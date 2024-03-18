@@ -323,7 +323,17 @@ export const directory = {
 						this.load(results);
 						this.trigger('sync');
 					}.bind(this));
-			}
+			},
+			match: function(search){
+				return _.filter(this.all, function(classroom){
+					var words = search.split(' ');
+					return _.find(words, function(word){
+						var formattedOption = lang.removeAccents(classroom.name).toLowerCase();
+						var formattedWord = lang.removeAccents(word).toLowerCase();
+						return formattedOption.indexOf(formattedWord) === -1
+					}) === undefined;
+				});
+			},
 		});
 	},
 	Classroom: function(){

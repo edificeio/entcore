@@ -1,0 +1,38 @@
+
+<!-- /myClass content -->
+
+<div class="vertical-spacing-twice">
+	<!-- Loading animation -->
+	<div class="dominos centered-text only-large-desktop" ng-if="display.loading">
+		<div class="row reduce-block-six">
+			<div class="spacer-large"></div>
+			<img skin-src="/img/illustrations/loading.gif" width="100px" heigh="100px"/>
+		</div>
+	</div>
+
+	<!-- emptyscreen -->
+	<div class="emptyscreen" ng-if="!classrooms.match(search.text).length && !display.loading">
+		<h2 class="emptyscreen-header"><i18n>class.search.noresults.title</i18n></h2>
+		<img class="emptyscreen-image" skin-src="/img/illustrations/illus-noresults.svg">
+		<p class="emptyscreen-footer"><i18n>class.search.noresults.description</i18n></p>
+	</div>
+
+	<div class="dominos centered-text" ng-class="dominoClass">
+		<!-- Classrooms -->
+		<div class="item user" ng-repeat="classroom in classrooms.match(search.text) | limitTo:search.maxLength">
+			<section class="domino grey" ng-click="selectClassroom(classroom)">
+				<div class="top">
+					<i class="users"></i>
+				</div>
+				<div class="center">
+					<span translate content="directory.classe"></span>
+				</div>
+				<div class="bottom">
+					<div class="content">
+						<span>[[classroom.name]]</span>
+					</div>
+				</div>
+			</section>
+		</div>
+	</div>
+</div>
