@@ -145,6 +145,23 @@ public class StorageFactory {
 			} catch (URISyntaxException e) {
 				e.printStackTrace();
 			}
+
+			JsonObject antivirus = s3.getJsonObject("antivirus");
+			if (antivirus != null) {
+				final String h = antivirus.getString("host");
+				final String c = antivirus.getString("credential");
+				if (isNotEmpty(h) && isNotEmpty(c)) {
+					AntivirusClient av = new HttpAntivirusClient(vertx, h, c);
+					((S3Storage) storage).setAntivirus(av);
+				}
+			}
+			
+			FileValidator fileValidator = new QuotaFileSizeValidation();
+			JsonArray blockedExtensions = s3.getJsonArray("blockedExtensions");
+			if (blockedExtensions != null && blockedExtensions.size() > 0) {
+				fileValidator.setNext(new ExtensionValidator(blockedExtensions));
+			}
+			((S3Storage) storage).setValidator(fileValidator);
 		} else if (fs != null) {
 			if (fs.containsKey("paths")) {
 				storage = new FileStorage(vertx, fs.getJsonArray("paths"), fs.getBoolean("flat", false), messagingClient, storageFileAnalyzerConfiguration);

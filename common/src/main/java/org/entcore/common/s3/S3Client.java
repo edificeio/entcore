@@ -23,6 +23,7 @@ import org.entcore.common.s3.storage.StorageObject;
 import org.entcore.common.s3.utils.*;
 import org.entcore.common.storage.FileStats;
 import org.entcore.common.storage.Storage;
+import org.entcore.common.validation.FileValidator;
 
 import io.vertx.core.file.OpenOptions;
 
@@ -137,7 +138,15 @@ public class S3Client {
 		uploadFile(request, defaultBucket, maxSize, handler);
 	}
 
+	public void uploadFile(HttpServerRequest request, Long maxSize, FileValidator validator, Handler<JsonObject> handler) {
+		uploadFile(request, defaultBucket, maxSize, validator, handler);
+	}
+
 	public void uploadFile(final HttpServerRequest request, final String bucket, final Long maxSize, final Handler<JsonObject> handler) {
+		uploadFile(request, bucket, maxSize, null, handler);
+	}
+
+	public void uploadFile(final HttpServerRequest request, final String bucket, final Long maxSize, FileValidator validator, final Handler<JsonObject> handler) {
 		final String id = getPath(UUID.randomUUID().toString());
 
 		MultipartUpload multipartUpload = new MultipartUpload(vertx, httpClient, host, accessKey, secretKey, region, bucket);
@@ -153,13 +162,27 @@ public class S3Client {
 
 			if (multipartUploadId.toString().isEmpty()) {
 				metadata.mergeIn(FileUtils.metadata(upload));
-				if (maxSize != null && maxSize < metadata.getLong("size", 0l)) {
-					handler.handle(
-						new JsonObject()
-							.put("status", "error")
-							.put("message", "file.too.large")
-					);
-					return;
+				if (validator != null) {
+					validator.process(metadata, new JsonObject().put("maxSize", maxSize), ar -> {
+						if (ar.failed()) {
+							handler.handle(
+								new JsonObject()
+									.put("status", "error")
+									.put("message", ar.cause().getMessage())
+							);
+							return;
+						}
+					});
+				}
+				else {
+					if (maxSize != null && maxSize < metadata.getLong("size", 0l)) {
+						handler.handle(
+							new JsonObject()
+								.put("status", "error")
+								.put("message", "file.too.large")
+						);
+						return;
+					}
 				}
 
 				multipartUpload.init(id, metadata.getString("filename"), metadata.getString("content-type"), uploadId -> {
@@ -551,7 +574,7 @@ public class S3Client {
 
 		MultipartUpload multipartUpload = new MultipartUpload(vertx, httpClient, host, accessKey, secretKey, region, bucket);
 		multipartUpload.upload(path, id, result -> {
-			handler.handle(new JsonObject().put("status", "ok"));
+			handler.handle(new JsonObject().put("_id", id).put("status", "ok"));
 		});
 	}
 
