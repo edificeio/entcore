@@ -80,4 +80,15 @@ public interface ShareService {
 
 	void findUserIdsForInheritShare(String resourceId, String userId, Optional<Set<String>> actions,
 			Handler<AsyncResult<Set<String>>> h);
+
+	/**
+	 * Gets the id of the owner of a resource.
+	 * So far, this method is only used to check if it is okay to add the manager rights
+	 * to a user who is not visible to the user trying to modify the shares of a resource.
+	 * @param resourceId Id of the resource of which we want the owner's id
+	 * @return Id of the owner or empty string if the owner could not be found
+	 */
+	default Future<String> getResourceOwnerUserId(final String resourceId) {
+		return Future.succeededFuture("");
+	}
 }
