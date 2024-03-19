@@ -462,15 +462,17 @@ public abstract class GenericShareService implements ShareService {
 	 * @return A {@code Future} that completes with {@code true} iff all the detailed conditions
 	 * above were met and {@code false} otherwise.
 	 */
-	private Future<Boolean> checkCanApplyShares(final String userId,
-																					 final JsonArray originalShares,
-																					 final Map<String, Set<String>> shareUpdates) {
+	private Future<Boolean> checkCanApplyShares(
+		final String userId,
+		final String resourceId,
+		final JsonArray originalShares,
+		final Map<String, Set<String>> shareUpdates) {
 		final Promise<Boolean> promise = Promise.promise();
 		final String customReturn = "RETURN DISTINCT visibles.id as id, has(visibles.login) as isUser";
 		UserUtils.findVisibles(eb, userId, customReturn, null, true, true, false, "fr", visibleResponse -> {
 			final Set<String> visibleUsersAndGroups = visibleResponse.stream()
-					.map(entry -> ((JsonObject) entry).getString("id"))
-					.collect(Collectors.toSet());
+				.map(entry -> ((JsonObject) entry).getString("id"))
+				.collect(Collectors.toSet());
 			// Check that original shares are untouched or that the ones that are modified are modified accordingly to
 			// users/groups visibility
 			boolean ok = true;
@@ -483,11 +485,13 @@ public abstract class GenericShareService implements ShareService {
 					log.debug(idOfShare + " is visible so it can be changed");
 				} else {
 					final Set<String> originalRights = share.stream()
-							.filter(e -> !e.getKey().equals("userId") && !e.getKey().equals("groupId") && (Boolean) e.getValue())
-							.map(Map.Entry::getKey)
-							.collect(Collectors.toSet());
+						.filter(e -> !e.getKey().equals("userId") && !e.getKey().equals("groupId") && (Boolean) e.getValue())
+						.map(Map.Entry::getKey)
+						.collect(Collectors.toSet());
 					final Set<String> desiredRights = shareUpdates.getOrDefault(idOfShare, Collections.emptySet());
-					if(desiredRights.equals(originalRights)) {
+					if(desiredRights.isEmpty()) {
+						log.debug("OK - manager can remove shares");
+					} else if(desiredRights.equals(originalRights)) {
 						log.debug("OK - desired rights and original rights are the same for " + idOfShare);
 					} else {
 						log.warn("KO - desired rights and original rights differ for " + idOfShare + " but the user has no visibility on it");
@@ -498,18 +502,32 @@ public abstract class GenericShareService implements ShareService {
 			}
 			if(ok) {
 				// Check that added groups or users do not concern users or groups that the user does not have access to
-				ok = shareUpdates.keySet().stream()
-						.filter(id -> !originalUsersAndGroups.contains(id)) // Added users and groups
-						.allMatch(id -> {
-							if(visibleUsersAndGroups.contains(id)) {
-								return true;
-							} else {
-								log.warn("KO - tried to add rights to a user/group " + id + " not visible to user");
-								return false;
-							}
-						});
+				final Set<String> unmatchedUserIds = shareUpdates.keySet().stream()
+					.filter(id -> !originalUsersAndGroups.contains(id)) // Added users and groups
+					.filter(id -> !visibleUsersAndGroups.contains(id))
+					.collect(Collectors.toSet());
+				if(unmatchedUserIds.isEmpty()) {
+					promise.complete(true);
+				} else if(unmatchedUserIds.size() > 1) {
+					// If there is more than 2 invisible users, we know that at least one of them is not visible at all so we cannot
+					// share the resource
+					log.warn("KO - tried to add rights to a user/group " + unmatchedUserIds + " not visible to user");
+					promise.complete(false);
+				} else {
+					//
+					getResourceOwnerUserId(resourceId).onSuccess(creatorId -> {
+						if(unmatchedUserIds.contains(creatorId)) {
+							promise.complete(true);
+						} else {
+							// For workspace, check if we want to add the owner of the resource
+							log.warn("KO - tried to add rights to a user/group " + unmatchedUserIds + " not visible to user");
+							promise.complete(false);
+						}
+					}).onFailure(promise::fail);
+				}
+			} else {
+				promise.complete(ok);
 			}
-			promise.complete(ok);
 		});
 		return promise.future();
 	}
@@ -541,7 +559,7 @@ public abstract class GenericShareService implements ShareService {
 																			final Map<String, Set<String>> membersActions,
 																			final Set<String> shareBookmarkIds) {
 		getOriginalShares(resourceId, userId)
-		.compose(shares -> checkCanApplyShares(userId, shares, membersActions))
+		.compose(shares -> checkCanApplyShares(userId, resourceId, shares, membersActions))
 		.onSuccess(e -> {
 			if(e) {
 				//		final String preFilter = "AND m.id IN {members} ";

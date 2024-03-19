@@ -27,8 +27,7 @@ import org.entcore.common.http.BaseServer;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.pdf.PdfFactory;
 import org.entcore.common.pdf.PdfGenerator;
-import org.entcore.common.share.impl.GenericShareService;
-import org.entcore.common.share.impl.MongoDbShareService;
+import org.entcore.common.share.ShareService;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.storage.impl.MongoDBApplicationStorage;
@@ -38,11 +37,7 @@ import org.entcore.workspace.controllers.WorkspaceController;
 import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.security.WorkspaceResourcesProvider;
 import org.entcore.workspace.service.WorkspaceService;
-import org.entcore.workspace.service.impl.AudioRecorderWorker;
-import org.entcore.workspace.service.impl.DefaultQuotaService;
-import org.entcore.workspace.service.impl.DefaultWorkspaceService;
-import org.entcore.workspace.service.impl.WorkspaceRepositoryEvents;
-import org.entcore.workspace.service.impl.WorkspaceSearchingEvents;
+import org.entcore.workspace.service.impl.*;
 
 import fr.wseduc.mongodb.MongoDb;
 import io.vertx.core.DeploymentOptions;
@@ -74,7 +69,8 @@ public class Workspace extends BaseServer {
 		/**
 		 * SHare Service
 		 */
-		GenericShareService shareService = new MongoDbShareService(vertx.eventBus(), MongoDb.getInstance(),
+		final MongoDb mongo = MongoDb.getInstance();
+		final ShareService shareService = new WorkspaceShareService(vertx.eventBus(), mongo,
 				DocumentDao.DOCUMENTS_COLLECTION, securedActions, new HashMap<>());
 		final int threshold = config.getInteger("alertStorage", 80);
 		/**
