@@ -331,9 +331,9 @@ public class S3Storage implements Storage {
     }
     
     @Override
-    public void scanFile(String path) {
+    public void scanFile(String id) {
         if (antivirus != null) {
-			antivirus.scan(path);
+			antivirus.scanS3(id, bucket);
 		}
     }
 

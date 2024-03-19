@@ -148,14 +148,15 @@ public class StorageFactory {
 
 			JsonObject antivirus = s3.getJsonObject("antivirus");
 			if (antivirus != null) {
-				final String h = antivirus.getString("host");
-				final String c = antivirus.getString("credential");
-				if (isNotEmpty(h) && isNotEmpty(c)) {
-					AntivirusClient av = new HttpAntivirusClient(vertx, h, c);
+				final String host = antivirus.getString("host");
+				final String port = antivirus.getString("port", "8080");
+				final String credential = antivirus.getString("credential");
+				if (isNotEmpty(host) && isNotEmpty(credential) && isNotEmpty(port)) {
+					AntivirusClient av = new HttpAntivirusClient(vertx, host, credential, Integer.parseInt(port));
 					((S3Storage) storage).setAntivirus(av);
 				}
 			}
-			
+
 			FileValidator fileValidator = new QuotaFileSizeValidation();
 			JsonArray blockedExtensions = s3.getJsonArray("blockedExtensions");
 			if (blockedExtensions != null && blockedExtensions.size() > 0) {
