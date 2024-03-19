@@ -29,7 +29,7 @@ import org.entcore.common.http.request.ActionsUtils;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.pdf.PdfGenerator;
-import org.entcore.common.share.impl.GenericShareService;
+import org.entcore.common.share.ShareService;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -69,14 +69,15 @@ public class WorkspaceController extends BaseController {
 	private EventHelper eventHelper;
 	private WorkspaceService workspaceService;
 	private TimelineHelper notification;
-	private GenericShareService shareService;
+	private final ShareService shareService;
 	private final PdfGenerator pdfGenerator;
 	private DocumentDao dao;
 	private FolderManager folderManager;
 
 	private Storage storage;
 
-	public WorkspaceController(Storage storage, WorkspaceService workspaceService, GenericShareService shareService,
+	public WorkspaceController(Storage storage, WorkspaceService workspaceService,
+														 final ShareService shareService,
 		PdfGenerator aPdfGenerator, MongoDb mongo, FolderManager fm) {
 		this.storage = storage;
 		this.workspaceService = workspaceService;

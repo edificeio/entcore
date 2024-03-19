@@ -51,7 +51,7 @@ import org.entcore.common.user.UserInfos;
 public class MongoDbShareService extends GenericShareService {
 
 	private final String collection;
-	private final MongoDb mongo;
+	protected final MongoDb mongo;
 
 	public MongoDbShareService(EventBus eb, MongoDb mongo, String collection, Map<String, SecuredAction> securedActions,
 			Map<String, List<String>> groupedActions) {
