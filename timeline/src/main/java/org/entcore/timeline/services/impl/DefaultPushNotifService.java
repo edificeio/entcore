@@ -214,7 +214,7 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
                 message.put("notification", notif);
                 // "content-avaiable" is required here to make the mobile app awake every time it receives a notification.
                 // When the back will be able to put the right number for the "badge" value, "content-available" could be removed to preserve user battery life.
-                apns.put("payload", new JsonObject().put("aps", new JsonObject().put("badge", 1).put("content-available", 1)));
+                apns.put("payload", new JsonObject().put("aps", new JsonObject().put("content-available", 1)));
                 message.put("apns", apns);
             }
 
