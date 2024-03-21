@@ -138,18 +138,14 @@ public class AppOAuthResourceProvider extends DefaultOAuthResourceProvider {
 	@Override
 	protected void getOAuthInfos(final SecureHttpServerRequest request, final JsonObject payload, final Handler<AsyncResult<JsonObject>> origHandler){
 		if(getCacheService().isPresent()){
-			request.pause();
 			final Handler<AsyncResult<JsonObject>> handler = e -> {
-				request.resume();
 				origHandler.handle(e);
 			};
 			Optional<String> token = getTokenId(request);
 			if(token.isPresent()){
-				request.pause();
 				final String tokenStr = token.get();
 				loadCache(tokenStr, resCache -> {
 					if(resCache.isPresent() && resCache.get().containsKey("oauth")){
-						request.resume();
 						final JsonObject oauth = resCache.get().getJsonObject("oauth");
 						final JsonObject session = resCache.get().getJsonObject("session");
 						if(session!=null) {
@@ -160,7 +156,6 @@ public class AppOAuthResourceProvider extends DefaultOAuthResourceProvider {
 						handler.handle(new DefaultAsyncResult<>(oauth));
 					}else{
 						cacheOAuthInfos(tokenStr, request, payload, r->{
-							request.resume();
 							handler.handle(r);
 						});
 					}
