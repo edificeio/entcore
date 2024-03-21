@@ -23,16 +23,29 @@ import java.io.File;
 
 public class InfectedFile {
 
-	private final String path;
-	private final String virus;
+	private String path;
+	private String virus;
 	private String id;
 	private long timerId;
 	private String name;
 	private String owner;
 	private String application;
 
+	public InfectedFile() {
+		this.path = "";
+		this.virus = "";
+	}
+
 	public InfectedFile(String path, String virus) {
 		this.path = path;
+		this.virus = virus;
+	}
+
+	public void setPath(String path) {
+		this.path = path;
+	}
+
+	public void setVirus(String virus) {
 		this.virus = virus;
 	}
 
