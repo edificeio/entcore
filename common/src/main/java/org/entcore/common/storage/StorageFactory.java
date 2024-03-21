@@ -149,10 +149,10 @@ public class StorageFactory {
 			JsonObject antivirus = s3.getJsonObject("antivirus");
 			if (antivirus != null) {
 				final String host = antivirus.getString("host");
-				final String port = antivirus.getString("port", "8080");
+				final int port = antivirus.getInteger("port", 8080);
 				final String credential = antivirus.getString("credential");
-				if (isNotEmpty(host) && isNotEmpty(credential) && isNotEmpty(port)) {
-					AntivirusClient av = new HttpAntivirusClient(vertx, host, credential, Integer.parseInt(port));
+				if (isNotEmpty(host) && isNotEmpty(credential)) {
+					AntivirusClient av = new HttpAntivirusClient(vertx, host, credential, port);
 					((S3Storage) storage).setAntivirus(av);
 				}
 			}

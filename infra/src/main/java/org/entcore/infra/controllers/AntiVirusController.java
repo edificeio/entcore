@@ -27,13 +27,22 @@ import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
+import org.entcore.common.user.UserInfos;
 import org.entcore.infra.services.AntivirusService;
+import org.entcore.infra.services.impl.InfectedFile;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AntiVirusController extends BaseController {
 
@@ -51,6 +60,41 @@ public class AntiVirusController extends BaseController {
 					antivirusService.replaceInfectedFiles(event.getString("scanReport"), defaultResponseHandler(request));
 				}
 			}
+		});
+	}
+
+	@Post("/antivirus/replace")
+	// @SecuredAction(value = "", type = ActionType.RESOURCE)
+	// @ResourceFilter(SuperAdminFilter.class)
+	// @MfaProtected()
+	public void replace(final HttpServerRequest request) {
+		List<InfectedFile> infectedFiles = new ArrayList<>();
+
+		RequestUtils.bodyToJson(request, jsonData -> {
+			if (jsonData == null || isNotEmpty(jsonData.toString())) {
+				badRequest(request);
+				return;
+			}
+
+			ObjectMapper mapper = new ObjectMapper();
+			InfectedFile infectedFile = null;
+			try {
+				infectedFile = mapper.readValue(jsonData.encode(), InfectedFile.class);
+			} catch (IOException e) {
+				badRequest(request);
+				return;
+			}
+
+			if (infectedFile == null) {
+				badRequest(request);
+				return;
+			}
+			infectedFiles.add(infectedFile);
+			log.info(infectedFile);
+			
+			antivirusService.launchReplace(infectedFiles);
+
+			ok(request);
 		});
 	}
 
