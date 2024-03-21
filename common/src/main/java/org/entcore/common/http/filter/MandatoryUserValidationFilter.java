@@ -92,12 +92,6 @@ public class MandatoryUserValidationFilter implements Filter {
 
     @Override
     public void canAccess(HttpServerRequest request, Handler<Boolean> handler) {
-        // Ajax requests are not redirected (useless)
-        if ("XMLHttpRequest".equals(request.headers().get("X-Requested-With"))){
-            handler.handle(true);
-            return;
-        }
-
         UserUtils.getSession(this.eventBus, request, session -> {
             final UserInfos userInfos = UserUtils.sessionToUserInfos(session);
             if (userInfos == null) {
