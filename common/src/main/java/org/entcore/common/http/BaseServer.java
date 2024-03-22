@@ -33,10 +33,10 @@ import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import fr.wseduc.webutils.validation.JsonSchemaValidator;
 
+import io.vertx.core.Vertx;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.cache.CacheFilter;
 import org.entcore.common.cache.CacheService;
-import org.entcore.common.cache.RedisCacheService;
 import org.entcore.common.controller.ConfController;
 import org.entcore.common.controller.RightsController;
 import org.entcore.common.datavalidation.utils.UserValidationFactory;
@@ -68,6 +68,9 @@ import io.vertx.core.json.JsonObject;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 public abstract class BaseServer extends Server {
 	public static final String ONDEPLOY_I18N = "ondeploy.i18n";
@@ -127,7 +130,7 @@ public abstract class BaseServer extends Server {
 			addFilter(new CacheFilter(getEventBus(vertx),securedUriBinding, cacheService));
 		}
 
-		addFilter(new MandatoryUserValidationFilter(mfaProtectedBinding, getEventBus(vertx)));
+		addFilter(new MandatoryUserValidationFilter(mfaProtectedBinding, getEventBus(vertx), getProfilesWithForcedMfa(vertx)));
 
 		if (config.getString("integration-mode","BUS").equals("HTTP")) {
 			addFilter(new HttpActionFilter(securedUriBinding, config, vertx, resourceProvider));
@@ -150,6 +153,18 @@ public abstract class BaseServer extends Server {
 			log.info("Received "+ONDEPLOY_I18N+" update i18n override");
 			this.loadI18nAssetsFiles();
 		});
+	}
+
+	private Set<String> getProfilesWithForcedMfa(Vertx vertx) {
+		final Set<String> profiles;
+		final LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
+		final String raw = (String) server.get("forced-mfa-profiles");
+		if(isEmpty(raw)) {
+			profiles = Collections.emptySet();
+		} else {
+			profiles = Arrays.stream(raw.split(",")).collect(Collectors.toSet());
+		}
+		return profiles;
 	}
 
 	protected void initFilters() {

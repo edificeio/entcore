@@ -5,16 +5,14 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.Renders;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
+import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.datavalidation.EmailValidation;
 import org.entcore.common.datavalidation.UserValidationService;
 import org.entcore.common.datavalidation.metrics.DataValidationMetricsFactory;
@@ -30,11 +28,14 @@ import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.Mfa;
 import org.entcore.common.utils.StringUtils;
 
-import java.io.StringReader;
-import java.io.Writer;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResult;
 import static org.entcore.common.user.SessionAttributes.IS_MFA;
 import static org.entcore.common.user.SessionAttributes.NEED_REVALIDATE_TERMS;
@@ -45,6 +46,8 @@ import static org.entcore.common.user.SessionAttributes.NEED_REVALIDATE_TERMS;
  */
 public class DefaultUserValidationService implements UserValidationService {
 	private static final Logger logger = LoggerFactory.getLogger(DefaultUserValidationService.class);
+
+  private final Set<String> profilesWithForcedMfa;
 
     /** Inner service for the "mobile" field validation. */
     //---------------------------------------------------------------
@@ -126,7 +129,8 @@ public class DefaultUserValidationService implements UserValidationService {
     private int waitInSeconds    = 10;   // Email is awaited 10 seconds by default (it's a front-side parameter)
 
     public DefaultUserValidationService(final io.vertx.core.Vertx vertx, final io.vertx.core.json.JsonObject config, final JsonObject params) {
-        eb = Server.getEventBus(vertx);
+      this.profilesWithForcedMfa = getProfilesWithForcedMfa(vertx);
+      eb = Server.getEventBus(vertx);
         if( params != null ) {
             ttlInSeconds    = params.getInteger("ttlInSeconds", 600);
             retryNumber     = params.getInteger("retryNumber",  5);
@@ -141,6 +145,19 @@ public class DefaultUserValidationService implements UserValidationService {
         this.eventType = eventType;
         return this;
 	}
+
+
+  private Set<String> getProfilesWithForcedMfa(final Vertx vertx) {
+    final Set<String> profiles;
+    final LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
+    final String raw = (String) server.get("forced-mfa-profiles");
+    if(isEmpty(raw)) {
+      profiles = Collections.emptySet();
+    } else {
+      profiles = Arrays.stream(raw.split(",")).collect(Collectors.toSet());
+    }
+    return profiles;
+  }
 
 	/** 
 	 * @return {
@@ -196,10 +213,14 @@ public class DefaultUserValidationService implements UserValidationService {
 	private Future<Boolean> needMFA(final JsonObject session, final UserInfos infos) {
         // As of 2023-01-27, an MFA is needed to access protected zones if and only if :
         // - no MFA has already been performed during this session, and
-        // - user is ADMx, and
+        // - user is ADMx or of a profile for which MFA is forced, and
         // - MFA is activated at platform-level, and
         // - all structures, the user is attached to, are not ignoring MFA
-        if( Boolean.TRUE.equals(getIsMFA(session))
+      final boolean alreadyMadeMFA = Boolean.TRUE.equals(getIsMFA(session));
+      if(!alreadyMadeMFA && profileRequiresMfa(infos) && !Mfa.isNotActivatedForUser(infos)) {
+        return Future.succeededFuture(Boolean.TRUE);
+      }
+        if( alreadyMadeMFA
          || infos == null
          || !(infos.isADMC() || infos.isADML())
          || Mfa.isNotActivatedForUser(infos)
@@ -209,6 +230,10 @@ public class DefaultUserValidationService implements UserValidationService {
 
         // otherwise MFA is needed
         return Future.succeededFuture(Boolean.TRUE);
+    }
+
+    public boolean profileRequiresMfa(final UserInfos infos) {
+        return profilesWithForcedMfa.contains(infos.getType());
     }
 
     @Override

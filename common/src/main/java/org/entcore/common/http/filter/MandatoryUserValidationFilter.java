@@ -61,9 +61,12 @@ public class MandatoryUserValidationFilter implements Filter {
 
     private final static String REDIRECT_TO_KEY = "MandatoryUserValidationFilterRedirectsTo";
 
-    public MandatoryUserValidationFilter(Set<Binding> mfaProtectedBindings, EventBus eventBus) {
+    private final Set<String> profilesWithForcedMfa;
+
+    public MandatoryUserValidationFilter(Set<Binding> mfaProtectedBindings, EventBus eventBus, Set<String> profilesWithForcedMfa) {
         this.eventBus = eventBus;
         this.bindings = mfaProtectedBindings;
+      this.profilesWithForcedMfa = profilesWithForcedMfa;
     }
 
 	private Binding requestBinding(HttpServerRequest request) {
@@ -230,11 +233,11 @@ public class MandatoryUserValidationFilter implements Filter {
     private Future<JsonObject> checkMfa(final SecureHttpServerRequest request, UserInfos userInfos, JsonObject validations) {
         if( Boolean.FALSE.equals(validations.getBoolean(FIELD_NEED_MFA, false)) // No need to perform a MFA => OK
                 || isInWhiteList(request.path(), request.method().name(), MFA_IDX) // white-listed url requested => OK
-                || !isMfaProtected(request) // Url not concerned by 2FA => OK
+                || (!profilesWithForcedMfa.contains(userInfos.getType()) && !isMfaProtected(request)) // Url not concerned by 2FA => OK
         ) {
             return Future.succeededFuture(validations);
         }
-        // There is another exception here, while changing mobile number or email adddress.
+        // There is another exception here, while changing mobile number or email address.
         // if the user MUST validate is email or mobile, but has not done MFA, this shall not block him.
         final String[] whiteListEmail = {"/directory/user/mailstate"};
         final String[] whiteListMobile = {"/directory/user/mobilestate"};
