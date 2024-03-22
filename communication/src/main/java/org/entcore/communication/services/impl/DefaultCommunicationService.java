@@ -71,7 +71,7 @@ public class DefaultCommunicationService implements CommunicationService {
 	public void removeLink(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler) {
 		String query =
 				"MATCH (g1:Group {id : {startGroupId}})-[r:COMMUNIQUE]->(g2:Group {id : {endGroupId}}) " +
-				"SET g1.communiqueWith = FILTER(gId IN g1.communiqueWith WHERE gId <> {endGroupId}), " +
+				"SET g1.communiqueWith = FILTER(gId IN g1.communiqueWith WHERE gId <> COALESCE({endGroupId},\"\")), " +
 						"g2.communiqueWith = coalesce(g2.communiqueWith, []) " +
 				"DELETE r " +
 				"RETURN COUNT(*) as number ";
@@ -399,7 +399,7 @@ public class DefaultCommunicationService implements CommunicationService {
 					"WITH cg, c " +
 					"MATCH c<-[:DEPENDS]-(g) " +
 					"WHERE (" + groupLabel + ") AND NOT(HAS(g.communiqueWith)) AND g.name =~ {otherProfile} " +
-					"SET cg.communiqueWith = FILTER(gId IN cg.communiqueWith WHERE gId <> g.id) + g.id ";
+					"SET cg.communiqueWith = FILTER(gId IN cg.communiqueWith WHERE gId <> COALESCE(g.id,\"\")) + g.id ";
 			String query2 =
 					"MATCH (s:Structure)<-[:DEPENDS" + c + "]-(cg:ProfileGroup)-[:DEPENDS]->(c:Class) " +
 					"WHERE s.id IN {structures} AND NOT(HAS(cg.communiqueWith)) AND cg.name =~ {profile} " +
@@ -425,7 +425,7 @@ public class DefaultCommunicationService implements CommunicationService {
 					"MATCH (s:Structure)<-[:DEPENDS" + c + "]-(cg:ProfileGroup), s<-[:DEPENDS]-(g) " +
 					"WHERE s.id IN {structures} AND HAS(cg.communiqueWith) AND cg.name =~ {profile} " +
 					"AND  (" + groupLabel + ") AND NOT(HAS(g.communiqueWith)) AND g.name =~ {otherProfile} " +
-					"SET cg.communiqueWith = FILTER(gId IN cg.communiqueWith WHERE gId <> g.id) + g.id ";
+					"SET cg.communiqueWith = FILTER(gId IN cg.communiqueWith WHERE gId <> COALESCE(g.id,\"\")) + g.id ";
 			String query2 =
 					"MATCH (s:Structure)<-[:DEPENDS" + c + "]-(cg:ProfileGroup), s<-[:DEPENDS]-(g) " +
 					"WHERE s.id IN {structures} AND NOT(HAS(cg.communiqueWith)) AND cg.name =~ {profile} " +
