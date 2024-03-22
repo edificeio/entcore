@@ -272,6 +272,13 @@ project(':app-registry') {
   }
 }
 
+project(':audience') {
+  dependencies {
+    compile project(':common')
+    compile "fr.wseduc:web-utils:$webUtilsVersion"
+    testCompile project(':test')
+  }
+}
 
 project(':auth') {
   dependencies {
@@ -403,6 +410,7 @@ project(':test') {
     compile "fr.wseduc:mod-postgresql:$modPostgresVersion:fat"
     compile "io.vertx:mod-mongo-persistor:$modMongoVersion:fat"
     compile 'io.gatling.highcharts:gatling-charts-highcharts:2.2.2'
+    compile 'org.mockito:mockito-inline:4.11.0'
     configurations.compile.exclude(group: 'io.gatling', module: 'gatling-app')
     configurations.compile.exclude(group: 'io.gatling', module: 'gatling-recorder')
   }
@@ -455,6 +463,13 @@ task integrationTest(dependsOn: [subprojects.copyMod, project(':tests').compileT
     project(':tests').tasks.gatling.execute()
 }
 
+project(':audience') {
+  dependencies {
+    compile project(':common')
+    compile "fr.wseduc:web-utils:$webUtilsVersion"
+    testCompile project(':test')
+  }
+}
 
 integrationTest.doFirst {
     tasks.runEnt.execute()

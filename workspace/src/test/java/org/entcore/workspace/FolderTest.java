@@ -22,11 +22,11 @@
 
 package org.entcore.workspace;
 
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import io.vertx.core.json.JsonArray;
-import org.checkerframework.checker.units.qual.A;
 import org.entcore.common.folders.ElementQuery;
 import org.entcore.common.folders.ElementShareOperations;
 import org.entcore.common.folders.FolderManager;
@@ -312,7 +312,7 @@ public class FolderTest {
      *
      * <u>STEPS</u> :
      * <ol>
-     *     <li>Create user "reader" and "writter"</li>
+     *     <li>Create user "reader" and "writer"</li>
      *     <li>Create folder1 for user13</li>
      *     <li>Create folder2 for user13 (child of folder1)</li>
      *     <li>Verify that folder1 is child of folder2</li>
@@ -336,10 +336,26 @@ public class FolderTest {
     public void shouldRestoreAChild(TestContext context) {
         final Async async = context.async();
         final UserInfos user = test.directory().generateUser("user13");
+        final Set<String> userIds = new HashSet<>();
+        userIds.add(user.getUserId());
+        test.vertx().eventBus().consumer("wse.communication.users").handler(message -> {
+            String action = ((JsonObject)message.body()).getString("action", "");
+            if("visibleUsers".equals(action)) {
+                final JsonArray response = new JsonArray();
+                for (String userId : userIds) {
+                    response.add(new JsonObject().put("id", userId));
+                }
+                message.reply(response);
+            } else {
+                message.fail(404, "not.found");
+            }
+        });
         // create reader
         test.directory().createActiveUser("reader", "password", "email").onComplete(context.asyncAssertSuccess(reader -> {
+            userIds.add(reader);
             // create writer
             test.directory().createActiveUser("writter", "password", "email").onComplete(context.asyncAssertSuccess(writter -> {
+                userIds.add(writter);
                 // create folder tree
                 workspaceService.createFolder(folder("folder1", "folder1"), user, context.asyncAssertSuccess(onCreateFolder1 -> {
                     workspaceService.createFolder("folder1", user, folder("folder2", "folder2"), context.asyncAssertSuccess(onCreateFolder2 -> {

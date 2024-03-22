@@ -32,7 +32,7 @@ import java.util.Set;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
-public class Sql {
+public class Sql implements ISql {
 
 	private String address;
 	private EventBus eb;
@@ -61,10 +61,12 @@ public class Sql {
 		return this;
 	}
 
+	@Override
 	public void prepared(String query, JsonArray values, Handler<Message<JsonObject>> handler) {
 		prepared(query, values, new DeliveryOptions(), handler);
 	}
 
+	@Override
 	public void prepared(String query, JsonArray values, DeliveryOptions deliveryOptions, Handler<Message<JsonObject>> handler) {
 		JsonObject j = new JsonObject()
 				.put("action", "prepared")
@@ -73,6 +75,7 @@ public class Sql {
 		eb.send(address, j, deliveryOptions, handlerToAsyncHandler(handler));
 	}
 
+	@Override
 	public void raw(String query, Handler<Message<JsonObject>> handler) {
 		JsonObject j = new JsonObject()
 				.put("action", "raw")
@@ -80,10 +83,12 @@ public class Sql {
 		eb.send(address, j, handlerToAsyncHandler(handler));
 	}
 
+	@Override
 	public void insert(String table, JsonObject params, Handler<Message<JsonObject>> handler) {
 		insert(table, params, null, handler);
 	}
 
+	@Override
 	public void insert(String table, JsonObject params, String returning, Handler<Message<JsonObject>> handler) {
 		if (params == null) {
 			handler.handle(new ErrorMessage("invalid.parameters"));
@@ -98,12 +103,14 @@ public class Sql {
 		insert(table, fields, new fr.wseduc.webutils.collections.JsonArray().add(values), returning, handler);
 	}
 
+	@Override
 	public void insert(String table, JsonArray fields, JsonArray values, Handler<Message<JsonObject>> handler) {
 		insert(table, fields, values, null, handler);
 	}
 
+	@Override
 	public void insert(String table, JsonArray fields, JsonArray values, String returning,
-			Handler<Message<JsonObject>> handler) {
+										 Handler<Message<JsonObject>> handler) {
 		JsonObject j = new JsonObject()
 				.put("action", "insert")
 				.put("table", table)
@@ -115,9 +122,10 @@ public class Sql {
 		eb.send(address, j, handlerToAsyncHandler(handler));
 	}
 
+	@Override
 	public void upsert(String table, JsonArray fields, JsonArray values, JsonArray conflictFields,
-					   JsonArray updateFields, String returning,
-					   Handler<Message<JsonObject>> handler) {
+										 JsonArray updateFields, String returning,
+										 Handler<Message<JsonObject>> handler) {
 		JsonObject j = new JsonObject()
 				.put("action", "upsert")
 				.put("table", table)
@@ -131,6 +139,7 @@ public class Sql {
 		eb.send(address, j, handlerToAsyncHandler(handler));
 	}
 
+	@Override
 	public void select(String table, JsonArray fields, Handler<Message<JsonObject>> handler) {
 		JsonObject j = new JsonObject()
 				.put("action", "select")
@@ -139,10 +148,12 @@ public class Sql {
 		eb.send(address, j, handlerToAsyncHandler(handler));
 	}
 
+	@Override
 	public void transaction(JsonArray statements, Handler<Message<JsonObject>> handler) {
 		transaction(statements, new DeliveryOptions(), handler);
 	}
 
+	@Override
 	public void transaction(JsonArray statements, DeliveryOptions deliveryOptions, Handler<Message<JsonObject>> handler) {
 		JsonObject j = new JsonObject()
 				.put("action", "transaction")
@@ -173,6 +184,22 @@ public class Sql {
 			sb.deleteCharAt(sb.length() - 1);
 		}
 		return sb.append(")").toString();
+	}
+
+	/**
+	 * Creates a placeholder for IN clause and updates the query params accordingly.
+	 * @param items the set of string items to be checked by the IN clause
+	 * @param params the query params to be updated
+	 * @return the placeholder
+	 */
+	public static String preparePlaceholderAndParamsForInClause(Set<String> items, JsonArray params) {
+		StringBuilder placeholder = new StringBuilder("(");
+		items.forEach(item -> {
+			placeholder.append("?,");
+			params.add(item);
+		});
+		placeholder.deleteCharAt(placeholder.length() - 1);
+		return placeholder.append(")").toString();
 	}
 
 	public static String arrayPrepared(JsonArray array) {

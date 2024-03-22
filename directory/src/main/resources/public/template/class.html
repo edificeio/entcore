@@ -7,31 +7,22 @@
 		<h1 class="cell">
 			<a data-reload>
 				<i class="userbook"></i>
-				<span translate content="userBook.class.title"></span><span>[[myClass && myClass.length > 0 ? " - " + myClass[0].name : ""]]</span>
+				<span translate content="userBook.class.title"></span>
+				<span>[[currentClass ? " - " + currentClass.name : ""]]</span>
 			</a>
 		</h1>
 	</app-title>
-
-	<div class="right-magnet three cell twelve-mobile">
-		<div class="row top-spacing" ng-if="users.all.length > 0">
-			<i class="show-details right-magnet"
-			   ng-click="selectUser(users.first())"
-			   ng-class="{ selected: currentUser }"
-			   ng-if="users.first()"></i>
-			<i class="show-icons right-magnet"
-			   ng-click="deselectUser('dominos')"
-			   ng-class="{ selected: !template.contains('details', 'user-infos') }"></i>
-		</div>
-	</div>
 </div>
 
 <div class="row vertical-spacing-twice">
 	<input type="search"
-		   ng-model="search.text" ng-change="updateSearch()"
-		   translate attr="placeholder"
-		   placeholder="userBook.search"
-		   class="three cell twelve-mobile"
-		   style="width: 285px" />
+		ng-if="!currentUser"
+		ng-model="search.text"
+		ng-change="updateSearch()"
+		placeholder="[[search.placeholder || 'userBook.search']]"
+		class="three cell twelve-mobile"
+		style="width: 285px"
+	/>
 	<a class="small-text right-magnet reduce-block-four"
 		href="/userbook/annuaire#/search"
 		translate content="search.in.directory"></a>
@@ -39,5 +30,10 @@
 
 
 <div class="row vertical-spacing-twice">
+	<a ng-if="(currentClass && classrooms.all.length > 1) || currentUser"
+		ng-click="navigateBack()">
+		<i class="back"></i>
+		<i18n>userBook.directory.back</i18n>
+	</a>
 	<div class="twelve cell" ng-include="template.containers.main"></div>
 </div>

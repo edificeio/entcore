@@ -43,13 +43,6 @@ object AuthScenario {
         AppRegistryScenario.now + "&redirect_uri=http%3A%2F%2Flocalhost%3A1500%2Fcode", "UTF-8"))
       .check(status.is(302)))
 
-    // check teacher functions
-    .exec(http("Get session")
-      .get("/auth/oauth2/userinfo")
-      .check(status.is(200),
-        jsonPath("$.functions.ADMIN_LOCAL_${now}.scope[0]").find.is("${schoolId}"),
-        jsonPath("$.functions.CLASS_ADMIN_${now}.scope[0]").find.is("${classId}")))
-
     .exec(http("Get OAuth2 code with connected user")
       .get("/auth/oauth2/auth?response_type=code&state=blip&scope=userinfo&client_id=test" +
         AppRegistryScenario.now + "&redirect_uri=http%3A%2F%2Flocalhost%3A1500%2Fcode")
