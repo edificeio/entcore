@@ -507,7 +507,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	public void sendResetPasswordMail(HttpServerRequest request, String email, String resetCode, String displayName,
 									  String login, final Handler<Either<String, JsonObject>> handler) {
 		if (email == null || resetCode == null || email.trim().isEmpty() || resetCode.trim().isEmpty()) {
-			handler.handle(new Either.Left<String, JsonObject>("invalid.mail"));
+			handler.handle(new Either.Right<String, JsonObject>(new JsonObject()));
 			return;
 		}
 		log.info("Sending resetCode by email: "+login+"/"+email+"/"+resetCode);
@@ -579,7 +579,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	private void sendSms(HttpServerRequest request, final String phone, String template, JsonObject params,
 											 final String module, final Handler<Either<String, JsonObject>> handler){
 		if (phone == null || phone.trim().isEmpty()) {
-			handler.handle(new Either.Left<>("invalid.phone"));
+			handler.handle(new Either.Right<String, JsonObject>(new JsonObject()));
 			return;
 		}
 		smsSender.send(request, phone, template, params, module)
