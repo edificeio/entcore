@@ -714,9 +714,17 @@ public class AuthController extends BaseController {
 																													password,
 																													request);
 																										} else {
-																											trace.info(
-																												getIp(request) + " - Erreur de connexion pour l'utilisateur "
-																															+ login);
+
+																											if(!e.getDescription().isEmpty() && e.getCode() == 401) {
+																												trace.info(
+																														getIp(request) + " - Erreur de connexion (" +  e.getDescription() + ") pour l'utilisateur "
+																																+ login);
+																											} else {
+																												trace.info(
+																														getIp(request) + " - Erreur de connexion pour l'utilisateur "
+																																+ login);
+																											}
+
 																											loginResult(
 																													request,
 																													e.getDescription(),
