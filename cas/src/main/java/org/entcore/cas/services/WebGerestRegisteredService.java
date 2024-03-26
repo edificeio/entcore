@@ -243,9 +243,10 @@ public class WebGerestRegisteredService extends AbstractCas20ExtensionRegistered
 
 	private List<String> getModelFunctions() {
 		List<String> functions = new ArrayList<>();
-		functions.add("AGT$ATTE$1$Administrateur WebGrest");
-		functions.add("AGT$ATTE$2$Approvisionneur WebGrest");
-		functions.add("AGT$ATTE$3$Chef de cuisine");
+		functions.add("ADE$AGENTS DEPARTEMENTAUX$1$Administrateur WebGerest");
+		functions.add("ADE$AGENTS DEPARTEMENTAUX$2$Approvisionneur WebGerest");
+		functions.add("ADC$AGENTS DEPARTEMENTAUX DES COLLEGES$3$Chef de cuisine");
+		functions.add("ADC$AGENTS DEPARTEMENTAUX DES COLLEGES$7$Cuisinier");
 		return functions;
 	}
 
