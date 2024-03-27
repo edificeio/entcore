@@ -611,6 +611,9 @@ public class DirectoryController extends BaseController {
 				JsonArray usersIds = message.body().getJsonArray("userIds");
 				schoolService.getUsersActivity(usersIds, busArrayHandler(message));
 				break;
+			case "getUserStructuresGroup":
+				userService.getUserStructuresGroup(userId, BusResponseHandler.busResponseHandler(message));
+				break;
 		default:
 			message.reply(new JsonObject()
 				.put("status", "error")

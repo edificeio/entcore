@@ -70,5 +70,7 @@
   "WebGesrestRegisteredService.name": "Web Gerest",
   "WebGesrestRegisteredService.description": "Service CAS 3.0 spécifique pour Web Gerest, le service Web Gerest utilise l'identifiant externe sans préfixe académique comme attribut principal.",
   "EleaRegisteredService.name": "Elea",
-  "EleaRegisteredService.description": "Service CAS spécifique pour Elea."
+  "EleaRegisteredService.description": "Service CAS spécifique pour Elea.",
+  "GenericRegisteredService.name": "Generic",
+  "GenericRegisteredService.description": "Service CAS générique."
 }
