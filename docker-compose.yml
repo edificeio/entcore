@@ -1,4 +1,3 @@
-version: "3"
 services:
   gradle:
     image: opendigitaleducation/gradle:4.5.1

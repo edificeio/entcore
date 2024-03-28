@@ -224,4 +224,37 @@ public class DefaultGroupService implements GroupService {
 				"RETURN g.id as id, g.name as name, g.displayName as displayName, g.filter as filter, labels(g) as labels";
 		neo.execute(query, params, validResultHandler(results));
 	}
+
+	/**
+	 * This method is used to get the community group
+	 * if the structureId is not null, it will get the community group of the structure
+	 * else it will get all the community group
+	 * The community group is not a group dependant of a structure, it is a group that can be used to communicate with all the users of the platform
+	 * for this reason, it is not dependant of a structure
+	 *
+	 * @param structureId : the structure id
+	 * @param results     : the result handler
+	 */
+	@Override
+	public void getCommunityGroup(String structureId, Handler<Either<String, JsonArray>> results) {
+		String query = "";
+		String returnStructure = "";
+		JsonObject params = new JsonObject();
+
+		if (structureId != null && !structureId.trim().isEmpty()) {
+			query = "MATCH (s:Structure)<-[:DEPENDS]-(pg:ProfileGroup)<-[:IN]-(u:User), u-[:IN]->(g:CommunityGroup) WHERE s.id = {structureId} WITH g, collect( distinct {name: s.name, id: s.id}) as structures, ";
+			returnStructure = ", CASE WHEN any(x in structures where x <> {name: null, id: null}) THEN structures END as structures";
+			params.put("structureId", structureId);
+		} else {
+			query = "MATCH (g:CommunityGroup) WITH g, ";
+		}
+
+		query = query +
+				"HEAD(filter(x IN labels(g) WHERE x <> 'Visible' AND x <> 'Group')) as type " +
+				"RETURN DISTINCT g.id as id, g.name as name, g.displayName as displayName, g.filter as filter, labels(g) as labels, type, " +
+				"g.lockDelete AS lockDelete, coalesce(g.nbUsers,0) as nbUsers" +
+				returnStructure;
+
+		neo.execute(query, params, validResultHandler(results));
+	}
 }
