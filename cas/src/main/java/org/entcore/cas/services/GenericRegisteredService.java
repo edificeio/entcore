@@ -50,13 +50,13 @@ public class GenericRegisteredService extends AbstractCas20ExtensionRegisteredSe
         Element rootAttributes = createElement("attributes", doc);
         Element rootUserAttributes = createElement("userAttributes", doc);
         Element rootGroups = createElement(DF_FONCTIONAL_GROUP + "s", doc);
-
+        JsonObject dataObject = data.getJsonObject("data");
         try {
             // uid
-            if (data.containsKey(DF_STRUCTURE_ID) && data.getValue(DF_STRUCTURE_ID) != null) {
+            if (dataObject.containsKey(DF_STRUCTURE_ID) && dataObject.getValue(DF_STRUCTURE_ID) != null) {
                 additionnalAttributes
                         .add(createTextElement(DF_ID,
-                                data.getString(DF_STRUCTURE_ID), doc));
+                                dataObject.getString(DF_STRUCTURE_ID), doc));
             }
             // date
             rootAttributes
@@ -64,42 +64,42 @@ public class GenericRegisteredService extends AbstractCas20ExtensionRegisteredSe
             rootAttributes.appendChild(
                     createTextElement("authenticationdate", java.time.LocalDateTime.now().toString(), doc));
             rootAttributes.appendChild(createTextElement("isfromnewlogin",
-                    data.getValue("lastLogin") == null ? "true" : "false", doc));
+                    dataObject.getValue("lastLogin") == null ? "true" : "false", doc));
 
             // uid-login
-            if (data.containsKey("login") && data.getValue("login") != null) {
+            if (dataObject.containsKey("login") && dataObject.getValue("login") != null) {
                 rootUserAttributes
                         .appendChild(createTextElement("login",
-                                data.getString("login"), doc));
+                                dataObject.getString("login"), doc));
             }
             // Lastname
-            if (data.containsKey(DF_LASTNAME) && data.getValue(DF_LASTNAME) != null) {
+            if (dataObject.containsKey(DF_LASTNAME) && dataObject.getValue(DF_LASTNAME) != null) {
                 rootUserAttributes
-                        .appendChild(createTextElement(DF_LASTNAME, data.getString(DF_LASTNAME), doc));
+                        .appendChild(createTextElement(DF_LASTNAME, dataObject.getString(DF_LASTNAME), doc));
             }
 
             // Firstname
-            if (data.containsKey(DF_FIRSTNAME) && data.getValue(DF_FIRSTNAME) != null) {
+            if (dataObject.containsKey(DF_FIRSTNAME) && dataObject.getValue(DF_FIRSTNAME) != null) {
                 rootUserAttributes
-                        .appendChild(createTextElement(DF_FIRSTNAME, data.getString(DF_FIRSTNAME), doc));
+                        .appendChild(createTextElement(DF_FIRSTNAME, dataObject.getString(DF_FIRSTNAME), doc));
             }
             // DisplayName
-            if (data.containsKey(DF_DISPLAYNAME) && data.getValue(DF_DISPLAYNAME) != null) {
+            if (dataObject.containsKey(DF_DISPLAYNAME) && dataObject.getValue(DF_DISPLAYNAME) != null) {
                 rootUserAttributes
-                        .appendChild(createTextElement(DF_DISPLAYNAME, data.getString(DF_DISPLAYNAME), doc));
+                        .appendChild(createTextElement(DF_DISPLAYNAME, dataObject.getString(DF_DISPLAYNAME), doc));
             }
             // birthDate
-            if (data.containsKey(DF_BIRTHDATE) && data.getValue(DF_BIRTHDATE) != null) {
+            if (dataObject.containsKey(DF_BIRTHDATE) && dataObject.getValue(DF_BIRTHDATE) != null) {
                 rootUserAttributes
-                        .appendChild(createTextElement(DF_BIRTHDATE, data.getString(DF_BIRTHDATE), doc));
+                        .appendChild(createTextElement(DF_BIRTHDATE, dataObject.getString(DF_BIRTHDATE), doc));
             }
             // Email
-            if (data.containsKey(DF_EMAIL) && data.getValue(DF_EMAIL) != null) {
-                rootUserAttributes.appendChild(createTextElement(DF_EMAIL, data.getString(DF_EMAIL), doc));
+            if (dataObject.containsKey(DF_EMAIL) && dataObject.getValue(DF_EMAIL) != null) {
+                rootUserAttributes.appendChild(createTextElement(DF_EMAIL, dataObject.getString(DF_EMAIL), doc));
             }
             // Profile
-            if (data.containsKey(DF_TYPE) && data.getValue(DF_TYPE).toString() != null) {
-                switch (data.getJsonArray(DF_TYPE).getList().get(0).toString()) {
+            if (dataObject.containsKey(DF_TYPE) && dataObject.getValue(DF_TYPE).toString() != null) {
+                switch (dataObject.getJsonArray(DF_TYPE).getList().get(0).toString()) {
                     case "Student":
                         rootUserAttributes.appendChild(createTextElement(DF_PROFILES, "Student", doc));
                         break;
@@ -115,8 +115,8 @@ public class GenericRegisteredService extends AbstractCas20ExtensionRegisteredSe
                 }
             }
             // Structures
-            if (data.containsKey(DF_STRUCTURES_NODES) && data.getValue(DF_STRUCTURES_NODES) != null) {
-                for (Object o : data.getJsonArray(DF_STRUCTURES_NODES).getList()) {
+            if (dataObject.containsKey(DF_STRUCTURES_NODES) && dataObject.getValue(DF_STRUCTURES_NODES) != null) {
+                for (Object o : dataObject.getJsonArray(DF_STRUCTURES_NODES).getList()) {
                     if (o == null || !(o instanceof JsonObject))
                         continue;
                     JsonObject structure = (JsonObject) o;
@@ -128,36 +128,40 @@ public class GenericRegisteredService extends AbstractCas20ExtensionRegisteredSe
                     if (structure.containsKey("UAI")) {
                         rootStructure.setAttribute(DF_STRUCTURE_ID, structure.getString("UAI"));
                     }
-                    if (data.containsKey(DF_ADMINISTRATIVE_STRUCTURES)
-                            && data.getValue(DF_ADMINISTRATIVE_STRUCTURES) != null
-                            && data.getValue(DF_ADMINISTRATIVE_STRUCTURES) instanceof JsonArray) {
+                    if (dataObject.containsKey(DF_ADMINISTRATIVE_STRUCTURES)
+                            && dataObject.getValue(DF_ADMINISTRATIVE_STRUCTURES) != null
+                            && dataObject.getValue(DF_ADMINISTRATIVE_STRUCTURES) instanceof JsonArray) {
                         JsonObject administrativeStructures = new JsonObject();
-                        if (data.getJsonArray(DF_ADMINISTRATIVE_STRUCTURES).getList().get(0) instanceof JsonObject) {
-                            administrativeStructures = (JsonObject) data.getJsonArray(DF_ADMINISTRATIVE_STRUCTURES)
+                        if (dataObject.getJsonArray(DF_ADMINISTRATIVE_STRUCTURES).getList()
+                                .get(0) instanceof JsonObject) {
+                            administrativeStructures = (JsonObject) dataObject
+                                    .getJsonArray(DF_ADMINISTRATIVE_STRUCTURES)
                                     .getList().get(0);
                         }
+
                         Boolean main = structure.getString("id")
                                 .equals(administrativeStructures.getString("id"));
                         rootStructure.setAttribute("main", main.toString());
+
                     }
                     if (structure.containsKey(DF_TYPE)) {
                         rootStructure.setAttribute(DF_TYPE, structure.getString(DF_TYPE));
                     }
                     // class
-                    if (data.containsKey(DF_CLASS + "s2D")) {
+                    if (dataObject.containsKey(DF_CLASS + "s2D")) {
                         addString(rootStructureClass, DF_CLASS,
-                                getClassCurrentStructures(data, structure.getString(DF_STRUCTURE_ID),
+                                getClassCurrentStructures(dataObject, structure.getString(DF_STRUCTURE_ID),
                                         DF_CLASS + "s2D"),
                                 doc);
-                    } else if (data.containsKey(DF_CLASS + "s") && !data.containsKey(DF_CLASS + "s2D")) {
+                    } else if (dataObject.containsKey(DF_CLASS + "s") && !dataObject.containsKey(DF_CLASS + "s2D")) {
                         addString(rootStructureClass, DF_CLASS,
-                                getClassCurrentStructures(data, structure.getString(DF_STRUCTURE_ID),
+                                getClassCurrentStructures(dataObject, structure.getString(DF_STRUCTURE_ID),
                                         DF_CLASS + "s2D"),
                                 doc);
                     }
                     // functionalGroups
-                    if (data.containsKey(DF_FONCTIONAL_GROUP + "s")) {
-                        for (Object group : data.getJsonArray(DF_FONCTIONAL_GROUP + "s").getList()) {
+                    if (dataObject.containsKey(DF_FONCTIONAL_GROUP + "s")) {
+                        for (Object group : dataObject.getJsonArray(DF_FONCTIONAL_GROUP + "s").getList()) {
                             if (group instanceof JsonObject && ((JsonObject) group).containsKey(DF_NAME)
                                     && ((JsonObject) group).getString("functionalGroup") != null
                                     && structure.getString(DF_STRUCTURE_ID)
@@ -186,9 +190,9 @@ public class GenericRegisteredService extends AbstractCas20ExtensionRegisteredSe
         }
     }
 
-    private void addString(Element root, String casLabel, List<JsonObject> data, Document doc) {
-        for (JsonObject classStructure : data) {
-            if (data != null) {
+    private void addString(Element root, String casLabel, List<JsonObject> dataObject, Document doc) {
+        for (JsonObject classStructure : dataObject) {
+            if (dataObject != null) {
                 Element rootClass = createTextElement(casLabel, classStructure.getString("className"), doc);
                 rootClass.setAttribute("externalId", classStructure.getString("ClassExternalId"));
                 root.appendChild(rootClass);
@@ -196,9 +200,10 @@ public class GenericRegisteredService extends AbstractCas20ExtensionRegisteredSe
         }
     }
 
-    private List<JsonObject> getClassCurrentStructures(JsonObject data, String structureExternalId, String ClassTitle) {
+    private List<JsonObject> getClassCurrentStructures(JsonObject dataObject, String structureExternalId,
+            String ClassTitle) {
         JsonArray classList = new JsonArray();
-        classList.addAll(data.getJsonArray(ClassTitle));
+        classList.addAll(dataObject.getJsonArray(ClassTitle));
         List<JsonObject> classCurrentStructure = new ArrayList<>();
         for (Object c : classList) {
             if (c instanceof String && ((String) c).contains("$")) {
