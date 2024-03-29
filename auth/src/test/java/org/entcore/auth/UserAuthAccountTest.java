@@ -236,13 +236,13 @@ public class UserAuthAccountTest {
   public void testAccountShouldNotBeAbleToResetPasswordWithSamePassword(TestContext context) {
     final Async async = context.async();
     test.directory()
-      .createActiveUser("user22", "activationCode12", "user12@test.com")
+      .createActiveUser("user23", "activationCode12", "user12@test.com")
       .compose(resAcUser -> test.directory().resetUser(resAcUser, "resetCode12"))
       .onComplete(resAcUser -> {
         context.assertTrue(resAcUser.succeeded());
-        authAccount.resetPassword("user22", "resetCode12", "password12", null, resActiv -> {
+        authAccount.resetPassword("user23", "resetCode12", "password12", null, resActiv -> {
           context.assertTrue(resActiv != null);
-          authAccount.resetPassword("user22", "resetCode12", "password12", null, resActiv2 -> {
+          authAccount.resetPassword("user23", "resetCode12", "password12", null, resActiv2 -> {
             context.assertFalse(resActiv2 != null);
             async.complete();
           });
