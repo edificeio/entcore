@@ -409,58 +409,43 @@ public class DefaultUserService implements UserService {
 	public void getUserStructuresGroup(String id,
 			Handler<Either<String, JsonObject>> result) {
 		try {
-			final String query = "MATCH (u:`User` { id : {id}}) "
-					+ "OPTIONAL MATCH u-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) WITH COLLECT(distinct s) as structureNodes, u "
-					+ "OPTIONAL MATCH u-[rf:HAS_FUNCTION]->(f:Function) WITH COLLECT(distinct [f.externalId, rf.scope]) as functions, u, structureNodes "
-					+ "OPTIONAL MATCH u-[:IN]->(fgroup: FunctionalGroup)-[:DEPENDS]->(s:Structure) WITH COLLECT(DISTINCT {functionalGroup: fgroup, structureExternalId: s.externalId }) AS admGroups, functions, u, structureNodes "
-					+ "OPTIONAL MATCH u-[:ADMINISTRATIVE_ATTACHMENT]->(admStruct: Structure) WITH COLLECT(distinct {id: admStruct.id}) as admStruct, admGroups, functions, u, structureNodes "
-					+ "OPTIONAL MATCH u-[r:TEACHES]->(s:Subject) WITH COLLECT(distinct s.code) as subjectCodes, admStruct, admGroups, functions, u, structureNodes "
-					+ "OPTIONAL MATCH (st:Structure)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) WHERE u.classes IS NOT NULL "
-					+ "RETURN DISTINCT u, u.profiles as type, structureNodes,"
-					+ "CASE WHEN admGroups IS NULL THEN [] ELSE admGroups END as functionalGroups, "
-					+ "CASE WHEN admStruct IS NULL THEN [] ELSE admStruct END as administrativeStructures, "
-					+ "CASE WHEN subjectCodes IS NULL THEN [] ELSE subjectCodes END as subjectCodes, "
-					+ "CASE WHEN c IS NULL THEN [] ELSE COLLECT(st.externalId + '$' + c.name) END as classes2D";
+			final String query = "MATCH (u:`User` {id: {id}}) " +
+					"OPTIONAL MATCH (u)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+					"WITH COLLECT(DISTINCT s) AS sn, u " +
+					"OPTIONAL MATCH (u)-[rf:HAS_FUNCTION]->(f:Function) " +
+					"WITH COLLECT(DISTINCT [f.externalId, rf.scope]) AS functions, u, sn " +
+					"OPTIONAL MATCH (u)-[:IN]->(fgroup:FunctionalGroup)-[:DEPENDS]->(s:Structure) " +
+					"WITH COLLECT(DISTINCT {functionalGroup: fgroup, structureExternalId: s.externalId}) AS admGroups, functions, u, sn "
+					+
+					"OPTIONAL MATCH (u)-[:ADMINISTRATIVE_ATTACHMENT]->(admStruct:Structure) " +
+					"WITH COLLECT(DISTINCT {id: admStruct.id}) AS admStruct, admGroups, functions, u, sn " +
+					"OPTIONAL MATCH (u)-[r:TEACHES]->(s:Subject) " +
+					"WITH COLLECT(DISTINCT s.code) AS subjectCodes, admStruct, admGroups, functions, u, sn " +
+					"OPTIONAL MATCH (st:Structure)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) " +
+					"WHERE u.classes IS NOT NULL " +
+					"RETURN DISTINCT " +
+					"{ " +
+					"   structureNodes: [s in sn | {created: s.created, name: s.name, externalId: s.externalId, id: s.id, UAI: s.UAI}], "
+					+
+					"   lastLogin: u.lastLogin, " +
+					"   displayName: u.displayName, " +
+					"   classes: u.classes, " +
+					"   login: u.login, " +
+					"   id: u.id, " +
+					"   email: u.email, " +
+					"   structures: u.structures, " +
+					"   externalId: u.externalId, " +
+					"   birthDate: u.birthDate, " +
+					"   lastName: u.lastName, " +
+					"   firstName: u.firstName, " +
+					"   type: u.profiles, " +
+					"   functionalGroups: CASE WHEN admGroups IS NULL THEN [] ELSE admGroups END, " +
+					"   administrativeStructures: CASE WHEN admStruct IS NULL THEN [] ELSE admStruct END, " +
+					"   subjectCodes: CASE WHEN subjectCodes IS NULL THEN [] ELSE subjectCodes END, " +
+					"   classes2D: CASE WHEN (c) IS NULL THEN [] ELSE COLLECT(st.externalId + '$' + c.name) END " +
+					"} AS data";
 
-			final Handler<Either<String, JsonObject>> filterResultHandler = event -> {
-				if (event.isRight()) {
-					final JsonObject r = event.right().getValue();
-					final List<String> excludedAttributes = Arrays.asList("password", "resetCode",
-							"lastNameSearchField",
-							"firstNameSearchField", "displayNameSearchField", "checksum", "emailSearchField",
-							"emailInternal",
-							"resetDate", "lastScheme", "lastDomain", "mfaState", "emailState", "mobileState");
-					excludedAttributes.forEach(r::remove);
-
-					final JsonArray jaAdm = r.getJsonArray("administrativeStructures");
-					if (jaAdm != null && !jaAdm.isEmpty()) {
-						final JsonObject jAdm = jaAdm.getJsonObject(0);
-						if (jAdm != null) {
-							final String idAdm = StringUtils.trimToBlank(jAdm.getString("id"));
-							final JsonArray newJaStruct = new JsonArray();
-							final JsonArray structureNodes = r.getJsonArray("structureNodes");
-							if (structureNodes != null && !structureNodes.isEmpty()) {
-								structureNodes.stream()
-										.filter(o -> o instanceof JsonObject
-												&& idAdm.equals(((JsonObject) o).getString("id", "")))
-										.findFirst().ifPresent(newJaStruct::add);
-								structureNodes.stream()
-										.filter(o -> o instanceof JsonObject
-												&& !idAdm.equals(((JsonObject) o).getString("id", "")))
-										.forEach(newJaStruct::add);
-								r.put("structureNodes", newJaStruct);
-							}
-						}
-					}
-
-					if (r.containsKey("aafFunctions")) {
-						extractReformatUserFunctions(r);
-					}
-				}
-				result.handle(event);
-			};
-			neo.execute(query, new JsonObject().put("id", id),
-					fullNodeMergeHandler("u", filterResultHandler, "structureNodes"));
+			neo.execute(query, new JsonObject().put("id", id), validUniqueResultHandler(result));
 		} catch (Exception e) {
 			logger.error("Error exception", e);
 		}
