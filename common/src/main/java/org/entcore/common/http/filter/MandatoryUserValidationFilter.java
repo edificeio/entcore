@@ -46,8 +46,8 @@ public class MandatoryUserValidationFilter implements Filter {
     };
     // White-lists are incremental : each step also applies to following steps
     private final static String[][] whiteListByStep = {
-        {},
         {"/internal/userinfo", "/userbook/", "/theme"},
+        {},
         {/*same routes as preceding step, used by /auth/validate-mail*/},
         {/*same routes as preceding step, used by /auth/validate-mail*/}
     };
