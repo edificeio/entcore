@@ -116,7 +116,10 @@ public abstract class BaseServer extends Server {
 		if (config.getBoolean("csrf-token", false)) {
 			addFilter(new CsrfFilter(getEventBus(vertx), securedUriBinding));
 		}
-
+		if (config.getBoolean("block-route-filter", false)) {
+			addFilter(new BlockRouteFilter(vertx, getEventBus(vertx), Server.getPathPrefix(config),
+				config.getLong("block-route-filter-refresh-period", 5 * 60 * 1000L)));
+		}
 		UserValidationFactory userValidationFactory = UserValidationFactory.getFactory();
 		userValidationFactory.init(vertx, config);
 
