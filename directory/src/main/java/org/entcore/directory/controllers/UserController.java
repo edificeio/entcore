@@ -1180,6 +1180,49 @@ public class UserController extends BaseController {
 	public void setNotification(TimelineHelper notification) {
 		this.notification = notification;
 	}
+	
+	/**
+	 * 
+	 * List users for one or more structure using uai
+	 * @param request the http request
+	 * 						- uai : the uai of the structure
+	 * @param results final handler
+	 * 					- Left if error
+	 * 					- Right if success with a JsonArray of users
+	 * 						- Each user is a JsonObject with fields
+	 * 							- externalId: the external id of the user
+	 * 							- lastName: the last name of the user
+	 * 							- firstName: the first name of the user
+	 * 							- login: the login of the user
+	 * 							- email: email address
+	 * 							- emailAcademy: email académique
+	 * 							- mobile: mobile phone number
+	 * 							- deleteDate: date of deletion
+	 * 							- functions: list of functions
+	 * 							- displayName: the display name of the user
+	 * 							- id: the id of the user
+	 * 							- blocked: true if the user is blocked
+	 * 							- emailInternal: internal email
+	 * 							- profiles: user profile
+	 * 							- UAI: the uai of the structure
+	 * 							- isActive: true if the user is active
+	 * 							- structures: id of the structures
+	 * 							- groups: list of groups
+	 * 							- createdDate: date of creation
+	 * 							- duplicated: login of the duplicated user
+	 * 							- isMergedWithINE: true if the user has been merged with an INE
+	 * 							- automaticMergedIds: list of ids of users that have been automatically merged with this user
+	 * 							- isMergedManuel: true if the user has been manually merged
+	 * 
+	 */
+	@Get("/user/list/by/structure")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdmlOfStructuresByUAI.class)
+	@MfaProtected()
+	public void listUsersByStructure(final HttpServerRequest request) {
+		final List<String> structures = request.params().getAll("uai");
+		userService.listUsersByStructure(structures, arrayResponseHandler(request));
+	}
 
 	/**
 	 * 
