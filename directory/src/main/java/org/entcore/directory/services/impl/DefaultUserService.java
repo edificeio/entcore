@@ -1309,67 +1309,65 @@ public class DefaultUserService implements UserService {
 	 * 							- isMergedManuel: true if the user has been manually merged
 	 * 
      */
-    public void listUsersByStructure(List<String> structures, Handler<Either<String, JsonArray>> results) {
-        if (structures == null || structures.isEmpty()) {
-            results.handle(new Either.Left<>("missing.uai"));
-            return;
-        }
+	public void listUsersByStructure(List<String> structures, Handler<Either<String, JsonArray>> results) {
+		if (structures == null || structures.isEmpty()) {
+			results.handle(new Either.Left<>("missing.uai"));
+			return;
+		}
 
-        JsonArray fields = new JsonArray().add("externalId").add("lastName").add("firstName").add("login");
-        fields.add("email").add("emailAcademy").add("mobile").add("deleteDate").add("functions").add("displayName");
-        fields.add("id").add("blocked").add("emailInternal");
+		JsonArray fields = new JsonArray().add("externalId").add("lastName").add("firstName").add("login");
+		fields.add("email").add("emailAcademy").add("mobile").add("deleteDate").add("functions").add("displayName");
+		fields.add("id").add("blocked").add("emailInternal");
 
 		JsonArray specificFields = new JsonArray().add(" head(u.profiles) as profiles").add(", s.UAI as UAI")
-												.add(", NOT EXISTS(u.activationCode) as isActive").add(", s.externalId as structures")
-												.add(", collect(distinct {groupName:g.name, groupId:g.id}) as groups").add(", u.created as createdDate")
-												.add(", u2.login as duplicated").add(", EXISTS(u.mergeIneDate) as isMergedWithINE")
-												.add(", u.mergedIds as automaticMergedIds");
+				.add(", NOT EXISTS(u.activationCode) as isActive").add(", s.externalId as structures")
+				.add(", collect(distinct {groupName:g.name, groupId:g.id}) as groups").add(", u.created as createdDate")
+				.add(", u2.login as duplicated").add(", EXISTS(u.mergeIneDate) as isMergedWithINE")
+				.add(", u.mergedIds as automaticMergedIds");
 
-												
+		StringBuilder query = new StringBuilder();
+		JsonObject params = new JsonObject().put("uai", new JsonArray(structures));
 
-        StringBuilder query = new StringBuilder();
+		query.append("MATCH (s:Structure)<-[:DEPENDS]-(pg:ProfileGroup)")
+				.append("<-[:IN]-(u:User) ");
 
-        query.append("MATCH (s:Structure)<-[:DEPENDS]-(pg:ProfileGroup)")
-            .append("<-[:IN]-(u:User) ");
+		String filter = "WHERE s.UAI IN {uai} ";
 
-        String  filter =  "WHERE s.UAI IN {uai} ";
-        JsonObject params = new JsonObject().put("uai", new JsonArray(structures));
-
-        query.append(filter);
-        query.append(" OPTIONAL MATCH (g:Group)<-[:IN]-u");
+		query.append(filter);
+		query.append(" OPTIONAL MATCH (g:Group)<-[:IN]-u");
 		query.append(" OPTIONAL MATCH u-[r:DUPLICATE]-(u2:User)");
 
-        query.append(" RETURN DISTINCT ");
-        for (Object field : fields) {
-            query.append(" u.").append(field);
-            query.append(" as ").append(field).append(",");
-        }
+		query.append(" RETURN DISTINCT ");
+		for (Object field : fields) {
+			query.append(" u.").append(field);
+			query.append(" as ").append(field).append(",");
+		}
 
 		for (Object specificField : specificFields) {
-            query.append(specificField);
-        }
-
+			query.append(specificField);
+		}
 		query.append(", EXISTS(u.mergedLogins) as isMergedManuel");
 
 		// Union with the backup to get the deleted users that are not in the structure anymore
-		query.append(" UNION MATCH (s:Structure)<-[:DEPENDS]-(pg:ProfileGroup), (u: User)-[:HAS_RELATIONSHIPS]->(b: Backup)");
-		query.append(" WHERE s.UAI IN {uai} AND s.id IN b.structureIds AND pg.id IN b.IN_OUTGOING AND (EXISTS(u.deleteDate) OR EXISTS(u.mergedWith))");
+		query.append(" UNION MATCH (s:Structure)  WHERE s.UAI IN {uai}");
+
+		query.append(" OPTIONAL MATCH (u: User)-[:HAS_RELATIONSHIPS]->(b: Backup) WHERE s.id IN b.structureIds AND (EXISTS(u.deleteDate) OR EXISTS(u.mergedWith))");
 		query.append(" OPTIONAL MATCH (g:Group) WHERE g.id IN b.IN_OUTGOING");
 		query.append(" OPTIONAL MATCH u-[r:DUPLICATE]-(u2:User)");
 
-        query.append(" RETURN DISTINCT ");
-        for (Object field : fields) {
-            query.append(" u.").append(field);
-            query.append(" as ").append(field).append(",");
-        }
+		query.append(" RETURN DISTINCT ");
+		for (Object field : fields) {
+			query.append(" u.").append(field);
+			query.append(" as ").append(field).append(",");
+		}
 
 		for (Object specificField : specificFields) {
-            query.append(specificField);
-        }
-    
+			query.append(specificField);
+		}
 		query.append(", EXISTS(u.mergedWith) as isMergedManuel");
 
-        neo.execute(query.toString(), params, validResultHandler(results));
-    }
+
+		neo.execute(query.toString(), params, validResultHandler(results));
+	}
 
 }

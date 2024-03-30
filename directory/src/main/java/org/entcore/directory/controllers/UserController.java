@@ -1160,12 +1160,12 @@ public class UserController extends BaseController {
 	 * 
 	 */
 	@Get("/user/list/by/structure")
-	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdmlOfStructuresByUAI.class)
 	@MfaProtected()
 	public void listUsersByStructure(final HttpServerRequest request) {
 		final List<String> structures = request.params().getAll("uai");
 		userService.listUsersByStructure(structures, arrayResponseHandler(request));
-
 	}
 
 }
