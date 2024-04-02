@@ -73,7 +73,7 @@
     "email.new.device.date": "<b>Date et heure</b>: {{#datetime}}{{date}}{{/datetime}}",
     "email.new.device.device": "<b>Appareil</b>: {{device}}",
     "email.new.device.ip": "<b>Adresse IP</b>: {{ip}}",
-    "email.new.device.warning": "S'il s'agit bien de vous, aucune action de votre part n'est requise. Dans le cas contraire, nous vous conseillons de <a href=\"{{host}}/auth/forgot#/password\" target=\"_blank\">modifier votre mot de passe</a> ou de vous rapprocher de votre établissement en cas de difficultés à procéder à ce changement.",
+    "email.new.device.warning": "S'il s'agit bien de vous, aucune action de votre part n'est requise. Dans le cas contraire, nous vous conseillons de modifier votre mot de passe ou de vous rapprocher de votre établissement en cas de difficultés à procéder à ce changement.",
     "phone.hi": "Bonjour, ",
     "phone.hi.withname": "Bonjour {{displayName}}, ",
     "phone.how.to.reset": "Vous pouvez vous connecter à l'ENT en saisissant votre identifiant et votre nouveau code d'activation",
