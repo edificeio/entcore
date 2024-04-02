@@ -279,6 +279,104 @@ public class FolderManagerMongoImpl implements FolderManager {
 		});
 	}
 
+	public void copyAllNoFail(
+			Optional<UserInfos> userOpt,
+			List<JsonObject> originals,
+			boolean keepVisibility,
+			final Handler<AsyncResult<List<JsonObject>>> handler
+	) {
+		// Duplicate every file documents, including attached files
+		List<Future> copyFutures = new ArrayList<>();
+		for( int i = 0; i<originals.size(); i++ ) {
+			final JsonObject doc = originals.get(i);
+
+			// only files are duplicated in storage
+			if( !DocumentHelper.isFile(doc) ) {
+				copyFutures.set(i, Future.succeededFuture(null));
+				continue;
+			}
+
+			final List<String> fileIds = StorageHelper.getListOfFileIds(doc);
+
+			// Copy files
+			Future<JsonObject> copyFuture = StorageHelper.copyFiles(storage, fileIds)
+			.recover( unused -> Future.succeededFuture(null) ) // never fails this copy
+			.map( copiedFilesMap -> {
+				// If files were not copied, set resulting doc to null.
+				if( copiedFilesMap == null ) {
+					return (JsonObject) null;
+				}
+
+				JsonObject copy = doc.copy();
+				copy.put("copyFromId", doc.getString("_id"));
+				copy.remove("_id");
+				copy.remove("eParent");
+				copy.remove("eParentOld");
+				if (!keepVisibility) {
+					copy.remove("protected");
+					copy.remove("public");
+				}
+				//
+				if (userOpt.isPresent()) {
+					UserInfos user = userOpt.get();
+					copy.put("owner", user.getUserId());
+					copy.put("ownerName", user.getUsername());
+				}
+				// dates
+				String now = MongoDb.formatDate(new Date());
+				copy.put("created", now);
+				copy.put("modified", now);
+				// remove shares and favorites
+				copy.put("favorites", new JsonArray());
+				copy.put("shared", new JsonArray());
+				copy.put("deleted", false);
+				// merge shared after reset shared
+				//InheritShareComputer.mergeShared(parent, copy, true);
+				// copy file from storage
+				StorageHelper.replaceAll(copy, copiedFilesMap);
+
+				// Any fileId not copied must be removed from the new doc
+				final List<String> toRemove = new ArrayList<String>();
+				for( String fileId : fileIds) {
+					if(!copiedFilesMap.containsKey(fileId)) {
+						toRemove.add(fileId);
+					}
+				}
+				if( toRemove.size() > 0 ) {
+					StorageHelper.removeAll(copy, toRemove);
+				}
+
+				return copy;
+			});
+
+			copyFutures.add( copyFuture );
+		}
+
+		// Persist the copied documents in DB
+		CompositeFuture.all(copyFutures) // never fails because of the recover() above
+		.compose(all -> {
+			final List<JsonObject> copiedDocsOrNulls = all.list();
+			final List<Future> futures = copiedDocsOrNulls.stream()
+				.map(json -> (json == null) ? Future.succeededFuture(null) : queryHelper.insert(json))
+				.collect(Collectors.toList());
+			
+			return CompositeFuture.join(futures)
+				.compose(unused -> Future.succeededFuture(futures))
+				.recover( unused -> Future.succeededFuture(futures));
+		})
+		.onSuccess( inserted -> {
+			handler.handle(
+				Future.succeededFuture(inserted.stream()
+				.map(doc -> (doc!=null && doc.succeeded()) ? (JsonObject) doc.result() : null)
+				.collect(Collectors.toList()))
+			);
+		})
+		.onFailure( t -> {
+			log.error("FolderManagerMongoImpl.copyAllNoFail() should never fail", t);
+			handler.handle(Future.failedFuture(t));
+		});
+	}
+
 	private Future<JsonArray> copyRecursivelyFromParentId(Optional<UserInfos> userOpt, Collection<JsonObject> docs,
 			Optional<String> newParentIdOpt, boolean keepVisibility) {
 		if (newParentIdOpt.isPresent()) {

@@ -1,6 +1,7 @@
 package org.entcore.common.folders;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -12,6 +13,7 @@ import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
@@ -292,6 +294,18 @@ public interface FolderManager {
 	 */
 	void copyAll(Collection<String> sourceIds, Optional<String> destinationFolderId, UserInfos user,
 			final Handler<AsyncResult<JsonArray>> handler);
+
+	/**
+	 * Copy an ordered list of `file` documents, without failing if any one cannot be copied.
+	 * The returned list of new documents wiil be in the same order as originals.
+	 * Any failed copy will be represented by a null in the returned list.
+	 * @param userOpt             the user doing the copy
+	 * @param originals           list of documents
+	 * @param keepVisibility      keep the `protect`or `public`flag ?
+	 * @param handler             emit the list of copied files
+	 */
+	void copyAllNoFail(Optional<UserInfos> userOpt, List<JsonObject> originals,
+			boolean keepVisibility, final Handler<AsyncResult<List<JsonObject>>> handler);
 
 	/**
 	 * trash only make the file or the folder not visible but it is still saved in

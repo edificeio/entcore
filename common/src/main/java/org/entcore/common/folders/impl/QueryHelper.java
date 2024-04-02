@@ -25,7 +25,7 @@ import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-class QueryHelper {
+public class QueryHelper {
 	final static int MAX_BATCH = 10;
 	final static long MAX_DEPTH = 10;
 	protected final MongoDb mongo = MongoDb.getInstance();
@@ -558,7 +558,7 @@ class QueryHelper {
 		}
 	}
 
-	DocumentQueryBuilder queryBuilder() {
+	public DocumentQueryBuilder queryBuilder() {
 		return new DocumentQueryBuilder();
 	}
 
@@ -822,7 +822,7 @@ class QueryHelper {
 		return future;
 	}
 
-	Future<List<JsonObject>> findAllAsList(DocumentQueryBuilder query) {
+	public Future<List<JsonObject>> findAllAsList(DocumentQueryBuilder query) {
 		return findAll(query).map(s -> s.stream().map(o -> (JsonObject) o).collect(Collectors.toList()));
 	}
 

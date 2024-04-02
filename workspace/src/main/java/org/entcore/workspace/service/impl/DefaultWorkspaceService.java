@@ -1,13 +1,16 @@
 package org.entcore.workspace.service.impl;
 
+import com.google.thirdparty.publicsuffix.PublicSuffixType;
 import com.mongodb.QueryBuilder;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
@@ -20,6 +23,7 @@ import org.entcore.common.folders.ElementQuery;
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.folders.impl.DocumentHelper;
 import org.entcore.common.folders.impl.FolderManagerWithQuota;
+import org.entcore.common.folders.impl.QueryHelper.DocumentQueryBuilder;
 import org.entcore.common.folders.impl.StorageHelper;
 import org.entcore.common.folders.QuotaService;
 import org.entcore.common.http.request.JsonHttpServerRequest;
@@ -683,13 +687,14 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 	@Override
 	public void changeVisibility(final JsonArray documentIds, String visibility, final Handler<Message<JsonObject>> handler) {
 		JsonObject jo = new JsonObject();
-		switch (visibility.toLowerCase()) {
-			case "protected":
-			case "owner":
+		Visibility v = Visibility.fromString(visibility.toLowerCase());
+		switch (v) {
+			case PROTECTED:
+			case OWNER:
 				jo.put("$set", new JsonObject().put("protected", true))
 					.put("$unset", new JsonObject().put("public", ""));
 				break;
-			case "public":
+			case PUBLIC:
 				jo.put("$set", new JsonObject().put("public", true))
 					.put("$unset", new JsonObject().put("protected", ""));
 				break;
@@ -704,6 +709,135 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
         );
 		JsonObject query = MongoQueryBuilder.build(qb);
 		mongo.update(DocumentDao.DOCUMENTS_COLLECTION, query, jo,false, true, (MongoDb.WriteConcern)null, res -> handler.handle(res));
+	}
+
+	@Override
+	public void transferAll(
+			final List<String> sourceIds, 
+			Optional<String> application, 
+			Visibility visibility, 
+			final UserInfos user,
+			Handler<AsyncResult<JsonArray>> handler
+		) {
+		if (sourceIds.isEmpty()) {
+			handler.handle(new DefaultAsyncResult<JsonArray>(new JsonArray()));
+			return;
+		}
+		if( visibility!=Visibility.PROTECTED && visibility!=Visibility.PUBLIC ) {
+			handler.handle(Future.failedFuture("invalid.parameters"));
+			return ;
+		}
+
+		final DocumentQueryBuilder querySourceDocuments = queryHelper.queryBuilder()
+			.filterByInheritShareAndOwner(user)
+			.withExcludeDeleted()
+			.withFileType(FILE_TYPE)
+			.withId(sourceIds);
+
+		// Find matching documents for queried ids.
+		queryHelper.findAllAsList(querySourceDocuments)
+		.map(docs -> {
+			// Index documents by id, and determine any needed visibility change.
+			final Map<String, JsonObject> index = new HashMap<String, JsonObject>(docs.size());
+			docs.stream().forEach( doc -> {
+				// Check if this doc must me copied, changed or preserved.
+				final boolean isProtected = Boolean.TRUE.equals(doc.getBoolean("protected"));
+				final boolean isPublic = Boolean.TRUE.equals(doc.getBoolean("public"));
+				if( !isProtected && !isPublic ) {
+					// We must copy it => set a temporary action
+					doc.put("visibility_action", "copy");
+					// Set the desired visibility for the copy.
+					if( visibility==Visibility.PUBLIC ) {
+						doc.put("public", true);
+					} else {
+						DocumentHelper.setProtected(doc, true);
+					}
+				} else if( (isProtected && visibility==Visibility.PUBLIC) 
+						|| (isPublic && visibility==Visibility.PROTECTED)) {
+					// We must change its visibility => set a temporary action.
+					doc.put("visibility_action", "change");
+					// Set the desired visibility.
+					if( visibility==Visibility.PUBLIC ) {
+						doc.put("public", true);
+						doc.remove("protected");
+					} else {
+						DocumentHelper.setProtected(doc, true);
+						doc.remove("public");
+					}
+				} else {
+					// We must do nothing => set a temporary action.
+					doc.put("visibility_action", "preserve");
+				}
+				index.put(DocumentHelper.getId(doc), doc);
+			});
+			return index;
+		})
+		.compose( docsMap -> {
+			// Split docs in two lists, depending on the required action.
+			final List<JsonObject> docsToCopy = new ArrayList<JsonObject>();
+			final JsonArray docIdsToChange = new JsonArray();
+			// Preserve ids order. Any doc not found will be null in `docs` list.
+			final List<JsonObject> docs = sourceIds.stream().map( (id) -> {
+				final JsonObject doc = docsMap.get(id);
+				if( doc != null ) {
+					// Remove the temporary action.
+					final String action = (String) doc.remove("visibility_action");
+					switch( action ) {
+						case "copy": docsToCopy.add(doc); break;
+						case "change": docIdsToChange.add(DocumentHelper.getId(doc)); break;
+						default: break;
+					}
+				}
+				return doc;
+			}).collect(Collectors.toList());
+
+			// Copy private documents
+			final Promise<List<JsonObject>> copyPromise = Promise.promise();
+			if(docsToCopy.size() > 0) {
+				folderManager.copyAllNoFail(Optional.of(user), docsToCopy, true, copyPromise);
+			} else {
+				copyPromise.complete(Collections.emptyList());
+			}
+
+			// Change visibility
+			final Promise<Message<JsonObject>> changePromise = Promise.promise();
+			if( docIdsToChange.size() > 0 ) {
+				changeVisibility( docIdsToChange, visibility.get(), new Handler<Message<JsonObject>>() {
+					public void handle(Message<JsonObject> event) {
+						changePromise.complete();
+					}
+				});
+			} else {
+				changePromise.complete();
+			}
+
+			// Resolve actions.
+			return CompositeFuture.join(copyPromise.future(), changePromise.future())
+			.map( unused -> copyPromise.future().result() )
+			.map( copies -> {
+				// Replace original docs by their copy (maybe null).
+				if( copies.size() == docsToCopy.size() ) {
+					for( int i=0; i<docsToCopy.size(); i++) {
+						final JsonObject source = docsToCopy.get(i);
+						final JsonObject copy = copies.get(i);
+						for( int j=0; j<docs.size(); j++) {
+							final JsonObject original = docs.get(j);
+							if( original!=null 
+								&& source!=null 
+								&& DocumentHelper.getId(original).equals(DocumentHelper.getId(source))
+								) {
+									docs.set(j, copy);
+									break;
+							}
+						}
+					}
+				}
+				return copies;
+			})
+			.recover( t -> null )
+			.map( unused -> docs );
+		})
+		.onSuccess( docs -> handler.handle(new DefaultAsyncResult<JsonArray>(new JsonArray(docs))) );
 	}
 
 	@Override

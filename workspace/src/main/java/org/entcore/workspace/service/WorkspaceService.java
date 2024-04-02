@@ -42,6 +42,35 @@ public interface WorkspaceService extends FolderManager {
 
 	public static final String WORKSPACE_NAME = "WORKSPACE";
 
+	public enum Visibility { 
+		OWNER("owner"),
+    	PROTECTED("protected"),
+    	PUBLIC("public");
+    
+		private final String visibility;
+
+		Visibility(final String visibility) {
+			this.visibility = visibility;
+		}
+
+		public String get() {
+			return this.visibility;
+		}
+
+		public static Visibility fromString(final String visibility) {
+			if(OWNER.visibility.equals(visibility)) {
+				return OWNER;
+			}
+			if(PROTECTED.visibility.equals(visibility)) {
+				return PROTECTED;
+			}
+			if(PUBLIC.visibility.equals(visibility)) {
+				return PUBLIC;
+			}
+			return null;
+		}
+	}
+
 	public void addDocument(final UserInfos user, final float quality, final String name, final String application,
 							final JsonObject doc, final JsonObject uploaded, final Handler<AsyncResult<JsonObject>> handler);
 
@@ -113,6 +142,16 @@ public interface WorkspaceService extends FolderManager {
 	public Future<Set<String>> getNotifyContributorDest(Optional<String> id, UserInfos user, Set<String> docIds);
 
 	public void changeVisibility(final JsonArray documentIds, String visibility, final Handler<Message<JsonObject>> handler);
+
+	/**
+	 * Transfer documents file to protected or public space.
+	 * @param sourceIds List of documents id
+	 * @param application Optional application code
+	 * @param visibility PROTECTED or PUBLIC only
+	 * @param user
+	 */
+	public void transferAll(final List<String> sourceIds, Optional<String> application, Visibility visibility, UserInfos user,
+			Handler<AsyncResult<JsonArray>> handler);
 
 	void getParentInfos(final String childId, UserInfos user, final Handler<AsyncResult<JsonObject>> handler);
 }

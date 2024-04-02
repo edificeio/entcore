@@ -9,6 +9,7 @@ import static org.entcore.common.http.response.DefaultResponseHandler.asyncDefau
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.user.UserUtils.getUserInfos;
 
+import java.lang.reflect.Array;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -38,6 +39,7 @@ import org.entcore.common.utils.StringUtils;
 import org.entcore.workspace.Workspace;
 import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.service.WorkspaceService;
+import org.entcore.workspace.service.WorkspaceService.Visibility;
 import org.vertx.java.core.http.RouteMatcher;
 
 import fr.wseduc.bus.BusAddress;
@@ -1277,6 +1279,36 @@ public class WorkspaceController extends BaseController {
 			} else {
 				unauthorized(request);
 			}
+		});
+	}
+
+	@Post("/documents/transfer")
+	@SecuredAction(value = "workspace.manager", type = ActionType.RESOURCE)
+	public void transferDocuments(HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, userInfos -> {
+			if (userInfos == null) {
+				unauthorized(request);
+				return;
+			}
+			final List<Visibility> acceptableVisibilities = Arrays.asList(Visibility.PROTECTED, Visibility.PUBLIC);
+			bodyToJson(request, pathPrefix + "transferDocuments", body -> {
+				final JsonArray ids = body.getJsonArray("ids");
+				String application = body.getString("application");
+				Visibility visibility = Visibility.fromString(body.getString("visibility"));
+				if( !acceptableVisibilities.contains(visibility) ) {
+					badRequest(request, "invalid.parameters");
+					return;
+				}
+	
+				workspaceService.transferAll(ids.getList(), Optional.ofNullable(application), visibility, userInfos, event -> {
+					if (event.succeeded()) {
+						renderJson(request, event.result());
+					} else {
+						JsonObject error = new JsonObject().put("error", event.cause().getMessage());
+						renderError(request, error);
+					}
+				});
+			});
 		});
 	}
 
