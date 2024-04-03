@@ -141,13 +141,15 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"WITH n, LENGTH(FILTER(x IN COLLECT(distinct r.score) WHERE x > 3)) as duplicates, p.blocked as blockedProfile " +
 				"WHERE (blockedProfile IS NULL OR blockedProfile = false) " +
 				"FOREACH (duplicate IN CASE duplicates WHEN 0 THEN [1] ELSE [] END | " +
-				"SET n.password = {password}, n.activationCode = null, n.email = {email}, n.emailSearchField=LOWER({email}), n.mobile = {phone}, n.needRevalidateTerms = {needRevalidateTerms})  " +
+				"SET n.password = {password}, n.oldPasswords = {oldPasswords}, n.activationCode = null, n.email = {email}, n.emailSearchField=LOWER({email}), n.mobile = {phone}, n.needRevalidateTerms = {needRevalidateTerms})  " +
 				"RETURN n.password as password, n.id as id, HEAD(n.profiles) as profile, duplicates > 0 as hasDuplicate, " +
 				"n.login as login, n.loginAlias as loginAlias ";
+		final String encryptedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
 		params.put("activationCode", activationCode);
-		params.put("password", BCrypt.hashpw(password, BCrypt.gensalt()));
+		params.put("password", encryptedPassword);
+		params.put("oldPasswords", new JsonArray().add(encryptedPassword));
 		params.put("email", email);
 		params.put("phone", phone);
 		params.put("allowActivateDuplicate", allowActivateDuplicateProfiles);
