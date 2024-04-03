@@ -792,17 +792,14 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 			}).collect(Collectors.toList());
 
 			// Copy private documents
-			final Promise<List<JsonObject>> copyPromise = Promise.promise();
-			if(docsToCopy.size() > 0) {
-				folderManager.copyAllNoFail(Optional.of(user), docsToCopy, true, copyPromise);
-			} else {
-				copyPromise.complete(Collections.emptyList());
-			}
+			final Future<List<JsonObject>> copyFuture = (docsToCopy.size() > 0)
+				? folderManager.copyAllNoFail(Optional.of(user), docsToCopy, true)
+				: Future.succeededFuture(Collections.emptyList());
 
 			// Change visibility
 			final Promise<Message<JsonObject>> changePromise = Promise.promise();
 			if( docIdsToChange.size() > 0 ) {
-				changeVisibility( docIdsToChange, visibility.get(), new Handler<Message<JsonObject>>() {
+				changeVisibility( docIdsToChange, visibility.getCode(), new Handler<Message<JsonObject>>() {
 					public void handle(Message<JsonObject> event) {
 						changePromise.complete();
 					}
@@ -812,8 +809,8 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 			}
 
 			// Resolve actions.
-			return CompositeFuture.join(copyPromise.future(), changePromise.future())
-			.map( unused -> copyPromise.future().result() )
+			return CompositeFuture.join(copyFuture, changePromise.future())
+			.map( unused -> copyFuture.result() )
 			.map( copies -> {
 				// Replace original docs by their copy (maybe null).
 				if( copies.size() == docsToCopy.size() ) {

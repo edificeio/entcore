@@ -279,14 +279,13 @@ public class FolderManagerMongoImpl implements FolderManager {
 		});
 	}
 
-	public void copyAllNoFail(
+	public Future<List<JsonObject>> copyAllNoFail(
 			Optional<UserInfos> userOpt,
 			List<JsonObject> originals,
-			boolean keepVisibility,
-			final Handler<AsyncResult<List<JsonObject>>> handler
+			boolean keepVisibility
 	) {
 		// Duplicate every file documents, including attached files
-		List<Future> copyFutures = new ArrayList<>();
+		List<Future> copyFutures = new ArrayList<>(originals.size());
 		for( int i = 0; i<originals.size(); i++ ) {
 			final JsonObject doc = originals.get(i);
 
@@ -300,7 +299,11 @@ public class FolderManagerMongoImpl implements FolderManager {
 
 			// Copy files
 			Future<JsonObject> copyFuture = StorageHelper.copyFiles(storage, fileIds)
-			.recover( unused -> Future.succeededFuture(null) ) // never fails this copy
+			.recover( t -> {
+				 // Never fails this copy
+				log.warn("Unexpected failure from StorageHelper.copyFiles() -> skipping those files.", t);
+				return Future.succeededFuture(null);
+			})
 			.map( copiedFilesMap -> {
 				// If files were not copied, set resulting doc to null.
 				if( copiedFilesMap == null ) {
@@ -330,8 +333,6 @@ public class FolderManagerMongoImpl implements FolderManager {
 				copy.put("favorites", new JsonArray());
 				copy.put("shared", new JsonArray());
 				copy.put("deleted", false);
-				// merge shared after reset shared
-				//InheritShareComputer.mergeShared(parent, copy, true);
 				// copy file from storage
 				StorageHelper.replaceAll(copy, copiedFilesMap);
 
@@ -349,11 +350,11 @@ public class FolderManagerMongoImpl implements FolderManager {
 				return copy;
 			});
 
-			copyFutures.add( copyFuture );
+			copyFutures.set(i, copyFuture);
 		}
 
 		// Persist the copied documents in DB
-		CompositeFuture.all(copyFutures) // never fails because of the recover() above
+		return CompositeFuture.all(copyFutures) // never fails because of the recover() above
 		.compose(all -> {
 			final List<JsonObject> copiedDocsOrNulls = all.list();
 			final List<Future> futures = copiedDocsOrNulls.stream()
@@ -362,18 +363,13 @@ public class FolderManagerMongoImpl implements FolderManager {
 			
 			return CompositeFuture.join(futures)
 				.compose(unused -> Future.succeededFuture(futures))
-				.recover( unused -> Future.succeededFuture(futures));
+				.recover(unused -> Future.succeededFuture(futures));
 		})
-		.onSuccess( inserted -> {
-			handler.handle(
-				Future.succeededFuture(inserted.stream()
-				.map(doc -> (doc!=null && doc.succeeded()) ? (JsonObject) doc.result() : null)
-				.collect(Collectors.toList()))
-			);
-		})
+		.map(inserted -> inserted.stream()
+			.map(doc -> (doc!=null && doc.succeeded()) ? (JsonObject) doc.result() : null)
+			.collect(Collectors.toList()))
 		.onFailure( t -> {
 			log.error("FolderManagerMongoImpl.copyAllNoFail() should never fail", t);
-			handler.handle(Future.failedFuture(t));
 		});
 	}
 

@@ -53,7 +53,7 @@ public interface WorkspaceService extends FolderManager {
 			this.visibility = visibility;
 		}
 
-		public String get() {
+		public String getCode() {
 			return this.visibility;
 		}
 

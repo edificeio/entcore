@@ -7,9 +7,9 @@ import static org.entcore.common.http.response.DefaultResponseHandler.arrayRespo
 import static org.entcore.common.http.response.DefaultResponseHandler.asyncArrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.asyncDefaultResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
+import static org.entcore.common.user.UserUtils.getAuthenticatedUserInfos;
 import static org.entcore.common.user.UserUtils.getUserInfos;
 
-import java.lang.reflect.Array;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -68,6 +68,9 @@ public class WorkspaceController extends BaseController {
 	public static final String WRITE_ACTION = "org-entcore-workspace-controllers-WorkspaceController|updateDocument";
 	public static final String SHARED_ACTION = "org-entcore-workspace-controllers-WorkspaceController|shareResource";
 	public static final String MEDIALIB_APP = "media-library";
+	/** List of possible Visibility for calling transferDocuments() method.*/
+	private static final List<Visibility> transferDocumentsVisibilities = Arrays.asList(Visibility.PROTECTED, Visibility.PUBLIC);
+
 	private EventHelper eventHelper;
 	private WorkspaceService workspaceService;
 	private TimelineHelper notification;
@@ -1285,17 +1288,13 @@ public class WorkspaceController extends BaseController {
 	@Post("/documents/transfer")
 	@SecuredAction(value = "workspace.manager", type = ActionType.RESOURCE)
 	public void transferDocuments(HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, userInfos -> {
-			if (userInfos == null) {
-				unauthorized(request);
-				return;
-			}
-			final List<Visibility> acceptableVisibilities = Arrays.asList(Visibility.PROTECTED, Visibility.PUBLIC);
+		getAuthenticatedUserInfos(eb, request)
+		.onSuccess( userInfos -> {
 			bodyToJson(request, pathPrefix + "transferDocuments", body -> {
 				final JsonArray ids = body.getJsonArray("ids");
 				String application = body.getString("application");
 				Visibility visibility = Visibility.fromString(body.getString("visibility"));
-				if( !acceptableVisibilities.contains(visibility) ) {
+				if( !transferDocumentsVisibilities.contains(visibility) ) {
 					badRequest(request, "invalid.parameters");
 					return;
 				}

@@ -13,11 +13,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.checkerframework.checker.units.qual.K;
+import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.utils.StringUtils;
 
@@ -64,14 +63,7 @@ public class StorageHelper {
 			if(getFileId(jsonDocument).contains(fileId)) {
 				jsonDocument.remove("file");
 			} else if(thumbnailEntries!=null) {
-				Iterator<Entry<String, Object>> iterator = thumbnailEntries.iterator();
-				while( iterator.hasNext() ) {
-					Entry<String, Object> entry = iterator.next();
-					if(entry!=null && entry.getValue()!=null && fileId.equals(entry.getValue().toString())) {
-						// Removing here also applies on the thumbnails JsonObject.
-						iterator.remove();
-					}
-				}
+				thumbnailEntries.removeIf(entry -> entry!=null && entry.getValue()!=null && fileId.equals(entry.getValue().toString()));
 			}
 		}
 	}
@@ -161,11 +153,11 @@ public class StorageHelper {
 		final List<Future> copyFutures = new ArrayList<Future>();
 
 		for (String fId : fileIds) {
-			Promise<Entry<String, String>> promise = Promise.promise();
+			Promise<Pair<String, String>> promise = Promise.promise();
 
 			storage.copyFile(fId, res -> {
 				if (isOk(res)) {
-					promise.complete(new AbstractMap.SimpleEntry<String, String>(fId, res.getString("_id")));
+					promise.complete(Pair.of(fId, res.getString("_id")));
 				} else {
 					promise.complete(null);
 				}
@@ -179,7 +171,7 @@ public class StorageHelper {
 		.map(unused -> {
 			@SuppressWarnings("unchecked")
 			Map<String, String> oldFileIdForNewFileId = copyFutures.stream()
-				.map(future -> future == null ? null : (Entry<String, String>) future.result())
+				.map(future -> future == null ? null : (Pair<String, String>) future.result())
 				.filter( pair -> pair != null)
 				.collect(Collectors.toMap(pair -> pair.getKey(), pair -> pair.getValue()));
 			return oldFileIdForNewFileId;

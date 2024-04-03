@@ -302,10 +302,10 @@ public interface FolderManager {
 	 * @param userOpt             the user doing the copy
 	 * @param originals           list of documents
 	 * @param keepVisibility      keep the `protect`or `public`flag ?
-	 * @param handler             emit the list of copied files
+	 * @return                    the list of copied documents (or nulls)
 	 */
-	void copyAllNoFail(Optional<UserInfos> userOpt, List<JsonObject> originals,
-			boolean keepVisibility, final Handler<AsyncResult<List<JsonObject>>> handler);
+	Future<List<JsonObject>> copyAllNoFail(Optional<UserInfos> userOpt, List<JsonObject> originals,
+			boolean keepVisibility);
 
 	/**
 	 * trash only make the file or the folder not visible but it is still saved in

@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 
 import io.vertx.core.*;
 
-import org.apache.commons.lang3.NotImplementedException;
 import org.entcore.common.folders.ElementQuery;
 import org.entcore.common.folders.ElementShareOperations;
 import org.entcore.common.folders.FolderManager;
@@ -207,12 +206,11 @@ public class FolderManagerWithQuota implements FolderManager {
 	}
 
 	@Override
-	public void copyAllNoFail(
+	public Future<List<JsonObject>> copyAllNoFail(
 			Optional<UserInfos> userOpt,
 			List<JsonObject> originals,
-			boolean keepVisibility,
-			Handler<AsyncResult<List<JsonObject>>> handler) {
-		handler.handle(io.vertx.core.Future.failedFuture("not.implemented"));
+			boolean keepVisibility) {
+		return io.vertx.core.Future.failedFuture("not.implemented");
 	}
 
 	@Override
