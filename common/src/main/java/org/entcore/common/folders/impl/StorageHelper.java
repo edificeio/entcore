@@ -153,9 +153,9 @@ public class StorageHelper {
 	 * Copy main file and any thumbnail of a document. 
 	 * @param storage where to copy
 	 * @param fileIds a list of file ids
-	 * @return a Map of <ID of original file, ID of copied file>, 
-	 * 		   or null if any file was not copied successfully
-	*/
+	 * @return a Map of <ID of original file, ID of copied file>
+	 *		   
+	 */
 	static public Future<Map<String, String>> copyFiles(Storage storage, final List<String> fileIds) {
 		@SuppressWarnings("rawtypes")
 		final List<Future> copyFutures = new ArrayList<Future>();
@@ -167,7 +167,7 @@ public class StorageHelper {
 				if (isOk(res)) {
 					promise.complete(new AbstractMap.SimpleEntry<String, String>(fId, res.getString("_id")));
 				} else {
-					promise.fail(toErrorStr(res));
+					promise.complete(null);
 				}
 			});
 
@@ -175,12 +175,11 @@ public class StorageHelper {
 		}
 
 		return CompositeFuture
-		.join(copyFutures)
-		.recover( fail -> Future.succeededFuture(null) )
+		.all(copyFutures)
 		.map(unused -> {
 			@SuppressWarnings("unchecked")
 			Map<String, String> oldFileIdForNewFileId = copyFutures.stream()
-				.map(future -> (Entry<String, String>) future.result())
+				.map(future -> future == null ? null : (Entry<String, String>) future.result())
 				.filter( pair -> pair != null)
 				.collect(Collectors.toMap(pair -> pair.getKey(), pair -> pair.getValue()));
 			return oldFileIdForNewFileId;
