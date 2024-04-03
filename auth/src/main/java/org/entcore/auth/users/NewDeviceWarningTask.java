@@ -19,50 +19,34 @@
 
 package org.entcore.auth.users;
 
-import io.vertx.core.Vertx;
-import io.vertx.core.Handler;
+import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.email.EmailSender;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.pgclient.PgPool;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.Row;
-import io.vertx.pgclient.SslMode;
-import io.vertx.sqlclient.Tuple;
-
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.UUID;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-
-import fr.wseduc.webutils.email.EmailSender;
-import fr.wseduc.webutils.http.Renders;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
+import io.vertx.pgclient.SslMode;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
 import io.vertx.sqlclient.Tuple;
-import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.user.UserInfos;
-import org.entcore.common.user.UserUtils;
 import org.entcore.common.http.renders.TemplatedEmailRenders;
 import org.entcore.common.http.request.JsonHttpServerRequest;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.user.UserUtils;
 
-import fr.wseduc.webutils.I18n;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
@@ -259,7 +243,7 @@ public class NewDeviceWarningTask extends TemplatedEmailRenders implements Handl
 
         String getUsersEmail = "MATCH (u:User) WHERE u.id IN {users} " +
                                 "OPTIONAL MATCH (u)-[:PREFERS]->(uac:UserAppConf) " +
-                                "RETURN u.id AS id, u.email AS email, u.displayName AS displayName, u.lastScheme AS lastScheme, u.lastDomain AS lastDomain, " +
+                                "RETURN u.id AS id, u.email AS email, u.displayName AS displayName, u.lastScheme AS lastScheme, u.lastDomain AS lastDomain, u.federated AS federated, " +
                                 "uac.theme AS theme, uac.language AS language";
 		Neo4j.getInstance().execute(getUsersEmail, new JsonObject().put("users", new JsonArray(new ArrayList(users.keySet()))), new Handler<Message<JsonObject>>()
         {
@@ -281,8 +265,9 @@ public class NewDeviceWarningTask extends TemplatedEmailRenders implements Handl
                         } catch(Exception e) {}
                         String userDomain = neoUser.getString("lastDomain", I18n.DEFAULT_DOMAIN);
                         String userScheme = neoUser.getString("lastScheme", "http");
+                        boolean federated = neoUser.getBoolean("federated", false);
 
-                        users.get(neoUser.getString("id")).setInfos(displayName, email, theme, mutableUserLanguage, userDomain, userScheme);
+                        users.get(neoUser.getString("id")).setInfos(displayName, email, theme, mutableUserLanguage, userDomain, userScheme, federated);
                     }
                     scoreConnections(users);
                 }
@@ -396,7 +381,7 @@ public class NewDeviceWarningTask extends TemplatedEmailRenders implements Handl
             .put("device", c.device.toString())
             .put("date", LocalDateTime.parse(c.date).toEpochSecond(ZoneOffset.UTC) * 1000)
             .put("ip", c.ip.indexOf("/") > -1 ? c.ip.substring(0, c.ip.indexOf("/")) : c.ip)
-            .put("host", user.scheme + "://" + user.host);
+            .put("changePasswordLink", user.scheme + "://" + user.host);
 
         HttpServerRequest request = new JsonHttpServerRequest(
             new JsonObject()
@@ -407,7 +392,8 @@ public class NewDeviceWarningTask extends TemplatedEmailRenders implements Handl
             .put("scheme", user.scheme)
         );
 
-        processEmailTemplate(request, templateParams, "email/newDeviceWarning.html", false, processedTemplate -> {
+        String mailTemplate = user.federated ? "email/newDeviceWarningFederatedAccount.html" : "email/newDeviceWarning.html";
+        processEmailTemplate(request, templateParams, mailTemplate, false, processedTemplate -> {
             sender.sendEmail(request, Collections.singletonList(user.email), mailFrom, 
                 null, //cc
                 null, //bcc
@@ -441,7 +427,7 @@ public class NewDeviceWarningTask extends TemplatedEmailRenders implements Handl
                 // Need the email address, theme.... :-(
                 String getUserEmail = "MATCH (u:User{id:{user}}) " +
                     "OPTIONAL MATCH (u)-[:PREFERS]->(uac:UserAppConf) " +
-                    "RETURN u.email AS email, u.displayName AS displayName, u.lastScheme AS lastScheme, u.lastDomain AS lastDomain, " +
+                    "RETURN u.email AS email, u.displayName AS displayName, u.lastScheme AS lastScheme, u.lastDomain AS lastDomain, u.federated AS federated, " +
                     "uac.theme AS theme, uac.language AS language";
                 Neo4j.getInstance().execute(getUserEmail, new JsonObject().put("user",user.getUserId()), new Handler<Message<JsonObject>>() {
                     @Override
@@ -466,8 +452,9 @@ public class NewDeviceWarningTask extends TemplatedEmailRenders implements Handl
                                 } catch(Exception e) {}
                                 String userDomain = neoUser.getString("lastDomain", I18n.DEFAULT_DOMAIN);
                                 String userScheme = neoUser.getString("lastScheme", "http");
+                                boolean federated = neoUser.getBoolean("federated", false);
                 
-                                evtUser.setInfos(displayName, email, theme, mutableUserLanguage, userDomain, userScheme);
+                                evtUser.setInfos(displayName, email, theme, mutableUserLanguage, userDomain, userScheme, federated);
                             }
 
                             // The fake connection
@@ -706,6 +693,7 @@ public class NewDeviceWarningTask extends TemplatedEmailRenders implements Handl
         String language;
         String scheme;
         String host;
+        boolean federated;
 
         Set<Connection> knownConnections = new LinkedHashSet<Connection>();
         Set<Connection> newConnections = new HashSet<Connection>();
@@ -717,7 +705,7 @@ public class NewDeviceWarningTask extends TemplatedEmailRenders implements Handl
             this.admin = admin;
         }
 
-        public void setInfos(String displayName, String email, String theme, String language, String host, String scheme)
+        public void setInfos(String displayName, String email, String theme, String language, String host, String scheme, boolean federated)
         {
             this.displayName = displayName;
             this.email = email;
@@ -725,6 +713,7 @@ public class NewDeviceWarningTask extends TemplatedEmailRenders implements Handl
             this.language = language;
             this.host = host;
             this.scheme = scheme;
+            this.federated = federated;
         }
 
         public void addKnownConnection(Connection c)
