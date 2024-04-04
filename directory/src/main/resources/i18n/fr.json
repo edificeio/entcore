@@ -680,7 +680,7 @@
     "userBook.title": "Mon compte",
     "userBook.unlock": "Déverrouiller",
     "userBook.unlocked": "Déverrouillé",
-    "userbook.renewpassword.error": "Le formulaire contient des erreurs, veuillez vérifier que votre ancien mot de passe est correct et que les deux mots de passe concordent et respectent les contraintes de sécurité.",
+    "userbook.renewpassword.error": "Le formulaire contient des erreurs. Veuillez vérifier que le nouveau mot de passe n’a pas déjà été utilisé et que les deux saisies sont identiques.",
     "welcome.class.admin": "\"Paramétrage de la classe\".",
     "welcome.class.admin.donotanswer": "Ce message a été généré automatiquement, merci de ne pas y répondre.",
     "welcome.class.admin.info": "Pour cela, deux possibilités s'offrent à vous pour créer ces comptes :",
