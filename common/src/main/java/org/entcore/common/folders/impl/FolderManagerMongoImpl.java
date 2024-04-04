@@ -298,21 +298,16 @@ public class FolderManagerMongoImpl implements FolderManager {
 			boolean keepVisibility
 	) {
 		// Duplicate every file documents, including attached files.
-		List<Future> copyFutures = new ArrayList<>(documents.size());
-		for( int i = 0; i<documents.size(); i++ ) {
-			final JsonObject doc = documents.get(i);
-
-			// Only *files* are duplicated in storage
+		List<Future> copyFutures = documents.stream()
+		.map( doc -> {
+			// Only *files* documents are duplicated in storage
 			if( !DocumentHelper.isFile(doc) ) {
-				copyFutures.set(i, Future.succeededFuture(Optional.empty()));
-				continue;
+				return Future.succeededFuture(Optional.empty());
 			}
 
+			// Copy document files
 			final List<String> fileIds = StorageHelper.getListOfFileIds(doc);
-
-			// Copy files
-			@SuppressWarnings("unchecked")
-			Future<Optional<JsonObject>> copyFuture = StorageHelper.copyFiles(storage, fileIds)
+			return StorageHelper.copyFiles(storage, fileIds)
 			.recover( t -> {
 				 // Never fails this copy
 				log.warn("Unexpected failure from StorageHelper.copyFiles() -> skipping those files.", t);
@@ -363,12 +358,9 @@ public class FolderManagerMongoImpl implements FolderManager {
 
 				return Optional.of(copy);
 			});
+		}).collect(Collectors.toList());
 
-			copyFutures.set(i, copyFuture);
-		}
-
-		return CompositeFuture.all(copyFutures)
-		.map(all -> all.list());
+		return CompositeFuture.all(copyFutures).map(all -> all.list());
 	}
 
 	/**
