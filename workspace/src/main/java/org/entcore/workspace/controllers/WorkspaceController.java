@@ -1299,13 +1299,13 @@ public class WorkspaceController extends BaseController {
 					return;
 				}
 	
-				workspaceService.transferAll(ids.getList(), Optional.ofNullable(application), visibility, userInfos, event -> {
-					if (event.succeeded()) {
-						renderJson(request, event.result());
-					} else {
-						JsonObject error = new JsonObject().put("error", event.cause().getMessage());
-						renderError(request, error);
-					}
+				workspaceService.transferAll(ids.getList(), Optional.ofNullable(application), visibility, userInfos)
+				.onSuccess( results -> {
+					renderJson(request, (JsonArray) results);
+				})
+				.onFailure( message -> {
+					JsonObject error = new JsonObject().put("error", message);
+					renderError(request, error);
 				});
 			});
 		});

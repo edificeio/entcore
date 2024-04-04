@@ -5,6 +5,7 @@ import static org.entcore.common.folders.impl.QueryHelper.isOk;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -279,35 +280,48 @@ public class FolderManagerMongoImpl implements FolderManager {
 		});
 	}
 
-	public Future<List<JsonObject>> copyAllNoFail(
+	/** 
+	 * Duplicate the files of a list of documents, in storage,
+	 * and return new documents indexing the duplicated files.
+	 * 
+	 * @param userOpt optional user.
+	 * @param documents list of original documents.
+	 * @param keepVisibility keep the `protected` or `public` visibility of original documents.
+	 * 
+	 * @return ordered list of optional documents, indexing the duplicated files in storage.
+	 * The order of new documents is the same as the originals.
+	 * Any empty document means its files were not found in storage or the copy failed.
+	 */
+	private Future<List<Optional<JsonObject>>> duplicateFilesNoFail(
 			Optional<UserInfos> userOpt,
-			List<JsonObject> originals,
+			List<JsonObject> documents,
 			boolean keepVisibility
 	) {
-		// Duplicate every file documents, including attached files
-		List<Future> copyFutures = new ArrayList<>(originals.size());
-		for( int i = 0; i<originals.size(); i++ ) {
-			final JsonObject doc = originals.get(i);
+		// Duplicate every file documents, including attached files.
+		List<Future> copyFutures = new ArrayList<>(documents.size());
+		for( int i = 0; i<documents.size(); i++ ) {
+			final JsonObject doc = documents.get(i);
 
-			// only files are duplicated in storage
+			// Only *files* are duplicated in storage
 			if( !DocumentHelper.isFile(doc) ) {
-				copyFutures.set(i, Future.succeededFuture(null));
+				copyFutures.set(i, Future.succeededFuture(Optional.empty()));
 				continue;
 			}
 
 			final List<String> fileIds = StorageHelper.getListOfFileIds(doc);
 
 			// Copy files
-			Future<JsonObject> copyFuture = StorageHelper.copyFiles(storage, fileIds)
+			@SuppressWarnings("unchecked")
+			Future<Optional<JsonObject>> copyFuture = StorageHelper.copyFiles(storage, fileIds)
 			.recover( t -> {
 				 // Never fails this copy
 				log.warn("Unexpected failure from StorageHelper.copyFiles() -> skipping those files.", t);
-				return Future.succeededFuture(null);
+				return Future.succeededFuture((Map<String, String>) Collections.EMPTY_MAP);
 			})
 			.map( copiedFilesMap -> {
-				// If files were not copied, set resulting doc to null.
-				if( copiedFilesMap == null ) {
-					return (JsonObject) null;
+				// If files were not copied, empty the resulting doc.
+				if( copiedFilesMap == null || copiedFilesMap.isEmpty() ) {
+					return Optional.empty();
 				}
 
 				JsonObject copy = doc.copy();
@@ -347,27 +361,46 @@ public class FolderManagerMongoImpl implements FolderManager {
 					StorageHelper.removeAll(copy, toRemove);
 				}
 
-				return copy;
+				return Optional.of(copy);
 			});
 
 			copyFutures.set(i, copyFuture);
 		}
 
+		return CompositeFuture.all(copyFutures)
+		.map(all -> all.list());
+	}
+
+	/**
+	 * Store documents in MongoDb. They are optional and may be empty.
+	 * 
+	 * @param optionalDocuments list of documents to store.
+	 * 
+	 * @return ordered list of json documents, where entrant empty documents are converted to null,
+	 * and non-empty are updated with their new _id.
+	 */
+	private Future<List<JsonObject>> storeOptionalDocumentsNoFail(List<Optional<JsonObject>> optionalDocuments) {
+		final List<Future> futures = optionalDocuments.stream()
+			.map(jsonOpt -> jsonOpt.isPresent() ? queryHelper.insert(jsonOpt.get()) : Future.succeededFuture(null))
+			.collect(Collectors.toList());
+		
+		return CompositeFuture.join(futures)
+			.map(unused -> futures)
+			.recover(unused -> Future.succeededFuture(futures))
+			.map(inserted -> inserted.stream()
+				.map(future -> future.succeeded() ? (JsonObject) future.result() : null)
+				.collect(Collectors.toList()));	
+	}
+
+	public Future<List<JsonObject>> copyAllNoFail(
+			Optional<UserInfos> userOpt,
+			List<JsonObject> originals,
+			boolean keepVisibility
+	) {
+		// Duplicate every file documents, including attached files
+		return duplicateFilesNoFail(userOpt, originals, keepVisibility)
 		// Persist the copied documents in DB
-		return CompositeFuture.all(copyFutures) // never fails because of the recover() above
-		.compose(all -> {
-			final List<JsonObject> copiedDocsOrNulls = all.list();
-			final List<Future> futures = copiedDocsOrNulls.stream()
-				.map(json -> (json == null) ? Future.succeededFuture(null) : queryHelper.insert(json))
-				.collect(Collectors.toList());
-			
-			return CompositeFuture.join(futures)
-				.compose(unused -> Future.succeededFuture(futures))
-				.recover(unused -> Future.succeededFuture(futures));
-		})
-		.map(inserted -> inserted.stream()
-			.map(doc -> (doc!=null && doc.succeeded()) ? (JsonObject) doc.result() : null)
-			.collect(Collectors.toList()))
+		.compose( newDocuments -> storeOptionalDocumentsNoFail(newDocuments) )
 		.onFailure( t -> {
 			log.error("FolderManagerMongoImpl.copyAllNoFail() should never fail", t);
 		});

@@ -712,20 +712,17 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 	}
 
 	@Override
-	public void transferAll(
+	public Future<JsonArray> transferAll(
 			final List<String> sourceIds, 
 			Optional<String> application, 
 			Visibility visibility, 
-			final UserInfos user,
-			Handler<AsyncResult<JsonArray>> handler
+			final UserInfos user
 		) {
 		if (sourceIds.isEmpty()) {
-			handler.handle(new DefaultAsyncResult<JsonArray>(new JsonArray()));
-			return;
+			return Future.succeededFuture(new JsonArray());
 		}
 		if( visibility!=Visibility.PROTECTED && visibility!=Visibility.PUBLIC ) {
-			handler.handle(Future.failedFuture("invalid.parameters"));
-			return ;
+			return Future.failedFuture("invalid.parameters");
 		}
 
 		final DocumentQueryBuilder querySourceDocuments = queryHelper.queryBuilder()
@@ -735,7 +732,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 			.withId(sourceIds);
 
 		// Find matching documents for queried ids.
-		queryHelper.findAllAsList(querySourceDocuments)
+		final Future<JsonArray> results = queryHelper.findAllAsList(querySourceDocuments)
 		.map(docs -> {
 			// Index documents by id, and determine any needed visibility change.
 			final Map<String, JsonObject> index = new HashMap<String, JsonObject>(docs.size());
@@ -744,7 +741,9 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 				final boolean isProtected = Boolean.TRUE.equals(doc.getBoolean("protected"));
 				final boolean isPublic = Boolean.TRUE.equals(doc.getBoolean("public"));
 				if( !isProtected && !isPublic ) {
-					// We must copy it => set a temporary action
+					// We must copy it
+					doc.put("application", application.isPresent() ? application.get() : WorkspaceController.MEDIALIB_APP);
+					// => set a temporary action
 					doc.put("visibility_action", "copy");
 					// Set the desired visibility for the copy.
 					if( visibility==Visibility.PUBLIC ) {
@@ -834,7 +833,9 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 			.recover( t -> null )
 			.map( unused -> docs );
 		})
-		.onSuccess( docs -> handler.handle(new DefaultAsyncResult<JsonArray>(new JsonArray(docs))) );
+		.map( docs -> new JsonArray(docs) );
+
+		return results;
 	}
 
 	@Override

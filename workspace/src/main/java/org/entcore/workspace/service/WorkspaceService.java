@@ -144,14 +144,14 @@ public interface WorkspaceService extends FolderManager {
 	public void changeVisibility(final JsonArray documentIds, String visibility, final Handler<Message<JsonObject>> handler);
 
 	/**
-	 * Transfer documents file to protected or public space.
+	 * Transfer file documents to protected or public space.
 	 * @param sourceIds List of documents id
 	 * @param application Optional application code
 	 * @param visibility PROTECTED or PUBLIC only
 	 * @param user
+	 * @return ordered JsonArray of transfered documents, being null when transfering was not possible.
 	 */
-	public void transferAll(final List<String> sourceIds, Optional<String> application, Visibility visibility, UserInfos user,
-			Handler<AsyncResult<JsonArray>> handler);
+	public Future<JsonArray> transferAll(final List<String> sourceIds, Optional<String> application, Visibility visibility, UserInfos user);
 
 	void getParentInfos(final String childId, UserInfos user, final Handler<AsyncResult<JsonObject>> handler);
 }

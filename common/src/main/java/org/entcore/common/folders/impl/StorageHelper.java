@@ -54,7 +54,13 @@ public class StorageHelper {
 		}
 	}
 
-	/** Remove fileIds from the document, if they match the document's file or any thumbnail. */
+	/**
+	 * Clean a document, by removing any reference to a file (id is given),
+	 * in the `file` and `thumbnails` fields.
+	 * 
+	 * @param jsonDocument document to clean.
+	 * @param fileIds IDs of file to be removed from `file` or `thumbnails` fields.
+	 */
 	static void removeAll(JsonObject jsonDocument, Collection<String> fileIds) {
 		final JsonObject thumbnails = jsonDocument.getJsonObject("thumbnails", null);
 		final Set<Map.Entry<String,Object>> thumbnailEntries = thumbnails==null ? null : thumbnails.getMap().entrySet();
