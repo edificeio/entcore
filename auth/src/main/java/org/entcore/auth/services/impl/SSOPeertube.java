@@ -20,9 +20,9 @@ public class SSOPeertube extends AbstractSSOProvider {
                 "u.displayName AS displayName,\n" +
                 "u.email AS email,\n" +
                 "u.externalId AS externalId,\n" +
-                "REDUCE(s = false, i IN applications | s OR i.address CONTAINS({serviceProviderEntityId})) AS hasMatchingApplication";
+                "REDUCE(s = false, i IN applications | s OR i.name CONTAINS({serviceName})) AS hasMatchingApplication";
 
-        Neo4j.getInstance().execute(query, new JsonObject().put("userId", userId).put("serviceProviderEntityId",serviceProviderEntityId), Neo4jResult.validUniqueResultHandler(evt -> {
+        Neo4j.getInstance().execute(query, new JsonObject().put("userId", userId).put("serviceName","PeertubeSAMLId"), Neo4jResult.validUniqueResultHandler(evt -> {
             if (evt.isLeft()) {
                 handler.handle(new Either.Left(evt.left().getValue()));
                 return;
