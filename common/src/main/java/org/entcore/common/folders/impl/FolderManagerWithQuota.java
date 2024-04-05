@@ -4,6 +4,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import io.vertx.core.*;
+
 import org.entcore.common.folders.ElementQuery;
 import org.entcore.common.folders.ElementShareOperations;
 import org.entcore.common.folders.FolderManager;
@@ -202,6 +203,14 @@ public class FolderManagerWithQuota implements FolderManager {
 			final long size = DocumentHelper.getFileSize(copies);
 			return decrementFreeSpace(user.getUserId(), size).map(copies);
 		}).setHandler(handler);
+	}
+
+	@Override
+	public Future<List<JsonObject>> copyAllNoFail(
+			Optional<UserInfos> userOpt,
+			List<JsonObject> originals,
+			boolean keepVisibility) {
+		return io.vertx.core.Future.failedFuture("not.implemented");
 	}
 
 	@Override
