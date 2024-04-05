@@ -7,6 +7,7 @@ import static org.entcore.common.http.response.DefaultResponseHandler.arrayRespo
 import static org.entcore.common.http.response.DefaultResponseHandler.asyncArrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.asyncDefaultResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
+import static org.entcore.common.user.UserUtils.getAuthenticatedUserInfos;
 import static org.entcore.common.user.UserUtils.getUserInfos;
 
 import java.util.*;
@@ -38,6 +39,7 @@ import org.entcore.common.utils.StringUtils;
 import org.entcore.workspace.Workspace;
 import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.service.WorkspaceService;
+import org.entcore.workspace.service.WorkspaceService.Visibility;
 import org.vertx.java.core.http.RouteMatcher;
 
 import fr.wseduc.bus.BusAddress;
@@ -66,6 +68,9 @@ public class WorkspaceController extends BaseController {
 	public static final String WRITE_ACTION = "org-entcore-workspace-controllers-WorkspaceController|updateDocument";
 	public static final String SHARED_ACTION = "org-entcore-workspace-controllers-WorkspaceController|shareResource";
 	public static final String MEDIALIB_APP = "media-library";
+	/** List of possible Visibility for calling transferDocuments() method.*/
+	private static final List<Visibility> transferDocumentsVisibilities = Arrays.asList(Visibility.PROTECTED, Visibility.PUBLIC);
+
 	private EventHelper eventHelper;
 	private WorkspaceService workspaceService;
 	private TimelineHelper notification;
@@ -1277,6 +1282,32 @@ public class WorkspaceController extends BaseController {
 			} else {
 				unauthorized(request);
 			}
+		});
+	}
+
+	@Post("/documents/transfer")
+	@SecuredAction(value = "workspace.manager", type = ActionType.RESOURCE)
+	public void transferDocuments(HttpServerRequest request) {
+		getAuthenticatedUserInfos(eb, request)
+		.onSuccess( userInfos -> {
+			bodyToJson(request, pathPrefix + "transferDocuments", body -> {
+				final JsonArray ids = body.getJsonArray("ids");
+				String application = body.getString("application");
+				Visibility visibility = Visibility.fromString(body.getString("visibility"));
+				if( !transferDocumentsVisibilities.contains(visibility) ) {
+					badRequest(request, "invalid.parameters");
+					return;
+				}
+	
+				workspaceService.transferAll(ids.getList(), Optional.ofNullable(application), visibility, userInfos)
+				.onSuccess( results -> {
+					renderJson(request, (JsonArray) results);
+				})
+				.onFailure( message -> {
+					JsonObject error = new JsonObject().put("error", message);
+					renderError(request, error);
+				});
+			});
 		});
 	}
 

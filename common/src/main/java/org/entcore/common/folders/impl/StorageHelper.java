@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -15,11 +16,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.utils.StringUtils;
 
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 
 public class StorageHelper {
@@ -48,6 +51,26 @@ public class StorageHelper {
 				throw new IllegalStateException("Could not found newFileId of the file:" + fileId);
 			}
 			replaceThumbnailFileId(jsonDocument, fileId, oldFileIdForNewFileId.get(fileId));
+		}
+	}
+
+	/**
+	 * Clean a document, by removing any reference to a file (id is given),
+	 * in the `file` and `thumbnails` fields.
+	 * 
+	 * @param jsonDocument document to clean.
+	 * @param fileIds IDs of file to be removed from `file` or `thumbnails` fields.
+	 */
+	static void removeAll(JsonObject jsonDocument, Collection<String> fileIds) {
+		final JsonObject thumbnails = jsonDocument.getJsonObject("thumbnails", null);
+		final Set<Map.Entry<String,Object>> thumbnailEntries = thumbnails==null ? null : thumbnails.getMap().entrySet();
+		for (String fileId : fileIds) {
+			if( fileId == null ) continue;
+			if(getFileId(jsonDocument).contains(fileId)) {
+				jsonDocument.remove("file");
+			} else if(thumbnailEntries!=null) {
+				thumbnailEntries.removeIf(entry -> entry!=null && entry.getValue()!=null && fileId.equals(entry.getValue().toString()));
+			}
 		}
 	}
 
@@ -120,6 +143,43 @@ public class StorageHelper {
 			Map<String, String> oldFileIdForNewFileId = copyStorageEvent.list().stream()
 					.map(pair -> (Entry<String, String>) pair)
 					.collect(Collectors.toMap(pair -> pair.getKey(), pair -> pair.getValue()));
+			return oldFileIdForNewFileId;
+		});
+	}
+
+	/** 
+	 * Copy main file and any thumbnail of a document. 
+	 * @param storage where to copy
+	 * @param fileIds a list of file ids
+	 * @return a Map of <ID of original file, ID of copied file>
+	 *		   
+	 */
+	static public Future<Map<String, String>> copyFiles(Storage storage, final List<String> fileIds) {
+		@SuppressWarnings("rawtypes")
+		final List<Future> copyFutures = new ArrayList<Future>();
+
+		for (String fId : fileIds) {
+			Promise<Pair<String, String>> promise = Promise.promise();
+
+			storage.copyFile(fId, res -> {
+				if (isOk(res)) {
+					promise.complete(Pair.of(fId, res.getString("_id")));
+				} else {
+					promise.complete(null);
+				}
+			});
+
+			copyFutures.add(promise.future());
+		}
+
+		return CompositeFuture
+		.all(copyFutures)
+		.map(unused -> {
+			@SuppressWarnings("unchecked")
+			Map<String, String> oldFileIdForNewFileId = copyFutures.stream()
+				.map(future -> future == null ? null : (Pair<String, String>) future.result())
+				.filter( pair -> pair != null)
+				.collect(Collectors.toMap(pair -> pair.getKey(), pair -> pair.getValue()));
 			return oldFileIdForNewFileId;
 		});
 	}

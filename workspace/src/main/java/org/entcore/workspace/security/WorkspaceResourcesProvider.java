@@ -120,6 +120,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 			case "restoreFolder":
 			case "restoreTrash":
 			case "bulkDelete":
+			case "transferDocuments":
 				authorizeDocuments(request, user, binding.getServiceMethod(), handler);
 				break;
 			case "getParentInfos":
