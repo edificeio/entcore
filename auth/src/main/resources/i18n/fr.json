@@ -201,5 +201,7 @@
     "validate-mfa.error.empty.target": "Destinataire indéfini.",
     "validate-mfa.error.invalid.receivers": "Destinataire injoignable.",
     "validate-mfa.error.invalid.provider": "Aucun fournisseur de service trouvé.",
-    "validate-mfa.error.apicall.error": "Fournisseur de service injoignable."
+    "validate-mfa.error.apicall.error": "Fournisseur de service injoignable.",
+    "password.rules.reset": "Votre mot de passe doit contenir au moins 6 caractères. Il doit aussi être différent des précédents mots de passe déjà utilisés.",
+    "password.rules.activation": "Votre mot de passe doit contenir au moins 6 caractères."
 }
