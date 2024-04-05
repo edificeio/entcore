@@ -523,20 +523,30 @@ public class AuthController extends BaseController {
 		context.put("mandatory", config.getJsonObject("mandatory", new JsonObject()));
 		// Human-readable password format :
 		final I18n i18n = I18n.getInstance();
-		final JsonObject pwdFormatByLang = new JsonObject();
+		final JsonObject pwdResetFormatByLang = new JsonObject();
+		final JsonObject pwdActivationFormatByLang = new JsonObject();
 		i18n.getLanguages(Renders.getHost(request))
 		.stream()
 		.map(String.class::cast)
 		.forEach( (String lang) -> {
 			if( lang != null ) {
 				try {
-					pwdFormatByLang.put(lang, i18n.translate("password.errors", Renders.getHost(request), lang));
-				} catch( Exception e ) {
-					pwdFormatByLang.put(lang, "");
+					pwdResetFormatByLang.put(lang, i18n.translate("password.rules.reset", Renders.getHost(request), lang));
+				} catch (Exception e) {
+					pwdResetFormatByLang.put(lang, "");
+					log.error("error when translating password.rules.reset in {0} : {1}", lang, e);
+				}
+
+				try {
+					pwdActivationFormatByLang.put(lang, i18n.translate("password.rules.activation", Renders.getHost(request), lang));
+				} catch (Exception e) {
+					pwdActivationFormatByLang.put(lang, "");
+					log.error("error when translating password.rules.activation in {0} : {1}", lang, e);
 				}
 			}
 		});
-		context.put("passwordRegexI18n", pwdFormatByLang);
+		context.put("passwordRegexI18n", pwdResetFormatByLang);
+		context.put("passwordRegexI18nActivation", pwdActivationFormatByLang);
 
 		final JsonArray mfaConfig = new JsonArray();
 		if( Mfa.withSms() ) mfaConfig.add(Mfa.TYPE_SMS);
