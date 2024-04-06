@@ -3,7 +3,6 @@ package org.entcore.common.http.filter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.entcore.common.http.response.DefaultPages;
@@ -42,15 +41,18 @@ public class BlockRouteFilter implements Filter {
 
         private final List<String> profiles;
         private final List<String> excludeStructures;
+        private final List<String> includeStructures;
         private final List<Pattern> routePatterns;
 
         @JsonCreator
         public BlockingCondition(
             @JsonProperty("profiles") List<String> profiles,
             @JsonProperty("exclude-structures") List<String> excludeStructures,
+            @JsonProperty("include-structures") List<String> includeStructures,
             @JsonProperty("route-patterns") List<String> routePatterns) {
             this.profiles = profiles;
             this.excludeStructures = excludeStructures;
+            this.includeStructures = includeStructures;
             this.routePatterns = routePatterns.stream().map(Pattern::compile).collect(Collectors.toList());
         }
 
@@ -58,16 +60,36 @@ public class BlockRouteFilter implements Filter {
             if (user.getType() != null && profiles != null && !(profiles.contains(user.getType()))) {
                 return false;
             }
-            if (user.getStructures() != null && excludeStructures != null) {
-                for (String structureId: user.getStructures()) {
-                    if (excludeStructures.contains(structureId)) {
-                        return false;
-                    }
-                }
+            if ((user.getStructures() != null) && (!userInIncludeStructures(user) || userInExcludeStructures(user))) {
+                return false;
             }
             if (routePatterns != null) {
                 for (Pattern routePattern: routePatterns) {
                     if (routePattern.matcher(request.path()).matches()) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private boolean userInExcludeStructures(UserInfos user) {
+            if (excludeStructures != null && !excludeStructures.isEmpty()) {
+                for (String structureId: user.getStructures()) {
+                    if (excludeStructures.contains(structureId)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        private boolean userInIncludeStructures(UserInfos user) {
+            if (includeStructures == null || includeStructures.isEmpty()) {
+                return true;
+            } else {
+                for (String structureId: user.getStructures()) {
+                    if (includeStructures.contains(structureId)) {
                         return true;
                     }
                 }
@@ -90,6 +112,7 @@ public class BlockRouteFilter implements Filter {
         final JsonObject keys = new JsonObject().put("_id", 0)
             .put("profiles", 1)
             .put("exclude-structures", 1)
+            .put("include-structures", 1)
             .put("route-patterns", 1);
         mongoDb.find(BLOCK_ROUTE_COLLECTION, query, new JsonObject(), keys, validAsyncResultsHandler(ar -> {
             if (ar.succeeded()) {
