@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 
 import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.filter.Filter;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -35,6 +36,8 @@ public class BlockRouteFilter implements Filter {
     private final MongoDb mongoDb = MongoDb.getInstance();
     private final EventBus eb;
     private final String prefix;
+    private final boolean redirectIfMobile;
+    private final int statusCode;
     private List<BlockingCondition> blockingConditions;
 
     private static class BlockingCondition {
@@ -99,9 +102,11 @@ public class BlockRouteFilter implements Filter {
 
     }
 
-    public BlockRouteFilter(Vertx vertx, EventBus eb, String prefix, long refreshConfPeriod) {
+    public BlockRouteFilter(Vertx vertx, EventBus eb, String prefix, long refreshConfPeriod, boolean redirectIfMobile, int statusCode) {
         this.prefix = prefix;
         this.eb = eb;
+        this.redirectIfMobile = redirectIfMobile;
+        this.statusCode = statusCode;
         this.blockingConditions = new ArrayList<>();
         vertx.setPeriodic(refreshConfPeriod, timerId -> refreshConf());
     }
@@ -143,8 +148,12 @@ public class BlockRouteFilter implements Filter {
 
     @Override
     public void deny(HttpServerRequest request) {
-        request.response().setStatusCode(401).setStatusMessage("Unauthorized")
-                .putHeader("content-type", "text/html").end(DefaultPages.UNAUTHORIZED.getPage());
+        if (redirectIfMobile && "mobile".equals(request.headers().get("X-APP"))) {
+            Renders.redirect(request, "/maintenance");
+        } else {
+            request.response().setStatusCode(statusCode).setStatusMessage("Unauthorized")
+                    .putHeader("content-type", "text/html").end(DefaultPages.UNAUTHORIZED.getPage());
+        }
     }
 
 }
