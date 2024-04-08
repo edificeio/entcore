@@ -118,7 +118,10 @@ public abstract class BaseServer extends Server {
 		}
 		if (config.getBoolean("block-route-filter", false)) {
 			addFilter(new BlockRouteFilter(vertx, getEventBus(vertx), Server.getPathPrefix(config),
-				config.getLong("block-route-filter-refresh-period", 5 * 60 * 1000L)));
+				config.getLong("block-route-filter-refresh-period", 5 * 60 * 1000L),
+				config.getBoolean("block-route-filter-redirect-if-mobile", true),
+				config.getInteger("block-route-filter-error-status-code", 401)
+			));
 		}
 		UserValidationFactory userValidationFactory = UserValidationFactory.getFactory();
 		userValidationFactory.init(vertx, config);
