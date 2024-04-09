@@ -1349,9 +1349,10 @@ public class DefaultUserService implements UserService {
 		query.append(", EXISTS(u.mergedLogins) as isMergedManuel");
 
 		// Union with the backup to get the deleted users that are not in the structure anymore
-		query.append(" UNION MATCH (s:Structure)  WHERE s.UAI IN {uai}");
-
-		query.append(" OPTIONAL MATCH (u: User)-[:HAS_RELATIONSHIPS]->(b: Backup) WHERE s.id IN b.structureIds AND (EXISTS(u.deleteDate) OR EXISTS(u.mergedWith))");
+		query.append(" UNION MATCH (p:Structure) WHERE p.UAI IN {uai} WITH p.id as id ");
+		query.append(" MATCH (b:Backup) WHERE id IN b.structureIds WITH id, b ");
+		query.append(" MATCH (u: User)-[:HAS_RELATIONSHIPS]->(b) WHERE (EXISTS(u.deleteDate) OR EXISTS(u.mergedWith)) ");
+		query.append(" MATCH (s:Structure ) WHERE s.id=id ");
 		query.append(" OPTIONAL MATCH (g:Group) WHERE g.id IN b.IN_OUTGOING");
 		query.append(" OPTIONAL MATCH u-[r:DUPLICATE]-(u2:User)");
 
