@@ -37,12 +37,6 @@
             <version>${scramVersion}</version>
             <scope>compile</scope>
         </dependency>
-        <!-- <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-driver-async</artifactId>
-            <version>${mongoVersion}</version>
-            <scope>compile</scope>
-        </dependency> -->
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>vertx-mongo-client</artifactId>

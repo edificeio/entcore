@@ -56,7 +56,7 @@
 
     <properties>
         <revision>5.0-b2school-SNAPSHOT</revision>
-        <junitVersion>4.10</junitVersion>
+        <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
         <modPostgresVersion>2.0-b2school-SNAPSHOT</modPostgresVersion>
         <modMongoVersion>4.0-b2school-SNAPSHOT</modMongoVersion>
@@ -103,12 +103,6 @@
             <artifactId>vertx-unit</artifactId>
             <version>${vertxVersion}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-codegen</artifactId>
-            <version>${vertxVersion}</version>
-            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
