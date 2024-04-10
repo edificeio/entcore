@@ -102,7 +102,7 @@ public class S3Storage implements Storage {
     
     @Override
     public void writeBuffer(String basePath, String id, Buffer buff, String contentType, String filename, Handler<JsonObject> handler) {
-        writeBuffer(null, id, buff, contentType, filename, false, handler);
+        writeBuffer(null, basePath, buff, contentType, filename, false, handler);
     }
     
     @Override
