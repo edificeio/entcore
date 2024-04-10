@@ -21,31 +21,22 @@ package org.entcore.infra.services.impl;
 
 import java.io.File;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 public class InfectedFile {
 
-	private String path;
-	private String virus;
+	private final String path;
+	private final String virus;
 	private String id;
 	private long timerId;
 	private String name;
 	private String owner;
 	private String application;
 
-	public InfectedFile() {
-		this.path = "";
-		this.virus = "";
-	}
-
-	public InfectedFile(String path, String virus) {
+	@JsonCreator
+	public InfectedFile(@JsonProperty("id") String path, @JsonProperty("signatureName") String virus) {
 		this.path = path;
-		this.virus = virus;
-	}
-
-	public void setPath(String path) {
-		this.path = path;
-	}
-
-	public void setVirus(String virus) {
 		this.virus = virus;
 	}
 

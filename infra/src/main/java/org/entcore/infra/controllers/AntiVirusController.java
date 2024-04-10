@@ -27,7 +27,6 @@ import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
-import org.entcore.common.user.UserInfos;
 import org.entcore.infra.services.AntivirusService;
 import org.entcore.infra.services.impl.InfectedFile;
 
@@ -74,9 +73,9 @@ public class AntiVirusController extends BaseController {
 				return;
 			}
 
-			ObjectMapper mapper = new ObjectMapper();
 			InfectedFile infectedFile = null;
 			try {
+				ObjectMapper mapper = new ObjectMapper();
 				infectedFile = mapper.readValue(jsonData.encode(), InfectedFile.class);
 			} catch (IOException e) {
 				badRequest(request);
