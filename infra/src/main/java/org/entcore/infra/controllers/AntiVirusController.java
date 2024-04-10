@@ -68,10 +68,8 @@ public class AntiVirusController extends BaseController {
 	// @ResourceFilter(SuperAdminFilter.class)
 	// @MfaProtected()
 	public void replace(final HttpServerRequest request) {
-		List<InfectedFile> infectedFiles = new ArrayList<>();
-
 		RequestUtils.bodyToJson(request, jsonData -> {
-			if (jsonData == null || isNotEmpty(jsonData.toString())) {
+			if (jsonData == null || jsonData.toString().isEmpty()) {
 				badRequest(request);
 				return;
 			}
@@ -89,6 +87,8 @@ public class AntiVirusController extends BaseController {
 				badRequest(request);
 				return;
 			}
+
+			List<InfectedFile> infectedFiles = new ArrayList<>();
 			infectedFiles.add(infectedFile);
 			log.info(infectedFile);
 			
