@@ -13,7 +13,8 @@ const PROXY_CONFIG = [
             "/admin/public/dist/assets/trumbowyg",
             "/admin/i18n",
             "/i18n",
-            "/languages"
+            "/languages",
+            "/zendeskGuide"
         ],
         "target": "http://localhost:8090",
         "secure": false,
