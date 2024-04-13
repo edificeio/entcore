@@ -1651,21 +1651,18 @@ public class AuthController extends BaseController {
 									public void handle(String resetedUserId) {
 										if (resetedUserId != null) {
 											trace.info(getIp(request) + " - Réinitialisation réussie du mot de passe de l'utilisateur " + login);
-											UserUtils.deleteCacheSession(eb, resetedUserId, "force".equals(forceChange) ? null : sessionIdStr, deleted -> {
-												if (deleted != null)
-												{
-													boolean droppedCurrent = sessionIdStr == null;
-													for(Object droppedSessionId : deleted)
-														if(droppedSessionId instanceof String && ((String) droppedSessionId).equals(sessionIdStr))
-															droppedSessionId = true;
-
-													if(droppedCurrent == true)
-													{
-														CookieHelper.set("oneSessionId", "", 0l, request);
-														CookieHelper.set("authenticated", "", 0l, request);
-													}
+											final boolean forcedChangePw = "force".equals(forceChange);
+											UserUtils.deleteCacheSession(eb, resetedUserId,  forcedChangePw ? null : sessionIdStr, deleted -> {
+												if (sessionIdStr == null || forcedChangePw) {
+													CookieHelper.set("oneSessionId", "", 0l, request);
+													CookieHelper.set("authenticated", "", 0l, request);
 												}
-												redirectionService.redirect(request, callback);							
+												if (forcedChangePw) {
+													redirectionService.redirect(request, config.getJsonObject("authenticationServer",
+															new JsonObject()).getString("loginURL", "/auth/login"));
+												} else {
+													redirectionService.redirect(request, callback);
+												}
 											});
 											UserUtils.deletePermanentSession(eb, resetedUserId, sessionIdStr, appTokenStr, null);
 										} else {
