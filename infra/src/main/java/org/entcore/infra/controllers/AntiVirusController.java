@@ -63,9 +63,9 @@ public class AntiVirusController extends BaseController {
 	}
 
 	@Post("/antivirus/replace")
-	// @SecuredAction(value = "", type = ActionType.RESOURCE)
-	// @ResourceFilter(SuperAdminFilter.class)
-	// @MfaProtected()
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void replace(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, jsonData -> {
 			if (jsonData == null || jsonData.toString().isEmpty()) {
