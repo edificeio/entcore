@@ -69,4 +69,13 @@ public interface DataValidationService {
 	 * @return the message ID
 	 */
 	Future<String> sendValidationMessage(HttpServerRequest request, String target, JsonObject templateParams, String module);
+
+	/**
+	 * Send the warning message (email or sms or both).
+	 * @param request required to translate things...
+	 * @param target address where to send
+	 * @param templateParams email template data
+	 * @return the message ID
+	 */
+	Future<String> sendWarningMessage(HttpServerRequest request, String target, JsonObject templateParams);
 }
