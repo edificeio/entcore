@@ -1066,22 +1066,21 @@ public class UserController extends BaseController {
 	@MfaProtected()
 	public void putMailState(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, pathPrefix + "putMailState", payload -> {
-			UserUtils.getUserInfos(eb, request, infos -> {
-				if (infos != null) {
-					// Initialize a new mail validation flow
-					EmailValidation.setPending(eb, infos.getUserId(), payload.getString("email"))
-							.compose( pendingEmailState -> {
-								// Send the validation email to the user
-								return EmailValidation.sendEmail(eb, request, infos, pendingEmailState);
-							})
-							.onSuccess(e -> ok(request))
-							.onFailure( e -> {
-								renderError( request, new JsonObject().put("error", e.getMessage()) );
-							});
-				} else {
-					notFound(request, "user.not.found");
-				}
-			});
+			UserUtils
+					.getAuthenticatedUserInfos(eb, request)
+					.onSuccess(userInfos -> {
+						// Initialize a new mail validation flow
+						EmailValidation
+								.setPending(eb, userInfos.getUserId(), payload.getString("email"))
+								.compose(pendingEmailState -> {
+									// Send the validation email to the user
+									return EmailValidation.sendEmail(eb, request, userInfos, pendingEmailState);
+								})
+								.onSuccess(e -> ok(request))
+								.onFailure(e -> {
+									renderError(request, new JsonObject().put("error", e.getMessage()));
+								});
+					});
 		});
 	}
 
@@ -1090,25 +1089,28 @@ public class UserController extends BaseController {
 	@MfaProtected()
 	public void postMailState(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, pathPrefix + "postMailState", payload -> {
-			UserUtils.getUserInfos(eb, request, infos -> {
-				if (infos != null) {
-					// Try a validation code
-					final String userId = infos.getUserId();
-					EmailValidation.tryValidate(eb, userId, payload.getString("key"))
-							.onSuccess( emailState -> {
-
-								UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> {
-									recreateSession(infos, userId, request, eb)
-											.onComplete(result -> renderJson( request, emailState ));
-								});
-							})
-							.onFailure( e -> {
-								renderError( request, new JsonObject().put("error", e.getMessage()) );
+			UserUtils
+					.getAuthenticatedUserInfos(eb, request)
+							.onSuccess(userInfos -> {
+								// Try a validation code
+								final String userId = userInfos.getUserId();
+								EmailValidation.tryValidate(eb, userId, payload.getString("key"))
+										.onSuccess(emailState -> {
+											if (!StringUtils.isEmpty(userInfos.getEmail())) {
+												EmailValidation.sendWarningEmail(request, userInfos, emailState)
+														.onFailure(e -> {
+															log.error("Failed to send email update alert", e);
+														});
+											}
+											UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> {
+												recreateSession(userInfos, userId, request, eb)
+														.onComplete(result -> renderJson(request, emailState));
+											});
+										})
+										.onFailure(e -> {
+											renderError(request, new JsonObject().put("error", e.getMessage()));
+										});
 							});
-				} else {
-					notFound(request, "user.not.found");
-				}
-			});
 		});
 	}
 

@@ -64,4 +64,18 @@ public class EmailValidation {
 			pendingEmailState
 		);
 	}
+
+	/**
+	 * Send a warning email to old address mail when it has been modified.
+	 * @param userInfos User infos
+	 * @param pendingEmailState with new email address
+	 * @return email ID
+	 */
+	static public Future<String> sendWarningEmail(final HttpServerRequest request, UserInfos userInfos, JsonObject pendingEmailState) {
+		return UserValidationFactory.getInstance().sendUpdateEmailWarning(
+				request,
+				userInfos,
+				pendingEmailState
+		);
+	}
 }
