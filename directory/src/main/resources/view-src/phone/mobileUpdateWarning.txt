@@ -1,0 +1,5 @@
+{{#i18n}}mobile.update.warning.hi{{/i18n}},
+
+{{#i18n}}mobile.update.warning.intro{{/i18n}} {{#i18n}}mobile.update.warning.outro{{/i18n}}
+
+{{#i18n}}email.signature{{/i18n}}

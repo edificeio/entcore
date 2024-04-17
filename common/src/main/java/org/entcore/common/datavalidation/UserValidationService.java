@@ -127,6 +127,15 @@ public interface UserValidationService {
 	 */
 	Future<String> sendValidationSMS(HttpServerRequest request, UserInfos infos, JsonObject mobileState);
 
+
+	/**
+	 * Send a warning email to old address mail when it has been modified.
+	 * @param request required for EmailSender to translate things...
+	 * @param userInfos contains connected user information (first name, last name, email ...)
+	 * @param mobileState with the new mobile phone number
+	 * @return the email ID
+	 */
+	Future<String> sendUpdateMobileWarning(HttpServerRequest request, UserInfos userInfos, JsonObject mobileState);
 	
 	//////////////// Email-related methods ////////////////
 

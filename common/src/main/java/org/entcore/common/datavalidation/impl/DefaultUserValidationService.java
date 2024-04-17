@@ -31,6 +31,7 @@ import org.entcore.common.utils.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.HashMap;
 import java.util.Map;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
@@ -49,8 +50,11 @@ public class DefaultUserValidationService implements UserValidationService {
     //---------------------------------------------------------------
     private class MobileField extends AbstractDataValidationService {
     //---------------------------------------------------------------
+        private EmailSender emailSender = null;
+
         MobileField(io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config, io.vertx.core.json.JsonObject params) {
             super("mobile", "mobileState", vertx, config, params);
+            emailSender = new EmailFactory(this.vertx, config).getSenderWithPriority(EmailFactory.PRIORITY_HIGH);
         }
 
         @Override
@@ -60,8 +64,63 @@ public class DefaultUserValidationService implements UserValidationService {
         }
 
         @Override
-        public Future<String> sendWarningMessage(HttpServerRequest request, String target, JsonObject templateParams) {
-            return Future.succeededFuture();
+        public Future<String> sendWarningMessage(HttpServerRequest request, Map<String, String> targets, JsonObject templateParams) {
+            Promise<String> promise = Promise.promise();
+            if (!StringUtils.isEmpty(targets.get("mobile"))) {
+                sendWarningSMS(request, targets.get("mobile"), templateParams)
+                        .onFailure(e -> log.error("Failed to send mobile update warning SMS", e));
+            }
+            if (!StringUtils.isEmpty(targets.get("email"))) {
+                sendWarningEmail(request, targets.get("email"), templateParams)
+                        .onFailure(e -> log.error("Failed to send mobile update warning email", e));
+            }
+            return promise.future();
+        }
+
+        private Future<String> sendWarningSMS(final HttpServerRequest request, String mobile, JsonObject templateParams) {
+            final SmsSender sms = SmsSenderFactory.getInstance().newInstance(this, eventStore);
+            return sms.sendUnique(request, mobile, "phone/mobileUpdateWarning.txt", templateParams, "CHANGE_NOTICE");
+        }
+
+        private Future<String> sendWarningEmail(HttpServerRequest request, String email, JsonObject templateParams) {
+            Promise<String> promise = Promise.promise();
+            if (emailSender == null) {
+                promise.complete(null);
+            } else if (StringUtils.isEmpty((email))) {
+                promise.fail("Invalid email address.");
+            } else {
+                processEmailTemplate(request, templateParams, "email/mobileUpdateWarning.html", false, processedTemplate -> {
+                    // Generate email subject
+                    final JsonObject timelineI18n = (requestThemeKV == null ? getThemeDefaults() : requestThemeKV).getOrDefault(I18n.acceptLanguage(request).split(",")[0].split("-")[0], new JsonObject());
+                    final String title = timelineI18n.getString("timeline.immediate.mail.subject.header", "")
+                            + I18n.getInstance().translate("mobile.update.warning.subject", getHost(request), I18n.acceptLanguage(request));
+
+                    emailSender.sendEmail(
+                            request,
+                            email,
+                            null,
+                            null,
+                            title,
+                            processedTemplate,
+                            null,
+                            false,
+                            ar -> {
+                                if (ar.succeeded()) {
+                                    Message<JsonObject> reply = ar.result();
+                                    if ("ok".equals(reply.body().getString("status"))) {
+                                        Object r = reply.body().getValue("result");
+                                        promise.complete( "" );
+                                    } else {
+                                        promise.fail( reply.body().getString("message", "") );
+                                    }
+                                } else {
+                                    promise.fail(ar.cause().getMessage());
+                                }
+                            }
+                    );
+                });
+            }
+            return promise.future();
         }
     }
 
@@ -88,9 +147,13 @@ public class DefaultUserValidationService implements UserValidationService {
         }
 
         @Override
-        public Future<String> sendWarningMessage(HttpServerRequest request, String email, JsonObject templateParams) {
-            final String subject = formatEmailSubject(request, "email.update.warning.subject");
-            return sendEmail(request, email, subject, "email/emailUpdateWarning.html", templateParams);
+        public Future<String> sendWarningMessage(HttpServerRequest request, Map<String, String> targets, JsonObject templateParams) {
+            Promise<String> promise = Promise.promise();
+            if (!StringUtils.isEmpty(targets.get("email"))) {
+                final String subject = formatEmailSubject(request, "email.update.warning.subject");
+                return sendEmail(request, targets.get("email"), subject, "email/emailUpdateWarning.html", templateParams);
+            }
+            return promise.future();
         }
 
         private Future<String> sendEmail(HttpServerRequest request, String to, String subject, String templateName, JsonObject templateParams) {
@@ -436,7 +499,26 @@ public class DefaultUserValidationService implements UserValidationService {
             }
             return id;
         });
-    }    
+    }
+
+    @Override
+    public Future<String> sendUpdateMobileWarning(HttpServerRequest request, UserInfos userInfos, JsonObject mobileState) {
+        JsonObject templateParams = new JsonObject()
+                .put("scheme", Renders.getScheme(request))
+                .put("host", Renders.getHost(request))
+                .put("userId", userInfos.getUserId())
+                .put("firstName", userInfos.getFirstName())
+                .put("lastName", userInfos.getLastName())
+                .put("date", LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000)
+                .put("oldPhoneNumber", userInfos.getMobile())
+                .put("newPhoneNumber", DataStateUtils.getValid(mobileState));
+
+        Map<String, String> targets = new HashMap<>();
+        targets.put("email", userInfos.getEmail());
+        targets.put("mobile", userInfos.getMobile());
+
+        return mobileSvc.sendWarningMessage(request, targets, templateParams);
+    }
 
     //////////////// Email-related methods ////////////////
 
@@ -536,8 +618,11 @@ public class DefaultUserValidationService implements UserValidationService {
                 .put("date", LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000)
                 .put("newEmail", DataStateUtils.getValid(emailState));
 
-        return emailSvc.sendWarningMessage(request, userInfos.getEmail(), templateParams)
-                .map( id -> id);
+        Map<String, String> targets = new HashMap<>();
+        targets.put("email", userInfos.getEmail());
+
+        return emailSvc.sendWarningMessage(request, targets, templateParams)
+                .map(id -> id);
     }
 
 }
