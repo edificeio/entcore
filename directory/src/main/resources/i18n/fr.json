@@ -933,9 +933,16 @@
     "class.no.user.attached.title": "La classe est vide !",
     "class.no.user.attached.description": "Il n'y a pas encore d'élèves ou d'ense rattachés à la classe.<br>Veuilez contacter votre administrateur si cela est une erreur.<br>Une fois configurée, vous trouverez ici le trombinoscope de la classe.",
     "email.update.warning.subject": "Modification de votre adresse mail",
-    "email.update.warning.hi": "Bonjour {{firstName}}",
+    "email.update.warning.hi": "Bonjour",
     "email.update.warning.intro": "L’adresse mail liée à votre compte a été modifiée. Vous ne recevrez plus de mails sur cette adresse mail.",
-    "email.update.warning.date": "Date de la modification: <b>{{#datetime}}{{date}}{{/datetime}}</b>",
-    "email.update.warning.new.email": "Nouvelle adresse mail : <b>{{newEmail}}</b>",
-    "email.update.warning.outro": "Si vous n’êtes pas à l’origine de cette action, nous vous conseillons de contacter votre administrateur local ou l'équipe de direction de votre établissement."
+    "email.update.warning.date": "Date de la modification :",
+    "email.update.warning.new.email": "Nouvelle adresse mail :",
+    "email.update.warning.outro": "Si vous n’êtes pas à l’origine de cette action, nous vous conseillons de contacter votre administrateur local ou l'équipe de direction de votre établissement.",
+    "mobile.update.warning.subject": "Modification du numéro de téléphone",
+    "mobile.update.warning.hi": "Bonjour",
+    "mobile.update.warning.intro": "Le numéro de téléphone lié à votre compte a été modifié.",
+    "mobile.update.warning.date": "Date de la modification :",
+    "mobile.update.warning.old.phone.number": "Ancien numéro de téléphone :",
+    "mobile.update.warning.new.phone.number": "Nouveau numéro de téléphone :",
+    "mobile.update.warning.outro": "Si vous n’êtes pas à l’origine de cette action, nous vous conseillons de modifier votre mot de passe."
 }

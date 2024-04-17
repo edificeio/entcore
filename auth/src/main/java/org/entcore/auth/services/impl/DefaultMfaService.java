@@ -29,6 +29,7 @@ import static fr.wseduc.webutils.Utils.getOrElse;
 import static org.entcore.common.datavalidation.utils.DataStateUtils.*;
 
 import java.security.InvalidKeyException;
+import java.util.Map;
 
 
 public class DefaultMfaService implements MfaService {
@@ -219,7 +220,7 @@ public class DefaultMfaService implements MfaService {
         }
 
         @Override
-        public Future<String> sendWarningMessage(HttpServerRequest request, String target, JsonObject templateParams) {
+        public Future<String> sendWarningMessage(HttpServerRequest request, Map<String, String> targets, JsonObject templateParams) {
             return Future.succeededFuture();
         }
     }
