@@ -28,6 +28,7 @@ import jp.eisbahn.oauth2.server.models.Request;
 
 import org.entcore.auth.security.SamlHelper;
 import org.entcore.auth.services.OpenIdConnectService;
+import org.entcore.auth.services.impl.JwtVerifier;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.redis.Redis;
@@ -47,6 +48,7 @@ public class OAuthDataHandlerFactory implements DataHandlerFactory {
 	private final JsonArray clientPWSupportSaml2;
 	private final boolean otpDisabled;
 	private SamlHelper samlHelper;
+	private JwtVerifier jwtVerifier;
 
 	public OAuthDataHandlerFactory(
 			OpenIdConnectService openIdConnectService, boolean cfl, int pwMaxRetry, long pwBanDelay,
@@ -70,11 +72,15 @@ public class OAuthDataHandlerFactory implements DataHandlerFactory {
 	public DataHandler create(Request request) {
 		return new OAuthDataHandler(request, neo, mongo, redisClient, openIdConnectService, checkFederatedLogin,
 				pwMaxRetry, pwBanDelay, passwordEventMinDate, defaultSyncValue, clientPWSupportSaml2, eventStore, samlHelper,
-				otpDisabled);
+				jwtVerifier, otpDisabled);
 	}
 
 	public void setSamlHelper(SamlHelper samlHelper) {
 		this.samlHelper = samlHelper;
+	}
+
+	public void setJwtVerifier(JwtVerifier jwtVerifier) {
+		this.jwtVerifier = jwtVerifier;
 	}
 
 }

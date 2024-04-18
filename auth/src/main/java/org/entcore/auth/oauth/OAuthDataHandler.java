@@ -22,6 +22,7 @@ package org.entcore.auth.oauth;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.security.BCrypt;
+import fr.wseduc.webutils.security.JWT;
 import fr.wseduc.webutils.security.Md5;
 import fr.wseduc.webutils.security.NTLM;
 import fr.wseduc.webutils.security.Sha256;
@@ -35,13 +36,15 @@ import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.Request;
 import jp.eisbahn.oauth2.server.models.UserData;
 
+import org.apache.commons.httpclient.URIException;
 import org.entcore.auth.security.SamlHelper;
 import org.entcore.auth.services.OpenIdConnectService;
+import org.entcore.auth.services.impl.JwtVerifier;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.redis.Redis;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -49,9 +52,10 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.redis.RedisClient;
 
-import static fr.wseduc.webutils.Utils.getOrElse;
-
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 
@@ -83,12 +87,14 @@ public class OAuthDataHandler extends DataHandler {
 	private final int defaultSyncValue;
 	private final JsonArray clientPWSupportSaml2;
 	private final SamlHelper samlHelper;
+	private final JwtVerifier jwtVerifier;
 	private final boolean otpDisabled;
 
 	public OAuthDataHandler(Request request, Neo4j neo, MongoDb mongo, RedisClient redisClient,
 			OpenIdConnectService openIdConnectService, boolean checkFederatedLogin,
 			int pwMaxRetry, long pwBanDelay, String passwordEventMinDate, int defaultSyncValue,
-			JsonArray clientPWSupportSaml2, EventStore eventStore, SamlHelper samlHelper, final boolean otpDisabled) {
+			JsonArray clientPWSupportSaml2, EventStore eventStore, SamlHelper samlHelper, JwtVerifier jwtVerifier,
+			final boolean otpDisabled) {
 		super(request);
 		this.neo = neo;
 		this.mongo = mongo;
@@ -103,6 +109,7 @@ public class OAuthDataHandler extends DataHandler {
 		this.defaultSyncValue = defaultSyncValue;
 		this.clientPWSupportSaml2 = clientPWSupportSaml2;
 		this.samlHelper = samlHelper;
+		this.jwtVerifier = jwtVerifier;
 	}
 
 	@Override
@@ -721,6 +728,66 @@ public class OAuthDataHandler extends DataHandler {
 			samlHelper.processCustomToken(customToken, handler);
 		} else {
 			handler.handle(new Try<AccessDenied, UserData>(new AccessDenied(AUTH_ERROR_AUTHENTICATION_FAILED)));
+		}
+	}
+
+	public void getClientsByGrantType(Vertx vertx, JwtVerifier jwtVerifier) {
+		String grantType = "urn:ietf:params:oauth:grant-type:jwt-bearer";
+		String query = "MATCH (n:External) WHERE n.grantType = {grantType} " +
+				"RETURN DISTINCT  n.certUri as certUri, n.name as name";
+		Map<String, Object> params = new HashMap<>();
+		params.put("grantType", grantType);
+		neo.execute(query, params, res -> {
+			JsonArray a = res.body().getJsonArray("result");
+			if ("ok".equals(res.body().getString("status")) && a != null) {
+				try {
+					for (Object o : a) {
+						if (!(o instanceof JsonObject))
+							continue;
+						/*
+						 * if (jwtVerifier.jwtInstances.containsKey(((JsonObject) o).getString("name")))
+						 * continue;
+						 */
+						final JWT jwt = new JWT(vertx, new URI(((JsonObject) o).getString("certUri")));
+						jwtVerifier.jwtInstances.put(((JsonObject) o).getString("name"), jwt);
+						log.debug("Adding a singleton "
+								+ jwtVerifier.jwtInstances.get(((JsonObject) o).getString("name")) + " with "
+								+ jwtVerifier.jwtInstances.size() + " elements");
+					}
+
+				} catch (URISyntaxException e) {
+					log.error("URI syntax error" + e);
+				}
+			} else {
+				log.error("Error during request execution");
+			}
+		});
+	}
+
+	@Override
+	public void getUserIdByAssertionJwt(String clientId, String assertion, Handler<Try<OAuthError, UserData>> handler) {
+		try {
+			this.jwtVerifier.verifyJWT(clientId, assertion, payload -> {
+				if (payload != null) {
+					this.jwtVerifier.getUserByExternalId(payload, user -> {
+						if (user != null) {
+							UserData userData = this.jwtVerifier.json2UserData(user);
+
+							handler.handle(new Try<OAuthError, UserData>(userData));
+						} else {
+							handler.handle(
+									new Try<OAuthError, UserData>(
+											new OAuthError.InvalidGrant("User identifier is invalid")));
+						}
+					});
+				} else {
+					handler.handle(
+							new Try<OAuthError, UserData>(new OAuthError.InvalidGrant("Token signature invalid")));
+				}
+			});
+		} catch (OAuthError e) {
+			log.error("Error Jwt authentication failed : " + e);
+			handler.handle(new Try<OAuthError, UserData>(new OAuthError.InvalidGrant("Jwt authentication failed")));
 		}
 	}
 
