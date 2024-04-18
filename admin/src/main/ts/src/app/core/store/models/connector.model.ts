@@ -16,6 +16,7 @@ export interface IConnector{
     oauthScope: string;
     oauthSecret: string;
     oauthGrantType: string;
+    oauthCertUri: string;
     structureId: string;
     oauthTransferSession: boolean;
 }
@@ -81,6 +82,7 @@ export class ConnectorModel extends Model<ConnectorModel> implements IConnector{
         super({});
         this.roles = [];
     }
+    oauthCertUri: string;
 
     syncRoles = (structureId: string, connectorId: string): Promise<void> => {
         return this.http.get(`/appregistry/application/external/${connectorId}/groups/roles?structureId=${structureId}`)

@@ -33,7 +33,8 @@ export class ServicesService {
                 pattern: connector.casPattern || '',
                 scope: connector.oauthScope || '',
                 secret: connector.oauthSecret || '',
-                grantType: connector.oauthGrantType || ''
+                grantType: connector.oauthGrantType || '',
+                certUri: connector.oauthCertUri || ''
             });
     }
 
@@ -52,7 +53,8 @@ export class ServicesService {
                 pattern: connector.casPattern || '',
                 scope: connector.oauthScope || '',
                 secret: connector.oauthSecret || '',
-                grantType: connector.oauthGrantType || ''
+                grantType: connector.oauthGrantType || '',
+                certUri: connector.oauthCertUri || ''
             });
     }
 
