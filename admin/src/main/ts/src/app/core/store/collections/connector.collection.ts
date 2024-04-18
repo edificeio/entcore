@@ -76,7 +76,8 @@ export class ConnectorCollection extends Collection<ConnectorModel> {
                 oauthSecret: connector.data.secret,
                 oauthGrantType: connector.data.grantType,
                 structureId: connector.data.structureId,
-                oauthTransferSession: this.setOauthTransferSession(connector.data.scope)
+                oauthTransferSession: this.setOauthTransferSession(connector.data.scope),
+                oauthCertUri: connector.data.certUri,
             });
         });
         this.data = Mix.castArrayAs(ConnectorModel, connectors);

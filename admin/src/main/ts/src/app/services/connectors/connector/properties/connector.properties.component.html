@@ -251,6 +251,11 @@
                      [disabled]="disabled">
         </ode-mono-select>
       </ode-form-field>
+
+      <ode-form-field label="services.connector.oauth.certUri">
+        <input type="text"  [(ngModel)]="connector.oauthCertUri" name="certUri">
+      </ode-form-field>
+      
     </fieldset>
   </ode-panel-section>
 
