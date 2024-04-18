@@ -64,7 +64,6 @@
         <mongodbHelperVersion>3.0-b2school-SNAPSHOT</mongodbHelperVersion>
         <jodaTimeVersion>2.9.4</jodaTimeVersion>
         <scramVersion>2.1</scramVersion>
-        <mongoVersion>3.12.14</mongoVersion>
         <micrometerPrometheusVersion>1.11.4</micrometerPrometheusVersion>
         <owaspVersion>20220608.1</owaspVersion>
         <jacksonVersion>2.11.3</jacksonVersion>
@@ -76,7 +75,6 @@
         <juniversalchardetVersion>1.0.3</juniversalchardetVersion>
         <commonsLangVersion>3.13.0</commonsLangVersion>
         <gatlingHighchartsVersion>2.3.1</gatlingHighchartsVersion>
-<!--        <vertxVersion>4.4.5</vertxVersion>-->
     </properties>
 
     <dependencies>
