@@ -24,18 +24,21 @@
     "displayName": {
       "type": "string"
     },
+    "certUri": {
+      "type": "string"
+    },
     "scope": {
       "type": "string"
     },
     "casType": {
-        "type": "string"
+      "type": "string"
     },
     "statCasType": {
-        "type": "string"
+      "type": "string"
     },
-	"pattern": {
-		"type": "string"
-	},
+    "pattern": {
+      "type": "string"
+    },
     "inherits": {
       "type": "boolean"
     }

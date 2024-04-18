@@ -28,8 +28,12 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
+import jp.eisbahn.oauth2.server.data.DataHandler;
+
 import org.entcore.auth.controllers.*;
 import org.entcore.auth.controllers.AuthController.AuthEvent;
+import org.entcore.auth.oauth.HttpServerRequestAdapter;
+import org.entcore.auth.oauth.OAuthDataHandler;
 import org.entcore.auth.oauth.OAuthDataHandlerFactory;
 import org.entcore.auth.security.AuthResourcesProvider;
 import org.entcore.auth.security.SamlHelper;
@@ -54,6 +58,7 @@ import org.opensaml.xml.ConfigurationException;
 import java.util.List;
 import java.util.UUID;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class Auth extends BaseServer {
@@ -63,6 +68,8 @@ public class Auth extends BaseServer {
 		final EventBus eb = getEventBus(vertx);
 		super.start();
 		setDefaultResourceFilter(new AuthResourcesProvider(new Neo(vertx, eb, null)));
+		final String JWT_PERIOD_CRON = "jwt-bearer-authorization-periodic";
+		final String JWT_PERIOD = "jwt-bearer-authorization";
 
 		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Auth.class.getSimpleName());
 		final UserAuthAccount userAuthAccount = new DefaultUserAuthAccount(vertx, config, eventStore);
@@ -94,7 +101,13 @@ public class Auth extends BaseServer {
 		final ConfigurationController configurationController = new ConfigurationController();
 		configurationController.setConfigurationService(new DefaultConfigurationService());
 		addController(configurationController);
-
+		final JwtVerifier jwtVerifier;
+		if (getOrElse(config.getBoolean(JWT_PERIOD), true)) {
+			jwtVerifier = new JwtVerifier(vertx);
+			oauthDataFactory.setJwtVerifier(jwtVerifier);
+		} else {
+			jwtVerifier = null;
+		}
 		final String samlMetadataFolder = config.getString("saml-metadata-folder");
 		if (samlMetadataFolder != null && !samlMetadataFolder.trim().isEmpty()) {
 			vertx.fileSystem().readDir(samlMetadataFolder, new Handler<AsyncResult<List<String>>>() {
@@ -207,6 +220,19 @@ public class Auth extends BaseServer {
 		setRepositoryEvents(new AuthRepositoryEvents(NDWTask));
 
 		addController(new RedirectController());
+
+		if (jwtVerifier != null) {
+			DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(null));
+			((OAuthDataHandler) data).getClientsByGrantType(vertx, jwtVerifier);
+			vertx.setPeriodic((config.containsKey(JWT_PERIOD_CRON)
+					&& (config.getLong(JWT_PERIOD_CRON) != null)) ? config.getLong(JWT_PERIOD_CRON) : 60000,
+					new Handler<Long>() {
+				@Override
+				public void handle(Long event) {
+					((OAuthDataHandler) data).getClientsByGrantType(vertx, jwtVerifier);
+				}
+			});
+		}
 	}
 
 }
