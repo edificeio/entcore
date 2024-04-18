@@ -76,7 +76,7 @@
         <juniversalchardetVersion>1.0.3</juniversalchardetVersion>
         <commonsLangVersion>3.13.0</commonsLangVersion>
         <gatlingHighchartsVersion>2.3.1</gatlingHighchartsVersion>
-        <vertxVersion>4.4.5</vertxVersion>
+<!--        <vertxVersion>4.4.5</vertxVersion>-->
     </properties>
 
     <dependencies>

@@ -38,19 +38,14 @@ import io.vertx.core.http.WebsocketVersion;
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.WebSocket;
 import io.vertx.core.net.SSLOptions;
-import io.vertx.core.net.SocketAddress;
-import io.vertx.core.streams.ReadStream;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.rmi.Remote;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 public class RemoteClient implements HttpClient
@@ -297,8 +292,23 @@ public class RemoteClient implements HttpClient
     }
 
     @Override
-    public Future<Void> updateSSLOptions(SSLOptions options) {
+    public Future<Boolean> updateSSLOptions(SSLOptions options) {
         return null;
+    }
+
+    @Override
+    public void updateSSLOptions(SSLOptions options, Handler<AsyncResult<Boolean>> handler) {
+        HttpClient.super.updateSSLOptions(options, handler);
+    }
+
+    @Override
+    public Future<Boolean> updateSSLOptions(SSLOptions options, boolean force) {
+        return null;
+    }
+
+    @Override
+    public void updateSSLOptions(SSLOptions options, boolean force, Handler<AsyncResult<Boolean>> handler) {
+        HttpClient.super.updateSSLOptions(options, force, handler);
     }
 
 
