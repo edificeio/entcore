@@ -200,7 +200,7 @@ public class AppOAuthResourceProvider extends DefaultOAuthResourceProvider {
 	}
 
 
-	private static final Pattern REGEXP_AUTHORIZATION = Pattern.compile("^\\s*(OAuth|Bearer)\\s+([^\\s\\,]*)");
+	private static final Pattern REGEXP_AUTHORIZATION = Pattern.compile("^\\s*(?:.+,\\s*)?(OAuth|Bearer)\\s+([^\\s\\,]*)");
 
 	public static Optional<String> getTokenId(HttpServerRequest request)
 	{
@@ -216,7 +216,7 @@ public class AppOAuthResourceProvider extends DefaultOAuthResourceProvider {
 	public static Optional<String> getTokenHeader(final HttpServerRequest request) {
 		//get from header
 		final String header = request.getHeader("Authorization");
-		if (header != null && Pattern.matches("^\\s*(OAuth|Bearer)(.*)$", header)) {
+		if (header != null && Pattern.matches("^\\s*(?:.+,\\s*)?(OAuth|Bearer)(.*)$", header)) {
 			final Matcher matcher = REGEXP_AUTHORIZATION.matcher(header);
 			if (!matcher.find()) {
 				return Optional.empty();
