@@ -1598,9 +1598,18 @@ public class AuthController extends BaseController {
 		});
 	}
 
+	@Post("/changePassword")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void changePasswordSubmit(final HttpServerRequest request) {
+		changePassword(request);
+	}
+
 	@Post("/reset")
-	public void
-	resetPasswordSubmit(final HttpServerRequest request) {
+	public void resetPasswordSubmit(final HttpServerRequest request) {
+		changePassword(request);
+	}
+
+	private void changePassword(final HttpServerRequest request) {
 		request.setExpectMultipart(true);
 		request.endHandler(new io.vertx.core.Handler<Void>() {
 
@@ -1615,7 +1624,7 @@ public class AuthController extends BaseController {
 				final String forceChange = Utils.getOrElse(request.formAttributes().get("forceChange"), "");
 				if (login == null
 						|| ((resetCode == null || resetCode.trim().isEmpty())
-								&& (oldPassword == null || oldPassword.trim().isEmpty() || oldPassword.equals(password)))
+						&& (oldPassword == null || oldPassword.trim().isEmpty() || oldPassword.equals(password)))
 						|| password == null || login.trim().isEmpty() || password.trim().isEmpty()
 						|| !password.equals(confirmPassword) || !passwordPattern.matcher(password).matches()) {
 					trace.info(getIp(request) + " - Erreur lors de la réinitialisation " + "du mot de passe de l'utilisateur " + login);
@@ -1632,53 +1641,53 @@ public class AuthController extends BaseController {
 						@Override
 						public void handle(Try<AccessDenied, String> tryUserId) {
 
-								String userId = null;
-								try {
-									userId = tryUserId.get();
-								} catch (AccessDenied e) {
-									// Will be handled by resetCode check
-								}
+							String userId = null;
+							try {
+								userId = tryUserId.get();
+							} catch (AccessDenied e) {
+								// Will be handled by resetCode check
+							}
 
-								// Keep current session and app token alive
-								Optional<String> sessionId = UserUtils.getSessionId(request);
-								Optional<String> appToken = AppOAuthResourceProvider.getTokenId(new SecureHttpServerRequest(request));
+							// Keep current session and app token alive
+							Optional<String> sessionId = UserUtils.getSessionId(request);
+							Optional<String> appToken = AppOAuthResourceProvider.getTokenId(new SecureHttpServerRequest(request));
 
-								final String sessionIdStr = sessionId.isPresent() ? sessionId.get() : null;
-								final String appTokenStr = appToken.isPresent() ? appToken.get() : null;
-								final io.vertx.core.Handler<String> resultHandler = new io.vertx.core.Handler<String>() {
+							final String sessionIdStr = sessionId.isPresent() ? sessionId.get() : null;
+							final String appTokenStr = appToken.isPresent() ? appToken.get() : null;
+							final io.vertx.core.Handler<String> resultHandler = new io.vertx.core.Handler<String>() {
 
-									@Override
-									public void handle(String resetedUserId) {
-										if (resetedUserId != null) {
-											trace.info(getIp(request) + " - Réinitialisation réussie du mot de passe de l'utilisateur " + login);
-											final boolean forcedChangePw = "force".equals(forceChange);
-											UserUtils.deleteCacheSession(eb, resetedUserId,  forcedChangePw ? null : sessionIdStr, deleted -> {
-												if (sessionIdStr == null || forcedChangePw) {
-													CookieHelper.set("oneSessionId", "", 0l, request);
-													CookieHelper.set("authenticated", "", 0l, request);
-												}
-												if (forcedChangePw) {
-													redirectionService.redirect(request, config.getJsonObject("authenticationServer",
-															new JsonObject()).getString("loginURL", "/auth/login"));
-												} else {
-													redirectionService.redirect(request, callback);
-												}
-											});
-											UserUtils.deletePermanentSession(eb, resetedUserId, sessionIdStr, appTokenStr, null);
-										} else {
-											trace.info(getIp(request) + " - Erreur lors de la réinitialisation du mot de passe de l'utilisateur "+ login);
-											error(request, resetCode);
-										}
+								@Override
+								public void handle(String resetedUserId) {
+									if (resetedUserId != null) {
+										trace.info(getIp(request) + " - Réinitialisation réussie du mot de passe de l'utilisateur " + login);
+										final boolean forcedChangePw = "force".equals(forceChange);
+										UserUtils.deleteCacheSession(eb, resetedUserId,  forcedChangePw ? null : sessionIdStr, deleted -> {
+											if (sessionIdStr == null || forcedChangePw) {
+												CookieHelper.set("oneSessionId", "", 0l, request);
+												CookieHelper.set("authenticated", "", 0l, request);
+											}
+											if (forcedChangePw) {
+												redirectionService.redirect(request, config.getJsonObject("authenticationServer",
+														new JsonObject()).getString("loginURL", "/auth/login"));
+											} else {
+												redirectionService.redirect(request, callback);
+											}
+										});
+										UserUtils.deletePermanentSession(eb, resetedUserId, sessionIdStr, appTokenStr, null);
+									} else {
+										trace.info(getIp(request) + " - Erreur lors de la réinitialisation du mot de passe de l'utilisateur "+ login);
+										error(request, resetCode);
 									}
-								};
-
-								if (resetCode != null && !resetCode.trim().isEmpty()) {
-									userAuthAccount.resetPassword(login, resetCode, password, request, resultHandler);
-								} else if(userId != null && !userId.trim().isEmpty()) {
-									userAuthAccount.changePassword(login, password, request, resultHandler);
-								} else {
-									error(request, null);
 								}
+							};
+
+							if (resetCode != null && !resetCode.trim().isEmpty()) {
+								userAuthAccount.resetPassword(login, resetCode, password, request, resultHandler);
+							} else if(userId != null && !userId.trim().isEmpty()) {
+								userAuthAccount.changePassword(login, password, request, resultHandler);
+							} else {
+								error(request, null);
+							}
 
 						}
 					});
@@ -1694,6 +1703,7 @@ public class AuthController extends BaseController {
 				renderJson(request, error);
 			}
 		});
+
 	}
 
 	@Get("/cgu")
