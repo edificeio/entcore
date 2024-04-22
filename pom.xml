@@ -38,6 +38,7 @@
         <module>admin</module>
         <module>app-registry</module>
         <module>archive</module>
+        <module>audience</module>
         <module>auth</module>
         <module>cas</module>
         <module>common</module>
