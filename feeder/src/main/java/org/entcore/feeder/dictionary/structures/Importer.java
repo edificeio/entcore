@@ -1183,10 +1183,9 @@ public class Importer {
 	}
 
 	public void removeOldCommunicationRules(String prefix) {
-		// On utilise la joinKey car il arrive que l'externalId d'une structure soit arbitraire et ne reflète pas l'id dans l'AAF...
 		final String query =
 				"MATCH (s:Structure)<-[:DEPENDS*1..2]-(g:Group)-[c:COMMUNIQUE]-(u:User) " +
-				"WHERE ANY(joinKey IN s.joinKey WHERE joinKey STARTS WITH {prefix}) AND u.source = {currentSource} " +
+				"WHERE s.externalId STARTS WITH {prefix} AND u.source = {currentSource} " +
 				"AND (c.source IS NULL OR c.source <> 'MANUAL') AND NOT (u)-[:IN]->(g) " +
 				"DELETE c";
 		transactionHelper.add(query, new JsonObject().put("prefix", prefix).put("currentSource", currentSource));
