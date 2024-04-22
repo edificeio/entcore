@@ -43,24 +43,31 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.entcore.auth.pojo.SendPasswordDestination;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStore;
+import org.entcore.common.http.renders.TemplatedEmailRenders;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.sms.SmsSender;
 import org.entcore.common.sms.SmsSenderFactory;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 import org.joda.time.DateTime;
 
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static fr.wseduc.webutils.Utils.*;
 import static java.util.Collections.emptyList;
 import static org.entcore.common.user.SessionAttributes.NEED_REVALIDATE_TERMS;
 
-public class DefaultUserAuthAccount implements UserAuthAccount {
+public class DefaultUserAuthAccount extends TemplatedEmailRenders implements UserAuthAccount {
 
 	private static final Logger log = LoggerFactory.getLogger(DefaultUserAuthAccount.class);
 	private static final long SEND_EMAIL_ACK_DELAY = 10000L;
@@ -85,6 +92,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	private final int passwordHistoryLength;
 
 	public DefaultUserAuthAccount(Vertx vertx, JsonObject config, EventStore eventStore) {
+		super(vertx, config);
 		this.eb = Server.getEventBus(vertx);
 		this.neo = new Neo(vertx, eb, null);
 		this.vertx = vertx;
@@ -425,85 +433,89 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		}
 	}
 
-	private void sendChangedPasswordMail(HttpServerRequest request, String email, String displayName,
-			String login, String profile, JsonArray functions) {
-		if (email == null || email.trim().isEmpty()) {
+	private void sendPasswordModificationMail(final HttpServerRequest request, String email, String firstName,
+										 String login, String profile, JsonArray functions, final boolean reset) {
+		if (StringUtils.isEmpty(email)) {
+			log.error("Fail to send password change email, user email is undefined");
 			return;
 		}
 
 		JsonObject sendMailFilter = config.getJsonObject("change-password-mail-filter");
-		if(sendMailFilter != null)
-		{
+		if (sendMailFilter != null) {
 			boolean userAllowed = false;
 			JsonArray allowedProfiles = sendMailFilter.getJsonArray("profiles");
 			JsonArray allowedFunctions = sendMailFilter.getJsonArray("functions");
 
-			if(allowedProfiles != null)
-				if(allowedProfiles.contains(profile) == true)
+			if (allowedProfiles != null)
+				if (allowedProfiles.contains(profile))
 					userAllowed = true;
 
-			if(allowedFunctions != null)
-			{
-				if(functions == null)
+			if (allowedFunctions != null) {
+				if (functions == null)
 					functions = new JsonArray();
 
 				boolean hasAllowedFunction = false;
-				for(int i = allowedFunctions.size(); i-- > 0;)
-				{
-					for(int j = functions.size(); j-- > 0;)
-					{
-						if(functions.getString(j).equals(allowedFunctions.getString(i)) == true)
-						{
+				for (int i = allowedFunctions.size(); i-- > 0; ) {
+					for (int j = functions.size(); j-- > 0; ) {
+						if (functions.getString(j).equals(allowedFunctions.getString(i))) {
 							hasAllowedFunction = true;
 							break;
 						}
 					}
-					if(hasAllowedFunction == true)
+					if (hasAllowedFunction)
 						break;
 				}
-
 				userAllowed |= hasAllowedFunction;
 			}
 
-			if(userAllowed == false) {
+			if (!userAllowed) {
 				return;
 			}
 		}
 
-		log.info("Sending changedPassword by email: "+login+"/"+email);
-		JsonObject json = new JsonObject()
-				.put("host", notification.getHost(request))
-				.put("displayName", displayName);
+		log.info("Sending changedPassword by email: " + login + "/" + email);
 
 		final AtomicBoolean sendEmailAck = new AtomicBoolean(false);
 		if (Boolean.TRUE.equals(config.getBoolean("log-send-email-ack", false))) {
 			vertx.setTimer(SEND_EMAIL_ACK_DELAY, res -> {
 				if (!sendEmailAck.get()) {
-					log.error("No ack after 10s of sending changedPassword by email: "+login+"/"+email);
+					log.error("No ack after 10s of sending changedPassword by email: " + login + "/" + email);
 				}
 			});
 		}
 
-		notification.sendEmail(
-				request,
-				email,
-				config.getString("email", "noreply@one1d.fr"),
-				null,
-				null,
-				"mail.change.pw.subject",
-				"email/changedPassword.html",
-				json,
-				true,
-				res -> {
-					sendEmailAck.set(true);
-					if (res.succeeded()) {
-						if (log.isDebugEnabled()) {
-							log.debug("Success sending changedPassword by email: "+login+"/"+email);
+		JsonObject templateParams = new JsonObject()
+				.put("displayName", firstName)
+				.put("date", LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000);
+
+		final String emailTemplate = reset ? "email/resetPassword.html" : "email/changedPassword.html";
+		final String i18nKey = reset ? "email.password.reset.subject" : "email.password.change.subject";
+
+		processEmailTemplate(request, templateParams, emailTemplate, false, processedTemplate -> {
+			final String emailSubject = getProjectNameFromTimelineI18n(request)
+					+ I18n.getInstance().translate(i18nKey, getHost(request), I18n.acceptLanguage(request));
+
+			notification.sendEmail(
+					request,
+					email,
+					null,
+					null,
+					emailSubject,
+					processedTemplate,
+					null,
+					false,
+					ar -> {
+						sendEmailAck.set(true);
+						if (ar.succeeded()) {
+							if (log.isDebugEnabled()) {
+								log.debug("Success sending changedPassword by email: " + login + "/" + email);
+							}
+						} else {
+							log.error("Error sending changedPassword by email: " + login + "/" + email, ar.cause());
 						}
-					 } else {
-						log.error("Error sending changedPassword by email: "+login+"/"+email, res.cause());
-					 }
-				});
+					}
+			);
+		});
 	}
 
 	@Override
@@ -641,7 +653,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 					"    n.oldPasswords = {oldPasswords} " +
 					"RETURN n.password as pw, head(n.profiles) as profile, n.id as id, " +
 					"COLLECT(func.name) + COLLECT(f.filter) as functions, " +
-					"n.login as login, n.loginAlias as loginAlias, n.email AS email, n.displayName AS displayName";
+					"n.login as login, n.loginAlias as loginAlias, n.email AS email, n.firstName AS firstName";
 			Map<String, Object> params = new HashMap<>();
 			params.put("login", login);
 			params.put("resetCode", resetCode);
@@ -650,11 +662,11 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
         if(request != null && user != null)
         {
           String email = user.getString("email");
-          String dName = user.getString("displayName");
+          String firstName = user.getString("firstName");
           String userLogin = user.getString("login");
           String profile = user.getString("profile");
           JsonArray functions = user.getJsonArray("functions");
-          sendChangedPasswordMail(request, email, dName, userLogin, profile, functions);
+		  sendPasswordModificationMail(request, email, firstName, userLogin, profile, functions, true);
           handler.handle(user.getString("id")); // Ignore email failures: email is optional
         }
         else
@@ -718,24 +730,22 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"SET n.password = {password}, n.changePw = null, n.oldPasswords = {oldPasswords} " +
 				"RETURN n.password as pw, head(n.profiles) as profile, n.id as id, " +
 				"COLLECT(func.name) + COLLECT(f.filter) as functions, " +
-				"n.login as login, n.loginAlias as loginAlias, n.email AS email, n.displayName as displayName";
+				"n.login as login, n.loginAlias as loginAlias, n.email AS email, n.firstName as firstName";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
 		updatePassword(user -> {
-      if(request != null && user != null)
-      {
-        String email = user.getString("email");
-        String dName = user.getString("displayName");
-        String login1 = user.getString("login");
-        String profile = user.getString("profile");
-        JsonArray functions = user.getJsonArray("functions");
+			if (request != null && user != null) {
+				String email = user.getString("email");
+				String firstName = user.getString("firstName");
+				String login1 = user.getString("login");
+				String profile = user.getString("profile");
+				JsonArray functions = user.getJsonArray("functions");
 
-        sendChangedPasswordMail(request, email, dName, login1, profile, functions);
-        handler.handle(user.getString("id")); // Ignore email failures: email is optional
-      }
-      else
-        handler.handle(user != null ? user.getString("id") : null);
-    }, query, password, login, params);
+				sendPasswordModificationMail(request, email, firstName, login1, profile, functions, false);
+				handler.handle(user.getString("id")); // Ignore email failures: email is optional
+			} else
+				handler.handle(user != null ? user.getString("id") : null);
+		}, query, password, login, params);
 	}
 
 	private void setResetCode(final String login, boolean checkFederatedLogin, final Handler<Either<String, JsonObject>> handler) {

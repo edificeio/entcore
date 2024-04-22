@@ -143,6 +143,13 @@ public abstract class TemplatedEmailRenders extends Renders {
 		return themeKVs;
 	}
 
+	/** Load Timeline i18n to retrieve PF/Project name and add it to custom email subject. */
+	protected String getProjectNameFromTimelineI18n(final HttpServerRequest request) {
+		final JsonObject timelineI18n = (requestThemeKV == null ? getThemeDefaults() : requestThemeKV)
+				.getOrDefault(I18n.acceptLanguage(request).split(",")[0].split("-")[0], new JsonObject());
+		return timelineI18n.getString("timeline.immediate.mail.subject.header", "");
+	}
+
 	/** Load and parse i18n files. */
 	protected Future<Map<String, JsonObject>> readI18nTimeline(List<String> filePaths) {
 		Promise<Map<String, JsonObject>> promise = Promise.promise();
