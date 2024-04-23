@@ -30,11 +30,16 @@ import fr.wseduc.webutils.http.BaseController;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
+import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.directory.services.ShareBookmarkService;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
+
+import org.entcore.common.http.filter.AdminFilter;
+import org.entcore.common.http.filter.ResourceFilter;
 
 public class ShareBookmarkController extends BaseController {
 
@@ -101,6 +106,23 @@ public class ShareBookmarkController extends BaseController {
 				badRequest(request, "invalid.user");
 			}
 		});
+	}
+
+	@Get("/sharebookmarkAll/:userId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void getAll(HttpServerRequest request) {
+		if (request.params().get("userId") != null) {
+			UserUtils.getUserInfos(eb, request.params().get("userId"), user -> {
+				if (user != null) {
+					shareBookmarkService.list(user.getUserId(), arrayResponseHandler(request));
+				} else {
+					badRequest(request, "invalid.user");
+				}
+			});
+		} else {
+			badRequest(request, "invalid.user");
+		}
 	}
 
 	@Delete("/sharebookmark/:id")
