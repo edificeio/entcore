@@ -411,7 +411,7 @@
   "workspace.tree.owner": "Mes documents",
   "workspace.tree.shared": "Partagés avec moi",
   "workspace.tree.protected": "Ajoutés dans les applications",
-  "workspace.tree.public": "Publics",
+  "workspace.tree.public": "Documents publics",
   "sort.order.alpha.asc": "Alphabétique",
   "sort.order.alpha.desc": "Alphabétique inversé",
   "sort.order.modify.desc": "Dernières modifications",
