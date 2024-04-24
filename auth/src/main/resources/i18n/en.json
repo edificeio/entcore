@@ -15,6 +15,8 @@
     "auth.error.authenticationFailed": "Invalid login or password",
     "auth.forgot.header": "MISSING PASSWORD",
     "auth.forgot.send": "Send",
+    "auth.forgot.send.mail": "Send an email",
+    "auth.forgot.send.sms": "Send a SMS",
     "auth.forgot.title": "Missing password",
     "auth.header": "CONNECTION",
     "auth.login": "Login",
@@ -57,5 +59,7 @@
     "connect.federated.user" : "Se connecter",
     "fed.form.user.wait" : "Veuillez patienter, vous allez être redirigé vers l'application demandée.",
     "fed.form.user.redirect" : "Si vous n'êtes pas automatiquement redirigé, vous pouvez cliquer sur le bouton ci-dessous.",
-    "fed.auth.error.user.not.found": "Votre compte académique n'est pas reconnu dans l'ENT. Merci de vous connecter avec vos identifants ENT ou contactez votre administrateur."
+    "fed.auth.error.user.not.found": "Votre compte académique n'est pas reconnu dans l'ENT. Merci de vous connecter avec vos identifants ENT ou contactez votre administrateur.",
+    "password.rules.reset": "Your password must contain at least 6 characters. It must also be different from the previous passwords used.",
+    "password.rules.activation": "Your password must contain at least 6 characters."
 }

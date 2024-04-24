@@ -52,4 +52,6 @@ public interface GroupService {
 	void getInfos(String groupId, Handler<Either<String,JsonObject>> handler);
 
 	void getFuncAndDisciplinesGroups(String structureId, Boolean recursive, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
+
+	void getCommunityGroup(String structureId, Handler<Either<String, JsonArray>> results);
 }

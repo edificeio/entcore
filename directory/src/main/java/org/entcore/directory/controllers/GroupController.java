@@ -266,4 +266,41 @@ public class GroupController extends BaseController {
 		});
 	}
 
+	/**
+	 * Retrieve all community groups of a structure or all the community groups of all the structures
+	 * if the structureId is not null, it will get the community group of the structure
+	 * else it will get the community group of all the structures
+	 * The community group is not a group dependant of a structure, it is a group that can be used to communicate with all the users of the platform
+	 * for this reason, it is not dependant of a structure
+	 *
+	 * @param request: HttpServerRequest
+	 *               - structureId: String
+	 * Response: JsonArray:
+	 * [{			- id: String
+	 * 				- name: String
+	 * 				- displayName: String
+	 * 				- filter: String
+	 * 				- labels: JsonArray
+	 * 				- type: String
+	 * 				- lockDelete: Boolean
+	 * 			    - nbUsers: Integer
+	 * 			    - structures: JsonArray
+	 * 			      - id: String
+	 * 			      - name: String
+	 * }]
+	 *
+	 * */
+	@Get("group/communityGroup")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void getCommunityGroup(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, user -> {
+			if(user != null) {
+				final String structureId = request.params().get("structureId");
+				groupService.getCommunityGroup(structureId, arrayResponseHandler(request));
+			} else {
+				unauthorized(request, "invalid.user");
+			}
+		});
+	}
+
 }

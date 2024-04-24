@@ -1295,4 +1295,100 @@ public class DefaultUserService implements UserService {
 		}));
 		return promise.future();
 	}
+	
+    /**
+	 * 
+     * List users for one or more structure using uai, with fields on cycle of the user like mergeIneDate, mergedIds, deletedDate...
+     * @param structures List of structures UAI to process
+     * @param results final handler
+	 * 					- Left if error
+	 * 					- Right if success with a JsonArray of users
+	 * 						- Each user is a JsonObject with fields
+	 * 							- externalId: the external id of the user
+	 * 							- lastName: the last name of the user
+	 * 							- firstName: the first name of the user
+	 * 							- login: the login of the user
+	 * 							- email: email address
+	 * 							- emailAcademy: email académique
+	 * 							- mobile: mobile phone number
+	 * 							- deleteDate: date of deletion
+	 * 							- functions: list of functions
+	 * 							- displayName: the display name of the user
+	 * 							- id: the id of the user
+	 * 							- blocked: true if the user is blocked
+	 * 							- emailInternal: internal email
+	 * 							- profiles: user profile
+	 * 							- UAI: the uai of the structure
+	 * 							- isActive: true if the user is active
+	 * 							- structures: id of the structures
+	 * 							- groups: list of groups
+	 * 							- createdDate: date of creation
+	 * 							- duplicated: login of the duplicated user
+	 * 							- isMergedWithINE: true if the user has been merged with an INE
+	 * 							- automaticMergedIds: list of ids of users that have been automatically merged with this user
+	 * 							- isMergedManuel: true if the user has been manually merged
+	 * 
+     */
+	public void listUsersByStructure(List<String> structures, Handler<Either<String, JsonArray>> results) {
+		if (structures == null || structures.isEmpty()) {
+			results.handle(new Either.Left<>("missing.uai"));
+			return;
+		}
+
+		JsonArray fields = new JsonArray().add("externalId").add("lastName").add("firstName").add("login");
+		fields.add("email").add("emailAcademy").add("mobile").add("deleteDate").add("functions").add("displayName");
+		fields.add("id").add("blocked").add("emailInternal");
+
+		JsonArray specificFields = new JsonArray().add(" head(u.profiles) as profiles").add(", s.UAI as UAI")
+				.add(", NOT EXISTS(u.activationCode) as isActive").add(", s.externalId as structures")
+				.add(", collect(distinct {groupName:g.name, groupId:g.id}) as groups").add(", u.created as createdDate")
+				.add(", u2.login as duplicated").add(", EXISTS(u.mergeIneDate) as isMergedWithINE")
+				.add(", u.mergedIds as automaticMergedIds");
+
+		StringBuilder query = new StringBuilder();
+		JsonObject params = new JsonObject().put("uai", new JsonArray(structures));
+
+		query.append("MATCH (s:Structure)<-[:DEPENDS]-(pg:ProfileGroup)")
+				.append("<-[:IN]-(u:User) ");
+
+		String filter = "WHERE s.UAI IN {uai} ";
+
+		query.append(filter);
+		query.append(" OPTIONAL MATCH (g:Group)<-[:IN]-u");
+		query.append(" OPTIONAL MATCH u-[r:DUPLICATE]-(u2:User)");
+
+		query.append(" RETURN DISTINCT ");
+		for (Object field : fields) {
+			query.append(" u.").append(field);
+			query.append(" as ").append(field).append(",");
+		}
+
+		for (Object specificField : specificFields) {
+			query.append(specificField);
+		}
+		query.append(", EXISTS(u.mergedLogins) as isMergedManuel");
+
+		// Union with the backup to get the deleted users that are not in the structure anymore
+		query.append(" UNION MATCH (p:Structure) WHERE p.UAI IN {uai} WITH p.id as id ");
+		query.append(" MATCH (b:Backup) WHERE id IN b.structureIds WITH id, b ");
+		query.append(" MATCH (u: User)-[:HAS_RELATIONSHIPS]->(b) WHERE (EXISTS(u.deleteDate) OR EXISTS(u.mergedWith)) ");
+		query.append(" MATCH (s:Structure ) WHERE s.id=id ");
+		query.append(" OPTIONAL MATCH (g:Group) WHERE g.id IN b.IN_OUTGOING");
+		query.append(" OPTIONAL MATCH u-[r:DUPLICATE]-(u2:User)");
+
+		query.append(" RETURN DISTINCT ");
+		for (Object field : fields) {
+			query.append(" u.").append(field);
+			query.append(" as ").append(field).append(",");
+		}
+
+		for (Object specificField : specificFields) {
+			query.append(specificField);
+		}
+		query.append(", EXISTS(u.mergedWith) as isMergedManuel");
+
+
+		neo.execute(query.toString(), params, validResultHandler(results));
+	}
+
 }

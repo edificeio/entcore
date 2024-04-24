@@ -27,7 +27,9 @@ import fr.wseduc.webutils.eventbus.ResultMessage;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.security.BCrypt;
 import fr.wseduc.webutils.security.NTLM;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
@@ -37,6 +39,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
+import org.apache.commons.collections4.CollectionUtils;
 import org.entcore.auth.pojo.SendPasswordDestination;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStore;
@@ -50,12 +53,11 @@ import org.entcore.common.validation.StringValidation;
 import org.joda.time.DateTime;
 
 import java.security.NoSuchAlgorithmException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static fr.wseduc.webutils.Utils.*;
+import static java.util.Collections.emptyList;
 import static org.entcore.common.user.SessionAttributes.NEED_REVALIDATE_TERMS;
 
 public class DefaultUserAuthAccount implements UserAuthAccount {
@@ -79,6 +81,8 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	private final long resetCodeExpireDelay;
 
 	private final boolean ignoreSendResetPasswordMailError;
+	private final boolean ignoreSendResetPasswordSmsError;
+	private final int passwordHistoryLength;
 
 	public DefaultUserAuthAccount(Vertx vertx, JsonObject config, EventStore eventStore) {
 		this.eb = Server.getEventBus(vertx);
@@ -102,8 +106,11 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		this.storePasswordEventEnabled = (config.getString("password-event-min-date") != null);
 		this.resetCodeExpireDelay = getOrElse(config.getLong("reset-code-expire-delay"), 3600000l);
 		this.ignoreSendResetPasswordMailError = config.getBoolean("reset-pwd-mail-ignore-error", false);
+		this.ignoreSendResetPasswordSmsError = config.getBoolean("reset-pwd-sms-ignore-error", false);
+		
 		SmsSenderFactory.getInstance().init(vertx, config);
 		this.smsSender = SmsSenderFactory.getInstance().newInstance(eventStore);
+		this.passwordHistoryLength = config.getInteger("password-history-length", 10);
 	}
 
 	@Override
@@ -137,13 +144,15 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"WITH n, LENGTH(FILTER(x IN COLLECT(distinct r.score) WHERE x > 3)) as duplicates, p.blocked as blockedProfile " +
 				"WHERE (blockedProfile IS NULL OR blockedProfile = false) " +
 				"FOREACH (duplicate IN CASE duplicates WHEN 0 THEN [1] ELSE [] END | " +
-				"SET n.password = {password}, n.activationCode = null, n.email = {email}, n.emailSearchField=LOWER({email}), n.mobile = {phone}, n.needRevalidateTerms = {needRevalidateTerms})  " +
+				"SET n.password = {password}, n.oldPasswords = {oldPasswords}, n.activationCode = null, n.email = {email}, n.emailSearchField=LOWER({email}), n.mobile = {phone}, n.needRevalidateTerms = {needRevalidateTerms})  " +
 				"RETURN n.password as password, n.id as id, HEAD(n.profiles) as profile, duplicates > 0 as hasDuplicate, " +
 				"n.login as login, n.loginAlias as loginAlias ";
+		final String encryptedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
 		params.put("activationCode", activationCode);
-		params.put("password", BCrypt.hashpw(password, BCrypt.gensalt()));
+		params.put("password", encryptedPassword);
+		params.put("oldPasswords", new JsonArray().add(encryptedPassword));
 		params.put("email", email);
 		params.put("phone", phone);
 		params.put("allowActivateDuplicate", allowActivateDuplicateProfiles);
@@ -501,7 +510,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	public void sendResetPasswordMail(HttpServerRequest request, String email, String resetCode, String displayName,
 									  String login, final Handler<Either<String, JsonObject>> handler) {
 		if (email == null || resetCode == null || email.trim().isEmpty() || resetCode.trim().isEmpty()) {
-			handler.handle(new Either.Left<String, JsonObject>("invalid.mail"));
+			handler.handle(new Either.Right<String, JsonObject>(new JsonObject()));
 			return;
 		}
 		log.info("Sending resetCode by email: "+login+"/"+email+"/"+resetCode);
@@ -573,20 +582,28 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	private void sendSms(HttpServerRequest request, final String phone, String template, JsonObject params,
 											 final String module, final Handler<Either<String, JsonObject>> handler){
 		if (phone == null || phone.trim().isEmpty()) {
-			handler.handle(new Either.Left<>("invalid.phone"));
+			handler.handle(new Either.Right<String, JsonObject>(new JsonObject()));
 			return;
 		}
 		smsSender.send(request, phone, template, params, module)
 		.onSuccess(e -> {
 			final boolean succeeded = e.getValidReceivers() != null && e.getValidReceivers().length == 1;
-			if(succeeded) {
-				handler.handle(new Either.Right<>(new JsonObject().put("success", true)));
+			if(!ignoreSendResetPasswordSmsError) {
+				if(succeeded) {
+					handler.handle(new Either.Right<>(new JsonObject().put("success", true)));
+				} else {
+					handler.handle(new Either.Left<>("ko"));
+				}
 			} else {
-				handler.handle(new Either.Left<>("ko"));
+				handler.handle(new Either.Right<>(new ResultMessage().body()));
 			}
 		})
 		.onFailure(th -> {
-			handler.handle(new Either.Left<>(th.getMessage()));
+			if(!ignoreSendResetPasswordSmsError) {
+				handler.handle(new Either.Left<>(th.getMessage()));
+			} else {
+				handler.handle(new Either.Right<>(new ResultMessage().body()));
+			}
 		});
 	}
 
@@ -614,39 +631,81 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 
 	@Override
 	public void resetPassword(String login, String resetCode, String password, HttpServerRequest request, final Handler<String> handler) {
-		String query =
+			String query =
 				"MATCH (n:User) " +
-				"WHERE n.login={login} AND has(n.resetDate) " +
-				"AND n.resetDate > {nowMinusDelay} AND n.resetCode = {resetCode} " +
-				"OPTIONAL MATCH (n)-[:IN]->(f:FunctionGroup) " +
-				"OPTIONAL MATCH (n)-[:HAS_FUNCTION]->(func:Function) " +
-				"SET n.password = {password}, n.resetCode = null, n.resetDate = null, n.changePw = null " +
-				"RETURN n.password as pw, head(n.profiles) as profile, n.id as id, " +
-				"COLLECT(func.name) + COLLECT(f.filter) as functions, " +
-				"n.login as login, n.loginAlias as loginAlias, n.email AS email, n.displayName AS displayName";
-		Map<String, Object> params = new HashMap<>();
-		params.put("login", login);
-		params.put("resetCode", resetCode);
-		params.put("nowMinusDelay", (System.currentTimeMillis() - resetCodeExpireDelay));
-		updatePassword(new Handler<JsonObject>()
-		{
-			@Override
-			public void handle(JsonObject user)
-			{
-				if(request != null && user != null)
-				{
-					String email = user.getString("email");
-					String dName = user.getString("displayName");
-					String login = user.getString("login");
-					String profile = user.getString("profile");
-					JsonArray functions = user.getJsonArray("functions");
-					sendChangedPasswordMail(request, email, dName, login, profile, functions);
-					handler.handle(user.getString("id")); // Ignore email failures: email is optional
+					"WHERE n.login={login} AND has(n.resetDate) " +
+					"AND n.resetDate > {nowMinusDelay} AND n.resetCode = {resetCode} " +
+					"OPTIONAL MATCH (n)-[:IN]->(f:FunctionGroup) " +
+					"OPTIONAL MATCH (n)-[:HAS_FUNCTION]->(func:Function) " +
+					"SET n.password = {password}, n.resetCode = null, n.resetDate = null, n.changePw = null," +
+					"    n.oldPasswords = {oldPasswords} " +
+					"RETURN n.password as pw, head(n.profiles) as profile, n.id as id, " +
+					"COLLECT(func.name) + COLLECT(f.filter) as functions, " +
+					"n.login as login, n.loginAlias as loginAlias, n.email AS email, n.displayName AS displayName";
+			Map<String, Object> params = new HashMap<>();
+			params.put("login", login);
+			params.put("resetCode", resetCode);
+			params.put("nowMinusDelay", (System.currentTimeMillis() - resetCodeExpireDelay));
+			updatePassword(user -> {
+        if(request != null && user != null)
+        {
+          String email = user.getString("email");
+          String dName = user.getString("displayName");
+          String userLogin = user.getString("login");
+          String profile = user.getString("profile");
+          JsonArray functions = user.getJsonArray("functions");
+          sendChangedPasswordMail(request, email, dName, userLogin, profile, functions);
+          handler.handle(user.getString("id")); // Ignore email failures: email is optional
+        }
+        else
+          handler.handle(user != null ? user.getString("id") : null);
+      }, query, password, login, params);
+	}
+
+	/**
+	 * Get the user's list of old passwords.
+	 * @param login Login of the user
+	 * @param fieldName Name of the field used to match the user (login or loginAlias)
+	 * @return the user's list of old passwords.
+	 */
+	private Future<List<String>> getOldPasswords(final String login, final String fieldName) {
+		final Promise<List<String>> promise = Promise.promise();
+		if(passwordHistoryLength >= 1) {
+			final String query = "MATCH (n:User) WHERE n." + fieldName + " = {login} " +
+				" RETURN n.id as id, n.oldPasswords as oldPasswords";
+			final Map<String, Object> params = new HashMap<>();
+			params.put("login", login);
+			neo.send(query, params, event -> {
+				final JsonObject body = event.body();
+				if ("ok".equals(body.getString("status"))) {
+					final JsonObject result = body.getJsonObject("result");
+					if(result != null && result.getJsonObject("0") != null && isNotEmpty(result.getJsonObject("0").getString("id"))) {
+						final List<String> oldPasswords;
+						final JsonObject element = result.getJsonObject("0");
+						if (element == null || element.getValue("oldPasswords") == null) {
+							oldPasswords = emptyList();
+						} else {
+							try {
+								oldPasswords = element.getJsonArray("oldPasswords").getList();
+							} catch (Exception e) {
+								promise.fail(e);
+								return;
+							}
+						}
+						promise.complete(oldPasswords);
+					} else if("login".equals(fieldName)){
+						getOldPasswords(login, "loginAlias").onComplete(promise);
+					} else {
+						promise.complete(emptyList());
+					}
+				} else {
+					promise.fail(body.getString("message"));
 				}
-				else
-					handler.handle(user != null ? user.getString("id") : null);
-			}
-		}, query, password, login, params);
+			});
+		} else {
+			promise.complete(emptyList());
+		}
+		return promise.future();
 	}
 
 	@Override
@@ -656,32 +715,27 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"WHERE n.login={login} AND NOT(n.password IS NULL) " +
 				"OPTIONAL MATCH (n)-[:IN]->(f:FunctionGroup) " +
 				"OPTIONAL MATCH (n)-[:HAS_FUNCTION]->(func:Function) " +
-				"SET n.password = {password}, n.changePw = null " +
+				"SET n.password = {password}, n.changePw = null, n.oldPasswords = {oldPasswords} " +
 				"RETURN n.password as pw, head(n.profiles) as profile, n.id as id, " +
 				"COLLECT(func.name) + COLLECT(f.filter) as functions, " +
 				"n.login as login, n.loginAlias as loginAlias, n.email AS email, n.displayName as displayName";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
-		updatePassword(new Handler<JsonObject>()
-		{
-			@Override
-			public void handle(JsonObject user)
-			{
-				if(request != null && user != null)
-				{
-					String email = user.getString("email");
-					String dName = user.getString("displayName");
-					String login = user.getString("login");
-					String profile = user.getString("profile");
-					JsonArray functions = user.getJsonArray("functions");
+		updatePassword(user -> {
+      if(request != null && user != null)
+      {
+        String email = user.getString("email");
+        String dName = user.getString("displayName");
+        String login1 = user.getString("login");
+        String profile = user.getString("profile");
+        JsonArray functions = user.getJsonArray("functions");
 
-					sendChangedPasswordMail(request, email, dName, login, profile, functions);
-					handler.handle(user.getString("id")); // Ignore email failures: email is optional
-				}
-				else
-					handler.handle(user != null ? user.getString("id") : null);
-			}
-		}, query, password, login, params);
+        sendChangedPasswordMail(request, email, dName, login1, profile, functions);
+        handler.handle(user.getString("id")); // Ignore email failures: email is optional
+      }
+      else
+        handler.handle(user != null ? user.getString("id") : null);
+    }, query, password, login, params);
 	}
 
 	private void setResetCode(final String login, boolean checkFederatedLogin, final Handler<Either<String, JsonObject>> handler) {
@@ -932,34 +986,64 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	}
 
 	private void updatePassword(final Handler<JsonObject> handler, String query, String password, String login, Map<String, Object> params) {
-		final String pw = BCrypt.hashpw(password, BCrypt.gensalt());
-		params.put("password", pw);
-		neo.send(query, params, res -> {
-			JsonObject r = res.body().getJsonObject("result");
-			JsonObject user = r.getJsonObject("0");
-			boolean updated = "ok".equals(res.body().getString("status"))
-					&& user != null
-					&& pw.equals(user.getString("pw"));
-			if (updated) {
-				storePasswordEvent(user.getString("login"), user.getString("loginAlias"),
-						password, user.getString("id"), user.getString("profile"));
-				handler.handle(user);
-			} else {
-				neo.send(query.replaceFirst("n.login=", "n.loginAlias="), params, event -> {
-					JsonObject r2 = event.body().getJsonObject("result");
-					JsonObject user2 = r2.getJsonObject("0");
-					if ("ok".equals(event.body().getString("status"))
-							&& user2 != null
-							&& pw.equals(user2.getString("pw"))) {
-						storePasswordEvent(user2.getString("login"), user2.getString("loginAlias"),
-								password, user2.getString("id"), user2.getString("profile"));
-						handler.handle(user2);
-					} else {
-						handler.handle(null);
-					}
-				});
+		getOldPasswords(login, "login")
+			.onFailure(th -> handler.handle(null))
+			.onSuccess(oldPasswords -> {
+				final boolean newPasswordNeverUsed = CollectionUtils.isEmpty(oldPasswords) ||
+					oldPasswords.stream()
+						.limit(passwordHistoryLength)
+						.noneMatch(oldPdw -> BCrypt.checkpw(password, oldPdw));
+				if(newPasswordNeverUsed) {
+					final String pw = BCrypt.hashpw(password, BCrypt.gensalt());
+					params.put("password", pw);
+					params.put("oldPasswords", getUpdatedListOfPasswords(pw, oldPasswords));
+					neo.send(query, params, res -> {
+						JsonObject r = res.body().getJsonObject("result");
+						JsonObject user = r.getJsonObject("0");
+						boolean updated = "ok".equals(res.body().getString("status"))
+							&& user != null
+							&& pw.equals(user.getString("pw"));
+						if (updated) {
+							storePasswordEvent(user.getString("login"), user.getString("loginAlias"),
+								password, user.getString("id"), user.getString("profile"));
+							handler.handle(user);
+						} else {
+							neo.send(query.replaceFirst("n.login=", "n.loginAlias="), params, event -> {
+								JsonObject r2 = event.body().getJsonObject("result");
+								JsonObject user2 = r2.getJsonObject("0");
+								if ("ok".equals(event.body().getString("status"))
+									&& user2 != null
+									&& pw.equals(user2.getString("pw"))) {
+									storePasswordEvent(user2.getString("login"), user2.getString("loginAlias"),
+										password, user2.getString("id"), user2.getString("profile"));
+									handler.handle(user2);
+								} else {
+									handler.handle(null);
+								}
+							});
+						}
+					});
+				} else {
+					log.warn("User " + login + " tried to reset their password by using an old password");
+					handler.handle(null);
+				}
+			});
+	}
+
+	/**
+	 * @param encryptedPassword Newly set encrypted password
+	 * @param oldPasswords Old encrypted passwords of the user in antichronological order
+	 * @return List of passwords in antichronological order including the new password and truncated to passwordHistoryLength
+	 */
+	private JsonArray getUpdatedListOfPasswords(final String encryptedPassword, final List<String> oldPasswords) {
+		final JsonArray updatedList = new JsonArray();
+		updatedList.add(encryptedPassword);
+		if(CollectionUtils.isNotEmpty(oldPasswords)) {
+			for (int i = 0; i < oldPasswords.size() && updatedList.size() < passwordHistoryLength; i++) {
+				updatedList.add(oldPasswords.get(i));
 			}
-		});
+		}
+		return updatedList;
 	}
 
 }

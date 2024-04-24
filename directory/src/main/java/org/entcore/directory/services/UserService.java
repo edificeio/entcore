@@ -162,4 +162,6 @@ public interface UserService {
 	void getAttachmentSchool(String userId, JsonArray structuresToExclude, Handler<Either<String, JsonObject>> result);
 
 	Future<JsonObject> getUsersDisplayNames(JsonArray userIds);
+	
+	public void listUsersByStructure(List<String> structures, Handler<Either<String, JsonArray>> results);
 }
