@@ -30,7 +30,7 @@
 	</div>
 
 	<!-- Users emptyscreen -->
-	<div class="emptyscreen" ng-if="search.index == 0 && users.length() == 0 && !users.searched && !display.loading">
+	<div class="emptyscreen" ng-if="search.index == 0 && users.length() == 0 && ((!classView && !users.searched) || (classView && search.text)) && !display.loading">
 		<div class="spacer-large"></div>
 		<h2 class="emptyscreen-header"><i18n>userBook.directory.emptyScreen.users.header</i18n></h2>
 		<img class="emptyscreen-image" skin-src="/img/illustrations/illus-emptyscreen.svg">
@@ -38,6 +38,14 @@
 			<i18n ng-if="!classView">userBook.directory.emptyScreen.users.footer</i18n>
 			<i18n ng-if="classView">class.search.noresults.description</i18n>
 		</p>
+	</div>
+
+	<!-- Class with no user attached -->
+	<div class="emptyscreen" ng-if="classView && search.index == 0 && users.length() == 0 && !search.text && !display.loading">
+		<div class="spacer-large"></div>
+		<h2 class="emptyscreen-header"><i18n>class.no.user.attached.title</i18n></h2>
+		<img class="emptyscreen-image" skin-src="/img/illustrations/illus-emptyscreen.svg">
+		<p class="emptyscreen-footer"><i18n>class.no.user.attached.description</i18n></p>
 	</div>
 
 	<!-- Groups emptyscreen -->
