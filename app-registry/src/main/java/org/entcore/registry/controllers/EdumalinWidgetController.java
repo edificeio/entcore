@@ -2,7 +2,6 @@ package org.entcore.registry.controllers;
 
 import fr.wseduc.rs.Get;
 import fr.wseduc.security.ActionType;
-import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 import io.vertx.core.Handler;
@@ -10,10 +9,10 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import org.omg.CORBA.SystemException;
 import org.vertx.java.core.http.RouteMatcher;
 
 import java.util.Map;
@@ -48,7 +47,6 @@ public class EdumalinWidgetController extends BaseController {
      */
     @Get("/edumalin/widget")
     @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
-    @MfaProtected()
     public void widgetEdumalin(final HttpServerRequest request) {
         if (edumalinToken == null || edumalinToken.isEmpty()) {
             authLoginEdumalin(request);
@@ -69,14 +67,16 @@ public class EdumalinWidgetController extends BaseController {
         UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
             @Override
             public void handle(UserInfos infos) {
-
-                httpClient.getAbs(edumalinUrl + "/widget/getDisplay/" + (infos.getType().equals("ELEVE") ? "Student" : "Teacher"), response -> {
+                httpClient.getAbs(edumalinUrl + "/widget/getDisplay/" + (infos.getType().equals("Student") ? "Student" : "Teacher"), response -> {
                     if (response.statusCode() == 200) {
                         response.bodyHandler(body -> {
                             JsonObject json = body.toJsonObject();
-                            if (json.containsKey("success") && json.getBoolean("success")
-                                    && json.containsKey("data") && !json.getJsonArray("data").isEmpty()) {
-                                renderJson(request, json);
+                            if (json.containsKey("success") && json.getBoolean("success")) {
+                                if(json.containsKey("data") && !json.getJsonArray("data").isEmpty()) {
+                                    renderJson(request, json);
+                                } else {
+                                    renderJson(request, new JsonObject().put("data", new JsonArray()));
+                                }
                             } else {
                                 JsonObject error = new JsonObject().put("error", "edumalin.widget.missing");
                                 badRequest(request, error.toString());
@@ -107,12 +107,6 @@ public class EdumalinWidgetController extends BaseController {
      */
     @SuppressWarnings("deprecation")
     private void authLoginEdumalin(final HttpServerRequest request) {
-
-        System.out.println("Edumalin widget controller initialized");
-        System.out.println("Edumalin url: " + edumalinUrl);
-        System.out.println("Edumalin username: " + usernameEdumalin);
-        System.out.println("Edumalin password: " + passwordEdumalin);
-        System.out.println("Edumalin referrer: " + referrerEdumalin);
 
         String requestBody = new JsonObject().put("username", usernameEdumalin).put("password", passwordEdumalin).toString();
         httpClient.postAbs(referrerEdumalin + "/auth/login", response -> {

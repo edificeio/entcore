@@ -523,20 +523,30 @@ public class AuthController extends BaseController {
 		context.put("mandatory", config.getJsonObject("mandatory", new JsonObject()));
 		// Human-readable password format :
 		final I18n i18n = I18n.getInstance();
-		final JsonObject pwdFormatByLang = new JsonObject();
+		final JsonObject pwdResetFormatByLang = new JsonObject();
+		final JsonObject pwdActivationFormatByLang = new JsonObject();
 		i18n.getLanguages(Renders.getHost(request))
 		.stream()
 		.map(String.class::cast)
 		.forEach( (String lang) -> {
 			if( lang != null ) {
 				try {
-					pwdFormatByLang.put(lang, i18n.translate("password.errors", Renders.getHost(request), lang));
-				} catch( Exception e ) {
-					pwdFormatByLang.put(lang, "");
+					pwdResetFormatByLang.put(lang, i18n.translate("password.rules.reset", Renders.getHost(request), lang));
+				} catch (Exception e) {
+					pwdResetFormatByLang.put(lang, "");
+					log.error("error when translating password.rules.reset in {0} : {1}", lang, e);
+				}
+
+				try {
+					pwdActivationFormatByLang.put(lang, i18n.translate("password.rules.activation", Renders.getHost(request), lang));
+				} catch (Exception e) {
+					pwdActivationFormatByLang.put(lang, "");
+					log.error("error when translating password.rules.activation in {0} : {1}", lang, e);
 				}
 			}
 		});
-		context.put("passwordRegexI18n", pwdFormatByLang);
+		context.put("passwordRegexI18n", pwdResetFormatByLang);
+		context.put("passwordRegexI18nActivation", pwdActivationFormatByLang);
 
 		final JsonArray mfaConfig = new JsonArray();
 		if( Mfa.withSms() ) mfaConfig.add(Mfa.TYPE_SMS);
@@ -714,9 +724,17 @@ public class AuthController extends BaseController {
 																													password,
 																													request);
 																										} else {
-																											trace.info(
-																												getIp(request) + " - Erreur de connexion pour l'utilisateur "
-																															+ login);
+
+																											if(!e.getDescription().isEmpty() && e.getCode() == 401) {
+																												trace.info(
+																														getIp(request) + " - Erreur de connexion (" +  e.getDescription() + ") pour l'utilisateur "
+																																+ login);
+																											} else {
+																												trace.info(
+																														getIp(request) + " - Erreur de connexion pour l'utilisateur "
+																																+ login);
+																											}
+
 																											loginResult(
 																													request,
 																													e.getDescription(),
@@ -1242,6 +1260,12 @@ public class AuthController extends BaseController {
 		});
 	}
 
+	/**
+	 * Send a mail or a sms to reset forgot id
+	 * @param request the request with the mail
+	 * @response 200 if the reset code has been sent or even if the mail does not exist to avoid telling if the mail exists in database or not
+	 * @response 400 if the mail is empty or if the service is invalid
+	 */
 	@Post("/forgot-id")
 	public void forgetId(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, new io.vertx.core.Handler<JsonObject>() {
@@ -1260,7 +1284,7 @@ public class AuthController extends BaseController {
 							public void handle(Either<String, JsonArray> event) {
 								// No user with that email, or more than one found.
 								if (event.isLeft()) {
-									badRequest(request, event.left().getValue());
+									renderJson(request, new JsonObject());
 									return;
 								}
 								JsonArray results = event.right().getValue();
@@ -1279,7 +1303,7 @@ public class AuthController extends BaseController {
 											structures.add(j);
 									}
 									if (firstName != null && structures.size() == 1)
-										badRequest(request, "non.unique.result");
+										renderJson(request, new JsonObject());
 									else
 										renderJson(request, new JsonObject().put("structures", structures));
 									return;
@@ -1289,7 +1313,7 @@ public class AuthController extends BaseController {
 
 								if(match.getString("activationCode") != null)
 								{
-									badRequest(request, "not.activated");
+									renderJson(request, new JsonObject());
 									return;
 								}
 
@@ -1302,7 +1326,7 @@ public class AuthController extends BaseController {
 											new io.vertx.core.Handler<Either<String, JsonObject>>() {
 												public void handle(Either<String, JsonObject> event) {
 													if (event.isLeft()) {
-														badRequest(request, event.left().getValue());
+														renderJson(request, new JsonObject());
 														return;
 													}
 													if (smsProvider != null && !smsProvider.isEmpty()) {
@@ -1329,49 +1353,20 @@ public class AuthController extends BaseController {
 		});
 	}
 
+	/**
+	 * API endpoint to verify if sms provider is configured
+	 */
 	@Get("/password-channels")
 	public void getForgotPasswordService(final HttpServerRequest request) {
-		userAuthAccount.findByLogin(request.params().get("login"), null, checkFederatedLogin,
-				new io.vertx.core.Handler<Either<String, JsonObject>>() {
-					public void handle(Either<String, JsonObject> result) {
-						if (result.isLeft()) {
-							badRequest(request, result.left().getValue());
-							return;
-						}
-						if (result.right().getValue().size() == 0) {
-							badRequest(request, "no.match");
-							return;
-						}
-						if(result.right().getValue().getString("activationCode") != null)
-						{
-							badRequest(request, "not.activated");
-							return;
-						}
-
-
-						final String mail = result.right().getValue().getString("email", "");
-						final String mobile = result.right().getValue().getString("mobile", "");
-
-						boolean mailCheck = mail != null && !mail.trim().isEmpty();
-						boolean mobileCheck = mobile != null && !mobile.trim().isEmpty();
-
-						if (!mailCheck && !mobileCheck) {
-							badRequest(request, "no.match");
-							return;
-						}
-
-						final String obfuscatedMail = StringValidation.obfuscateMail(mail);
-						final String obfuscatedMobile = fr.wseduc.webutils.StringValidation.obfuscateMobile(mobile);
-
-						if (smsProvider != null && !smsProvider.isEmpty())
-							renderJson(request,
-									new JsonObject().put("mobile", obfuscatedMobile).put("mail", obfuscatedMail));
-						else
-							renderJson(request, new JsonObject().put("mail", obfuscatedMail));
-					}
-				});
+		renderJson(request, new JsonObject().put("mobile", smsProvider != null && !smsProvider.isEmpty()));
 	}
 
+	/**
+	 * Send a mail or a sms with a reset code to the user
+	 * @param request the request with the login and the service (mail or mobile)
+	 * @response 200 if the reset code has been sent or even if the login does not exist to avoid telling if the login exists in database or not
+	 * @response 400 if the login is empty or if the service is invalid
+	 */
 	@Post("/forgot-password")
 	public void forgotPasswordSubmit(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, new io.vertx.core.Handler<JsonObject>() {
@@ -1388,16 +1383,16 @@ public class AuthController extends BaseController {
 						new io.vertx.core.Handler<Either<String, JsonObject>>() {
 							public void handle(Either<String, JsonObject> result) {
 								if (result.isLeft()) {
-									badRequest(request, result.left().getValue());
+									renderJson(request, new JsonObject());
 									return;
 								}
 								if (result.right().getValue().size() == 0) {
-									badRequest(request, "no.match");
+									renderJson(request, new JsonObject());
 									return;
 								}
 								if(result.right().getValue().getString("activationCode") != null)
 								{
-									badRequest(request, "not.activated");
+									renderJson(request, new JsonObject());
 									return;
 								}
 
@@ -1656,21 +1651,18 @@ public class AuthController extends BaseController {
 									public void handle(String resetedUserId) {
 										if (resetedUserId != null) {
 											trace.info(getIp(request) + " - Réinitialisation réussie du mot de passe de l'utilisateur " + login);
-											UserUtils.deleteCacheSession(eb, resetedUserId, "force".equals(forceChange) ? null : sessionIdStr, deleted -> {
-												if (deleted != null)
-												{
-													boolean droppedCurrent = sessionIdStr == null;
-													for(Object droppedSessionId : deleted)
-														if(droppedSessionId instanceof String && ((String) droppedSessionId).equals(sessionIdStr))
-															droppedSessionId = true;
-
-													if(droppedCurrent == true)
-													{
-														CookieHelper.set("oneSessionId", "", 0l, request);
-														CookieHelper.set("authenticated", "", 0l, request);
-													}
+											final boolean forcedChangePw = "force".equals(forceChange);
+											UserUtils.deleteCacheSession(eb, resetedUserId,  forcedChangePw ? null : sessionIdStr, deleted -> {
+												if (sessionIdStr == null || forcedChangePw) {
+													CookieHelper.set("oneSessionId", "", 0l, request);
+													CookieHelper.set("authenticated", "", 0l, request);
 												}
-												redirectionService.redirect(request, callback);							
+												if (forcedChangePw) {
+													redirectionService.redirect(request, config.getJsonObject("authenticationServer",
+															new JsonObject()).getString("loginURL", "/auth/login"));
+												} else {
+													redirectionService.redirect(request, callback);
+												}
 											});
 											UserUtils.deletePermanentSession(eb, resetedUserId, sessionIdStr, appTokenStr, null);
 										} else {

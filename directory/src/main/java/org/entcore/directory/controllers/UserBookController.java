@@ -31,6 +31,7 @@ import static org.entcore.common.user.SessionAttributes.THEME_ATTRIBUTE;
 
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
@@ -38,7 +39,9 @@ import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.request.JsonHttpServerRequest;
+import org.entcore.common.http.response.DefaultResponseHandler;
 import org.entcore.common.neo4j.Neo;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.notification.ConversationNotification;
 import org.entcore.common.user.UserInfos;
@@ -312,29 +315,45 @@ public class UserBookController extends BaseController {
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void myClass(final HttpServerRequest request) {
 		String classId = request.params().get("id");
-		String matchClass;
-		JsonObject params = new JsonObject();
-		if (classId == null || classId.trim().isEmpty()) {
-			matchClass = "(n:User {id : {userId}})-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class) " +
-					"WITH c, profile, visibles MATCH";
-		} else {
-			matchClass = "(c:Class {id : {classId}}),";
-			params.put("classId", classId);
-		}
-		String query =
-				"MATCH " + matchClass + " visibles-[:IN]->(:ProfileGroup)-[:DEPENDS]->c " +
-				"WHERE profile.name IN ['Student', 'Teacher'] " +
-				"OPTIONAL MATCH visibles-[:USERBOOK]->u " +
-				"RETURN distinct profile.name as type, visibles.id as id, " +
-				"visibles.displayName as displayName, u.mood as mood, " +
-				"u.userid as userId, u.picture as photo " +
-				"ORDER BY type DESC, displayName ";
-		UserUtils.findVisibleUsers(eb, request, true, true, query, params, new Handler<JsonArray>() {
-			@Override
-			public void handle(JsonArray users) {
-				renderJson(request, users);
-			}
-		});
+		UserUtils.getAuthenticatedUserInfos(eb, request)
+				.onSuccess(userInfos -> {
+					String queryVisibleUsers = "RETURN DISTINCT visibles.id as user ";
+					UserUtils.findVisibleUsers(eb, request, true, true, queryVisibleUsers, new JsonObject(), visibles -> {
+						String matchClass;
+						JsonObject params = new JsonObject();
+						if (classId == null || classId.trim().isEmpty()) {
+							matchClass = "(n:User {id : {userId}})-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class) ";
+							params.put("userId", userInfos.getUserId());
+						} else {
+							matchClass = "(c:Class {id : {classId}}) ";
+							params.put("classId", classId);
+						}
+
+						List<String> ids = visibles
+								.stream()
+								.map(v -> ((JsonObject)v).getString("user"))
+								.collect(Collectors.toList());
+						params.put("visibles", ids);
+
+						String queryClassUsers = "MATCH " + matchClass +
+								"WITH c " +
+								"MATCH c<-[:DEPENDS]-(cpg:ProfileGroup)<-[:IN]-(m:User) " +
+								"WHERE head(m.profiles) IN ['Student','Teacher'] " +
+								"OPTIONAL MATCH m-[:USERBOOK]->u " +
+								"RETURN distinct head(m.profiles) as type, m.id as id, " +
+								"m.displayName as displayName, u.mood as mood, " +
+								"u.userid as userId, u.picture as photo, (m.id IN {visibles}) as isVisible " +
+								"ORDER BY type DESC, displayName ";
+
+						Neo4j.getInstance().execute(
+								queryClassUsers,
+								params,
+								Neo4jResult.validResultHandler(
+										DefaultResponseHandler.arrayResponseHandler(request)
+								)
+						);
+					});
+				});
 	}
 
 	@Get("/api/edit-userbook-info")

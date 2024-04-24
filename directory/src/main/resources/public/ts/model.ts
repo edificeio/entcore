@@ -15,8 +15,8 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import { http as oldHttp, model, idiom as lang, Collection, notify, ui, _, moment } from 'entcore';
 import http from 'axios';
+import { Collection, _, idiom as lang, model, moment, notify, http as oldHttp, ui } from 'entcore';
 
 export const directory = {
 	directory: undefined,
@@ -302,6 +302,38 @@ export const directory = {
 				});
 				return res;
 			}
+		});
+
+		this.collection(directory.Classroom, {
+			sync: function() {
+				return http.get('/auth/oauth2/userinfo?version=v2.0')
+					.then(function(res) {
+						const { classes, realClassesNames } = res.data;
+
+						let results: {id: string, name: string}[];
+						if (!classes || !realClassesNames || classes.length !== realClassesNames.length) {
+							results = [];
+						}
+						results =
+							classes.map((id: string, index: number) => ({
+								id,
+								name: realClassesNames[index],
+							})
+						);
+						this.load(results);
+						this.trigger('sync');
+					}.bind(this));
+			},
+			match: function(search){
+				return _.filter(this.all, function(classroom){
+					var words = search.split(' ');
+					return _.find(words, function(word){
+						var formattedOption = lang.removeAccents(classroom.name).toLowerCase();
+						var formattedWord = lang.removeAccents(word).toLowerCase();
+						return formattedOption.indexOf(formattedWord) === -1
+					}) === undefined;
+				});
+			},
 		});
 	},
 	Classroom: function(){

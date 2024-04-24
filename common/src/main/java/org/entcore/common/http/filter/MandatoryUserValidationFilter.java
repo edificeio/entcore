@@ -46,8 +46,8 @@ public class MandatoryUserValidationFilter implements Filter {
     };
     // White-lists are incremental : each step also applies to following steps
     private final static String[][] whiteListByStep = {
-        {},
         {"/internal/userinfo", "/userbook/", "/theme"},
+        {},
         {/*same routes as preceding step, used by /auth/validate-mail*/},
         {/*same routes as preceding step, used by /auth/validate-mail*/}
     };
@@ -92,12 +92,6 @@ public class MandatoryUserValidationFilter implements Filter {
 
     @Override
     public void canAccess(HttpServerRequest request, Handler<Boolean> handler) {
-        // Ajax requests are not redirected (useless)
-        if ("XMLHttpRequest".equals(request.headers().get("X-Requested-With"))){
-            handler.handle(true);
-            return;
-        }
-
         UserUtils.getSession(this.eventBus, request, session -> {
             final UserInfos userInfos = UserUtils.sessionToUserInfos(session);
             if (userInfos == null) {

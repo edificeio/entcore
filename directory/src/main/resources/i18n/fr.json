@@ -680,7 +680,7 @@
     "userBook.title": "Mon compte",
     "userBook.unlock": "Déverrouiller",
     "userBook.unlocked": "Déverrouillé",
-    "userbook.renewpassword.error": "Le formulaire contient des erreurs, veuillez vérifier que votre ancien mot de passe est correct et que les deux mots de passe concordent et respectent les contraintes de sécurité.",
+    "userbook.renewpassword.error": "Le formulaire contient des erreurs. Veuillez vérifier que le nouveau mot de passe n’a pas déjà été utilisé et que les deux saisies sont identiques.",
     "welcome.class.admin": "\"Paramétrage de la classe\".",
     "welcome.class.admin.donotanswer": "Ce message a été généré automatiquement, merci de ne pas y répondre.",
     "welcome.class.admin.info": "Pour cela, deux possibilités s'offrent à vous pour créer ces comptes :",
@@ -923,6 +923,11 @@
     "error.commit.timetable.transaction" : "L'enregistrement des données n'a pu aboutir, veuillez essayer ultérieurement. Si le problème persiste, veuillez contacter l'assistance.",
     "directory.default.relative.title" : "Enseignants de mes enfants",
     "directory.default.teacher.title" : "Enseignants et personnels de l'établissement",
-    "admin.duplicate.notify.subject" : "Votre demande de duplication de paramétrage"
-    
+    "admin.duplicate.notify.subject" : "Votre demande de duplication de paramétrage",
+    "class.empty.state.title": "Pas de classe rattachée",
+    "class.empty.state.description": "Votre compte est rattaché à aucune classe.<br>Veuillez contacter votre administrateur si cela est une erreur.<br>Pour rechercher un utilisateur, vous pouvez utiliser l'application \"Annuaire\"",
+    "class.empty.state.directory": "Ouvrir l'annuaire",
+    "class.search": "Rechercher une classe",
+    "class.search.noresults.title": "C'est désert... Il y a quelqu'un ?",
+    "class.search.noresults.description": "La recherche n'aboutit à aucun résultat.<br>Veuillez changer votre recherche."
 }

@@ -32,7 +32,7 @@ interface ForgotControllerScope {
 	forgot(service): void;
 	forgotPassword(login: string, service: "mail")
 	canSubmitForgotForm: (isInputValid: boolean) => boolean
-	passwordChannels(login: string): void
+	passwordChannels(): void
 	forgotId(args: { mail: string, firstName: string, structureId: string }, service: "mail")
 	noSpace(event: KeyboardEvent): void
 	noUpperCase(): void
@@ -136,11 +136,10 @@ export let forgotController = ng.controller('ForgotController', ['$scope', 'rout
 		}
 	};
 
-	$scope.passwordChannels = function(login){
-		http().get('/auth/password-channels', {login: login})
+	$scope.passwordChannels = function(){
+		http().get('/auth/password-channels')
 			.done(function(data){
 				$scope.user.channels = {
-					mail: data.mail,
 					mobile: data.mobile
 				}
 				$scope.$apply()
@@ -155,7 +154,8 @@ export let forgotController = ng.controller('ForgotController', ['$scope', 'rout
 		$scope.sendingMailAndWaitingFeedback = true;
 		http().postJson('/auth/forgot-password', {login: login, service: service})
 			.done(function(data){
-				notify.info("auth.notify.password.forgotten", 8000);
+				
+				notify.info( service === "mail" ? "auth.notify.password.forgotten" : "auth.notify.password.forgotten.sms", 8000);
 				$scope.user.channels = {}
 				$scope.sendingMailAndWaitingFeedback = false;
 				$scope.$apply()
