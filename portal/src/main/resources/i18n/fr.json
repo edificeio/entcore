@@ -970,6 +970,7 @@
   "explorer.rename": "Renommer",
   "explorer.create": "Créer",
   "explorer.move": "Déplacer",
+  "explorer.optional" : "Optionnel",
   "explorer.move.title": "Déplacer",
   "explorer.move.subtitle": "Sélectionner le dossier vers lequel déplacer les éléments",
   "explorer.folder.new": "Nouveau dossier",
