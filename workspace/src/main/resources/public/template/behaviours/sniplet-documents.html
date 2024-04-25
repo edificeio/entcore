@@ -83,7 +83,7 @@
 			on-open="openDocument(document)"
 			ng-change="updateSelection()" class="radius explorer-hover">
 
-			<a class="img container cell">
+			<a class="img container cell" tooltip="[[document.title]]">
 				<div class="twelve cell">
 					<div class="clip absolute">
 						<i ng-if="!document.metadata" class="folder-large"></i>
