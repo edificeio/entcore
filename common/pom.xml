@@ -41,7 +41,7 @@
             <groupId>io.vertx</groupId>
             <artifactId>vertx-mongo-client</artifactId>
             <version>${vertxVersion}</version>
-            <scope>provided</scope>
+            <scope>compile</scope>
             <exclusions>
                 <exclusion>
                     <groupId>org.mongodb</groupId>
