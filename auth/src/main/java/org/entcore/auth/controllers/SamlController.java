@@ -132,15 +132,45 @@ public class SamlController extends AbstractFederateController {
 	public void wayf(HttpServerRequest request) {
 		if (samlWayfParams != null) {
 			final String host = Renders.getHost(request);
-			if (samlWayfMustacheFormat.getJsonObject(host) == null) {
-				JsonObject wayfParams = samlWayfParams.getJsonObject(host);
-				wayfParams = (wayfParams == null) ? samlWayfParams : wayfParams;
+			JsonObject wayfParams = samlWayfParams.getJsonObject(host);
+			wayfParams = (wayfParams == null) ? samlWayfParams : wayfParams;
+
+			//hack to disable the cache for a wayf
+			Boolean noCache = false;
+			for (String attr : wayfParams.fieldNames()) {
+				JsonObject i = wayfParams.getJsonObject(attr);
+				if (i == null) continue;
+				if (isEmpty(i.getString("acs"))) continue;
+				if (i.containsKey("filter")) {
+					noCache = true;
+					break;
+				}
+			}
+
+			if (samlWayfMustacheFormat.getJsonObject(host) == null || noCache) {
 				final JsonArray wmf = new fr.wseduc.webutils.collections.JsonArray();
+				//hack to display only the wayf entry corresponding to provider
+				final String providerToDisplay = request.getParam("provider");
+				Boolean providerToDisplayEnabled = false;
+				if (noCache && providerToDisplay != null) {
+					for (String attr : wayfParams.fieldNames()) {
+						JsonObject i = wayfParams.getJsonObject(attr);
+						if (i == null) continue;
+						if (isEmpty(i.getString("acs"))) continue;
+						if (providerToDisplay.equals(i.getString("filter"))) {
+							providerToDisplayEnabled = true;
+							break;
+						}
+					}
+				}
+
 				for (String attr : wayfParams.fieldNames()) {
 					JsonObject i = wayfParams.getJsonObject(attr);
 					if (i == null) continue;
 					final String acs = i.getString("acs");
 					if (isEmpty(acs)) continue;
+					if (providerToDisplayEnabled && !providerToDisplay.equals(i.getString("filter"))) continue;
+
 					URI uri;
 					try {
 						uri = new URI(acs);
@@ -420,7 +450,7 @@ public class SamlController extends AbstractFederateController {
 			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 				@Override
 				public void handle(final UserInfos user) {
-					if (user == null) redirectToLogin(request, SAMLAuthnRequest, relayState);
+					if (user == null) redirectToLogin(request, SAMLAuthnRequest, relayState, serviceProviderId);
 					else ssoGenerateSAML(user, authNRequestId, serviceProviderId, relayState,  request);
 				}
 			});
@@ -436,7 +466,7 @@ public class SamlController extends AbstractFederateController {
 		}
 	}
 
-	private void redirectToLogin(HttpServerRequest request, String SAMLAuthnRequest, String relayState) {
+	private void redirectToLogin(HttpServerRequest request, String SAMLAuthnRequest, String relayState, String serviceProviderId) {
 		String path = "/auth/saml/redirect/sso/?SAMLRequest=%s&RelayState=%s";
 		String location = "";
 		try {
@@ -447,10 +477,10 @@ public class SamlController extends AbstractFederateController {
 			if (config.containsKey("authLocations")) {
 				final String host = Renders.getHost(request);
 				final String authLocation = config.getJsonObject("authLocations", new JsonObject()).getJsonObject(host, new JsonObject()).getString("loginUri");
-				location = extractLocation(authLocation, request, callback, cookieCallback);
+				location = extractLocation(authLocation, request, callback, cookieCallback, serviceProviderId);
 			} else if (config.containsKey("loginUri")) {
 				final String authLocation = config.getString("loginUri");
-				location = extractLocation(authLocation, request, callback, cookieCallback);
+				location = extractLocation(authLocation, request, callback, cookieCallback, null);
 			}
 
 			if (location == null || location.isEmpty()) {
@@ -474,11 +504,15 @@ public class SamlController extends AbstractFederateController {
 	 * @param authLocation authLocation
 	 * @return location
 	 */
-	private String extractLocation(final String authLocation, HttpServerRequest request, String callback, String cookieCallback) {
+	private String extractLocation(final String authLocation, HttpServerRequest request, String callback, String cookieCallback, String serviceProviderId) {
 		String location = null;
 		if (authLocation != null && !LOGIN_PAGE.equals(authLocation)) {
 			if (WAYF_PAGE.equals(authLocation)) {
-				location = String.format("%s?callback=%s", WAYF_PAGE, callback);
+				if (serviceProviderId != null) {
+					location = String.format("%s?provider=%s&callback=%s", WAYF_PAGE, serviceProviderId, callback);
+				} else {
+					location = String.format("%s?callback=%s", WAYF_PAGE, callback);
+				}
 			} else {
 				//external login page
 				location = authLocation;
