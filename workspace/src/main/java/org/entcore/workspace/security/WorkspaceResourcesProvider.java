@@ -120,8 +120,13 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 			case "restoreFolder":
 			case "restoreTrash":
 			case "bulkDelete":
-			case "transferDocuments":
 				authorizeDocuments(request, user, binding.getServiceMethod(), handler);
+				break;
+			// transfering documents requires reading them
+			case "transferDocuments":
+				authorizeDocuments(request, user,
+				"org.entcore.workspace.controllers.WorkspaceController|getDocument" //quick fix, should use reflection 
+				, handler);
 				break;
 			case "getParentInfos":
 			case "renameDocument":
