@@ -77,7 +77,6 @@
             <groupId>fr.wseduc</groupId>
             <artifactId>mod-postgresql</artifactId>
             <version>${modPostgresVersion}</version>
-            <classifier>fat</classifier>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -108,7 +107,6 @@
             <groupId>io.vertx</groupId>
             <artifactId>mod-mongo-persistor</artifactId>
             <version>${modMongoVersion}</version>
-            <classifier>fat</classifier>
             <scope>compile</scope>
         </dependency>
         <!-- <dependency>

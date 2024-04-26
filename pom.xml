@@ -67,7 +67,7 @@
         <scramVersion>2.1</scramVersion>
         <micrometerPrometheusVersion>1.11.4</micrometerPrometheusVersion>
         <owaspVersion>20220608.1</owaspVersion>
-        <jacksonVersion>2.11.3</jacksonVersion>
+        <jacksonVersion>2.15.2</jacksonVersion>
         <casVersion>0.2.2</casVersion>
         <vertxCronTimerVersion>2.0.0</vertxCronTimerVersion>
         <jnaVersion>3.0.2</jnaVersion>
@@ -143,14 +143,12 @@
             <groupId>fr.wseduc</groupId>
             <artifactId>mod-postgresql</artifactId>
             <version>${modPostgresVersion}</version>
-            <classifier>fat</classifier>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>mod-mongo-persistor</artifactId>
             <version>${modMongoVersion}</version>
-            <classifier>fat</classifier>
             <scope>test</scope>
             <exclusions>
                 <exclusion>
