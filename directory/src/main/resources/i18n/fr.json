@@ -931,7 +931,7 @@
     "class.search.noresults.title": "C'est désert... Il y a quelqu'un ?",
     "class.search.noresults.description": "La recherche n'aboutit à aucun résultat.<br>Veuillez changer votre recherche.",
     "class.no.user.attached.title": "La classe est vide !",
-    "class.no.user.attached.description": "Il n'y a pas encore d'élèves ou d'ense rattachés à la classe.<br>Veuilez contacter votre administrateur si cela est une erreur.<br>Une fois configurée, vous trouverez ici le trombinoscope de la classe.",
+    "class.no.user.attached.description": "Il n'y a pas encore d'élèves ou d'enseignants rattachés à la classe.<br>Veuilez contacter votre administrateur si cela est une erreur.<br>Une fois configurée, vous trouverez ici le trombinoscope de la classe.",
     "email.update.warning.subject": "Modification de votre adresse mail",
     "email.update.warning.hi": "Bonjour",
     "email.update.warning.intro": "L’adresse mail liée à votre compte a été modifiée. Vous ne recevrez plus de mails sur cette adresse mail.",
