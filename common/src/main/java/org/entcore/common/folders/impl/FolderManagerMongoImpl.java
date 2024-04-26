@@ -342,6 +342,8 @@ public class FolderManagerMongoImpl implements FolderManager {
 				copy.put("favorites", new JsonArray());
 				copy.put("shared", new JsonArray());
 				copy.put("deleted", false);
+				// merge shared after reset shared
+				InheritShareComputer.mergeShared(Optional.empty(), copy, true);
 				// copy file from storage
 				StorageHelper.replaceAll(copy, copiedFilesMap);
 
