@@ -77,6 +77,8 @@ public class EventRecorderContentTransformerClient implements IContentTransforme
       if("attachments".equalsIgnoreCase(type)) {
         final int nbAttachments = computeNbAttachements(json);
         occurrences.compute("nb_attachments", (k, v) -> v + nbAttachments);
+      } else if ("linker".equalsIgnoreCase(type)) {
+        occurrences.compute("nb_internal_links", (k, v) -> v + 1);
       } else if("text".equalsIgnoreCase(type)) {
         final String text = json.getString("text", "").trim();
         if(text.length() >= 2 && text.charAt(0) == '$' && text.charAt(text.length() - 1) == '$') {
