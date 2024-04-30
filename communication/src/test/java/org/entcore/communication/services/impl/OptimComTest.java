@@ -76,7 +76,7 @@ public class OptimComTest {
 	public void setUp(TestContext context) {
 		vertx = test.vertx();
 		defaultComService = new DefaultCommunicationService();
-		xpComService = new XpCommunicationService();
+		xpComService = new XpCommunicationService(new JsonArray());
 	}
 
 	//@Test

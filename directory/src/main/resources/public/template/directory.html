@@ -6,9 +6,11 @@
 	<container template="lightbox"></container>
 </lightbox>
 
-<div class="row rigid-grid">
-	<section class="flex-row f-column justify-center four cell twelve-mobile twelve-tablette-wide center-component-tablette" ng-class="{ 'only-large-desktop':display.searchmobile }">
-		<app-title>
+<div class="row rigid-grid" style="background-color: #FFFFFF;">
+	<section
+		class="flex-row f-column justify-center four cell twelve-mobile twelve-tablette-wide center-component-tablette"
+		ng-class="{ 'only-large-desktop':display.searchmobile }">
+		<app-title style="padding: 24px;">
 			<h1 class="no-margin">
 				<a data-reload>
 					<i class="userbook"></i>
@@ -19,69 +21,71 @@
 		<div class="clear"></div>
 		<div class="spacer-small zero-desktop"></div>
 		<h2 class="eight-tablette-wide zero-large-desktop" ng-if="getCurrentItemsLength() > 0">
-			<a ng-click="onCloseSearchModule()" class="right-magnet"><i18n>userBook.directory.backToResults</i18n> <i class="forward"></i></a>
+			<a ng-click="onCloseSearchModule()" class="right-magnet">
+				<i18n>userBook.directory.backToResults</i18n> <i class="forward"></i>
+			</a>
 		</h2>
-		<div class="eight-tablette-wide">
-			<div class="spacer-small"></div>
-			<search-module
-				ng-model="search.index"
-				ng-change="switchForm(index)"
-				search="searchDirectory()"
+		<div  class="eight-tablette-wide mt-12">
+			<section class="twelve cell tabs row" ng-if="discoverVisibleAutorize()">
+
+				<header ng-class="selectedTabCssAnnuaire('myNetwork')" ng-click="selectTabAnnuaire('myNetwork')"
+					translate content="userbook.myNetwork" style="text-align: center;">
+
+				</header>
+				<header ng-class="selectedTabCssAnnuaire('discoverVisible')"
+					ng-click="selectTabAnnuaire('discoverVisible')" translate content="userbook.discover.visible"
+					style="text-align: center;">
+
+				</header>
+			</section>
+			<search-module ng-model="search.index" ng-change="switchForm(index)" search="searchDirectory()"
 				images='["directory-user", "directory-group", "directory-bookmark"]'
-				i18n='["share.users", "share.groups", "directory.favorites"]'>
-				<div class="reduce-block-eight centered row centered-text twelve" ng-class='{ "divide-opacity": display.loadingmobile }'>
+				i18n='["share.users", "share.groups", "directory.favorites"]'
+				ng-if="isSelectedTabAnnuaire('myNetwork')">
+				<div class="reduce-block-eight centered row centered-text twelve"
+					ng-class='{ "divide-opacity": display.loadingmobile }'>
 					<div>
-						<div class="underlined-title"><i18n>directory.search.one</i18n> <strong><i18n>directory.one.user</i18n></strong></div>
+						<div class="underlined-title">
+							<i18n>directory.search.one</i18n> <strong>
+								<i18n>directory.one.user</i18n>
+							</strong>
+						</div>
 						<div class="spacer-small"></div>
 						<div class="reduce-block-four">
 							<div class="search-pagination flex-row align-center">
 								<div class="cell twelve">
-									<input class="twelve" 
-										type="text" 
-										translate attr="placeholder"
-										ng-model="search.users"
-										placeholder="userBook.search"/>
+									<input class="twelve" type="text" translate attr="placeholder"
+										ng-model="search.users" placeholder="userBook.search" />
 									<i class="search" ng-click="searchDirectory()"></i>
 								</div>
 							</div>
 							<div class="reduce-block-eight horizontal-margin">
 								<div class="spacer-small"></div>
 								<multi-comboboxes ng-if="filtersOptions.users.structures.length > 1"
-									ng-model="filters.users.structures"
-									options="filtersOptions.users.structures"
+									ng-model="filters.users.structures" options="filtersOptions.users.structures"
 									title-all="[[lang.translate('directory.allStructures')]]"
-									title="[[lang.translate('directory.structures')]]"
-									check="onCheck(option)"
-									search-placeholder="directory.search.structure"
-								>
+									title="[[lang.translate('directory.structures')]]" check="onCheck(option)"
+									search-placeholder="directory.search.structure">
 								</multi-comboboxes>
-								<multi-comboboxes 
-									ng-model="filters.users.classes"
-									options="filtersOptions.users.classes"
-									order="classesOrder"
+								<multi-comboboxes ng-model="filters.users.classes"
+									options="filtersOptions.users.classes" order="classesOrder"
 									title-all="[[lang.translate('directory.allClasses')]]"
 									title="[[lang.translate('directory.classes')]]"
 									title-disabled="[[ getDisabledClassTitle(search.index) ]]"
 									search-placeholder="directory.search.class"
-									ng-disabled="isMultiStructure() && noStructureSelected(search.index)"
-								>
+									ng-disabled="isMultiStructure() && noStructureSelected(search.index)">
 								</multi-comboboxes>
-								<multi-comboboxes 
-									ng-model="filters.users.profiles"
+								<multi-comboboxes ng-model="filters.users.profiles"
 									options="filtersOptions.users.profiles"
 									title-all="[[lang.translate('directory.allProfiles')]]"
-									title="[[lang.translate('directory.profiles')]]"
-									disable-search="true"
-								>
+									title="[[lang.translate('directory.profiles')]]" disable-search="true">
 								</multi-comboboxes>
-								<multi-comboboxes 
-									ng-model="filters.users.functions"
+								<multi-comboboxes ng-model="filters.users.functions"
 									options="filtersOptions.users.functions"
 									title-all="[[lang.translate('directory.allFunctions')]]"
 									title="[[lang.translate('directory.functions')]]"
 									ng-disabled="!testFunctionFilterAvailable(filters.users.profiles)"
-									search-placeholder="directory.search.function"
-									>
+									search-placeholder="directory.search.function">
 								</multi-comboboxes>
 								<div class="spacer-small"></div>
 								<button type="submit" ng-disabled="searchForm.$invalid" class="twelve">
@@ -91,64 +95,55 @@
 						</div>
 					</div>
 				</div>
-				<div class="reduce-block-eight centered row centered-text twelve" ng-class='{ "divide-opacity": display.loadingmobile }'>
+				<div class="reduce-block-eight centered row centered-text twelve"
+					ng-class='{ "divide-opacity": display.loadingmobile }'>
 					<div>
-						<div class="underlined-title"><i18n>directory.search.one</i18n> <strong><i18n>directory.one.group</i18n></strong></div>
+						<div class="underlined-title">
+							<i18n>directory.search.one</i18n> <strong>
+								<i18n>directory.one.group</i18n>
+							</strong>
+						</div>
 						<div class="spacer-small"></div>
 						<div class="reduce-block-four">
 							<div class="search-pagination flex-row align-center">
 								<div class="cell twelve">
-									<input class="twelve" 
-										type="text" 
-										translate attr="placeholder"
-										ng-model="search.groups"
-										placeholder="userBook.search.name"/>
+									<input class="twelve" type="text" translate attr="placeholder"
+										ng-model="search.groups" placeholder="userBook.search.name" />
 									<i class="search" ng-click="searchDirectory()"></i>
 								</div>
 							</div>
 							<div class="reduce-block-eight horizontal-margin">
 								<div class="spacer-small"></div>
-								<multi-comboboxes  ng-if="filtersOptions.groups.structures.length > 1"
-									ng-model="filters.groups.structures"
-									options="filtersOptions.groups.structures"
+								<multi-comboboxes ng-if="filtersOptions.groups.structures.length > 1"
+									ng-model="filters.groups.structures" options="filtersOptions.groups.structures"
 									title-all="[[lang.translate('directory.allStructures')]]"
-									title="[[lang.translate('directory.structures')]]"
-									check="onCheck(option)"
-									search-placeholder="directory.search.structure"
-								>
+									title="[[lang.translate('directory.structures')]]" check="onCheck(option)"
+									search-placeholder="directory.search.structure">
 								</multi-comboboxes>
-								<multi-comboboxes 
-									ng-model="filters.groups.classes"
-									options="filtersOptions.groups.classes"
-									order="classesOrder"
+								<multi-comboboxes ng-model="filters.groups.classes"
+									options="filtersOptions.groups.classes" order="classesOrder"
 									title-all="[[lang.translate('directory.allClasses')]]"
 									title="[[lang.translate('directory.classes')]]"
 									title-disabled="[[ getDisabledClassTitle(search.index) ]]"
 									search-placeholder="directory.search.class"
 									ng-disabled="!testClassFilterAvailable(filters.groups.types, filters.groups.functions) || (isMultiStructure() && noStructureSelected(search.index))">
 								</multi-comboboxes>
-								<multi-comboboxes 
-									ng-model="filters.groups.profiles"
+								<multi-comboboxes ng-model="filters.groups.profiles"
 									options="filtersOptions.groups.profiles"
 									title-all="[[lang.translate('directory.allProfiles')]]"
-									title="[[lang.translate('directory.profiles')]]"
-									disable-search="true"
+									title="[[lang.translate('directory.profiles')]]" disable-search="true"
 									ng-disabled="!testProfileFilterAvailable(filters.groups.types, filters.groups.functions)">
 								</multi-comboboxes>
-								<multi-comboboxes 
-									ng-model="filters.groups.functions"
+								<multi-comboboxes ng-model="filters.groups.functions"
 									options="filtersOptions.groups.functions"
 									title-all="[[lang.translate('directory.allFunctions')]]"
 									title="[[lang.translate('directory.functions')]]"
 									search-placeholder="directory.search.function"
 									ng-disabled="!testFunctionFilterAvailable(filters.groups.profiles, filters.groups.types, filters.groups.classes)">
 								</multi-comboboxes>
-								<multi-comboboxes 
-									ng-model="filters.groups.types"
-									options="filtersOptions.groups.types"
+								<multi-comboboxes ng-model="filters.groups.types" options="filtersOptions.groups.types"
 									title-all="[[lang.translate('directory.allGroupsTypes')]]"
-									title="[[lang.translate('directory.groupsTypes')]]"
-									disable-search="true"
+									title="[[lang.translate('directory.groupsTypes')]]" disable-search="true"
 									ng-disabled="!testGroupTypeFilterAvailable(filters.groups.classes, filters.groups.profiles, filters.groups.functions)">
 								</multi-comboboxes>
 								<div class="spacer-small"></div>
@@ -159,17 +154,19 @@
 						</div>
 					</div>
 				</div>
-				<div class="reduce-block-eight centered row centered-text twelve" ng-class='{ "divide-opacity": display.loadingmobile }'>
+				<div class="reduce-block-eight centered row centered-text twelve"
+					ng-class='{ "divide-opacity": display.loadingmobile }'>
 					<div workflow="directory.allowSharebookmarks">
-						<div ng-class='{"only-desktop":favorites.all.length === 0}' >
-							<div class="underlined-title"><i18n>directory.manage.my</i18n> <strong><i18n>directory.favorite.share</i18n></strong></div>
+						<div ng-class='{"only-desktop":favorites.all.length === 0}'>
+							<div class="underlined-title">
+								<i18n>directory.manage.my</i18n> <strong>
+									<i18n>directory.favorite.share</i18n>
+								</strong>
+							</div>
 							<div class="spacer-small"></div>
 							<div class="reduce-block-eight horizontal-margin">
-								<removable-list
-									ng-model="favorites.all"
-									selected-item="currentFavorite"
-									select-item="selectFavorite(item)"
-									delete-item="deleteFavorite(item)"
+								<removable-list ng-model="favorites.all" selected-item="currentFavorite"
+									select-item="selectFavorite(item)" delete-item="deleteFavorite(item)"
 									placeholder="[[lang.translate('userBook.search.title')]]"
 									noitems="[[lang.translate('directory.nofavorite')]]"
 									noresult="[[lang.translate('directory.nofavorite.result')]]"
@@ -184,34 +181,90 @@
 								</div>
 							</div>
 						</div>
-						<div ng-if='favorites.all.length === 0' class= "center-component-tablette zero-desktop">
+						<div ng-if='favorites.all.length === 0' class="center-component-tablette zero-desktop">
 							<div class="emptyscreen row reduce-block-six" ng-if="search.index == 2 && !currentFavorite">
-								<h2 class="emptyscreen-header"><i18n>userBook.directory.emptyScreen.favorite.header</i18n></h2>
+								<h2 class="emptyscreen-header">
+									<i18n>userBook.directory.emptyScreen.favorite.header</i18n>
+								</h2>
 								<img class="emptyscreen-image" skin-src="/img/illustrations/illus-emptyscreen.svg">
-								<p class="emptyscreen-footer"><i18n>userBook.directory.emptyScreen.favorite.mobile.footer</i18n></p>
+								<p class="emptyscreen-footer">
+									<i18n>userBook.directory.emptyScreen.favorite.mobile.footer</i18n>
+								</p>
 							</div>
 						</div>
 					</div>
 				</div>
 			</search-module>
+			<search-module ng-model="search.index" ng-change="switchForm(index)" search="searchDirectory()"
+				images='["directory-discover-visible", "directory-group"]'
+				i18n='["userbook.discover.visible.users", "userbook.discover.visible.groups"]'
+				ng-if="isSelectedTabAnnuaire('discoverVisible')">
+				<div class="reduce-block-eight centered row centered-text twelve"
+					ng-class='{ "divide-opacity": display.loadingmobile }'>
+					<div>
+						<div class="underlined-title">
+							<i18n>directory.search.one</i18n> <strong>
+								<i18n>directory.one.user</i18n>
+							</strong>
+						</div>
+						<div class="spacer-small"></div>
+						<div class="reduce-block-four">
+							<div class="search-pagination flex-row align-center">
+								<div class="cell twelve">
+									<input class="twelve" type="text" translate attr="placeholder"
+										ng-model="discoverVisible.filters.search" placeholder="userBook.search" />
+								</div>
+							</div>
+							<div class="reduce-block-eight horizontal-margin">
+								<div class="spacer-small"></div>
+								<multi-comboboxes ng-model="discoverVisible.filters.structures"
+									options="discoverVisible.options.structures"
+									title-all="[[lang.translate('directory.allStructures')]]"
+									title="[[lang.translate('directory.structures')]]" check="onCheck(option)"
+									search-placeholder="directory.search.structure">
+								</multi-comboboxes>
+								<multi-comboboxes ng-if="discoverVisible.options.profiles.length>1" ng-model="discoverVisible.filters.profiles"
+									options="discoverVisible.options.profiles"
+									title-all="[[lang.translate('directory.allProfiles')]]"
+									title="[[lang.translate('directory.profiles')]]" disable-search="true">
+								</multi-comboboxes>
+								<div class="spacer-small"></div>
+								<button type="button" ng-click="getDiscoverVisibleSearchUsers()" class="twelve">
+									<i18n>portal.search</i18n>
+								</button>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="reduce-block-eight centered row centered-text twelve"
+					ng-class='{ "divide-opacity": display.loadingmobile }'>
+					<div class="spacer-small"></div>
+					<div class="only-desktop">
+						<button type="button"
+							ng-disabled="discoverVisible.displayEditGroup || discoverVisible.displayCreateGroup"
+							ng-click="discoverVisibleDisplayCreateOrEditGroup('add')" class="twelve">
+							<i18n>userbook.discover.visible.groups.create</i18n>
+						</button>
+					</div>
+				</div>
+			</search-module>
 		</div>
 		<div class="absolute-position-w centered-text zero-large-desktop" ng-if="display.loadingmobile">
-			<img skin-src="/img/illustrations/loading.gif" width="100px" heigh="100px"/>
+			<img skin-src="/img/illustrations/loading.gif" width="100px" heigh="100px" />
 		</div>
-		
-	</section>
-	<section class="margin-four margin-wide-four top-spacing-twice" ng-class="{ 'only-large-desktop' : !display.searchmobile  }">
 
-		<!-- Results list template (dominos) -->	
-		<div ng-class="{ 'twelve': !currentUser || display.searchmobile, 'four zero-mobile': currentUser && !display.searchmobile}" 
-			class="cell horizontal-spacing"
-			ng-if="!currentUser">
+	</section>
+	<section class="margin-four margin-wide-four top-spacing-twice"
+		ng-class="{ 'only-large-desktop' : !display.searchmobile  }">
+
+		<!-- Results list template (dominos) -->
+		<div ng-class="{ 'twelve': !currentUser || display.searchmobile, 'four zero-mobile': currentUser && !display.searchmobile}"
+			class="cell horizontal-spacing" ng-if="!currentUser">
 			<div data-ng-include="template.containers.list"></div>
 		</div>
 
 		<!-- User details template -->
-		<div ng-if="currentUser"
-			class="left-spacing-twice horizontal-margin-zero-mobile">
+		<div ng-if="currentUser" class="left-spacing-twice horizontal-margin-zero-mobile">
 			<div data-ng-include="template.containers.details" class="side-panel-right twelve cell twelve-mobile"></div>
 		</div>
 	</section>

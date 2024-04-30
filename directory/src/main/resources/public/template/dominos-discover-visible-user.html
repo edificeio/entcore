@@ -1,0 +1,35 @@
+<section class="domino overflow-hd" ng-class="colorFromType(user.profile != null ? user.profile : user.type)">
+    <div class="top" ng-style="avatarFor(user,'290x290')"></div>
+
+    <div class="center">
+        <p class="nomargin" translate
+            content="directory.[[getType(user.profile != null ? user.profile : user.type).toLowerCase()]]"></p>
+        <p ng-if="hasSubject(user)" class="nomargin discipline cell-ellipsis" tooltip="[[getSubject(user)]]">Matière :
+            [[getSubject(user)]]</p>
+    </div>
+
+    <div class="bottom" style="padding: 10px;">
+        <div class="content">
+           
+            <div class="twelve cell">
+                <div class="multiline-ellipsis-three" style="line-height: inherit; margin-bottom: 20px;">
+                    <span>[[user.displayName]]</span>
+                </div>
+            </div>
+
+                 
+            <div class="bottom-locked" style="margin-top: 10px; margin-bottom: 10px;">
+                <a ng-if="!user.hasCommunication" ng-click="discoverVisibleCommuteUsers(user.id)">
+                    <i class="plus" style="margin-right: 7px;" tooltip="<i18n>userbook.discover.visible.user.add.relation.tooltip</i18n>"></i>
+                </a>
+                <a ng-if="user.hasCommunication" ng-href="/conversation/conversation#/write-mail/[[user.id]]">
+                    <i class="send-mail" tooltip="<i18n>userBook.class.write-message</i18n>"></i>
+                </a>
+                <a ng-if="user.hasCommunication" ng-click="discoverVisibleRemoveCommuteUsers(user.id)">
+                    <i class="cancel" style="margin-right: 9px; color: #ff0000;" tooltip="<i18n>userbook.discover.visible.user.delete.relation.tooltip</i18n>"></i>
+                </a>
+            </div>
+
+        </div>
+    </div>
+</section>

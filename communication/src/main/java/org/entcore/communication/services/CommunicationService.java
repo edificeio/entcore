@@ -22,8 +22,10 @@ package org.entcore.communication.services;
 import fr.wseduc.webutils.Either;
 
 import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserInfos;
 
 import java.util.Arrays;
@@ -146,4 +148,23 @@ public interface CommunicationService {
 	 * @param handler     final handler
 	 */
 	void verify(String senderId, String recipientId, Handler<Either<String, JsonObject>> handler);
+
+	void getDiscoverVisibleUsers(String userId, JsonObject filter, JsonArray discoverVisibleExpectedProfile, final Handler<Either<String, JsonArray>> handler);
+
+	void getDiscoverVisibleStructures(final Handler<Either<String, JsonArray>> handler);
+
+	void discoverVisibleAddCommuteUsers(UserInfos user, String recipientId, JsonArray discoverVisibleExpectedProfile,TimelineHelper notifyTimeline, HttpServerRequest request, Handler<Either<String, JsonObject>> handler);
+
+	void discoverVisibleRemoveCommuteUsers(String senderId, String recipientId, Handler<Either<String, JsonObject>> handler);
+
+	void discoverVisibleGetGroups(String userId, Handler<Either<String, JsonArray>> handler);
+
+	void discoverVisibleGetUsersInGroup(String userId, String groupId,  Handler<Either<String, JsonArray>> handler);
+
+	void createDiscoverVisibleGroup(String userId, JsonObject body, Handler<Either<String, JsonObject>> handler);
+
+	void updateDiscoverVisibleGroup(String userId, String groupId, JsonObject body, Handler<Either<String, JsonObject>> handler);
+
+	void addDiscoverVisibleGroupUsers(UserInfos user, String groupId, JsonObject body, JsonArray discoverVisibleExpectedProfile, TimelineHelper notifyTimeline, HttpServerRequest request, Handler<Either<String, JsonObject>> handler);
 }
+

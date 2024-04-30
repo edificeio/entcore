@@ -19,7 +19,9 @@
 
 package org.entcore.communication;
 
+import io.vertx.core.json.JsonArray;
 import org.entcore.common.http.BaseServer;
+import org.entcore.common.notification.TimelineHelper;
 import org.entcore.communication.controllers.CommunicationController;
 import org.entcore.communication.filters.CommunicationFilter;
 import org.entcore.communication.services.impl.DefaultCommunicationService;
@@ -30,9 +32,10 @@ public class Communication extends BaseServer {
 	@Override
 	public void start() throws Exception {
 		super.start();
-		CommunicationController communicationController = new CommunicationController();
+		TimelineHelper helper = new TimelineHelper(vertx, vertx.eventBus(), config);
+		CommunicationController communicationController = new CommunicationController(helper, config.getJsonArray("discoverVisibleExpectedProfile", new JsonArray()));
 		if (config.getBoolean("xp-com-rules", false)) {
-			communicationController.setCommunicationService(new XpCommunicationService());
+			communicationController.setCommunicationService(new XpCommunicationService(config.getJsonArray("discoverVisibleExpectedProfile", new JsonArray())));
 		} else {
 			communicationController.setCommunicationService(new DefaultCommunicationService());
 		}
