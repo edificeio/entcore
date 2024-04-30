@@ -73,6 +73,7 @@ import org.entcore.auth.oauth.OAuthDataHandler;
 import org.entcore.auth.pojo.SendPasswordDestination;
 import org.entcore.auth.services.MfaService;
 import org.entcore.auth.services.SafeRedirectionService;
+import org.entcore.auth.services.impl.OpenIdSloServiceImpl;
 import org.entcore.auth.users.UserAuthAccount;
 import org.entcore.common.datavalidation.UserValidation;
 import org.entcore.common.events.EventStore;
@@ -93,12 +94,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -121,14 +119,10 @@ public class AuthController extends BaseController {
 	private ClientCredentialFetcher clientCredentialFetcher;
 	private long sessionsLimit;
 	private HttpClient sessionLimitConfClient;
-	private HttpClient httpClient;
 	private JsonArray ipAllowedByPassLimit;
 	protected final SafeRedirectionService redirectionService = SafeRedirectionService.getInstance();
 	private MfaService mfaSvc;
-	private static String CLIENT_ID = "clientId";
-	private static String USER_ID = "userId";
-	private static String SESSION_ID = "sessionId";
-	private static String LOGOUT_URL = "logoutUrl";
+	private OpenIdSloServiceImpl sloServiceImpl;
 
 	public enum AuthEvent {
 		ACTIVATION, LOGIN, SMS
@@ -146,7 +140,6 @@ public class AuthController extends BaseController {
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
-		httpClient = vertx.createHttpClient();
 		GrantHandlerProvider grantHandlerProvider = new DefaultGrantHandlerProvider();
 		clientCredentialFetcher = new ClientCredentialFetcherImpl();
 		token = new Token();
@@ -218,6 +211,7 @@ public class AuthController extends BaseController {
 		invalidEmails = MapFactory.getSyncClusterMap("invalidEmails", vertx);
 		internalAddress = config.getJsonArray("internalAddress",
 				new fr.wseduc.webutils.collections.JsonArray().add("localhost").add("127.0.0.1")).getList();
+		sloServiceImpl = new OpenIdSloServiceImpl(vertx, oauthDataFactory);
 	}
 
 	/**
@@ -235,69 +229,8 @@ public class AuthController extends BaseController {
 	@BusAddress("openid")
 	public void sloOpenId(final Message<JsonObject> message) {
 		if (message != null && message.body().getString("action").equals("oidc-slo")) {
-			JsonObject logoutToken = new JsonObject();
-			List<JsonObject> clients = new ArrayList<>();
-			if (message.body() != null && isNotEmpty(message.body().getString(SESSION_ID))
-					&& isNotEmpty(message.body().getString(USER_ID))) {
-				JsonObject obj = new JsonObject()
-						.put(USER_ID, message.body().getString(USER_ID))
-						.put(SESSION_ID, message.body().getString(SESSION_ID));
-				final DataHandler data = oauthDataFactory.create(new JsonRequestAdapter(obj));
-				((OAuthDataHandler) data).getAuthorizationsBySessionId(obj.getString(SESSION_ID), authorizations -> {
-					if (authorizations == null)
-						return;
-					for (JsonObject authorization : authorizations) {
-						((OAuthDataHandler) data).deleteTokensByAuthId(authorization.getString("id"));
-						JsonObject client = new JsonObject()
-								.put(SESSION_ID, authorization.getString(SESSION_ID))
-								.put(USER_ID, authorization.getString(USER_ID))
-								.put(CLIENT_ID, authorization.getString(CLIENT_ID))
-								.put(LOGOUT_URL, authorization.getString(LOGOUT_URL));
-						clients.add(client);
-						Set<JsonObject> set = new LinkedHashSet<>(clients);
-						clients.clear();
-						clients.addAll(set);
-						((OAuthDataHandler) data).deleteAuthorization(client, res -> {
-							if (res.body() != null)
-								log.debug("Authorization deleted");
-						});
-					}
-					for (JsonObject auth : clients) {
-						if (auth.getString(LOGOUT_URL) != null) {
-							((OAuthDataHandler) data).getLogoutToken(auth.getString(
-									USER_ID),
-									auth.getString(CLIENT_ID),
-									response -> {
-										logoutToken.put("logout_token", response).put(LOGOUT_URL,
-												auth.getString(LOGOUT_URL));
-										if (response != null) {
-											sendRequest(logoutToken);
-										}
-									});
-						} else {
-							log.error("logout url is is empty");
-						}
-					}
-
-				});
-			}
-	}
-}
-
-	@SuppressWarnings("deprecation")
-	private void sendRequest(JsonObject data) {
-		HttpClientRequest request = this.httpClient
-				.postAbs(data.getString(LOGOUT_URL), response -> {
-					log.debug("Response received with status code " + response.statusCode());
-					response.bodyHandler(body -> log.debug("Body: " + body.toString()));
-				})
-				.putHeader("content-type", "application/json")
-				.putHeader("content-length",
-						String.valueOf(
-								new JsonObject().put("logout_token", data.getString("logout_token")).toString()
-										.length()))
-				.write(new JsonObject().put("logout_token", data.getString("logout_token")).toString());
-		request.end();
+			sloServiceImpl.sloOpenId(message);
+		}
 	}
 
 	@Get("/oauth2/auth")

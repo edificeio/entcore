@@ -38,9 +38,6 @@ import static fr.wseduc.webutils.Utils.isEmpty;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.eventbus.Message;
 
 public class OpenIdConnectController extends AbstractFederateController {
 
@@ -56,16 +53,18 @@ public class OpenIdConnectController extends AbstractFederateController {
 
 	// Just endpoint for testing oidc slo back-channel
 
-	@Post("/openid/test")
-	public void test(HttpServerRequest request) {
-		eb.send("openid", new JsonObject()
-				.put("action", "oidc-slo")
-				.put("userId", request.getParam("userId"))
-				.put("sessionId", request.getParam("sessionId")));
-		renderJson(request, new JsonObject()
-				.put("action", "oidc-slo")
-				.put("sessionId", request.getParam("sessionId")));
-	}
+	/*
+	 * @Post("/openid/test")
+	 * public void test(HttpServerRequest request) {
+	 * eb.send("openid", new JsonObject()
+	 * .put("action", "oidc-slo")
+	 * .put("userId", request.getParam("userId"))
+	 * .put("sessionId", request.getParam("sessionId")));
+	 * renderJson(request, new JsonObject()
+	 * .put("action", "oidc-slo")
+	 * .put("sessionId", request.getParam("sessionId")));
+	 * }
+	 */
 
 
 	@Get("/openid/login")
