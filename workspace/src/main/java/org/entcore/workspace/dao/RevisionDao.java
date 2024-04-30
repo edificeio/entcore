@@ -22,10 +22,11 @@ package org.entcore.workspace.dao;
 import java.util.Optional;
 import java.util.Set;
 
+import com.mongodb.client.model.Filters;
 import io.vertx.core.Promise;
+import org.bson.conversions.Bson;
 import org.entcore.common.mongodb.MongoDbResult;
 
-import com.mongodb.QueryBuilder;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
@@ -55,7 +56,7 @@ public class RevisionDao extends GenericDao {
 	public Future<Optional<JsonObject>> getLastRevision(String documentId) {
 		Promise<Optional<JsonObject>> future = Promise.promise();
 		JsonObject mongoSorts = new JsonObject().put("date", -1);
-		final QueryBuilder builder = QueryBuilder.start("documentId").is(documentId);
+		final Bson builder = Filters.eq("documentId", documentId);
 		mongo.find(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder), mongoSorts, null, 0, 2,
 				Integer.MAX_VALUE, MongoDbResult.validResultsHandler(res -> {
 					if (res.isLeft()) {
@@ -74,7 +75,7 @@ public class RevisionDao extends GenericDao {
 	public Future<JsonArray> getLastRevision(String documentId, int count) {
 		Promise<JsonArray> future = Promise.promise();
 		JsonObject mongoSorts = new JsonObject().put("date", -1);
-		final QueryBuilder builder = QueryBuilder.start("documentId").is(documentId);
+		final Bson builder = Filters.eq("documentId", documentId);
 		mongo.find(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder), mongoSorts, null, 0, count,
 				Integer.MAX_VALUE, MongoDbResult.validResultsHandler(res -> {
 					if (res.isLeft()) {
@@ -90,7 +91,7 @@ public class RevisionDao extends GenericDao {
 	}
 
 	public Future<JsonObject> findByDocAndId(String documentId, String revisionId) {
-		final QueryBuilder builder = QueryBuilder.start("_id").is(revisionId).and("documentId").is(documentId);
+		final Bson builder = Filters.and(Filters.eq("_id", revisionId), Filters.eq("documentId", documentId));
 		Promise<JsonObject> future = Promise.promise();
 		mongo.findOne(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
 				MongoDbResult.validResultHandler(res -> {
@@ -124,7 +125,7 @@ public class RevisionDao extends GenericDao {
 
 	public Future<JsonObject> deleteByDocAndId(String documentId, String revisionId) {
 		Promise<JsonObject> future = Promise.promise();
-		final QueryBuilder builder = QueryBuilder.start("_id").is(revisionId).and("documentId").is(documentId);
+		final Bson builder = Filters.and(Filters.eq("_id", revisionId), Filters.eq("documentId", documentId));
 		mongo.delete(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
 				MongoDbResult.validResultHandler(new Handler<Either<String, JsonObject>>() {
 					public void handle(Either<String, JsonObject> event) {
@@ -141,7 +142,7 @@ public class RevisionDao extends GenericDao {
 	}
 
 	public Future<JsonArray> findByDoc(String documentId) {
-		final QueryBuilder builder = QueryBuilder.start("documentId").is(documentId);
+		final Bson builder = Filters.eq("documentId", documentId);
 		Promise<JsonArray> future = Promise.promise();
 		mongo.find(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
 				MongoDbResult.validResultsHandler(res -> {
@@ -157,7 +158,7 @@ public class RevisionDao extends GenericDao {
 	}
 
 	public Future<JsonArray> findByDocs(Set<String> documentId) {
-		final QueryBuilder builder = QueryBuilder.start("documentId").in(documentId);
+		final Bson builder = Filters.in("documentId", documentId);
 		Promise<JsonArray> future = Promise.promise();
 		mongo.find(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
 				MongoDbResult.validResultsHandler(res -> {
@@ -174,7 +175,7 @@ public class RevisionDao extends GenericDao {
 
 	public Future<JsonObject> deleteByDoc(String documentId) {
 		Promise<JsonObject> future = Promise.promise();
-		final QueryBuilder builder = QueryBuilder.start("documentId").is(documentId);
+		final Bson builder = Filters.eq("documentId", documentId);
 		mongo.delete(DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
 				MongoDbResult.validResultHandler(new Handler<Either<String, JsonObject>>() {
 					public void handle(Either<String, JsonObject> event) {

@@ -1,6 +1,6 @@
 package org.entcore.test;
 
-import com.mongodb.QueryBuilder;
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.Either;
@@ -13,6 +13,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import org.bson.conversions.Bson;
 import org.entcore.common.elasticsearch.ElasticClientManager;
 import org.entcore.common.mongodb.MongoDbResult;
 import org.entcore.common.neo4j.Neo4j;
@@ -275,7 +276,7 @@ public class DatabaseTestHelper {
 
     /** Look for a single object by its id, in a mongoDB collection. */
     public Future<JsonObject> executeMongoWithUniqueResultById(String collection, String id) {
-        QueryBuilder builder = QueryBuilder.start("_id").is(id);
+        Bson builder = Filters.eq("_id", id);
         final MongoDb mongo = MongoDb.getInstance();
         final Promise<JsonObject> future = Promise.promise();
         mongo.findOne(collection, MongoQueryBuilder.build(builder), MongoDbResult.validResultHandler(res -> {

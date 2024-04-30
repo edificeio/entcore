@@ -19,12 +19,15 @@
 
 package org.entcore.directory.services.impl;
 
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
+import fr.wseduc.webutils.request.filter.Filter;
 import io.vertx.core.eventbus.DeliveryOptions;
+import org.bson.conversions.Bson;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.directory.Directory;
@@ -37,7 +40,6 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.List;
 
-import com.mongodb.QueryBuilder;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
@@ -328,7 +330,7 @@ public class DefaultTimetableService implements TimetableService {
 				{
 					String UAI = either.right().getValue();
 
-					QueryBuilder query = QueryBuilder.start("UAI").is(UAI);
+					Bson query = Filters.eq("UAI", UAI);
 					JsonObject sort = new JsonObject()
 						.put("created", -1);
 					JsonObject projection = new JsonObject()
@@ -364,9 +366,9 @@ public class DefaultTimetableService implements TimetableService {
 				{
 					String UAI = either.right().getValue();
 
-					QueryBuilder query = QueryBuilder.start().and(
-						QueryBuilder.start("UAI").is(UAI).get(),
-						QueryBuilder.start("_id").is(reportId).get()
+					Bson query = Filters.and(
+						Filters.eq("UAI", UAI),
+						Filters.eq("_id", reportId)
 					);
 					JsonObject projection = new JsonObject()
 						.put("_id", 1)

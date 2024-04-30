@@ -19,20 +19,18 @@
 
 package org.entcore.workspace.dao;
 
-import java.util.Date;
-
-import io.vertx.core.Promise;
-import org.entcore.common.folders.impl.DocumentHelper;
-import org.entcore.common.mongodb.MongoDbResult;
-import org.entcore.common.utils.StringUtils;
-
-import com.mongodb.QueryBuilder;
-
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
+import org.bson.conversions.Bson;
+import org.entcore.common.folders.impl.DocumentHelper;
+import org.entcore.common.mongodb.MongoDbResult;
+
+import java.util.Date;
 
 public class DocumentDao extends GenericDao {
 
@@ -42,7 +40,7 @@ public class DocumentDao extends GenericDao {
 		super(mongo, DOCUMENTS_COLLECTION);
 	}
 
-	static JsonObject toJson(QueryBuilder queryBuilder) {
+	static JsonObject toJson(Bson queryBuilder) {
 		return MongoQueryBuilder.build(queryBuilder);
 	}
 
@@ -55,7 +53,7 @@ public class DocumentDao extends GenericDao {
 	}
 
 	public Future<JsonObject> findById(String id) {
-		final QueryBuilder builder = QueryBuilder.start("_id").is(id);
+		final Bson builder = Filters.eq("_id", id);
 		Promise<JsonObject> future = Promise.promise();
 		mongo.findOne(DOCUMENTS_COLLECTION, MongoQueryBuilder.build(builder), MongoDbResult.validResultHandler(res -> {
 			if (res.isLeft()) {
@@ -79,7 +77,7 @@ public class DocumentDao extends GenericDao {
 				.set("thumbnails", revision.getJsonObject("thumbnails"))//
 				.set("metadata", revision.getJsonObject("metadata"))//
 				.set("nameSearch", name != null ? DocumentHelper.prepareNameForSearch(name) : "").unset("previewDate");
-		mongo.update(collection, toJson(QueryBuilder.start("_id").is(docId)), set.build(), message -> {
+		mongo.update(collection, toJson(Filters.eq("_id", docId)), set.build(), message -> {
 			JsonObject body = message.body();
 			if (isOk(body)) {
 				JsonObject doc = new JsonObject()

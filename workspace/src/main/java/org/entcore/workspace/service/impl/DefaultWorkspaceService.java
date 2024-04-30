@@ -1,7 +1,7 @@
 package org.entcore.workspace.service.impl;
 
 import com.google.thirdparty.publicsuffix.PublicSuffixType;
-import com.mongodb.QueryBuilder;
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.DefaultAsyncResult;
@@ -14,6 +14,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+import org.bson.conversions.Bson;
 import org.entcore.common.folders.ElementQuery;
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.folders.impl.DocumentHelper;
@@ -345,14 +346,14 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 	}
 
 	public void listRevisions(final String id, final Handler<Either<String, JsonArray>> handler) {
-		final QueryBuilder builder = QueryBuilder.start("documentId").is(id);
+		final Bson builder = Filters.eq("documentId", id);
 		mongo.find(RevisionDao.DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
 				MongoDbResult.validResultsHandler(handler));
 	}
 
 	public void getRevision(final String documentId, final String revisionId,
 			final Handler<Either<String, JsonObject>> handler) {
-		final QueryBuilder builder = QueryBuilder.start("_id").is(revisionId).and("documentId").is(documentId);
+		final Bson builder = Filters.and(Filters.eq("_id", revisionId), Filters.eq("documentId", documentId));
 		mongo.findOne(RevisionDao.DOCUMENT_REVISION_COLLECTION, MongoQueryBuilder.build(builder),
 				MongoDbResult.validResultHandler(handler));
 	}
@@ -696,11 +697,11 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 			default:
 				handler.handle(null);
 		}
-		QueryBuilder qb = QueryBuilder.start().and(
-                QueryBuilder.start("_id").in(documentIds).get(),
-                QueryBuilder.start().or(
-                    QueryBuilder.start("protected").is(true).get(),
-                    QueryBuilder.start("public").is(true).get()).get()
+		Bson qb = Filters.and(
+                Filters.in("_id", documentIds),
+                Filters.or(
+                    Filters.eq("protected", true),
+                    Filters.eq("public", true))
         );
 		JsonObject query = MongoQueryBuilder.build(qb);
 		mongo.update(DocumentDao.DOCUMENTS_COLLECTION, query, jo,false, true, (MongoDb.WriteConcern)null, res -> handler.handle(res));

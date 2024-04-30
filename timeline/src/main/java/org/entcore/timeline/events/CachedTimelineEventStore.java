@@ -1,5 +1,6 @@
 package org.entcore.timeline.events;
 
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.Either;
@@ -19,7 +20,6 @@ import org.entcore.timeline.services.TimelineConfigService;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import com.mongodb.QueryBuilder;
 
 public class CachedTimelineEventStore implements TimelineEventStore {
     private static Logger logger = LoggerFactory.getLogger(CachedTimelineEventStore.class);
@@ -259,7 +259,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
     }
 
     protected void removeById(String id, final Handler<Void> handler){
-        mongo.findOne(DefaultTimelineEventStore.TIMELINE_COLLECTION, MongoQueryBuilder.build(QueryBuilder.start("_id").is(id)), message->{
+        mongo.findOne(DefaultTimelineEventStore.TIMELINE_COLLECTION, MongoQueryBuilder.build(Filters.eq("_id", id)), message->{
             //do action
             handler.handle(null);
             //then delete from cache

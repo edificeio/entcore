@@ -19,11 +19,13 @@
 
 package org.entcore.registry.services.impl;
 
+import com.mongodb.client.model.Filters;
 import io.vertx.core.Handler;
 import io.vertx.core.http.*;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
 
+import org.bson.conversions.Bson;
 import org.entcore.registry.services.WidgetExternalCacheService;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.mongodb.MongoDbResult;
@@ -32,7 +34,6 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 
-import com.mongodb.QueryBuilder;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -97,7 +98,7 @@ public class DefaultWidgetExternalCacheService implements WidgetExternalCacheSer
 
     private void getCache(WidgetExternalCacheConf cache, Handler<Either<String, JsonObject>> handler)
     {
-        final QueryBuilder builder = QueryBuilder.start("_id").is(cache.id);
+        final Bson builder = Filters.eq("_id", cache.id);
         mongo.findOne(EXTERNAL_CACHE_COLLECTION, MongoQueryBuilder.build(builder), MongoDbResult.validResultHandler(new Handler<Either<String, JsonObject>>()
         {
             @Override

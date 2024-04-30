@@ -19,7 +19,7 @@
 
 package org.entcore.timeline.services.impl;
 
-import com.mongodb.QueryBuilder;
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.Either;
@@ -741,9 +741,11 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 	 */
 	private void getUserNotifications(String userId, Date from, Date to, final Handler<JsonArray> handler){
 		JsonObject matcher = MongoQueryBuilder.build(
-				QueryBuilder
-						.start("recipients").elemMatch(QueryBuilder.start("userId").is(userId).get())
-						.and("date").greaterThanEquals(from).lessThan(to));
+				Filters.and(
+						Filters.elemMatch("recipients", Filters.eq("userId", userId)),
+						Filters.gte("date", from),
+						Filters.lt("date",to)
+						));
 
 		JsonObject keys = new JsonObject()
 				.put("_id", 0)
@@ -783,7 +785,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 				.put("pipeline", pipeline)
 				.put("cursor", new JsonObject().put("batchSize", Integer.MAX_VALUE));
 
-		JsonObject matcher = MongoQueryBuilder.build(QueryBuilder.start("date").greaterThanEquals(from).lessThan(to));
+		JsonObject matcher = MongoQueryBuilder.build(Filters.and(Filters.gte("date", from), Filters.lt("date", to)));
 
 		pipeline.add(new JsonObject().put("$match", matcher));
 		pipeline.add(new JsonObject().put("$unwind", "$recipients"));
@@ -851,9 +853,11 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 				.put("cursor", new JsonObject().put("batchSize", Integer.MAX_VALUE));
 
 		JsonObject matcher = MongoQueryBuilder.build(
-				QueryBuilder
-						.start("recipients").elemMatch(QueryBuilder.start("userId").is(userId).get())
-						.and("date").greaterThanEquals(from).lessThan(to));
+				Filters.and(
+						Filters.elemMatch("recipients", Filters.eq("userId", userId)),
+						Filters.gte("date", from),
+						Filters.lt("date", to)
+						));
 		JsonObject grouper = new JsonObject("{ \"_id\" : { \"type\": \"$type\", \"event-type\": \"$event-type\"}, \"count\": { \"$sum\": 1 } }");
 		JsonObject transformer = new JsonObject("{ \"type\": \"$_id.type\", \"event-type\": \"$_id.event-type\", \"count\": 1, \"_id\": 0 }");
 

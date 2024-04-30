@@ -22,7 +22,7 @@
 
 package org.entcore.workspace;
 
-import com.mongodb.QueryBuilder;
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import io.vertx.core.Future;
@@ -298,7 +298,7 @@ public class DocumentTest {
                     workspaceService.trash(id, user, res2 -> {
                         context.assertTrue(res2.succeeded());
                         test.database().executeMongoWithUniqueResult("documents",
-                                MongoQueryBuilder.build(QueryBuilder.start("_id").is(id))).onComplete(res3 -> {
+                                MongoQueryBuilder.build(Filters.eq("_id", id))).onComplete(res3 -> {
                             context.assertTrue(res3.succeeded());
                             System.out.println(res3.result().encodePrettily());
                             Boolean deleted = res3.result().getBoolean("deleted");
