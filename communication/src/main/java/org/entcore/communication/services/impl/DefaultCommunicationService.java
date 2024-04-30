@@ -25,14 +25,17 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.StatementsBuilder;
+import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.validation.StringValidation;
 import org.entcore.communication.services.CommunicationService;
 
 import java.util.HashMap;
@@ -50,17 +53,17 @@ import static org.entcore.common.neo4j.Neo4jResult.*;
 public class DefaultCommunicationService implements CommunicationService {
 
 	protected final Neo4j neo4j = Neo4j.getInstance();
-    private static final String CAN_COMMUNICATE_VERIFY = "canCommunicate";
+	private static final String CAN_COMMUNICATE_VERIFY = "canCommunicate";
 
-    protected static final Logger log = LoggerFactory.getLogger(DefaultCommunicationService.class);
+	protected static final Logger log = LoggerFactory.getLogger(DefaultCommunicationService.class);
 
 	@Override
 	public void addLink(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler) {
 		String query =
 				"MATCH (g1:Group {id : {startGroupId}}), (g2:Group {id : {endGroupId}}) " +
-				"SET g1.communiqueWith = coalesce(g1.communiqueWith, []) + {endGroupId} " +
-				"CREATE UNIQUE g1-[:COMMUNIQUE { source: 'MANUAL'}]->g2 " +
-				"RETURN COUNT(*) as number ";
+						"SET g1.communiqueWith = coalesce(g1.communiqueWith, []) + {endGroupId} " +
+						"CREATE UNIQUE g1-[:COMMUNIQUE { source: 'MANUAL'}]->g2 " +
+						"RETURN COUNT(*) as number ";
 		JsonObject params = new JsonObject()
 				.put("startGroupId", startGroupId)
 				.put("endGroupId", endGroupId);
@@ -71,10 +74,10 @@ public class DefaultCommunicationService implements CommunicationService {
 	public void removeLink(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler) {
 		String query =
 				"MATCH (g1:Group {id : {startGroupId}})-[r:COMMUNIQUE]->(g2:Group {id : {endGroupId}}) " +
-				"SET g1.communiqueWith = FILTER(gId IN g1.communiqueWith WHERE gId <> COALESCE({endGroupId},\"\")), " +
+						"SET g1.communiqueWith = FILTER(gId IN g1.communiqueWith WHERE gId <> COALESCE({endGroupId},\"\")), " +
 						"g2.communiqueWith = coalesce(g2.communiqueWith, []) " +
-				"DELETE r " +
-				"RETURN COUNT(*) as number ";
+						"DELETE r " +
+						"RETURN COUNT(*) as number ";
 		JsonObject params = new JsonObject()
 				.put("startGroupId", startGroupId)
 				.put("endGroupId", endGroupId);
@@ -83,12 +86,12 @@ public class DefaultCommunicationService implements CommunicationService {
 
 	@Override
 	public void addLinkWithUsers(String groupId, Direction direction, Handler<Either<String, JsonObject>> handler) {
-		if( Direction.NONE.equals(direction) ) {
+		if (Direction.NONE.equals(direction)) {
 			// With a direction of NONE, only update the 'users' property.
 			String query =
-				"MATCH (g:Group { id : {groupId}}) " +
-				"SET g.users = {direction} "+ 
-				"RETURN 0 as number ";
+					"MATCH (g:Group { id : {groupId}}) " +
+							"SET g.users = {direction} " +
+							"RETURN 0 as number ";
 			JsonObject params = new JsonObject().put("groupId", groupId).put("direction", direction.name());
 			neo4j.execute(query, params, validUniqueResultHandler(handler));
 		} else {
@@ -105,11 +108,11 @@ public class DefaultCommunicationService implements CommunicationService {
 			}
 			String query =
 					"MATCH (g:Group { id : {groupId}}) " +
-					"SET g.users = {direction} " +
-					"WITH g " +
-					"MATCH g<-[:IN]-(u:User) " +
-					"CREATE UNIQUE " + createRelationship +
-					"RETURN COUNT(*) as number ";
+							"SET g.users = {direction} " +
+							"WITH g " +
+							"MATCH g<-[:IN]-(u:User) " +
+							"CREATE UNIQUE " + createRelationship +
+							"RETURN COUNT(*) as number ";
 			JsonObject params = new JsonObject().put("groupId", groupId).put("direction", direction.name());
 			neo4j.execute(query, params, validUniqueResultHandler(handler));
 		}
@@ -121,11 +124,11 @@ public class DefaultCommunicationService implements CommunicationService {
 			StatementsBuilder sb = new StatementsBuilder();
 
 			params.forEach((groupId, direction) -> {
-				if( Direction.NONE.equals(direction) ) {
+				if (Direction.NONE.equals(direction)) {
 					// With a direction of NONE, only update the 'users' property.
 					String query =
-						"MATCH (g:Group { id : {groupId}}) " +
-						"SET g.users = {direction} ";
+							"MATCH (g:Group { id : {groupId}}) " +
+									"SET g.users = {direction} ";
 					sb.add(query, new JsonObject().put("groupId", groupId).put("direction", direction.name()));
 				} else {
 					String createRelationship = null;
@@ -164,7 +167,7 @@ public class DefaultCommunicationService implements CommunicationService {
 		switch (direction) {
 			case NONE:
 				handler.handle(new Either.Right<>(new JsonObject().put("number", 0)));
-				return;	// Nothing more to do.
+				return;    // Nothing more to do.
 			case INCOMING:
 				relationship = "g<-[r:COMMUNIQUE]-(u:User) ";
 				set = "SET g.users = CASE WHEN g.users = 'INCOMING' THEN null ELSE 'OUTGOING' END ";
@@ -179,11 +182,11 @@ public class DefaultCommunicationService implements CommunicationService {
 		}
 		String query =
 				"MATCH (g:Group { id : {groupId}}) " +
-				set +
-				"WITH g " +
-				"MATCH " + relationship +
-				"DELETE r " +
-				"RETURN COUNT(*) as number ";
+						set +
+						"WITH g " +
+						"MATCH " + relationship +
+						"DELETE r " +
+						"RETURN COUNT(*) as number ";
 		JsonObject params = new JsonObject().put("groupId", groupId);
 		neo4j.execute(query, params, validUniqueResultHandler(handler));
 	}
@@ -206,15 +209,15 @@ public class DefaultCommunicationService implements CommunicationService {
 //		}
 		String query =
 				"MATCH (g:Group { id : {groupId}}) " +
-				"OPTIONAL MATCH g-[:COMMUNIQUE]->(g1:Group) " +
-				"RETURN g as group, COLLECT(g1) as communiqueWith ";
+						"OPTIONAL MATCH g-[:COMMUNIQUE]->(g1:Group) " +
+						"RETURN g as group, COLLECT(g1) as communiqueWith ";
 		JsonObject params = new JsonObject().put("groupId", groupId);
 		neo4j.execute(query, params, fullNodeMergeHandler("group", handler, "communiqueWith"));
 	}
 
 	@Override
 	public void addLinkBetweenRelativeAndStudent(String groupId, Direction direction,
-			Handler<Either<String, JsonObject>> handler) {
+												 Handler<Either<String, JsonObject>> handler) {
 		String createRelationship;
 		switch (direction) {
 			case INCOMING:
@@ -228,28 +231,28 @@ public class DefaultCommunicationService implements CommunicationService {
 		}
 		String query =
 				"MATCH (g:Group { id : {groupId}})<-[:IN]-(u:User)<-[:RELATED]-(s:User) " +
-				"SET g.relativeCommuniqueStudent = {direction} " +
-				"CREATE UNIQUE " + createRelationship +
-				"RETURN COUNT(*) as number ";
+						"SET g.relativeCommuniqueStudent = {direction} " +
+						"CREATE UNIQUE " + createRelationship +
+						"RETURN COUNT(*) as number ";
 		JsonObject params = new JsonObject().put("groupId", groupId).put("direction", direction.name());
 		neo4j.execute(query, params, validUniqueResultHandler(handler));
 	}
 
 	@Override
 	public void removeLinkBetweenRelativeAndStudent(String groupId, Direction direction,
-			Handler<Either<String, JsonObject>> handler) {
+													Handler<Either<String, JsonObject>> handler) {
 		String relationship;
 		String set;
 		switch (direction) {
 			case INCOMING:
 				relationship = "g<-[:IN]-(u:User)<-[r:COMMUNIQUE_DIRECT]-(s:User) ";
 				set = "SET g.relativeCommuniqueStudent = " +
-					"CASE WHEN g.relativeCommuniqueStudent = 'INCOMING' THEN null ELSE 'OUTGOING' END ";
+						"CASE WHEN g.relativeCommuniqueStudent = 'INCOMING' THEN null ELSE 'OUTGOING' END ";
 				break;
 			case OUTGOING:
 				relationship = "g<-[:IN]-(u:User)-[r:COMMUNIQUE_DIRECT]->(s:User) ";
 				set = "SET g.relativeCommuniqueStudent = " +
-					"CASE WHEN g.relativeCommuniqueStudent = 'OUTGOING' THEN null ELSE 'INCOMING' END ";
+						"CASE WHEN g.relativeCommuniqueStudent = 'OUTGOING' THEN null ELSE 'INCOMING' END ";
 				break;
 			default:
 				relationship = "g<-[:IN]-(u:User)-[r:COMMUNIQUE_DIRECT]-(s:User) ";
@@ -257,33 +260,33 @@ public class DefaultCommunicationService implements CommunicationService {
 		}
 		String query =
 				"MATCH (g:Group { id : {groupId}}) " +
-				"WHERE HAS(g.relativeCommuniqueStudent) " +
-				set +
-				"WITH g " +
-				"MATCH " + relationship +
-				"DELETE r " +
-				"RETURN COUNT(*) as number ";
+						"WHERE HAS(g.relativeCommuniqueStudent) " +
+						set +
+						"WITH g " +
+						"MATCH " + relationship +
+						"DELETE r " +
+						"RETURN COUNT(*) as number ";
 		JsonObject params = new JsonObject().put("groupId", groupId);
 		neo4j.execute(query, params, validUniqueResultHandler(handler));
 	}
 
 	@Override
 	public void initDefaultRules(JsonArray structureIds, JsonObject defaultRules, final Integer transactionId,
-			final Boolean commit, final Handler<Either<String, JsonObject>> handler) {
+								 final Boolean commit, final Handler<Either<String, JsonObject>> handler) {
 		final StatementsBuilder s1 = new StatementsBuilder();
 		final StatementsBuilder s2 = new StatementsBuilder();
 		final StatementsBuilder s3 = new StatementsBuilder();
 		s3.add(
 				"MATCH (s:Structure)<-[:DEPENDS*1..2]-(g:ProfileGroup) " +
-				"WHERE NOT(HAS(g.communiqueWith)) " +
-				"SET g.communiqueWith = [] "
+						"WHERE NOT(HAS(g.communiqueWith)) " +
+						"SET g.communiqueWith = [] "
 		).add(
 				"MATCH (fg:FunctionGroup) " +
-				"WHERE fg.name ENDS WITH 'AdminLocal' " +
-				"SET fg.users = 'BOTH' "
+						"WHERE fg.name ENDS WITH 'AdminLocal' " +
+						"SET fg.users = 'BOTH' "
 		).add(
 				"MATCH (ag:FunctionalGroup) " +
-				"SET ag.users = 'BOTH' "
+						"SET ag.users = 'BOTH' "
 		);
 		for (String attr : defaultRules.fieldNames()) {
 			initDefaultRules(structureIds, attr, defaultRules.getJsonObject(attr), s1, s2);
@@ -300,19 +303,19 @@ public class DefaultCommunicationService implements CommunicationService {
 								Integer transactionId = event.body().getInteger("transactionId");
 								neo4j.executeTransaction(s3.build(), transactionId, commit.booleanValue(),
 										new Handler<Message<JsonObject>>() {
-									@Override
-									public void handle(Message<JsonObject> message) {
-										if ("ok".equals(message.body().getString("status"))) {
-											handler.handle(new Either.Right<String, JsonObject>(new JsonObject()));
-											log.info("Default communication rules initialized.");
-										} else {
-											handler.handle(new Either.Left<String, JsonObject>(
-													message.body().getString("message")));
-											log.error("Error init default com rules : " +
-													message.body().getString("message"));
-										}
-									}
-								});
+											@Override
+											public void handle(Message<JsonObject> message) {
+												if ("ok".equals(message.body().getString("status"))) {
+													handler.handle(new Either.Right<String, JsonObject>(new JsonObject()));
+													log.info("Default communication rules initialized.");
+												} else {
+													handler.handle(new Either.Left<String, JsonObject>(
+															message.body().getString("message")));
+													log.error("Error init default com rules : " +
+															message.body().getString("message"));
+												}
+											}
+										});
 							} else {
 								handler.handle(new Either.Left<String, JsonObject>(event.body().getString("message")));
 								log.error("Error init default com rules : " + event.body().getString("message"));
@@ -334,16 +337,16 @@ public class DefaultCommunicationService implements CommunicationService {
 	}
 
 	private void initDefaultRules(JsonArray structureIds, String attr, JsonObject defaultRules,
-			final StatementsBuilder existingGroups, final StatementsBuilder newGroups) {
-		final String [] a = attr.split("\\-");
+								  final StatementsBuilder existingGroups, final StatementsBuilder newGroups) {
+		final String[] a = attr.split("\\-");
 		final String c = "Class".equals(a[0]) ? "*2" : "";
 		String relativeStudent = defaultRules.getString("Relative-Student"); // TODO check type in enum
 		if (relativeStudent != null && "Relative".equals(a[1])) {
 			String query =
 					"MATCH (s:Structure)<-[:DEPENDS" + c + "]-(cg:ProfileGroup) " +
-					"WHERE s.id IN {structures} AND NOT(HAS(cg.communiqueWith)) " +
-					"AND cg.name =~ {profile} " +
-					"SET cg.relativeCommuniqueStudent = {direction} ";
+							"WHERE s.id IN {structures} AND NOT(HAS(cg.communiqueWith)) " +
+							"AND cg.name =~ {profile} " +
+							"SET cg.relativeCommuniqueStudent = {direction} ";
 			JsonObject params = new JsonObject()
 					.put("structures", structureIds)
 					.put("direction", relativeStudent)
@@ -354,9 +357,9 @@ public class DefaultCommunicationService implements CommunicationService {
 		if (users != null) {
 			String query =
 					"MATCH (s:Structure)<-[:DEPENDS" + c + "]-(cg:ProfileGroup) " +
-					"WHERE s.id IN {structures} AND NOT(HAS(cg.communiqueWith)) " +
-					"AND cg.name =~ {profile} " +
-					"SET cg.users = {direction} ";
+							"WHERE s.id IN {structures} AND NOT(HAS(cg.communiqueWith)) " +
+							"AND cg.name =~ {profile} " +
+							"SET cg.users = {direction} ";
 			JsonObject params = new JsonObject()
 					.put("structures", structureIds)
 					.put("direction", users)
@@ -369,7 +372,7 @@ public class DefaultCommunicationService implements CommunicationService {
 		StringBuilder groupLabelSB = new StringBuilder("g:ProfileGroup");
 		for (Object o : communiqueWith) {
 			if (!(o instanceof String)) continue;
-			String [] s = ((String) o).split("\\-");
+			String[] s = ((String) o).split("\\-");
 			if ("Class".equals(s[0]) && "Structure".equals(a[0])) {
 				log.warn("Invalid default configuration " + attr + "->" + o.toString());
 			} else if ("Class".equals(s[0])) {
@@ -395,24 +398,24 @@ public class DefaultCommunicationService implements CommunicationService {
 		if (!classes.isEmpty()) {
 			String query =
 					"MATCH (s:Structure)<-[:DEPENDS" + c + "]-(cg:ProfileGroup)-[:DEPENDS]->(c:Class) " +
-					"WHERE s.id IN {structures} AND HAS(cg.communiqueWith) AND cg.name =~ {profile} " +
-					"WITH cg, c " +
-					"MATCH c<-[:DEPENDS]-(g) " +
-					"WHERE (" + groupLabel + ") AND NOT(HAS(g.communiqueWith)) AND g.name =~ {otherProfile} " +
-					"SET cg.communiqueWith = FILTER(gId IN cg.communiqueWith WHERE gId <> COALESCE(g.id,\"\")) + g.id ";
+							"WHERE s.id IN {structures} AND HAS(cg.communiqueWith) AND cg.name =~ {profile} " +
+							"WITH cg, c " +
+							"MATCH c<-[:DEPENDS]-(g) " +
+							"WHERE (" + groupLabel + ") AND NOT(HAS(g.communiqueWith)) AND g.name =~ {otherProfile} " +
+							"SET cg.communiqueWith = FILTER(gId IN cg.communiqueWith WHERE gId <> COALESCE(g.id,\"\")) + g.id ";
 			String query2 =
 					"MATCH (s:Structure)<-[:DEPENDS" + c + "]-(cg:ProfileGroup)-[:DEPENDS]->(c:Class) " +
-					"WHERE s.id IN {structures} AND NOT(HAS(cg.communiqueWith)) AND cg.name =~ {profile} " +
-					"WITH cg, c, s " +
-					"MATCH c<-[:DEPENDS]-(g) " +
-					"WHERE  (" + groupLabel + ") AND g.name =~ {otherProfile} " +
-					"SET cg.communiqueWith = coalesce(cg.communiqueWith, []) + g.id ";
+							"WHERE s.id IN {structures} AND NOT(HAS(cg.communiqueWith)) AND cg.name =~ {profile} " +
+							"WITH cg, c, s " +
+							"MATCH c<-[:DEPENDS]-(g) " +
+							"WHERE  (" + groupLabel + ") AND g.name =~ {otherProfile} " +
+							"SET cg.communiqueWith = coalesce(cg.communiqueWith, []) + g.id ";
 			if (!structures.isEmpty()) {
 				query2 +=
 						"WITH DISTINCT s, cg " +
-						"MATCH s<-[:DEPENDS]-(g) " +
-						"WHERE (" + groupLabel + ") AND g.name =~ {structureProfile} " +
-						"SET cg.communiqueWith = coalesce(cg.communiqueWith, []) + g.id ";
+								"MATCH s<-[:DEPENDS]-(g) " +
+								"WHERE (" + groupLabel + ") AND g.name =~ {structureProfile} " +
+								"SET cg.communiqueWith = coalesce(cg.communiqueWith, []) + g.id ";
 			}
 			JsonObject p = params.copy();
 			p.put("otherProfile", "^.*?(" + Joiner.on("|").join(classes) + ")$");
@@ -423,14 +426,14 @@ public class DefaultCommunicationService implements CommunicationService {
 		if (!structures.isEmpty() && "Structure".equals(a[0])) {
 			String query =
 					"MATCH (s:Structure)<-[:DEPENDS" + c + "]-(cg:ProfileGroup), s<-[:DEPENDS]-(g) " +
-					"WHERE s.id IN {structures} AND HAS(cg.communiqueWith) AND cg.name =~ {profile} " +
-					"AND  (" + groupLabel + ") AND NOT(HAS(g.communiqueWith)) AND g.name =~ {otherProfile} " +
-					"SET cg.communiqueWith = FILTER(gId IN cg.communiqueWith WHERE gId <> COALESCE(g.id,\"\")) + g.id ";
+							"WHERE s.id IN {structures} AND HAS(cg.communiqueWith) AND cg.name =~ {profile} " +
+							"AND  (" + groupLabel + ") AND NOT(HAS(g.communiqueWith)) AND g.name =~ {otherProfile} " +
+							"SET cg.communiqueWith = FILTER(gId IN cg.communiqueWith WHERE gId <> COALESCE(g.id,\"\")) + g.id ";
 			String query2 =
 					"MATCH (s:Structure)<-[:DEPENDS" + c + "]-(cg:ProfileGroup), s<-[:DEPENDS]-(g) " +
-					"WHERE s.id IN {structures} AND NOT(HAS(cg.communiqueWith)) AND cg.name =~ {profile} " +
-					"AND (" + groupLabel + ") AND g.name =~ {otherProfile} " +
-					"SET cg.communiqueWith = coalesce(cg.communiqueWith, []) + g.id ";
+							"WHERE s.id IN {structures} AND NOT(HAS(cg.communiqueWith)) AND cg.name =~ {profile} " +
+							"AND (" + groupLabel + ") AND g.name =~ {otherProfile} " +
+							"SET cg.communiqueWith = coalesce(cg.communiqueWith, []) + g.id ";
 			params.put("otherProfile", "^.*?(" + Joiner.on("|").join(structures) + ")$");
 			existingGroups.add(query, params);
 			newGroups.add(query2, params);
@@ -444,47 +447,47 @@ public class DefaultCommunicationService implements CommunicationService {
 		JsonObject params = new JsonObject().put("structures", structureIds);
 		String query =
 				"MATCH (s:Structure)<-[:DEPENDS*1..2]-(g:ProfileGroup) " +
-				"WHERE s.id IN {structures} AND HAS(g.communiqueWith) AND LENGTH(g.communiqueWith) <> 0 " +
-				"WITH DISTINCT g " +
-				"MATCH (pg:Group) " +
-				"WHERE pg.id IN g.communiqueWith " +
-				"MERGE g-[:COMMUNIQUE]->pg ";
+						"WHERE s.id IN {structures} AND HAS(g.communiqueWith) AND LENGTH(g.communiqueWith) <> 0 " +
+						"WITH DISTINCT g " +
+						"MATCH (pg:Group) " +
+						"WHERE pg.id IN g.communiqueWith " +
+						"MERGE g-[:COMMUNIQUE]->pg ";
 		s.add(query, params);
 		String usersIncoming =
 				"MATCH (s:Structure)<-[:DEPENDS*1..2]-(g:Group)<-[:IN]-(u:User) " +
-				"WHERE s.id IN {structures} AND HAS(g.users) AND (g.users = 'INCOMING' OR g.users = 'BOTH') " +
-				"MERGE g<-[:COMMUNIQUE]-u ";
+						"WHERE s.id IN {structures} AND HAS(g.users) AND (g.users = 'INCOMING' OR g.users = 'BOTH') " +
+						"MERGE g<-[:COMMUNIQUE]-u ";
 		s.add(usersIncoming, params);
 		String usersOutgoing =
 				"MATCH (s:Structure)<-[:DEPENDS*1..2]-(g:Group)<-[:IN]-(u:User) " +
-				"WHERE s.id IN {structures} AND HAS(g.users) AND (g.users = 'OUTGOING' OR g.users = 'BOTH') " +
-				"MERGE g-[:COMMUNIQUE]->u ";
+						"WHERE s.id IN {structures} AND HAS(g.users) AND (g.users = 'OUTGOING' OR g.users = 'BOTH') " +
+						"MERGE g-[:COMMUNIQUE]->u ";
 		s.add(usersOutgoing, params);
 		String relativeIncoming =
 				"MATCH (s:Structure)<-[:DEPENDS*1..2]-(g:ProfileGroup)<-[:IN]-(r:User)<-[:RELATED]-(u:User) " +
-				"WHERE s.id IN {structures} AND HAS(g.relativeCommuniqueStudent) " +
-				"AND (g.relativeCommuniqueStudent = 'INCOMING' OR g.relativeCommuniqueStudent = 'BOTH') " +
-				"MERGE r<-[:COMMUNIQUE_DIRECT]-u ";
+						"WHERE s.id IN {structures} AND HAS(g.relativeCommuniqueStudent) " +
+						"AND (g.relativeCommuniqueStudent = 'INCOMING' OR g.relativeCommuniqueStudent = 'BOTH') " +
+						"MERGE r<-[:COMMUNIQUE_DIRECT]-u ";
 		s.add(relativeIncoming, params);
 		String relativeOutgoing =
 				"MATCH (s:Structure)<-[:DEPENDS*1..2]-(g:ProfileGroup)<-[:IN]-(r:User)<-[:RELATED]-(u:User) " +
-				"WHERE s.id IN {structures} AND HAS(g.relativeCommuniqueStudent) " +
-				"AND (g.relativeCommuniqueStudent = 'OUTGOING' OR g.relativeCommuniqueStudent = 'BOTH') " +
-				"MERGE r-[:COMMUNIQUE_DIRECT]->u ";
+						"WHERE s.id IN {structures} AND HAS(g.relativeCommuniqueStudent) " +
+						"AND (g.relativeCommuniqueStudent = 'OUTGOING' OR g.relativeCommuniqueStudent = 'BOTH') " +
+						"MERGE r-[:COMMUNIQUE_DIRECT]->u ";
 		s.add(relativeOutgoing, params);
 		String setVisible =
 				"MATCH (s:Structure)<-[:DEPENDS*1..2]-(g:Group)<-[:IN*0..1]-(v), " +
-				"v-[:COMMUNIQUE|COMMUNIQUE_DIRECT]-() " +
-				"WHERE s.id IN {structures} AND NOT(v:Visible) " +
-				"WITH DISTINCT v " +
-				"SET v:Visible ";
+						"v-[:COMMUNIQUE|COMMUNIQUE_DIRECT]-() " +
+						"WHERE s.id IN {structures} AND NOT(v:Visible) " +
+						"WITH DISTINCT v " +
+						"SET v:Visible ";
 		s.add(setVisible, params);
 		String setVisible2 =
 				"MATCH (s:Structure)<-[:DEPENDS]-(g:Group)<-[:COMMUNIQUE]-(), " +
-				"g<-[:DEPENDS]-(v)" +
-				"WHERE s.id IN {structures} AND NOT(v:Visible) " +
-				"WITH DISTINCT v " +
-				"SET v:Visible ";
+						"g<-[:DEPENDS]-(v)" +
+						"WHERE s.id IN {structures} AND NOT(v:Visible) " +
+						"WITH DISTINCT v " +
+						"SET v:Visible ";
 		s.add(setVisible2, params);
 		neo4j.executeTransaction(s.build(), transactionId, commit.booleanValue(), event -> {
 			if ("ok".equals(event.body().getString("status"))) {
@@ -506,40 +509,40 @@ public class DefaultCommunicationService implements CommunicationService {
 		JsonObject params = new JsonObject().put("groupId", groupId);
 		String query =
 				"MATCH (g:Group {id : {groupId}}) " +
-				"WHERE HAS(g.communiqueWith) AND LENGTH(g.communiqueWith) <> 0 " +
-				"WITH g " +
-				"MATCH (pg:Group) " +
-				"WHERE pg.id IN g.communiqueWith " +
-				"MERGE g-[:COMMUNIQUE]->pg ";
+						"WHERE HAS(g.communiqueWith) AND LENGTH(g.communiqueWith) <> 0 " +
+						"WITH g " +
+						"MATCH (pg:Group) " +
+						"WHERE pg.id IN g.communiqueWith " +
+						"MERGE g-[:COMMUNIQUE]->pg ";
 		s.add(query, params);
 		String usersIncoming =
 				"MATCH (g:Group {id : {groupId}})<-[:IN]-(u:User) " +
-				"WHERE HAS(g.users) AND (g.users = 'INCOMING' OR g.users = 'BOTH') " +
-				"MERGE g<-[:COMMUNIQUE]-u ";
+						"WHERE HAS(g.users) AND (g.users = 'INCOMING' OR g.users = 'BOTH') " +
+						"MERGE g<-[:COMMUNIQUE]-u ";
 		s.add(usersIncoming, params);
 		String usersOutgoing =
 				"MATCH (g:Group {id : {groupId}})<-[:IN]-(u:User) " +
-				"WHERE HAS(g.users) AND (g.users = 'OUTGOING' OR g.users = 'BOTH') " +
-				"MERGE g-[:COMMUNIQUE]->u ";
+						"WHERE HAS(g.users) AND (g.users = 'OUTGOING' OR g.users = 'BOTH') " +
+						"MERGE g-[:COMMUNIQUE]->u ";
 		s.add(usersOutgoing, params);
 		String relativeIncoming =
 				"MATCH (g:Group {id : {groupId}})<-[:IN]-(r:User)<-[:RELATED]-(u:User) " +
-				"WHERE HAS(g.relativeCommuniqueStudent) " +
-				"AND (g.relativeCommuniqueStudent = 'INCOMING' OR g.relativeCommuniqueStudent = 'BOTH') " +
-				"MERGE r<-[:COMMUNIQUE_DIRECT]-u ";
+						"WHERE HAS(g.relativeCommuniqueStudent) " +
+						"AND (g.relativeCommuniqueStudent = 'INCOMING' OR g.relativeCommuniqueStudent = 'BOTH') " +
+						"MERGE r<-[:COMMUNIQUE_DIRECT]-u ";
 		s.add(relativeIncoming, params);
 		String relativeOutgoing =
 				"MATCH (g:Group {id : {groupId}})<-[:IN]-(r:User)<-[:RELATED]-(u:User) " +
-				"WHERE HAS(g.relativeCommuniqueStudent) " +
-				"AND (g.relativeCommuniqueStudent = 'OUTGOING' OR g.relativeCommuniqueStudent = 'BOTH') " +
-				"MERGE r-[:COMMUNIQUE_DIRECT]->u ";
+						"WHERE HAS(g.relativeCommuniqueStudent) " +
+						"AND (g.relativeCommuniqueStudent = 'OUTGOING' OR g.relativeCommuniqueStudent = 'BOTH') " +
+						"MERGE r-[:COMMUNIQUE_DIRECT]->u ";
 		s.add(relativeOutgoing, params);
 		String setVisible =
 				"MATCH (g:Group {id : {groupId}})<-[:IN]-(v), " +
-				"v-[:COMMUNIQUE|COMMUNIQUE_DIRECT]-() " +
-				"WHERE NOT(v:Visible) " +
-				"WITH DISTINCT v " +
-				"SET v:Visible ";
+						"v-[:COMMUNIQUE|COMMUNIQUE_DIRECT]-() " +
+						"WHERE NOT(v:Visible) " +
+						"WITH DISTINCT v " +
+						"SET v:Visible ";
 		s.add(setVisible, params);
 		neo4j.executeTransaction(s.build(), null, true, validEmptyHandler(handler));
 	}
@@ -547,7 +550,7 @@ public class DefaultCommunicationService implements CommunicationService {
 	@Override
 	public void removeRules(String structureId, Handler<Either<String, JsonObject>> handler) {
 		String query;
-		JsonObject params =  new JsonObject();
+		JsonObject params = new JsonObject();
 		if (structureId != null && !structureId.trim().isEmpty()) {
 			query = "MATCH (s:Structure)<-[:DEPENDS*1..2]-(g:ProfileGroup)-[r:COMMUNIQUE]-() " +
 					"WHERE s.id = {schoolId} " +
@@ -572,8 +575,8 @@ public class DefaultCommunicationService implements CommunicationService {
 
 	@Override
 	public void visibleUsers(String userId, String structureId, JsonArray expectedTypes, boolean itSelf,
-			boolean myGroup, boolean profile, String preFilter, String customReturn, JsonObject additionnalParams, String userProfile,
-			final Handler<Either<String, JsonArray>> handler) {
+							 boolean myGroup, boolean profile, String preFilter, String customReturn, JsonObject additionnalParams, String userProfile,
+							 final Handler<Either<String, JsonArray>> handler) {
 		StringBuilder query = new StringBuilder();
 		JsonObject params = new JsonObject();
 		String condition = itSelf ? "" : "AND m.id <> {userId} ";
@@ -586,7 +589,7 @@ public class DefaultCommunicationService implements CommunicationService {
 			String l = (myGroup) ? " (length(p) >= 2 OR m.users <> 'INCOMING')" : " length(p) >= 2";
 			query.append(" MATCH p=(n:User)-[:COMMUNIQUE*0..2]->ipg" +
 					"-[:COMMUNIQUE*0..1]->g<-[:DEPENDS*0..1]-m ");
-			condition += "AND (("+ l +
+			condition += "AND ((" + l +
 					" AND (length(p) < 3 OR (ipg:Group AND (m:User OR g<-[:DEPENDS]-m) AND length(p) = 3)))) ";
 			if (userProfile == null || "Student".equals(userProfile) || "Relative".equals(userProfile)) {
 				union = new StringBuilder("MATCH p=(n:User)-[:COMMUNIQUE_DIRECT]->m " +
@@ -605,7 +608,7 @@ public class DefaultCommunicationService implements CommunicationService {
 		if (expectedTypes != null && expectedTypes.size() > 0) {
 			query.append("AND (");
 			StringBuilder types = new StringBuilder();
-			for (Object o: expectedTypes) {
+			for (Object o : expectedTypes) {
 				if (!(o instanceof String)) continue;
 				String t = (String) o;
 				types.append(" OR m:").append(t);
@@ -638,12 +641,12 @@ public class DefaultCommunicationService implements CommunicationService {
 			}
 		} else {
 			query.append("RETURN distinct m.id as id, m.name as name, "
-					+ "m.login as login, m.displayName as username, ").append(pr)
+							+ "m.login as login, m.displayName as username, ").append(pr)
 					.append("m.lastName as lastName, m.firstName as firstName, m.profiles as profiles "
 							+ "ORDER BY name, username ");
 			if (union != null) {
 				union.append("RETURN distinct m.id as id, m.name as name, "
-						+ "m.login as login, m.displayName as username, ").append(pr)
+								+ "m.login as login, m.displayName as username, ").append(pr)
 						.append("m.lastName as lastName, m.firstName as firstName, m.profiles as profiles "
 								+ "ORDER BY name, username ");
 			}
@@ -665,11 +668,11 @@ public class DefaultCommunicationService implements CommunicationService {
 	public void usersCanSeeMe(String userId, Handler<Either<String, JsonArray>> handler) {
 		String query =
 				"MATCH p=(n:User)<-[:COMMUNIQUE*0..2]-t<-[r:COMMUNIQUE|COMMUNIQUE_DIRECT]-(m:User) " +
-				"WHERE n.id = {userId} AND ((type(r) = 'COMMUNIQUE_DIRECT' AND length(p) = 1) " +
-				"XOR (type(r) = 'COMMUNIQUE' AND length(p) >= 2)) AND m.id <> {userId} " +
-				"RETURN distinct m.id as id, m.login as login, " +
-				"m.displayName as username, HEAD(m.profiles) as type " +
-				"ORDER BY username ";
+						"WHERE n.id = {userId} AND ((type(r) = 'COMMUNIQUE_DIRECT' AND length(p) = 1) " +
+						"XOR (type(r) = 'COMMUNIQUE' AND length(p) >= 2)) AND m.id <> {userId} " +
+						"RETURN distinct m.id as id, m.login as login, " +
+						"m.displayName as username, HEAD(m.profiles) as type " +
+						"ORDER BY username ";
 		JsonObject params = new JsonObject();
 		params.put("userId", userId);
 		neo4j.execute(query, params, validResultHandler(handler));
@@ -677,50 +680,50 @@ public class DefaultCommunicationService implements CommunicationService {
 
 	@Override
 	public void visibleProfilsGroups(String userId, String customReturn, JsonObject additionnalParams,
-			String preFilter, Handler<Either<String, JsonArray>> handler) {
+									 String preFilter, Handler<Either<String, JsonArray>> handler) {
 		String r;
 		if (customReturn != null && !customReturn.trim().isEmpty()) {
 			r = "WITH gp as profileGroup, profile " + customReturn;
 		} else {
 			r = "RETURN distinct gp.id as id, gp.name as name, profile.name as type, " +
-				"gp.groupDisplayName as groupDisplayName " +
-				"ORDER BY type DESC, name ";
+					"gp.groupDisplayName as groupDisplayName " +
+					"ORDER BY type DESC, name ";
 		}
 		JsonObject params =
 				(additionnalParams != null) ? additionnalParams : new JsonObject();
 		params.put("userId", userId);
 		boolean excludeEmptyGroups = true;
-		if(additionnalParams != null){
+		if (additionnalParams != null) {
 			excludeEmptyGroups = additionnalParams.getBoolean("excludeEmptyGroups", excludeEmptyGroups);
 		}
 		String query =
 				"MATCH p=(n:User)-[:COMMUNIQUE*1..2]->l<-[:DEPENDS*0..1]-(gp:Group) " +
-				"WHERE n.id = {userId} " +
-				(excludeEmptyGroups? "AND (NOT(HAS(gp.nbUsers)) OR gp.nbUsers > 0)":"") +
-				"AND (length(p) > 1 OR gp.users <> 'INCOMING') " + (preFilter != null ? preFilter : "") +
-				"OPTIONAL MATCH gp-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) " +
-				r;
+						"WHERE n.id = {userId} " +
+						(excludeEmptyGroups ? "AND (NOT(HAS(gp.nbUsers)) OR gp.nbUsers > 0)" : "") +
+						"AND (length(p) > 1 OR gp.users <> 'INCOMING') " + (preFilter != null ? preFilter : "") +
+						"OPTIONAL MATCH gp-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) " +
+						r;
 		neo4j.execute(query, params, validResultHandler(handler));
 	}
 
 	@Override
 	public void visibleManualGroups(String userId, String customReturn, JsonObject additionnalParams,
-			Handler<Either<String, JsonArray>> handler) {
+									Handler<Either<String, JsonArray>> handler) {
 		String r;
 		if (customReturn != null && !customReturn.trim().isEmpty()) {
 			r = "WITH mg as manualGroup " + customReturn;
 		} else {
 			r = "RETURN distinct mg.id as id, mg.name as name, " +
-				"mg.groupDisplayName as groupDisplayName " +
-				"ORDER BY type DESC, name ";
+					"mg.groupDisplayName as groupDisplayName " +
+					"ORDER BY type DESC, name ";
 		}
 		JsonObject params =
 				(additionnalParams != null) ? additionnalParams : new JsonObject();
 		params.put("userId", userId);
 		String query =
 				"MATCH p=(n:User)-[:COMMUNIQUE*1..2]->l<-[:DEPENDS*0..1]-(mg:ManualGroup) " +
-				"WHERE n.id = {userId} AND (length(p) > 1 OR mg.users <> 'INCOMING') " +
-				r;
+						"WHERE n.id = {userId} AND (length(p) > 1 OR mg.users <> 'INCOMING') " +
+						r;
 		neo4j.execute(query, params, validResultHandler(handler));
 	}
 
@@ -760,71 +763,72 @@ public class DefaultCommunicationService implements CommunicationService {
 		neo4j.execute(query, params, validResultHandler(results));
 	}
 
-    @Override
-    public void safelyRemoveLinkWithUsers(String groupId, Handler<Either<String, JsonObject>> handler) {
-        getRelationsOfGroup(groupId).whenComplete((result, err) -> {
-            if (err != null) {
-                handler.handle(new Either.Left<>(err.getMessage()));
-            } else {
-                int numberOfSendingGroups = result.getInteger("numberOfSendingGroups");
-                int numberOfReceivingGroups = result.getInteger("numberOfReceivingGroups");
+	@Override
+	public void safelyRemoveLinkWithUsers(String groupId, Handler<Either<String, JsonObject>> handler) {
+		getRelationsOfGroup(groupId).whenComplete((result, err) -> {
+			if (err != null) {
+				handler.handle(new Either.Left<>(err.getMessage()));
+			} else {
+				int numberOfSendingGroups = result.getInteger("numberOfSendingGroups");
+				int numberOfReceivingGroups = result.getInteger("numberOfReceivingGroups");
 
-                Direction directionToRemove = computeDirectionToRemove(numberOfSendingGroups > 0, numberOfReceivingGroups > 0);
+				Direction directionToRemove = computeDirectionToRemove(numberOfSendingGroups > 0, numberOfReceivingGroups > 0);
 
-                if (directionToRemove == null) {
-                    handler.handle(new Either.Left<>(CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION));
-                } else {
-                    Direction nextDirection = computeNextDirection(directionToRemove);
-                    removeLinkWithUsers(groupId, directionToRemove,
-                            t -> handler.handle(new Either.Right<>(new JsonObject().put("users", nextDirection))));
-                }
-            }
-        });
-    }
+				if (directionToRemove == null) {
+					handler.handle(new Either.Left<>(CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION));
+				} else {
+					Direction nextDirection = computeNextDirection(directionToRemove);
+					removeLinkWithUsers(groupId, directionToRemove,
+							t -> handler.handle(new Either.Right<>(new JsonObject().put("users", nextDirection))));
+				}
+			}
+		});
+	}
 
-    @Override
-    public void getDirections(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler) {
-    	String query = "MATCH (startGroup: Group {id: {startGroupId}}), (endGroup: Group {id: {endGroupId}}) " +
-    			"RETURN startGroup.users as startDirection, endGroup.users as endDirection";
+	@Override
+	public void getDirections(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler) {
+		String query = "MATCH (startGroup: Group {id: {startGroupId}}), (endGroup: Group {id: {endGroupId}}) " +
+				"RETURN startGroup.users as startDirection, endGroup.users as endDirection";
 
-    	JsonObject params = new JsonObject()
-    			.put("startGroupId", startGroupId)
-    			.put("endGroupId", endGroupId);
+		JsonObject params = new JsonObject()
+				.put("startGroupId", startGroupId)
+				.put("endGroupId", endGroupId);
 
-    	neo4j.execute(query, params, validUniqueResultHandler(handler));
-    }
+		neo4j.execute(query, params, validUniqueResultHandler(handler));
+	}
 
 	/**
 	 * Get useful data of groups : id, name, filter, displayName, internalCommunicationRule (users), type, subType
+	 *
 	 * @param groupIds An ordered list of group identifiers.
 	 * @return an array of Group data, in the same order as @param groupIds
 	 */
-	protected Future<JsonObject[]> getGroupInfos( String... groupIds ) {
-        final Promise<JsonObject[]> promise = Promise.promise();
+	protected Future<JsonObject[]> getGroupInfos(String... groupIds) {
+		final Promise<JsonObject[]> promise = Promise.promise();
 		String query = "UNWIND {groupIds} AS sortedId "
-			+ "WITH sortedId MATCH (g:Group {id: sortedId}) "
-			+ "WITH g, HEAD(filter(x IN labels(g) WHERE x <> 'Visible' AND x <> 'Group')) as type "
-			+ "RETURN DISTINCT "
-			+ "g.id as id, "
-			+ "g.name as name, "
-			+ "g.filter as filter, "
-			+ "g.displayName as displayName, "
-			+ "g.users as internalCommunicationRule, "
-			+ "type, "
-			+ "CASE WHEN (g: ProfileGroup)-[:DEPENDS]->(:Structure) THEN 'StructureGroup' "
-			+ "     WHEN (g: ProfileGroup)-[:DEPENDS]->(:Class) THEN 'ClassGroup' "
-			+ "     WHEN HAS(g.subType) THEN g.subType END as subType";
+				+ "WITH sortedId MATCH (g:Group {id: sortedId}) "
+				+ "WITH g, HEAD(filter(x IN labels(g) WHERE x <> 'Visible' AND x <> 'Group')) as type "
+				+ "RETURN DISTINCT "
+				+ "g.id as id, "
+				+ "g.name as name, "
+				+ "g.filter as filter, "
+				+ "g.displayName as displayName, "
+				+ "g.users as internalCommunicationRule, "
+				+ "type, "
+				+ "CASE WHEN (g: ProfileGroup)-[:DEPENDS]->(:Structure) THEN 'StructureGroup' "
+				+ "     WHEN (g: ProfileGroup)-[:DEPENDS]->(:Class) THEN 'ClassGroup' "
+				+ "     WHEN HAS(g.subType) THEN g.subType END as subType";
 
-		JsonArray  groups = new JsonArray( Arrays.asList(groupIds) );
+		JsonArray groups = new JsonArray(Arrays.asList(groupIds));
 		JsonObject params = new JsonObject().put("groupIds", groups);
 
 		neo4j.execute(query, params, validResultHandler(results -> {
-			if( results.isLeft() ) {
-				promise.fail( results.left().getValue() );
+			if (results.isLeft()) {
+				promise.fail(results.left().getValue());
 			} else {
 				List rows = results.right().getValue().getList();
-				final JsonObject[] result = new JsonObject[ rows.size() ];
-				for( int idx=0; idx<rows.size(); idx++ )
+				final JsonObject[] result = new JsonObject[rows.size()];
+				for (int idx = 0; idx < rows.size(); idx++)
 					result[idx] = (JsonObject) rows.get(idx);
 				promise.complete(result);
 			}
@@ -836,88 +840,88 @@ public class DefaultCommunicationService implements CommunicationService {
 	protected Direction computeDirectionForAddLinkCheck(JsonObject groupInfos, boolean isStartGroup) {
 		final Direction direction = Direction.fromString(groupInfos.getString("internalCommunicationRule"));
 
-		if( isStartGroup ) {
+		if (isStartGroup) {
 			// Starting group of a new link will require the INCOMING communication rule.
-			return Direction.fromBitmask( direction.bitmask | Direction.INCOMING.bitmask );
+			return Direction.fromBitmask(direction.bitmask | Direction.INCOMING.bitmask);
 		} else {
 			// Ending group of a new link will require the OUTGOING communication rule.
 			// EXCEPT broadcast lists (previously knwown as "automatic manual groups")
 			// Broadcast lists must keep a NONE rule because no user should see members of those lists (too big !)
-			if( "ManualGroup".equals(groupInfos.getString("type", "")) 
-				&& "BroadcastGroup".equals(groupInfos.getString("subType", "")) ) {
+			if ("ManualGroup".equals(groupInfos.getString("type", ""))
+					&& "BroadcastGroup".equals(groupInfos.getString("subType", ""))) {
 				// Broadcast lists
 				return Direction.NONE;
 			} else {
-				return Direction.fromBitmask( direction.bitmask | Direction.OUTGOING.bitmask );
+				return Direction.fromBitmask(direction.bitmask | Direction.OUTGOING.bitmask);
 			}
 		}
 	}
 
-	protected Future<String> computeWarningMessageForAddLinkCheck( 
-			UserInfos userInfos, 
-			JsonObject startInfos, Direction toStartDirection, 
+	protected Future<String> computeWarningMessageForAddLinkCheck(
+			UserInfos userInfos,
+			JsonObject startInfos, Direction toStartDirection,
 			JsonObject endInfos, Direction toEndDirection
-		) {
-		final Direction fromStartDirection = Direction.fromString( startInfos.getString("internalCommunicationRule") );
-		final Direction fromEndDirection   = Direction.fromString( endInfos.getString("internalCommunicationRule") );
+	) {
+		final Direction fromStartDirection = Direction.fromString(startInfos.getString("internalCommunicationRule"));
+		final Direction fromEndDirection = Direction.fromString(endInfos.getString("internalCommunicationRule"));
 
 		// Check if any rule was added to the start group
-		Direction addedStartRule = Direction.fromBitmask( toStartDirection.bitmask & ~fromStartDirection.bitmask );
+		Direction addedStartRule = Direction.fromBitmask(toStartDirection.bitmask & ~fromStartDirection.bitmask);
 		// Check if any rule was added to the end group
-		Direction addedEndRule = Direction.fromBitmask( toEndDirection.bitmask & ~fromEndDirection.bitmask );
+		Direction addedEndRule = Direction.fromBitmask(toEndDirection.bitmask & ~fromEndDirection.bitmask);
 
 		// Check if we are trying to make members of a broadcast list visibles by another group.
-		if( !toEndDirection.equals(Direction.NONE) && "BroadcastGroup".equals(endInfos.getString("subType","")) ) {
+		if (!toEndDirection.equals(Direction.NONE) && "BroadcastGroup".equals(endInfos.getString("subType", ""))) {
 			// This is forbidden.
-			return Future.failedFuture( CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION );
+			return Future.failedFuture(CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION);
 		}
-		
+
 		String warningMessage = null;
 		if (addedStartRule.equals(Direction.INCOMING)) {
 			// Check if the user can do this.
-			if( isImpossibleToChangeDirectionGroupForAddLink(
-					startInfos.getString("filter",""), startInfos.getString("subType",""), userInfos
-				)) {
-				return Future.failedFuture( CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION );
+			if (isImpossibleToChangeDirectionGroupForAddLink(
+					startInfos.getString("filter", ""), startInfos.getString("subType", ""), userInfos
+			)) {
+				return Future.failedFuture(CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION);
 			}
-			if( toStartDirection.equals(Direction.BOTH) ) {
+			if (toStartDirection.equals(Direction.BOTH)) {
 				warningMessage = CommunicationService.WARNING_STARTGROUP_USERS_CAN_COMMUNICATE;
 			}
 		}
 
 		if (addedEndRule.equals(Direction.OUTGOING)) {
 			// Check if the user can do this.
-			if( isImpossibleToChangeDirectionGroupForAddLink(
-					endInfos.getString("filter",""), endInfos.getString("subType",""), userInfos
-				)) {
-				return Future.failedFuture( CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION );
+			if (isImpossibleToChangeDirectionGroupForAddLink(
+					endInfos.getString("filter", ""), endInfos.getString("subType", ""), userInfos
+			)) {
+				return Future.failedFuture(CommunicationService.IMPOSSIBLE_TO_CHANGE_DIRECTION);
 			}
-			if( toEndDirection.equals(Direction.BOTH) ) {
-				warningMessage = warningMessage==null 
-					? CommunicationService.WARNING_ENDGROUP_USERS_CAN_COMMUNICATE 
-					: CommunicationService.WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE;
+			if (toEndDirection.equals(Direction.BOTH)) {
+				warningMessage = warningMessage == null
+						? CommunicationService.WARNING_ENDGROUP_USERS_CAN_COMMUNICATE
+						: CommunicationService.WARNING_BOTH_GROUPS_USERS_CAN_COMMUNICATE;
 			}
 		}
 
-		return Future.succeededFuture( warningMessage );
+		return Future.succeededFuture(warningMessage);
 	}
 
-    @Override
+	@Override
 	public void addLinkCheckOnly(String startGroupId, String endGroupId, UserInfos userInfos, Handler<Either<String, JsonObject>> handler) {
 		// 1. Get group info (Direction, Type and Subtype)
 		getGroupInfos(startGroupId, endGroupId)
-		// 2. Compute next directions
-		// 3. Check for impossible direction changes
-		.compose( groupsInfos -> computeWarningMessageForAddLinkCheck(
-			userInfos, 
-			groupsInfos[0],
-			computeDirectionForAddLinkCheck(groupsInfos[0], true),
-			groupsInfos[1],
-			computeDirectionForAddLinkCheck(groupsInfos[1], false)
-		))
-		// 4. Compute warning message
-		.onSuccess( msg -> handler.handle(new Either.Right<>(new JsonObject().put("warning", msg))) )
-		.onFailure( err -> handler.handle(new Either.Left<String,JsonObject>(err.getMessage())) );
+				// 2. Compute next directions
+				// 3. Check for impossible direction changes
+				.compose(groupsInfos -> computeWarningMessageForAddLinkCheck(
+						userInfos,
+						groupsInfos[0],
+						computeDirectionForAddLinkCheck(groupsInfos[0], true),
+						groupsInfos[1],
+						computeDirectionForAddLinkCheck(groupsInfos[1], false)
+				))
+				// 4. Compute warning message
+				.onSuccess(msg -> handler.handle(new Either.Right<>(new JsonObject().put("warning", msg))))
+				.onFailure(err -> handler.handle(new Either.Left<String, JsonObject>(err.getMessage())));
 	}
 
 	private CompletableFuture<JsonObject> getRelationsOfGroup(String groupId) {
@@ -1007,78 +1011,78 @@ public class DefaultCommunicationService implements CommunicationService {
 	public void processChangeDirectionAfterAddingLink(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler) {
 		// 1. Get group info (Direction, Type and Subtype)
 		getGroupInfos(startGroupId, endGroupId)
-		// 2. Compute next directions
-		// 3. Apply direction changes
-		.compose( groupsInfos -> {
-			final Direction fromStartDirection = Direction.fromString( groupsInfos[0].getString("internalCommunicationRule") );
-			final Direction fromEndDirection   = Direction.fromString( groupsInfos[1].getString("internalCommunicationRule") );
-			final Direction toStartDirection = computeDirectionForAddLinkCheck(groupsInfos[0], true);
-			final Direction toEndDirection   = computeDirectionForAddLinkCheck(groupsInfos[1], false);
-	
-			// Check if any rule was added to the start group
-			Direction addedStartRule = Direction.fromBitmask( toStartDirection.bitmask & ~fromStartDirection.bitmask );
-			// Check if any rule was added to the end group
-			Direction addedEndRule = Direction.fromBitmask( toEndDirection.bitmask & ~fromEndDirection.bitmask );
-	
-			if (addedStartRule.equals(Direction.NONE) && addedEndRule.equals(Direction.NONE) ) {
-				return Future.succeededFuture( new JsonObject().put("ok", "no direction to change") );
-			} else {
-				final Map<String, Direction> newDirection = new HashMap<>();
-				if( !addedStartRule.equals(Direction.NONE) ) {
-					newDirection.put(startGroupId, toStartDirection);
-				}
-				if( !addedEndRule.equals(Direction.NONE) ) {
-					newDirection.put(endGroupId, toEndDirection);
-				}
-				
-				final Promise<JsonObject> promise = Promise.promise();
-				this.addLinkWithUsers(newDirection, addLinkWithUsers -> {
-					if (addLinkWithUsers.isLeft()) {
-						promise.fail( addLinkWithUsers.left().getValue() );
+				// 2. Compute next directions
+				// 3. Apply direction changes
+				.compose(groupsInfos -> {
+					final Direction fromStartDirection = Direction.fromString(groupsInfos[0].getString("internalCommunicationRule"));
+					final Direction fromEndDirection = Direction.fromString(groupsInfos[1].getString("internalCommunicationRule"));
+					final Direction toStartDirection = computeDirectionForAddLinkCheck(groupsInfos[0], true);
+					final Direction toEndDirection = computeDirectionForAddLinkCheck(groupsInfos[1], false);
+
+					// Check if any rule was added to the start group
+					Direction addedStartRule = Direction.fromBitmask(toStartDirection.bitmask & ~fromStartDirection.bitmask);
+					// Check if any rule was added to the end group
+					Direction addedEndRule = Direction.fromBitmask(toEndDirection.bitmask & ~fromEndDirection.bitmask);
+
+					if (addedStartRule.equals(Direction.NONE) && addedEndRule.equals(Direction.NONE)) {
+						return Future.succeededFuture(new JsonObject().put("ok", "no direction to change"));
 					} else {
-						JsonObject response = new JsonObject();
-						newDirection.forEach((groupId, direction) -> response.put(groupId, direction));
-						promise.complete( response );
+						final Map<String, Direction> newDirection = new HashMap<>();
+						if (!addedStartRule.equals(Direction.NONE)) {
+							newDirection.put(startGroupId, toStartDirection);
+						}
+						if (!addedEndRule.equals(Direction.NONE)) {
+							newDirection.put(endGroupId, toEndDirection);
+						}
+
+						final Promise<JsonObject> promise = Promise.promise();
+						this.addLinkWithUsers(newDirection, addLinkWithUsers -> {
+							if (addLinkWithUsers.isLeft()) {
+								promise.fail(addLinkWithUsers.left().getValue());
+							} else {
+								JsonObject response = new JsonObject();
+								newDirection.forEach((groupId, direction) -> response.put(groupId, direction));
+								promise.complete(response);
+							}
+						});
+						return promise.future();
 					}
-				});
-				return promise.future();
-			}
-		})
-		// 4. Compute warning message
-		.onSuccess( result -> handler.handle(new Either.Right<String, JsonObject>(result)) )
-		.onFailure( err -> handler.handle(new Either.Left<String,JsonObject>(err.getMessage())) );
+				})
+				// 4. Compute warning message
+				.onSuccess(result -> handler.handle(new Either.Right<String, JsonObject>(result)))
+				.onFailure(err -> handler.handle(new Either.Left<String, JsonObject>(err.getMessage())));
 	}
 
-    public Direction computeDirectionToRemove(boolean hasIncomingRelationship, boolean hasOutgoingRelationship) {
-        if (hasIncomingRelationship && hasOutgoingRelationship) {
-            return null;
-        }
+	public Direction computeDirectionToRemove(boolean hasIncomingRelationship, boolean hasOutgoingRelationship) {
+		if (hasIncomingRelationship && hasOutgoingRelationship) {
+			return null;
+		}
 
-        if (hasIncomingRelationship) {
-            return Direction.INCOMING;
-        }
+		if (hasIncomingRelationship) {
+			return Direction.INCOMING;
+		}
 
-        if (hasOutgoingRelationship) {
-            return Direction.OUTGOING;
-        }
+		if (hasOutgoingRelationship) {
+			return Direction.OUTGOING;
+		}
 
-        return Direction.BOTH;
-    }
+		return Direction.BOTH;
+	}
 
-    public Direction computeNextDirection(Direction directionToRemove) {
-        if (directionToRemove == null) {
-            return Direction.BOTH;
-        }
+	public Direction computeNextDirection(Direction directionToRemove) {
+		if (directionToRemove == null) {
+			return Direction.BOTH;
+		}
 
-        if (directionToRemove.equals(Direction.INCOMING)) {
-            return Direction.OUTGOING;
-        }
+		if (directionToRemove.equals(Direction.INCOMING)) {
+			return Direction.OUTGOING;
+		}
 
-        if (directionToRemove.equals(Direction.OUTGOING)) {
-            return Direction.INCOMING;
-        }
-        return null;
-    }
+		if (directionToRemove.equals(Direction.OUTGOING)) {
+			return Direction.INCOMING;
+		}
+		return null;
+	}
 
 	public boolean isImpossibleToChangeDirectionGroupForAddLink(String filter, String subType, UserInfos userInfos) {
 		if (userInfos.getFunctions().containsKey(DefaultFunctions.SUPER_ADMIN)) {
@@ -1096,48 +1100,341 @@ public class DefaultCommunicationService implements CommunicationService {
 		return false;
 	}
 
-    @Override
-    public void verify(String senderId, String recipientId, Handler<Either<String, JsonObject>> handler) {
+	@Override
+	public void verify(String senderId, String recipientId, Handler<Either<String, JsonObject>> handler) {
 
-        String query = "MATCH (s:User), (r:User) "
-                + "where s.id = {senderId} and r.id = {recipientId} "
-                + "return exists((r)<-[:COMMUNIQUE*1..2]-()<-[:COMMUNIQUE]-(s)) OR "
-                + "exists((r)<-[:COMMUNIQUE_DIRECT]-(s)) as " + CAN_COMMUNICATE_VERIFY;
+		String query = "MATCH (s:User), (r:User) "
+				+ "where s.id = {senderId} and r.id = {recipientId} "
+				+ "return exists((r)<-[:COMMUNIQUE*1..2]-()<-[:COMMUNIQUE]-(s)) OR "
+				+ "exists((r)<-[:COMMUNIQUE_DIRECT]-(s)) as " + CAN_COMMUNICATE_VERIFY;
 
-        JsonObject params = new JsonObject()
-                .put("senderId", senderId)
-                .put("recipientId", recipientId);
+		JsonObject params = new JsonObject()
+				.put("senderId", senderId)
+				.put("recipientId", recipientId);
 
-        neo4j.execute(query, params, validUniqueResultHandler(result -> {
+		neo4j.execute(query, params, validUniqueResultHandler(result -> {
 
-            if (result.isRight() && !result.right().getValue().isEmpty()) {
-                handler.handle(new Either.Right<>(result.right().getValue()));
-            } else {
+			if (result.isRight() && !result.right().getValue().isEmpty()) {
+				handler.handle(new Either.Right<>(result.right().getValue()));
+			} else {
 
-                String queryGroup = "MATCH (s:User), (r:Group) "
-                        + "where s.id = {senderId} and r.id = {recipientId} "
-                        + "return exists((s)-[:COMMUNIQUE*1..2]->()<-[:DEPENDS]-(r)) OR "
-                        + "exists((r)<-[:COMMUNIQUE]-()<-[:COMMUNIQUE]-(s)) OR "
-                        + "(exists((r)<-[:COMMUNIQUE]-(s)) AND r.users <> 'INCOMING') as " + CAN_COMMUNICATE_VERIFY;
+				String queryGroup = "MATCH (s:User), (r:Group) "
+						+ "where s.id = {senderId} and r.id = {recipientId} "
+						+ "return exists((s)-[:COMMUNIQUE*1..2]->()<-[:DEPENDS]-(r)) OR "
+						+ "exists((r)<-[:COMMUNIQUE]-()<-[:COMMUNIQUE]-(s)) OR "
+						+ "(exists((r)<-[:COMMUNIQUE]-(s)) AND r.users <> 'INCOMING') as " + CAN_COMMUNICATE_VERIFY;
 
-                JsonObject paramsGroup = new JsonObject()
-                        .put("senderId", senderId)
-                        .put("recipientId", recipientId);
+				JsonObject paramsGroup = new JsonObject()
+						.put("senderId", senderId)
+						.put("recipientId", recipientId);
 
-                neo4j.execute(queryGroup, paramsGroup, validUniqueResultHandler(resultGroup -> {
+				neo4j.execute(queryGroup, paramsGroup, validUniqueResultHandler(resultGroup -> {
 
-                    if (resultGroup.isRight() && !resultGroup.right().getValue().isEmpty()) {
-                        handler.handle(new Either.Right<>(resultGroup.right().getValue()));
-                    } else {
-                        if (resultGroup.isLeft()) {
-                            log.error("Error when checking communication rights : " + resultGroup.left().getValue());
-                        }
-                        handler.handle(new Either.Right<>(new JsonObject().put(CAN_COMMUNICATE_VERIFY, false)));
-                    }
-                }));
-            }
+					if (resultGroup.isRight() && !resultGroup.right().getValue().isEmpty()) {
+						handler.handle(new Either.Right<>(resultGroup.right().getValue()));
+					} else {
+						if (resultGroup.isLeft()) {
+							log.error("Error when checking communication rights : " + resultGroup.left().getValue());
+						}
+						handler.handle(new Either.Right<>(new JsonObject().put(CAN_COMMUNICATE_VERIFY, false)));
+					}
+				}));
+			}
 
-        }));
+		}));
 
-    }
+	}
+
+	/**
+	 * Return the list of users, with filtering on the structures, profiles and search
+	 * */
+	@Override
+	public void getDiscoverVisibleUsers(String userId, JsonObject filters, JsonArray discoverVisibleExpectedProfile, final Handler<Either<String, JsonArray>> handler) {
+
+		JsonObject params = new JsonObject().put("userId", userId);
+		StringBuilder query = new StringBuilder("MATCH (m:Visible) "
+				+ "WHERE (NOT(HAS(m.blocked)) OR m.blocked = false) AND m.id <> {userId} ");
+
+		if (filters != null && !filters.isEmpty()) {
+			for (String key : filters.fieldNames()) {
+				switch (key) {
+					case "structures":
+						JsonArray structures = filters.getJsonArray(key);
+						if (structures != null && !structures.isEmpty()) {
+							query.append("AND ANY(x IN m.structures WHERE x IN {structures}) ");
+							params.put("structures", structures);
+						}
+						break;
+					case "profiles":
+						JsonArray profile = filters.getJsonArray(key);
+						boolean allowProfileFilter = true;
+
+						if(profile != null && !profile.isEmpty()) {
+							for (Object p : profile) {
+								if (!discoverVisibleExpectedProfile.contains(p)) {
+									allowProfileFilter = false;
+									break;
+								}
+							}
+						} else {
+							allowProfileFilter = false;
+						}
+
+						if (allowProfileFilter) {
+							query.append("AND HEAD(m.profiles) IN {profiles} ");
+							params.put("profiles", profile);
+						} else {
+							query.append("AND HEAD(m.profiles) IN {discoverVisibleExpectedProfile} ");
+							params.put("discoverVisibleExpectedProfile", discoverVisibleExpectedProfile);
+						}
+						break;
+					case "search":
+						final String search = filters.getString(key);
+						if (search != null && !search.trim().isEmpty()) {
+							query.append("AND m.displayNameSearchField CONTAINS {search} ");
+							String sanitizedSearch = StringValidation.sanitize(search);
+							params.put("search", sanitizedSearch);
+						}
+						break;
+				}
+			}
+		}
+
+		if(filters == null || filters.isEmpty() || !filters.containsKey("profiles")) {
+			query.append("AND HEAD(m.profiles) in {discoverVisibleExpectedProfile} ");
+			params.put("discoverVisibleExpectedProfile", discoverVisibleExpectedProfile);
+		}
+
+		query.append("WITH DISTINCT m as visibles " + "return DISTINCT visibles.id as id, visibles.name as name, visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, HEAD(visibles.profiles) as profile, visibles.structures as structures");
+
+		neo4j.execute(query.toString(), params, validResultHandler(handler));
+	}
+
+	/**
+	 * Return the list of structures
+	 * */
+	@Override
+	public void getDiscoverVisibleStructures(final Handler<Either<String, JsonArray>> handler) {
+		String query = "MATCH (s:Structure) "
+				+ "RETURN s.id as id, s.externalId as type, s.name as label, 'false' as checked";
+
+		neo4j.execute(query, new JsonObject(), validResultHandler(handler));
+	}
+
+
+	/**
+	 * Add communication between two users, using the COMMUNIQUE_DIRECT relation and source 'MANUAL'
+	 * */
+	@Override
+	public void discoverVisibleAddCommuteUsers(String senderId, String recipientId, JsonArray discoverVisibleExpectedProfile, Handler<Either<String, JsonObject>> handler){
+
+		String query = "MATCH (s:User {id : {senderId}}), (r:User {id : {recipientId}}) WHERE HEAD(s.profiles) IN {discoverVisibleExpectedProfile} AND HEAD(r.profiles) IN {discoverVisibleExpectedProfile} " +
+						"CREATE s-[:COMMUNIQUE_DIRECT { source: 'MANUAL'}]->r " +
+						"RETURN COUNT(*) as number";
+
+		JsonObject params = new JsonObject().put("senderId", senderId).put("recipientId", recipientId).put("discoverVisibleExpectedProfile", discoverVisibleExpectedProfile);
+
+		neo4j.execute(query, params, validUniqueResultHandler(handler));
+	}
+
+	/**
+	 * Remove communication between two users, using the COMMUNIQUE_DIRECT relation and source 'MANUAL'
+	 * */
+	@Override
+	public void discoverVisibleRemoveCommuteUsers(String senderId, String recipientId, Handler<Either<String, JsonObject>> handler){
+
+		String query = "MATCH (s:User {id : {senderId}})-[r:COMMUNIQUE_DIRECT { source: 'MANUAL'}]->(u:User {id : {recipientId}}) " +
+						"DELETE r " +
+						"RETURN COUNT(*) as number";
+
+		JsonObject params = new JsonObject().put("senderId", senderId).put("recipientId", recipientId);
+
+		neo4j.execute(query, params, validUniqueResultHandler(handler));
+	}
+
+	/**
+	 * Return the list of groups, that the user is IN or has COMMUNIQUE rights, with group type 'manager'
+	 * */
+	@Override
+	public void discoverVisibleGetGroups(String userId, Handler<Either<String, JsonArray>> handler) {
+		String query = "MATCH (g:CommunityGroup:Group:Visible {type: 'manager'})<-[r:IN|COMMUNIQUE]-(u:User {id: {userId}}) " +
+						"RETURN DISTINCT g.id as id, g.name as name, g.displayNameSearchField as displayName, g.nbUsers as nbUsers ORDER BY name";
+
+		JsonObject params = new JsonObject().put("userId", userId);
+
+		neo4j.execute(query, params, validResultHandler(handler));
+	}
+
+	/**
+	 * Return the list of users, that are IN the group, with group type 'manager'
+	 * */
+	@Override
+	public void discoverVisibleGetUsersInGroup(String userId, String groupId,  Handler<Either<String, JsonArray>> handler) {
+		String query = "MATCH (g:CommunityGroup:Group:Visible {id: {groupId}, type: 'manager'})<-[r:IN|COMMUNIQUE]-(u:User) "+
+						"RETURN DISTINCT HEAD(u.profiles) as type, u.id as id, u.displayName as displayName, u.login as login ORDER BY type DESC, displayName";
+
+		JsonObject param = new JsonObject().put("groupId", groupId);
+
+		neo4j.execute(query, param, validResultHandler(handler));
+	}
+
+	/**
+	 * Create a new group, with group type 'manager'
+	 * */
+	@Override
+	public void createDiscoverVisibleGroup(String userId, JsonObject body, Handler<Either<String, JsonObject>> handler){
+
+
+		String query = "CREATE (g:CommunityGroup:Group:Visible {name : {name}, type : 'manager', users : '', displayNameSearchField: {name}}) " +
+						"SET g.id = id(g) +'-'+timestamp() " +
+						"WITH g " +
+						"MATCH (u:User {id : {userId}}) " +
+						"CREATE u-[:IN]->g, u-[:COMMUNIQUE]->g " +
+						"RETURN g.id as id";
+
+		final String name = body.getString("name");
+
+		if (name == null || name.trim().isEmpty()) {
+			handler.handle(new Either.Left<>("Invalid name"));
+			return;
+		}
+
+		JsonObject params = new JsonObject().put("userId", userId).put("name", name);
+
+		neo4j.execute(query, params, validUniqueResultHandler(handler));
+
+	}
+
+	/**
+	 * Update the name of a group, with group type 'manager' and groupId
+	 * */
+	@Override
+	public void updateDiscoverVisibleGroup(String userId, String groupId, JsonObject body, Handler<Either<String, JsonObject>> handler){
+
+		final String name = body.getString("name");
+
+		if (name != null && !name.trim().isEmpty()) {
+			String query = "MATCH (g:CommunityGroup:Group:Visible {id : {groupId}}) " +
+							"SET g.name = {name}, g.displayNameSearchField = {name} " +
+							"RETURN g.id as id";
+
+			JsonObject params = new JsonObject().put("groupId", groupId).put("name", name);
+
+			neo4j.execute(query, params, validUniqueResultHandler(handler));
+
+		} else {
+			handler.handle(new Either.Left<>("Invalid name"));
+		}
+	}
+
+	/**
+	 * Update the group members, using oldUsers and newUsers array, if users was in oldUsers and not in newUsers, remove the user from the group
+	 * if users are in newUsers and not in oldUsers, add the user to the group and send a notification
+	 * Update the number of users in the group
+	 * */
+	@Override
+	public void addDiscoverVisibleGroupUsers(UserInfos user, String groupId, JsonObject body, JsonArray discoverVisibleExpectedProfile, TimelineHelper notifyTimeline, HttpServerRequest request, Handler<Either<String, JsonObject>> handler) {
+		StatementsBuilder statementsBuilder = new StatementsBuilder();
+		JsonArray oldUsers = body.getJsonArray("oldUsers");
+		JsonArray newUsers = body.getJsonArray("newUsers");
+		JsonObject params = new JsonObject().put("groupId", groupId);
+
+		if (newUsers == null || newUsers.isEmpty()) {
+			handler.handle(new Either.Left<>("Invalid users"));
+			return;
+		}
+
+		if (newUsers.size() > 100) {
+			handler.handle(new Either.Left<>("Too many users"));
+			return;
+		}
+
+		if(!newUsers.contains(user.getUserId()) && oldUsers.isEmpty()){
+			newUsers.add(user.getUserId());
+		}
+
+		JsonArray usersToRemove = new JsonArray();
+		JsonArray usersToAdd = new JsonArray();
+
+		if (!oldUsers.isEmpty()) {
+			for (int i = 0; i < oldUsers.size(); i++) {
+				if (!newUsers.contains(oldUsers.getString(i))) {
+					usersToRemove.add(oldUsers.getString(i));
+				}
+			}
+		}
+
+		for (int i = 0; i < newUsers.size(); i++) {
+			if (!oldUsers.contains(newUsers.getString(i))) {
+				usersToAdd.add(newUsers.getString(i));
+			}
+		}
+
+		final String deleteQuery = "MATCH (g:CommunityGroup:Group:Visible {id : {groupId}})<-[r:IN|COMMUNIQUE]-(u:User) " +
+									"WHERE u.id IN {users} " +
+									"DELETE r;";
+		statementsBuilder.add(deleteQuery, params.copy().put("users", usersToRemove));
+
+		final String addQuery = "MATCH (g:CommunityGroup:Group:Visible {id : {groupId}}) " +
+								"MATCH (u:User) " +
+								"WHERE u.id IN {users} AND HEAD(u.profiles) IN {discoverVisibleExpectedProfile} " +
+								"CREATE UNIQUE u-[:IN]->g, u-[:COMMUNIQUE]->g;";
+
+		statementsBuilder.add(addQuery, params.copy().put("users", usersToAdd).put("discoverVisibleExpectedProfile", discoverVisibleExpectedProfile));
+
+		final String queryNb =
+				"MATCH (g:CommunityGroup:Group:Visible {id : {groupId}})<-[:IN]-(u:User) " +
+						"WITH g, count(distinct u) as cu " +
+						"SET g.nbUsers = cu;";
+
+		statementsBuilder.add(queryNb, params);
+
+		neo4j.executeTransaction(statementsBuilder.build(), null, true, event -> {
+			if ("ok".equals(event.body().getString("status"))) {
+				if(!usersToAdd.isEmpty()){
+					sendNotificationTimeline(notifyTimeline, request, user, usersToAdd, groupId);
+				}
+				handler.handle(new Either.Right<>(event.body()));
+			} else {
+				handler.handle(new Either.Left<>(event.body().getString("message")));
+			}
+		});
+	}
+
+	/**
+	 * Get the group name, to be use in the notification
+	 * */
+	private void getGroupName(String groupId, Handler<Either<String, JsonObject>> handler) {
+		String query = "MATCH (g:CommunityGroup:Group:Visible {id : {groupId}}) " +
+				"RETURN g.name as name";
+
+		JsonObject params = new JsonObject().put("groupId", groupId);
+
+		neo4j.execute(query, params, validUniqueResultHandler(handler));
+	}
+
+	/**
+	 * Send notification, to the users that was added to the group, using the timelineHelper to send the notification.
+	 * The notification is 'userbook_discoverVisibleGroups.userbook_discoverVisibleGroups' and will be using 'userbook' type in the timeline and will have the annuaire icon
+	 * The notification will have <i18N>'Explore le réseau'</i18N> as title and will have the group name as groupName
+	 * */
+	private void sendNotificationTimeline(TimelineHelper notifyTimeline, HttpServerRequest request, UserInfos user, JsonArray receivers, String groupId) {
+
+		getGroupName(groupId, event -> {
+			if (event.isLeft()) {
+				log.error("Error when getting group name : " + event.left().getValue());
+				return;
+			}
+			String groupName = event.right().getValue().getString("name");
+			JsonObject params = new JsonObject()
+					.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
+					.put("username", user.getUsername())
+					.put("uriUserbookAnnuaire", "/userbook/annuaire#/search")
+					.put("groupName", groupName);
+
+			notifyTimeline.notifyTimeline(request, "userbook_discoverVisibleGroups.userbook_discoverVisibleGroups", user, receivers.getList(),
+					user.getUserId() + System.currentTimeMillis() + "userbook_discoverVisibleGroups", params);
+		});
+	}
+
 }

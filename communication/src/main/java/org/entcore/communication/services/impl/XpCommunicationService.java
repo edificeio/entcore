@@ -31,6 +31,12 @@ import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 
 public class XpCommunicationService extends DefaultCommunicationService {
 
+	final JsonArray discoverVisibleExpectedProfile = new JsonArray();
+
+	public XpCommunicationService(JsonArray discoverVisibleExpectedProfile) {
+		this.discoverVisibleExpectedProfile.addAll(discoverVisibleExpectedProfile);
+	}
+
 	@Override
 	public void visibleUsers(String userId, String structureId, JsonArray expectedTypes, boolean itSelf,
 			boolean myGroup, boolean profile, String preFilter, String customReturn, JsonObject additionnalParams, String userProfile,
@@ -49,7 +55,7 @@ public class XpCommunicationService extends DefaultCommunicationService {
 			query.append("WITH (REDUCE(acc=[], groups IN COLLECT(COALESCE(g.communiqueWith, [])) | acc+groups) + ")
 					.append(myGroupQuery).append(") as comGroups ");
 			query.append("MATCH p=(g:Group)<-[:DEPENDS*0..1]-cg-[:COMMUNIQUE*0..1]->m ");
-			if (userProfile == null || "Student".equals(userProfile) || "Relative".equals(userProfile)) {
+			if (userProfile == null || "Student".equals(userProfile) || "Relative".equals(userProfile) || !discoverVisibleExpectedProfile.isEmpty() ) {
 				union = new StringBuilder("MATCH p=(n:User)-[:COMMUNIQUE_DIRECT]->m " +
 						"WHERE n.id = {userId} AND (NOT(HAS(m.blocked)) OR m.blocked = false) ");
 			}

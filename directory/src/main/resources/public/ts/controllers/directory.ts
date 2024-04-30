@@ -17,6 +17,7 @@
 
 import { $, angular, idiom as lang, model, moment, ng, notify, template, ui } from 'entcore';
 import { directory } from '../model';
+import { filter } from 'core-js/core/array';
 
 export const directoryController = ng.controller('DirectoryController',['$scope', '$window', 'route', '$location', ($scope, $window, route, $location) => {
 	$scope.template = template;
@@ -97,6 +98,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		},
 		viewGroup: async function(params){
 			$scope.search.index = 1;
+			$scope.selectTabAnnuaire('myNetwork')
 			$scope.groups.searched = true;
 			$scope.currentGroup = new directory.Group({ id: params.groupId });
 			await $scope.currentGroup.getName();
@@ -286,26 +288,26 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 				classe.type = classe.id;
 			});
 	
-			if ($scope.search.index === 0) {
+			if ($scope.search.index === 0 && $scope.isSelectedTabAnnuaire('myNetwork')) {
 				$scope.filtersOptions.users.classes = $scope.filtersOptions.users.classes || [];
 				$scope.filtersOptions.users.classes.push(...filterClasses);
-			} else if ($scope.search.index === 1) {
+			} else if ($scope.search.index === 1 && $scope.isSelectedTabAnnuaire('myNetwork')) {
 				$scope.filtersOptions.groups.classes = $scope.filtersOptions.groups.classes || [];
 				$scope.filtersOptions.groups.classes.push(...filterClasses);
-			} else if ($scope.search.index === 2) {
+			} else if ($scope.search.index === 2 && $scope.isSelectedTabAnnuaire('myNetwork')) {
 				$scope.create.favorite.options.classes = $scope.create.favorite.options.classes || [];
 				$scope.create.favorite.options.classes.push(...filterClasses);
 			}
 		} else {
-			if ($scope.search.index === 0) {
+			if ($scope.search.index === 0 && $scope.isSelectedTabAnnuaire('myNetwork')) {
 				$scope.filtersOptions.users.classes = $scope.filtersOptions.users.classes.filter(classe => classe.structId != option.type);
 				$scope.filters.users.classes = $scope.filters.users.classes.filter(
 					filterModel => $scope.filtersOptions.users.classes.find(filterOption => filterModel === filterOption.type));
-			} else if ($scope.search.index === 1) {
+			} else if ($scope.search.index === 1 && $scope.isSelectedTabAnnuaire('myNetwork')) {
 				$scope.filtersOptions.groups.classes = $scope.filtersOptions.groups.classes.filter(classe => classe.structId != option.type);
 				$scope.filters.groups.classes = $scope.filters.groups.classes.filter(
 					filterModel => $scope.filtersOptions.groups.classes.find(filterOption => filterModel === filterOption.type));
-			} else if ($scope.search.index === 2) {
+			} else if ($scope.search.index === 2 && $scope.isSelectedTabAnnuaire('myNetwork')) {
 				$scope.create.favorite.options.classes = $scope.create.favorite.options.classes.filter(classe => classe.structId != option.type);
 				$scope.create.favorite.filters.classes = $scope.create.favorite.filters.classes.filter(
 					filterModel => $scope.create.favorite.options.classes.find(filterOption => filterModel === filterOption.type));
@@ -343,7 +345,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.indexFormChanged($scope.search.index);
 
 		// Favorite
-		if ($scope.search.index == 2) {
+		if ($scope.search.index == 2 && $scope.isSelectedTabAnnuaire('myNetwork')) {
 			$scope.createFavorite();
 			return;
 		}
@@ -354,13 +356,16 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		}
 		template.open('main', 'mono-class');
 		template.open('list', 'dominos');
-		if ($scope.search.index === 0) {
+		if ($scope.search.index === 0 && $scope.isSelectedTabAnnuaire('myNetwork')) {
 			await directory.directory.users.searchDirectory($scope.search.users, $scope.filters.users);
 			$scope.users = directory.directory.users;
 			$scope.allUsers = Object.assign([], $scope.users);
 			template.open('dominosUser', 'dominos-user');
-		}
-		else {
+		} else if($scope.search.index === 0 && $scope.isSelectedTabAnnuaire('discoverVisible')) {
+			template.open('dominosDiscoverVisibleUser', 'dominos-discover-visible-user');
+		} else if ($scope.search.index === 1 && $scope.isSelectedTabAnnuaire('discoverVisible')) {
+			template.open('dominosDiscoverVisibleGroup', 'dominos-discover-visible-group');
+		} else {
 			await directory.directory.groups.searchDirectory($scope.search.groups, $scope.filters.groups);
 			$scope.groups = directory.directory.groups;
 			template.open('dominosGroup', 'dominos-group');
@@ -369,7 +374,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.display.showCloseMobile = $scope.display.searchmobile;
 		$scope.display.loading = false;
 		$scope.display.loadingmobile = false;
-		if (($scope.search.index === 0 && $scope.users.all.length === 0) || ($scope.search.index === 1 && $scope.groups.all.length === 0)) {
+		if ((($scope.search.index === 0 && $scope.users.all.length === 0) || ($scope.search.index === 1 && $scope.groups.all.length === 0)) && $scope.isSelectedTabAnnuaire('myNetwork')) {
 			if (ui.breakpoints.checkMaxWidth("wideScreen")) {
 				notify.info("noresult");
 			}
@@ -737,6 +742,15 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	};
 
 	$scope.getCurrentItemsLength = function() {
+		if($scope.isSelectedTabAnnuaire('discoverVisible')) {
+			switch($scope.search.index) {
+				case 0:
+					return $scope.discoverVisible.users.length;
+				case 1:
+					return $scope.discoverVisible.groups.length;
+			}
+		}
+
 		switch($scope.search.index) {
 			case 0:
 				return $scope.users.all.length;
@@ -750,8 +764,10 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	$scope.indexFormChanged = function(index) {
 		if ($scope.display.creatingFavorite) {
 			template.close('list');
-			if (index === 2)
+			if (index === 2 && $scope.isSelectedTabAnnuaire('myNetwork'))
 				template.open('list', 'favorite-form');
+			else if (index === 1 && $scope.isSelectedTabAnnuaire('discoverVisible'))
+				template.open('list', 'discover-visible-group-add-edit');
 			else
 				template.open('list', 'dominos');
 		}
@@ -768,18 +784,22 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		template.open('main', 'mono-class');
 		template.open('list', 'dominos');
 
-		if (index === 0) {
+		if (index === 0 && $scope.isSelectedTabAnnuaire('myNetwork')) {
 			if (!$scope.users.all.length) $scope.display.loading = true;
 			await directory.directory.users.searchDirectory($scope.search.users, $scope.filters.users);
 			$scope.users = directory.directory.users;
 			$scope.allUsers = Object.assign([], $scope.users);
 			template.open('dominosUser', 'dominos-user');
 		}
-		else if (index === 1) {
+		else if (index === 1 && $scope.isSelectedTabAnnuaire('myNetwork')) {
 			if (!$scope.groups.all.length) $scope.display.loading = true;
 			await directory.directory.groups.searchDirectory($scope.search.groups, $scope.filters.groups);
 			$scope.groups = directory.directory.groups;
 			template.open('dominosGroup', 'dominos-group');
+		} else if(index === 0 && $scope.isSelectedTabAnnuaire('discoverVisible')) {
+			template.open('dominosDiscoverVisibleUser', 'dominos-discover-visible-user');
+		} else if(index === 1 && $scope.isSelectedTabAnnuaire('discoverVisible')) {
+			template.open('dominosDiscoverVisibleGroup', 'dominos-discover-visible-group');
 		}
 		
 		$scope.display.searchmobile = false;
@@ -1019,12 +1039,19 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 			// Search directory for filtered results and display them.
 			await directory.directory[params.filters].searchDirectory("", filters, null, false);
-			if ($scope.search.index === 0) {
+			if ($scope.search.index === 0 && $scope.isSelectedTabAnnuaire('myNetwork')) {
 				$scope.users = directory.directory.users;
 				$scope.allUsers = Object.assign([], $scope.users);
 				template.open('dominosUser', 'dominos-user');
 				showResultsPanel = showResultsPanel && $scope.users.all.length > 0;
-			} else {
+			} else if ($scope.search.index === 0 && $scope.isSelectedTabAnnuaire('discoverVisible')) {
+				template.open('dominosDiscoverVisibleUser', 'dominos-discover-visible-user');
+				showResultsPanel = showResultsPanel && $scope.discoverVisible.users.length > 0; 
+			} else if ($scope.search.index === 1 && $scope.isSelectedTabAnnuaire('discoverVisible')) {
+				template.open('dominosDiscoverVisibleGroup', 'dominos-discover-visible-group');
+				showResultsPanel = showResultsPanel && $scope.discoverVisible.groups.length > 0; 
+			} 
+			else {
 				$scope.groups = directory.directory.groups;
 				template.open('dominosGroup', 'dominos-group');
 				showResultsPanel = showResultsPanel && $scope.groups.all.length > 0; 
@@ -1033,5 +1060,271 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 				$scope.display.searchmobile = true;
 			}
 		} 
+	}
+
+	$scope.discoverVisible = {
+		users: [],
+		displayCreateGroup: false,
+		groups: [],
+		selectedGroup: null,
+		displaySelectedGroupUsers: {group:null, users:[]},
+		displayEditGroup: false,
+		editOrAddGroup: {searchedUsers: [], selectedUsers: [], groupName: null, baseUsersId: []},
+		filters: {
+			structures: [],
+			profiles: [],
+			search: ""
+		},
+		options: {
+			structures: [],
+			profiles: []
+		}
+	};
+
+	$scope.annuaireTab = "myNetwork";
+
+	$scope.getDiscoverVisibleOptions = function() {
+
+
+		Promise.resolve(directory.discoverVisibleAcceptedProfiles()).then(function(result){
+
+			var defaultProfiles = result.length === 1;
+
+			for(var i = 0; i < result.length; i++) {
+				switch(result[i]) {
+					case 'Teacher':
+						$scope.discoverVisible.options.profiles.push({label: 'Enseignant', type: 'Teacher', checked: defaultProfiles});
+						break;
+					case 'Personnel':
+						$scope.discoverVisible.options.profiles.push({label: 'Personnel', type: 'Personnel', checked: defaultProfiles});
+						break;
+				}
+			}
+
+			if(result.length > 0 && $scope.discoverVisibleAutorize()) {
+				$scope.getDiscoverVisibleGetGroups();
+				Promise.resolve(directory.discoverVisibleStructure()).then(function(result){
+					$scope.discoverVisible.options.structures = result;
+				});
+			}
+		});
+	}
+
+	$scope.getDiscoverVisibleOptions();
+
+	
+	$scope.getDiscoverVisibleSearchUsers = async function() {
+
+		$scope.display.loading = true;
+
+		if($scope.discoverVisible.filters.structures.length === 0 && $scope.discoverVisible.filters.search === "") { 
+			notify.info("userbook.discover.visible.users.search.filter.empty");
+			$scope.display.loading = false;
+			return;
+		}
+
+		var result = await directory.discoverVisibleUsers($scope.discoverVisible.filters);
+		if(result.length === 0){
+			$scope.discoverVisible.users = [];
+		} else {
+			$scope.discoverVisible.users = result;
+			$scope.discoverVisible.editOrAddGroup.searchedUsers = result;
+
+		}
+
+		$scope.display.loading = false;
+
+		$scope.$apply();
+
+	}
+
+	$scope.getDiscoverVisibleGetGroups = async function() {
+		$scope.display.loading = true;
+
+		var result = await directory.discoverVisibleGetGroups();
+		$scope.discoverVisible.groups = result;
+		
+		$scope.display.loading = false;
+		$scope.$apply('discoverVisible.groups');
+	}
+
+	$scope.isSelectedTabAnnuaire = function (tab) {
+        if (!tab) {
+            console.warn("[Directory][Annuaire.isSelectedTab] kind should not be null: ", tab)
+        }
+        return tab == $scope.annuaireTab;
+    }
+    $scope.selectTabAnnuaire = function (tab) {
+		if($scope.discoverVisible.displayEditGroup || $scope.discoverVisible.displayCreateGroup) {
+			$scope.backToDiscoverVisibleSelectedGroup();
+		}
+		$scope.search.index = 0;
+        $scope.annuaireTab = tab;
+    }
+
+    $scope.selectedTabCssAnnuaire = function (tab) {
+        return $scope.isSelectedTabAnnuaire(tab) ? "selected" : "";
+    }
+
+
+	$scope.discoverVisibleDisplayUsersInGroup = async function(selectedGroupId) {
+		$scope.scroolTop();
+		$scope.display.loading = true;
+		if (ui.breakpoints.checkMaxWidth("wideScreen")) {
+			$scope.display.loadingmobile = true;
+		}
+		$scope.discoverVisible.selectedGroup = selectedGroupId;
+		var response;
+		try{
+			response = await directory.discoverVisibleGetUsersInGroup(selectedGroupId);
+		} catch(e) {
+			await $scope.getDiscoverVisibleGetGroups();
+			await $scope.backToDiscoverVisibleGroups();
+			return;
+		}
+		
+		$scope.discoverVisible.displaySelectedGroupUsers.group = $scope.discoverVisible.groups.find(group => group.id === selectedGroupId);
+		$scope.discoverVisible.displaySelectedGroupUsers.users = response;
+
+		template.open('discoverVisibleGroupInfo', 'discover-visible-group-info');
+		$scope.display.loading = false;
+		$scope.display.loadingmobile = false;
+
+		$scope.$apply();
+	};
+
+	$scope.discoverVisibleDisplayCreateOrEditGroup = async function(action) {
+		$scope.scroolTop();
+		$scope.display.loading = true;
+		if (ui.breakpoints.checkMaxWidth("wideScreen")) {
+			$scope.display.loadingmobile = true;
+		}
+
+		if(action === 'edit'){
+			$scope.discoverVisible.displayEditGroup = true;
+			$scope.discoverVisible.displayCreateGroup = false;
+			$scope.discoverVisible.editOrAddGroup.selectedUsers = $scope.discoverVisible.displaySelectedGroupUsers.users;
+			$scope.discoverVisible.displaySelectedGroupUsers.users.map(user => $scope.discoverVisible.editOrAddGroup.baseUsersId.push(user.id));
+			$scope.discoverVisible.editOrAddGroup.groupName = $scope.discoverVisible.displaySelectedGroupUsers.group.name;
+		} else {
+			$scope.discoverVisible.selectedGroup = null;
+			$scope.discoverVisible.displaySelectedGroupUsers.group = null;
+			$scope.discoverVisible.displaySelectedGroupUsers.users = [];
+			$scope.discoverVisible.displayEditGroup = false;
+			$scope.discoverVisible.displayCreateGroup = true;
+		}
+
+	
+
+		$scope.discoverVisible.editOrAddGroup.searchedUsers = $scope.discoverVisible.users;
+
+		$scope.discoverVisible.editOrAddGroup.searchedUsers.forEach(user => {
+			if(user.selected){
+				user.selected = false;
+			}
+		});
+
+		template.close('list');
+		template.open('list', 'discover-visible-group-add-edit');
+		$scope.display.loading = false;
+		$scope.display.loadingmobile = false;
+
+		$scope.$apply();
+	};
+
+	$scope.backToDiscoverVisibleGroups = function() {
+		$scope.discoverVisible.selectedGroup = null;
+		$scope.discoverVisible.displayEditGroup = false;
+		$scope.discoverVisible.displayCreateGroup = false;
+		$scope.discoverVisible.displaySelectedGroupUsers.group = null;
+		$scope.discoverVisible.displaySelectedGroupUsers.users = [];
+		$scope.discoverVisible.editOrAddGroup.searchedUsers = [];
+		$scope.discoverVisible.editOrAddGroup.selectedUsers = [];
+		$scope.discoverVisible.editOrAddGroup.baseUsersId = [];
+		$scope.discoverVisible.editOrAddGroup.groupName = null;
+
+		$scope.display.loading = false;
+
+		template.open('dominosDiscoverVisibleGroup', 'dominos-discover-visible-group');
+		
+		$scope.$apply();
+	};
+
+	$scope.backToDiscoverVisibleSelectedGroup = async function() {
+
+		$scope.discoverVisible.displayEditGroup = false;
+		$scope.discoverVisible.displayCreateGroup = false;
+		$scope.discoverVisible.displaySelectedGroupUsers.group = null;
+		$scope.discoverVisible.displaySelectedGroupUsers.users = [];
+		$scope.discoverVisible.editOrAddGroup.searchedUsers = [];
+		$scope.discoverVisible.editOrAddGroup.selectedUsers = [];
+		$scope.discoverVisible.editOrAddGroup.baseUsersId = [];
+		$scope.discoverVisible.editOrAddGroup.groupName = null;
+
+		if($scope.discoverVisible.selectedGroup !== null){
+			await $scope.discoverVisibleDisplayUsersInGroup($scope.discoverVisible.selectedGroup);
+
+		} else {
+			await $scope.getDiscoverVisibleGetGroups();
+	
+		}
+
+		template.close('list');
+		template.open('list', 'dominos');
+		$scope.display.loading = false;
+		$scope.$apply();
+	}
+
+	$scope.discoverVisibleSaveGroup = async function() {
+		$scope.display.loading = true;
+
+		if($scope.discoverVisible.displayCreateGroup){
+			var result = await directory.discoverVisibleCreateGroup($scope.discoverVisible.editOrAddGroup.groupName);
+			if(result && result.id !== null){
+				await directory.discoverVisibleAddUserToGroup(result.id, [], $scope.discoverVisible.editOrAddGroup.selectedUsers);
+				await $scope.getDiscoverVisibleGetGroups();
+			}
+
+			$scope.discoverVisible.selectedGroup = result.id;
+
+		} else {
+
+			if($scope.discoverVisible.editOrAddGroup.groupName !== $scope.discoverVisible.displaySelectedGroupUsers.group.name) {
+				await directory.discoverVisibleEditGroup($scope.discoverVisible.selectedGroup, $scope.discoverVisible.editOrAddGroup.groupName);
+				await $scope.getDiscoverVisibleGetGroups();
+			}
+
+			await directory.discoverVisibleAddUserToGroup($scope.discoverVisible.selectedGroup, $scope.discoverVisible.editOrAddGroup.baseUsersId, $scope.discoverVisible.editOrAddGroup.selectedUsers);
+
+		}
+
+		await $scope.backToDiscoverVisibleSelectedGroup();
+
+		$scope.$apply();
+	}
+
+	$scope.discoverVisibleCommuteUsers = async function(receiverId) {
+
+		await directory.discoverVisibleAddCommuteUsers(receiverId);
+		window.location.href = "/conversation/conversation#/write-mail/" + receiverId;
+	} 
+
+	$scope.discoverVisibleAutorize = function() {
+		if( $scope.discoverVisible.options.profiles !== null && $scope.discoverVisible.options.profiles.length > 0){
+			for(var i = 0; i < $scope.discoverVisible.options.profiles.length; i++){
+				if($scope.discoverVisible.options.profiles[i].type !== null && (model.me.type === 'Teacher' || model.me.type === 'ENSEIGNANT') && $scope.discoverVisible.options.profiles[i].type === 'Teacher'){			
+					return true;
+				} else if($scope.discoverVisible.options.profiles[i].type !== null && (model.me.type === 'Personnel' || model.me.type === 'PERSEDUCNAT') && $scope.discoverVisible.options.profiles[i].type === 'Personnel'){
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	$scope.discoverVisibleExistGroup = async function() {
+		await directory.discoverVisibleAddUserToGroup($scope.discoverVisible.selectedGroup, $scope.discoverVisible.displaySelectedGroupUsers.users.map(user => user.id), $scope.discoverVisible.displaySelectedGroupUsers.users.filter(user => user.id !== model.me.id).map(user => user.id));
+		await $scope.getDiscoverVisibleGetGroups();
+		await $scope.backToDiscoverVisibleGroups();
 	}
 }]);

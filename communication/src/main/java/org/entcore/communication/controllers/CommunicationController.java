@@ -39,8 +39,10 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.validation.StringValidation;
+import org.entcore.communication.filters.CommunicationDiscoverVisibleFilter;
 import org.entcore.communication.services.CommunicationService;
 import org.entcore.communication.services.impl.XpCommunicationService;
 
@@ -52,6 +54,13 @@ import static org.entcore.common.http.response.DefaultResponseHandler.*;
 public class CommunicationController extends BaseController {
 
 	private CommunicationService communicationService;
+	private final TimelineHelper timeline;
+	private final JsonArray discoverVisibleExpectedProfile;
+
+	public CommunicationController(TimelineHelper helper, JsonArray discoverVisibleExpectedProfile) {
+		this.timeline = helper;
+		this.discoverVisibleExpectedProfile = discoverVisibleExpectedProfile;
+	}
 
 	@Get("/admin-console")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
@@ -644,4 +653,222 @@ public class CommunicationController extends BaseController {
 		}
 		communicationService.verify(from, to, notEmptyResponseHandler(request));
 	}
+
+	/**
+	 * Discover visible users, return list of users that can be dicover by the user
+	 * @param request
+	 * 	{
+	 * 		"structures": ["id1", "id2"],
+	 * 		"profiles": ["Teacher"],
+	 * 		"search": "search",
+	 * 	}
+	 *
+	 * */
+	@Post("/discover/visible/users")
+	@SecuredAction(value= "", type = ActionType.RESOURCE)
+	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
+	public void getDiscoverVisibleUsers(HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, filter -> UserUtils.getUserInfos(eb, request, user -> {
+			if(user == null || discoverVisibleExpectedProfile.isEmpty() || !discoverVisibleExpectedProfile.contains(user.getType())) {
+				badRequest(request, "invalid.user");
+				return;
+			}
+			communicationService.getDiscoverVisibleUsers( user.getUserId(), filter, discoverVisibleExpectedProfile, arrayResponseHandler(request));
+		}));
+	}
+
+	/**
+	 * Return list of accepted profile for discover visible
+	 * */
+	@Get("/discover/visible/profiles")
+	@SecuredAction(value= "", type = ActionType.RESOURCE)
+	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
+	public void getDiscoverVisibleAcceptedProfile(HttpServerRequest request) {
+		renderJson(request, discoverVisibleExpectedProfile);
+	}
+
+	/**
+	 * Return list of all structures, to be use to filter discover visible users
+	 * */
+	@Get("/discover/visible/structures")
+	@SecuredAction(value= "", type = ActionType.RESOURCE)
+	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
+	public void getDiscoverVisibleStructures(HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, user -> {
+			if(user == null || discoverVisibleExpectedProfile.isEmpty() || !discoverVisibleExpectedProfile.contains(user.getType())) {
+				badRequest(request, "invalid.user");
+				return;
+			}
+			communicationService.getDiscoverVisibleStructures(arrayResponseHandler(request));
+		});
+	}
+
+	/**
+	 * Add communication rights between two users, this methode use "COMMUIQUE_DIRECT" with source 'MANUAL'
+	 * @param request
+	 * 	{
+	 * 		"receiverId": "receiverId"
+	 * 	}
+	 * */
+	@Post("/discover/visible/add/commuting/:receiverId")
+	@SecuredAction(value= "", type = ActionType.RESOURCE)
+	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
+	public void discoverVisibleAddCommuteUsers(HttpServerRequest request) {
+		String receiverId = request.params().get("receiverId");
+		if(receiverId == null || receiverId.trim().isEmpty()) {
+			badRequest(request, "invalid.parameter");
+			return;
+		}
+
+		UserUtils.getUserInfos(eb, request, user -> {
+			if(user == null || discoverVisibleExpectedProfile.isEmpty() || !discoverVisibleExpectedProfile.contains(user.getType())) {
+				badRequest(request, "invalid.user");
+				return;
+			}
+			communicationService.discoverVisibleAddCommuteUsers(user.getUserId(), receiverId, discoverVisibleExpectedProfile, notEmptyResponseHandler(request));
+		});
+	}
+
+	/**
+	 * Delete communication rights between two users, this methode delete "COMMUIQUE_DIRECT" with source 'MANUAL'
+	 * */
+	@Delete("/discover/visible/remove/commuting/:receiverId")
+	@SecuredAction(value= "", type = ActionType.RESOURCE)
+	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
+	public void discoverVisibleRemoveCommuteUsers(HttpServerRequest request) {
+		String receiverId = request.params().get("receiverId");
+		if(receiverId == null || receiverId.trim().isEmpty()) {
+			badRequest(request, "invalid.parameter");
+			return;
+		}
+
+		UserUtils.getUserInfos(eb, request, user -> {
+			if(user == null || discoverVisibleExpectedProfile.isEmpty() || !discoverVisibleExpectedProfile.contains(user.getType())) {
+				badRequest(request, "invalid.user");
+				return;
+			}
+			communicationService.discoverVisibleRemoveCommuteUsers(user.getUserId(), receiverId, notEmptyResponseHandler(request));
+		});
+	}
+
+	/**
+	 * This methode return all groups that the user can see, with the group type 'manager'
+	 * */
+	@Get("/discover/visible/groups")
+	@SecuredAction(value= "", type = ActionType.RESOURCE)
+	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
+	public void discoverVisibleGetGroups(HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, user -> {
+			if(user == null || discoverVisibleExpectedProfile.isEmpty() || !discoverVisibleExpectedProfile.contains(user.getType())) {
+				badRequest(request, "invalid.user");
+				return;
+			}
+			communicationService.discoverVisibleGetGroups(user.getUserId(), arrayResponseHandler(request));
+		});
+	}
+
+	/**
+	 * Get the list of users in a group
+	 * @param request
+	 * 	{
+	 * 		"groupId": "groupId"
+	 * 	}
+	 * */
+	@Get("/discover/visible/group/:groupId/users")
+	@SecuredAction(value= "", type = ActionType.RESOURCE)
+	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
+	public void discoverVisibleGetUsersInGroup(HttpServerRequest request) {
+
+		String groupId = request.params().get("groupId");
+
+		UserUtils.getUserInfos(eb, request, user -> {
+			if(user == null || discoverVisibleExpectedProfile.isEmpty() || !discoverVisibleExpectedProfile.contains(user.getType())) {
+				badRequest(request, "invalid.user");
+				return;
+			}
+			communicationService.discoverVisibleGetUsersInGroup(user.getUserId(), groupId, arrayResponseHandler(request));
+		});
+
+	}
+
+	/**
+	 * Create a group with the group type 'manager'
+	 * @param request
+	 * 	{
+	 * 		"name": "name",
+	 * 	}
+	 * */
+	@Post("/discover/visible/group")
+	@SecuredAction(value= "", type = ActionType.RESOURCE)
+	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
+	public void createDiscoverVisibleGroup(HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, body -> {
+			UserUtils.getUserInfos(eb, request, user -> {
+				if(user == null || discoverVisibleExpectedProfile.isEmpty() || !discoverVisibleExpectedProfile.contains(user.getType())) {
+					badRequest(request, "invalid.user");
+					return;
+				}
+				communicationService.createDiscoverVisibleGroup(user.getUserId(), body, notEmptyResponseHandler(request));
+			});
+		});
+	}
+
+	/**
+	 * Update a group with the group type 'manager'
+	 * @param request
+	 * 	{
+	 * 		"groupId": "groupId",
+	 * 		"name": "name",
+	 * 	}
+	 * */
+	@Put("/discover/visible/group/:groupId")
+	@SecuredAction(value= "", type = ActionType.RESOURCE)
+	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
+	public void updateDiscoverVisibleGroup(HttpServerRequest request) {
+		String groupId = request.params().get("groupId");
+		if(groupId == null || groupId.trim().isEmpty()) {
+			badRequest(request, "invalid.parameter");
+			return;
+		}
+		RequestUtils.bodyToJson(request, body -> {
+			UserUtils.getUserInfos(eb, request, user -> {
+				if(user == null || discoverVisibleExpectedProfile.isEmpty() || !discoverVisibleExpectedProfile.contains(user.getType())) {
+					badRequest(request, "invalid.user");
+					return;
+				}
+				communicationService.updateDiscoverVisibleGroup(user.getUserId(), groupId, body, notEmptyResponseHandler(request));
+			});
+		});
+	}
+
+	/**
+	 * Update the groups member, with adding the new user in the group and send a notification to the user, and removing the user from the group
+	 * @param request
+	 * 	{
+	 * 		"groupId": "groupId",
+	 * 		"oldUsers": ["userId1", "userId2"], // list of users befor change
+	 * 		"newUsers": "["userId1", "userId2"]" //list of users after change
+	 * 	}
+	 * */
+	@Put("/discover/visible/group/:groupId/users")
+	@SecuredAction(value= "", type = ActionType.RESOURCE)
+	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
+	public void addDiscoverVisibleGroupUsers(HttpServerRequest request) {
+		String groupId = request.params().get("groupId");
+		if(groupId == null || groupId.trim().isEmpty()) {
+			badRequest(request, "invalid.parameter");
+			return;
+		}
+
+		RequestUtils.bodyToJson(request, body -> {
+			UserUtils.getUserInfos(eb, request, user -> {
+				if(user == null || discoverVisibleExpectedProfile.isEmpty() || !discoverVisibleExpectedProfile.contains(user.getType())) {
+					badRequest(request, "invalid.user");
+					return;
+				}
+				communicationService.addDiscoverVisibleGroupUsers(user, groupId, body, discoverVisibleExpectedProfile, timeline, request, defaultResponseHandler(request));
+			});
+		});
+	}
+
 }

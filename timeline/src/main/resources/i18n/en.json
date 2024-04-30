@@ -27,5 +27,7 @@
     "lightmode.timeline.notifications": "Because of an unprecedented peak in connections, your News feed is temporarily inaccessible. The notification history will be restored later. Also, to be notified by your network, external notifications are always sent to the email address entered in My account.",
     "lightmode.timeline.notifications.html": "<div><h1>Your News feed is unavailable...</h1><h2>Because of an unprecedented peak in connections, your News feed is temporarily inaccessible. The notification history will be restored later. Also, to be notified by your network, external notifications are always sent to the email address entered in My account.</h2></div>",
     "timeline.historyold": "Load notification history",
-    "timeline.empty.cache": "The history of your notifications is hidden by default. You can load your history by clicking below."
+    "timeline.empty.cache": "The history of your notifications is hidden by default. You can load your history by clicking below.",
+    "userbook_discovervisiblegroups": "Explore the network",
+    "userbook.discover.visible.groups.add.user.notify": "added you to the workgroup"
 }

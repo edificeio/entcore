@@ -923,6 +923,24 @@
     "error.commit.timetable.transaction" : "L'enregistrement des données n'a pu aboutir, veuillez essayer ultérieurement. Si le problème persiste, veuillez contacter l'assistance.",
     "directory.default.relative.title" : "Enseignants de mes enfants",
     "directory.default.teacher.title" : "Enseignants et personnels de l'établissement",
-    "admin.duplicate.notify.subject" : "Votre demande de duplication de paramétrage"
-    
+    "admin.duplicate.notify.subject" : "Votre demande de duplication de paramétrage",
+    "userbook.myNetwork": "Mes contacts",
+    "userbook.discover.visible": "Explorer le réseau",
+    "userbook.discover.visible.message.info": "En collaboration avec le projet Éduc De Normandie, nous vous proposons une fonctionnalité expérimentale. Désormais, vous pouvez communiquer directement avec vos collègues sans passer par les administrateurs. De plus, vous avez la possibilité de former des groupes de travail selon vos besoins.",
+    "userbook.discover.visible.users": "Découvrir",
+    "userbook.discover.visible.groups": "Groupes de travail",
+    "userbook.discover.visible.group.title": "Groupe de travail",
+    "userbook.discover.visible.groups.create": "Créer un groupe",
+    "userbook.discover.visible.group.actiion.edit": "Modifier le groupe",
+    "userbook.discover.visible.group.add.title": "Crée le groupe",
+    "userbook.discover.visible.group.edit.title": "Modifier le groupe",
+    "userbook.discover.visible.group.name": "Nom du groupe",
+    "userbook.discover.visible.group.name.placeholder": "Entrez le nom du groupe",
+    "userbook.discover.visible.group.search": "Rechercher les utilisateurs",
+    "userbook.discover.visible.group.search.add.user": "Membres à ajouter",
+    "userbook.discover.visible.group.composition": "Composition du groupe",
+    "userbook.discover.visible.search.users.empty": "Saisissez les critères de votre recherche pour afficher les résultats",
+    "userbook.discover.visible.group.composition.empty": "Aucun membre dans ce groupe,il n'est pas permis d'enregistrer un groupe sans membre",
+    "userbook.discover.visible.users.search.filter.empty": "Veuillez renseigner au moins un critère de recherche",
+    "userbook.discover.visible.group.exit": "Quitter le groupe"
 }

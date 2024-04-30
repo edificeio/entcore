@@ -1,0 +1,70 @@
+<lightbox>
+	<container template="lightbox"></container>
+</lightbox>
+
+
+<div class="horizontal-spacing">
+	<div class="flex-row justify-between">
+		<h2 class="flex-all-remains left-text">
+			<a ng-click="backToDiscoverVisibleGroups()"><i class="back"></i>
+				<i18n>userBook.directory.back</i18n>
+			</a>
+		</h2>
+	</div>
+	<article class="rigid-grid cell twelve">
+		<div class="flex-row horizontal-spacing justify-between">
+			<div class="left-text">
+				<h4>[[ discoverVisible.displaySelectedGroupUsers.group.name ]]</h4>
+				<div class="cell absolute-magnet">
+					<button type="button" ng-click="discoverVisibleExistGroup()" class="twelve">
+						<i18n>userbook.discover.visible.group.exit</i18n>
+					</button>
+				</div>
+				<div class="small-text">
+					<div ng-if="hasWorkflowMessagerie()" class="flex-row">
+						<div class="action-item">
+							<a class="flex-row twelve"
+								ng-href="/conversation/conversation#/write-mail/[[discoverVisible.selectedGroup]]/Group">
+								<i class="block cell no-margin centered-text icon-force-size send-mail"></i>
+								<span class="cell medium-block-container">
+									<i18n>userBook.directory.group.write-message</i18n>
+								</span>
+							</a>
+						</div>
+						<div></div>
+					</div>
+
+					<div></div>
+					<div class="only-desktop">
+						<div class="flex-row">
+							<div class="action-item">
+								<a class="flex-row twelve" ng-click="discoverVisibleDisplayCreateOrEditGroup('edit')">
+									<i class="block cell no-margin centered-text icon-force-size edit"
+										style="line-height: 43px;"></i>
+									<span class="cell medium-block-container">
+										<i18n>userbook.discover.visible.group.actiion.edit</i18n>
+									</span>
+								</a>
+							</div>
+						</div>
+					</div>
+					<div></div>
+
+					<div class="row"></div>
+				</div>
+				<div class="top-spacing-twice left-text italic-text indication small-text">[[
+					discoverVisible.displaySelectedGroupUsers.users.length ]] <i18n>portal.users</i18n>
+				</div>
+
+			</div>
+
+		</div>
+	</article>
+</div>
+<div class="clear"></div>
+<div class="flex-row justify-center align-center f-wrap">
+	<div class="item user"
+		ng-repeat="user in discoverVisible.displaySelectedGroupUsers.users | orderBy:'displayName' | limitTo:search.maxLength">
+		<div data-ng-include="template.containers.dominosDiscoverVisibleUser"></div>
+	</div>
+</div>

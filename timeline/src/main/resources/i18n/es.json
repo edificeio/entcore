@@ -3,5 +3,7 @@
     "lightmode.timeline.notifications": "Debido a un pico de conexiones sin precedentes, su suministro de noticias es temporalmente inaccesible. El historial de notificaciones se restaurará más tarde. Además, para recibir las noticias de su red, las notificaciones externas siempre se envían a la dirección de correo electrónico ingresada en Mi cuenta.",
     "lightmode.timeline.notifications.html": "<div><h1>Su suministro de noticias no está disponible...</h1><h2>Debido a un pico de conexiones sin precedentes, su suministro de noticias es temporalmente inaccesible. El historial de notificaciones se restaurará más tarde. Además, para recibir las noticias de su red, las notificaciones externas siempre se envían a la dirección de correo electrónico ingresada en Mi cuenta.</h2></div>",
     "timeline.historyold": "Cargar el historial de notificaciones",
-    "timeline.empty.cache": "El historial de sus notificaciones está oculto de forma predeterminada. Puede cargar su historial haciendo clic a continuación"
+    "timeline.empty.cache": "El historial de sus notificaciones está oculto de forma predeterminada. Puede cargar su historial haciendo clic a continuación",
+    "userbook_discovervisiblegroups": "Explore la red",
+    "userbook.discover.visible.groups.add.user.notify": "te agregó al grupo de trabajo"
 }

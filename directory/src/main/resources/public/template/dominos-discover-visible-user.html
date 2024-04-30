@@ -1,0 +1,23 @@
+<section class="domino overflow-hd" ng-class="colorFromType(user.profile != null ? user.profile : user.type)">
+    <div class="top" ng-style="avatarFor(user,'290x290')"></div>
+
+    <div class="center">
+        <p class="nomargin" translate
+            content="directory.[[getType(user.profile != null ? user.profile : user.type).toLowerCase()]]"></p>
+        <p ng-if="hasSubject(user)" class="nomargin discipline cell-ellipsis" tooltip="[[getSubject(user)]]">Matière :
+            [[getSubject(user)]]</p>
+    </div>
+
+    <div class="bottom">
+        <div class="content">
+            <div class="multiline-ellipsis-three" style="line-height: inherit;">
+                <span>[[user.displayName]]</span>
+            </div>
+            <div class="bottom-locked">
+                <a ng-click="discoverVisibleCommuteUsers(user.id)">
+                    <i class="send-mail"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
