@@ -14,7 +14,7 @@
 
 <div ng-if="!currentSchool">
 	<!--Users no results screen-->
-	<div class="emptyscreen row reduce-block-six" ng-if="search.index == 0 && users.all.length === 0 && !display.loading && users.searched">
+	<div class="emptyscreen row reduce-block-six" ng-if="isSelectedTabAnnuaire('myNetwork') && search.index == 0 && users.all.length === 0 && !display.loading && users.searched">
 		<div class="spacer-large"></div>
 		<h2 class="emptyscreen-header"><i18n>userBook.directory.noresults.users.header</i18n></h2>
 		<img class="emptyscreen-image" skin-src="/img/illustrations/illus-noresults.svg">
@@ -22,7 +22,7 @@
 	</div>
 
 	<!--Groups no results screen-->
-	<div class="emptyscreen row reduce-block-six" ng-if="search.index == 1 && groups.all.length === 0 && !display.loading && groups.searched">
+	<div class="emptyscreen row reduce-block-six" ng-if="isSelectedTabAnnuaire('myNetwork') && search.index == 1 && groups.all.length === 0 && !display.loading && groups.searched">
 		<div class="spacer-large"></div>
 		<h2 class="emptyscreen-header"><i18n>userBook.directory.noresults.groups.header</i18n></h2>
 		<img class="emptyscreen-image" skin-src="/img/illustrations/illus-noresults.svg">
@@ -30,7 +30,7 @@
 	</div>
 
 	<!-- Users emptyscreen -->
-	<div class="emptyscreen" ng-if="search.index == 0 && users.length() == 0 && ((!classView && !users.searched) || (classView && search.text)) && !display.loading">
+	<div class="emptyscreen" ng-if="isSelectedTabAnnuaire('myNetwork') && search.index == 0 && users.length() == 0 && ((!classView && !users.searched) || (classView && search.text)) && !users.searched && !display.loading">
 		<div class="spacer-large"></div>
 		<h2 class="emptyscreen-header"><i18n>userBook.directory.emptyScreen.users.header</i18n></h2>
 		<img class="emptyscreen-image" skin-src="/img/illustrations/illus-emptyscreen.svg">
@@ -49,7 +49,7 @@
 	</div>
 
 	<!-- Groups emptyscreen -->
-	<div class="emptyscreen" ng-if="search.index == 1 && groups.length() == 0 && !groups.searched && !display.loading">
+	<div class="emptyscreen" ng-if="isSelectedTabAnnuaire('myNetwork') &&search.index == 1 && groups.length() == 0 && !groups.searched && !display.loading">
 		<div class="spacer-large"></div>
 		<h2 class="emptyscreen-header"><i18n>userBook.directory.emptyScreen.groups.header</i18n></h2>
 		<img class="emptyscreen-image" skin-src="/img/illustrations/illus-emptyscreen.svg">
@@ -57,11 +57,36 @@
 	</div>
 
 	<!-- Favorites emptyscreen -->
-	<div class="emptyscreen" ng-if="search.index == 2 && !currentFavorite">
+	<div class="emptyscreen" ng-if="isSelectedTabAnnuaire('myNetwork') &&search.index == 2 && !currentFavorite">
 		<div class="spacer-large"></div>
 		<h2 class="emptyscreen-header"><i18n>userBook.directory.emptyScreen.favorite.header</i18n></h2>
 		<img class="emptyscreen-image" skin-src="/img/illustrations/illus-emptyscreen.svg">
 		<p class="emptyscreen-footer"><i18n>userBook.directory.emptyScreen.favorite.footer</i18n></p>
+	</div>
+
+		<!-- Discover User emptyscreen -->
+	<div class="emptyscreen" ng-if="isSelectedTabAnnuaire('discoverVisible') && search.index == 0 && discoverVisible.users.length === 0 && !display.loading">
+		<div class="flex-row warning justify-center align-center f-wrap">
+			<span class="no-style ng-scope">
+				<i18n>userbook.discover.visible.message.info</i18n>
+			</span>
+		</div>
+		<div class="spacer-large"></div>
+		<h2 class="emptyscreen-header"><i18n>userBook.directory.emptyScreen.users.header</i18n></h2>
+		<img class="emptyscreen-image" skin-src="/img/illustrations/illus-noresults.svg">
+		<p class="emptyscreen-footer"><i18n>userBook.directory.emptyScreen.users.footer</i18n></p>
+	</div>
+			
+	<!-- Discover Visible emptyscreen groups-->		
+	<div class="emptyscreen" ng-if="isSelectedTabAnnuaire('discoverVisible') && search.index == 1 && discoverVisible.groups.length === 0 && !display.loading">
+		<div class="flex-row warning justify-center align-center f-wrap">
+			<span class="no-style ng-scope">
+				<i18n>userbook.discover.visible.message.info</i18n>
+			</span>
+		</div>
+		<div class="spacer-large"></div>
+		<h2 class="emptyscreen-header"><i18n>userBook.directory.emptyScreen.groups.header</i18n></h2>
+		<img class="emptyscreen-image" skin-src="/img/illustrations/illus-noresults.svg">
 	</div>
 
 	<a class="zero-large-desktop" ng-if="display.searchmobile && !display.creatingFavorite && !currentGroup">
@@ -73,7 +98,7 @@
 
 <div class="dominos centered-text" ng-class="dominoClass">
 
-	<div ng-class="dominoInfosClass" ng-if="(search.index === 0 && !display.loading && users.match(search.text).length) || (search.index === 1 && !display.loading && !currentGroup && groups.match(search.text).length)">
+	<div ng-class="dominoInfosClass" ng-if="isSelectedTabAnnuaire('myNetwork') && ((search.index === 0 && !display.loading && users.match(search.text).length) || (search.index === 1 && !display.loading && !currentGroup && groups.match(search.text).length))">
 
 		<h2 class="default-value-title" ng-if="showDefaultValue && defaultValueTitle.length>0">[[defaultValueTitle]]</h2>
 
@@ -101,12 +126,12 @@
 	</div>
 
 	<!-- Group Users -->
-	<div class="group-infos" ng-if="(search.index === 1 || search.index === 2) && !display.loading && currentGroup">
+	<div class="group-infos" ng-if="isSelectedTabAnnuaire('myNetwork') && (search.index === 1 || search.index === 2) && !display.loading && currentGroup">
 		<div data-ng-include="template.containers.groupInfos"></div>
 	</div>
 
 	<!-- Favorites -->
-	<div class="favorite-infos" ng-if="search.index === 2 && !display.creatingFavorite && currentFavorite && !currentGroup && !display.loading">
+	<div class="favorite-infos" ng-if="isSelectedTabAnnuaire('myNetwork') && search.index === 2 && !display.creatingFavorite && currentFavorite && !currentGroup && !display.loading">
 		<div class="horizontal-spacing">
 			<article class="rigid-grid cell twelve">
 				<div class="flex-row horizontal-spacing justify-between">
@@ -151,6 +176,42 @@
 			</div>
 		</div>
 	</div>	
+
+	<!-- Discover Visible User-->
+	<div class="discover-visible-user" ng-if="isSelectedTabAnnuaire('discoverVisible') && search.index === 0 && discoverVisible.users.length > 0 && !display.loading">
+		<div class="flex-row warning justify-center align-center f-wrap mt-12">
+			<span class="no-style ng-scope">
+				<i18n>userbook.discover.visible.message.info</i18n>
+			</span>
+		</div>
+		<div class="flex-row justify-center align-center f-wrap">
+			<div ng-repeat="user in discoverVisible.users | orderBy:'displayName' | limitTo:search.maxLength" class="item user">
+				<div data-ng-include="template.containers.dominosDiscoverVisibleUser"></div>
+			</div>
+		</div>
+	</div>	
+
+		<!-- Discover Visible Groups-->
+	<div class="discover-visible-groups"
+			ng-if="isSelectedTabAnnuaire('discoverVisible') && search.index === 1 && discoverVisible.groups.length > 0 && discoverVisible && discoverVisible.displaySelectedGroupUsers.group===null && !discoverVisible.displayCreateGroup && !display.loading">
+			<div class="flex-row warning justify-center align-center f-wrap mt-12">
+				<span class="no-style ng-scope">
+					<i18n>userbook.discover.visible.message.info</i18n>
+				</span>
+			</div>
+		<div class="flex-row justify-center align-center f-wrap">
+			<div ng-repeat="group in discoverVisible.groups | orderBy:'displayName' | limitTo:search.maxLength"
+					class="item group">
+				<div data-ng-include="template.containers.dominosDiscoverVisibleGroup"></div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Discover Visible Group Users-->
+	<div class="discover-visible-group-info" ng-if="isSelectedTabAnnuaire('discoverVisible') && search.index === 1 && discoverVisible.groups && discoverVisible && discoverVisible.displaySelectedGroupUsers.group!==null && !discoverVisible.displayCreateGroup && !discoverVisible.displayEditGroup && !display.loading">
+		<div data-ng-include="template.containers.discoverVisibleGroupInfo"></div>
+	</div>
+
 
 	<!-- Classrooms -->
     <div ng-if="!classView" class="item user" ng-repeat="classroom in classrooms.match(search.text) | limitTo:search.maxLength">
