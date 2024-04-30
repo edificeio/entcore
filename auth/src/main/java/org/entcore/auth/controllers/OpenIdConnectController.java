@@ -38,9 +38,6 @@ import static fr.wseduc.webutils.Utils.isEmpty;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.eventbus.Message;
 
 public class OpenIdConnectController extends AbstractFederateController {
 
