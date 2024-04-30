@@ -19,12 +19,13 @@
 
 package org.entcore.common.service.impl;
 
-import com.mongodb.QueryBuilder;
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoDbAPI;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 import io.vertx.core.*;
+import org.bson.conversions.Bson;
 import org.entcore.common.mongodb.MongoDbConf;
 import org.entcore.common.share.impl.MongoDbShareService;
 import org.entcore.common.folders.impl.DocumentHelper;
@@ -102,10 +103,10 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 			groupIds[i] = j.getString("group");
 		}
 		final long timestamp = System.currentTimeMillis();
-		final JsonObject matcher = MongoQueryBuilder.build(QueryBuilder.start("shared.groupId").in(groupIds));
+		final JsonObject matcher = MongoQueryBuilder.build(Filters.eq("shared.groupId", groupIds));
 		final MongoUpdateBuilder modifier = new MongoUpdateBuilder();
 		modifier.set("_deleteGroupsKey", timestamp);
-		modifier.pull("shared", MongoQueryBuilder.build(QueryBuilder.start("groupId").in(groupIds)));
+		modifier.pull("shared", MongoQueryBuilder.build(Filters.eq("groupId", groupIds)));
 
 		final String collection = MongoDbConf.getInstance().getCollection();
 		if (collection == null || collection.trim().isEmpty()) {
@@ -119,7 +120,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 						" : " + event.body().getString("message"));
 			}
 			// find deleted resources
-			final QueryBuilder findByKey = QueryBuilder.start("_deleteGroupsKey").is(timestamp);
+			final Bson findByKey = Filters.eq("_deleteGroupsKey", timestamp);
 			final JsonObject query = MongoQueryBuilder.build(findByKey);
 			mongo.find(collection, query, eventFind -> {
 				final JsonArray results = eventFind.body().getJsonArray("results");
@@ -166,10 +167,10 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		}
 
 		final long timestamp = System.currentTimeMillis();
-		final JsonObject criteriaShared = MongoQueryBuilder.build(QueryBuilder.start("shared.userId").in(userIds));
+		final JsonObject criteriaShared = MongoQueryBuilder.build(Filters.eq("shared.userId", userIds));
 		final MongoUpdateBuilder modifierShared = new MongoUpdateBuilder();
 		modifierShared.set("_deleteUsersKey", timestamp);
-		modifierShared.pull("shared", MongoQueryBuilder.build(QueryBuilder.start("userId").in(userIds)));
+		modifierShared.pull("shared", MongoQueryBuilder.build(Filters.eq("userId", userIds)));
 		final String collection = MongoDbConf.getInstance().getCollection();
 		if (collection == null || collection.trim().isEmpty()) {
 			log.error("Error deleting users : invalid collection " + collection + " in class " + this.getClass().getName());
@@ -181,9 +182,9 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 				log.error("Error deleting users shared in collection " + collection  +
 						" : " + eventShared.body().getString("message"));
 			}
-			QueryBuilder findByAuthor = QueryBuilder.start("author.userId").in(userIds);
-			QueryBuilder findByOwner = QueryBuilder.start("owner.userId").in(userIds);
-			QueryBuilder findByAuthorOrOwner = QueryBuilder.start().or(findByAuthor.get(), findByOwner.get());
+			Bson findByAuthor = Filters.eq("author.userId", userIds);
+			Bson findByOwner = Filters.eq("owner.userId", userIds);
+			Bson findByAuthorOrOwner = Filters.or(findByAuthor, findByOwner);
 			final JsonObject criteria = MongoQueryBuilder.build(findByAuthorOrOwner);
 			final MongoUpdateBuilder modifier = new MongoUpdateBuilder();
 			modifier.set("owner.deleted", true);
@@ -194,7 +195,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 							" : " + eventOwner.body().getString("message"));
 				}
 				// find updated resources
-				final QueryBuilder findByKey = QueryBuilder.start("_deleteUsersKey").is(timestamp);
+				final Bson findByKey = Filters.eq("_deleteUsersKey", timestamp);
 				final JsonObject query = MongoQueryBuilder.build(findByKey);
 				mongo.find(collection, query, eventFind -> {
 					final JsonArray results = eventFind.body().getJsonArray("results");
@@ -248,7 +249,8 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 	 */
 	protected void removeObjects(final String collection, final Handler<List<ResourceChanges>> handler) {
 		JsonObject matcher = MongoQueryBuilder.build(
-				QueryBuilder.start("shared." + managerRight).notEquals(true).put("owner.deleted").is(true));
+				Filters.and(Filters.ne("shared." + managerRight, true),
+						Filters.eq("owner.deleted", true)));
 
 		JsonObject projection = new JsonObject().put("_id", 1);
 
@@ -272,7 +274,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 						JsonObject j = res.getJsonObject(i);
 						objectIds[i] = j.getString("_id");
 					}
-					JsonObject matcher = MongoQueryBuilder.build(QueryBuilder.start("_id").in(objectIds));
+					JsonObject matcher = MongoQueryBuilder.build(Filters.eq("_id", objectIds));
 					mongo.delete(collection, matcher, new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> event) {
@@ -282,7 +284,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 							} else if (revisionsCollection != null && !revisionsCollection.trim().isEmpty() &&
 									revisionIdAttribute != null && !revisionIdAttribute.trim().isEmpty()) {
 								JsonObject criteria = MongoQueryBuilder.build(
-										QueryBuilder.start(revisionIdAttribute).in(objectIds));
+										Filters.eq(revisionIdAttribute, objectIds));
 								mongo.delete(revisionsCollection, criteria, new Handler<Message<JsonObject>>() {
 									@Override
 									public void handle(Message<JsonObject> event) {
@@ -343,17 +345,17 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 	@Override
 	public void exportResources(JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources, String exportId, String userId,
 								JsonArray g, String exportPath, String locale, String host, Handler<Boolean> handler) {
-		QueryBuilder findByAuthor = QueryBuilder.start("author.userId").is(userId);
-		QueryBuilder findByOwner = QueryBuilder.start("owner.userId").is(userId);
-		QueryBuilder findByAuthorOrOwner = QueryBuilder.start().or(findByAuthor.get(), findByOwner.get());
+		Bson findByAuthor = Filters.eq("author.userId", userId);
+		Bson findByOwner = Filters.eq("owner.userId", userId);
+		Bson findByAuthorOrOwner = Filters.or(findByAuthor, findByOwner);
 
-		QueryBuilder findByShared = QueryBuilder.start().or(
-				QueryBuilder.start("shared.userId").is(userId).get(),
-				QueryBuilder.start("shared.groupId").in(g).get()
+		Bson findByShared = Filters.or(
+				Filters.eq("shared.userId", userId),
+				Filters.in("shared.groupId", g)
 		);
-		QueryBuilder findByAuthorOrOwnerOrShared = exportSharedResources == false ? findByAuthorOrOwner : QueryBuilder.start().or(
-				findByAuthorOrOwner.get(),
-				findByShared.get()
+		Bson findByAuthorOrOwnerOrShared = exportSharedResources == false ? findByAuthorOrOwner : Filters.or(
+				findByAuthorOrOwner,
+				findByShared
 		);
 
 		JsonObject query;
@@ -361,8 +363,8 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		if(resourcesIds == null)
 			query = MongoQueryBuilder.build(findByAuthorOrOwnerOrShared);
 		else {
-			QueryBuilder limitToResources = findByAuthorOrOwnerOrShared.and(
-					QueryBuilder.start("_id").in(resourcesIds).get()
+			Bson limitToResources = Filters.and(findByAuthorOrOwnerOrShared,
+					Filters.in("_id", resourcesIds)
 			);
 			query = MongoQueryBuilder.build(limitToResources);
 		}
@@ -646,7 +648,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 			oldIdsToNewIds.put(docId, docId);
 		}
 
-		QueryBuilder lookForExisting = QueryBuilder.start("_id").in(idsToImport);
+		Bson lookForExisting = Filters.in("_id", idsToImport);
 		// HINT: a little optimisation could be made here if we only fetched the resources id because that's all
 		// we're going to use
 		mongo.find(collection, MongoQueryBuilder.build(lookForExisting), new Handler<Message<JsonObject>>() {

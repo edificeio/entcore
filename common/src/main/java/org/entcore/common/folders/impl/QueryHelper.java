@@ -4,7 +4,9 @@ import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import com.mongodb.client.model.Filters;
 import io.vertx.core.Promise;
+import org.bson.conversions.Bson;
 import org.entcore.common.folders.ElementQuery;
 import org.entcore.common.folders.ElementQuery.ElementSort;
 import org.entcore.common.folders.FolderManager;
@@ -13,9 +15,6 @@ import org.entcore.common.service.impl.MongoDbSearchService;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
 
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
-import com.mongodb.QueryBuilder;
 
 import fr.wseduc.mongodb.AggregationsBuilder;
 import fr.wseduc.mongodb.MongoDb;
@@ -38,7 +37,7 @@ public class QueryHelper {
 		this.useOldChildrenQuery = useOldChildrenQuery;
 	}
 
-	static JsonObject toJson(QueryBuilder queryBuilder) {
+	static JsonObject toJson(Bson queryBuilder) {
 		return MongoQueryBuilder.build(queryBuilder);
 	}
 
@@ -51,7 +50,7 @@ public class QueryHelper {
 	}
 
 	public static class DocumentQueryBuilder {
-		QueryBuilder builder = new QueryBuilder();
+		Bson builder = Filters.empty();
 		private boolean excludeDeleted;
 		private JsonObject mongoSorts;
 		private JsonObject mongoProjections;
@@ -59,9 +58,10 @@ public class QueryHelper {
 		private Integer skip;
 		private Integer limit;
 		private List<String> parentIdsFilter = new ArrayList<>();
+
 		public DocumentQueryBuilder copy() {
 			final DocumentQueryBuilder copy = new DocumentQueryBuilder();
-			copy.builder.get().putAll(this.builder.get().toMap());
+			copy.builder = this.builder;
 			copy.excludeDeleted = this.excludeDeleted;
 			copy.mongoSorts = this.mongoSorts;
 			copy.mongoProjections = this.mongoProjections;
@@ -191,27 +191,26 @@ public class QueryHelper {
 		}
 
 		public DocumentQueryBuilder withAncestorContains(String ancestorId) {
-			DBObject sub = new BasicDBObject();
-			sub.put("$eq", ancestorId);
-			builder.and(QueryBuilder.start("ancestors").elemMatch(sub).get());
+			builder = Filters.and(builder, Filters.elemMatch("ancestors", Filters.eq("$eq", ancestorId)));
 			return this;
 		}
 
 		public DocumentQueryBuilder withEparentNotIn(Set<String> eParents) {
-			builder.and(new QueryBuilder().or(//
-						QueryBuilder.start("eParent").exists(false).get(), //
-						QueryBuilder.start("eParent").notIn(eParents).get()).get());
+			builder = Filters.and(builder, Filters.or(
+						Filters.exists("eParent", false),
+						Filters.nin("eParent", eParents)));
 			return this;
 		}
 
 		public DocumentQueryBuilder withHavingParent(boolean haveParent) {
 			if (haveParent) {
-				builder.and(QueryBuilder.start("eParent").exists(true).and("eParent").notEquals(null).get());
+				builder = Filters.and(builder, Filters.and(
+						Filters.exists("eParent", true),
+						Filters.ne("eParent", null)));
 			} else {
-				builder.and(new QueryBuilder().or(//
-						QueryBuilder.start("eParent").exists(false).get(), //
-						QueryBuilder.start("eParent").is(null).get()).get()//
-				);
+				builder= Filters.and(builder, Filters.or(
+						Filters.exists("eParent",false),
+						Filters.eq("eParent", null)));
 			}
 			return this;
 		}
@@ -253,7 +252,7 @@ public class QueryHelper {
 				return this;
 			}
 			for (String v : visibilities) {
-				builder.and(QueryBuilder.start(v).is(true).get());
+				builder = Filters.and(builder, Filters.eq(v, true));
 			}
 			return this;
 		}
@@ -263,19 +262,18 @@ public class QueryHelper {
 				return this;
 			}
 			for (String v : visibilities) {
-				builder.and(QueryBuilder.start(v).notEquals(true).get());
+				builder = Filters.and(builder, Filters.ne(v, true));
 			}
 			return this;
 		}
 
 		public DocumentQueryBuilder filterByOwnerVisibilities(UserInfos user, Collection<String> visibilities) {
-			List<DBObject> ors = new ArrayList<>();
+			List<Bson> ors = new ArrayList<>();
 			for (String v : visibilities) {
-				ors.add(QueryBuilder.start(v).is(true).get());
+				ors.add(Filters.eq(v, true));
 			}
-			ors.add(QueryBuilder.start("owner").is(user.getUserId()).get());
-			//
-			builder.or(ors.toArray(new DBObject[ors.size()]));
+			ors.add(Filters.eq("owner", user.getUserId()));
+			builder = Filters.or(builder, Filters.or(ors));
 			return this;
 		}
 
@@ -283,266 +281,265 @@ public class QueryHelper {
 			if (searchWordsLst.isEmpty()) {
 				return this;
 			}
-			final QueryBuilder worldsQuery = new QueryBuilder();
-			worldsQuery.text(MongoDbSearchService.textSearchedComposition(searchWordsLst));
-			builder.and(worldsQuery.get());
+			final Bson worldsQuery = Filters.text(MongoDbSearchService.textSearchedComposition(searchWordsLst));
+			builder = Filters.and(builder, worldsQuery);
 			return this;
 		}
 
 		public DocumentQueryBuilder filterBySharedAndOwner(UserInfos user) {
-			List<DBObject> groups = new ArrayList<>();
-			groups.add(QueryBuilder.start("userId").is(user.getUserId()).get());
+			List<Bson> groups = new ArrayList<>();
+			groups.add(Filters.eq("userId", user.getUserId()));
 			for (String gpId : user.getGroupsIds()) {
-				groups.add(QueryBuilder.start("groupId").is(gpId).get());
+				groups.add(Filters.eq("groupId", gpId));
 			}
-			DBObject subQuery = new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get();
-			builder.or(QueryBuilder.start("owner").is(user.getUserId()).get(), //
-					QueryBuilder.start("shared").elemMatch(subQuery).get());
+			Bson subQuery = Filters.or(groups);
+			builder = Filters.or(builder, Filters.eq("owner", user.getUserId()), //
+					Filters.elemMatch("shared", subQuery));
 			return this;
 		}
 
 		public DocumentQueryBuilder filterByInheritShareAndOwnerOrVisibilities(UserInfos user,
 																			   Collection<String> visibilities) {
-			List<DBObject> ors = new ArrayList<>();
+			List<Bson> ors = new ArrayList<>();
 			// owner
-			ors.add(QueryBuilder.start("owner").is(user.getUserId()).get());
+			ors.add(Filters.eq("owner", user.getUserId()));
 			// shared
-			List<DBObject> groups = new ArrayList<>();
-			groups.add(QueryBuilder.start("userId").is(user.getUserId()).get());
+			List<Bson> groups = new ArrayList<>();
+			groups.add(Filters.eq("userId", user.getUserId()));
 			for (String gpId : user.getGroupsIds()) {
-				groups.add(QueryBuilder.start("groupId").is(gpId).get());
+				groups.add(Filters.eq("groupId", gpId));
 			}
-			DBObject subQuery = new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get();
-			ors.add(QueryBuilder.start("inheritedShares").elemMatch(subQuery).get());
+			Bson subQuery = Filters.or(groups);
+			ors.add(Filters.elemMatch("inheritedShares", subQuery));
 			//
 			for (String visibility : visibilities) {
-				ors.add(QueryBuilder.start(visibility).is(true).get());
+				ors.add(Filters.eq(visibility, true));
 			}
 			//
-			builder.or(ors.toArray(new DBObject[ors.size()]));
+			builder = Filters.or(builder, Filters.or(ors));
 			return this;
 		}
 
 		public DocumentQueryBuilder filterBySharedAndOwnerOrVisibilities(UserInfos user,
 																			   Collection<String> visibilities) {
-			List<DBObject> ors = new ArrayList<>();
+			List<Bson> ors = new ArrayList<>();
 			// owner
-			ors.add(QueryBuilder.start("owner").is(user.getUserId()).get());
+			ors.add(Filters.eq("owner", user.getUserId()));
 			// shared
-			List<DBObject> groups = new ArrayList<>();
-			groups.add(QueryBuilder.start("userId").is(user.getUserId()).get());
+			List<Bson> groups = new ArrayList<>();
+			groups.add(Filters.eq("userId", user.getUserId()));
 			for (String gpId : user.getGroupsIds()) {
-				groups.add(QueryBuilder.start("groupId").is(gpId).get());
+				groups.add(Filters.eq("groupId", gpId));
 			}
-			DBObject subQuery = new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get();
-			ors.add(QueryBuilder.start("shared").elemMatch(subQuery).get());
+			Bson subQuery = Filters.or(groups);
+			ors.add(Filters.elemMatch("shared", subQuery));
 			//
 			for (String visibility : visibilities) {
-				ors.add(QueryBuilder.start(visibility).is(true).get());
+				ors.add(Filters.eq(visibility, true));
 			}
 			//
-			builder.or(ors.toArray(new DBObject[ors.size()]));
+			builder = Filters.or(builder, Filters.or(ors));
 			return this;
 		}
 
 		public DocumentQueryBuilder filterByOwnerOrVisibilities(UserInfos user, Collection<String> visibilities) {
-			List<DBObject> ors = new ArrayList<>();
+			List<Bson> ors = new ArrayList<>();
 			// owner
-			ors.add(QueryBuilder.start("owner").is(user.getUserId()).get());
+			ors.add(Filters.eq("owner", user.getUserId()));
 			//
 			for (String visibility : visibilities) {
-				ors.add(QueryBuilder.start(visibility).is(true).get());
+				ors.add(Filters.eq(visibility, true));
 			}
 			//
-			builder.or(ors.toArray(new DBObject[ors.size()]));
+			builder = Filters.or(builder, Filters.or(ors));
 			return this;
 		}
 
 		public DocumentQueryBuilder filterByInheritShareAndOwner(UserInfos user) {
-			List<DBObject> groups = new ArrayList<>();
-			groups.add(QueryBuilder.start("userId").is(user.getUserId()).get());
+			List<Bson> groups = new ArrayList<>();
+			groups.add(Filters.eq("userId", user.getUserId()));
 			for (String gpId : user.getGroupsIds()) {
-				groups.add(QueryBuilder.start("groupId").is(gpId).get());
+				groups.add(Filters.eq("groupId", gpId));
 			}
-			DBObject subQuery = new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get();
-			builder.or(//
-					QueryBuilder.start("owner").is(user.getUserId()).get(), //
-					QueryBuilder.start("inheritedShares").elemMatch(subQuery).get()//
+			Bson subQuery = Filters.or(groups);
+			builder = Filters.or(builder,
+					Filters.eq("owner", user.getUserId()),
+					Filters.elemMatch("inheritedShares", subQuery)
 			);
 			return this;
 		}
 
 		public DocumentQueryBuilder withOnlyFavorites(UserInfos user) {
-			List<DBObject> groups = new ArrayList<>();
-			groups.add(QueryBuilder.start("userId").is(user.getUserId()).get());
+			List<Bson> groups = new ArrayList<>();
+			groups.add(Filters.eq("userId", user.getUserId()));
 			// if one day we have favorites groups...
 			// for (String gpId : user.getGroupsIds()) {
-			// groups.add(QueryBuilder.start("groupId").is(gpId).get());
+			// groups.add(Filters.eq("groupId", gpId));
 			// }
-			builder.and(QueryBuilder.start("favorites")
-					.elemMatch(new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get()).get());
+			builder = Filters.and(builder, Filters.elemMatch("favorites", Filters.or(groups)));
 			return this;
 		}
 
 		public DocumentQueryBuilder filterByOwner(UserInfos user) {
-			builder.and("owner").is(user.getUserId());
+			builder = Filters.and(builder, Filters.eq("owner", user.getUserId()));
 			return this;
 		}
 
 		public DocumentQueryBuilder filterByInheritShareAndOwnerWithAction(UserInfos user, String action) {
-			List<DBObject> groups = new ArrayList<>();
-			groups.add(QueryBuilder.start("userId").is(user.getUserId()).put(action).is(true).get());
+			List<Bson> groups = new ArrayList<>();
+			groups.add(Filters.and(Filters.eq("userId", user.getUserId()), Filters.eq(action, true)));
 			for (String gpId : user.getGroupsIds()) {
-				groups.add(QueryBuilder.start("groupId").is(gpId).put(action).is(true).get());
+				groups.add(Filters.and(Filters.eq("groupId", gpId), Filters.eq(action, true)));
 			}
-			builder.or(QueryBuilder.start("owner").is(user.getUserId()).get(), QueryBuilder.start("inheritedShares")
-					.elemMatch(new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get()).get());
+			builder = Filters.or(builder,
+					Filters.eq("owner", user.getUserId()),
+					Filters.elemMatch("inheritedShares", Filters.or(groups)));
 			return this;
 		}
 
 		public DocumentQueryBuilder withOwnerIds(Collection<String> ids) {
-			builder.and(QueryBuilder.start("owner").in(ids).get());
+			builder = Filters.and(builder, Filters.in("owner", ids));
 			return this;
 		}
 
 		public DocumentQueryBuilder withTrasherId(String ids) {
-			builder.and(QueryBuilder.start("trasher").is(ids).get());
+			builder = Filters.and(builder, Filters.eq("trasher", ids));
 			return this;
 		}
 
 		public DocumentQueryBuilder withBeingShared(Boolean isShared) {
 			// if is shared does not exists => notEquals
 			if (isShared) {
-				builder.and(QueryBuilder.start("isShared").is(true).get());
+				builder = Filters.and(builder, Filters.eq("isShared", true));
 			} else {
-				builder.and(QueryBuilder.start("isShared").notEquals(true).get());
+				builder = Filters.and(builder, Filters.ne("isShared", true));
 			}
 			return this;
 		}
 
 		public DocumentQueryBuilder withActionNotExistingInInheritedShared(UserInfos user, String action) {
-			builder.and(QueryBuilder.start("inheritedShares")
-					.elemMatch(QueryBuilder.start("userId").notEquals(user.getUserId()).and(action).is(true).get())
-					.get());
+			builder = Filters.and(builder,
+					Filters.elemMatch("inheritedShares",
+							Filters.and(Filters.ne("userId", user.getUserId()), Filters.eq(action, true))));
 			return this;
 		}
 
 		public DocumentQueryBuilder withActionExistingInInheritedShared(UserInfos user, String action) {
-			List<DBObject> groups = new ArrayList<>();
-			groups.add(QueryBuilder.start("userId").is(user.getUserId()).and(action).is(true).get());
+			List<Bson> groups = new ArrayList<>();
+			groups.add(Filters.and(Filters.eq("userId", user.getUserId()), Filters.eq(action, true)));
 			for (String gpId : user.getGroupsIds()) {
-				groups.add(QueryBuilder.start("groupId").is(gpId).and(action).is(true).get());
+				groups.add(Filters.and(Filters.eq("groupId", gpId), Filters.eq(action, true)));
 			}
-			DBObject subQuery = new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get();
-			builder.or(QueryBuilder.start("owner").is(user.getUserId()).get(), //
-					QueryBuilder.start("inheritedShares").elemMatch(subQuery).get());
+			Bson subQuery = Filters.or(groups);
+			builder = Filters.or(builder, Filters.eq("owner", user.getUserId()),
+					Filters.elemMatch("inheritedShares", subQuery));
 			return this;
 		}
 
 		public DocumentQueryBuilder withActionExistingInInheritedSharedWithOrVisiblities(UserInfos user, String action, Set<String> visibilities) {
-			final List<DBObject> ors = new ArrayList<>();
-			final List<DBObject> groups = new ArrayList<>();
+			final List<Bson> ors = new ArrayList<>();
+			final List<Bson> groups = new ArrayList<>();
 			//owner
-			ors.add(QueryBuilder.start("owner").is(user.getUserId()).get());
+			ors.add(Filters.eq("owner", user.getUserId()));
 			//inherit shares
-			groups.add(QueryBuilder.start("userId").is(user.getUserId()).and(action).is(true).get());
+			groups.add(Filters.and(Filters.eq("userId", user.getUserId()), Filters.eq(action, true)));
 			for (String gpId : user.getGroupsIds()) {
-				groups.add(QueryBuilder.start("groupId").is(gpId).and(action).is(true).get());
+				groups.add(Filters.and(Filters.eq("groupId", gpId), Filters.eq(action, true)));
 			}
-			DBObject subQuery = new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get();
-			ors.add(QueryBuilder.start("inheritedShares").elemMatch(subQuery).get());
+			Bson subQuery = Filters.or(groups);
+			ors.add(Filters.elemMatch("inheritedShares", subQuery));
 			//visibilities
 			for (String visibility : visibilities) {
-				ors.add(QueryBuilder.start(visibility).is(true).get());
+				ors.add(Filters.eq(visibility, true));
 			}
 			//
-			builder.or(ors.toArray(new DBObject[ors.size()]));
+			builder = Filters.or(builder, Filters.or(ors));
 			return this;
 		}
 
 		public DocumentQueryBuilder withActionExistingInShared(UserInfos user, String action) {
-			List<DBObject> groups = new ArrayList<>();
-			groups.add(QueryBuilder.start("userId").is(user.getUserId()).and(action).is(true).get());
+			List<Bson> groups = new ArrayList<>();
+			groups.add(Filters.and(Filters.eq("userId", user.getUserId()), Filters.eq(action, true)));
 			for (String gpId : user.getGroupsIds()) {
-				groups.add(QueryBuilder.start("groupId").is(gpId).and(action).is(true).get());
+				groups.add(Filters.and(Filters.eq("groupId", gpId), Filters.eq(action, true)));
 			}
-			DBObject subQuery = new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get();
-			builder.or(QueryBuilder.start("owner").is(user.getUserId()).get(), //
-					QueryBuilder.start("shared").elemMatch(subQuery).get());
+			Bson subQuery = Filters.or(groups);
+			builder = Filters.or(builder, Filters.eq("owner", user.getUserId()), //
+					Filters.elemMatch("shared", subQuery));
 			return this;
 		}
 
 		public DocumentQueryBuilder withParent(String id) {
-			builder.and("eParent").is(id);
+			builder = Filters.and(builder, Filters.eq("eParent", id));
 			parentIdsFilter.add(id);
 			return this;
 		}
 
 		public DocumentQueryBuilder withParent(Collection<String> id) {
-			builder.and("eParent").in(id);
+			builder = Filters.and(builder, Filters.in("eParent", id));
 			parentIdsFilter.addAll(id);
 			return this;
 		}
 
 		public DocumentQueryBuilder withIdNotEq(String id) {
-			builder.and("_id").notEquals(id);
+			builder = Filters.and(builder, Filters.ne("_id", id));
 			return this;
 		}
 
 		public DocumentQueryBuilder withId(String id) {
-			builder.and("_id").is(id);
+			builder = Filters.and(builder, Filters.eq("_id", id));
 			return this;
 		}
 
 		public DocumentQueryBuilder withId(Collection<String> id) {
-			builder.and("_id").in(id);
+			builder = Filters.and(builder, Filters.in("_id", id));
 			return this;
 		}
 
 		public DocumentQueryBuilder withKeyValue(String key, Object value) {
-			builder.and(key).is(value);
+			builder = Filters.and(builder, Filters.eq(key, value));
 			return this;
 		}
 
 		public DocumentQueryBuilder withKeyValueNotEq(String key, Object value) {
-			builder.and(key).notEquals(value);
+			builder = Filters.and(builder, Filters.ne(key, value));
 			return this;
 		}
 
 		public DocumentQueryBuilder withIds(Collection<String> ids) {
-			builder.and("_id").in(ids);
+			builder = Filters.and(builder, Filters.in("_id", ids));
 			return this;
 		}
 
 		public DocumentQueryBuilder withExcludeDeleted() {
 			excludeDeleted = true;
-			builder.and("deleted").notEquals(true);
+			builder = Filters.and(builder, Filters.ne("deleted", true));
 			return this;
 		}
 
 		public DocumentQueryBuilder withOnlyDeleted() {
 			onlyDeleted = true;
-			builder.and("deleted").is(true);
+			builder = Filters.and(builder, Filters.eq("deleted", true));
 			return this;
 		}
 
 		public DocumentQueryBuilder withFileType(final String type) {
-			builder.and("eType").is(type);
+			builder = Filters.and(builder, Filters.eq("eType", type));
 			return this;
 		}
 
 		public DocumentQueryBuilder withNameMatch(final String pattern) {
-			builder.and("name").regex(Pattern.compile("^" + pattern + "(_|$)"));
+			builder = Filters.and(builder, Filters.regex("name", Pattern.compile("^" + pattern + "(_|$)")));
 			return this;
 		}
 
 		public DocumentQueryBuilder withNameStarts(final String pattern) {
-			builder.and("name").regex(Pattern.compile("^" + pattern));
+			builder = Filters.and(builder, Filters.regex("name", Pattern.compile("^" + pattern)));
 			return this;
 		}
 
 		public DocumentQueryBuilder withNameEq(final String name) {
-			builder.and("name").is(name);
+			builder = Filters.and(builder, Filters.eq("name", name));
 			return this;
 		}
 
@@ -554,7 +551,7 @@ public class QueryHelper {
 			return onlyDeleted;
 		}
 
-		public QueryBuilder build() {
+		public Bson build() {
 			return builder;
 		}
 	}
@@ -568,7 +565,7 @@ public class QueryHelper {
 			Optional<DocumentQueryBuilder> queryChildren, boolean includeParents) {
 		JsonObject projection = new JsonObject().put("_id", 1).put("children", "$children._id");
 		@SuppressWarnings("unchecked")
-		Optional<JsonObject> query = queryChildren.map(q -> new JsonObject(q.build().get().toMap()));
+		Optional<JsonObject> query = queryChildren.map(q -> new JsonObject(q.build().toBsonDocument().toJson()));
 		AggregationsBuilder agg = AggregationsBuilder.startWithCollection(this.collection)//
 				.withMatch(parentFilter.build())//
 				.withGraphLookup("$_id", "_id", "eParent", "children", Optional.of(MAX_DEPTH), Optional.empty(), query)//
@@ -618,7 +615,7 @@ public class QueryHelper {
 														Optional<DocumentQueryBuilder> queryChildren){
 		final JsonObject projection = new JsonObject().put("_id", 1).put("children", "$children._id");
 		final DocumentQueryBuilder queryChildrenBuild = queryChildren.orElse(queryBuilder()).withFileType(FolderManager.FOLDER_TYPE);
-		final Optional<JsonObject> queryChildrenOpt = Optional.of(new JsonObject(queryChildrenBuild.build().get().toMap()));
+		final Optional<JsonObject> queryChildrenOpt = Optional.of(new JsonObject(queryChildrenBuild.build().toBsonDocument().toJson()));
 		AggregationsBuilder agg = AggregationsBuilder.startWithCollection(this.collection)//
 				.withMatch(parentFilter.build())//
 				.withGraphLookup("$_id", "_id", "eParent", "children", Optional.of(MAX_DEPTH), Optional.empty(), queryChildrenOpt)//
@@ -740,7 +737,7 @@ public class QueryHelper {
 
 		Promise<JsonArray> future = Promise.promise();
 		// match all (folders and file)
-		QueryBuilder match = query.build();
+		Bson match = query.build();
 		// first : match only folder regarding criterias
 		AggregationsBuilder agg = AggregationsBuilder.startWithCollection(this.collection);
 		agg = agg.withMatch(match)
@@ -799,7 +796,7 @@ public class QueryHelper {
 
 	Future<JsonObject> findById(String id) {
 		Promise<JsonObject> future = Promise.promise();
-		mongo.findOne(collection, toJson(QueryBuilder.start("_id").is(id)), message -> {
+		mongo.findOne(collection, toJson(Filters.eq("_id", id)), message -> {
 			JsonObject body = message.body();
 			if (isOk(body)) {
 				future.complete(body.getJsonObject("result"));
@@ -928,7 +925,7 @@ public class QueryHelper {
 				.set("isShared", inheritShared != null && !inheritShared.isEmpty())//
 				.set("ancestors", ancestors)//
 				.set("modified", now).build();
-		mongo.update(collection, toJson(QueryBuilder.start("_id").is(id)), set, message -> {
+		mongo.update(collection, toJson(Filters.eq("_id", id)), set, message -> {
 			JsonObject body = message.body();
 			if (isOk(body)) {
 				future.complete(file);
@@ -948,7 +945,7 @@ public class QueryHelper {
 
 	Future<Void> update(String id, JsonObject set) {
 		Promise<Void> future = Promise.promise();
-		mongo.update(collection, toJson(QueryBuilder.start("_id").is(id)), set, message -> {
+		mongo.update(collection, toJson(Filters.eq("_id", id)), set, message -> {
 			JsonObject body = message.body();
 			if (isOk(body)) {
 				future.complete(null);
@@ -963,7 +960,7 @@ public class QueryHelper {
 		Promise<Void> future = Promise.promise();
 		String now = MongoDb.formatDate(new Date());
 		set.set("modified", now);
-		mongo.update(collection, toJson(QueryBuilder.start("_id").is(id)), set.build(), message -> {
+		mongo.update(collection, toJson(Filters.eq("_id", id)), set.build(), message -> {
 			JsonObject body = message.body();
 			if (isOk(body)) {
 				future.complete(null);
@@ -987,7 +984,7 @@ public class QueryHelper {
 		if(setModified){
 			set.set("modified", now);
 		}
-		JsonObject query = toJson(QueryBuilder.start("_id").in(id));
+		JsonObject query = toJson(Filters.eq("_id", id));
 		JsonObject setJson = set.build();
 		mongo.update(collection, query, setJson, false, true, message -> {
 			JsonObject body = message.body();
@@ -1044,7 +1041,7 @@ public class QueryHelper {
 			return Future.succeededFuture();
 		}
 		Promise<Void> future = Promise.promise();
-		mongo.delete(collection, toJson(QueryBuilder.start("_id").in(ids)), res -> {
+		mongo.delete(collection, toJson(Filters.eq("_id", ids)), res -> {
 			if (isOk(res.body())) {
 				future.complete(null);
 			} else {

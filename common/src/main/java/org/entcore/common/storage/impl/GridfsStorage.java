@@ -19,7 +19,7 @@
 
 package org.entcore.common.storage.impl;
 
-import com.mongodb.QueryBuilder;
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.DefaultAsyncResult;
@@ -45,6 +45,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.core.streams.WriteStream;
 import org.apache.commons.lang3.NotImplementedException;
+import org.bson.conversions.Bson;
 import org.entcore.common.messaging.to.UploadedFileMessage;
 import org.entcore.common.storage.BucketStats;
 import org.entcore.common.storage.FileStats;
@@ -606,7 +607,7 @@ public class GridfsStorage implements Storage {
 	@Override
 	public void writeToFileSystem(String [] ids, String destinationPath, JsonObject alias,
 			final Handler<JsonObject> handler) {
-		QueryBuilder q = QueryBuilder.start("_id").in(ids);
+		Bson q = Filters.eq("_id", ids);
 		JsonObject e = new JsonObject()
 				.put("action", "write")
 				.put("path", destinationPath)

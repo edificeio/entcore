@@ -1,12 +1,10 @@
 package org.entcore.common.service.impl;
 
-import com.mongodb.QueryBuilder;
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
-import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
 import io.vertx.core.*;
-import io.vertx.core.file.FileSystem;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.file.FileSystem;
@@ -14,6 +12,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.bson.conversions.Bson;
 import org.entcore.common.folders.FolderExporter;
 import org.entcore.common.folders.FolderExporter.FolderExporterContext;
 import org.entcore.common.storage.StorageFactory;
@@ -85,7 +84,7 @@ public abstract class AbstractRepositoryEvents implements RepositoryEvents {
 			String res = prevResults.encode();
 			JsonArray documentsIds = new JsonArray(ResourceUtils.extractIds(res));
 			if (!documentsIds.isEmpty()) {
-				QueryBuilder findDocsbyId = QueryBuilder.start("_id").in(documentsIds);
+				Bson findDocsbyId = Filters.eq("_id", documentsIds);
 				JsonObject query = MongoQueryBuilder.build(findDocsbyId);
 				mongo.find("documents", query, new Handler<Message<JsonObject>>() {
 					@Override
