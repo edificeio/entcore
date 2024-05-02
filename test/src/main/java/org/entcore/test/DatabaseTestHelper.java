@@ -138,11 +138,14 @@ public class DatabaseTestHelper {
                         } else {
                             // Play migration scripts
                             DB migration = new DB(vertx, sql, schema);
-                            migration.loadScripts("sql");
+                            migration.loadScripts("sql")
+                              .onSuccess(e -> async.complete())
+                              .onFailure(context::fail);
                         }
                     });
-                }
-                vertx.setTimer(delay, t -> async.complete());
+                } else {
+                    async.complete();
+                };
             } else {
                 context.fail(ar.cause());
             }
