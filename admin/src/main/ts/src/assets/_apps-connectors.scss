@@ -825,3 +825,16 @@ i.edumalin::before {
   content:'\e967';
   color:$blue;
 }
+
+i.mediacentre-large,
+i.type.mediacentre,
+i.mediacentre {
+  @include fonticon;
+}
+
+i.mediacentre-large::before,
+i.type.mediacentre::before,
+i.mediacentre::before {
+  content:'\e968';
+  color:#2029b6;
+}
