@@ -171,3 +171,13 @@ i.edumalin {
     color: $blue;
   }
 }
+
+i.mediacentre-large
+i.mediacentre {
+  @include fonticon;
+
+  &::before {
+    content: '\e968';
+    color: #2029b6;
+  }
+}
