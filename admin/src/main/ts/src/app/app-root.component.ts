@@ -193,7 +193,7 @@ export class AppRootComponent extends OdeComponent {
                                     }
                                 }});
                             (window as any).zE('webWidget', 'close');
-                            window.location.href = '/support';
+                            window.open('/support', '_blank');
                         }
                     });
                 };
