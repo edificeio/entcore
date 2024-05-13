@@ -25,13 +25,21 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.oauth.OpenIdConnectClient;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.HmacSha1;
+
+import org.entcore.auth.oauth.OAuthDataHandler;
 import org.entcore.auth.services.OpenIdConnectServiceProvider;
 import org.entcore.auth.services.OpenIdServiceProviderFactory;
+import org.entcore.auth.services.impl.DefaultOpendIdConnectService;
 import org.entcore.common.user.UserInfos;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import jp.eisbahn.oauth2.server.exceptions.OAuthError.MultipleVectorChoice;
+import jp.eisbahn.oauth2.server.exceptions.OAuthError.UnsupportedResponseType;
 
+import java.io.UnsupportedEncodingException;
+import java.security.GeneralSecurityException;
 import java.util.UUID;
 
 import static fr.wseduc.webutils.Utils.isEmpty;
@@ -69,19 +77,24 @@ public class OpenIdConnectController extends AbstractFederateController {
 
 	@Get("/openid/login")
 	public void login(HttpServerRequest request) {
+		final String mobileChecker = CookieHelper.get("X-APP", request);
 		final OpenIdConnectServiceProvider openIdConnectServiceProvider = openIdConnectServiceProviderFactory.serviceProvider(request);
 		if (openIdConnectServiceProvider == null) return;
 		OpenIdConnectClient oic = openIdConnectServiceProviderFactory.openIdClient(request);
 		if (oic == null) return;
-		final String state = UUID.randomUUID().toString();
+		String state = UUID.randomUUID().toString();
 		CookieHelper.getInstance().setSigned("csrfstate", state, 900, request);
 		final String nonce = UUID.randomUUID().toString();
+		String mobileParam = request.getParam("mobile");
+		if ("true".equals(mobileParam) || "mobile".equals(mobileChecker)) {
+			state = String.format("%s%s", "mobile-", UUID.randomUUID().toString());
+		}
 		CookieHelper.getInstance().setSigned("nonce", nonce, 900, request);
 		oic.authorizeRedirect(request, state, nonce, openIdConnectServiceProvider.getScope());
 	}
 
 	@Get("/openid/authenticate")
-	public void authenticate(final HttpServerRequest request) {
+	public void authenticate(final HttpServerRequest request) throws MultipleVectorChoice {
 		final OpenIdConnectServiceProvider openIdConnectServiceProvider = openIdConnectServiceProviderFactory.serviceProvider(request);
 		if (openIdConnectServiceProvider == null) return;
 		OpenIdConnectClient oic = openIdConnectServiceProviderFactory.openIdClient(request);
@@ -96,6 +109,7 @@ public class OpenIdConnectController extends AbstractFederateController {
 			forbidden(request, "invalid_replay");
 			return;
 		}
+
 		oic.authorizationCodeToken(request, state, nonce, new Handler<JsonObject>() {
 			@Override
 			public void handle(final JsonObject payload) {
@@ -105,6 +119,20 @@ public class OpenIdConnectController extends AbstractFederateController {
 						@Override
 						public void handle(Either<String, Object> res) {
 							if (res.isRight() && res.right().getValue() instanceof JsonObject) {
+								if (state.startsWith("mobile-")) {
+									try {
+										final String customToken = DefaultOpendIdConnectService
+												.getUsersWithSignaturesAndEncryption(
+														(JsonObject) res.right().getValue(), "", "", signKey);
+										JsonObject params = new JsonObject().put("customToken", customToken);
+										renderView(request, params, "mobileOpenIdToken.html", null);
+									} catch (UnsupportedEncodingException | GeneralSecurityException
+											| IllegalStateException | UnsupportedResponseType e) {
+										log.error("Error", e);
+										unauthorized(request, OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED);
+									}
+									return;
+								}
 								authenticate((JsonObject) res.right().getValue(), "_", payload.getString("id_token_hint"), activationThemes, request);
 							} else if (subMapping && res.isLeft() && OpenIdConnectServiceProvider.UNRECOGNIZED_USER_IDENTITY
 									.equals(res.left().getValue())) {

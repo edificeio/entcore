@@ -70,6 +70,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.Inflater;
@@ -228,6 +229,20 @@ public class SamlController extends AbstractFederateController {
 			if ((userAgent != null && (userAgent.contains("iPhone") || userAgent.contains("Android"))) ||
 					(xRequestedWith != null && xRequestedWith.startsWith("com.ode")) ||
 					("true".equals(request.params().get("mobile")))) {
+				final String mobileChecker = CookieHelper.get("X-APP", request);
+				final String urlFormat = String.format("https://%s/auth/openid/login", getHost(request));
+				if ("mobile".equals(mobileChecker)) {
+					JsonArray providers = swmf.getJsonArray("providers");
+					for (int i = 0; i < providers.size(); i++) {
+						JsonObject provider = providers.getJsonObject(i);
+						if (provider.getString("uri").equals(urlFormat)) {
+							String urlFormatMobile = String.format("%s?mobile=%s", urlFormat, true);
+							provider = provider.put("uri", urlFormatMobile);
+							providers.set(i, provider);
+						}
+					}
+					swmf.put("providers", providers);
+				}
 				renderView(request, swmf, "wayf-mobile.html", null);
 			} else {
 				renderView(request, swmf, "wayf.html", null);

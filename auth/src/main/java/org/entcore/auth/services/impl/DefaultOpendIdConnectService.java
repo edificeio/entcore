@@ -19,25 +19,31 @@
 
 package org.entcore.auth.services.impl;
 
-import fr.wseduc.webutils.DefaultAsyncResult;
-import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.security.JWT;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+
+import java.io.UnsupportedEncodingException;
+import java.security.GeneralSecurityException;
+import java.util.UUID;
+
 import org.entcore.auth.services.OpenIdConnectService;
 import org.entcore.auth.services.OpenIdConnectServiceProvider;
 import org.entcore.common.neo4j.Neo4j;
 
+import fr.wseduc.webutils.DefaultAsyncResult;
+import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.security.Blowfish;
+import fr.wseduc.webutils.security.HmacSha256;
+import fr.wseduc.webutils.security.JWT;
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
-import java.util.UUID;
-
-import static fr.wseduc.webutils.Utils.isNotEmpty;
+import jp.eisbahn.oauth2.server.exceptions.OAuthError;
+import jp.eisbahn.oauth2.server.exceptions.OAuthError.UnsupportedResponseType;
 
 public class DefaultOpendIdConnectService implements OpenIdConnectService, OpenIdConnectServiceProvider {
 
@@ -155,5 +161,28 @@ public class DefaultOpendIdConnectService implements OpenIdConnectService, OpenI
 			handler.handle(new DefaultAsyncResult<>(new RuntimeException("undefined.payload")));
 		}
 	}
+
+	public static String getUsersWithSignaturesAndEncryption(JsonObject userInfo, String sessionIndex,
+			String nameId,
+			String signKey)
+			throws UnsupportedEncodingException, IllegalStateException, GeneralSecurityException,
+			UnsupportedResponseType {
+		if (userInfo == null) {
+			throw new UnsupportedResponseType("user information is empty");
+		}
+		JsonObject j = userInfo;
+		j.put("iat", System.currentTimeMillis());
+		j.put("key", HmacSha256.sign(
+					sessionIndex + nameId + j.getString("login") + j.getString("id") + j.getLong("iat"), signKey));
+		if (isNotEmpty(nameId)) {
+			j.put("nameId", nameId);
+		}
+		if (isNotEmpty(sessionIndex)) {
+			j.put("sessionIndex", sessionIndex);
+		}
+		return Blowfish.encrypt(j.encode(), UUID.randomUUID().toString());
+	}
+
+	
 
 }
