@@ -10,6 +10,7 @@ import static org.junit.Assert.assertEquals;
 
 public class EventRecorderContentTransformerClientTest {
 
+
   @Test
   public void testComputeCounters() {
     final JsonObject content = new JsonObject(data).getJsonObject("jsonContent");
@@ -23,7 +24,216 @@ public class EventRecorderContentTransformerClientTest {
     assertEquals(2, (int)occurrences.get("nb_internal_links"));
     assertEquals(1, (int)occurrences.get("nb_formulae"));
   }
-  
+
+  @Test
+  public void testComputeCounters2() {
+    final JsonObject content = new JsonObject(data2).getJsonObject("jsonContent");
+    final Map<String, Integer> occurrences = EventRecorderContentTransformerClient.computeMultimediaOccurrences(content);
+    assertEquals(1, (int)occurrences.get("nb_external_links"));
+    assertEquals(3, (int)occurrences.get("nb_internal_links"));
+  }
+
+  public static final String data2 = "{\n" +
+    "  \"jsonContent\": {\n" +
+    "    \"type\": \"doc\",\n" +
+    "    \"content\": [\n" +
+    "      {\n" +
+    "        \"type\": \"paragraph\",\n" +
+    "        \"attrs\": {\n" +
+    "          \"textAlign\": \"left\"\n" +
+    "        },\n" +
+    "        \"content\": [\n" +
+    "          {\n" +
+    "            \"type\": \"text\",\n" +
+    "            \"text\": \"3 Liens internes\"\n" +
+    "          }\n" +
+    "        ]\n" +
+    "      },\n" +
+    "      {\n" +
+    "        \"type\": \"paragraph\",\n" +
+    "        \"attrs\": {\n" +
+    "          \"textAlign\": \"left\"\n" +
+    "        },\n" +
+    "        \"content\": [\n" +
+    "          {\n" +
+    "            \"type\": \"linker\",\n" +
+    "            \"attrs\": {\n" +
+    "              \"href\": \"/blog/id/5d42bb33-79ad-442d-994e-e31496280a42/post/c66a8faa-8d3a-4299-9edc-602485f18230\",\n" +
+    "              \"class\": null,\n" +
+    "              \"target\": null,\n" +
+    "              \"title\": \"Projet en cours [Blog public + favori]\",\n" +
+    "              \"data-id\": \"5d42bb33-79ad-442d-994e-e31496280a42#c66a8faa-8d3a-4299-9edc-602485f18230\",\n" +
+    "              \"data-app-prefix\": \"blog\"\n" +
+    "            },\n" +
+    "            \"content\": [\n" +
+    "              {\n" +
+    "                \"type\": \"text\",\n" +
+    "                \"text\": \"Projet en cours [Blog public + favori]\"\n" +
+    "              }\n" +
+    "            ]\n" +
+    "          }\n" +
+    "        ]\n" +
+    "      },\n" +
+    "      {\n" +
+    "        \"type\": \"paragraph\",\n" +
+    "        \"attrs\": {\n" +
+    "          \"textAlign\": \"left\"\n" +
+    "        },\n" +
+    "        \"content\": [\n" +
+    "          {\n" +
+    "            \"type\": \"linker\",\n" +
+    "            \"attrs\": {\n" +
+    "              \"href\": \"/blog/id/1cb7a7dc-1072-45d5-933c-00e28fffacde/post/15d29ce5-61fa-4456-b1c1-cbd060f39c9b\",\n" +
+    "              \"class\": null,\n" +
+    "              \"target\": null,\n" +
+    "              \"title\": \"Android S22 chrome Toolbar non scrollable ! [Test de créa de blog 2]\",\n" +
+    "              \"data-id\": \"1cb7a7dc-1072-45d5-933c-00e28fffacde#15d29ce5-61fa-4456-b1c1-cbd060f39c9b\",\n" +
+    "              \"data-app-prefix\": \"blog\"\n" +
+    "            },\n" +
+    "            \"content\": [\n" +
+    "              {\n" +
+    "                \"type\": \"text\",\n" +
+    "                \"text\": \"Android S22 chrome Toolbar non scrollable ! [Test de créa de blog 2]\"\n" +
+    "              }\n" +
+    "            ]\n" +
+    "          }\n" +
+    "        ]\n" +
+    "      },\n" +
+    "      {\n" +
+    "        \"type\": \"paragraph\",\n" +
+    "        \"attrs\": {\n" +
+    "          \"textAlign\": \"left\"\n" +
+    "        },\n" +
+    "        \"content\": [\n" +
+    "          {\n" +
+    "            \"type\": \"linker\",\n" +
+    "            \"attrs\": {\n" +
+    "              \"href\": \"/blog/id/1cb7a7dc-1072-45d5-933c-00e28fffacde/post/a70d3e71-d4c5-4dd5-b6f7-b2a2d99cf876\",\n" +
+    "              \"class\": null,\n" +
+    "              \"target\": null,\n" +
+    "              \"title\": \"Responsive iOS safari  [Test de créa de blog 2]\",\n" +
+    "              \"data-id\": \"1cb7a7dc-1072-45d5-933c-00e28fffacde#a70d3e71-d4c5-4dd5-b6f7-b2a2d99cf876\",\n" +
+    "              \"data-app-prefix\": \"blog\"\n" +
+    "            },\n" +
+    "            \"content\": [\n" +
+    "              {\n" +
+    "                \"type\": \"text\",\n" +
+    "                \"text\": \"Responsive iOS safari [Test de créa de blog 2]\"\n" +
+    "              }\n" +
+    "            ]\n" +
+    "          }\n" +
+    "        ]\n" +
+    "      },\n" +
+    "      {\n" +
+    "        \"type\": \"paragraph\",\n" +
+    "        \"attrs\": {\n" +
+    "          \"textAlign\": \"left\"\n" +
+    "        }\n" +
+    "      },\n" +
+    "      {\n" +
+    "        \"type\": \"paragraph\",\n" +
+    "        \"attrs\": {\n" +
+    "          \"textAlign\": \"left\"\n" +
+    "        },\n" +
+    "        \"content\": [\n" +
+    "          {\n" +
+    "            \"type\": \"text\",\n" +
+    "            \"text\": \"Liens externes\"\n" +
+    "          }\n" +
+    "        ]\n" +
+    "      },\n" +
+    "      {\n" +
+    "        \"type\": \"paragraph\",\n" +
+    "        \"attrs\": {\n" +
+    "          \"textAlign\": \"left\"\n" +
+    "        },\n" +
+    "        \"content\": [\n" +
+    "          {\n" +
+    "            \"type\": \"text\",\n" +
+    "            \"marks\": [\n" +
+    "              {\n" +
+    "                \"type\": \"hyperlink\",\n" +
+    "                \"attrs\": {\n" +
+    "                  \"href\": \"https://www.youtube.com/watch?v=SLp7G8dYRlQ&list=RDUTtABhxErvw&index=10\",\n" +
+    "                  \"target\": \"_blank\",\n" +
+    "                  \"class\": null,\n" +
+    "                  \"title\": \"\"\n" +
+    "                }\n" +
+    "              }\n" +
+    "            ],\n" +
+    "            \"text\": \"https://www.youtube.com/watch?v=SLp7G8dYRlQ&list=RDUTtABhxErvw&index=10\"\n" +
+    "          }\n" +
+    "        ]\n" +
+    "      },\n" +
+    "      {\n" +
+    "        \"type\": \"paragraph\",\n" +
+    "        \"attrs\": {\n" +
+    "          \"textAlign\": \"left\"\n" +
+    "        }\n" +
+    "      },\n" +
+    "      {\n" +
+    "        \"type\": \"paragraph\",\n" +
+    "        \"attrs\": {\n" +
+    "          \"textAlign\": \"left\"\n" +
+    "        }\n" +
+    "      },\n" +
+    "      {\n" +
+    "        \"type\": \"paragraph\",\n" +
+    "        \"attrs\": {\n" +
+    "          \"textAlign\": \"left\"\n" +
+    "        }\n" +
+    "      },\n" +
+    "      {\n" +
+    "        \"type\": \"paragraph\",\n" +
+    "        \"attrs\": {\n" +
+    "          \"textAlign\": \"left\"\n" +
+    "        },\n" +
+    "        \"content\": [\n" +
+    "          {\n" +
+    "            \"type\": \"custom-image\",\n" +
+    "            \"attrs\": {\n" +
+    "              \"textAlign\": \"left\",\n" +
+    "              \"src\": \"/workspace/document/b81f3d53-d021-48f8-95ed-810f8daa5ac7\",\n" +
+    "              \"alt\": null,\n" +
+    "              \"title\": null,\n" +
+    "              \"size\": \"medium\",\n" +
+    "              \"width\": \"350\",\n" +
+    "              \"height\": \"NaN\",\n" +
+    "              \"style\": null\n" +
+    "            }\n" +
+    "          }\n" +
+    "        ]\n" +
+    "      },\n" +
+    "      {\n" +
+    "        \"type\": \"paragraph\",\n" +
+    "        \"attrs\": {\n" +
+    "          \"textAlign\": \"left\"\n" +
+    "        },\n" +
+    "        \"content\": [\n" +
+    "          {\n" +
+    "            \"type\": \"text\",\n" +
+    "            \"text\": \"Yes\"\n" +
+    "          }\n" +
+    "        ]\n" +
+    "      },\n" +
+    "      {\n" +
+    "        \"type\": \"audio\",\n" +
+    "        \"attrs\": {\n" +
+    "          \"src\": \"/workspace/document/1117a432-a622-4da4-9519-ec492f986c56\",\n" +
+    "          \"documentId\": \"1117a432-a622-4da4-9519-ec492f986c56\"\n" +
+    "        }\n" +
+    "      },\n" +
+    "      {\n" +
+    "        \"type\": \"audio\",\n" +
+    "        \"attrs\": {\n" +
+    "          \"src\": \"/workspace/document/686b3f20-bce5-47a2-9425-f64c011a9889\",\n" +
+    "          \"documentId\": \"686b3f20-bce5-47a2-9425-f64c011a9889\"\n" +
+    "        }\n" +
+    "      }\n" +
+    "    ]\n" +
+    "  }\n" +
+    "}";
+
   
   public static final String data = "{" +
     "  \"jsonContent\": {" +

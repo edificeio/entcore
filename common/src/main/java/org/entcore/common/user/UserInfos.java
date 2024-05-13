@@ -295,6 +295,8 @@ public class UserInfos {
 	private Boolean federated;
 	private List<Widget> widgets;
 	private Map<String, Object> otherProperties = new HashMap<>();
+	private String email;
+	private String mobile;
 
 	public Map<String, Child> getChildren() { return children; }
 
@@ -536,6 +538,22 @@ public class UserInfos {
 	public void setWidgets(List<Widget> widgets) {
 		this.widgets = widgets;
   }
+
+	public String getEmail() {
+		return email;
+	}
+
+	public void setEmail(String email) {
+		this.email = email;
+	}
+
+	public String getMobile() {
+		return mobile;
+	}
+
+	public void setMobile(String mobile) {
+		this.mobile = mobile;
+	}
 
 	@JsonAnySetter
 	public void setOtherProperty(String key, Object value) {

@@ -4,6 +4,7 @@ import fr.wseduc.transformer.IContentTransformerClient;
 import fr.wseduc.transformer.to.ContentTransformerRequest;
 import fr.wseduc.transformer.to.ContentTransformerResponse;
 import io.vertx.core.Future;
+import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.events.EventStore;
@@ -44,18 +45,21 @@ public class EventRecorderContentTransformerClient implements IContentTransforme
                                                       final HttpServerRequest httpCallerRequest) {
     return client.transform(request, httpCallerRequest)
       .onSuccess(transformed -> {
-        JsonObject json = transformed.getCleanJson();
-        if(json == null) {
-          json = transformed.getJsonContent();
-        }
-        final Map<String, Integer> occurrences = computeMultimediaOccurrences(json);
-        if(occurrences != null) {
-          final JsonObject customAttributes = new JsonObject()
-            .put("override-module", module);
-          for (Map.Entry<String, Integer> entry : occurrences.entrySet()) {
-            customAttributes.put(entry.getKey(), entry.getValue());
+        // Do not count events when we only want to migrate old content
+        if(!HttpMethod.GET.equals(httpCallerRequest.method())) {
+          JsonObject json = transformed.getCleanJson();
+          if (json == null) {
+            json = transformed.getJsonContent();
           }
-          eventStore.createAndStoreEvent(EVENT, httpCallerRequest, customAttributes);
+          final Map<String, Integer> occurrences = computeMultimediaOccurrences(json);
+          if (occurrences != null) {
+            final JsonObject customAttributes = new JsonObject()
+              .put("override-module", module);
+            for (Map.Entry<String, Integer> entry : occurrences.entrySet()) {
+              customAttributes.put(entry.getKey(), entry.getValue());
+            }
+            eventStore.createAndStoreEvent(EVENT, httpCallerRequest, customAttributes);
+          }
         }
       });
   }
@@ -77,6 +81,8 @@ public class EventRecorderContentTransformerClient implements IContentTransforme
       if("attachments".equalsIgnoreCase(type)) {
         final int nbAttachments = computeNbAttachements(json);
         occurrences.compute("nb_attachments", (k, v) -> v + nbAttachments);
+      } else if ("linker".equalsIgnoreCase(type)) {
+        occurrences.compute("nb_internal_links", (k, v) -> v + 1);
       } else if("text".equalsIgnoreCase(type)) {
         final String text = json.getString("text", "").trim();
         if(text.length() >= 2 && text.charAt(0) == '$' && text.charAt(text.length() - 1) == '$') {

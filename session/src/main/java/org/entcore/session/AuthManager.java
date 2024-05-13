@@ -836,7 +836,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"OPTIONAL MATCH n-[rf:HAS_FUNCTION]->(f:Function) " +
 				"OPTIONAL MATCH n<-[:RELATED]-(child:User) " +
 				"RETURN distinct " +
-				"n.classes as classNames, n.level as level, n.login as login, COLLECT(distinct [c.id, c.name]) as classes, " +
+				"n.classes as classNames, n.level as level, n.email as email, n.mobile as mobile, n.login as login, COLLECT(distinct [c.id, c.name]) as classes, " +
 				"n.lastName as lastName, n.firstName as firstName, n.externalId as externalId, n.federated as federated, " +
 				"n.birthDate as birthDate, n.changePw as forceChangePassword, COALESCE(n.needRevalidateTerms, FALSE) as needRevalidateTerms,HAS(n.deleteDate) as deletePending, " +
 				"n.displayName as username, HEAD(n.profiles) as type, " +

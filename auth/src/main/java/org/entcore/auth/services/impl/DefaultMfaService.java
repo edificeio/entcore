@@ -3,6 +3,7 @@ package org.entcore.auth.services.impl;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
@@ -28,6 +29,7 @@ import static fr.wseduc.webutils.Utils.getOrElse;
 import static org.entcore.common.datavalidation.utils.DataStateUtils.*;
 
 import java.security.InvalidKeyException;
+import java.util.Map;
 
 
 public class DefaultMfaService implements MfaService {
@@ -215,6 +217,11 @@ public class DefaultMfaService implements MfaService {
             // }
 
             return Future.failedFuture("not.implemented.yet");
+        }
+
+        @Override
+        public Future<String> sendWarningMessage(HttpServerRequest request, Map<String, String> targets, JsonObject templateParams) {
+            return Future.succeededFuture();
         }
     }
 
