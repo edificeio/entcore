@@ -97,8 +97,7 @@ public class Structure implements IdObject
             "MATCH (u:User)-[attached:IN]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
             "WHERE " + fullMatcher + " " +  // Match users that are attached to this structure (but exclude people who are only in the manual groups)
             "WITH u, s " +
-            "MATCH (u)-[r:IN]-(g:Group)-[:DEPENDS*1..2]-(s) " +
-            "WHERE NOT(g:ManualGroup) ";
+            "MATCH (u)-[r:IN]-(g:Group)-[:DEPENDS*1..2]-(s) ";
 
         JsonObject params = new JsonObject();
         fullMatcher.addParams(params);
