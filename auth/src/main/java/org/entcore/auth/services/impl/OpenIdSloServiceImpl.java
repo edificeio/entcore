@@ -15,6 +15,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.data.DataHandlerFactory;
+import jp.eisbahn.oauth2.server.models.AuthInfo;
 
 import static fr.wseduc.webutils.Utils.*;
 
@@ -41,16 +42,16 @@ public class OpenIdSloServiceImpl {
                     .put(USER_ID, message.body().getString(USER_ID))
                     .put(SESSION_ID, message.body().getString(SESSION_ID));
             final DataHandler data = oauthDataFactory.create(new JsonRequestAdapter(obj));
-            ((OAuthDataHandler) data).getAuthorizationsBySessionId(obj.getString(SESSION_ID), authorizations -> {
+            data.getAuthorizationsBySessionId(obj.getString(SESSION_ID), authorizations -> {
                 if (authorizations == null)
                     return;
-                for (JsonObject authorization : authorizations) {
-                    ((OAuthDataHandler) data).deleteTokensByAuthId(authorization.getString("id"));
+                for (AuthInfo authorization : authorizations) {
+                    data.deleteTokensByAuthId(authorization.getId());
                     JsonObject client = new JsonObject()
-                            .put(SESSION_ID, authorization.getString(SESSION_ID))
-                            .put(USER_ID, authorization.getString(USER_ID))
-                            .put(CLIENT_ID, authorization.getString(CLIENT_ID))
-                            .put(LOGOUT_URL, authorization.getString(LOGOUT_URL));
+                            .put(SESSION_ID, obj.getString(SESSION_ID))
+                            .put(USER_ID, authorization.getUserId())
+                            .put(CLIENT_ID, authorization.getClientId())
+                            .put(LOGOUT_URL, authorization.getLogoutUrl());
                     clients.add(client);
                     ((OAuthDataHandler) data).deleteAuthorization(client, res -> {
                         if (res.body() != null)
