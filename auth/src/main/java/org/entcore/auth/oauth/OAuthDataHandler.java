@@ -817,7 +817,7 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 	}
 
 	@Override
-	public void getAuthorizationsBySessionId(String sessionId, Handler<List<JsonObject>> handler) {
+	public void getAuthorizationsBySessionId(String sessionId, Handler<List<AuthInfo>> handler) {
 		if (sessionId != null) {
 			JsonObject queryData = new JsonObject()
 					.put("sessionId", sessionId)
@@ -829,7 +829,7 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 						handler.handle(Collections.emptyList());
 						return;
 					}
-					handler.handle(filterList(results));
+					handler.handle(filterAuth(results));
 				} else {
 					handler.handle(null);
 				}
@@ -839,20 +839,25 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 		}
 	}
 
-	private List<JsonObject> filterList(JsonArray data) {
-		List<JsonObject> array = new ArrayList<>();
+	private List<AuthInfo> filterAuth(JsonArray data) {
+		List<AuthInfo> array = new ArrayList<AuthInfo>();
 		for (int i = 0; i < data.size(); i++) {
-			JsonObject res = data.getJsonObject(i);
-			res.put("id", res.getString("_id"));
-			res.remove("_id");
-			res.remove("createdAt");
-			array.add(res);
+			JsonObject o = data.getJsonObject(i);
+			o.put("id", o.getString("_id"));
+			o.remove("_id");
+			o.remove("sessionId");
+			o.remove("createdAt");
+			ObjectMapper mapper = new ObjectMapper();
+			try {
+				array.add(mapper.readValue(o.encode(), AuthInfo.class));
+			} catch (IOException e) {
+				log.error(e);
+			}
 		}
 		return array;
 	}
-
 	@Override
-	public void getTokensByAuthId(String authId, Handler<List<JsonObject>> handler) {
+	public void getTokensByAuthId(String authId, Handler<List<AccessToken>> handler) {
 		if (authId != null) {
 			JsonObject query = new JsonObject().put("authId", authId);
 			mongo.find(ACCESS_TOKEN_COLLECTION, query, res -> {
@@ -868,7 +873,23 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 				}
 			});
 		}
+	}
 
+	private List<AccessToken> filterList(JsonArray data) {
+		List<AccessToken> array = new ArrayList<>();
+		for (int i = 0; i < data.size(); i++) {
+			AccessToken res = new AccessToken();
+			JsonObject o = data.getJsonObject(i);
+			o.put("id", o.getString("_id"));
+			o.remove("_id");
+			res.setAuthId(o.getString("authId"));
+			res.setCreatedOn(MongoDb.parseIsoDate(o.getJsonObject("createdOn")));
+			res.setExpiresIn(o.getInteger("expiresIn"));
+			res.setIdToken(o.getString("id_token"));
+			res.setToken(o.getString("token"));
+			array.add(res);
+		}
+		return array;
 	}
 
 	@Override
