@@ -21,8 +21,8 @@ public class ShareModel {
         this.creatorId = creatorId;
         this.reverseNormalizedRights = ShareRoles.getRoleBySecuredActionName(actions);
         for(final Object shareObject : sharedJson.getList()){
-            if(shareObject instanceof JsonObject){
-                final JsonObject jsonShare = (JsonObject) shareObject;
+            if(shareObject instanceof JsonObject || shareObject instanceof Map){
+                final JsonObject jsonShare = shareObject instanceof JsonObject? (JsonObject) shareObject : new JsonObject((Map<String,Object>)shareObject);
                 // get role enum from fqdn java name
                 final Set<ShareRoles> roles = new HashSet<>();
                 for(final String key : jsonShare.fieldNames()){
