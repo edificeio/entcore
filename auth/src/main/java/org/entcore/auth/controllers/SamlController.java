@@ -561,8 +561,8 @@ public class SamlController extends AbstractFederateController {
 
 	@Post("/saml/acs")
 	public void acs(final HttpServerRequest request) {
-		final String app = CookieHelper.getInstance().getSigned("X-APP", request);
-		if (app.equals("mobile")) {
+		final String app = CookieHelper.get("X-APP", request);
+		if ("mobile".equals(app) && app != null) {
 			redirectionService.redirect(request, LOGIN_PAGE);
 			return;
 		}
