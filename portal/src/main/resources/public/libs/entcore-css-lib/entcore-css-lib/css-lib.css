@@ -3681,32 +3681,6 @@ grid-cell.height-undefined {
   .drawing-grid .row {
     min-height: 60px; }
 
-help section.lightbox > div.content {
-  width: 920px;
-  max-width: 100%;
-  box-sizing: border-box; }
-  help section.lightbox > div.content .app-single-post {
-    background: #fff; }
-    help section.lightbox > div.content .app-single-post .app-menu {
-      float: left;
-      width: 250px; }
-    help section.lightbox > div.content .app-single-post .app-content-section {
-      width: 640px;
-      float: right; }
-      help section.lightbox > div.content .app-single-post .app-content-section img {
-        max-width: 100%;
-        display: block; }
-    help section.lightbox > div.content .app-single-post .app-content-container {
-      margin-top: 15px; }
-    help section.lightbox > div.content .app-single-post h2 {
-      width: 100%; }
-    help section.lightbox > div.content .app-single-post .app-print {
-      display: none; }
-  help section.lightbox > div.content .app-single-post::after {
-    content: " ";
-    display: block;
-    width: 100%;
-    clear: both; }
 
 .humane,
 .humane-original {
