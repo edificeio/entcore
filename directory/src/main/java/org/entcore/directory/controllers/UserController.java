@@ -139,24 +139,76 @@ public class UserController extends BaseController {
 						}
 						final Promise<Either<String, JsonObject>> onUpdateDone = Promise.promise();
 						final Promise<Void> onRemoveSessionAttributeDone = Promise.promise();
-						userService.update(userId, body, e -> onUpdateDone.complete(e));
-						UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> onRemoveSessionAttributeDone.complete());
-						CompositeFuture.join(onUpdateDone.future(), onRemoveSessionAttributeDone.future()).onComplete(compositeResult -> {
-							final Future<Either<String, JsonObject>> futureUpdateDone = onUpdateDone.future();
-							if(futureUpdateDone.succeeded()) {
-								final Either<String, JsonObject> updateDoneResult = futureUpdateDone.result();
-								recreateSession(user, userId, request, eb).onComplete(e -> {
-									notEmptyResponseHandler(request).handle(updateDoneResult);
-								});
-							} else {
-								final JsonObject error = new JsonObject().put("error", futureUpdateDone.cause().getMessage());
-								Renders.renderJson(request, error, 400);
-							}
+
+						// Retrieving user data in order to send notifications in case of changes of the email or mobile phone number.
+						final Promise<JsonObject> getUserPromise = Promise.promise();
+						if (body.containsKey("email") || body.containsKey("mobile")) {
+							userService.get(userId, false, false, ev -> {
+								if (ev.isRight() && ev.right().getValue() != null && !ev.right().getValue().isEmpty()) {
+										getUserPromise.complete(ev.right().getValue());
+								} else {
+									getUserPromise.complete(null);
+								}
+							});
+						} else {
+							getUserPromise.complete(null);
+						}
+
+						getUserPromise.future().onComplete(userBeforeUpdate -> {
+							userService.update(userId, body, onUpdateDone::complete);
+							UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> onRemoveSessionAttributeDone.complete());
+
+							CompositeFuture.join(onUpdateDone.future(), onRemoveSessionAttributeDone.future())
+									.onComplete(compositeResult -> {
+										final Future<Either<String, JsonObject>> futureUpdateDone = onUpdateDone.future();
+										if (futureUpdateDone.succeeded()) {
+											final Either<String, JsonObject> updateDoneResult = futureUpdateDone.result();
+											recreateSession(user, userId, request, eb).onComplete(e -> {
+												notEmptyResponseHandler(request).handle(updateDoneResult);
+											});
+
+											if (userBeforeUpdate != null && userBeforeUpdate.result() != null) {
+												sendEmailOrMobileUpdateNotifications(request, userBeforeUpdate.result(), body);
+											}
+										} else {
+											final JsonObject error = new JsonObject().put("error", futureUpdateDone.cause().getMessage());
+											Renders.renderJson(request, error, 400);
+										}
+									});
 						});
 					}
 				});
 			}
 		});
+	}
+
+	/*
+		Send update notifications if email or mobile phone number has been updated
+	 */
+	private void sendEmailOrMobileUpdateNotifications(final HttpServerRequest request, final JsonObject user, final JsonObject submittedValues) {
+		final UserInfos userInfos = new UserInfos();
+		userInfos.setFirstName(user.getString("firstName"));
+		userInfos.setLastName(user.getString("lastName"));
+		userInfos.setEmail(user.getString("email"));
+		userInfos.setMobile(user.getString("mobile"));
+
+		String oldEmail = user.getString("email");
+		String newEmail = submittedValues.getString("email");
+		if (!StringUtils.isEmpty(newEmail) && !StringUtils.isEmpty(oldEmail) && !oldEmail.equalsIgnoreCase(newEmail)) {
+			final JsonObject emailState = new JsonObject()
+					.put("valid", newEmail);
+			EmailValidation.sendWarningEmail(request, userInfos, emailState)
+					.onFailure(e -> log.error("Failed to send email update notification", e));
+		}
+
+		String oldMobile = user.getString("mobile");
+		String newMobile = submittedValues.getString("mobile");
+		if (!StringUtils.isEmpty(newMobile) && !StringUtils.isEmpty(oldMobile) && !oldMobile.equalsIgnoreCase(newMobile)) {
+			final JsonObject mobileState = new JsonObject()
+					.put("valid", newMobile);
+			MobileValidation.sendWarning(request, userInfos, mobileState)
+					.onFailure(e -> log.error("Failed to send mobile update notification", e));
+		}
 	}
 
 	@Put("/user/login/:userId")
