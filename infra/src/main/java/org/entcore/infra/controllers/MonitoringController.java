@@ -86,7 +86,7 @@ public class MonitoringController extends BaseController {
 		}
 		Neo4j.getInstance().execute("MATCH (:Structure) RETURN count(*)", (JsonObject) null,
 				getResponseHandler("neo4j", timerId,  result, count, request, closed));
-		MongoDb.getInstance().command("{ dbStats: 1 }",
+		MongoDb.getInstance().command("{ \"dbStats\": 1 }",
 				getResponseHandler("mongodb", timerId,  result, count, request, closed));
 	}
 
