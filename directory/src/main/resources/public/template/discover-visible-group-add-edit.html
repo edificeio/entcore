@@ -29,18 +29,7 @@
                     <i18n>userbook.discover.visible.group.search</i18n>
                 </h4>
             </div>
-            <div class="search-pagination flex-row">
-                <div class="cell seven top-spacing-twice">
-                    <input class="twelve" type="text" translate attr="placeholder"
-                        ng-model="discoverVisible.filters.search" placeholder="userBook.search" />
-                    <i class="search centered"></i>
-                </div>
-                <div class="cell absolute-magnet">
-                    <button type="button" ng-click="getDiscoverVisibleSearchUsers()" class="twelve">
-                        <i18n>portal.search</i18n>
-                    </button>
-                </div>
-            </div>
+
             <div class="vertical-spacing-four">
                 <div class="flex-row">
                     <multi-comboboxes class="twelve min-w-zero" ng-model="discoverVisible.filters.structures"
@@ -57,6 +46,17 @@
 
                 </div>
 
+            </div>
+            <div class="search-pagination flex-row">
+                <div class="cell seven top-spacing-twice">
+                    <input class="twelve" type="text" translate attr="placeholder"
+                        ng-model="discoverVisible.filters.search" placeholder="userBook.search" />
+                </div>
+                <div class="cell absolute-magnet">
+                    <button type="button" ng-click="getDiscoverVisibleSearchUsers()" class="twelve">
+                        <i18n>portal.search</i18n>
+                    </button>
+                </div>
             </div>
             <div class="row vertical-spacing-four">
                 <div class="flex-row">

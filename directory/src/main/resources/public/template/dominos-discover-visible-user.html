@@ -14,8 +14,16 @@
                 <span>[[user.displayName]]</span>
             </div>
             <div class="bottom-locked">
-                <a ng-click="discoverVisibleCommuteUsers(user.id)">
+                <a ng-if="user.hasCommunication" ng-href="/conversation/conversation#/write-mail/[[user.id]]">
                     <i class="send-mail"></i>
+                </a>
+                <a ng-if="!user.hasCommunication" ng-click="discoverVisibleCommuteUsers(user.id)">
+                    <i class="plus" style="margin-right: 7px;"></i>
+                </a>
+            </div>
+            <div class="bottom-locked" style="right: auto">
+                <a ng-if="user.hasCommunication" ng-click="discoverVisibleRemoveCommuteUsers(user.id)">
+                    <i class="cancel" style="margin-right: 9px;"></i>
                 </a>
             </div>
         </div>

@@ -725,7 +725,7 @@ public class CommunicationController extends BaseController {
 				badRequest(request, "invalid.user");
 				return;
 			}
-			communicationService.discoverVisibleAddCommuteUsers(user.getUserId(), receiverId, discoverVisibleExpectedProfile, notEmptyResponseHandler(request));
+			communicationService.discoverVisibleAddCommuteUsers(user, receiverId, discoverVisibleExpectedProfile, timeline, request, notEmptyResponseHandler(request));
 		});
 	}
 

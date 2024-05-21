@@ -520,6 +520,10 @@ export const directory = {
 		var response = await http.post('/communication/discover/visible/add/commuting/'+receiverId);
 		return response.data;
 	},
+	discoverVisibleRemoveCommuteUsers: async function(receiverId){
+		var response = await http.delete('/communication/discover/visible/remove/commuting/'+receiverId);
+		return response.data;
+	},
 	discoverVisibleCreateGroup: async function(name){
 		var body = {
 			name: name,

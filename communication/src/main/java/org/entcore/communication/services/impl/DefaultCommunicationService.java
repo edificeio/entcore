@@ -1205,7 +1205,10 @@ public class DefaultCommunicationService implements CommunicationService {
 			params.put("discoverVisibleExpectedProfile", discoverVisibleExpectedProfile);
 		}
 
-		query.append("WITH DISTINCT m as visibles " + "return DISTINCT visibles.id as id, visibles.name as name, visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, HEAD(visibles.profiles) as profile, visibles.structures as structures");
+		query.append("WITH DISTINCT m as visibles "
+				+ "OPTIONAL MATCH (u:User {id: {userId}})-[:COMMUNIQUE_DIRECT {source:'MANUAL'}]-(visibles) "
+				+ "return DISTINCT visibles.id as id, visibles.name as name, visibles.displayName as displayName, "
+				+ "visibles.groupDisplayName as groupDisplayName, HEAD(visibles.profiles) as profile, visibles.structures as structures, u IS NOT NULL as hasCommunication");
 
 		neo4j.execute(query.toString(), params, validResultHandler(handler));
 	}
@@ -1226,15 +1229,26 @@ public class DefaultCommunicationService implements CommunicationService {
 	 * Add communication between two users, using the COMMUNIQUE_DIRECT relation and source 'MANUAL'
 	 * */
 	@Override
-	public void discoverVisibleAddCommuteUsers(String senderId, String recipientId, JsonArray discoverVisibleExpectedProfile, Handler<Either<String, JsonObject>> handler){
+	public void discoverVisibleAddCommuteUsers(UserInfos user, String recipientId, JsonArray discoverVisibleExpectedProfile,TimelineHelper notifyTimeline, HttpServerRequest request, Handler<Either<String, JsonObject>> handler){
 
-		String query = "MATCH (s:User {id : {senderId}}), (r:User {id : {recipientId}}) WHERE HEAD(s.profiles) IN {discoverVisibleExpectedProfile} AND HEAD(r.profiles) IN {discoverVisibleExpectedProfile} " +
-						"CREATE s-[:COMMUNIQUE_DIRECT { source: 'MANUAL'}]->r " +
-						"RETURN COUNT(*) as number";
+		String query = "MATCH (s:User {id : {senderId}}), (r:User {id : {recipientId}}) WHERE HEAD(s.profiles) IN {discoverVisibleExpectedProfile} AND HEAD(r.profiles) IN {discoverVisibleExpectedProfile} "
+				+ "OPTIONAL MATCH (s)-[rel:COMMUNIQUE_DIRECT]->(r) WITH s, r, COUNT(rel) AS relCount "
+				+ "WHERE relCount = 0 CREATE (s)-[:COMMUNIQUE_DIRECT {source: 'MANUAL'}]->(r) RETURN COUNT(*) AS number ";
 
-		JsonObject params = new JsonObject().put("senderId", senderId).put("recipientId", recipientId).put("discoverVisibleExpectedProfile", discoverVisibleExpectedProfile);
+		JsonObject params = new JsonObject().put("senderId", user.getUserId()).put("recipientId", recipientId).put("discoverVisibleExpectedProfile", discoverVisibleExpectedProfile);
+		neo4j.execute(query, params, validUniqueResultHandler(result -> {
+			if (result.isRight() && !result.right().getValue().isEmpty()) {
+				if(result.right().getValue().getInteger("number") > 0) {
+					sendNotificationTimeline(notifyTimeline, request, user, new JsonArray().add(recipientId), "");
+				}
+				handler.handle(new Either.Right<>(result.right().getValue()));
+			} else {
+				if (result.isLeft()) {
+					handler.handle(new Either.Left<>(result.left().getValue()));
 
-		neo4j.execute(query, params, validUniqueResultHandler(handler));
+				}
+			}
+		}));
 	}
 
 	/**
@@ -1243,7 +1257,7 @@ public class DefaultCommunicationService implements CommunicationService {
 	@Override
 	public void discoverVisibleRemoveCommuteUsers(String senderId, String recipientId, Handler<Either<String, JsonObject>> handler){
 
-		String query = "MATCH (s:User {id : {senderId}})-[r:COMMUNIQUE_DIRECT { source: 'MANUAL'}]->(u:User {id : {recipientId}}) " +
+		String query = "MATCH (s:User {id : {senderId}})-[r:COMMUNIQUE_DIRECT { source: 'MANUAL'}]-(u:User {id : {recipientId}}) " +
 						"DELETE r " +
 						"RETURN COUNT(*) as number";
 
@@ -1271,9 +1285,10 @@ public class DefaultCommunicationService implements CommunicationService {
 	@Override
 	public void discoverVisibleGetUsersInGroup(String userId, String groupId,  Handler<Either<String, JsonArray>> handler) {
 		String query = "MATCH (g:CommunityGroup:Group:Visible {id: {groupId}, type: 'manager'})<-[r:IN|COMMUNIQUE]-(u:User) "+
-						"RETURN DISTINCT HEAD(u.profiles) as type, u.id as id, u.displayName as displayName, u.login as login ORDER BY type DESC, displayName";
+						"OPTIONAL MATCH (m:User {id: {userId}})-[:COMMUNIQUE_DIRECT {source:'MANUAL'}]-(u) " +
+						"RETURN DISTINCT HEAD(u.profiles) as type, u.id as id, u.displayName as displayName, m IS NOT NULL as hasCommunication, u.login as login ORDER BY type DESC, displayName";
 
-		JsonObject param = new JsonObject().put("groupId", groupId);
+		JsonObject param = new JsonObject().put("userId", userId).put("groupId", groupId);
 
 		neo4j.execute(query, param, validResultHandler(handler));
 	}
@@ -1285,7 +1300,7 @@ public class DefaultCommunicationService implements CommunicationService {
 	public void createDiscoverVisibleGroup(String userId, JsonObject body, Handler<Either<String, JsonObject>> handler){
 
 
-		String query = "CREATE (g:CommunityGroup:Group:Visible {name : {name}, type : 'manager', users : '', displayNameSearchField: {name}}) " +
+		String query = "CREATE (g:CommunityGroup:Group:Visible {name : {name}, type : 'manager', users : 'BOTH', displayNameSearchField: {name}}) " +
 						"SET g.id = id(g) +'-'+timestamp() " +
 						"WITH g " +
 						"MATCH (u:User {id : {userId}}) " +
@@ -1392,6 +1407,9 @@ public class DefaultCommunicationService implements CommunicationService {
 		neo4j.executeTransaction(statementsBuilder.build(), null, true, event -> {
 			if ("ok".equals(event.body().getString("status"))) {
 				if(!usersToAdd.isEmpty()){
+					if(usersToAdd.contains(user.getUserId())) {
+						usersToAdd.remove(user.getUserId());
+					}
 					sendNotificationTimeline(notifyTimeline, request, user, usersToAdd, groupId);
 				}
 				handler.handle(new Either.Right<>(event.body()));
@@ -1420,21 +1438,33 @@ public class DefaultCommunicationService implements CommunicationService {
 	 * */
 	private void sendNotificationTimeline(TimelineHelper notifyTimeline, HttpServerRequest request, UserInfos user, JsonArray receivers, String groupId) {
 
-		getGroupName(groupId, event -> {
-			if (event.isLeft()) {
-				log.error("Error when getting group name : " + event.left().getValue());
-				return;
-			}
-			String groupName = event.right().getValue().getString("name");
-			JsonObject params = new JsonObject()
-					.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
-					.put("username", user.getUsername())
-					.put("uriUserbookAnnuaire", "/userbook/annuaire#/search")
-					.put("groupName", groupName);
+		if(user == null || receivers == null || receivers.isEmpty()){
+			return;
+		}
+
+		JsonObject params = new JsonObject()
+				.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
+				.put("username", user.getUsername())
+				.put("uriUserbookAnnuaire", "/userbook/annuaire#/search");
+
+		if(!groupId.isEmpty()) {
+			getGroupName(groupId, event -> {
+				if (event.isLeft()) {
+					log.error("Error when getting group name : " + event.left().getValue());
+					return;
+				}
+				String groupName = event.right().getValue().getString("name");
+
+				params.put("groupName", groupName);
+
+				notifyTimeline.notifyTimeline(request, "userbook_discoverVisibleGroups.userbook_discoverVisibleGroups", user, receivers.getList(),
+						user.getUserId() + System.currentTimeMillis() + "userbook_discoverVisibleGroups", params);
+			});
+		} else {
 
 			notifyTimeline.notifyTimeline(request, "userbook_discoverVisibleGroups.userbook_discoverVisibleGroups", user, receivers.getList(),
 					user.getUserId() + System.currentTimeMillis() + "userbook_discoverVisibleGroups", params);
-		});
+		}
 	}
 
 }

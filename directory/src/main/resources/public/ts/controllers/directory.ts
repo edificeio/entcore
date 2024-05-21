@@ -1305,10 +1305,43 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 	$scope.discoverVisibleCommuteUsers = async function(receiverId) {
 
-		await directory.discoverVisibleAddCommuteUsers(receiverId);
-		window.location.href = "/conversation/conversation#/write-mail/" + receiverId;
+		const result = await directory.discoverVisibleAddCommuteUsers(receiverId);
+		if(result && result.number > 0) {
+			const user = $scope.discoverVisible.users.find(item => item.id === receiverId);
+			if(user) {
+				user.hasCommunication = true;
+				$scope.discoverVisible.users = [...$scope.discoverVisible.users.filter(item => item.id !== receiverId), user];
+				$scope.$apply();
+			}
+
+			const userGroup = $scope.discoverVisible.displaySelectedGroupUsers.users.find(item => item.id === receiverId);
+			if(userGroup) {
+				userGroup.hasCommunication = true;
+				$scope.discoverVisible.displaySelectedGroupUsers.users = [...$scope.discoverVisible.displaySelectedGroupUsers.users.filter(item => item.id !== receiverId), userGroup];
+				$scope.$apply();
+			}
+		}
 	} 
 
+	$scope.discoverVisibleRemoveCommuteUsers = async function(receiverId) {
+
+		const result = await directory.discoverVisibleRemoveCommuteUsers(receiverId);
+		if(result && result.number > 0) {
+			const user = $scope.discoverVisible.users.find(item => item.id === receiverId);
+			if(user) {
+				user.hasCommunication = false;
+				$scope.discoverVisible.users = [...$scope.discoverVisible.users.filter(item => item.id !== receiverId), user];
+				$scope.$apply();
+			}
+			const userGroup = $scope.discoverVisible.displaySelectedGroupUsers.users.find(item => item.id === receiverId);
+			if(userGroup) {
+				userGroup.hasCommunication = false;
+				$scope.discoverVisible.displaySelectedGroupUsers.users = [...$scope.discoverVisible.displaySelectedGroupUsers.users.filter(item => item.id !== receiverId), userGroup];
+				$scope.$apply();
+			}
+		}
+	} 
+	
 	$scope.discoverVisibleAutorize = function() {
 		if( $scope.discoverVisible.options.profiles !== null && $scope.discoverVisible.options.profiles.length > 0){
 			for(var i = 0; i < $scope.discoverVisible.options.profiles.length; i++){

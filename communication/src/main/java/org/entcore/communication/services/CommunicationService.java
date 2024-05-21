@@ -153,7 +153,7 @@ public interface CommunicationService {
 
 	void getDiscoverVisibleStructures(final Handler<Either<String, JsonArray>> handler);
 
-	void discoverVisibleAddCommuteUsers(String senderId, String recipientId, JsonArray discoverVisibleExpectedProfile, Handler<Either<String, JsonObject>> handler);
+	void discoverVisibleAddCommuteUsers(UserInfos user, String recipientId, JsonArray discoverVisibleExpectedProfile,TimelineHelper notifyTimeline, HttpServerRequest request, Handler<Either<String, JsonObject>> handler);
 
 	void discoverVisibleRemoveCommuteUsers(String senderId, String recipientId, Handler<Either<String, JsonObject>> handler);
 
