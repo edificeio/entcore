@@ -37,7 +37,7 @@ public class JwtVerifier {
             if (jwtInstances.get(clientId) != null) {
                 jwtInstances.get(clientId).verifyAndGet(token, payload -> {
                     if (payload != null) {
-                        handler.handle(payload.getString("sub"));
+                        handler.handle(payload.getString("userId"));
                     } else {
                         handler.handle(null);
                     }
@@ -52,10 +52,10 @@ public class JwtVerifier {
         }
     }
 
-    public void getUserByExternalId(String externalId, final Handler<JsonObject> handler) {
-        String query = "Match (u:User {externalId:{externalId}}) OPTIONAL MATCH (p:Profile) WHERE HAS(u.profiles) AND p.name = head(u.profiles) RETURN DISTINCT u.id as id, u.activationCode as activationCode, u.login as login, u.email as email, u.mobile as mobile, u.federated, u.blocked as blockedUser, p.blocked as blockedProfile, u.source as source";
+    public void getUserByExternalId(String id, final Handler<JsonObject> handler) {
+        String query = "Match (u:User {id:{id}}) OPTIONAL MATCH (p:Profile) WHERE HAS(u.profiles) AND p.name = head(u.profiles) RETURN DISTINCT u.id as id, u.activationCode as activationCode, u.login as login, u.email as email, u.mobile as mobile, u.federated, u.blocked as blockedUser, p.blocked as blockedProfile, u.source as source";
         Map<String, Object> params = new HashMap<>();
-        params.put("externalId", externalId);
+        params.put("id", id);
         neo4j.execute(query, params, new io.vertx.core.Handler<Message<JsonObject>>() {
             @Override
             public void handle(Message<JsonObject> res) {

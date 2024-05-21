@@ -102,7 +102,7 @@ public class Auth extends BaseServer {
 		configurationController.setConfigurationService(new DefaultConfigurationService());
 		addController(configurationController);
 		final JwtVerifier jwtVerifier;
-		if (getOrElse(config.getBoolean(JWT_PERIOD), false)) {
+		if (getOrElse(config.getBoolean(JWT_PERIOD), true)) {
 			jwtVerifier = new JwtVerifier(vertx);
 			oauthDataFactory.setJwtVerifier(jwtVerifier);
 		} else {
@@ -225,7 +225,7 @@ public class Auth extends BaseServer {
 			DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(null));
 			((OAuthDataHandler) data).getClientsByGrantType(vertx, jwtVerifier);
 			vertx.setPeriodic((config.containsKey(JWT_PERIOD_CRON)
-					&& (config.getLong(JWT_PERIOD_CRON) != null)) ? config.getLong(JWT_PERIOD_CRON) : 60000 * 60,
+					&& (config.getLong(JWT_PERIOD_CRON) != null)) ? config.getLong(JWT_PERIOD_CRON) : 60000,
 					new Handler<Long>() {
 				@Override
 				public void handle(Long event) {
