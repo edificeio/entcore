@@ -606,6 +606,8 @@
   "minor.duplicate": "Mineur",
   "minor.duplicate.tooltip": "Le doublon est sans conséquence",
   "group.details.add.users": "Gérer les utilisateurs du groupe",
+  "group.details.created": "Créé par {{user}} le {{date}}",
+  "group.details.modified": "Modifié par {{user}} le {{date}}",
   "group.details.members.can.communicate": "Les membres du groupe <b>peuvent</b> communiquer entre eux",
   "group.details.members.cannot.communicate": "Les membres du groupe <b>ne peuvent pas</b> communiquer entre eux",
   "group.details.broadcast-group.never.communicate": "Les membres d'une liste de diffusion <b>ne peuvent pas</b> communiquer entre eux",
