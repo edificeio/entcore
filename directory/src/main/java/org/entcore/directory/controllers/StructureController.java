@@ -157,7 +157,6 @@ public class StructureController extends BaseController {
 
 	@Get("/structure/admin/list")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@MfaProtected()
 	public void listAdmin(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
