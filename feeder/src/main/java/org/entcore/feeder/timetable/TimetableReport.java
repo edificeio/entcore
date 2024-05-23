@@ -203,7 +203,7 @@ public class TimetableReport {
     this.templator = TimetableReport.templateProcessors.get(vertx);
 
     if (this.templator == null) {
-      this.templator = new TemplateProcessor().escapeHTML(false);
+      this.templator = new TemplateProcessor(vertx, "template").escapeHTML(false);
 
       this.templator.setLambda("i18n", new I18nLambda(locale));
       this.templator.setLambda("datetime", new LocaleDateLambda(locale));
