@@ -156,12 +156,13 @@ export let forgotController = ng.controller('ForgotController', ['$scope', 'rout
 			.done(function(data){
 				
 				notify.info( service === "mail" ? "auth.notify.password.forgotten" : "auth.notify.password.forgotten.sms", 8000);
-				$scope.user.channels = {}
 				$scope.sendingMailAndWaitingFeedback = false;
+				$scope.user.login = null;
 				$scope.$apply()
 			})
 			.e400(function(data){
 				$scope.sendingMailAndWaitingFeedback = false;
+				$scope.user.login = null;
 				setError('auth.notify.' + JSON.parse(data.responseText).error + '.login');
 			})
 	}
@@ -192,6 +193,11 @@ export let forgotController = ng.controller('ForgotController', ['$scope', 'rout
 						$scope.user.channels = {}
 					}
 				}
+
+				$scope.user.mail = null;
+				$scope.user.firstName = null;
+				$scope.user.structureId = null;
+
 				$scope.$apply()
 			})
             .e400(function(data){
@@ -201,6 +207,11 @@ export let forgotController = ng.controller('ForgotController', ['$scope', 'rout
 				}else{
 					setError('auth.notify.' + err.error + '.mail');
 				}
+
+				$scope.user.mail = null;
+				$scope.user.firstName = null;
+				$scope.user.structureId = null;
+
 				$scope.$apply()
 			})
 	}
