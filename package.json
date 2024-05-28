@@ -1,6 +1,6 @@
 {
   "name": "ent-core",
-  "version": "4.12.12",
+  "version": "1.0.0",
   "description": "",
   "main": "gulpfile.js",
   "directories": {
@@ -27,7 +27,7 @@
     "angular-sanitize": "1.8.3",
     "axios": "0.15.3",
     "core-js": "^2.4.1",
-    "entcore": "dev",
+    "entcore": "4.8.6",
     "entcore-generic-icons": "https://github.com/edificeio/generic-icons.git",
     "entcore-toolkit": "^1.0.1",
     "humane-js": "^3.2.2",
