@@ -5,17 +5,26 @@ import java.util.Set;
 
 import org.entcore.auth.oauth.JsonRequestAdapter;
 import org.entcore.auth.oauth.OAuthDataHandler;
+import org.entcore.auth.services.OpenIdServiceProviderFactory;
+import org.entcore.common.neo4j.Neo4j;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.data.DataHandlerFactory;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
+import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.http.oauth.OpenIdConnectClient;
+import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 
 import static fr.wseduc.webutils.Utils.*;
 
@@ -26,11 +35,16 @@ public class OpenIdSloServiceImpl {
     private static final String USER_ID = "userId";
     private static final String SESSION_ID = "sessionId";
     private static final String LOGOUT_URL = "logoutUrl";
+    private static final String SESSION_ADDRESS = "wse.session";
     protected static final Logger log = LoggerFactory.getLogger(OpenIdSloServiceImpl.class);
+    private final OpenIdServiceProviderFactory openIdConnectServiceProviderFactory = null;
+    private final EventBus eb;
+    private final Neo4j neo4j = Neo4j.getInstance();
 
     public OpenIdSloServiceImpl(Vertx vertx, DataHandlerFactory oauthDataFactory) {
         this.httpClient = vertx.createHttpClient();
         this.oauthDataFactory = oauthDataFactory;
+        this.eb = vertx.eventBus();
     }
 
     public void sloOpenId(final Message<JsonObject> message) {
@@ -94,4 +108,40 @@ public class OpenIdSloServiceImpl {
                 .write(new JsonObject().put("logout_token", data.getString("logout_token")).toString());
         request.end();
     }
+
+    @SuppressWarnings("deprecation")
+    public void logoutWithSlo(String token, OpenIdConnectClient oic, HttpServerRequest request) {
+        oic.getJwtInstance().verifyAndGet(token, payload -> {
+            if (payload != null) {
+                final String QUERY_SUB_CC = "MATCH (u:User {subCC : {sub}}) " + AbstractSSOProvider.RETURN_QUERY;
+                final String subject = payload.getString("sub");
+                neo4j.execute(QUERY_SUB_CC, new JsonObject().put("sub", subject),
+                        validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
+                            @Override
+                            public void handle(final Either<String, JsonObject> event) {
+                                if (event.isRight() && event.right().getValue().size() > 0) {
+                                    String userId = event.right().getValue().getString("id");
+
+                                    JsonObject sessionMessage = new JsonObject().put("action", "dropAllByUserId")
+                                            .put("userId", userId);
+                                    eb.send(SESSION_ADDRESS, sessionMessage,
+                                            new Handler<AsyncResult<Message<JsonObject>>>() {
+                                                @Override
+                                                public void handle(AsyncResult<Message<JsonObject>> message) {
+                                                    if (message.succeeded() == false)
+                                                        log.error("Unable to remove session for CC user " + userId);
+                                                }
+                                            });
+                                } else
+                                    log.error("Unable to find CC user (subject " + subject + ")");
+                                request.response().setStatusCode(200).end();
+                            }
+                        }));
+            } else {
+                request.response().setStatusCode(401).end();
+
+            }
+        });
+    }
+
 }

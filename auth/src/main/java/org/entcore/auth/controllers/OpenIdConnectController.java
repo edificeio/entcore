@@ -24,14 +24,20 @@ import fr.wseduc.rs.Post;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.oauth.OpenIdConnectClient;
 import fr.wseduc.webutils.request.CookieHelper;
+import fr.wseduc.webutils.request.RequestUtils;
 import fr.wseduc.webutils.security.HmacSha1;
 import org.entcore.auth.services.OpenIdConnectServiceProvider;
 import org.entcore.auth.services.OpenIdServiceProviderFactory;
+import org.entcore.auth.services.impl.OpenIdSloServiceImpl;
 import org.entcore.common.user.UserInfos;
+import org.vertx.java.core.http.RouteMatcher;
+
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 
+import java.util.Map;
 import java.util.UUID;
 
 import static fr.wseduc.webutils.Utils.isEmpty;
@@ -45,6 +51,14 @@ public class OpenIdConnectController extends AbstractFederateController {
 	private JsonObject certificates = new JsonObject();
 	private boolean subMapping;
 	private JsonObject activationThemes;
+	private OpenIdSloServiceImpl sloServiceImpl;
+
+	@Override
+	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
+			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
+		super.init(vertx, config, rm, securedActions);
+		sloServiceImpl = new OpenIdSloServiceImpl(vertx, null);
+	}
 
 	@Get("/openid/certs")
 	public void certs(HttpServerRequest request) {
@@ -174,6 +188,27 @@ public class OpenIdConnectController extends AbstractFederateController {
 	@Get("/openid/slo")
 	public void slo(final HttpServerRequest request) {
 		sloUser(request);
+	}
+
+	@Post("/openid/logout/slo")
+	public void logoutWithSlo(final HttpServerRequest request) {
+		request.setExpectMultipart(true);
+		request.endHandler(v -> {
+			String logout = request.getFormAttribute("logout_token");
+			OpenIdConnectClient oic = openIdConnectServiceProviderFactory.openIdClient(request);
+			if (logout == null) {
+				badRequest(request);
+				log.warn("Request body not formated");
+				return;
+			}
+			if (oic != null && logout != null) {
+				sloServiceImpl.logoutWithSlo(logout, oic, request);
+			} else {
+				request.response().setStatusCode(403).end();
+			}
+
+		});
+
 	}
 
 	@Post("/openid/webhook")
