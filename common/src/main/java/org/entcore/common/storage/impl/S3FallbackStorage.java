@@ -1,5 +1,6 @@
 package org.entcore.common.storage.impl;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
@@ -82,7 +83,7 @@ public class S3FallbackStorage implements FallbackStorage {
                 if (nbStorageFolder > 1 && storageIdx < nbStorageFolder) {
                     downloadFile(file, destination, storageIdx +1, handler);
                 } else {
-                    handler.handle(Future.failedFuture(new FileNotFoundException("S3Fallback - Not found file : " + file)));
+                    handler.handle(Future.failedFuture(new FileNotFoundException("S3Fallback - Not found file : " + file + " , statusCode: " + resp.statusCode())));
                 }
             }
         });
@@ -96,7 +97,13 @@ public class S3FallbackStorage implements FallbackStorage {
         }
     }
 
-    private String generateUri(String file, int storageIdx) {
+    private String generateUri(String fileName, int storageIdx) {
+        String file;
+        if (fileName.contains(File.separator)) {
+            file = fileName.substring(fileName.lastIndexOf(File.separator) + 1);
+        } else {
+            file = fileName;
+        }
         final String bucketName;
         if (multiBuckets) {
             bucketName = name + "-" + file.substring(file.length() - 2);
