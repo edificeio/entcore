@@ -1657,32 +1657,31 @@ public class AuthController extends BaseController {
 							final String sessionIdStr = sessionId.isPresent() ? sessionId.get() : null;
 							final String appTokenStr = appToken.isPresent() ? appToken.get() : null;
 							final io.vertx.core.Handler<String> resultHandler = new io.vertx.core.Handler<String>() {
-
 									@Override
-									public void handle(String resetedUserId) {
-										if (resetedUserId != null) {
-											trace.info(getIp(request) + " - Réinitialisation réussie du mot de passe de l'utilisateur " + login + " - Referer " + request.headers().get("Referer"));
-											final boolean forcedChangePw = "force".equals(forceChange);
-											UserUtils.deleteCacheSession(eb, resetedUserId,  forcedChangePw ? null : sessionIdStr, deleted -> {
-												if (sessionIdStr == null || forcedChangePw) {
-													CookieHelper.set("oneSessionId", "", 0l, request);
-													CookieHelper.set("authenticated", "", 0l, request);
-												}
-												if (forcedChangePw) {
-													redirectionService.redirect(request, config.getJsonObject("authenticationServer",
-															new JsonObject()).getString("loginURL", "/auth/login"));
-												} else {
-													redirectionService.redirect(request, callback);
-												}
-											});
-											UserUtils.deletePermanentSession(eb, resetedUserId, sessionIdStr, appTokenStr, null);
-										} else {
-											trace.info(getIp(request) + " - Erreur lors de la réinitialisation du mot de passe de l'utilisateur "+ login + " - Referer " + request.headers().get("Referer"));
-											error(request, resetCode);
-										}
+								public void handle(String resetedUserId) {
+									if (resetedUserId != null) {
+										trace.info(getIp(request) + " - Réinitialisation réussie du mot de passe de l'utilisateur " + login + " - Referer " + request.headers().get("Referer"));
+										final boolean forcedChangePw = "force".equals(forceChange);
+										UserUtils.deleteCacheSession(eb, resetedUserId,  forcedChangePw ? null : sessionIdStr, deleted -> {
+											if (sessionIdStr == null || forcedChangePw) {
+												CookieHelper.set("oneSessionId", "", 0l, request);
+												CookieHelper.set("authenticated", "", 0l, request);
+											}
+											if (forcedChangePw) {
+												redirectionService.redirect(request, config.getJsonObject("authenticationServer",
+														new JsonObject()).getString("loginURL", "/auth/login"));
+											} else {
+												redirectionService.redirect(request, callback);
+											}
+										});
+										UserUtils.deletePermanentSession(eb, resetedUserId, sessionIdStr, appTokenStr, null);
+									} else {
+										trace.info(getIp(request) + " - Erreur lors de la réinitialisation du mot de passe de l'utilisateur "+ login + " - Referer " + request.headers().get("Referer"));
+										error(request, resetCode);
 									}
 								}
 							};
+
 
 							if (resetCode != null && !resetCode.trim().isEmpty()) {
 								userAuthAccount.resetPassword(login, resetCode, password, request, resultHandler);
