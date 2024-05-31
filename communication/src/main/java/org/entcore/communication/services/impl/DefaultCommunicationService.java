@@ -567,13 +567,28 @@ public class DefaultCommunicationService implements CommunicationService {
 	public void visibleUsers(String userId, String structureId, JsonArray expectedTypes, boolean itSelf,
 							 boolean myGroup, boolean profile, String preFilter, String customReturn, JsonObject additionnalParams,
 							 final Handler<Either<String, JsonArray>> handler) {
-		visibleUsers(userId, structureId, expectedTypes, itSelf, myGroup, profile, preFilter, customReturn, additionnalParams, null, handler);
+		getVisibleUsers(userId, structureId, expectedTypes, itSelf, myGroup, profile, preFilter, customReturn, additionnalParams, null, false, handler);
 	}
 
 	@Override
 	public void visibleUsers(String userId, String structureId, JsonArray expectedTypes, boolean itSelf,
 			boolean myGroup, boolean profile, String preFilter, String customReturn, JsonObject additionnalParams, String userProfile,
 			final Handler<Either<String, JsonArray>> handler) {
+		getVisibleUsers(userId, structureId, expectedTypes, itSelf, myGroup, profile, preFilter, customReturn, additionnalParams, userProfile, false, handler);
+	}
+
+	@Override
+	public void visibleUsers(String userId, String structureId, JsonArray expectedTypes, boolean itSelf,
+							 boolean myGroup, boolean profile, String preFilter, String customReturn, JsonObject additionnalParams, String userProfile,
+							 boolean reverseUnion,
+							 final Handler<Either<String, JsonArray>> handler) {
+		getVisibleUsers(userId, structureId, expectedTypes, itSelf, myGroup, profile, preFilter, customReturn, additionnalParams, userProfile, reverseUnion, handler);
+	}
+
+	private void getVisibleUsers(String userId, String structureId, JsonArray expectedTypes, boolean itSelf,
+							 boolean myGroup, boolean profile, String preFilter, String customReturn, JsonObject additionnalParams, String userProfile,
+							 boolean reverseUnion,
+							 final Handler<Either<String, JsonArray>> handler) {
 		StringBuilder query = new StringBuilder();
 		JsonObject params = new JsonObject();
 		String condition = itSelf ? "" : "AND m.id <> {userId} ";
@@ -602,7 +617,7 @@ public class DefaultCommunicationService implements CommunicationService {
 			}
 		}
 		query.append(condition);
-		if (expectedTypes != null && expectedTypes.size() > 0) {
+		if (expectedTypes != null && !expectedTypes.isEmpty()) {
 			query.append("AND (");
 			StringBuilder types = new StringBuilder();
 			for (Object o: expectedTypes) {
@@ -638,12 +653,12 @@ public class DefaultCommunicationService implements CommunicationService {
 			}
 		} else {
 			query.append("RETURN distinct m.id as id, m.name as name, "
-					+ "m.login as login, m.displayName as username, ").append(pr)
+							+ "m.login as login, m.displayName as username, ").append(pr)
 					.append("m.lastName as lastName, m.firstName as firstName, m.profiles as profiles "
 							+ "ORDER BY name, username ");
 			if (union != null) {
 				union.append("RETURN distinct m.id as id, m.name as name, "
-						+ "m.login as login, m.displayName as username, ").append(pr)
+								+ "m.login as login, m.displayName as username, ").append(pr)
 						.append("m.lastName as lastName, m.firstName as firstName, m.profiles as profiles "
 								+ "ORDER BY name, username ");
 			}
@@ -654,12 +669,17 @@ public class DefaultCommunicationService implements CommunicationService {
 		}
 		String q;
 		if (union != null) {
-			q = query.append(" union ").append(union.toString()).toString();
+			if (reverseUnion) {
+				q = union.append(" union ").append(query).toString();
+			} else {
+				q = query.append(" union ").append(union).toString();
+			}
 		} else {
 			q = query.toString();
 		}
 		neo4j.execute(q, params, validResultHandler(handler));
 	}
+
 
 	@Override
 	public void usersCanSeeMe(String userId, Handler<Either<String, JsonArray>> handler) {

@@ -32,14 +32,18 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.communication.services.CommunicationService;
 import org.entcore.communication.services.impl.XpCommunicationService;
@@ -48,6 +52,7 @@ import java.util.List;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
+import static org.entcore.common.neo4j.Neo4jResult.fullNodeMergeHandler;
 
 public class CommunicationController extends BaseController {
 
@@ -643,5 +648,151 @@ public class CommunicationController extends BaseController {
 			return;
 		}
 		communicationService.verify(from, to, notEmptyResponseHandler(request));
+	}
+
+	@Get("/visible/search")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void searchVisibleContact(HttpServerRequest request) {
+		UserUtils.getAuthenticatedUserInfos(eb, request)
+				.onSuccess(userInfos -> {
+					final String query = request.params().get("query");
+					final boolean isAdmin = userInfos.isADML() || userInfos.isADMC();
+
+					// if Admin query param is mandatory ??
+					/*
+					if (isAdmin && StringUtils.isEmpty(query)) {
+						badRequest(request, "query.param.required");
+					}
+					//*/
+
+					String match = "MATCH (visibles) " +
+
+							"OPTIONAL MATCH visibles-[:RELATED]->(parent: User) " +
+							"WITH DISTINCT visibles, collect({id: parent.id, displayName: parent.displayName}) as relatives " +
+
+							"OPTIONAL MATCH visibles-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class) " +
+							"WITH DISTINCT visibles, relatives, collect({id: c.id, name: c.name}) as classrooms " +
+
+							"OPTIONAL MATCH visibles<-[:RELATED]-(child: User) " +
+							"WITH visibles, relatives, classrooms, child " +
+							"ORDER BY child.displayName " +
+							"WITH visibles, relatives, classrooms, collect({id: child.id, displayName: child.displayName}) AS children, collect(distinct child.displayName) AS sorted_children " +
+
+							"OPTIONAL MATCH visibles-[:IN]->(fg:FuncGroup) " +
+							"WITH visibles, relatives, classrooms, children, sorted_children, fg " +
+							"ORDER BY fg.filter " +
+							"WITH visibles, relatives, classrooms, children, sorted_children, collect({id: fg.id, name: fg.filter}) AS functions, collect(distinct fg.filter) AS sorted_functions " +
+
+							"OPTIONAL MATCH visibles-[:IN]->(dg:DisciplineGroup) " +
+							"WITH visibles, relatives, classrooms, children, sorted_children, functions, sorted_functions, dg " +
+							"ORDER BY dg.filter " +
+							"WITH DISTINCT visibles, relatives, classrooms, children, sorted_children, functions, sorted_functions, collect({id: dg.id, name: dg.filter}) as disciplines, collect(distinct dg.filter) AS sorted_disciplines " +
+
+							"WITH visibles, relatives, classrooms, children, functions, disciplines, " +
+							"reduce(s = '', name IN sorted_children | s + name) AS sorted_children_names, " +
+							"reduce(s = '', name IN sorted_functions | s + name) AS sorted_functions, " +
+							"reduce(s = '', name IN sorted_disciplines | s + name) AS sorted_disciplines ";
+
+					String preFilter = "";
+					JsonObject params = new JsonObject();
+
+					if (!StringUtils.isEmpty(query)) {
+						preFilter = "AND m.displayNameSearchField CONTAINS {search} " +
+								"OR m.groupDisplayName CONTAINS {search} ";
+						String sanitizedSearch = StringValidation.sanitize(query);
+						params.put("search", sanitizedSearch);
+					}
+
+					final String customReturn = match +
+							"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
+							"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
+							"HEAD(visibles.profiles) as profile, visibles.nbUsers as nbUsers, " +
+							"labels(visibles) as groupType, visibles.filter as groupProfile, visibles.subType as subType, " +
+							"filter(x IN coalesce(children, []) WHERE x.id IS NOT NULL) as children, " +
+							"filter(x IN coalesce(relatives, []) WHERE x.id IS NOT NULL) as relatives, " +
+							"filter(x IN coalesce(classrooms, []) WHERE x.id IS NOT NULL) as classrooms, " +
+							"filter(x IN coalesce(functions, []) WHERE x.id IS NOT NULL) as functions, " +
+							"filter(x IN coalesce(disciplines, []) WHERE x.id IS NOT NULL) as disciplines, " +
+							"sorted_children_names, sorted_functions, sorted_disciplines, " +
+							"CASE " +
+							"WHEN visibles.displayName IS NOT NULL THEN visibles.displayName " +
+							"WHEN visibles.name IS NOT NULL THEN visibles.name " +
+							"ELSE '' " +
+							"END as sortDisplayName, " +
+							"CASE " +
+							"WHEN HEAD(visibles.profiles) = 'Teacher' THEN 1 " +
+							"WHEN HEAD(visibles.profiles) = 'Personnel' THEN 2 " +
+							"WHEN HEAD(visibles.profiles) = 'Relative' THEN 3 " +
+							"WHEN HEAD(visibles.profiles) = 'Student' THEN 4 " +
+							"WHEN HEAD(visibles.profiles) = 'Guest' THEN 5 " +
+							"WHEN visibles.subType = 'BroadcastGroup' THEN 12 " +
+							"WHEN 'ManualGroup' IN labels(visibles) THEN 6 " +
+							"WHEN (visibles:ProfileGroup)-[:DEPENDS]->(:Class) THEN 7 " +
+							"WHEN (visibles:ProfileGroup)-[:DEPENDS]->(:Structure) THEN 11 " +
+							"WHEN 'FunctionalGroup' IN labels(visibles) THEN 8 " +
+							"WHEN 'FuncGroup' IN labels(visibles) OR 'FunctionGroup' IN labels(visibles) OR 'DirectionGroup' IN labels(visibles) THEN 9 " +
+							"WHEN 'DisciplineGroup' IN labels(visibles) THEN 10 " +
+							"ELSE 13 " +
+							"END as sortWeight " +
+							"ORDER BY " +
+							"sortWeight, " +
+							"toLower(sortDisplayName), " +
+							"sorted_children_names, " +
+							"sorted_functions, " +
+							"sorted_disciplines ";
+
+					Promise<Either<String, JsonArray>> getVisiblePromise = Promise.promise();
+					communicationService.visibleUsers(
+							userInfos.getUserId(),
+							null,
+							null,
+							true,
+							true,
+							false,
+							preFilter,
+							customReturn,
+							params,
+							userInfos.getType(),
+							true,
+							getVisiblePromise::complete);
+
+					// Share bookmarks
+					final Promise<Either<String, JsonObject>> getShareBookmarksPromise = Promise.promise();
+					final String queryShareBookmarks = "MATCH (:User {id:{userId}})-[:HAS_SB]->(bm:ShareBookmark) return bm";
+					Neo4j.getInstance()
+							.execute(
+									queryShareBookmarks,
+									new JsonObject().put("userId", userInfos.getUserId()),
+									fullNodeMergeHandler("bm", getShareBookmarksPromise::complete)
+							);
+
+					CompositeFuture.join(getVisiblePromise.future(), getShareBookmarksPromise.future())
+							.onComplete(ar -> {
+								final Either<String, JsonArray> resVisible = getVisiblePromise.future().result();
+								final Either<String, JsonObject> resShareBookmark = getShareBookmarksPromise.future().result();
+
+								if (resVisible.isLeft()) {
+									log.error(resVisible.left().getValue());
+								}
+
+								if (resShareBookmark.isLeft()) {
+									log.error(resShareBookmark.left().getValue());
+								}
+
+								JsonArray visible = resVisible.isLeft() ? new JsonArray() : resVisible.right().getValue();
+								JsonObject shareBookmarks = resShareBookmark.isLeft() ? new JsonObject() : resShareBookmark.right().getValue();
+
+								renderJson(
+										request,
+										UserUtils.mapObjectToContact(
+												userInfos.getType(),
+												shareBookmarks,
+												visible,
+												I18n.acceptLanguage(request)
+										)
+								);
+							});
+
+				}).onFailure(e -> log.error("An error occurred when retrieving authenticated user infos"));
 	}
 }
