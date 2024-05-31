@@ -1683,6 +1683,7 @@ public class AuthController extends BaseController {
 								}
 							};
 
+
 							if (resetCode != null && !resetCode.trim().isEmpty()) {
 								userAuthAccount.resetPassword(login, resetCode, password, request, resultHandler);
 							} else if(userId != null && !userId.trim().isEmpty()) {
