@@ -66,16 +66,17 @@ public class S3Client {
 	private String accessKey;
 	private String secretKey;
 	private String region;
+	private String ssec;
 
-	public S3Client(Vertx vertx, URI uri, String accessKey, String secretKey, String region, String bucket) {
-		this(vertx, uri, accessKey, secretKey, region, bucket, false);
+	public S3Client(Vertx vertx, URI uri, String accessKey, String secretKey, String region, String bucket, String ssec) {
+		this(vertx, uri, accessKey, secretKey, region, bucket, ssec, false);
 	}
 
-	public S3Client(Vertx vertx, URI uri, String accessKey, String secretKey, String region, String bucket, boolean keepAlive) {
-		this(vertx, uri, accessKey, secretKey, region, bucket, keepAlive, 10000, 100, 10000l);
+	public S3Client(Vertx vertx, URI uri, String accessKey, String secretKey, String region, String bucket, String ssec, boolean keepAlive) {
+		this(vertx, uri, accessKey, secretKey, region, bucket, ssec, keepAlive, 10000, 100, 10000l);
 	}
 
-	public S3Client(Vertx vertx, URI uri, String accessKey, String secretKey, String region,  String bucket, boolean keepAlive,
+	public S3Client(Vertx vertx, URI uri, String accessKey, String secretKey, String region, String bucket, String ssec, boolean keepAlive,
 					int timeout, int threshold, long openDelay) {
 		this.vertx = vertx;
 		this.host = uri.getHost();
@@ -83,6 +84,7 @@ public class S3Client {
 		this.secretKey = secretKey;
 		this.region = region;
 		this.defaultBucket = bucket;
+		this.ssec = ssec;
 		this.httpClient = new ResilientHttpClient(vertx, uri, keepAlive, timeout, threshold, openDelay);
 	}
 
@@ -149,7 +151,7 @@ public class S3Client {
 	public void uploadFile(final HttpServerRequest request, final String bucket, final Long maxSize, FileValidator validator, final Handler<JsonObject> handler) {
 		final String id = getPath(UUID.randomUUID().toString());
 
-		MultipartUpload multipartUpload = new MultipartUpload(vertx, httpClient, host, accessKey, secretKey, region, bucket);
+		MultipartUpload multipartUpload = new MultipartUpload(vertx, httpClient, host, accessKey, secretKey, region, bucket, ssec);
 		JsonObject metadata = new JsonObject();
 		AtomicLong size = new AtomicLong(0l);
 		List<String> eTags = new ArrayList<>();
@@ -328,6 +330,7 @@ public class S3Client {
 		}
 
 		req.setHost(host);
+		AwsUtils.setSSEC(req, ssec);
         try {
             AwsUtils.sign(req, accessKey, secretKey, region);
         } catch (SignatureException e) {
@@ -379,6 +382,7 @@ public class S3Client {
 		}
 
 		req.setHost(host);
+		AwsUtils.setSSEC(req, ssec);
 		try {
 			AwsUtils.sign(req, accessKey, secretKey, region);
 		} catch (SignatureException e) {
@@ -407,6 +411,7 @@ public class S3Client {
 		}
 
 		req.setHost(host);
+		AwsUtils.setSSEC(req, ssec);
 		try {
 			AwsUtils.sign(req, accessKey, secretKey, region);
 		} catch (SignatureException e) {
@@ -439,6 +444,7 @@ public class S3Client {
 
 		req.setHost(host);
 		req.putHeader("Content-Type", object.getContentType());
+		AwsUtils.setSSEC(req, ssec);
         try {
             AwsUtils.sign(req, accessKey, secretKey, region, object);
         } catch (SignatureException e) {
@@ -501,6 +507,7 @@ public class S3Client {
 		}
 
 		req.setHost(host);
+		AwsUtils.setSSEC_copy(req, ssec);
         try {
             AwsUtils.sign(req, accessKey, secretKey, region);
         } catch (SignatureException e) {
@@ -547,6 +554,7 @@ public class S3Client {
 		}
 
 		req.setHost(host);
+		AwsUtils.setSSEC(req, ssec);
         try {
             AwsUtils.sign(req, accessKey, secretKey, region);
         } catch (SignatureException e) {
@@ -572,7 +580,7 @@ public class S3Client {
 			return;
 		}
 
-		MultipartUpload multipartUpload = new MultipartUpload(vertx, httpClient, host, accessKey, secretKey, region, bucket);
+		MultipartUpload multipartUpload = new MultipartUpload(vertx, httpClient, host, accessKey, secretKey, region, bucket, ssec);
 		multipartUpload.upload(path, id, result -> {
 			handler.handle(new JsonObject().put("_id", id).put("status", "ok"));
 		});
@@ -585,7 +593,7 @@ public class S3Client {
 		final JsonObject metadata = new JsonObject();
 		final AtomicLong fileSize = new AtomicLong(0);
 
-		MultipartUpload multipartUpload = new MultipartUpload(vertx, httpClient, host, accessKey, secretKey, region, defaultBucket);
+		MultipartUpload multipartUpload = new MultipartUpload(vertx, httpClient, host, accessKey, secretKey, region, defaultBucket, ssec);
 		List<String> eTags = new ArrayList<>();
 		Chunk chunk = new Chunk();
 		StringBuilder multipartUploadId = new StringBuilder();
