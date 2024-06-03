@@ -11,12 +11,14 @@ import org.entcore.common.s3.storage.StorageObject;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Base64;
 
 public class AwsUtils {
 
@@ -73,4 +75,33 @@ public class AwsUtils {
 			return "";
 		}
 	}
+
+    public static void setSSEC(HttpClientRequest request, String ssec) {
+        if(ssec == null || ssec.isEmpty()) return;
+
+        String md5Str = new String();
+        try {
+            byte[] hash = MessageDigest.getInstance("MD5").digest(ssec.getBytes());
+            String hexString = new BigInteger(1, hash).toString(16);
+            md5Str = Base64.getEncoder().encodeToString(hexString.getBytes());
+        }
+        catch (NoSuchAlgorithmException e) {
+			log.error(e.getMessage(), e);
+			md5Str = "";
+		}
+
+        request.putHeader("x-amz-server-side​-encryption​-customer-algorithm", "AES256");
+		request.putHeader("x-amz-server-side​-encryption​-customer-key", ssec);
+		request.putHeader("x-amz-server-side​-encryption​-customer-key-MD5", md5Str);
+    }
+
+    public static void setSSEC_copy(HttpClientRequest request, String ssec) {
+        if(ssec == null || ssec.isEmpty()) return;
+
+        AwsUtils.setSSEC(request, ssec);
+        
+        request.putHeader("x-amz-copy-source​-server-side​-encryption​-customer-algorithm", "AES256");
+		request.putHeader("x-amz-copy-source​-server-side​-encryption​-customer-key", ssec);
+		request.putHeader("x-amz-copy-source-​server-side​-encryption​-customer-key-MD5", request.headers().get("x-amz-server-side​-encryption​-customer-key-MD5"));
+    }
 }

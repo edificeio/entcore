@@ -39,8 +39,9 @@ public class MultipartUpload {
     protected final String secretKey;
     protected final String region;
     protected final String bucket;
+    protected final String ssec;
 
-    public MultipartUpload(final Vertx vertx, final ResilientHttpClient httpClient, final String endPoint,final String accessKey, final String secretKey, final String region, final String bucket) {
+    public MultipartUpload(final Vertx vertx, final ResilientHttpClient httpClient, final String endPoint,final String accessKey, final String secretKey, final String region, final String bucket, final String ssec) {
         this.vertx = vertx;
         this.httpClient = httpClient;
 
@@ -50,6 +51,7 @@ public class MultipartUpload {
         this.region = region;
 
         this.bucket = bucket;
+        this.ssec = ssec;
     }
 
     public void upload(final String filepath, final String id, final Handler<JsonObject> handler) {
@@ -135,6 +137,7 @@ public class MultipartUpload {
             req.putHeader("Content-Type", contentType);
         }
 
+        AwsUtils.setSSEC(req, ssec);
         if (!sign(req, null)) {
             handler.handle(null);
             return;
@@ -206,6 +209,7 @@ public class MultipartUpload {
             }
         });
 
+        AwsUtils.setSSEC(req, ssec);
         if (!sign(req, AwsUtils.getDigest(chunk.getBuffer()))) {
             handler.handle(null);
             return;
@@ -241,6 +245,7 @@ public class MultipartUpload {
             return;
         }
 
+        AwsUtils.setSSEC(req, ssec);
         if (!sign(req, AwsUtils.getDigest(body.getBytes()))) {
             handler.handle(null);
             return;
