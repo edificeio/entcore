@@ -90,10 +90,11 @@ public class Directory extends BaseServer {
 					s3.getString("secretKey"),
 					s3.getString("region"),
 					s3.getString("bucket"),
-					s3.getBoolean("keepAlive"),
-					s3.getInteger("timeout"),
-					s3.getInteger("threshold"),
-					s3.getLong("openDelay")
+					s3.getString("ssec", null),
+					s3.getBoolean("keepAlive", false),
+					s3.getInteger("timeout", 10000),
+					s3.getInteger("threshold", 100),
+					s3.getLong("openDelay", 10000l)
 				);
 			} catch (URISyntaxException e) {
 				log.error("S3avatar URI error", e);

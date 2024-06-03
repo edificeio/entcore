@@ -52,9 +52,9 @@ public class S3Storage implements Storage {
     private AntivirusClient antivirus;
     private FileValidator validator;
     
-    public S3Storage(Vertx vertx, URI uri, String accessKey, String secretKey, String region, String bucket, boolean keepAlive, int timeout, int threshold, long openDelay) {
+    public S3Storage(Vertx vertx, URI uri, String accessKey, String secretKey, String region, String bucket, String ssec, boolean keepAlive, int timeout, int threshold, long openDelay) {
         this.bucket = bucket;
-        this.s3Client = new S3Client(vertx, uri, accessKey, secretKey, region, bucket, keepAlive, timeout, threshold, openDelay);
+        this.s3Client = new S3Client(vertx, uri, accessKey, secretKey, region, bucket, ssec, keepAlive, timeout, threshold, openDelay);
     }
 
     @Override
