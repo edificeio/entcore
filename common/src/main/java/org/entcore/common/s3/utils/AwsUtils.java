@@ -90,9 +90,9 @@ public class AwsUtils {
 			md5Str = "";
 		}
 
-        request.putHeader("x-amz-server-side​-encryption​-customer-algorithm", "AES256");
-		request.putHeader("x-amz-server-side​-encryption​-customer-key", ssec);
-		request.putHeader("x-amz-server-side​-encryption​-customer-key-MD5", md5Str);
+        request.putHeader("x-amz-server-side-encryption-customer-algorithm", "AES256");
+		request.putHeader("x-amz-server-side-encryption-customer-key", ssec);
+		request.putHeader("x-amz-server-side-encryption-customer-key-MD5", md5Str);
     }
 
     public static void setSSEC_copy(HttpClientRequest request, String ssec) {
@@ -100,8 +100,8 @@ public class AwsUtils {
 
         AwsUtils.setSSEC(request, ssec);
         
-        request.putHeader("x-amz-copy-source​-server-side​-encryption​-customer-algorithm", "AES256");
-		request.putHeader("x-amz-copy-source​-server-side​-encryption​-customer-key", ssec);
-		request.putHeader("x-amz-copy-source-​server-side​-encryption​-customer-key-MD5", request.headers().get("x-amz-server-side​-encryption​-customer-key-MD5"));
+        request.putHeader("x-amz-copy-source-server-side-encryption-customer-algorithm", "AES256");
+		request.putHeader("x-amz-copy-source-server-side-encryption-customer-key", ssec);
+		request.putHeader("x-amz-copy-source-server-side-encryption-customer-key-MD5", request.headers().get("x-amz-server-side-encryption-customer-key-MD5"));
     }
 }
