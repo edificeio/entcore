@@ -6,5 +6,6 @@
     "timeline.empty.cache": "El historial de sus notificaciones está oculto de forma predeterminada. Puede cargar su historial haciendo clic a continuación",
     "userbook_discovervisiblegroups": "Explore la red",
     "userbook.discover.visible.groups.add.user.notify": "te agregó al grupo de trabajo",
-    "userbook.discover.visible.user.add.user.notify": "te ha añadido a su red."
+    "userbook.discover.visible.user.add.user.notify": "te ha añadido a su red.",
+    "timeline.notification.external.subject": "Sujeto: "
 }

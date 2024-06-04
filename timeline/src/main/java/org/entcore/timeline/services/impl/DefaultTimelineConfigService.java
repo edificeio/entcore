@@ -20,6 +20,9 @@
 package org.entcore.timeline.services.impl;
 
 import static org.entcore.common.mongodb.MongoDbResult.*;
+
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.service.impl.MongoDbCrudService;
 import org.entcore.timeline.services.TimelineConfigService;
 import io.vertx.core.Handler;
@@ -33,6 +36,8 @@ import java.util.Map;
 public class DefaultTimelineConfigService extends MongoDbCrudService implements TimelineConfigService {
 
 	private Map<String, String> registeredNotifications;
+
+	private final Neo4j neo4j = Neo4j.getInstance();
 
 	public DefaultTimelineConfigService(String collection) {
 		super(collection);
@@ -98,6 +103,35 @@ public class DefaultTimelineConfigService extends MongoDbCrudService implements 
 
 	public void setRegisteredNotifications(Map<String, String> registeredNotifications) {
 		this.registeredNotifications = registeredNotifications;
+	}
+
+	@Override
+	public void getUserDisplayNameById(String userId, final Handler<JsonObject> handler){
+		if (userId == null || userId.isEmpty()) {
+			handler.handle(null);
+			return;
+		}
+
+		String query = "MATCH (u:User) "
+				+ "WHERE u.id = {userId} "
+				+ "return DISTINCT u.id as id, u.displayName as displayName, HEAD(u.profiles) as type";
+
+		JsonObject params = new JsonObject().put("userId", userId);
+
+
+		neo4j.execute(query, params, Neo4jResult.validUniqueResultHandler(result -> {
+			JsonObject returnUser = null;
+			if (result.isRight()) {
+				JsonObject neoData = result.right().getValue();
+
+				returnUser = new JsonObject();
+				returnUser.put("id", neoData.getString("id"));
+				returnUser.put("displayName", neoData.getString("displayName"));
+				returnUser.put("type", neoData.getString("type"));
+			}
+			handler.handle(returnUser);
+		}));
+
 	}
 
 }
