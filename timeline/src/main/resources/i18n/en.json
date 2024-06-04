@@ -30,5 +30,6 @@
     "timeline.empty.cache": "The history of your notifications is hidden by default. You can load your history by clicking below.",
     "userbook_discovervisiblegroups": "Explore the network",
     "userbook.discover.visible.groups.add.user.notify": "added you to the workgroup",
-    "userbook.discover.visible.user.add.user.notify": "added you to their network."
+    "userbook.discover.visible.user.add.user.notify": "added you to their network.",
+    "timeline.notification.external.subject": "Subject: "
 }

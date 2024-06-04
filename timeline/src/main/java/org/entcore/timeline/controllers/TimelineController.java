@@ -986,4 +986,63 @@ public class TimelineController extends BaseController {
 	public void setLazyEventsI18n(HashMap<String, JsonObject> lazyEventsI18n) {
 		this.lazyEventsI18n = lazyEventsI18n;
 	}
+
+	@Post("send/notification")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void sendNotification(final HttpServerRequest request) {
+
+		RequestUtils.bodyToJson(request, body -> {
+			final String senderId = body.getString("senderId");
+			final JsonArray recipientIds = body.getJsonArray("recipientIds");
+			final String message = body.getString("message");
+			final String subject = body.getString("subject");
+
+
+			if( recipientIds == null || recipientIds.isEmpty() || message == null || message.isEmpty()) {
+				badRequest(request);
+				return;
+			}
+
+
+
+			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+				public void handle(final UserInfos user) {
+					if(user == null){
+						unauthorized(request);
+						return;
+					}
+
+					configService.getUserDisplayNameById( senderId == null || senderId.isEmpty() ? user.getUserId() : senderId, new Handler<JsonObject>(){
+						public void handle(JsonObject result) {
+
+							if(result == null){
+								badRequest(request);
+								return;
+							}
+
+							final String resultName = result.getString("displayName");
+							final String resultId = result.getString("id");
+							final String resultType = result.getString("type");
+
+							final JsonObject params = new JsonObject()
+									.put("uri", "/userbook/annuaire#" + resultId + "#" + resultType)
+									.put("username", resultName)
+									.put("message", message)
+									.put("subject", subject);
+
+
+							timelineHelper.notifyTimeline(request, "timeline.external-notification", user, recipientIds.getList(),
+									user.getUserId() + System.currentTimeMillis() + "external-notification", params);
+						}
+					});
+
+
+				}
+			});
+
+		});
+
+
+	}
 }

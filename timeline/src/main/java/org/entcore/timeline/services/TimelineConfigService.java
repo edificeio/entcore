@@ -39,4 +39,6 @@ public interface TimelineConfigService{
 	 */
 	public void getNotificationProperties(final String notificationKey, final Handler<Either<String, JsonObject>> handler);
 
+	public void getUserDisplayNameById(String userId, Handler<JsonObject> handler);
+
 }
