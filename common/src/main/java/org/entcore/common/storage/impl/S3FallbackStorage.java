@@ -18,6 +18,8 @@ import io.vertx.core.file.OpenOptions;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class S3FallbackStorage implements FallbackStorage {
 
@@ -30,6 +32,8 @@ public class S3FallbackStorage implements FallbackStorage {
     private final String secretKey;
     private final String name;
     private final String host;
+
+    private static final Logger log = LoggerFactory.getLogger(S3FallbackStorage.class);
 
     public S3FallbackStorage(Vertx vertx, String host, String name, boolean multiBuckets,
             int nbStorageFolder, String region, String accessKey, String secretKey) {
@@ -53,10 +57,10 @@ public class S3FallbackStorage implements FallbackStorage {
 
     @Override
     public void downloadFile(String file,  String destination, Handler<AsyncResult<String>> handler) {
-        downloadFile(file, destination, 1, handler);
+        downloadFile(file, destination, 1, 3, handler);
     }
 
-    private void downloadFile(String file, String destination, int storageIdx, Handler<AsyncResult<String>> handler) {
+    private void downloadFile(String file, String destination, int storageIdx, int retryIndex, Handler<AsyncResult<String>> handler) {
         final String uri = generateUri(file, storageIdx);
         HttpClientRequest req = httpClient.get(uri);
         req.setHost(this.host);
@@ -81,9 +85,15 @@ public class S3FallbackStorage implements FallbackStorage {
                 });
             } else {
                 if (nbStorageFolder > 1 && storageIdx < nbStorageFolder) {
-                    downloadFile(file, destination, storageIdx +1, handler);
+                    downloadFile(file, destination, storageIdx+1, retryIndex, handler);
                 } else {
-                    handler.handle(Future.failedFuture(new FileNotFoundException("S3Fallback - Not found file : " + file + " , statusCode: " + resp.statusCode())));
+                    if (retryIndex - 1 > 0) {
+                        log.error("S3Fallback error downloading " + file + " (" + resp.statusCode() + "), retryIndex " + retryIndex);
+                        downloadFile(file, destination, storageIdx, retryIndex-1, handler);
+                    }
+                    else {
+                        resp.bodyHandler(body -> handler.handle(Future.failedFuture(new FileNotFoundException("S3Fallback - Not found file : " + file + ", statusCode: " + resp.statusCode() + ", message: " + body.toString().trim()))));
+                    }
                 }
             }
         });
