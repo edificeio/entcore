@@ -92,7 +92,8 @@ public class S3FallbackStorage implements FallbackStorage {
                         downloadFile(file, destination, storageIdx, retryIndex-1, handler);
                     }
                     else {
-                        resp.bodyHandler(body -> handler.handle(Future.failedFuture(new FileNotFoundException("S3Fallback - Not found file : " + file + ", statusCode: " + resp.statusCode() + ", message: " + body.toString().trim()))));
+                        resp.bodyHandler(body -> log.error("S3Fallback error - " + file + " - " + resp.statusCode() + " - " + body.toString().trim()));
+                        handler.handle(Future.failedFuture(new FileNotFoundException("S3Fallback - Not found file : " + file + " , statusCode: " + resp.statusCode())));
                     }
                 }
             }
