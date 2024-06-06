@@ -26,7 +26,6 @@ mods
 **/dist
 **/ts/entcore
 **/template/entcore
-data
 developer.id
 *.mod.json
 .jshintrc
@@ -84,3 +83,4 @@ infra/src/main/resources/public/js/pixi.min.js
 **/.vertx
 admin/src/main/ts/.angular
 *.lock
+tests/src/test/resources/data/thumbnails/image.jpg
