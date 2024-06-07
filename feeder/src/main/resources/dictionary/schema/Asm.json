@@ -1,0 +1,29 @@
+{
+	"validate" : {
+		"password" : {
+			"type": "string",
+			"validator":"maxLength"
+		},
+		"firstName" : {
+			"type": "string",
+			"validator":"maxLength"
+		},
+		"children" : {
+			"type": "string",
+			"validator":"maxLength"
+		},
+		"lastName" : {
+			"type": "string",
+			"validator" : "maxLength"
+		},
+		"email" : {
+			"type" : "string",
+			"validator" : "email"
+		}
+	},
+	"required" : ["firstName", "lastName", "email", "children","password"],
+	"generate" : {
+		"id" : {"generator":"uuid4", "args":[]}
+	},
+	"modifiable" : []
+}

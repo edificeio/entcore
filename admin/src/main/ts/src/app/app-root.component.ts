@@ -47,10 +47,11 @@ export class AppRootComponent extends OdeComponent {
     public currentStructure: StructureModel;
     public hideAdminV1Link: boolean;
     public isAdmc: boolean;
+    public enableMassMessaging: boolean;
     private hasSubscribeChildRoute: boolean = false;
 
     constructor(injector: Injector) {
-        super(injector);
+        super(injector);  
     }
 
     async ngOnInit() {
@@ -66,6 +67,7 @@ export class AppRootComponent extends OdeComponent {
         this.subscriptions.add(this.route.data.subscribe((data: Data) => {
             if (data && data.config) {
                 this.hideAdminV1Link = data.config['hide-adminv1-link'];
+                this.enableMassMessaging = data.config['mass-messaging-enabled'];
             }
         }));
 
@@ -76,6 +78,7 @@ export class AppRootComponent extends OdeComponent {
                         const structureId = params.structureId;
                         if (structureId) {
                             this.currentStructure = globalStore.structures.data.find(s => s.id === structureId);
+                            this.currentStructure.enableMassMessaging = this.enableMassMessaging;
                             this.router.navigateByUrl(this.getNewPath(this.currentStructure.id));
                         }
                     }

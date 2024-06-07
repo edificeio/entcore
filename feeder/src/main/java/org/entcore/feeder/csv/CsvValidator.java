@@ -36,8 +36,7 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import java.io.File;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -56,7 +55,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 
 	private boolean enableRelativeStudentLinkCheck = true;
 
-	private enum CsvValidationProcessType { VALIDATE, COLUMN_MAPPING, CLASSES_MAPPING }
+	private enum CsvValidationProcessType { VALIDATE, COLUMN_MAPPING, ASM_COLUMN_MAPPING,CLASSES_MAPPING }
 	private final Vertx vertx;
 	private String structureId;
 	private final MappingFinder mappingFinder;
@@ -74,6 +73,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 		p.put("Student", new Validator("dictionary/schema/Student.json", true));
 		p.put("Relative", new Validator("dictionary/schema/User.json", true));
 		p.put("Guest", new Validator("dictionary/schema/User.json", true));
+		p.put("Asm", new Validator("dictionary/schema/Asm.json", true));
 		profiles = Collections.unmodifiableMap(p);
 	}
 
@@ -86,6 +86,10 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 
 	public void columnsMapping(final String p, final Handler<JsonObject> handler) {
 		process(p, CsvValidationProcessType.COLUMN_MAPPING, null, handler);
+	}
+
+	public void asmColumnsMapping(final String p, final Handler<JsonObject> handler) {
+		process(p, CsvValidationProcessType.ASM_COLUMN_MAPPING, null, handler);
 	}
 
 	public void classesMapping(final String p, final Handler<JsonObject> handler) {
@@ -231,20 +235,25 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 						@Override
 						public void handle(AsyncResult<List<String>> event) {
 							final List<String> importFiles = event.result();
-							Collections.sort(importFiles, Collections.reverseOrder());
-							if (event.succeeded() && importFiles.size() > 0) {
-								if (processType == CsvValidationProcessType.VALIDATE && importFiles.stream()
-										.anyMatch(f -> f.endsWith("Relative"))) {
-									loadStudentExternalIdMapping(structureId, h -> {
-										processFiles(importFiles, handler, processType, path, admlStructures);
-									});
-								} else {
-									processFiles(importFiles, handler, processType, path, admlStructures);
+
+
+							List<List<String>> records = new ArrayList<List<String>>();
+							try (CSVReader csvReader = new CSVReader(new FileReader(importFiles.get(0)));) {
+								String[] values = null;
+								while ((values = csvReader.readNext()) != null) {
+									List<String> row = Arrays.asList(values);
+									if (!row.isEmpty() && row.stream().anyMatch(value -> value != null && !value.trim().isEmpty())) {
+										records.add(Arrays.asList(values));
+									}
 								}
-							} else {
+							} catch (FileNotFoundException e) {
 								addError("error.list.files");
 								handler.handle(result);
-							}
+                            } catch (IOException e) {
+								addError("error.list.files");
+								handler.handle(result);
+                            }
+							handler.handle(result.put("asmRecords", records));
 						}
 					});
 				} else {
@@ -289,6 +298,9 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 										checkFile(file, profile, charset, admlStructures, h);
 										break;
 									case COLUMN_MAPPING:
+										checkColumnsMapping(file, profile, charset, h);
+										break;
+									case ASM_COLUMN_MAPPING:
 										checkColumnsMapping(file, profile, charset, h);
 										break;
 									case CLASSES_MAPPING:
