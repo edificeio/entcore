@@ -19,10 +19,8 @@
 
 package org.entcore.directory.controllers;
 
-import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
-import fr.wseduc.rs.Put;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
@@ -30,11 +28,13 @@ import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerFileUpload;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.DecodeException;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
@@ -43,25 +43,21 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.directory.exceptions.ImportException;
 import org.entcore.directory.pojo.ImportInfos;
-import org.entcore.directory.security.TeacherOfClass;
-import org.entcore.directory.services.ImportService;
-import org.entcore.directory.services.SchoolService;
+import org.entcore.directory.services.MassMessagingService;
 
 import java.io.File;
 import java.util.UUID;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
-import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 import static org.entcore.common.utils.FileUtils.deleteImportPath;
 
 
-public class ImportController extends BaseController {
+public class MassMessagingController extends BaseController {
 
-	private ImportService importService;
-	private SchoolService schoolService;
+	private MassMessagingService massMessagingService;
 
-	@Get("/wizard")
+	@Get("")
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
@@ -69,33 +65,18 @@ public class ImportController extends BaseController {
 		renderView(request);
 	}
 
-    @Post("/wizard/column/mapping")
-    @ResourceFilter(AdminFilter.class)
-    @SecuredAction(value = "", type = ActionType.RESOURCE)
-    @MfaProtected()
-    public void columnsMapping(final HttpServerRequest request) {
-        uploadImport(request, new Handler<AsyncResult<ImportInfos>>() {
-            @Override
-            public void handle(AsyncResult<ImportInfos> event) {
-                if (event.succeeded()) {
-                    importService.columnsMapping(event.result(), reportResponseHandler(vertx, event.result().getPath(), request));
-                } else {
-                    badRequest(request, event.cause().getMessage());
-                }
-            }
-        });
-    }
 
-	@Post("/wizard/classes/mapping")
+
+	@Post("/massmessaging/column/mapping")
 	@ResourceFilter(AdminFilter.class)
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
-	public void classesMapping(final HttpServerRequest request) {
+	public void csvColumnsMapping(final HttpServerRequest request) {
 		uploadImport(request, new Handler<AsyncResult<ImportInfos>>() {
 			@Override
 			public void handle(AsyncResult<ImportInfos> event) {
 				if (event.succeeded()) {
-					importService.classesMapping(event.result(), reportResponseHandler(vertx, event.result().getPath(), request));
+					massMessagingService.csvColumnsMapping(event.result(), reportResponseHandler(vertx, event.result().getPath(), request));
 				} else {
 					badRequest(request, event.cause().getMessage());
 				}
@@ -103,46 +84,68 @@ public class ImportController extends BaseController {
 		});
 	}
 
+	@Get("/massmessaging/senderName")
+	@ResourceFilter(AdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
+	public void getSenderName(final HttpServerRequest request) {
 
-    @Post("/wizard/validate")
-    @ResourceFilter(AdminFilter.class)
+		final JsonObject messageConfig =  new JsonObject();
+		messageConfig.put("sender-id", config.getString("massMessagingDefaultSenderId"));
+		massMessagingService.getSenderDisplayName(request, messageConfig,new Handler<Either<JsonObject, String>>() {
+			@Override
+			public void handle(Either<JsonObject, String> event) {
+				if(event.isRight()) {
+					JsonObject response = new JsonObject().put("senderName", event.right().getValue());
+					Renders.renderJson(request, response);
+				} else {
+					notFound(request, event.left().getValue().getString("error"));
+				}
+			}
+		});
+	}
+
+	@Post("/massmessaging/validation/populate")
+	@ResourceFilter(AdminFilter.class)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
+	public void populateImportedInfos(final HttpServerRequest request) {
+
+		massMessagingService.validateMassMessaging(request, new Handler<Either<JsonObject, JsonArray>>() {
+            @Override
+            public void handle(Either<JsonObject, JsonArray> event) {
+                if(event.isRight()) {
+					JsonObject response = new JsonObject().put("csvHeaders", event.right().getValue());
+					Renders.renderJson(request, response);
+                } else {
+                    badRequest(request, event.left().getValue().getString("message"));
+                }
+            }
+        });
+	}
+
+    @Post("/massmessaging")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @MfaProtected()
-    public void validateImport(final HttpServerRequest request) {
-        uploadImport(request, new Handler<AsyncResult<ImportInfos>>() {
+    public void massMessaging(final HttpServerRequest request) {
+
+		final JsonObject messageConfig =  new JsonObject();
+		messageConfig.put("sender-id", config.getString("massMessagingDefaultSenderId"));
+
+		massMessagingService.publishMassMessages(request, messageConfig,new Handler<Either<String, JsonObject>>() {
             @Override
-            public void handle(AsyncResult<ImportInfos> event) {
-                if (event.succeeded()) {
-                    UserUtils.getUserInfos(eb, request, user -> {
-                        if (user != null) {
-                            importService.validate(event.result(), user,
-                                    reportResponseHandler(vertx, event.result().getPath(), request));
-                        } else {
-                            unauthorized(request, "invalid.user");
-                        }
-                    });
+            public void handle(Either<String, JsonObject> event) {
+                if (event.isRight()) {
+					JsonObject response = new JsonObject().put("remainingLogins", event.right().getValue().getJsonArray("remainingLogins"))
+														.put("loginsSucceeded", event.right().getValue().getInteger("loginsSucceeded"));
+					Renders.renderJson(request, response);
                 } else {
-                    badRequest(request, event.cause().getMessage());
+                    badRequest(request, "send failed");
                 }
             }
         });
     }
 
-	@Put("/wizard/validate/:id")
-	@ResourceFilter(AdminFilter.class) // TODO add import owner and check
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@MfaProtected()
-	public void validateWithId(final HttpServerRequest request) {
-		String importId = request.params().get("id");
-		UserUtils.getUserInfos(eb, request, user -> {
-			if (user != null) {
-				importService.validate(importId, user, reportResponseHandler(vertx,
-						config.getString("wizard-path", "/tmp") + File.separator + importId, request));
-			} else {
-				unauthorized(request, "invalid.user");
-			}
-		});
-	}
 
 	private void uploadImport(final HttpServerRequest request, final Handler<AsyncResult<ImportInfos>> handler) {
 		request.pause();
@@ -264,134 +267,8 @@ public class ImportController extends BaseController {
 		return "true".equalsIgnoreCase(param);
 	}
 
-	@Get("/wizard/import/:id")
-	@ResourceFilter(AdminFilter.class)
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@MfaProtected()
-	public void findImportDraft(final HttpServerRequest request) {
-		importService.findById(request.params().get("id"), defaultResponseHandler(request));
-	}
-
-	@Post("/wizard/import")
-	@ResourceFilter(AdminFilter.class)
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@MfaProtected()
-	public void doImport(final HttpServerRequest request) {
-		uploadImport(request, new Handler<AsyncResult<ImportInfos>>() {
-			@Override
-			public void handle(final AsyncResult<ImportInfos> event) {
-				if (event.succeeded()) {
-					importService.doImport(event.result(), reportResponseHandler(vertx, event.result().getPath(), request));
-				} else {
-					badRequest(request, event.cause().getMessage());
-				}
-			}
-		});
-	}
-
-	@Post("/import/:userType/class/:classId")
-	@ResourceFilter(TeacherOfClass.class)
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	public void doClassImport(final HttpServerRequest request) {
-		request.pause();
-		schoolService.getByClassId(request.params().get("classId"), new Handler<Either<String, JsonObject>>() {
-			@Override
-			public void handle(Either<String, JsonObject> s) {
-				JsonObject structure = new JsonObject();
-				if (s.isRight()) {
-					structure = s.right().getValue();
-				}
-
-				if(structure.isEmpty() == false)
-				{
-					request.setExpectMultipart(true);
-					request.formAttributes().add("structureId", structure.getString("id"));
-					request.formAttributes().add("structureExternalId", structure.getString("externalId"));
-					request.formAttributes().add("predelete", "false");
-					request.formAttributes().add("transition", "false");
-					request.formAttributes().add("structureName", structure.getString("name"));
-					if(structure.getString("UAI") != null)
-						request.formAttributes().add("UAI", structure.getString("UAI"));
-					request.formAttributes().add("type", "CSV");
-					request.resume();
-					uploadImport(request, new Handler<AsyncResult<ImportInfos>>() {
-						@Override
-						public void handle(final AsyncResult<ImportInfos> event) {
-							if (event.succeeded()) {
-								importService.doImport(event.result(), reportResponseHandler(vertx, event.result().getPath(), request));
-							} else {
-								badRequest(request, event.cause().getMessage());
-							}
-						}
-					});
-				} else {
-					notFound(request, "class.not.found");
-				}
-			}
-		});
-	}
-
-	@Put("/wizard/import/:id")
-	@ResourceFilter(AdminFilter.class) // TODO add import owner and check
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@MfaProtected()
-	public void launchImport(final HttpServerRequest request) {
-		String importId = request.params().get("id");
-		importService.doImport(importId, reportResponseHandler(vertx,
-				config.getString("wizard-path", "/tmp") + File.separator + importId, request));
-	}
-
-	@Post("/wizard/update/:id/:profile")
-	@ResourceFilter(AdminFilter.class) // TODO add import owner and check
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@MfaProtected()
-	public void createLine(final HttpServerRequest request) {
-		final String importId = request.params().get("id");
-		final String profile = request.params().get("profile");
-		bodyToJson(request, new Handler<JsonObject>() { // TODO add json validator
-			@Override
-			public void handle(JsonObject line) {
-				importService.addLine(importId, profile, line, notEmptyResponseHandler(request));
-			}
-		});
-	}
-
-	@Put("/wizard/update/:id/:profile")
-	@ResourceFilter(AdminFilter.class) // TODO add import owner and check
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@MfaProtected()
-	public void updateLine(final HttpServerRequest request) {
-		final String importId = request.params().get("id");
-		final String profile = request.params().get("profile");
-		bodyToJson(request, new Handler<JsonObject>() { // TODO add json validator
-			@Override
-			public void handle(JsonObject line) {
-				importService.updateLine(importId, profile, line, notEmptyResponseHandler(request));
-			}
-		});
-	}
-
-	@Delete("/wizard/update/:id/:profile/:line")
-	@ResourceFilter(AdminFilter.class) // TODO add import owner and check
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@MfaProtected()
-	public void deleteLine(final HttpServerRequest request) {
-		final String importId = request.params().get("id");
-		final String profile = request.params().get("profile");
-		try {
-			final Integer line = Integer.parseInt(request.params().get("line"));
-			importService.deleteLine(importId, profile, line, notEmptyResponseHandler(request));
-		} catch (NumberFormatException e) {
-			badRequest(request, "invalid.line");
-		}
-	}
-
-	public void setImportService(ImportService importService) {
-		this.importService = importService;
-	}
-
-	public void setSchoolService(SchoolService schoolService) {
-		this.schoolService = schoolService;
+	public void setMassMesssagingService(MassMessagingService massMessagingService) {
+		this.massMessagingService = massMessagingService;
 	}
 
 }
