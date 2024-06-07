@@ -3,16 +3,18 @@ import {ImportsExportsRootComponent} from './imports-exports-root/imports-export
 import {ImportCSVComponent} from './import/import-csv/import-csv.component';
 import {ExportComponent} from './export/export.component';
 import {MassMailComponent} from './mailing/mass-mail/mass-mail.component';
+import { MassMessageComponent } from './mailing/mass-message/mass-message.component';
 
 
 export let routes: Routes = [
-     {
-        path: '', component: ImportsExportsRootComponent,
-        children: [
-            { path: 'import-csv', component: ImportCSVComponent },
-            { path: 'export', component: ExportComponent },
-            { path: 'massmail', component: MassMailComponent }
-        ]
-     }
+    {
+       path: '', component: ImportsExportsRootComponent,
+       children: [
+           { path: 'import-csv', component: ImportCSVComponent },
+           { path: 'export', component: ExportComponent },
+           { path: 'massmail', component: MassMailComponent },
+           { path: 'massmessage', component: MassMessageComponent }
+       ]
+    }
 
-];
+   ];

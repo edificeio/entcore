@@ -8,4 +8,5 @@ export interface Config {
     'guest-pre-delete-delay': number;
     'hide-adminv1-link': boolean;
     'hide-personal-data': boolean;
+    'mass-messaging-enabled': boolean;
 }

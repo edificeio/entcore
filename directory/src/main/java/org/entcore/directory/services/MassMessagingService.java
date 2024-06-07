@@ -21,29 +21,20 @@ package org.entcore.directory.services;
 
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 import org.entcore.directory.pojo.ImportInfos;
 
-public interface ImportService {
+public interface MassMessagingService {
 
-	void validate(ImportInfos importInfos, UserInfos user, Handler<Either<JsonObject, JsonObject>> handler);
+	void getSenderDisplayName(HttpServerRequest request, JsonObject messageConfig, Handler<Either<JsonObject, String>> handler);
 
-	void validate(String id, UserInfos user, Handler<Either<JsonObject, JsonObject>> handler);
+	void csvColumnsMapping(ImportInfos result, Handler<Either<JsonObject,JsonObject>> handler);
 
-	void doImport(ImportInfos result, Handler<Either<JsonObject, JsonObject>> eitherHandler);
+	void validateMassMessaging(HttpServerRequest request, Handler<Either<JsonObject, JsonArray>> handler);
 
-	void doImport(String importId, Handler<Either<JsonObject, JsonObject>> eitherHandler);
+	void publishMassMessages(HttpServerRequest request, JsonObject messageConfig,Handler<Either<String,JsonObject>> handler);
 
-	void columnsMapping(ImportInfos result, Handler<Either<JsonObject,JsonObject>> handler);
-
-	void classesMapping(ImportInfos result, Handler<Either<JsonObject,JsonObject>> handler);
-
-	void addLine(String importId, String profile, JsonObject line, Handler<Either<String,JsonObject>> handler);
-
-	void updateLine(String importId, String profile, JsonObject line, Handler<Either<String,JsonObject>> handler);
-
-	void deleteLine(String importId, String profile, Integer line, Handler<Either<String,JsonObject>> handler);
-
-	void findById(String importId,  Handler<Either<String,JsonObject>> handler);
 }

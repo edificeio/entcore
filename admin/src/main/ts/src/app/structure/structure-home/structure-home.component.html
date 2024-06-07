@@ -5,6 +5,6 @@
     <ode-user-search-card *ngIf="!structureParent" [structure]="structure" class="align-start"></ode-user-search-card>
     <ode-adml-search-card *ngIf="structureParent"></ode-adml-search-card>
     <ode-services-card></ode-services-card>
-    <ode-imports-exports-card></ode-imports-exports-card>
+    <ode-imports-exports-card [structure] ="structure"></ode-imports-exports-card>
   </div>
 </div>

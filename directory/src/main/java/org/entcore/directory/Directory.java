@@ -143,6 +143,10 @@ public class Directory extends BaseServer {
 		importController.setSchoolService(schoolService);
 		addController(importController);
 
+		MassMessagingController massMessagingController = new MassMessagingController();
+		massMessagingController.setMassMesssagingService(new DefaultMassMessagingService(vertx, eb));
+		addController(massMessagingController);
+
 		TimetableController timetableController = new TimetableController();
 		timetableController.setTimetableService(new DefaultTimetableService(eb));
 		addController(timetableController);
