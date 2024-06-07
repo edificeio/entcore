@@ -20,11 +20,12 @@
 package org.entcore.directory.services;
 
 import fr.wseduc.webutils.Either;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 import org.entcore.directory.pojo.ImportInfos;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.json.JsonObject;
 
 public interface ImportService {
 
@@ -37,6 +38,12 @@ public interface ImportService {
 	void doImport(String importId, Handler<Either<JsonObject, JsonObject>> eitherHandler);
 
 	void columnsMapping(ImportInfos result, Handler<Either<JsonObject,JsonObject>> handler);
+
+	void asmColumnsMapping(ImportInfos result, Handler<Either<JsonObject,JsonObject>> handler);
+
+	void validateMassMessaging(HttpServerRequest request, Handler<Either<JsonObject, JsonArray>> handler);
+
+	void publishMassMessages(HttpServerRequest request, JsonObject messageConfig,Handler<Either<String,JsonObject>> handler);
 
 	void classesMapping(ImportInfos result, Handler<Either<JsonObject,JsonObject>> handler);
 

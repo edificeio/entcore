@@ -36,6 +36,7 @@ export class StructureModel extends Model<StructureModel> {
     ignoreMFA?: boolean;
     joinKey?: string[];
     exports?: string[];
+    enableMassMessaging?: boolean;
 
     constructor() {
         super({});

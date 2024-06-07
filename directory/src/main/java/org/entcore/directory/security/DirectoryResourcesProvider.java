@@ -139,6 +139,9 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				case "performMassmail" :
 					isAdmin(user, false, handler);
 					break;
+				case "getMassMessageTemplate" :
+					isAdmin(user, false, handler);
+					break;
 				case "unlinkUser" :
 				case "linkUser" :
 					adminUpdateFilter.checkADMCUpdate(request, user, false, true, hr -> {
@@ -192,7 +195,15 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					break;
 				default: handler.handle(false);
 			}
-		}else {
+		} else if (serviceMethod != null && serviceMethod.startsWith(ImportController.class.getName())) {
+			String method = serviceMethod
+					.substring(ImportController.class.getName().length() + 1);
+			switch (method) {
+				case "massMessaging" :
+					isAdmin(user, false, handler);
+					break;
+			}
+		} else {
 			handler.handle(false);
 		}
 	}
