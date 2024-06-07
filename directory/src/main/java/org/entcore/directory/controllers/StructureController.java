@@ -33,7 +33,7 @@ import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 
 import fr.wseduc.webutils.request.RequestUtils;
-import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.file.FileSystem;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.appregistry.ApplicationUtils;
@@ -68,6 +68,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -358,6 +359,47 @@ public class StructureController extends BaseController {
 
 				massMailService.massMailAllUsersByStructure(structureId, infos, arrayResponseHandler(request));
 			}
+		});
+	}
+
+	@Get("/structure/massmessaging/template")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
+	public void getTemplate(final HttpServerRequest request) {
+		FileSystem fs = vertx.fileSystem();
+
+		this.assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath");
+		this.skins = vertx.sharedData().getLocalMap("skins");
+
+		getSkin(request, res -> {
+
+			final String skin;
+			if (res.isLeft() || res.right().getValue() == null) {
+				skin = this.skins.get(Renders.getHost(request));
+			} else {
+				skin = res.right().getValue();
+			}
+
+			final String assetsPath = this.assetsPath + "/assets/themes/" + skin;
+			final String templatePath = assetsPath + "/template/directory/massmessage_asm_default.html";
+
+			fs.readFile(templatePath, result -> {
+
+				if (result.succeeded()) {
+					String html = result.result().toString(StandardCharsets.UTF_8);
+
+					request.response()
+							.setStatusCode(200)
+							.putHeader("content-type", "text/html; charset=utf-8")
+							.end(html);
+				} else {
+					request.response()
+							.setStatusCode(500)
+							.putHeader("content-type", "text/plain; charset=utf-8")
+							.end("Failed to load template");
+				}
+
+			});
 		});
 	}
 

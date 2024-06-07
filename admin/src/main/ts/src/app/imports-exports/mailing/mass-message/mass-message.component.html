@@ -1,0 +1,95 @@
+<div class="container has-shadow">
+  <h2>{{ 'massmessage.accounts' | translate }}</h2>
+
+  <div class="has-vertical-padding-10 is-pulled-left">
+    <p>
+      <s5l>import.massmessage</s5l>
+    </p>
+    <input id="importFile" type="file" name="import file" (change)="loadFile($event)"/>
+    <button id="loadButton" class="cell" (click)="csvImportFile()" *ngIf="isButtonVisible">massmessage.load.excel</button>
+    </div>
+
+  <div class="has-vertical-padding-10 flex has-flex-end">
+    <div class="mailing__publish">
+      <s5l>massmessage.subject</s5l>
+      <br>
+      <input [(ngModel)]="inputValue" type="text" />
+    </div>
+
+    <div class="mailing__publish">
+      <p>
+        <s5l>process.massmessage</s5l>
+      </p>
+      <div>
+        <button class="cell" (click)="sendAsmPublipostage()" [disabled]="countUsers == 0 || messagesSent == true">
+          <s5l>send.massmessage</s5l>
+        </button>
+
+        <button class="cell" (click)="openTemplateEditot()">
+          <s5l>edit.massmessage.template</s5l>
+        </button>
+
+        <ode-lightbox-confirm
+          [show]="showTemplateEditor"
+          [lightboxTitle]="'Edit Template'"
+          (onConfirm)="saveModifiedTemplate()"
+          (onCancel)="cancelTemplateEdit()">
+          <div>
+            <h3>massmessage.variables</h3>
+            <div *ngIf="importedData && importedData.headers">
+              <ng-container *ngFor="let header of importedData.headers; let isFirst = first">
+                <span>{{ header.token }}</span>
+                <span *ngIf="!isFirst">,</span>
+              </ng-container>
+            </div>
+          </div>
+          <textarea [(ngModel)]="htmlTemplate" rows="25" cols="130"></textarea>
+        </ode-lightbox-confirm>
+      </div>
+    </div>
+  </div>
+
+  <div class="has-vertical-padding-10 is-clearfix">
+    <div class="message is-info">
+      <div class="message-body has-text-centered">{{countUsers}}
+        <s5l>massmessage.accounts</s5l>
+      </div>
+    </div>
+  </div>
+
+    <div class="message is-success" *ngIf ="messagesSent == true">
+      <div class="message-body has-text-centered">
+        <s5l>massmessage.sent</s5l>
+      </div>
+    </div>
+
+    <div class="message is-warning" *ngIf ="sendFailed">
+      <div class="message-body has-text-centered">
+        <s5l>massmessage.not.sent</s5l>
+      </div>
+    </div>
+
+
+  <div class="has-vertical-padding-10">
+    <message-box *ngIf="globalError.message" [type]="'danger'" [messages]="[globalError.message]"></message-box>
+    <table *ngIf="showImportedFileInTable" >
+      
+      <thead>
+      <tr>
+        <th *ngFor="let header of importedData.headers">
+          <s5l>{{header.field}}</s5l>
+        </th>
+      </tr>
+
+      </thead>
+      <br>
+      <tbody>
+        <tr *ngFor="let user of importedData.rows">
+          <td *ngFor="let header of importedData.headers">
+          {{ user[header.field].value }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

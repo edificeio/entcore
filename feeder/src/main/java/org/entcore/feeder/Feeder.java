@@ -429,6 +429,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				break;
 			case "columnsMapping" : csvColumnMapping(message);
 				break;
+			case "asmColumnsMapping" : csvAsmColumnMapping(message);
+				break;
 			case "classesMapping" : csvClassesMapping(message);
 				break;
 			case "ignore-duplicate" :
@@ -573,6 +575,22 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				this.config.getJsonObject("csvMappings", new JsonObject()));
 		String path = message.body().getString("path");
 		v.columnsMapping(path, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject event) {
+				JsonObject result = v.getResult().put("availableFields", v.getColumnsMapper().availableFields());
+				if (!v.containsErrors()) {
+					result.remove("errors");
+				}
+				sendOK(message, result);
+			}
+		});
+	}
+	private void csvAsmColumnMapping(final Message<JsonObject> message) {
+		final String acceptLanguage = message.body().getString("language", "fr");
+		final CsvValidator v = new CsvValidator(vertx, acceptLanguage,
+				this.config.getJsonObject("csvMappings", new JsonObject()));
+		String path = message.body().getString("path");
+		v.asmColumnsMapping(path, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject event) {
 				JsonObject result = v.getResult().put("availableFields", v.getColumnsMapper().availableFields());

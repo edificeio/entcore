@@ -3,12 +3,15 @@
 </div>
 
 <div class="tabs">
-  <button class="tab" *ngFor="let tab of tabs"
+  <ng-container *ngFor="let tab of tabs">
+  <button class="tab"
           [disabled]="tab.disabled"
           [routerLink]="tab.view"
-          routerLinkActive="active">
+          routerLinkActive="active" 
+          *ngIf="!(showMassMessage == false && tab.view == 'massmessage')">
     {{ tab.label | translate }}
   </button>
+</ng-container>
 </div>
 
 <router-outlet></router-outlet>
