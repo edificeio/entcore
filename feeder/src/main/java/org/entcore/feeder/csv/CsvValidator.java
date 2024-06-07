@@ -36,8 +36,7 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import java.io.File;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -56,7 +55,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 
 	private boolean enableRelativeStudentLinkCheck = true;
 
-	private enum CsvValidationProcessType { VALIDATE, COLUMN_MAPPING, CLASSES_MAPPING }
+	private enum CsvValidationProcessType { VALIDATE, COLUMN_MAPPING,CLASSES_MAPPING }
 	private final Vertx vertx;
 	private String structureId;
 	private final MappingFinder mappingFinder;
@@ -233,17 +232,16 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 							final List<String> importFiles = event.result();
 							Collections.sort(importFiles, Collections.reverseOrder());
 							if (event.succeeded() && importFiles.size() > 0) {
-								if (processType == CsvValidationProcessType.VALIDATE && importFiles.stream()
-										.anyMatch(f -> f.endsWith("Relative"))) {
+								if (processType == CsvValidationProcessType.VALIDATE && importFiles.stream().anyMatch(f -> f.endsWith("Relative"))) {
 									loadStudentExternalIdMapping(structureId, h -> {
 										processFiles(importFiles, handler, processType, path, admlStructures);
 									});
 								} else {
 									processFiles(importFiles, handler, processType, path, admlStructures);
-								}
-							} else {
-								addError("error.list.files");
-								handler.handle(result);
+									}
+								} else {
+									addError("error.list.files");
+									handler.handle(result);
 							}
 						}
 					});

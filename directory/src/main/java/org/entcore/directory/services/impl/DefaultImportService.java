@@ -23,26 +23,24 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Either;
-import io.vertx.core.eventbus.DeliveryOptions;
-import org.entcore.common.mongodb.MongoDbResult;
-import org.entcore.common.user.UserInfos;
-import org.entcore.directory.Directory;
-import org.entcore.directory.pojo.ImportInfos;
-import org.entcore.directory.services.ImportService;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.mongodb.MongoDbResult;
+import org.entcore.common.user.UserInfos;
+import org.entcore.directory.Directory;
+import org.entcore.directory.pojo.ImportInfos;
+import org.entcore.directory.services.ImportService;
 
 import java.util.Map;
 
-import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
-import static fr.wseduc.webutils.Utils.defaultValidationParamsNull;
-import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static fr.wseduc.webutils.Utils.*;
 import static org.entcore.common.user.DefaultFunctions.ADMIN_LOCAL;
 import static org.entcore.common.user.DefaultFunctions.SUPER_ADMIN;
 
@@ -55,7 +53,6 @@ public class DefaultImportService implements ImportService {
 	private static final ObjectMapper mapper = new ObjectMapper();
 	private final MongoDb mongo = MongoDb.getInstance();
 	private static final String IMPORTS = "imports";
-
 	public DefaultImportService(Vertx vertx, EventBus eb) {
 		this.eb = eb;
 		this.vertx = vertx;
@@ -173,7 +170,6 @@ public class DefaultImportService implements ImportService {
 			log.error(e.getMessage(), e);
 		}
 	}
-
 	@Override
 	public void classesMapping(ImportInfos importInfos, final Handler<Either<JsonObject, JsonObject>> handler) {
 		try {
