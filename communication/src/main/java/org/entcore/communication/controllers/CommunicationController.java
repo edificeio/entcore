@@ -37,6 +37,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.http.filter.AdminFilter;
@@ -50,9 +51,11 @@ import org.entcore.communication.services.impl.XpCommunicationService;
 
 import java.util.List;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 import static org.entcore.common.neo4j.Neo4jResult.fullNodeMergeHandler;
+import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 
 public class CommunicationController extends BaseController {
 
@@ -697,8 +700,7 @@ public class CommunicationController extends BaseController {
 					JsonObject params = new JsonObject();
 
 					if (!StringUtils.isEmpty(query)) {
-						preFilter = "AND m.displayNameSearchField CONTAINS {search} " +
-								"OR m.groupDisplayName CONTAINS {search} ";
+						preFilter = "AND m.displayNameSearchField CONTAINS {search} ";
 						String sanitizedSearch = StringValidation.sanitize(query);
 						params.put("search", sanitizedSearch);
 					}
@@ -757,7 +759,9 @@ public class CommunicationController extends BaseController {
 							getVisiblePromise::complete);
 
 					// Share bookmarks
-					final Promise<Either<String, JsonObject>> getShareBookmarksPromise = Promise.promise();
+					final Promise<Either<String, JsonArray>> getShareBookmarksPromise = Promise.promise();
+
+					/*
 					final String queryShareBookmarks = "MATCH (:User {id:{userId}})-[:HAS_SB]->(bm:ShareBookmark) return bm";
 					Neo4j.getInstance()
 							.execute(
@@ -765,11 +769,28 @@ public class CommunicationController extends BaseController {
 									new JsonObject().put("userId", userInfos.getUserId()),
 									fullNodeMergeHandler("bm", getShareBookmarksPromise::complete)
 							);
+					 */
+
+					String sbFilter = "";
+					JsonObject sbParams = new JsonObject().put("userId", userInfos.getUserId());
+					if (!StringUtils.isEmpty(query)) {
+						sbFilter = " AND lower(sbValue[0]) contains {search} ";
+						sbParams.put("search", StringValidation.sanitize(query));
+					}
+					String queryShareBookmarks = "MATCH (:User {id: {userId}})-[:HAS_SB]->(sb:ShareBookmark) " +
+							"WITH sb, keys(sb) AS ids " +
+							"UNWIND ids AS id " +
+							"WITH sb, id, sb[id] AS sbValue " +
+							"WHERE size(sbValue) >= 2 " + sbFilter +
+							"WITH sb, id, sb[id] AS sbValue ORDER BY sbValue[0] " +
+							"RETURN id as id, sbValue[0] as displayName ";
+
+					Neo4j.getInstance().execute(queryShareBookmarks, sbParams, validResultHandler(getShareBookmarksPromise::complete));
 
 					CompositeFuture.join(getVisiblePromise.future(), getShareBookmarksPromise.future())
 							.onComplete(ar -> {
 								final Either<String, JsonArray> resVisible = getVisiblePromise.future().result();
-								final Either<String, JsonObject> resShareBookmark = getShareBookmarksPromise.future().result();
+								final Either<String, JsonArray> resShareBookmark = getShareBookmarksPromise.future().result();
 
 								if (resVisible.isLeft()) {
 									log.error(resVisible.left().getValue());
@@ -780,7 +801,7 @@ public class CommunicationController extends BaseController {
 								}
 
 								JsonArray visible = resVisible.isLeft() ? new JsonArray() : resVisible.right().getValue();
-								JsonObject shareBookmarks = resShareBookmark.isLeft() ? new JsonObject() : resShareBookmark.right().getValue();
+								JsonArray shareBookmarks = resShareBookmark.isLeft() ? new JsonArray() : resShareBookmark.right().getValue();
 
 								renderJson(
 										request,
