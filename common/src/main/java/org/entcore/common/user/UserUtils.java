@@ -323,10 +323,11 @@ public class UserUtils {
 		return visible;
 	}
 
-	public static JsonArray mapObjectToContact(final String profile, final JsonObject shareBookmarks, final JsonArray visible, final String acceptLanguage) {
+	public static JsonArray mapObjectToContact(final String profile, final JsonArray shareBookmarks, final JsonArray visible, final String acceptLanguage) {
 		final List<String> usedInAll = Arrays.asList("TO", "CC", "CCI");
 		final List<String> usedInCCI = Collections.singletonList("CCI");
 
+		/*
 		final JsonArray sb = new JsonArray();
 		if (shareBookmarks != null) {
 			for (String id: shareBookmarks.fieldNames()) {
@@ -343,6 +344,16 @@ public class UserUtils {
 		}
 
 		final JsonArray res = !sb.isEmpty() ? sortShareBookmarksByName(sb) : new JsonArray();
+		 */
+
+		final JsonArray res = new JsonArray();
+		for (Object o: shareBookmarks) {
+			if (!(o instanceof JsonObject)) continue;
+			JsonObject j = (JsonObject) o;
+			j.put("type", "ShareBookmark");
+			j.put("usedIn", usedInAll);
+			res.add(j);
+		}
 
 		for (Object o: visible) {
 			if (!(o instanceof JsonObject)) continue;
