@@ -588,7 +588,11 @@ public class FileStorage implements Storage {
 					String name = FileUtils.getNameWithExtension(downloadName, metadata);
 					resp.putHeader("Content-Disposition", "attachment; filename=\"" + name + "\"");
 				}
-				ETag.addHeader(resp, id);
+				if(metadata.containsKey("ETag")) {
+					ETag.addHeader(resp, metadata.getString("ETag"));
+				} else {
+					ETag.addHeader(resp, id);
+				}
 				if (metadata != null && metadata.getString("content-type") != null) {
 					resp.putHeader("Content-Type", metadata.getString("content-type"));
 				}
