@@ -225,7 +225,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	$scope.generateCriteriaOptions = function(filters) {
 		var test;
 		return {
-			structures: $scope.criteria.structures.map((element) => {
+			structures: $scope.criteria.structures?.map((element) => {
 				return { label: element.name, type: element.id };
 			}),
 			classes: $scope.criteria.classes && $scope.criteria.classes.map((element) => {
