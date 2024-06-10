@@ -51,6 +51,7 @@ import org.entcore.common.redis.RedisClient;
 
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.time.Instant;
 import java.util.*;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -478,7 +479,7 @@ public class OAuthDataHandler extends DataHandler {
 								AccessToken t = new AccessToken();
 								t.setAuthId(authInfo.getId());
 								t.setToken(token.getString("token"));
-								t.setCreatedOn(new Date(token.getJsonObject("createdOn").getLong("$date")));
+								t.setCreatedOn(Date.from(Instant.parse(token.getJsonObject("createdOn").getString("$date"))));
 								t.setExpiresIn(3600);
 								if (token.containsKey("id_token")) {
 									t.setIdToken(token.getString("id_token"));
