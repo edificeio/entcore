@@ -1133,8 +1133,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 					@Override
 					public void handle(AsyncResult<Message<JsonObject>> result)
 					{
-						if(result.succeeded() ==  true)
-						{
+						if(result.succeeded()) {
 							Message<JsonObject> event = result.result();
 							JsonObject thumbnails = event.body().getJsonObject("outputs");
 
@@ -1145,7 +1144,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 							}
 						}
 
-						future.fail(new RuntimeException("Failed to send a request to the image resizer"));
+						future.fail(new RuntimeException("Failed to send a request to the image resizer", result.cause()));
 						handler.handle(future);
 					}
 				});
