@@ -714,7 +714,7 @@ public class DefaultSchoolService implements SchoolService {
 					.put("action", "manual-create-group")
 					.put("structureId", result.getValue("structureId"))
 					.put("group", group);
-			eventBus.send("entcore.feeder", action, (Handler<AsyncResult<Message<JsonObject>>>) groupResult -> {
+			eventBus.request("entcore.feeder", action, (Handler<AsyncResult<Message<JsonObject>>>) groupResult -> {
 				if (groupResult.failed()) {
 					handler.handle(new Either.Left<>(new JsonObject().put("error", "Failed to create GAR group : ").put("uai", uai)));
 					return;
