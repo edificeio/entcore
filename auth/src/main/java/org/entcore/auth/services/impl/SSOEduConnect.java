@@ -95,7 +95,7 @@ public class SSOEduConnect extends AbstractSSOProvider {
 		put("32","GUADELOUPE");
 		put("33","GUYANE");
 		put("40","NOUVELLE_CALEDONIE");
-		put("41","POLYNESIE_FRANCAISE");
+		put("41","POLYNESIE");
 		put("42","WALLIS_ET_FUTUNA");
 		put("43","MAYOTTE");
 		put("44","ST_PIERRE_ET_MIQUELON");
