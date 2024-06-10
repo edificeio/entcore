@@ -1,6 +1,6 @@
 {
   "name": "ent-core",
-  "version": "4.12.12",
+  "version": "1.0.0",
   "description": "",
   "main": "gulpfile.js",
   "directories": {
