@@ -20,7 +20,6 @@
 package org.entcore.auth.oauth;
 
 import fr.wseduc.mongodb.MongoDb;
-import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.security.BCrypt;
 import fr.wseduc.webutils.security.Md5;
 import fr.wseduc.webutils.security.NTLM;
@@ -36,7 +35,6 @@ import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.Request;
 import jp.eisbahn.oauth2.server.models.UserData;
 
-import org.bson.conversions.Bson;
 import org.entcore.auth.security.SamlHelper;
 import org.entcore.auth.services.OpenIdConnectService;
 import org.entcore.common.events.EventStore;
@@ -57,7 +55,6 @@ import java.time.Instant;
 import java.util.*;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.mongodb.client.model.Filters.eq;
 import static fr.wseduc.webutils.Utils.isEmpty;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
@@ -658,8 +655,9 @@ public class OAuthDataHandler extends DataHandler {
 	@Override
 	public void getAuthInfoById(String id, final Handler<AuthInfo> handler) {
 		if (id != null && !id.trim().isEmpty()) {
-			Bson query = eq("_id", id);
-			mongo.findOne(AUTH_INFO_COLLECTION, MongoQueryBuilder.build(query), new io.vertx.core.Handler<Message<JsonObject>>() {
+			JsonObject query = new JsonObject()
+			.put("_id", id);
+			mongo.findOne(AUTH_INFO_COLLECTION, query, new io.vertx.core.Handler<Message<JsonObject>>() {
 
 				@Override
 				public void handle(Message<JsonObject> res) {
