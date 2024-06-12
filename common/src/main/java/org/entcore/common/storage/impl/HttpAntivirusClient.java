@@ -37,6 +37,7 @@ public class HttpAntivirusClient implements AntivirusClient {
 	private static final Logger log = LoggerFactory.getLogger(HttpAntivirusClient.class);
 	private HttpClient httpClient;
 	private String credential;
+	private String platformId;
 
 	public HttpAntivirusClient(Vertx vertx, String host, String cretential) {
 		this(vertx, host, cretential, 8001);
@@ -51,6 +52,14 @@ public class HttpAntivirusClient implements AntivirusClient {
 				.setKeepAlive(true);
 		this.httpClient = vertx.createHttpClient(options);
 		this.credential = cretential;
+
+		final String eventStoreConf = (String) vertx.sharedData().getLocalMap("server").get("event-store");
+        if (eventStoreConf != null) {
+            final JsonObject eventStoreConfig = new JsonObject(eventStoreConf);
+            this.platformId = eventStoreConfig.getString("platform");
+        } else {
+            this.platformId = null;
+        }
 	}
 
 	@Override
@@ -87,8 +96,8 @@ public class HttpAntivirusClient implements AntivirusClient {
 	}
 
 	@Override
-	public void scanS3(String id, String bucket, Handler<AsyncResult<Void>> handler){
-		HttpClientRequest req = httpClient.post("/scan/file", response -> {
+	public void scanS3(String id, String bucket, Handler<AsyncResult<Void>> handler) {
+		HttpClientRequest req = httpClient.post("/scan/file/" + platformId, response -> {
 			if (response.statusCode() != 200) {
 				log.error("Error when call scan file : " + id);
 				final Exception exc = new Exception("Error when call scan file (" + response.statusCode() + "): " + id);

@@ -508,7 +508,7 @@ public class S3Client {
 		}
 
 		req.setHost(host);
-		AwsUtils.setSSEC_copy(req, ssec);
+		AwsUtils.setSSECCopy(req, ssec);
         try {
             AwsUtils.sign(req, accessKey, secretKey, region);
         } catch (SignatureException e) {
