@@ -227,6 +227,7 @@ public class UserUtils {
 			public void handle(AsyncResult<Message<JsonArray>> res) {
 				if (res.succeeded()) {
 					JsonArray r = res.result().body();
+					log.info("UserUtils.findVisibles - r.size = " + r.size());
 					if (acceptLanguage != null) {
 						translateGroupsNames(r, acceptLanguage);
 					}

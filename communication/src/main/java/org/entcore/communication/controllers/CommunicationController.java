@@ -328,6 +328,7 @@ public class CommunicationController extends BaseController {
 			};
 			switch (action) {
 			case "visibleUsers":
+				log.info("wse.communication.users Bus Address visibleUsers");
 				String preFilter = message.body().getString("preFilter");
 				String customReturn = message.body().getString("customReturn");
 				JsonObject ap = message.body().getJsonObject("additionnalParams");

@@ -677,6 +677,8 @@ public class DefaultCommunicationService implements CommunicationService {
 		} else {
 			q = query.toString();
 		}
+		log.info("Communication Service ==> Final query");
+		log.info(q);
 		neo4j.execute(q, params, validResultHandler(handler));
 	}
 
