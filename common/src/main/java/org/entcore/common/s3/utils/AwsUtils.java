@@ -79,15 +79,14 @@ public class AwsUtils {
     public static void setSSEC(HttpClientRequest request, String ssec) {
         if(ssec == null || ssec.isEmpty()) return;
 
-        String md5Str = new String();
+        String md5Str = "";
         try {
-            byte[] hash = MessageDigest.getInstance("MD5").digest(ssec.getBytes());
+            byte[] hash = MessageDigest.getInstance("MD5").digest(Base64.getDecoder().decode(ssec));
             String hexString = new BigInteger(1, hash).toString(16);
             md5Str = Base64.getEncoder().encodeToString(hexString.getBytes());
         }
         catch (NoSuchAlgorithmException e) {
 			log.error(e.getMessage(), e);
-			md5Str = "";
 		}
 
         request.putHeader("x-amz-server-side-encryption-customer-algorithm", "AES256");
@@ -95,13 +94,13 @@ public class AwsUtils {
 		request.putHeader("x-amz-server-side-encryption-customer-key-MD5", md5Str);
     }
 
-    public static void setSSEC_copy(HttpClientRequest request, String ssec) {
+    public static void setSSECCopy(HttpClientRequest request, String ssec) {
         if(ssec == null || ssec.isEmpty()) return;
 
         AwsUtils.setSSEC(request, ssec);
         
-        request.putHeader("x-amz-copy-source-server-side-encryption-customer-algorithm", "AES256");
-		request.putHeader("x-amz-copy-source-server-side-encryption-customer-key", ssec);
+        request.putHeader("x-amz-copy-source-server-side-encryption-customer-algorithm", request.headers().get("x-amz-server-side-encryption-customer-algorithm"));
+		request.putHeader("x-amz-copy-source-server-side-encryption-customer-key", request.headers().get("x-amz-server-side-encryption-customer-key"));
 		request.putHeader("x-amz-copy-source-server-side-encryption-customer-key-MD5", request.headers().get("x-amz-server-side-encryption-customer-key-MD5"));
     }
 }

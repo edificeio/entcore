@@ -12,7 +12,6 @@ import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
 import org.apache.james.mime4j.codec.EncoderUtil;
-import org.entcore.common.s3.S3Client;
 import org.entcore.common.s3.dataclasses.CompleteMultipartUpload;
 import org.entcore.common.s3.dataclasses.CompletePart;
 import org.entcore.common.s3.dataclasses.InitiateMultipartUploadResult;
