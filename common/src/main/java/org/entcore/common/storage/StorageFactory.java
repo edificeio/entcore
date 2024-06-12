@@ -136,7 +136,7 @@ public class StorageFactory {
 			String secretKey = s3.getString("secretKey");
 			String region = s3.getString("region");
 			String bucket = s3.getString("bucket");
-			String ssec = s3.getString("ssec", null);
+			String ssec = s3.getString("ssec");
 			boolean keepAlive = s3.getBoolean("keepAlive", false);
 			int timeout = s3.getInteger("timeout", 10000);
 			int threshold = s3.getInteger("threshold", 100);
