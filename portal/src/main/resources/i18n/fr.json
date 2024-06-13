@@ -1,6 +1,7 @@
 {
   "actualites": "Actualités",
   "add": "Ajouter",
+  "addMultiple": "Ajouter ([[number]])",
   "admin.appRegistry": "Applications",
   "admin.calendar": "Calendrier",
   "admin.communication": "Communication",
@@ -965,7 +966,7 @@
   "explorer.rename": "Renommer",
   "explorer.create": "Créer",
   "explorer.move": "Déplacer",
-  "explorer.optional" : "Optionnel",
+  "explorer.optional": "Optionnel",
   "explorer.move.title": "Déplacer",
   "explorer.move.subtitle": "Sélectionner le dossier vers lequel déplacer les éléments",
   "explorer.export.title": "Export HTML",
