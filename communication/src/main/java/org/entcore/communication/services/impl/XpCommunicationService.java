@@ -33,7 +33,8 @@ public class XpCommunicationService extends DefaultCommunicationService {
 
 	@Override
 	public void visibleUsers(String userId, String structureId, JsonArray expectedTypes, boolean itSelf,
-			boolean myGroup, boolean profile, String preFilter, String customReturn, JsonObject additionnalParams, String userProfile,
+			boolean myGroup, boolean profile, String preFilter, String customReturn, JsonObject additionalParams, String userProfile,
+			boolean reverseUnion,
 			final Handler<Either<String, JsonArray>> handler) {
 		StringBuilder query = new StringBuilder();
 		JsonObject params = new JsonObject();
@@ -113,12 +114,17 @@ public class XpCommunicationService extends DefaultCommunicationService {
 			}
 		}
 		params.put("userId", userId);
-		if (additionnalParams != null) {
-			params.mergeIn(additionnalParams);
+		if (additionalParams != null) {
+			params.mergeIn(additionalParams);
 		}
 		String q;
 		if (union != null) {
-			q = query.append(" union ").append(union.toString()).toString();
+			// q = query.append(" union ").append(union.toString()).toString();
+			if (reverseUnion) {
+				q = union.append(" union ").append(query).toString();
+			} else {
+				q = query.append(" union ").append(union).toString();
+			}
 		} else {
 			q = query.toString();
 		}
