@@ -20,6 +20,7 @@
 package org.entcore.auth.oauth;
 
 import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.security.BCrypt;
 import fr.wseduc.webutils.security.Md5;
 import fr.wseduc.webutils.security.NTLM;
@@ -35,6 +36,7 @@ import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.Request;
 import jp.eisbahn.oauth2.server.models.UserData;
 
+import org.bson.conversions.Bson;
 import org.entcore.auth.security.SamlHelper;
 import org.entcore.auth.services.OpenIdConnectService;
 import org.entcore.common.events.EventStore;
@@ -55,6 +57,7 @@ import java.time.Instant;
 import java.util.*;
 
 import static com.google.common.collect.Lists.newArrayList;
+import static com.mongodb.client.model.Filters.*;
 import static fr.wseduc.webutils.Utils.isEmpty;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
@@ -500,12 +503,8 @@ public class OAuthDataHandler extends DataHandler {
 	@Override
 	public void getAuthInfoByCode(String code, final Handler<AuthInfo> handler) {
 		if (code != null && !code.trim().isEmpty()) {
-			JsonObject query = new JsonObject()
-			.put("code", code)
-			.put("createdAt", new JsonObject()
-					.put("$gte",
-							new JsonObject().put("$date", System.currentTimeMillis() - CODE_EXPIRES)));
-			mongo.findOne(AUTH_INFO_COLLECTION, query, new io.vertx.core.Handler<Message<JsonObject>>() {
+			Bson query = and(eq("code", code), gte("createdAt", new Date(System.currentTimeMillis() - CODE_EXPIRES)));
+			mongo.findOne(AUTH_INFO_COLLECTION, MongoQueryBuilder.build(query), new io.vertx.core.Handler<Message<JsonObject>>() {
 
 				@Override
 				public void handle(Message<JsonObject> res) {
