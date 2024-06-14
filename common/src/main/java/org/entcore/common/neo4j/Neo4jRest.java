@@ -140,10 +140,10 @@ public class Neo4jRest implements GraphDatabase {
 
 				@Override
 				public void handle(final HttpClientResponse resp) {
-					resp.bodyHandler(new Handler<Buffer>() {
-
-						@Override
-						public void handle(Buffer b) {
+					if (resp == null) {
+						handler.handle(new JsonObject().put("message", "Missing response from neo4j."));
+					} else {
+						resp.bodyHandler(b -> {
 							logger.debug(b.toString());
 							if (resp.statusCode() != 404 && resp.statusCode() != 500) {
 								JsonObject json = new JsonObject(b.toString("UTF-8"));
@@ -156,8 +156,8 @@ public class Neo4jRest implements GraphDatabase {
 								handler.handle(new JsonObject().put("message",
 										resp.statusMessage() + " : " + b.toString()));
 							}
-						}
-					});
+						});
+					}
 				}
 			});
 		} catch (Neo4jConnectionException e) {
@@ -445,14 +445,18 @@ public class Neo4jRest implements GraphDatabase {
 				.flatMap(r -> r.send(b))
 				.onSuccess(handler)
 				.onFailure(event -> {
-					logger.error("Neo4j error in request : " + path + " - " + b + ": " + event.getMessage(), event);
+					logger.error("Neo4j error in request : " + path + " - " + b, event);
 					if (ignoreEmptyStateError && EMPTY_STATEMENTS_STRING.equals(b) && retry > 0) {
 						logger.warn("Retry sendRequest with empty statements.");
 						try {
 							sendRequest(path, body, checkReadOnly, forceReadOnly, (retry - 1), handler);
+							return;
 						} catch (Neo4jConnectionException e) {
 							logger.error("Error when try retry sendRequest call.", e);
 						}
+						handler.handle(null);
+					} else {
+						handler.handle(null);
 					}
 				});
 
