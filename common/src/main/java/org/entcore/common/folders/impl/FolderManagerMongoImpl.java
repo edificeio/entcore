@@ -345,18 +345,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 				// merge shared after reset shared
 				InheritShareComputer.mergeShared(Optional.empty(), copy, true);
 				// copy file from storage
-				StorageHelper.replaceAll(copy, copiedFilesMap);
-
-				// Any fileId not copied must be removed from the new doc
-				final List<String> toRemove = new ArrayList<String>();
-				for( String fileId : fileIds) {
-					if(!copiedFilesMap.containsKey(fileId)) {
-						toRemove.add(fileId);
-					}
-				}
-				if( toRemove.size() > 0 ) {
-					StorageHelper.removeAll(copy, toRemove);
-				}
+				StorageHelper.replaceAll(copy, copiedFilesMap, true);
 
 				return Optional.of(copy);
 			});
