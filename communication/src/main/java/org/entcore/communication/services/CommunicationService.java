@@ -113,11 +113,6 @@ public interface CommunicationService {
 			boolean reverseUnion,
 			Handler<Either<String, JsonArray>> handler);
 
-	void visibleUsers(String userId, String structureId, JsonArray expectedTypes, boolean itSelf, boolean myGroup,
-					  boolean profile, String preFilter, String customReturn, JsonObject additionnalParams, String userProfile,
-					  boolean reverseUnion,
-					  Handler<Either<String, JsonArray>> handler);
-
 	void usersCanSeeMe(String userId, final Handler<Either<String, JsonArray>> handler);
 
 	void visibleProfilsGroups(String userId, String customReturn, JsonObject additionnalParams, String preFilter,
