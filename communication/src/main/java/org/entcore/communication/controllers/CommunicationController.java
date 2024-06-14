@@ -264,7 +264,7 @@ public class CommunicationController extends BaseController {
 						"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
 						"HEAD(visibles.profiles) as profile, subjects" + nbUsers + groupTypes;
 				communicationService.visibleUsers(user.getUserId(), null, expectedTypes, true, true, false,
-						preFilter, customReturn, params, user.getType(), visibles -> {
+						preFilter, customReturn, params, user.getType(), false, visibles -> {
 							if (visibles.isRight()) {
 								renderJson(request,
 										UserUtils.translateAndGroupVisible(visibles.right().getValue(),
@@ -656,7 +656,7 @@ public class CommunicationController extends BaseController {
 
 	@Get("/visible/search")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
-	public void searchVisibleContact(HttpServerRequest request) {
+	public void searchVisibleContacts(HttpServerRequest request) {
 		UserUtils.getAuthenticatedUserInfos(eb, request)
 				.onSuccess(userInfos -> {
 					final String query = request.params().get("query");
@@ -669,152 +669,13 @@ public class CommunicationController extends BaseController {
 					}
 					//*/
 
-					String match = "MATCH (visibles) " +
-
-							"OPTIONAL MATCH visibles-[:RELATED]->(parent: User) " +
-							"WITH DISTINCT visibles, collect({id: parent.id, displayName: parent.displayName}) as relatives " +
-
-							"OPTIONAL MATCH visibles-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class) " +
-							"WITH DISTINCT visibles, relatives, collect({id: c.id, name: c.name}) as classrooms " +
-
-							"OPTIONAL MATCH visibles<-[:RELATED]-(child: User) " +
-							"WITH visibles, relatives, classrooms, child " +
-							"ORDER BY child.displayName " +
-							"WITH visibles, relatives, classrooms, collect({id: child.id, displayName: child.displayName}) AS children, collect(distinct child.displayName) AS sorted_children " +
-
-							"OPTIONAL MATCH visibles-[:IN]->(fg:FuncGroup) " +
-							"WITH visibles, relatives, classrooms, children, sorted_children, fg " +
-							"ORDER BY fg.filter " +
-							"WITH visibles, relatives, classrooms, children, sorted_children, collect({id: fg.id, name: fg.filter}) AS functions, collect(distinct fg.filter) AS sorted_functions " +
-
-							"OPTIONAL MATCH visibles-[:IN]->(dg:DisciplineGroup) " +
-							"WITH visibles, relatives, classrooms, children, sorted_children, functions, sorted_functions, dg " +
-							"ORDER BY dg.filter " +
-							"WITH DISTINCT visibles, relatives, classrooms, children, sorted_children, functions, sorted_functions, collect({id: dg.id, name: dg.filter}) as disciplines, collect(distinct dg.filter) AS sorted_disciplines " +
-
-							"WITH visibles, relatives, classrooms, children, functions, disciplines, " +
-							"reduce(s = '', name IN sorted_children | s + name) AS sorted_children_names, " +
-							"reduce(s = '', name IN sorted_functions | s + name) AS sorted_functions, " +
-							"reduce(s = '', name IN sorted_disciplines | s + name) AS sorted_disciplines ";
-
-					String preFilter = "";
-					JsonObject params = new JsonObject();
-
-					if (!StringUtils.isEmpty(query)) {
-						preFilter = "AND m.displayNameSearchField CONTAINS {search} ";
-						String sanitizedSearch = StringValidation.sanitize(query);
-						params.put("search", sanitizedSearch);
-					}
-
-					final String customReturn = match +
-							"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
-							"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
-							"HEAD(visibles.profiles) as profile, visibles.nbUsers as nbUsers, " +
-							"labels(visibles) as groupType, visibles.filter as groupProfile, visibles.subType as subType, " +
-							"filter(x IN coalesce(children, []) WHERE x.id IS NOT NULL) as children, " +
-							"filter(x IN coalesce(relatives, []) WHERE x.id IS NOT NULL) as relatives, " +
-							"filter(x IN coalesce(classrooms, []) WHERE x.id IS NOT NULL) as classrooms, " +
-							"filter(x IN coalesce(functions, []) WHERE x.id IS NOT NULL) as functions, " +
-							"filter(x IN coalesce(disciplines, []) WHERE x.id IS NOT NULL) as disciplines, " +
-							"sorted_children_names, sorted_functions, sorted_disciplines, " +
-							"CASE " +
-							"WHEN visibles.displayName IS NOT NULL THEN visibles.displayName " +
-							"WHEN visibles.name IS NOT NULL THEN visibles.name " +
-							"ELSE '' " +
-							"END as sortDisplayName, " +
-							"CASE " +
-							"WHEN HEAD(visibles.profiles) = 'Teacher' THEN 1 " +
-							"WHEN HEAD(visibles.profiles) = 'Personnel' THEN 2 " +
-							"WHEN HEAD(visibles.profiles) = 'Relative' THEN 3 " +
-							"WHEN HEAD(visibles.profiles) = 'Student' THEN 4 " +
-							"WHEN HEAD(visibles.profiles) = 'Guest' THEN 5 " +
-							"WHEN visibles.subType = 'BroadcastGroup' THEN 12 " +
-							"WHEN 'ManualGroup' IN labels(visibles) THEN 6 " +
-							"WHEN (visibles:ProfileGroup)-[:DEPENDS]->(:Class) THEN 7 " +
-							"WHEN (visibles:ProfileGroup)-[:DEPENDS]->(:Structure) THEN 11 " +
-							"WHEN 'FunctionalGroup' IN labels(visibles) THEN 8 " +
-							"WHEN 'FuncGroup' IN labels(visibles) OR 'FunctionGroup' IN labels(visibles) OR 'DirectionGroup' IN labels(visibles) THEN 9 " +
-							"WHEN 'DisciplineGroup' IN labels(visibles) THEN 10 " +
-							"ELSE 13 " +
-							"END as sortWeight " +
-							"ORDER BY " +
-							"sortWeight, " +
-							"toLower(sortDisplayName), " +
-							"sorted_children_names, " +
-							"sorted_functions, " +
-							"sorted_disciplines ";
-
-					Promise<Either<String, JsonArray>> getVisiblePromise = Promise.promise();
-					communicationService.visibleUsers(
-							userInfos.getUserId(),
-							null,
-							null,
-							true,
-							true,
-							false,
-							preFilter,
-							customReturn,
-							params,
-							userInfos.getType(),
-							true,
-							getVisiblePromise::complete);
-
-					// Share bookmarks
-					final Promise<Either<String, JsonArray>> getShareBookmarksPromise = Promise.promise();
-
-					/*
-					final String queryShareBookmarks = "MATCH (:User {id:{userId}})-[:HAS_SB]->(bm:ShareBookmark) return bm";
-					Neo4j.getInstance()
-							.execute(
-									queryShareBookmarks,
-									new JsonObject().put("userId", userInfos.getUserId()),
-									fullNodeMergeHandler("bm", getShareBookmarksPromise::complete)
-							);
-					 */
-
-					String sbFilter = "";
-					JsonObject sbParams = new JsonObject().put("userId", userInfos.getUserId());
-					if (!StringUtils.isEmpty(query)) {
-						sbFilter = " AND lower(sbValue[0]) contains {search} ";
-						sbParams.put("search", StringValidation.sanitize(query));
-					}
-					String queryShareBookmarks = "MATCH (:User {id: {userId}})-[:HAS_SB]->(sb:ShareBookmark) " +
-							"WITH sb, keys(sb) AS ids " +
-							"UNWIND ids AS id " +
-							"WITH sb, id, sb[id] AS sbValue " +
-							"WHERE size(sbValue) >= 2 " + sbFilter +
-							"WITH sb, id, sb[id] AS sbValue ORDER BY sbValue[0] " +
-							"RETURN id as id, sbValue[0] as displayName ";
-
-					Neo4j.getInstance().execute(queryShareBookmarks, sbParams, validResultHandler(getShareBookmarksPromise::complete));
-
-					CompositeFuture.join(getVisiblePromise.future(), getShareBookmarksPromise.future())
-							.onComplete(ar -> {
-								final Either<String, JsonArray> resVisible = getVisiblePromise.future().result();
-								final Either<String, JsonArray> resShareBookmark = getShareBookmarksPromise.future().result();
-
-								if (resVisible.isLeft()) {
-									log.error(resVisible.left().getValue());
-								}
-
-								if (resShareBookmark.isLeft()) {
-									log.error(resShareBookmark.left().getValue());
-								}
-
-								JsonArray visible = resVisible.isLeft() ? new JsonArray() : resVisible.right().getValue();
-								JsonArray shareBookmarks = resShareBookmark.isLeft() ? new JsonArray() : resShareBookmark.right().getValue();
-
-								renderJson(
-										request,
-										UserUtils.mapObjectToContact(
-												userInfos.getType(),
-												shareBookmarks,
-												visible,
-												I18n.acceptLanguage(request)
-										)
-								);
-							});
-
+					communicationService.searchVisibleContacts(userInfos, query, I18n.acceptLanguage(request), res -> {
+						if (res.isRight()) {
+							renderJson(request, res.right().getValue());
+						} else {
+							leftToResponse(request, res.left());
+						}
+					});
 				}).onFailure(e -> log.error("An error occurred when retrieving authenticated user infos"));
 	}
 }
