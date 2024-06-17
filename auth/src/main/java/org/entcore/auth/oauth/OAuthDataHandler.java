@@ -482,7 +482,7 @@ public class OAuthDataHandler extends DataHandler {
 								AccessToken t = new AccessToken();
 								t.setAuthId(authInfo.getId());
 								t.setToken(token.getString("token"));
-								t.setCreatedOn(Date.from(Instant.parse(token.getJsonObject("createdOn").getString("$date"))));
+								t.setCreatedOn(MongoDb.parseIsoDate(token.getJsonObject("createdOn")));
 								t.setExpiresIn(3600);
 								if (token.containsKey("id_token")) {
 									t.setIdToken(token.getString("id_token"));
