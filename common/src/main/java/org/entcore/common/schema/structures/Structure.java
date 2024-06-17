@@ -97,37 +97,38 @@ public class Structure implements IdObject
             "MATCH (u:User)-[attached:IN]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
             "WHERE " + fullMatcher + " " +  // Match users that are attached to this structure (but exclude people who are only in the manual groups)
             "WITH u, s " +
-            "MATCH (u)-[r:IN]-(g:Group)-[:DEPENDS*1..2]-(s) ";
+            "MATCH (u)-[rg:IN]-(g:Group)-[:DEPENDS*1..2]-(s) "; // Find the groups that the user is in that are related to the structure
 
         JsonObject params = new JsonObject();
         fullMatcher.addParams(params);
         sourceMatcher.addParams(params);
 
+        query += "WHERE NOT(g:ManualGroup) AND NOT(COALESCE(rg.source, 'UNKNOWN') = 'MANUAL') "; // Exclude manual groups
+
         if(tx.source == Source.MANUAL)
         {
-            SourceMatcher notManual = new SourceMatcher(Matcher.Operation.EXCLUDE, "r", Source.MANUAL);
             query +=
-                "WITH u, r, g, s, MAX(CASE WHEN " + notManual + " THEN s.externalId ELSE null END) AS sID " +
-			    "SET u.removedFromStructures = [rsId IN coalesce(u.removedFromStructures, []) WHERE rsId <> coalesce(sID, '')] + coalesce(sID, []), " +
-                "u.structures = FILTER(sId IN u.structures WHERE sId <> s.externalId), " +
-				"u.classes = FILTER(cId IN u.classes WHERE NOT(cId =~ (s.externalId + '.*'))) " +
-                "WITH u, r, g, s ";
-            notManual.addParams(params);
+                "WITH u, rg, g, s " +
+			    "SET u.removedFromStructures = [rsId IN coalesce(u.removedFromStructures, []) WHERE rsId <> coalesce(s.externalId, '')] + coalesce(s.externalId, []), " + // Add the structure to the removed structures
+                "u.structures = FILTER(sId IN u.structures WHERE sId <> s.externalId), " + // Remove user from the structure
+				"u.classes = FILTER(cId IN u.classes WHERE NOT(cId =~ (s.externalId + '.*'))) " + // Remove user from the classes of the structure
+                "WITH u, rg, g, s ";
         }
 
         query +=
             "OPTIONAL MATCH (u)-[c:COMMUNIQUE]-(g) " +
-            "DELETE r, c " + // Remove user from groups
+            "DELETE rg, c " + // Remove the user from the group
             "WITH u, s " +
-            "MATCH (u)-[r:HAS_FUNCTION]->() " +
+            "MATCH (u)-[r:HAS_FUNCTION]->() " + // Find the functions of the user
             "WHERE s.id IN r.scope " +
-            "OPTIONAL MATCH (s)-[:HAS_ATTACHMENT*1..]->(ss:Structure) " +
-            "WITH s, r, count(CASE WHEN ss.id IN r.scope THEN 1 ELSE NULL END) as parentADML " +
-            "WHERE parentADML = 0 " +
-            "SET r.scope = FILTER(sId IN r.scope WHERE sId <> s.id) " + // Remove user function for the structure but keep inherited functions
+            "OPTIONAL MATCH (s)-[:HAS_ATTACHMENT*1..]->(ss:Structure) " + // Find the parent structures
+            "WITH u, s, r, count(CASE WHEN ss.id IN r.scope THEN 1 ELSE NULL END) as parentADML " + // Count the number of parent structures
+            "WHERE parentADML = 0 MATCH (u)-[hasFunction:HAS_FUNCTION]-(f:Function {externalId : 'ADMIN_LOCAL'}), (u)-[inOrComm:IN|COMMUNIQUE]-(fg:FunctionGroup) " +
+            "WHERE fg.externalId ENDS WITH 'ADMIN_LOCAL' DELETE hasFunction, inOrComm " + // REMOVE ADMIN_LOCAL function if no structures are left
+            "WITH u, s, r, parentADML " +
+            "WHERE parentADML = 0 SET r.scope = FILTER(sId IN r.scope WHERE sId <> s.id) " + // Remove user function for the structure but keep inherited functions
             "WITH r " +
-            "WHERE LENGTH(r.scope) = 0 " +
-            "DELETE r"; // Remove the function if no structures are left
+            "WHERE LENGTH(r.scope) = 0 DELETE r"; // Remove the function if no structures are left
 
         tx.add(query, params, promise);
 
