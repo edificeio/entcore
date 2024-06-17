@@ -103,10 +103,10 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 			groupIds[i] = j.getString("group");
 		}
 		final long timestamp = System.currentTimeMillis();
-		final JsonObject matcher = MongoQueryBuilder.build(Filters.eq("shared.groupId", groupIds));
+		final JsonObject matcher = MongoQueryBuilder.build(Filters.in("shared.groupId", groupIds));
 		final MongoUpdateBuilder modifier = new MongoUpdateBuilder();
 		modifier.set("_deleteGroupsKey", timestamp);
-		modifier.pull("shared", MongoQueryBuilder.build(Filters.eq("groupId", groupIds)));
+		modifier.pull("shared", MongoQueryBuilder.build(Filters.in("groupId", groupIds)));
 
 		final String collection = MongoDbConf.getInstance().getCollection();
 		if (collection == null || collection.trim().isEmpty()) {
@@ -167,10 +167,10 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		}
 
 		final long timestamp = System.currentTimeMillis();
-		final JsonObject criteriaShared = MongoQueryBuilder.build(Filters.eq("shared.userId", userIds));
+		final JsonObject criteriaShared = MongoQueryBuilder.build(Filters.in("shared.userId", userIds));
 		final MongoUpdateBuilder modifierShared = new MongoUpdateBuilder();
 		modifierShared.set("_deleteUsersKey", timestamp);
-		modifierShared.pull("shared", MongoQueryBuilder.build(Filters.eq("userId", userIds)));
+		modifierShared.pull("shared", MongoQueryBuilder.build(Filters.in("userId", userIds)));
 		final String collection = MongoDbConf.getInstance().getCollection();
 		if (collection == null || collection.trim().isEmpty()) {
 			log.error("Error deleting users : invalid collection " + collection + " in class " + this.getClass().getName());
@@ -182,8 +182,8 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 				log.error("Error deleting users shared in collection " + collection  +
 						" : " + eventShared.body().getString("message"));
 			}
-			Bson findByAuthor = Filters.eq("author.userId", userIds);
-			Bson findByOwner = Filters.eq("owner.userId", userIds);
+			Bson findByAuthor = Filters.in("author.userId", userIds);
+			Bson findByOwner = Filters.in("owner.userId", userIds);
 			Bson findByAuthorOrOwner = Filters.or(findByAuthor, findByOwner);
 			final JsonObject criteria = MongoQueryBuilder.build(findByAuthorOrOwner);
 			final MongoUpdateBuilder modifier = new MongoUpdateBuilder();
@@ -274,7 +274,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 						JsonObject j = res.getJsonObject(i);
 						objectIds[i] = j.getString("_id");
 					}
-					JsonObject matcher = MongoQueryBuilder.build(Filters.eq("_id", objectIds));
+					JsonObject matcher = MongoQueryBuilder.build(Filters.in("_id", objectIds));
 					mongo.delete(collection, matcher, new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> event) {
@@ -284,7 +284,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 							} else if (revisionsCollection != null && !revisionsCollection.trim().isEmpty() &&
 									revisionIdAttribute != null && !revisionIdAttribute.trim().isEmpty()) {
 								JsonObject criteria = MongoQueryBuilder.build(
-										Filters.eq(revisionIdAttribute, objectIds));
+										Filters.in(revisionIdAttribute, objectIds));
 								mongo.delete(revisionsCollection, criteria, new Handler<Message<JsonObject>>() {
 									@Override
 									public void handle(Message<JsonObject> event) {
