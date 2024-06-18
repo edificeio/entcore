@@ -29,7 +29,7 @@ public class GenericRegisteredService extends AbstractCas20ExtensionRegisteredSe
     protected static final String DF_LASTNAME = "lastName";
     protected static final String DF_BIRTHDATE = "birthDate";
     protected static final String DF_DISPLAYNAME = "displayName";
-    protected static final String DF_FIRSTNAME = "fistName";
+    protected static final String DF_FIRSTNAME = "firstName";
     protected static final String DF_FONCTIONAL_GROUP = "functionalGroup";
     protected static final String DF_TYPE = "type";
     protected static final String DF_STRUCTURES_NODES = "structureNodes";
