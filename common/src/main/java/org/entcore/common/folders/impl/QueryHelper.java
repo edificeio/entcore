@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 
 import com.mongodb.client.model.Filters;
 import io.vertx.core.Promise;
+import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.entcore.common.folders.ElementQuery;
 import org.entcore.common.folders.ElementQuery.ElementSort;
@@ -273,7 +274,7 @@ public class QueryHelper {
 				ors.add(Filters.eq(v, true));
 			}
 			ors.add(Filters.eq("owner", user.getUserId()));
-			builder = Filters.or(builder, Filters.or(ors));
+			builder = Filters.and(builder, Filters.or(ors));
 			return this;
 		}
 
@@ -293,8 +294,9 @@ public class QueryHelper {
 				groups.add(Filters.eq("groupId", gpId));
 			}
 			Bson subQuery = Filters.or(groups);
-			builder = Filters.or(builder, Filters.eq("owner", user.getUserId()), //
-					Filters.elemMatch("shared", subQuery));
+			builder = Filters.and(builder, Filters.or(
+						Filters.eq("owner", user.getUserId()), //
+						Filters.elemMatch("shared", subQuery)));
 			return this;
 		}
 
@@ -316,7 +318,7 @@ public class QueryHelper {
 				ors.add(Filters.eq(visibility, true));
 			}
 			//
-			builder = Filters.or(builder, Filters.or(ors));
+			builder = Filters.and(builder, Filters.or(ors));
 			return this;
 		}
 
@@ -338,7 +340,7 @@ public class QueryHelper {
 				ors.add(Filters.eq(visibility, true));
 			}
 			//
-			builder = Filters.or(builder, Filters.or(ors));
+			builder = Filters.and(builder, Filters.or(ors));
 			return this;
 		}
 
@@ -351,7 +353,7 @@ public class QueryHelper {
 				ors.add(Filters.eq(visibility, true));
 			}
 			//
-			builder = Filters.or(builder, Filters.or(ors));
+			builder = Filters.and(builder, Filters.or(ors));
 			return this;
 		}
 
@@ -362,10 +364,10 @@ public class QueryHelper {
 				groups.add(Filters.eq("groupId", gpId));
 			}
 			Bson subQuery = Filters.or(groups);
-			builder = Filters.or(builder,
-					Filters.eq("owner", user.getUserId()),
-					Filters.elemMatch("inheritedShares", subQuery)
-			);
+			builder = Filters.and(builder,
+					Filters.or(
+							Filters.eq("owner", user.getUserId()),
+							Filters.elemMatch("inheritedShares", subQuery)));
 			return this;
 		}
 
@@ -391,9 +393,9 @@ public class QueryHelper {
 			for (String gpId : user.getGroupsIds()) {
 				groups.add(Filters.and(Filters.eq("groupId", gpId), Filters.eq(action, true)));
 			}
-			builder = Filters.or(builder,
-					Filters.eq("owner", user.getUserId()),
-					Filters.elemMatch("inheritedShares", Filters.or(groups)));
+			builder = Filters.and(builder, Filters.or(
+						Filters.eq("owner", user.getUserId()),
+						Filters.elemMatch("inheritedShares", Filters.or(groups))));
 			return this;
 		}
 
@@ -431,8 +433,9 @@ public class QueryHelper {
 				groups.add(Filters.and(Filters.eq("groupId", gpId), Filters.eq(action, true)));
 			}
 			Bson subQuery = Filters.or(groups);
-			builder = Filters.or(builder, Filters.eq("owner", user.getUserId()),
-					Filters.elemMatch("inheritedShares", subQuery));
+			builder = Filters.and(builder, Filters.or(
+						Filters.eq("owner", user.getUserId()),
+						Filters.elemMatch("inheritedShares", subQuery)));
 			return this;
 		}
 
@@ -453,7 +456,7 @@ public class QueryHelper {
 				ors.add(Filters.eq(visibility, true));
 			}
 			//
-			builder = Filters.or(builder, Filters.or(ors));
+			builder = Filters.and(builder, Filters.or(ors));
 			return this;
 		}
 
@@ -464,8 +467,9 @@ public class QueryHelper {
 				groups.add(Filters.and(Filters.eq("groupId", gpId), Filters.eq(action, true)));
 			}
 			Bson subQuery = Filters.or(groups);
-			builder = Filters.or(builder, Filters.eq("owner", user.getUserId()), //
-					Filters.elemMatch("shared", subQuery));
+			builder = Filters.and(builder, Filters.or(
+						Filters.eq("owner", user.getUserId()), //
+						Filters.elemMatch("shared", subQuery)));
 			return this;
 		}
 
@@ -529,12 +533,12 @@ public class QueryHelper {
 		}
 
 		public DocumentQueryBuilder withNameMatch(final String pattern) {
-			builder = Filters.and(builder, Filters.regex("name", Pattern.compile("^" + pattern + "(_|$)")));
+			builder = Filters.and(builder, new Document("name", new Document("$regex", "^" + pattern + "(_|$)")));
 			return this;
 		}
 
 		public DocumentQueryBuilder withNameStarts(final String pattern) {
-			builder = Filters.and(builder, Filters.regex("name", Pattern.compile("^" + pattern)));
+			builder = Filters.and(builder, new Document("name", new Document("$regex", "^" + pattern)));
 			return this;
 		}
 
@@ -984,7 +988,7 @@ public class QueryHelper {
 		if(setModified){
 			set.set("modified", now);
 		}
-		JsonObject query = toJson(Filters.eq("_id", id));
+		JsonObject query = toJson(Filters.in("_id", id));
 		JsonObject setJson = set.build();
 		mongo.update(collection, query, setJson, false, true, message -> {
 			JsonObject body = message.body();
@@ -1041,7 +1045,7 @@ public class QueryHelper {
 			return Future.succeededFuture();
 		}
 		Promise<Void> future = Promise.promise();
-		mongo.delete(collection, toJson(Filters.eq("_id", ids)), res -> {
+		mongo.delete(collection, toJson(Filters.in("_id", ids)), res -> {
 			if (isOk(res.body())) {
 				future.complete(null);
 			} else {
