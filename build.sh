@@ -141,7 +141,7 @@ install () {
 }
 
 test () {
-  docker compose run --rm maven mvn $MVN_OPTS test
+  mvn $MVN_OPTS test
 }
 
 localDep () {
