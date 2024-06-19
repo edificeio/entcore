@@ -141,7 +141,7 @@ install () {
 }
 
 test () {
-  mvn $MVN_OPTS test
+  mvn test
 }
 
 localDep () {
