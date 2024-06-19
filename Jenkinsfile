@@ -37,5 +37,10 @@ pipeline {
         }
       }
     }
+  post {
+    cleanup {
+      sh 'docker-compose down'
+    }
+  }
 }
 
