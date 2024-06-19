@@ -141,7 +141,7 @@ install () {
 }
 
 test () {
-  if [-z "$JAVA_8_HOME"]
+  if [ -z "$JAVA_8_HOME" ]
   then
     mvn test
   else
