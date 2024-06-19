@@ -79,8 +79,15 @@ public class LibraryController extends BaseController {
                     renderError(request, res.result());
                 }
             } else {
-                final JsonObject body = new JsonObject().put("success", false).put("reason", "unknown").put("message", res.cause().getMessage());
-                renderError(request, body);
+                final JsonObject resultJson = res.result();
+                final String message = resultJson.getString("message", "");
+                if (message.equals(DefaultLibraryService.MESSAGE.CONTENT_TOO_LARGE.name())) {
+                    renderError(request, resultJson, 413, message);
+                } else {
+                    final JsonObject body = new JsonObject().put("success", false).put("reason", "unknown").put("message", res.cause().getMessage());
+                    renderError(request, body);
+                    log.error("An unknown error occurred while calling the library publish service : \nResponse : " + res.result().encode(), res.cause());
+                }
             }
         });
     }
