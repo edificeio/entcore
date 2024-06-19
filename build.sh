@@ -141,7 +141,12 @@ install () {
 }
 
 test () {
-  mvn test
+  if [-z "$JAVA_8_HOME"]
+  then
+    mvn test
+  else
+    JAVA_HOME=$JAVA_8_HOME mvn test
+  fi
 }
 
 localDep () {
