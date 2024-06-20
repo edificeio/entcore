@@ -150,6 +150,9 @@ public class Group {
 		{
 			tx = TransactionManager.getInstance().begin();
 
+			String groupId = "f595f073-1080-4cc4-abb8-3aae9fa74076"; // PF: nouvelle calédonie, Liste de diff: Diffusion tous les enseignants
+			String linksCountQuery = "MATCH (g:ManualGroup {id: {groupId}})-[:IN]-(u:User) RETURN g.name as name, g.nbUsers as nbUsers, count(distinct u.id) as countUsers";
+
 			String removeQuery =
 				"MATCH " +
 				"	(g:ManualGroup)<-[old:IN]-(:User) " +
@@ -171,18 +174,64 @@ public class Group {
 
 			JsonObject params = new JsonObject();
 
-			tx.add(removeQuery, params);
-			tx.add(linkQuery, params);
+			tx.add(linksCountQuery, new JsonObject().put("groupId", groupId), res -> {
+				log.info("########## BEFORE UPDATE ==== Count links query");
+				if (res.isLeft()) {
+					log.error("Error while executing linksCountQuery : " + res.left().getValue());
+				}
+				JsonArray groups = res.right().getValue();
+				if (groups.size() != 1) {
+					log.error("Unexpected groups count #### size = " + groups.size());
+				}
+
+				JsonObject broadcastGroup = groups.getJsonObject(0);
+				log.info("###### BroadCast group details ######");
+				log.info("name: " + broadcastGroup.getString("name"));
+				log.info("nbUsers: " + broadcastGroup.getInteger("nbUsers"));
+				log.info("countUsers: " + broadcastGroup.getInteger("countUsers"));
+			});
+
+			tx.add(removeQuery, params, res -> {
+				if (res.isLeft()) {
+					log.error("Error while executing removeQuery : " + res.left().getValue());
+				}
+				log.info("removeQuery successfully executed");
+			});
+			tx.add(linkQuery, params, res -> {
+				if (res.isLeft()) {
+					log.error("Error while executing linkQuery : " + res.left().getValue());
+				}
+				log.info("linkQuery successfully executed");
+			});
+
+			tx.add(linksCountQuery, new JsonObject().put("groupId", groupId), res -> {
+				log.info("########## AFTER UPDATE ==== Count links query");
+				if (res.isLeft()) {
+					log.error("Error while executing linksCountQuery : " + res.left().getValue());
+				}
+				JsonArray groups = res.right().getValue();
+				if (groups.size() != 1) {
+					log.error("Unexpected groups count #### size = " + groups.size());
+				}
+
+				JsonObject broadcastGroup = groups.getJsonObject(0);
+				log.info("###### BroadCast group details ######");
+				log.info("name: " + broadcastGroup.getString("name"));
+				log.info("nbUsers: " + broadcastGroup.getInteger("nbUsers"));
+				log.info("countUsers: " + broadcastGroup.getInteger("countUsers"));
+			});
+
 			User.countUsersInGroups(null, "ManualGroup", tx);
 
-			tx.commit(null);
+			tx.commit(res -> {
+				log.info("runLinkRules transaction terminated");
+				log.info("transaction body : " + (res.body() != null ? res.body().toString() : "NULL"));
+			});
 		}
-		catch(TransactionException e)
-		{
+		catch(TransactionException e) {
 			log.error("Error opening or running transaction in group link rules", e);
 		}
-		catch(Exception e)
-		{
+		catch(Exception e) {
 			log.error("Unknown error in group link rules", e);
 		}
 	}

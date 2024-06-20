@@ -120,6 +120,9 @@ public class PostImport {
 		return new Handler<Void>() {
 			@Override
 			public void handle(Void v) {
+
+				logger.info(e -> "PostImport finalHandler with source " + source);
+
 				if (config.getJsonArray("active-user-from-old-platform") != null &&
 						config.getJsonArray("active-user-from-old-platform").contains(source)) {
 					User.searchUserFromOldPlatform(vertx);
@@ -140,6 +143,7 @@ public class PostImport {
 				}
 				if(Boolean.TRUE.equals(config.getBoolean("manual-group-link-users-auto", true)) &&
 						manualGroupLinkUsersAutoSources.contains(source)) {
+					logger.info(e -> "runLinkRules with source " + source);
 					Group.runLinkRules();
 				}
 				if(Boolean.TRUE.equals(config.getBoolean("fix-incorrect-storages", true)) &&
