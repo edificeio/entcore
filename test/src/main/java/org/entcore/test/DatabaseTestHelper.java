@@ -118,7 +118,7 @@ public class DatabaseTestHelper {
                 .put("password", postgreSQLContainer.getPassword());
 
         final DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(postgresConfig).setWorker(true)
-                .setInstances(1);// TODO vertx4 .setMultiThreaded(true);
+                .setInstances(1);
 
         vertx.deployVerticle(fr.wseduc.sql.SqlPersistor.class.getName(), deploymentOptions, ar -> {
             if (ar.succeeded()) {
@@ -171,7 +171,7 @@ public class DatabaseTestHelper {
                 .put("use_mongo_types", true).put("pool_size", 10).put("port", mongoDBContainer.getMappedPort(27017));
 
         final DeploymentOptions deploymentOptions = new DeploymentOptions().setConfig(postgresConfig).setWorker(true)
-                .setInstances(1);// TODO vertx4 .setMultiThreaded(true);.setMultiThreaded(true);
+                .setInstances(1);
 
         vertx.deployVerticle(MongoPersistor.class.getName(), deploymentOptions, ar -> {
             if (ar.succeeded()) {

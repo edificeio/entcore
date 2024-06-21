@@ -585,8 +585,7 @@ public class UserUtils {
 		if (timeGetSessionDelay > LOG_SESSION_DELAY) {
 			log.info("Find session time : " + timeGetSessionDelay + " ms.");
 			final MongoDb mongoDb = MongoDb.getInstance();
-			// TODO vertx4
-			if (true) { //mongoDb.isInitialized()) {
+			if (mongoDb.isInitialized()) {
 				final JsonObject sessionMonitoring = new JsonObject()
 						.put("date", MongoDb.now())
 						.put("epoch", startSessionTime)

@@ -152,7 +152,6 @@ public class RedisCacheService implements CacheService {
         });
     }
 
-    // TODO vertx4
     public void getListLength(String key, Handler<AsyncResult<Long>> handler){
         redis.llen(key, (Handler) handler);
     }

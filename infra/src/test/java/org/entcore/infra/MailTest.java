@@ -101,7 +101,6 @@ public class MailTest {
     final Async async = testCtx.async();
     DeploymentOptions deplomentOptions = new DeploymentOptions()
         .setWorker(true).setInstances(1)
-        // TODO vertx4 .setMultiThreaded(false)
         .setIsolationGroup("mail_worker_group")
         .setIsolatedClasses(Collections.singletonList("org.entcore.infra.*"))
         .setConfig(new JsonObject().put("postgres", postgresql));
