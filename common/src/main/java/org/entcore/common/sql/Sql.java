@@ -94,13 +94,13 @@ public class Sql implements ISql {
 			handler.handle(new ErrorMessage("invalid.parameters"));
 			return;
 		}
-		JsonArray fields = new fr.wseduc.webutils.collections.JsonArray();
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray fields = new JsonArray();
+		JsonArray values = new JsonArray();
 		for (String attr : params.fieldNames()) {
 			fields.add(attr);
 			values.add(params.getValue(attr));
 		}
-		insert(table, fields, new fr.wseduc.webutils.collections.JsonArray().add(values), returning, handler);
+		insert(table, fields, new JsonArray().add(values), returning, handler);
 	}
 
 	@Override

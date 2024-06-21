@@ -161,7 +161,7 @@ public class MongoDbShareService extends GenericShareService {
 			if (!(o instanceof JsonObject))
 				continue;
 			JsonObject userShared = (JsonObject) o;
-			JsonArray a = new fr.wseduc.webutils.collections.JsonArray();
+			JsonArray a = new JsonArray();
 			for (String attrName : userShared.fieldNames()) {
 				if ("userId".equals(attrName) || "groupId".equals(attrName)) {
 					continue;
@@ -268,7 +268,7 @@ public class MongoDbShareService extends GenericShareService {
 		mongo.findOne(collection, MongoQueryBuilder.build(query), keys, mongoEVent -> {
 			if ("ok".equals(mongoEVent.body().getString("status"))) {
 				JsonArray shared = mongoEVent.body().getJsonObject("result", new JsonObject()).getJsonArray("shared",
-						new fr.wseduc.webutils.collections.JsonArray());
+						new JsonArray());
 				final JsonArray actions = getResoureActions(securedActions);
 				JsonObject res = getActionsByIds(userId, shared);
 				getShareInfos(userId, actions, res.getJsonObject("groups"), res.getJsonObject("users"), acceptLanguage,
@@ -335,7 +335,7 @@ public class MongoDbShareService extends GenericShareService {
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status")) && event.body().getJsonObject("result") != null) {
 					JsonArray actual = event.body().getJsonObject("result").getJsonArray("shared",
-							new fr.wseduc.webutils.collections.JsonArray());
+							new JsonArray());
 					boolean exist = false;
 					for (int i = 0; i < actual.size(); i++) {
 						JsonObject s = actual.getJsonObject(i);
@@ -469,8 +469,8 @@ public class MongoDbShareService extends GenericShareService {
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status")) && event.body().getJsonObject("result") != null) {
 					JsonArray actual = event.body().getJsonObject("result").getJsonArray("shared",
-							new fr.wseduc.webutils.collections.JsonArray());
-					JsonArray shared = new fr.wseduc.webutils.collections.JsonArray();
+							new JsonArray());
+					JsonArray shared = new JsonArray();
 					for (int i = 0; i < actual.size(); i++) {
 						JsonObject s = actual.getJsonObject(i);
 						String id = s.getString(shareIdAttr);

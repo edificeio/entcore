@@ -382,7 +382,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 					JsonObject item = (JsonObject) obj;
 					if (DocumentHelper.isFile(item) && !StringUtils.isEmpty(DocumentHelper.getFileId(item))) {
 						deleteAllRevisions(DocumentHelper.getId(item),
-								new fr.wseduc.webutils.collections.JsonArray().add(DocumentHelper.getFileId(item)));
+								new JsonArray().add(DocumentHelper.getFileId(item)));
 					}
 				}
 			}
@@ -537,15 +537,15 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 	}
 
 	public void incrementStorage(JsonObject added) {
-		updateStorage(new fr.wseduc.webutils.collections.JsonArray().add(added), null);
+		updateStorage(new JsonArray().add(added), null);
 	}
 
 	public void decrementStorage(JsonObject removed) {
-		updateStorage(null, new fr.wseduc.webutils.collections.JsonArray().add(removed));
+		updateStorage(null, new JsonArray().add(removed));
 	}
 
 	public void decrementStorage(JsonObject removed, Handler<Either<String, JsonObject>> handler) {
-		updateStorage(null, new fr.wseduc.webutils.collections.JsonArray().add(removed), handler);
+		updateStorage(null, new JsonArray().add(removed), handler);
 	}
 
 	public void incrementStorage(JsonArray added) {
@@ -557,7 +557,7 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 	}
 
 	public void updateStorage(JsonObject added, JsonObject removed) {
-		updateStorage(new fr.wseduc.webutils.collections.JsonArray().add(added), new JsonArray().add(removed));
+		updateStorage(new JsonArray().add(added), new JsonArray().add(removed));
 	}
 
 	public void updateStorage(JsonArray addeds, JsonArray removeds) {

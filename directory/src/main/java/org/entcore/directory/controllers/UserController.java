@@ -422,7 +422,7 @@ public class UserController extends BaseController {
 			@SuppressWarnings("unchecked")
 			public void handle(JsonObject event) {
 				if (event != null) {
-					userService.delete(event.getJsonArray("users", new fr.wseduc.webutils.collections.JsonArray()).getList(), defaultResponseHandler(request));
+					userService.delete(event.getJsonArray("users", new JsonArray()).getList(), defaultResponseHandler(request));
 				} else {
 					badRequest(request, "invalid.json");
 				}
@@ -449,7 +449,7 @@ public class UserController extends BaseController {
 				if (user != null) {
 					final String structureId = request.params().get("structureId");
 					final String classId = request.params().get("classId");
-					JsonArray types = new fr.wseduc.webutils.collections.JsonArray(request.params().getAll("profile"));
+					JsonArray types = new JsonArray(request.params().getAll("profile"));
 					final String profile = (types != null && types.size() > 0) ? types.getString(0) : "All";
 					final String filterActive = request.params().get("filterActive");
 					final String exportType = request.params().get("type") == null ? "" : request.params().get("type");
@@ -655,7 +655,7 @@ public class UserController extends BaseController {
 							.put("action", "setCommunicationRules")
 							.put("groupId", groupId);
 					eb.request("wse.communication", j);
-					JsonArray a = new fr.wseduc.webutils.collections.JsonArray().add(userId);
+					JsonArray a = new JsonArray().add(userId);
 					ApplicationUtils.publishModifiedUserGroup(eb, a);
 					recreateSession(userId, request, eb, () -> renderJson(request, res.right().getValue()));
 				} else {
@@ -701,7 +701,7 @@ public class UserController extends BaseController {
 				if (user != null && (searchTerm == null || searchTerm.trim().length() > 2)) {
 					final String structureId = request.params().get("structureId");
 					final String classId = request.params().get("classId");
-					final JsonArray types = new fr.wseduc.webutils.collections.JsonArray(request.params().getAll("profile"));
+					final JsonArray types = new JsonArray(request.params().getAll("profile"));
 					final String groupId = request.params().get("groupId");
 					final String filterActive = request.params().get("filterActive");
 					final boolean includeSubStructures = "true".equals(request.params().get("includeSubStructures"));
@@ -757,7 +757,7 @@ public class UserController extends BaseController {
 							.put("action", "setMultipleDefaultCommunicationRules")
 							.put("schoolIds", structures);
 					eb.request("wse.communication", j);
-					JsonArray a = new fr.wseduc.webutils.collections.JsonArray().add(relativeId);
+					JsonArray a = new JsonArray().add(relativeId);
 					ApplicationUtils.publishModifiedUserGroup(eb, a);
 					if (structures == null || structures.size() == 0) {
 						notFound(request, "user.not.found");
@@ -814,7 +814,7 @@ public class UserController extends BaseController {
 	public void listDuplicates(final HttpServerRequest request) {
 		final List<String> structures = request.params().getAll("structure");
 		final boolean inherit = "true".equals(request.params().get("inherit"));
-		userService.listDuplicates(new fr.wseduc.webutils.collections.JsonArray(structures), inherit, arrayResponseHandler(request));
+		userService.listDuplicates(new JsonArray(structures), inherit, arrayResponseHandler(request));
 	}
 
 
@@ -826,11 +826,11 @@ public class UserController extends BaseController {
 		final String format = request.params().get("format");
 		final List<String> structures = request.params().getAll("uai");
 
-		JsonArray fields = new fr.wseduc.webutils.collections.JsonArray().add("externalId").add("lastName").add("firstName").add("login");
+		JsonArray fields = new JsonArray().add("externalId").add("lastName").add("firstName").add("login");
 		if ("true".equalsIgnoreCase(request.params().get("administrativeStructure"))) {
 			fields.add("administrativeStructure");
 		}
-		JsonArray types = new fr.wseduc.webutils.collections.JsonArray(request.params().getAll("type"));
+		JsonArray types = new JsonArray(request.params().getAll("type"));
 
 		boolean isExportFull = false;
 		String isExportFullParameter = request.params().get("full");

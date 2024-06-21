@@ -209,7 +209,7 @@ public class AuthController extends BaseController {
 //		} else {
 		invalidEmails = MapFactory.getSyncClusterMap("invalidEmails", vertx);
 		internalAddress = config.getJsonArray("internalAddress",
-				new fr.wseduc.webutils.collections.JsonArray().add("localhost").add("127.0.0.1")).getList();
+				new JsonArray().add("localhost").add("127.0.0.1")).getList();
 	}
 
 	@Get("/oauth2/auth")
@@ -1294,7 +1294,7 @@ public class AuthController extends BaseController {
 									renderJson(request, new JsonObject());
 									return;
 								}
-								JsonArray structures = new fr.wseduc.webutils.collections.JsonArray();
+								JsonArray structures = new JsonArray();
 								if (results.size() > 1) {
 									for (Object ob : results) {
 										JsonObject j = (JsonObject) ob;

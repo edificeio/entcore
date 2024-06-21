@@ -363,7 +363,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
                 List<String> scope = f.getScope();
                 if (scope != null && !scope.isEmpty()) {
                     condition += "AND s.id IN {scope} ";
-                    params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
+                    params.put("scope", new JsonArray(scope));
                 }
             } else if (userInfos.getFunctions().containsKey(CLASS_ADMIN)) {
                 if (filterObj.getJsonArray("classes").size() < 1) {
@@ -375,7 +375,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
                 List<String> scope = f.getScope();
                 if (scope != null && !scope.isEmpty()) {
                     condition = "AND c.id IN {scope} ";
-                    params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
+                    params.put("scope", new JsonArray(scope));
                 }
             }
         }
@@ -479,7 +479,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
             List<String> scope = f.getScope();
             if (scope != null && !scope.isEmpty()) {
                 condition += "WHERE s.id IN {scope} ";
-                params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
+                params.put("scope", new JsonArray(scope));
             }
         }
 

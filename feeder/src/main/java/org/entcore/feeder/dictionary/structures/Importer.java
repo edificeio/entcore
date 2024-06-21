@@ -604,7 +604,7 @@ public class Importer {
 				transactionHelper.add(qs, ps);
 			}
 			if (externalId != null && linkClasses != null) {
-				JsonArray classes = new fr.wseduc.webutils.collections.JsonArray();
+				JsonArray classes = new JsonArray();
 				for (String[] structClass : linkClasses) {
 					if (structClass != null && structClass[0] != null && structClass[1] != null) {
 						String q =
@@ -722,7 +722,7 @@ public class Importer {
 							"DELETE r";
 					transactionHelper.add(daa, ps);
 				}
-				JsonArray classes = new fr.wseduc.webutils.collections.JsonArray();
+				JsonArray classes = new JsonArray();
 				if (externalId != null && linkClasses != null) {
 					for (String[] structClass : linkClasses) {
 						if (structClass != null && structClass[0] != null && structClass[1] != null) {
@@ -754,7 +754,7 @@ public class Importer {
 							.put("classes", classes);
 					transactionHelper.add(q, p);
 				}
-				final JsonArray groups = new fr.wseduc.webutils.collections.JsonArray();
+				final JsonArray groups = new JsonArray();
 				if (externalId != null && linkGroups != null) {
 					for (String[] structGroup : linkGroups) {
 						if (structGroup != null && structGroup[0] != null && structGroup[1] != null) {

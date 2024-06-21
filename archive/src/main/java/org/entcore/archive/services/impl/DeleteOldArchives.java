@@ -92,7 +92,7 @@ public class DeleteOldArchives implements Handler<Long> {
             JsonArray res = event.body().getJsonArray("results");
             if ("ok".equals(event.body().getString("status"))) {
                 if (res != null && res.size() > 0) {
-                    JsonArray ids = new fr.wseduc.webutils.collections.JsonArray();
+                    JsonArray ids = new JsonArray();
                     for (Object object : res) {
                         if (!(object instanceof JsonObject)) continue;
                         JsonObject jo = (JsonObject) object;

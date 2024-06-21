@@ -122,7 +122,7 @@ public class DefaultSchoolService implements SchoolService {
 			List<String> scope = f.getScope();
 			if (scope != null && !scope.isEmpty()) {
 				condition = "WHERE s.id IN {structures} ";
-				params.put("structures", new fr.wseduc.webutils.collections.JsonArray(scope));
+				params.put("structures", new JsonArray(scope));
 			}
 		}
 		String query =
@@ -220,7 +220,7 @@ public class DefaultSchoolService implements SchoolService {
 	@Override
 	public void list(JsonArray fields, Handler<Either<String, JsonArray>> results) {
 		if (fields == null || fields.size() == 0) {
-			fields = new fr.wseduc.webutils.collections.JsonArray().add("id").add("externalId").add("name").add("UAI");
+			fields = new JsonArray().add("id").add("externalId").add("name").add("UAI");
 		}
 		StringBuilder query = new StringBuilder();
 		query.append("MATCH (s:Structure) RETURN ");
@@ -275,14 +275,14 @@ public class DefaultSchoolService implements SchoolService {
 			List<String> scope = f.getScope();
 			if (scope != null && !scope.isEmpty()) {
 				condition += "AND s.id IN {scope} ";
-				params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
+				params.put("scope", new JsonArray(scope));
 			}
 		} else if(userInfos.getFunctions().containsKey(CLASS_ADMIN)){
 			UserInfos.Function f = userInfos.getFunctions().get(CLASS_ADMIN);
 			List<String> scope = f.getScope();
 			if (scope != null && !scope.isEmpty()) {
 				condition = "AND class.id IN {scope} ";
-				params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
+				params.put("scope", new JsonArray(scope));
 			}
 		}
 

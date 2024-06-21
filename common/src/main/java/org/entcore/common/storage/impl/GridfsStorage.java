@@ -525,7 +525,7 @@ public class GridfsStorage implements Storage {
 
 	@Override
 	public void removeFile(String id, Handler<JsonObject> handler) {
-		JsonArray ids = new fr.wseduc.webutils.collections.JsonArray().add(id);
+		JsonArray ids = new JsonArray().add(id);
 		JsonObject find = new JsonObject();
 		find.put("action", "remove");
 		JsonObject query = new JsonObject();

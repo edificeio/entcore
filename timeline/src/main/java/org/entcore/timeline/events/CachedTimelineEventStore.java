@@ -82,7 +82,7 @@ public class CachedTimelineEventStore implements TimelineEventStore {
                         restriction.equals(TimelineNotificationsLoader.Restrictions.HIDDEN.name())) {
                     String notifType = notif.getString("type");
                     if (!restricted.containsKey(notifType)) {
-                        restricted.put(notifType, new fr.wseduc.webutils.collections.JsonArray());
+                        restricted.put(notifType, new JsonArray());
                     }
                     restricted.getJsonArray(notifType).add(notif.getString("event-type"));
                 }

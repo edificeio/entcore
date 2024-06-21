@@ -160,7 +160,7 @@ public class PersEducNat extends AbstractUser {
 
 				}
 				final JsonObject fosm = new JsonObject();
-				final JsonArray classes = new fr.wseduc.webutils.collections.JsonArray();
+				final JsonArray classes = new JsonArray();
 				final JsonObject fcm = new JsonObject();
 				if (externalId != null && linkClasses != null) {
 					for (String[] structClass : linkClasses) {
@@ -169,7 +169,7 @@ public class PersEducNat extends AbstractUser {
 							if (structClass.length > 2 && isNotEmpty(structClass[2])) {
 								JsonArray fClasses = fcm.getJsonArray(structClass[2]);
 								if (fClasses == null) {
-									fClasses = new fr.wseduc.webutils.collections.JsonArray();
+									fClasses = new JsonArray();
 									fcm.put(structClass[2], fClasses);
 								}
 								fClasses.add(structClass[1]);
@@ -203,7 +203,7 @@ public class PersEducNat extends AbstractUser {
 							"MATCH (u:User {externalId : {userExternalId}})-[r:TEACHES_FOS]->(f:FieldOfStudy) " +
 							"WHERE NOT(f.externalId IN {fos}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
 							"SET r.classes = null ";
-					transactionHelper.add(removeOldFoslc, p.copy().put("fos", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(fcm.fieldNames()))));
+					transactionHelper.add(removeOldFoslc, p.copy().put("fos", new JsonArray(new ArrayList<>(fcm.fieldNames()))));
 					for (String fos: fcm.fieldNames()) {
 						String q2 =
 								"MATCH (u:User {externalId : {userExternalId}}), (f:FieldOfStudy {externalId:{feId}}) " +
@@ -212,7 +212,7 @@ public class PersEducNat extends AbstractUser {
 						transactionHelper.add(q2, p.copy().put("classes", fcm.getJsonArray(fos)).put("feId", fos));
 					}
 				}
-				final JsonArray groups = new fr.wseduc.webutils.collections.JsonArray();
+				final JsonArray groups = new JsonArray();
 				final JsonObject fgm = new JsonObject();
 				if (externalId != null && linkGroups != null) {
 					for (String[] structGroup : linkGroups) {
@@ -221,7 +221,7 @@ public class PersEducNat extends AbstractUser {
 							if (structGroup.length > 2 && isNotEmpty(structGroup[2])) {
 								JsonArray fGroups = fgm.getJsonArray(structGroup[2]);
 								if (fGroups == null) {
-									fGroups = new fr.wseduc.webutils.collections.JsonArray();
+									fGroups = new JsonArray();
 									fgm.put(structGroup[2], fGroups);
 								}
 								fGroups.add(structGroup[1]);
@@ -259,12 +259,12 @@ public class PersEducNat extends AbstractUser {
 							"MATCH (u:User {externalId : {userExternalId}})-[r:TEACHES_FOS]->(f:FieldOfStudy) " +
 							"WHERE NOT(f.externalId IN {fos}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
 							"DELETE r";
-					transactionHelper.add(deleteOldFoslg, pdfg.copy().put("fos", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(fosm.fieldNames()))));
+					transactionHelper.add(deleteOldFoslg, pdfg.copy().put("fos", new JsonArray(new ArrayList<>(fosm.fieldNames()))));
 					final String removeOldFoslg =
 							"MATCH (u:User {externalId : {userExternalId}})-[r:TEACHES_FOS]->(f:FieldOfStudy) " +
 							"WHERE NOT(f.externalId IN {fos}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
 							"SET r.groups = null ";
-					transactionHelper.add(removeOldFoslg, pdfg.copy().put("fos", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(fgm.fieldNames()))));
+					transactionHelper.add(removeOldFoslg, pdfg.copy().put("fos", new JsonArray(new ArrayList<>(fgm.fieldNames()))));
 					for (String fos: fgm.fieldNames()) {
 						String q2 =
 								"MATCH (u:User {externalId : {userExternalId}}), (f:FieldOfStudy {externalId:{feId}}) " +

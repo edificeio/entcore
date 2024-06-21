@@ -105,7 +105,7 @@ public abstract class SqlRepositoryEvents extends AbstractRepositoryEvents {
                                         for(int r = rows.size(); r-- > 0;)
                                         {
                                             JsonArray row = rows.getJsonArray(r);
-                                            fr.wseduc.webutils.collections.JsonArray.setInJsonArray(row, fieldIx, null);
+                                            row.set(fieldIx, null);
                                         }
                                     }
                                 }

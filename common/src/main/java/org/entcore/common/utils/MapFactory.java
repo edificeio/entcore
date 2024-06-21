@@ -19,7 +19,6 @@
 
 package org.entcore.common.utils;
 
-import fr.wseduc.webutils.collections.AsyncLocalMap;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;

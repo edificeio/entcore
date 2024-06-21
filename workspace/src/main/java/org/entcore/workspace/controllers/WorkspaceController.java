@@ -1716,7 +1716,7 @@ public class WorkspaceController extends BaseController {
 			return;
 		}
 		String name = message.body().getString("name");
-		JsonArray t = message.body().getJsonArray("thumbs", new fr.wseduc.webutils.collections.JsonArray());
+		JsonArray t = message.body().getJsonArray("thumbs", new JsonArray());
 		List<String> thumbs = new ArrayList<>();
 		for (int i = 0; i < t.size(); i++) {
 			thumbs.add(t.getString(i));

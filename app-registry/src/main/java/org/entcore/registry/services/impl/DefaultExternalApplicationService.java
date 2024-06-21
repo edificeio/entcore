@@ -94,7 +94,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 					row.put("data", appData);
 					row.remove("application");
 
-					JsonArray actionsCopy = new fr.wseduc.webutils.collections.JsonArray();
+					JsonArray actionsCopy = new JsonArray();
 					for(Object actionObj: actions){
 						JsonObject action = (JsonObject) actionObj;
 						JsonObject data = action.getJsonObject("data");
@@ -107,7 +107,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 						JsonObject data = role.getJsonObject("role").getJsonObject("data");
 						role.put("role", data);
 						JsonArray acts = role.getJsonArray("actions");
-						JsonArray actsCopy = new fr.wseduc.webutils.collections.JsonArray();
+						JsonArray actsCopy = new JsonArray();
 						for(Object actionObj : acts){
 							JsonObject action = (JsonObject) actionObj;
 							actsCopy.add(action.getJsonObject("data"));
@@ -165,7 +165,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 
 		final String applicationName = application.getString("name");
 		final String id = UUID.randomUUID().toString();
-		application.put("scope", new fr.wseduc.webutils.collections.JsonArray("[\"" + application.getString("scope", "").replaceAll("\\s", "\",\"") + "\"]"));
+		application.put("scope", new JsonArray("[\"" + application.getString("scope", "").replaceAll("\\s", "\",\"") + "\"]"));
 		application.put("id", id);
 		application.put("structureId", structureId);
 
@@ -261,7 +261,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 		params.put("appId", appId);
 		params.put("inputStructureId", structureId);
 		if (profiles != null && profiles.size() > 0) {
-			params.put("profiles", new fr.wseduc.webutils.collections.JsonArray(profiles));
+			params.put("profiles", new JsonArray(profiles));
 		}
 		neo.execute(query, params, validResultHandler(res->{
 			if(res.isRight()){
@@ -362,7 +362,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 		params.put("appId", appId);
 		params.put("inputStructureId", structureId);
 		if (profiles != null && profiles.size() > 0) {
-			params.put("profiles", new fr.wseduc.webutils.collections.JsonArray(profiles));
+			params.put("profiles", new JsonArray(profiles));
 		}
 		neo.execute(query, params, validResultHandler(res->{
 			if(res.isRight()){

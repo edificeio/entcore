@@ -71,7 +71,7 @@ public class DefaultTimetableService implements TimetableService {
 		final JsonObject sort = new JsonObject().put("startDate", 1);
 		final JsonObject keys = KEYS.copy();
 		if (lastDate > 0) {
-			query.put("$or", new fr.wseduc.webutils.collections.JsonArray()
+			query.put("$or", new JsonArray()
 					.add(new JsonObject().put("modified", new JsonObject().put("$gte", lastDate)))
 					.add(new JsonObject().put("deleted", new JsonObject().put("$gte", lastDate))));
 			keys.put("deleted", 1);
@@ -104,7 +104,7 @@ public class DefaultTimetableService implements TimetableService {
 
 		if (groupNames != null) {
 			JsonObject dateOperand =  new JsonObject()
-					.put("$and", new fr.wseduc.webutils.collections.JsonArray()
+					.put("$and", new JsonArray()
 							.add(new JsonObject().put("startDate" ,betweenStart))
 							.add(new JsonObject().put("endDate" ,betweenEnd)));
 
@@ -121,7 +121,7 @@ public class DefaultTimetableService implements TimetableService {
 
 			query.put("$and", new JsonArray().add(dateOperand).add(groupOperand));
 		} else {
-			query.put("$and", new fr.wseduc.webutils.collections.JsonArray()
+			query.put("$and", new JsonArray()
 					.add(new JsonObject().put("startDate", betweenStart))
 					.add(new JsonObject().put("endDate", betweenEnd)));
 		}
@@ -153,7 +153,7 @@ public class DefaultTimetableService implements TimetableService {
 		StringBuilder whereClause = new StringBuilder().append(" WHERE 1=1");
 		if (teachers != null && !teachers.isEmpty()) {
 			query.append("<-[r:TEACHES]-(u:User)");
-			params.put("teacherIds", new fr.wseduc.webutils.collections.JsonArray(teachers));
+			params.put("teacherIds", new JsonArray(teachers));
 			whereClause.append(" AND u.id IN  {teacherIds}");
 		}
 		if (!StringUtils.isEmpty(externalGroupId)) {
@@ -402,7 +402,7 @@ public class DefaultTimetableService implements TimetableService {
 				validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
 			@Override
 			public void handle(Either<String, JsonObject> event) {
-				final JsonArray errors = new fr.wseduc.webutils.collections.JsonArray();
+				final JsonArray errors = new JsonArray();
 				final JsonObject ge = new JsonObject().put("error.global", errors);
 				if (event.isRight() && isNotEmpty(event.right().getValue().getString("UAI")))
 				{
@@ -440,7 +440,7 @@ public class DefaultTimetableService implements TimetableService {
 			@Override
 			public void handle(Either<String, JsonObject> event)
 			{
-				final JsonArray errors = new fr.wseduc.webutils.collections.JsonArray();
+				final JsonArray errors = new JsonArray();
 				final JsonObject ge = new JsonObject().put("error.global", errors);
 
 				if (event.isRight() && isNotEmpty(event.right().getValue().getString("externalId")))

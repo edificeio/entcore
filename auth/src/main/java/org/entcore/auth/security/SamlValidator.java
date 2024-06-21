@@ -603,7 +603,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		List<AttributeConsumingService> AttributesCS = spSSODescriptor.getAttributeConsumingServices();
 		if (AttributesCS.size() > 0) {
 			HashMap<String, List<String>> attributes = new HashMap<String, List<String>>();
-			final JsonArray jsonArrayResult = new fr.wseduc.webutils.collections.JsonArray();
+			final JsonArray jsonArrayResult = new JsonArray();
 
 			for (final AttributeConsumingService attributeConsumingService : AttributesCS) {
 				for (RequestedAttribute requestedAttribute : attributeConsumingService.getRequestAttributes()) {

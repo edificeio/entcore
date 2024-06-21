@@ -44,7 +44,7 @@ public class PmbRegisteredService extends DefaultRegisteredService {
 			if ("ok".equals(event.body().getString("status")) && res != null) {
 				// extract uais
 				JsonArray uaisToCheck = new JsonArray();
-				for (Object o : res.getJsonArray("structureNodes", new fr.wseduc.webutils.collections.JsonArray()).getList()) {
+				for (Object o : res.getJsonArray("structureNodes", new JsonArray()).getList()) {
 					if (!(o instanceof JsonObject)) continue;
 					JsonObject structure = (JsonObject) o;
 					if (structure.containsKey("UAI")) {

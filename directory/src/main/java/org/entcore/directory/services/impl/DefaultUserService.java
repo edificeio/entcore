@@ -71,7 +71,7 @@ public class DefaultUserService implements UserService {
 
 	@Override
 	public void createInStructure(String structureId, JsonObject user, Handler<Either<String, JsonObject>> result) {
-		user.put("profiles", new fr.wseduc.webutils.collections.JsonArray().add(user.getString("type")));
+		user.put("profiles", new JsonArray().add(user.getString("type")));
 		JsonObject action = new JsonObject()
 				.put("action", "manual-create-user")
 				.put("structureId", structureId)
@@ -82,7 +82,7 @@ public class DefaultUserService implements UserService {
 
 	@Override
 	public void createInClass(String classId, JsonObject user, Handler<Either<String, JsonObject>> result) {
-		user.put("profiles", new fr.wseduc.webutils.collections.JsonArray().add(user.getString("type")));
+		user.put("profiles", new JsonArray().add(user.getString("type")));
 		JsonObject action = new JsonObject()
 				.put("action", "manual-create-user")
 				.put("classId", classId)
@@ -408,7 +408,7 @@ public class DefaultUserService implements UserService {
 	private void extractReformatUserFunctions(JsonObject r) {
 		//reformat functions
 		JsonObject functions = new JsonObject();
-		for (Object o : getOrElse(r.getJsonArray("aafFunctions"), new fr.wseduc.webutils.collections.JsonArray())) {
+		for (Object o : getOrElse(r.getJsonArray("aafFunctions"), new JsonArray())) {
 			if (o == null) continue;
 			String[] sf = o.toString().split("\\$");
 			if (sf.length == 5) {
@@ -416,8 +416,8 @@ public class DefaultUserService implements UserService {
 				if (jo == null) {
 					jo = new JsonObject().put("code", sf[1])
 							.put("functionName", sf[2])
-							.put("scope", new fr.wseduc.webutils.collections.JsonArray())
-							.put("structureExternalIds", new fr.wseduc.webutils.collections.JsonArray())
+							.put("scope", new JsonArray())
+							.put("structureExternalIds", new JsonArray())
 							.put("subjects", new JsonObject());
 					functions.put(sf[1], jo);
 				}
@@ -426,8 +426,8 @@ public class DefaultUserService implements UserService {
 					subject = new JsonObject()
 							.put("subjectCode", sf[3])
 							.put("subjectName", sf[4])
-							.put("scope", new fr.wseduc.webutils.collections.JsonArray())
-							.put("structureExternalIds", new fr.wseduc.webutils.collections.JsonArray());
+							.put("scope", new JsonArray())
+							.put("structureExternalIds", new JsonArray());
 					jo.getJsonObject("subjects").put(sf[3], subject);
 				}
 				jo.getJsonArray("structureExternalIds").add(sf[0]);
@@ -435,7 +435,7 @@ public class DefaultUserService implements UserService {
 			}
 		}
 		r.remove("aafFunctions");
-		for (Object o : getOrElse(r.getJsonArray("functions"), new fr.wseduc.webutils.collections.JsonArray())) {
+		for (Object o : getOrElse(r.getJsonArray("functions"), new JsonArray())) {
 			if (!(o instanceof JsonArray)) continue;
 			JsonArray a = (JsonArray) o;
 			String code = a.getString(0);
@@ -562,7 +562,7 @@ public class DefaultUserService implements UserService {
 			params.put("structureId", structureId);
 			if (profile != null && !profile.isEmpty()) {
 				query += "AND p.name IN {profile} ";
-				params.put("profile", new fr.wseduc.webutils.collections.JsonArray(profile));
+				params.put("profile", new JsonArray(profile));
 			}
 		} else { // users without structure
 			query = "MATCH (u:User)" +
@@ -699,7 +699,7 @@ public class DefaultUserService implements UserService {
 			if (restrictResultsToFunction && scope != null && !scope.isEmpty()) {
 				filterFunction += "MATCH (fs:Structure)<-[:DEPENDS]-(pg:ProfileGroup)<-[:IN]-(u:User) ";
 				conditionFunction += "AND (fs.id IN {scope}) ";
-				params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
+				params.put("scope", new JsonArray(scope));
 			}
 		} else if(userInfos.getFunctions().containsKey(CLASS_ADMIN)){
 			UserInfos.Function f = userInfos.getFunctions().get(CLASS_ADMIN);
@@ -707,7 +707,7 @@ public class DefaultUserService implements UserService {
 			if (scope != null && !scope.isEmpty()) {
 				filterFunction += "MATCH (c:Class)<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), u-[:IN]->pg ";
 				conditionFunction += "AND c.id IN {scope} ";
-				params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
+				params.put("scope", new JsonArray(scope));
 			}
 		}
 		String query =
@@ -761,7 +761,7 @@ public class DefaultUserService implements UserService {
 	public void delete(List<String> users, Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-delete-user")
-				.put("users", new fr.wseduc.webutils.collections.JsonArray(users));
+				.put("users", new JsonArray(users));
 		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
@@ -769,7 +769,7 @@ public class DefaultUserService implements UserService {
 	public void restore(List<String> users, Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-restore-user")
-				.put("users", new fr.wseduc.webutils.collections.JsonArray(users));
+				.put("users", new JsonArray(users));
 		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
@@ -979,7 +979,7 @@ public class DefaultUserService implements UserService {
 		}
 
 		if (fields == null || fields.size() == 0) {
-			fields = new fr.wseduc.webutils.collections.JsonArray().add("id").add("externalId").add("lastName").add("firstName").add("login");
+			fields = new JsonArray().add("id").add("externalId").add("lastName").add("firstName").add("login");
 		}
 
 		//user's fields for Full Export
@@ -995,7 +995,7 @@ public class DefaultUserService implements UserService {
 		// Init params and filter for all type of queries
 		String  filter =  "WHERE s.UAI IN {uai} ";
 
-		JsonObject params = new JsonObject().put("uai", new fr.wseduc.webutils.collections.JsonArray(UAI));
+		JsonObject params = new JsonObject().put("uai", new JsonArray(UAI));
 
 		StringBuilder query = new StringBuilder();
 		query.append("MATCH (s:Structure)<-[:DEPENDS]-(cpg:ProfileGroup)");

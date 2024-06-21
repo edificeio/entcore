@@ -193,7 +193,7 @@ public class WorkspaceSearchingEvents implements SearchingEvents {
 				}
 			});
 		} else {
-			handler.handle(new Either.Right<String, JsonArray>(new fr.wseduc.webutils.collections.JsonArray()));
+			handler.handle(new Either.Right<String, JsonArray>(new JsonArray()));
 		}
 	}
 }

@@ -25,7 +25,6 @@
  import io.vertx.core.DeploymentOptions;
  import io.vertx.core.Handler;
  import io.vertx.core.eventbus.Message;
- import io.vertx.core.json.JsonArray;
  import io.vertx.core.json.JsonObject;
  import io.vertx.ext.unit.Async;
  import io.vertx.ext.unit.TestContext;
@@ -75,9 +74,6 @@
                  json.remove("groups");
                  eventStore.storeCustomEvent(eventType, json);
              }
-         });
-         test.vertx().eventBus().localConsumer("event.blacklist", ar -> {
-             ar.reply(new JsonArray());
          });
      }
 

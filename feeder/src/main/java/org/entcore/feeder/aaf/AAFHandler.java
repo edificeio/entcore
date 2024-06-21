@@ -109,7 +109,7 @@ public final class AAFHandler extends DefaultHandler {
 		if (type != null && type.contains("array")) {
 			JsonArray a = currentStructure.getJsonArray(attribute);
 			if (a == null) {
-				a = new fr.wseduc.webutils.collections.JsonArray();
+				a = new JsonArray();
 				currentStructure.put(attribute, a);
 			}
 			if (!s.isEmpty()) {

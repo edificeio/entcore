@@ -173,7 +173,7 @@ public abstract class AbstractRepositoryEvents implements RepositoryEvents {
 				applyIdsChange((JsonArray)val, oldIdsToNewIds);
 			else if(val instanceof String)
 			{
-				fr.wseduc.webutils.collections.JsonArray.setInJsonArray(docFragment, i, applyIdsChange((String)val, oldIdsToNewIds));
+				docFragment.set(i, applyIdsChange((String)val, oldIdsToNewIds));
 			}
 		}
 	}

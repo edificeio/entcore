@@ -89,13 +89,13 @@ public class DefaultImportService implements ImportService {
 					} else {
 						handler.handle(new Either.Left<JsonObject, JsonObject>(
 								new JsonObject().put("global",
-								new fr.wseduc.webutils.collections.JsonArray().add(res.body().getString("message", "")))));
+								new JsonArray().add(res.body().getString("message", "")))));
 					}
 				}
 			}));
 		} catch (JsonProcessingException e) {
 			handler.handle(new Either.Left<JsonObject, JsonObject>(new JsonObject()
-					.put("global", new fr.wseduc.webutils.collections.JsonArray().add("unexpected.error"))));
+					.put("global", new JsonArray().add("unexpected.error"))));
 			log.error(e.getMessage(), e);
 		}
 	}
@@ -128,13 +128,13 @@ public class DefaultImportService implements ImportService {
 						}
 					} else {
 						handler.handle(new Either.Left<JsonObject, JsonObject>(new JsonObject().put("global",
-								new fr.wseduc.webutils.collections.JsonArray().add(event.body().getString("message", "")))));
+								new JsonArray().add(event.body().getString("message", "")))));
 					}
 			}
 			}));
 		} catch (JsonProcessingException e) {
 			handler.handle(new Either.Left<JsonObject, JsonObject>(new JsonObject()
-					.put("global", new fr.wseduc.webutils.collections.JsonArray().add("unexpected.error"))));
+					.put("global", new JsonArray().add("unexpected.error"))));
 			log.error(e.getMessage(), e);
 		}
 	}

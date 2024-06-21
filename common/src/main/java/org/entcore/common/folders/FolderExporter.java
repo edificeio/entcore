@@ -165,7 +165,7 @@ public class FolderExporter {
 					context.errors.addAll(res.getJsonArray("errors"));
 					future.complete();
 					log.error("Failed to export file : " + folderPath + " - " + nameByFileId + "- "
-							+ new fr.wseduc.webutils.collections.JsonArray(Arrays.asList(ids)).encode() + " - "
+							+ new JsonArray(Arrays.asList(ids)).encode() + " - "
 							+ res.encode());
 				}
 			});

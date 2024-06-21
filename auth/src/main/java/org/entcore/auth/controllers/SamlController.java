@@ -135,7 +135,7 @@ public class SamlController extends AbstractFederateController {
 			if (samlWayfMustacheFormat.getJsonObject(host) == null) {
 				JsonObject wayfParams = samlWayfParams.getJsonObject(host);
 				wayfParams = (wayfParams == null) ? samlWayfParams : wayfParams;
-				final JsonArray wmf = new fr.wseduc.webutils.collections.JsonArray();
+				final JsonArray wmf = new JsonArray();
 				for (String attr : wayfParams.fieldNames()) {
 					JsonObject i = wayfParams.getJsonObject(attr);
 					if (i == null) continue;

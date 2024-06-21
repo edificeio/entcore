@@ -59,13 +59,13 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 	public void process(JsonObject object) {
 		List<String> c = object.getJsonArray("classes") != null ? object.getJsonArray("classes").getList() : new LinkedList<>();
 		createGroups(object.getJsonArray("groups"), c, null);
-		createClasses(new fr.wseduc.webutils.collections.JsonArray(c));
+		createClasses(new JsonArray(c));
 		createFunctionGroups(object.getJsonArray("functions"), null);
 		createHeadTeacherGroups(object.getJsonArray("headTeacher"), null);
 		createDirectionGroups(object.getJsonArray("direction"), null);
 		linkMef(object.getJsonArray("modules"));
 		String profile = detectProfile(object);
-		object.put("profiles", new fr.wseduc.webutils.collections.JsonArray()
+		object.put("profiles", new JsonArray()
 				.add((TEACHER_PROFILE_EXTERNAL_ID.equals(profile) ? "Teacher" : "Personnel")));
 		String email = object.getString("email");
 		if (email != null && !email.trim().isEmpty()) {

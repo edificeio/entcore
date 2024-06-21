@@ -236,7 +236,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 		JsonObject params = new JsonObject()
 				.put("id", request.params().get("groupId"))
 				.put("userId", request.params().get("userId"))
-				.put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
+				.put("ids", new JsonArray(new ArrayList<>(ids)));
 		validateQuery(request, handler, query, params);
 	}
 
@@ -249,7 +249,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				"RETURN count(*) > 0 as exists";
 		JsonObject params = new JsonObject()
 				.put("id", request.params().get("groupId"))
-				.put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
+				.put("ids", new JsonArray(new ArrayList<>(ids)));
 		validateQuery(request, handler, query, params);
 	}
 
@@ -332,7 +332,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					"RETURN count(*) > 0 as exists";
 			JsonObject params = new JsonObject()
 					.put("classId", classId)
-					.put("ids", new fr.wseduc.webutils.collections.JsonArray(adminLocal.getScope()));
+					.put("ids", new JsonArray(adminLocal.getScope()));
 			validateQuery(request, handler, query, params);
 		} else {
 			handler.handle(false);
@@ -372,7 +372,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 									"RETURN count(*) > 0 as exists";
 					JsonObject params = new JsonObject()
 							.put("classId", classId)
-							.put("ids", new fr.wseduc.webutils.collections.JsonArray(adminLocal.getScope()));
+							.put("ids", new JsonArray(adminLocal.getScope()));
 					validateQuery(request, handler, query, params);
 				} else {
 					handler.handle(false);
@@ -411,7 +411,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					"RETURN count(*) > 0 as exists";
 			JsonObject params = new JsonObject()
 					.put("classId", classId)
-					.put("ids", new fr.wseduc.webutils.collections.JsonArray(adminLocal.getScope()));
+					.put("ids", new JsonArray(adminLocal.getScope()));
 			validateQuery(request, handler, query, params);
 		} else {
 			handler.handle(false);
@@ -456,7 +456,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			JsonObject params = new JsonObject()
 					.put("id", request.params().get("groupId"))
 					.put("userId", request.params().get("userId"))
-					.put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
+					.put("ids", new JsonArray(new ArrayList<>(ids)));
 			neo.execute(query, params, new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> r) {
@@ -486,7 +486,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				"WHERE u.id IN {userIds} " +
 				"RETURN count(distinct u) = {size} as exists ";
 		JsonObject params = new JsonObject()
-				.put("userIds", new fr.wseduc.webutils.collections.JsonArray(userIds))
+				.put("userIds", new JsonArray(userIds))
 				.put("teacherId", user.getUserId())
 				.put("size", userIds.size());
 		validateQuery(request, handler, query, params);
@@ -507,7 +507,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 		JsonObject params = new JsonObject()
 				.put("classId", classId)
 				.put("userId", request.params().get("userId"))
-				.put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
+				.put("ids", new JsonArray(new ArrayList<>(ids)));
 		neo.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> r) {
@@ -612,7 +612,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 		JsonObject params = new JsonObject()
 				.put("classId", classId)
 				.put("userId", request.params().get("userId"))
-				.put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
+				.put("ids", new JsonArray(new ArrayList<>(ids)));
 		neo.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> r) {

@@ -113,7 +113,7 @@ public abstract class GenericShareService implements ShareService {
 				if (a == null) {
 					a = new JsonObject()
 							.put("name",
-									new fr.wseduc.webutils.collections.JsonArray()
+									new JsonArray()
 											.add(action.getName().replaceAll("\\.", "-")))
 							.put("displayName", action.getDisplayName()).put("type", action.getType());
 					resourceActions.put(action.getDisplayName(), a);
@@ -122,7 +122,7 @@ public abstract class GenericShareService implements ShareService {
 				}
 			}
 		}
-		this.resourceActions = new fr.wseduc.webutils.collections.JsonArray(
+		this.resourceActions = new JsonArray(
 				new ArrayList<>(resourceActions.getMap().values()));
 		return this.resourceActions;
 	}
@@ -203,9 +203,9 @@ public abstract class GenericShareService implements ShareService {
 			final JsonObject userCheckedActions, final String acceptLanguage, ShareInfosQuery query,
 			final Handler<JsonObject> handler) {
 		final JsonObject groupParams = new JsonObject().put("groupIds",
-				new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(groupCheckedActions.fieldNames())));
+				new JsonArray(new ArrayList<>(groupCheckedActions.fieldNames())));
 		final JsonObject userParams = new JsonObject().put("userIds",
-				new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(userCheckedActions.fieldNames())));
+				new JsonArray(new ArrayList<>(userCheckedActions.fieldNames())));
 		final String search = query.getSearch();
 		if (search != null && search.trim().isEmpty()) {
 			final Neo4j neo4j = Neo4j.getInstance();
@@ -214,7 +214,7 @@ public abstract class GenericShareService implements ShareService {
 				if (sg.isRight()) {
 					visibleGroups = sg.right().getValue();
 				} else {
-					visibleGroups = new fr.wseduc.webutils.collections.JsonArray();
+					visibleGroups = new JsonArray();
 				}
 				final JsonObject groups = new JsonObject();
 				groups.put("visibles", visibleGroups);
@@ -230,7 +230,7 @@ public abstract class GenericShareService implements ShareService {
 					if (event.isRight()) {
 						visibleUsers = event.right().getValue();
 					} else {
-						visibleUsers = new fr.wseduc.webutils.collections.JsonArray();
+						visibleUsers = new JsonArray();
 					}
 					JsonObject users = new JsonObject();
 					users.put("visibles", visibleUsers);

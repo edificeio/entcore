@@ -273,14 +273,14 @@ public class PostImport {
 			neo4j.execute(q, new JsonObject().put("externalIds", eIds), new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> message) {
-					JsonArray ids = message.body().getJsonArray("result", new fr.wseduc.webutils.collections.JsonArray());
+					JsonArray ids = message.body().getJsonArray("result", new JsonArray());
 					if ("ok".equals(message.body().getString("status")) && ids != null &&
 							ids.size() == 1) {
 						logger.info(e-> "SUCCEED get ids for applyComRules " + ids.getJsonObject(0).getJsonArray("ids"));
 						JsonObject j = new JsonObject()
 								.put("action", "initAndApplyDefaultCommunicationRules")
 								.put("schoolIds", (ids.getJsonObject(0))
-										.getJsonArray("ids", new fr.wseduc.webutils.collections.JsonArray()));
+										.getJsonArray("ids", new JsonArray()));
 						logger.info(e-> "START apply applyComRules");
 						eb.request("wse.communication", j, new DeliveryOptions().setSendTimeout(3600 * 1000l),
 								handlerToAsyncHandler(new Handler<Message<JsonObject>>() {

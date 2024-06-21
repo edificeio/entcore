@@ -153,7 +153,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected final String UAI;
 	protected final Report report;
 	protected final TimetableReport ttReport;
-	protected final JsonArray structure = new fr.wseduc.webutils.collections.JsonArray();
+	protected final JsonArray structure = new JsonArray();
 	protected String structureExternalId;
 	protected String structureId;
 	protected JsonObject classesMapping;
@@ -221,7 +221,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected final String basePath;
 	private boolean txSuccess = false;
 	protected Set<String> userImportedExternalId = new HashSet<>();
-	private volatile JsonArray coursesBuffer = new fr.wseduc.webutils.collections.JsonArray();
+	private volatile JsonArray coursesBuffer = new JsonArray();
 	protected final boolean authorizeUserCreation;
 	protected final boolean authorizeUpdateGroups;
 	protected final boolean authoriseUpdateTimetable;
@@ -550,7 +550,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			return;
 
 		final JsonArray cf = coursesBuffer;
-		coursesBuffer = new fr.wseduc.webutils.collections.JsonArray();
+		coursesBuffer = new JsonArray();
 		final int countCoursesBuffer = cf.size();
 		if (countCoursesBuffer > 0) {
 			mongoDb.bulk(COURSES, cf, new Handler<Message<JsonObject>>() {
@@ -619,7 +619,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	}
 
 	private JsonArray getExternalIdClasses(JsonArray classes) {
-		JsonArray a = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray a = new JsonArray();
 		if (classes != null && classes.size() > 0) {
 			for (Object c: classes) {
 				if (!(c instanceof String)) continue;
@@ -633,7 +633,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	}
 
 	private JsonArray getExternalIdGroups(JsonArray groups) {
-		JsonArray a = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray a = new JsonArray();
 		if (groups != null && groups.size() > 0) {
 			for (Object g: groups) {
 				if (!(g instanceof String)) continue;
@@ -771,7 +771,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 
 		JsonArray mappedGroups = groupsMapping != null ? new JsonArray(new ArrayList<String>(groupsMapping.getMap().keySet())) : new JsonArray();
 		persistBulKCourses();
-		txXDT.add(DELETE_SUBJECT, params.copy().put("subjects", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(subjects.values()))));
+		txXDT.add(DELETE_SUBJECT, params.copy().put("subjects", new JsonArray(new ArrayList<>(subjects.values()))));
 		txXDT.add(UNLINK_SUBJECT, params);
 		if(authorizeUpdateGroups == true)
 		{

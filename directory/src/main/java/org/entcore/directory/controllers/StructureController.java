@@ -125,7 +125,7 @@ public class StructureController extends BaseController {
 			public void handle(Either<String, JsonObject> r) {
 				if (r.isRight()) {
 					if (r.right().getValue() != null && r.right().getValue().size() > 0) {
-						JsonArray a = new fr.wseduc.webutils.collections.JsonArray().add(userId);
+						JsonArray a = new JsonArray().add(userId);
 						ApplicationUtils.sendModifiedUserGroup(eb, a, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(Message<JsonObject> message) {
@@ -217,7 +217,7 @@ public class StructureController extends BaseController {
 	@SecuredAction("structure.list.all")
 	public void listStructures(final HttpServerRequest request) {
 		String format = request.params().get("format");
-		JsonArray fields = new fr.wseduc.webutils.collections.JsonArray().add("id").add("externalId").add("name").add("UAI")
+		JsonArray fields = new JsonArray().add("id").add("externalId").add("name").add("UAI")
 				.add("address").add("zipCode").add("city").add("phone").add("academy");
 		if ("XML".equalsIgnoreCase(format)) {
 			structureService.list(fields, new Handler<Either<String, JsonArray>>() {
@@ -327,10 +327,10 @@ public class StructureController extends BaseController {
 						null;
 
 				filter
-					.put("profiles", new fr.wseduc.webutils.collections.JsonArray(request.params().getAll("p")))
-					.put("levels", new fr.wseduc.webutils.collections.JsonArray(request.params().getAll("l")))
-					.put("classes", new fr.wseduc.webutils.collections.JsonArray(request.params().getAll("c")))
-					.put("sort", new fr.wseduc.webutils.collections.JsonArray(sorts));
+					.put("profiles", new JsonArray(request.params().getAll("p")))
+					.put("levels", new JsonArray(request.params().getAll("l")))
+					.put("classes", new JsonArray(request.params().getAll("c")))
+					.put("sort", new JsonArray(sorts));
 
 				if(request.params().contains("a")){
 					filter.put("activated", request.params().get("a"));
@@ -444,10 +444,10 @@ public class StructureController extends BaseController {
 				null;
 
 		filter
-			.put("profiles", new fr.wseduc.webutils.collections.JsonArray(request.params().getAll("p")))
-			.put("levels", new fr.wseduc.webutils.collections.JsonArray(request.params().getAll("l")))
-			.put("classes", new fr.wseduc.webutils.collections.JsonArray(request.params().getAll("c")))
-			.put("sort", new fr.wseduc.webutils.collections.JsonArray(request.params().getAll("s")));
+			.put("profiles", new JsonArray(request.params().getAll("p")))
+			.put("levels", new JsonArray(request.params().getAll("l")))
+			.put("classes", new JsonArray(request.params().getAll("c")))
+			.put("sort", new JsonArray(request.params().getAll("s")));
 
 		if(request.params().contains("a")){
 			filter.put("activated", request.params().get("a"));

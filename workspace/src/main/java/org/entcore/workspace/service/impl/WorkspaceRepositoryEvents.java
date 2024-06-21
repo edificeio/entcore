@@ -403,7 +403,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 					.pull("inheritedShares", new JsonObject().put("groupId", j.getString("group")))
 					.addToSet("old_shared", new JsonObject().put("groupId", j.getString("group")));
 			if (shareOldGroupsToUsers) {
-				JsonArray userShare = new fr.wseduc.webutils.collections.JsonArray();
+				JsonArray userShare = new JsonArray();
 				for (Object u : j.getJsonArray("users")) {
 					JsonObject share = new JsonObject().put("userId", u.toString())
 							.put(WorkspaceController.GET_ACTION, true).put(WorkspaceController.COPY_ACTION, true);
