@@ -1076,7 +1076,7 @@ public class UserController extends BaseController {
 						MobileValidation.tryValidate(eb, UserUtils.getSessionIdOrTokenId(request).get(), userId, payload.getString("key"))
 								.onSuccess( mobileState -> {
 									// Send the warning email & sms to the user
-									if (!StringUtils.isEmpty(userInfos.getMobile())) {
+									if ("valid".equalsIgnoreCase(mobileState.getString("state")) && !StringUtils.isEmpty(userInfos.getMobile())) {
 										MobileValidation.sendWarning(request, userInfos, mobileState)
 												.onFailure(e -> log.error("Failed to send mobile update alert", e));
 									}
@@ -1150,7 +1150,7 @@ public class UserController extends BaseController {
 								final String userId = userInfos.getUserId();
 								EmailValidation.tryValidate(eb, userId, payload.getString("key"))
 										.onSuccess(emailState -> {
-											if (!StringUtils.isEmpty(userInfos.getEmail())) {
+											if ("valid".equalsIgnoreCase(emailState.getString("state")) && !StringUtils.isEmpty(userInfos.getEmail())) {
 												EmailValidation.sendWarningEmail(request, userInfos, emailState)
 														.onFailure(e -> {
 															log.error("Failed to send email update alert", e);
