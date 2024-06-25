@@ -547,10 +547,9 @@ public class User {
 				.put("limit", limit);
 		String query =
 				"MATCH (:DeleteGroup)<-[:IN]-(u:User) " +
-				"WHERE HAS(u.deleteDate) AND u.deleteDate < {date} " +
+				"WHERE HAS(u.deleteDate) AND u.deleteDate < {date} WITH DISTINCT u LIMIT {limit} " +
 				"OPTIONAL MATCH (u)-[:HAS_RELATIONSHIPS]->(b:Backup) " +
-				 GET_DELETE_OPTIONS +
-				"LIMIT {limit} ";
+				 GET_DELETE_OPTIONS;
 		transactionHelper.add(query, params);
 	}
 
