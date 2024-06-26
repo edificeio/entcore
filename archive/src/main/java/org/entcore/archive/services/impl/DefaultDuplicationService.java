@@ -2,7 +2,6 @@ package org.entcore.archive.services.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
-import fr.wseduc.webutils.http.Renders;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
@@ -16,6 +15,12 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+import org.entcore.common.explorer.ExplorerMessage;
+import org.entcore.common.explorer.ExplorerPluginFactory;
+import org.entcore.common.explorer.IExplorerPluginCommunication;
+import org.entcore.common.explorer.IdAndVersion;
+import org.entcore.common.explorer.impl.ExplorerResourceDetails;
+import org.entcore.common.explorer.impl.ExplorerResourceDetailsQuery;
 import org.entcore.common.storage.Storage;
 import org.entcore.archive.services.DuplicationService;
 import org.entcore.archive.services.ExportService;
@@ -25,6 +30,10 @@ import org.entcore.common.user.UserInfos;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Map;
+import java.util.Optional;
+
+import static io.vertx.core.json.JsonObject.mapFrom;
+import static java.lang.System.currentTimeMillis;
 
 public class DefaultDuplicationService implements DuplicationService
 {
@@ -35,6 +44,7 @@ public class DefaultDuplicationService implements DuplicationService
 
     private final ExportService exportService;
     private final ImportService importService;
+    private final IExplorerPluginCommunication explorerPluginCommunication;
 
     public DefaultDuplicationService(Vertx vertx, JsonObject config, Storage storage, String importPath, PrivateKey signKey, PublicKey verifyKey, boolean forceEncryption)
     {
@@ -45,6 +55,11 @@ public class DefaultDuplicationService implements DuplicationService
       this.exportService = new FileSystemExportService(vertx, vertx.fileSystem(), vertx.eventBus(), tmpDir, "duplicate:export", null,
               storage, null, null, signKey, forceEncryption);
       this.importService = new DefaultImportService(vertx, config, storage, importPath, "duplicate:import", verifyKey, forceEncryption);
+      try {
+        this.explorerPluginCommunication = ExplorerPluginFactory.getCommunication();
+      } catch (Exception e) {
+        throw new IllegalStateException("explorer plugin communication could not be started", e);
+      }
     }
 
     @Override
@@ -133,6 +148,7 @@ public class DefaultDuplicationService implements DuplicationService
                                 // The import service automatically deletes the archive
                                 //importService.deleteArchive(importId);
                                 handler.handle(new Either.Right<>(duplicatedId));
+                                moveDuplicatedResourceToOriginalResourceFolder(resourcesIds, apps, duplicatedId, user);
                               }
                             });
                           }
@@ -151,6 +167,31 @@ public class DefaultDuplicationService implements DuplicationService
         }
       });
     }
+
+  private void moveDuplicatedResourceToOriginalResourceFolder(final JsonArray resourcesIds, final JsonArray apps,
+                                                              final String duplicatedId, final UserInfos userInfos) {
+    final String resourceId = resourcesIds.getString(0);
+    final String app = apps.getString(0);
+    eb.request("explorer.resources.details", mapFrom(new ExplorerResourceDetailsQuery(resourceId, app, userInfos.getUserId())), e -> {
+      if(e.succeeded()) {
+        final ExplorerResourceDetails details = ((JsonObject) e.result().body()).mapTo(ExplorerResourceDetails.class);
+        if(details.getParentId() == null) {
+          log.debug("Resource {0}@{1} is already in root folder", duplicatedId, app);
+        } else {
+          log.debug("Sending a message to move duplicated resource {0}@{1} to right folder", duplicatedId, app);
+          final ExplorerMessage message = ExplorerMessage.move(
+              new IdAndVersion(duplicatedId, currentTimeMillis()), details.getParentId(),
+              app, details.getResourceType(), details.getEntityType(),
+            userInfos);
+          explorerPluginCommunication.pushMessage(message)
+            .onSuccess(ok -> log.debug("Successfully sent a message to move the newly duplicated resource"))
+            .onFailure(th -> log.warn("An error occurred while sending a message to move the newly duplicated resource {0}@{1} to right folder", duplicatedId, app, th));
+        }
+      } else {
+        log.error("An error occurred while fetching resource {0}@{1} details", resourceId, app, e.cause());
+      }
+    });
+  }
 
   @Override
   public void exported(final String exportId, String status, final String locale, final String host)

@@ -10,12 +10,14 @@ import java.util.stream.Collectors;
 
 public class ExplorerMessage {
 
-    public enum ExplorerContentType{
+
+  public enum ExplorerContentType{
         Text, Html, Pdf
     }
     public enum ExplorerAction{
         Upsert(ExplorerPriority.High),
         Delete(ExplorerPriority.High),
+        Move(ExplorerPriority.Medium),
         Audience(ExplorerPriority.Low);
         private final ExplorerPriority priority;
         ExplorerAction(final ExplorerPriority i){
@@ -83,6 +85,19 @@ public class ExplorerMessage {
         builder.withType(application, resourceType, entityType);
         return builder;
     }
+
+  public static ExplorerMessage move(final IdAndVersion id, final Long folderId,
+                                     final String application, final String resourceType,
+                                     final String entityType,
+                                     final UserInfos user) {
+    final ExplorerMessage builder = new ExplorerMessage(id.getId(), ExplorerAction.Move, false);
+    builder.withVersion(id.getVersion());
+    builder.withType(application, resourceType, entityType);
+    builder.withParentId(Optional.ofNullable(folderId));
+    builder.message.put("updaterId", user.getUserId());
+    builder.message.put("updaterName", user.getUsername());
+    return builder;
+  }
 
     public static ExplorerMessage delete(final IdAndVersion id, final UserInfos user, final boolean forSearch) {
         final ExplorerMessage builder = new ExplorerMessage(id.getId(), ExplorerAction.Delete, forSearch);
