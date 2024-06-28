@@ -93,6 +93,8 @@ public class S3Client {
 	}
 
 	public void getFileStats(String id, String bucket, Handler<AsyncResult<FileStats>> handler) {
+		id = getPath(id);
+
 		HttpClientRequest req = httpClient.head("/" + bucket + "/" + id, response -> {
 			response.pause();
 			if (response.statusCode() == 200) {
@@ -290,6 +292,8 @@ public class S3Client {
 	public void downloadFile(String id, final HttpServerRequest request, String bucket,
 			boolean inline, String downloadName, JsonObject metadata, final String eTag,
 			final Handler<AsyncResult<Void>> resultHandler) {
+		id = getPath(id);
+
 		final HttpServerResponse resp = request.response();
 		if (!inline) {
 			String name = FileUtils.getNameWithExtension(downloadName, metadata);
@@ -348,7 +352,9 @@ public class S3Client {
 	}
 
 	public void readFile(final String id, String bucket, final Handler<AsyncResult<StorageObject>> handler) {
-		HttpClientRequest req = httpClient.get("/" + bucket + "/" + id, response -> {
+		final String idPrefixed = getPath(id);
+
+		HttpClientRequest req = httpClient.get("/" + bucket + "/" + idPrefixed, response -> {
 			response.pause();
 			if (response.statusCode() == 200) {
 				final Buffer buffer = Buffer.buffer();
@@ -364,7 +370,7 @@ public class S3Client {
 							}
 						}
 						StorageObject o = new StorageObject(
-								id,
+								idPrefixed,
 								buffer,
 								filename,
 								response.headers().get("Content-Type")
@@ -399,7 +405,9 @@ public class S3Client {
 		readFileStream(id, defaultBucket, handler);
 	}
 
-	public void readFileStream(final String id, String bucket, final Handler<AsyncResult<HttpClientResponse>> handler) {
+	public void readFileStream(String id, String bucket, final Handler<AsyncResult<HttpClientResponse>> handler) {
+		id = getPath(id);
+
 		HttpClientRequest req = httpClient.get("/" + bucket + "/" + id, response -> {
 			response.pause();
 			response.endHandler(event -> handler.handle(Future.succeededFuture(response)));
@@ -429,7 +437,7 @@ public class S3Client {
 	}
 
 	public void writeFile(StorageObject object, String bucket, final Handler<AsyncResult<String>> handler) {
-		final String id = (object.getId() != null) ? object.getId() : getPath(UUID.randomUUID().toString());
+		final String id = (object.getId() != null) ? getPath(object.getId()) : getPath(UUID.randomUUID().toString());
 		
 		final HttpClientRequest req = httpClient.put("/" + bucket + "/" + id, response -> {
 			if (response.statusCode() == 200) {
@@ -463,6 +471,8 @@ public class S3Client {
 	}
 
 	public void deleteFile(String id, String bucket, final Handler<AsyncResult<Void>> handler) {
+		id = getPath(id);
+
 		final HttpClientRequest req = httpClient.delete("/" + bucket + "/" + id, response -> {
 			if (response.statusCode() == 204) {
 				handler.handle(new DefaultAsyncResult<>((Void) null));
@@ -517,7 +527,7 @@ public class S3Client {
 			return;
         }
 		
-		req.putHeader("X-Copy-From", "/" + bucket + "/" + from);
+		req.putHeader("X-Copy-From", "/" + bucket + "/" + getPath(from));
 		req.end();
 	}
 
@@ -527,6 +537,8 @@ public class S3Client {
 
 	public void writeToFileSystem(String id, final String destination, String bucket,
 			final Handler<AsyncResult<String>> handler) {
+		id = getPath(id);
+
 		HttpClientRequest req = httpClient.get("/" + bucket + "/" + id, response -> {
 			response.pause();
 			if (response.statusCode() == 200) {
@@ -581,14 +593,17 @@ public class S3Client {
 			return;
 		}
 
+		final String idPrefixed = getPath(id);
+
 		MultipartUpload multipartUpload = new MultipartUpload(vertx, httpClient, host, accessKey, secretKey, region, bucket, ssec);
-		multipartUpload.upload(path, id, result -> {
+		multipartUpload.upload(path, idPrefixed, result -> {
 			handler.handle(new JsonObject().put("_id", id).put("status", "ok"));
 		});
 	}
 
-	public void writeBufferStream(String id, ReadStream<Buffer> bufferReadStream, String contentType, String filename, Handler<AsyncResult<JsonObject>> handler) {
+	public void writeBufferStream(final String id, ReadStream<Buffer> bufferReadStream, String contentType, String filename, Handler<AsyncResult<JsonObject>> handler) {
 		bufferReadStream.pause();
+		final String idPrefixed = getPath(id);
 
 		final JsonObject res = new JsonObject();
 		final JsonObject metadata = new JsonObject();
@@ -600,7 +615,7 @@ public class S3Client {
 		StringBuilder multipartUploadId = new StringBuilder();
 
 		if (multipartUploadId.toString().isEmpty()) {
-			multipartUpload.init(id, filename, contentType, uploadId -> {
+			multipartUpload.init(idPrefixed, filename, contentType, uploadId -> {
 				multipartUploadId.append(uploadId);
 				bufferReadStream.resume();
 			});
@@ -613,9 +628,9 @@ public class S3Client {
 				bufferReadStream.pause();
 				String uploadId = multipartUploadId.toString();
 
-				multipartUpload.uploadPart(id, uploadId, chunk, eTag -> {
+				multipartUpload.uploadPart(idPrefixed, uploadId, chunk, eTag -> {
 					if (eTag == null) {
-						multipartUpload.cancel(id, uploadId);
+						multipartUpload.cancel(idPrefixed, uploadId);
 						handler.handle(new DefaultAsyncResult<>(
 							new JsonObject()
 								.put("status", "error")
@@ -636,9 +651,9 @@ public class S3Client {
 			String uploadId = multipartUploadId.toString();
 
 			if (chunk.getChunkSize() > 0) {
-				multipartUpload.uploadPart(id, uploadId, chunk, eTag -> {
+				multipartUpload.uploadPart(idPrefixed, uploadId, chunk, eTag -> {
 					if (eTag == null) {
-						multipartUpload.cancel(id, uploadId);
+						multipartUpload.cancel(idPrefixed, uploadId);
 						handler.handle(new DefaultAsyncResult<>(
 							new JsonObject()
 								.put("status", "error")
@@ -649,10 +664,10 @@ public class S3Client {
 					fileSize.addAndGet(chunk.getChunkSize());
 					eTags.add(eTag);
 
-					multipartUpload.complete(id, uploadId, eTags, result -> {
+					multipartUpload.complete(idPrefixed, uploadId, eTags, result -> {
 						metadata.put("size", fileSize);
 						res.put("status", "ok")
-							.put("_id", id)
+							.put("_id", idPrefixed)
 							.put("metadata", metadata);
 
 						handler.handle(new DefaultAsyncResult<>(res));
@@ -660,10 +675,10 @@ public class S3Client {
 				});
 			}
 			else {
-				multipartUpload.complete(id, uploadId, eTags, result -> {
+				multipartUpload.complete(idPrefixed, uploadId, eTags, result -> {
 					metadata.put("size", fileSize);
 					res.put("status", "ok")
-						.put("_id", id)
+						.put("_id", idPrefixed)
 						.put("metadata", metadata);
 
 					handler.handle(new DefaultAsyncResult<>(res));
@@ -671,6 +686,56 @@ public class S3Client {
 			}
 		});
 	}
+
+	// public void list(String prefix, String filter, final Handler<AsyncResult<List<String>>> handler) {
+	// 	list(prefix, filter, defaultBucket, handler);
+	// }
+
+	// public void list(String prefix, String filter, String bucket, final Handler<AsyncResult<List<String>>> handler) {
+	// 	HttpClient tempHttpClient = httpClient.getNow(bucket + "." + host, bucket, null)
+
+	// 	HttpClientRequest req = httpClient.get("/" + bucket + "/" + id, response -> {
+	// 		response.pause();
+	// 		if (response.statusCode() == 200) {
+	// 			List<String> objects = new ArrayList<>();
+
+	// 			// vertx.fileSystem().open(destination, new OpenOptions(), ar -> {
+	// 			// 	if (ar.succeeded()) {
+	// 			// 		response.endHandler(aVoid -> {
+	// 			// 			ar.result().close();
+	// 			// 			handler.handle(new DefaultAsyncResult<>(destination));
+	// 			// 		});
+	// 			// 		Pump p = Pump.pump(response, ar.result());
+	// 			// 		p.start();
+
+	// 			// 		response.resume();
+	// 			// 	} else {
+	// 			// 		handler.handle(new DefaultAsyncResult<>(ar.cause()));
+	// 			// 	}
+	// 			// });
+
+	// 			handler.handle(new DefaultAsyncResult<>(objects));
+	// 		} else {
+	// 			handler.handle(new DefaultAsyncResult<>(new StorageException(response.statusMessage())));
+	// 		}
+	// 	});
+		
+	// 	if (req == null) {
+	// 		handler.handle(Future.failedFuture("Request is null"));
+	// 		return;
+	// 	}
+
+	// 	req.setHost(host);
+    //     try {
+    //         AwsUtils.sign(req, accessKey, secretKey, region);
+    //     } catch (SignatureException e) {
+	// 		log.error("writeToFileSystem signature failed", e);
+	// 		handler.handle(Future.failedFuture("writeToFileSystem signature failed"));
+	// 		return;
+    //     }
+
+	// 	req.end();
+	// }
 
 	private String getContentType(String p) {
 		try {
@@ -689,6 +754,9 @@ public class S3Client {
 
 	public static String getPath(final String id) {
 		String path;
+
+		if (id.charAt(2) == File.separator.charAt(0) && id.charAt(5) == File.separator.charAt(0))
+			return id;
 
 		try {
 			path = Storage.getFilePath(id, "", false);
