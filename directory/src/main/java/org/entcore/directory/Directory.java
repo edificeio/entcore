@@ -82,8 +82,8 @@ public class Directory extends BaseServer {
 				new MongoDBApplicationStorage("documents", Directory.class.getSimpleName()));
 
 		Storage storageAvatar = null;
-		if (config != null && config.getJsonObject("s3avatar") != null) {
-			JsonObject s3 = config.getJsonObject("s3avatar");
+		if (config != null && config.getJsonObject("s3avatars") != null) {
+			JsonObject s3 = config.getJsonObject("s3avatars");
 			try {
 				storageAvatar = new S3Storage(
 					vertx,
@@ -92,7 +92,7 @@ public class Directory extends BaseServer {
 					s3.getString("secretKey"),
 					s3.getString("region"),
 					s3.getString("bucket"),
-					s3.getString("ssec", null),
+					s3.getString("ssec"),
 					s3.getBoolean("keepAlive", false),
 					s3.getInteger("timeout", 10000),
 					s3.getInteger("threshold", 100),
