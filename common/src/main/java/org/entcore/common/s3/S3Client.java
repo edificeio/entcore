@@ -756,9 +756,10 @@ public class S3Client {
 		String path;
 
 		if (id.charAt(2) == File.separator.charAt(0) && id.charAt(5) == File.separator.charAt(0)) {
-			log.error("S3 bad path format: " + id);
 			return id;
 		}
+		
+		log.error("S3 bad path format: " + id);
 
 		try {
 			path = Storage.getFilePath(id, "", false);
