@@ -24,6 +24,7 @@ import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
+import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
@@ -101,6 +102,8 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 import static fr.wseduc.webutils.Utils.*;
+import static fr.wseduc.webutils.request.RequestUtils.getTokenHeader;
+
 import static org.entcore.auth.oauth.OAuthAuthorizationResponse.*;
 import static org.entcore.common.aggregation.MongoConstants.TRACE_TYPE_CONNECTOR;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
@@ -458,6 +461,33 @@ public class AuthController extends BaseController {
 					}
 
 				});
+			}
+		});
+	}
+
+	@Post("/oauth2/token-as-cookie")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	@ApiDoc("Gives back a cookie to the user corresponding to its jwtToken")
+	public void tokenAsCookie(final HttpServerRequest request) {
+		UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(user -> {
+			final Optional<String> jwtToken = getTokenHeader(request);
+			if(jwtToken.isPresent()) {
+				final String oneSessionId = UUID.randomUUID().toString();
+				UserUtils.createSessionWithId(eb, user.getUserId(), oneSessionId, false)
+					.onSuccess(e -> {
+						log.debug("[AuthController@tokenAsCookie] Session created for user");
+						final long timeout = config.getLong("cookie_timeout", Long.MIN_VALUE);
+						CookieHelper.getInstance().setSigned("oneSessionId", oneSessionId, timeout, request);
+						CookieHelper.set("authenticated", "true", timeout, request);
+						Renders.render(request, new JsonObject().put("succces", true));
+					})
+					.onFailure(th -> {
+						log.warn("[AuthController@tokenAsCookie] Error while creating session", th);
+						Renders.renderError(request);
+					});
+			} else {
+				log.warn("[AuthController@tokenAsCookie] Called without a jwt token");
+				Renders.badRequest(request);
 			}
 		});
 	}
