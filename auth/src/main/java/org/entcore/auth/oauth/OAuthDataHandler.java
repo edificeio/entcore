@@ -64,6 +64,7 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class OAuthDataHandler extends DataHandler {
 	public static final String AUTH_ERROR_AUTHENTICATION_FAILED = "auth.error.authenticationFailed";
+	public static final String AUTH_ERROR_PASSWORD_RESET = "The password must be reset";
 	public static final String AUTH_ERROR_BLOCKED_USER = "auth.error.blockedUser";
 	public static final String AUTH_ERROR_BLOCKED_PROFILETYPE = "auth.error.blockedProfileType";
 	public static final String AUTH_ERROR_OTP_DISABLED = "auth.error.otpDisabled";
@@ -190,7 +191,8 @@ public class OAuthDataHandler extends DataHandler {
 				"OPTIONAL MATCH (p:Profile) " +
 				"WHERE HAS(n.profiles) AND p.name = head(n.profiles) " +
 				"RETURN DISTINCT n.id as userId, n.password as password, p.blocked as blockedProfile, " +
-				"n.otp as otp, n.otpiat as otpiat, n.blocked as blockedUser, n.lastLogin as lastLogin, head(n.profiles) as profile, " +
+				"n.otp as otp, n.otpiat as otpiat, n.resetCode as resetCode , n.resetDate as resetDate, n.blocked as blockedUser,  n.lastLogin as lastLogin, head(n.profiles) as profile, "
+				+
 				"n.login as login, n.loginAlias as loginAlias";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", username);
@@ -265,6 +267,12 @@ public class OAuthDataHandler extends DataHandler {
 				handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_AUTHENTICATION_FAILED)));
 				return;
 			}
+			// Handle hijack scenario to return a 403 error when a reset code is used as a password in the auth2 flow
+			if (r.containsKey("resetCode") && password.equals(r.getString("resetCode"))
+					&& !isDateWithinLimit(r.getLong("resetDate"))) {
+				handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_PASSWORD_RESET, 403)));
+				return;
+			}
 			boolean success = false;
 			String hash = null;
 			try {
@@ -316,6 +324,12 @@ public class OAuthDataHandler extends DataHandler {
 		} else {
 			handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_GLOBAL)));
 		}
+	}
+
+	public static boolean isDateWithinLimit(long resetDate) {
+		long currentDateMillis = System.currentTimeMillis();
+		long MILLIS_IN_24_HOURS = 24 * 60 * 60 * 1000L;
+		return (currentDateMillis - resetDate) >= MILLIS_IN_24_HOURS;
 	}
 
 	private void removeOTP(String username) {
