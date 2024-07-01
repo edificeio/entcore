@@ -380,7 +380,7 @@ public class Neo4jRest implements GraphDatabase {
 				} else {
 					continue;
 				}
-				JsonObject outRow = new JsonObject();
+				JsonObject outRow = new fr.wseduc.webutils.collections.JsonObject();
 				out.add(outRow);
 				for (int j = 0; j < row.size(); j++) {
 					Object value = row.getValue(j);
