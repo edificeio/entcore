@@ -26,27 +26,7 @@ public interface IPostgresClient {
         final JsonObject postgresConfig = getPostgresConfig(vertx, config);
         final PostgresClient baseClient = new PostgresClient(vertx, postgresConfig);
         final IPostgresClient postgresClient = pool? baseClient.getClientPool(): baseClient;
-
-        // TODO vertx4 to remove if PostgresClientBus* is removed
-        /*if(worker){
-            //one consumer per config
-            final String suffix = Md5.hash(postgresConfig.encode());
-            return new PostgresClientBusPublisher(vertx, postgresConfig, suffix);
-        }else{*/
-            return postgresClient;
-        //}
-    }
-
-
-
-    // TODO vertx4 to remove if PostgresClientBus* is removed
-    static IPostgresClient initPostgresConsumer(final Vertx vertx, final JsonObject config, final boolean pool) throws Exception{
-        final JsonObject postgresConfig = getPostgresConfig(vertx, config);
-        final PostgresClient baseClient = new PostgresClient(vertx, postgresConfig);
-        final IPostgresClient postgresClient = pool? baseClient.getClientPool(): baseClient;
-        //one consumer per config
-        final String suffix = Md5.hash(postgresConfig.encode());
-        return PostgresClientBusConsumer.initInstance(vertx, postgresClient, suffix);
+        return postgresClient;
     }
 
     static JsonObject getPostgresConfig(final Vertx vertx, final JsonObject config) throws Exception{
