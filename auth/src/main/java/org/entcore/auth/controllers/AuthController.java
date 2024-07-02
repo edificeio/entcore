@@ -77,8 +77,10 @@ import org.entcore.auth.services.impl.OpenIdSloServiceImpl;
 import org.entcore.auth.users.UserAuthAccount;
 import org.entcore.common.datavalidation.UserValidation;
 import org.entcore.common.events.EventStore;
+import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.AppOAuthResourceProvider;
 import org.entcore.common.http.filter.IgnoreCsrf;
+import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.MapFactory;
@@ -1733,6 +1735,26 @@ public class AuthController extends BaseController {
 			public void handle(UserInfos user) {
 				context.put("notLoggedIn", user == null);
 				renderView(request, context);
+			}
+		});
+	}
+
+	@Post("/cgu")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void needToValidateCgu(final HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, user -> {
+			if(user==null) {
+				unauthorized(request,"cgu.accept.unauthorized");
+			}else {
+				String userId = user.getUserId();
+				this.userAuthAccount.needToValidateCgu(userId, ok->{
+					if(ok) {
+						noContent(request);
+					}else {
+						badRequest(request,"cgu.accept.failed");
+					}
+				});
 			}
 		});
 	}
