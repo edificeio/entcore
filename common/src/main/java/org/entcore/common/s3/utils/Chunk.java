@@ -14,6 +14,8 @@ public class Chunk {
 
     private long chunkSize;
 
+    private int retryIndex;
+
     public Chunk() {
         // TODO: get maxSize config
         this(DEFAULT_MAX_SIZE);
@@ -25,6 +27,7 @@ public class Chunk {
         this.buffer = Buffer.buffer();
         this.chunkNumber = 1;
         this.chunkSize = 0;
+        this.retryIndex = 0;
     }
 
     public long getMaxSize() {
@@ -43,6 +46,10 @@ public class Chunk {
         return chunkSize;
     }
 
+    public int getRetryIndex() {
+        return retryIndex;
+    }
+
     public void appendBuffer(Buffer bufferPart) {
         buffer.appendBuffer(bufferPart);
         chunkSize += bufferPart.length();
@@ -52,6 +59,11 @@ public class Chunk {
         buffer = Buffer.buffer();
         chunkNumber++;
         chunkSize = 0;
+        retryIndex = 0;
+    }
+
+    public void incrementRetryIndex() {
+        retryIndex++;
     }
     
 }
