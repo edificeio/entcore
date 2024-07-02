@@ -71,32 +71,6 @@ public class S3Storage implements Storage {
     
     @Override
     public void findByFilenameEndingWith(String name, Handler<AsyncResult<JsonArray>> handler) {
-        // JsonArray json = new JsonArray();
-        // json.add(name);
-        
-        // handler.handle(new DefaultAsyncResult<>(json));
-
-        // json.add(S3Client.getPath(name));
-
-        // handler.handle(new DefaultAsyncResult<>(json));
-
-        // String path = StringUtils.substringBeforeLast(name, File.separator);
-        // handler.hand;
-
-        // if (ar.succeeded()) {
-        //     String path = StringUtils.substringBeforeLast(name, File.separator);
-        //     fs.readDir(path, String.format("(.*)%s", name), event -> {
-        //         if (event.succeeded()) {
-        //             JsonArray json = event.result().stream().collect(JsonArray::new, JsonArray::add, JsonArray::addAll);
-        //             handler.handle(new DefaultAsyncResult<>(json));
-        //         } else {
-        //             handler.handle(new DefaultAsyncResult<>(event.cause()));
-        //         }
-        //     });
-        // } else {
-        //     handler.handle(new DefaultAsyncResult<>(ar.cause()));
-        // }
-
         // TODO to implement
         throw new UnsupportedOperationException("not yet implemented");
     }
@@ -128,7 +102,7 @@ public class S3Storage implements Storage {
     
     @Override
     public void writeBuffer(String basePath, String id, Buffer buff, String contentType, String filename, Handler<JsonObject> handler) {
-        writeBuffer(null, basePath, buff, contentType, filename, false, handler);
+        writeBuffer(null, id, buff, contentType, filename, false, handler);
     }
     
     @Override

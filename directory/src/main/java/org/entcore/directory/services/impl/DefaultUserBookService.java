@@ -123,8 +123,7 @@ public class DefaultUserBookService implements UserBookService {
 
 	private Future<Boolean> cacheAvatarFromUserBook(String userId, Optional<String> pictureId, Boolean remove) {
 		// clean avatar when changing or when removing
-		Future<Boolean> futureClean = (pictureId.isPresent() || remove) ? cleanAvatarCache(userId)
-				: Future.succeededFuture();
+		Future<Boolean> futureClean = Future.succeededFuture();
 		return futureClean.compose(res -> {
 			if (!pictureId.isPresent()) {
 				return Future.succeededFuture();
