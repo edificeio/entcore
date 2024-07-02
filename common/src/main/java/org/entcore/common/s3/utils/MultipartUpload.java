@@ -203,8 +203,25 @@ public class MultipartUpload {
                 handler.handle(response.headers().get("ETag"));
             }
             else {
-                handler.handle(null);
-                return;
+                chunk.incrementRetryIndex();
+
+                log.debug("MultiPart upload failed: " + response.statusCode() + " - " + chunk.getChunkNumber());
+                if (response.headers() != null) {
+                    response.headers().forEach(header -> {
+                        log.debug("MultiPart upload failed: " + header.getKey() + " - " + header.getValue());
+                    });
+                }
+                response.bodyHandler(body -> {
+                    log.debug(body.toString());
+                });
+
+                if (chunk.getRetryIndex() < 6) {
+                    uploadPart(id, uploadId, chunk, handler);
+                }
+                else {
+                    handler.handle(null);
+                    return;
+                }
             }
         });
 
