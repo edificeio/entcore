@@ -152,7 +152,8 @@ public class S3Client {
 	}
 
 	public void uploadFile(final HttpServerRequest request, final String bucket, final Long maxSize, FileValidator validator, final Handler<JsonObject> handler) {
-		final String id = getPath(UUID.randomUUID().toString());
+		final String uuid = UUID.randomUUID().toString();
+		final String id = getPath(uuid);
 
 		MultipartUpload multipartUpload = new MultipartUpload(vertx, httpClient, host, accessKey, secretKey, region, bucket, ssec);
 		JsonObject metadata = new JsonObject();
@@ -245,7 +246,7 @@ public class S3Client {
 						multipartUpload.complete(id, uploadId, eTags, result -> {
 							handler.handle(
 								new JsonObject()
-									.put("_id", id)
+									.put("_id", uuid)
 									.put("status", "ok")
 									.put("metadata", metadata)
 							);
@@ -256,7 +257,7 @@ public class S3Client {
 					multipartUpload.complete(id, uploadId, eTags, result -> {
 						handler.handle(
 							new JsonObject()
-								.put("_id", id)
+								.put("_id", uuid)
 								.put("status", "ok")
 								.put("metadata", metadata)
 						);
@@ -370,7 +371,7 @@ public class S3Client {
 							}
 						}
 						StorageObject o = new StorageObject(
-								idPrefixed,
+								id,
 								buffer,
 								filename,
 								response.headers().get("Content-Type")
@@ -503,10 +504,12 @@ public class S3Client {
 	}
 
 	public void copyFile(String from, String bucket, final Handler<AsyncResult<String>> handler) {
-		final String id = getPath(UUID.randomUUID().toString());
+		final String uuid = UUID.randomUUID().toString();
+		final String id = getPath(uuid);
+
 		final HttpClientRequest req = httpClient.put("/" + bucket + "/" + id, response -> {
 			if (response.statusCode() == 200) {
-				handler.handle(new DefaultAsyncResult<>(id));
+				handler.handle(new DefaultAsyncResult<>(uuid));
 			} else {
 				handler.handle(new DefaultAsyncResult<>(new StorageException(response.statusMessage())));
 			}
@@ -667,7 +670,7 @@ public class S3Client {
 					multipartUpload.complete(idPrefixed, uploadId, eTags, result -> {
 						metadata.put("size", fileSize);
 						res.put("status", "ok")
-							.put("_id", idPrefixed)
+							.put("_id", id)
 							.put("metadata", metadata);
 
 						handler.handle(new DefaultAsyncResult<>(res));
@@ -678,7 +681,7 @@ public class S3Client {
 				multipartUpload.complete(idPrefixed, uploadId, eTags, result -> {
 					metadata.put("size", fileSize);
 					res.put("status", "ok")
-						.put("_id", idPrefixed)
+						.put("_id", id)
 						.put("metadata", metadata);
 
 					handler.handle(new DefaultAsyncResult<>(res));
@@ -686,56 +689,6 @@ public class S3Client {
 			}
 		});
 	}
-
-	// public void list(String prefix, String filter, final Handler<AsyncResult<List<String>>> handler) {
-	// 	list(prefix, filter, defaultBucket, handler);
-	// }
-
-	// public void list(String prefix, String filter, String bucket, final Handler<AsyncResult<List<String>>> handler) {
-	// 	HttpClient tempHttpClient = httpClient.getNow(bucket + "." + host, bucket, null)
-
-	// 	HttpClientRequest req = httpClient.get("/" + bucket + "/" + id, response -> {
-	// 		response.pause();
-	// 		if (response.statusCode() == 200) {
-	// 			List<String> objects = new ArrayList<>();
-
-	// 			// vertx.fileSystem().open(destination, new OpenOptions(), ar -> {
-	// 			// 	if (ar.succeeded()) {
-	// 			// 		response.endHandler(aVoid -> {
-	// 			// 			ar.result().close();
-	// 			// 			handler.handle(new DefaultAsyncResult<>(destination));
-	// 			// 		});
-	// 			// 		Pump p = Pump.pump(response, ar.result());
-	// 			// 		p.start();
-
-	// 			// 		response.resume();
-	// 			// 	} else {
-	// 			// 		handler.handle(new DefaultAsyncResult<>(ar.cause()));
-	// 			// 	}
-	// 			// });
-
-	// 			handler.handle(new DefaultAsyncResult<>(objects));
-	// 		} else {
-	// 			handler.handle(new DefaultAsyncResult<>(new StorageException(response.statusMessage())));
-	// 		}
-	// 	});
-		
-	// 	if (req == null) {
-	// 		handler.handle(Future.failedFuture("Request is null"));
-	// 		return;
-	// 	}
-
-	// 	req.setHost(host);
-    //     try {
-    //         AwsUtils.sign(req, accessKey, secretKey, region);
-    //     } catch (SignatureException e) {
-	// 		log.error("writeToFileSystem signature failed", e);
-	// 		handler.handle(Future.failedFuture("writeToFileSystem signature failed"));
-	// 		return;
-    //     }
-
-	// 	req.end();
-	// }
 
 	private String getContentType(String p) {
 		try {
@@ -758,8 +711,6 @@ public class S3Client {
 		if (id.charAt(2) == File.separator.charAt(0) && id.charAt(5) == File.separator.charAt(0)) {
 			return id;
 		}
-		
-		log.error("S3 bad path format: " + id);
 
 		try {
 			path = Storage.getFilePath(id, "", false);
