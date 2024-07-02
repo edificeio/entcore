@@ -258,17 +258,12 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 	@Override
 	@SuppressWarnings("deprecation")
 	public void revalidateCgu(String userId, Handler<Boolean> handler) {
-		String query = "MATCH(u:User{id:{userId}}) SET u.needRevalidateTerms=false RETURN u";
-		JsonObject params = new JsonObject().put("userId", userId);
-		neo.execute(query, params, Neo4jResult.validUniqueResultHandler(res-> {
-			if(res.isRight()) {
-				UserUtils.addSessionAttribute(eb, userId, NEED_REVALIDATE_TERMS, "false", addSessionAttributeRes -> {
-					handler.handle(addSessionAttributeRes);
-				});
-			} else {
-				handler.handle(false);
-			}
-		}));
+		validationFlag(false, userId, handler);
+	}
+
+	@Override
+	public void needToValidateCgu(String userId, Handler<Boolean> handler) {
+		validationFlag(true, userId, handler);
 	}
 	
 	@Override
@@ -1086,4 +1081,18 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 			handler.handle(new Either.Left<>("Failed to force change password"));
 		});
 	}
+	private void validationFlag(Boolean flag,String userId, Handler<Boolean> handler) {
+		String query = "MATCH(u:User{id:{userId}}) SET u.needRevalidateTerms= "+ flag +" RETURN u";
+		JsonObject params = new JsonObject().put("userId", userId);
+		neo.execute(query, params, Neo4jResult.validUniqueResultHandler(res-> {
+			if(res.isRight()) {
+				UserUtils.addSessionAttribute(eb, userId, NEED_REVALIDATE_TERMS, flag.toString(), addSessionAttributeRes -> {
+					handler.handle(addSessionAttributeRes);
+				});
+			} else {
+				handler.handle(false);
+			}
+		}));
+	}
+
 }
