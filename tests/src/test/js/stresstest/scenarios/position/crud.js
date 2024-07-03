@@ -122,8 +122,8 @@ export function searchPositionsOnMultipleEtabs() {
     // Create 1 head structure and 2
     // depending structures
     const chapeau = createEmptyStructure(`Chapeau - ${schoolName}`, false, session)
-    const structure1 = initStructure(schoolName, session)
-    const structure2 = initStructure(schoolName2, session)
+    const structure1 = initStructure(`1 - ${schoolName}`, session)
+    const structure2 = initStructure(`2 - ${schoolName}`, session)
     attachStructureAsChild(chapeau, structure1, session)
     attachStructureAsChild(chapeau, structure2, session)
 
