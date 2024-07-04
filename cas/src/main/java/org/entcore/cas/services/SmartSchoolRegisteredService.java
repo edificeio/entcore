@@ -61,7 +61,10 @@ public class SmartSchoolRegisteredService extends AbstractCas20ExtensionRegister
             rootElement.appendChild(createTextElement(FIRSTNAME, data.getString(FIRSTNAME, ""), doc));
             rootElement.appendChild(createTextElement(LASTNAME, data.getString(LASTNAME, ""), doc));
             rootElement.appendChild(createTextElement(EMAIL, data.getString(EMAIL, ""), doc));
-            rootElement.appendChild(createTextElement(RIGHT, getRights(userFunctions, structureNodes, userProfiles), doc));
+            List<String> rights = getRights(userFunctions, structureNodes, userProfiles);
+            for (String right : rights) {
+                rootElement.appendChild(createTextElement(RIGHT, right, doc));
+            }
             rootElement.appendChild(createTextElement(ACTIVE_STRUCTURE, data.getJsonArray("structures", new JsonArray()).getString(0), doc));
             addStructures(structureNodes, doc, rootElement);
             additionnalAttributes.add(rootElement);
@@ -77,13 +80,15 @@ public class SmartSchoolRegisteredService extends AbstractCas20ExtensionRegister
         }
     }
 
-    private String getRights(JsonArray functions, JsonArray structureNodes, JsonArray userProfiles) {
+    private List<String> getRights(JsonArray functions, JsonArray structureNodes, JsonArray userProfiles) {
+        List<String> rights = new ArrayList<>();
         List<String> dfFunctions = new ArrayList<>();
         List<String> otherFunctions = new ArrayList<>();
         filterFunctionsByHatStructure(functions,dfFunctions, otherFunctions);
 
         if (dfFunctions.contains("SuperAdmin") || otherFunctions.contains("SuperAdmin")) {
-            return RIGHTS.ADMIN.toString();
+            rights.add(RIGHTS.ADMIN.toString());
+            return rights;
         }
 
         Optional<JsonObject> digitaleFactoryStructure = structureNodes.stream()
@@ -94,28 +99,36 @@ public class SmartSchoolRegisteredService extends AbstractCas20ExtensionRegister
 
         if (digitaleFactoryStructure.isPresent()) {
             if (dfFunctions.contains("AdminLocal")) {
-
-           return RIGHTS.ADMINDF.toString();
+               rights.add(RIGHTS.ADMINDF.toString());
             }
             if (userProfiles.contains("Guest")) {
                 if (dfFunctions.contains("partenaireministere")) {
-                   return RIGHTS.USERDF.toString();
+                    rights.add(RIGHTS.USERDF.toString());
                 } else {
-                    return RIGHTS.PARTNRINDUS.toString();
+                    rights.add(RIGHTS.PARTNRINDUS.toString());
                 }
+            }
+            if((userProfiles.contains("Personnel") || userProfiles.contains("Teacher"))
+                    && structureNodes.size() > 1 && !rights.contains(RIGHTS.ADMINDF.toString())) { // in Campus's structure and DF
+                rights.add(RIGHTS.USERDF.toString());
             }
         }
 
         if (containsFunction(otherFunctions, CHECKER_FUNCTIONS)) {
-            return RIGHTS.CHECKER.toString();
+            rights.add(RIGHTS.CHECKER.toString());
         }
 
         if (containsFunction(otherFunctions, EDITOR_FUNCTIONS)) {
-            return RIGHTS.EDITOR.toString();
+            rights.add(RIGHTS.EDITOR.toString());
         }
 
-        return RIGHTS.READER.toString();
+        if (!rights.contains(RIGHTS.EDITOR.toString()) && !rights.contains(RIGHTS.CHECKER.toString())) {
+            if (!digitaleFactoryStructure.isPresent() || (structureNodes.size() > 1)) {
+                rights.add(RIGHTS.READER.toString());
+            }
+        }
 
+        return rights;
     }
 
     private void filterFunctionsByHatStructure(JsonArray allFunctionsByStructure, List<String> dfFunctions, List<String> otherFunctions) {
@@ -143,6 +156,7 @@ public class SmartSchoolRegisteredService extends AbstractCas20ExtensionRegister
         }
         return false;
     }
+
     @Override
     public void getUser(AuthCas authCas, String service, Handler<User> userHandler) {
         Future<JsonObject> userFuture = getDirectoryUser(authCas);
