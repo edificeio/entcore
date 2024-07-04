@@ -15,6 +15,7 @@ import org.entcore.common.neo4j.Neo4jResult;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -60,7 +61,7 @@ public class SmartSchoolRegisteredService extends AbstractCas20ExtensionRegister
             rootElement.appendChild(createTextElement(FIRSTNAME, data.getString(FIRSTNAME, ""), doc));
             rootElement.appendChild(createTextElement(LASTNAME, data.getString(LASTNAME, ""), doc));
             rootElement.appendChild(createTextElement(EMAIL, data.getString(EMAIL, ""), doc));
-            rootElement.appendChild(createTextElement(RIGHT, getRight(userFunctions, structureNodes, userProfiles), doc));
+            rootElement.appendChild(createTextElement(RIGHT, getRights(userFunctions, structureNodes, userProfiles), doc));
             rootElement.appendChild(createTextElement(ACTIVE_STRUCTURE, data.getJsonArray("structures", new JsonArray()).getString(0), doc));
             addStructures(structureNodes, doc, rootElement);
             additionnalAttributes.add(rootElement);
@@ -76,8 +77,12 @@ public class SmartSchoolRegisteredService extends AbstractCas20ExtensionRegister
         }
     }
 
-    private String getRight(JsonArray functions, JsonArray structureNodes, JsonArray userProfiles) {
-        if (functions.contains("SuperAdmin")) {
+    private String getRights(JsonArray functions, JsonArray structureNodes, JsonArray userProfiles) {
+        List<String> dfFunctions = new ArrayList<>();
+        List<String> otherFunctions = new ArrayList<>();
+        filterFunctionsByHatStructure(functions,dfFunctions, otherFunctions);
+
+        if (dfFunctions.contains("SuperAdmin") || otherFunctions.contains("SuperAdmin")) {
             return RIGHTS.ADMIN.toString();
         }
 
@@ -88,40 +93,56 @@ public class SmartSchoolRegisteredService extends AbstractCas20ExtensionRegister
                 .findFirst();
 
         if (digitaleFactoryStructure.isPresent()) {
-            if (functions.contains("AdminLocal")) {
-                return RIGHTS.ADMINDF.toString();
+            if (dfFunctions.contains("AdminLocal")) {
+
+           return RIGHTS.ADMINDF.toString();
             }
             if (userProfiles.contains("Guest")) {
-                if (functions.contains("partenaireministere")) {
-                    return RIGHTS.USERDF.toString();
+                if (dfFunctions.contains("partenaireministere")) {
+                   return RIGHTS.USERDF.toString();
                 } else {
                     return RIGHTS.PARTNRINDUS.toString();
                 }
             }
         }
 
-        List<String> userFunctions = functions.getList();
-        if (containsFunction(userFunctions, CHECKER_FUNCTIONS)) {
+        if (containsFunction(otherFunctions, CHECKER_FUNCTIONS)) {
             return RIGHTS.CHECKER.toString();
         }
 
-        if (containsFunction(userFunctions, EDITOR_FUNCTIONS)) {
+        if (containsFunction(otherFunctions, EDITOR_FUNCTIONS)) {
             return RIGHTS.EDITOR.toString();
         }
 
         return RIGHTS.READER.toString();
+
     }
 
-    private boolean containsFunction(List<String> functions, List<String> rightFunctions) {
+    private void filterFunctionsByHatStructure(JsonArray allFunctionsByStructure, List<String> dfFunctions, List<String> otherFunctions) {
+        for(int i = 0; i < allFunctionsByStructure.size(); i++){
+            JsonObject userFunctionByStructure = allFunctionsByStructure.getJsonObject(i);
+            if(userFunctionByStructure.containsKey("functions") && !userFunctionByStructure.getJsonArray("functions").isEmpty()) {
+                List<String> allFunctions = userFunctionByStructure.getJsonArray("functions").getList();
+                for (String function : allFunctions) {
+                    if (userFunctionByStructure.containsKey("structureName") &&
+                            (DIGITAL_FACTORY_STRUCTURE_NAME.equals(userFunctionByStructure.getString("structureName"))
+                                    || userFunctionByStructure.getString("structureName") == null) ) {
+                        if (!dfFunctions.contains(function)) dfFunctions.add(function);
+                    } else {
+                        if (!otherFunctions.contains(function)) otherFunctions.add(function);
+                    }
+                }
+            }
+        }
+    }
+   private boolean containsFunction(List<String> functions, List<String> rightFunctions) {
         for (String function : functions) {
             if (rightFunctions.contains(function.trim().replaceAll("\\s+","").toLowerCase())) {
                 return true;
             }
         }
-
         return false;
     }
-
     @Override
     public void getUser(AuthCas authCas, String service, Handler<User> userHandler) {
         Future<JsonObject> userFuture = getDirectoryUser(authCas);
@@ -129,6 +150,12 @@ public class SmartSchoolRegisteredService extends AbstractCas20ExtensionRegister
         List<Future> futures = Arrays.asList(userFuture, functionsFuture);
         CompositeFuture.all(futures)
                 .onFailure(throwable -> {
+                    if (userFuture.failed()) {
+                        log.error(String.format("Failed to retrieve directory user %s: %s", authCas.getUser(), userFuture.cause().getMessage()), userFuture.cause());
+                    }
+                    if (functionsFuture.failed()) {
+                        log.error(String.format("Failed to retrieve user functions for %s: %s", authCas.getUser(), functionsFuture.cause().getMessage()), functionsFuture.cause());
+                    }
                     log.error(String.format("Failed to retrieve user %s", authCas.getUser(), throwable));
                     userHandler.handle(null);
                 })
@@ -145,15 +172,18 @@ public class SmartSchoolRegisteredService extends AbstractCas20ExtensionRegister
     private Future<JsonArray> getUserFunctions(AuthCas authCas) {
         Promise<JsonArray> promise = Promise.promise();
         String query = "MATCH(u:User) WHERE u.id = {id} " +
-                "OPTIONAL MATCH (u)-[:IN]->(f:FunctionGroup) " +
+                "OPTIONAL MATCH (u)-[:IN]->(f:FunctionGroup)-[:DEPENDS]->(s: Structure) " +
                 "OPTIONAL MATCH (u)-[:HAS_FUNCTION]->(func:Function) " +
-                "RETURN COLLECT(func.name) + COLLECT(f.filter) as functions;";
+                "RETURN COLLECT(Distinct(func.name)) + COLLECT(Distinct(f.filter)) as functions, s.name as structureName;";
         JsonObject params = new JsonObject()
                 .put("id", authCas.getUser());
+        log.info("Requête neo: " + query + " params: " + params);
 
-        Neo4j.getInstance().execute(query, params, Neo4jResult.validUniqueResultHandler(either -> {
+        Neo4j.getInstance().execute(query, params, Neo4jResult.validResultHandler(either -> {
             if (either.isLeft()) promise.fail(either.left().getValue());
-            else promise.complete(either.right().getValue().getJsonArray("functions", new JsonArray()));
+            else {
+                promise.complete(either.right().getValue());
+            }
         }));
 
         return promise.future();
