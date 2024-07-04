@@ -26,21 +26,19 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
-import io.vertx.core.shareddata.LocalMap;
-import org.entcore.common.http.filter.AdminFilter;
-import org.entcore.common.http.filter.IgnoreCsrf;
-import org.entcore.common.http.filter.ResourceFilter;
-import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.sql.Sql;
-import org.entcore.infra.services.CspReportService;
-import org.entcore.infra.services.impl.MongoDbCspReportService;
-
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.shareddata.LocalMap;
+import org.entcore.common.http.filter.AdminFilter;
+import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.sql.Sql;
+import org.entcore.infra.services.CspReportService;
+import org.entcore.infra.services.impl.MongoDbCspReportService;
 import org.vertx.java.core.http.RouteMatcher;
 
 import java.util.Map;
@@ -174,7 +172,6 @@ public class MonitoringController extends BaseController {
 	 */
 	@Post("/monitoring/csp")
 	@SecuredAction(type = ActionType.AUTHENTICATED, value = "")
-	@IgnoreCsrf
 	public void cspReport(final HttpServerRequest request) {
 		bodyToJson(request, pathPrefix + "cspReport", body -> {
 			final JsonObject report = body.getJsonObject("csp-report");
