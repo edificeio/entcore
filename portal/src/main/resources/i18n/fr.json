@@ -1034,7 +1034,7 @@
   "audience.views.uniqueViewsPerProfile.personnel": "Personnel(s)",
   "audience.views.uniqueViewsPerProfile.guest": "Invité(s)",
   "audience.views.title": "Audience",
-  "audience.views.detail.viewsCounter": "Vues totales",
+  "audience.views.detail.viewsCounter": "Vues au total",
   "audience.views.detail.uniqueViewsCounter": "Personnes ont vu le billet",
   "audience.views.detail.noUniqueViews": "Il n’est pas possible de connaître le nombre de personnes qui ont vu le message.",
   "audience.views.cancel": "Fermer",
