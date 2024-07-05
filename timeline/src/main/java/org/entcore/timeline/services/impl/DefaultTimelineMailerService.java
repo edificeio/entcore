@@ -155,7 +155,8 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 			final String userLanguage = mutableLanguage;
 
 			final String userDisplayName = getOrElse(userPref.getString("displayName"), "", true);
-			templateParameters.put("displayName", userDisplayName);
+			final JsonObject tParameters = templateParameters.copy();
+			tParameters.put("displayName", userDisplayName);
 
 			if(!processedTemplates.containsKey(userDomain))
 				processedTemplates.put(userDomain, new HashMap<String, Map<String,String>>());
@@ -184,7 +185,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 			if(!processedTemplates.get(userDomain).containsKey(userLanguage)) {
 				processedTemplates.get(userDomain).put(userLanguage, new HashMap<>());
 			}
-			processTimelineTemplate(templateParameters, "", "notifications/immediate-mail.html",
+			processTimelineTemplate(tParameters, "", "notifications/immediate-mail.html",
 					userDomain, userScheme, userLanguage, false, new Handler<String>(){
 						public void handle(String processedTemplate) {
 							processedTemplates.get(userDomain).get(userLanguage).put(userPref.getString("userId", ""), processedTemplate);
