@@ -37,7 +37,7 @@ public class AwsUtils {
     }
 
     public static void sign(HttpClientRequest request, String accessKey, String secretKey, String region, String hash) throws SignatureException {
-        if (hash != null && hash.equals("")) hash = null;
+        if (hash != null && "".equals(hash)) hash = null;
 
         try {
             AWS4Signature.sign(request, region, accessKey, secretKey, hash);
