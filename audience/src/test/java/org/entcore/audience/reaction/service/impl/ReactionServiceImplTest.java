@@ -22,10 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RunWith(VertxUnitRunner.class)
@@ -338,37 +335,42 @@ public class ReactionServiceImplTest {
     userInfos3.setLastName("last-name-3");
     userInfos3.setType("PERSEDUCNAT");
 
+    final String resourceId = "r-id-upsert-0";
+
     final int page = 1;
     final int size = 100;
 
     // User 1 saves their first reaction
-    reactionService.upsertReaction("mod-upsert", "rt-upsert", "r-id-upsert-0", userInfos, "reaction-type-1")
-    .compose(e -> reactionService.getReactionDetails("mod-upsert", "rt-upsert", "r-id-upsert-0", page, size))
-    .onSuccess(reactionDetails -> {
-      final int count = reactionDetails.getReactionCounters().getCountByType().get("reaction-type-1");
-      context.assertEquals(1, count, "Should have a count of one because we just registered a reaction of this type for this resource");
+    reactionService.upsertReaction("mod-upsert", "rt-upsert", resourceId, userInfos, "reaction-type-1")
+    .onSuccess(reactionsSummary -> {
+        final ReactionsSummaryForResource reactionsSummaryForResource = reactionsSummary.getReactionsByResource().get(resourceId);
+        context.assertEquals(1, reactionsSummaryForResource.getTotalReactionsCounter(), "Should have a count of one because we just registered a reaction for this resource");
+        context.assertEquals("reaction-type-1", reactionsSummaryForResource.getUserReaction(), "Should be reaction-type-1");
     })
     // User 1 saves another reaction for the same resource
-    .compose(e -> reactionService.upsertReaction("mod-upsert", "rt-upsert", "r-id-upsert-0", userInfos, "reaction-type-2"))
-    .compose(e -> reactionService.getReactionDetails("mod-upsert", "rt-upsert", "r-id-upsert-0", page, size))
-    .onSuccess(e -> {
-      final Map<String, Integer> counts = e.getReactionCounters().getCountByType();
-      context.assertEquals(1, counts.size(), "Should have only one entry for this resource because the only two reactions come from the same user so the latest should replace the other one");
-      final int count = counts.get("reaction-type-2");
-      context.assertEquals(1, count, "Should have a count of one because we just registered a reaction of this type for this resource");
+    .compose(e -> reactionService.upsertReaction("mod-upsert", "rt-upsert", resourceId, userInfos, "reaction-type-2"))
+    .onSuccess(reactionsSummary -> {
+        final ReactionsSummaryForResource reactionsSummaryForResource = reactionsSummary.getReactionsByResource().get(resourceId);
+        context.assertEquals(1, reactionsSummaryForResource.getTotalReactionsCounter(), "Should still be one for this resource because the user just updated his first reaction");
+        context.assertEquals("reaction-type-2", reactionsSummaryForResource.getUserReaction(), "Should be reaction-type-2 after update");
     })
     // Another user registers a reaction for the same resource
-    .compose(e -> reactionService.upsertReaction("mod-upsert", "rt-upsert", "r-id-upsert-0", userInfos2, "reaction-type-3"))
-    .compose(e -> reactionService.getReactionDetails("mod-upsert", "rt-upsert", "r-id-upsert-0", page, size))
-    .onSuccess(e -> {
-      final Map<String, Integer> counts = e.getReactionCounters().getCountByType();
-      context.assertEquals(2, counts.size(), "Should have 2 entries, one per user who saved a reaction");
-      context.assertEquals(1, counts.get("reaction-type-2"), "User 1 previously registered that reaction so it should appear");
-      context.assertEquals(1, counts.get("reaction-type-3"), "User 1 previously registered that reaction so it should appear");
+    .compose(e -> reactionService.upsertReaction("mod-upsert", "rt-upsert", resourceId, userInfos2, "reaction-type-3"))
+    .onSuccess(reactionsSummaryResponse -> {
+        final ReactionsSummaryForResource reactionsSummaryForResource = reactionsSummaryResponse.getReactionsByResource().get(resourceId);
+        context.assertEquals(2, reactionsSummaryForResource.getTotalReactionsCounter(), "Should now be 2 reactions on this resource, from user 1 and user 2");
+        context.assertEquals("reaction-type-3", reactionsSummaryForResource.getUserReaction(), "Should be reaction-type-3 of user 2");
+        context.assertTrue(reactionsSummaryForResource.getReactionTypes().containsAll(Sets.newHashSet("reaction-type-2", "reaction-type-3")), "Should list reaction type 2 and 3 on this resource");
     })
     // Yet another user registers a reaction for this resource but of a type which has already been registered
-    .compose(e -> reactionService.upsertReaction("mod-upsert", "rt-upsert", "r-id-upsert-0", userInfos3, "reaction-type-3"))
-    .compose(e -> reactionService.getReactionDetails("mod-upsert", "rt-upsert", "r-id-upsert-0", page, size))
+    .compose(e -> reactionService.upsertReaction("mod-upsert", "rt-upsert", resourceId, userInfos3, "reaction-type-3"))
+    .onSuccess(reactionsSummaryResponse -> {
+        final ReactionsSummaryForResource reactionsSummaryForResource = reactionsSummaryResponse.getReactionsByResource().get(resourceId);
+        context.assertEquals(3, reactionsSummaryForResource.getTotalReactionsCounter(), "Should now be 3 after a third user reacted");
+        context.assertEquals("reaction-type-3", reactionsSummaryForResource.getUserReaction(), "Should be reaction-type-3 of user 3");
+    })
+    // One last check of the reaction details
+    .compose(e -> reactionService.getReactionDetails("mod-upsert", "rt-upsert", resourceId, page, size))
     .onSuccess(e -> {
       final Map<String, Integer> counts = e.getReactionCounters().getCountByType();
       context.assertEquals(2, counts.size(), "Should have 2 entries, one per type of reaction");
@@ -398,9 +400,11 @@ public class ReactionServiceImplTest {
       final int page = 1;
       final int size = 100;
 
-      // User saves their first reaction
+      // User saves his first reaction
       reactionService.upsertReaction("mod-delete", "rt-delete", "r-id-delete-0", userInfos, "reaction-type-1")
+              // another user saves the same reaction on the same resource
               .compose(e -> reactionService.upsertReaction("mod-delete", "rt-delete", "r-id-delete-0", userInfos2, "reaction-type-1"))
+              // verifying the reaction details on the resource
               .compose(e -> reactionService.getReactionDetails("mod-delete", "rt-delete", "r-id-delete-0", page, size))
               .onSuccess(reactionDetails -> {
                   context.assertEquals(2, reactionDetails.getReactionCounters().getAllReactionsCounter(), "Should be a total of two reactions for this resource");
@@ -409,7 +413,16 @@ public class ReactionServiceImplTest {
                   context.assertEquals(2, reactionDetails.getUserReactions().size(), "Users' reaction list should contain two reactions");
                   context.assertTrue(reactionDetails.getUserReactions().stream().map(UserReaction::getUserId).collect(Collectors.toSet()).containsAll(Sets.newHashSet("user-id", "user-id-2")), "Users' reaction list should contain user-id and user-id-2");
               })
+              // deleting reaction of first user
               .compose(e -> reactionService.deleteReaction("mod-delete", "rt-delete", "r-id-delete-0", userInfos))
+              // verifying reaction summary returned by deletion
+              .onSuccess(e -> {
+                  final ReactionsSummaryForResource reactionsSummaryForResource = e.getReactionsByResource().get("r-id-delete-0");
+                  context.assertEquals(1, reactionsSummaryForResource.getTotalReactionsCounter(), "Should be a total of one reaction for the resource after deletion of first user's reaction");
+                  context.assertNull(reactionsSummaryForResource.getUserReaction(), "Reaction of first user on the resource should be null.");
+                  context.assertTrue(Collections.singleton("reaction-type-1").containsAll(reactionsSummaryForResource.getReactionTypes()), "List of reaction types should still contain reaction type of second user's reaction");
+              })
+              // verifying reaction details
               .compose(e -> reactionService.getReactionDetails("mod-delete", "rt-delete", "r-id-delete-0", page, size))
               .onSuccess(reactionDetails -> {
                   context.assertEquals(1, reactionDetails.getReactionCounters().getAllReactionsCounter(), "Should be a total of one reaction for this resource, after deleting one reaction");
@@ -418,7 +431,16 @@ public class ReactionServiceImplTest {
                   context.assertEquals(1, reactionDetails.getUserReactions().size(), "List of users' reactions should contain 1 reaction after deletion");
                   context.assertTrue(reactionDetails.getUserReactions().stream().noneMatch(userReaction -> userReaction.getUserId().equals("user-id")), "Reaction of user-id should have been removed from users' reaction list.");
               })
+              // deleting reaction of second user
               .compose(e -> reactionService.deleteReaction("mod-delete", "rt-delete", "r-id-delete-0", userInfos2))
+              // verifying reaction summary returned by deletion
+              .onSuccess(e -> {
+                  final ReactionsSummaryForResource reactionsSummaryForResource = e.getReactionsByResource().get("r-id-delete-0");
+                  context.assertEquals(0, reactionsSummaryForResource.getTotalReactionsCounter(), "Should be a total of 0 reaction for the resource after deletion of second user's reaction");
+                  context.assertNull(reactionsSummaryForResource.getUserReaction(), "Reaction of second user on the resource should be null.");
+                  context.assertTrue(reactionsSummaryForResource.getReactionTypes().isEmpty(), "List of reaction types should be empty");
+              })
+              // verifying reaction details
               .compose(e -> reactionService.getReactionDetails("mod-delete", "rt-delete", "r-id-delete-0", page, size))
               .onSuccess(reactionDetails -> {
                   context.assertTrue(reactionDetails.getReactionCounters().getCountByType().isEmpty(), "Reaction counters by type should be empty, after deleting last reaction");
