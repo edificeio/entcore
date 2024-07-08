@@ -12,9 +12,9 @@ public interface ReactionService {
 
     Future<ReactionDetailsResponse> getReactionDetails(String module, String resourceType, String resourceId, int page, int size);
 
-    Future<Void> upsertReaction(String module, String resourceType, String resourceId, UserInfos userInfos, String reactionType);
+    Future<ReactionsSummaryResponse> upsertReaction(String module, String resourceType, String resourceId, UserInfos userInfos, String reactionType);
 
-    Future<Void> deleteReaction(String module, String resourceType, String resourceId, UserInfos user);
+    Future<ReactionsSummaryResponse> deleteReaction(String module, String resourceType, String resourceId, UserInfos user);
 
     Future<Void> deleteAllReactionsOfUsers(Set<String> userIds);
 

@@ -89,13 +89,23 @@ public class ReactionServiceImpl implements ReactionService {
     }
 
     @Override
-    public Future<Void> upsertReaction(String module, String resourceType, String resourceId, UserInfos userInfos, String reactionType) {
-        return reactionDao.upsertReaction(module, resourceType, resourceId, userInfos.getUserId(), userInfos.getType(), reactionType);
+    public Future<ReactionsSummaryResponse> upsertReaction(String module, String resourceType, String resourceId, UserInfos userInfos, String reactionType) {
+        Promise<ReactionsSummaryResponse> reactionsSummaryPromise = Promise.promise();
+        reactionDao.upsertReaction(module, resourceType, resourceId, userInfos.getUserId(), userInfos.getType(), reactionType)
+                .compose(e -> getReactionsSummary(module, resourceType, Collections.singleton(resourceId), userInfos))
+                .onSuccess(reactionsSummaryPromise::complete)
+                .onFailure(reactionsSummaryPromise::fail);
+        return reactionsSummaryPromise.future();
     }
 
     @Override
-    public Future<Void> deleteReaction(String module, String resourceType, String resourceId, UserInfos userInfos) {
-        return reactionDao.deleteReaction(module, resourceType, resourceId, userInfos.getUserId());
+    public Future<ReactionsSummaryResponse> deleteReaction(String module, String resourceType, String resourceId, UserInfos userInfos) {
+        Promise<ReactionsSummaryResponse> reactionsSummaryPromise = Promise.promise();
+        reactionDao.deleteReaction(module, resourceType, resourceId, userInfos.getUserId())
+                .compose(e -> getReactionsSummary(module, resourceType, Collections.singleton(resourceId), userInfos))
+                .onSuccess(reactionsSummaryPromise::complete)
+                .onFailure(reactionsSummaryPromise::fail);
+        return reactionsSummaryPromise.future();
     }
 
     @Override
