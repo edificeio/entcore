@@ -29,6 +29,8 @@ public class SSOGLPI extends AbstractSSOProvider {
     private static final String FIRSTNAME = "firstName";
     private static final String LASTNAME = "lastName";
     private static final String ACADEMIC_MAIL = "emailAcademy";
+    private static final String EMAIL = "email";
+    private static final String MAIL = "mail";
     private static final String UAIS = "uais";
     protected static final String STRUCTURES = "structures";
     protected static final String UAI = "UAI";
@@ -86,9 +88,12 @@ public class SSOGLPI extends AbstractSSOProvider {
                 result.add(new JsonObject().put(FIRSTNAME, userInfos.getString(FIRSTNAME, FIRSTNAME)));
             }
 
-            // AcademicMail
+            // AcademicMail or else mail
             if (userInfos.containsKey(ACADEMIC_MAIL)) {
-                result.add(new JsonObject().put(ACADEMIC_MAIL, userInfos.getString(ACADEMIC_MAIL, ACADEMIC_MAIL)));
+                result.add(new JsonObject().put(MAIL, userInfos.getString(ACADEMIC_MAIL, MAIL)));
+            }
+            else if (userInfos.containsKey(EMAIL)) {
+                result.add(new JsonObject().put(MAIL, userInfos.getString(EMAIL, MAIL)));
             }
 
             // UAIs
