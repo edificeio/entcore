@@ -112,7 +112,7 @@ public class AudienceController extends BaseController {
     final String resourceId = request.getParam("resourceId");
     verify(module, resourceType, Collections.singleton(resourceId), request)
         .onSuccess(user -> reactionService.deleteReaction(module, resourceType, resourceId, user)
-            .onSuccess(e -> Renders.ok(request))
+            .onSuccess(e -> Renders.render(request, e))
             .onFailure(th -> {
               Renders.log.error("Error while deleting reaction for user and resource " + module + "@" + resourceType + "@" + resourceId, th);
               Renders.renderError(request);
