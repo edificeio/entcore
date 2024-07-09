@@ -50,6 +50,14 @@ var http = (function(){
 		xsrfCookie = _.findWhere(cookies, { name: 'XSRF-TOKEN' });
 	}
 
+	// Inject current X-XSRF-TOKEN header to future queries launched bu $.ajax()
+	if(xsrfCookie && $ && $.ajaxPrefilter) {
+		$.ajaxPrefilter(function(options/*, originalOptions, jqXHR*/) {
+			if(!options.headers) options.headers={};
+			options.headers['X-XSRF-TOKEN'] = xsrfCookie.val;
+		});
+	}
+
 	Http.prototype = {
 		serialize: function(obj){
 			var str = [];
