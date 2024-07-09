@@ -5,9 +5,6 @@ import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.request.HttpServerRequestWithBuffering;
 import fr.wseduc.webutils.request.filter.Filter;
-import fr.wseduc.webutils.security.SecureHttpServerRequest;
-import fr.wseduc.webutils.security.WrappedHttpServerRequest;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
@@ -18,8 +15,6 @@ import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.entcore.common.http.filter.CsrfFilter;
-import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.StringUtils;
 
