@@ -76,7 +76,7 @@ export function setup() {
     structureTree = { 
         head: chapeau, 
         structures: [structure1, structure2], 
-        admls: [structure1, structure2], 
+        admls: [adml1, adml2], 
         positions: [position1, position2],
         headAdml: megaAdml}
   });
