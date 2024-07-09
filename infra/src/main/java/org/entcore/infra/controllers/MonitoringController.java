@@ -34,6 +34,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.http.filter.AdminFilter;
+import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.sql.Sql;
@@ -172,6 +173,7 @@ public class MonitoringController extends BaseController {
 	 */
 	@Post("/monitoring/csp")
 	@SecuredAction(type = ActionType.AUTHENTICATED, value = "")
+	@IgnoreCsrf
 	public void cspReport(final HttpServerRequest request) {
 		bodyToJson(request, pathPrefix + "cspReport", body -> {
 			final JsonObject report = body.getJsonObject("csp-report");
