@@ -575,6 +575,7 @@ public class PortalController extends BaseController {
 	}
 	
 	@Get("zendeskGuide/config")
+	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
 	public void zendeskGuideConfig(HttpServerRequest request) {
 
 		final JsonObject zendeskConfig = config.getJsonObject("zendeskGuide", new JsonObject());
@@ -607,6 +608,13 @@ public class PortalController extends BaseController {
 		}
 
 		renderJson(request, zendeskConfig);
+	}
+
+	//TODO: remove this method when the old help is removed from all projects
+	@Get("/oldHelp")
+	@SecuredAction("portal.oldHelpEnable")
+	public void oldHelpEnable(HttpServerRequest request) {
+		renderJson(request, new JsonObject().put("enable", true));
 	}
 
 }
