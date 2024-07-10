@@ -99,6 +99,23 @@
             </span></a
           >
         </li>
+        <li ng-if="currentLanguage == 'fr'" class="nav-item">
+          <style>
+            .ic-help {
+              font-size: 24px;
+            }
+          </style>
+          <a
+            style="padding: 0"
+            href=""
+            class="nav-link"
+            title="[[lang.translate('navbar.help')]]"
+            aria-label="[[lang.translate('navbar.help')]]"
+            pulsar="{ index: 6, i18n: 'portal.pulsar.help', position: 'bottom center'}"
+          >
+            <i18n>help.icon</i18n>
+          </a>
+        </li>
         <li class="nav-item">
           <a
             href="/"
@@ -355,6 +372,19 @@
             class="conversation"
             ng-include="template.containers.portal.conversationUnread"
           ></div>
+        </li>
+        <li class="nav-item">
+          <a
+            href="#"
+            i18n-title="navbar.help"
+            class="nav-link"
+            aria-label="navbar.help"
+            pulsar="{ index:5, style:{zIndex:1021}, i18n:'portal.pulsar.help', position:'bottom center'}"
+            ng-if="currentLanguage == 'fr'"
+          >
+            <help></help
+            ><!-- i18n>help.icon</i18n -->
+          </a>
         </li>
         <li class="nav-item">
           <div class="dropdown">
