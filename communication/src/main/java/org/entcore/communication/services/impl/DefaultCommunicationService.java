@@ -57,6 +57,14 @@ public class DefaultCommunicationService implements CommunicationService {
 
 	protected static final Logger log = LoggerFactory.getLogger(DefaultCommunicationService.class);
 
+	private final TimelineHelper notifyTimeline;
+	final JsonArray discoverVisibleExpectedProfile = new JsonArray();
+
+	public DefaultCommunicationService(TimelineHelper notifyTimeline, JsonArray discoverVisibleExpectedProfile) {
+		this.notifyTimeline = notifyTimeline;
+		this.discoverVisibleExpectedProfile.addAll(discoverVisibleExpectedProfile);
+	}
+
 	@Override
 	public void addLink(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler) {
 		String query =
@@ -586,17 +594,20 @@ public class DefaultCommunicationService implements CommunicationService {
 			query.append("MATCH (n:User)-[:COMMUNIQUE*1..3]->m-[:DEPENDS*1..2]->(s:Structure {id:{schoolId}})"); //TODO manage leaf
 			params.put("schoolId", structureId);
 		} else {
-			String l = (myGroup) ? " (length(p) >= 2 OR m.users <> 'INCOMING')" : " length(p) >= 2";
-			query.append(" MATCH p=(n:User)-[:COMMUNIQUE*0..2]->ipg" +
-					"-[:COMMUNIQUE*0..1]->g<-[:DEPENDS*0..1]-m ");
-			condition += "AND ((" + l +
-					" AND (length(p) < 3 OR (ipg:Group AND (m:User OR g<-[:DEPENDS]-m) AND length(p) = 3)))) ";
-			if (userProfile == null || "Student".equals(userProfile) || "Relative".equals(userProfile)) {
+			String myGroupQuery = (myGroup) ? "COLLECT(CASE WHEN g.users = 'BOTH' THEN g.id ELSE '' END)" : "[]";
+			query.append(" MATCH (n:User {id: {userId}})-[:COMMUNIQUE]->(g:Group) ");
+			query.append("WITH (REDUCE(acc=[], groups IN COLLECT(COALESCE(g.communiqueWith, [])) | acc+groups) + ")
+					.append(myGroupQuery).append(") as comGroups ");
+			query.append("MATCH p=(g:Group)<-[:DEPENDS*0..1]-cg-[:COMMUNIQUE*0..1]->m ");
+			if (userProfile == null || "Student".equals(userProfile) || "Relative".equals(userProfile) || discoverVisibleExpectedProfile.contains(userProfile) ) {
 				union = new StringBuilder("MATCH p=(n:User)-[:COMMUNIQUE_DIRECT]->m " +
 						"WHERE n.id = {userId} AND (NOT(HAS(m.blocked)) OR m.blocked = false) ");
 			}
 		}
-		query.append("WHERE n.id = {userId} AND (NOT(HAS(m.blocked)) OR m.blocked = false) AND (NOT(HAS(m.nbUsers)) OR m.nbUsers > 0) ");
+		query.append("WHERE  g.id IN comGroups " +
+				"AND (length(p) < 1 OR (length(p) < 2 AND g.id <> cg.id) OR (length(p) < 2 AND m:User)) " +
+				"AND (NOT(HAS(m.blocked)) OR m.blocked = false) " +
+				"AND (NOT(HAS(m.nbUsers)) OR m.nbUsers > 0) ");
 		if (preFilter != null) {
 			query.append(preFilter);
 			if (union != null) {
@@ -608,7 +619,7 @@ public class DefaultCommunicationService implements CommunicationService {
 		if (expectedTypes != null && expectedTypes.size() > 0) {
 			query.append("AND (");
 			StringBuilder types = new StringBuilder();
-			for (Object o : expectedTypes) {
+			for (Object o: expectedTypes) {
 				if (!(o instanceof String)) continue;
 				String t = (String) o;
 				types.append(" OR m:").append(t);
@@ -1149,7 +1160,7 @@ public class DefaultCommunicationService implements CommunicationService {
 	 * Return the list of users, with filtering on the structures, profiles and search
 	 * */
 	@Override
-	public void getDiscoverVisibleUsers(String userId, JsonObject filters, JsonArray discoverVisibleExpectedProfile, final Handler<Either<String, JsonArray>> handler) {
+	public void getDiscoverVisibleUsers(String userId, JsonObject filters, final Handler<Either<String, JsonArray>> handler) {
 
 		JsonObject params = new JsonObject().put("userId", userId);
 		StringBuilder query = new StringBuilder("MATCH (m:Visible) "
@@ -1229,7 +1240,7 @@ public class DefaultCommunicationService implements CommunicationService {
 	 * Add communication between two users, using the COMMUNIQUE_DIRECT relation and source 'MANUAL'
 	 * */
 	@Override
-	public void discoverVisibleAddCommuteUsers(UserInfos user, String recipientId, JsonArray discoverVisibleExpectedProfile,TimelineHelper notifyTimeline, HttpServerRequest request, Handler<Either<String, JsonObject>> handler){
+	public void discoverVisibleAddCommuteUsers(UserInfos user, String recipientId, HttpServerRequest request, Handler<Either<String, JsonObject>> handler){
 
 		String query = "MATCH (s:User {id : {senderId}}), (r:User {id : {recipientId}}) WHERE HEAD(s.profiles) IN {discoverVisibleExpectedProfile} AND HEAD(r.profiles) IN {discoverVisibleExpectedProfile} "
 				+ "OPTIONAL MATCH (s)-[rel:COMMUNIQUE_DIRECT]->(r) WITH s, r, COUNT(rel) AS relCount "
@@ -1239,7 +1250,7 @@ public class DefaultCommunicationService implements CommunicationService {
 		neo4j.execute(query, params, validUniqueResultHandler(result -> {
 			if (result.isRight() && !result.right().getValue().isEmpty()) {
 				if(result.right().getValue().getInteger("number") > 0) {
-					sendNotificationTimeline(notifyTimeline, request, user, new JsonArray().add(recipientId), "");
+					sendNotificationTimeline(request, user, new JsonArray().add(recipientId), "");
 				}
 				handler.handle(new Either.Right<>(result.right().getValue()));
 			} else {
@@ -1348,7 +1359,7 @@ public class DefaultCommunicationService implements CommunicationService {
 	 * Update the number of users in the group
 	 * */
 	@Override
-	public void addDiscoverVisibleGroupUsers(UserInfos user, String groupId, JsonObject body, JsonArray discoverVisibleExpectedProfile, TimelineHelper notifyTimeline, HttpServerRequest request, Handler<Either<String, JsonObject>> handler) {
+	public void addDiscoverVisibleGroupUsers(UserInfos user, String groupId, JsonObject body, HttpServerRequest request, Handler<Either<String, JsonObject>> handler) {
 		StatementsBuilder statementsBuilder = new StatementsBuilder();
 		JsonArray oldUsers = body.getJsonArray("oldUsers");
 		JsonArray newUsers = body.getJsonArray("newUsers");
@@ -1410,7 +1421,7 @@ public class DefaultCommunicationService implements CommunicationService {
 					if(usersToAdd.contains(user.getUserId())) {
 						usersToAdd.remove(user.getUserId());
 					}
-					sendNotificationTimeline(notifyTimeline, request, user, usersToAdd, groupId);
+					sendNotificationTimeline(request, user, usersToAdd, groupId);
 				}
 				handler.handle(new Either.Right<>(event.body()));
 			} else {
@@ -1436,7 +1447,7 @@ public class DefaultCommunicationService implements CommunicationService {
 	 * The notification is 'userbook_discoverVisibleGroups.userbook_discoverVisibleGroups' and will be using 'userbook' type in the timeline and will have the annuaire icon
 	 * The notification will have <i18N>'Explore le réseau'</i18N> as title and will have the group name as groupName
 	 * */
-	private void sendNotificationTimeline(TimelineHelper notifyTimeline, HttpServerRequest request, UserInfos user, JsonArray receivers, String groupId) {
+	private void sendNotificationTimeline(HttpServerRequest request, UserInfos user, JsonArray receivers, String groupId) {
 
 		if(user == null || receivers == null || receivers.isEmpty()){
 			return;
@@ -1465,6 +1476,11 @@ public class DefaultCommunicationService implements CommunicationService {
 			notifyTimeline.notifyTimeline(request, "userbook_discoverVisibleGroups.userbook_discoverVisibleGroups", user, receivers.getList(),
 					user.getUserId() + System.currentTimeMillis() + "userbook_discoverVisibleGroups", params);
 		}
+	}
+
+	@Override
+	public void getDiscoverVisibleAcceptedProfile(Handler<Either<String, JsonArray>> handler) {
+		handler.handle(new Either.Right<>(discoverVisibleExpectedProfile));
 	}
 
 }
