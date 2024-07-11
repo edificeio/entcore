@@ -1019,7 +1019,7 @@ public class UserController extends BaseController {
 	public void getAttachmentSchool(HttpServerRequest request) {
 		String userId = request.params().get("userId");
 		JsonArray structuresToExclude = config.getJsonArray("library-structures-blacklist", new JsonArray());
-		userService.getAttachmentSchool(userId, structuresToExclude, notEmptyResponseHandler(request));
+		userService.getAttachmentSchool(userId, structuresToExclude, defaultResponseHandler(request));
 	}
 
 	@Get("/user/mobilestate")
