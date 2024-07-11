@@ -1,5 +1,8 @@
 package org.entcore.communication.services.impl;
 
+import fr.wseduc.webutils.collections.JsonArray;
+import io.vertx.core.Vertx;
+import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.communication.services.CommunicationService;
 import org.entcore.communication.services.CommunicationService.Direction;
@@ -41,7 +44,7 @@ public class DefaultCommunicationServiceTest {
 
     @Before
     public void prepare() {
-        this.service = new DefaultCommunicationService();
+        this.service = new DefaultCommunicationService(new TimelineHelper(Vertx.vertx(), Vertx.vertx().eventBus(), new JsonObject()), new JsonArray());
         this.userNoAdmin = test.directory().generateUser("notused");
         this.userNoAdmin.setFunctions(new HashMap<String, UserInfos.Function>(0));
     }

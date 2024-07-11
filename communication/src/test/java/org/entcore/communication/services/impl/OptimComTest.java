@@ -34,6 +34,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.notification.TimelineHelper;
 import org.entcore.communication.services.CommunicationService;
 import org.entcore.test.TestHelper;
 import org.junit.Before;
@@ -75,8 +76,7 @@ public class OptimComTest {
 	//@Before
 	public void setUp(TestContext context) {
 		vertx = test.vertx();
-		defaultComService = new DefaultCommunicationService();
-		xpComService = new XpCommunicationService(new JsonArray());
+		defaultComService = new DefaultCommunicationService(new TimelineHelper(vertx, vertx.eventBus(), new JsonObject()), new JsonArray());
 	}
 
 	//@Test
@@ -167,11 +167,9 @@ public class OptimComTest {
 									.put("visibles", visibles.right().getValue())
 									.put("time", System.currentTimeMillis() - start)
 									.put("userId", userId);
-							if (communicationService instanceof XpCommunicationService) {
-								xpResults.put(userId, j);
-							} else {
-								defaultResults.put(userId, j);
-							}
+
+							defaultResults.put(userId, j);
+
 							future.complete();
 						} else {
 							future.fail(new RuntimeException(visibles.left().getValue()));
