@@ -25,7 +25,6 @@ import org.entcore.common.notification.TimelineHelper;
 import org.entcore.communication.controllers.CommunicationController;
 import org.entcore.communication.filters.CommunicationFilter;
 import org.entcore.communication.services.impl.DefaultCommunicationService;
-import org.entcore.communication.services.impl.XpCommunicationService;
 
 public class Communication extends BaseServer {
 
@@ -33,12 +32,10 @@ public class Communication extends BaseServer {
 	public void start() throws Exception {
 		super.start();
 		TimelineHelper helper = new TimelineHelper(vertx, vertx.eventBus(), config);
-		CommunicationController communicationController = new CommunicationController(helper, config.getJsonArray("discoverVisibleExpectedProfile", new JsonArray()));
-		if (config.getBoolean("xp-com-rules", false)) {
-			communicationController.setCommunicationService(new XpCommunicationService(config.getJsonArray("discoverVisibleExpectedProfile", new JsonArray())));
-		} else {
-			communicationController.setCommunicationService(new DefaultCommunicationService());
-		}
+		CommunicationController communicationController = new CommunicationController();
+
+		communicationController.setCommunicationService(new DefaultCommunicationService(helper, config.getJsonArray("discoverVisibleExpectedProfile", new JsonArray())));
+
 		addController(communicationController);
 		setDefaultResourceFilter(new CommunicationFilter());
 	}

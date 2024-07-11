@@ -39,12 +39,11 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
-import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.communication.filters.CommunicationDiscoverVisibleFilter;
 import org.entcore.communication.services.CommunicationService;
-import org.entcore.communication.services.impl.XpCommunicationService;
+import org.entcore.communication.services.impl.DefaultCommunicationService;
 
 import java.util.List;
 
@@ -54,13 +53,6 @@ import static org.entcore.common.http.response.DefaultResponseHandler.*;
 public class CommunicationController extends BaseController {
 
 	private CommunicationService communicationService;
-	private final TimelineHelper timeline;
-	private final JsonArray discoverVisibleExpectedProfile;
-
-	public CommunicationController(TimelineHelper helper, JsonArray discoverVisibleExpectedProfile) {
-		this.timeline = helper;
-		this.discoverVisibleExpectedProfile = discoverVisibleExpectedProfile;
-	}
 
 	@Get("/admin-console")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
@@ -333,7 +325,7 @@ public class CommunicationController extends BaseController {
 				String customReturn = message.body().getString("customReturn");
 				JsonObject ap = message.body().getJsonObject("additionnalParams");
 				boolean itSelf = message.body().getBoolean("itself", false);
-				boolean myGroup = communicationService instanceof XpCommunicationService ? true :
+				boolean myGroup = communicationService instanceof DefaultCommunicationService ? true :
 						message.body().getBoolean("mygroup", false);
 				boolean profile = message.body().getBoolean("profile", true);
 				communicationService.visibleUsers(userId, schoolId, expectedTypes, itSelf, myGroup,
@@ -669,11 +661,11 @@ public class CommunicationController extends BaseController {
 	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
 	public void getDiscoverVisibleUsers(HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, filter -> UserUtils.getUserInfos(eb, request, user -> {
-			if(user == null || discoverVisibleExpectedProfile.isEmpty() || !discoverVisibleExpectedProfile.contains(user.getType())) {
+			if(user == null) {
 				badRequest(request, "invalid.user");
 				return;
 			}
-			communicationService.getDiscoverVisibleUsers( user.getUserId(), filter, discoverVisibleExpectedProfile, arrayResponseHandler(request));
+			communicationService.getDiscoverVisibleUsers( user.getUserId(), filter, arrayResponseHandler(request));
 		}));
 	}
 
@@ -684,7 +676,7 @@ public class CommunicationController extends BaseController {
 	@SecuredAction(value= "", type = ActionType.RESOURCE)
 	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
 	public void getDiscoverVisibleAcceptedProfile(HttpServerRequest request) {
-		renderJson(request, discoverVisibleExpectedProfile);
+		communicationService.getDiscoverVisibleAcceptedProfile(arrayResponseHandler(request));
 	}
 
 	/**
@@ -695,7 +687,7 @@ public class CommunicationController extends BaseController {
 	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
 	public void getDiscoverVisibleStructures(HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, user -> {
-			if(user == null || discoverVisibleExpectedProfile.isEmpty() || !discoverVisibleExpectedProfile.contains(user.getType())) {
+			if(user == null) {
 				badRequest(request, "invalid.user");
 				return;
 			}
@@ -721,11 +713,11 @@ public class CommunicationController extends BaseController {
 		}
 
 		UserUtils.getUserInfos(eb, request, user -> {
-			if(user == null || discoverVisibleExpectedProfile.isEmpty() || !discoverVisibleExpectedProfile.contains(user.getType())) {
+			if(user == null) {
 				badRequest(request, "invalid.user");
 				return;
 			}
-			communicationService.discoverVisibleAddCommuteUsers(user, receiverId, discoverVisibleExpectedProfile, timeline, request, notEmptyResponseHandler(request));
+			communicationService.discoverVisibleAddCommuteUsers(user, receiverId, request, notEmptyResponseHandler(request));
 		});
 	}
 
@@ -743,7 +735,7 @@ public class CommunicationController extends BaseController {
 		}
 
 		UserUtils.getUserInfos(eb, request, user -> {
-			if(user == null || discoverVisibleExpectedProfile.isEmpty() || !discoverVisibleExpectedProfile.contains(user.getType())) {
+			if(user == null) {
 				badRequest(request, "invalid.user");
 				return;
 			}
@@ -759,7 +751,7 @@ public class CommunicationController extends BaseController {
 	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
 	public void discoverVisibleGetGroups(HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, user -> {
-			if(user == null || discoverVisibleExpectedProfile.isEmpty() || !discoverVisibleExpectedProfile.contains(user.getType())) {
+			if(user == null) {
 				badRequest(request, "invalid.user");
 				return;
 			}
@@ -782,7 +774,7 @@ public class CommunicationController extends BaseController {
 		String groupId = request.params().get("groupId");
 
 		UserUtils.getUserInfos(eb, request, user -> {
-			if(user == null || discoverVisibleExpectedProfile.isEmpty() || !discoverVisibleExpectedProfile.contains(user.getType())) {
+			if(user == null) {
 				badRequest(request, "invalid.user");
 				return;
 			}
@@ -804,7 +796,7 @@ public class CommunicationController extends BaseController {
 	public void createDiscoverVisibleGroup(HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, body -> {
 			UserUtils.getUserInfos(eb, request, user -> {
-				if(user == null || discoverVisibleExpectedProfile.isEmpty() || !discoverVisibleExpectedProfile.contains(user.getType())) {
+				if(user == null) {
 					badRequest(request, "invalid.user");
 					return;
 				}
@@ -832,7 +824,7 @@ public class CommunicationController extends BaseController {
 		}
 		RequestUtils.bodyToJson(request, body -> {
 			UserUtils.getUserInfos(eb, request, user -> {
-				if(user == null || discoverVisibleExpectedProfile.isEmpty() || !discoverVisibleExpectedProfile.contains(user.getType())) {
+				if(user == null) {
 					badRequest(request, "invalid.user");
 					return;
 				}
@@ -862,11 +854,11 @@ public class CommunicationController extends BaseController {
 
 		RequestUtils.bodyToJson(request, body -> {
 			UserUtils.getUserInfos(eb, request, user -> {
-				if(user == null || discoverVisibleExpectedProfile.isEmpty() || !discoverVisibleExpectedProfile.contains(user.getType())) {
+				if(user == null) {
 					badRequest(request, "invalid.user");
 					return;
 				}
-				communicationService.addDiscoverVisibleGroupUsers(user, groupId, body, discoverVisibleExpectedProfile, timeline, request, defaultResponseHandler(request));
+				communicationService.addDiscoverVisibleGroupUsers(user, groupId, body, request, defaultResponseHandler(request));
 			});
 		});
 	}

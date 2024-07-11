@@ -2,6 +2,7 @@ package org.entcore.communication.filters;
 
 import fr.wseduc.webutils.http.Binding;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -12,6 +13,12 @@ import org.entcore.common.user.UserInfos;
 
 public class CommunicationDiscoverVisibleFilter implements ResourcesProvider {
 
+    JsonArray discoverVisibleExpectedProfile = new JsonArray();
+
+    public CommunicationDiscoverVisibleFilter() {
+        this.discoverVisibleExpectedProfile = Vertx.currentContext().config().getJsonArray("discoverVisibleExpectedProfile", new JsonArray());
+    }
+
     private final Neo4j neo4j = Neo4j.getInstance();
 
 
@@ -19,7 +26,7 @@ public class CommunicationDiscoverVisibleFilter implements ResourcesProvider {
     public void authorize(HttpServerRequest resourceRequest, Binding binding,
                           UserInfos user, Handler<Boolean> handler) {
 
-        if(user == null) {
+        if(user == null || discoverVisibleExpectedProfile.isEmpty() || !discoverVisibleExpectedProfile.contains(user.getType())) {
             handler.handle(false);
             return;
         }
