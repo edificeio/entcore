@@ -212,6 +212,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 			}
 		],
 		children: [],
+		helpbox: "workspace.help.2",
 		contextualButtons: [
 			{ text: lang.translate('workspace.move'), action: $scope.openMoveView, right: "manager", allow: allowAction("move") },
 			{ text: lang.translate('workspace.copy'), action: $scope.openCopyView, right: "read", allow: allowAction("copy") },
