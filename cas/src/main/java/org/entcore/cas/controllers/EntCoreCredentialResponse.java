@@ -37,6 +37,7 @@ public class EntCoreCredentialResponse extends CredentialResponse {
 		try {
 			response.putHeader("Location", "/auth/login?callback=" +
 					URLEncoder.encode("/cas/login?" + serializeParams(request), "UTF-8"));
+					
 			response.setStatusCode(302);
 		} catch (UnsupportedEncodingException e) {
 			response.setStatusCode(500);
