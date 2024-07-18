@@ -34,5 +34,4 @@ if (fs.existsSync("./.proxyRemoteConfig.js")) {
   }
 }
 
-// console.log(PROXY_CONFIG);
 module.exports = [PROXY_CONFIG];
