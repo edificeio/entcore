@@ -7,7 +7,7 @@
  */
 
 module.exports = {
-  target: "https://recette-release.opendigitaleducation.com",
+  target: "",
   xsrfToken: "",
   oneSessionId: "",
 };
