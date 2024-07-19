@@ -37,6 +37,9 @@ import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Map;
 import java.util.UUID;
 
@@ -65,37 +68,28 @@ public class OpenIdConnectController extends AbstractFederateController {
 		renderJson(request, certificates);
 	}
 
-	// Just endpoint for testing oidc slo back-channel
-
-	/*
-	 * @Post("/openid/test")
-	 * public void test(HttpServerRequest request) {
-	 * eb.send("openid", new JsonObject()
-	 * .put("action", "oidc-slo")
-	 * .put("userId", request.getParam("userId"))
-	 * .put("sessionId", request.getParam("sessionId")));
-	 * renderJson(request, new JsonObject()
-	 * .put("action", "oidc-slo")
-	 * .put("sessionId", request.getParam("sessionId")));
-	 * }
-	 */
-
 
 	@Get("/openid/login")
-	public void login(HttpServerRequest request) {
+	public void login(HttpServerRequest request) throws UnsupportedEncodingException {
 		final OpenIdConnectServiceProvider openIdConnectServiceProvider = openIdConnectServiceProviderFactory.serviceProvider(request);
 		if (openIdConnectServiceProvider == null) return;
 		OpenIdConnectClient oic = openIdConnectServiceProviderFactory.openIdClient(request);
 		if (oic == null) return;
-		final String state = UUID.randomUUID().toString();
+		String state = UUID.randomUUID().toString();
 		CookieHelper.getInstance().setSigned("csrfstate", state, 900, request);
 		final String nonce = UUID.randomUUID().toString();
 		CookieHelper.getInstance().setSigned("nonce", nonce, 900, request);
-		oic.authorizeRedirect(request, state, nonce, openIdConnectServiceProvider.getScope());
+		String stateWithCallback = null;
+		if (request.params().contains("callback") && isNotEmpty(request.params().get("callback"))) {
+			stateWithCallback = URLEncoder.encode(String.format("%s:%s", state, request.params().get("callback")),
+					"UTF-8");
+		}
+		oic.authorizeRedirect(request, stateWithCallback == null ? state : stateWithCallback, nonce,
+				openIdConnectServiceProvider.getScope());
 	}
 
 	@Get("/openid/authenticate")
-	public void authenticate(final HttpServerRequest request) {
+	public void authenticate(final HttpServerRequest request) throws UnsupportedEncodingException {
 		final OpenIdConnectServiceProvider openIdConnectServiceProvider = openIdConnectServiceProviderFactory.serviceProvider(request);
 		if (openIdConnectServiceProvider == null) return;
 		OpenIdConnectClient oic = openIdConnectServiceProviderFactory.openIdClient(request);
@@ -109,6 +103,12 @@ public class OpenIdConnectController extends AbstractFederateController {
 		if (nonce == null) {
 			forbidden(request, "invalid_replay");
 			return;
+		}
+		if (request.params().contains("state")) {
+			String[] stateAndCallbackArray = parseString(request.params().get("state"));
+			if (stateAndCallbackArray != null) {
+				CookieHelper.getInstance().setSigned("callback", stateAndCallbackArray[1], 900, request);
+			}
 		}
 		oic.authorizationCodeToken(request, state, nonce, new Handler<JsonObject>() {
 			@Override
@@ -247,5 +247,16 @@ public class OpenIdConnectController extends AbstractFederateController {
 	public void setActivationThemes(JsonObject activationThemes) {
 		this.activationThemes = activationThemes;
 	}
+
+	public static String[] parseString(String input) throws UnsupportedEncodingException {
+		String separator = ":";
+		input = URLDecoder.decode(input, "UTF-8");
+		if (input != null && !input.isEmpty() && input.contains(separator)) {
+			return input.split(separator, 2);
+		} else {
+			return null;
+		}
+	}
+
 
 }
