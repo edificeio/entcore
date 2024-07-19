@@ -3,6 +3,7 @@
 	"birthDate" : { "attribute" : "ENTPersonDateNaissance", "converter" : "date" },
 	"lastName" : { "attribute" : "sn" },
 	"firstName" : { "attribute" : "givenName" },
+	"otherNames" : { "attribute" : "ENTPersonAutresPrenoms" },
 	"surname" : { "attribute" : "ENTPersonNomPatro" },
 	"title" : { "attribute" : "personalTitle" },
 	"homePhone" : { "attribute" : "homePhone" },
