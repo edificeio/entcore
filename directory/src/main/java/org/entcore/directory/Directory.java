@@ -165,6 +165,9 @@ public class Directory extends BaseServer {
 
         addController(new CalendarController());
 
+		UserPositionController userPositionController = new UserPositionController(new DefaultUserPositionService());
+		addController(userPositionController);
+
         vertx.eventBus().localConsumer("user.repository",
                 new RepositoryHandler(new UserbookRepositoryEvents(userBookService), eb));
 
