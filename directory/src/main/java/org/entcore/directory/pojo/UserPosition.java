@@ -1,6 +1,6 @@
 package org.entcore.directory.pojo;
 
-public class UserPosition {
+public class UserPosition implements Comparable<UserPosition> {
 	private final String id;
 	private final String name;
 	private final UserPositionSource source;
@@ -21,5 +21,10 @@ public class UserPosition {
 
 	public UserPositionSource getSource() {
 		return source;
+	}
+
+	@Override
+	public int compareTo(UserPosition o) {
+		return this.name.compareTo(o.getName());
 	}
 }

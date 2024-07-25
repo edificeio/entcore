@@ -16,6 +16,7 @@ import org.entcore.common.user.UserUtils;
 import org.entcore.directory.pojo.UserPositionSource;
 import org.entcore.directory.services.UserPositionService;
 
+import java.util.Optional;
 import java.util.Set;
 
 public class UserPositionController extends BaseController {
@@ -26,18 +27,20 @@ public class UserPositionController extends BaseController {
 		this.userPositionService = userPositionService;
 	}
 
-	@Get("/positions/:prefix")
+	@Get("/positions")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
 	public void getPositions(HttpServerRequest request) {
-		final String prefix = request.getParam("prefix");
-		final Set<String> structureIds = RequestUtils.getParamAsSet("structureIds", request);
-		userPositionService.getUserPositions(structureIds, prefix)
-				.onSuccess(userPositions -> Renders.render(request, userPositions))
-				.onFailure(th -> {
-					Renders.log.warn("An error occurred while fetching user positions", th);
-					Renders.renderError(request);
+		final Optional<String> prefix = Optional.ofNullable(request.getParam("prefix"));
+		UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(adminInfos -> {
+			userPositionService.getUserPositions(prefix.orElse(""), adminInfos)
+					.onSuccess(userPositions -> Renders.render(request, userPositions))
+					.onFailure(th -> {
+						Renders.log.warn("An error occurred while fetching user positions", th);
+						Renders.renderError(request);
+					});
 		});
+
 	}
 
 	@Get("/positions/:positionId")
@@ -57,12 +60,12 @@ public class UserPositionController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
 	public void createPosition(HttpServerRequest request) {
-		UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(userInfos -> {
+		UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(adminInfos -> {
 			RequestUtils.bodyToJson(request, jsonBody -> {
 				final String positionName = jsonBody.getString("name");
 				final String structureId = jsonBody.getString("structureId");
 				final String userId = jsonBody.getString("userId");
-				userPositionService.createUserPosition(positionName, structureId, userId, UserPositionSource.MANUAL)
+				userPositionService.createUserPosition(positionName, structureId, userId, UserPositionSource.MANUAL, adminInfos)
 						.onSuccess(userPosition -> Renders.render(request, userPosition, 201))
 						.onFailure(th -> {
 							Renders.log.warn("An error occurred while creating position : " + positionName + " for user " + userId + " in structure " + structureId, th);
