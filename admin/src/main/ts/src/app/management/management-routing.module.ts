@@ -20,6 +20,8 @@ import {ImportEdtGuardService} from './import-edt/import-edt-guard.service';
 import {CalendarGuardService} from './calendar/calendar-guard.service';
 import {SubjectsGuardService} from './subjects/subjects-guard.service';
 import {StructureGarComponent} from './structure-gar/structure-gar.component';
+import { UserPositionsComponent } from './user-positions/user-positions.component';
+import { UserPositionComponent } from './user-positions/user-position/user-position.component';
 
 export let routes: Routes = [
      {
@@ -105,6 +107,23 @@ export let routes: Routes = [
             {
                 path: 'gar',
                 component: StructureGarComponent
+            },
+            {
+                path: 'positions',
+                children: [
+                    {
+                        path: 'create',
+                        component: UserPositionsComponent
+                    },
+                    {
+                        path: ':userPositionId',
+                        component: UserPositionsComponent
+                    },
+                    {
+                        path: '',
+                        component: UserPositionsComponent
+                    }
+                ]
             }
         ]
      }

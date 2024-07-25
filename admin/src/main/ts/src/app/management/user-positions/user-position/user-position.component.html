@@ -1,0 +1,20 @@
+<h2 fxLayout="row" fxLayoutAlign="space-between">
+  {{ userPosition.name }}
+  <div *ngIf="editable">
+    <button (click)="edit()">
+      <i class="fa fa-edit is-size-5"></i>
+      <s5l>management.structure.user-position.details.rename</s5l>
+    </button>
+    <button (click)="delete()">
+      <i class="fa fa-trash is-size-5"></i>
+      <s5l>management.structure.user-position.details.delete</s5l>
+    </button>
+  </div>
+</h2>
+<div>
+  <s5l>management.structure.user-position.details.source.label</s5l>:
+  {{
+    "management.structure.user-position.details.source." + userPosition.source
+      | translate
+  }}
+</div>
