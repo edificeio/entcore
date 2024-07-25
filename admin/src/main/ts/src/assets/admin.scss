@@ -1863,7 +1863,8 @@ ode-users-root {
   }
 }
 
-ode-users-list {
+ode-users-list,
+ode-structure-user-positions {
   & > .flex-header {
     display: flex;
     justify-content: flex-end;
@@ -2791,6 +2792,8 @@ div.flashmsg {
 }
 
 ode-message-flash,
+ode-structure-user-positions,
+ode-user-position-modal,
 ode-message-flash-form {
   button.action {
     background-color: $accent;
@@ -2803,7 +2806,11 @@ ode-message-flash-form {
       border-color: $accent-dark;
     }
   }
+}
 
+ode-message-flash,
+ode-user-position-modal,
+ode-message-flash-form {
   .container {
     background-color: white;
     padding: 10px 30px 60px 30px;
