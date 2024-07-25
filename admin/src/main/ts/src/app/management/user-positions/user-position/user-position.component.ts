@@ -1,0 +1,67 @@
+import {
+  Component,
+  EventEmitter,
+  Injector,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from "@angular/core";
+import { OdeComponent } from "ngx-ode-core";
+import { StructureModel } from "src/app/core/store/models/structure.model";
+import { Session } from "src/app/core/store/mappings/session";
+import { SessionModel } from "src/app/core/store/models/session.model";
+import { UserPosition } from "src/app/core/store/models/userPosition.model";
+import { routing } from "src/app/core/services/routing.service";
+import { ActivatedRoute, Data } from "@angular/router";
+import { UserPositionServices } from "src/app/core/services/user-position.service";
+import { MatDialog } from "@angular/material/dialog";
+import { UserPositionModalComponent } from "../user-position-modal/user-position-modal.component";
+
+@Component({
+  selector: "ode-user-position",
+  templateUrl: "./user-position.component.html",
+  styleUrls: ["./user-position.component.scss"],
+})
+export class UserPositionComponent extends OdeComponent {
+  @Input() structureId: string;
+  @Input() userPosition: UserPosition;
+  
+  @Output() userPositionUpdated: EventEmitter<UserPosition> = new EventEmitter();
+
+  get editable(): boolean {
+    return this.userPosition.source !== "AAF";
+  }
+
+  constructor(
+    injector: Injector,
+    private userPositionServices: UserPositionServices,
+    public dialog: MatDialog
+  ) {
+    super(injector);
+  }
+
+  edit() {
+    const dialogRef = this.dialog.open(UserPositionModalComponent, {
+      width: "70%",
+      height: "50%",
+      data: { structureId: this.structureId, userPosition: this.userPosition },
+    });
+
+    this.subscriptions.add(
+      dialogRef.afterClosed().subscribe((userPosition: UserPosition) => {
+        // TODO : add confirmation toaster
+        if (userPosition) {
+          this.userPosition = userPosition;
+          this.userPositionUpdated.emit(userPosition);
+          this.changeDetector.markForCheck();
+        }
+      })
+    );
+  }
+
+  delete(): void {
+    // TODO : add confirmation toaster
+    this.userPositionServices.deleteUserPosition(this.userPosition.id);
+  }
+}

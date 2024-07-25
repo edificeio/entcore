@@ -1,0 +1,39 @@
+<div class="header">
+  <button class="action" (click)="createUserPosition()">
+    <s5l>management.structure.user-position.create</s5l>
+    <i class="fa fa-plus-circle is-size-5"></i>
+  </button>
+</div>
+<ode-side-layout showCompanion="true">
+  <div side-card>
+    <div>
+      <ode-list
+        [model]="userPositionList"
+        searchPlaceholder="management.structure.user-position.search.placeholder"
+        sort="name"
+        noResultsLabel="management.structure.user-position.search.empty"
+        [isSelected]="isSelected"
+        [inputFilter]="filterByInput"
+        (inputChange)="searchPositionPrefix = $event"
+        (onSelect)="openUserPositionDetails($event)"
+      >
+        <ng-template let-item>
+          {{ item.name }}
+        </ng-template>
+      </ode-list>
+    </div>
+  </div>
+  <div side-companion class="container">
+    <ng-container *ngIf="!selectedUserPosition">
+      <h2>
+        <s5l>management.structure.user-position.title</s5l>
+      </h2>
+      <div>
+        <s5l>management.structure.user-position.description</s5l>
+      </div>
+    </ng-container>
+    <ng-container *ngIf="selectedUserPosition">
+      <ode-user-position [userPosition]="selectedUserPosition" [structureId]="structure.id" (userPositionUpdated)="userPostionUpdated($event)"> </ode-user-position>
+    </ng-container>
+  </div>
+</ode-side-layout>

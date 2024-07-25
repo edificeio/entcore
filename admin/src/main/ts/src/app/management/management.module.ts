@@ -41,6 +41,10 @@ import {ImportEDTReportsService} from './import-edt/import-edt-reports.service';
 import {SubjectsGuardService} from './subjects/subjects-guard.service';
 import { StructureAttachmentComponent } from './structure-attachment/structure-attachment.component';
 import {StructureGarComponent} from './structure-gar/structure-gar.component';
+import { UserPositionsComponent } from './user-positions/user-positions.component';
+import { UserPositionComponent } from './user-positions/user-position/user-position.component';
+import { UserPositionModalComponent } from './user-positions/user-position-modal/user-position-modal.component';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @NgModule({
     imports: [
@@ -50,6 +54,7 @@ import {StructureGarComponent} from './structure-gar/structure-gar.component';
         NgxOdeSijilModule.forChild(),
         RouterModule.forChild(routes),
         MatPaginatorModule,
+        MatDialogModule,
         MatSortModule,
         MatTableModule,
         NgxTrumbowygModule.withConfig({
@@ -87,8 +92,10 @@ import {StructureGarComponent} from './structure-gar/structure-gar.component';
         SubjectDetails,
         CalendarComponent,
         StructureAttachmentComponent,
-        StructureGarComponent
-
+        StructureGarComponent,
+        UserPositionsComponent,
+        UserPositionComponent,
+        UserPositionModalComponent
     ],
     exports: [
         RouterModule
