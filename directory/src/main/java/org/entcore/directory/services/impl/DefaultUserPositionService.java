@@ -6,12 +6,13 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
+import org.entcore.common.user.UserInfos;
 import org.entcore.directory.pojo.UserPosition;
 import org.entcore.directory.pojo.UserPositionSource;
 import org.entcore.directory.services.UserPositionService;
 
-import java.util.HashSet;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 
 public class DefaultUserPositionService implements UserPositionService {
@@ -19,24 +20,25 @@ public class DefaultUserPositionService implements UserPositionService {
 	private final Neo4j neo4jClient = Neo4j.getInstance();
 
 	@Override
-	public Future<Set<UserPosition>> getUserPositions(Set<String> structureIds, String prefix) {
+	public Future<Set<UserPosition>> getUserPositions(String prefix, UserInfos adminInfos ) {
 		Promise<Set<UserPosition>> promise = Promise.promise();
 		final String prefixRegex = prefix + ".*";
-		final JsonArray structureIdsArray = new JsonArray();
-		structureIds.forEach(structureIdsArray::add);
-		final String query = "" +
-				"MATCH (p:UserPosition)-[:IN]->(s:Structure) " +
-				"WHERE p.name =~ {prefixRegex} " +
-				"AND s.id IN {structureIds} " +
-				"RETURN p.id as id, p.name as name, p.source as source ";
+		final StringBuilder query = new StringBuilder();
 		final JsonObject params = new JsonObject()
-				.put("prefixRegex", prefixRegex)
-				.put("structureIds", structureIdsArray);
-		neo4jClient.execute(query, params, Neo4jResult.validResultHandler(event -> {
+				.put("prefixRegex", prefixRegex);
+		if (adminInfos.isADMC()) {
+			query.append("MATCH (s:Structure)<-[:IN]-(p:UserPosition) ");
+		} else if (adminInfos.isADML()) {
+			query.append("MATCH (:User {id:{adminId}})-[:IN]->(:FunctionGroup {filter:\"AdminLocal\"})-[:DEPENDS]->(:Structure)<-[:IN]-(p:UserPosition) ");
+			params.put("adminId", adminInfos.getUserId());
+		}
+		query.append("WHERE p.name =~ {prefixRegex} " +
+				"RETURN p.id as id, p.name as name, p.source as source ");
+		neo4jClient.execute(query.toString(), params, Neo4jResult.validResultHandler(event -> {
 			if (event.isLeft()) {
 				promise.fail(event.left().getValue());
 			} else {
-				Set<UserPosition> userPositions = new HashSet<>();
+				Set<UserPosition> userPositions = new TreeSet<>();
 				JsonArray results = event.right().getValue();
 				results.forEach(result -> {
 					JsonObject jsonResult = (JsonObject) result;
@@ -52,7 +54,7 @@ public class DefaultUserPositionService implements UserPositionService {
 	public Future<UserPosition> getUserPosition(String userPositionId) {
 		Promise<UserPosition> promise = Promise.promise();
 		final String query = "" +
-				"MATCH (p:UserPosition {id: {userPositionId}}) " +
+				"MATCH (p:UserPosition {id:{userPositionId}}) " +
 				"RETURN DISTINCT p.id as id, p.name as name, p.source as source ";
 		neo4jClient.execute(query, new JsonObject().put("userPositionId", userPositionId), Neo4jResult.validUniqueResultHandler(event -> {
 			if (event.isLeft()) {
@@ -69,22 +71,29 @@ public class DefaultUserPositionService implements UserPositionService {
 	}
 
 	@Override
-	public Future<UserPosition> createUserPosition(String positionName, String structureId, String userId, UserPositionSource source) {
+	public Future<UserPosition> createUserPosition(String positionName, String structureId, String userId, UserPositionSource source, UserInfos adminInfos) {
 		Promise<UserPosition> promise = Promise.promise();
 		final String positionId = UUID.randomUUID().toString();
+		final StringBuilder query = new StringBuilder();
 		final JsonObject userPositionProps = new JsonObject()
 				.put("id", positionId)
 				.put("name", positionName)
 				.put("source", source.toString());
-		final String query = "" +
-				"MATCH (u:User {id: {userId}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure {id: {structureId}}) " +
-				"CREATE (u)-[:HAS_POSITION]->(p:UserPosition {userPositionProps})-[:IN]->(s) " +
-				"RETURN p.id as id, p.name as name, p.source as source ";
 		final JsonObject params = new JsonObject()
 				.put("userId", userId)
 				.put("structureId", structureId)
 				.put("userPositionProps", userPositionProps);
-		neo4jClient.execute(query, params, Neo4jResult.validUniqueResultHandler(event -> {
+		if (adminInfos.isADMC()) {
+			query.append("MATCH (u:User {id:{userId}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure {id:{structureId}}) ");
+		} else if (adminInfos.isADML()) {
+			query.append("MATCH (u:User {id:{userId}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure {id:{structureId}}), " +
+					"(:User {id:{adminId}})-[:IN]->(:FunctionGroup {filter:\"AdminLocal\"})-[:DEPENDS]->(s) ");
+			params.put("adminId", adminInfos.getUserId());
+		}
+		query.append(
+				"CREATE (u)-[:HAS_POSITION]->(p:UserPosition {userPositionProps})-[:IN]->(s) " +
+				"RETURN p.id as id, p.name as name, p.source as source ");
+		neo4jClient.execute(query.toString(), params, Neo4jResult.validUniqueResultHandler(event -> {
 			if (event.isLeft()) {
 				promise.fail(event.left().getValue());
 			} else {
@@ -120,7 +129,7 @@ public class DefaultUserPositionService implements UserPositionService {
 	public Future<Void> deleteUserPosition(String positionId) {
 		Promise<Void> promise = Promise.promise();
 		final String query = "" +
-				"MATCH (:User)-[h:HAS_POSITION]->(p:UserPosition {id: {positionId}})-[i:IN]->(:Structure) " +
+				"MATCH (:User)-[h:HAS_POSITION]->(p:UserPosition {id:{positionId}})-[i:IN]->(:Structure) " +
 				"DELETE h,p,i ";
 		neo4jClient.execute(query, new JsonObject().put("positionId", positionId), Neo4jResult.validResultHandler(event -> {
 			if (event.isLeft()) {
