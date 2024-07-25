@@ -80,7 +80,8 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 @SuppressWarnings("deprecation")
 public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 	public static final String AUTH_ERROR_AUTHENTICATION_FAILED = "auth.error.authenticationFailed";
-	public static final String AUTH_ERROR_PASSWORD_RESET = "The password must be reset";
+	public static final String AUTH_ERROR_PASSWORD_RESET = "auth.error.password.reset";
+	public static final String AUTH_ERROR_ACTIVATION_CODE = "auth.error.activation.code";
 	public static final String AUTH_ERROR_BLOCKED_USER = "auth.error.blockedUser";
 	public static final String AUTH_ERROR_BLOCKED_PROFILETYPE = "auth.error.blockedProfileType";
 	public static final String AUTH_ERROR_OTP_DISABLED = "auth.error.otpDisabled";
@@ -197,7 +198,7 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 	private void getUserIdNeo4j(final String username, final String password,
 			final Handler<Try<AccessDenied, String>> handler) {
 		String query = "MATCH (n:User) " +
-				"WHERE n.login={login} AND NOT(HAS(n.activationCode)) ";
+				"WHERE n.login={login}";
 		// "AND (NOT(HAS(n.blocked)) OR n.blocked = false) ";
 		if (checkFederatedLogin) {
 			query += "AND (NOT(HAS(n.federated)) OR n.federated = false) ";
@@ -205,7 +206,7 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 		query += "OPTIONAL MATCH (p:Profile) " +
 				"WHERE HAS(n.profiles) AND p.name = head(n.profiles) " +
 				"RETURN DISTINCT n.id as userId, n.password as password, p.blocked as blockedProfile, " +
-				"n.otp as otp, n.otpiat as otpiat, n.resetCode as resetCode , n.resetDate as resetDate, n.blocked as blockedUser,  n.lastLogin as lastLogin, head(n.profiles) as profile, "
+				"n.otp as otp, n.otpiat as otpiat, n.resetCode as resetCode , n.resetDate as resetDate, n.activationCode as activationCode , n.blocked as blockedUser,  n.lastLogin as lastLogin, head(n.profiles) as profile, "
 				+
 				"n.login as login, n.loginAlias as loginAlias";
 		Map<String, Object> params = new HashMap<>();
@@ -274,6 +275,12 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 				}
 				// if otp is ok return id
 				handler.handle(new Try<AccessDenied, String>(r.getString("userId")));
+				return;
+			}
+			// Handle hijack scenario to return a 403 error when a activation Code is used
+			// as a password in the auth2 flow
+			if (r.containsKey("activationCode") && password.equals(r.getString("activationCode"))) {
+				handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_ACTIVATION_CODE, 403)));
 				return;
 			}
 			dbPassword = r.getString("password");
