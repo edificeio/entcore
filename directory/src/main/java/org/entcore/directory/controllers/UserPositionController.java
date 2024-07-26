@@ -17,7 +17,6 @@ import org.entcore.directory.pojo.UserPositionSource;
 import org.entcore.directory.services.UserPositionService;
 
 import java.util.Optional;
-import java.util.Set;
 
 public class UserPositionController extends BaseController {
 
@@ -32,8 +31,9 @@ public class UserPositionController extends BaseController {
 	@ResourceFilter(AdminFilter.class)
 	public void getPositions(HttpServerRequest request) {
 		final Optional<String> prefix = Optional.ofNullable(request.getParam("prefix"));
+		final Optional<String> structureId = Optional.ofNullable(request.getParam("structureId"));
 		UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(adminInfos -> {
-			userPositionService.getUserPositions(prefix.orElse(""), adminInfos)
+			userPositionService.getUserPositions(prefix, structureId, adminInfos)
 					.onSuccess(userPositions -> Renders.render(request, userPositions))
 					.onFailure(th -> {
 						Renders.log.warn("An error occurred while fetching user positions", th);
@@ -64,11 +64,10 @@ public class UserPositionController extends BaseController {
 			RequestUtils.bodyToJson(request, jsonBody -> {
 				final String positionName = jsonBody.getString("name");
 				final String structureId = jsonBody.getString("structureId");
-				final String userId = jsonBody.getString("userId");
-				userPositionService.createUserPosition(positionName, structureId, userId, UserPositionSource.MANUAL, adminInfos)
+				userPositionService.createUserPosition(positionName, structureId, UserPositionSource.MANUAL, adminInfos)
 						.onSuccess(userPosition -> Renders.render(request, userPosition, 201))
 						.onFailure(th -> {
-							Renders.log.warn("An error occurred while creating position : " + positionName + " for user " + userId + " in structure " + structureId, th);
+							Renders.log.warn("An error occurred while creating position : " + positionName + " in structure " + structureId, th);
 							Renders.renderError(request);
 						});
 			});
@@ -79,29 +78,35 @@ public class UserPositionController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
 	public void updatePosition(HttpServerRequest request) {
-		final String positionId = request.getParam("positionId");
-		RequestUtils.bodyToJson(request, jsonBody -> {
-			final String name = jsonBody.getString("name");
-			userPositionService.renameUserPosition(name, positionId)
-					.onSuccess(userPosition -> Renders.render(request, userPosition))
-					.onFailure(th -> {
-						Renders.log.warn("An error occurred while renaming user position with id : " + positionId + " and name : " + name, th);
-						Renders.renderError(request);
-					});
+		UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(adminInfos -> {
+			final String positionId = request.getParam("positionId");
+			RequestUtils.bodyToJson(request, jsonBody -> {
+				final String name = jsonBody.getString("name");
+				userPositionService.renameUserPosition(name, positionId, adminInfos)
+						.onSuccess(userPosition -> Renders.render(request, userPosition))
+						.onFailure(th -> {
+							Renders.log.warn("An error occurred while renaming user position with id : " + positionId + " and name : " + name, th);
+							Renders.renderError(request);
+						});
+			});
 		});
+
 	}
 
-	@Delete("/positions/:positionId")
+	@Delete("/positions/:positionId/:structureId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
 	public void deletePosition(HttpServerRequest request) {
-		final String positionId = request.getParam("positionId");
-		userPositionService.deleteUserPosition(positionId)
-				.onSuccess(event -> Renders.ok(request))
-				.onFailure(th -> {
-					Renders.log.warn("An error occurred while fetching user position with id : " + positionId, th);
-					Renders.renderError(request);
-				});
+		UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(adminInfos -> {
+			final String positionId = request.getParam("positionId");
+			final String structureId = request.getParam("structureId");
+			userPositionService.deleteUserPosition(positionId, structureId, adminInfos)
+					.onSuccess(event -> Renders.ok(request))
+					.onFailure(th -> {
+						Renders.log.warn("An error occurred while fetching user position with id : " + positionId, th);
+						Renders.renderError(request);
+					});
+		});
 	}
 
 }

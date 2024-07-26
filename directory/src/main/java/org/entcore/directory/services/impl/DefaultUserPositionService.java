@@ -11,42 +11,53 @@ import org.entcore.directory.pojo.UserPosition;
 import org.entcore.directory.pojo.UserPositionSource;
 import org.entcore.directory.services.UserPositionService;
 
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.UUID;
+import java.util.*;
 
 public class DefaultUserPositionService implements UserPositionService {
 
 	private final Neo4j neo4jClient = Neo4j.getInstance();
 
 	@Override
-	public Future<Set<UserPosition>> getUserPositions(String prefix, UserInfos adminInfos ) {
+	public Future<Set<UserPosition>> getUserPositions(Optional<String> prefix, Optional<String> structureId, UserInfos adminInfos ) {
 		Promise<Set<UserPosition>> promise = Promise.promise();
-		final String prefixRegex = prefix + ".*";
-		final StringBuilder query = new StringBuilder();
-		final JsonObject params = new JsonObject()
-				.put("prefixRegex", prefixRegex);
-		if (adminInfos.isADMC()) {
-			query.append("MATCH (s:Structure)<-[:IN]-(p:UserPosition) ");
-		} else if (adminInfos.isADML()) {
-			query.append("MATCH (:User {id:{adminId}})-[:IN]->(:FunctionGroup {filter:\"AdminLocal\"})-[:DEPENDS]->(:Structure)<-[:IN]-(p:UserPosition) ");
-			params.put("adminId", adminInfos.getUserId());
-		}
-		query.append("WHERE p.name =~ {prefixRegex} " +
-				"RETURN p.id as id, p.name as name, p.source as source ");
-		neo4jClient.execute(query.toString(), params, Neo4jResult.validResultHandler(event -> {
-			if (event.isLeft()) {
-				promise.fail(event.left().getValue());
+		retrieveAdminStructures(adminInfos).onSuccess(structureIds -> {
+			if (structureIds.isEmpty()) {
+				promise.complete(Collections.emptySet());
 			} else {
-				Set<UserPosition> userPositions = new TreeSet<>();
-				JsonArray results = event.right().getValue();
-				results.forEach(result -> {
-					JsonObject jsonResult = (JsonObject) result;
-					userPositions.add(new UserPosition(jsonResult.getString("id"), jsonResult.getString("name"), UserPositionSource.valueOf(jsonResult.getString("source"))));
-				});
-				promise.complete(userPositions);
+				final JsonArray adminStructureIds = new JsonArray();
+				structureIds.forEach(adminStructureIds::add);
+				final JsonObject params = new JsonObject()
+						.put("adminStructureIds", adminStructureIds);
+
+				final StringBuilder query = new StringBuilder();
+				query.append("MATCH (p:UserPosition)-[:IN]->(s:Structure) ")
+						.append("WHERE s.id IN {adminStructureIds} ");
+				// filters user positions whose name don't match the prefix
+				if (prefix.isPresent()) {
+					query.append("AND p.name =~ {prefixRegex} ");
+					params.put("prefixRegex", prefix.get() + ".*");
+				}
+				// filters user positions related to a specific structure
+				if (structureId.isPresent()) {
+					query.append("AND s.id = {structureId} ");
+					params.put("structureId", structureId);
+				}
+				query.append("RETURN p.id as id, p.name as name, p.source as source ");
+				neo4jClient.execute(query.toString(), params, Neo4jResult.validResultHandler(event -> {
+					if (event.isLeft()) {
+						promise.fail(event.left().getValue());
+					} else {
+						Set<UserPosition> userPositions = new TreeSet<>();
+						JsonArray results = event.right().getValue();
+						results.forEach(result -> {
+							JsonObject jsonResult = (JsonObject) result;
+							userPositions.add(new UserPosition(jsonResult.getString("id"), jsonResult.getString("name"), UserPositionSource.valueOf(jsonResult.getString("source"))));
+						});
+						promise.complete(userPositions);
+					}
+				}));
 			}
-		}));
+		}).onFailure(promise::fail);
 		return promise.future();
 	}
 
@@ -71,71 +82,149 @@ public class DefaultUserPositionService implements UserPositionService {
 	}
 
 	@Override
-	public Future<UserPosition> createUserPosition(String positionName, String structureId, String userId, UserPositionSource source, UserInfos adminInfos) {
+	public Future<UserPosition> createUserPosition(String positionName, String structureId, UserPositionSource source, UserInfos adminInfos) {
 		Promise<UserPosition> promise = Promise.promise();
-		final String positionId = UUID.randomUUID().toString();
-		final StringBuilder query = new StringBuilder();
-		final JsonObject userPositionProps = new JsonObject()
-				.put("id", positionId)
-				.put("name", positionName)
-				.put("source", source.toString());
-		final JsonObject params = new JsonObject()
-				.put("userId", userId)
-				.put("structureId", structureId)
-				.put("userPositionProps", userPositionProps);
-		if (adminInfos.isADMC()) {
-			query.append("MATCH (u:User {id:{userId}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure {id:{structureId}}) ");
-		} else if (adminInfos.isADML()) {
-			query.append("MATCH (u:User {id:{userId}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure {id:{structureId}}), " +
-					"(:User {id:{adminId}})-[:IN]->(:FunctionGroup {filter:\"AdminLocal\"})-[:DEPENDS]->(s) ");
-			params.put("adminId", adminInfos.getUserId());
-		}
-		query.append(
-				"CREATE (u)-[:HAS_POSITION]->(p:UserPosition {userPositionProps})-[:IN]->(s) " +
-				"RETURN p.id as id, p.name as name, p.source as source ");
-		neo4jClient.execute(query.toString(), params, Neo4jResult.validUniqueResultHandler(event -> {
-			if (event.isLeft()) {
-				promise.fail(event.left().getValue());
+		retrieveAdminStructures(adminInfos).onSuccess(structureIds -> {
+			if (structureIds.isEmpty()) {
+				promise.fail("Admin not linked to any structure.");
 			} else {
-				JsonObject result = event.right().getValue();
-				promise.complete(new UserPosition(result.getString("id"), result.getString("name"), UserPositionSource.valueOf(result.getString("source"))));
+				final JsonArray adminStructureIds = new JsonArray();
+				structureIds.forEach(adminStructureIds::add);
+				final String positionId = UUID.randomUUID().toString();
+				final JsonObject userPositionProps = new JsonObject()
+						.put("id", positionId)
+						.put("name", positionName)
+						.put("source", source.toString());
+				final JsonObject params = new JsonObject()
+						.put("structureId", structureId)
+						.put("adminStructureIds", adminStructureIds)
+						.put("userPositionProps", userPositionProps);
+
+				final String query = "" +
+						"MATCH (s:Structure {id:{structureId}}) " +
+						"WHERE s.id IN {adminStructureIds} " +
+						"CREATE UNIQUE (p:UserPosition {userPositionProps})-[:IN]->(s) " +
+						"RETURN p.id as id, p.name as name, p.source as source ";
+				neo4jClient.execute(query, params, Neo4jResult.validUniqueResultHandler(event -> {
+					if (event.isLeft()) {
+						promise.fail(event.left().getValue());
+					} else {
+						JsonObject result = event.right().getValue();
+						promise.complete(new UserPosition(result.getString("id"), result.getString("name"), UserPositionSource.valueOf(result.getString("source"))));
+					}
+				}));
 			}
-		}));
+		}).onFailure(promise::fail);
 		return promise.future();
 	}
 
 	@Override
-	public Future<UserPosition> renameUserPosition(String positionName, String positionId) {
+	public Future<UserPosition> renameUserPosition(String positionName, String positionId, UserInfos adminInfos) {
 		Promise<UserPosition> promise = Promise.promise();
-		final String query = "" +
-				"MATCH (u:UserPosition {id: {positionId}}) " +
-				"SET u.name = {positionName} " +
-				"RETURN DISTINCT u.id as id, u.name as name, u.source as source ";
-		final JsonObject params = new JsonObject()
-				.put("positionId", positionId)
-				.put("positionName", positionName);
-		neo4jClient.execute(query, params, Neo4jResult.validUniqueResultHandler(event -> {
-			if (event.isLeft()) {
-				promise.fail(event.left().getValue());
+		retrieveAdminStructures(adminInfos).onSuccess(structureIds -> {
+			if (structureIds.isEmpty()) {
+				promise.fail("Admin not linked to any structure.");
 			} else {
-				JsonObject result = event.right().getValue();
-				promise.complete(new UserPosition(result.getString("id"), result.getString("name"), UserPositionSource.valueOf(result.getString("source"))));
+				final JsonArray adminStructureIds = new JsonArray();
+				structureIds.forEach(adminStructureIds::add);
+				final JsonObject params = new JsonObject()
+						.put("positionId", positionId)
+						.put("positionName", positionName)
+						.put("adminStructureIds", adminStructureIds);
+
+				final String query = "" +
+						"MATCH (u:UserPosition {id: {positionId}})-[:IN]->(s:Structure) " +
+						"WHERE s.id IN {adminStructureIds} " +
+						"SET u.name = {positionName} " +
+						"RETURN DISTINCT u.id as id, u.name as name, u.source as source ";
+				neo4jClient.execute(query, params, Neo4jResult.validUniqueResultHandler(event -> {
+					if (event.isLeft()) {
+						promise.fail(event.left().getValue());
+					} else {
+						JsonObject result = event.right().getValue();
+						promise.complete(new UserPosition(result.getString("id"), result.getString("name"), UserPositionSource.valueOf(result.getString("source"))));
+					}
+				}));
 			}
-		}));
+		}).onFailure(promise::fail);
 		return promise.future();
 	}
 
 	@Override
-	public Future<Void> deleteUserPosition(String positionId) {
+	public Future<Void> deleteUserPosition(String positionId, String structureId, UserInfos adminInfos) {
 		Promise<Void> promise = Promise.promise();
+		retrieveAdminStructures(adminInfos).onSuccess(structureIds -> {
+			if (structureIds.isEmpty()) {
+				promise.fail("Admin not linked to any structure.");
+			} else {
+				final JsonArray adminStructureIds = new JsonArray();
+				structureIds.forEach(adminStructureIds::add);
+				final JsonObject params = new JsonObject()
+						.put("positionId", positionId)
+						.put("structureId", structureId)
+						.put("adminStructureIds", adminStructureIds);
+				final String query = "" +
+						"MATCH [h:HAS_POSITION]->(p:UserPosition {id:{positionId}})-[i:IN]->(s:Structure {id:{structureId}}) " +
+						"WHERE s.id IN {adminStructureIds} " +
+						"DELETE h,p,i ";
+				neo4jClient.execute(query, params, Neo4jResult.validResultHandler(event -> {
+					if (event.isLeft()) {
+						promise.fail(event.left().getValue());
+					} else {
+						promise.complete();
+					}
+				}));
+			}}).onFailure(promise::fail);
+		return promise.future();
+	}
+
+	@Override
+	public Future<Void> attachUserPositions(Set<String> positionIds, String userId) {
+		Promise<Void> promise = Promise.promise();
+		final JsonArray positionIdsArray = new JsonArray();
+		positionIds.forEach(positionIdsArray::add);
+		final JsonObject params = new JsonObject()
+				.put("positionIds", positionIdsArray)
+				.put("userId", userId);
 		final String query = "" +
-				"MATCH (:User)-[h:HAS_POSITION]->(p:UserPosition {id:{positionId}})-[i:IN]->(:Structure) " +
-				"DELETE h,p,i ";
-		neo4jClient.execute(query, new JsonObject().put("positionId", positionId), Neo4jResult.validResultHandler(event -> {
+				"MATCH (u:User {id:{userId}})-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure), (p:UserPosition)" +
+				"WHERE p.id IN {positionsIds} " +
+				"MERGE (u)-[:HAS_POSITION]->(p)-[:IN]->(s),  ";
+		neo4jClient.execute(query, params, Neo4jResult.validResultHandler(event -> {
 			if (event.isLeft()) {
 				promise.fail(event.left().getValue());
 			} else {
 				promise.complete();
+			}
+		}));
+		return promise.future();
+	}
+
+	private Future<Set<String>> retrieveAdminStructures(UserInfos adminInfos) {
+		Promise<Set<String>> promise = Promise.promise();
+		final StringBuilder query = new StringBuilder();
+		final JsonObject params = new JsonObject();
+		if (adminInfos.isADMC()) {
+			query.append("MATCH (s:Structure) ");
+		} else if (adminInfos.isADML()) {
+			query.append("MATCH (:User {id:{adminId}})-[:IN]->(:FunctionGroup {filter:\"AdminLocal\"})-[:DEPENDS]->(s:Structure) ");
+			params.put("adminId", adminInfos.getUserId());
+		} else {
+			promise.fail("User must be admin");
+			return promise.future();
+		}
+		query.append("RETURN s.id as id");
+		neo4jClient.execute(query.toString(), params, Neo4jResult.validResultHandler(event -> {
+			if (event.isLeft()) {
+				promise.fail(event.left().getValue());
+			} else {
+			JsonArray results = event.right().getValue();
+			Set<String> structureIds = new HashSet<>();
+			results.forEach(result -> {
+				JsonObject jsonResult = (JsonObject) result;
+				structureIds.add(jsonResult.getString("id"));
+			});
+			promise.complete(structureIds);
 			}
 		}));
 		return promise.future();
