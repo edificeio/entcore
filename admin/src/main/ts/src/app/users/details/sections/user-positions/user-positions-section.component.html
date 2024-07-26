@@ -1,0 +1,44 @@
+<ode-panel-section
+  section-title="users.details.section.positions"
+  [folded]="true"
+>
+  <div *ngFor="let userPosition of userPositions">
+    {{ userPosition.name }} -
+    <s5l>user-position.source.{{ userPosition.source }}</s5l>
+    <button (click)="deleteUserPosition(userPosition)">
+      <i class="fa fa-trash is-size-5"></i>
+      <s5l>user-position.delete-assigment</s5l>
+    </button>
+  </div>
+  <button (click)="openAssignUserPositionModal()">
+    <i class="fa fa-plus-circle is-size-5"></i>
+    <s5l>user-position.add-assigment</s5l>
+  </button>
+  <button (click)="saveUpdate()" [disabled]="!userPositionsUpdated">
+    <i class="fa fa-save is-size-5"></i>
+    <s5l>user-position.save-assigment</s5l>
+  </button>
+
+  <ode-lightbox
+    class="inner-list"
+    [show]="showUserPositionAssigmentLightbox"
+    (onClose)="showUserPositionAssigmentLightbox = false"
+  >
+    <div class="padded">
+      <h3><s5l>user-position.add-assigment</s5l></h3>
+      <ode-user-position-list
+        [userPositionList]="positionList"
+        (selectedUserPositionChange)="addUserPositionToList($event)"
+      ></ode-user-position-list>
+      <button (click)="createUserPosition()">
+        <s5l>user-position.create</s5l>
+        <i class="fa fa-plus-circle is-size-5"></i>
+      </button>
+    </div>
+  </ode-lightbox>
+  <ode-user-position-modal
+    [showUserPositionLightbox]="showUserPositionLightbox"
+    (onClose)="addUserPositionToList($event)"
+  >
+  </ode-user-position-modal>
+</ode-panel-section>

@@ -14,7 +14,7 @@ export interface UserPositionElementQuery {
   /**
    *  Restrict results to userPosition in existing in the structure list.
    */
-  structureIds?: string[];
+  structureId?: string;
 }
 
 export interface UserPosition {

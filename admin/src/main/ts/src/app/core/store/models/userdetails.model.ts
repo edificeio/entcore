@@ -1,6 +1,7 @@
 import {Model} from 'entcore-toolkit';
 import {GroupModel} from '../../store/models/group.model';
 import { StructureModel } from './structure.model';
+import { UserPosition } from './userPosition.model';
 
 export enum UserProfiles
 {
@@ -62,6 +63,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     maxQuota?: number;
     structureNodes?: Array<any>;
     removedFromStructures?: Array<String>;
+    positions?: Array<UserPosition>;
 
     toggleBlock() {
         return this.http.put(`/auth/block/${this.id}`, { block: !this.blocked }).then(() => {

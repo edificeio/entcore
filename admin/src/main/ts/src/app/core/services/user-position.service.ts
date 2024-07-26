@@ -45,15 +45,15 @@ export class UserPositionServices {
     return res;
   }
 
-  public async getUserPosition(id: string): Promise<UserPosition> {
-    const userPosition = (
-      await http.get<UserPosition>(`${this.positionsURL}/${id}`)
-    ).data;
-    return userPosition;
-  }
-
+  /**
+   * Get user positions depending on the query
+   * @param params if provided, will be used to filter the user positions by structureId
+   *               and/or filter with prefix
+   *               if structureId is not provided, will return all user position from all the structures he is ADML of
+   * @returns list of user positions
+   */
   public async searchUserPositions(
-    params: UserPositionElementQuery
+    params?: UserPositionElementQuery
   ): Promise<UserPosition[]> {
     return [
       {
@@ -73,12 +73,12 @@ export class UserPositionServices {
       },
     ];
 
-    //   const userPositions: UserPosition[] =
-    //   params.structureIds?.length || params.prefix?.length
-    //     ? await http.get<UserPosition[]>(this.positionsURL, {
-    //         queryParams: { ...params },
-    //       })
-    //     : [];
+    // const userPositions: UserPosition[] = (await http.get<UserPosition[]>(
+    //   this.positionsURL,
+    //   {
+    //     params: params? params : {},
+    //   }
+    // )).data;
     // return userPositions;
   }
 }

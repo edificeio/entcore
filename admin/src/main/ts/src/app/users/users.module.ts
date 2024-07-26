@@ -43,6 +43,7 @@ import { UserlistFiltersService } from '../core/services/userlist.filters.servic
 import { UsersListComponent } from './users-list/users-list.component';
 import { UsersRelinkComponent } from './users-relink/users-relink.component';
 import { SharedModule } from '../_shared/shared.module';
+import { UserPositionsSectionComponent } from './details/sections/user-positions/user-positions-section.component';
 
 @NgModule({
     imports: [
@@ -83,6 +84,7 @@ import { SharedModule } from '../_shared/shared.module';
         SmartUsersComparisonComponent,
         UsersRelinkComponent,
         UsersListComponent,
+        UserPositionsSectionComponent
     ],
     providers: [
         UserDetailsResolver,
