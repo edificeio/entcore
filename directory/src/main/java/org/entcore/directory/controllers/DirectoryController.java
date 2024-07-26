@@ -52,6 +52,7 @@ import io.vertx.core.json.JsonObject;
 import org.vertx.java.core.http.RouteMatcher;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
@@ -70,6 +71,7 @@ public class DirectoryController extends BaseController {
 	private UserService userService;
 	private GroupService groupService;
 	private SlotProfileService slotProfileService;
+	private UserPositionService userPositionService;
 	private EventStore eventStore;
 
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
@@ -404,6 +406,7 @@ public class DirectoryController extends BaseController {
 				}
 				List<String> childrenIds = request.formAttributes().getAll("childrenIds");
 				user.put("childrenIds", new fr.wseduc.webutils.collections.JsonArray(childrenIds));
+				Set<String> userPositionIds = new HashSet<>(request.formAttributes().getAll("userPositionIds"));
 				if (classId != null && !classId.trim().isEmpty()) {
 					userService.createInClass(classId, user, new Handler<Either<String, JsonObject>>() {
 						@Override
@@ -427,6 +430,9 @@ public class DirectoryController extends BaseController {
 										});
 									}
 								}));
+								if (!userPositionIds.isEmpty()) {
+									userPositionService.attachUserPositions(userPositionIds, r.getString("id"));
+								}
 								renderJson(request, r);
 							} else {
 								leftToResponse(request, res.left());
@@ -449,6 +455,9 @@ public class DirectoryController extends BaseController {
 										eb.send("wse.communication", j);
 									}
 								}));
+								if (!userPositionIds.isEmpty()) {
+									userPositionService.attachUserPositions(userPositionIds, r.getString("id"));
+								}
 								renderJson(request, r);
 							} else {
 								leftToResponse(request, res.left());
@@ -656,6 +665,10 @@ public class DirectoryController extends BaseController {
 
 	public void setSlotProfileService (SlotProfileService slotProfileService) {
 		this.slotProfileService = slotProfileService;
+	}
+
+	public void setUserPositionService(UserPositionService userPositionService) {
+		this.userPositionService = userPositionService;
 	}
 
 	// Methods used to create Workflow rights

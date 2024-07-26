@@ -89,6 +89,7 @@ public class Directory extends BaseServer {
 		SchoolService schoolService = new DefaultSchoolService(eb).setListUserMode(config.getString("listUserMode", "multi"));
 		GroupService groupService = new DefaultGroupService(eb);
 		SubjectService subjectService = new DefaultSubjectService(eb);
+		UserPositionService userPositionService = new DefaultUserPositionService();
 		ConversationNotification conversationNotification = new ConversationNotification(vertx, eb, config);
 
 		DirectoryController directoryController = new DirectoryController();
@@ -97,6 +98,7 @@ public class Directory extends BaseServer {
 		directoryController.setUserService(userService);
 		directoryController.setGroupService(groupService);
 		directoryController.setSlotProfileService(new DefaultSlotProfileService(SLOTPROFILE_COLLECTION));
+		directoryController.setUserPositionService(userPositionService);
 		addController(directoryController);
 		vertx.setTimer(5000l, event -> directoryController.createSuperAdmin());
 
@@ -165,7 +167,7 @@ public class Directory extends BaseServer {
 
         addController(new CalendarController());
 
-		UserPositionController userPositionController = new UserPositionController(new DefaultUserPositionService());
+		UserPositionController userPositionController = new UserPositionController(userPositionService);
 		addController(userPositionController);
 
         vertx.eventBus().localConsumer("user.repository",
