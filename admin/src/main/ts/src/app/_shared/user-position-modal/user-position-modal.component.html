@@ -1,43 +1,48 @@
-<h2 fxLayout="row" fxLayoutAlign="space-between">
-  <ng-container *ngIf="userPosition.id">
-    {{ userPosition.name }}
-  </ng-container>
-  <s5l *ngIf="!userPosition.id">
-    management.structure.user-position.details.create
-  </s5l>
-  <mat-dialog-actions fxLayoutAlign="end start" fxFlex="20" style="text-align: end">
-      <button (click)="cancel()" class="mat-button">X</button>
-  </mat-dialog-actions>
-</h2>
-<form #usePositionForm="ngForm" (ngSubmit)="save()">
-  <ode-form-field label=".input-name">
-    <input
-      type="text"
-      required
-      minlength="3"
-      name="userPositionName"
-      #userPositionNameInput="ngModel"
-      [(ngModel)]="editableName"
-    />
-    <ode-form-errors [control]="userPositionNameInput"></ode-form-errors>
-  </ode-form-field>
-</form>
+<ode-lightbox
+  class="inner-list"
+  [show]="showUserPositionLightbox"
+  (onClose)="showUserPositionLightbox = false"
+>
+  <div class="padded">
+    <h2 fxLayout="row" fxLayoutAlign="space-between">
+      <s5l>
+        management.structure.user-position.details.{{
+          isUpdateModal ? "rename-title" : "create"
+        }}
+      </s5l>
+    </h2>
+    <form #usePositionForm="ngForm" (ngSubmit)="save()">
+      <ode-form-field label="management.structure.user-position.details.input-name">
+        <input
+          type="text"
+          required
+          minlength="3"
+          name="userPositionName"
+          #userPositionNameInput="ngModel"
+          placeholder="management.structure.user-position.details.input-name-placeholder"
+          [(ngModel)]="editableName"
+        />
+        <ode-form-errors [control]="userPositionNameInput"></ode-form-errors>
+      </ode-form-field>
+    </form>
 
-<div class="is-pulled-right">
-  <button (click)="cancel()" class="user-position-save">
-    <s5l>management.structure.user-position.details.cancel</s5l>
-    <i class="fa fa-check is-size-5"></i>
-  </button>
-  <button
-    (click)="save()"
-    class="user-position-save action"
-    [disabled]="usePositionForm.invalid"
-  >
-    <s5l
-      >management.structure.user-position.details.{{
-        userPosition.id ? "save" : "create"
-      }}</s5l
-    >
-    <i class="fa fa-check is-size-5"></i>
-  </button>
-</div>
+    <div class="is-pulled-right">
+      <button (click)="cancel()" class="user-position-save">
+        <s5l>management.structure.user-position.details.cancel</s5l>
+        <i class="fa fa-check is-size-5"></i>
+      </button>
+      <button
+        (click)="save()"
+        class="user-position-save action"
+        [disabled]="usePositionForm.invalid"
+      >
+        <s5l>
+          management.structure.user-position.details.{{
+            userPosition.id ? "save" : "create"
+          }}
+        </s5l>
+        <i class="fa fa-check is-size-5"></i>
+      </button>
+    </div>
+  </div>
+</ode-lightbox>

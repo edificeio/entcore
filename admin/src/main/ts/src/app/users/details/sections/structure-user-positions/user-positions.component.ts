@@ -9,12 +9,12 @@ import { Data } from "@angular/router";
 import { UserPositionServices } from "src/app/core/services/user-position.service";
 import { Location } from "@angular/common";
 import { MatDialog } from "@angular/material/dialog";
-import { UserPositionModalComponent } from "../../_shared/user-position-modal/user-position-modal.component";
+import { UserPositionModalComponent } from "src/app/_shared/user-position-modal/user-position-modal.component";
 
 @Component({
-  selector: "ode-structure-user-positions",
-  templateUrl: "./structure-user-positions.component.html",
-  styleUrls: ["./structure-user-positions.component.scss"],
+  selector: "ode-user-positions",
+  templateUrl: "./user-positions.component.html",
+  styleUrls: ["./user-positions.component.scss"],
 })
 export class StructureUserPositionsComponent
   extends OdeComponent
@@ -25,9 +25,8 @@ export class StructureUserPositionsComponent
   public showConfirmLightbox = false;
   public userPositionList: UserPosition[] = [];
   public searchPositionPrefix: string;
-
   private _selectedUserPosition: UserPosition;
-  public get selectedUserPosition(): UserPosition {
+  public get selectedUserPosition(): UserPosition{
     return this._selectedUserPosition;
   }
   set selectedUserPosition(value: UserPosition) {
@@ -37,8 +36,6 @@ export class StructureUserPositionsComponent
     }
     this.changeDetector.markForCheck();
   }
-
-  public showUserPositionLightbox: boolean = false;
 
   constructor(
     injector: Injector,
@@ -75,12 +72,13 @@ export class StructureUserPositionsComponent
                     const userPosition = this.userPositionList.find(
                       (userPosition) => userPosition.id === userPostionId
                     );
+                    this.userPositionList.find(
+                      (userPosition) => userPosition.id === userPostionId
+                    );
                     if (userPosition) {
                       this.selectedUserPosition = userPosition;
                     } else {
                       console.error("User position not found");
-                      const url = this.router.url.replace(`/${userPostionId}`, "");
-                      this.location.go(`${url}`);
                     }
                     this.changeDetector.markForCheck();
                   }
@@ -126,22 +124,28 @@ export class StructureUserPositionsComponent
   };
 
   createUserPosition() {
-    this.showUserPositionLightbox = true;
-  }
+    const dialogRef = this.dialog.open(UserPositionModalComponent, {
+      width: "70%",
+      height: "50%",
+      data: { structureId: this.structure._id },
+    });
 
-  onCloseCreateUserPosition(userPosition: UserPosition) {
-    if (userPosition) {
-      // TODO : add confirmation toaster
-      this.userPositionList.push(userPosition);
-      this.selectedUserPosition = userPosition;
+    this.subscriptions.add(
+      dialogRef.afterClosed().subscribe((userPosition: UserPosition) => {
+        if (userPosition) {
+          // TODO : add confirmation toaster
+          this.userPositionList.push(userPosition);
+          this.selectedUserPosition = userPosition;
 
-      // Redirect to the new user position URL
-      if (this.router.url.endsWith("/create")) {
-        const url = this.router.url.replace("/create", "");
-        this.location.go(`${url}/${userPosition.id}`);
-      }
-    }
-    this.showUserPositionLightbox = false;
+          // Redirect to the new user position URL 
+          if (this.router.url.endsWith("/create")) {
+            const url = this.router.url.replace("/create", "");
+            this.location.go(`${url}/${userPosition.id}`);
+          }
+          this.changeDetector.markForCheck();
+        }
+      })
+    );
     this.changeDetector.markForCheck();
   }
 

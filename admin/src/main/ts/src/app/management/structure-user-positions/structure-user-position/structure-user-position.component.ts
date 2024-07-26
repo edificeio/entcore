@@ -26,6 +26,8 @@ export class StructureUserPositionComponent extends OdeComponent {
     return this.userPosition.source !== "AAF";
   }
 
+  public showUserPositionLightbox: boolean = false;
+
   constructor(
     injector: Injector,
     private userPositionServices: UserPositionServices,
@@ -35,22 +37,17 @@ export class StructureUserPositionComponent extends OdeComponent {
   }
 
   edit() {
-    const dialogRef = this.dialog.open(UserPositionModalComponent, {
-      width: "70%",
-      height: "50%",
-      data: { structureId: this.structureId, userPosition: this.userPosition },
-    });
-
-    this.subscriptions.add(
-      dialogRef.afterClosed().subscribe((userPosition: UserPosition) => {
-        // TODO : add confirmation toaster
-        if (userPosition) {
-          this.userPosition = userPosition;
-          this.userPositionUpdated.emit(userPosition);
-          this.changeDetector.markForCheck();
-        }
-      })
-    );
+    this.showUserPositionLightbox = true;
+  }
+  
+  onCloseEdit(userPosition: UserPosition) {
+    // TODO : add confirmation toaster
+    if (userPosition) {
+      this.userPosition = userPosition;
+      this.userPositionUpdated.emit(userPosition);
+    }
+    this.showUserPositionLightbox = false;
+    this.changeDetector.markForCheck();
   }
 
   delete(): void {

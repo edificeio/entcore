@@ -18,3 +18,9 @@
       | translate
   }}
 </div>
+<ode-user-position-modal
+  [structureId]="structureId"
+  [userPosition]="userPosition"
+  [showUserPositionLightbox]="showUserPositionLightbox"
+  (onClose)="onCloseEdit($event)"
+></ode-user-position-modal>

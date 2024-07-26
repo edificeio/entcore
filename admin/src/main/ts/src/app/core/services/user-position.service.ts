@@ -9,10 +9,16 @@ import http from "axios";
 
 @Injectable()
 export class UserPositionServices {
-  private positionsURL = '/directory/positions';
+  private positionsURL = "/directory/positions";
 
-  public async createUserPosition(userPositionCreation: UserPositionCreation): Promise<UserPosition> {
-    return { id: "10", name: userPositionCreation.name, source: "MANUAL"};
+  public async createUserPosition(
+    userPositionCreation: UserPositionCreation
+  ): Promise<UserPosition> {
+    return {
+      id: userPositionCreation.name,
+      name: userPositionCreation.name,
+      source: "MANUAL",
+    };
     // return (
     //   await http.post<UserPosition>(
     //     this.positionsURL,
@@ -21,7 +27,9 @@ export class UserPositionServices {
     // ).data;
   }
 
-  public async updateUserPosition(userPosition: UserPosition): Promise<UserPosition> {
+  public async updateUserPosition(
+    userPosition: UserPosition
+  ): Promise<UserPosition> {
     return userPosition;
     // const res = await http.post<UserPosition>(
     //   `${this.positionsURL}/${userPosition.id}`,
@@ -32,7 +40,7 @@ export class UserPositionServices {
 
   public async deleteUserPosition(id: string, structureId: string) {
     const res = await http.delete<UserPosition>(
-      `${this.positionsURL}/${id}?structureId=${structureId}`,
+      `${this.positionsURL}/${id}?structureId=${structureId}`
     );
     return res;
   }
@@ -62,15 +70,15 @@ export class UserPositionServices {
         id: "3",
         name: "name 3",
         source: "CSV",
-      }
+      },
     ];
-    
-  //   const userPositions: UserPosition[] =
-  //   params.structureIds?.length || params.prefix?.length
-  //     ? await http.get<UserPosition[]>(this.positionsURL, {
-  //         queryParams: { ...params },
-  //       })
-  //     : [];
-  // return userPositions;
+
+    //   const userPositions: UserPosition[] =
+    //   params.structureIds?.length || params.prefix?.length
+    //     ? await http.get<UserPosition[]>(this.positionsURL, {
+    //         queryParams: { ...params },
+    //       })
+    //     : [];
+    // return userPositions;
   }
 }

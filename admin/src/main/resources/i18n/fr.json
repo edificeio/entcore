@@ -179,7 +179,9 @@
   "management.structure.user-position.details.cancel": "Annuler",
   "management.structure.user-position.details.delete": "Supprimer",
   "management.structure.user-position.details.create": "Créer une fonction",
+  "management.structure.user-position.details.rename-title": "Renommer une fonction",
   "management.structure.user-position.details.input-name": "Nom de la fonction",
+  "management.structure.user-position.details.input-name-placeholder": "Saisissez le nom de la fonction",
 
   "management.message.flash": "Message Flash",
   "management.message.flash.edit": "Éditer un message flash",
