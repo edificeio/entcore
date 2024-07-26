@@ -37,6 +37,7 @@ import org.entcore.common.user.UserUtils;
 
 import java.util.UUID;
 
+import static fr.wseduc.webutils.Utils.isEmpty;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public abstract class AbstractFederateController extends BaseController {
@@ -92,7 +93,10 @@ public abstract class AbstractFederateController extends BaseController {
 					if(config.getBoolean("xsrfOnAuth", true)){
 						CookieHelper.set("XSRF-TOKEN", UUID.randomUUID().toString(), request);
 					}
-					final String callback = CookieHelper.getInstance().getSigned("callback", request);
+					String callback = CookieHelper.getInstance().getSigned("callback", request);
+					if(isEmpty(callback) ){
+						callback = request.params().get("callbackFromState");
+					}
 					if (isNotEmpty(callback)) {
 						CookieHelper.getInstance().setSigned("callback", "", 0, request);
 						redirectionService.redirect(request, callback, "");
