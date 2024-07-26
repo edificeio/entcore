@@ -5,6 +5,7 @@ This project was generated with [Angular CLI](https://github.com/angular/angular
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
+If you want to be connected to a remote server instead of you local springboard you can use the `.proxyRemoteConfig.template.js` copy the file and remove the `.template` so the `proxy-devepment.config.js` will be able to use it when you run `ng serve`.
 
 ## Code scaffolding
 

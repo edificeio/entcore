@@ -84,3 +84,4 @@ infra/src/main/resources/public/js/pixi.min.js
 admin/src/main/ts/.angular
 *.lock
 tests/src/test/resources/data/thumbnails/image.jpg
+admin/src/main/ts/.proxyRemoteConfig.js
