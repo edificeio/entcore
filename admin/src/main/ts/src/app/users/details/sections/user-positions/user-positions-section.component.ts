@@ -73,6 +73,7 @@ export class UserPositionsSectionComponent
   }
 
   createUserPosition() {
+    // TODO recupérer le champs de recherche pour l'ajouter dans la modal d'ajout de nouvelle fonction.
     this.showUserPositionAssigmentLightbox = false;
     this.showUserPositionLightbox = true;
   }
@@ -83,5 +84,7 @@ export class UserPositionsSectionComponent
     this.showUserPositionLightbox = false;
   }
 
-  saveUpdate() {}
+  saveUpdate() {
+    // TODO call userPositionServices.assignUserPositionToUser (pas encore ajouté au service) envoyer toute la liste de userPositions pour update (le back remplace la liste actuelle par celle envoyée)
+  }
 }
