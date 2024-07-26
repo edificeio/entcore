@@ -38,6 +38,7 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.Map;
@@ -70,7 +71,7 @@ public class OpenIdConnectController extends AbstractFederateController {
 
 
 	@Get("/openid/login")
-	public void login(HttpServerRequest request) throws UnsupportedEncodingException {
+	public void login(HttpServerRequest request) {
 		final OpenIdConnectServiceProvider openIdConnectServiceProvider = openIdConnectServiceProviderFactory.serviceProvider(request);
 		if (openIdConnectServiceProvider == null) return;
 		OpenIdConnectClient oic = openIdConnectServiceProviderFactory.openIdClient(request);
@@ -81,15 +82,22 @@ public class OpenIdConnectController extends AbstractFederateController {
 		CookieHelper.getInstance().setSigned("nonce", nonce, 900, request);
 		String stateWithCallback = null;
 		if (request.params().contains("callback") && isNotEmpty(request.params().get("callback"))) {
-			stateWithCallback = URLEncoder.encode(String.format("%s:%s", state, request.params().get("callback")),
-					"UTF-8");
+			String baseUrl = null;
+			try {
+				baseUrl = extractBaseUrl(request.params().get("callback"));
+				stateWithCallback = URLEncoder.encode(String.format("%s:%s", state, baseUrl),
+						"UTF-8");
+			} catch (Exception e) {
+				log.info("Error due to url format  : ", e);
+			}
+
 		}
 		oic.authorizeRedirect(request, stateWithCallback == null ? state : stateWithCallback, nonce,
 				openIdConnectServiceProvider.getScope());
 	}
 
 	@Get("/openid/authenticate")
-	public void authenticate(final HttpServerRequest request) throws UnsupportedEncodingException {
+	public void authenticate(final HttpServerRequest request)  {
 		final OpenIdConnectServiceProvider openIdConnectServiceProvider = openIdConnectServiceProviderFactory.serviceProvider(request);
 		if (openIdConnectServiceProvider == null) return;
 		OpenIdConnectClient oic = openIdConnectServiceProviderFactory.openIdClient(request);
@@ -107,7 +115,9 @@ public class OpenIdConnectController extends AbstractFederateController {
 		if (request.params().contains("state")) {
 			String[] stateAndCallbackArray = parseString(request.params().get("state"));
 			if (stateAndCallbackArray != null) {
-				CookieHelper.getInstance().setSigned("callback", stateAndCallbackArray[1], 900, request);
+				request.params().remove("state");
+				request.params().set("state", stateAndCallbackArray[0]);
+				request.params().set("callbackFromState", stateAndCallbackArray[1]);
 			}
 		}
 		oic.authorizationCodeToken(request, state, nonce, new Handler<JsonObject>() {
@@ -248,9 +258,14 @@ public class OpenIdConnectController extends AbstractFederateController {
 		this.activationThemes = activationThemes;
 	}
 
-	public static String[] parseString(String input) throws UnsupportedEncodingException {
+	public static String[] parseString(String input) {
 		String separator = ":";
-		input = URLDecoder.decode(input, "UTF-8");
+		try {
+			input = URLDecoder.decode(input, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			log.info("Error due to url encoding  : ", e);
+		}
 		if (input != null && !input.isEmpty() && input.contains(separator)) {
 			return input.split(separator, 2);
 		} else {
@@ -258,5 +273,9 @@ public class OpenIdConnectController extends AbstractFederateController {
 		}
 	}
 
+	public static String extractBaseUrl(String url) throws Exception {
+		URL fullUrl = new URL(url);
+		return String.format("%s://%s%s", fullUrl.getProtocol(), fullUrl.getHost(), fullUrl.getPath());
+	}
 
 }
