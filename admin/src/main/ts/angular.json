@@ -99,14 +99,15 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
             "browserTarget": "admin-app:build",
-            "proxyConfig": "src/proxy.conf.js"
+            "proxyConfig": "proxy.conf.js"
           },
           "configurations": {
             "production": {
               "browserTarget": "admin-app:build:production"
             },
             "development": {
-              "browserTarget": "admin-app:build:development"
+              "browserTarget": "admin-app:build:development",
+              "proxyConfig": "proxy-development.conf.js"
             }
           },
           "defaultConfiguration": "development"
@@ -124,18 +125,13 @@
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.spec.json",
             "karmaConfig": "karma.conf.js",
-            "assets": [
-              "src/favicon.ico",
-              "src/assets"
-            ],
+            "assets": ["src/favicon.ico", "src/assets"],
             "styles": [
               "node_modules/font-awesome/css/font-awesome.css",
               "node_modules/flatpickr/dist/themes/confetti.css",
               "src/assets/admin.scss"
             ],
-            "scripts": [
-              "node_modules/jquery/dist/jquery.min.js"
-            ]
+            "scripts": ["node_modules/jquery/dist/jquery.min.js"]
           }
         },
         "e2e": {
