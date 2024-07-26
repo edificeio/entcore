@@ -43,7 +43,7 @@ import { StructureAttachmentComponent } from './structure-attachment/structure-a
 import {StructureGarComponent} from './structure-gar/structure-gar.component';
 import { UserPositionsComponent } from './user-positions/user-positions.component';
 import { UserPositionComponent } from './user-positions/user-position/user-position.component';
-import { UserPositionModalComponent } from './user-positions/user-position-modal/user-position-modal.component';
+import { UserPositionModalComponent } from '../_shared/user-position-modal/user-position-modal.component';
 import { MatDialogModule } from '@angular/material/dialog';
 
 @NgModule({

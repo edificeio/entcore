@@ -9,7 +9,7 @@ import { ActivatedRoute, Data, Router } from "@angular/router";
 import { UserPositionServices } from "src/app/core/services/user-position.service";
 import { Location } from "@angular/common";
 import { MatDialog } from "@angular/material/dialog";
-import { UserPositionModalComponent } from "./user-position-modal/user-position-modal.component";
+import { UserPositionModalComponent } from "../../_shared/user-position-modal/user-position-modal.component";
 
 @Component({
   selector: "ode-user-positions",

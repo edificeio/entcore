@@ -1,10 +1,8 @@
 import {
-  AfterViewInit,
   Component,
   ElementRef,
   Inject,
   Injector,
-  Input,
   ViewChild,
 } from "@angular/core";
 import { OdeComponent } from "ngx-ode-core";
