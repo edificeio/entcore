@@ -7,20 +7,10 @@
 <ode-side-layout showCompanion="true">
   <div side-card>
     <div>
-      <ode-list
-        [model]="userPositionList"
-        searchPlaceholder="management.structure.user-position.search.placeholder"
-        sort="name"
-        noResultsLabel="management.structure.user-position.search.empty"
-        [isSelected]="isSelected"
-        [inputFilter]="filterByInput"
-        (inputChange)="searchPositionPrefix = $event"
-        (onSelect)="openUserPositionDetails($event)"
-      >
-        <ng-template let-item>
-          {{ item.name }}
-        </ng-template>
-      </ode-list>
+      <ode-user-position-list
+        [userPositionList]="userPositionList"
+        [(selectedUserPosition)]="selectedUserPosition"
+      ></ode-user-position-list>
     </div>
   </div>
   <div side-companion class="container">
@@ -33,7 +23,12 @@
       </div>
     </ng-container>
     <ng-container *ngIf="selectedUserPosition">
-      <ode-user-position [userPosition]="selectedUserPosition" [structureId]="structure.id" (userPositionUpdated)="userPostionUpdated($event)"> </ode-user-position>
+      <ode-user-position
+        [userPosition]="selectedUserPosition"
+        [structureId]="structure.id"
+        (userPositionUpdated)="userPostionUpdated($event)"
+      >
+      </ode-user-position>
     </ng-container>
   </div>
 </ode-side-layout>

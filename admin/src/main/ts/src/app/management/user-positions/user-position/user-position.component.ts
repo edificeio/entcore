@@ -3,17 +3,10 @@ import {
   EventEmitter,
   Injector,
   Input,
-  OnDestroy,
-  OnInit,
   Output,
 } from "@angular/core";
 import { OdeComponent } from "ngx-ode-core";
-import { StructureModel } from "src/app/core/store/models/structure.model";
-import { Session } from "src/app/core/store/mappings/session";
-import { SessionModel } from "src/app/core/store/models/session.model";
 import { UserPosition } from "src/app/core/store/models/userPosition.model";
-import { routing } from "src/app/core/services/routing.service";
-import { ActivatedRoute, Data } from "@angular/router";
 import { UserPositionServices } from "src/app/core/services/user-position.service";
 import { MatDialog } from "@angular/material/dialog";
 import { UserPositionModalComponent } from "../../../_shared/user-position-modal/user-position-modal.component";

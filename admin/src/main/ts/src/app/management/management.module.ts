@@ -41,10 +41,12 @@ import {ImportEDTReportsService} from './import-edt/import-edt-reports.service';
 import {SubjectsGuardService} from './subjects/subjects-guard.service';
 import { StructureAttachmentComponent } from './structure-attachment/structure-attachment.component';
 import {StructureGarComponent} from './structure-gar/structure-gar.component';
-import { UserPositionsComponent } from './user-positions/user-positions.component';
 import { UserPositionComponent } from './user-positions/user-position/user-position.component';
 import { UserPositionModalComponent } from '../_shared/user-position-modal/user-position-modal.component';
 import { MatDialogModule } from '@angular/material/dialog';
+import { UserPositionsComponent } from './user-positions/user-positions.component';
+import { UserPositionListComponent } from '../_shared/user-position-list/user-position-list.component';
+import { SharedModule } from '../_shared/shared.module';
 
 @NgModule({
     imports: [
@@ -72,7 +74,8 @@ import { MatDialogModule } from '@angular/material/dialog';
         }),
         MatRadioModule,
         MatDividerModule,
-        FlexLayoutModule
+        FlexLayoutModule,
+        SharedModule
     ],
     declarations: [
         ZimbraComponent,
@@ -95,7 +98,6 @@ import { MatDialogModule } from '@angular/material/dialog';
         StructureGarComponent,
         UserPositionsComponent,
         UserPositionComponent,
-        UserPositionModalComponent
     ],
     exports: [
         RouterModule

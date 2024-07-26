@@ -10,18 +10,13 @@ import {MessageFlashResolver} from './message-flash/message-flash.resolver';
 import { BlockProfilesComponent } from './block-profile/block-profiles.component';
 import { ZimbraComponent } from './zimbra/zimbra.component';
 import { ImportEDTComponent } from './import-edt/import-edt.component';
-import {ZimbraGuardService} from './zimbra/zimbra-guard.service';
 import {CalendarComponent} from './calendar/calendar.component';
 import { SubjectsComponent} from './subjects/subjects.component';
 import {SubjectsResolver} from './subjects/subjects.resolver';
 import {SubjectCreate} from './subjects/create/subject-create.component';
 import {SubjectDetails} from './subjects/details/subject-details.component';
-import {ImportEdtGuardService} from './import-edt/import-edt-guard.service';
-import {CalendarGuardService} from './calendar/calendar-guard.service';
-import {SubjectsGuardService} from './subjects/subjects-guard.service';
 import {StructureGarComponent} from './structure-gar/structure-gar.component';
 import { UserPositionsComponent } from './user-positions/user-positions.component';
-import { UserPositionComponent } from './user-positions/user-position/user-position.component';
 
 export let routes: Routes = [
      {

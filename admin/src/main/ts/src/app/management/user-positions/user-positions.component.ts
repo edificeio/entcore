@@ -5,7 +5,7 @@ import { Session } from "src/app/core/store/mappings/session";
 import { SessionModel } from "src/app/core/store/models/session.model";
 import { UserPosition } from "src/app/core/store/models/userPosition.model";
 import { routing } from "src/app/core/services/routing.service";
-import { ActivatedRoute, Data, Router } from "@angular/router";
+import { Data } from "@angular/router";
 import { UserPositionServices } from "src/app/core/services/user-position.service";
 import { Location } from "@angular/common";
 import { MatDialog } from "@angular/material/dialog";
@@ -25,7 +25,17 @@ export class UserPositionsComponent
   public showConfirmLightbox = false;
   public userPositionList: UserPosition[] = [];
   public searchPositionPrefix: string;
-  public selectedUserPosition: UserPosition;
+  private _selectedUserPosition: UserPosition;
+  public get selectedUserPosition(): UserPosition{
+    return this._selectedUserPosition;
+  }
+  set selectedUserPosition(value: UserPosition) {
+    if (value != this._selectedUserPosition) {
+      this._selectedUserPosition = value;
+      this.openUserPositionDetails(value);
+    }
+    this.changeDetector.markForCheck();
+  }
 
   constructor(
     injector: Injector,
