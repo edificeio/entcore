@@ -164,4 +164,5 @@ public interface UserService {
 	Future<JsonObject> getUsersDisplayNames(JsonArray userIds);
 	
 	public void listUsersByStructure(List<String> structures, Handler<Either<String, JsonArray>> results);
+	void getUserStructuresGroup(String id, Handler<Either<String, JsonObject>> result);
 }

@@ -289,5 +289,8 @@
     "assistant.2d.teaching.myapps": "Découvrez les services et les ressources à disposition dans l’onglet <b>Mes applis</b>.",
     "assistant.2d.teaching.external.notifications": "Indiquez votre adresse mail et paramétrez vos notifications externes dans <b>Mon compte</b>.",
     "assistant.2d.teaching.title.3": "Un doute, une question ?",
-    "assistant.2d.teaching.help": "Consultez l’aide en ligne contextuelle située dans le menu en haut de votre écran. Elle vous présente le mode d’emploi de la page que vous êtes en train de consulter."
+    "assistant.2d.teaching.help": "Consultez l’aide en ligne contextuelle située dans le menu en haut de votre écran. Elle vous présente le mode d’emploi de la page que vous êtes en train de consulter.",
+    "userbook_discovervisiblegroups": "Explorer le réseau",
+    "userbook.discover.visible.groups.add.user.notify": "vous a ajouté au groupe de travail",
+    "userbook.discover.visible.user.add.user.notify": "vous a ajouté à son réseau."
 }

@@ -73,13 +73,11 @@ import org.entcore.auth.oauth.OAuthDataHandler;
 import org.entcore.auth.pojo.SendPasswordDestination;
 import org.entcore.auth.services.MfaService;
 import org.entcore.auth.services.SafeRedirectionService;
+import org.entcore.auth.services.impl.OpenIdSloServiceImpl;
 import org.entcore.auth.users.UserAuthAccount;
 import org.entcore.common.datavalidation.UserValidation;
 import org.entcore.common.events.EventStore;
-import org.entcore.common.http.filter.AdminFilter;
-import org.entcore.common.http.filter.AppOAuthResourceProvider;
-import org.entcore.common.http.filter.IgnoreCsrf;
-import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.http.filter.*;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.MapFactory;
@@ -121,6 +119,7 @@ public class AuthController extends BaseController {
 	private JsonArray ipAllowedByPassLimit;
 	protected final SafeRedirectionService redirectionService = SafeRedirectionService.getInstance();
 	private MfaService mfaSvc;
+	private OpenIdSloServiceImpl sloServiceImpl;
 
 	public enum AuthEvent {
 		ACTIVATION, LOGIN, SMS
@@ -132,14 +131,12 @@ public class AuthController extends BaseController {
 	private boolean slo;
 	private List<String> internalAddress;
 	private boolean checkFederatedLogin = false;
-
 	private long jwtTtlSeconds;
 
 	@Override
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
-
 		GrantHandlerProvider grantHandlerProvider = new DefaultGrantHandlerProvider();
 		clientCredentialFetcher = new ClientCredentialFetcherImpl();
 		token = new Token();
@@ -211,6 +208,26 @@ public class AuthController extends BaseController {
 		invalidEmails = MapFactory.getSyncClusterMap("invalidEmails", vertx);
 		internalAddress = config.getJsonArray("internalAddress",
 				new fr.wseduc.webutils.collections.JsonArray().add("localhost").add("127.0.0.1")).getList();
+		sloServiceImpl = new OpenIdSloServiceImpl(vertx, oauthDataFactory);
+	}
+
+	/**
+	 * This method listens for
+	 * messages on the"openid"
+	 * address to
+	 * process Single Log-Out (SLO) for OpenID Connect clients. It initializes a
+	 * logout token and a list of client objects. For each message, it extracts the
+	 * user ID, fetches authorizations for that user, and deletes associated tokens.
+	 * It then constructs a client object for each authorization, ensuring
+	 * uniqueness in the client list. For each unique client, it requests a logout
+	 * token and, upon receiving it, triggers logout requests for each client. This
+	 * process ensures the user is logged out from all registered clients.
+	 **/
+	@BusAddress("openid")
+	public void sloOpenId(final Message<JsonObject> message) {
+		if (message != null && message.body().getString("action").equals("oidc-slo")) {
+			sloServiceImpl.sloOpenId(message);
+		}
 	}
 
 	@Get("/oauth2/auth")
@@ -221,6 +238,7 @@ public class AuthController extends BaseController {
 		final String scope = request.params().get("scope");
 		final String state = request.params().get("state");
 		final String nonce = request.params().get("nonce");
+		final String sessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
 		if ("code".equals(responseType) && clientId != null && !clientId.trim().isEmpty()) {
 			if (isNotEmpty(scope)) {
 				final DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(request));
@@ -235,7 +253,7 @@ public class AuthController extends BaseController {
 								public void handle(UserInfos user) {
 									if (user != null && user.getUserId() != null) {
 										((OAuthDataHandler) data).createOrUpdateAuthInfo(clientId, user.getUserId(),
-												scope, redirectUri, nonce, new Handler<AuthInfo>() {
+												scope, redirectUri, nonce, sessionId, new Handler<AuthInfo>() {
 
 													@Override
 													public void handle(AuthInfo auth) {
@@ -1600,9 +1618,18 @@ public class AuthController extends BaseController {
 		});
 	}
 
+	@Post("/changePassword")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void changePasswordSubmit(final HttpServerRequest request) {
+		changePassword(request);
+	}
+
 	@Post("/reset")
-	public void
-	resetPasswordSubmit(final HttpServerRequest request) {
+	public void resetPasswordSubmit(final HttpServerRequest request) {
+		changePassword(request);
+	}
+
+	private void changePassword(final HttpServerRequest request) {
 		request.setExpectMultipart(true);
 		request.endHandler(new io.vertx.core.Handler<Void>() {
 
@@ -1617,7 +1644,7 @@ public class AuthController extends BaseController {
 				final String forceChange = Utils.getOrElse(request.formAttributes().get("forceChange"), "");
 				if (login == null
 						|| ((resetCode == null || resetCode.trim().isEmpty())
-								&& (oldPassword == null || oldPassword.trim().isEmpty() || oldPassword.equals(password)))
+						&& (oldPassword == null || oldPassword.trim().isEmpty() || oldPassword.equals(password)))
 						|| password == null || login.trim().isEmpty() || password.trim().isEmpty()
 						|| !password.equals(confirmPassword) || !passwordPattern.matcher(password).matches()) {
 					trace.info(getIp(request) + " - Erreur lors de la réinitialisation " + "du mot de passe de l'utilisateur " + login + " - Referer " + request.headers().get("Referer"));
@@ -1634,53 +1661,54 @@ public class AuthController extends BaseController {
 						@Override
 						public void handle(Try<AccessDenied, String> tryUserId) {
 
-								String userId = null;
-								try {
-									userId = tryUserId.get();
-								} catch (AccessDenied e) {
-									// Will be handled by resetCode check
-								}
+							String userId = null;
+							try {
+								userId = tryUserId.get();
+							} catch (AccessDenied e) {
+								// Will be handled by resetCode check
+							}
 
-								// Keep current session and app token alive
-								Optional<String> sessionId = UserUtils.getSessionId(request);
-								Optional<String> appToken = AppOAuthResourceProvider.getTokenId(new SecureHttpServerRequest(request));
+							// Keep current session and app token alive
+							Optional<String> sessionId = UserUtils.getSessionId(request);
+							Optional<String> appToken = AppOAuthResourceProvider.getTokenId(new SecureHttpServerRequest(request));
 
-								final String sessionIdStr = sessionId.isPresent() ? sessionId.get() : null;
-								final String appTokenStr = appToken.isPresent() ? appToken.get() : null;
-								final io.vertx.core.Handler<String> resultHandler = new io.vertx.core.Handler<String>() {
+							final String sessionIdStr = sessionId.isPresent() ? sessionId.get() : null;
+							final String appTokenStr = appToken.isPresent() ? appToken.get() : null;
+							final io.vertx.core.Handler<String> resultHandler = new io.vertx.core.Handler<String>() {
 
-									@Override
-									public void handle(String resetedUserId) {
-										if (resetedUserId != null) {
+								@Override
+								public void handle(String resetedUserId) {
+									if (resetedUserId != null) {
 											trace.info(getIp(request) + " - Réinitialisation réussie du mot de passe de l'utilisateur " + login + " - Referer " + request.headers().get("Referer"));
-											final boolean forcedChangePw = "force".equals(forceChange);
-											UserUtils.deleteCacheSession(eb, resetedUserId,  forcedChangePw ? null : sessionIdStr, deleted -> {
-												if (sessionIdStr == null || forcedChangePw) {
-													CookieHelper.set("oneSessionId", "", 0l, request);
-													CookieHelper.set("authenticated", "", 0l, request);
-												}
-												if (forcedChangePw) {
-													redirectionService.redirect(request, config.getJsonObject("authenticationServer",
-															new JsonObject()).getString("loginURL", "/auth/login"));
-												} else {
-													redirectionService.redirect(request, callback);
-												}
-											});
-											UserUtils.deletePermanentSession(eb, resetedUserId, sessionIdStr, appTokenStr, null);
-										} else {
+										final boolean forcedChangePw = "force".equals(forceChange);
+										UserUtils.deleteCacheSession(eb, resetedUserId,  forcedChangePw ? null : sessionIdStr, deleted -> {
+											if (sessionIdStr == null || forcedChangePw) {
+												CookieHelper.set("oneSessionId", "", 0l, request);
+												CookieHelper.set("authenticated", "", 0l, request);
+											}
+											if (forcedChangePw) {
+												redirectionService.redirect(request, config.getJsonObject("authenticationServer",
+														new JsonObject()).getString("loginURL", "/auth/login"));
+											} else {
+												redirectionService.redirect(request, callback);
+											}
+										});
+										UserUtils.deletePermanentSession(eb, resetedUserId, sessionIdStr, appTokenStr, null);
+									} else {
 											trace.info(getIp(request) + " - Erreur lors de la réinitialisation du mot de passe de l'utilisateur "+ login + " - Referer " + request.headers().get("Referer"));
-											error(request, resetCode);
-										}
+										error(request, resetCode);
 									}
-								};
-
-								if (resetCode != null && !resetCode.trim().isEmpty()) {
-									userAuthAccount.resetPassword(login, resetCode, password, request, resultHandler);
-								} else if(userId != null && !userId.trim().isEmpty()) {
-									userAuthAccount.changePassword(login, password, request, resultHandler);
-								} else {
-									error(request, null);
 								}
+							};
+
+
+							if (resetCode != null && !resetCode.trim().isEmpty()) {
+								userAuthAccount.resetPassword(login, resetCode, password, request, resultHandler);
+							} else if(userId != null && !userId.trim().isEmpty()) {
+								userAuthAccount.changePassword(login, password, request, resultHandler);
+							} else {
+								error(request, null);
+							}
 
 						}
 					});
@@ -1696,6 +1724,7 @@ public class AuthController extends BaseController {
 				renderJson(request, error);
 			}
 		});
+
 	}
 
 	@Get("/cgu")
@@ -1707,6 +1736,26 @@ public class AuthController extends BaseController {
 				context.put("notLoggedIn", user == null);
 				renderView(request, context);
 			}
+		});
+	}
+
+	@Post("/cgu")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void needToValidateCgu(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, data -> {
+			if (data == null) {
+				badRequest(request);
+				return;
+			}
+				final String userId = data.getString("userId");
+				this.userAuthAccount.needToValidateCgu(userId, ok->{
+					if(ok) {
+						noContent(request);
+					}else {
+						badRequest(request,"cgu.accept.failed");
+					}
+				});
 		});
 	}
 	
@@ -1903,7 +1952,7 @@ public class AuthController extends BaseController {
 		RequestUtils.bodyToJson(request, new io.vertx.core.Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject data) {
-				
+
 				final String userId = data.getString("userId");
 
 				if (userId == null || userId.trim().isEmpty()) {

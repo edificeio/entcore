@@ -20,11 +20,14 @@
 package org.entcore.directory.services.impl;
 
 import fr.wseduc.webutils.Either;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.neo4j.StatementsBuilder;
@@ -37,6 +40,7 @@ import org.entcore.directory.services.SchoolService;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
@@ -45,6 +49,7 @@ import static org.entcore.common.neo4j.Neo4jResult.*;
 import static org.entcore.common.user.DefaultFunctions.*;
 
 public class DefaultSchoolService implements SchoolService {
+	private static final Logger log = LoggerFactory.getLogger(DefaultSchoolService.class);
 	private final int firstLevel = 1;
 	private final int secondLevel = 2;
 	private final JsonArray defaultStructureLevelsOfEducation = new JsonArray()
@@ -126,7 +131,7 @@ public class DefaultSchoolService implements SchoolService {
 				"WITH s, COLLECT({id: ps.id, name: ps.name}) as parents " +
 				"RETURN s.id as id, s.UAI as UAI, s.name as name, s.externalId as externalId, s.timetable as timetable, s.punctualTimetable AS punctualTimetable, " +
 				"s.hasApp as hasApp, s.ignoreMFA as ignoreMFA, s.levelsOfEducation as levelsOfEducation, s.distributions as distributions, s.manualName AS manualName, " +
-				"s.feederName AS feederName, s.source AS source, " +
+				"s.feederName AS feederName, s.source AS source, s.exports as exports, " +
 				"CASE WHEN any(p in parents where p <> {id: null, name: null}) THEN parents END as parents";
 
 		neo.execute(query, params, result -> {
@@ -653,4 +658,93 @@ public class DefaultSchoolService implements SchoolService {
 		builder.add(duplicateQuery, params);
 	}
 
+	@Override
+	public void checkGAR(JsonArray uais, Handler<Either<String, JsonArray>> handler) {
+		final String query = "MATCH (s:Structure) WHERE s.source IN ['AAF', 'AAF1D'] AND s.UAI IN {uais} " +
+				"MATCH s<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User) " +
+				"WITH s, count(u) as users where users > 0 RETURN DISTINCT s.name AS name, s.UAI as UAI";
+		JsonArray uaiUppercase = new JsonArray(uais.stream().map(uai -> uai.toString().toUpperCase()).collect(Collectors.toList()));
+		JsonObject params = new JsonObject().put("uais", uaiUppercase);
+		neo.execute(query, params, validResultHandler(handler));
+	}
+
+	@Override
+	public void activateGar(String garId, JsonArray targetUAIs, String groupName, String appName, Handler<Either<String, JsonObject>> handler) {
+		final List<String> list = targetUAIs.getList();
+		final AtomicInteger countDown = new AtomicInteger(list.size());
+		final JsonArray errors = new JsonArray();
+
+		for (String uai : list) {
+			activateGar(garId, uai, groupName, appName, result -> {
+				if (result.isLeft()) {
+					final JsonObject error = result.left().getValue();
+					errors.add(error.getString("uai"));
+					log.error(error.getString("error") + error.getString("uai"));
+				}
+
+				if (countDown.decrementAndGet() == 0) {
+					handler.handle(new Either.Right<>(new JsonObject().put("errors", errors)));
+				}
+            });
+		}
+	}
+
+	private void activateGar(String garId, String uai, String groupName, String appName, Handler<Either<JsonObject, JsonObject>> handler) {
+		final String query = "MATCH (s:Structure {UAI:{uai}}) OPTIONAL MATCH (s)<-[:DEPENDS]-(g:ManualGroup{name:{groupName}}) SET " +
+				"s.exports = CASE WHEN ('GAR-' + {garId}) IN coalesce(s.exports, []) then s.exports " +
+				"WHEN ANY(x IN coalesce(s.exports, []) WHERE x starts WITH 'GAR-') then [x IN s.exports | CASE WHEN x STARTS WITH 'GAR-' THEN 'GAR-' + {garId} ELSE x END] " +
+				"ELSE coalesce(s.exports, []) + ('GAR-' + {garId}) END return s.id as structureId, g.id as groupId";
+
+		final JsonObject params = new JsonObject().put("uai", uai).put("garId", garId).put("groupName", groupName);
+		neo.execute(query, params, validUniqueResultHandler(either -> {
+			if (either.isLeft()) {
+				handler.handle(new Either.Left<>(new JsonObject().put("error", "Failed to deploy GAR structure : ").put("uai", uai)));
+				return;
+			}
+			JsonObject result = either.right().getValue();
+			if (result.getValue("structureId") == null) {
+				handler.handle(new Either.Left<>(new JsonObject().put("error", "Failed to deploy GAR structure : ").put("uai", uai)));
+				return;
+			}
+			final JsonObject group = new JsonObject().put("name", groupName).put("groupDisplayName", groupName);
+			group.put("id", result.getValue("groupId"));
+			group.put("lockDelete", true);
+
+			JsonObject action = new JsonObject()
+					.put("action", "manual-create-group")
+					.put("structureId", result.getValue("structureId"))
+					.put("group", group);
+			eventBus.send("entcore.feeder", action, (Handler<AsyncResult<Message<JsonObject>>>) groupResult -> {
+				if (groupResult.failed()) {
+					handler.handle(new Either.Left<>(new JsonObject().put("error", "Failed to create GAR group : ").put("uai", uai)));
+					return;
+				}
+
+				String groupId = groupResult.result().body()
+						.getJsonArray("results")
+						.getJsonArray(0)
+						.getJsonObject(0).getString("id");
+
+				StatementsBuilder builder = new StatementsBuilder();
+				final String authorizedQuery = "MATCH (a:Application {name:{appName}})-[]->(ac:Action)<-[]-(r:Role), (g:Group {id:{groupId}}) " +
+						" CREATE UNIQUE (g)-[:AUTHORIZED]->(r)";
+				final JsonObject authorizedParams = new JsonObject().put("appName", appName).put("groupId", groupId);
+				builder.add(authorizedQuery, authorizedParams);
+
+				final String populateQuery = "MATCH (s:Structure {UAI: {uai}})<-[:DEPENDS]-(g:ManualGroup {id: {groupId} }), (s)<-[:DEPENDS]-(pg:ProfileGroup)<-[:IN]-(u:User) " +
+						"WHERE pg.filter IN ['Teacher','Personnel'] AND ANY(function IN u.functions WHERE function CONTAINS '$DIR$' OR function CONTAINS '$DOC$' OR function CONTAINS '$DIRECTION') " +
+						"CREATE UNIQUE u-[:IN {source:'MANUAL'}]->g";
+				final JsonObject populateParams = new JsonObject().put("uai", uai).put("groupId", groupId);
+				builder.add(populateQuery, populateParams);
+
+				neo.executeTransaction(builder.build(), null, true, res -> {
+                    if ("ok".equals(res.body().getString("status"))) {
+                        handler.handle(new Either.Right<>(new JsonObject()));
+                    } else {
+                        handler.handle(new Either.Left<>(new JsonObject().put("error", "Failed to authorise and populate GAR group : ").put("uai", uai)));
+                    }
+                });
+			});
+		}));
+	}
 }

@@ -7,7 +7,6 @@ import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
@@ -30,8 +29,9 @@ import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.Mfa;
 import org.entcore.common.utils.StringUtils;
 
-import java.io.StringReader;
-import java.io.Writer;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.HashMap;
 import java.util.Map;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
@@ -50,14 +50,77 @@ public class DefaultUserValidationService implements UserValidationService {
     //---------------------------------------------------------------
     private class MobileField extends AbstractDataValidationService {
     //---------------------------------------------------------------
+        private EmailSender emailSender = null;
+
         MobileField(io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config, io.vertx.core.json.JsonObject params) {
             super("mobile", "mobileState", vertx, config, params);
+            emailSender = new EmailFactory(this.vertx, config).getSenderWithPriority(EmailFactory.PRIORITY_HIGH);
         }
 
         @Override
         public Future<String> sendValidationMessage( final HttpServerRequest request, String mobile, JsonObject templateParams, final String module ) {
             final SmsSender sms = SmsSenderFactory.getInstance().newInstance( this, eventStore );
             return sms.sendUnique(request, mobile, "phone/mobileVerification.txt", templateParams, module);
+        }
+
+        @Override
+        public Future<String> sendWarningMessage(HttpServerRequest request, Map<String, String> targets, JsonObject templateParams) {
+            Promise<String> promise = Promise.promise();
+            if (!StringUtils.isEmpty(targets.get("mobile"))) {
+                sendWarningSMS(request, targets.get("mobile"), templateParams)
+                        .onFailure(e -> log.error("Failed to send mobile update warning SMS", e));
+            }
+            if (!StringUtils.isEmpty(targets.get("email"))) {
+                sendWarningEmail(request, targets.get("email"), templateParams)
+                        .onFailure(e -> log.error("Failed to send mobile update warning email", e));
+            }
+            return promise.future();
+        }
+
+        private Future<String> sendWarningSMS(final HttpServerRequest request, String mobile, JsonObject templateParams) {
+            final SmsSender sms = SmsSenderFactory.getInstance().newInstance(this, eventStore);
+            return sms.sendUnique(request, mobile, "phone/mobileUpdateWarning.txt", templateParams, "CHANGE_NOTICE");
+        }
+
+        private Future<String> sendWarningEmail(HttpServerRequest request, String email, JsonObject templateParams) {
+            Promise<String> promise = Promise.promise();
+            if (emailSender == null) {
+                promise.complete(null);
+            } else if (StringUtils.isEmpty((email))) {
+                promise.fail("Invalid email address.");
+            } else {
+                processEmailTemplate(request, templateParams, "email/mobileUpdateWarning.html", false, processedTemplate -> {
+                    // Generate email subject
+                    final JsonObject timelineI18n = (requestThemeKV == null ? getThemeDefaults() : requestThemeKV).getOrDefault(I18n.acceptLanguage(request).split(",")[0].split("-")[0], new JsonObject());
+                    final String title = timelineI18n.getString("timeline.immediate.mail.subject.header", "")
+                            + I18n.getInstance().translate("mobile.update.warning.subject", getHost(request), I18n.acceptLanguage(request));
+
+                    emailSender.sendEmail(
+                            request,
+                            email,
+                            null,
+                            null,
+                            title,
+                            processedTemplate,
+                            null,
+                            false,
+                            ar -> {
+                                if (ar.succeeded()) {
+                                    Message<JsonObject> reply = ar.result();
+                                    if ("ok".equals(reply.body().getString("status"))) {
+                                        Object r = reply.body().getValue("result");
+                                        promise.complete( "" );
+                                    } else {
+                                        promise.fail( reply.body().getString("message", "") );
+                                    }
+                                } else {
+                                    promise.fail(ar.cause().getMessage());
+                                }
+                            }
+                    );
+                });
+            }
+            return promise.future();
         }
     }
 
@@ -75,43 +138,74 @@ public class DefaultUserValidationService implements UserValidationService {
         @Override
         public Future<String> sendValidationMessage( final HttpServerRequest request, String email, JsonObject templateParams, final String module) {
             Promise<String> promise = Promise.promise();
-            if( emailSender == null ) {
-                promise.complete(null);
-            } else if( StringUtils.isEmpty((email)) ) {
-                promise.fail("Invalid email address.");
-            } else if( templateParams==null || StringUtils.isEmpty(templateParams.getString("code")) ) {
+            if (templateParams == null || StringUtils.isEmpty(templateParams.getString("code"))) {
                 promise.fail("Invalid parameters.");
+            }
+
+            final String subject = formatEmailSubject(request,"email.validation.subject");
+            return sendEmail(request, email, subject, "email/emailValidationCode.html", templateParams);
+        }
+
+        @Override
+        public Future<String> sendWarningMessage(HttpServerRequest request, Map<String, String> targets, JsonObject templateParams) {
+            Promise<String> promise = Promise.promise();
+            if (!StringUtils.isEmpty(targets.get("email"))) {
+                final String subject = formatEmailSubject(request, "email.update.warning.subject");
+                return sendEmail(request, targets.get("email"), subject, "email/emailUpdateWarning.html", templateParams);
+            }
+            return promise.future();
+        }
+
+        private Future<String> sendEmail(HttpServerRequest request, String to, String subject, String templateName, JsonObject templateParams) {
+            Promise<String> promise = Promise.promise();
+            if (emailSender == null) {
+                promise.complete(null);
+            } else if (StringUtils.isEmpty((to))) {
+                promise.fail("Invalid email address.");
             } else {
-                String code = templateParams.getString("code");
-                processEmailTemplate(request, templateParams, "email/emailValidationCode.html", false, processedTemplate -> {
-                    // Generate email subject
-                    final JsonObject timelineI18n = (requestThemeKV==null ? getThemeDefaults():requestThemeKV).getOrDefault( I18n.acceptLanguage(request).split(",")[0].split("-")[0], new JsonObject() );
-                    final String title = timelineI18n.getString("timeline.immediate.mail.subject.header", "") 
-                        + I18n.getInstance().translate("email.validation.subject", getHost(request), I18n.acceptLanguage(request), code);
-                    
-                    emailSender.sendEmail(request, email, null, null,
-                        title,
-                        processedTemplate,
-                        null,
-                        false,
-                        ar -> {
-                            if (ar.succeeded()) {
-                                Message<JsonObject> reply = ar.result();
-                                if ("ok".equals(reply.body().getString("status"))) {
-                                    Object r = reply.body().getValue("result");
-                                    promise.complete( "" );
+                processEmailTemplate(request, templateParams, templateName, false, processedTemplate -> {
+                    emailSender.sendEmail(
+                            request,
+                            to,
+                            null,
+                            null,
+                            subject,
+                            processedTemplate,
+                            null,
+                            false,
+                            ar -> {
+                                if (ar.succeeded()) {
+                                    Message<JsonObject> reply = ar.result();
+                                    if ("ok".equals(reply.body().getString("status"))) {
+                                        promise.complete("");
+                                    } else {
+                                        promise.fail(reply.body().getString("message", ""));
+                                    }
                                 } else {
-                                    promise.fail( reply.body().getString("message", "") );
+                                    promise.fail(ar.cause().getMessage());
                                 }
-                            } else {
-                                promise.fail(ar.cause().getMessage());
                             }
-                        }
                     );
                 });
             }
             return promise.future();
         }
+
+        /**
+         * Generate email subject by loading Timeline i18n to retrieve PF/Project name and add it to custom email subject.
+         * @param request to get host, language, ...
+         * @param i18nKey key for email subject
+         * @return subject
+         */
+        private String formatEmailSubject(HttpServerRequest request, String i18nKey) {
+            final JsonObject timelineI18n = (requestThemeKV == null ? getThemeDefaults() : requestThemeKV).getOrDefault(
+                    I18n.acceptLanguage(request).split(",")[0].split("-")[0],
+                    new JsonObject()
+            );
+            return timelineI18n.getString("timeline.immediate.mail.subject.header", "") +
+                    I18n.getInstance().translate(i18nKey, getHost(request), I18n.acceptLanguage(request));
+        }
+
     }
 
     //---------------------------------------------------------------
@@ -405,7 +499,26 @@ public class DefaultUserValidationService implements UserValidationService {
             }
             return id;
         });
-    }    
+    }
+
+    @Override
+    public Future<String> sendUpdateMobileWarning(HttpServerRequest request, UserInfos userInfos, JsonObject mobileState) {
+        JsonObject templateParams = new JsonObject()
+                .put("scheme", Renders.getScheme(request))
+                .put("host", Renders.getHost(request))
+                .put("userId", userInfos.getUserId())
+                .put("firstName", userInfos.getFirstName())
+                .put("lastName", userInfos.getLastName())
+                .put("date", LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000)
+                .put("oldPhoneNumber", userInfos.getMobile())
+                .put("newPhoneNumber", DataStateUtils.getValid(mobileState));
+
+        Map<String, String> targets = new HashMap<>();
+        targets.put("email", userInfos.getEmail());
+        targets.put("mobile", userInfos.getMobile());
+
+        return mobileSvc.sendWarningMessage(request, targets, templateParams);
+    }
 
     //////////////// Email-related methods ////////////////
 
@@ -494,4 +607,22 @@ public class DefaultUserValidationService implements UserValidationService {
             return id;
         });
     }
+
+    @Override
+    public Future<String> sendUpdateEmailWarning(HttpServerRequest request, UserInfos userInfos, JsonObject emailState) {
+        JsonObject templateParams = new JsonObject()
+                .put("scheme", Renders.getScheme(request))
+                .put("host", Renders.getHost(request))
+                .put("firstName", userInfos.getFirstName())
+                .put("lastName", userInfos.getLastName())
+                .put("date", LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000)
+                .put("newEmail", DataStateUtils.getValid(emailState));
+
+        Map<String, String> targets = new HashMap<>();
+        targets.put("email", userInfos.getEmail());
+
+        return emailSvc.sendWarningMessage(request, targets, templateParams)
+                .map(id -> id);
+    }
+
 }

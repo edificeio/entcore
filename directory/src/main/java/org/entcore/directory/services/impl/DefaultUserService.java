@@ -405,6 +405,53 @@ public class DefaultUserService implements UserService {
 		neo.execute(query, new JsonObject().put("id", id), fullNodeMergeHandler("u", filterResultHandler, "structureNodes"));
 	}
 
+	@Override
+	public void getUserStructuresGroup(String id,
+			Handler<Either<String, JsonObject>> result) {
+		try {
+			final String query = "MATCH (u:`User` {id: {id}}) " +
+					"OPTIONAL MATCH (u)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+					"WITH COLLECT(DISTINCT s) AS sn, u " +
+					"OPTIONAL MATCH (u)-[rf:HAS_FUNCTION]->(f:Function) " +
+					"WITH COLLECT(DISTINCT [f.externalId, rf.scope]) AS functions, u, sn " +
+					"OPTIONAL MATCH (u)-[:IN]->(fgroup:FunctionalGroup)-[:DEPENDS]->(s:Structure) " +
+					"WITH COLLECT(DISTINCT {functionalGroup: fgroup, structureExternalId: s.externalId}) AS admGroups, functions, u, sn "
+					+
+					"OPTIONAL MATCH (u)-[:ADMINISTRATIVE_ATTACHMENT]->(admStruct:Structure) " +
+					"WITH COLLECT(DISTINCT {id: admStruct.id}) AS admStruct, admGroups, functions, u, sn " +
+					"OPTIONAL MATCH (u)-[r:TEACHES]->(s:Subject) " +
+					"WITH COLLECT(DISTINCT s.code) AS subjectCodes, admStruct, admGroups, functions, u, sn " +
+					"OPTIONAL MATCH (st:Structure)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) " +
+					"WHERE u.classes IS NOT NULL " +
+					"RETURN DISTINCT " +
+					"{ " +
+					"   structureNodes: [s in sn | {created: s.created, name: s.name, externalId: s.externalId, id: s.id, UAI: s.UAI}], "
+					+
+					"   lastLogin: u.lastLogin, " +
+					"   displayName: u.displayName, " +
+					"   classes: u.classes, " +
+					"   login: u.login, " +
+					"   id: u.id, " +
+					"   email: u.email, " +
+					"   structures: u.structures, " +
+					"   externalId: u.externalId, " +
+					"   birthDate: u.birthDate, " +
+					"   lastName: u.lastName, " +
+					"   firstName: u.firstName, " +
+					"   type: u.profiles, " +
+					"   functionalGroups: CASE WHEN admGroups IS NULL THEN [] ELSE admGroups END, " +
+					"   administrativeStructures: CASE WHEN admStruct IS NULL THEN [] ELSE admStruct END, " +
+					"   subjectCodes: CASE WHEN subjectCodes IS NULL THEN [] ELSE subjectCodes END, " +
+					"   classes2D: CASE WHEN (c) IS NULL THEN [] ELSE COLLECT(st.externalId + '$' + c.name) END " +
+					"} AS data";
+
+			neo.execute(query, new JsonObject().put("id", id), validUniqueResultHandler(result));
+		} catch (Exception e) {
+			logger.error("Error exception", e);
+		}
+
+	}
+
 	private void extractReformatUserFunctions(JsonObject r) {
 		//reformat functions
 		JsonObject functions = new JsonObject();

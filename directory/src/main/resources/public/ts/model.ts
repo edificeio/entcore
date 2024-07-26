@@ -517,7 +517,91 @@ export const directory = {
 			return testDisplayName.indexOf(searchTerm) !== -1 || testNameReversed.indexOf(searchTerm) !== -1
 				|| testFullName.indexOf(searchTerm) !== -1 || testFullNameReversed.indexOf(searchTerm) !== -1;
 		});
+	},
+	discoverVisibleUsers: async function(filters){
+		var body = {
+			search: filters.search.toLowerCase(),
+		};
+		
+		if (filters.structures)
+			body["structures"] = filters.structures;
+		if (filters.profiles)
+			body["profiles"] = filters.profiles;
+
+		
+		var response = await http.post('/communication/discover/visible/users', body);
+		return response.data;
+	},
+	discoverVisibleAcceptedProfiles: async function(){
+		var response = await http.get('/communication/discover/visible/profiles');
+		return response.data;
+	},
+	discoverVisibleStructure: async function(){
+		var response = await http.get('/communication/discover/visible/structures');
+		return response.data;
+	},
+	discoverVisibleGetGroups: async function(){
+		var response = await http.get('/communication/discover/visible/groups');
+		return response.data;
+	},
+	discoverVisibleGetUsersInGroup: async function(groupId){
+		var response = await http.get('/communication/discover/visible/group/' + groupId + "/users");
+		return response.data;
+	},
+	discoverVisibleAddCommuteUsers: async function(receiverId){
+		var response = await http.post('/communication/discover/visible/add/commuting/'+receiverId);
+		return response.data;
+	},
+	discoverVisibleRemoveCommuteUsers: async function(receiverId){
+		var response = await http.delete('/communication/discover/visible/remove/commuting/'+receiverId);
+		return response.data;
+	},
+	discoverVisibleCreateGroup: async function(name){
+		var body = {
+			name: name,
+		};
+		var response = await http.post('/communication/discover/visible/group', body);
+		return response.data;
+	},
+	discoverVisibleEditGroup: async function(groupId, name){
+		var body = {
+			name: name
+		};
+		var response = await http.put('/communication/discover/visible/group/'+groupId, body);
+		return response.data;
+	},
+	discoverVisibleAddUserToGroup: async function(groupId, oldUsersId, newUsers){
+
+		var newUsersId = [];
+		newUsers.forEach(user => {
+			newUsersId.push(user.id);
+		});
+
+		var body = {
+			oldUsers: oldUsersId,
+			newUsers: newUsersId
+		};
+
+		var response = await http.put('/communication/discover/visible/group/'+groupId+'/users', body);
+		return response.data;
+	},
+	trackEvent: async function(eventType: String){
+		// Track this event.
+		if (eventType && eventType.length > 0) {
+			const eventJson: any = {
+				"event-type": eventType,
+			};
+		
+			try {
+				await http.post("/infra/event/web/store", eventJson);
+				
+			} catch (e) {
+				console.debug("[TrackingInternal] failed to trackEvent: ", e);
+			}
+		}
+		
 	}
+
 }
 
 directory.User.prototype.saveUserbook = function(){

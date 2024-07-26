@@ -42,6 +42,9 @@
             "calendar" : {{ adminCalendarTab | default('false') }},
             "subjects" : {{ adminSubjectsTab | default('false') }}
         }
+        {% if massMessagingEnabled is defined %},
+        "mass-messaging-enabled": {{massMessagingEnabled}}
+        {% endif %}
         {% if hideAdminv1Link is defined %},
         "hide-adminv1-link": {{ hideAdminv1Link }}
         {% endif %}

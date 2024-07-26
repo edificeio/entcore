@@ -1,0 +1,98 @@
+<h3 whereami class="twelve centered-text"></h3>
+<article
+    class="discover-visible-group-add-edit flex-row f-column justify-center horizontal-margin only-desktop"
+    ng-class='{ "divide-opacity": display.loading }'>
+
+
+
+
+    <h3 ng-if="!discoverVisible.displayEditGroup">
+        <i18n>userbook.discover.visible.group.add.title</i18n>
+    </h3>
+    <h3 ng-if="discoverVisible.displayEditGroup">
+        <i18n>userbook.discover.visible.group.edit.title</i18n>
+    </h3>
+    <form class="reduce-block-eight horizontal-margin" ng-submit="discoverVisibleSaveGroup()">
+
+        <div class="bottom-spacing-twice">
+            <div class="flex-row">
+                <h4>
+                    <i18n>userbook.discover.visible.group.name</i18n>
+                </h4>
+            </div>
+            <input type="text" ng-model="discoverVisible.editOrAddGroup.groupName" translate attr="placeholder"
+                placeholder="userbook.discover.visible.group.name.placeholder" class="text-flow twelve" required ng-minlength="1" />
+        </div>
+        <div class="vertical-spacing-four">
+            <div class="flex-row">
+                <h4>
+                    <i18n>userbook.discover.visible.group.search</i18n>
+                </h4>
+            </div>
+
+            <div class="vertical-spacing-four">
+                <div class="flex-row">
+                    <multi-comboboxes class="twelve min-w-zero" ng-model="discoverVisible.filters.structures"
+                        options="discoverVisible.options.structures"
+                        title-all="[[lang.translate('directory.allStructures')]]"
+                        title="[[lang.translate('directory.structures')]]" check="onCheck(option)"
+                        search-placeholder="directory.search.structure">
+                    </multi-comboboxes>
+                    <multi-comboboxes ng-if="discoverVisible.options.profiles.length>1" ng-class="{ 'horizontal-margin-twice': true}" class="twelve min-w-zero"
+                        ng-model="discoverVisible.filters.profiles" options="discoverVisible.options.profiles"
+                        title-all="[[lang.translate('directory.allProfiles')]]"
+                        title="[[lang.translate('directory.profiles')]]" disable-search="true">
+                    </multi-comboboxes>
+
+                </div>
+
+            </div>
+            <div class="search-pagination flex-row">
+                <div class="cell seven top-spacing-twice">
+                    <input class="twelve" type="text" translate attr="placeholder"
+                        ng-model="discoverVisible.filters.search" placeholder="userBook.search" />
+                </div>
+                <div class="cell absolute-magnet">
+                    <button type="button" ng-click="getDiscoverVisibleSearchUsers()" class="twelve">
+                        <i18n>portal.search</i18n>
+                    </button>
+                </div>
+            </div>
+            <div class="row vertical-spacing-four">
+                <div class="flex-row">
+                    <div class="six">
+                        <strong class="medium-importance medium-text">
+                            <i18n>userbook.discover.visible.group.search.add.user</i18n>
+                        </strong>
+                    </div>
+                    <div class="horizontal-margin-twice"></div>
+                    <div class="six">
+                        <strong class="medium-importance medium-text">
+                            <i18n>userbook.discover.visible.group.composition</i18n>
+                        </strong>
+                    </div>
+                </div>
+                <transfer-columns class="block top-spacing-twice"
+                    ng-model="discoverVisible.editOrAddGroup.selectedUsers"
+                    searched-items="discoverVisible.editOrAddGroup.searchedUsers" loading="display.loading"
+                    text-right-warning-title="[[lang.translate('userbook.discover.visible.search.users.empty')]]"
+                    text-right-warning-description="[[lang.translate('userbook.discover.visible.group.composition.empty')]]">
+                </transfer-columns>
+            </div>
+            <div class="row">
+                <div class="right-magnet top-spacing-four">
+                    <button type="button" class="flat-button" ng-click="backToDiscoverVisibleSelectedGroup()">
+                        <i18n>cancel</i18n>
+                    </button>
+                    <button ng-disabled="discoverVisible.editOrAddGroup.selectedUsers.length === 0">
+                        <i18n>directory.save</i18n>
+                    </button>
+                </div>
+            </div>
+    </form>
+
+    <!-- Loading animation -->
+    <div class="absolute-position-w centered-text" ng-if="display.loading">
+        <img skin-src="/img/illustrations/loading.gif" width="100px" heigh="100px" />
+    </div>
+</article>

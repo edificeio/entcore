@@ -1,9 +1,9 @@
 @font-face {
   font-family: 'generic-icons';
   src:
-    url('fonts/generic-icons.ttf?sm0rh9') format('truetype'),
-    url('fonts/generic-icons.woff?sm0rh9') format('woff'),
-    url('fonts/generic-icons.svg?sm0rh9#generic-icons') format('svg');
+    url('fonts/generic-icons.ttf?sk2e0p') format('truetype'),
+    url('fonts/generic-icons.woff?sk2e0p') format('woff'),
+    url('fonts/generic-icons.svg?sk2e0p#generic-icons') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -24,6 +24,9 @@ i {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.mediacentre:before {
+  content: "\e968";
+}
 .edumalin:before {
   content: "\e967";
   color: #4a4a4a;

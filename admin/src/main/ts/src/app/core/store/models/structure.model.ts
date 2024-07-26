@@ -34,6 +34,8 @@ export class StructureModel extends Model<StructureModel> {
     manualName?: boolean;
     feederName?: string;
     ignoreMFA?: boolean;
+    exports?: string[];
+    enableMassMessaging?: boolean;
 
     constructor() {
         super({});

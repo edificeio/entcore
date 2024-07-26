@@ -6,6 +6,7 @@ export class SessionModel {
 
     private static session: Session;
     private static context: Context;
+    private static currentLanguage: string;
 
     public static getSession(): Promise<Session> {
         if (!SessionModel.session) {
@@ -41,6 +42,23 @@ export class SessionModel {
             });
         } else {
             return Promise.resolve( SessionModel.context );
+        }
+    }
+
+    public static getCurrentLanguage(): Promise<string> {
+        if (!SessionModel.currentLanguage) {
+            return new Promise((resolve, reject) => {
+                http.get('/userbook/preference/language')
+                .then(result => {
+                    SessionModel.currentLanguage = JSON.parse(result.data.preference)['default-domain'] as string;
+                    resolve(SessionModel.currentLanguage);
+                }, e => {
+                    console.error(e);
+                    resolve('fr');
+                });
+            });
+        } else {
+            return Promise.resolve( SessionModel.currentLanguage );
         }
     }
 }
