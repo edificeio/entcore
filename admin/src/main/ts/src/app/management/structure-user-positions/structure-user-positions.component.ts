@@ -62,7 +62,7 @@ export class StructureUserPositionsComponent
           this.structure = data.structure;
           this.userPositionServices
             .searchUserPositions({
-              structureIds: [this.structure.id],
+              structureId: this.structure.id,
             })
             .then((userPositions) => {
               this.userPositionList = userPositions;

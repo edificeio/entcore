@@ -1,6 +1,6 @@
 <div class="flex-header">
   <button class="action" (click)="createUserPosition()">
-    <s5l>management.structure.user-position.create</s5l>
+    <s5l>user-position.create</s5l>
     <i class="fa fa-plus-circle is-size-5"></i>
   </button>
 </div>
@@ -35,6 +35,6 @@
 
 <ode-user-position-modal
   [structureId]="structure.id"
-  [showUserPositionLightbox]="showUserPositionLightbox"
+  [show]="showUserPositionLightbox"
   (onClose)="onCloseCreateUserPosition($event)"
 ></ode-user-position-modal>

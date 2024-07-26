@@ -11,6 +11,8 @@ import {
 import { OdeComponent } from "ngx-ode-core";
 import { UserPosition } from "src/app/core/store/models/userPosition.model";
 import { UserPositionServices } from "src/app/core/services/user-position.service";
+import { NotifyService } from "src/app/core/services/notify.service";
+import { SpinnerService } from "ngx-ode-ui";
 
 @Component({
   selector: "ode-user-position-modal",
@@ -23,25 +25,27 @@ export class UserPositionModalComponent extends OdeComponent implements OnInit {
   @Input() structureId: string;
 
   private _userPosition: UserPosition;
-  @Input() get userPosition(): UserPosition {
+  get userPosition(): UserPosition {
     return this._userPosition;
   };
-  set userPosition(value: UserPosition) {
+  @Input() set userPosition(value: UserPosition) {
     this._userPosition = value;
-    this.editableName = value.name;
+    this.editableName = value?.name;
   }
-  @Input() showUserPositionLightbox: boolean = true;
+  @Input() show: boolean = true;
 
   @Output() onClose: EventEmitter<UserPosition> = new EventEmitter();
   
   public editableName: string = "";
 
   get isUpdateModal(): boolean {
-    return this.userPosition.id !== undefined;
+    return !!this.userPosition.id;
   }
   
   constructor(
     injector: Injector,
+    private ns: NotifyService,
+    public spinner: SpinnerService,
     private userPositionServices: UserPositionServices
   ) {
     super(injector);
@@ -49,33 +53,41 @@ export class UserPositionModalComponent extends OdeComponent implements OnInit {
 
   ngOnInit(): void {
     if (!this.userPosition) {
-      this.userPosition = {name:"", source:"MANUAL"}
+      this.userPosition = {name:"", source:"MANUAL"};
     }
   }
 
-
   async save(): Promise<void> {
-    this.userPosition.name = this.editableName;
-    
     if (this.isUpdateModal) {
-      this.userPosition = await this.userPositionServices.updateUserPosition(
-        this.userPosition
-      );
+      this.userPosition = await this.spinner
+        .perform('portal-content', this.userPositionServices.updateUserPosition(
+          {...this.userPosition, name: this.editableName}
+        ));
     } else {
-      this.userPosition = await this.userPositionServices.createUserPosition({
-        name: this.userPosition.name,
-        
-        structureId: this.structureId,
-      });
+      this.userPosition = await this.spinner
+        .perform('portal-content', this.userPositionServices.createUserPosition({
+          name: this.editableName,
+          structureId: this.structureId,
+        }))
+        .catch(err => {
+          // TODO notification
+          // this.ns.error(
+          //     {
+          //         key: 'notify.user.update.error.content',
+          //         parameters: {
+          //             user: this.user.firstName + ' ' + this.user.lastName
+          //         }
+          //     }, 'notify.user.update.error.title', err);
+          return undefined;
+        });
     }
     this.onClose.emit(this.userPosition);
+    this.editableName = undefined;
+    this.show = false;
   }
   
   cancel() {
-    if (!this.isUpdateModal) {
-      this.userPosition = undefined;
-    }
     this.onClose.emit();
-    this.editableName = this.userPosition.name;
+    this.show = false;
   }
 }

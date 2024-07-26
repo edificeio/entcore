@@ -3,6 +3,7 @@ import {
   UserPosition,
   UserPositionCreation,
   UserPositionElementQuery,
+  UserPositionSource,
 } from "src/app/core/store/models/userPosition.model";
 
 import http from "axios";
@@ -14,11 +15,13 @@ export class UserPositionServices {
   public async createUserPosition(
     userPositionCreation: UserPositionCreation
   ): Promise<UserPosition> {
-    return {
+    const result = {
       id: userPositionCreation.name,
       name: userPositionCreation.name,
-      source: "MANUAL",
+      source: "MANUAL" as UserPositionSource,
     };
+    console.log(JSON.stringify(result));
+    return Promise.resolve(result);
     // return (
     //   await http.post<UserPosition>(
     //     this.positionsURL,
@@ -30,7 +33,7 @@ export class UserPositionServices {
   public async updateUserPosition(
     userPosition: UserPosition
   ): Promise<UserPosition> {
-    return userPosition;
+    return Promise.resolve({...userPosition});
     // const res = await http.post<UserPosition>(
     //   `${this.positionsURL}/${userPosition.id}`,
     //   userPosition,
@@ -45,15 +48,15 @@ export class UserPositionServices {
     return res;
   }
 
-  public async getUserPosition(id: string): Promise<UserPosition> {
-    const userPosition = (
-      await http.get<UserPosition>(`${this.positionsURL}/${id}`)
-    ).data;
-    return userPosition;
-  }
-
+  /**
+   * Get user positions depending on the query
+   * @param params if provided, will be used to filter the user positions by structureId
+   *               and/or filter with prefix
+   *               if structureId is not provided, will return all user position from all the structures he is ADML of
+   * @returns list of user positions
+   */
   public async searchUserPositions(
-    params: UserPositionElementQuery
+    params?: UserPositionElementQuery
   ): Promise<UserPosition[]> {
     return [
       {
@@ -73,12 +76,12 @@ export class UserPositionServices {
       },
     ];
 
-    //   const userPositions: UserPosition[] =
-    //   params.structureIds?.length || params.prefix?.length
-    //     ? await http.get<UserPosition[]>(this.positionsURL, {
-    //         queryParams: { ...params },
-    //       })
-    //     : [];
+    // const userPositions: UserPosition[] = (await http.get<UserPosition[]>(
+    //   this.positionsURL,
+    //   {
+    //     params: params? params : {},
+    //   }
+    // )).data;
     // return userPositions;
   }
 }

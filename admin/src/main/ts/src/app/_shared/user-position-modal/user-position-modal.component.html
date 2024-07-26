@@ -1,25 +1,25 @@
 <ode-lightbox
   class="inner-list"
-  [show]="showUserPositionLightbox"
-  (onClose)="showUserPositionLightbox = false"
+  [show]="show"
+  (onClose)="cancel()"
 >
   <div class="padded">
     <h2 fxLayout="row" fxLayoutAlign="space-between">
       <s5l>
-        management.structure.user-position.details.{{
+        user-position.{{
           isUpdateModal ? "rename-title" : "create"
         }}
       </s5l>
     </h2>
     <form #usePositionForm="ngForm" (ngSubmit)="save()">
-      <ode-form-field label="management.structure.user-position.details.input-name">
+      <ode-form-field label="user-position.input-name">
         <input
           type="text"
           required
           minlength="3"
           name="userPositionName"
           #userPositionNameInput="ngModel"
-          placeholder="management.structure.user-position.details.input-name-placeholder"
+          placeholder="user-position.input-name-placeholder"
           [(ngModel)]="editableName"
         />
         <ode-form-errors [control]="userPositionNameInput"></ode-form-errors>
@@ -28,7 +28,7 @@
 
     <div class="is-pulled-right">
       <button (click)="cancel()" class="user-position-save">
-        <s5l>management.structure.user-position.cancel</s5l>
+        <s5l>user-position.cancel</s5l>
       </button>
       <button
         (click)="save()"
@@ -36,7 +36,7 @@
         [disabled]="usePositionForm.invalid"
       >
         <s5l>
-          management.structure.user-position.details.{{
+          user-position.{{
             userPosition.id ? "save" : "create"
           }}
         </s5l>
