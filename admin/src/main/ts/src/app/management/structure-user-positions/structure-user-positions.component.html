@@ -23,12 +23,12 @@
       </div>
     </ng-container>
     <ng-container *ngIf="selectedUserPosition">
-      <ode-user-position
+      <ode-structure-user-position
         [userPosition]="selectedUserPosition"
         [structureId]="structure.id"
         (userPositionUpdated)="userPostionUpdated($event)"
       >
-      </ode-user-position>
+      </ode-structure-user-position>
     </ng-container>
   </div>
 </ode-side-layout>

@@ -12,11 +12,11 @@ import { MatDialog } from "@angular/material/dialog";
 import { UserPositionModalComponent } from "../../../_shared/user-position-modal/user-position-modal.component";
 
 @Component({
-  selector: "ode-user-position",
-  templateUrl: "./user-position.component.html",
-  styleUrls: ["./user-position.component.scss"],
+  selector: "ode-structure-user-position",
+  templateUrl: "./structure-user-position.component.html",
+  styleUrls: ["./structure-user-position.component.scss"],
 })
-export class UserPositionComponent extends OdeComponent {
+export class StructureUserPositionComponent extends OdeComponent {
   @Input() structureId: string;
   @Input() userPosition: UserPosition;
   
@@ -55,6 +55,6 @@ export class UserPositionComponent extends OdeComponent {
 
   delete(): void {
     // TODO : add confirmation toaster
-    this.userPositionServices.deleteUserPosition(this.userPosition.id);
+    this.userPositionServices.deleteUserPosition(this.userPosition.id, this.structureId);
   }
 }

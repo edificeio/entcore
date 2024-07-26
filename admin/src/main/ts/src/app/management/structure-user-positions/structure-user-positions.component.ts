@@ -12,11 +12,11 @@ import { MatDialog } from "@angular/material/dialog";
 import { UserPositionModalComponent } from "../../_shared/user-position-modal/user-position-modal.component";
 
 @Component({
-  selector: "ode-user-positions",
-  templateUrl: "./user-positions.component.html",
-  styleUrls: ["./user-positions.component.scss"],
+  selector: "ode-structure-user-positions",
+  templateUrl: "./structure-user-positions.component.html",
+  styleUrls: ["./structure-user-positions.component.scss"],
 })
-export class UserPositionsComponent
+export class StructureUserPositionsComponent
   extends OdeComponent
   implements OnInit, OnDestroy
 {
@@ -134,7 +134,6 @@ export class UserPositionsComponent
       dialogRef.afterClosed().subscribe((userPosition: UserPosition) => {
         if (userPosition) {
           // TODO : add confirmation toaster
-          // TODO insert in the right position or order the list by name after insertion or get the list from back if paginated and maybe scroll at it
           this.userPositionList.push(userPosition);
           this.selectedUserPosition = userPosition;
 

@@ -9,12 +9,13 @@ import http from "axios";
 
 @Injectable()
 export class UserPositionServices {
+  private positionsURL = '/directory/positions';
 
   public async createUserPosition(userPositionCreation: UserPositionCreation): Promise<UserPosition> {
     return { id: "10", name: userPositionCreation.name, source: "MANUAL"};
     // return (
     //   await http.post<UserPosition>(
-    //     `/directory/positions`,
+    //     this.positionsURL,
     //     userPositionCreation
     //   )
     // ).data;
@@ -23,22 +24,22 @@ export class UserPositionServices {
   public async updateUserPosition(userPosition: UserPosition): Promise<UserPosition> {
     return userPosition;
     // const res = await http.post<UserPosition>(
-    //   `/directory/positions/${userPosition.id}`,
+    //   `${this.positionsURL}/${userPosition.id}`,
     //   userPosition,
     // );
     // return res;
   }
 
-  public async deleteUserPosition(id: string) {
+  public async deleteUserPosition(id: string, structureId: string) {
     const res = await http.delete<UserPosition>(
-      `/directory/positions/${id}`,
+      `${this.positionsURL}/${id}?structureId=${structureId}`,
     );
     return res;
   }
 
   public async getUserPosition(id: string): Promise<UserPosition> {
     const userPosition = (
-      await http.get<UserPosition>(`/directory/positions/${id}`)
+      await http.get<UserPosition>(`${this.positionsURL}/${id}`)
     ).data;
     return userPosition;
   }
@@ -66,7 +67,7 @@ export class UserPositionServices {
     
   //   const userPositions: UserPosition[] =
   //   params.structureIds?.length || params.prefix?.length
-  //     ? await http.get<UserPosition[]>("/directory/positions", {
+  //     ? await http.get<UserPosition[]>(this.positionsURL, {
   //         queryParams: { ...params },
   //       })
   //     : [];

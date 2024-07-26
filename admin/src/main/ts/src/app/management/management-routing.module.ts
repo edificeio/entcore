@@ -16,7 +16,7 @@ import {SubjectsResolver} from './subjects/subjects.resolver';
 import {SubjectCreate} from './subjects/create/subject-create.component';
 import {SubjectDetails} from './subjects/details/subject-details.component';
 import {StructureGarComponent} from './structure-gar/structure-gar.component';
-import { UserPositionsComponent } from './user-positions/user-positions.component';
+import { StructureUserPositionsComponent } from './structure-user-positions/structure-user-positions.component';
 
 export let routes: Routes = [
      {
@@ -108,15 +108,15 @@ export let routes: Routes = [
                 children: [
                     {
                         path: 'create',
-                        component: UserPositionsComponent
+                        component: StructureUserPositionsComponent
                     },
                     {
                         path: ':userPositionId',
-                        component: UserPositionsComponent
+                        component: StructureUserPositionsComponent
                     },
                     {
                         path: '',
-                        component: UserPositionsComponent
+                        component: StructureUserPositionsComponent
                     }
                 ]
             }
