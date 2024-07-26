@@ -1049,5 +1049,7 @@
   "audience.reaction.great": "Génial",
   "audience.reaction.congrats": "Bravo",
   "audience.reaction.interesting": "Instructif",
-  "audience.reaction.default": "Réagir"
+  "audience.reaction.default": "Réagir",
+  "card.open.menu": "Ouvrir le menu",
+  "card.open.resource": "Ouvrir la resource"
 }
