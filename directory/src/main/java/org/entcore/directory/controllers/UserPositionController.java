@@ -93,14 +93,13 @@ public class UserPositionController extends BaseController {
 
 	}
 
-	@Delete("/positions/:positionId/:structureId")
+	@Delete("/positions/:positionId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
 	public void deletePosition(HttpServerRequest request) {
 		UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(adminInfos -> {
 			final String positionId = request.getParam("positionId");
-			final String structureId = request.getParam("structureId");
-			userPositionService.deleteUserPosition(positionId, structureId, adminInfos)
+			userPositionService.deleteUserPosition(positionId, adminInfos)
 					.onSuccess(event -> Renders.ok(request))
 					.onFailure(th -> {
 						Renders.log.warn("An error occurred while fetching user position with id : " + positionId, th);

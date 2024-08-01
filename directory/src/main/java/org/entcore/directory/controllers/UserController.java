@@ -62,6 +62,7 @@ import org.entcore.directory.pojo.TransversalSearchType;
 import org.entcore.directory.pojo.Users;
 import org.entcore.directory.security.*;
 import org.entcore.directory.services.UserBookService;
+import org.entcore.directory.services.UserPositionService;
 import org.entcore.directory.services.UserService;
 import org.vertx.java.core.http.RouteMatcher;
 
@@ -71,9 +72,7 @@ import javax.xml.bind.Marshaller;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
@@ -85,6 +84,7 @@ public class UserController extends BaseController {
 	static final String MOOD_RESOURCE_NAME = "mood";
 	private UserService userService;
 	private UserBookService userBookService;
+	private UserPositionService userPositionService;
 	private TimelineHelper notification;
 	private static final int MOTTO_MAX_LENGTH = 75;
 	private final EventHelper eventHelper;
@@ -130,6 +130,7 @@ public class UserController extends BaseController {
 				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 					public void handle(UserInfos user) {
 						final  String userId = request.params().get("userId");
+						final Set<String> userPositionIds = new HashSet<>(RequestUtils.getParamAsSet("positionIds", request));
 						//User name modification prevention for non-admins.
 						if(!user.getFunctions().containsKey(DefaultFunctions.SUPER_ADMIN) &&
 								!user.getFunctions().containsKey(DefaultFunctions.ADMIN_LOCAL) &&
@@ -169,6 +170,9 @@ public class UserController extends BaseController {
 
 											if (userBeforeUpdate != null && userBeforeUpdate.result() != null) {
 												sendEmailOrMobileUpdateNotifications(request, userBeforeUpdate.result(), body);
+											}
+											if (!userPositionIds.isEmpty()) {
+												userPositionService.setUserPositions(userPositionIds, userId);
 											}
 										} else {
 											final JsonObject error = new JsonObject().put("error", futureUpdateDone.cause().getMessage());
@@ -1175,6 +1179,10 @@ public class UserController extends BaseController {
 
 	public void setUserBookService(UserBookService userBookService) {
 		this.userBookService = userBookService;
+	}
+
+	public void setUserPositionService(UserPositionService userPositionService) {
+		this.userPositionService = userPositionService;
 	}
 
 	public void setNotification(TimelineHelper notification) {

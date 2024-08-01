@@ -406,7 +406,7 @@ public class DirectoryController extends BaseController {
 				}
 				List<String> childrenIds = request.formAttributes().getAll("childrenIds");
 				user.put("childrenIds", new fr.wseduc.webutils.collections.JsonArray(childrenIds));
-				Set<String> userPositionIds = new HashSet<>(request.formAttributes().getAll("userPositionIds"));
+				Set<String> userPositionIds = new HashSet<>(request.formAttributes().getAll("positionIds"));
 				if (classId != null && !classId.trim().isEmpty()) {
 					userService.createInClass(classId, user, new Handler<Either<String, JsonObject>>() {
 						@Override
@@ -430,9 +430,6 @@ public class DirectoryController extends BaseController {
 										});
 									}
 								}));
-								if (!userPositionIds.isEmpty()) {
-									userPositionService.attachUserPositions(userPositionIds, r.getString("id"));
-								}
 								renderJson(request, r);
 							} else {
 								leftToResponse(request, res.left());
@@ -456,7 +453,7 @@ public class DirectoryController extends BaseController {
 									}
 								}));
 								if (!userPositionIds.isEmpty()) {
-									userPositionService.attachUserPositions(userPositionIds, r.getString("id"));
+									userPositionService.setUserPositions(userPositionIds, r.getString("id"));
 								}
 								renderJson(request, r);
 							} else {

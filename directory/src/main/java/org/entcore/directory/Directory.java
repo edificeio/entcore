@@ -126,6 +126,7 @@ public class Directory extends BaseServer {
 		userController.setNotification(timeline);
 		userController.setUserBookService(userBookService);
 		userController.setUserService(userService);
+		userController.setUserPositionService(userPositionService);
 		addController(userController);
 
 		ProfileController profileController = new ProfileController();
