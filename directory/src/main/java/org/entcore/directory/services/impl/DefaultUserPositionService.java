@@ -7,6 +7,7 @@ import io.vertx.core.json.JsonObject;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.directory.pojo.UserPosition;
 import org.entcore.directory.pojo.UserPositionSource;
 import org.entcore.directory.services.UserPositionService;
@@ -38,9 +39,9 @@ public class DefaultUserPositionService implements UserPositionService {
 					params.put("prefixRegex", prefix.get() + ".*");
 				}
 				// filters user positions related to a specific structure
-				if (structureId.isPresent()) {
+				if (structureId.isPresent() && !StringUtils.isEmpty(structureId.get())) {
 					query.append("AND s.id = {structureId} ");
-					params.put("structureId", structureId);
+					params.put("structureId", structureId.get());
 				}
 				query.append("RETURN p.id as id, p.name as name, p.source as source, s.id as structureId ");
 				neo4jClient.execute(query.toString(), params, Neo4jResult.validResultHandler(event -> {
@@ -112,7 +113,7 @@ public class DefaultUserPositionService implements UserPositionService {
 						final String query = "" +
 								"MATCH (s:Structure {id:{structureId}}) " +
 								"WHERE s.id IN {adminStructureIds} " +
-								"MERGE (p:UserPosition {userPositionProps})-[:IN]->(s) " +
+								"CREATE UNIQUE (p:UserPosition {userPositionProps})-[:IN]->(s) " +
 								"RETURN p.id as id, p.name as name, p.source as source ";
 						neo4jClient.execute(query, params, Neo4jResult.validUniqueResultHandler(event -> {
 							if (event.isLeft()) {
@@ -147,10 +148,10 @@ public class DefaultUserPositionService implements UserPositionService {
 						.put("adminStructureIds", adminStructureIds);
 
 				final String query = "" +
-						"MATCH (u:UserPosition {id: {positionId}})-[:IN]->(s:Structure) " +
+						"MATCH (p:UserPosition {id: {positionId}})-[:IN]->(s:Structure) " +
 						"WHERE s.id IN {adminStructureIds} " +
-						"SET u.name = {positionName} " +
-						"RETURN u.id as id, u.name as name, u.source as source, p.structureId as structureId ";
+						"SET p.name = {positionName} " +
+						"RETURN p.id as id, p.name as name, p.source as source, s.id as structureId ";
 				neo4jClient.execute(query, params, Neo4jResult.validUniqueResultHandler(event -> {
 					if (event.isLeft()) {
 						promise.fail(event.left().getValue());
@@ -207,7 +208,7 @@ public class DefaultUserPositionService implements UserPositionService {
 				"WHERE NOT p.id IN {positionIds} " +
 				"DELETE h " +
 				"WITH u " +
-				"MATCH (p:UserPosition) " +
+				"MATCH (u)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure)<-[:IN]-(p:UserPosition) " +
 				"WHERE p.id IN {positionIds} " +
 				"MERGE (u)-[:HAS_POSITION]->(p) ";
 		return promise.future();
@@ -232,7 +233,6 @@ public class DefaultUserPositionService implements UserPositionService {
 				promise.fail(event.left().getValue());
 			} else {
 				JsonObject result = event.right().getValue();
-				// TODO : verify if this check is valid
 				if (result.isEmpty()) {
 					promise.complete(Optional.empty());
 				} else {

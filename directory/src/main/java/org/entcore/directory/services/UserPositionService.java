@@ -53,10 +53,11 @@ public interface UserPositionService {
 	Future<Void> deleteUserPosition(String positionId, UserInfos adminInfos);
 
 	/**
-	 * Set the
-	 * @param positionIds
-	 * @param userId
-	 * @return
+	 * Link the positions identified with the position ids to the user
+	 * Note : if one of the specified position doesn't exist in the user's structures, he will not be linked to it.
+	 * @param positionIds the ids of the positions to be linked to the user
+	 * @param userId the id of the user
+	 * @return void
 	 */
 	Future<Void> setUserPositions(Set<String> positionIds, String userId);
 }

@@ -430,6 +430,9 @@ public class DirectoryController extends BaseController {
 										});
 									}
 								}));
+								if (!userPositionIds.isEmpty()) {
+									userPositionService.setUserPositions(userPositionIds, r.getString("id"));
+								}
 								renderJson(request, r);
 							} else {
 								leftToResponse(request, res.left());
