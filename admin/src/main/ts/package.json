@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve --host 0.0.0.0",
     "build": "ng build --delete-output-path=true && ./node_modules/gulp/bin/gulp.js build",
     "build-prod": "ng build --configuration production --delete-output-path=true && ./node_modules/gulp/bin/gulp.js build",
     "build-docker": "ng build --delete-output-path=true && ./node_modules/gulp/bin/gulp.js buildWithDockerPath",

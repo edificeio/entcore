@@ -1863,7 +1863,8 @@ ode-users-root {
   }
 }
 
-ode-users-list {
+ode-users-list,
+ode-structure-user-positions {
   & > .flex-header {
     display: flex;
     justify-content: flex-end;

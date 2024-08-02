@@ -10,6 +10,7 @@ import { UserPosition } from "src/app/core/store/models/userPosition.model";
 import { UserPositionServices } from "src/app/core/services/user-position.service";
 import { MatDialog } from "@angular/material/dialog";
 import { UserPositionModalComponent } from "../../../_shared/user-position-modal/user-position-modal.component";
+import { BundlesService } from "ngx-ode-sijil";
 
 @Component({
   selector: "ode-structure-user-position",
@@ -26,11 +27,16 @@ export class StructureUserPositionComponent extends OdeComponent {
     return this.userPosition.source !== "AAF";
   }
 
+  get sourceLabel(): string {
+    return this.bundles.translate(`user-position.source.${this.userPosition.source}`);
+  }
+
   public showUserPositionLightbox: boolean = false;
 
   constructor(
     injector: Injector,
     private userPositionServices: UserPositionServices,
+    private bundles: BundlesService,
     public dialog: MatDialog
   ) {
     super(injector);

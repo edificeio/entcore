@@ -145,7 +145,7 @@ export class StructureUserPositionsComponent
     this.changeDetector.markForCheck();
   }
 
-  userPostionUpdated(userPosition: UserPosition) {
+  userPositionUpdated(userPosition: UserPosition) {
     const userPositionUpdatedIndex = this.userPositionList.findIndex(
       (userP) => userP.id === userPosition.id
     );

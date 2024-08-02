@@ -11,13 +11,13 @@
     </button>
   </div>
 </h2>
-<div>
-  <s5l>management.structure.user-position.details.source.label</s5l>:
-  {{
-    "management.structure.user-position.details.source." + userPosition.source
-      | translate
-  }}
-</div>
+
+<fieldset>
+  <ode-form-field label="user-position.source.label">
+    <div>{{sourceLabel}}</div>
+  </ode-form-field>
+</fieldset>
+
 <ode-user-position-modal
   [structureId]="structureId"
   [userPosition]="userPosition"

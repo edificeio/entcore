@@ -1,4 +1,4 @@
-<div class="header">
+<div class="flex-header">
   <button class="action" (click)="createUserPosition()">
     <s5l>management.structure.user-position.create</s5l>
     <i class="fa fa-plus-circle is-size-5"></i>
@@ -26,7 +26,7 @@
       <ode-structure-user-position
         [userPosition]="selectedUserPosition"
         [structureId]="structure.id"
-        (userPositionUpdated)="userPostionUpdated($event)"
+        (userPositionUpdated)="userPositionUpdated($event)"
       >
       </ode-structure-user-position>
     </ng-container>

@@ -28,6 +28,7 @@ services:
       - ../recette:/home/node/recette # TODO : rendre générique pour appliquer à tous les springboards
     environment:
       - NG_CLI_ANALYTICS=false
+
   load-tester:
     image: grafana/k6:master
     volumes:
