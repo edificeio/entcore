@@ -37,7 +37,7 @@ export class UserPositionModalComponent extends OdeComponent implements OnInit {
   public editableName: string = "";
 
   get isUpdateModal(): boolean {
-    return this.userPosition.id !== undefined;
+    return !!this.userPosition.id;
   }
   
   constructor(
@@ -49,7 +49,7 @@ export class UserPositionModalComponent extends OdeComponent implements OnInit {
 
   ngOnInit(): void {
     if (!this.userPosition) {
-      this.userPosition = {name:"", source:"MANUAL"}
+      this.userPosition = {name:"", source:"MANUAL"};
     }
   }
 
@@ -64,18 +64,18 @@ export class UserPositionModalComponent extends OdeComponent implements OnInit {
     } else {
       this.userPosition = await this.userPositionServices.createUserPosition({
         name: this.userPosition.name,
-        
         structureId: this.structureId,
       });
     }
     this.onClose.emit(this.userPosition);
+    this.showUserPositionLightbox = false;
   }
   
   cancel() {
-    if (!this.isUpdateModal) {
-      this.userPosition = undefined;
-    }
     this.onClose.emit();
-    this.editableName = this.userPosition.name;
+    if (!this.isUpdateModal) {
+      this.editableName = "";
+    }
+    this.showUserPositionLightbox = false;
   }
 }
