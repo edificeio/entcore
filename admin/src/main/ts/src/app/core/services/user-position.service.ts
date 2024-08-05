@@ -3,6 +3,7 @@ import {
   UserPosition,
   UserPositionCreation,
   UserPositionElementQuery,
+  UserPositionSource,
 } from "src/app/core/store/models/userPosition.model";
 
 import http from "axios";
@@ -14,11 +15,13 @@ export class UserPositionServices {
   public async createUserPosition(
     userPositionCreation: UserPositionCreation
   ): Promise<UserPosition> {
-    return {
+    const result = {
       id: userPositionCreation.name,
       name: userPositionCreation.name,
-      source: "MANUAL",
+      source: "MANUAL" as UserPositionSource,
     };
+    console.log(JSON.stringify(result));
+    return Promise.resolve(result);
     // return (
     //   await http.post<UserPosition>(
     //     this.positionsURL,
@@ -30,7 +33,7 @@ export class UserPositionServices {
   public async updateUserPosition(
     userPosition: UserPosition
   ): Promise<UserPosition> {
-    return userPosition;
+    return Promise.resolve({...userPosition});
     // const res = await http.post<UserPosition>(
     //   `${this.positionsURL}/${userPosition.id}`,
     //   userPosition,
@@ -81,6 +84,4 @@ export class UserPositionServices {
     // )).data;
     // return userPositions;
   }
-
-  // TODO : implement the method assignUserPositionToUser
 }

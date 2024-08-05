@@ -1,6 +1,6 @@
 import { Model } from "entcore-toolkit";
 
-export type UserPostisionSource = "MANUAL" | "AAF" | "CSV";
+export type UserPositionSource = "MANUAL" | "AAF" | "CSV";
 export interface UserPositionCreation {
   name: string;
   structureId: string;
@@ -20,5 +20,5 @@ export interface UserPositionElementQuery {
 export interface UserPosition {
   id?: string;
   name?: string;
-  source: UserPostisionSource;
+  source: UserPositionSource;
 }

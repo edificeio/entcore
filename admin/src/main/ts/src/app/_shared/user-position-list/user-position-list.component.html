@@ -5,8 +5,9 @@
   noResultsLabel="user-position.search.empty"
   [isSelected]="isSelected"
   [inputFilter]="filterByInput"
-  (inputChange)="searchPositionPrefix = $event"
+  (inputChange)="searchPrefix = $event"
   (onSelect)="selectUserPosition($event)"
+  (listChange)="checkEmitNewPositionName($event)"
 >
   <ng-template let-item>
     {{ item.name }}

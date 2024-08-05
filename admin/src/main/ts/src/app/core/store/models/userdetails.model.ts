@@ -63,7 +63,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     maxQuota?: number;
     structureNodes?: Array<any>;
     removedFromStructures?: Array<String>;
-    positions?: Array<UserPosition>;
+    userPositions?: Array<UserPosition>;
 
     toggleBlock() {
         return this.http.put(`/auth/block/${this.id}`, { block: !this.blocked }).then(() => {
@@ -176,7 +176,6 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
             });
         });
     }
-
 
     removeAdml() {
         return this.http.delete(`/directory/user/function/${this.id}/ADMIN_LOCAL`).then(() => {
@@ -313,6 +312,11 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     
     updateMail() {
         return this.http.put(`/directory/user/${this.id}`, {email: this.email});
+    }
+
+    updateUserPositions() {
+        const positionIds = this.userPositions?.map( position => position.id).join(",") ?? "";
+        return this.http.put(`/directory/user/${this.id}?positionIds=${positionIds}`, {});
     }
 
     removeFromStructure(struct: StructureModel)
