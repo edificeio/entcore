@@ -161,11 +161,12 @@ public class Group {
 				"AND target.filter IN g.autolinkUsersFromGroups " +
 				"WITH g, u " +
 				"MERGE (u)-[new:IN]->(g) " +
+				"ON CREATE SET new.source = 'AUTO' " +
 				"SET new.updated = {now} ";
 
 			final String removeQuery =
 				"MATCH (g:ManualGroup)<-[old:IN]-(:User) " +
-				"WHERE (NOT EXISTS(old.source) OR old.source <> 'MANUAL') AND (NOT EXISTS(old.updated) OR old.updated <> {now}) " +
+				"WHERE EXISTS(g.autolinkUsersFromGroups) AND old.source = 'AUTO' AND (NOT EXISTS(old.updated) OR old.updated <> {now}) " +
 				"DELETE old ";
 
 			final JsonObject params = new JsonObject().put("now", System.currentTimeMillis());
