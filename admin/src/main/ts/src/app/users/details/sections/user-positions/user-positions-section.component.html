@@ -14,7 +14,7 @@
     <i class="fa fa-plus-circle is-size-5"></i>
     <s5l>user-position.add-assigment</s5l>
   </button>
-  <button (click)="saveUpdate()" [disabled]="!userPositionsUpdated">
+  <button (click)="saveUpdate()" [disabled]="!hasUserPositionsChanged">
     <i class="fa fa-save is-size-5"></i>
     <s5l>user-position.save-assigment</s5l>
   </button>
@@ -27,7 +27,7 @@
     <div class="padded">
       <h3><s5l>user-position.add-assigment</s5l></h3>
       <ode-user-position-list
-        [userPositionList]="positionList"
+        [userPositionList]="filteredPositionList"
         (selectedUserPositionChange)="addUserPositionToList($event)"
       ></ode-user-position-list>
       <button (click)="createUserPosition()">

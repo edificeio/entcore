@@ -26,17 +26,15 @@ export class UserPositionsSectionComponent
   showUserPositionAssigmentLightbox: boolean = false;
   showUserPositionLightbox: boolean = false;
 
-  get userPositionsUpdated(): boolean {
-    if (!this.user.userDetails.positions && this.userPositions.length > 0) {
-      return true;
-    }
-    if (
-      this.user.userDetails.positions.map((p) => p.id) !==
-      this.userPositions.map((p) => p.id)
-    ) {
-      return true;
-    }
-    return false;
+  /** Truthy when detecting user's positions changes */
+  get hasUserPositionsChanged(): boolean {
+    return (!this.user.userDetails.positions && this.userPositions.length > 0) || 
+      (this.user.userDetails.positions && 
+        this.user.userDetails.positions.map((p) => p.id) !== this.userPositions.map((p) => p.id));
+  }
+
+  get filteredPositionList() {
+    return this.positionList.filter( position => !this.userPositions.some(value=>value.id===position.id));
   }
 
   constructor(
@@ -49,6 +47,7 @@ export class UserPositionsSectionComponent
 
   async ngOnInit() {
     this.positionList = await this.userPositionServices.searchUserPositions();
+    // Memoize the initial user's positions
     this.userPositions = this.user.userDetails.positions
       ? [...this.user.userDetails.positions]
       : [];
@@ -57,6 +56,7 @@ export class UserPositionsSectionComponent
   ngOnChanges() {}
 
   protected onUserChange() {
+    // Memoize the user's new positions
     this.userPositions = this.user.userDetails.positions
       ? [...this.user.userDetails.positions]
       : [];
