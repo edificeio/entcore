@@ -3,7 +3,6 @@ import {
   UserPosition,
   UserPositionCreation,
   UserPositionElementQuery,
-  UserPositionSource,
 } from "src/app/core/store/models/userPosition.model";
 
 import http from "axios";
@@ -12,33 +11,21 @@ import http from "axios";
 export class UserPositionServices {
   private positionsURL = "/directory/positions";
 
-  public async createUserPosition(
-    userPositionCreation: UserPositionCreation
-  ): Promise<UserPosition> {
-    const result = {
-      id: userPositionCreation.name,
-      name: userPositionCreation.name,
-      source: "MANUAL" as UserPositionSource,
-    };
-    console.log(JSON.stringify(result));
-    return Promise.resolve(result);
-    // return (
-    //   await http.post<UserPosition>(
-    //     this.positionsURL,
-    //     userPositionCreation
-    //   )
-    // ).data;
+  public async createUserPosition(userPositionCreation: UserPositionCreation) {
+    return (
+      await http.post<UserPosition>(
+        this.positionsURL,
+        userPositionCreation
+      )
+    ).data;
   }
 
-  public async updateUserPosition(
-    userPosition: UserPosition
-  ): Promise<UserPosition> {
-    return Promise.resolve({...userPosition});
-    // const res = await http.post<UserPosition>(
-    //   `${this.positionsURL}/${userPosition.id}`,
-    //   userPosition,
-    // );
-    // return res;
+  public async updateUserPosition(userPosition: UserPosition) {
+    const res = await http.post<UserPosition>(
+      `${this.positionsURL}/${userPosition.id}`,
+      userPosition,
+    );
+    return res.data;
   }
 
   public async deleteUserPosition(id: string, structureId: string) {
@@ -58,30 +45,15 @@ export class UserPositionServices {
   public async searchUserPositions(
     params?: UserPositionElementQuery
   ): Promise<UserPosition[]> {
-    return [
+    const userPositions: UserPosition[] = (await http.get<UserPosition[]>(
+      this.positionsURL,
       {
-        id: "1",
-        name: "name",
-        source: "MANUAL",
-      },
-      {
-        id: "2",
-        name: "name 2",
-        source: "AAF",
-      },
-      {
-        id: "3",
-        name: "name 3",
-        source: "CSV",
-      },
-    ];
-
-    // const userPositions: UserPosition[] = (await http.get<UserPosition[]>(
-    //   this.positionsURL,
-    //   {
-    //     params: params? params : {},
-    //   }
-    // )).data;
-    // return userPositions;
+        params: params? params : {},
+      }
+    )).data;
+    return userPositions.map(position => {
+      position.name = position.name.trim();
+      return position;
+    });
   }
 }

@@ -2007,6 +2007,56 @@ ode-user-create {
     form {
       margin-bottom: 0px;
     }
+    div.user-position-container {
+      display: flex;
+      align-items: start;
+
+      label {
+        flex: 0 0 200px;
+        margin-top: 0.7em;
+      }
+
+      div.search {
+        flex: 1;
+        margin-right: 50px;
+        max-height: 40vh;
+        overflow-y: scroll;
+
+        .empty-screen {
+          display: flex;
+          align-items: center;
+          flex-direction: column;
+          gap: 16px;
+          padding-top: 16px;
+          margin-top: -120px;
+          position: relative;
+          background-color: #fff !important;
+        }
+      }
+
+      div.positions-list {
+        flex: 2;
+        h3 {
+          margin-top: 5px;
+        }
+        ul {
+          display: table;
+          border-spacing: 10px 5px;
+          text-align: center;
+          li {
+            display: table-row;
+            span {
+              text-align: left;
+              display: table-cell;
+            }
+            i {
+              display: table-cell;
+            }
+          }
+        }
+      }
+    }
+
     div.children-container {
       display: flex;
       div.empty {

@@ -49,7 +49,7 @@ export class UserPositionListComponent extends OdeComponent {
     return (
       this.selectedUserPosition &&
       userPosition &&
-      this.selectedUserPosition.id === userPosition.id
+      this.selectedUserPosition.name.trim() === userPosition.name.trim()
     );
   };
 
@@ -59,18 +59,19 @@ export class UserPositionListComponent extends OdeComponent {
   };
 
   checkEmitNewPositionName(filteredList:[]) {
+    const searchPrefix = this.searchPrefix?.trim() ?? "";
     // When filtered list is empty and current search prefix is not,
-    if(filteredList.length == 0 && this.searchPrefix?.length > 0) {
+    if(filteredList.length == 0 && searchPrefix.length > 0) {
         // If the search prefix has not been proposed yet, then do it now.
-        if( this.previousProposal !== this.searchPrefix) {
-          this.newPositionNameProposed.emit(this.searchPrefix);
-          this.previousProposal = this.searchPrefix;
+        if( this.previousProposal !== searchPrefix) {
+          this.newPositionNameProposed.emit(searchPrefix);
+          this.previousProposal = searchPrefix;
         }
     }
     // If the proposal has not been resetted yet, then do it now.
     else if(this.previousProposal) {
       this.newPositionNameProposed.emit();
-      this.previousProposal = this.searchPrefix;
+      this.previousProposal = searchPrefix;
     }
   }
 }
