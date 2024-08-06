@@ -43,6 +43,16 @@ export class UserPositionsSectionComponent
     return this.positionList?.filter( position => !this.userPositions.some(value=>value.id===position.id)) ?? [];
   }
 
+  set newPositionName(name) {
+    name = name ? name.trim() : "";
+    // Check if the name of this new position does not already exist in the list
+    if( this.positionList && 
+        !this.positionList.some(position => position.name===name) ) {
+      this.newPosition = {name, source: "MANUAL"};
+      this.showEmptyScreen = name && name.length;
+    }
+  }
+
   constructor(
     private ns: NotifyService,
     public spinner: SpinnerService,
@@ -54,7 +64,7 @@ export class UserPositionsSectionComponent
   }
 
   async ngOnInit() {
-    this.setNewPositionName(undefined);
+    this.newPositionName = undefined;
     this.positionList = await this.spinner
       .perform('portal-content', this.userPositionServices.searchUserPositions())
       .catch(err => {
@@ -81,16 +91,6 @@ export class UserPositionsSectionComponent
       ? [...this.details.userPositions]
       : [];
     this.cdRef.markForCheck();
-  }
-
-  setNewPositionName(name) {
-    name = name ? name.trim() : "";
-    // Check if the name of this new position does not already exist in the list
-    if( this.positionList && 
-        !this.positionList.some(position => position.name===name) ) {
-      this.newPosition = {name, source: "MANUAL"};
-      this.showEmptyScreen = name && name.length;
-    }
   }
 
   selectUserPosition(userPosition: UserPosition) {

@@ -33,7 +33,7 @@
         [searchPrefix]="searchPrefix"
         [userPositionList]="filteredPositionList"
         (selectedUserPositionChange)="selectUserPosition($event)"
-        (newPositionNameProposed)="setNewPositionName($event)"
+        (newPositionNameProposed)="newPositionName = $event"
       ></ode-user-position-list>
       
       <div *ngIf="showEmptyScreen" class="empty-screen">
