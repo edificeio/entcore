@@ -21,4 +21,5 @@ export interface UserPosition {
   id?: string;
   name?: string;
   source: UserPositionSource;
+  structureId?: string;
 }

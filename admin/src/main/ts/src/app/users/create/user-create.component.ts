@@ -32,11 +32,18 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
     get canHavePositions() {
         return this.newUser.type === 'Personnel';
     }
-    /** List of all positions existing in current structure. */
+    /** List of all positions existing in structures the user is ADMx of. */
     positionList: UserPosition[];
-    /** List of available positions = all positions except those already selected. */
+    /** List of selectable positions = all positions except duplicates and those already assigned. */
     get filteredPositionList() {
-        return this.positionList?.filter( position => !this.newUser.userDetails.userPositions.some(value=>value.id===position.id)) ?? [];
+        // Extract and trim names
+        const filteredList = this.positionList?.map(position => position.name)
+            // Remove empty and already selected names
+            .filter(name => !this.newUser.userDetails.userPositions.some(value=> name.length===0 || value.name.trim()===name)) ?? [];
+        // Remove remaining duplicates
+        return filteredList.filter((name, index) => (index+1>=filteredList.length || filteredList.indexOf(name, index+1)<0))
+            // return result as an array of UserPosition
+            .map(name => ({name}));
     }
 
     newPosition: UserPosition = {name: "", source: "MANUAL"};
@@ -124,8 +131,40 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
     }
 
     addPosition(position: UserPosition) {
-        this.newUser.userDetails.userPositions.push(position);
-        this.showNewPositionProposal = false;
+        const name = position.name.trim();
+        const structureId = this.usersStore.structure.id;
+        // Search the structure for a UserPosition with this name.
+        Promise.resolve(this.positionList.find(pos => pos.name==name && pos.structureId==structureId))
+        .then( async (positionToAdd) => positionToAdd 
+            ? positionToAdd
+            // If none is found then create one before selecting it.
+            : await this.spinner.perform<UserPosition|undefined>('portal-content', 
+                this.userPositionServices.createUserPosition({name, structureId})
+                .then(created => {
+                    this.positionList.push(created);
+                    this.ns.success(
+                        "notify.user-position.create.success.content",
+                        "notify.user-position.success.title"
+                    );
+                    return created;
+                })
+                .catch(err => {
+                    this.ns.error({
+                            key: 'notify.user-position.create.error.content',
+                            parameters: {position: name}},
+                        'notify.user-position.create.error.title',
+                        err
+                    );
+                    return undefined;
+                })
+            )
+        )
+        .then(addedPosition => {
+            if(addedPosition) {
+                this.newUser.userDetails.userPositions.push(addedPosition);
+                this.showNewPositionProposal = false;
+            }
+        });
     }
 
     removePosition(position: UserPosition) {

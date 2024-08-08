@@ -19,6 +19,7 @@ export class UserPositionServices {
       id: userPositionCreation.name,
       name: userPositionCreation.name,
       source: "MANUAL" as UserPositionSource,
+      structureId: userPositionCreation.structureId
     };
     console.log(JSON.stringify(result));
     return Promise.resolve(result);
@@ -58,21 +59,30 @@ export class UserPositionServices {
   public async searchUserPositions(
     params?: UserPositionElementQuery
   ): Promise<UserPosition[]> {
-    return [
+    const userPositions = [
       {
         id: "1",
         name: "name",
-        source: "MANUAL",
+        source: "MANUAL" as UserPositionSource,
+        structureId: "struct1",
       },
       {
         id: "2",
         name: "name 2",
-        source: "AAF",
+        source: "AAF" as UserPositionSource,
+        structureId: "struct1",
       },
       {
         id: "3",
         name: "name 3",
-        source: "CSV",
+        source: "CSV" as UserPositionSource,
+        structureId: "struct2",
+      },
+      {
+        id: "4",
+        name: "name 2",
+        source: "AAF" as UserPositionSource,
+        structureId: "struct2",
       },
     ];
 
@@ -82,6 +92,9 @@ export class UserPositionServices {
     //     params: params? params : {},
     //   }
     // )).data;
-    // return userPositions;
+    return userPositions.map(position => {
+      position.name = position.name.trim();
+      return position;
+    });
   }
 }

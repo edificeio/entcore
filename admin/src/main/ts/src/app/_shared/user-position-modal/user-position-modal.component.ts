@@ -62,22 +62,45 @@ export class UserPositionModalComponent extends OdeComponent implements OnInit {
       this.userPosition = await this.spinner
         .perform('portal-content', this.userPositionServices.updateUserPosition(
           {...this.userPosition, name: this.editableName}
-        ));
+        ))
+        .then( updated => {
+          this.ns.success(
+            "notify.user-position.update.success.content",
+            "notify.user-position.success.title"
+          );
+          return updated;
+        })
+        .catch(err => {
+          this.ns.error(
+              {
+                  key: 'notify.user-position.update.error.content',
+                  parameters: {
+                    position: this.userPosition.name
+                  }
+              }, 'notify.user-position.update.error.title', err);
+          return this.userPosition;
+        });
     } else {
       this.userPosition = await this.spinner
         .perform('portal-content', this.userPositionServices.createUserPosition({
           name: this.editableName,
           structureId: this.structureId,
         }))
+        .then(created => {
+          this.ns.success(
+            "notify.user-position.create.success.content",
+            "notify.user-position.success.title"
+          );
+          return created;
+        })
         .catch(err => {
-          // TODO notification
-          // this.ns.error(
-          //     {
-          //         key: 'notify.user.update.error.content',
-          //         parameters: {
-          //             user: this.user.firstName + ' ' + this.user.lastName
-          //         }
-          //     }, 'notify.user.update.error.title', err);
+          this.ns.error(
+              {
+                  key: 'notify.user-position.create.error.content',
+                  parameters: {
+                      position: this.editableName
+                  }
+              }, 'notify.user-position.create.error.title', err);
           return undefined;
         });
     }
