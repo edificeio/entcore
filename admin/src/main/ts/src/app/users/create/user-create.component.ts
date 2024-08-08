@@ -90,23 +90,6 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
 
     createNewUser() {
         this.spinner.perform('portal-content', this.newUser.createNewUser(this.usersStore.structure.id)
-            .then(async res => {
-                if( this.canHavePositions ) {
-                    // Save selected positions.
-                    await this.newUser.userDetails.updateUserPositions()
-                    .catch(err => {
-                      // TODO notification
-                      // this.ns.error(
-                      //     {
-                      //         key: 'notify.user.update.error.content',
-                      //         parameters: {
-                      //             user: this.user.firstName + ' ' + this.user.lastName
-                      //         }
-                      //     }, 'notify.user.update.error.title', err);
-                    });
-                }
-                return res;
-            })
             .then(res => {
                 this.ns.success({
                         key: 'notify.user.create.content',
