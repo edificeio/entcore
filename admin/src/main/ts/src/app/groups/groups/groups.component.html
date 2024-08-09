@@ -22,11 +22,11 @@
 </div>
 
 <div class="tabs">
-  <button class="tab" *ngFor="let tab of tabs"
-          [routerLink]="tab.view"
-          routerLinkActive="active">
+  <ng-container *ngFor="let tab of tabs"><button class="tab" *ngIf="tab.visible"
+        [routerLink]="tab.view"
+        routerLinkActive="active">
     {{ tab.label | translate }}
-  </button>
+  </button></ng-container>
 </div>
 
 <router-outlet></router-outlet>

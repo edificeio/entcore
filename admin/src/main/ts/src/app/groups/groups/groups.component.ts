@@ -13,6 +13,7 @@ import { routing } from "../../core/services/routing.service";
 import { GroupsStore } from "../groups.store";
 import { Session } from "src/app/core/store/mappings/session";
 import { SessionModel } from "src/app/core/store/models/session.model";
+import { GroupType } from "src/app/core/store/models/group.model";
 
 @Component({
   selector: "ode-groups-root",
@@ -27,12 +28,12 @@ export class GroupsComponent extends OdeComponent implements OnInit, OnDestroy {
 
   // Tabs
   tabs = [
-//  { label: "Classes", view: "classes" },  // admin only
-    { label: "ManualGroup", view: "manualGroup" },
-    { label: "ProfileGroup", view: "profileGroup" },
-    { label: "FunctionalGroup", view: "functionalGroup" },
-    { label: "FunctionGroup", view: "functionGroup" },
-//  { label: "BroadcastGroup", view: "broadcastGroup" }    // admin only
+    { label: "Classes", view: "classes", visible: false },  // admin only
+    { label: "ManualGroup", view: "manualGroup", visible: true },
+    { label: "ProfileGroup", view: "profileGroup", visible: true },
+    { label: "FunctionalGroup", view: "functionalGroup", visible: true },
+    { label: "FunctionGroup", view: "functionGroup", visible: false },  // optional
+    { label: "BroadcastGroup", view: "broadcastGroup", visible: false }    // admin only
   ];
 
   groupsError: any;
@@ -48,6 +49,7 @@ export class GroupsComponent extends OdeComponent implements OnInit, OnDestroy {
       routing.observe(this.route, "data").subscribe((data: Data) => {
         if (data.structure) {
           this.groupsStore.structure = data.structure;
+          this.showOptionalTabs();
           this.changeDetector.markForCheck();
         }
       })
@@ -93,11 +95,21 @@ export class GroupsComponent extends OdeComponent implements OnInit, OnDestroy {
     const isADML = session.isADML();
 
     if (this.isADMC) {
-      this.tabs.unshift({ label: "Classes", view: "classes" });
+      this.tabs.find(tab => tab.view==="classes").visible = true;
     }
     if ((isADML || this.isADMC) && this.groupsStore.structure.children.length) {
-      this.tabs.push({ label: "BroadcastGroup", view: "broadcastGroup" });
+      this.tabs.find(tab => tab.view==="broadcastGroup").visible = true;
     }
     this.changeDetector.markForCheck();
+  }
+
+  showOptionalTabs() {
+    const groups = this.groupsStore.structure?.groups?.data;
+    // Function tab is visible only when not empty
+    this.tabs.find(tab => tab.view==="functionGroup").visible = (
+      Array.isArray(groups) &&
+      groups.some(group=>(
+        group.type==='FunctionGroup' || group.type==='FuncGroup' as GroupType)
+      ));
   }
 }
