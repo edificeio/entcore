@@ -74,6 +74,12 @@ export class UserDetailsComponent
     return this._user;
   }
 
+  get withAafFunctions() {
+    return Array.isArray(this.user?.aafFunctions)
+     && this.user.aafFunctions.length > 0
+     && (this.user.type == 'Personnel' || this.user.type == 'Teacher')
+  }
+
   constructor(
     injector: Injector,
     public spinner: SpinnerService,
