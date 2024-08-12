@@ -16,14 +16,15 @@ public interface UserPositionService {
 	 * @param adminInfos the current admin infos
 	 * @return the retrieved user positions, filtered by prefix or structure
 	 */
-	Future<Set<UserPosition>> getUserPositions(Optional<String> prefix, Optional<String> structureId, UserInfos adminInfos);
+	Future<Set<UserPosition>> getUserPositions(String prefix, String structureId, UserInfos adminInfos);
 
 	/**
 	 * Retrieve a user position by its id
 	 * @param userPositionId the id of the user position to retrieve
+	 * @param adminInfos the current admin infos
 	 * @return the user position
 	 */
-	Future<UserPosition> getUserPosition(String userPositionId);
+	Future<UserPosition> getUserPosition(String userPositionId, UserInfos adminInfos);
 
 	/**
 	 * create a user position and links it to a structure

@@ -329,7 +329,7 @@ public class DefaultUserService implements UserService {
 				"OPTIONAL MATCH u-[:IN]->(fgroup: FunctionalGroup) WITH COLLECT(distinct {id: fgroup.id, name: fgroup.name}) as admGroups, parents, children, functions, u, structureNodes " +
 				"OPTIONAL MATCH u-[:ADMINISTRATIVE_ATTACHMENT]->(admStruct: Structure) WITH COLLECT(distinct {id: admStruct.id}) as admStruct, admGroups, parents, children, functions, u, structureNodes " +
 				"OPTIONAL MATCH u-[r:TEACHES]->(s:Subject) WITH COLLECT(distinct s.code) as subjectCodes, admStruct, admGroups, parents, children, functions, u, structureNodes " +
-				"OPTIONAL MATCH u-[h:HAS_POSITION]->(p:UserPosition) WITH COLLECT(distinct {id: p.id, name: p.name, source: p.source}) as userPositions, subjectCodes, admStruct, admGroups, parents, children, functions, u, structureNodes " +
+				"OPTIONAL MATCH u-[h:HAS_POSITION]->(p:UserPosition)-[:IN]->(struct:Structure) WITH COLLECT(distinct {id: p.id, name: p.name, source: p.source, structureId: struct.id}) as userPositions, subjectCodes, admStruct, admGroups, parents, children, functions, u, structureNodes " +
 				getMgroups;
 
 		if(withClasses) {

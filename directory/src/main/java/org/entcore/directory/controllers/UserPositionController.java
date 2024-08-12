@@ -30,8 +30,8 @@ public class UserPositionController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
 	public void getPositions(HttpServerRequest request) {
-		final Optional<String> prefix = Optional.ofNullable(request.getParam("prefix"));
-		final Optional<String> structureId = Optional.ofNullable(request.getParam("structureId"));
+		final String prefix = request.getParam("prefix");
+		final String structureId = request.getParam("structureId");
 		UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(adminInfos -> {
 			userPositionService.getUserPositions(prefix, structureId, adminInfos)
 					.onSuccess(userPositions -> Renders.render(request, userPositions))
@@ -47,13 +47,15 @@ public class UserPositionController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
 	public void getPosition(HttpServerRequest request) {
-		final String positionId = request.getParam("positionId");
-		userPositionService.getUserPosition(positionId)
-				.onSuccess(userPosition -> Renders.render(request, userPosition))
-				.onFailure(th -> {
-					Renders.log.warn("Could not find user position with id: " + positionId, th);
-					Renders.notFound(request);
-				});
+		UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(adminInfos -> {
+			final String positionId = request.getParam("positionId");
+			userPositionService.getUserPosition(positionId, adminInfos)
+					.onSuccess(userPosition -> Renders.render(request, userPosition))
+					.onFailure(th -> {
+						Renders.log.warn("Could not find user position with id: " + positionId, th);
+						Renders.notFound(request);
+					});
+		});
 	}
 
 	@Post("/positions")

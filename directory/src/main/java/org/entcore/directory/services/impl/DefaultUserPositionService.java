@@ -4,6 +4,8 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.user.UserInfos;
@@ -16,14 +18,19 @@ import java.util.*;
 
 public class DefaultUserPositionService implements UserPositionService {
 
+	public static final String ADMIN_WITHOUT_STRUCTURE = "Admin not linked to any structure.";
+
+	private final Logger logger = LoggerFactory.getLogger(DefaultUserPositionService.class);
+
 	private final Neo4j neo4jClient = Neo4j.getInstance();
 
 	@Override
-	public Future<Set<UserPosition>> getUserPositions(Optional<String> prefix, Optional<String> structureId, UserInfos adminInfos ) {
+	public Future<Set<UserPosition>> getUserPositions(String prefix, String structureId, UserInfos adminInfos ) {
 		Promise<Set<UserPosition>> promise = Promise.promise();
 		fetchAdminStructures(adminInfos).onSuccess(structureIds -> {
 			if (structureIds.isEmpty()) {
-				promise.fail("Admin not linked to any structure.");
+				logger.warn(ADMIN_WITHOUT_STRUCTURE);
+				promise.fail(ADMIN_WITHOUT_STRUCTURE);
 			} else {
 				final JsonArray adminStructureIds = new JsonArray();
 				structureIds.forEach(adminStructureIds::add);
@@ -34,18 +41,19 @@ public class DefaultUserPositionService implements UserPositionService {
 				query.append("MATCH (p:UserPosition)-[:IN]->(s:Structure) ")
 						.append("WHERE s.id IN {adminStructureIds} ");
 				// filters user positions whose name don't match the prefix
-				if (prefix.isPresent()) {
+				if (prefix != null) {
 					query.append("AND p.name =~ {prefixRegex} ");
-					params.put("prefixRegex", prefix.get() + ".*");
+					params.put("prefixRegex", prefix + ".*");
 				}
 				// filters user positions related to a specific structure
-				if (structureId.isPresent() && !StringUtils.isEmpty(structureId.get())) {
+				if (!StringUtils.isEmpty(structureId)) {
 					query.append("AND s.id = {structureId} ");
-					params.put("structureId", structureId.get());
+					params.put("structureId", structureId);
 				}
 				query.append("RETURN p.id as id, p.name as name, p.source as source, s.id as structureId ");
 				neo4jClient.execute(query.toString(), params, Neo4jResult.validResultHandler(event -> {
 					if (event.isLeft()) {
+						logger.warn("Failed fetching user positions : " + event.left().getValue());
 						promise.fail(event.left().getValue());
 					} else {
 						Set<UserPosition> userPositions = new TreeSet<>();
@@ -66,25 +74,40 @@ public class DefaultUserPositionService implements UserPositionService {
 	}
 
 	@Override
-	public Future<UserPosition> getUserPosition(String userPositionId) {
+	public Future<UserPosition> getUserPosition(String userPositionId, UserInfos adminInfos) {
 		Promise<UserPosition> promise = Promise.promise();
-		final String query = "" +
-				"MATCH (p:UserPosition {id:{userPositionId}})-[:IN]->(s:Structure) " +
-				"RETURN p.id as id, p.name as name, p.source as source, s.id as structureId ";
-		neo4jClient.execute(query, new JsonObject().put("userPositionId", userPositionId), Neo4jResult.validUniqueResultHandler(event -> {
-			if (event.isLeft()) {
-				promise.fail(event.left().getValue());
+		fetchAdminStructures(adminInfos).onSuccess(structureIds -> {
+			if (structureIds.isEmpty()) {
+				logger.warn(ADMIN_WITHOUT_STRUCTURE);
+				promise.fail(ADMIN_WITHOUT_STRUCTURE);
 			} else {
-				JsonObject result = event.right().getValue();
-				if (result.isEmpty()) {
-					promise.fail("No user position found.");
-				}
-				promise.complete(new UserPosition(result.getString("id"),
-						result.getString("name"),
-						UserPositionSource.valueOf(result.getString("source")),
-						result.getString("structureId")));
+				final JsonArray adminStructureIds = new JsonArray();
+				structureIds.forEach(adminStructureIds::add);
+				final JsonObject params = new JsonObject()
+						.put("adminStructureIds", adminStructureIds)
+						.put("userPositionId", userPositionId);
+				final String query = "" +
+						"MATCH (p:UserPosition {id:{userPositionId}})-[:IN]->(s:Structure) " +
+						"WHERE s.id IN {adminStructureIds} " +
+						"RETURN p.id as id, p.name as name, p.source as source, s.id as structureId ";
+				neo4jClient.execute(query, params, Neo4jResult.validUniqueResultHandler(event -> {
+					if (event.isLeft()) {
+						promise.fail(event.left().getValue());
+					} else {
+						JsonObject result = event.right().getValue();
+						if (result.isEmpty()) {
+							final String error = "No user position found.";
+							logger.warn(error);
+							promise.fail(error);
+						}
+						promise.complete(new UserPosition(result.getString("id"),
+								result.getString("name"),
+								UserPositionSource.valueOf(result.getString("source")),
+								result.getString("structureId")));
+					}
+				}));
 			}
-		}));
+		}).onFailure(promise::fail);
 		return promise.future();
 	}
 
@@ -93,7 +116,8 @@ public class DefaultUserPositionService implements UserPositionService {
 		Promise<UserPosition> promise = Promise.promise();
 		fetchAdminStructures(adminInfos).onSuccess(adminStructureIds -> {
 			if (adminStructureIds.isEmpty()) {
-				promise.fail("Admin not linked to any structure.");
+				logger.warn(ADMIN_WITHOUT_STRUCTURE);
+				promise.fail(ADMIN_WITHOUT_STRUCTURE);
 			} else {
 				getPositionByNameInStructure(positionName, structureId, adminStructureIds).onSuccess(userPosition -> {
 					if (userPosition.isPresent()) {
@@ -117,6 +141,7 @@ public class DefaultUserPositionService implements UserPositionService {
 								"RETURN p.id as id, p.name as name, p.source as source ";
 						neo4jClient.execute(query, params, Neo4jResult.validUniqueResultHandler(event -> {
 							if (event.isLeft()) {
+								logger.warn("Failed creating user position : " + event.left().getValue());
 								promise.fail(event.left().getValue());
 							} else {
 								JsonObject result = event.right().getValue();
@@ -138,7 +163,8 @@ public class DefaultUserPositionService implements UserPositionService {
 		Promise<UserPosition> promise = Promise.promise();
 		fetchAdminStructures(adminInfos).onSuccess(structureIds -> {
 			if (structureIds.isEmpty()) {
-				promise.fail("Admin not linked to any structure.");
+				logger.warn(ADMIN_WITHOUT_STRUCTURE);
+				promise.fail(ADMIN_WITHOUT_STRUCTURE);
 			} else {
 				final JsonArray adminStructureIds = new JsonArray();
 				structureIds.forEach(adminStructureIds::add);
@@ -154,6 +180,7 @@ public class DefaultUserPositionService implements UserPositionService {
 						"RETURN p.id as id, p.name as name, p.source as source, s.id as structureId ";
 				neo4jClient.execute(query, params, Neo4jResult.validUniqueResultHandler(event -> {
 					if (event.isLeft()) {
+						logger.warn("Failed renaming user position : " + event.left().getValue());
 						promise.fail(event.left().getValue());
 					} else {
 						JsonObject result = event.right().getValue();
@@ -173,7 +200,8 @@ public class DefaultUserPositionService implements UserPositionService {
 		Promise<Void> promise = Promise.promise();
 		fetchAdminStructures(adminInfos).onSuccess(structureIds -> {
 			if (structureIds.isEmpty()) {
-				promise.fail("Admin not linked to any structure.");
+				logger.warn(ADMIN_WITHOUT_STRUCTURE);
+				promise.fail(ADMIN_WITHOUT_STRUCTURE);
 			} else {
 				final JsonArray adminStructureIds = new JsonArray();
 				structureIds.forEach(adminStructureIds::add);
@@ -186,6 +214,7 @@ public class DefaultUserPositionService implements UserPositionService {
 						"DETACH DELETE p ";
 				neo4jClient.execute(query, params, Neo4jResult.validResultHandler(event -> {
 					if (event.isLeft()) {
+						logger.warn("Failed deleting user position : " + event.left().getValue());
 						promise.fail(event.left().getValue());
 					} else {
 						promise.complete();
@@ -211,6 +240,14 @@ public class DefaultUserPositionService implements UserPositionService {
 				"MATCH (u)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure)<-[:IN]-(p:UserPosition) " +
 				"WHERE p.id IN {positionIds} " +
 				"MERGE (u)-[:HAS_POSITION]->(p) ";
+		neo4jClient.execute(query, params, Neo4jResult.validResultHandler(event -> {
+			if (event.isLeft()) {
+				logger.warn("Failed setting postions to user : " + event.left().getValue());
+				promise.fail(event.left().getValue());
+			} else {
+				promise.complete();
+			}
+		}));
 		return promise.future();
 	}
 
@@ -230,6 +267,7 @@ public class DefaultUserPositionService implements UserPositionService {
 				"RETURN p.id as id, p.name as name, p.source as source ";
 		neo4jClient.execute(query, params, Neo4jResult.validUniqueResultHandler(event -> {
 			if (event.isLeft()) {
+				logger.warn("Failed retrieving positions by name in structure : " + event.left().getValue());
 				promise.fail(event.left().getValue());
 			} else {
 				JsonObject result = event.right().getValue();
@@ -256,12 +294,15 @@ public class DefaultUserPositionService implements UserPositionService {
 			query.append("MATCH (:User {id:{adminId}})-[:IN]->(:FunctionGroup {filter:\"AdminLocal\"})-[:DEPENDS]->(s:Structure) ");
 			params.put("adminId", adminInfos.getUserId());
 		} else {
-			promise.fail("User must be admin");
+			final String error = "User must be admin";
+			logger.warn(error);
+			promise.fail(error);
 			return promise.future();
 		}
 		query.append("RETURN s.id as id");
 		neo4jClient.execute(query.toString(), params, Neo4jResult.validResultHandler(event -> {
 			if (event.isLeft()) {
+				logger.warn("Failed fetching structures of admin : " + event.left().getValue());
 				promise.fail(event.left().getValue());
 			} else {
 			JsonArray results = event.right().getValue();

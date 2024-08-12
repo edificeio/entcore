@@ -130,7 +130,7 @@ public class UserController extends BaseController {
 				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 					public void handle(UserInfos user) {
 						final  String userId = request.params().get("userId");
-						final Set<String> userPositionIds = new HashSet<>(RequestUtils.getParamAsSet("positionIds", request));
+						final JsonArray userPositionArray = body.getJsonArray("positionIds");
 						//User name modification prevention for non-admins.
 						if(!user.getFunctions().containsKey(DefaultFunctions.SUPER_ADMIN) &&
 								!user.getFunctions().containsKey(DefaultFunctions.ADMIN_LOCAL) &&
@@ -171,7 +171,9 @@ public class UserController extends BaseController {
 											if (userBeforeUpdate != null && userBeforeUpdate.result() != null) {
 												sendEmailOrMobileUpdateNotifications(request, userBeforeUpdate.result(), body);
 											}
-											if (!userPositionIds.isEmpty()) {
+											if (userPositionArray != null) {
+												Set<String> userPositionIds = new HashSet<>();
+												userPositionArray.forEach(id -> userPositionIds.add((String) id));
 												userPositionService.setUserPositions(userPositionIds, userId);
 											}
 										} else {
