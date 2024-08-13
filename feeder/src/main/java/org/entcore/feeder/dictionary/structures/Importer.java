@@ -182,10 +182,10 @@ public class Importer {
 	private Future<Void> loadPersEducnat2D() {
 		final Promise<Void> promise = Promise.promise();
 		final String query =
-			"MATCH (s:Structure {source:'AAF'})<-[:DEPENDS]-(:ProfileGroup)<-[r:IN]-(u:User) " +
-			"WHERE u.source = 'AAF' and head(u.profiles) IN ['Personnel','Teacher'] and not(has(r.source)) " +
+			"MATCH (s:Structure {source:'AAF'})<-[:DEPENDS]-(pg:ProfileGroup)<-[r:IN]-(u:User) " +
+			"WHERE u.source = 'AAF' and pg.filter IN ['Personnel','Teacher'] and not(has(r.source)) " +
 			"RETURN DISTINCT u.externalId as externalId, u.source as source, head(u.profiles) as profile, " +
-			"COLLECT(distinct s.externalId) as structuresExternalIds";
+			"u.functions as functions, COLLECT(distinct s.externalId) as structuresExternalIds";
 		Neo4j.getInstance().execute(query, new JsonObject(), event -> {
 			final JsonArray res = event.body().getJsonArray("result");
 			if ("ok".equals(event.body().getString("status")) && res != null) {
