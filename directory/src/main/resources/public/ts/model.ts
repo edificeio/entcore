@@ -82,6 +82,11 @@ export const directory = {
 			else
 				this.profiles[0];
 		};
+		this.getPositions = function() {
+			return this.positions 
+				? this.positions.map(function(position) {return position.name;}) 
+				: [];
+		};
 		this.generateOTP = function(callback) {
 			http.post('/auth/generate/otp').then(function(res) {
 				if(typeof callback === 'function') {

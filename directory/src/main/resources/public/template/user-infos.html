@@ -18,10 +18,15 @@
 
 		<div class="sheet">
 			<div>
-				<h2 class="text-word-break no-margin size-auto">[[currentUser.displayName]]</h2>
+				<div class="flex-inline align-items-center gap-16">
+					<h2 class="no-margin">[[currentUser.displayName]]</h2>
+					<div class="flex-inline align-items-center gap-4 top-spacing-small">
+						<span class="circle square-mini" ng-class="currentUser.getProfile()"></span>
+						<span class="low-importance">[[ currentUser.getProfileName() ]]</span>
+					</div>
+				</div>
 				<div class="flex-row">
-					<span class="cell circle square-mini top-spacing-small right-spacing-small" ng-class="currentUser.getProfile()"></span>
-					<span class="cell low-importance">[[ currentUser.getProfileName() ]]</span>
+					<span class="cell">[[ currentUser.getPositions().join(", ") ]]</span>
 				</div>
 			</div>
 
