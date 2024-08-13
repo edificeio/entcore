@@ -1,4 +1,4 @@
-package org.entcore.directory.pojo;
+package org.entcore.common.user.position;
 
 public class UserPosition implements Comparable<UserPosition> {
 	private final String id;

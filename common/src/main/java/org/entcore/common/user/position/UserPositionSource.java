@@ -1,4 +1,4 @@
-package org.entcore.directory.pojo;
+package org.entcore.common.user.position;
 
 public enum UserPositionSource {
 	MANUAL,

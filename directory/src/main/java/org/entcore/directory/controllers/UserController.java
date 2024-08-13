@@ -62,7 +62,7 @@ import org.entcore.directory.pojo.TransversalSearchType;
 import org.entcore.directory.pojo.Users;
 import org.entcore.directory.security.*;
 import org.entcore.directory.services.UserBookService;
-import org.entcore.directory.services.UserPositionService;
+import org.entcore.common.user.position.UserPositionService;
 import org.entcore.directory.services.UserService;
 import org.vertx.java.core.http.RouteMatcher;
 
@@ -130,7 +130,7 @@ public class UserController extends BaseController {
 				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 					public void handle(UserInfos user) {
 						final  String userId = request.params().get("userId");
-						final JsonArray userPositionArray = body.getJsonArray("positionIds");
+						final JsonArray userPositonIds = body.getJsonArray("positionIds");
 						//User name modification prevention for non-admins.
 						if(!user.getFunctions().containsKey(DefaultFunctions.SUPER_ADMIN) &&
 								!user.getFunctions().containsKey(DefaultFunctions.ADMIN_LOCAL) &&
@@ -156,7 +156,7 @@ public class UserController extends BaseController {
 						}
 
 						getUserPromise.future().onComplete(userBeforeUpdate -> {
-							userService.update(userId, body, onUpdateDone::complete);
+							userService.update(userId, userPositonIds, body, onUpdateDone::complete);
 							UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> onRemoveSessionAttributeDone.complete());
 
 							CompositeFuture.join(onUpdateDone.future(), onRemoveSessionAttributeDone.future())
@@ -170,11 +170,6 @@ public class UserController extends BaseController {
 
 											if (userBeforeUpdate != null && userBeforeUpdate.result() != null) {
 												sendEmailOrMobileUpdateNotifications(request, userBeforeUpdate.result(), body);
-											}
-											if (userPositionArray != null) {
-												Set<String> userPositionIds = new HashSet<>();
-												userPositionArray.forEach(id -> userPositionIds.add((String) id));
-												userPositionService.setUserPositions(userPositionIds, userId);
 											}
 										} else {
 											final JsonObject error = new JsonObject().put("error", futureUpdateDone.cause().getMessage());

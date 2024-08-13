@@ -1,4 +1,4 @@
-package org.entcore.directory.services.impl;
+package org.entcore.common.user.position.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -7,12 +7,13 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.Neo4jQueryAndParams;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.position.UserPosition;
+import org.entcore.common.user.position.UserPositionService;
+import org.entcore.common.user.position.UserPositionSource;
 import org.entcore.common.utils.StringUtils;
-import org.entcore.directory.pojo.UserPosition;
-import org.entcore.directory.pojo.UserPositionSource;
-import org.entcore.directory.services.UserPositionService;
 
 import java.util.*;
 
@@ -224,9 +225,14 @@ public class DefaultUserPositionService implements UserPositionService {
 		return promise.future();
 	}
 
-	@Override
-	public Future<Void> setUserPositions(Set<String> positionIds, String userId) {
-		Promise<Void> promise = Promise.promise();
+	/**
+	 * Build a neo4j query and the associated params that link the positions identified with the position ids to the user
+	 * Note : if one of the specified position doesn't exist in the user's structures, he will not be linked to it.
+	 * @param positionIds the ids of the positions to be linked to the user
+	 * @param userId the id of the user
+	 * @return the neo4j query and the associated params
+	 */
+	public static Neo4jQueryAndParams getUserPositionSettingQueryAndParam(Set<String> positionIds, String userId) {
 		final JsonArray positionIdsArray = new JsonArray();
 		positionIds.forEach(positionIdsArray::add);
 		final JsonObject params = new JsonObject()
@@ -240,15 +246,7 @@ public class DefaultUserPositionService implements UserPositionService {
 				"MATCH (u)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure)<-[:IN]-(p:UserPosition) " +
 				"WHERE p.id IN {positionIds} " +
 				"MERGE (u)-[:HAS_POSITION]->(p) ";
-		neo4jClient.execute(query, params, Neo4jResult.validResultHandler(event -> {
-			if (event.isLeft()) {
-				logger.warn("Failed setting postions to user : " + event.left().getValue());
-				promise.fail(event.left().getValue());
-			} else {
-				promise.complete();
-			}
-		}));
-		return promise.future();
+		return new Neo4jQueryAndParams(query, params);
 	}
 
 	private Future<Optional<UserPosition>> getPositionByNameInStructure(String userPositionName, String structureId, Set<String> adminStructureIds) {
@@ -294,9 +292,7 @@ public class DefaultUserPositionService implements UserPositionService {
 			query.append("MATCH (:User {id:{adminId}})-[:IN]->(:FunctionGroup {filter:\"AdminLocal\"})-[:DEPENDS]->(s:Structure) ");
 			params.put("adminId", adminInfos.getUserId());
 		} else {
-			final String error = "User must be admin";
-			logger.warn(error);
-			promise.fail(error);
+			promise.complete(new HashSet<>());
 			return promise.future();
 		}
 		query.append("RETURN s.id as id");

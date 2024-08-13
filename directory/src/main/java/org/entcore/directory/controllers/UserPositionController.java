@@ -13,10 +13,8 @@ import io.vertx.core.http.HttpServerRequest;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserUtils;
-import org.entcore.directory.pojo.UserPositionSource;
-import org.entcore.directory.services.UserPositionService;
-
-import java.util.Optional;
+import org.entcore.common.user.position.UserPositionSource;
+import org.entcore.common.user.position.UserPositionService;
 
 public class UserPositionController extends BaseController {
 

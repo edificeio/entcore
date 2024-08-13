@@ -29,6 +29,7 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.security.BCrypt;
+import io.vertx.core.Future;
 import io.vertx.core.eventbus.DeliveryOptions;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.bus.BusResponseHandler;
@@ -39,8 +40,7 @@ import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.neo4j.Neo;
-import org.entcore.common.user.UserInfos;
-import org.entcore.common.user.UserUtils;
+import org.entcore.common.user.position.UserPositionService;
 import org.entcore.directory.security.AdmlOfStructuresByExternalId;
 import org.entcore.directory.services.*;
 import io.vertx.core.Handler;
@@ -52,7 +52,6 @@ import io.vertx.core.json.JsonObject;
 import org.vertx.java.core.http.RouteMatcher;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
@@ -406,9 +405,9 @@ public class DirectoryController extends BaseController {
 				}
 				List<String> childrenIds = request.formAttributes().getAll("childrenIds");
 				user.put("childrenIds", new fr.wseduc.webutils.collections.JsonArray(childrenIds));
-				Set<String> userPositionIds = new HashSet<>(request.formAttributes().getAll("positionIds"));
+				List<String> userPositionIds = request.formAttributes().getAll("positionIds");
 				if (classId != null && !classId.trim().isEmpty()) {
-					userService.createInClass(classId, user, new Handler<Either<String, JsonObject>>() {
+					userService.createInClass(classId, userPositionIds, user, new Handler<Either<String, JsonObject>>() {
 						@Override
 						public void handle(Either<String, JsonObject> res) {
 							if (res.isRight() && res.right().getValue().size() > 0) {
@@ -430,9 +429,6 @@ public class DirectoryController extends BaseController {
 										});
 									}
 								}));
-								if (!userPositionIds.isEmpty()) {
-									userPositionService.setUserPositions(userPositionIds, r.getString("id"));
-								}
 								renderJson(request, r);
 							} else {
 								leftToResponse(request, res.left());
@@ -440,7 +436,7 @@ public class DirectoryController extends BaseController {
 						}
 					});
 				} else {
-					userService.createInStructure(structureId, user, new Handler<Either<String, JsonObject>>() {
+					userService.createInStructure(structureId, userPositionIds, user, new Handler<Either<String, JsonObject>>() {
 						@Override
 						public void handle(Either<String, JsonObject> res) {
 							if (res.isRight() && res.right().getValue().size() > 0) {
@@ -455,9 +451,6 @@ public class DirectoryController extends BaseController {
 										eb.send("wse.communication", j);
 									}
 								}));
-								if (!userPositionIds.isEmpty()) {
-									userPositionService.setUserPositions(userPositionIds, r.getString("id"));
-								}
 								renderJson(request, r);
 							} else {
 								leftToResponse(request, res.left());

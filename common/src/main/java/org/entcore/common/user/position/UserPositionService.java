@@ -1,11 +1,8 @@
-package org.entcore.directory.services;
+package org.entcore.common.user.position;
 
 import io.vertx.core.Future;
 import org.entcore.common.user.UserInfos;
-import org.entcore.directory.pojo.UserPosition;
-import org.entcore.directory.pojo.UserPositionSource;
 
-import java.util.Optional;
 import java.util.Set;
 
 public interface UserPositionService {
@@ -53,12 +50,4 @@ public interface UserPositionService {
 	 */
 	Future<Void> deleteUserPosition(String positionId, UserInfos adminInfos);
 
-	/**
-	 * Link the positions identified with the position ids to the user
-	 * Note : if one of the specified position doesn't exist in the user's structures, he will not be linked to it.
-	 * @param positionIds the ids of the positions to be linked to the user
-	 * @param userId the id of the user
-	 * @return void
-	 */
-	Future<Void> setUserPositions(Set<String> positionIds, String userId);
 }
