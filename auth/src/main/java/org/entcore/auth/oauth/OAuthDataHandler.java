@@ -277,9 +277,16 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 				handler.handle(new Try<AccessDenied, String>(r.getString("userId")));
 				return;
 			}
+
+			//TODO: THIS WAS SET TO MAKE SURE THAT OLD MOBILE VERSION CAN CONTINUE TO CONNECT AFTER CHANGEMENT TO REMOVE: IN FUTURE - Build in 14/08/2024
+			final String userAgent = getRequest().getHeader("User-Agent");
+			final String xAPP = getRequest().getHeader("X-APP");
+			// IF the headers contains X-APP with the value is mobile, this will be the new version of the app then no need to bypass 403 response for mobile
+			final boolean isMobile = (xAPP == null || !xAPP.equals("mobile")) && (userAgent != null && (userAgent.startsWith("appe") || userAgent.startsWith("okhttp")));
+			
 			// Handle hijack scenario to return a 403 error when a activation Code is used
 			// as a password in the auth2 flow
-			if (r.containsKey("activationCode") && password.equals(r.getString("activationCode"))) {
+			if (r.containsKey("activationCode") && password.equals(r.getString("activationCode")) && !isMobile) {
 				handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_ACTIVATION_CODE, 403)));
 				return;
 			}
@@ -291,7 +298,7 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 			}
 			// Handle hijack scenario to return a 403 error when a reset code is used as a password in the auth2 flow
 			if (r.containsKey("resetCode") && password.equals(r.getString("resetCode"))
-					&& !isDateWithinLimit(r.getLong("resetDate"))) {
+					&& !isDateWithinLimit(r.getLong("resetDate")) && !isMobile) {
 				handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_PASSWORD_RESET, 403)));
 				return;
 			}
