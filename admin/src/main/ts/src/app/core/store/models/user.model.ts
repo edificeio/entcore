@@ -127,9 +127,9 @@ export class UserModel extends Model<UserModel> {
         userPayload.append('structureId', structureId);
         userPayload.append('birthDate', this.userDetails.birthDate);
         this.userDetails.children.forEach(child => userPayload.append('childrenIds', child.id));
-        const positionIds = this.userDetails.userPositions?.map(position=>position.id).join(",");
+        this.userDetails.userPositions?.forEach(position => userPayload.append('positionIds', position.id));
 
-        return this.http.post(`/directory/api/user${positionIds ? `?positionIds=${positionIds}` : ""}`
+        return this.http.post(`/directory/api/user`
             , userPayload
             , {headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'}});
     }
