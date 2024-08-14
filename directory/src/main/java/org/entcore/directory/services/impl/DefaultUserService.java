@@ -329,6 +329,7 @@ public class DefaultUserService implements UserService {
 				"OPTIONAL MATCH u-[:IN]->(fgroup: FunctionalGroup) WITH COLLECT(distinct {id: fgroup.id, name: fgroup.name}) as admGroups, parents, children, functions, u, structureNodes " +
 				"OPTIONAL MATCH u-[:ADMINISTRATIVE_ATTACHMENT]->(admStruct: Structure) WITH COLLECT(distinct {id: admStruct.id}) as admStruct, admGroups, parents, children, functions, u, structureNodes " +
 				"OPTIONAL MATCH u-[r:TEACHES]->(s:Subject) WITH COLLECT(distinct s.code) as subjectCodes, admStruct, admGroups, parents, children, functions, u, structureNodes " +
+				"OPTIONAL MATCH u-[h:HAS_POSITION]->(p:UserPosition)-[:IN]->(struct:Structure) WITH COLLECT(distinct {id: p.id, name: p.name, source: p.source, structureId: struct.id}) as userPositions, subjectCodes, admStruct, admGroups, parents, children, functions, u, structureNodes " +
 				getMgroups;
 
 		if(withClasses) {
@@ -342,14 +343,16 @@ public class DefaultUserService implements UserService {
 					"filter(x IN coalesce(parents, []) WHERE x.id IS NOT NULL) as parents, " +
 					"filter(x IN coalesce(admGroups, []) WHERE x.id IS NOT NULL) as functionalGroups, " +
 					"filter(x IN coalesce(admStruct, []) WHERE x.id IS NOT NULL) as administrativeStructures, " +
-					"filter(x IN coalesce(subjectCodes, []) WHERE x IS NOT NULL) as subjectCodes, ";
+					"filter(x IN coalesce(subjectCodes, []) WHERE x IS NOT NULL) as subjectCodes, " +
+					"filter(x IN coalesce(userPositions, []) WHERE x IS NOT NULL) as userPositions, ";
 		} else {
 			query += "RETURN DISTINCT u.profiles as type, structureNodes, functions, " +
 					"CASE WHEN children IS NULL THEN [] ELSE children END as children, " +
 					"CASE WHEN parents IS NULL THEN [] ELSE parents END as parents, " +
 					"CASE WHEN admGroups IS NULL THEN [] ELSE admGroups END as functionalGroups, " +
 					"CASE WHEN admStruct IS NULL THEN [] ELSE admStruct END as administrativeStructures, " +
-					"CASE WHEN subjectCodes IS NULL THEN [] ELSE subjectCodes END as subjectCodes, ";
+					"CASE WHEN subjectCodes IS NULL THEN [] ELSE subjectCodes END as subjectCodes, " +
+					"CASE WHEN userPositions IS NULL THEN [] ELSE userPositions END as userPositions, ";
 		}
 
 		if(withClasses) {
