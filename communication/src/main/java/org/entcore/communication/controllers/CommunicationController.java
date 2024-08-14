@@ -224,6 +224,17 @@ public class CommunicationController extends BaseController {
 									where += "g2.filter IN {filters2} ";
 								}
 								break;
+							case "positions":
+								JsonArray positionIds = filter.getJsonArray(criteria);
+								if (positionIds == null || positionIds.isEmpty()) continue;
+								params.put("positionIds", positionIds);
+								if (!match.contains("MATCH ")) {
+									where = " WHERE ";
+								} else {
+									where += "AND ";
+								}
+								where += "  ANY(id IN positionIds WHERE id IN {positionIds}) ";
+                break;
 							case "search":
 								final String search = filter.getString(criteria);
 								if (isNotEmpty(search)) {
@@ -254,6 +265,7 @@ public class CommunicationController extends BaseController {
 				final boolean returnGroupType = !groupTypes.isEmpty();
 				final String customReturn = match + where +
 						"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
+						"positionNames, positionIds, " +
 						"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
 						"HEAD(visibles.profiles) as profile, subjects" + nbUsers + groupTypes;
 				communicationService.visibleUsers(user.getUserId(), null, expectedTypes, true, true, false,
