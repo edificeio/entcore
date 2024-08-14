@@ -406,8 +406,9 @@ public class DirectoryController extends BaseController {
 				List<String> childrenIds = request.formAttributes().getAll("childrenIds");
 				user.put("childrenIds", new fr.wseduc.webutils.collections.JsonArray(childrenIds));
 				List<String> userPositionIds = request.formAttributes().getAll("positionIds");
+				user.put("userPositionIds", userPositionIds);
 				if (classId != null && !classId.trim().isEmpty()) {
-					userService.createInClass(classId, userPositionIds, user, new Handler<Either<String, JsonObject>>() {
+					userService.createInClass(classId, user, new Handler<Either<String, JsonObject>>() {
 						@Override
 						public void handle(Either<String, JsonObject> res) {
 							if (res.isRight() && res.right().getValue().size() > 0) {
@@ -436,7 +437,7 @@ public class DirectoryController extends BaseController {
 						}
 					});
 				} else {
-					userService.createInStructure(structureId, userPositionIds, user, new Handler<Either<String, JsonObject>>() {
+					userService.createInStructure(structureId, user, new Handler<Either<String, JsonObject>>() {
 						@Override
 						public void handle(Either<String, JsonObject> res) {
 							if (res.isRight() && res.right().getValue().size() > 0) {

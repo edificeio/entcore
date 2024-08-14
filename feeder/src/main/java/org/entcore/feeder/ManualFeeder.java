@@ -286,25 +286,27 @@ public class ManualFeeder extends BusModBase {
 		user.put("source", userSource);
 
 		final String structureId = message.body().getString("structureId");
-		final JsonArray userPositionIds = message.body().getJsonArray("userPositionIds");
 		if (structureId != null && !structureId.trim().isEmpty()) {
 			final JsonArray classesNames = message.body().getJsonArray("classesNames");
-			createUserInStructure(message, user, profile, structureId, childrenIds, classesNames, userPositionIds);
+			createUserInStructure(message, user, profile, structureId, childrenIds, classesNames);
 			return;
 		}
 		final String classId = message.body().getString("classId");
 		if (classId != null && !classId.trim().isEmpty()) {
-			createUserInClass(message, user, profile, classId, childrenIds, userPositionIds);
+			createUserInClass(message, user, profile, classId, childrenIds);
 			return;
 		}
 		sendError(message, "structureId or classId must be specified");
 	}
 
 	private void createUserInStructure(final Message<JsonObject> message,
-			final JsonObject user, String profile, String structureId, JsonArray childrenIds, JsonArray classesNames, JsonArray userPositionIds) {
+			final JsonObject user, String profile, String structureId, JsonArray childrenIds, JsonArray classesNames) {
 		final Integer transactionId = message.body().getInteger("transactionId");
 		final Boolean commit = message.body().getBoolean("commit", true);
 		StatementsBuilder statementsBuilder = new StatementsBuilder();
+		// Retrieve user position ids and remove them from user properties before creating user node
+		final JsonArray userPositionIds = user.getJsonArray("userPositionIds");
+		user.remove("userPositionIds");
 		String related = "";
 		JsonObject params = new JsonObject()
 				.put("structureId", structureId)
@@ -601,9 +603,12 @@ public class ManualFeeder extends BusModBase {
 	}
 
 	private void createUserInClass(final Message<JsonObject> message,
-			final JsonObject user, String profile, String classId, JsonArray childrenIds, JsonArray userPositionIds) {
+			final JsonObject user, String profile, String classId, JsonArray childrenIds) {
 		final Integer transactionId = message.body().getInteger("transactionId");
 		final Boolean commit = message.body().getBoolean("commit", true);
+		// Retrieve user position ids and remove them from user properties before creating user node
+		final JsonArray userPositionIds = user.getJsonArray("userPositionIds");
+		user.remove("userPositionIds");
 		StatementsBuilder statementsBuilder = new StatementsBuilder();
 		String related = "";
 		JsonObject params = new JsonObject()
@@ -830,6 +835,9 @@ public class ManualFeeder extends BusModBase {
 					StatementsBuilder statementsBuilder = new StatementsBuilder();
 					final Integer transactionId = message.body().getInteger("transactionId");
 					final Boolean commit = message.body().getBoolean("commit", true);
+					// Retrieve user position ids and remove them from user properties before updating user node
+					final JsonArray userPositionIds = user.getJsonArray("userPositionIds");
+					user.remove("userPositionIds");
 					Set<String> oldLogins = new HashSet<String>();
 					String updatedLoginAlias = user.getString("loginAlias");
 					final JsonArray deletedAlias = new JsonArray();
@@ -875,7 +883,6 @@ public class ManualFeeder extends BusModBase {
 					JsonObject params = user.put("userId", userId);
 					statementsBuilder.add(query, params);
 
-					JsonArray userPositionIds = message.body().getJsonArray("userPositionIds");
 					if (userPositionIds != null) {
 						Neo4jQueryAndParams neo4jQueryAndParams = DefaultUserPositionService.getUserPositionSettingQueryAndParam(userPositionIds.stream().map(id -> (String) id).collect(Collectors.toSet()), userId);
 						statementsBuilder.add(neo4jQueryAndParams.getQuery(), neo4jQueryAndParams.getParams());

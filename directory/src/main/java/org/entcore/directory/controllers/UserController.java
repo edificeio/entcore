@@ -130,7 +130,6 @@ public class UserController extends BaseController {
 				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 					public void handle(UserInfos user) {
 						final  String userId = request.params().get("userId");
-						final JsonArray userPositonIds = body.getJsonArray("positionIds");
 						//User name modification prevention for non-admins.
 						if(!user.getFunctions().containsKey(DefaultFunctions.SUPER_ADMIN) &&
 								!user.getFunctions().containsKey(DefaultFunctions.ADMIN_LOCAL) &&
@@ -156,7 +155,7 @@ public class UserController extends BaseController {
 						}
 
 						getUserPromise.future().onComplete(userBeforeUpdate -> {
-							userService.update(userId, userPositonIds, body, onUpdateDone::complete);
+							userService.update(userId, body, onUpdateDone::complete);
 							UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> onRemoveSessionAttributeDone.complete());
 
 							CompositeFuture.join(onUpdateDone.future(), onRemoveSessionAttributeDone.future())

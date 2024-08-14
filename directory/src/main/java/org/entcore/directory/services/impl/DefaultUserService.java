@@ -70,35 +70,32 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
-	public void createInStructure(String structureId, List<String> userPositionIds, JsonObject user, Handler<Either<String, JsonObject>> result) {
+	public void createInStructure(String structureId, JsonObject user, Handler<Either<String, JsonObject>> result) {
 		user.put("profiles", new fr.wseduc.webutils.collections.JsonArray().add(user.getString("type")));
 		JsonObject action = new JsonObject()
 				.put("action", "manual-create-user")
 				.put("structureId", structureId)
-				.put("userPositionIds", userPositionIds)
 				.put("profile", user.getString("type"))
 				.put("data", user);
 		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
-	public void createInClass(String classId, List<String> userPositionIds, JsonObject user, Handler<Either<String, JsonObject>> result) {
+	public void createInClass(String classId, JsonObject user, Handler<Either<String, JsonObject>> result) {
 		user.put("profiles", new fr.wseduc.webutils.collections.JsonArray().add(user.getString("type")));
 		JsonObject action = new JsonObject()
 				.put("action", "manual-create-user")
 				.put("classId", classId)
-				.put("userPositionIds", userPositionIds)
 				.put("profile", user.getString("type"))
 				.put("data", user);
 		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
-	public void update(final String id, final JsonArray userPositionIds, final JsonObject user, final Handler<Either<String, JsonObject>> result) {
+	public void update(final String id, final JsonObject user, final Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-update-user")
 				.put("userId", id)
-				.put("userPositionIds", userPositionIds)
 				.put("data", user);
 		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}

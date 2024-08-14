@@ -27,6 +27,27 @@ public class DefaultUserPositionService implements UserPositionService {
 
 	@Override
 	public Future<Set<UserPosition>> getUserPositions(String prefix, String structureId, UserInfos adminInfos ) {
+		return getUserPositions(null, prefix, structureId, adminInfos);
+	}
+
+	@Override
+	public Future<UserPosition> getUserPosition(String userPositionId, UserInfos adminInfos) {
+		Promise<UserPosition> promise = Promise.promise();
+		getUserPositions(userPositionId, null, null, adminInfos)
+				.onSuccess(userPositions -> {
+					if (userPositions.isEmpty()) {
+						final String error = "No user position found.";
+						logger.warn(error);
+						promise.fail(error);
+					} else {
+						promise.complete(userPositions.stream().findFirst().get());
+					}
+				})
+				.onFailure(promise::fail);
+		return promise.future();
+	}
+
+	private Future<Set<UserPosition>> getUserPositions(String positionId, String prefix, String structureId, UserInfos adminInfos ) {
 		Promise<Set<UserPosition>> promise = Promise.promise();
 		fetchAdminStructures(adminInfos).onSuccess(structureIds -> {
 			if (structureIds.isEmpty()) {
@@ -41,6 +62,11 @@ public class DefaultUserPositionService implements UserPositionService {
 				final StringBuilder query = new StringBuilder();
 				query.append("MATCH (p:UserPosition)-[:IN]->(s:Structure) ")
 						.append("WHERE s.id IN {adminStructureIds} ");
+				//filters user positions whose id match the specified user position id
+				if (!StringUtils.isEmpty(positionId)) {
+					query.append("AND p.id = {positionId} ");
+					params.put("positionId", positionId);
+				}
 				// filters user positions whose name don't match the prefix
 				if (prefix != null) {
 					query.append("AND p.name =~ {prefixRegex} ");
@@ -61,50 +87,9 @@ public class DefaultUserPositionService implements UserPositionService {
 						JsonArray results = event.right().getValue();
 						results.forEach(result -> {
 							JsonObject jsonResult = (JsonObject) result;
-							userPositions.add(new UserPosition(jsonResult.getString("id"),
-									jsonResult.getString("name"),
-									UserPositionSource.valueOf(jsonResult.getString("source")),
-									jsonResult.getString("structureId")));
+							userPositions.add(createUserPositionFromResult(jsonResult));
 						});
 						promise.complete(userPositions);
-					}
-				}));
-			}
-		}).onFailure(promise::fail);
-		return promise.future();
-	}
-
-	@Override
-	public Future<UserPosition> getUserPosition(String userPositionId, UserInfos adminInfos) {
-		Promise<UserPosition> promise = Promise.promise();
-		fetchAdminStructures(adminInfos).onSuccess(structureIds -> {
-			if (structureIds.isEmpty()) {
-				logger.warn(ADMIN_WITHOUT_STRUCTURE);
-				promise.fail(ADMIN_WITHOUT_STRUCTURE);
-			} else {
-				final JsonArray adminStructureIds = new JsonArray();
-				structureIds.forEach(adminStructureIds::add);
-				final JsonObject params = new JsonObject()
-						.put("adminStructureIds", adminStructureIds)
-						.put("userPositionId", userPositionId);
-				final String query = "" +
-						"MATCH (p:UserPosition {id:{userPositionId}})-[:IN]->(s:Structure) " +
-						"WHERE s.id IN {adminStructureIds} " +
-						"RETURN p.id as id, p.name as name, p.source as source, s.id as structureId ";
-				neo4jClient.execute(query, params, Neo4jResult.validUniqueResultHandler(event -> {
-					if (event.isLeft()) {
-						promise.fail(event.left().getValue());
-					} else {
-						JsonObject result = event.right().getValue();
-						if (result.isEmpty()) {
-							final String error = "No user position found.";
-							logger.warn(error);
-							promise.fail(error);
-						}
-						promise.complete(new UserPosition(result.getString("id"),
-								result.getString("name"),
-								UserPositionSource.valueOf(result.getString("source")),
-								result.getString("structureId")));
 					}
 				}));
 			}
@@ -139,17 +124,14 @@ public class DefaultUserPositionService implements UserPositionService {
 								"MATCH (s:Structure {id:{structureId}}) " +
 								"WHERE s.id IN {adminStructureIds} " +
 								"CREATE UNIQUE (p:UserPosition {userPositionProps})-[:IN]->(s) " +
-								"RETURN p.id as id, p.name as name, p.source as source ";
+								"RETURN p.id as id, p.name as name, p.source as source, s.id as structureId ";
 						neo4jClient.execute(query, params, Neo4jResult.validUniqueResultHandler(event -> {
 							if (event.isLeft()) {
 								logger.warn("Failed creating user position : " + event.left().getValue());
 								promise.fail(event.left().getValue());
 							} else {
 								JsonObject result = event.right().getValue();
-								promise.complete(new UserPosition(result.getString("id"),
-										result.getString("name"),
-										UserPositionSource.valueOf(result.getString("source")),
-										structureId));
+								promise.complete(createUserPositionFromResult(result));
 							}
 						}));
 					}
@@ -185,10 +167,7 @@ public class DefaultUserPositionService implements UserPositionService {
 						promise.fail(event.left().getValue());
 					} else {
 						JsonObject result = event.right().getValue();
-						promise.complete(new UserPosition(result.getString("id"),
-								result.getString("name"),
-								UserPositionSource.valueOf(result.getString("source")),
-								result.getString("structureId")));
+						promise.complete(createUserPositionFromResult(result));
 					}
 				}));
 			}
@@ -262,7 +241,7 @@ public class DefaultUserPositionService implements UserPositionService {
 				"WHERE s.id IN {adminStructureArray} " +
 				"AND s.id = {structureId} " +
 				"AND p.name = {userPositionName} " +
-				"RETURN p.id as id, p.name as name, p.source as source ";
+				"RETURN p.id as id, p.name as name, p.source as source, s.id as structureId ";
 		neo4jClient.execute(query, params, Neo4jResult.validUniqueResultHandler(event -> {
 			if (event.isLeft()) {
 				logger.warn("Failed retrieving positions by name in structure : " + event.left().getValue());
@@ -272,10 +251,7 @@ public class DefaultUserPositionService implements UserPositionService {
 				if (result.isEmpty()) {
 					promise.complete(Optional.empty());
 				} else {
-					promise.complete(Optional.of(new UserPosition(result.getString("id"),
-							result.getString("name"),
-							UserPositionSource.valueOf(result.getString("source")),
-							structureId)));
+					promise.complete(Optional.of(createUserPositionFromResult(result)));
 				}
 			}
 		}));
@@ -311,5 +287,12 @@ public class DefaultUserPositionService implements UserPositionService {
 			}
 		}));
 		return promise.future();
+	}
+
+	private static UserPosition createUserPositionFromResult(JsonObject jsonResult) {
+		return new UserPosition(jsonResult.getString("id"),
+				jsonResult.getString("name"),
+				UserPositionSource.valueOf(jsonResult.getString("source")),
+				jsonResult.getString("structureId"));
 	}
 }

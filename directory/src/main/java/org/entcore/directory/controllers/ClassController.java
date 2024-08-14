@@ -115,7 +115,7 @@ public class ClassController extends BaseController {
 			@Override
 			public void handle(JsonObject body) {
 				final String classId = request.params().get("classId");
-				userService.createInClass(classId, null, body, new Handler<Either<String, JsonObject>>() {
+				userService.createInClass(classId, body, new Handler<Either<String, JsonObject>>() {
 					@Override
 					public void handle(Either<String, JsonObject> r) {
 						if (r.isRight()) {

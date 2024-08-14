@@ -32,11 +32,11 @@ import java.util.List;
 
 public interface UserService {
 
-	void createInStructure(String structureId, List<String> userPositionIds, JsonObject user, Handler<Either<String, JsonObject>> result);
+	void createInStructure(String structureId, JsonObject user, Handler<Either<String, JsonObject>> result);
 
-	void createInClass(String classId, List<String> userPositionIds, JsonObject user, Handler<Either<String, JsonObject>> result);
+	void createInClass(String classId, JsonObject user, Handler<Either<String, JsonObject>> result);
 
-	void update(String id, JsonArray userPositionIds, JsonObject user, Handler<Either<String, JsonObject>> result);
+	void update(String id, JsonObject user, Handler<Either<String, JsonObject>> result);
 
 	void updateLogin(String id, String newLogin, Handler<Either<String, JsonObject>> result);
 
