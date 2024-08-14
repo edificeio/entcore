@@ -1,6 +1,6 @@
 package org.entcore.common.user.position;
 
-public class UserPosition implements Comparable<UserPosition> {
+public class UserPosition {
 	private final String id;
 	private final String name;
 	private final UserPositionSource source;
@@ -27,10 +27,5 @@ public class UserPosition implements Comparable<UserPosition> {
 
 	public String getStructureId() {
 		return structureId;
-	}
-
-	@Override
-	public int compareTo(UserPosition o) {
-		return this.name.compareTo(o.getName());
 	}
 }

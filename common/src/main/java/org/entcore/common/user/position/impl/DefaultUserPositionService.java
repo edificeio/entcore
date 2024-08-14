@@ -83,7 +83,7 @@ public class DefaultUserPositionService implements UserPositionService {
 						logger.warn("Failed fetching user positions : " + event.left().getValue());
 						promise.fail(event.left().getValue());
 					} else {
-						Set<UserPosition> userPositions = new TreeSet<>();
+						Set<UserPosition> userPositions = new HashSet<>();
 						JsonArray results = event.right().getValue();
 						results.forEach(result -> {
 							JsonObject jsonResult = (JsonObject) result;
