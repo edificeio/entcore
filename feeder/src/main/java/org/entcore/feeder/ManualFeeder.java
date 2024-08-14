@@ -971,7 +971,7 @@ public class ManualFeeder extends BusModBase {
 								final JsonObject j = (JsonObject) o;
 								final String id = j.getString("id");
 								if (isNotEmpty(id)) {
-									User.backupRelationship(id, tx);
+									User.backupRelationship(id, false, tx);
 									User.preDelete(id, tx);
 									if (j.getBoolean("inactive", false)) {
 										oldLogins.add(j.getString("login"));
