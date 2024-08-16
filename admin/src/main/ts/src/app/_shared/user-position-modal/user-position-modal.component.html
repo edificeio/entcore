@@ -1,0 +1,47 @@
+<ode-lightbox
+  class="inner-list"
+  [show]="show"
+  (onClose)="cancel()"
+>
+  <div class="padded">
+    <h2 fxLayout="row" fxLayoutAlign="space-between">
+      <s5l>
+        user-position.{{
+          isUpdateModal ? "rename-title" : "create"
+        }}
+      </s5l>
+    </h2>
+    <form #usePositionForm="ngForm" (ngSubmit)="save()">
+      <ode-form-field label="user-position.input-name">
+        <input
+          type="text"
+          required
+          minlength="3"
+          name="userPositionName"
+          #userPositionNameInput="ngModel"
+          placeholder="user-position.input-name-placeholder"
+          [(ngModel)]="editableName"
+        />
+        <ode-form-errors [control]="userPositionNameInput"></ode-form-errors>
+      </ode-form-field>
+    </form>
+
+    <div class="is-pulled-right">
+      <button (click)="cancel()" class="user-position-save">
+        <s5l>user-position.cancel</s5l>
+      </button>
+      <button
+        (click)="save()"
+        class="user-position-save action"
+        [disabled]="usePositionForm.invalid"
+      >
+        <s5l>
+          user-position.{{
+            userPosition.id ? "save" : "create"
+          }}
+        </s5l>
+        <i class="fa fa-check is-size-5"></i>
+      </button>
+    </div>
+  </div>
+</ode-lightbox>
