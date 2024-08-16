@@ -1,0 +1,15 @@
+<ode-list
+  [model]="userPositionList"
+  searchPlaceholder="user-position.search.placeholder"
+  sort="name"
+  noResultsLabel="user-position.search.empty"
+  [isSelected]="isSelected"
+  [inputFilter]="filterByInput"
+  (inputChange)="searchPrefix = $event"
+  (onSelect)="selectUserPosition($event)"
+  (listChange)="checkEmitNewPositionName($event)"
+>
+  <ng-template let-item>
+    {{ item.name }}
+  </ng-template>
+</ode-list>
