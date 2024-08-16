@@ -39,6 +39,8 @@ import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.storage.impl.FileStorage;
 import org.entcore.common.storage.impl.MongoDBApplicationStorage;
 import org.entcore.common.user.RepositoryHandler;
+import org.entcore.common.user.position.UserPositionService;
+import org.entcore.common.user.position.impl.DefaultUserPositionService;
 import org.entcore.directory.controllers.*;
 import org.entcore.directory.security.DirectoryResourcesProvider;
 import org.entcore.directory.security.UserbookCsrfFilter;
@@ -89,6 +91,7 @@ public class Directory extends BaseServer {
 		SchoolService schoolService = new DefaultSchoolService(eb).setListUserMode(config.getString("listUserMode", "multi"));
 		GroupService groupService = new DefaultGroupService(eb);
 		SubjectService subjectService = new DefaultSubjectService(eb);
+		UserPositionService userPositionService = new DefaultUserPositionService();
 		ConversationNotification conversationNotification = new ConversationNotification(vertx, eb, config);
 
 		DirectoryController directoryController = new DirectoryController();
@@ -97,6 +100,7 @@ public class Directory extends BaseServer {
 		directoryController.setUserService(userService);
 		directoryController.setGroupService(groupService);
 		directoryController.setSlotProfileService(new DefaultSlotProfileService(SLOTPROFILE_COLLECTION));
+		directoryController.setUserPositionService(userPositionService);
 		addController(directoryController);
 		vertx.setTimer(5000l, event -> directoryController.createSuperAdmin());
 
@@ -124,6 +128,7 @@ public class Directory extends BaseServer {
 		userController.setNotification(timeline);
 		userController.setUserBookService(userBookService);
 		userController.setUserService(userService);
+		userController.setUserPositionService(userPositionService);
 		addController(userController);
 
 		ProfileController profileController = new ProfileController();
@@ -164,6 +169,9 @@ public class Directory extends BaseServer {
 		addController(subjectController);
 
         addController(new CalendarController());
+
+		UserPositionController userPositionController = new UserPositionController(userPositionService);
+		addController(userPositionController);
 
         vertx.eventBus().localConsumer("user.repository",
                 new RepositoryHandler(new UserbookRepositoryEvents(userBookService), eb));

@@ -1,6 +1,7 @@
 import {Model} from 'entcore-toolkit';
 import {GroupModel} from '../../store/models/group.model';
 import { StructureModel } from './structure.model';
+import { UserPosition } from './userPosition.model';
 
 export enum UserProfiles
 {
@@ -62,6 +63,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     maxQuota?: number;
     structureNodes?: Array<any>;
     removedFromStructures?: Array<String>;
+    userPositions?: Array<UserPosition>;
 
     toggleBlock() {
         return this.http.put(`/auth/block/${this.id}`, { block: !this.blocked }).then(() => {
@@ -174,7 +176,6 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
             });
         });
     }
-
 
     removeAdml() {
         return this.http.delete(`/directory/user/function/${this.id}/ADMIN_LOCAL`).then(() => {
@@ -311,6 +312,11 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     
     updateMail() {
         return this.http.put(`/directory/user/${this.id}`, {email: this.email});
+    }
+
+    updateUserPositions() {
+        const positionIds = this.userPositions?.map( position => position.id).join(",") ?? "";
+        return this.http.put(`/directory/user/${this.id}?positionIds=${positionIds}`, {});
     }
 
     removeFromStructure(struct: StructureModel)

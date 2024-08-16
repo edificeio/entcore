@@ -1,0 +1,111 @@
+package org.entcore.directory.controllers;
+
+import fr.wseduc.rs.Delete;
+import fr.wseduc.rs.Get;
+import fr.wseduc.rs.Post;
+import fr.wseduc.rs.Put;
+import fr.wseduc.security.ActionType;
+import fr.wseduc.security.SecuredAction;
+import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.http.Renders;
+import fr.wseduc.webutils.request.RequestUtils;
+import io.vertx.core.http.HttpServerRequest;
+import org.entcore.common.http.filter.AdminFilter;
+import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.user.UserUtils;
+import org.entcore.common.user.position.UserPositionSource;
+import org.entcore.common.user.position.UserPositionService;
+
+public class UserPositionController extends BaseController {
+
+	private final UserPositionService userPositionService;
+
+	public UserPositionController(UserPositionService userPositionService) {
+		this.userPositionService = userPositionService;
+	}
+
+	@Get("/positions")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void getPositions(HttpServerRequest request) {
+		final String prefix = request.getParam("prefix");
+		final String structureId = request.getParam("structureId");
+		UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(adminInfos -> {
+			userPositionService.getUserPositions(prefix, structureId, adminInfos)
+					.onSuccess(userPositions -> Renders.render(request, userPositions))
+					.onFailure(th -> {
+						Renders.log.warn("An error occurred while fetching user positions", th);
+						Renders.renderError(request);
+					});
+		});
+
+	}
+
+	@Get("/positions/:positionId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void getPosition(HttpServerRequest request) {
+		UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(adminInfos -> {
+			final String positionId = request.getParam("positionId");
+			userPositionService.getUserPosition(positionId, adminInfos)
+					.onSuccess(userPosition -> Renders.render(request, userPosition))
+					.onFailure(th -> {
+						Renders.log.warn("Could not find user position with id: " + positionId, th);
+						Renders.notFound(request);
+					});
+		});
+	}
+
+	@Post("/positions")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void createPosition(HttpServerRequest request) {
+		UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(adminInfos -> {
+			RequestUtils.bodyToJson(request, jsonBody -> {
+				final String positionName = jsonBody.getString("name");
+				final String structureId = jsonBody.getString("structureId");
+				userPositionService.createUserPosition(positionName, structureId, UserPositionSource.MANUAL, adminInfos)
+						.onSuccess(userPosition -> Renders.render(request, userPosition, 201))
+						.onFailure(th -> {
+							Renders.log.warn("An error occurred while creating position : " + positionName + " in structure " + structureId, th);
+							Renders.renderError(request);
+						});
+			});
+		});
+	}
+
+	@Put("/positions/:positionId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void updatePosition(HttpServerRequest request) {
+		UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(adminInfos -> {
+			final String positionId = request.getParam("positionId");
+			RequestUtils.bodyToJson(request, jsonBody -> {
+				final String name = jsonBody.getString("name");
+				userPositionService.renameUserPosition(name, positionId, adminInfos)
+						.onSuccess(userPosition -> Renders.render(request, userPosition))
+						.onFailure(th -> {
+							Renders.log.warn("An error occurred while renaming user position with id : " + positionId + " and name : " + name, th);
+							Renders.renderError(request);
+						});
+			});
+		});
+
+	}
+
+	@Delete("/positions/:positionId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void deletePosition(HttpServerRequest request) {
+		UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(adminInfos -> {
+			final String positionId = request.getParam("positionId");
+			userPositionService.deleteUserPosition(positionId, adminInfos)
+					.onSuccess(event -> Renders.ok(request))
+					.onFailure(th -> {
+						Renders.log.warn("An error occurred while fetching user position with id : " + positionId, th);
+						Renders.renderError(request);
+					});
+		});
+	}
+
+}

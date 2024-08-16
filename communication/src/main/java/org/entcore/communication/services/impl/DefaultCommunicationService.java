@@ -591,7 +591,7 @@ public class DefaultCommunicationService implements CommunicationService {
 		StringBuilder union = null;
 		String conditionUnion = itSelf ? "" : "AND m.id <> {userId} ";
 		if (structureId != null && !structureId.trim().isEmpty()) {
-			query.append("MATCH (n:User)-[:COMMUNIQUE*1..3]->m-[:DEPENDS*1..2]->(s:Structure {id:{schoolId}})"); //TODO manage leaf
+			query.append("MATCH (n:User)-[:COMMUNIQUE*1..3]->m-[:DEPENDS*1..2]->(s:Structure {id:{schoolId}}) "); //TODO manage leaf
 			params.put("schoolId", structureId);
 		} else {
 			String myGroupQuery = (myGroup) ? "COLLECT(CASE WHEN g.users = 'BOTH' THEN g.id ELSE '' END)" : "[]";
@@ -638,6 +638,12 @@ public class DefaultCommunicationService implements CommunicationService {
 			if (union != null) {
 				union.append("OPTIONAL MATCH m-[:IN*0..1]->pgp-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) ");
 			}
+		}
+		pcr += ", COLLECT(position.id) as positionIds, COLLECT(position.name) as positionNames ";
+		pr += " COLLECT(position.id) as positionIds, COLLECT(position.name) as positionNames ";
+		query.append(" OPTIONAL MATCH (m)-[:HAS_POSITION]->(position:Position) ");
+		if(union != null) {
+			union.append(" OPTIONAL MATCH (m)-[:HAS_POSITION]->(position:Position) ");
 		}
 		query.append("OPTIONAL MATCH (sub:Subject)<-[:TEACHES]-m ");
 		if (union != null) {

@@ -28,10 +28,11 @@ services:
       - ../recette:/home/node/recette # TODO : rendre générique pour appliquer à tous les springboards
     environment:
       - NG_CLI_ANALYTICS=false
-  load-tester:
+
+  k6:
     image: grafana/k6:master
     volumes:
-      - ./tests/src/test/js/stresstest:/home/k6/src
+      - ./tests/src/test/js:/home/k6/src
       - ./tests/src/test/resources/data:/home/k6/data
     environment:
       ROOT_URL: http://172.17.0.1:8090

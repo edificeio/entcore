@@ -27,9 +27,11 @@ import io.vertx.core.json.JsonObject;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.Neo4jQueryAndParams;
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.position.impl.DefaultUserPositionService;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.feeder.dictionary.structures.*;
 import org.entcore.feeder.dictionary.structures.User.DeleteTask;
@@ -41,6 +43,7 @@ import org.vertx.java.busmods.BusModBase;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
@@ -301,6 +304,8 @@ public class ManualFeeder extends BusModBase {
 		final Integer transactionId = message.body().getInteger("transactionId");
 		final Boolean commit = message.body().getBoolean("commit", true);
 		StatementsBuilder statementsBuilder = new StatementsBuilder();
+		// Retrieve user position ids and remove them from user properties before creating user node
+		final JsonArray userPositionIds = (JsonArray) user.remove("userPositionIds");
 		String related = "";
 		JsonObject params = new JsonObject()
 				.put("structureId", structureId)
@@ -336,6 +341,10 @@ public class ManualFeeder extends BusModBase {
 					.put("classesNames", classesNames)
 					.put("source", user.getString("source"));
 			statementsBuilder.add(classesQuery, classesParams);
+		}
+		if (userPositionIds != null) {
+			Neo4jQueryAndParams neo4jQueryAndParams = DefaultUserPositionService.getUserPositionSettingQueryAndParam(userPositionIds.stream().map(id -> (String) id).collect(Collectors.toSet()), user.getString("id"));
+			statementsBuilder.add(neo4jQueryAndParams.getQuery(), neo4jQueryAndParams.getParams());
 		}
 		neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
 			@Override
@@ -596,6 +605,8 @@ public class ManualFeeder extends BusModBase {
 			final JsonObject user, String profile, String classId, JsonArray childrenIds) {
 		final Integer transactionId = message.body().getInteger("transactionId");
 		final Boolean commit = message.body().getBoolean("commit", true);
+		// Retrieve user position ids and remove them from user properties before creating user node
+		final JsonArray userPositionIds = (JsonArray) user.remove("userPositionIds");
 		StatementsBuilder statementsBuilder = new StatementsBuilder();
 		String related = "";
 		JsonObject params = new JsonObject()
@@ -619,6 +630,10 @@ public class ManualFeeder extends BusModBase {
 				related +
 				"RETURN DISTINCT u.id as id, u.login AS login";
 		statementsBuilder.add(query, params);
+		if(userPositionIds != null) {
+			Neo4jQueryAndParams neo4jQueryAndParams = DefaultUserPositionService.getUserPositionSettingQueryAndParam(userPositionIds.stream().map(id -> (String) id).collect(Collectors.toSet()), user.getString("id"));
+			statementsBuilder.add(neo4jQueryAndParams.getQuery(), neo4jQueryAndParams.getParams());
+		}
 		neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -815,6 +830,11 @@ public class ManualFeeder extends BusModBase {
 				JsonArray res = r.body().getJsonArray("result");
 				if ("ok".equals(r.body().getString("status")) && res != null && res.size() > 0)
 				{
+					StatementsBuilder statementsBuilder = new StatementsBuilder();
+					final Integer transactionId = message.body().getInteger("transactionId");
+					final Boolean commit = message.body().getBoolean("commit", true);
+					// Retrieve user position ids and remove them from user properties before updating user node
+					final JsonArray userPositionIds = (JsonArray) user.remove("userPositionIds");
 					Set<String> oldLogins = new HashSet<String>();
 					String updatedLoginAlias = user.getString("loginAlias");
 					final JsonArray deletedAlias = new JsonArray();
@@ -858,7 +878,13 @@ public class ManualFeeder extends BusModBase {
 							"SET " + Neo4jUtils.nodeSetPropertiesFromJson("u", user) +
 							"RETURN DISTINCT u.id as id ";
 					JsonObject params = user.put("userId", userId);
-					neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
+					statementsBuilder.add(query, params);
+
+					if (userPositionIds != null) {
+						Neo4jQueryAndParams neo4jQueryAndParams = DefaultUserPositionService.getUserPositionSettingQueryAndParam(userPositionIds.stream().map(id -> (String) id).collect(Collectors.toSet()), userId);
+						statementsBuilder.add(neo4jQueryAndParams.getQuery(), neo4jQueryAndParams.getParams());
+					}
+					neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit, new Handler<Message<JsonObject>>() {
 								@Override
 								public void handle(Message<JsonObject> m) {
 									Validator.removeLogins(oldLogins);

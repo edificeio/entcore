@@ -593,6 +593,20 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		} else return "";
 	}
 
+	$scope.hasUserPosition = function(user): boolean {
+		return user && user.profile == 'Personnel' && user.positionNames && user.positionNames.length > 0;
+	}
+
+	$scope.getUserPositionsTooltip = function(user): string {
+		return $scope.hasUserPosition(user) ? user.positionNames.join(', ') : "";
+	}
+
+	$scope.getUserPositionsLabel = function(user): string {
+		return ($scope.hasUserPosition(user)
+			? `${user.positionNames[0]}${user.positionNames > 1 ? "..." : ""}`
+			: "");
+	}
+
 	$scope.deleteFavorite = function(favorite) {
 		if (!$scope.display.creatingFavorite) {
 			$scope.tryRemoveFavorite(favorite);

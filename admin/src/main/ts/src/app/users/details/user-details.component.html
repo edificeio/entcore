@@ -14,7 +14,7 @@
     }}</span>
   </div>
   <div class="login-date" *ngIf="details.lastLogin">
-    <s5l>lastLogin.date</s5l> {{ details.lastLogin | localizedDate: "short" }}
+    <s5l>lastLogin.date</s5l> {{ details.lastLogin | localizedDate : "short" }}
   </div>
 
   <div class="panel-header-sub">
@@ -274,6 +274,13 @@
     *ngIf="!user.deleteDate"
   >
   </ode-user-children-section>
+
+  <ode-user-positions-section
+    [user]="user"
+    [structure]="structure"
+    *ngIf="user.type == 'Personnel'"
+  >
+  </ode-user-positions-section>
 
   <ode-user-aaf-functions-section
     [inUser]="user"
