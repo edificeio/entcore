@@ -42,6 +42,8 @@ import { UserQuotaSectionComponent } from './details/sections/quota/user-quota-s
 import { UserlistFiltersService } from '../core/services/userlist.filters.service';
 import { UsersListComponent } from './users-list/users-list.component';
 import { UsersRelinkComponent } from './users-relink/users-relink.component';
+import { SharedModule } from '../_shared/shared.module';
+import { UserPositionsSectionComponent } from './details/sections/user-positions/user-positions-section.component';
 
 @NgModule({
     imports: [
@@ -51,7 +53,8 @@ import { UsersRelinkComponent } from './users-relink/users-relink.component';
         NgxOdeSijilModule.forChild(),
         NgxOdeUiModule,
         CommunicationModule,
-        HttpClientModule
+        HttpClientModule,
+        SharedModule
     ],
     declarations: [
         UsersComponent,
@@ -81,6 +84,7 @@ import { UsersRelinkComponent } from './users-relink/users-relink.component';
         SmartUsersComparisonComponent,
         UsersRelinkComponent,
         UsersListComponent,
+        UserPositionsSectionComponent
     ],
     providers: [
         UserDetailsResolver,

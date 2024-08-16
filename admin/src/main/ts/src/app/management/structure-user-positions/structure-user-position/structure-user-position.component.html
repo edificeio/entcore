@@ -1,0 +1,26 @@
+<h2 fxLayout="row" fxLayoutAlign="space-between">
+  {{ userPosition.name }}
+  <div *ngIf="editable">
+    <button (click)="edit()">
+      <i class="fa fa-edit is-size-5"></i>
+      <s5l>user-position.rename</s5l>
+    </button>
+    <button (click)="delete()">
+      <i class="fa fa-trash is-size-5"></i>
+      <s5l>user-position.delete</s5l>
+    </button>
+  </div>
+</h2>
+
+<fieldset>
+  <ode-form-field label="user-position.source.label">
+    <div>{{sourceLabel}}</div>
+  </ode-form-field>
+</fieldset>
+
+<ode-user-position-modal
+  [structureId]="structureId"
+  [userPosition]="userPosition"
+  [show]="showUserPositionLightbox"
+  (onClose)="onCloseEdit($event)"
+></ode-user-position-modal>

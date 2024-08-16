@@ -39,8 +39,7 @@ import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.neo4j.Neo;
-import org.entcore.common.user.UserInfos;
-import org.entcore.common.user.UserUtils;
+import org.entcore.common.user.position.UserPositionService;
 import org.entcore.directory.security.AdmlOfStructuresByExternalId;
 import org.entcore.directory.services.*;
 import io.vertx.core.Handler;
@@ -70,6 +69,7 @@ public class DirectoryController extends BaseController {
 	private UserService userService;
 	private GroupService groupService;
 	private SlotProfileService slotProfileService;
+	private UserPositionService userPositionService;
 	private EventStore eventStore;
 
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
@@ -404,6 +404,8 @@ public class DirectoryController extends BaseController {
 				}
 				List<String> childrenIds = request.formAttributes().getAll("childrenIds");
 				user.put("childrenIds", new fr.wseduc.webutils.collections.JsonArray(childrenIds));
+				List<String> userPositionIds = request.formAttributes().getAll("positionIds");
+				user.put("userPositionIds", userPositionIds);
 				if (classId != null && !classId.trim().isEmpty()) {
 					userService.createInClass(classId, user, new Handler<Either<String, JsonObject>>() {
 						@Override
@@ -656,6 +658,10 @@ public class DirectoryController extends BaseController {
 
 	public void setSlotProfileService (SlotProfileService slotProfileService) {
 		this.slotProfileService = slotProfileService;
+	}
+
+	public void setUserPositionService(UserPositionService userPositionService) {
+		this.userPositionService = userPositionService;
 	}
 
 	// Methods used to create Workflow rights

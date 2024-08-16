@@ -285,6 +285,9 @@ public class UserUtils {
 		for (Object o: visibles) {
 			if (!(o instanceof JsonObject)) continue;
 			JsonObject j = (JsonObject) o;
+			if(j.containsKey("positionIds")) {
+				formatPositions(j);
+			}
 			if (j.getString("name") != null) {
 				j.remove("displayName");
 				j.remove("profile");
@@ -318,6 +321,18 @@ public class UserUtils {
 			}
 		}
 		return visible;
+	}
+
+	private static void formatPositions(JsonObject dbResult) {
+		final JsonArray positionIds = (JsonArray) dbResult.remove("positionIds");
+		final JsonArray positionNames = (JsonArray) dbResult.remove("positionNames");
+		final JsonArray positions = new JsonArray();
+		for(int i = 0; i < positionIds.size(); i++) {
+			positions.add(new JsonObject()
+				.put("name", positionNames.getString(i))
+				.put("id", positionIds.getString(i)));
+		}
+		dbResult.put("positions", positions);
 	}
 
 	public static void findUsersCanSeeMe(final EventBus eb, HttpServerRequest request,
