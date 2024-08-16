@@ -26,7 +26,8 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
         { label: 'management.zimbra.tab', view: 'zimbra', active: 'zimbra', right: "fr.openent.zimbra.controllers.ZimbraController|view"},
         { label: 'management.subjects.tab', view: 'subjects/create', active: 'subjects', right: "fr.openent.DisplayController|view"},
         { label: 'management.edt.tab', view: 'import-edt', active: 'import-edt', right: "fr.cgi.edt.controllers.EdtController|view" },
-        { label: 'management.structure.gar.tab', view: 'gar', active: 'gar'}
+        { label: 'management.structure.gar.tab', view: 'gar', active: 'gar'},
+        { label: "management.structure.user-position.tab", view: "positions", active: "positions" },
     ];
 
     private structure: StructureModel;

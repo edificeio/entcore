@@ -10,16 +10,13 @@ import {MessageFlashResolver} from './message-flash/message-flash.resolver';
 import { BlockProfilesComponent } from './block-profile/block-profiles.component';
 import { ZimbraComponent } from './zimbra/zimbra.component';
 import { ImportEDTComponent } from './import-edt/import-edt.component';
-import {ZimbraGuardService} from './zimbra/zimbra-guard.service';
 import {CalendarComponent} from './calendar/calendar.component';
 import { SubjectsComponent} from './subjects/subjects.component';
 import {SubjectsResolver} from './subjects/subjects.resolver';
 import {SubjectCreate} from './subjects/create/subject-create.component';
 import {SubjectDetails} from './subjects/details/subject-details.component';
-import {ImportEdtGuardService} from './import-edt/import-edt-guard.service';
-import {CalendarGuardService} from './calendar/calendar-guard.service';
-import {SubjectsGuardService} from './subjects/subjects-guard.service';
 import {StructureGarComponent} from './structure-gar/structure-gar.component';
+import { StructureUserPositionsComponent } from './structure-user-positions/structure-user-positions.component';
 
 export let routes: Routes = [
      {
@@ -105,6 +102,23 @@ export let routes: Routes = [
             {
                 path: 'gar',
                 component: StructureGarComponent
+            },
+            {
+                path: 'positions',
+                children: [
+                    {
+                        path: 'create',
+                        component: StructureUserPositionsComponent
+                    },
+                    {
+                        path: ':userPositionId',
+                        component: StructureUserPositionsComponent
+                    },
+                    {
+                        path: '',
+                        component: StructureUserPositionsComponent
+                    }
+                ]
             }
         ]
      }
