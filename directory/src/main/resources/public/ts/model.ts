@@ -412,6 +412,8 @@ export const directory = {
 					body["profiles"] = filters.profiles;
 				if (filters.functions)
 					body["functions"] = filters.functions;
+				if (filters.positions)
+					body["positions"] = filters.positions;
 				
 				body["mood"] = true;
 				
@@ -855,6 +857,14 @@ directory.User.prototype.mergeByKeys = function(keys, handler) {
 		handler(true);
         }
 	}.bind(this));
+};
+
+directory.User.prototype.extractPositionNames = function() {
+	return this.positionNames 
+		? this.positionNames
+		: Array.isArray(this.userPositions) 
+			? this.userPositions.map(function(pos) {return pos.name;})
+			: [];
 };
 
 directory.User.prototype.moods = ["default"];

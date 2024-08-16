@@ -13,6 +13,7 @@ import { NotifyService } from './services/notify.service';
 import { SijilLabelsService } from './services/sijil.labels.service';
 import { UserService } from './services/user.service';
 import { WidgetService } from './services/widgets.service';
+import { UserPositionServices } from './services/user-position.service';
 
 @NgModule({
     imports: [
@@ -34,7 +35,8 @@ import { WidgetService } from './services/widgets.service';
         SpinnerService,
         WidgetService,
         ConfigResolver,
-        UserService
+        UserService,
+        UserPositionServices
     ],
 })
 export class CoreModule {

@@ -314,12 +314,6 @@ public class DefaultUserService implements UserService {
 	public void get(String id, boolean getManualGroups, JsonArray filterAttributes, boolean filterNullReturn, boolean withClasses,
 					Handler<Either<String, JsonObject>> result) {
 
-		String getMgroups = "";
-		String resultMgroups = "";
-		if (getManualGroups) {
-			getMgroups = "OPTIONAL MATCH u-[:IN]->(mgroup: ManualGroup) WITH COLLECT(distinct {id: mgroup.id, name: mgroup.name}) as manualGroups, subjectCodes, admStruct, admGroups, parents, children, functions, u, structureNodes ";
-			resultMgroups = "CASE WHEN manualGroups IS NULL THEN [] ELSE manualGroups END as manualGroups, ";
-		}
 		String query =
 				"MATCH (u:`User` { id : {id}}) " +
 				"OPTIONAL MATCH u-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) WITH COLLECT(distinct s) as structureNodes, u " +
@@ -329,11 +323,13 @@ public class DefaultUserService implements UserService {
 				"OPTIONAL MATCH u-[:IN]->(fgroup: FunctionalGroup) WITH COLLECT(distinct {id: fgroup.id, name: fgroup.name}) as admGroups, parents, children, functions, u, structureNodes " +
 				"OPTIONAL MATCH u-[:ADMINISTRATIVE_ATTACHMENT]->(admStruct: Structure) WITH COLLECT(distinct {id: admStruct.id}) as admStruct, admGroups, parents, children, functions, u, structureNodes " +
 				"OPTIONAL MATCH u-[r:TEACHES]->(s:Subject) WITH COLLECT(distinct s.code) as subjectCodes, admStruct, admGroups, parents, children, functions, u, structureNodes " +
-				getMgroups;
+				"OPTIONAL MATCH u-[h:HAS_POSITION]->(p:UserPosition)-[:IN]->(struct:Structure) WITH COLLECT(distinct {id: p.id, name: p.name, source: p.source, structureId: struct.id}) as userPositions, subjectCodes, admStruct, admGroups, parents, children, functions, u, structureNodes ";
 
-		if(withClasses) {
+		if (getManualGroups)
+			query += "OPTIONAL MATCH u-[:IN]->(mgroup: ManualGroup) WITH COLLECT(distinct {id: mgroup.id, name: mgroup.name}) as manualGroups, userPositions, subjectCodes, admStruct, admGroups, parents, children, functions, u, structureNodes ";
+
+		if(withClasses)
 			query += "OPTIONAL MATCH s<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) WHERE u.classes IS NOT NULL ";
-		}
 		
 		if(filterNullReturn){
 			query += "RETURN DISTINCT u.profiles as type, structureNodes, " +
@@ -342,22 +338,25 @@ public class DefaultUserService implements UserService {
 					"filter(x IN coalesce(parents, []) WHERE x.id IS NOT NULL) as parents, " +
 					"filter(x IN coalesce(admGroups, []) WHERE x.id IS NOT NULL) as functionalGroups, " +
 					"filter(x IN coalesce(admStruct, []) WHERE x.id IS NOT NULL) as administrativeStructures, " +
-					"filter(x IN coalesce(subjectCodes, []) WHERE x IS NOT NULL) as subjectCodes, ";
+					"filter(x IN coalesce(subjectCodes, []) WHERE x IS NOT NULL) as subjectCodes, " +
+					"filter(x IN coalesce(userPositions, []) WHERE x IS NOT NULL) as userPositions, ";
 		} else {
 			query += "RETURN DISTINCT u.profiles as type, structureNodes, functions, " +
 					"CASE WHEN children IS NULL THEN [] ELSE children END as children, " +
 					"CASE WHEN parents IS NULL THEN [] ELSE parents END as parents, " +
 					"CASE WHEN admGroups IS NULL THEN [] ELSE admGroups END as functionalGroups, " +
 					"CASE WHEN admStruct IS NULL THEN [] ELSE admStruct END as administrativeStructures, " +
-					"CASE WHEN subjectCodes IS NULL THEN [] ELSE subjectCodes END as subjectCodes, ";
+					"CASE WHEN subjectCodes IS NULL THEN [] ELSE subjectCodes END as subjectCodes, " +
+					"CASE WHEN userPositions IS NULL THEN [] ELSE userPositions END as userPositions, ";
 		}
 
-		if(withClasses) {
+		if (getManualGroups)
+			query += "CASE WHEN manualGroups IS NULL THEN [] ELSE manualGroups END as manualGroups, ";
+
+		if(withClasses)
 			query += "CASE WHEN c IS NULL THEN [] ELSE COLLECT(s.externalId + '$' + c.name) END as classes2D, ";
-		}
 
-		query += resultMgroups +
-				"u";
+		query += "u";
 
 		final Handler<Either<String, JsonObject>> filterResultHandler = event -> {
 			if (event.isRight()) {
