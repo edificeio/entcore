@@ -39,7 +39,7 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
         // Extract and trim names
         const filteredList = this.positionList?.map(position => position.name)
             // Remove empty and already selected names
-            .filter(name => !this.newUser.userDetails.userPositions.some(value=> name.length===0 || value.name.trim()===name)) ?? [];
+            .filter(name => !this.newUser.userDetails.userPositions.some(value=> name.length===0 || (value.name && value.name?.trim()===name))) ?? [];
         // Remove remaining duplicates
         return filteredList.filter((name, index) => (index+1>=filteredList.length || filteredList.indexOf(name, index+1)<0))
             // return result as an array of UserPosition
