@@ -129,7 +129,7 @@ public class UserController extends BaseController {
 			public void handle(final JsonObject body) {
 				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 					public void handle(UserInfos user) {
-						final  String userId = request.params().get("userId");
+						final String userId = request.params().get("userId");
 						//User name modification prevention for non-admins.
 						if(!user.getFunctions().containsKey(DefaultFunctions.SUPER_ADMIN) &&
 								!user.getFunctions().containsKey(DefaultFunctions.ADMIN_LOCAL) &&
