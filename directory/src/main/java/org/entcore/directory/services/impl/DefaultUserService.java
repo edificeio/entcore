@@ -365,7 +365,7 @@ public class DefaultUserService implements UserService {
 				filterAttributes.add("password").add("resetCode").add("lastNameSearchField").add("firstNameSearchField")
 						.add("displayNameSearchField").add("checksum").add("emailSearchField")
 						.add("emailInternal").add("resetDate").add("lastScheme").add("lastDomain")
-						.add("mfaState").add("emailState").add("mobileState");
+						.add("mfaState").add("emailState").add("mobileState").add("oldPasswords").add("oldPassword");
 				for (Object o : filterAttributes) {
 					r.remove((String) o);
 				}
