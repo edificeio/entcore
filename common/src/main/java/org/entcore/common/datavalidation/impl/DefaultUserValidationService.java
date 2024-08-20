@@ -535,10 +535,11 @@ public class DefaultUserValidationService implements UserValidationService {
      * @return the required map parameter, updated
      */
     private Future<JsonObject> isEmailValidationRequired(final UserInfos userInfos, final JsonObject required) {
-        if( (userInfos.isADML() || userInfos.isADMC()) 
+        if( ((userInfos.isADML() || userInfos.isADMC())
          && !Boolean.TRUE.equals(userInfos.getIgnoreMFA()) 
          && Mfa.withEmail()
-         && !UserValidationFactory.getFactory().deactivateValidationAfterLogin
+         && !UserValidationFactory.getFactory().deactivateValidationAfterLogin)
+       || ("Relative".equals(userInfos.getType()) && UserValidationFactory.getFactory().activateValidationRelative )
          ){
             final Promise<JsonObject> promise = Promise.promise();
             hasValidEmail(userInfos.getUserId())
