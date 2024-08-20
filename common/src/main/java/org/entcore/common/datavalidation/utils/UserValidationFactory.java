@@ -38,6 +38,7 @@ public class UserValidationFactory {
     private String eventType;
 	/** When truthy, deactivates the email address or mobile phone validation right after login (on web and mobile app). */
 	public boolean deactivateValidationAfterLogin = false;
+	public boolean activateValidationRelative = false;
 	private UserValidationService handler;
 
 	public UserValidationFactory() {
@@ -71,7 +72,9 @@ public class UserValidationFactory {
 		}
 
 		final Boolean emailValidationActive = config.getBoolean("active", true);
+		final boolean emailValidationRelativeActive = config.getBoolean("emailValidationRelativeActive", false);
 		deactivateValidationAfterLogin = Boolean.FALSE.equals(emailValidationActive);
+		activateValidationRelative = Boolean.TRUE.equals(emailValidationRelativeActive);
 		return this;
 	}
 
