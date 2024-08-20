@@ -1,3 +1,4 @@
+const { on } = require("events");
 const fs = require("fs");
 
 const PROXY_CONFIG = {
@@ -16,6 +17,7 @@ const PROXY_CONFIG = {
     "/i18n",
     "/languages",
     "/zendeskGuide",
+    "/theme",
   ],
   target: "http://localhost:8090",
   secure: false,
@@ -24,14 +26,21 @@ const PROXY_CONFIG = {
 };
 
 if (fs.existsSync("./.proxyRemoteConfig.js")) {
-  console.log("Using remote proxy configuration");
   const config = require("./.proxyRemoteConfig.js");
+  console.log("Using remote proxy configuration traget: ", config.target);
   PROXY_CONFIG.target = config.target;
   if (config.oneSessionId && config.xsrfToken) {
     PROXY_CONFIG.headers = {
       cookie: `oneSessionId=${config.oneSessionId}; authenticated=true; XSRF-TOKEN=${config.xsrfToken}`,
     };
+    PROXY_CONFIG.onProxyRes = (proxyRes, req, res) => {
+      proxyRes.headers["set-cookie"] = [
+        `oneSessionId=${config.oneSessionId}`,
+        `XSRF-TOKEN=${config.xsrfToken}`,
+      ];
+    };
   }
+
 }
 
 module.exports = [PROXY_CONFIG];
