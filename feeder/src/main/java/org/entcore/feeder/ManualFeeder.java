@@ -834,7 +834,7 @@ public class ManualFeeder extends BusModBase {
 					final Integer transactionId = message.body().getInteger("transactionId");
 					final Boolean commit = message.body().getBoolean("commit", true);
 					// Retrieve user position ids and remove them from user properties before updating user node
-					final JsonArray userPositionIds = (JsonArray) user.remove("userPositionIds");
+					final JsonArray userPositionIds = (JsonArray) user.remove("positionIds");
 					Set<String> oldLogins = new HashSet<String>();
 					String updatedLoginAlias = user.getString("loginAlias");
 					final JsonArray deletedAlias = new JsonArray();
