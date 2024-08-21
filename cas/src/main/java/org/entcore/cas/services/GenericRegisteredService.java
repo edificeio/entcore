@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.entcore.common.utils.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -20,8 +21,8 @@ public class GenericRegisteredService extends AbstractCas20ExtensionRegisteredSe
 
     protected static final String DF_ID = "user";
     protected static final String DF_STRUCTURE = "school";
-    protected static final String DF_STRUCTURE_UAI = "UAI";
-    protected static final String DF_STRUCTURE_ID = "externalId";
+    protected static final String DF_UAI = "UAI";
+    protected static final String DF_EXTERNAL_ID = "externalId";
     protected static final String DF_PROFILES = "profile";
     protected static final String DF_CLASS = "classe";
     protected static final String DF_DISCIPLINE = "discipline";
@@ -36,6 +37,8 @@ public class GenericRegisteredService extends AbstractCas20ExtensionRegisteredSe
     protected static final String DF_ADMINISTRATIVE_STRUCTURES = "administrativeStructures";
     protected static final String DF_NAME = "name";
     protected static final String DF_CLASS_CATEGORY = "classCategories";
+    protected static final String DF_PARENT = "parent";
+    protected static final String DF_CHILD = "child";
 
     @Override
     public void configure(EventBus eb, Map<String, Object> conf) {
@@ -53,10 +56,10 @@ public class GenericRegisteredService extends AbstractCas20ExtensionRegisteredSe
         JsonObject dataObject = data.getJsonObject("data");
         try {
             // uid
-            if (dataObject.containsKey(DF_STRUCTURE_ID) && dataObject.getValue(DF_STRUCTURE_ID) != null) {
+            if (dataObject.containsKey(DF_EXTERNAL_ID) && dataObject.getValue(DF_EXTERNAL_ID) != null) {
                 additionnalAttributes
                         .add(createTextElement(DF_ID,
-                                dataObject.getString(DF_STRUCTURE_ID), doc));
+                                dataObject.getString(DF_EXTERNAL_ID), doc));
             }
             // date
             rootAttributes
@@ -102,18 +105,27 @@ public class GenericRegisteredService extends AbstractCas20ExtensionRegisteredSe
                 switch (dataObject.getJsonArray(DF_TYPE).getList().get(0).toString()) {
                     case "Student":
                         rootUserAttributes.appendChild(createTextElement(DF_PROFILES, "Student", doc));
+                        // Parent
+                        if (dataObject.containsKey(DF_PARENT+"s") && !dataObject.getJsonArray(DF_PARENT+"s", new JsonArray()).isEmpty()) {
+                            addParentChildNode(DF_PARENT, doc, dataObject.getJsonArray(DF_PARENT+"s"), rootUserAttributes);
+                        }
                         break;
                     case "Teacher":
                         rootUserAttributes.appendChild(createTextElement(DF_PROFILES, "Teacher", doc));
                         break;
                     case "Relative":
                         rootUserAttributes.appendChild(createTextElement(DF_PROFILES, "Relative", doc));
+                        // Child
+                        if (dataObject.containsKey(DF_CHILD+"s") && !dataObject.getJsonArray(DF_CHILD+"s", new JsonArray()).isEmpty()) {
+                            addParentChildNode(DF_CHILD, doc, dataObject.getJsonArray(DF_CHILD+"s"), rootUserAttributes);
+                        }
                         break;
                     case "Personnel":
                         rootUserAttributes.appendChild(createTextElement(DF_PROFILES, "Personnel", doc));
                         break;
                 }
             }
+
             // Structures
             if (dataObject.containsKey(DF_STRUCTURES_NODES) && dataObject.getValue(DF_STRUCTURES_NODES) != null) {
                 for (Object o : dataObject.getJsonArray(DF_STRUCTURES_NODES).getList()) {
@@ -126,7 +138,7 @@ public class GenericRegisteredService extends AbstractCas20ExtensionRegisteredSe
                         rootStructure.setAttribute(DF_NAME, structure.getString(DF_NAME));
                     }
                     if (structure.containsKey("UAI")) {
-                        rootStructure.setAttribute(DF_STRUCTURE_ID, structure.getString("UAI"));
+                        rootStructure.setAttribute(DF_EXTERNAL_ID, structure.getString("UAI"));
                     }
                     if (dataObject.containsKey(DF_ADMINISTRATIVE_STRUCTURES)
                             && dataObject.getValue(DF_ADMINISTRATIVE_STRUCTURES) != null
@@ -150,13 +162,13 @@ public class GenericRegisteredService extends AbstractCas20ExtensionRegisteredSe
                     // class
                     if (dataObject.containsKey(DF_CLASS + "s2D")) {
                         addString(rootStructureClass, DF_CLASS,
-                                getClassCurrentStructures(dataObject, structure.getString(DF_STRUCTURE_ID),
+                                getClassCurrentStructures(dataObject, structure.getString(DF_EXTERNAL_ID),
                                         DF_CLASS + "s2D"),
                                 doc);
                     } else if (dataObject.containsKey(DF_CLASS + "s") && !dataObject.containsKey(DF_CLASS + "s2D")) {
                         addString(rootStructureClass, DF_CLASS,
-                                getClassCurrentStructures(dataObject, structure.getString(DF_STRUCTURE_ID),
-                                        DF_CLASS + "s2D"),
+                                getClassCurrentStructures(dataObject, structure.getString(DF_EXTERNAL_ID),
+                                        DF_CLASS + "s"),
                                 doc);
                     }
                     // functionalGroups
@@ -164,7 +176,7 @@ public class GenericRegisteredService extends AbstractCas20ExtensionRegisteredSe
                         for (Object group : dataObject.getJsonArray(DF_FONCTIONAL_GROUP + "s").getList()) {
                             if (group instanceof JsonObject && ((JsonObject) group).containsKey(DF_NAME)
                                     && ((JsonObject) group).getString("functionalGroup") != null
-                                    && structure.getString(DF_STRUCTURE_ID)
+                                    && structure.getString(DF_EXTERNAL_ID)
                                             .equals(((JsonObject) group).getString("structureExternalId"))) {
                                 rootGroups.appendChild(
                                         createTextElement(DF_FONCTIONAL_GROUP, ((JsonObject) group).getString(DF_NAME),
@@ -188,6 +200,23 @@ public class GenericRegisteredService extends AbstractCas20ExtensionRegisteredSe
         Exception e) {
             log.error("Failed to transform User ", e);
         }
+    }
+
+    private void addParentChildNode(String label, final Document doc, JsonArray elements, Element rootUserAttributes)  {
+        final Element root = createElement(label+"s", doc);
+
+        for (Object o : elements.getList()) {
+            if (o == null || !(o instanceof JsonObject))
+                continue;
+            JsonObject elem = (JsonObject) o;
+            if (!StringUtils.isEmpty(elem.getString(DF_EXTERNAL_ID))) {
+                Element element = createTextElement(label, elem.getString(DF_DISPLAYNAME), doc);
+                element.setAttribute("externalId", elem.getString(DF_EXTERNAL_ID));
+                element.setAttribute(DF_UAI, elem.getString(DF_UAI));
+                root.appendChild(element);
+            }
+        }
+        rootUserAttributes.appendChild(root);
     }
 
     private void addString(Element root, String casLabel, List<JsonObject> dataObject, Document doc) {

@@ -421,8 +421,11 @@ public class DefaultUserService implements UserService {
 					"WITH COLLECT(DISTINCT {id: admStruct.id}) AS admStruct, admGroups, functions, u, sn " +
 					"OPTIONAL MATCH (u)-[r:TEACHES]->(s:Subject) " +
 					"WITH COLLECT(DISTINCT s.code) AS subjectCodes, admStruct, admGroups, functions, u, sn " +
+					"OPTIONAL MATCH u<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup {filter:'Student'})-[:DEPENDS]->(cs:Structure) " +
+					"WITH COLLECT(distinct {id: child.id, displayName: child.displayName, externalId: child.externalId, UAI: cs.UAI}) as children, subjectCodes, admStruct, admGroups, functions, u, sn " +
+					"OPTIONAL MATCH u-[:RELATED]->(parent: User)-[:IN]->(:ProfileGroup {filter:'Relative'})-[:DEPENDS]->(ps:Structure) WHERE ps IN sn " +
+					"WITH COLLECT(distinct {id: parent.id, displayName: parent.displayName, externalId: parent.externalId, UAI: ps.UAI}) as parents, children, subjectCodes, admStruct, admGroups, functions, u, sn " +
 					"OPTIONAL MATCH (st:Structure)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) " +
-					"WHERE u.classes IS NOT NULL " +
 					"RETURN DISTINCT " +
 					"{ " +
 					"   structureNodes: [s in sn | {created: s.created, name: s.name, externalId: s.externalId, id: s.id, UAI: s.UAI}], "
@@ -442,6 +445,8 @@ public class DefaultUserService implements UserService {
 					"   functionalGroups: CASE WHEN admGroups IS NULL THEN [] ELSE admGroups END, " +
 					"   administrativeStructures: CASE WHEN admStruct IS NULL THEN [] ELSE admStruct END, " +
 					"   subjectCodes: CASE WHEN subjectCodes IS NULL THEN [] ELSE subjectCodes END, " +
+					"   childs: CASE WHEN children IS NULL THEN [] ELSE children END, " +
+					"   parents: CASE WHEN parents IS NULL THEN [] ELSE parents END, " +
 					"   classes2D: CASE WHEN (c) IS NULL THEN [] ELSE COLLECT(st.externalId + '$' + c.name) END " +
 					"} AS data";
 
