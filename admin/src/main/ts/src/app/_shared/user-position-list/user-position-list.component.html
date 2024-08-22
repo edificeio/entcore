@@ -7,7 +7,7 @@
   [inputFilter]="filterByInput"
   (inputChange)="searchPrefix = $event"
   (onSelect)="selectUserPosition($event)"
-  (listChange)="checkEmitNewPositionName($event)"
+  (listChange)="listChange($event)"
 >
   <ng-template let-item>
     {{ item.name }}
