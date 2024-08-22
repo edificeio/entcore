@@ -14,12 +14,6 @@
         [title]="'user-position.remove' | translate"></i>
     </li>
   </ul>
-  <!-- <button class="is-pulled-right has-bottom-margin-10" 
-          (click)="saveUpdate()"
-          [disabled]="!hasUserPositionsChanged">
-    <s5l>save.modifications</s5l>
-    <i class="fa fa-floppy-o"></i>
-  </button> -->
 
   <ode-lightbox
     class="inner-list"
@@ -30,12 +24,11 @@
       <h3><s5l>user-position.select</s5l></h3>
 
       <ode-user-position-list
-        [searchPrefix]="searchPrefix"
+        [(searchPrefix)]="searchPrefix"
         [userPositionList]="filteredPositionList"
         (selectedUserPositionChange)="selectUserPosition($event)"
-        (newPositionNameProposed)="newPositionName = $event"
+        (filteredListChange)="filteredListChange($event)"
       ></ode-user-position-list>
-      
       <div *ngIf="showEmptyScreen" class="empty-screen">
         <img height="100" src="/admin/public/img/user-position-empty-screen.svg" />
         <s5l>user-position.input-name.not-found</s5l>

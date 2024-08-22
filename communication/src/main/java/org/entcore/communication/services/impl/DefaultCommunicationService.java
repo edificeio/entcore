@@ -640,7 +640,7 @@ public class DefaultCommunicationService implements CommunicationService {
 			}
 		}
 		pcr += ", COLLECT(position.id) as positionIds, COLLECT(position.name) as positionNames ";
-		pr += " COLLECT(position.id) as positionIds, COLLECT(position.name) as positionNames ";
+		pr += " COLLECT(position.id) as positionIds, COLLECT(position.name) as positionNames, ";
 		query.append(" OPTIONAL MATCH (m)-[:HAS_POSITION]->(position:Position) ");
 		if(union != null) {
 			union.append(" OPTIONAL MATCH (m)-[:HAS_POSITION]->(position:Position) ");

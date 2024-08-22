@@ -315,8 +315,8 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     }
 
     updateUserPositions() {
-        const positionIds = this.userPositions?.map( position => position.id).join(",") ?? "";
-        return this.http.put(`/directory/user/${this.id}?positionIds=${positionIds}`, {});
+        const positionIds = this.userPositions?.map(position => position.id) ?? [];
+        return this.http.put(`/directory/user/${this.id}`, {positionIds});
     }
 
     removeFromStructure(struct: StructureModel)

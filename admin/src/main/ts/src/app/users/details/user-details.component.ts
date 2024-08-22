@@ -80,6 +80,10 @@ export class UserDetailsComponent
      && (this.user.type == 'Personnel' || this.user.type == 'Teacher')
   }
 
+  get displayUserPositions() {
+    return this.user.type === "Personnel" || this.user.type === "Teacher";
+  }
+
   constructor(
     injector: Injector,
     public spinner: SpinnerService,

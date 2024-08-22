@@ -1,13 +1,15 @@
 .user-position-assignment {
-
     .empty-screen {
         display: flex;
         align-items: center;
         flex-direction: column;
         gap: 16px;
         padding-top: 16px;
-        margin-top: -120px;
         position: relative;
         background-color: #fff !important;
+    }
+
+    .list-wrapper:has(li.no-results) {
+        display: none;
     }
 }

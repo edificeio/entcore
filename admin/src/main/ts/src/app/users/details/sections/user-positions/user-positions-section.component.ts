@@ -1,8 +1,8 @@
 import {
-  ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
   OnInit,
+  ViewEncapsulation,
 } from "@angular/core";
 
 import { AbstractSection } from "../abstract.section";
@@ -17,7 +17,7 @@ import { NotifyService } from "src/app/core/services/notify.service";
   templateUrl: "./user-positions-section.component.html",
   styleUrls: ["./user-positions-section.component.scss"],
   inputs: ["user", "structure"],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  encapsulation: ViewEncapsulation.None,
 })
 export class UserPositionsSectionComponent
   extends AbstractSection
@@ -72,7 +72,6 @@ export class UserPositionsSectionComponent
   }
 
   async ngOnInit() {
-    this.newPositionName = undefined;
     this.positionList = await this.spinner
       .perform('portal-content', this.userPositionServices.searchUserPositions())
       .catch(err => {
@@ -83,13 +82,11 @@ export class UserPositionsSectionComponent
         );
         return [];
       });
-      
     this.memoizeInitialUserPositions();
   }
 
   protected onUserChange() {
     this.memoizeInitialUserPositions();
-    this.cdRef.markForCheck();
   }
 
   private memoizeInitialUserPositions() {
@@ -131,7 +128,6 @@ export class UserPositionsSectionComponent
         if(addedPosition) {
           this.userPositions.push(addedPosition);
           this.showUserPositionSelectionLightbox = false;
-          this.cdRef.markForCheck();
           this.saveUpdate();
         }
     });
@@ -142,6 +138,7 @@ export class UserPositionsSectionComponent
   }
 
   openUserPositionCreationModal() {
+    this.newPosition = { name: this.searchPrefix || "", source: "MANUAL" };
     this.showUserPositionSelectionLightbox = false;
     this.showUserPositionCreationLightbox = true;
   }
@@ -175,5 +172,10 @@ export class UserPositionsSectionComponent
           err
         );
       });
+  }
+
+  filteredListChange(filteredList: UserPosition[]) {
+    this.showEmptyScreen = filteredList.length === 0;
+    this.cdRef.detectChanges();
   }
 }

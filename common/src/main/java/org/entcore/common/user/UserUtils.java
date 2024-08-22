@@ -289,6 +289,7 @@ public class UserUtils {
 				formatPositions(j);
 			}
 			if (j.getString("name") != null) {
+				j.remove("positions");
 				j.remove("displayName");
 				j.remove("profile");
 				j.remove("mood");
