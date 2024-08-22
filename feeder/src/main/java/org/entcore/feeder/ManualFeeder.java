@@ -889,7 +889,14 @@ public class ManualFeeder extends BusModBase {
 								public void handle(Message<JsonObject> m) {
 									Validator.removeLogins(oldLogins);
 									DeleteTask.storeDeleteUserEvent(eventStore, deletedAlias);
-									message.reply(m.body());
+									final JsonObject body = m.body();
+									// Send back to the requester only the id of the updated user
+									final JsonArray results = (JsonArray) body.remove("results");
+									if(results != null && !results.isEmpty()) {
+										// 0 is the index at which the result of the query updating the user node is stored
+										body.put("result", results.getValue(0));
+									}
+									message.reply(body);
 								}
 							});
 				} else {
