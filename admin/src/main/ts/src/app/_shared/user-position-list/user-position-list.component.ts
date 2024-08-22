@@ -14,24 +14,31 @@ import { UserPosition } from "src/app/core/store/models/userPosition.model";
   styleUrls: ["./user-position-list.component.scss"],
 })
 export class UserPositionListComponent extends OdeComponent {
-  @Input() public searchPrefix: string;
+  private _searchPrefix: string;
+  @Input() get searchPrefix(): string {
+    return this._searchPrefix;
+  }
+  set searchPrefix(value: string) {
+    this._searchPrefix = value;
+    this.searchPrefixChange.emit(value);
+  }
+  @Output() searchPrefixChange: EventEmitter<String> = new EventEmitter();
+
   @Input() userPositionList: UserPosition[] = [];
   private _selectedUserPosition: UserPosition;
   @Input() get selectedUserPosition(): UserPosition {
     return this._selectedUserPosition;
   }
   set selectedUserPosition(value: UserPosition) {
-      this._selectedUserPosition = value;
-      this.selectedUserPositionChange.emit(value);
-      this.changeDetector.markForCheck();
+    this._selectedUserPosition = value;
+    this.selectedUserPositionChange.emit(value);
   }
   @Output() selectedUserPositionChange: EventEmitter<UserPosition> =
     new EventEmitter();
 
-  @Output() newPositionNameProposed: EventEmitter<String> =
-  new EventEmitter();
-
-  private previousProposal: string;
+  private _filteredList: UserPosition[] =[];
+  @Output() filteredListChange: EventEmitter<UserPosition[]> =
+    new EventEmitter();
 
   constructor(injector: Injector) {
     super(injector);
@@ -55,23 +62,12 @@ export class UserPositionListComponent extends OdeComponent {
 
   selectUserPosition = (userPosition: UserPosition) => {
     this.selectedUserPosition = userPosition;
-    this.changeDetector.markForCheck();
   };
 
-  checkEmitNewPositionName(filteredList:[]) {
-    const searchPrefix = this.searchPrefix?.trim() ?? "";
-    // When filtered list is empty and current search prefix is not,
-    if(filteredList.length == 0 && searchPrefix.length > 0) {
-        // If the search prefix has not been proposed yet, then do it now.
-        if( this.previousProposal !== searchPrefix) {
-          this.newPositionNameProposed.emit(searchPrefix);
-          this.previousProposal = searchPrefix;
-        }
-    }
-    // If the proposal has not been resetted yet, then do it now.
-    else if(this.previousProposal) {
-      this.newPositionNameProposed.emit();
-      this.previousProposal = searchPrefix;
+  listChange(filteredList: UserPosition[]) {
+    if (filteredList.join("") !== this._filteredList.join("")) {
+      this._filteredList = filteredList;
+      this.filteredListChange.emit(filteredList);
     }
   }
 }

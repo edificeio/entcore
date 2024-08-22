@@ -594,16 +594,16 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	}
 
 	$scope.hasUserPosition = function(user): boolean {
-		return user && user.profile == 'Personnel' && user.positionNames && user.positionNames.length > 0;
+		return user && user.positions && user.positions.length > 0;
 	}
 
 	$scope.getUserPositionsTooltip = function(user): string {
-		return $scope.hasUserPosition(user) ? user.positionNames.join(', ') : "";
+		return $scope.hasUserPosition(user) ? user.positions.map(position=>position.name).join(', ') : "";
 	}
 
 	$scope.getUserPositionsLabel = function(user): string {
 		return ($scope.hasUserPosition(user)
-			? `${user.positionNames[0]}${user.positionNames > 1 ? "..." : ""}`
+			? `${user.positions[0].name}${user.positions.length > 1 ? "..." : ""}`
 			: "");
 	}
 
