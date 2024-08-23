@@ -17,14 +17,14 @@
       class="nomargin discipline cell-ellipsis"
       tooltip="[[getSubject(user)]]"
     >
-      {{ 'directory.subject' | i18n:{value:getSubject(user)} }}
+      [[ 'directory.subject' | i18n:{value:getSubject(user)} ]]
     </p>
     <p
       ng-if="hasUserPosition(user)"
       class="nomargin discipline cell-ellipsis"
       tooltip="[[getUserPositionsTooltip(user)]]"
     >
-      {{ 'directory.userPosition' | i18n:{value:getUserPositionsLabel(user)} }}
+    [[ 'directory.userPosition' | i18n:{value:getUserPositionsLabel(user)} ]]
     </p>
   </div>
 
