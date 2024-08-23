@@ -218,8 +218,9 @@ public class DefaultUserPositionService implements UserPositionService {
 				.put("positionIds", positionIdsArray)
 				.put("userId", userId);
 		final String query = "" +
-				"MATCH (u:User {id:{userId}})-[h:HAS_POSITION]->(p:UserPosition) " +
-				"WHERE NOT p.id IN {positionIds} " +
+				"MATCH (u:User {id:{userId}}) " +
+			  "OPTIONAL MATCH (u)-[h:HAS_POSITION]->(p:UserPosition) " +
+				"WHERE p is not null and NOT p.id IN {positionIds} " +
 				"DELETE h " +
 				"WITH u " +
 				"MATCH (u)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure)<-[:IN]-(p:UserPosition) " +
