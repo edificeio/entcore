@@ -189,6 +189,8 @@
   "user-position.input-name": "Nom de la fonction",
   "user-position.input-name-placeholder": "Saisissez le nom de la fonction",
   "user-position.input-name.not-found": "Cette fonction n’est pas répertoriée, souhaitez-vous l’ajouter ?",
+  "user-position.confirm.remove.title": "Enlever la fonction",
+  "user-position.confirm.remove.text": "Êtes vous sûr de vouloir enlever la fonction {{name}} ?",
 
   "management.message.flash": "Message Flash",
   "management.message.flash.edit": "Éditer un message flash",
@@ -1054,6 +1056,8 @@
   "notify.user-position.assign.success.content": "Les fonctions ont été assignées.",
   "notify.user-position.assign.error.content": "Les fonctions n'ont pas pu être assignées.",
   "notify.user-position.assign.error.title": "Erreur lors de la sauvegarde",
+  "notify.user-position.remove.error.content": "La fonction n'a pas pu être enlevée.",
+  "notify.user-position.remove.success.content": "La fonction a été enlevée.",
   "notify.user-position.create.success.content": "La fonction a été créée.",
   "notify.user-position.create.error.title": "Erreur lors de la création",
   "notify.user-position.create.error.content": "La fonction {{position}} n'a pas pu être créée.",
