@@ -32,6 +32,9 @@ export class UserPositionsSectionComponent
   showUserPositionCreationLightbox: boolean = false;
   showEmptyScreen: boolean = false;
 
+  showConfirmRemovePosition: boolean = false;
+  positionToRemove: UserPosition;
+
   /** Truthy when detecting user's positions changes */
   get hasUserPositionsChanged(): boolean {
     return (!this.details.userPositions && this.userPositions.length > 0) || 
@@ -134,7 +137,18 @@ export class UserPositionsSectionComponent
   }
 
   removeUserPosition(position: UserPosition) {
-    this.userPositions = this.userPositions.filter((p) => p.id !== position.id);
+    this.positionToRemove = position;
+    this.showConfirmRemovePosition = true;
+  }
+
+  removeUserPositionCancel() {
+    this.showConfirmRemovePosition = false;
+  }
+
+  removeUserPositionConfirmed() {
+    this.userPositions = this.userPositions.filter((p) => p.id !== this.positionToRemove.id);
+    this.saveUpdate(true);
+    this.showConfirmRemovePosition = false;
   }
 
   openUserPositionCreationModal() {
@@ -150,7 +164,7 @@ export class UserPositionsSectionComponent
     this.showUserPositionCreationLightbox = false;
   }
 
-  saveUpdate() {
+  saveUpdate(removePosition = false) {
     if( this.userPositions && this.userPositions.length>0) {
       this.details.userPositions = [...this.userPositions];
     } else {
@@ -160,14 +174,14 @@ export class UserPositionsSectionComponent
       .perform('portal-content', this.details.updateUserPositions())
       .then(() => {
         this.ns.success(
-          'notify.user-position.assign.success.content',
+          removePosition ? 'notify.user-position.remove.success.content' :'notify.user-position.assign.success.content',
           'notify.user-position.success.title'
         );
         this.userInfoService.setState(this.details);
       })
       .catch(err => {
         this.ns.error(
-          'notify.user-position.assign.error.content',
+          removePosition ? 'notify.user-position.remove.error.content':  'notify.user-position.assign.error.content',
           'notify.user-position.assign.error.title', 
           err
         );

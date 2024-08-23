@@ -9,9 +9,15 @@
 
   <ul class="actions-list">
     <li *ngFor="let userPosition of userPositions">
-      <span>{{ userPosition.name }} - <s5l>user-position.source.{{ userPosition.source }}</s5l></span>
-      <i class="fa fa-times action" (click)="removeUserPosition(userPosition)"
-        [title]="'user-position.remove' | translate"></i>
+      <span
+        >{{ userPosition.name }} -
+        <s5l>user-position.source.{{ userPosition.source }}</s5l></span
+      >
+      <i
+        class="fa fa-times action"
+        (click)="removeUserPosition(userPosition)"
+        [title]="'user-position.remove' | translate"
+      ></i>
     </li>
   </ul>
 
@@ -30,13 +36,16 @@
         (filteredListChange)="filteredListChange($event)"
       ></ode-user-position-list>
       <div *ngIf="showEmptyScreen" class="empty-screen">
-        <img height="100" src="/admin/public/img/user-position-empty-screen.svg" />
+        <img
+          height="100"
+          src="/admin/public/img/user-position-empty-screen.svg"
+        />
         <s5l>user-position.input-name.not-found</s5l>
         <button (click)="openUserPositionCreationModal()">
           <s5l>user-position.add</s5l>
           <i class="fa fa-plus-circle is-size-5"></i>
         </button>
-      </div>        
+      </div>
     </div>
   </ode-lightbox>
 
@@ -47,4 +56,18 @@
     (onClose)="addUserPositionToList($event)"
   >
   </ode-user-position-modal>
+
+  <ode-lightbox-confirm
+    *ngIf="positionToRemove"
+    [show]="showConfirmRemovePosition"
+    lightboxTitle="user-position.confirm.remove.title"
+    (onCancel)="removeUserPositionCancel()"
+    (onConfirm)="removeUserPositionConfirmed()"
+  >
+    <p>
+      <s5l [s5l-params]="{ name: positionToRemove.name }"
+        >user-position.confirm.remove.text</s5l
+      >
+    </p>
+  </ode-lightbox-confirm>
 </ode-panel-section>
