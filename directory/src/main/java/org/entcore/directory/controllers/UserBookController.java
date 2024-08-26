@@ -49,6 +49,8 @@ import org.entcore.common.user.UserUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.directory.services.SchoolService;
 import org.entcore.directory.services.UserBookService;
+import org.entcore.common.user.position.UserPositionService;
+import org.entcore.common.user.position.UserPosition;
 import org.vertx.java.core.http.RouteMatcher;
 
 import fr.wseduc.bus.BusAddress;
@@ -62,6 +64,7 @@ import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.HttpClientUtils;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -80,6 +83,7 @@ public class UserBookController extends BaseController {
 	private HttpClient client;
 	private SchoolService schoolService;
 	private UserBookService userBookService;
+	private UserPositionService userPositionService;
 	private EventStore eventStore;
 	private ConversationNotification conversationNotification;
 	protected enum DirectoryEvent { ACCESS }
@@ -90,6 +94,10 @@ public class UserBookController extends BaseController {
 		this.userBookService = userBookService;
 	}
 	
+	public void setUserPositionService(UserPositionService userPositionService) {
+		this.userPositionService = userPositionService;
+	}
+
 	@Override
 	public void init(final Vertx vertx, JsonObject config, RouteMatcher rm,
 					 Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -790,11 +798,45 @@ public class UserBookController extends BaseController {
 	@Get("/search/criteria")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void searchCriteria(HttpServerRequest request) {
+		final boolean monoStructureOnly = Boolean.parseBoolean(request.params().get("getClassesMonoStructureOnly"));
 		UserUtils.getUserInfos(eb, request, user -> {
 			if (user != null) {
-				schoolService.searchCriteria(user.getStructures()
-						, Boolean.parseBoolean(request.params().get("getClassesMonoStructureOnly"))
-						, defaultResponseHandler(request));
+				final List<String> structures = user.getStructures();
+				final String mainStructureId = (structures!=null && structures.size()>0) ? structures.get(0) : null;
+
+				// Get the UserPositions if needed
+				Future<Set<UserPosition>> userPositions = (monoStructureOnly && mainStructureId!=null) 
+					? userPositionService.getUserPositionsInStructure(null, mainStructureId, user)
+					: Future.succeededFuture(Collections.emptySet());
+
+				userPositions.onComplete( ar -> {
+					Set<UserPosition> positions;
+					if(ar.failed()) {
+						log.debug("Unable to get UserPositions, considering it empty.");
+						positions = Collections.emptySet();
+					} else {
+						positions = ar.result();
+					}
+
+					schoolService.searchCriteria(
+						structures, 
+						monoStructureOnly, 
+						(Either<String, JsonObject> either) -> {
+							if (either.isRight()) {
+								JsonObject result = either.right().getValue();
+								if(result != null) {
+									// Add UserPositions to the resulting JsonObject
+									final JsonArray positionsArray = new JsonArray();
+									positions.forEach( position -> {
+										positionsArray.add(position.toJsonObject());
+									});
+									result.put("positions", positionsArray);
+								}
+							}
+							defaultResponseHandler(request).handle(either);
+						}
+					);
+			 	});
 			} else {
 				badRequest(request, "invalid.user");
 			}

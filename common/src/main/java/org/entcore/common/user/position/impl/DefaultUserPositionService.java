@@ -26,14 +26,19 @@ public class DefaultUserPositionService implements UserPositionService {
 	private final Neo4j neo4jClient = Neo4j.getInstance();
 
 	@Override
-	public Future<Set<UserPosition>> getUserPositions(String prefix, String structureId, UserInfos adminInfos ) {
-		return getUserPositions(null, prefix, structureId, adminInfos);
+	public Future<Set<UserPosition>> getUserPositions(String prefix, String structureId, UserInfos adminInfos) {
+		return getAdminUserPositions(null, prefix, structureId, adminInfos);
+	}
+
+	@Override
+	public Future<Set<UserPosition>> getUserPositionsInStructure(String prefix, String structureId, UserInfos user) {
+		return getUserPositions(null, prefix, structureId, user);
 	}
 
 	@Override
 	public Future<UserPosition> getUserPosition(String userPositionId, UserInfos adminInfos) {
 		Promise<UserPosition> promise = Promise.promise();
-		getUserPositions(userPositionId, null, null, adminInfos)
+		getAdminUserPositions(userPositionId, null, null, adminInfos)
 				.onSuccess(userPositions -> {
 					if (userPositions.isEmpty()) {
 						final String error = "No user position found.";
@@ -47,7 +52,7 @@ public class DefaultUserPositionService implements UserPositionService {
 		return promise.future();
 	}
 
-	private Future<Set<UserPosition>> getUserPositions(String positionId, String prefix, String structureId, UserInfos adminInfos ) {
+	private Future<Set<UserPosition>> getAdminUserPositions(String positionId, String prefix, String structureId, UserInfos adminInfos) {
 		Promise<Set<UserPosition>> promise = Promise.promise();
 		fetchAdminStructures(adminInfos).onSuccess(structureIds -> {
 			if (structureIds.isEmpty()) {
@@ -94,6 +99,51 @@ public class DefaultUserPositionService implements UserPositionService {
 				}));
 			}
 		}).onFailure(promise::fail);
+		
+		return promise.future();
+	}
+
+	private Future<Set<UserPosition>> getUserPositions(String positionId, String prefix, String structureId, UserInfos userInfos) {
+		Promise<Set<UserPosition>> promise = Promise.promise();
+		final JsonObject params = new JsonObject()
+			.put("userStructureIds", new JsonArray(
+				userInfos.getStructures() == null ? Collections.emptyList() : userInfos.getStructures()
+			));
+
+		final StringBuilder query = new StringBuilder();
+		query.append("MATCH (p:UserPosition)-[:IN]->(s:Structure) ")
+				.append("WHERE s.id IN {userStructureIds} ");
+		//filters user positions whose id match the specified user position id
+		if (!StringUtils.isEmpty(positionId)) {
+			query.append("AND p.id = {positionId} ");
+			params.put("positionId", positionId);
+		}
+		// filters user positions whose name don't match the prefix
+		if (prefix != null) {
+			query.append("AND p.name =~ {prefixRegex} ");
+			params.put("prefixRegex", prefix + ".*");
+		}
+		// filters user positions related to a specific structure
+		if (!StringUtils.isEmpty(structureId)) {
+			query.append("AND s.id = {structureId} ");
+			params.put("structureId", structureId);
+		}
+		query.append("RETURN p.id as id, p.name as name, p.source as source, s.id as structureId ");
+		neo4jClient.execute(query.toString(), params, Neo4jResult.validResultHandler(event -> {
+			if (event.isLeft()) {
+				logger.warn("Failed fetching user positions : " + event.left().getValue());
+				promise.fail(event.left().getValue());
+			} else {
+				Set<UserPosition> userPositions = new HashSet<>();
+				JsonArray results = event.right().getValue();
+				results.forEach(result -> {
+					JsonObject jsonResult = (JsonObject) result;
+					userPositions.add(createUserPositionFromResult(jsonResult));
+				});
+				promise.complete(userPositions);
+			}
+		}));
+	
 		return promise.future();
 	}
 

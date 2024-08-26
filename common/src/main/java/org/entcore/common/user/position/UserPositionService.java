@@ -16,6 +16,14 @@ public interface UserPositionService {
 	Future<Set<UserPosition>> getUserPositions(String prefix, String structureId, UserInfos adminInfos);
 
 	/**
+	 * Retrieve user positions linked to a structure which the user is attached to.
+	 * @param prefix if not null, filters the result : keeps only the user positions whose name match the prefix pattern
+	 * @param structureId keeps the user positions linked to this structure. Cannot be null.
+	 * @return the retrieved user positions, filtered by prefix
+	 */
+	Future<Set<UserPosition>> getUserPositionsInStructure(String prefix, String structureId, UserInfos userInfos);
+
+	/**
 	 * Retrieve a user position by its id
 	 * @param userPositionId the id of the user position to retrieve
 	 * @param adminInfos the current admin infos
