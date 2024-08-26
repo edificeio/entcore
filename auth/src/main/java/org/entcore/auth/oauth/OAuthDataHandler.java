@@ -100,6 +100,7 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 	private static final String ACCESS_TOKEN_COLLECTION = "tokens";
 	private static final int CODE_EXPIRES = 600000; // 10 min
 	private static final Logger log = LoggerFactory.getLogger(OAuthDataHandler.class);
+	protected static final long EXPIRES_AFTER = 60000L; // 1 min
 	private final int pwMaxRetry;
 	private final long pwBanDelay;
 	private final int defaultSyncValue;
@@ -520,9 +521,9 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 									persistToken(token);
 								}
 							} else { // revoke existing token and code with same authId
-								mongo.delete(ACCESS_TOKEN_COLLECTION, query);
-								mongo.delete(AUTH_INFO_COLLECTION,
-										new JsonObject().put("_id", authInfo.getId()));
+								final JsonObject setTTL = getSetTTL();
+								mongo.update(ACCESS_TOKEN_COLLECTION, query, setTTL, false, true);
+								mongo.update(AUTH_INFO_COLLECTION, new JsonObject().put("_id", authInfo.getId()), setTTL, false, true);
 								handler.handle(null);
 							}
 						}
@@ -923,7 +924,7 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 	public void deleteTokensByAuthId(String authId) {
 		if (authId != null) {
 			JsonObject query = new JsonObject().put("authId", authId);
-			mongo.delete(ACCESS_TOKEN_COLLECTION, query);
+			mongo.update(ACCESS_TOKEN_COLLECTION, query, getSetTTL(), false, true);
 		} else {
 			log.error("Id Token not removed");
 		}
@@ -949,10 +950,15 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 	@Override
 	public void deleteAuthorization(JsonObject auth, Handler<Message<JsonObject>> callback) {
 		if (auth != null) {
-			mongo.delete(AUTH_INFO_COLLECTION, auth, callback::handle);
+			mongo.update(AUTH_INFO_COLLECTION, auth, getSetTTL(), false, true, callback::handle);
 		} else {
 			log.error("Authorization cannot be removed");
 		}
+	}
+
+	private JsonObject getSetTTL() {
+		return new JsonObject().put("$set", new JsonObject()
+				.put("flagTTL", new JsonObject().put("$date", (System.currentTimeMillis() - EXPIRES_AFTER))));
 	}
 
 }
