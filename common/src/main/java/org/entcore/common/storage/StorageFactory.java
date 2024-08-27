@@ -32,6 +32,7 @@ import org.entcore.common.storage.impl.FileStorage;
 import org.entcore.common.storage.impl.GridfsStorage;
 import org.entcore.common.storage.impl.HttpAntivirusClient;
 import org.entcore.common.storage.impl.S3FallbackStorage;
+import org.entcore.common.storage.impl.S3FallbackS3FSStorage;
 import org.entcore.common.storage.impl.StorageFileAnalyzer;
 import org.entcore.common.storage.impl.SwiftStorage;
 
@@ -187,6 +188,7 @@ public class StorageFactory {
 			((FileStorage) storage).setValidator(fileValidator);
 
 			JsonObject s3fallback = fs.getJsonObject("s3fallback");
+			JsonObject s3fallbacks3fs = fs.getJsonObject("s3fallbacks3fs");
 			if (s3fallback != null) {
 				final String host = s3fallback.getString("host");
 				final String name = s3fallback.getString("name");
@@ -199,6 +201,21 @@ public class StorageFactory {
 					S3FallbackStorage s3FallbackStorage = new S3FallbackStorage(
 							vertx, host, name, multiBuckets, nbStorageFolder, region, accessKey, secretKey);
 					((FileStorage) storage).setFallbackStorage(s3FallbackStorage);
+				}
+			}
+			else if (s3fallbacks3fs != null) {
+				final String uri = s3fallbacks3fs.getString("uri");
+				final String bucket = s3fallbacks3fs.getString("bucket");
+				final String region = s3fallbacks3fs.getString("region");
+				final String accessKey = s3fallbacks3fs.getString("accessKey");
+				final String secretKey = s3fallbacks3fs.getString("secretKey");
+				final String ssecKey = s3fallbacks3fs.getString("ssec");
+				final int bucketMaxAge = s3fallbacks3fs.getInteger("bucketMaxAge", 2);
+
+				if (isNotEmpty(uri) && isNotEmpty(bucket) && isNotEmpty(region) && isNotEmpty(accessKey) && isNotEmpty(secretKey)) {
+					S3FallbackS3FSStorage s3FallbackS3FSStorage = new S3FallbackS3FSStorage(
+							vertx, uri, bucket, region, accessKey, secretKey, ssecKey, bucketMaxAge);
+					((FileStorage) storage).setFallbackStorage(s3FallbackS3FSStorage);
 				}
 			}
 		} else {
