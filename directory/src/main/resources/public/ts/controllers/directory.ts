@@ -951,6 +951,10 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		return (!groups && $scope.checkProfileTeacherPersonnel(profiles)) || (groups && ((classes && !groups.length && !profiles.length && !classes.length) || (!classes && !groups.length && $scope.checkProfileTeacherPersonnel(profiles))));
 	};
 
+	$scope.testPositionFilterAvailable = function(profiles, groups, classes) {
+		return (!groups && $scope.checkProfileTeacherPersonnel(profiles)) || (groups && ((classes && !groups.length && !profiles.length && !classes.length) || (!classes && !groups.length && $scope.checkProfileTeacherPersonnel(profiles))));
+	};
+
 	$scope.checkProfileTeacherPersonnel = function(profiles) {
 		return profiles.length === 0 || profiles.indexOf("Teacher") !== -1 || profiles.indexOf("Personnel") !== -1;
 	}
