@@ -371,7 +371,6 @@ public class Structure {
 							if ("ok".equals(event.body().getString("status"))) {
 								if (!onlyRemoveShare) {
 									for (Object u : res.getJsonArray("users")) {
-										User.backupRelationship(u.toString(), false, tx);
 										User.transition(u.toString(), tx);
 									}
 									transitionClassGroup();
