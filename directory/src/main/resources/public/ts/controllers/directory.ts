@@ -63,6 +63,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 				classes: [],
 				profiles: [],
 				functions: [],
+				positions: [],
 				types: [],
 			}
 		}
@@ -852,7 +853,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	$scope.canFavoriteFormInitSearch = function() {
 		return $scope.create.favorite.search || $scope.create.favorite.filters.structures || $scope.create.favorite.filters.classes || 
 				$scope.create.favorite.filters.profles || $scope.create.favorite.filters.functions || 
-				$scope.create.favorite.filters.types || $scope.favoriteFormUsersGroups.length > 0;
+				$scope.create.favorite.filters.types || $scope.create.favorite.filters.positions || $scope.favoriteFormUsersGroups.length > 0;
 	};
 
 	$scope.favoriteFormInitSearch = function() {
@@ -861,11 +862,13 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.create.favorite.filters.classes = [];
 		$scope.create.favorite.filters.profiles = [];
 		$scope.create.favorite.filters.functions = [];
+		$scope.create.favorite.filters.positions = [];
 		$scope.create.favorite.filters.types = [];
 		$scope.checkOption($scope.create.favorite.options.structures, false);
 		$scope.checkOption($scope.create.favorite.options.classes, false);
 		$scope.checkOption($scope.create.favorite.options.profiles, false);
 		$scope.checkOption($scope.create.favorite.options.functions, false);
+		$scope.checkOption($scope.create.favorite.options.positions, false);
 		$scope.checkOption($scope.create.favorite.options.types, false);
 		$scope.favoriteFormUsersGroups = [];
 	};
@@ -1014,6 +1017,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	 * @param class			string | string[]
 	 * @param profile		an ID
 	 * @param structure		an ID
+	 * @param position		an ID
 	 * 
 	 * Example URL : /userbook/annuaire#/search?filters=groups&structure=an_id&profile=Teacher&class=TP1&class=TP2
 	 */
@@ -1022,7 +1026,8 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			filters?:"users"|"groups",
 			class?:string|Array<string>,
 			profile?:string|Array<string>,
-			structure?:string
+			structure?:string,
+			position?:string
 		} = $location.search();
 
 		let filters;
@@ -1052,6 +1057,11 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		} else if( angular.isArray(params.class) ) {
 			filters = filters || {};
 			filters.classes = params.class;
+		}
+
+		if( typeof params.position === "string" ) {
+			filters = filters || {};
+			filters.positions = [params.position];
 		}
 
 		if( filters ) {
