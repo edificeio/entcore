@@ -529,6 +529,7 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 		JsonObject json = new JsonObject()
 				.put("host", notification.getHost(request))
 				.put("resetUri", notification.getHost(request) + "/auth/reset/" + resetCode)
+				.put("resetCode", resetCode)
 				.put("displayName", displayName);
 
 
