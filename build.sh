@@ -183,6 +183,25 @@ publish () {
   docker compose run --rm $USER_OPTION gradle gradle "$GRADLE_OPTION"publish
 }
 
+itTests() {
+  all_successful=true
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  for script in $(find "$script_dir/tests/src/test/js/it" -type f -name "run.sh"); do
+    # Execute the script
+    bash "$script"
+    
+    # Check the exit status of the script
+    if [ $? -ne 0 ]; then
+        all_successful=false  # If any script fails, exit with status 1
+    fi
+  done
+  if [ "$all_successful" = true ]; then
+    exit 0
+  else
+    exit 1
+  fi
+}
+
 for param in "$@"
 do
   case $param in
@@ -214,6 +233,9 @@ do
       ;;
     test)
       testGradle
+      ;;
+    itTests)
+      itTests
       ;;
     infra)
       infra
