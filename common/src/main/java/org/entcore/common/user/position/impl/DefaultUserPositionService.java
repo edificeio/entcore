@@ -26,19 +26,19 @@ public class DefaultUserPositionService implements UserPositionService {
 	private final Neo4j neo4jClient = Neo4j.getInstance();
 
 	@Override
-	public Future<Set<UserPosition>> getUserPositions(String prefix, String structureId, UserInfos adminInfos) {
-		return getAdminUserPositions(null, prefix, structureId, adminInfos);
+	public Future<Set<UserPosition>> getUserPositions(UserInfos user) {
+		return getUserPositions(null, null, null, user);
 	}
 
 	@Override
-	public Future<Set<UserPosition>> getUserPositionsInStructure(String prefix, String structureId, UserInfos user) {
-		return getUserPositions(null, prefix, structureId, user);
+	public Future<Set<UserPosition>> getUserPositions(String prefix, String structureId, UserInfos adminInfos) {
+		return getUserPositionsForAdmin(null, prefix, structureId, adminInfos);
 	}
 
 	@Override
 	public Future<UserPosition> getUserPosition(String userPositionId, UserInfos adminInfos) {
 		Promise<UserPosition> promise = Promise.promise();
-		getAdminUserPositions(userPositionId, null, null, adminInfos)
+		getUserPositionsForAdmin(userPositionId, null, null, adminInfos)
 				.onSuccess(userPositions -> {
 					if (userPositions.isEmpty()) {
 						final String error = "No user position found.";
@@ -52,67 +52,34 @@ public class DefaultUserPositionService implements UserPositionService {
 		return promise.future();
 	}
 
-	private Future<Set<UserPosition>> getAdminUserPositions(String positionId, String prefix, String structureId, UserInfos adminInfos) {
-		Promise<Set<UserPosition>> promise = Promise.promise();
-		fetchAdminStructures(adminInfos).onSuccess(structureIds -> {
-			if (structureIds.isEmpty()) {
-				logger.warn(ADMIN_WITHOUT_STRUCTURE);
-				promise.fail(ADMIN_WITHOUT_STRUCTURE);
-			} else {
-				final JsonArray adminStructureIds = new JsonArray();
-				structureIds.forEach(adminStructureIds::add);
-				final JsonObject params = new JsonObject()
-						.put("adminStructureIds", adminStructureIds);
-
-				final StringBuilder query = new StringBuilder();
-				query.append("MATCH (p:UserPosition)-[:IN]->(s:Structure) ")
-						.append("WHERE s.id IN {adminStructureIds} ");
-				//filters user positions whose id match the specified user position id
-				if (!StringUtils.isEmpty(positionId)) {
-					query.append("AND p.id = {positionId} ");
-					params.put("positionId", positionId);
+	private Future<Set<UserPosition>> getUserPositionsForAdmin(String positionId, String prefix, String structureId, UserInfos adminInfos) {
+		return fetchAdminStructures(adminInfos)
+			.compose(structureIds -> {
+				if (structureIds.isEmpty()) {
+					logger.warn(ADMIN_WITHOUT_STRUCTURE);
+					return Future.failedFuture(ADMIN_WITHOUT_STRUCTURE);
 				}
-				// filters user positions whose name don't match the prefix
-				if (prefix != null) {
-					query.append("AND p.name =~ {prefixRegex} ");
-					params.put("prefixRegex", prefix + ".*");
-				}
-				// filters user positions related to a specific structure
-				if (!StringUtils.isEmpty(structureId)) {
-					query.append("AND s.id = {structureId} ");
-					params.put("structureId", structureId);
-				}
-				query.append("RETURN p.id as id, p.name as name, p.source as source, s.id as structureId ");
-				neo4jClient.execute(query.toString(), params, Neo4jResult.validResultHandler(event -> {
-					if (event.isLeft()) {
-						logger.warn("Failed fetching user positions : " + event.left().getValue());
-						promise.fail(event.left().getValue());
-					} else {
-						Set<UserPosition> userPositions = new HashSet<>();
-						JsonArray results = event.right().getValue();
-						results.forEach(result -> {
-							JsonObject jsonResult = (JsonObject) result;
-							userPositions.add(createUserPositionFromResult(jsonResult));
-						});
-						promise.complete(userPositions);
-					}
-				}));
-			}
-		}).onFailure(promise::fail);
-		
-		return promise.future();
+				return getUserPositions(positionId, prefix, structureId, new ArrayList<String>(structureIds));
+			});
 	}
 
 	private Future<Set<UserPosition>> getUserPositions(String positionId, String prefix, String structureId, UserInfos userInfos) {
+		return getUserPositions(
+			positionId, 
+			prefix, 
+			structureId, 
+			userInfos.getStructures() == null ? Collections.emptyList() : userInfos.getStructures()
+		);
+	}
+
+	private Future<Set<UserPosition>> getUserPositions(String positionId, String prefix, String structureId, List<String> structureIds) {
 		Promise<Set<UserPosition>> promise = Promise.promise();
 		final JsonObject params = new JsonObject()
-			.put("userStructureIds", new JsonArray(
-				userInfos.getStructures() == null ? Collections.emptyList() : userInfos.getStructures()
-			));
+			.put("structureIds", new JsonArray(structureIds));
 
 		final StringBuilder query = new StringBuilder();
 		query.append("MATCH (p:UserPosition)-[:IN]->(s:Structure) ")
-				.append("WHERE s.id IN {userStructureIds} ");
+				.append("WHERE s.id IN {structureIds} ");
 		//filters user positions whose id match the specified user position id
 		if (!StringUtils.isEmpty(positionId)) {
 			query.append("AND p.id = {positionId} ");

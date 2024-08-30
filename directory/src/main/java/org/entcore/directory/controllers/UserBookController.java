@@ -798,18 +798,11 @@ public class UserBookController extends BaseController {
 	@Get("/search/criteria")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void searchCriteria(HttpServerRequest request) {
-		final boolean monoStructureOnly = Boolean.parseBoolean(request.params().get("getClassesMonoStructureOnly"));
+		final boolean getClassesMonoStructureOnly = Boolean.parseBoolean(request.params().get("getClassesMonoStructureOnly"));
 		UserUtils.getUserInfos(eb, request, user -> {
 			if (user != null) {
-				final List<String> structures = user.getStructures();
-				final String mainStructureId = (structures!=null && structures.size()>0) ? structures.get(0) : null;
-
-				// Get the UserPositions if needed
-				Future<Set<UserPosition>> userPositions = (monoStructureOnly && mainStructureId!=null) 
-					? userPositionService.getUserPositionsInStructure(null, mainStructureId, user)
-					: Future.succeededFuture(Collections.emptySet());
-
-				userPositions.onComplete( ar -> {
+				userPositionService.getUserPositions(user)
+				.onComplete( ar -> {
 					Set<UserPosition> positions;
 					if(ar.failed()) {
 						log.debug("Unable to get UserPositions, considering it empty.");
@@ -819,17 +812,15 @@ public class UserBookController extends BaseController {
 					}
 
 					schoolService.searchCriteria(
-						structures, 
-						monoStructureOnly, 
+						user.getStructures(), 
+						getClassesMonoStructureOnly, 
 						(Either<String, JsonObject> either) -> {
 							if (either.isRight()) {
 								JsonObject result = either.right().getValue();
 								if(result != null) {
 									// Add UserPositions to the resulting JsonObject
 									final JsonArray positionsArray = new JsonArray();
-									positions.forEach( position -> {
-										positionsArray.add(position.toJsonObject());
-									});
+									positions.forEach(position -> positionsArray.add(position.toJsonObject()));
 									result.put("positions", positionsArray);
 								}
 							}
