@@ -30,6 +30,7 @@ import org.entcore.auth.services.OpenIdConnectServiceProvider;
 import org.entcore.auth.services.OpenIdServiceProviderFactory;
 import org.entcore.auth.services.impl.OpenIdSloServiceImpl;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.http.RouteMatcher;
 
 import io.vertx.core.Handler;
@@ -72,28 +73,57 @@ public class OpenIdConnectController extends AbstractFederateController {
 
 	@Get("/openid/login")
 	public void login(HttpServerRequest request) {
-		final OpenIdConnectServiceProvider openIdConnectServiceProvider = openIdConnectServiceProviderFactory.serviceProvider(request);
-		if (openIdConnectServiceProvider == null) return;
-		OpenIdConnectClient oic = openIdConnectServiceProviderFactory.openIdClient(request);
-		if (oic == null) return;
-		String state = UUID.randomUUID().toString();
-		CookieHelper.getInstance().setSigned("csrfstate", state, 900, request);
-		final String nonce = UUID.randomUUID().toString();
-		CookieHelper.getInstance().setSigned("nonce", nonce, 900, request);
-		String stateWithCallback = null;
+		final String callBack;
 		if (request.params().contains("callback") && isNotEmpty(request.params().get("callback"))) {
-			String baseUrl = null;
-			try {
-				baseUrl = extractBaseUrl(request.params().get("callback"));
-				stateWithCallback = URLEncoder.encode(String.format("%s:%s", state, baseUrl),
-						"UTF-8");
-			} catch (Exception e) {
-				log.info("Error due to url format  : ", e);
-			}
-
+			callBack = request.params().get("callback");
+		} else {
+			callBack = null;
 		}
-		oic.authorizeRedirect(request, stateWithCallback == null ? state : stateWithCallback, nonce,
-				openIdConnectServiceProvider.getScope());
+
+		UserUtils.getUserInfos(eb, request, userInfos -> {
+			if (userInfos != null && userInfos.getUserId() != null) {
+				final String host;
+				final String path;
+				if (callBack != null) {
+                    try {
+                        final URL fullUrl = new URL(callBack);
+						host = String.format("%s://%s", fullUrl.getProtocol(), fullUrl.getHost());
+						path = fullUrl.getPath();
+                    } catch (Exception e) {
+						log.error("Error due to url format  : ", e);
+						badRequest(request);
+						return;
+                    }
+				} else {
+					host = getScheme(request) + "://" + getHost(request);
+					path = "";
+				}
+				redirectionService.redirect(request, host, path);
+			} else {
+				final OpenIdConnectServiceProvider openIdConnectServiceProvider = openIdConnectServiceProviderFactory.serviceProvider(request);
+				if (openIdConnectServiceProvider == null) return;
+				OpenIdConnectClient oic = openIdConnectServiceProviderFactory.openIdClient(request);
+				if (oic == null) return;
+				String state = UUID.randomUUID().toString();
+				CookieHelper.getInstance().setSigned("csrfstate", state, 900, request);
+				final String nonce = UUID.randomUUID().toString();
+				CookieHelper.getInstance().setSigned("nonce", nonce, 900, request);
+				String stateWithCallback = null;
+				if (callBack != null) {
+					String baseUrl = null;
+					try {
+						baseUrl = extractBaseUrl(callBack);
+						stateWithCallback = URLEncoder.encode(String.format("%s:%s", state, baseUrl),
+								"UTF-8");
+					} catch (Exception e) {
+						log.info("Error due to url format  : ", e);
+					}
+
+				}
+				oic.authorizeRedirect(request, stateWithCallback == null ? state : stateWithCallback, nonce,
+						openIdConnectServiceProvider.getScope());
+			}
+        });
 	}
 
 	@Get("/openid/authenticate")
