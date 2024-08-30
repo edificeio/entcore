@@ -12,6 +12,7 @@ import {
   createEmptyStructure,
   initStructure,
   logout,
+  activateUsers,
   deletePosition,
   getRandomUserWithProfile,
   attachStructureAsChild,
