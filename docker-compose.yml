@@ -41,3 +41,5 @@ services:
       VUS: 100
       ADMC_LOGIN: tom.mate
       ADMC_PASSWORD: password
+      DEFAULT_PASSWORD: password
+      RECREATE_STRUCTURES: false # Set to 'true' if you want to run the tests on brand new structures

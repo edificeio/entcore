@@ -2,11 +2,10 @@ import { check } from "k6";
 import chai, { describe } from "https://jslib.k6.io/k6chaijs/4.3.4.2/index.js";
 import {
   authenticateWeb,
-  assertKo,
+  assertCondition,
   assertOk,
-  makeADML,
+  makeAdml,
   searchPositions,
-  createDefaultStructure,
   createPosition,
   createPositionOrFail,
   getUsersOfSchool,
@@ -14,14 +13,18 @@ import {
   initStructure,
   logout,
   deletePosition,
-  getRandomUserWithProfile
+  getRandomUserWithProfile,
+  attachStructureAsChild,
+  getAdmlsOrMakThem
 } from "https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
 
 
 chai.config.logFailures = true;
 
+
 export const options = {
   setupTimeout: "1h",
+  maxRedirects: 0,
   thresholds: {
     checks: ["rate == 1.00"],
   },
@@ -30,32 +33,33 @@ export const options = {
       exec: 'testCreatePosition',
       executor: "per-vu-iterations",
       vus: 1,
-      maxDuration: "60s",
-      gracefulStop: '60s',
-    },
-    searchPositionsOnOneEtab: {
-      exec: 'searchPositionsOnOneEtab',
-      executor: "per-vu-iterations",
-      vus: 1,
-      maxDuration: "60s",
-      gracefulStop: '60s',
-    },
-    searchPositionsOnMultipleEtabs: {
-      exec: 'searchPositionsOnMultipleEtabs',
-      executor: "per-vu-iterations",
-      vus: 1,
-      maxDuration: "60s",
-      gracefulStop: '60s',
+      maxDuration: "5s",
+      gracefulStop: '1s',
     },
     deletePosition: {
       exec: 'testDeletePosition',
       executor: "per-vu-iterations",
       vus: 1,
-      maxDuration: "60s",
-      gracefulStop: '60s',
+      maxDuration: "5s",
+      gracefulStop: '1s'
+    },
+    searchPositionsOnOneEtab: {
+      exec: 'searchPositionsOnOneEtab',
+      executor: "per-vu-iterations",
+      vus: 1,
+      maxDuration: "5s",
+      gracefulStop: '1s'
+    },
+    searchPositionsOnMultipleEtabs: {
+      exec: 'searchPositionsOnMultipleEtabs',
+      executor: "per-vu-iterations",
+      vus: 1,
+      maxDuration: "5s",
+      gracefulStop: '1s'
     },
   },
 };
+
 
 /**
  * @returns A test dataset containing
@@ -71,37 +75,33 @@ export function setup() {
   let structure;
   let adml;
   let structureTree;
+  let chapeau;
   describe("[Position-CRUD] Initialize data", () => {
     //////////////////////////////////////////////////////
     // Create a simple structure and create one ADML for it
-    structure = createDefaultStructure();
-    const session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
-    const users = getUsersOfSchool(structure, session)
-    adml = getRandomUserWithProfile(users, 'Teacher');
-    makeADML(adml, structure, session)
+    const suffix = __ENV.RECREATE_STRUCTURES === 'true' ? ` - ${Date.now()}` : ''
+    structure = initStructure(`IT - Fonctions${suffix}`, 'tiny');
+    let session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+    adml = getAdmlsOrMakThem(structure, 'Teacher', 1, session)[0]
 
 
-    const schoolName = `IT Positions - NEtab ${Date.now()}`
-
+    const schoolName = `IT Positions - NEtab`
     //////////////////////////////////
     // Create 1 head structure and 2
     // depending structures
-    const chapeau = createEmptyStructure(`Chapeau - ${schoolName}`, false, session)
-    const structure1 = initStructure(`1 - ${schoolName}`, session)
-    const structure2 = initStructure(`2 - ${schoolName}`, session)
+    const chapeau = createEmptyStructure(`Chapeau - ${schoolName}${suffix}`, false, session)
+    const structure1 = initStructure(`1 - ${schoolName}${suffix}`, 'tiny')
+    const structure2 = initStructure(`2 - ${schoolName}${suffix}`, 'tiny')
+    const structure3 = initStructure(`3 - ${schoolName}${suffix}`, 'tiny')
     attachStructureAsChild(chapeau, structure1, session)
     attachStructureAsChild(chapeau, structure2, session)
     ////////////////////////////////////
     // Create 1 ADML for each structure
     // and 1 ADML for the head structure
-    const users1 = getUsersOfSchool(structure1, session)
-    const adml1 = getRandomUserWithProfile(users1, 'Teacher');
-    makeADML(adml1, structure1, session)
-    const users2 = getUsersOfSchool(structure2, session)
-    const adml2 = getRandomUserWithProfile(users2, 'Teacher');
-    makeADML(adml2, structure2, session)
-    const megaAdml = getRandomUserWithProfile(users2, 'Teacher', [adml2]);
-    makeADML(megaAdml, structure, session)
+    const megaAdml = getAdmlsOrMakThem(structure3, 'Teacher', 1, session)[0]
+    makeAdml(megaAdml, chapeau, session)
+    const adml1 = getAdmlsOrMakThem(structure1, 'Teacher', 1, [megaAdml], session)[0]
+    const adml2 = getAdmlsOrMakThem(structure2, 'Teacher', 1, [megaAdml], session)[0]
     structureTree = { head: chapeau, structures: [structure1, structure2], admls: [adml1, adml2], headAdml: megaAdml}
   });
   return { structure, adml, structureTree };
@@ -124,21 +124,20 @@ export function testCreatePosition({structure, adml, structureTree}) {
 
     logout(session)
     let res = createPosition(positionName, structure);
-    assertKo(res, "An unauthenticated user should not be able to create a position");
+    assertCondition(() => res.status === 401, "An unauthenticated user should not be able to create a position");
 
     session = authenticateWeb(teacher.login)
     res = createPosition(positionName, structure, session);
-    assertKo(res, "An authenticated user without special rights should not be able to create a position");
+    assertCondition(() => res.status === 401, "An authenticated user without special rights should not be able to create a position");
 
 
     session = authenticateWeb(adml.login)
     res = createPosition(positionName, structure, session);
-    assertOk(res, "An ADML user should not be able to create a position");
-
+    assertCondition(() => res.status === 201, "An ADML user should be able to create a position");
 
     session = authenticateWeb(adml1.login)
-    res = createPosition(positionName, structure, session);
-    assertKo(res, "An ADML of another structure should not be able to create a position");
+    res = createPosition(`${positionName}-ADML2`, structure, session);
+    assertCondition(() => res.status === 401, "An ADML of another structure should not be able to create a position");
 
     // An ADMC should be able to create a position
     session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
@@ -154,10 +153,10 @@ export function testCreatePosition({structure, adml, structureTree}) {
  */
 export function searchPositionsOnOneEtab({structure, adml}) {
   describe("[Position-CRUD] Search Positions - One Etab", () => {
-    const session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+    let session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
     createPositionOrFail(`IT Position - Search - Coucou`, structure, session)
     createPositionOrFail(`IT Position - Search - Hello`, structure, session)
-    createPositionOrFail(`IT Position - Search - Hello les amis`, structure, session)
+    createPositionOrFail(`IT Position - Search - HellÔ les amis`, structure, session)
     createPositionOrFail(`IT Position - Search - Hello les amis coucou`, structure, session)
   
     
@@ -165,17 +164,24 @@ export function searchPositionsOnOneEtab({structure, adml}) {
     const teacher = getRandomUserWithProfile(users, 'Teacher', [adml]);
 
     let res = searchPositions('Coucou');
-    assertKo(res, "An unauthenticated user should not be able to search positions");
+    assertCondition(() => res.status === 401, "An unauthenticated user should not be able to search positions");
 
 
     session = authenticateWeb(teacher.login)
     res = searchPositions('Coucou', session);
-    assertKo(res, "An authenticated user without special rights should not be able to search positions");
+    assertCondition(() => res.status === 401, "An authenticated user without special rights should not be able to search positions");
 
 
     session = authenticateWeb(adml.login)
     res = searchPositions('Coucou', session);
     assertOk(res, "An ADML should be able to search positions");
+    res = searchPositions('hello', session);
+    check(JSON.parse(res.body), {
+      'search should return all positions containing the filter': pos => pos && pos.length === 3,
+      'search shoud be case-insensitive': pos => pos.filter(p => p.name.contains('Hello')).length == 2,
+      'search shoud be special-character-insensitive': pos => pos.filter(p => p.name.contains('HellÔ')).length == 1,
+      'no duplicates were returned': pos =>   noDuplicates(pos)
+    })
 
 
     session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
@@ -190,9 +196,9 @@ export function searchPositionsOnOneEtab({structure, adml}) {
  * @param {*} param0 Initialized data
  */
 export function searchPositionsOnMultipleEtabs({structureTree}) {
-  const {structures: [structure1, structure2], admls: [adml1, adml2]} = structureTree
+  const {structures: [structure1, structure2], admls: [adml1, adml2], headAdml} = structureTree
   describe("[Position-CRUD] Search Positions - Multiple Etab", () => {
-    const session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+    let session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
     //////////////////////////////////
     // Search positions
     //////////////////////////////////
@@ -209,30 +215,29 @@ export function searchPositionsOnMultipleEtabs({structureTree}) {
       createPositionOrFail(`IT Position - Search - MEtab2 Hello`, structure2, session),
       createPositionOrFail(`IT Position - Search - MEtab2 Hello les amis`, structure2, session)
     ]
-
     session = authenticateWeb(adml1.login)
 
-    let res = searchPositions('MEtab', session);
+    let res = searchPositions('IT Position - Search - MEtab', session);
     check(JSON.parse(res.body), {
       'adml of structure1 should see the positions of structure 1 only': pos => pos && pos.length === positions1.length,
       'all positions of structure1 should be fetched': pos => allPositionsOk(positions1, pos),
-      'no duplicates were returned': pos =>   (positions1)
+      'no duplicates were returned': pos =>   noDuplicates(pos)
     })
-    res = searchPositions('MEtab2', session);
+    res = searchPositions('IT Position - Search - MEtab2', session);
     check(JSON.parse(res.body), {
       'adml of structure1 should see no positions of structure 2': pos => pos && pos.length === 0
     })
 
     session = authenticateWeb(adml2.login)
-    res = searchPositions('MEtab', session);
+    res = searchPositions('IT Position - Search - MEtab', session);
     check(JSON.parse(res.body), {
       'adml of structure2 should see the positions of structure 2 only': pos => pos && pos.length === positions2.length,
-      'all positions of structure1 should be fetched': pos => allPositionsOk(positions2, pos),
-      'no duplicates were returned': pos => noDuplicates(positions2)
+      'all positions of structure2 should be fetched': pos => allPositionsOk(positions2, pos),
+      'no duplicates were returned': pos => noDuplicates(pos)
     })
 
-    session = authenticateWeb(megaAdml.login)
-    res = searchPositions('MEtab', session);
+    session = authenticateWeb(headAdml.login)
+    res = searchPositions('IT Position - Search - MEtab', session);
     check(JSON.parse(res.body), {
       'adml of structure1 and structure2 should see the positions of both structures': pos => pos && pos.length === (positions2.length + positions1.length),
       'all positions of structure1 should be fetched': pos => allPositionsOk([...positions2, ...positions1], pos),
@@ -251,7 +256,7 @@ export function searchPositionsOnMultipleEtabs({structureTree}) {
 export function testDeletePosition({structureTree}) {
   const {structures: [structure1, structure2], admls: [adml1], headAdml} = structureTree
   describe("[Position-CRUD] Delete position", () => {
-    const session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+    let session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
 
     /////////////////////////////////////
     // Create 2 positions for structure 1
@@ -275,13 +280,13 @@ export function testDeletePosition({structureTree}) {
     /////////////////////////////////
     logout(session);
     let res = deletePosition(postionEtab2_1);
-    assertKo(res, "An unauthenticated user should not be able to delete a position");
+    assertCondition(() => res.status === 401, "An unauthenticated user should not be able to delete a position");
     session = authenticateWeb(teacher.login)
     res = deletePosition(postionEtab2_1, session);
-    assertKo(res, "A user who is not ADML should not be able to delete a position");
-    session = authenticateWeb(adml.login)
+    assertCondition(() => res.status === 401, "A user who is not ADML should not be able to delete a position");
+    session = authenticateWeb(adml1.login)
     res = deletePosition(postionEtab2_1, session);
-    assertKo(res, "An ADML of another structure should not be able to delete this position");
+    assertCondition(() => res.status === 401, "An ADML of another structure should not be able to delete this position");
     res = deletePosition(postionEtab1_1, session);
     assertOk(res, "An ADML of a structure should be able to delete a position");
 
@@ -299,20 +304,20 @@ export function testDeletePosition({structureTree}) {
 
 function allPositionsOk(expected, actual) {
   const actualIds = new Set();
-  for(const p in actual) {
+  for(const p of actual) {
     actualIds.add(p.id)
   }
   const notFound = expected.filter(p => !actualIds.has(p.id))
   if(notFound.length > 0) {
-    console.warn(`The following positions were expected but not retrieved : ${notFound}`)
+    console.warn(`The following positions were expected but not retrieved : ${notFound.map(e => e.id + '-' + e.name)}`)
   }
   return notFound.length === 0;
 }
 
 function noDuplicates(positions) {
   const actualIds = new Set();
-  for(const p in positions) {
+  for(const p of positions) {
     actualIds.add(p.id)
   }
-  return positions.length === actualIds.size();
+  return positions.length === actualIds.size;
 }
