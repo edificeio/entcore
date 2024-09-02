@@ -26,11 +26,14 @@ export class UserPositionsSectionComponent
   /** List of all positions existing in structures the user is ADMx of. */
   positionList: UserPosition[];
   userPositions: UserPosition[];
+  filteredList: UserPosition[] = [];
   searchPrefix: string = "";
   newPosition: UserPosition = {name: "", source: "MANUAL"};
   showUserPositionSelectionLightbox: boolean = false;
   showUserPositionCreationLightbox: boolean = false;
-  showEmptyScreen: boolean = false;
+  get showEmptyScreen(): boolean{
+    return this.filteredList.length === 0 && this.searchPrefix?.length > 0;
+  };
 
   showConfirmRemovePosition: boolean = false;
   positionToRemove: UserPosition;
@@ -52,16 +55,6 @@ export class UserPositionsSectionComponent
     return filteredList.filter((name, index) => (index+1>=filteredList.length || filteredList.indexOf(name, index+1)<0))
       // return result as an array of UserPosition
       .map(name => ({name}));
-  }
-
-  set newPositionName(name) {
-    name = name ? name.trim() : "";
-    // Check if the name of this new position does not already exist in the list
-    if( this.positionList && 
-        !this.positionList.some(position => position.name===name) ) {
-      this.newPosition = {name, source: "MANUAL"};
-      this.showEmptyScreen = name && name.length;
-    }
   }
 
   constructor(
@@ -142,12 +135,14 @@ export class UserPositionsSectionComponent
   }
 
   removeUserPositionCancel() {
+    this.searchPrefix = "";
     this.showConfirmRemovePosition = false;
   }
 
   removeUserPositionConfirmed() {
     this.userPositions = this.userPositions.filter((p) => p.id !== this.positionToRemove.id);
     this.saveUpdate(true);
+    this.searchPrefix = "";
     this.showConfirmRemovePosition = false;
   }
 
@@ -189,7 +184,7 @@ export class UserPositionsSectionComponent
   }
 
   filteredListChange(filteredList: UserPosition[]) {
-    this.showEmptyScreen = filteredList.length === 0;
+    this.filteredList = filteredList;
     this.cdRef.detectChanges();
   }
 }

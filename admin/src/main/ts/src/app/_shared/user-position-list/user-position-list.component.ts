@@ -65,6 +65,7 @@ export class UserPositionListComponent extends OdeComponent {
   };
 
   listChange(filteredList: UserPosition[]) {
+    // Fix issue with ode-list component triggering update too often
     if (filteredList.join("") !== this._filteredList.join("")) {
       this._filteredList = filteredList;
       this.filteredListChange.emit(filteredList);
