@@ -17,7 +17,6 @@ import {
   getRandomUserWithProfile,
   attachStructureAsChild,
   getAdmlsOrMakThem,
-  attachStructureAsChild,
   getSearchCriteria
 } from "https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
 
