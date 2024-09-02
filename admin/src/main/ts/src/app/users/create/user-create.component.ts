@@ -1,5 +1,5 @@
 import { Location } from '@angular/common';
-import { Component, Injector, OnDestroy, OnInit } from '@angular/core';
+import { Component, Injector, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { Data } from '@angular/router';
 import { OdeComponent } from 'ngx-ode-core';
 import { SelectOption, SpinnerService } from 'ngx-ode-ui';
@@ -14,8 +14,10 @@ import { UserPositionServices } from 'src/app/core/services/user-position.servic
 
 @Component({
     selector: 'ode-user-create',
+    styleUrls: ['./user-create.component.scss'],
     templateUrl: './user-create.component.html',
-    providers: [UserChildrenListService]
+    providers: [UserChildrenListService],
+    encapsulation: ViewEncapsulation.None,
 })
 export class UserCreateComponent extends OdeComponent implements OnInit, OnDestroy {
 
@@ -32,6 +34,7 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
     get canHavePositions() {
         return this.newUser.type === 'Personnel';
     }
+
     /** List of all positions existing in structures the user is ADMx of. */
     positionList: UserPosition[];
     /** List of selectable positions = all positions except duplicates and those already assigned. */
@@ -46,16 +49,13 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
             .map(name => ({name}));
     }
 
-    newPosition: UserPosition = {name: "", source: "MANUAL"};
-    set newPositionName(name) {
-        name = name ? name.trim() : "";
-        // Check if the name of this new position does not already exist in the list
-        if(this.positionList && !this.positionList.some(position => position.name===name) ) {
-            this.newPosition = {name, source: "MANUAL"};
-            this.showNewPositionProposal = name && name.length;
-        }
-    }
-    showNewPositionProposal = false;
+    showUserPositionSelectionLightbox = false;
+    newPosition: UserPosition = { name: "", source: "MANUAL" };
+    searchPrefix: string = "";
+    filteredList: UserPosition[] = [];
+    get showNewPositionProposal(): boolean {
+        return this.searchPrefix.length > 0 && this.filteredList.length === 0;
+    };
     showUserPositionCreationLightbox = false;
 
     constructor(
@@ -78,7 +78,6 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
         this.newUser.structures = [{id, name, externalId}];
         this.classeOptions = [{value: null, label: 'create.user.sansclasse'}];
 
-        this.newPositionName = undefined;
         this.positionList = await this.spinner
           .perform('portal-content', this.userPositionServices.searchUserPositions())
           .catch(err => []);
@@ -162,7 +161,8 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
         .then(addedPosition => {
             if(addedPosition) {
                 this.newUser.userDetails.userPositions.push(addedPosition);
-                this.showNewPositionProposal = false;
+                this.showUserPositionSelectionLightbox = false;
+                this.searchPrefix = "";
             }
         });
     }
@@ -198,5 +198,15 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
             return input.trim();
         }
         return input;
+    }
+
+    showPositionCreation() {
+        this.newPosition = { name: this.searchPrefix, source: "MANUAL" };
+        this.showUserPositionCreationLightbox = true;
+    }
+
+    filteredListChange(filteredList: UserPosition[]) {
+      this.filteredList = filteredList;
+      this.changeDetector.detectChanges();
     }
 }
