@@ -15,7 +15,8 @@ import {
   deletePosition,
   getRandomUserWithProfile,
   attachStructureAsChild,
-  getAdmlsOrMakThem
+  getAdmlsOrMakThem,
+  getSearchCriteria
 } from "https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
 
 
@@ -75,7 +76,6 @@ export function setup() {
   let structure;
   let adml;
   let structureTree;
-  let chapeau;
   describe("[Position-CRUD] Initialize data", () => {
     //////////////////////////////////////////////////////
     // Create a simple structure and create one ADML for it
@@ -112,10 +112,11 @@ export function setup() {
  * - non-adml users cannot create positions
  * - adml can create positions only in the structures they administer
  * - admc can create positions on avery structures
+ * - search criteria return positions accessible by the user
  * @param {*} param0 Initialized data
  */
 export function testCreatePosition({structure, adml, structureTree}) {
-  const {admls: [adml1]} = structureTree
+  const {admls: [adml1, adml2], structures: [structure1, structure2], headAdml} = structureTree
   describe("[Position-CRUD] Create positions", () => {
     let session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
     const positionName = "IT Position - Create - " + Date.now();
@@ -132,16 +133,39 @@ export function testCreatePosition({structure, adml, structureTree}) {
 
 
     session = authenticateWeb(adml.login)
+    let positions = []
     res = createPosition(positionName, structure, session);
     assertCondition(() => res.status === 201, "An ADML user should be able to create a position");
+    positions.push(JSON.parse(res.body));
+    res = createPosition(`${positionName} - bis`, structure, session);
+    assertCondition(() => res.status === 201, "An ADML user should be able to create a position");
+    positions.push(JSON.parse(res.body));
+
+    assertSearchCriteriaOnlyContainThesePositions(positions, "ADML with a structure with these positions", session);
 
     session = authenticateWeb(adml1.login)
     res = createPosition(`${positionName}-ADML2`, structure, session);
     assertCondition(() => res.status === 401, "An ADML of another structure should not be able to create a position");
+    assertSearchCriteriaOnlyContainThesePositions([], "ADML in a structure without these positions", session);
 
     // An ADMC should be able to create a position
     session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
-    createPositionOrFail(`${positionName}-ADMC`, structure, session);
+    createPositionOrFail(`${positionName}-ADMC`, structure1, session);
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // An ADML of multiple structures should be able to see the positions of all
+    // administered structures
+    // ADML of each structure create position(s) on their respective structure and
+    // then the head adml fetches the searchCriteria and we check if the previously
+    // created positions are accessible
+    positions = []
+    session = authenticateWeb(adml1.login);
+    positions.push(createPositionOrFail(`${positionName}-ADML1-0`, structure1, session));
+    positions.push(createPositionOrFail(`${positionName}-ADML1-1`, structure1, session));
+    session = authenticateWeb(adml2.login);
+    positions.push(createPositionOrFail(`${positionName}-ADML2-0`, structure2, session));
+    session = authenticateWeb(headAdml.login);
+    assertSearchCriteriaOnlyContainThesePositions(positions, "ADML of multiple structures", session);
 })
 };
 /**
@@ -320,4 +344,18 @@ function noDuplicates(positions) {
     actualIds.add(p.id)
   }
   return positions.length === actualIds.size;
+}
+
+function assertSearchCriteriaOnlyContainThesePositions(expected, userType) {
+  describe(userType, () => {
+    const criteria = getSearchCriteria();
+    const criteriaPositions = criteria.positions || [];
+    const actualIds = criteriaPositions.map(e => e.id)
+    const checks = {}
+    console.log(`${userType}, expected`, expected)
+    console.log(`${userType}, actual`, criteriaPositions)
+    checks[`should have the same number of positions as expected`] = actual => actual.length === expected.length
+    checks[`should contain all expected positions`] = () => expected.filter(exp => actualIds.indexOf(exp.id)) >= 0
+    check(criteriaPositions, checks);
+  })
 }
