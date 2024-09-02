@@ -46,40 +46,60 @@
 
     <div class="user-position-container" *ngIf="canHavePositions">
       <label><s5l>create.user.positions.title</s5l></label>
-      <div class="search">
-        <ode-user-position-list
-          [userPositionList]="filteredPositionList"
-          (selectedUserPositionChange)="addPosition($event)"
-          (newPositionNameProposed)="newPositionName = $event"
-        ></ode-user-position-list>
-        
-        <div *ngIf="showNewPositionProposal" class="empty-screen">
-          <img height="100" src="/admin/public/img/user-position-empty-screen.svg" />
-          <s5l>user-position.input-name.not-found</s5l>
-          <button (click)="showUserPositionCreationLightbox = true">
-            <s5l>user-position.add</s5l>
-            <i class="fa fa-plus-circle is-size-5"></i>
-          </button>
-        </div>
+      <div>
+        <div>
 
-        <ode-user-position-modal
-          [structureId]="usersStore.structure.id"        
-          [userPosition]="newPosition"
-          [show]="showUserPositionCreationLightbox"
-          (onClose)="addUserPositionToList($event)"
-        >
-        </ode-user-position-modal>
-    
-      </div>
-      <div class="positions-list">
-        <h3><s5l>create.user.selectedpositions</s5l></h3>
-        <ul>
-          <li *ngFor="let position of newUser.userDetails.userPositions">
-            <span>{{ position.name }} - <s5l>user-position.source.{{ position.source }}</s5l></span>
-            <i class="fa fa-times action" (click)="removePosition(position)"
-              [title]="'user-position.delete-assignment' | translate"></i>
-          </li>
-        </ul>
+          <ode-user-position-modal
+            [structureId]="usersStore.structure.id"        
+            [userPosition]="newPosition"
+            [show]="showUserPositionCreationLightbox"
+            (onClose)="addUserPositionToList($event)"
+          >
+          </ode-user-position-modal>
+      
+          <button (click)="showUserPositionSelectionLightbox = true">
+            <i class="fa fa-plus-circle is-size-5"></i>
+            <s5l>user-position.select</s5l>
+          </button>
+          
+          <ode-lightbox
+            class="inner-list"
+            [show]="showUserPositionSelectionLightbox"
+            (onClose)="showUserPositionSelectionLightbox = false"
+          >
+            <div class="user-position-assignment padded">
+              <h3><s5l>user-position.select</s5l></h3>
+
+              <ode-user-position-list
+                [(searchPrefix)]="searchPrefix"
+                [userPositionList]="filteredPositionList"
+                (selectedUserPositionChange)="addPosition($event)"
+                (filteredListChange)="filteredListChange($event)"
+              ></ode-user-position-list>
+              <div *ngIf="showNewPositionProposal" class="empty-screen">
+                <img
+                  height="100"
+                  src="/admin/public/img/user-position-empty-screen.svg"
+                />
+                <s5l>user-position.input-name.not-found</s5l>
+                <button (click)="showPositionCreation()">
+                  <s5l>user-position.add</s5l>
+                  <i class="fa fa-plus-circle is-size-5"></i>
+                </button>
+              </div>
+            </div>
+          </ode-lightbox>
+        </div>
+        <div class="positions-list">
+          <h3><s5l>create.user.selectedpositions</s5l></h3>
+          <ul>
+            <li *ngFor="let position of newUser.userDetails.userPositions">
+              <span>{{ position.name }} - <s5l>user-position.source.{{ position.source }}</s5l></span>
+              <i class="fa fa-times action" (click)="removePosition(position)"
+                [title]="'user-position.delete-assignment' | translate"></i>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
 
