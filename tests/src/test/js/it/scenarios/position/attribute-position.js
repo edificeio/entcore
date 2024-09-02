@@ -2,7 +2,6 @@ import { check } from "k6";
 import chai, { describe } from "https://jslib.k6.io/k6chaijs/4.3.4.2/index.js";
 import {
   authenticateWeb,
-  assertKo,
   assertOk,
   makeAdml,
   createPositionOrFail,
@@ -13,7 +12,9 @@ import {
   attributePositions,
   getRandomUserWithProfile,
   getUserProfileOrFail,
-  attachStructureAsChild
+  attachStructureAsChild,
+  getAdmlsOrMakThem,
+  checkReturnCode
 } from "https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
 
 
@@ -21,6 +22,7 @@ chai.config.logFailures = true;
 
 export const options = {
   setupTimeout: "1h",
+  maxRedirects: 0,
   thresholds: {
     checks: ["rate == 1.00"],
   },
@@ -29,8 +31,8 @@ export const options = {
       exec: 'testAttributePositions',
       executor: "per-vu-iterations",
       vus: 1,
-      maxDuration: "60s",
-      gracefulStop: '60s',
+      maxDuration: "5s",
+      gracefulStop: '5s',
     },
   },
 };
@@ -54,25 +56,24 @@ export function setup() {
     // Create 1 head structure and 2
     // depending structures
     const chapeau = createEmptyStructure(`Chapeau-${schoolName}`, false, session)
-    const structure1 = initStructure(`1-${schoolName}`, session)
-    const structure2 = initStructure(`2-${schoolName}`, session)
+    const structure1 = initStructure(`1 - ${schoolName}`, 'tiny')
+    const structure2 = initStructure(`2 - ${schoolName}`, 'tiny')
+    const structure3 = initStructure(`3 - ${schoolName}`, 'tiny')
     attachStructureAsChild(chapeau, structure1, session)
     attachStructureAsChild(chapeau, structure2, session)
     ////////////////////////////////////
     // Create 1 ADML for each structure
     // and 1 ADML for the head structure
-    const users1 = getUsersOfSchool(structure1, session)
-    const adml1 = getRandomUserWithProfile(users1, 'Teacher');
-    makeAdml(adml1, structure1, session)
-    const users2 = getUsersOfSchool(structure2, session)
-    const adml2 = getRandomUserWithProfile(users2, 'Teacher');
-    makeAdml(adml2, structure2, session)
-    const megaAdml = getRandomUserWithProfile(users2, 'Teacher', [adml2]);
+    const megaAdml = getAdmlsOrMakThem(structure3, 'Teacher', 1, session)[0]
     makeAdml(megaAdml, chapeau, session)
+    const adml1 = getAdmlsOrMakThem(structure1, 'Teacher', 1, [megaAdml], session)[0]
+    const adml2 = getAdmlsOrMakThem(structure2, 'Teacher', 1, [megaAdml], session)[0]
+    structureTree = { head: chapeau, structures: [structure1, structure2], admls: [adml1, adml2], headAdml: megaAdml}
     ////////////////////////////////////
     // Create 1 position for each structure
-    const position1 = createPositionOrFail(`IT - Position 1`, structure1, session);
-    const position2 = createPositionOrFail(`IT - Position 2`, structure2, session);
+    const now = Date.now()
+    const position1 = createPositionOrFail(`IT - Position Attribute - 1 - ${now}`, structure1, session);
+    const position2 = createPositionOrFail(`IT - Position Attribute - 2 - ${now}`, structure2, session);
     structureTree = { 
         head: chapeau, 
         structures: [structure1, structure2], 
@@ -100,7 +101,6 @@ export function testAttributePositions({structures, admls, positions, headAdml }
     const teacher1 = getRandomUserWithProfile(users1, 'Teacher', [adml1, headAdml]);
     const relative1 = getRandomUserWithProfile(users1, 'Relative', [adml1, headAdml]);
     const student1 = getRandomUserWithProfile(users1, 'Student', [adml1, headAdml]);
-
     const users2 = getUsersOfSchool(structure2, session)
     const teacher2 = getRandomUserWithProfile(users2, 'Teacher', [adml2]);
     const relative2 = getRandomUserWithProfile(users2, 'Relative', [adml2]);
@@ -112,74 +112,89 @@ export function testAttributePositions({structures, admls, positions, headAdml }
     // Check that non ADML users
     // cannot attribute a position to a teacher
     const profiles = [
-        [null, "Unauthenticated"],
+        [null, "Unauthenticated user"],
         [teacher1, "Non ADML (teacher)"],
         [relative1, "Non ADML (relative)"],
         [student1, "Non ADML (Student)"]]
+    console.log("teacher1 is ", teacher1.login)
+    console.log("relative1 is ", relative1.login)
+    console.log("student1 is ", student1.login)
     for(let profile of profiles) {
         const [user, label] = profile
+        let returnCode;
         if(user) {
             session = authenticateWeb(teacher1.login)
+            returnCode = 401;
         } else {
             session = null
-            logout()
+            logout();
+            returnCode = 302
         }
-        assertKo(attributePositions(teacher1, position1, session), `${label} should not be able to attribute a position to a teacher`);
-        assertKo(attributePositions(relative1, position1, session), `${label} should not be able to attribute a position to a teacher`);
-        assertKo(attributePositions(student1, position1, session), `${label} should not be able to attribute a position to a teacher`);
+        describe(`${label} attributes position to a teacher`, () => {
+          checkReturnCode(attributePositions(teacher1, [position1], session), `${label} should not be able to attribute a position to a teacher`, returnCode);
+          checkReturnCode(attributePositions(relative1, [position1], session), `${label} should not be able to attribute a position to a relative`, returnCode);
+          checkReturnCode(attributePositions(student1, [position1], session), `${label} should not be able to attribute a position to a student`, returnCode);
+        })
     }
 
     session = authenticateWeb(adml1.login)
     //////////////////////////////
     // Try to attribute position 
     // from another structure
-    assertKo(attributePositions(teacher1, position2, session), `ADML should not be able to attribute a position from another structure to a teacher`);
-    assertKo(attributePositions(relative1, position2, session), `ADML should not be able to attribute a position from another structure to a relative`);
-    assertKo(attributePositions(student1, position2, session), `ADML should not be able to attribute a position from another structure to a student`);
-
+    describe("ADML attributes position to a user in another structure", () => {
+      checkReturnCode(attributePositions(teacher1, [position2], session), `ADML should not be able to attribute a position from another structure to a teacher`, 401);
+      checkReturnCode(attributePositions(relative1, [position2], session), `ADML should not be able to attribute a position from another structure to a relative`, 401);
+      checkReturnCode(attributePositions(student1, [position2], session), `ADML should not be able to attribute a position from another structure to a student`, 401);
+    })
     //////////////////////////////
     // Try to attribute position 
     // from their structure
-    assertOk(attributePositions(teacher1, position1, session), `ADML should be able to attribute a position to a teacher`);
-    assertKo(attributePositions(relative1, position1, session), `ADML should not be able to attribute a position to a relative`);
-    assertKo(attributePositions(student1, position1, session), `ADML should not be able to attribute a position to a student`);
-    
+    describe("ADML attributes position to a user in the administered structure", () => {
+      assertOk(attributePositions(teacher1, [position1], session), `ADML should be able to attribute a position to a teacher`);
+      checkReturnCode(attributePositions(relative1, [position1], session), `ADML should not be able to attribute a position to a relative`, 401);
+      checkReturnCode(attributePositions(student1, [position1], session), `ADML should not be able to attribute a position to a student`, 401);
+    })
 
     session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
-    //////////////////////////////
-    // Try to attribute position 
-    // from another structure
-    assertKo(attributePositions(teacher1, position2, session), `ADMC should not be able to attribute a position from another structure to a teacher`);
-    assertKo(attributePositions(relative1, position2, session), `ADMC should not be able to attribute a position from another structure to a relative`);
-    assertKo(attributePositions(student1, position2, session), `ADMC should not be able to attribute a position from another structure to a student`);
+    
+    describe("ADMC attributes position to a user in another structure", () => {
+      //////////////////////////////
+      // Try to attribute position 
+      // from another structure
+      checkReturnCode(attributePositions(teacher1, [position2], session), `ADMC should not be able to attribute a position from another structure to a teacher`, 401);
+      checkReturnCode(attributePositions(relative1, [position2], session), `ADMC should not be able to attribute a position from another structure to a relative`, 401);
+      checkReturnCode(attributePositions(student1, [position2], session), `ADMC should not be able to attribute a position from another structure to a student`, 401);
 
-    //////////////////////////////
-    // Try to attribute position 
-    // from their structure
-    assertOk(attributePositions(teacher2, position2, session), `ADMC should be able to attribute a position to a teacher`);
-    assertKo(attributePositions(relative2, position2, session), `ADMC should not be able to attribute a position to a relative`);
-    assertKo(attributePositions(student2, position2, session), `ADMC should not be able to attribute a position to a student`);
-
-    ///////////////////////////////
-    // Ensure that once a position
-    // is set for a user it can be
-    // retrieved
-    const teacher2_2 = getRandomUserWithProfile(users2, 'Teacher', [adml2, teacher2]);
-    session = authenticateWeb(adml2.login)
-    attributePositions(teacher2_2, position2, session)
-    let teacherUserProfile = getUserProfileOrFail(teacher2_2.id, session)
-    check(teacherUserProfile, {
-        'user has positions': p => !!p.positions && p.positions.length === 1,
-        'user has the right position': p => p.positions[0].id === position2.id
+      //////////////////////////////
+      // Try to attribute position 
+      // from their structure
+      assertOk(attributePositions(teacher2, [position2], session), `ADMC should be able to attribute a position to a teacher`);
+      checkReturnCode(attributePositions(relative2, [position2], session), `ADMC should not be able to attribute a position to a relative`, 401);
+      checkReturnCode(attributePositions(student2, [position2], session), `ADMC should not be able to attribute a position to a student`, 401);
     })
-    ///////////////////////////////
-    // Ensure that once a position
-    // is removed it is not 
-    // retrieved
-    attributePositions(teacher2_2, [], session)
-    teacherUserProfile = getUserProfileOrFail(teacher2_2.id, session)
-    check(teacherUserProfile, {
-        'user has no positions anymore after they have been removed': p => !p.positions || p.positions.length === 0
+
+    describe("Ability to retrieve a user position", () => {
+      ///////////////////////////////
+      // Ensure that once a position
+      // is set for a user it can be
+      // retrieved
+      const teacher2_2 = getRandomUserWithProfile(users2, 'Teacher', [adml2, teacher2]);
+      session = authenticateWeb(adml2.login)
+      attributePositions(teacher2_2, [position2], session)
+      let teacherUserProfile = getUserProfileOrFail(teacher2_2.id, session)
+      check(teacherUserProfile, {
+          'user has positions': p => !!p.userPositions && p.userPositions.length === 1,
+          'user has the right position': p => p.userPositions[0].id === position2.id
+      })
+      ///////////////////////////////
+      // Ensure that once a position
+      // is removed it is not 
+      // retrieved
+      attributePositions(teacher2_2, [], session)
+      teacherUserProfile = getUserProfileOrFail(teacher2_2.id, session)
+      check(teacherUserProfile, {
+          'user has no positions anymore after they have been removed': p => !p.userPositions || p.userPositions.length === 0
+      })
     })
 })
 };
