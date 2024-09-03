@@ -63,6 +63,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 				classes: [],
 				profiles: [],
 				functions: [],
+				positions: [],
 				types: [],
 			}
 		}
@@ -139,7 +140,8 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 					structures: [],
 					classes: [],
 					profiles: [],
-					functions: []
+					functions: [],
+					positions: []
 				},
 				groups: {
 					structures: [],
@@ -263,6 +265,9 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 				*/
 				}
 				return { label: lang.translate(element), type: element, available: test };
+			}),
+			positions: $scope.criteria.positions.map((element) => {
+				return {label: element.name, type: element.id};
 			}),
 			types: $scope.criteria.groupTypes.map((element) => {
 				return { label: lang.translate("directory." + element), type: element };
@@ -848,7 +853,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	$scope.canFavoriteFormInitSearch = function() {
 		return $scope.create.favorite.search || $scope.create.favorite.filters.structures || $scope.create.favorite.filters.classes || 
 				$scope.create.favorite.filters.profles || $scope.create.favorite.filters.functions || 
-				$scope.create.favorite.filters.types || $scope.favoriteFormUsersGroups.length > 0;
+				$scope.create.favorite.filters.types || $scope.create.favorite.filters.positions || $scope.favoriteFormUsersGroups.length > 0;
 	};
 
 	$scope.favoriteFormInitSearch = function() {
@@ -857,11 +862,13 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		$scope.create.favorite.filters.classes = [];
 		$scope.create.favorite.filters.profiles = [];
 		$scope.create.favorite.filters.functions = [];
+		$scope.create.favorite.filters.positions = [];
 		$scope.create.favorite.filters.types = [];
 		$scope.checkOption($scope.create.favorite.options.structures, false);
 		$scope.checkOption($scope.create.favorite.options.classes, false);
 		$scope.checkOption($scope.create.favorite.options.profiles, false);
 		$scope.checkOption($scope.create.favorite.options.functions, false);
+		$scope.checkOption($scope.create.favorite.options.positions, false);
 		$scope.checkOption($scope.create.favorite.options.types, false);
 		$scope.favoriteFormUsersGroups = [];
 	};
@@ -947,6 +954,10 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		return (!groups && $scope.checkProfileTeacherPersonnel(profiles)) || (groups && ((classes && !groups.length && !profiles.length && !classes.length) || (!classes && !groups.length && $scope.checkProfileTeacherPersonnel(profiles))));
 	};
 
+	$scope.testPositionFilterAvailable = function(profiles, groups, classes) {
+		return (!groups && $scope.checkProfileTeacherPersonnel(profiles)) || (groups && ((classes && !groups.length && !profiles.length && !classes.length) || (!classes && !groups.length && $scope.checkProfileTeacherPersonnel(profiles))));
+	};
+
 	$scope.checkProfileTeacherPersonnel = function(profiles) {
 		return profiles.length === 0 || profiles.indexOf("Teacher") !== -1 || profiles.indexOf("Personnel") !== -1;
 	}
@@ -1006,6 +1017,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	 * @param class			string | string[]
 	 * @param profile		an ID
 	 * @param structure		an ID
+	 * @param position		an ID
 	 * 
 	 * Example URL : /userbook/annuaire#/search?filters=groups&structure=an_id&profile=Teacher&class=TP1&class=TP2
 	 */
@@ -1014,7 +1026,8 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			filters?:"users"|"groups",
 			class?:string|Array<string>,
 			profile?:string|Array<string>,
-			structure?:string
+			structure?:string,
+			position?:string
 		} = $location.search();
 
 		let filters;
@@ -1044,6 +1057,11 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		} else if( angular.isArray(params.class) ) {
 			filters = filters || {};
 			filters.classes = params.class;
+		}
+
+		if( typeof params.position === "string" ) {
+			filters = filters || {};
+			filters.positions = [params.position];
 		}
 
 		if( filters ) {
