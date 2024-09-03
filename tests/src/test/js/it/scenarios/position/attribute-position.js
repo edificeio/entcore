@@ -2,7 +2,6 @@ import { check } from "k6";
 import chai, { describe } from "https://jslib.k6.io/k6chaijs/4.3.4.2/index.js";
 import {
   authenticateWeb,
-  assertOk,
   makeAdml,
   createPositionOrFail,
   getUsersOfSchool,
@@ -14,8 +13,9 @@ import {
   getUserProfileOrFail,
   attachStructureAsChild,
   getAdmlsOrMakThem,
-  checkReturnCode
-} from "https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
+  checkReturnCode,
+  switchSession
+} from "../../../commons/index.js"; //"https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
 
 
 chai.config.logFailures = true;
@@ -96,7 +96,8 @@ export function testAttributePositions({structures, admls, positions, headAdml }
   const [structure1, structure2] = structures
   const [position1, position2] = positions
   describe("[Position-Attribute] Attribute positions to users", () => {
-    let session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
+    const admcSession = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
+    let session;
     const users1 = getUsersOfSchool(structure1, session)
     const teacher1 = getRandomUserWithProfile(users1, 'Teacher', [adml1, headAdml]);
     const relative1 = getRandomUserWithProfile(users1, 'Relative', [adml1, headAdml]);
@@ -123,17 +124,17 @@ export function testAttributePositions({structures, admls, positions, headAdml }
         const [user, label] = profile
         let returnCode;
         if(user) {
-            session = authenticateWeb(teacher1.login)
-            returnCode = 401;
+            session = authenticateWeb(user.login)
+            returnCode = 200;
         } else {
             session = null
             logout();
             returnCode = 302
         }
         describe(`${label} attributes position to a teacher`, () => {
-          checkReturnCode(attributePositions(teacher1, [position1], session), `${label} should not be able to attribute a position to a teacher`, returnCode);
-          checkReturnCode(attributePositions(relative1, [position1], session), `${label} should not be able to attribute a position to a relative`, returnCode);
-          checkReturnCode(attributePositions(student1, [position1], session), `${label} should not be able to attribute a position to a student`, returnCode);
+          tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(teacher1, [position1], label, 'teacher', returnCode, session, admcSession);
+          tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(relative1, [position1], label, 'relative', returnCode, session, admcSession);
+          tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(student1, [position1], label, 'student', returnCode, session, admcSession);
         })
     }
 
@@ -142,35 +143,28 @@ export function testAttributePositions({structures, admls, positions, headAdml }
     // Try to attribute position 
     // from another structure
     describe("ADML attributes position to a user in another structure", () => {
-      checkReturnCode(attributePositions(teacher1, [position2], session), `ADML should not be able to attribute a position from another structure to a teacher`, 401);
-      checkReturnCode(attributePositions(relative1, [position2], session), `ADML should not be able to attribute a position from another structure to a relative`, 401);
-      checkReturnCode(attributePositions(student1, [position2], session), `ADML should not be able to attribute a position from another structure to a student`, 401);
+      tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(teacher1, [position2], 'ADML', 'teacher', 200, session, admcSession);
+      tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(relative1, [position2], 'ADML', 'relative', 200, session, admcSession);
+      tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(student1, [position2], 'ADML', 'student', 200, session, admcSession);
     })
-    //////////////////////////////
-    // Try to attribute position 
-    // from their structure
     describe("ADML attributes position to a user in the administered structure", () => {
-      assertOk(attributePositions(teacher1, [position1], session), `ADML should be able to attribute a position to a teacher`);
-      checkReturnCode(attributePositions(relative1, [position1], session), `ADML should not be able to attribute a position to a relative`, 401);
-      checkReturnCode(attributePositions(student1, [position1], session), `ADML should not be able to attribute a position to a student`, 401);
+      assignNewPositionAndCheckThatItSucceeded(teacher1, [position1], 'ADML', 'teacher', session, admcSession);
+      tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(relative1, [position1], 'ADML', 'relative', 200, session, admcSession);
+      tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(student1, [position1], 'ADML', 'student', 200, session, admcSession);
     })
 
     session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
     
     describe("ADMC attributes position to a user in another structure", () => {
-      //////////////////////////////
-      // Try to attribute position 
-      // from another structure
-      checkReturnCode(attributePositions(teacher1, [position2], session), `ADMC should not be able to attribute a position from another structure to a teacher`, 401);
-      checkReturnCode(attributePositions(relative1, [position2], session), `ADMC should not be able to attribute a position from another structure to a relative`, 401);
-      checkReturnCode(attributePositions(student1, [position2], session), `ADMC should not be able to attribute a position from another structure to a student`, 401);
+      tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(teacher1, [position2], 'ADMC', 'teacher', 200, session, admcSession);
+      tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(relative1, [position2], 'ADMC', 'relative', 200, session, admcSession);
+      tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(student1, [position2], 'ADMC', 'student', 200, session, admcSession);
+    })
 
-      //////////////////////////////
-      // Try to attribute position 
-      // from their structure
-      assertOk(attributePositions(teacher2, [position2], session), `ADMC should be able to attribute a position to a teacher`);
-      checkReturnCode(attributePositions(relative2, [position2], session), `ADMC should not be able to attribute a position to a relative`, 401);
-      checkReturnCode(attributePositions(student2, [position2], session), `ADMC should not be able to attribute a position to a student`, 401);
+    describe("ADMC attributes position to a user in their structure", () => {
+      assignNewPositionAndCheckThatItSucceeded(teacher2, [position2], 'ADMC', 'teacher', session, admcSession);
+      tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(relative2, [position2], 'ADMC', 'relative', 200, session, admcSession);
+      tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(student2, [position2], 'ADMC', 'student', 200, session, admcSession);
     })
 
     describe("Ability to retrieve a user position", () => {
@@ -198,3 +192,42 @@ export function testAttributePositions({structures, admls, positions, headAdml }
     })
 })
 };
+
+function assignNewPositionAndCheckThatItSucceeded(user, positions, requesterType, userType, session, admcSession) {
+  checkReturnCode(attributePositions(user, positions, session), `${requesterType} call to attribute a position to a ${userType} should end with 200`, 200);
+  const newUserPositions = (getUserProfileOrFail(user.id, admcSession).userPositions || []);
+  const attributedPositions = positions.map(p => p.id)
+  const checks = {}
+  checks[`${requesterType} should be able to attribute new positions to a ${userType}`] = () => {
+    const missingPositions = attributedPositions.filter(attPos => newUserPositions.indexOf(attPos) < 0);
+    const ok = missingPositions.length === 0;
+    if(!ok) {
+      console.error(`${requesterType} should have been able to attribute all positions to a ${userType}, ${missingPositions.length}/${positions.length} where not added : ${missingPositions}`)
+    }
+  };
+  return check(newUserPositions, checks);
+}
+
+function tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(user, positions, requesterType, userType, returnCode, session, admcSession) {
+  switchSession(admcSession);
+  const oldUserPositions = (getUserProfileOrFail(user.id, admcSession).userPositions || []);
+  switchSession(session);
+  checkReturnCode(attributePositions(user, positions, session), `${requesterType} call to attribute a position to a ${userType} should end with ${returnCode}`, returnCode);
+  switchSession(admcSession);
+  const newUserPositions = (getUserProfileOrFail(user.id, admcSession).userPositions || []);
+  switchSession(session);
+  const checks = {}
+  checks[`${requesterType} should not be able to attribute a position to a ${userType}`] = () => {
+    let ok;
+    if(oldUserPositions.length === newUserPositions.length) {
+      ok = newUserPositions.filter(newPos => oldUserPositions.indexOf(newPos) < 0).length === 0;
+    } else {
+      ok = false;
+    }
+    if(!ok) {
+      console.error(`${requesterType} should not be able to attribute a position to a ${userType}, expecting `, oldUserPositions, ` but got `, newUserPositions,` when adding `, positions)
+    }
+    return ok;
+  };
+  return check(newUserPositions, checks);
+}

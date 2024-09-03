@@ -12,7 +12,6 @@ import {
   createEmptyStructure,
   initStructure,
   logout,
-  activateUsers,
   deletePosition,
   getRandomUserWithProfile,
   attachStructureAsChild,
@@ -141,13 +140,12 @@ export function testCreatePosition({structure, adml, structureTree}) {
     res = createPosition(`${positionName} - bis`, structure, session);
     assertCondition(() => res.status === 201, "An ADML user should be able to create a position");
     positions.push(JSON.parse(res.body));
-
-    assertSearchCriteriaOnlyContainThesePositions(positions, "ADML with a structure with these positions", session);
-
+    //assertSearchCriteriaContainSpecifiedPositionsAndNotOther(positions, p => p.structureId !==  structure.id, "ADML with a structure with these positions", session);
     session = authenticateWeb(adml1.login)
+
     res = createPosition(`${positionName}-ADML2`, structure, session);
     assertCondition(() => res.status === 401, "An ADML of another structure should not be able to create a position");
-    assertSearchCriteriaOnlyContainThesePositions([], "ADML in a structure without these positions", session);
+    assertSearchCriteriaContainSpecifiedPositionsAndNotOther([], p => p.structureId !==  structure.id, "ADML in a structure without these positions", session);
 
     // An ADMC should be able to create a position
     session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
@@ -166,7 +164,7 @@ export function testCreatePosition({structure, adml, structureTree}) {
     session = authenticateWeb(adml2.login);
     positions.push(createPositionOrFail(`${positionName}-ADML2-0`, structure2, session));
     session = authenticateWeb(headAdml.login);
-    assertSearchCriteriaOnlyContainThesePositions(positions, "ADML of multiple structures", session);
+    assertSearchCriteriaContainSpecifiedPositionsAndNotOther(positions, p => p.structureId ===  structure1.id || p.structureId ===  structure2.id, "ADML of multiple structures", session);
 })
 };
 /**
@@ -347,14 +345,18 @@ function noDuplicates(positions) {
   return positions.length === actualIds.size;
 }
 
-function assertSearchCriteriaOnlyContainThesePositions(expected, userType) {
+function assertSearchCriteriaContainSpecifiedPositionsAndNotOther(structureId, expected, unwantedPredicate, userType) {
   describe(userType, () => {
     const criteria = getSearchCriteria();
     const criteriaPositions = criteria.positions || [];
     const actualIds = criteriaPositions.map(e => e.id)
-    const checks = {}
-    checks[`should have the same number of positions as expected`] = actual => actual.length === expected.length
-    checks[`should contain all expected positions`] = () => expected.filter(exp => actualIds.indexOf(exp.id)) >= 0
-    check(criteriaPositions, checks);
+    const ok = check(criteriaPositions, {
+      'should contain all expected positions' : () => expected.filter(exp => actualIds.indexOf(exp.id) < 0).length === 0,
+      'should contain none of the unwanted positions' : () => actualIds.filter(act => unwantedPredicate({id: act.id})).length >= 0
+    });
+    if(!ok) {
+      console.warn("actualIds", actualIds)
+      console.warn('Expecting positions\n', expected, '\ngot\n', criteriaPositions)
+    }
   })
 }
