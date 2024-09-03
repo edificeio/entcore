@@ -1,5 +1,7 @@
 package org.entcore.common.user.position;
 
+import io.vertx.core.json.JsonObject;
+
 public class UserPosition {
 	private final String id;
 	private final String name;
@@ -27,5 +29,13 @@ public class UserPosition {
 
 	public String getStructureId() {
 		return structureId;
+	}
+
+	public JsonObject toJsonObject() {
+		return new JsonObject()
+			.put("name", name)
+			.put("id", id)
+			.put("source", source.name())
+			.put("structureId", structureId);
 	}
 }

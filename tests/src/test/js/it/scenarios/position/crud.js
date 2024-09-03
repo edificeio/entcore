@@ -12,6 +12,7 @@ import {
   createEmptyStructure,
   initStructure,
   logout,
+  activateUsers,
   deletePosition,
   getRandomUserWithProfile,
   attachStructureAsChild,
@@ -352,8 +353,6 @@ function assertSearchCriteriaOnlyContainThesePositions(expected, userType) {
     const criteriaPositions = criteria.positions || [];
     const actualIds = criteriaPositions.map(e => e.id)
     const checks = {}
-    console.log(`${userType}, expected`, expected)
-    console.log(`${userType}, actual`, criteriaPositions)
     checks[`should have the same number of positions as expected`] = actual => actual.length === expected.length
     checks[`should contain all expected positions`] = () => expected.filter(exp => actualIds.indexOf(exp.id)) >= 0
     check(criteriaPositions, checks);

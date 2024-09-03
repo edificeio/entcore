@@ -69,12 +69,19 @@
                         title="[[lang.translate('directory.profiles')]]"
                         ng-disabled="!testProfileFilterAvailable(create.favorite.filters.types)">
                     </multi-comboboxes>
-                    <multi-comboboxes ng-if="filtersOptions.users.structures.length < 2" class="twelve min-w-zero"
+                    <!-- <multi-comboboxes ng-if="filtersOptions.users.structures.length < 2" class="twelve min-w-zero"
                         ng-model="create.favorite.filters.functions"
                         options="create.favorite.options.functions"
                         title-all="[[lang.translate('directory.allFunctions')]]"
                         title="[[lang.translate('directory.functions')]]"
                         ng-disabled="!testFunctionFilterAvailable(create.favorite.filters.profiles, create.favorite.filters.types)">
+                    </multi-comboboxes> -->
+                    <multi-comboboxes ng-if="filtersOptions.users.structures.length < 2" class="twelve min-w-zero"
+                        ng-model="create.favorite.filters.positions"
+                        options="create.favorite.options.positions"
+                        title-all="[[lang.translate('directory.allFunctions')]]"
+                        title="[[lang.translate('directory.functions')]]"
+                        ng-disabled="!testPositionFilterAvailable(create.favorite.filters.profiles, create.favorite.filters.types)">
                     </multi-comboboxes>
                 </div>
                 <div class="flex-row">
