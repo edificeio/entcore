@@ -62,6 +62,7 @@ public class SSOAzure extends AbstractSSOProvider {
 	protected static final String UAI_ATTTRIBUTE = "UAI";
 	protected static final String CLASSES_ATTTRIBUTE = "Classes";
 	protected static final String DEFAULT_NOT_EXISTS = "__NOT_EXISTS__";
+	protected static final String SSO_SOURCE = "SSO";
 	private static final Map<String, String> profilesMapping = Collections.unmodifiableMap(new HashMap<String, String>() {{
 		put("Enseignant","Teacher");
 		put("Eleve","Student");
@@ -148,10 +149,10 @@ public class SSOAzure extends AbstractSSOProvider {
 				"RETURN DISTINCT s.id as structureId, COLLECT(DISTINCT [c.id, c.name]) as classes ";
 		final String queryUserAAF =
 				"MATCH (u:User {externalId:{joinKey}}) " +
-				"RETURN u.id as id, u.source as source, u.activationCode as activationCode ";
+				"RETURN u.id as id, u.source as source, u.activationCode as activationCode, u.deleteDate as deleteDate ";
 		final String queryUser =
 				"MATCH (u:User {externalId:{externalId}}) " +
-				"RETURN u.id as id, u.externalId as externalId, u.source as source ";
+				"RETURN u.id as id, u.externalId as externalId, u.source as source, u.deleteDate as deleteDate ";
 
 		final StatementsBuilder statements = new StatementsBuilder();
 		statements
@@ -272,7 +273,16 @@ public class SSOAzure extends AbstractSSOProvider {
 	private void createUserIfNeeded(Assertion assertion, JsonArray results, Handler<AsyncResult<Void>> handler) {
 		final JsonArray ssoUsers = results.getJsonArray(1);
 		if (ssoUsers != null && ssoUsers.size() == 1) {
-			handler.handle(Future.succeededFuture());
+			final JsonObject ssoUser = ssoUsers.getJsonObject(0);
+			if (ssoUser.getLong("deleteDate") != null && SSO_SOURCE.equals(ssoUser.getString("source"))) {
+				final JsonArray users = new JsonArray().add(ssoUser.getString("id"));
+				final JsonObject action = new JsonObject()
+					.put("action", "manual-restore-user")
+					.put("users", users);
+				eb.request(FEEDER, action, resRestore -> handler.handle(Future.succeededFuture()));
+			} else {
+				handler.handle(Future.succeededFuture());
+			}
 			return;
 		}
 
