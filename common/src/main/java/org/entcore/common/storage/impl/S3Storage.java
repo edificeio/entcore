@@ -35,6 +35,7 @@ import org.entcore.common.s3.S3Client;
 import org.entcore.common.s3.storage.StorageObject;
 import org.entcore.common.storage.AntivirusClient;
 import org.entcore.common.storage.BucketStats;
+import org.entcore.common.storage.FallbackStorage;
 import org.entcore.common.storage.FileStats;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.validation.FileValidator;
@@ -349,5 +350,9 @@ public class S3Storage implements Storage {
     public FileValidator getValidator() {
         return validator;
     }
+
+    public void setFallbackStorage(FallbackStorage fallbackStorage) {
+        this.s3Client.setFallbackStorage(fallbackStorage);
+	}
 
 }

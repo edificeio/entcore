@@ -33,6 +33,7 @@ import org.entcore.common.storage.impl.GridfsStorage;
 import org.entcore.common.storage.impl.HttpAntivirusClient;
 import org.entcore.common.storage.impl.S3FallbackStorage;
 import org.entcore.common.storage.impl.S3FallbackS3FSStorage;
+import org.entcore.common.storage.impl.S3FallbackS3S3Storage;
 import org.entcore.common.storage.impl.StorageFileAnalyzer;
 import org.entcore.common.storage.impl.SwiftStorage;
 
@@ -165,6 +166,12 @@ public class StorageFactory {
 				fileValidator.setNext(new ExtensionValidator(blockedExtensions));
 			}
 			((S3Storage) storage).setValidator(fileValidator);
+
+			JsonObject s3fallbacks3s3 = s3.getJsonObject("s3fallbacks3s3");
+			if (s3fallbacks3s3 != null) {
+					S3FallbackS3S3Storage s3FallbackS3FSStorage = new S3FallbackS3S3Storage(vertx, s3, s3fallbacks3s3);
+					((S3Storage) storage).setFallbackStorage(s3FallbackS3FSStorage);
+			}
 		} else if (fs != null) {
 			if (fs.containsKey("paths")) {
 				storage = new FileStorage(vertx, fs.getJsonArray("paths"), fs.getBoolean("flat", false), messagingClient, storageFileAnalyzerConfiguration);
