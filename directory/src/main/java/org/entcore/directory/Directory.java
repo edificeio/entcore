@@ -108,6 +108,7 @@ public class Directory extends BaseServer {
 		UserBookController userBookController = new UserBookController();
 		userBookController.setSchoolService(schoolService);
 		userBookController.setUserBookService(userBookService);
+		userBookController.setUserPositionService(userPositionService);
 		userBookController.setConversationNotification(conversationNotification);
 		addController(userBookController);
 
