@@ -7,6 +7,12 @@ import java.util.Set;
 
 public interface UserPositionService {
 	/**
+	 * Retrieve user positions linked to structures the user or admin is attached to.
+	 * @return the retrieved user positions
+	 */
+	Future<Set<UserPosition>> getUserPositions(UserInfos userInfos);
+
+	/**
 	 * Retrieve user positions linked to the structures managed by the current admin
 	 * @param prefix if present, filters the result : keeps only the user positions whose name match the prefix pattern
 	 * @param structureId if present, filters the result : keeps the user positions linked to the structure
