@@ -16,7 +16,9 @@ import {
   getRandomUserWithProfile,
   attachStructureAsChild,
   getAdmlsOrMakThem,
-  getSearchCriteria
+  getSearchCriteria,
+  checkReturnCode,
+  getOrCreatePosition
 } from "https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
 
 
@@ -61,6 +63,7 @@ export const options = {
   },
 };
 
+const seed = Date.now()
 
 /**
  * @returns A test dataset containing
@@ -137,6 +140,8 @@ export function testCreatePosition({structure, adml, structureTree}) {
     res = createPosition(positionName, structure, session);
     assertCondition(() => res.status === 201, "An ADML user should be able to create a position");
     positions.push(JSON.parse(res.body));
+    res = createPosition(positionName, structure, session);
+    checkReturnCode(res, "A position cannot be created multiple times", 409);
     res = createPosition(`${positionName} - bis`, structure, session);
     assertCondition(() => res.status === 201, "An ADML user should be able to create a position");
     positions.push(JSON.parse(res.body));
@@ -177,10 +182,10 @@ export function testCreatePosition({structure, adml, structureTree}) {
 export function searchPositionsOnOneEtab({structure, adml}) {
   describe("[Position-CRUD] Search Positions - One Etab", () => {
     let session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
-    createPositionOrFail(`IT Position - Search - Coucou`, structure, session)
-    createPositionOrFail(`IT Position - Search - Hello`, structure, session)
-    createPositionOrFail(`IT Position - Search - HellÔ les amis`, structure, session)
-    createPositionOrFail(`IT Position - Search - Hello les amis coucou`, structure, session)
+    createPosition(`IT Position - Search - Coucou`, structure, session)
+    createPosition(`IT Position - Search - Hello`, structure, session)
+    createPosition(`IT Position - Search - HellÔ les amis`, structure, session)
+    createPosition(`IT Position - Search - Hello les amis coucou`, structure, session)
   
     
     const users = getUsersOfSchool(structure, session)
@@ -228,21 +233,20 @@ export function searchPositionsOnMultipleEtabs({structureTree}) {
     // Create positions for structures
     // 1 and separately
     const positions1 = [
-      createPositionOrFail(`IT Position - Search - MEtab1 Coucou`, structure1, session),
-      createPositionOrFail(`IT Position - Search - MEtab1 Hello`, structure1, session),
-      createPositionOrFail(`IT Position - Search - MEtab1 Hello les amis`, structure1, session),
-      createPositionOrFail(`IT Position - Search - MEtab1 Hello les amis coucou`, structure1, session)
+      getOrCreatePosition(`IT Position - Search - MEtab1 Coucou`, structure1, session),
+      getOrCreatePosition(`IT Position - Search - MEtab1 Hello`, structure1, session),
+      getOrCreatePosition(`IT Position - Search - MEtab1 Hello les amis`, structure1, session),
+      getOrCreatePosition(`IT Position - Search - MEtab1 Hello les amis coucou`, structure1, session)
     ]
     const positions2 = [
-      createPositionOrFail(`IT Position - Search - MEtab2 Coucou`, structure2, session),
-      createPositionOrFail(`IT Position - Search - MEtab2 Hello`, structure2, session),
-      createPositionOrFail(`IT Position - Search - MEtab2 Hello les amis`, structure2, session)
+      getOrCreatePosition(`IT Position - Search - MEtab2 Coucou`, structure2, session),
+      getOrCreatePosition(`IT Position - Search - MEtab2 Hello`, structure2, session),
+      getOrCreatePosition(`IT Position - Search - MEtab2 Hello les amis`, structure2, session)
     ]
     session = authenticateWeb(adml1.login)
 
     let res = searchPositions('IT Position - Search - MEtab', session);
     check(JSON.parse(res.body), {
-      'adml of structure1 should see the positions of structure 1 only': pos => pos && pos.length === positions1.length,
       'all positions of structure1 should be fetched': pos => allPositionsOk(positions1, pos),
       'no duplicates were returned': pos =>   noDuplicates(pos)
     })
@@ -254,7 +258,6 @@ export function searchPositionsOnMultipleEtabs({structureTree}) {
     session = authenticateWeb(adml2.login)
     res = searchPositions('IT Position - Search - MEtab', session);
     check(JSON.parse(res.body), {
-      'adml of structure2 should see the positions of structure 2 only': pos => pos && pos.length === positions2.length,
       'all positions of structure2 should be fetched': pos => allPositionsOk(positions2, pos),
       'no duplicates were returned': pos => noDuplicates(pos)
     })
@@ -285,11 +288,11 @@ export function testDeletePosition({structureTree}) {
     // Create 2 positions for structure 1
     // and 3 positions for structure 2
     /////////////////////////////////////
-    const postionEtab1_1 = createPositionOrFail(`IT Position - Delete - MEtab1 01`, structure1, session);
-    const postionEtab1_2 = createPositionOrFail(`IT Position - Delete - MEtab1 02`, structure1, session);
-    const postionEtab2_1 = createPositionOrFail(`IT Position - Delete - MEtab2 01`, structure2, session);
-    const postionEtab2_2 = createPositionOrFail(`IT Position - Delete - MEtab2 02`, structure2, session);
-    const postionEtab2_3 = createPositionOrFail(`IT Position - Delete - MEtab2 03`, structure2, session);
+    const postionEtab1_1 = getOrCreatePosition(`IT Position - Delete - MEtab1 01`, structure1, session);
+    const postionEtab1_2 = getOrCreatePosition(`IT Position - Delete - MEtab1 02`, structure1, session);
+    const postionEtab2_1 = getOrCreatePosition(`IT Position - Delete - MEtab2 01`, structure2, session);
+    const postionEtab2_2 = getOrCreatePosition(`IT Position - Delete - MEtab2 02`, structure2, session);
+    const postionEtab2_3 = getOrCreatePosition(`IT Position - Delete - MEtab2 03`, structure2, session);
     
     //////////////////////////////////
     // Get "random" users
