@@ -15,7 +15,9 @@ import org.entcore.common.user.position.UserPositionService;
 import org.entcore.common.user.position.UserPositionSource;
 import org.entcore.common.utils.StringUtils;
 
+import java.text.Normalizer;
 import java.util.*;
+import java.util.regex.Pattern;
 
 public class DefaultUserPositionService implements UserPositionService {
 
@@ -31,8 +33,8 @@ public class DefaultUserPositionService implements UserPositionService {
 	}
 
 	@Override
-	public Future<Set<UserPosition>> getUserPositions(String prefix, String structureId, UserInfos adminInfos) {
-		return getUserPositionsForAdmin(null, prefix, structureId, adminInfos);
+	public Future<Set<UserPosition>> getUserPositions(String content, String structureId, UserInfos adminInfos) {
+		return getUserPositionsForAdmin(null, content, structureId, adminInfos);
 	}
 
 	@Override
@@ -52,27 +54,27 @@ public class DefaultUserPositionService implements UserPositionService {
 		return promise.future();
 	}
 
-	private Future<Set<UserPosition>> getUserPositionsForAdmin(String positionId, String prefix, String structureId, UserInfos adminInfos) {
+	private Future<Set<UserPosition>> getUserPositionsForAdmin(String positionId, String content, String structureId, UserInfos adminInfos) {
 		return fetchAdminStructures(adminInfos)
 			.compose(structureIds -> {
 				if (structureIds.isEmpty()) {
 					logger.warn(ADMIN_WITHOUT_STRUCTURE);
 					return Future.failedFuture(ADMIN_WITHOUT_STRUCTURE);
 				}
-				return getUserPositions(positionId, prefix, structureId, new ArrayList<String>(structureIds));
+				return getUserPositions(positionId, content, structureId, new ArrayList<String>(structureIds));
 			});
 	}
 
 	private Future<Set<UserPosition>> getUserPositions(String positionId, String prefix, String structureId, UserInfos userInfos) {
 		return getUserPositions(
-			positionId, 
-			prefix, 
-			structureId, 
+			positionId,
+			prefix,
+			structureId,
 			userInfos.getStructures() == null ? Collections.emptyList() : userInfos.getStructures()
 		);
 	}
 
-	private Future<Set<UserPosition>> getUserPositions(String positionId, String prefix, String structureId, List<String> structureIds) {
+	private Future<Set<UserPosition>> getUserPositions(String positionId, String content, String structureId, List<String> structureIds) {
 		Promise<Set<UserPosition>> promise = Promise.promise();
 		final JsonObject params = new JsonObject()
 			.put("structureIds", new JsonArray(structureIds));
@@ -85,10 +87,11 @@ public class DefaultUserPositionService implements UserPositionService {
 			query.append("AND p.id = {positionId} ");
 			params.put("positionId", positionId);
 		}
-		// filters user positions whose name don't match the prefix
-		if (prefix != null) {
-			query.append("AND p.name =~ {prefixRegex} ");
-			params.put("prefixRegex", prefix + ".*");
+		// filters user positions whose name don't match the content
+		if (content != null) {
+			final String simplifiedContent = getSimplifiedString(content);
+			query.append("AND p.simplifiedName =~ {contentRegex} ");
+			params.put("contentRegex", ".*" + simplifiedContent + ".*");
 		}
 		// filters user positions related to a specific structure
 		if (!StringUtils.isEmpty(structureId)) {
@@ -110,7 +113,7 @@ public class DefaultUserPositionService implements UserPositionService {
 				promise.complete(userPositions);
 			}
 		}));
-	
+
 		return promise.future();
 	}
 
@@ -126,12 +129,14 @@ public class DefaultUserPositionService implements UserPositionService {
 					if (userPosition.isPresent()) {
 						promise.fail("position.already.exists:"+userPosition.get().getId());
 					} else {
+						final String simplifiedName = getSimplifiedString(positionName);
 						final JsonArray adminStructureArray = new JsonArray();
 						adminStructureIds.forEach(adminStructureArray::add);
 						final String positionId = UUID.randomUUID().toString();
 						final JsonObject userPositionProps = new JsonObject()
 								.put("id", positionId)
 								.put("name", positionName)
+								.put("simplifiedName", simplifiedName)
 								.put("source", source.toString());
 						final JsonObject params = new JsonObject()
 								.put("structureId", structureId)
@@ -166,17 +171,19 @@ public class DefaultUserPositionService implements UserPositionService {
 				logger.warn(ADMIN_WITHOUT_STRUCTURE);
 				promise.fail(ADMIN_WITHOUT_STRUCTURE);
 			} else {
+				final String simplifiedName = getSimplifiedString(positionName);
 				final JsonArray adminStructureIds = new JsonArray();
 				structureIds.forEach(adminStructureIds::add);
 				final JsonObject params = new JsonObject()
 						.put("positionId", positionId)
 						.put("positionName", positionName)
+						.put("simplifiedName", simplifiedName)
 						.put("adminStructureIds", adminStructureIds);
 
 				final String query = "" +
 						"MATCH (p:UserPosition {id: {positionId}})-[:IN]->(s:Structure) " +
 						"WHERE s.id IN {adminStructureIds} " +
-						"SET p.name = {positionName} " +
+						"SET p.name = {positionName}, p.simplifiedName = {simplifiedName} " +
 						"RETURN p.id as id, p.name as name, p.source as source, s.id as structureId ";
 				neo4jClient.execute(query, params, Neo4jResult.validUniqueResultHandler(event -> {
 					if (event.isLeft()) {
@@ -312,5 +319,17 @@ public class DefaultUserPositionService implements UserPositionService {
 				jsonResult.getString("name"),
 				UserPositionSource.valueOf(jsonResult.getString("source")),
 				jsonResult.getString("structureId"));
+	}
+
+	/**
+	 * Simplifies source string (removes diacritics and sets to lower case)
+	 * @param source the source string to be simplified
+	 * @return the source string set to lower case and without diacritics
+	 */
+	private static String getSimplifiedString(String source) {
+		return Pattern.compile("\\p{M}")
+				.matcher(Normalizer.normalize(source, Normalizer.Form.NFD))
+				.replaceAll("")
+				.toLowerCase();
 	}
 }

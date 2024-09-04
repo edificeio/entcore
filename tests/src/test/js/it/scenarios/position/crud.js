@@ -206,8 +206,8 @@ export function searchPositionsOnOneEtab({structure, adml}) {
     res = searchPositions('hello', session);
     check(JSON.parse(res.body), {
       'search should return all positions containing the filter': pos => pos && pos.length === 3,
-      'search shoud be case-insensitive': pos => pos.filter(p => p.name.contains('Hello')).length == 2,
-      'search shoud be special-character-insensitive': pos => pos.filter(p => p.name.contains('HellÔ')).length == 1,
+      'search should be case-insensitive': pos => pos.filter(p => p.name.includes('Hello')).length == 2,
+      'search should be special-character-insensitive': pos => pos.filter(p => p.name.includes('HellÔ')).length == 1,
       'no duplicates were returned': pos =>   noDuplicates(pos)
     })
 
