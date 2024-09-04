@@ -124,7 +124,7 @@ public class DefaultUserPositionService implements UserPositionService {
 			} else {
 				getPositionByNameInStructure(positionName, structureId, adminStructureIds).onSuccess(userPosition -> {
 					if (userPosition.isPresent()) {
-						promise.complete(userPosition.get());
+						promise.fail("position.already.exists:"+userPosition.get().getId());
 					} else {
 						final JsonArray adminStructureArray = new JsonArray();
 						adminStructureIds.forEach(adminStructureArray::add);
