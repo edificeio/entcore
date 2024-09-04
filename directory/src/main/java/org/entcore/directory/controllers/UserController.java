@@ -130,12 +130,14 @@ public class UserController extends BaseController {
 				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 					public void handle(UserInfos user) {
 						final String userId = request.params().get("userId");
-						//User name modification prevention for non-admins.
+						//User name and user position modification prevention for non-admins.
 						if(!user.getFunctions().containsKey(DefaultFunctions.SUPER_ADMIN) &&
-								!user.getFunctions().containsKey(DefaultFunctions.ADMIN_LOCAL) &&
-								!user.getFunctions().containsKey(DefaultFunctions.CLASS_ADMIN)){
-							body.remove("lastName");
-							body.remove("firstName");
+								!user.getFunctions().containsKey(DefaultFunctions.ADMIN_LOCAL)){
+							body.remove("positionIds");
+							if (!user.getFunctions().containsKey(DefaultFunctions.CLASS_ADMIN)) {
+								body.remove("lastName");
+								body.remove("firstName");
+							}
 						}
 						final Promise<Either<String, JsonObject>> onUpdateDone = Promise.promise();
 						final Promise<Void> onRemoveSessionAttributeDone = Promise.promise();
