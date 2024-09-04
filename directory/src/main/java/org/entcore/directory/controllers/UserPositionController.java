@@ -29,10 +29,10 @@ public class UserPositionController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
 	public void getPositions(HttpServerRequest request) {
-		final String prefix = request.getParam("prefix");
+		final String content = request.getParam("content");
 		final String structureId = request.getParam("structureId");
 		UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(adminInfos -> {
-			userPositionService.getUserPositions(prefix, structureId, adminInfos)
+			userPositionService.getUserPositions(content, structureId, adminInfos)
 					.onSuccess(userPositions -> Renders.render(request, userPositions))
 					.onFailure(th -> {
 						Renders.log.warn("An error occurred while fetching user positions", th);

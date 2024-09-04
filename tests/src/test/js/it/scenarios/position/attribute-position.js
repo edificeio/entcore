@@ -111,7 +111,7 @@ export function testAttributePositions({structures, admls, positions, headAdml }
     
     ////////////////////////////
     // Check that non ADML users
-    // cannot attribute a position to a teacher
+    // cannot attribute a position to any other profile
     const profiles = [
         [null, "Unauthenticated user"],
         [teacher1, "Non ADML (teacher)"],
@@ -125,17 +125,29 @@ export function testAttributePositions({structures, admls, positions, headAdml }
         let returnCode;
         if(user) {
             session = authenticateWeb(user.login)
-            returnCode = 200;
+            returnCode = 401;
         } else {
             session = null
             logout();
             returnCode = 302
         }
         describe(`${label} attributes position to a teacher`, () => {
-          tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(teacher1, [position1], label, 'teacher', returnCode, session, admcSession);
-          tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(relative1, [position1], label, 'relative', returnCode, session, admcSession);
-          tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(student1, [position1], label, 'student', returnCode, session, admcSession);
+            let randomTeacher = getRandomUserWithProfile(users1, 'Teacher', [teacher1]);
+            tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(randomTeacher, [position1], label, 'teacher', returnCode, session, admcSession);
         })
+        describe(`${label} attributes position to a relative`, () => {
+            let randomRelative = getRandomUserWithProfile(users1, 'Relative', [relative1]);
+            tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(randomRelative, [position1], label, 'relative', returnCode, session, admcSession);
+        })
+        describe(`${label} attributes position to a student`, () => {
+            let randomStudent = getRandomUserWithProfile(users1, 'Student', [student1]);
+            tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(randomStudent, [position1], label, 'student', returnCode, session, admcSession);
+        })
+        if (user) {
+            describe(`${label} attributes position to itself`, () => {
+                tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(user, [position1], label, label, 200, session, admcSession);
+            })
+        }
     }
 
     session = authenticateWeb(adml1.login)
