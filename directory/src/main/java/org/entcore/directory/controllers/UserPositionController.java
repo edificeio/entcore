@@ -10,6 +10,7 @@ import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserUtils;
@@ -67,8 +68,20 @@ public class UserPositionController extends BaseController {
 				userPositionService.createUserPosition(positionName, structureId, UserPositionSource.MANUAL, adminInfos)
 						.onSuccess(userPosition -> Renders.render(request, userPosition, 201))
 						.onFailure(th -> {
+							final String message;
+							final JsonObject body = new JsonObject();
+							final int code;
+							final String errorMessage = th.getMessage();
+							if(errorMessage.startsWith("position.already.exists:")) {
+								code = 409;
+								message = th.getMessage();
+								body.put("existingPositionId", errorMessage.split(":")[1]);
+							} else {
+								code = 500;
+								message = "unknown.error";
+							}
 							Renders.log.warn("An error occurred while creating position : " + positionName + " in structure " + structureId, th);
-							Renders.renderError(request);
+							Renders.renderError(request, body, code, message);
 						});
 			});
 		});
