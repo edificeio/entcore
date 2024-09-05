@@ -143,9 +143,11 @@
   </ode-panel-section>
   <!--TYPE LIGHTBOX-->
   <ode-lightbox-confirm *ngIf="!!isOpenCasType" lightboxTitle="services.connector.cas.newMapping"
-                    [show]="isOpenCasType"
-                    (onCancel)="closeCasType(false)"
-                    (onConfirm)="closeCasType(true)">
+                  [show]="isOpenCasType"
+                  [disableConfirm]="isCasTypeValid"
+                  (onCancel)="closeCasType(false)"
+                  (onConfirm)="closeCasType(true)">
+      <form #casTypeFormRef="ngForm">
         <ode-form-field label="services.connector.cas.mapping">
           <input type="text"
                   [ngModel]="newCasType.type"
@@ -156,8 +158,8 @@
         <ode-form-field label="services.connector.cas.type">
           <select [(ngModel)]="newCasType.casType"
                   name="newCasType_casType"
-                  [required]="true"
-                  class="is-flex-none has-min-width">
+                  class="is-flex-none has-min-width"
+                  required>
             <option *ngFor="let casType of casTypes | orderBy:'name'" [value]="casType.id">
               {{ casType.name }}
             </option>
@@ -166,24 +168,22 @@
         <ode-form-field label="services.connector.cas.pattern">
           <input type="text"
                   [(ngModel)]="newCasType.pattern"
-                  [required]="true"
                   name="casPattern"
                   [placeholder]="'form.optional' | translate">
         </ode-form-field>
         <ode-form-field label="services.connector.cas.xiti.outil">
           <input type="text"
                   [(ngModel)]="newCasType.xitiOutil"
-                  [required]="true"
                   name="newCasType_xitiOutil"
                   [placeholder]="'form.optional' | translate">
         </ode-form-field>
         <ode-form-field label="services.connector.cas.xiti.service">
           <input type="text"
                   [(ngModel)]="newCasType.xitiService"
-                  [required]="true"
                   name="newCasType_xitiService"
                   [placeholder]="'form.optional' | translate">
         </ode-form-field>
+      </form>
   </ode-lightbox-confirm>
   <!--/END LIGHTBOX-->
   <!--REMOVE LIGHTBOX-->
