@@ -76,6 +76,9 @@ public class UserPositionController extends BaseController {
 								code = 409;
 								message = th.getMessage();
 								body.put("existingPositionId", errorMessage.split(":")[1]);
+							} else if(errorMessage.equals("cannot.create.position.on.this.structure")) {
+								code = 401;
+								message = "Missing the rights to create a position on this structure";
 							} else {
 								code = 500;
 								message = "unknown.error";
