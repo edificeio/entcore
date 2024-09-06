@@ -80,15 +80,14 @@
 									title-all="[[lang.translate('directory.allProfiles')]]"
 									title="[[lang.translate('directory.profiles')]]" disable-search="true">
 								</multi-comboboxes>
-								<!-- WB-3252, replace AAF functions filter by UserPositions filter
+								<!-- WB-3252, replace AAF functions filter by UserPositions filter -->
 								<multi-comboboxes ng-model="filters.users.functions"
 									options="filtersOptions.users.functions"
-									title-all="[[lang.translate('directory.allFunctions')]]"
-									title="[[lang.translate('directory.functions')]]"
+									title-all="[[lang.translate('directory.allFunctionGroups')]]"
+									title="[[lang.translate('directory.functionGroups')]]"
 									ng-disabled="!testFunctionFilterAvailable(filters.users.profiles)"
-									search-placeholder="directory.search.function">
+									search-placeholder="directory.search.functionGroup">
 								</multi-comboboxes>
-								 -->
 								<multi-comboboxes ng-model="filters.users.positions"
 									options="filtersOptions.users.positions"
 									title-all="[[lang.translate('directory.allFunctions')]]"
