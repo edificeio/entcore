@@ -745,12 +745,12 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 
 	private void getUserIdByLoginAlias(String username, String password, Handler<Try<AccessDenied, String>> handler) {
 		String query = "MATCH (n:User) " +
-				"WHERE n.loginAlias={loginAlias} AND NOT(HAS(n.activationCode)) " +
+				"WHERE n.loginAlias={loginAlias} " +
 				// "AND (NOT(HAS(n.blocked)) OR n.blocked = false) " +
 				"OPTIONAL MATCH (p:Profile) " +
 				"WHERE HAS(n.profiles) AND p.name = head(n.profiles) " +
 				"RETURN DISTINCT n.id as userId, n.password as password, p.blocked as blockedProfile, " +
-				"n.otp as otp, n.otpiat as otpiat, n.blocked as blockedUser, n.lastLogin as lastLogin, head(n.profiles) as profile, "
+				"n.otp as otp, n.otpiat as otpiat, n.blocked as blockedUser, n.resetCode as resetCode , n.resetDate as resetDate, n.activationCode as activationCode , n.lastLogin as lastLogin, head(n.profiles) as profile, "
 				+
 				"n.login as login, n.loginAlias as loginAlias";
 		Map<String, Object> params = new HashMap<>();
