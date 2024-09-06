@@ -1,6 +1,7 @@
 package org.entcore.common.user.position;
 
 import io.vertx.core.Future;
+import org.entcore.common.neo4j.Neo4jQueryAndParams;
 import org.entcore.common.user.UserInfos;
 
 import java.util.Set;
@@ -56,4 +57,5 @@ public interface UserPositionService {
 	 */
 	Future<Void> deleteUserPosition(String positionId, UserInfos adminInfos);
 
+	Future<Neo4jQueryAndParams> getUserPositionSettingQueryAndParam(Set<String> positionIds, String userId, String callerId);
 }

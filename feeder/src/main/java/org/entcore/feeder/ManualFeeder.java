@@ -20,6 +20,7 @@
 package org.entcore.feeder;
 
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -31,6 +32,7 @@ import org.entcore.common.neo4j.Neo4jQueryAndParams;
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.position.UserPositionService;
 import org.entcore.common.user.position.impl.DefaultUserPositionService;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.feeder.dictionary.structures.*;
@@ -58,6 +60,7 @@ public class ManualFeeder extends BusModBase {
 	private final Neo4j neo4j;
 	private EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Feeder.class.getSimpleName());
 	public static final String SOURCE = "MANUAL";
+	private final UserPositionService userPositionService;
 
 	static {
 		Map<String, Validator> p = new HashMap<>();
@@ -69,9 +72,10 @@ public class ManualFeeder extends BusModBase {
 		profiles = Collections.unmodifiableMap(p);
 	}
 
-	public ManualFeeder(Neo4j neo4j, EventBus eb) {
+	public ManualFeeder(Neo4j neo4j, EventBus eb, final UserPositionService userPositionService) {
 		this.neo4j = neo4j;
 		this.eb = eb;
+		this.userPositionService = userPositionService;
 	}
 
 	public void createStructure(final Message<JsonObject> message) {
@@ -260,7 +264,7 @@ public class ManualFeeder extends BusModBase {
 
 	public void createUser(final Message<JsonObject> message) {
 		logger.info("enter create user");
-		logger.info(((JsonObject) message.body()).encode());
+		logger.info(message.body().encode());
 		final JsonObject user = getMandatoryObject("data", message);
 		if (user == null) return;
 		if (user.getString("externalId") == null) {
@@ -342,24 +346,39 @@ public class ManualFeeder extends BusModBase {
 					.put("source", user.getString("source"));
 			statementsBuilder.add(classesQuery, classesParams);
 		}
-		if (userPositionIds != null) {
-			Neo4jQueryAndParams neo4jQueryAndParams = DefaultUserPositionService.getUserPositionSettingQueryAndParam(userPositionIds.stream().map(id -> (String) id).collect(Collectors.toSet()), user.getString("id"));
-			statementsBuilder.add(neo4jQueryAndParams.getQuery(), neo4jQueryAndParams.getParams());
+		final Promise<Void> promise = Promise.promise();
+		if (userPositionIds == null) {
+			promise.complete();
+		} else {
+			userPositionService.getUserPositionSettingQueryAndParam(
+				userPositionIds.stream().map(id -> (String) id).collect(Collectors.toSet()),
+				user.getString("id"),
+				message.body().getString("callerId"))
+			.onSuccess(queryAndParams -> {
+				statementsBuilder.add(queryAndParams.getQuery(), queryAndParams.getParams());
+				promise.complete();
+			})
+			.onFailure(promise::fail);
 		}
-		neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				final JsonArray results = event.body().getJsonArray("results");
-				if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
-					message.reply(event.body().put("result", results.getJsonArray(0)));
-					if (commit.booleanValue()) {
-						eventStore.createAndStoreEvent(Feeder.FeederEvent.CREATE_USER.name(),
+		promise.future().onSuccess(e -> {
+			neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit, new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					final JsonArray results = event.body().getJsonArray("results");
+					if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
+						message.reply(event.body().put("result", results.getJsonArray(0)));
+						if (commit) {
+							eventStore.createAndStoreEvent(Feeder.FeederEvent.CREATE_USER.name(),
 								(UserInfos) null, new JsonObject().put("new-user", user.getString("id")));
+						}
+					} else {
+						message.reply(event.body());
 					}
-				} else {
-					message.reply(event.body());
 				}
-			}
+			});
+		}).onFailure(th -> {
+			logger.warn("An error occurred when trying to create user positions update metho", th);
+			message.reply("Unknown error");
 		});
 	}
 
@@ -630,25 +649,39 @@ public class ManualFeeder extends BusModBase {
 				related +
 				"RETURN DISTINCT u.id as id, u.login AS login";
 		statementsBuilder.add(query, params);
-		if(userPositionIds != null) {
-			Neo4jQueryAndParams neo4jQueryAndParams = DefaultUserPositionService.getUserPositionSettingQueryAndParam(userPositionIds.stream().map(id -> (String) id).collect(Collectors.toSet()), user.getString("id"));
-			statementsBuilder.add(neo4jQueryAndParams.getQuery(), neo4jQueryAndParams.getParams());
+		final Promise<Void> promise = Promise.promise();
+		if(userPositionIds == null) {
+			promise.complete();
+		} else {
+			userPositionService.getUserPositionSettingQueryAndParam(
+				userPositionIds.stream().map(id -> (String) id).collect(Collectors.toSet()),
+				user.getString("id"),
+				message.body().getString("callerId"))
+			.onSuccess(queryAndParams -> {
+				statementsBuilder.add(queryAndParams.getQuery(), queryAndParams.getParams());
+				promise.complete();
+			}).onFailure(promise::fail);
 		}
-		neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				final JsonArray results = event.body().getJsonArray("results");
-				if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
-					message.reply(event.body().put("result", results.getJsonArray(0)));
-					if (commit.booleanValue()) {
-						eventStore.createAndStoreEvent(Feeder.FeederEvent.CREATE_USER.name(),
+		promise.future().onSuccess(e -> {
+			neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					final JsonArray results = event.body().getJsonArray("results");
+					if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
+						message.reply(event.body().put("result", results.getJsonArray(0)));
+						if (commit) {
+							eventStore.createAndStoreEvent(Feeder.FeederEvent.CREATE_USER.name(),
 								(UserInfos) null, new JsonObject().put("new-user", user.getString("id")));
+						}
+					} else {
+						message.reply(event.body());
 					}
-				} else {
-					message.reply(event.body());
 				}
-			}
-		});
+			});
+			}).onFailure(th -> {
+				logger.warn("An error occurred while creating user position update query", th);
+				sendError(message, "Unknown error");
+			});
 
 	}
 
@@ -820,6 +853,7 @@ public class ManualFeeder extends BusModBase {
 		final JsonObject user = getMandatoryObject("data", message);
 		if (user == null) return;
 		final String userId = getMandatoryString("userId", message);
+		final String callerId = message.body().getString("callerId");
 		if (userId == null) return;
 		String q =
 				"MATCH (u:User { id : {userId}})-[:IN]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
@@ -880,25 +914,40 @@ public class ManualFeeder extends BusModBase {
 					JsonObject params = user.put("userId", userId);
 					statementsBuilder.add(query, params);
 
-					if (userPositionIds != null) {
-						Neo4jQueryAndParams neo4jQueryAndParams = DefaultUserPositionService.getUserPositionSettingQueryAndParam(userPositionIds.stream().map(id -> (String) id).collect(Collectors.toSet()), userId);
-						statementsBuilder.add(neo4jQueryAndParams.getQuery(), neo4jQueryAndParams.getParams());
+					final Promise<Void> promise = Promise.promise();
+					if (userPositionIds == null) {
+						promise.complete();
+					} else {
+						userPositionService.getUserPositionSettingQueryAndParam(
+							userPositionIds.stream().map(id -> (String) id).collect(Collectors.toSet()),
+							userId,
+							callerId)
+						.onSuccess(queryAndParams -> {
+							statementsBuilder.add(queryAndParams.getQuery(), queryAndParams.getParams());
+							promise.complete();
+						})
+						.onFailure(promise::fail);
 					}
-					neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit, new Handler<Message<JsonObject>>() {
-								@Override
-								public void handle(Message<JsonObject> m) {
-									Validator.removeLogins(oldLogins);
-									DeleteTask.storeDeleteUserEvent(eventStore, deletedAlias);
-									final JsonObject body = m.body();
-									// Send back to the requester only the id of the updated user
-									final JsonArray results = (JsonArray) body.remove("results");
-									if(results != null && !results.isEmpty()) {
-										// 0 is the index at which the result of the query updating the user node is stored
-										body.put("result", results.getValue(0));
-									}
-									message.reply(body);
+					promise.future().onSuccess(e -> {
+						neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit, new Handler<Message<JsonObject>>() {
+							@Override
+							public void handle(Message<JsonObject> m) {
+								Validator.removeLogins(oldLogins);
+								DeleteTask.storeDeleteUserEvent(eventStore, deletedAlias);
+								final JsonObject body = m.body();
+								// Send back to the requester only the id of the updated user
+								final JsonArray results = (JsonArray) body.remove("results");
+								if(results != null && !results.isEmpty()) {
+									// 0 is the index at which the result of the query updating the user node is stored
+									body.put("result", results.getValue(0));
 								}
-							});
+								message.reply(body);
+							}
+						});
+					}).onFailure(th -> {
+						logger.warn("An error occurred while creating user position update query", th);
+						sendError(message, "Unknown error");
+					});
 				} else {
 					sendError(message, "Invalid profile.");
 				}

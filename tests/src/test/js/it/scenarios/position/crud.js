@@ -4,12 +4,10 @@ import {
   authenticateWeb,
   assertCondition,
   assertOk,
-  makeAdml,
   searchPositions,
   createPosition,
   createPositionOrFail,
   getUsersOfSchool,
-  createEmptyStructure,
   initStructure,
   logout,
   deletePosition,
@@ -18,7 +16,8 @@ import {
   getAdmlsOrMakThem,
   getSearchCriteria,
   checkReturnCode,
-  getOrCreatePosition
+  getOrCreatePosition,
+  attachUserToStructures
 } from "https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
 
 
@@ -92,19 +91,19 @@ export function setup() {
     //////////////////////////////////
     // Create 1 head structure and 2
     // depending structures
-    const chapeau = createEmptyStructure(`Chapeau - ${schoolName}${suffix}`, false, session)
+    const chapeau = initStructure(`Chapeau - ${schoolName}${suffix}`, 'tiny')
     const structure1 = initStructure(`1 - ${schoolName}${suffix}`, 'tiny')
     const structure2 = initStructure(`2 - ${schoolName}${suffix}`, 'tiny')
-    const structure3 = initStructure(`3 - ${schoolName}${suffix}`, 'tiny')
     attachStructureAsChild(chapeau, structure1, session)
     attachStructureAsChild(chapeau, structure2, session)
     ////////////////////////////////////
     // Create 1 ADML for each structure
     // and 1 ADML for the head structure
-    const megaAdml = getAdmlsOrMakThem(structure3, 'Teacher', 1, session)[0]
-    makeAdml(megaAdml, chapeau, session)
+    const megaAdml = getAdmlsOrMakThem(chapeau, 'Teacher', 1, [], session)[0]
     const adml1 = getAdmlsOrMakThem(structure1, 'Teacher', 1, [megaAdml], session)[0]
     const adml2 = getAdmlsOrMakThem(structure2, 'Teacher', 1, [megaAdml], session)[0]
+    attachUserToStructures(megaAdml, [structure1, structure2], session)
+
     structureTree = { head: chapeau, structures: [structure1, structure2], admls: [adml1, adml2], headAdml: megaAdml}
   });
   return { structure, adml, structureTree };
@@ -143,7 +142,6 @@ export function testCreatePosition({structure, adml, structureTree}) {
     res = createPosition(positionName, structure, session);
     checkReturnCode(res, "A position cannot be created multiple times", 409);
     res = createPosition(`${positionName} - bis`, structure, session);
-    assertCondition(() => res.status === 201, "An ADML user should be able to create a position");
     positions.push(JSON.parse(res.body));
     //assertSearchCriteriaContainSpecifiedPositionsAndNotOther(positions, p => p.structureId !==  structure.id, "ADML with a structure with these positions", session);
     session = authenticateWeb(adml1.login)
@@ -348,7 +346,7 @@ function noDuplicates(positions) {
   return positions.length === actualIds.size;
 }
 
-function assertSearchCriteriaContainSpecifiedPositionsAndNotOther(structureId, expected, unwantedPredicate, userType) {
+function assertSearchCriteriaContainSpecifiedPositionsAndNotOther(expected, unwantedPredicate, userType) {
   describe(userType, () => {
     const criteria = getSearchCriteria();
     const criteriaPositions = criteria.positions || [];

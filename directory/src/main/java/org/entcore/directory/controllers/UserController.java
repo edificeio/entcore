@@ -157,7 +157,7 @@ public class UserController extends BaseController {
 						}
 
 						getUserPromise.future().onComplete(userBeforeUpdate -> {
-							userService.update(userId, body, onUpdateDone::complete);
+							userService.update(userId, body, user, onUpdateDone::complete);
 							UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> onRemoveSessionAttributeDone.complete());
 
 							CompositeFuture.join(onUpdateDone.future(), onRemoveSessionAttributeDone.future())

@@ -407,7 +407,7 @@ public class DirectoryController extends BaseController {
 				List<String> userPositionIds = request.formAttributes().getAll("positionIds");
 				user.put("userPositionIds", userPositionIds);
 				if (classId != null && !classId.trim().isEmpty()) {
-					userService.createInClass(classId, user, new Handler<Either<String, JsonObject>>() {
+					userService.createInClass(classId, user, null, new Handler<Either<String, JsonObject>>() {
 						@Override
 						public void handle(Either<String, JsonObject> res) {
 							if (res.isRight() && res.right().getValue().size() > 0) {
@@ -436,7 +436,7 @@ public class DirectoryController extends BaseController {
 						}
 					});
 				} else {
-					userService.createInStructure(structureId, user, new Handler<Either<String, JsonObject>>() {
+					userService.createInStructure(structureId, user, null, new Handler<Either<String, JsonObject>>() {
 						@Override
 						public void handle(Either<String, JsonObject> res) {
 							if (res.isRight() && res.right().getValue().size() > 0) {
