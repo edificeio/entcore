@@ -2,14 +2,18 @@ package org.entcore.common.user.position.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.collections4.CollectionUtils;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jQueryAndParams;
 import org.entcore.common.neo4j.Neo4jResult;
+import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.position.UserPosition;
 import org.entcore.common.user.position.UserPositionService;
 import org.entcore.common.user.position.UserPositionSource;
@@ -27,7 +31,13 @@ public class DefaultUserPositionService implements UserPositionService {
 
 	private final Neo4j neo4jClient = Neo4j.getInstance();
 
-	@Override
+	private final EventBus eventBus;
+
+  public DefaultUserPositionService(EventBus eventBus) {
+    this.eventBus = eventBus;
+  }
+
+  @Override
 	public Future<Set<UserPosition>> getUserPositions(UserInfos user) {
 		return getUserPositions(null, null, null, user);
 	}
@@ -124,6 +134,9 @@ public class DefaultUserPositionService implements UserPositionService {
 			if (adminStructureIds.isEmpty()) {
 				logger.warn(ADMIN_WITHOUT_STRUCTURE);
 				promise.fail(ADMIN_WITHOUT_STRUCTURE);
+			} else if(!adminStructureIds.contains(structureId)) {
+				logger.warn("The user tried to create a position on structure {0} but only can access structures {1}", structureId, adminStructureIds);
+				promise.fail("cannot.create.position.on.this.structure");
 			} else {
 				getPositionByNameInStructure(positionName, structureId, adminStructureIds).onSuccess(userPosition -> {
 					if (userPosition.isPresent()) {
@@ -180,7 +193,7 @@ public class DefaultUserPositionService implements UserPositionService {
 						.put("simplifiedName", simplifiedName)
 						.put("adminStructureIds", adminStructureIds);
 
-				final String query = "" +
+				final String query =
 						"MATCH (p:UserPosition {id: {positionId}})-[:IN]->(s:Structure) " +
 						"WHERE s.id IN {adminStructureIds} " +
 						"SET p.name = {positionName}, p.simplifiedName = {simplifiedName} " +
@@ -235,22 +248,49 @@ public class DefaultUserPositionService implements UserPositionService {
 	 * @param userId the id of the user
 	 * @return the neo4j query and the associated params
 	 */
-	public static Neo4jQueryAndParams getUserPositionSettingQueryAndParam(Set<String> positionIds, String userId) {
-		final JsonArray positionIdsArray = new JsonArray();
-		positionIds.forEach(positionIdsArray::add);
-		final JsonObject params = new JsonObject()
-				.put("positionIds", positionIdsArray)
-				.put("userId", userId);
-		final String query = "" +
-				"MATCH (u:User {id:{userId}}) " +
-			  "OPTIONAL MATCH (u)-[h:HAS_POSITION]->(p:UserPosition) " +
-				"WHERE p is not null and NOT p.id IN {positionIds} " +
-				"DELETE h " +
-				"WITH u " +
-				"MATCH (u)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure)<-[:IN]-(p:UserPosition) " +
-				"WHERE p.id IN {positionIds} " +
-				"MERGE (u)-[:HAS_POSITION]->(p) ";
-		return new Neo4jQueryAndParams(query, params);
+	public Future<Neo4jQueryAndParams> getUserPositionSettingQueryAndParam(final Set<String> positionIds,
+																																				 final String userId,
+																																				 final String callerId) {
+		final Promise<UserInfos> promise = Promise.promise();
+		if(callerId == null) {
+			final UserInfos adminInfos = new UserInfos();
+			Map<String, UserInfos.Function> functions = new HashMap<>();
+			functions.put(DefaultFunctions.SUPER_ADMIN, new UserInfos.Function());
+			adminInfos.setFunctions(functions);
+			promise.complete(adminInfos);
+		} else {
+			UserUtils.getUserInfos(eventBus, callerId, promise::complete);
+		}
+		return promise.future().compose(adminInfos -> fetchAdminStructures(adminInfos).map(adminStructureIds -> {
+			final String query;
+			final JsonArray sids = new JsonArray();
+			adminStructureIds.forEach(sids::add);
+			final JsonObject
+				params = new JsonObject()
+				.put("userId", userId)
+				.put("structureIds", sids);
+			if(CollectionUtils.isEmpty(positionIds)) {
+				query =
+					"MATCH (u:User {id:{userId}})-[h:HAS_POSITION]->(p:UserPosition)-[:IN]->(s:Structure) " +
+					"WHERE head(u.profiles) IN ['Teacher', 'Personnel'] AND s.id in {structureIds} " +
+					"DELETE h";
+			} else {
+				final JsonArray positionIdsArray = new JsonArray();
+				positionIds.forEach(positionIdsArray::add);
+				params.put("positionIds", positionIdsArray);
+				query =
+					"MATCH (u:User {id:{userId}}) " +
+						"WHERE head(u.profiles) IN ['Teacher', 'Personnel'] " +
+						"OPTIONAL MATCH (u)-[h:HAS_POSITION]->(p:UserPosition)-[:IN]->(s: Structure) " +
+						"WHERE s.id IN {structureIds}" +
+						"DELETE h " +
+						"WITH u " +
+						"MATCH (u)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure)<-[:IN]-(p:UserPosition) " +
+						"WHERE p.id IN {positionIds} AND s.id IN {structureIds} " +
+						"MERGE (u)-[:HAS_POSITION]->(p) ";
+			}
+			return new Neo4jQueryAndParams(query, params);
+		}));
 	}
 
 	private Future<Optional<UserPosition>> getPositionByNameInStructure(String userPositionName, String structureId, Set<String> adminStructureIds) {
