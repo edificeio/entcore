@@ -70,33 +70,36 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
-	public void createInStructure(String structureId, JsonObject user, Handler<Either<String, JsonObject>> result) {
+	public void createInStructure(String structureId, JsonObject user, final UserInfos caller, Handler<Either<String, JsonObject>> result) {
 		user.put("profiles", new fr.wseduc.webutils.collections.JsonArray().add(user.getString("type")));
 		JsonObject action = new JsonObject()
 				.put("action", "manual-create-user")
 				.put("structureId", structureId)
 				.put("profile", user.getString("type"))
-				.put("data", user);
+				.put("data", user)
+				.put("callerId", caller == null ? null : caller.getUserId());
 		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
-	public void createInClass(String classId, JsonObject user, Handler<Either<String, JsonObject>> result) {
+	public void createInClass(String classId, JsonObject user, final UserInfos caller, Handler<Either<String, JsonObject>> result) {
 		user.put("profiles", new fr.wseduc.webutils.collections.JsonArray().add(user.getString("type")));
 		JsonObject action = new JsonObject()
 				.put("action", "manual-create-user")
 				.put("classId", classId)
 				.put("profile", user.getString("type"))
-				.put("data", user);
+				.put("data", user)
+				.put("callerId", caller == null ? null : caller.getUserId());
 		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
-	public void update(final String id, final JsonObject user, final Handler<Either<String, JsonObject>> result) {
+	public void update(final String id, final JsonObject user, final UserInfos caller, final Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-update-user")
 				.put("userId", id)
-				.put("data", user);
+				.put("data", user)
+				.put("callerId", caller == null ? null : caller.getUserId());
 		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
