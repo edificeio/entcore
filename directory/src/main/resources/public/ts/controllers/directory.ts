@@ -266,7 +266,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 				}
 				return { label: lang.translate(element), type: element, available: test };
 			}),
-			positions: $scope.criteria.positions.map((element) => {
+			positions: $scope.criteria.positions?.map((element) => {
 				return {label: element.name, type: element.id};
 			}),
 			types: $scope.criteria.groupTypes.map((element) => {
