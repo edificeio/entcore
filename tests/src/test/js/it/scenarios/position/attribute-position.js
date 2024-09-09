@@ -78,7 +78,7 @@ export function setup() {
     const position1 = createPositionOrFail(`IT - Position Attribute - 1 - ${now}`, structure1, session);
     const position2 = createPositionOrFail(`IT - Position Attribute - 2 - ${now}`, structure2, session);
 
-    cleanUsers([structure1, structure2])
+    cleanUsersPositions([structure1, structure2])
 
     structureTree = { 
         head: chapeau, 
@@ -244,17 +244,17 @@ function containsPosition(actualUserPositions, positionToFind) {
 function assignNewPositionAndCheckThatItSucceeded(user, positions, requesterType, userType, session, admcSession) {
   checkReturnCode(attributePositions(user, positions, session), `${requesterType} call to attribute a position to a ${userType} should end with 200`, 200);
   const newUserPositions = (getUserProfileOrFail(user.id, admcSession).userPositions || []);
-  const newUserPoisitionIds = newUserPositions.map(p => p.id)
+  const newUserPositionIds = newUserPositions.map(p => p.id)
   const expectedPositionsIds = positions.map(p => p.id)
   const checks = {}
   checks[`${requesterType} should be able to attribute new positions to a ${userType}`] = () => {
-    const missingPositions = expectedPositionsIds.filter(expectedPositionId => newUserPoisitionIds.indexOf(expectedPositionId) < 0);
+    const missingPositions = expectedPositionsIds.filter(expectedPositionId => newUserPositionIds.indexOf(expectedPositionId) < 0);
     const ok = missingPositions.length === 0;
     if(!ok) {
       console.error(`------------------- ${requesterType} ----------------------`)
       console.error(`${requesterType} should have been able to attribute all positions to a ${userType}, ${missingPositions.length}/${positions.length} where not added : ${missingPositions}`)
       console.error('expectedPositionsIds', expectedPositionsIds)
-      console.error('newUserPoisitionIds', newUserPoisitionIds)
+      console.error('newUserPositionIds', newUserPositionIds)
       console.error(`------------------- End ----------------------`)
     }
     return ok;
@@ -292,7 +292,7 @@ function tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(user, positi
   return check(newUserPositions, checks);
 }
 
-function cleanUsers(structures) {
+function cleanUsersPositions(structures) {
   const session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
   for(let structure of structures) {
     const users = getUsersOfSchool(structure)
