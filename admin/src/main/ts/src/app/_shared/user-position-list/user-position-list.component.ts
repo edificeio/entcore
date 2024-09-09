@@ -14,15 +14,15 @@ import { UserPosition } from "src/app/core/store/models/userPosition.model";
   styleUrls: ["./user-position-list.component.scss"],
 })
 export class UserPositionListComponent extends OdeComponent {
-  private _searchPrefix: string;
-  @Input() get searchPrefix(): string {
-    return this._searchPrefix;
+  private _searchContent: string;
+  @Input() get searchContent(): string {
+    return this._searchContent;
   }
-  set searchPrefix(value: string) {
-    this._searchPrefix = value;
-    this.searchPrefixChange.emit(value);
+  set searchContent(value: string) {
+    this._searchContent = value;
+    this.searchContentChange.emit(value);
   }
-  @Output() searchPrefixChange: EventEmitter<String> = new EventEmitter();
+  @Output() searchContentChange: EventEmitter<String> = new EventEmitter();
 
   @Input() userPositionList: UserPosition[] = [];
   private _selectedUserPosition: UserPosition;
@@ -45,10 +45,10 @@ export class UserPositionListComponent extends OdeComponent {
   }
 
   filterByInput = (item: any): boolean => {
-    return !!this.searchPrefix
+    return !!this.searchContent
       ? item.name
           .toLowerCase()
-          .indexOf(this.searchPrefix.toLowerCase()) >= 0
+          .indexOf(this.searchContent.toLowerCase()) >= 0
       : true;
   };
 

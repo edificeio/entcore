@@ -27,12 +27,12 @@ export class UserPositionsSectionComponent
   positionList: UserPosition[];
   userPositions: UserPosition[];
   filteredList: UserPosition[] = [];
-  searchPrefix: string = "";
+  searchContent: string = "";
   newPosition: UserPosition = {name: "", source: "MANUAL"};
   showUserPositionSelectionLightbox: boolean = false;
   showUserPositionCreationLightbox: boolean = false;
   get showEmptyScreen(): boolean{
-    return this.filteredList.length === 0 && this.searchPrefix?.length > 0;
+    return this.filteredList.length === 0 && this.searchContent?.length > 0;
   };
 
   showConfirmRemovePosition: boolean = false;
@@ -135,19 +135,19 @@ export class UserPositionsSectionComponent
   }
 
   removeUserPositionCancel() {
-    this.searchPrefix = "";
+    this.searchContent = "";
     this.showConfirmRemovePosition = false;
   }
 
   removeUserPositionConfirmed() {
     this.userPositions = this.userPositions.filter((p) => p.id !== this.positionToRemove.id);
     this.saveUpdate(true);
-    this.searchPrefix = "";
+    this.searchContent = "";
     this.showConfirmRemovePosition = false;
   }
 
   openUserPositionCreationModal() {
-    this.newPosition = { name: this.searchPrefix || "", source: "MANUAL" };
+    this.newPosition = { name: this.searchContent || "", source: "MANUAL" };
     this.showUserPositionSelectionLightbox = false;
     this.showUserPositionCreationLightbox = true;
   }

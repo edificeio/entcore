@@ -1,5 +1,3 @@
-import { Model } from "entcore-toolkit";
-
 export type UserPositionSource = "MANUAL" | "AAF" | "CSV";
 export interface UserPositionCreation {
   name: string;
@@ -9,7 +7,7 @@ export interface UserPositionElementQuery {
   /**
    * Keep only results having this criteria.
    */
-  prefix?: string;
+  content?: string;
 
   /**
    *  Restrict results to userPosition in existing in the structure list.

@@ -51,10 +51,10 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
 
     showUserPositionSelectionLightbox = false;
     newPosition: UserPosition = { name: "", source: "MANUAL" };
-    searchPrefix: string = "";
+    searchContent: string = "";
     filteredList: UserPosition[] = [];
     get showNewPositionProposal(): boolean {
-        return this.searchPrefix.length > 0 && this.filteredList.length === 0;
+        return this.searchContent.length > 0 && this.filteredList.length === 0;
     };
     showUserPositionCreationLightbox = false;
 
@@ -162,7 +162,7 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
             if(addedPosition) {
                 this.newUser.userDetails.userPositions.push(addedPosition);
                 this.showUserPositionSelectionLightbox = false;
-                this.searchPrefix = "";
+                this.searchContent = "";
             }
         });
     }
@@ -201,7 +201,7 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
     }
 
     showPositionCreation() {
-        this.newPosition = { name: this.searchPrefix, source: "MANUAL" };
+        this.newPosition = { name: this.searchContent, source: "MANUAL" };
         this.showUserPositionCreationLightbox = true;
     }
 
