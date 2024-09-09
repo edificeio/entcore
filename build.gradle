@@ -213,6 +213,13 @@ subprojects {
           groupId "${modowner}"
         }
       }
+      if("tests".equals(project.name)) {
+        maven(MavenPublication) {
+          groupId "${modowner}"
+          artifactId "${modname}"
+          artifact("build/libs/${modname}-$version-it.jar") { classifier "it" }
+        }
+      }
     }
   }
 
@@ -428,8 +435,32 @@ project(':tests') {
     compile 'net.minidev:json-smart:1.1.1'
   }
 
-}
+  task itJar(type: Jar) {
+    classifier = 'it'
+    baseName = "${modname}"
+    from 'it'
 
+
+    // Add contents of src/test/js to the JAR file
+    from('src/test/js') {
+      into 'js' // Place the files under the 'js' directory in the JAR
+    }
+
+    // Add contents of src/test/resources to the JAR file
+    from('src/test/resources') {
+      into 'resources' // Place the files under the 'resources' directory in the JAR
+    }
+
+    // Optionally specify the destination directory for the JAR file
+    destinationDir = file("$buildDir/libs")
+  }
+
+  artifacts {
+    archives itJar
+    archives shadowJar
+  }
+
+}
 /*
 task runEnt(type:Exec, dependsOn: subprojects.copyMod) {
   workingDir '.'
