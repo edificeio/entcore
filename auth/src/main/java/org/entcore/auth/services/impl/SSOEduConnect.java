@@ -122,7 +122,7 @@ public class SSOEduConnect extends AbstractSSOProvider {
 			return;
 		}
 
-		if (vectors.size() > 1) {
+		if (vectors.size() > 1 || (!noPrefix && privateEtabsPrefix)) {
 			JsonArray joinKeys = new fr.wseduc.webutils.collections.JsonArray();
 			for (String vector : vectors) {
 				final String joinKey = getJoinKey(vector);
@@ -147,17 +147,10 @@ public class SSOEduConnect extends AbstractSSOProvider {
 		} else {
 			final String joinKey = getJoinKey(vectors.get(0));
 			if (isNotEmpty(joinKey)) {
-				final String querySingle;
 				final JsonObject params = new JsonObject();
-				if (!noPrefix && privateEtabsPrefix) {
-					querySingle =
-							"MATCH (u:User) " +
-							"WHERE u.externalId IN {joinKeys} ";
-					params.put("joinKeys", new JsonArray().add(joinKey).add("P"+joinKey));
-				} else {
-					querySingle = "MATCH (u:User {externalId:{joinKey}}) ";
-					params.put("joinKey", joinKey);
-				}
+				final String querySingle = "MATCH (u:User {externalId:{joinKey}}) ";
+				params.put("joinKey", joinKey);
+
 				executeQuery(querySingle, params, assertion, handler);
 			} else {
 				handler.handle(new Either.Left<>("invalid.joinKey"));
