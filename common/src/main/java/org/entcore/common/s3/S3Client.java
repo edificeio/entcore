@@ -21,7 +21,6 @@ import org.entcore.common.s3.exception.StorageException;
 import org.entcore.common.s3.storage.DefaultAsyncResult;
 import org.entcore.common.s3.storage.StorageObject;
 import org.entcore.common.s3.utils.*;
-import org.entcore.common.storage.FallbackStorage;
 import org.entcore.common.storage.FileStats;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.validation.FileValidator;
@@ -68,8 +67,6 @@ public class S3Client {
 	private String secretKey;
 	private String region;
 	private String ssec;
-
-	private FallbackStorage fallbackStorage;
 
 	public S3Client(Vertx vertx, URI uri, String accessKey, String secretKey, String region, String bucket, String ssec) {
 		this(vertx, uri, accessKey, secretKey, region, bucket, ssec, false);
@@ -296,61 +293,59 @@ public class S3Client {
 	public void downloadFile(String id, final HttpServerRequest request, String bucket,
 			boolean inline, String downloadName, JsonObject metadata, final String eTag,
 			final Handler<AsyncResult<Void>> resultHandler) {
-		getReadPath(id, arFileId -> {
-			final String fileId = arFileId.result();
+		final String fileId = getPath(id);
 
-			final HttpServerResponse resp = request.response();
-			if (!inline) {
-				String name = FileUtils.getNameWithExtension(downloadName, metadata);
-				resp.putHeader("Content-Disposition", "attachment; filename=\"" + name + "\"");
+		final HttpServerResponse resp = request.response();
+		if (!inline) {
+			String name = FileUtils.getNameWithExtension(downloadName, metadata);
+			resp.putHeader("Content-Disposition", "attachment; filename=\"" + name + "\"");
+		}
+
+		HttpClientRequest req = httpClient.get("/" + bucket + "/" + fileId, response -> {
+			response.pause();
+
+			if (response.statusCode() == 200 || response.statusCode() == 304) {
+				resp.putHeader("ETag", ((eTag != null) ? eTag : response.headers().get("ETag")));
+				resp.putHeader("Content-Type", response.headers().get("Content-Type"));
 			}
 
-			HttpClientRequest req = httpClient.get("/" + bucket + "/" + fileId, response -> {
-				response.pause();
+			if (response.statusCode() == 200) {
+				resp.setChunked(true);
 
-				if (response.statusCode() == 200 || response.statusCode() == 304) {
-					resp.putHeader("ETag", ((eTag != null) ? eTag : response.headers().get("ETag")));
-					resp.putHeader("Content-Type", response.headers().get("Content-Type"));
-				}
+				response.handler(buff -> resp.write(buff));
 
-				if (response.statusCode() == 200) {
-					resp.setChunked(true);
-
-					response.handler(buff -> resp.write(buff));
-
-					response.endHandler(aVoid -> {
-						resp.end();
-						if (resultHandler != null) {
-							resultHandler.handle(new DefaultAsyncResult<>((Void) null));
-						}
-					});
-
-					response.resume();
-				} else {
-					resp.setStatusCode(response.statusCode()).setStatusMessage(response.statusMessage()).end();
+				response.endHandler(aVoid -> {
+					resp.end();
 					if (resultHandler != null) {
 						resultHandler.handle(new DefaultAsyncResult<>((Void) null));
 					}
+				});
+
+				response.resume();
+			} else {
+				resp.setStatusCode(response.statusCode()).setStatusMessage(response.statusMessage()).end();
+				if (resultHandler != null) {
+					resultHandler.handle(new DefaultAsyncResult<>((Void) null));
 				}
-			});
-			
-			if (req == null) {
-				resultHandler.handle(new DefaultAsyncResult<>((Void) null));
-				return;
 			}
-
-			req.setHost(host);
-			AwsUtils.setSSEC(req, ssec);
-			try {
-				AwsUtils.sign(req, accessKey, secretKey, region);
-			} catch (SignatureException e) {
-				log.error("downloadFile signature failed", e);
-				resultHandler.handle(Future.failedFuture("downloadFile signature failed"));
-				return;
-			}
-
-			req.end();
 		});
+		
+		if (req == null) {
+			resultHandler.handle(new DefaultAsyncResult<>((Void) null));
+			return;
+		}
+
+		req.setHost(host);
+		AwsUtils.setSSEC(req, ssec);
+		try {
+			AwsUtils.sign(req, accessKey, secretKey, region);
+		} catch (SignatureException e) {
+			log.error("downloadFile signature failed", e);
+			resultHandler.handle(Future.failedFuture("downloadFile signature failed"));
+			return;
+		}
+
+		req.end();
 	}
 
 	public void readFile(final String id, final Handler<AsyncResult<StorageObject>> handler) {
@@ -358,55 +353,53 @@ public class S3Client {
 	}
 
 	public void readFile(final String id, String bucket, final Handler<AsyncResult<StorageObject>> handler) {
-		getReadPath(id, arFileId -> {
-			final String idPrefixed = arFileId.result();
+		final String idPrefixed = getPath(id);
 
-			HttpClientRequest req = httpClient.get("/" + bucket + "/" + idPrefixed, response -> {
-				response.pause();
-				if (response.statusCode() == 200) {
-					final Buffer buffer = Buffer.buffer();
-					response.handler(buffer::appendBuffer);
-					response.endHandler(event -> {
-							String filename = response.headers().get("x-amz-meta-filename");
-							if (filename != null) {
-								try {
-									filename = DecoderUtil.decodeEncodedWords(
-											filename, DecodeMonitor.SILENT);
-								} catch (IllegalArgumentException e) {
-									log.error(e.getMessage(), e);
-								}
+		HttpClientRequest req = httpClient.get("/" + bucket + "/" + idPrefixed, response -> {
+			response.pause();
+			if (response.statusCode() == 200) {
+				final Buffer buffer = Buffer.buffer();
+				response.handler(buffer::appendBuffer);
+				response.endHandler(event -> {
+						String filename = response.headers().get("x-amz-meta-filename");
+						if (filename != null) {
+							try {
+								filename = DecoderUtil.decodeEncodedWords(
+										filename, DecodeMonitor.SILENT);
+							} catch (IllegalArgumentException e) {
+								log.error(e.getMessage(), e);
 							}
-							StorageObject o = new StorageObject(
-									id,
-									buffer,
-									filename,
-									response.headers().get("Content-Type")
-							);
-							handler.handle(new DefaultAsyncResult<>(o));
-					});
-					response.resume();
-				} else {
-					handler.handle(new DefaultAsyncResult<>(new StorageException(response.statusMessage())));
-				}
-			});
-
-			if (req == null) {
-				handler.handle(Future.failedFuture("Request is null"));
-				return;
+						}
+						StorageObject o = new StorageObject(
+								id,
+								buffer,
+								filename,
+								response.headers().get("Content-Type")
+						);
+						handler.handle(new DefaultAsyncResult<>(o));
+				});
+				response.resume();
+			} else {
+				handler.handle(new DefaultAsyncResult<>(new StorageException(response.statusMessage())));
 			}
-
-			req.setHost(host);
-			AwsUtils.setSSEC(req, ssec);
-			try {
-				AwsUtils.sign(req, accessKey, secretKey, region);
-			} catch (SignatureException e) {
-				log.error("readFile signature failed", e);
-				handler.handle(Future.failedFuture("readFile signature failed"));
-				return;
-			}
-
-			req.end();
 		});
+
+		if (req == null) {
+			handler.handle(Future.failedFuture("Request is null"));
+			return;
+		}
+
+		req.setHost(host);
+		AwsUtils.setSSEC(req, ssec);
+		try {
+			AwsUtils.sign(req, accessKey, secretKey, region);
+		} catch (SignatureException e) {
+			log.error("readFile signature failed", e);
+			handler.handle(Future.failedFuture("readFile signature failed"));
+			return;
+		}
+
+		req.end();
 	}
 
 	public void readFileStream(final String id, final Handler<AsyncResult<HttpClientResponse>> handler) {
@@ -414,32 +407,30 @@ public class S3Client {
 	}
 
 	public void readFileStream(String id, String bucket, final Handler<AsyncResult<HttpClientResponse>> handler) {
-		getReadPath(id, arFileId -> {
-			final String fileId = arFileId.result();
+		final String fileId = getPath(id);
 
-			HttpClientRequest req = httpClient.get("/" + bucket + "/" + fileId, response -> {
-				response.pause();
-				response.endHandler(event -> handler.handle(Future.succeededFuture(response)));
-				response.resume();
-			});
-
-			if (req == null) {
-				handler.handle(Future.failedFuture("Request is null"));
-				return;
-			}
-
-			req.setHost(host);
-			AwsUtils.setSSEC(req, ssec);
-			try {
-				AwsUtils.sign(req, accessKey, secretKey, region);
-			} catch (SignatureException e) {
-				log.error("readFileStream signature failed", e);
-				handler.handle(Future.failedFuture("readFile signature failed"));
-				return;
-			}
-
-			req.end();
+		HttpClientRequest req = httpClient.get("/" + bucket + "/" + fileId, response -> {
+			response.pause();
+			response.endHandler(event -> handler.handle(Future.succeededFuture(response)));
+			response.resume();
 		});
+
+		if (req == null) {
+			handler.handle(Future.failedFuture("Request is null"));
+			return;
+		}
+
+		req.setHost(host);
+		AwsUtils.setSSEC(req, ssec);
+		try {
+			AwsUtils.sign(req, accessKey, secretKey, region);
+		} catch (SignatureException e) {
+			log.error("readFileStream signature failed", e);
+			handler.handle(Future.failedFuture("readFile signature failed"));
+			return;
+		}
+
+		req.end();
 	}
 
 	public void writeFile(StorageObject object, final Handler<AsyncResult<String>> handler) {
@@ -549,48 +540,46 @@ public class S3Client {
 
 	public void writeToFileSystem(String id, final String destination, String bucket,
 			final Handler<AsyncResult<String>> handler) {
-		getReadPath(id, arFileId -> {
-			final String fileId = arFileId.result();
+		final String fileId = getPath(id);
 
-			HttpClientRequest req = httpClient.get("/" + bucket + "/" + id, response -> {
-				response.pause();
-				if (response.statusCode() == 200) {
-					vertx.fileSystem().open(destination, new OpenOptions(), ar -> {
-						if (ar.succeeded()) {
-							response.endHandler(aVoid -> {
-								ar.result().close();
-								handler.handle(new DefaultAsyncResult<>(destination));
-							});
-							Pump p = Pump.pump(response, ar.result());
-							p.start();
+		HttpClientRequest req = httpClient.get("/" + bucket + "/" + id, response -> {
+			response.pause();
+			if (response.statusCode() == 200) {
+				vertx.fileSystem().open(destination, new OpenOptions(), ar -> {
+					if (ar.succeeded()) {
+						response.endHandler(aVoid -> {
+							ar.result().close();
+							handler.handle(new DefaultAsyncResult<>(destination));
+						});
+						Pump p = Pump.pump(response, ar.result());
+						p.start();
 
-							response.resume();
-						} else {
-							handler.handle(new DefaultAsyncResult<>(ar.cause()));
-						}
-					});
-				} else {
-					handler.handle(new DefaultAsyncResult<>(new StorageException(response.statusMessage())));
-				}
-			});
-			
-			if (req == null) {
-				handler.handle(Future.failedFuture("Request is null"));
-				return;
+						response.resume();
+					} else {
+						handler.handle(new DefaultAsyncResult<>(ar.cause()));
+					}
+				});
+			} else {
+				handler.handle(new DefaultAsyncResult<>(new StorageException(response.statusMessage())));
 			}
-
-			req.setHost(host);
-			AwsUtils.setSSEC(req, ssec);
-			try {
-				AwsUtils.sign(req, accessKey, secretKey, region);
-			} catch (SignatureException e) {
-				log.error("writeToFileSystem signature failed", e);
-				handler.handle(Future.failedFuture("writeToFileSystem signature failed"));
-				return;
-			}
-
-			req.end();
 		});
+		
+		if (req == null) {
+			handler.handle(Future.failedFuture("Request is null"));
+			return;
+		}
+
+		req.setHost(host);
+		AwsUtils.setSSEC(req, ssec);
+		try {
+			AwsUtils.sign(req, accessKey, secretKey, region);
+		} catch (SignatureException e) {
+			log.error("writeToFileSystem signature failed", e);
+			handler.handle(Future.failedFuture("writeToFileSystem signature failed"));
+			return;
+		}
+
+		req.end();
 	}
 
 	public void writeFromFileSystem(final String id, String path, final Handler<JsonObject> handler) {
@@ -731,30 +720,6 @@ public class S3Client {
 		}
 
 		return path;
-	}
-
-	public void getReadPath(final String id, Handler<AsyncResult<String>> handler) {
-		if (fallbackStorage != null) {
-			fallbackStorage.downloadFileIfNotExists(id, id, new Handler<AsyncResult<String>>() {
-				@Override
-				public void handle(AsyncResult<String> event) {
-					if (event.succeeded()) {
-						log.error("Object " + id + " downloaded with success.");
-					}
-					else {
-						log.error(event.cause());
-					}
-					handler.handle(Future.succeededFuture(getPath(id)));
-				}
-			});
-		}
-		else {
-			handler.handle(Future.succeededFuture(getPath(id)));
-		}
-	}
-
-	public void setFallbackStorage(FallbackStorage fallbackStorage) {
-		this.fallbackStorage = fallbackStorage;
 	}
 
 }

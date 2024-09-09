@@ -29,6 +29,8 @@ import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.streams.ReadStream;
 import org.entcore.common.messaging.to.UploadedFileMessage;
 import org.entcore.common.s3.S3Client;
@@ -52,6 +54,10 @@ public class S3Storage implements Storage {
 
     private AntivirusClient antivirus;
     private FileValidator validator;
+
+    private FallbackStorage fallbackStorage;
+
+    private static final Logger log = LoggerFactory.getLogger(S3Storage.class);
     
     public S3Storage(Vertx vertx, URI uri, String accessKey, String secretKey, String region, String bucket, String ssec, boolean keepAlive, int timeout, int threshold, long openDelay) {
         this.bucket = bucket;
@@ -184,56 +190,63 @@ public class S3Storage implements Storage {
                 continue;
             }
             String d = destinationPath + File.separator + alias.getString(id, id);
-            s3Client.writeToFileSystem(id, d, new Handler<AsyncResult<String>>() {
-                @Override
-                public void handle(AsyncResult<String> event) {
-                    if (event.failed()) {
-                        errors.add(new JsonObject().put("id", id)
-                        .put("message", event.cause().getMessage()));
-                    }
-                    if (count.decrementAndGet() <= 0) {
-                        JsonObject j = new JsonObject();
-                        if (errors.size() == 0) {
-                            handler.handle(j.put("status", "ok"));
-                        } else {
-                            handler.handle(j.put("status", "error").put("errors", errors)
-                            .put("message", errors.encode()));
+
+            getReadPath(id, ar -> {
+                s3Client.writeToFileSystem(ar.result(), d, new Handler<AsyncResult<String>>() {
+                    @Override
+                    public void handle(AsyncResult<String> event) {
+                        if (event.failed()) {
+                            errors.add(new JsonObject().put("id", ar.result())
+                            .put("message", event.cause().getMessage()));
+                        }
+                        if (count.decrementAndGet() <= 0) {
+                            JsonObject j = new JsonObject();
+                            if (errors.size() == 0) {
+                                handler.handle(j.put("status", "ok"));
+                            } else {
+                                handler.handle(j.put("status", "error").put("errors", errors)
+                                .put("message", errors.encode()));
+                            }
                         }
                     }
-                }
+                });
             });
         }
     }
     
     @Override
     public void readFile(String id, final Handler<Buffer> handler) {
-        s3Client.readFile(id, new Handler<AsyncResult<StorageObject>>() {
-            @Override
-            public void handle(AsyncResult<StorageObject> event) {
-                if (event.succeeded()) {
-                    handler.handle(event.result().getBuffer());
-                } else {
-                    handler.handle(null);
+        getReadPath(id, ar -> {
+            s3Client.readFile(ar.result(), new Handler<AsyncResult<StorageObject>>() {
+                @Override
+                public void handle(AsyncResult<StorageObject> event) {
+                    if (event.succeeded()) {
+                        handler.handle(event.result().getBuffer());
+                    } else {
+                        handler.handle(null);
+                    }
                 }
-            }
+            });
         });
     }
     
     @Override
     public void readStreamFile(String id, Handler<ReadStream<Buffer>> handler) {
-        s3Client.readFileStream(id, ar -> {
-            if (ar.succeeded()) {
-                HttpClientResponse response = ar.result();
-                if (response.statusCode() == 200) {
-                    handler.handle(response);
+        getReadPath(id, arId -> {
+            s3Client.readFileStream(arId.result(), ar -> {
+                if (ar.succeeded()) {
+                    HttpClientResponse response = ar.result();
+                    if (response.statusCode() == 200) {
+                        handler.handle(response);
+                    }
+                    else {
+                        handler.handle(null);
+                    }
                 }
                 else {
                     handler.handle(null);
                 }
-            }
-            else {
-                handler.handle(null);
-            }
+            });
         });
     }
     
@@ -244,7 +257,9 @@ public class S3Storage implements Storage {
     
     @Override
     public void sendFile(String id, String downloadName, HttpServerRequest request, boolean inline, JsonObject metadata, Handler<AsyncResult<Void>> resultHandler) {
-        s3Client.downloadFile(id, request, inline, downloadName, metadata, id, resultHandler);
+        getReadPath(id, ar -> {
+            s3Client.downloadFile(ar.result(), request, inline, downloadName, metadata, id, resultHandler);
+        });
     }
 
     @Override
@@ -252,13 +267,15 @@ public class S3Storage implements Storage {
         final String id = uploadedFileMessage.getId();
         final Promise<byte[]> onFileRead = Promise.promise();
         
-        s3Client.readFile(id, storageObject -> {
-            if (storageObject.succeeded()) {
-                onFileRead.complete(storageObject.result().getBuffer().getBytes());
-            }
-            else {
-                onFileRead.fail(storageObject.cause());
-            }
+        getReadPath(id, ar -> {
+            s3Client.readFile(ar.result(), storageObject -> {
+                if (storageObject.succeeded()) {
+                    onFileRead.complete(storageObject.result().getBuffer().getBytes());
+                }
+                else {
+                    onFileRead.fail(storageObject.cause());
+                }
+            });
         });
         
         return onFileRead.future();
@@ -351,8 +368,24 @@ public class S3Storage implements Storage {
         return validator;
     }
 
+    public void getReadPath(String id, Handler<AsyncResult<String>> handler) {
+        final String idPath = S3Client.getPath(id);
+
+		if (fallbackStorage != null) {
+			fallbackStorage.downloadFileIfNotExists(idPath, idPath, new Handler<AsyncResult<String>>() {
+				@Override
+				public void handle(AsyncResult<String> event) {
+					handler.handle(Future.succeededFuture(idPath));
+				}
+			});
+		}
+		else {
+			handler.handle(Future.succeededFuture(idPath));
+		}
+	}
+
     public void setFallbackStorage(FallbackStorage fallbackStorage) {
-        this.s3Client.setFallbackStorage(fallbackStorage);
+        this.fallbackStorage = fallbackStorage;
 	}
 
 }
