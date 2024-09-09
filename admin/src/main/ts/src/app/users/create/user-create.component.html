@@ -71,7 +71,7 @@
               <h3><s5l>user-position.select</s5l></h3>
 
               <ode-user-position-list
-                [(searchPrefix)]="searchPrefix"
+                [(searchContent)]="searchContent"
                 [userPositionList]="filteredPositionList"
                 (selectedUserPositionChange)="addPosition($event)"
                 (filteredListChange)="filteredListChange($event)"
