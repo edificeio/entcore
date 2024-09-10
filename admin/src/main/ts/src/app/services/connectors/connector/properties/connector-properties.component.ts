@@ -39,6 +39,9 @@ export class ConnectorPropertiesComponent extends OdeComponent implements OnInit
     @ViewChild('propertiesForm')
     propertiesFormRef: NgForm;
 
+    @ViewChild('casTypeFormRef')
+    casTypeFormRef: NgForm;
+
     LINKPARAMS_TARGET_PORTAL = '';
     LINKPARAMS_TARGET_NEWPAGE = '_blank';
     LINKPARAMS_TARGET_ADAPTOR = 'adapter';
@@ -139,6 +142,10 @@ export class ConnectorPropertiesComponent extends OdeComponent implements OnInit
         }
     }
 
+    public get isCasTypeValid(): boolean {
+        return this.casTypeFormRef?.invalid ?? false;
+    }
+
     public getCasTypeDescription(): string {
         if (this.connector.casTypeId && this.casTypes) {
             return this.casTypes.find(casType => casType.id === this.connector.casTypeId).description;
@@ -190,7 +197,7 @@ export class ConnectorPropertiesComponent extends OdeComponent implements OnInit
     public async closeCasRemove(confirm: boolean)
     {
         try {
-            if(confirm){
+            if(confirm && this.propertiesFormRef.invalid){
                 await this.casMappingCollection.removeMapping(this.casTypeToRemove);
                 this.casMappings = this.casMappingCollection.data;
                 this.changeDetector.markForCheck();
