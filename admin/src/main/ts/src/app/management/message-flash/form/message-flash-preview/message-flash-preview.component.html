@@ -1,19 +1,16 @@
 <article class="content-box flashmsg__preview">
   <h3><s5l>flashmsg.preview</s5l> :</h3>
-  <div class="twelve cell">
-    <div *ngIf="customColor != undefined"  class="flashmsg" [ngStyle]="{'background-color': customColor}">
-      <div [innerHTML]="domSanitizer.bypassSecurityTrustHtml(text)"></div>
-      <div *ngIf="!!signature" class="is-italic" [ngStyle]="{'color': signatureColor}">
-        <br />
+  <div class="cell flashmsg" [ngClass]="color"
+    [ngStyle]="{ 'background-color': customColor, '--custom-message-color': customColor}">
+    <svg class="icon-svg flash-icon" width="20" height="20" viewBox="0 0 24 24">
+      <use [attr.href]="'/admin/public/icons/icons.svg' + (color === 'red' ? '#alert-triangle' : '#info-circle')"></use>
+    </svg>
+    <div class="flash-content">
+      <p [innerHTML]="domSanitizer.bypassSecurityTrustHtml(text)"></p>
+      <div *ng-if="!!signature" class="flash-content-signature mt-3 font-italic">
         {{ signature }}
       </div>
-    </div>
-    <div *ngIf="customColor == undefined" class="flashmsg" [ngClass]="color">
-      <div [innerHTML]="domSanitizer.bypassSecurityTrustHtml(text)"></div>
-      <div *ngIf="!!signature" class="is-italic" [ngStyle]="{'color': signatureColor}">
-        <br />
-        {{ signature }}
-      </div>
+      <div *ng-if="!signature" class="flash-content-signature"></div>
     </div>
   </div>
 </article>
