@@ -90,9 +90,9 @@ public class NotificationUtils {
     public static void deleteFcmToken(String userId, String fcmToken, Handler<Either<String, JsonObject>> handler){
         final JsonObject params = new JsonObject().put("userId", userId).put("fcmToken", fcmToken);
 
-        String query = "MATCH (u:User {id: {userId}}) MERGE (u)-[:PREFERS]->(uac:UserAppConf)" +
-                "ON CREATE SET uac.fcmTokens = [{fcmToken}] " +
-                "ON MATCH SET uac.fcmTokens = FILTER(token IN coalesce(uac.fcmTokens, []) WHERE token <> {fcmToken})";
+        final String query =
+                "MATCH (u:User {id: {userId}})-[:PREFERS]->(uac:UserAppConf) " +
+                "SET uac.fcmTokens = FILTER(token IN coalesce(uac.fcmTokens, []) WHERE token <> {fcmToken})";
 
         Neo4j.getInstance().execute(query, params, validUniqueResultHandler(handler));
 
