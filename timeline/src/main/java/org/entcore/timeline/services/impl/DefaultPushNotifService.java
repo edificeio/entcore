@@ -142,7 +142,8 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
                 processMessage(notification, this.getUserLanguage(userPref), typeNotification, typeData, message -> {
                     for(Object token : userPref.getJsonArray("tokens")){
                         try {
-                            ossFcm.sendNotifications(new JsonObject().put("message", message.put("token", (String) token)));
+                            ossFcm.sendNotifications(userPref.getString("userId"),
+                                    new JsonObject().put("message", message.put("token", (String) token)));
                         } catch (Exception e) {
                             log.error("[sendNotificationToUsers] Issue while sending notification (" + notificationName + ").", e);
 
