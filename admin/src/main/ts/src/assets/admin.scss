@@ -1,8 +1,8 @@
 // Custom Theming for Angular Material
 @use '@angular/material' as mat;
 
-// use sass math library
 @use "sass:math";
+@use "sass:map";
 
 // For more information: https://material.angular.io/guide/theming
 // Plus imports for other components in your app.
@@ -2768,20 +2768,11 @@ div.legend-square {
   margin-right: 10px;
   cursor: pointer;
 }
-div.legend-square.red {
-  background-color: $flash-red;
-}
-div.legend-square.orange {
-  background-color: $flash-orange;
-}
-div.legend-square.green {
-  background-color: $flash-green;
-}
-div.legend-square.blue {
-  background-color: $flash-blue;
-}
-div.legend-square.grey-dark {
-  background-color: $flash-grey;
+
+@each $key, $value in $widget-flash-colors {
+  div.legend-square.#{$key} {
+    background-color: map.get($value, "badge");
+  }
 }
 div.legend-square.outlined,
 input.outlined {
@@ -2814,28 +2805,100 @@ ode-message-sticker {
 
 // Message flash
 .flashmsg {
-  border-width: 0 0 4px 4px;
+
+  padding: 36px 24px 24px;
+  position: relative;
+  border-radius: 8px 8px 8px 6px;
+  margin: 32px 4px 36px 0;
+  left: 4px;
+  bottom: 4px;
+
+  @each $key, $value in $widget-flash-colors {
+    &.#{$key} {
+      --custom-message-color: #{map.get($value, "background")};
+      background-color: map.get($value, "background");
+      box-shadow: map.get($value, "shadow") -4px 0px,
+        map.get($value, "shadow") 0px 4px,
+        map.get($value, "shadow") -2px 2px 0 2px;
+
+      &::before {
+        background-color: map.get($value, "badge");
+        border-color: map.get($value, "shadow");
+        box-shadow: 0 0 0 4px map.get($value, "background");
+      }
+
+    }
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    display: block;
+    top: 4px-52px+24px + 8px;
+    left: 4px+24px;
+    width: 36px;
+    height: 36px;
+    border-radius: 100%;
+    border-width: 4px;
     border-style: solid;
-  
-  &.red {
-    background: $flash-red;
-    border-color: $flash-red-border;
+    box-sizing: content-box;
   }
-  &.orange {
-    background: $flash-orange;
-    border-color: $flash-orange-border;
+
+  .flash-icon {
+    position: absolute;
+    display: block;
+    top: 4px-52px+24px + 8px + 10px;
+    left: 4px+24px + 10px;
+    width: 24px;
+    height: 24px;
+    color: #fff;
   }
-  &.green {
-    background: $flash-green;
-    border-color: $flash-green-border;
+
+  &.red .flash-icon {
+    // 'alert-triangle' icon seems vertically misaligned.
+    transform: translateY(-1px);
   }
-  &.blue {
-    background: $flash-blue;
-    border-color: $flash-blue-border;
-  }
-  &.grey-dark {
-    background: $flash-grey;
-    border-color: $flash-grey-border;
+
+  .flash-content {
+    padding-right: 1rem;
+    font-size: 14px;
+    line-height: calc(22 / 14);
+
+    // Merge multiple <br> into one and delete the first empty line if present
+    p,
+    p>div {
+      &>br:first-child,
+      &>br:not(:not(br)+br) {
+        display: none;
+      }
+    }
+    > p:first-child {
+      margin-top: 0;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: underline;
+      font-weight: bold;
+
+      &:hover {
+        color: #000;
+      }
+
+      &:active {
+        color: #550070;
+      }
+    }
+
+    .flash-content-signature {
+      font-style: italic;
+      margin-top: 22px !important;
+      margin-right: 12em;
+    }
+
+    >*:last-child {
+      margin-bottom: 0;
+    }
   }
 
   &__preview {
@@ -2849,13 +2912,6 @@ ode-message-sticker {
       height: unset;
     }
   }
-}
-div.flashmsg {
-  min-height: 20px;
-  padding: 15px 25px;
-  margin-bottom: 15px;
-  box-shadow: 1px 1px 5px $shadow-light;
-  color: #fff;
 }
 
 ode-message-flash,
