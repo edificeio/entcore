@@ -18,6 +18,7 @@
 
 package org.entcore.common.notification.ws;
 
+import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.http.oauth.OAuth2Client;
 import fr.wseduc.webutils.security.JWT;
 import io.vertx.core.Handler;
@@ -40,9 +41,14 @@ public class OssFcm {
     private Logger log = LoggerFactory.getLogger(OssFcm.class);
     private JsonObject payload = new JsonObject();
     private PrivateKey key;
-
+    private final boolean logPushNotifs;
+    private MongoDb mongoDb;
 
     public OssFcm(OAuth2Client client, String iss, String scope, String aud, String url, String key) throws Exception{
+        this(client, iss, scope, aud, url, key, false);
+    }
+
+    public OssFcm(OAuth2Client client, String iss, String scope, String aud, String url, String key, boolean logPushNotifs) throws Exception{
         this.client = client;
         this.url = url;
         payload.put("iss", iss)
@@ -50,7 +56,10 @@ public class OssFcm {
                 .put("aud", aud);
 
         this.key = JWT.stringToPrivateKey(key);
-
+        this.logPushNotifs = logPushNotifs;
+        if (this.logPushNotifs) {
+            mongoDb = MongoDb.getInstance();
+        }
     }
 
     public void sendNotifications(final JsonObject message) throws Exception{
@@ -70,6 +79,10 @@ public class OssFcm {
                             public void handle(HttpClientResponse response) {
                                 if(response.statusCode() != 200){
                                     log.error("[OssFcm.sendNotifications] request failed : status=" + response.statusCode()+ "/ message="+response.statusMessage()+"/ url="+url+"/ token="+token);
+                                }
+                                if (logPushNotifs) {
+                                    final JsonObject resp = new JsonObject().put("status", response.statusCode());
+                                    mongoDb.insert("logpushnotifs", message.put("logcreated", MongoDb.now()).put("resp", resp));
                                 }
                             }
                         });
