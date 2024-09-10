@@ -27,10 +27,15 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
+import static fr.wseduc.webutils.Utils.isEmpty;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+
 import java.io.UnsupportedEncodingException;
 import java.security.PrivateKey;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.entcore.common.notification.NotificationUtils;
 
 public class OssFcm {
 
@@ -42,13 +47,15 @@ public class OssFcm {
     private JsonObject payload = new JsonObject();
     private PrivateKey key;
     private final boolean logPushNotifs;
+    private final boolean removeTokenIf404;
     private MongoDb mongoDb;
 
     public OssFcm(OAuth2Client client, String iss, String scope, String aud, String url, String key) throws Exception{
-        this(client, iss, scope, aud, url, key, false);
+        this(client, iss, scope, aud, url, key, false, false);
     }
 
-    public OssFcm(OAuth2Client client, String iss, String scope, String aud, String url, String key, boolean logPushNotifs) throws Exception{
+    public OssFcm(OAuth2Client client, String iss, String scope, String aud, String url, String key,
+            boolean logPushNotifs, boolean removeTokenIf404) throws Exception{
         this.client = client;
         this.url = url;
         payload.put("iss", iss)
@@ -60,9 +67,14 @@ public class OssFcm {
         if (this.logPushNotifs) {
             mongoDb = MongoDb.getInstance();
         }
+        this.removeTokenIf404 = removeTokenIf404;
     }
 
     public void sendNotifications(final JsonObject message) throws Exception{
+        sendNotifications(null, message);
+    }
+
+    public void sendNotifications(final String userId, final JsonObject message) throws Exception{
         getAccessToken(new Handler<String>() {
             @Override
             public void handle(String token) {
@@ -79,6 +91,9 @@ public class OssFcm {
                             public void handle(HttpClientResponse response) {
                                 if(response.statusCode() != 200){
                                     log.error("[OssFcm.sendNotifications] request failed : status=" + response.statusCode()+ "/ message="+response.statusMessage()+"/ url="+url+"/ token="+token);
+                                    if (removeTokenIf404 && response.statusCode() == 404) {
+                                        removeInvalidToken(userId, message);
+                                    }
                                 }
                                 if (logPushNotifs) {
                                     final JsonObject resp = new JsonObject().put("status", response.statusCode());
@@ -119,4 +134,32 @@ public class OssFcm {
             }
         }
     }
+
+    private void removeInvalidToken(String userId, JsonObject message) {
+        final JsonObject mes = message.getJsonObject("message");
+        if (isEmpty(userId)) {
+            if (isNotEmpty(mes.getString("topic"))) {
+                log.error("[OssFcm.removeInvalidToken] userId= null, topic= " + mes.getString("topic"));
+            }
+            if (isNotEmpty(mes.getString("condition"))) {
+                log.error("[OssFcm.removeInvalidToken] userId= null, condition= " + mes.getString("condition"));
+            }
+            if (isNotEmpty(mes.getString("token"))) {
+                log.error("[OssFcm.removeInvalidToken] userId= null, token= " + mes.getString("token"));
+            }
+        } else if (isNotEmpty(mes.getString("token"))) {
+            log.info("[OssFcm.removeInvalidToken] try remove token= " + mes.getString("token") + ", user= " + userId);
+            NotificationUtils.deleteFcmToken(userId, mes.getString("token"), e -> {
+                if (e.isRight()) {
+                    log.info("[OssFcm.removeInvalidToken] Removed token= " + mes.getString("token") + ", user= " + userId);
+                } else {
+                    log.error("[OssFcm.removeInvalidToken] Error when remove token " +
+                            mes.getString("token") + ", user= " + userId + " : " + e.left().getValue());
+                }
+            });
+        } else {
+            log.error("[OssFcm.removeInvalidToken] Missing token in message for user= " + userId);
+        }
+    }
+
 }
