@@ -1546,7 +1546,8 @@ div.legend-square.flashgreen {
 div.legend-square.flashblue {
   background-color: #2A9CC8;
 }
-div.legend-square.flashgrey {
+div.legend-square.flashgrey,
+div.legend-square.flashgrey-dark {
   background-color: #5B6472;
 }
 div.legend-separator {

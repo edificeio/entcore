@@ -18,6 +18,7 @@
 
 package org.entcore.timeline.controllers;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
 
@@ -51,6 +52,7 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
+import static fr.wseduc.webutils.Utils.isEmpty;
 import org.vertx.java.core.http.RouteMatcher;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
@@ -66,10 +68,24 @@ public class FlashMsgController extends BaseController {
 		this.eventHelper = new EventHelper(eventStore);
 	}
 
+	// TEMPORARY to handle both timeline and timeline2 view
+	private String defaultSkin;
+	private Map<String, String> hostSkin;
+	private JsonObject skinLevels;
+	
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
 		notification = new TimelineHelper(vertx, eb, config);
+
+		// TEMPORARY to handle both timeline and timeline2 view
+		this.defaultSkin = config.getString("skin", "raw");
+		this.hostSkin = new HashMap<>();
+		JsonObject skins = new JsonObject(vertx.sharedData().getLocalMap("skins"));
+		for (final String domain: skins.fieldNames()) {
+			this.hostSkin.put(domain, skins.getString(domain));
+		}
+		this.skinLevels = new JsonObject(vertx.sharedData().getLocalMap("skin-levels"));
 	}
 
 	/* User part */
@@ -122,7 +138,23 @@ public class FlashMsgController extends BaseController {
 	@ResourceFilter(SuperAdminFilter.class)
 	@MfaProtected()
 	public void preview(final HttpServerRequest request){
-		renderView(request, new JsonObject(), "admin-preview.html", null);
+		if (this.skinLevels == null) {
+			renderView(request, new JsonObject(), "admin-preview.html", null);
+			return;
+		}
+		UserUtils.getTheme(eb, request, this.hostSkin, userTheme -> {
+			if (isEmpty(userTheme)) {
+				renderView(request, new JsonObject(), "admin-preview.html", null);
+				return;
+			}
+			JsonArray userSkinLevels = this.skinLevels.getJsonArray(userTheme);
+			if (userSkinLevels != null && userSkinLevels.contains("2d")) {
+				renderView(request, new JsonObject(), "admin-preview-2d.html", null);
+				return;
+			} else {
+				renderView(request, new JsonObject(), "admin-preview.html", null);
+			}
+		});
 	}
 
 	@Post("/flashmsg")
