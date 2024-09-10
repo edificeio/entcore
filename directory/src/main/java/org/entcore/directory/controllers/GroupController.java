@@ -29,25 +29,22 @@ import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
-import org.entcore.common.user.UserInfos;
-import org.entcore.common.user.UserUtils;
-import org.entcore.directory.services.GroupService;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
-import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
-import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
-import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
-import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
-import static org.entcore.common.http.response.DefaultResponseHandler.leftToResponse;
-
-import java.util.List;
-
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
+import org.entcore.directory.services.GroupService;
+
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+
+import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
+import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 public class GroupController extends BaseController {
 
@@ -139,19 +136,20 @@ public class GroupController extends BaseController {
 				body.remove("structureId");
 				body.remove("classId");
 
-				UserUtils.getUserInfos(eb, request, user -> {
-					if(user != null) {
-						if(UserUtils.isSuperAdmin(user) == false) {
-							body.remove("autolinkTargetAllStructs");
-							body.remove("autolinkTargetStructs");
-							body.remove("autolinkUsersFromGroups");
-						}
+				UserUtils.getAuthenticatedUserInfos(eb, request)
+								.onSuccess(userInfos -> {
+									if (!UserUtils.isSuperAdmin(userInfos)) {
+										body.remove("autolinkTargetAllStructs");
+										body.remove("autolinkTargetStructs");
+										body.remove("autolinkUsersFromGroups");
+									}
 
-						groupService.createOrUpdateManual(body, structureId, classId, notEmptyResponseHandler(request, 201));	
-					}
-					else
-						unauthorized(request, "invalid.user");
-				});
+									body.put("createdById", userInfos.getUserId());
+									body.put("createdByName", userInfos.getUsername());
+									body.put("createdAt", LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000);
+
+									groupService.createOrUpdateManual(body, structureId, classId, notEmptyResponseHandler(request, 201));
+								});
 			}
 		});
 	}
@@ -168,19 +166,20 @@ public class GroupController extends BaseController {
 				public void handle(JsonObject body) {
 					body.put("id", groupId);
 
-					UserUtils.getUserInfos(eb, request, user -> {
-						if(user != null) {
-							if(UserUtils.isSuperAdmin(user) == false) {
-								body.remove("autolinkTargetAllStructs");
-								body.remove("autolinkTargetStructs");
-								body.remove("autolinkUsersFromGroups");
-							}
+					UserUtils.getAuthenticatedUserInfos(eb, request)
+							.onSuccess(userInfos -> {
+								if (!UserUtils.isSuperAdmin(userInfos)) {
+									body.remove("autolinkTargetAllStructs");
+									body.remove("autolinkTargetStructs");
+									body.remove("autolinkUsersFromGroups");
+								}
 
-							groupService.createOrUpdateManual(body, null, null, notEmptyResponseHandler(request));
-						}
-						else
-							unauthorized(request, "invalid.user");
-					});
+								body.put("modifiedById", userInfos.getUserId());
+								body.put("modifiedByName", userInfos.getUsername());
+								body.put("modifiedAt", LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000);
+
+								groupService.createOrUpdateManual(body, null, null, notEmptyResponseHandler(request));
+							});
 				}
 			});
 		} else {

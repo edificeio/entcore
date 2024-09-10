@@ -1398,6 +1398,14 @@ ode-spinner-cube.button-spinner {
       padding: 20px;
       div {
         padding: 5px 0;
+        &.update-info {
+          padding: 0;
+          color: $grey-dark;
+          font-size: .5em;
+          &:hover {
+            cursor: default;
+          }
+        }
       }
       .panel-header-content {
         gap: 24px;
