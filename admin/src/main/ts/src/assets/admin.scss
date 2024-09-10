@@ -2814,21 +2814,30 @@ ode-message-sticker {
 
 // Message flash
 .flashmsg {
+  border-width: 0 0 4px 4px;
+    border-style: solid;
+  
   &.red {
     background: $flash-red;
+    border-color: $flash-red-border;
   }
   &.orange {
     background: $flash-orange;
+    border-color: $flash-orange-border;
   }
   &.green {
     background: $flash-green;
+    border-color: $flash-green-border;
   }
   &.blue {
     background: $flash-blue;
+    border-color: $flash-blue-border;
   }
   &.grey-dark {
     background: $flash-grey;
+    border-color: $flash-grey-border;
   }
+
   &__preview {
     flex: 1 1;
     margin: 30px 0 0 20px;
