@@ -75,7 +75,8 @@ public class Timeline extends BaseServer {
 		timelineController.setLazyEventsI18n(lazyEventsI18n);
 
 
-		final List<TimelinePushNotifService> pushNotifServices = startPushNotifServices(eventsI18n,configService);
+		final List<TimelinePushNotifService> pushNotifServices = startPushNotifServices(
+				eventsI18n,configService, config.getBoolean("log-push-notifs", false));
 		notificationHelper.setPushNotifServices(pushNotifServices);
 
 
@@ -127,7 +128,8 @@ public class Timeline extends BaseServer {
 	 */
 	protected List<TimelinePushNotifService> startPushNotifServices(
 			final LocalMap<String,String> eventsI18n,
-			final TimelineConfigService configService
+			final TimelineConfigService configService,
+			final boolean logPushNotifs
 		) {
 		List<TimelinePushNotifService> list = new ArrayList<TimelinePushNotifService>();
 		try { // reading a JsonArray
@@ -136,7 +138,7 @@ public class Timeline extends BaseServer {
 				pushNotifs.forEach( o -> {
 					if( o!=null && JsonObject.class.isAssignableFrom(o.getClass()) ) {
 						final JsonObject pushNotif = (JsonObject) o;
-						final TimelinePushNotifService pushNotifService = pushNotifServiceFactory(pushNotif, eventsI18n, configService);
+						final TimelinePushNotifService pushNotifService = pushNotifServiceFactory(pushNotif, eventsI18n, configService, logPushNotifs);
 						if( pushNotifService != null ) {
 							list.add( pushNotifService );
 						}
@@ -151,7 +153,7 @@ public class Timeline extends BaseServer {
 		try { // reading a JsonObject
 			JsonObject pushNotif = config.getJsonObject("push-notif");
 			if(pushNotif != null){
-				final TimelinePushNotifService pushNotifService = pushNotifServiceFactory(pushNotif, eventsI18n, configService);
+				final TimelinePushNotifService pushNotifService = pushNotifServiceFactory(pushNotif, eventsI18n, configService, logPushNotifs);
 				if( pushNotifService != null ) {
 					list.add( pushNotifService );
 				}
@@ -182,7 +184,8 @@ public class Timeline extends BaseServer {
 	protected TimelinePushNotifService pushNotifServiceFactory(
 			final JsonObject pushNotif,
 			final LocalMap<String,String> eventsI18n,
-			final TimelineConfigService configService
+			final TimelineConfigService configService,
+			final boolean logPushNotifs
 		) {
 		try {
 			OAuth2Client googleOAuth2SSO = new OAuth2Client(URI.create(pushNotif.getString("uri")),
@@ -190,7 +193,7 @@ public class Timeline extends BaseServer {
 					pushNotif.getString("tokenUrn"), null, vertx,
 					pushNotif.getInteger("poolSize", 16), true);
 			OssFcm oss = new OssFcm(googleOAuth2SSO, pushNotif.getString("client_mail") , pushNotif.getString("scope"),
-					pushNotif.getString("aud"), pushNotif.getString("url"), pushNotif.getString("key"));
+					pushNotif.getString("aud"), pushNotif.getString("url"), pushNotif.getString("key"), logPushNotifs);
 
 			final DefaultPushNotifService pushNotifService = new DefaultPushNotifService(vertx, config, oss);
 			pushNotifService.setEventsI18n(eventsI18n);
