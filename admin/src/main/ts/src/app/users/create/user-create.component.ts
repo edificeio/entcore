@@ -207,6 +207,11 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
         this.showUserPositionCreationLightbox = true;
     }
 
+    showPositionSelection(event: MouseEvent) {
+        event.preventDefault();
+        this.showUserPositionSelectionLightbox = true;
+    }
+
     filteredListChange(filteredList: UserPosition[]) {
       this.filteredList = filteredList;
       this.changeDetector.detectChanges();
