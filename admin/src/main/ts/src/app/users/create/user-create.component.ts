@@ -174,6 +174,7 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
     addUserPositionToList(position: UserPosition | undefined) {
         if( position ) {
             this.positionList.push(position);
+            this.newUser.userDetails.userPositions.push(position);
         }
         this.showUserPositionCreationLightbox = false;
     }
@@ -202,6 +203,7 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
 
     showPositionCreation() {
         this.newPosition = { name: this.searchContent, source: "MANUAL" };
+        this.showUserPositionSelectionLightbox = false;
         this.showUserPositionCreationLightbox = true;
     }
 

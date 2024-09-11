@@ -39,7 +39,7 @@ export class UserPositionModalComponent extends OdeComponent implements OnInit {
   public editableName: string = "";
 
   get isUpdateModal(): boolean {
-    return !!this.userPosition.id;
+    return !!this.userPosition?.id;
   }
   
   constructor(
@@ -94,23 +94,37 @@ export class UserPositionModalComponent extends OdeComponent implements OnInit {
           return created;
         })
         .catch(err => {
-          this.ns.error(
-              {
-                  key: 'notify.user-position.create.error.content',
-                  parameters: {
-                      position: this.editableName
-                  }
-              }, 'notify.user-position.create.error.title', err);
+          debugger
+          if (err.response.status === 409 && err.response?.data?.existingPositionId) {
+            this.ns.error(
+                {
+                    key: 'notify.user-position.create.error.duplicate.content',
+                    parameters: {
+                        position: this.editableName
+                    }
+                }, 'notify.user-position.create.error.title', err);
+          } else {
+            this.ns.error(
+                {
+                    key: 'notify.user-position.create.error.content',
+                    parameters: {
+                        position: this.editableName
+                    }
+                }, 'notify.user-position.create.error.title', err);
+            }
           return undefined;
         });
     }
     this.onClose.emit(this.userPosition);
+    this.userPosition = undefined;
     this.editableName = undefined;
     this.show = false;
   }
   
   cancel() {
     this.onClose.emit();
+    this.userPosition = undefined;
+    this.editableName = undefined;
     this.show = false;
   }
 }

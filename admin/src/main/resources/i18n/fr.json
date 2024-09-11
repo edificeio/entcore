@@ -1061,6 +1061,7 @@
   "notify.user-position.create.success.content": "La fonction a été créée.",
   "notify.user-position.create.error.title": "Erreur lors de la création",
   "notify.user-position.create.error.content": "La fonction {{position}} n'a pas pu être créée.",
+  "notify.user-position.create.error.duplicate.content": "La fonction {{position}} est déjà presente.",
   "notify.user-position.read.error.title": "Erreur de lecture",
   "notify.user-position.read.error.content": "La liste des fonctions existantes n'a pas pu être récupérée.",
   "notify.user-position.update.success.content": "La fonction a été mise à jour.",
