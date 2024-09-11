@@ -34,7 +34,7 @@
         [disabled]="usePositionForm.invalid"
       >
         <s5l>
-          user-position.{{userPosition.id ? "rename" : "create"}}
+          user-position.{{isUpdateModal ? "rename" : "create"}}
         </s5l>
         <i class="fa fa-check is-size-5"></i>
       </button>

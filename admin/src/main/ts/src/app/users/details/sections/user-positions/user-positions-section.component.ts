@@ -107,6 +107,7 @@ export class UserPositionsSectionComponent
                     "notify.user-position.create.success.content",
                     "notify.user-position.success.title"
                 );
+                console.log(created);
                 return created;
             })
             .catch(err => {
@@ -120,7 +121,8 @@ export class UserPositionsSectionComponent
             })
         )
     )
-    .then(addedPosition => {
+      .then(addedPosition => {
+      console.log(addedPosition);
         if(addedPosition) {
           this.userPositions.push(addedPosition);
           this.showUserPositionSelectionLightbox = false;
@@ -155,6 +157,8 @@ export class UserPositionsSectionComponent
   addUserPositionToList(position: UserPosition | undefined) {
     if( position ) {
       this.positionList.push(position);
+      this.userPositions.push(position);
+      this.saveUpdate();
     }
     this.showUserPositionCreationLightbox = false;
   }
