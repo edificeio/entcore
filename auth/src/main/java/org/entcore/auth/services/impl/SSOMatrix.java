@@ -42,7 +42,9 @@ public class SSOMatrix extends AbstractSSOProvider {
             result.add(new JsonObject().put("displayName", user.getString("displayName", "")));
             UserUtils.getUserInfos(eb, userId, userInfos -> {
                 if (userInfos != null) {
-                    createStatsEvent(userInfos, host);
+                    JsonObject event = new JsonObject().put("service", host).put("connector-type", "saml")
+                            .put("saml-type", this.getClass().getSimpleName());
+                    eventStore.createAndStoreEvent(TRACE_TYPE_CONNECTOR, userInfos, event);
                 }
             });
             handler.handle(new Either.Right<>(result));
@@ -58,8 +60,4 @@ public class SSOMatrix extends AbstractSSOProvider {
         handler.handle(new Either.Left<String, Object>("execute function ot available on SSO Matrix Implementation"));
     }
 
-    private void createStatsEvent(UserInfos user, String host) {
-        JsonObject event = new JsonObject().put("service", host).put("connector-type", "saml").put("saml-type", this.getClass().getSimpleName());
-        eventStore.createAndStoreEvent(TRACE_TYPE_CONNECTOR, user, event);
-    }
 }
