@@ -143,7 +143,7 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
                     for(Object token : userPref.getJsonArray("tokens")){
                         try {
                             ossFcm.sendNotifications(userPref.getString("userId"),
-                                    new JsonObject().put("message", message.put("token", (String) token)));
+                                    new JsonObject().put("message", message.copy().put("token", (String) token)));
                         } catch (Exception e) {
                             log.error("[sendNotificationToUsers] Issue while sending notification (" + notificationName + ").", e);
 
@@ -158,7 +158,7 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
 
         this.processMessage(notification, "fr", typeNotification, typeData, message -> {
             try {
-                ossFcm.sendNotifications(new JsonObject().put("message", message.put("topic", topic)));
+                ossFcm.sendNotifications(new JsonObject().put("message", message.copy().put("topic", topic)));
             } catch (Exception e) {
                 log.error("[sendNotificationToTopic] Issue while sending notification (" + notificationName + ").", e);
 
@@ -169,7 +169,7 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
     private void sendCondition(final String notificationName,final JsonObject notification,final String condition,  boolean typeNotification, boolean typeData){
         this.processMessage(notification, "fr", typeNotification, typeData, message -> {
             try {
-                ossFcm.sendNotifications(new JsonObject().put("message", message.put("condition", condition)));
+                ossFcm.sendNotifications(new JsonObject().put("message", message.copy().put("condition", condition)));
             } catch (Exception e) {
                 log.error("[sendNotificationToCondition] Issue while sending notification (" + notificationName + ").", e);
 
