@@ -25,10 +25,19 @@ const PROXY_CONFIG = {
   changeOrigin: true,
 };
 
+const PROXY_FAVICO = {
+  context: "/assets/themes/**/*.ico",
+  target: "http://localhost:8090",
+  secure: false,
+  logLevel: "debug",
+  changeOrigin: true,
+};
+
 if (fs.existsSync("./.proxyRemoteConfig.js")) {
   const config = require("./.proxyRemoteConfig.js");
-  console.log("Using remote proxy configuration traget: ", config.target);
+  console.log("Using remote proxy configuration target: ", config.target);
   PROXY_CONFIG.target = config.target;
+  PROXY_FAVICO.target = config.target;
   if (config.oneSessionId && config.xsrfToken) {
     PROXY_CONFIG.headers = {
       cookie: `oneSessionId=${config.oneSessionId}; authenticated=true; XSRF-TOKEN=${config.xsrfToken}`,
@@ -43,4 +52,4 @@ if (fs.existsSync("./.proxyRemoteConfig.js")) {
 
 }
 
-module.exports = [PROXY_CONFIG];
+module.exports = [PROXY_CONFIG, PROXY_FAVICO];
