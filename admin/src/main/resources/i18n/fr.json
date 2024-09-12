@@ -1714,5 +1714,7 @@
   "statistics_presences.view": "Statistiques : accès",
   "user.merge.disclaimer.confirm": "Voulez-vous conserver les rattachements des deux comptes : établissements, classes, groupes et rattachements enfants pour les comptes parents ? Par défaut la fusion va simplement conserver le compte principal (compte déjà activé ou celui en alimentation automatique) et supprimer le compte en doublon.",
   "user.merge.oldmerge.button": "Ne pas conserver",
-  "user.merge.newmerge.button": "Conserver"
+  "user.merge.newmerge.button": "Conserver",
+  "position.name.already.used": "Une fonction du même nom existe déjà dans cette structure",
+  "position.not.accessible": "Cette fonction ne peut être modifiée"
 }

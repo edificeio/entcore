@@ -101,8 +101,20 @@ public class UserPositionController extends BaseController {
 				userPositionService.renameUserPosition(name, positionId, adminInfos)
 						.onSuccess(userPosition -> Renders.render(request, userPosition))
 						.onFailure(th -> {
-							Renders.log.warn("An error occurred while renaming user position with id : " + positionId + " and name : " + name, th);
-							Renders.renderError(request);
+							log.warn("An error occurred while renaming user position with id : " + positionId + " and name : " + name, th);
+							final String message;
+							final int code;
+							if("position.not.accessible".equals(th.getMessage())) {
+								message = th.getMessage();
+								code = 403;
+							} else if("position.name.already.used".equals(th.getMessage())) {
+								message = th.getMessage();
+								code = 409;
+							} else {
+								message = "unknown.error";
+								code = 500;
+							}
+							Renders.renderError(request, new JsonObject(), code, message);
 						});
 			});
 		});
