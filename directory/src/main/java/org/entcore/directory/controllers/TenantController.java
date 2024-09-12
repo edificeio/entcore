@@ -24,18 +24,15 @@ import fr.wseduc.rs.Post;
 import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
-import org.entcore.common.http.filter.IgnoreCsrf;
-import org.entcore.common.http.filter.ResourceFilter;
-import org.entcore.common.http.filter.SuperAdminFilter;
-import org.entcore.directory.services.TenantService;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.http.filter.SuperAdminFilter;
+import org.entcore.directory.services.TenantService;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
-import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
-import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
-import static org.entcore.common.http.response.DefaultResponseHandler.notEmptyResponseHandler;
+import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 public class TenantController extends BaseController {
 
@@ -43,7 +40,6 @@ public class TenantController extends BaseController {
 
 	@Post("/tenant")
 	@SecuredAction("tenant.create")
-	@IgnoreCsrf
 	public void create(final HttpServerRequest request) {
 		bodyToJson(request, pathPrefix + "createTenant", new Handler<JsonObject>() {
 			@Override

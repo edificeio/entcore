@@ -45,7 +45,6 @@ import org.entcore.common.datavalidation.utils.DataStateUtils;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
-import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.notification.TimelineHelper;
@@ -577,7 +576,6 @@ public class UserController extends BaseController {
 	@Post("/user/function/:userId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AddFunctionFilter.class)
-	@IgnoreCsrf
 	@MfaProtected()
 	public void addFunction(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
@@ -606,7 +604,6 @@ public class UserController extends BaseController {
 	@Post("/:structure/user/:userId/headteacher")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructures.class)
-	@IgnoreCsrf
 	@MfaProtected()
 	public void addHeadTeacherManual(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
@@ -641,7 +638,6 @@ public class UserController extends BaseController {
 	@Post("/:structure/user/:userId/direction")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructures.class)
-	@IgnoreCsrf
 	@MfaProtected()
 	public void addDirectionManual(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
