@@ -193,18 +193,39 @@ public class DefaultUserPositionService implements UserPositionService {
 						.put("simplifiedName", simplifiedName)
 						.put("adminStructureIds", adminStructureIds);
 
+
 				final String query =
+						// Get the desired position and its structure
 						"MATCH (p:UserPosition {id: {positionId}})-[:IN]->(s:Structure) " +
+						// Ensure the structure is accessible by the user
 						"WHERE s.id IN {adminStructureIds} " +
-						"SET p.name = {positionName}, p.simplifiedName = {simplifiedName} " +
-						"RETURN p.id as id, p.name as name, p.source as source, s.id as structureId ";
+						// Try to find a position with the name we're trying to use...
+						"OPTIONAL MATCH (s)<-[:IN]-(otherPosition:UserPosition{name:{positionName}}) " +
+						// ...which is not the one we're trying to rename
+						"WHERE otherPosition.id <> p.id " +
+						// Store the fact that a position whith the same name already exists
+						"WITH p, count(otherPosition) AS conflict, s " +
+						"WITH p, s, conflict, CASE WHEN conflict = 0 THEN true ELSE false END AS canUpdate " +
+						// Perform the update only if no conflict was detected
+						"FOREACH (_ IN CASE WHEN canUpdate THEN [1] ELSE [] END | " +
+							"SET p.name = {positionName}, p.simplifiedName = {simplifiedName} " +
+						")" +
+						// Return the field of the position and a boolean 'updated' which is false if we could not perform the
+						// update because a conflict was detected
+						"RETURN canUpdate AS updated, p.id as id, p.name as name, p.source as source, s.id as structureId ";
 				neo4jClient.execute(query, params, Neo4jResult.validUniqueResultHandler(event -> {
 					if (event.isLeft()) {
 						logger.warn("Failed renaming user position : " + event.left().getValue());
 						promise.fail(event.left().getValue());
 					} else {
 						JsonObject result = event.right().getValue();
-						promise.complete(createUserPositionFromResult(result));
+						if (result.containsKey("updated") && !result.getBoolean("updated")) {
+							promise.fail("position.name.already.used");
+						} else if (result.containsKey("id")) {
+							promise.complete(createUserPositionFromResult(result));
+						} else {
+							promise.fail("position.not.accessible");
+						}
 					}
 				}));
 			}
