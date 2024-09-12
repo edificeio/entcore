@@ -7,6 +7,7 @@ import {
   searchPositions,
   createPosition,
   createPositionOrFail,
+  updatePosition,
   getUsersOfSchool,
   initStructure,
   logout,
@@ -17,7 +18,10 @@ import {
   getSearchCriteria,
   checkReturnCode,
   getOrCreatePosition,
-  attachUserToStructures
+  attachUserToStructures,
+  getRandomUser,
+  switchSession,
+  getPositionByIdOrFail
 } from "https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
 
 
@@ -33,6 +37,13 @@ export const options = {
   scenarios: {
     createPosition: {
       exec: 'testCreatePosition',
+      executor: "per-vu-iterations",
+      vus: 1,
+      maxDuration: "5s",
+      gracefulStop: '1s',
+    },
+    renamePosition: {
+      exec: 'testRenamePosition',
       executor: "per-vu-iterations",
       vus: 1,
       maxDuration: "5s",
@@ -61,8 +72,6 @@ export const options = {
     },
   },
 };
-
-const seed = Date.now()
 
 /**
  * @returns A test dataset containing
@@ -168,6 +177,92 @@ export function testCreatePosition({structure, adml, structureTree}) {
     positions.push(createPositionOrFail(`${positionName}-ADML2-0`, structure2, session));
     session = authenticateWeb(headAdml.login);
     assertSearchCriteriaContainSpecifiedPositionsAndNotOther(positions, p => p.structureId ===  structure1.id || p.structureId ===  structure2.id, "ADML of multiple structures", session);
+})
+};
+
+
+export function testRenamePosition({structure, adml, structureTree}) {
+  const {admls: [adml1, adml2], structures: [structure1, structure2], headAdml} = structureTree
+  describe("[Position-CRUD] Rename position", () => {
+    let session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+    const users1 = getUsersOfSchool(structure1, session)
+    const unprivilegedUserOfStructure1 = getRandomUser(users1, [adml1, headAdml])
+    const users2 = getUsersOfSchool(structure2, session)
+    const unprivilegedUserOfStructure2 = getRandomUser(users2, [adml2, headAdml])
+    const adml1Session = authenticateWeb(adml1.login)
+    const positionName = "IT Position - Rename - To rename" + Date.now();
+    const positionToRename = createPositionOrFail(positionName, structure1, adml1Session)
+    let previousName = positionName
+    const usersThatCanRename = [
+      [authenticateWeb(adml1.login), "ADML of administered structure"],
+      [authenticateWeb(headAdml.login), "ADML of head structure"],
+      [authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD), "ADMC"]
+    ]
+    for(let userThatCanRename of usersThatCanRename) {
+      let [sessionToTry, label] = userThatCanRename
+      describe(`${label} - Can rename positions`, () => {
+        switchSession(sessionToTry)
+        const successfullRename = `${positionName} - renamed by ${label}`
+        positionToRename.name = successfullRename
+        assertOk(updatePosition(positionToRename, session), `should be able to rename a position`)
+        switchSession(adml1Session)
+        let res = searchPositions(positionName, adml1Session)
+        check(JSON.parse(res.body), {
+          'should only find the renamed position': positions => positions.length === 1,
+          'position should be renamed': positions => positions[0].name === successfullRename
+        })
+        previousName = successfullRename
+      })
+    }
+    const usersThatCannotRename = [
+      [authenticateWeb(adml2.login), "ADML of an unadministered structure", 403],
+      [authenticateWeb(unprivilegedUserOfStructure1.login), "Unprivileged user of the structure of the position", 401],
+      [authenticateWeb(unprivilegedUserOfStructure2.login), "Unprivileged user of an unrelated structure", 401],
+      [null, "Unauthenticated user", 302]
+    ]
+    for(let user of usersThatCannotRename) {
+      let [sessionToTry, label, expectedHTTPErrorCode] = user
+      describe(`${label} - Cannot rename positions`, () => {
+        if(sessionToTry === null) {
+          logout()
+        }
+        const failedRename = `${positionName} - renamed by ${label}`
+        positionToRename.name = failedRename
+        switchSession(sessionToTry)
+        checkReturnCode(
+          updatePosition(positionToRename, sessionToTry),
+          `should not be able to rename a position`,
+          expectedHTTPErrorCode)
+        switchSession(adml1Session)
+        let res = searchPositions(positionName, adml1Session)
+        check(JSON.parse(res.body), {
+          'should only find the original position': positions => positions.length === 1,
+          'position should not be renamed': positions => positions[0].name === previousName
+        })
+      })
+    }
+    describe('Forbidden actions', () => {
+      session = authenticateWeb(headAdml.login)
+      const fixedName = `${positionName} - fixed`
+      const fixedNameInOtherStructure = `${positionName} - fixed in structure 2`
+      createPositionOrFail(fixedName, structure1, session)
+      createPositionOrFail(fixedNameInOtherStructure, structure2, session)
+      positionToRename.name = fixedName
+      checkReturnCode(
+        updatePosition(positionToRename, session),
+        `should not allow to rename a position with a name that already exists in the structure`,
+        409
+      )
+      check(getPositionByIdOrFail(positionToRename.id, session), {
+        'should not be able to reuse a name of a position in the same structure' : p => p.name === previousName,
+      })
+      positionToRename.name = fixedNameInOtherStructure
+      assertOk(updatePosition(positionToRename, session), 'should allow to reuse a name of a position in another structure')
+      check(getPositionByIdOrFail(positionToRename.id, session), {
+        'should be able to reuse a name of a position in another structure' : p => p.name === fixedNameInOtherStructure,
+        'source should not have been modified' : p => p.source === 'MANUAL'
+      })
+    })
 })
 };
 /**
