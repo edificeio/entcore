@@ -161,5 +161,6 @@ export class StructureUserPositionsComponent
       this.userPositionList.splice(index, 1);
       this.changeDetector.markForCheck();
     }
+    this.selectedUserPosition = null;
   }
 }
