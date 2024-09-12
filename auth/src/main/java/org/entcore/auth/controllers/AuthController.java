@@ -1543,7 +1543,6 @@ public class AuthController extends BaseController {
 
 	@Post("/sendResetPassword")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@IgnoreCsrf
 	public void sendResetPassword(final HttpServerRequest request) {
 		String login = request.formAttributes().get("login");
 		String email = request.formAttributes().get("email");

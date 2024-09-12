@@ -29,28 +29,30 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.security.BCrypt;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.bus.BusResponseHandler;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.AdminFilter;
-import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.user.position.UserPositionService;
 import org.entcore.directory.security.AdmlOfStructuresByExternalId;
 import org.entcore.directory.services.*;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import org.vertx.java.core.http.RouteMatcher;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
@@ -133,7 +135,6 @@ public class DirectoryController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructuresByExternalId.class)
 	@MfaProtected()
-	@IgnoreCsrf
 	public void launchImport(final HttpServerRequest request) {
 		final JsonObject json = new JsonObject()
 				.put("action", "import")
@@ -148,7 +149,6 @@ public class DirectoryController extends BaseController {
 
 	@Post("/transition")
 	@SecuredAction("directory.transition")
-	@IgnoreCsrf
 	public void launchTransition(final HttpServerRequest request) {
 		JsonObject t = new JsonObject().put("action", "transition");
 		callTransition(request, t);
@@ -171,7 +171,6 @@ public class DirectoryController extends BaseController {
 
 	@Post("/removeclassgroupshare/:structureExternalId")
 	@SecuredAction("directory.removeclassgroupshare")
-	@IgnoreCsrf
 	public void launchRemoveGroupShare(final HttpServerRequest request) {
 		JsonObject t = new JsonObject().put("action", "transition").put("onlyRemoveShare", true);
 		callTransition(request, t);
@@ -179,7 +178,6 @@ public class DirectoryController extends BaseController {
 
 	@Post("/duplicates/mark")
 	@SecuredAction("directory.duplicates.mark")
-	@IgnoreCsrf
 	public void markDuplicates(final HttpServerRequest request) {
 		eb.send("entcore.feeder", new JsonObject().put("action", "mark-duplicates"),
 				new DeliveryOptions().setSendTimeout(getOrElse(config.getLong("markDuplicatesTimeout"), 300000l)), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
@@ -192,7 +190,6 @@ public class DirectoryController extends BaseController {
 
 	@Post("/autogroups/link")
 	@SecuredAction("directory.autogroups.link")
-	@IgnoreCsrf
 	public void linkAutogroups(final HttpServerRequest request) {
 		eb.send("entcore.feeder", new JsonObject().put("action", "manual-link-autogroups"), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			@Override
@@ -204,7 +201,6 @@ public class DirectoryController extends BaseController {
 
 	@Post("/export")
 	@SecuredAction("directory.export")
-	@IgnoreCsrf
 	public void launchExport(HttpServerRequest request) {
 		eb.send("entcore.feeder", new JsonObject().put("action", "export"));
 		request.response().end();
@@ -212,7 +208,6 @@ public class DirectoryController extends BaseController {
 
 	@Post("/reinitLogins")
 	@SecuredAction("directory.reinit.login")
-	@IgnoreCsrf
 	public void reinitLogins(HttpServerRequest request) {
 		eb.send("entcore.feeder", new JsonObject().put("action", "reinit-logins"));
 		request.response().end();
@@ -238,7 +233,6 @@ public class DirectoryController extends BaseController {
 
 	@Post("/school")
 	@SecuredAction("directory.school.create")
-	@IgnoreCsrf
 	public void createSchool(final HttpServerRequest request) {
 		bodyToJson(request, new Handler<JsonObject>() {
 			@Override
@@ -279,7 +273,6 @@ public class DirectoryController extends BaseController {
 
 	@Post("/class/:schoolId")
 	@SecuredAction("directory.class.create")
-	@IgnoreCsrf
 	public void createClass(final HttpServerRequest request) {
 		final String schoolId = request.params().get("schoolId");
 		if (schoolId == null || schoolId.trim().isEmpty()) {
@@ -380,7 +373,6 @@ public class DirectoryController extends BaseController {
 	@Post("/api/user")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
-	@IgnoreCsrf
 	public void createUser(final HttpServerRequest request) {
 		request.setExpectMultipart(true);
 		request.endHandler(new Handler<Void>() {

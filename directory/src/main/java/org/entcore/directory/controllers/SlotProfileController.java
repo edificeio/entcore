@@ -1,25 +1,22 @@
 package org.entcore.directory.controllers;
 
 import fr.wseduc.rs.*;
-import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
-import org.entcore.common.http.filter.IgnoreCsrf;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.entcore.common.mongodb.MongoDbControllerHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.directory.pojo.Slot;
 import org.entcore.directory.services.SlotProfileService;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpServerRequest;
 import org.vertx.java.core.http.RouteMatcher;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-
 
 import java.util.Map;
 
@@ -44,7 +41,6 @@ public class SlotProfileController extends MongoDbControllerHelper {
 
     @Post("/slotprofiles")
     @ApiDoc("Create a slot profile")
-    @IgnoreCsrf
     @SecuredAction(value = "directory.slot.manage")
     public void createSlotProfile(final HttpServerRequest request) {
 
@@ -71,7 +67,6 @@ public class SlotProfileController extends MongoDbControllerHelper {
 
     @Put("/slotprofiles/:idSlotProfile")
     @ApiDoc("Update a slot profile")
-    @IgnoreCsrf
     @SecuredAction(value = "directory.slot.manage")
     public void updateSlotProfile(final HttpServerRequest request) {
         UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -99,7 +94,6 @@ public class SlotProfileController extends MongoDbControllerHelper {
 
     @Delete("/slotprofiles/:idSlotProfile")
     @ApiDoc("Delete a slot profile")
-    @IgnoreCsrf
     @SecuredAction(value = "directory.slot.manage")
     public void deleteSlotProfile(final HttpServerRequest request) {
         UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -148,7 +142,6 @@ public class SlotProfileController extends MongoDbControllerHelper {
 
     @Post("/slotprofiles/:idSlotProfile/slots")
     @ApiDoc("Create a slot for a given slot profile")
-    @IgnoreCsrf
     @SecuredAction(value = "directory.slot.manage")
     public void createSlot(final HttpServerRequest request) {
         UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -224,7 +217,6 @@ public class SlotProfileController extends MongoDbControllerHelper {
 
     @ApiDoc("Update a given slot for a given slot profile")
     @Put("/slotprofiles/:idSlotProfile/slots/:idSlot")
-    @IgnoreCsrf
     @SecuredAction(value = "directory.slot.manage")
     public void updateSlot(final HttpServerRequest request) {
         UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
@@ -299,7 +291,6 @@ public class SlotProfileController extends MongoDbControllerHelper {
 
     @ApiDoc("Delete a given slot for a given slot profile")
     @Delete("/slotprofiles/:idSlotProfile/slots/:idSlot")
-    @IgnoreCsrf
     @SecuredAction(value = "directory.slot.manage")
     public void deleteSlotFromSlotProfile(final HttpServerRequest request) {
         UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
