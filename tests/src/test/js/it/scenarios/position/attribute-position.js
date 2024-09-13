@@ -189,6 +189,11 @@ export function testAttributePositions({structures, admls, positions, headAdml, 
       tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(relative1, [position1], 'ADML', 'relative', 200, session, admcSession);
       tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(student1, [position1], 'ADML', 'student', 200, session, admcSession);
     })
+    
+    describe("ADML attributes a function to another ADML in the same structure", () => {
+      session = authenticateWeb(headAdml.login)
+      assignNewPositionAndCheckThatItSucceeded(adml2, [position1], 'ADML', 'Other ADML', session, admcSession);
+    })
 
     session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
     
