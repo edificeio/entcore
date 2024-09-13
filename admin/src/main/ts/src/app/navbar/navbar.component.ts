@@ -3,6 +3,7 @@ import { Component, ElementRef, EventEmitter, Injector, Input, Output, ViewChild
 import { OdeComponent } from 'ngx-ode-core';
 import { removeAccents } from 'ngx-ode-ui';
 import { StructureModel } from '../core/store/models/structure.model';
+import { SessionModel } from '../core/store/models/session.model';
 
 @Component({
     selector: 'ode-navbar',
@@ -54,8 +55,8 @@ export class NavbarComponent extends OdeComponent {
     }
 
     public getLogoutCallback() {
-        http.get(`/theme`).then((res) => {
-            this.logoutCallback = res.data.logoutCallback;        
+        SessionModel.getTheme().then((theme) => {
+            this.logoutCallback = theme.logoutCallback;        
         })
     }
 }
