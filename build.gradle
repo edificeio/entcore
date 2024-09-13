@@ -211,14 +211,10 @@ subprojects {
         mavenJava(MavenPublication) {
           from components.java
           groupId "${modowner}"
-        }
-      }
-      if ("tests".equals(project.name)) {
-        mavenIt(MavenPublication) {
-          groupId "${modowner}"
-          artifactId "${modname}"
-          artifact("build/libs/${modname}-$version-it.jar") {
-            classifier "it"
+          if ("tests".equals(project.name)) {
+            artifact("build/libs/${modname}-$version-it.jar") {
+              classifier "it"
+            }
           }
         }
       }
