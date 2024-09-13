@@ -1,5 +1,6 @@
 import http from 'axios';
 import { FlashMessageModel } from 'src/app/core/store/models/flashmessage.model';
+import { SessionModel } from 'src/app/core/store/models/session.model';
 import { StructureModel } from 'src/app/core/store/models/structure.model';
 
 export class MessageFlashService {
@@ -147,10 +148,9 @@ export class MessageFlashService {
     }
 
     static async getTheme() {
-        let response;
         try {
-            response = await http.get(`/theme`);
-            return response.data.skin + 'theme.css';
+            const theme = await SessionModel.getTheme();
+            return theme.skin + 'theme.css';
         } catch (error) {
             return error.response.data;
         }

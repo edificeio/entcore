@@ -14,6 +14,7 @@ import { SijilLabelsService } from './services/sijil.labels.service';
 import { UserService } from './services/user.service';
 import { WidgetService } from './services/widgets.service';
 import { UserPositionServices } from './services/user-position.service';
+import { FavIconResolver } from './resolvers/favicon.resolver';
 
 @NgModule({
     imports: [
@@ -36,7 +37,8 @@ import { UserPositionServices } from './services/user-position.service';
         WidgetService,
         ConfigResolver,
         UserService,
-        UserPositionServices
+        UserPositionServices,
+        FavIconResolver
     ],
 })
 export class CoreModule {
