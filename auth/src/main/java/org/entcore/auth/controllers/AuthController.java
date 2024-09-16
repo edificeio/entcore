@@ -91,9 +91,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -120,6 +122,7 @@ public class AuthController extends BaseController {
 	protected final SafeRedirectionService redirectionService = SafeRedirectionService.getInstance();
 	private MfaService mfaSvc;
 	private OpenIdSloServiceImpl sloServiceImpl;
+	private Set<String> clientIdsAuthorized = new HashSet();
 
 	public enum AuthEvent {
 		ACTIVATION, LOGIN, SMS
@@ -149,6 +152,8 @@ public class AuthController extends BaseController {
 		protectedResource.setAccessTokenFetcherProvider(accessTokenFetcherProvider);
 		passwordPattern = Pattern.compile(config.getString("passwordRegex", ".{8}.*"));
 		LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
+		JsonArray authorizedSessions = getOrElse(config.getJsonArray("authorize-mobile-session"), new JsonArray());
+		authorizedSessions.forEach(session -> clientIdsAuthorized.add((String) session));
 		if (server != null && server.get("smsProvider") != null)
 			smsProvider = (String) server.get("smsProvider");
 		slo = config.getBoolean("slo", false);
@@ -435,7 +440,7 @@ public class AuthController extends BaseController {
 											userData.getEmail(), userData.getMobile(), userData.getSource(), request);
 								}
 							}
-							if (checkClientIdFromConfigAuth(clientId)) {
+							if (clientIdsAuthorized.contains(clientId)) {
 								futureUserId.future().onSuccess(userId -> {
 									createSessionForMobile(userId, response, request);
 								}).onFailure(th -> {
@@ -464,16 +469,6 @@ public class AuthController extends BaseController {
 						});
 					}
 
-					private boolean checkClientIdFromConfigAuth(String clientId) {
-						JsonArray clientIds = new JsonArray();
-						clientIds.addAll(getOrElse(config.getJsonArray("authorize_mobile_session"), new JsonArray()));
-						for (Object id : clientIds) {
-							if (clientId.equals(id)) {
-								return true;
-							}
-						}
-						return false;
-					}
 
 					private void activateUser(final String activationCode, final String login, String email, String mobile, String source,
 							final HttpServerRequest request) {
