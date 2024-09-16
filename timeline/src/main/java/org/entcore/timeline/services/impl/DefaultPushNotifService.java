@@ -141,12 +141,14 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
                     userPref.getJsonArray("tokens") != null && userPref.getJsonArray("tokens").size() > 0){
                 processMessage(notification, this.getUserLanguage(userPref), typeNotification, typeData, message -> {
                     for(Object token : userPref.getJsonArray("tokens")){
+                        if ("null".equals(token)) {
+                            continue;
+                        }
                         try {
                             ossFcm.sendNotifications(userPref.getString("userId"),
                                     new JsonObject().put("message", message.copy().put("token", (String) token)));
                         } catch (Exception e) {
                             log.error("[sendNotificationToUsers] Issue while sending notification (" + notificationName + ").", e);
-
                         }
                     }
                 });
