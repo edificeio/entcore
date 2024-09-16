@@ -31,7 +31,7 @@
       <button
         (click)="save()"
         class="user-position-save action"
-        [disabled]="usePositionForm.invalid"
+        [disabled]="usePositionForm.invalid || saving"
       >
         <s5l>
           user-position.{{isUpdateModal ? "rename" : "create"}}
