@@ -16,7 +16,6 @@ import {
   attachUserToStructures
 } from "https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
 
-
 chai.config.logFailures = true;
 
 export const options = {
@@ -132,6 +131,7 @@ export function testAttributePositions({structures, admls, positions, headAdml, 
     console.log("relative1 is ", relative1.login)
     console.log("student1 is ", student1.login)
     console.log("multiEtabUser", multiEtabUser.login)
+
     for(let profile of profiles) {
         const [user, label] = profile
         let returnCode;
@@ -189,10 +189,10 @@ export function testAttributePositions({structures, admls, positions, headAdml, 
       tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(relative1, [position1], 'ADML', 'relative', 200, session, admcSession);
       tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(student1, [position1], 'ADML', 'student', 200, session, admcSession);
     })
-    
+
     describe("ADML attributes a function to another ADML in the same structure", () => {
       session = authenticateWeb(headAdml.login)
-      assignNewPositionAndCheckThatItSucceeded(adml2, [position1], 'ADML', 'Other ADML', session, admcSession);
+      assignNewPositionAndCheckThatItSucceeded(adml2, [position2], 'ADML', 'Other ADML', session, admcSession);
     })
 
     session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
