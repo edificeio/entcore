@@ -150,7 +150,8 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
                 .catch(err => {
                     this.ns.error({
                             key: 'notify.user-position.create.error.content',
-                            parameters: {position: name}},
+                            parameters: { position: name }
+                        },
                         'notify.user-position.create.error.title',
                         err
                     );
