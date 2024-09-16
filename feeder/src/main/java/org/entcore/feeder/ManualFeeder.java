@@ -279,6 +279,10 @@ public class ManualFeeder extends BusModBase {
 		if ("Relative".equals(profile)) {
 			childrenIds = user.getJsonArray("childrenIds");
 		}
+		JsonArray userPositionIds = null;
+		if ("Personnel".equals(profile)) {
+			userPositionIds = user.getJsonArray("userPositionIds");
+		}
 		final String userSource = "SSO".equals(user.getString("source")) ? "SSO": SOURCE;
 		final String error = profiles.get(profile).validate(user);
 		if (error != null) {
@@ -292,7 +296,7 @@ public class ManualFeeder extends BusModBase {
 		final String structureId = message.body().getString("structureId");
 		if (structureId != null && !structureId.trim().isEmpty()) {
 			final JsonArray classesNames = message.body().getJsonArray("classesNames");
-			createUserInStructure(message, user, profile, structureId, childrenIds, classesNames);
+			createUserInStructure(message, user, profile, structureId, childrenIds, classesNames, userPositionIds);
 			return;
 		}
 		final String classId = message.body().getString("classId");
@@ -304,12 +308,11 @@ public class ManualFeeder extends BusModBase {
 	}
 
 	private void createUserInStructure(final Message<JsonObject> message,
-			final JsonObject user, String profile, String structureId, JsonArray childrenIds, JsonArray classesNames) {
+			final JsonObject user, String profile, String structureId, JsonArray childrenIds, 
+			JsonArray classesNames, JsonArray userPositionIds) {
 		final Integer transactionId = message.body().getInteger("transactionId");
 		final Boolean commit = message.body().getBoolean("commit", true);
 		StatementsBuilder statementsBuilder = new StatementsBuilder();
-		// Retrieve user position ids and remove them from user properties before creating user node
-		final JsonArray userPositionIds = (JsonArray) user.remove("userPositionIds");
 		String related = "";
 		JsonObject params = new JsonObject()
 				.put("structureId", structureId)
