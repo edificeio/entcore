@@ -279,9 +279,11 @@ public class ManualFeeder extends BusModBase {
 		if ("Relative".equals(profile)) {
 			childrenIds = user.getJsonArray("childrenIds");
 		}
-		JsonArray userPositionIds = null;
-		if ("Personnel".equals(profile)) {
-			userPositionIds = user.getJsonArray("userPositionIds");
+		JsonArray userPositionIds = user.getJsonArray("userPositionIds");;
+		if (userPositionIds != null && !userPositionIds.isEmpty() && !"Personnel".equals(profile)) {
+			logger.warn("Cannot create a user with profile {0} and positions", profile);
+			sendError(message, "user.profiles.not.allowed.for.profile.at.creation");
+			return;
 		}
 		final String userSource = "SSO".equals(user.getString("source")) ? "SSO": SOURCE;
 		final String error = profiles.get(profile).validate(user);

@@ -427,7 +427,13 @@ public class DirectoryController extends BaseController {
 								}));
 								renderJson(request, r);
 							} else {
-								leftToResponse(request, res.left());
+								final Either.Left<String, JsonObject> left = res.left();
+								final String value = left.getValue();
+								if("user.profiles.not.allowed.for.profile.at.creation".equals(value)) {
+									renderError(request, new JsonObject().put("error", value), 403, "Forbidden");
+								} else {
+									leftToResponse(request, res.left());
+								}
 							}
 						}
 					});
@@ -449,7 +455,13 @@ public class DirectoryController extends BaseController {
 								}));
 								renderJson(request, r);
 							} else {
-								leftToResponse(request, res.left());
+								final Either.Left<String, JsonObject> left = res.left();
+								final String value = left.getValue();
+								if("user.profiles.not.allowed.for.profile.at.creation".equals(value)) {
+									renderError(request, new JsonObject().put("error", value), 403, "Forbidden");
+								} else {
+									leftToResponse(request, res.left());
+								}
 							}
 						}
 					});
