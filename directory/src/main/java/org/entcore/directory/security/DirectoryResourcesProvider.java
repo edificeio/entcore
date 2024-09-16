@@ -19,6 +19,7 @@
 
 package org.entcore.directory.security;
 
+import com.google.common.collect.Sets;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.request.RequestUtils;
 
@@ -37,6 +38,7 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.*;
 
+import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static io.vertx.core.http.HttpMethod.*;
 import static org.entcore.common.user.DefaultFunctions.*;
 
@@ -44,6 +46,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 
 	private final Neo4j neo = Neo4j.getInstance();
 	private AdminUpdateFilter adminUpdateFilter = new AdminUpdateFilter();
+	private final Set<String> fieldsUpdatableByADMLOnOtherADML = Sets.newHashSet("positionIds");
 
 	private static class HandlerWrapper{
 		final Handler<Boolean> originalHandler;
@@ -449,7 +452,15 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			handler.handle(true);
 			return;
 		}
-		adminOrTeacher(request, user, false, handler);
+		bodyToJson(request, body -> {
+			// If the requester is an ADML and the target user is also an ADML, allow the update to proceed iff the requester
+			// wants to update the allowed fields specified in fieldsUpdatableByADMLOnOtherADML
+      final boolean admlCanUpdateADML =
+        body != null &&
+				fieldsUpdatableByADMLOnOtherADML.containsAll(body.fieldNames());
+      adminOrTeacher(request, user, admlCanUpdateADML, handler);
+    }
+    );
 	}
 
 	private void adminOrTeacher(final HttpServerRequest request, final UserInfos user, boolean admlCanUpdateADML, final Handler<Boolean> handler) {
