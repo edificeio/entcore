@@ -37,6 +37,7 @@ export class UserPositionModalComponent extends OdeComponent implements OnInit {
   @Output() onClose: EventEmitter<UserPosition> = new EventEmitter();
   
   public editableName: string = "";
+  public saving: boolean = false;
 
   get isUpdateModal(): boolean {
     return !!this.userPosition?.id;
@@ -52,12 +53,15 @@ export class UserPositionModalComponent extends OdeComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.saving = false;
+    
     if (!this.userPosition) {
       this.userPosition = {name:"", source:"MANUAL"};
     }
   }
 
   async save(): Promise<void> {
+    this.saving = true;
     if (this.isUpdateModal) {
       this.userPosition = await this.spinner
         .perform('portal-content', this.userPositionServices.updateUserPosition(
