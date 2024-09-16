@@ -392,6 +392,7 @@ public class AuthController extends BaseController {
 					private void oauthTokenHandle(Response response) {
 						final String grantType = req.getParameter("grant_type");
 						final UserData userData = response.getUserData();
+						final String clientId = req.getParameter("client_id");
 						if (response.getCode() == 200 && ("password".equals(grantType) ||
 								"refresh_token".equals(grantType) ||
 								"saml2".equals(grantType) ||
@@ -401,14 +402,7 @@ public class AuthController extends BaseController {
 							if ("password".equals(grantType)) {
 								final String login = req.getParameter("username");
 								trace.info(getIp(request) + " - Connexion de l'utilisateur " + login + " - Referer " + request.headers().get("Referer"));
-								final DataHandler data = oauthDataFactory.create(req);
-								data.getUserId(login, req.getParameter("password"), getUserIdResult -> {
-									try {
-										futureUserId.complete(getUserIdResult.get());
-									} catch (AccessDenied e) {
-										futureUserId.fail(e);
-									}
-								});
+								futureUserId.complete(userData.getId());
 								eventStore.createAndStoreEvent(AuthEvent.LOGIN.name(), login, clientCredential.getClientId(), request);
 								userAuthAccount.storeDomainByLogin(login, getHost(request), getScheme(request), new io.vertx.core.Handler<Boolean>() {
 									@Override
@@ -441,12 +435,17 @@ public class AuthController extends BaseController {
 											userData.getEmail(), userData.getMobile(), userData.getSource(), request);
 								}
 							}
-							futureUserId.future().onSuccess(userId -> {
-								createSessionForMobile(userId, response, request);
-							}).onFailure(th -> {
-								log.warn("Could not create a session for the user", th);
+							if (checkClientIdFromConfigAuth(clientId)) {
+								futureUserId.future().onSuccess(userId -> {
+									createSessionForMobile(userId, response, request);
+								}).onFailure(th -> {
+									log.warn("Could not create a session for the user", th);
+									renderJson(request, new JsonObject(response.getBody()), response.getCode());
+								});
+							} else {
 								renderJson(request, new JsonObject(response.getBody()), response.getCode());
-							});
+							}
+
 						} else {
 							renderJson(request, new JsonObject(response.getBody()), response.getCode());
 						}
@@ -463,6 +462,17 @@ public class AuthController extends BaseController {
 								}
 							}
 						});
+					}
+
+					private boolean checkClientIdFromConfigAuth(String clientId) {
+						JsonArray clientIds = new JsonArray();
+						clientIds.addAll(getOrElse(config.getJsonArray("authorize_mobile_session"), new JsonArray()));
+						for (Object id : clientIds) {
+							if (clientId.equals(id)) {
+								return true;
+							}
+						}
+						return false;
 					}
 
 					private void activateUser(final String activationCode, final String login, String email, String mobile, String source,
