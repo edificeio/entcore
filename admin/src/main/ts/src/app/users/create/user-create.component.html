@@ -57,7 +57,7 @@
           >
           </ode-user-position-modal>
       
-          <button (click)="showPositionSelection($event)">
+          <button type="button" (click)="showPositionSelection($event)">
             <i class="fa fa-plus-circle is-size-5"></i>
             <s5l>user-position.select</s5l>
           </button>
@@ -82,7 +82,7 @@
                   src="/admin/public/img/user-position-empty-screen.svg"
                 />
                 <s5l>user-position.input-name.not-found</s5l>
-                <button (click)="showPositionCreation()">
+                <button type="button" (click)="showPositionCreation()">
                   <s5l>user-position.add</s5l>
                   <i class="fa fa-plus-circle is-size-5"></i>
                 </button>
@@ -94,7 +94,7 @@
           <h3><s5l>create.user.selectedpositions</s5l></h3>
           <ul>
             <li *ngFor="let position of newUser.userDetails.userPositions">
-              <span>{{ position.name }} - <s5l>user-position.source.{{ position.source }}</s5l></span>
+              <span>{{ position.name }}</span>
               <i class="fa fa-times action" (click)="removePosition(position)"
                 [title]="'user-position.delete-assignment' | translate"></i>
             </li>
