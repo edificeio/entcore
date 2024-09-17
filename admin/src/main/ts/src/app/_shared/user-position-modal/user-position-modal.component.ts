@@ -124,6 +124,7 @@ export class UserPositionModalComponent extends OdeComponent implements OnInit {
     this.userPosition = undefined;
     this.editableName = undefined;
     this.show = false;
+    this.saving = false;
   }
   
   cancel() {
@@ -131,5 +132,6 @@ export class UserPositionModalComponent extends OdeComponent implements OnInit {
     this.userPosition = undefined;
     this.editableName = undefined;
     this.show = false;
+    this.saving = false;
   }
 }
