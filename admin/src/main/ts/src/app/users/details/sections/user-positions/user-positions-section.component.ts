@@ -45,13 +45,11 @@ export class UserPositionsSectionComponent
         this.details.userPositions.map((p) => p.id) !== this.userPositions.map((p) => p.id));
   }
 
-  /** List of selectable positions = all positions except duplicates and those already assigned. */
+  /** List of selectable positions = all positions except duplicates. */
   get filteredPositionList() {
     // Extract and trim names
-    const filteredList = this.positionList?.map(position => position.name.trim())
-      // Remove empty and already selected names
-      .filter(name => !this.userPositions.some(value=> name.length===0 || (value.name && value.name.trim()===name))) ?? [];
-    // Remove remaining duplicates
+    const filteredList = this.positionList?.map(position => position.name.trim()) ?? [];
+    // Remove duplicates
     return filteredList.filter((name, index) => (index+1>=filteredList.length || filteredList.indexOf(name, index+1)<0))
       // return result as an array of UserPosition
       .map(name => ({name}));
@@ -92,7 +90,7 @@ export class UserPositionsSectionComponent
   }
 
   selectUserPosition(position: UserPosition) {
-    const name = position.name.trim();
+    const name = position.name?.trim();
     const structureId = this.structure.id;
     // Search the structure for a UserPosition with this name.
     Promise.resolve(this.positionList.find(pos => pos.name==name && pos.structureId==structureId))
@@ -121,13 +119,16 @@ export class UserPositionsSectionComponent
             })
         )
     )
-      .then(addedPosition => {
-      console.log(addedPosition);
-        if(addedPosition) {
+    .then(addedPosition => {
+      if(addedPosition) {
+        // Do not duplicate positions
+        const addedName = addedPosition.name?.trim();
+        if( addedName && this.userPositions.findIndex(pos => pos.name?.trim() == addedName) < 0 ) {
           this.userPositions.push(addedPosition);
-          this.showUserPositionSelectionLightbox = false;
           this.saveUpdate();
         }
+        this.showUserPositionSelectionLightbox = false;
+      }
     });
   }
 
