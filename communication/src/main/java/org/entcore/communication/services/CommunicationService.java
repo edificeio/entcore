@@ -106,11 +106,12 @@ public interface CommunicationService {
 	void removeRules(String structureId, Handler<Either<String, JsonObject>> handler);
 
 	void visibleUsers(String userId, String structureId, JsonArray expectedTypes, boolean itSelf, boolean myGroup,
-					  boolean profile, String preFilter, String customReturn, JsonObject additionnalParams,
+					  boolean profile, String preFilter, String customReturn, JsonObject additionalParams,
 					  Handler<Either<String, JsonArray>> handler);
 
 	void visibleUsers(String userId, String structureId, JsonArray expectedTypes, boolean itSelf, boolean myGroup,
-			boolean profile, String preFilter, String customReturn, JsonObject additionnalParams, String userProfile,
+			boolean profile, String preFilter, String customReturn, JsonObject additionalParams, String userProfile,
+			boolean reverseUnion,
 			Handler<Either<String, JsonArray>> handler);
 
 	void usersCanSeeMe(String userId, final Handler<Either<String, JsonArray>> handler);
@@ -167,5 +168,7 @@ public interface CommunicationService {
 	void addDiscoverVisibleGroupUsers(UserInfos user, String groupId, JsonObject body, HttpServerRequest request, Handler<Either<String, JsonObject>> handler);
 
 	void getDiscoverVisibleAcceptedProfile(Handler<Either<String, JsonArray>> handler);
+	
+	void searchVisibleContacts(UserInfos user, String search, String language, Handler<Either<String, JsonArray>> results);
 }
 

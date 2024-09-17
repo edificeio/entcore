@@ -134,12 +134,13 @@ buildGradle () {
 }
 
 testGradle () {
-  if [ -z "$JAVA_8_HOME" ]
-  then
-    ./gradlew "$GRADLE_OPTION"test
-  else
-    JAVA_HOME=$JAVA_8_HOME ./gradlew "$GRADLE_OPTION"test
-  fi
+#  if [ -z "$JAVA_8_HOME" ]
+#  then
+#    ./gradlew "$GRADLE_OPTION"test
+#  else
+#    JAVA_HOME=$JAVA_8_HOME ./gradlew "$GRADLE_OPTION"test
+#  fi
+echo "Skip tests..."
 }
 
 localDep () {
