@@ -19,9 +19,8 @@ export class FavIconResolver implements Resolve<void> {
                 link.rel = "icon";
                 link.href = iconUrl;
                 document.head.appendChild(link);
-                console.log("favicon OK");
             } else {
-                console.log("favicon unreachable");
+                console.log("No favicon found");
             }
         } catch(e) {
             console.log("Cannot fetch favicon :" + e);

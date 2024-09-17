@@ -9,10 +9,7 @@
 
   <ul class="actions-list">
     <li *ngFor="let userPosition of userPositions">
-      <span
-        >{{ userPosition.name }} -
-        <s5l>user-position.source.{{ userPosition.source }}</s5l></span
-      >
+      <span>{{ userPosition.name }}</span>
       <i
         class="fa fa-times action"
         (click)="removeUserPosition(userPosition)"

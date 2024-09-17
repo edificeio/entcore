@@ -25,10 +25,11 @@
     </form>
 
     <div class="is-pulled-right">
-      <button (click)="cancel()" class="user-position-save">
+      <button type="button" (click)="cancel()" class="user-position-save">
         <s5l>user-position.cancel</s5l>
       </button>
       <button
+        type="button" 
         (click)="save()"
         class="user-position-save action"
         [disabled]="usePositionForm.invalid || saving"
