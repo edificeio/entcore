@@ -980,6 +980,9 @@ public class SqlConversationService implements ConversationService{
 				JsonArray users = new fr.wseduc.webutils.collections.JsonArray();
 				JsonArray groups = new fr.wseduc.webutils.collections.JsonArray();
 				visible.put("groups", groups).put("users", users);
+
+				logger.info("callFindVisibles Count = " + visibles.size());
+
 				for (Object o: visibles) {
 					if (!(o instanceof JsonObject)) continue;
 					JsonObject j = (JsonObject) o;
