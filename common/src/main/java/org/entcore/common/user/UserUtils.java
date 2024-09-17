@@ -20,16 +20,10 @@
 package org.entcore.common.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
-import static fr.wseduc.webutils.Utils.getOrElse;
-import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
-import static fr.wseduc.webutils.Utils.isEmpty;
-import static fr.wseduc.webutils.Utils.isNotEmpty;
 import fr.wseduc.webutils.http.Renders;
-import static fr.wseduc.webutils.http.Renders.unauthorized;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.JWT;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
@@ -48,13 +42,15 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import static org.entcore.common.http.filter.AppOAuthResourceProvider.getTokenId;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.session.SessionRecreationRequest;
 import org.entcore.common.utils.HostUtils;
 import org.entcore.common.utils.StringUtils;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -63,6 +59,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static fr.wseduc.webutils.Utils.getOrElse;
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
+import static fr.wseduc.webutils.Utils.isEmpty;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static fr.wseduc.webutils.http.Renders.unauthorized;
+import static org.entcore.common.http.filter.AppOAuthResourceProvider.getTokenId;
 
 public class UserUtils {
 
@@ -224,6 +227,7 @@ public class UserUtils {
 			public void handle(AsyncResult<Message<JsonArray>> res) {
 				if (res.succeeded()) {
 					JsonArray r = res.result().body();
+					log.info("UserUtils.findVisibles - r.size = " + r.size());
 					if (acceptLanguage != null) {
 						translateGroupsNames(r, acceptLanguage);
 					}
@@ -322,6 +326,106 @@ public class UserUtils {
 			}
 		}
 		return visible;
+	}
+
+	public static JsonArray mapObjectToContact(final String profile, final JsonArray shareBookmarks, final JsonArray visible, final String acceptLanguage) {
+		final List<String> usedInAll = Arrays.asList("TO", "CC", "CCI");
+		final List<String> usedInCCI = Collections.singletonList("CCI");
+
+		/*
+		final JsonArray sb = new JsonArray();
+		if (shareBookmarks != null) {
+			for (String id: shareBookmarks.fieldNames()) {
+				final JsonArray value = shareBookmarks.getJsonArray(id);
+				if (value == null || value.size() < 2) {
+					continue;
+				}
+				final JsonObject r = new fr.wseduc.webutils.collections.JsonObject();
+				r.put("id", id);
+				r.put("displayName", value.remove(0));
+				r.put("type", "ShareBookmark");
+				sb.add(r);
+			}
+		}
+
+		final JsonArray res = !sb.isEmpty() ? sortShareBookmarksByName(sb) : new JsonArray();
+		 */
+
+		final JsonArray res = new JsonArray();
+		for (Object o: shareBookmarks) {
+			if (!(o instanceof JsonObject)) continue;
+			JsonObject j = (JsonObject) o;
+			j.put("type", "ShareBookmark");
+			j.put("usedIn", usedInAll);
+			res.add(j);
+		}
+
+		for (Object o: visible) {
+			if (!(o instanceof JsonObject)) continue;
+			JsonObject j = (JsonObject) o;
+			if (j.getString("name") != null) {
+				j.remove("profile");
+				j.remove("children");
+				j.remove("classrooms");
+				j.remove("disciplines");
+				j.remove("functions");
+				j.remove("relatives");
+
+				Object gt = j.remove("groupType");
+				Object gp = j.remove("groupProfile");
+				if (gt instanceof Iterable) {
+					for (Object gti: (Iterable) gt) {
+						if (gti != null && !"Group".equals(gti) && gti.toString().endsWith("Group")) {
+							j.put("groupType", gti);
+							if ("ProfileGroup".equals(gti)) {
+								j.put("profile", gp);
+							}
+							break;
+						}
+					}
+				}
+
+				UserUtils.groupDisplayName(j, acceptLanguage);
+				j.put("displayName", j.getString("name"));
+
+				if (j.getString("groupType").equals("ManualGroup") && j.getString("subType").equals("BroadcastGroup")) {
+					j.put("type", "BroadcastGroup");
+					j.put("usedIn", usedInCCI);
+				} else {
+					j.put("type", "Group");
+					j.put("usedIn", usedInAll);
+				}
+			} else {
+				j.put("type", "User");
+				j.put("usedIn", usedInAll);
+				j.remove("groupProfile");
+				j.remove("groupType");
+				j.remove("nbUsers");
+				if (profile.equals("Student")) {
+					j.remove("relatives");
+				}
+			}
+
+			j.remove("name");
+			j.remove("groupDisplayName");
+			j.remove("sortDisplayName");
+			j.remove("sortWeight");
+			j.remove("subjects");
+			j.remove("subType");
+			j.remove("sorted_children_names");
+			j.remove("sorted_functions");
+			j.remove("sorted_disciplines");
+
+			res.add(j);
+		}
+		return res;
+	}
+
+	private static JsonArray sortShareBookmarksByName(JsonArray sb) {
+		List<JsonObject> list = sb.getList();
+		list.sort(Comparator.comparing(o -> o.getString("displayName")));
+
+		return new JsonArray(list);
 	}
 
 	private static void formatPositions(JsonObject dbResult) {

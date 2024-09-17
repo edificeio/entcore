@@ -21,6 +21,7 @@ package org.entcore.communication.services.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.collections.Joiner;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
@@ -35,20 +36,26 @@ import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.communication.services.CommunicationService;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import static org.entcore.common.neo4j.Neo4jResult.*;
+import static org.entcore.common.neo4j.Neo4jResult.fullNodeMergeHandler;
+import static org.entcore.common.neo4j.Neo4jResult.validEmptyHandler;
+import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
+import static org.entcore.common.neo4j.Neo4jResult.validUniqueResult;
+import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 
 public class DefaultCommunicationService implements CommunicationService {
 
@@ -576,15 +583,16 @@ public class DefaultCommunicationService implements CommunicationService {
 
 	@Override
 	public void visibleUsers(String userId, String structureId, JsonArray expectedTypes, boolean itSelf,
-							 boolean myGroup, boolean profile, String preFilter, String customReturn, JsonObject additionnalParams,
+							 boolean myGroup, boolean profile, String preFilter, String customReturn, JsonObject additionalParams,
 							 final Handler<Either<String, JsonArray>> handler) {
-		visibleUsers(userId, structureId, expectedTypes, itSelf, myGroup, profile, preFilter, customReturn, additionnalParams, null, handler);
+		visibleUsers(userId, structureId, expectedTypes, itSelf, myGroup, profile, preFilter, customReturn, additionalParams, null, false, handler);
 	}
 
 	@Override
-	public void visibleUsers(String userId, String structureId, JsonArray expectedTypes, boolean itSelf,
-							 boolean myGroup, boolean profile, String preFilter, String customReturn, JsonObject additionnalParams, String userProfile,
-							 final Handler<Either<String, JsonArray>> handler) {
+	public void visibleUsers(
+			String userId, String structureId, JsonArray expectedTypes, boolean itSelf, boolean myGroup, boolean profile,
+			String preFilter, String customReturn, JsonObject additionalParams, String userProfile, boolean reverseUnion,
+			final Handler<Either<String, JsonArray>> handler) {
 		StringBuilder query = new StringBuilder();
 		JsonObject params = new JsonObject();
 		String condition = itSelf ? "" : "AND m.id <> {userId} ";
@@ -616,7 +624,7 @@ public class DefaultCommunicationService implements CommunicationService {
 			}
 		}
 		query.append(condition);
-		if (expectedTypes != null && expectedTypes.size() > 0) {
+		if (expectedTypes != null && !expectedTypes.isEmpty()) {
 			query.append("AND (");
 			StringBuilder types = new StringBuilder();
 			for (Object o: expectedTypes) {
@@ -669,17 +677,22 @@ public class DefaultCommunicationService implements CommunicationService {
 			}
 		}
 		params.put("userId", userId);
-		if (additionnalParams != null) {
-			params.mergeIn(additionnalParams);
+		if (additionalParams != null) {
+			params.mergeIn(additionalParams);
 		}
 		String q;
 		if (union != null) {
-			q = query.append(" union ").append(union.toString()).toString();
+			if (reverseUnion) {
+				q = union.append(" union ").append(query).toString();
+			} else {
+				q = query.append(" union ").append(union).toString();
+			}
 		} else {
 			q = query.toString();
 		}
 		neo4j.execute(q, params, validResultHandler(handler));
 	}
+
 
 	@Override
 	public void usersCanSeeMe(String userId, Handler<Either<String, JsonArray>> handler) {
@@ -1488,5 +1501,160 @@ public class DefaultCommunicationService implements CommunicationService {
 	public void getDiscoverVisibleAcceptedProfile(Handler<Either<String, JsonArray>> handler) {
 		handler.handle(new Either.Right<>(discoverVisibleExpectedProfile));
 	}
+
+	@Override
+	public void searchVisibleContacts(UserInfos user, String search, String language, Handler<Either<String, JsonArray>> handler) {
+		String match = "MATCH (visibles) " +
+
+				"OPTIONAL MATCH visibles-[:RELATED]->(parent: User) " +
+				"WITH DISTINCT visibles, collect({id: parent.id, displayName: parent.displayName}) as relatives " +
+
+				"OPTIONAL MATCH visibles-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class) " +
+				"WITH DISTINCT visibles, relatives, collect({id: c.id, name: c.name}) as classrooms " +
+
+				"OPTIONAL MATCH visibles<-[:RELATED]-(child: User) " +
+				"WITH visibles, relatives, classrooms, child " +
+				"ORDER BY child.displayName " +
+				"WITH visibles, relatives, classrooms, collect({id: child.id, displayName: child.displayName}) AS children, collect(distinct child.displayName) AS sorted_children " +
+
+				"OPTIONAL MATCH visibles-[:IN]->(fg:FuncGroup) " +
+				"WITH visibles, relatives, classrooms, children, sorted_children, fg " +
+				"ORDER BY fg.filter " +
+				"WITH visibles, relatives, classrooms, children, sorted_children, collect({id: fg.id, name: fg.filter}) AS functions, collect(distinct fg.filter) AS sorted_functions " +
+
+				"OPTIONAL MATCH visibles-[:IN]->(dg:DisciplineGroup) " +
+				"WITH visibles, relatives, classrooms, children, sorted_children, functions, sorted_functions, dg " +
+				"ORDER BY dg.filter " +
+				"WITH DISTINCT visibles, relatives, classrooms, children, sorted_children, functions, sorted_functions, collect({id: dg.id, name: dg.filter}) as disciplines, collect(distinct dg.filter) AS sorted_disciplines " +
+
+				"WITH visibles, relatives, classrooms, children, functions, disciplines, " +
+				"reduce(s = '', name IN sorted_children | s + name) AS sorted_children_names, " +
+				"reduce(s = '', name IN sorted_functions | s + name) AS sorted_functions, " +
+				"reduce(s = '', name IN sorted_disciplines | s + name) AS sorted_disciplines ";
+
+		String preFilter = "";
+		JsonObject params = new JsonObject();
+
+		if (!StringUtils.isEmpty(search)) {
+			preFilter = "AND m.displayNameSearchField CONTAINS {search} ";
+			String sanitizedSearch = StringValidation.sanitize(search);
+			params.put("search", sanitizedSearch);
+		}
+
+		final String customReturn = match +
+				"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
+				"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
+				"HEAD(visibles.profiles) as profile, visibles.nbUsers as nbUsers, " +
+				"labels(visibles) as groupType, visibles.filter as groupProfile, visibles.subType as subType, " +
+				"filter(x IN coalesce(children, []) WHERE x.id IS NOT NULL) as children, " +
+				"filter(x IN coalesce(relatives, []) WHERE x.id IS NOT NULL) as relatives, " +
+				"filter(x IN coalesce(classrooms, []) WHERE x.id IS NOT NULL) as classrooms, " +
+				"filter(x IN coalesce(functions, []) WHERE x.id IS NOT NULL) as functions, " +
+				"filter(x IN coalesce(disciplines, []) WHERE x.id IS NOT NULL) as disciplines, " +
+				"sorted_children_names, sorted_functions, sorted_disciplines, " +
+				"CASE " +
+				"WHEN visibles.displayName IS NOT NULL THEN visibles.displayName " +
+				"WHEN visibles.name IS NOT NULL THEN visibles.name " +
+				"ELSE '' " +
+				"END as sortDisplayName, " +
+				"CASE " +
+				"WHEN HEAD(visibles.profiles) = 'Teacher' THEN 1 " +
+				"WHEN HEAD(visibles.profiles) = 'Personnel' THEN 2 " +
+				"WHEN HEAD(visibles.profiles) = 'Relative' THEN 3 " +
+				"WHEN HEAD(visibles.profiles) = 'Student' THEN 4 " +
+				"WHEN HEAD(visibles.profiles) = 'Guest' THEN 5 " +
+				"WHEN visibles.subType = 'BroadcastGroup' THEN 12 " +
+				"WHEN 'ManualGroup' IN labels(visibles) THEN 6 " +
+				"WHEN (visibles:ProfileGroup)-[:DEPENDS]->(:Class) THEN 7 " +
+				"WHEN (visibles:ProfileGroup)-[:DEPENDS]->(:Structure) THEN 11 " +
+				"WHEN 'FunctionalGroup' IN labels(visibles) THEN 8 " +
+				"WHEN 'FuncGroup' IN labels(visibles) OR 'FunctionGroup' IN labels(visibles) OR 'DirectionGroup' IN labels(visibles) THEN 9 " +
+				"WHEN 'DisciplineGroup' IN labels(visibles) THEN 10 " +
+				"ELSE 13 " +
+				"END as sortWeight " +
+				"ORDER BY " +
+				"sortWeight, " +
+				"toLower(sortDisplayName), " +
+				"sorted_children_names, " +
+				"sorted_functions, " +
+				"sorted_disciplines ";
+
+		Promise<Either<String, JsonArray>> getVisiblePromise = Promise.promise();
+		visibleUsers(
+				user.getUserId(),
+				null,
+				null,
+				true,
+				true,
+				false,
+				preFilter,
+				customReturn,
+				params,
+				user.getType(),
+				true,
+				getVisiblePromise::complete);
+
+		// Share bookmarks
+		final Promise<Either<String, JsonArray>> getShareBookmarksPromise = Promise.promise();
+
+					/*
+					final String queryShareBookmarks = "MATCH (:User {id:{userId}})-[:HAS_SB]->(bm:ShareBookmark) return bm";
+					Neo4j.getInstance()
+							.execute(
+									queryShareBookmarks,
+									new JsonObject().put("userId", userInfos.getUserId()),
+									fullNodeMergeHandler("bm", getShareBookmarksPromise::complete)
+							);
+					 */
+
+		String sbFilter = "";
+		JsonObject sbParams = new JsonObject().put("userId", user.getUserId());
+		if (!StringUtils.isEmpty(search)) {
+			sbFilter = " AND lower(sbValue[0]) contains {search} ";
+			sbParams.put("search", StringValidation.sanitize(search));
+		}
+		String queryShareBookmarks = "MATCH (:User {id: {userId}})-[:HAS_SB]->(sb:ShareBookmark) " +
+				"WITH sb, keys(sb) AS ids " +
+				"UNWIND ids AS id " +
+				"WITH sb, id, sb[id] AS sbValue " +
+				"WHERE size(sbValue) >= 2 " + sbFilter +
+				"WITH sb, id, sb[id] AS sbValue ORDER BY sbValue[0] " +
+				"RETURN id as id, sbValue[0] as displayName ";
+
+		Neo4j.getInstance().execute(queryShareBookmarks, sbParams, validResultHandler(getShareBookmarksPromise::complete));
+
+		CompositeFuture.join(getVisiblePromise.future(), getShareBookmarksPromise.future())
+				.onComplete(ar -> {
+
+					if (ar.failed()) {
+						handler.handle(new Either.Left<>(ar.cause().getMessage()));
+					}
+
+					final Either<String, JsonArray> resVisible = getVisiblePromise.future().result();
+					final Either<String, JsonArray> resShareBookmark = getShareBookmarksPromise.future().result();
+
+					if (resVisible.isLeft()) {
+						log.error(resVisible.left().getValue());
+					}
+
+					if (resShareBookmark.isLeft()) {
+						log.error(resShareBookmark.left().getValue());
+					}
+
+					JsonArray visible = resVisible.isLeft() ? new JsonArray() : resVisible.right().getValue();
+					JsonArray shareBookmarks = resShareBookmark.isLeft() ? new JsonArray() : resShareBookmark.right().getValue();
+
+					handler.handle(new Either.Right<>(
+							UserUtils.mapObjectToContact(
+									user.getType(),
+									shareBookmarks,
+									visible,
+									language
+							)
+					));
+				});
+
+	}
+
 
 }
