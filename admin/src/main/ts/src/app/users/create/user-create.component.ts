@@ -41,8 +41,8 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
     get filteredPositionList() {
         // Extract and trim names
         const filteredList = this.positionList?.map(position => position.name)
-            // Remove empty and already selected names
-            .filter(name => !this.newUser.userDetails.userPositions.some(value=> name.length===0 || (value.name && value.name?.trim()===name))) ?? [];
+            // Remove empty names
+            .filter(name => name.length>0) ?? [];
         // Remove remaining duplicates
         return filteredList.filter((name, index) => (index+1>=filteredList.length || filteredList.indexOf(name, index+1)<0))
             // return result as an array of UserPosition
@@ -160,11 +160,13 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
             )
         )
         .then(addedPosition => {
-            if(addedPosition) {
+            // Do not duplicate positions
+            const addedName = addedPosition.name?.trim();
+            if( addedName && this.newUser.userDetails.userPositions.findIndex(pos => pos.name?.trim() == addedName) < 0 ) {
                 this.newUser.userDetails.userPositions.push(addedPosition);
-                this.showUserPositionSelectionLightbox = false;
-                this.searchContent = "";
             }
+            this.searchContent = "";
+            this.showUserPositionSelectionLightbox = false;
         });
     }
 
