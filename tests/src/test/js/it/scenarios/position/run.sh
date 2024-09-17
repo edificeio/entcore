@@ -2,6 +2,7 @@
 tests=(
     "docker compose run --rm k6 run file:///home/k6/src/it/scenarios/position/crud.js"
     "docker compose run --rm k6 run file:///home/k6/src/it/scenarios/position/attribute-position.js"
+    "docker compose run --rm k6 run file:///home/k6/src/it/scenarios/position/user-creation.js"
 )
 exit_code=0
 for test in "${tests[@]}"; do

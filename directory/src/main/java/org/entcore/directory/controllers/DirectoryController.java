@@ -53,6 +53,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
@@ -396,8 +397,11 @@ public class DirectoryController extends BaseController {
 				}
 				List<String> childrenIds = request.formAttributes().getAll("childrenIds");
 				user.put("childrenIds", new fr.wseduc.webutils.collections.JsonArray(childrenIds));
-				List<String> userPositionIds = request.formAttributes().getAll("positionIds");
-				user.put("userPositionIds", userPositionIds);
+				// Get UserPosition IDs and remove duplicates.
+				List<String> userPositionIds = request.formAttributes().getAll("positionIds")
+				.stream().distinct().collect(Collectors.toList());
+				
+				user.put("userPositionIds", new fr.wseduc.webutils.collections.JsonArray(userPositionIds));
 				if (classId != null && !classId.trim().isEmpty()) {
 					userService.createInClass(classId, user, null, new Handler<Either<String, JsonObject>>() {
 						@Override
@@ -423,7 +427,13 @@ public class DirectoryController extends BaseController {
 								}));
 								renderJson(request, r);
 							} else {
-								leftToResponse(request, res.left());
+								final Either.Left<String, JsonObject> left = res.left();
+								final String value = left.getValue();
+								if("user.profiles.not.allowed.for.profile.at.creation".equals(value)) {
+									renderError(request, new JsonObject().put("error", value), 403, "Forbidden");
+								} else {
+									leftToResponse(request, res.left());
+								}
 							}
 						}
 					});
@@ -445,7 +455,13 @@ public class DirectoryController extends BaseController {
 								}));
 								renderJson(request, r);
 							} else {
-								leftToResponse(request, res.left());
+								final Either.Left<String, JsonObject> left = res.left();
+								final String value = left.getValue();
+								if("user.profiles.not.allowed.for.profile.at.creation".equals(value)) {
+									renderError(request, new JsonObject().put("error", value), 403, "Forbidden");
+								} else {
+									leftToResponse(request, res.left());
+								}
 							}
 						}
 					});
