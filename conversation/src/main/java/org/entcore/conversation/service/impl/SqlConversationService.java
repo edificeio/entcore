@@ -29,6 +29,8 @@ import java.util.UUID;
 
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.sql.SqlStatementsBuilder;
@@ -64,6 +66,8 @@ public class SqlConversationService implements ConversationService{
 	private final String userMessageAttachmentTable;
 	private final boolean optimizedThreadList;
 	private int sendTimeout = DEFAULT_SENDTIMEOUT;
+
+	static Logger logger = LoggerFactory.getLogger(SqlConversationService.class);
 
 	public SqlConversationService(Vertx vertx, String schema) {
 		this.eb = Server.getEventBus(vertx);
@@ -663,6 +667,9 @@ public class SqlConversationService implements ConversationService{
 				JsonArray users = new fr.wseduc.webutils.collections.JsonArray();
 				JsonArray groups = new fr.wseduc.webutils.collections.JsonArray();
 				visible.put("groups", groups).put("users", users);
+
+				logger.info("callFindVisibles Count = " + visibles.size());
+
 				for (Object o: visibles) {
 					if (!(o instanceof JsonObject)) continue;
 					JsonObject j = (JsonObject) o;
