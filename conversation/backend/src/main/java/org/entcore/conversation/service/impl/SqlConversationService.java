@@ -980,6 +980,9 @@ public class SqlConversationService implements ConversationService{
 				JsonArray users = new JsonArray();
 				JsonArray groups = new JsonArray();
 				visible.put("groups", groups).put("users", users);
+
+				logger.info("callFindVisibles Count = " + visibles.size());
+
 				for (Object o: visibles) {
 					if (!(o instanceof JsonObject)) continue;
 					JsonObject j = (JsonObject) o;

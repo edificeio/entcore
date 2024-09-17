@@ -162,7 +162,7 @@ public class OptimComTest {
 		vertx.setTimer(i * 50L, h -> {
 			final long start = System.currentTimeMillis();
 			communicationService.visibleUsers(userId, null, null, true, true,
-					false, null, CUSTOM_RETURN, new JsonObject(), userProfile, visibles -> {
+					false, null, CUSTOM_RETURN, new JsonObject(), userProfile, false, visibles -> {
 						if (visibles.isRight()) {
 							final JsonObject j = new JsonObject()
 									.put("visibles", visibles.right().getValue())
