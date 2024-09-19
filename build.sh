@@ -206,7 +206,7 @@ itTests() {
   script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   cd $script_dir/tests/src/test/js/it/scenarios
   exit_code=0
-  js_files=($(find . -type f -name '*.js'))
+  js_files=($(find . -type f -name '*.js' ! -name '_*'))
   for it_file in "${js_files[@]}"; do
     short_file_name=$(basename -s .js $it_file)
     file_dir=$(dirname $it_file)
