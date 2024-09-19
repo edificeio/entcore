@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ficAlimMENESR SYSTEM "ficAlimMENESR.dtd">
+<ficAlimMENESR>
+<!-- versionAF="AAF-VE2407" -->
+<!-- versionSDET="Annexe 4bis version 6.4" -->
+<!-- codeAcademieExport="13" -->
+<!-- degre="2D" -->
+<!-- dateGenerationExport="16/09/2024" -->
+
+<addRequest>
+<operationalAttributes><attr name="categorieStructure"><value>EtabEducNat</value></attr></operationalAttributes> 
+<identifier><id>43</id></identifier> 
+<attributes> 
+<attr name="ENTStructureJointure"><value>43</value></attr>
+<attr name="ENTStructureUAI"><value>0123456A</value></attr>
+<attr name="ENTEtablissementUAI"><value>0123456A</value></attr>
+<attr name="ENTStructureSIREN"><value>01234567891234</value></attr>
+<attr name="ENTStructureNomCourant"><value>CLG$CLG INTEGRATION$PARIS</value></attr>
+<attr name="ENTStructureTypeStruct"><value>COLLEGE</value></attr>
+<attr name="ENTStructureCodeTypeStruct"><value>340</value></attr>
+<attr name="ENTEtablissementMinistereTutelle"><value>MINISTERE DE L&apos;EDUCATION NATIONALE</value></attr>
+<attr name="ENTEtablissementCodeMinistereTutelle"><value>06</value></attr>
+<attr name="ENTEtablissementContrat"><value>PU</value></attr>
+<attr name="postOfficeBox"><value></value></attr>
+<attr name="street"><value>10 avenue des Batignolles</value></attr>
+<attr name="postalCode"><value>75017</value></attr>
+<attr name="l"><value>PARIS</value></attr>
+<attr name="telephoneNumber"><value>+33 1 02 03 04 05</value></attr>
+<attr name="facsimileTelephoneNumber"><value>+33 1 02 03 04 05</value></attr>
+<attr name="ENTStructureMailSI"><value>ce.fakestruct@mailinator.fr</value></attr>
+<attr name="ENTEtablissementStructRattachFctl"><value/></attr>
+<attr name="ENTEtablissementBassin"><value>13164$NORD CHARENTE</value></attr>
+<attr name="ENTServAcAcademie"><value>PARIS</value></attr>
+<attr name="ENTServAcCodeAcademie"><value>013</value></attr>
+</attributes>
+</addRequest>
+
+</ficAlimMENESR>
