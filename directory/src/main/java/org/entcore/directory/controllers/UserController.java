@@ -281,7 +281,7 @@ public class UserController extends BaseController {
 									}
 								});
 								req.setRawMethod("BAN");
-								req.putHeader("X-Ban-Url", uri.getPath() + userId);
+								req.putHeader("X-Ban-Tag", userId);
 								req.end();
 							}
 
