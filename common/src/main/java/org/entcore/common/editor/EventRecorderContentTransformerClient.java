@@ -54,7 +54,9 @@ public class EventRecorderContentTransformerClient implements IContentTransforme
           final Map<String, Integer> occurrences = computeMultimediaOccurrences(json);
           if (occurrences != null) {
             final JsonObject customAttributes = new JsonObject()
-              .put("override-module", module);
+              .put("override-module", module)
+              .put("resource_type", request.getResourceType())
+              .put("resource_id", request.getResourceId());
             for (Map.Entry<String, Integer> entry : occurrences.entrySet()) {
               customAttributes.put(entry.getKey(), entry.getValue());
             }
