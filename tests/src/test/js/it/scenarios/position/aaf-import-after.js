@@ -5,12 +5,12 @@ import {
   triggerImport,
   getSchoolByName,
   getUsersOfSchool,
-  getUserProfileOrFail,
   getPositionsOfStructure,
   attributePositions,
   getOrCreatePosition
 } from "https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
 import { sleep } from 'k6';
+import {checkUserAndPositions} from './_utils.js';
 
 chai.config.logFailures = true;
 
@@ -83,26 +83,6 @@ export function testImportUserWithFunctionsInAAFStep2() {
       ['BBBB', 'User who didn\'t have positions before', [`ENSEIGNEMENT DEVANT ELEVES / ENSEIGNER EN SEGPA OU EREA`]],
       ['CCCC', 'New user with multiple positions', [`ARTICHAUT / PATATES`, `LEGUMES / HARICOTS`, `LEGUMES / PETITS POIS`]]
     ]
-    for(let expectedValue of expectedValues) {
-      const [lastName, label, expectedPositionNames] = expectedValue;
-      describe(label, () => {
-        const user = getUserByLastName(users, lastName);
-        const userPositions = getUserProfileOrFail(user.id, session).userPositions || []
-        check(userPositions, {
-          'user has the number of expected positions': ups => ups.length === expectedPositionNames.length,
-          'user has the expected positions': ups => {
-            const actualNames = new Set();
-            for(let p of ups) {
-              actualNames.add(p.name);
-            }
-            return expectedPositionNames.filter(expectedName => !actualNames.has(expectedName)).length === 0;
-          }
-        })
-      })
-    }
+    checkUserAndPositions(expectedValues, users, session)
 })
 };
-
-function getUserByLastName(users, lastName) {
-  return (users || []).filter(u => u.lastName === lastName)[0]
-}
