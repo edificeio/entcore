@@ -91,6 +91,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -270,7 +271,8 @@ public class AuthController extends BaseController {
 													}
 												});
 									} else {
-										viewLogin(request, null, request.uri());
+										redirectToLogin(request, responseType, clientId, redirectUri, scope, state, nonce);
+										//viewLogin(request, null, request.uri());
 									}
 								}
 							});
@@ -285,6 +287,72 @@ public class AuthController extends BaseController {
 		} else {
 			invalidRequest(request, redirectUri, state);
 		}
+	}
+
+	private void redirectToLogin(HttpServerRequest request, String responseType, String clientId, String redirectUri, String scope, String state, String nonce) {
+		String path = "/auth/oauth2/auth?state=%s&scope=%s&response_type=%s&redirect_uri=%s&client_id=%s";
+		if (!StringUtils.isEmpty(nonce)) path += "&nonce=%s";
+
+		String location = "";
+		try {
+			final String responseTypeEnc = URLEncoder.encode(responseType, StandardCharsets.UTF_8.toString());
+			final String clientIdEnc = URLEncoder.encode(clientId, StandardCharsets.UTF_8.toString());
+			final String redirectUriEnc = URLEncoder.encode(redirectUri, StandardCharsets.UTF_8.toString());
+			final String scopeEnc = URLEncoder.encode(scope, StandardCharsets.UTF_8.toString());
+			final String stateEnc = URLEncoder.encode(state, StandardCharsets.UTF_8.toString());
+			final String pathFormated;
+			if (!StringUtils.isEmpty(nonce)) {
+				final String nonceEnc = URLEncoder.encode(nonce, StandardCharsets.UTF_8.toString());
+				pathFormated = String.format(path, stateEnc, scopeEnc, responseTypeEnc, redirectUriEnc, clientIdEnc, nonceEnc);
+			} else {
+				pathFormated = String.format(path, stateEnc, scopeEnc, responseTypeEnc, redirectUriEnc, clientIdEnc);
+			}
+			final String callback = URLEncoder.encode(pathFormated, StandardCharsets.UTF_8.toString());
+			final String cookieCallback = getScheme(request) + "://" + getHost(request) + pathFormated;
+			if (config.containsKey("oauthLoginUri")) {
+				final String authLocation = config.getString("oauthLoginUri");
+				location = extractLocation(authLocation, request, callback, cookieCallback);
+				location = String.format("%s?callback=%s", location, URLEncoder.encode(cookieCallback, StandardCharsets.UTF_8.toString()));
+			} else if (config.containsKey("authLocations")) {
+				final String host = Renders.getHost(request);
+				final String authLocation = config.getJsonObject("authLocations", new JsonObject()).getJsonObject(host, new JsonObject()).getString("loginUri");
+				location = extractLocation(authLocation, request, callback, cookieCallback);
+			} else if (config.containsKey("loginUri")) {
+				final String authLocation = config.getString("loginUri");
+				location = extractLocation(authLocation, request, callback, cookieCallback);
+			}
+
+			if (location == null || location.isEmpty()) {
+				location = String.format("%s?callback=%s", AbstractFederateController.LOGIN_PAGE, callback);
+			}
+		} catch (UnsupportedEncodingException e) {
+			log.error("Encoding exception in redirectToLogin method", e);
+		}
+
+		if (location.startsWith("http")) {
+			redirect(request, location, "");
+		} else {
+			redirect(request, location);
+		}
+	}
+
+	/**
+	 * Extract location and set cookie for external login page.
+	 * @param authLocation authLocation
+	 * @return location
+	 */
+	private String extractLocation(final String authLocation, HttpServerRequest request, String callback, String cookieCallback) {
+		String location = null;
+		if (authLocation != null && !AbstractFederateController.LOGIN_PAGE.equals(authLocation)) {
+			if (AbstractFederateController.WAYF_PAGE.equals(authLocation)) {
+				location = String.format("%s?callback=%s", AbstractFederateController.WAYF_PAGE, callback);
+			} else {
+				//external login page
+				location = authLocation;
+			}
+			CookieHelper.getInstance().setSigned("callback", cookieCallback, 600, request);
+		}
+		return location;
 	}
 
 	/* FIXME FAKE OAUTH for dev purposes only
