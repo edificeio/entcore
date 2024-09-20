@@ -1,9 +1,6 @@
 package org.entcore.common.editor;
 
-import fr.wseduc.transformer.IContentTransformerClient;
-import fr.wseduc.transformer.to.ContentTransformerRequest;
 import fr.wseduc.transformer.to.ContentTransformerResponse;
-import io.vertx.core.Future;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
@@ -12,8 +9,10 @@ import org.entcore.common.events.EventStore;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class EventRecorderContentTransformerClient implements IContentTransformerClient {
-  private final IContentTransformerClient client;
+/**
+ * Stores multimedia information of rich text content in an EventStore.
+ */
+public class ContentTransformerEventRecorder implements IContentTransformerEventRecorder {
   private final EventStore eventStore;
   private final String module;
   public static final String EVENT = "EDITOR_CONTENT";
@@ -32,36 +31,35 @@ public class EventRecorderContentTransformerClient implements IContentTransforme
     customCounts.add("nb_formulae");
   }
 
-  public EventRecorderContentTransformerClient(final IContentTransformerClient client,
-                                               final EventStore eventStore,
-                                               final String module) {
-    this.client = client;
+  public ContentTransformerEventRecorder(final EventStore eventStore,
+                                         final String module) {
     this.eventStore = eventStore;
     this.module = module;
   }
 
   @Override
-  public Future<ContentTransformerResponse> transform(final ContentTransformerRequest request,
-                                                      final HttpServerRequest httpCallerRequest) {
-    return client.transform(request, httpCallerRequest)
-      .onSuccess(transformed -> {
-        // Do not count events when we only want to migrate old content
-        if(!HttpMethod.GET.equals(httpCallerRequest.method())) {
-          JsonObject json = transformed.getCleanJson();
-          if (json == null) {
-            json = transformed.getJsonContent();
-          }
-          final Map<String, Integer> occurrences = computeMultimediaOccurrences(json);
-          if (occurrences != null) {
-            final JsonObject customAttributes = new JsonObject()
-              .put("override-module", module);
-            for (Map.Entry<String, Integer> entry : occurrences.entrySet()) {
-              customAttributes.put(entry.getKey(), entry.getValue());
-            }
-            eventStore.createAndStoreEvent(EVENT, httpCallerRequest, customAttributes);
-          }
+  public void recordTransformation(final String id,
+                                   final String resourceType,
+                                   final ContentTransformerResponse response,
+                                   final HttpServerRequest httpCallerRequest) {
+    // Do not count events when we only want to migrate old content
+    if(!HttpMethod.GET.equals(httpCallerRequest.method())) {
+      JsonObject json = response.getCleanJson();
+      if (json == null) {
+        json = response.getJsonContent();
+      }
+      final Map<String, Integer> occurrences = computeMultimediaOccurrences(json);
+      if (occurrences != null) {
+        final JsonObject customAttributes = new JsonObject()
+          .put("override-module", module)
+          .put("resource_type", resourceType)
+          .put("resource_id", id);
+        for (Map.Entry<String, Integer> entry : occurrences.entrySet()) {
+          customAttributes.put(entry.getKey(), entry.getValue());
         }
-      });
+        eventStore.createAndStoreEvent(EVENT, httpCallerRequest, customAttributes);
+      }
+    }
   }
 
   public static Map<String, Integer> computeMultimediaOccurrences(final JsonObject json) {

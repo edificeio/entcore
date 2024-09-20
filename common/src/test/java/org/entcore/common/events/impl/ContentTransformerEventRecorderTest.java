@@ -1,20 +1,20 @@
 package org.entcore.common.events.impl;
 
 import io.vertx.core.json.JsonObject;
-import org.entcore.common.editor.EventRecorderContentTransformerClient;
+import org.entcore.common.editor.ContentTransformerEventRecorder;
 import org.junit.Test;
 
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-public class EventRecorderContentTransformerClientTest {
+public class ContentTransformerEventRecorderTest {
 
 
   @Test
   public void testComputeCounters() {
     final JsonObject content = new JsonObject(data).getJsonObject("jsonContent");
-    final Map<String, Integer> occurrences = EventRecorderContentTransformerClient.computeMultimediaOccurrences(content);
+    final Map<String, Integer> occurrences = ContentTransformerEventRecorder.computeMultimediaOccurrences(content);
     assertEquals(5, (int)occurrences.get("nb_images"));
     assertEquals(4, (int)occurrences.get("nb_videos"));
     assertEquals(4, (int)occurrences.get("nb_sounds"));
@@ -28,7 +28,7 @@ public class EventRecorderContentTransformerClientTest {
   @Test
   public void testComputeCounters2() {
     final JsonObject content = new JsonObject(data2).getJsonObject("jsonContent");
-    final Map<String, Integer> occurrences = EventRecorderContentTransformerClient.computeMultimediaOccurrences(content);
+    final Map<String, Integer> occurrences = ContentTransformerEventRecorder.computeMultimediaOccurrences(content);
     assertEquals(1, (int)occurrences.get("nb_external_links"));
     assertEquals(3, (int)occurrences.get("nb_internal_links"));
   }
