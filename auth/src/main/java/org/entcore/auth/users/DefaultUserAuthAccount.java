@@ -91,6 +91,8 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 	private final boolean ignoreSendResetPasswordSmsError;
 	private final int passwordHistoryLength;
 
+	private final boolean sendForgotPasswordEmailWithResetCode;
+
 	public DefaultUserAuthAccount(Vertx vertx, JsonObject config, EventStore eventStore) {
 		super(vertx, config);
 		this.eb = Server.getEventBus(vertx);
@@ -119,6 +121,7 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 		SmsSenderFactory.getInstance().init(vertx, config);
 		this.smsSender = SmsSenderFactory.getInstance().newInstance(eventStore);
 		this.passwordHistoryLength = config.getInteger("password-history-length", 10);
+		this.sendForgotPasswordEmailWithResetCode = config.getBoolean("send-forgot-password-email-with-reset-code", false);
 	}
 
 	@Override
@@ -535,7 +538,7 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 				null,
 				null,
 				"mail.reset.pw.subject",
-				"email/forgotPassword.html",
+				sendForgotPasswordEmailWithResetCode ? "email/forgotPasswordResetCode.html" : "email/forgotPassword.html",
 				json,
 				true,
 				handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
