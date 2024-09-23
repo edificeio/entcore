@@ -1,5 +1,6 @@
 import {Injectable} from '@angular/core';
 import {Subject} from 'rxjs';
+import { UserPosition } from '../store/models/userPosition.model';
 
 export abstract class UserFilter<T> {
 
@@ -245,6 +246,25 @@ class BlockedFilter extends UserFilter<string> {
     }
 }
 
+class PositionFilter extends UserFilter<string> {
+    type = 'userPositions';
+    label = 'userPosition.multi.combo.title';
+    display = 'name';
+    comboModel = [];
+    order = '+';
+    filterProp = 'this';
+
+    filter = (userPositions: string[]) => {
+        const outputModel = this.outputModel;
+
+        return outputModel.length === 0 ||
+            userPositions && userPositions.length > 0 &&
+            userPositions.some(f => {
+                return outputModel.some(o => o === f);
+            });
+    }
+}
+
 @Injectable()
 export class UserlistFiltersService {
 
@@ -265,6 +285,7 @@ export class UserlistFiltersService {
     private dateFilter = new DateFilter(this.$updateSubject);
     private deleteFilter = new DeleteFilter(this.$updateSubject);
     private blockedFilter = new BlockedFilter(this.$updateSubject);
+    private positionFilter = new PositionFilter(this.$updateSubject);
 
     filters: UserFilterList<any> = [
         this.profileFilter,
@@ -279,7 +300,8 @@ export class UserlistFiltersService {
         this.admlFilter,
         this.dateFilter,
         this.deleteFilter,
-        this.blockedFilter
+        this.blockedFilter,
+        this.positionFilter
     ];
 
     resetFilters() {
@@ -330,6 +352,10 @@ export class UserlistFiltersService {
 
     setBlockedComboModel(combos: string[]) {
         this.blockedFilter.comboModel = combos;
+    }
+
+    setPositionComboModel(combos: UserPosition[]) {
+        this.positionFilter.comboModel = combos;
     }
 
     getFormattedFilters(customFilters?: UserFilter<any> | UserFilterList<any>): any {

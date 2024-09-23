@@ -431,6 +431,7 @@
   "adml.multi.combo.title": "Administrateurs locaux",
   "blocked.multi.combo.title": "Blocage",
   "delete.multi.combo.title": "Pré-suppression",
+  "userPositions.multi.combo.title": "Fonctions",
   "ignore.activation": "Pas de filtre sur l'activation",
   "users.activated": "Utilisateurs activés",
   "users.not.activated": "Utilisateurs non activés",
