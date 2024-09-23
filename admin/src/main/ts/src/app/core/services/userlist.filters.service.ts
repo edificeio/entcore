@@ -246,7 +246,7 @@ class BlockedFilter extends UserFilter<string> {
     }
 }
 
-class PositionFilter extends UserFilter<string> {
+class PositionFilter extends UserFilter<{id:string}> {
     type = 'userPositions';
     label = 'userPosition.multi.combo.title';
     display = 'name';
@@ -254,13 +254,13 @@ class PositionFilter extends UserFilter<string> {
     order = '+';
     filterProp = 'this';
 
-    filter = (userPositions: string[]) => {
+    filter = (userPositions: Array<UserPosition>) => {
         const outputModel = this.outputModel;
 
         return outputModel.length === 0 ||
             userPositions && userPositions.length > 0 &&
             userPositions.some(f => {
-                return outputModel.some(o => o === f);
+                return outputModel.some(o => o.id === f.id);
             });
     }
 }
