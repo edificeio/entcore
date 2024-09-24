@@ -251,8 +251,8 @@ class PositionFilter extends UserFilter<{id:string}> {
     label = 'userPositions.multi.combo.title';
     display = 'name';
     comboModel = [];
-    order = '+';
-    filterProp = 'this';
+    order = '+name';
+    filterProp = 'name';
 
     filter = (userPositions: Array<UserPosition>) => {
         const outputModel = this.outputModel;
