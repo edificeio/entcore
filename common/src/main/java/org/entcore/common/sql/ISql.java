@@ -1,5 +1,6 @@
 package org.entcore.common.sql;
 
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
@@ -11,6 +12,8 @@ public interface ISql {
   void prepared(String query, JsonArray values, Handler<Message<JsonObject>> handler);
 
   void prepared(String query, JsonArray values, DeliveryOptions deliveryOptions, Handler<Message<JsonObject>> handler);
+
+  Future<Message<JsonObject>> prepared(String query, JsonArray values, DeliveryOptions deliveryOptions);
 
   void raw(String query, Handler<Message<JsonObject>> handler);
 
