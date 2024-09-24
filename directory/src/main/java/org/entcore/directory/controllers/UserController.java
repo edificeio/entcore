@@ -261,29 +261,7 @@ public class UserController extends BaseController {
 					@Override
 					public void handle(Either<String, JsonObject> event) {
 						if (event.isRight()) {
-							// Clean avatar on Varnish cache
-							String varnishUrl = userBookData.getString("varnish-url");
-							if (varnishUrl != null) {
-								URI uri = URI.create(varnishUrl);
-								final int port = (uri.getPort() > 0) ? uri.getPort() : ("https".equals(uri.getScheme()) ? 443 : 80);
-								HttpClientOptions options = new HttpClientOptions()
-										.setDefaultHost(uri.getHost())
-										.setDefaultPort(port)
-										.setSsl("https".equals(uri.getScheme()));
-								HttpClient httpClient = vertx.createHttpClient(options);
-
-								HttpClientRequest req = httpClient.request(HttpMethod.OTHER, uri.getPath(), response -> {
-									if (response.statusCode() == 200) {
-										log.info("BAN succefull !");
-									}
-									else {
-										log.warn("BAN failed !");
-									}
-								});
-								req.setRawMethod("BAN");
-								req.putHeader("X-Ban-Tag", userId);
-								req.end();
-							}
+							banCache(userId);
 
 							UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> {
 								CookieHelper.set("userbookVersion", System.currentTimeMillis()+"", request);
@@ -315,6 +293,70 @@ public class UserController extends BaseController {
 				});
 			}
 		});
+	}
+
+	private void banCache(String userId) {
+		JsonObject cloudflare = userBookData.getJsonObject("cloudflare");
+		JsonObject varnish = userBookData.getJsonObject("varnish");
+
+		final URI uri;
+		final String token;
+		if (cloudflare != null) {
+			uri = URI.create(varnish.getString("url"));
+			token = cloudflare.getString("token");
+
+			if (token == null) return;
+		}
+		else {
+			if (varnish != null) {
+				uri = URI.create(varnish.getString("url"));
+				token = null;
+
+				if (uri == null) return;
+			}
+			else {
+				return;
+			}
+		}
+
+		final int port = (uri.getPort() > 0) ? uri.getPort() : ("https".equals(uri.getScheme()) ? 443 : 80);
+		final HttpClientOptions options = new HttpClientOptions()
+			.setDefaultHost(uri.getHost())
+			.setDefaultPort(port)
+			.setSsl("https".equals(uri.getScheme()));
+		final HttpClient httpClient = vertx.createHttpClient(options);
+
+		if (cloudflare != null) {
+			if (uri != null && token != null) {
+				final JsonObject payload = new JsonObject();
+				payload.put("tags", "[" + userId + "]");
+
+				final HttpClientRequest req = httpClient.post(uri.getPath(), response -> {
+					if (response.statusCode() == 200) {
+						log.info("PURGE succefull !");
+					}
+					else {
+						log.warn("PURGE failed !");
+					}
+				});
+				req.putHeader("Authorization", "Bearer " + token);
+				req.putHeader("Content-Type", "application/json");
+				req.end(payload.encode());
+			}
+		}
+		else if (varnish != null) {
+			final HttpClientRequest req = httpClient.request(HttpMethod.OTHER, uri.getPath(), response -> {
+				if (response.statusCode() == 200) {
+					log.info("BAN succefull !");
+				}
+				else {
+					log.warn("BAN failed !");
+				}
+			});
+			req.setRawMethod("BAN");
+			req.putHeader("Ban-Tag", userId);
+			req.end();
+		}
 	}
 
 	@Get("/user/:userId")

@@ -273,7 +273,7 @@ public class DefaultUserBookService implements UserBookService {
 	@Override
 	public void getAvatar(String userId, Optional<String> size, String defaultAvatarDirty, HttpServerRequest request) {
 		String fileIdSized = avatarFileNameFromUserId(userId, size);
-		request.response().putHeader("X-Cache-Tag", userId);
+		request.response().putHeader("Cache-Tag", userId);
 		sendAvatar(request, fileIdSized)// try with size
 				.compose(success -> {// try without size
 					if (success) {
