@@ -87,7 +87,7 @@
 									ng-disabled="!testFunctionFilterAvailable(filters.users.profiles)"
 									search-placeholder="directory.search.functionGroup">
 								</multi-comboboxes>
-								<multi-comboboxes ng-if="filtersOptions.users.positions?.length > 0" 
+								<multi-comboboxes ng-if="filtersOptions.users.positions && filtersOptions.users.positions.length > 0"
 									ng-model="filters.users.positions"
 									options="filtersOptions.users.positions"
 									title-all="[[lang.translate('directory.allFunctions')]]"
