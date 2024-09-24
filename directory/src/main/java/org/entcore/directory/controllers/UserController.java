@@ -302,7 +302,7 @@ public class UserController extends BaseController {
 		final URI uri;
 		final String token;
 		if (cloudflare != null) {
-			uri = URI.create(varnish.getString("url"));
+			uri = URI.create(cloudflare.getString("url"));
 			token = cloudflare.getString("token");
 
 			if (token == null) return;
@@ -327,22 +327,22 @@ public class UserController extends BaseController {
 		final HttpClient httpClient = vertx.createHttpClient(options);
 
 		if (cloudflare != null) {
-			if (uri != null && token != null) {
-				final JsonObject payload = new JsonObject();
-				payload.put("tags", "[" + userId + "]");
+			final JsonArray tags = new JsonArray();
+			tags.add(userId);
+			final JsonObject payload = new JsonObject();
+			payload.put("tags", tags);
 
-				final HttpClientRequest req = httpClient.post(uri.getPath(), response -> {
-					if (response.statusCode() == 200) {
-						log.info("PURGE succefull !");
-					}
-					else {
-						log.warn("PURGE failed !");
-					}
-				});
-				req.putHeader("Authorization", "Bearer " + token);
-				req.putHeader("Content-Type", "application/json");
-				req.end(payload.encode());
-			}
+			final HttpClientRequest req = httpClient.post(uri.getPath(), response -> {
+				if (response.statusCode() == 200) {
+					log.info("PURGE succefull !");
+				}
+				else {
+					log.warn("PURGE failed !");
+				}
+			});
+			req.putHeader("Authorization", "Bearer " + token);
+			req.putHeader("Content-Type", "application/json");
+			req.end(payload.encode());
 		}
 		else if (varnish != null) {
 			final HttpClientRequest req = httpClient.request(HttpMethod.OTHER, uri.getPath(), response -> {
