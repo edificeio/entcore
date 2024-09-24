@@ -402,12 +402,14 @@ public class DefaultSchoolService implements SchoolService {
 			"  WITH distinct u, classes, structuresDup, duplicates, structures, functionalGroups, CASE WHEN mgroup IS NULL THEN [] ELSE COLLECT(distinct mgroup.name) END as manualGroups " +
 			"OPTIONAL MATCH (u)-[rf:HAS_FUNCTION]->(f:Function) " +
 			"  WITH distinct u, classes, structuresDup, duplicates, structures, functionalGroups, manualGroups, CASE WHEN f IS NULL THEN [] ELSE COLLECT(distinct [f.externalId, rf.scope]) END as functions " +
+			"OPTIONAL MATCH (u)-[:HAS_POSITION]->(p:UserPosition)-[:IN]->(:Structure {id:{structureId}}) " +
+			"  WITH distinct u, classes, structuresDup, duplicates, structures, functionalGroups, manualGroups, functions, CASE WHEN p IS NULL THEN [] ELSE COLLECT(distinct {id: p.id}) END as userPositions " +
 			"RETURN DISTINCT " +
 			"u.id as id, u.profiles[0] as type, u.activationCode as code, u.login as login," +
 			"u.firstName as firstName, u.lastName as lastName, u.displayName as displayName," +
 			"u.source as source, u.deleteDate as deleteDate, u.disappearanceDate as disappearanceDate, u.blocked as blocked, u.created as creationDate, u.removedFromStructures AS removedFromStructures, " +
 			"EXTRACT(function IN u.functions | split(function, \"$\")) as aafFunctions," +
-			" classes, functionalGroups, manualGroups, functions, duplicates, structures " +
+			" classes, functionalGroups, manualGroups, functions, duplicates, structures, userPositions " +
 			"ORDER BY lastName, firstName ";
 		if("none".equals(listUserMode)){
 			//do not include presuppressed user
@@ -420,7 +422,7 @@ public class DefaultSchoolService implements SchoolService {
 					"RETURN DISTINCT u.id as id, u.profiles[0] as type, u.activationCode as code, u.login as login, u.firstName as firstName, u.lastName as lastName, u.displayName as displayName, " +
 					"u.source as source, u.deleteDate as deleteDate, u.disappearanceDate as disappearanceDate, u.blocked as blocked, u.created as creationDate, u.removedFromStructures as removedFromStructures, " +
 					"[] as aafFunctions, [] as classes, [] as functionalGroups, [] as manualGroups, [] as functions, [] as duplicates, " +
-					"COLLECT(distinct {id: s.id, name: s.name, externalId: s.externalId}) as structures " +
+					"COLLECT(distinct {id: s.id, name: s.name, externalId: s.externalId}) as structures, [] as userPositions " +
 					"ORDER BY lastName, firstName ";
 		}else{
 			//include presuppressed (multi etab)
@@ -433,7 +435,7 @@ public class DefaultSchoolService implements SchoolService {
 					"RETURN DISTINCT u.id as id, u.profiles[0] as type, u.activationCode as code, u.login as login, u.firstName as firstName, u.lastName as lastName, u.displayName as displayName, " +
 					"u.source as source, u.deleteDate as deleteDate, u.disappearanceDate as disappearanceDate, u.blocked as blocked, u.created as creationDate, u.removedFromStructures as removedFromStructures, " +
 					"[] as aafFunctions, [] as classes, [] as functionalGroups, [] as manualGroups, [] as functions, [] as duplicates, " +
-					"COLLECT(distinct {id: s.id, name: s.name, externalId: s.externalId}) as structures " +
+					"COLLECT(distinct {id: s.id, name: s.name, externalId: s.externalId}) as structures, [] as userPositions " +
 					"ORDER BY lastName, firstName ";
 		}
 		JsonObject params = new JsonObject().put("structureId", structureId);
