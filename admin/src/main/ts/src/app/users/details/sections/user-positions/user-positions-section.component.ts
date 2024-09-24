@@ -177,6 +177,7 @@ export class UserPositionsSectionComponent
           removePosition ? 'notify.user-position.remove.success.content' :'notify.user-position.assign.success.content',
           'notify.user-position.success.title'
         );
+        this.user.userPositions = this.details.userPositions.map(p=>({id: p.id}));
         this.userInfoService.setState(this.details);
       })
       .catch(err => {

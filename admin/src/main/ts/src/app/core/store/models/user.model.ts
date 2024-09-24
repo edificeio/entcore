@@ -40,6 +40,7 @@ export class UserModel extends Model<UserModel> {
     functionalGroups: string[] = [];
     manualGroups: string[] = [];
     functions?: Array<[string, Array<string>]> = [];
+    userPositions?: Array<{id: string}> = [];
     structures: { id: string, name: string, externalId: string }[] = [];
     classes: Classe[] = [];
     duplicates: { id: string, firstName: string, lastName: string, code: string, score: number, structures: { id: string, name: string }[] }[] = [];
