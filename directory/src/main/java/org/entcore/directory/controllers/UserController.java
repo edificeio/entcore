@@ -72,6 +72,8 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.text.ParseException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
@@ -79,6 +81,8 @@ import static org.entcore.common.http.response.DefaultResponseHandler.*;
 import static org.entcore.common.user.SessionAttributes.PERSON_ATTRIBUTE;
 
 public class UserController extends BaseController {
+	private static String SORTON_REGEXP = "^(?<order>\\+|\\-)(?<field>firstName|lastName|displayName)$";
+	private static final Pattern SORTON_PATTERN = Pattern.compile(SORTON_REGEXP);
 	static final String MOTTO_RESOURCE_NAME = "motto";
 	static final String MOOD_RESOURCE_NAME = "mood";
 	private UserService userService;
@@ -446,10 +450,23 @@ public class UserController extends BaseController {
 		final String searchType = request.params().get("searchType");
 		final String searchTerm = request.params().get("searchTerm");
 
+		String sortingField = null;
+		String sortingOrder = null;
+		if(sortOn!=null) {
+			Matcher matcher = SORTON_PATTERN.matcher(sortOn);
+			if(!matcher.find()) {
+				badRequest(request);
+				return;
+			}
+			sortingField = matcher.group("field");
+			sortingOrder = matcher.group("order").charAt(0)=='-' ? "DESC" : "ASC";
+		}
+
 		userService.listIsolated(
 				structureId,
 				expectedProfile,
-				sortOn,
+				sortingField,
+				sortingOrder,
 				fromIndexInt,
 				limitResultInt,
 				searchType,
