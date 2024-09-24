@@ -45,7 +45,7 @@
                         </a>
                     </div>
                 </div>
-                <div class="flex-row">
+                <div style="column-gap: 16px; display: grid; grid-template-columns: repeat(3, 1fr);">
                     <multi-comboboxes ng-if="filtersOptions.users.structures.length > 1" class="twelve min-w-zero"
                         ng-model="create.favorite.filters.structures"
                         options="create.favorite.options.structures"
@@ -53,54 +53,43 @@
                         title="[[lang.translate('directory.structures')]]"
                         check="onCheck(option)">
                     </multi-comboboxes>
-                    <multi-comboboxes class="twelve min-w-zero" ng-class="{ 'horizontal-margin-twice': filtersOptions.users.structures.length > 1 }"
+                    <multi-comboboxes class="twelve min-w-zero"
                         ng-model="create.favorite.filters.classes"
                         options="create.favorite.options.classes"
                         order="classesOrder"
                         title-all="[[lang.translate('directory.allClasses')]]"
                         title="[[lang.translate('directory.classes')]]"
-                        ng-disabled="!testClassFilterAvailable(create.favorite.filters.types) || (isMultiStructure() && noStructureSelected(search.index))"
+                        ng-disabled="!testClassFilterAvailable(create.favorite.filters.types) || (isMultiStructure() && noStructureSelected(search.index)) || create.favorite.options.classes.length === 0"
                         title-disabled="[[ getDisabledClassTitle(search.index) ]]">
                     </multi-comboboxes>
-                    <multi-comboboxes class="twelve min-w-zero" ng-class="{ 'horizontal-margin-twice': filtersOptions.users.structures.length < 2 }"
+                    <multi-comboboxes class="twelve min-w-zero"
                         ng-model="create.favorite.filters.profiles"
                         options="create.favorite.options.profiles"
                         title-all="[[lang.translate('directory.allProfiles')]]"
                         title="[[lang.translate('directory.profiles')]]"
                         ng-disabled="!testProfileFilterAvailable(create.favorite.filters.types)">
                     </multi-comboboxes>
-                    <multi-comboboxes ng-if="filtersOptions.users.structures.length < 2" class="twelve min-w-zero"
+                    <multi-comboboxes class="twelve min-w-zero"
                         ng-model="create.favorite.filters.functions"
                         options="create.favorite.options.functions"
                         title-all="[[lang.translate('directory.allFunctionGroups')]]"
                         title="[[lang.translate('directory.functionGroups')]]"
                         ng-disabled="!testFunctionFilterAvailable(create.favorite.filters.profiles, create.favorite.filters.types)">
                     </multi-comboboxes>
-                    <multi-comboboxes ng-if="filtersOptions.users.structures.length < 2" class="twelve min-w-zero"
+                    <multi-comboboxes class="twelve min-w-zero"
                         ng-model="create.favorite.filters.positions"
                         options="create.favorite.options.positions"
                         title-all="[[lang.translate('directory.allFunctions')]]"
                         title="[[lang.translate('directory.functions')]]"
                         ng-disabled="!testPositionFilterAvailable(create.favorite.filters.profiles, create.favorite.filters.types)">
                     </multi-comboboxes>
-                </div>
-                <div class="flex-row">
-                    <multi-comboboxes ng-if="filtersOptions.users.structures.length > 1" class="twelve min-w-zero"
-                        ng-model="create.favorite.filters.functions"
-                        options="create.favorite.options.functions"
-                        title-all="[[lang.translate('directory.allFunctions')]]"
-                        title="[[lang.translate('directory.functions')]]"
-                        ng-disabled="!testFunctionFilterAvailable(create.favorite.filters.profiles, create.favorite.filters.types)">
-                    </multi-comboboxes>
-                    <multi-comboboxes class="twelve min-w-zero" ng-class="{ 'horizontal-margin-twice': filtersOptions.users.structures.length > 1 }"
+                    <multi-comboboxes class="twelve min-w-zero" 
                         ng-model="create.favorite.filters.types"
                         options="create.favorite.options.types"
                         title-all="[[lang.translate('directory.allGroupsTypes')]]"
                         title="[[lang.translate('directory.groupsTypes')]]"
                         ng-disabled="!testGroupTypeFilterAvailable(create.favorite.filters.classes, create.favorite.filters.profiles, create.favorite.filters.functions)">
                     </multi-comboboxes>
-                    <div ng-if="filtersOptions.users.structures.length < 2" class="twelve horizontal-margin-twice min-w-zero"></div>
-                    <div class="twelve min-w-zero"></div>
                 </div>
             </div>
         </div>

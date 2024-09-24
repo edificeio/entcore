@@ -72,6 +72,7 @@ export class UsersListComponent extends OdeComponent {
                 }
             });
         });
+        this.listFilters.setPositionComboModel(structure.userPositions);
         this.listFilters.setFunctionsComboModel(filterAafFunctions);
 
         this.listFilters.setProfilesComboModel(structure.profiles.map(p => p.name));

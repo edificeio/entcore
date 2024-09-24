@@ -5,6 +5,8 @@ import { SubjectCollection } from '../collections/subject.collection';
 import { ApplicationCollection } from '../collections/application.collection';
 import { ConnectorCollection } from '../collections/connector.collection';
 import { WidgetCollection } from '../collections/widget.collection';
+import { UserPosition } from './userPosition.model';
+import { UserPositionServices } from '../../services/user-position.service';
 
 export type ClassModel = { id: string, name: string };
 
@@ -26,6 +28,7 @@ export class StructureModel extends Model<StructureModel> {
     source?: string;
     profiles: { name: string, blocked: any }[] = [];
     aafFunctions: Array<Array<Array<string>>> = [];
+    userPositions: Array<UserPosition> = [];
     levelsOfEducation: number[] = [];
     distributions: string[];
     timetable: string;
@@ -116,6 +119,17 @@ export class StructureModel extends Model<StructureModel> {
                         && res.data[0].aafFunctions && res.data[0].aafFunctions.length > 0) {
                         this.aafFunctions = res.data[0].aafFunctions;
                     }
+                });
+        }
+        return Promise.resolve();
+    }
+
+    syncPositions(force?: boolean) {
+        if (this.userPositions.length < 1 || force === true) {
+            const userPositionServices = new UserPositionServices();
+            return userPositionServices.searchUserPositions({structureId: this.id})
+                .then(res => {
+                    this.userPositions = res;
                 });
         }
         return Promise.resolve();
