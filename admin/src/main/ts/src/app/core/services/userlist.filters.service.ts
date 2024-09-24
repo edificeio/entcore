@@ -248,7 +248,7 @@ class BlockedFilter extends UserFilter<string> {
 
 class PositionFilter extends UserFilter<{id:string}> {
     type = 'userPositions';
-    label = 'userPosition.multi.combo.title';
+    label = 'userPositions.multi.combo.title';
     display = 'name';
     comboModel = [];
     order = '+';
