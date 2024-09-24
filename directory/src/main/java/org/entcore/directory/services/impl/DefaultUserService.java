@@ -586,7 +586,8 @@ public class DefaultUserService implements UserService {
 	public void listIsolated(
 			String structureId, 
 			List<String> profile, 
-			String sortOn,
+			final String sortingField,
+			final String sortingOrder,
 			final Integer fromIndex,
 			final Integer limitResult,
 			final String searchType,
@@ -626,20 +627,16 @@ public class DefaultUserService implements UserService {
 		
 		query += "RETURN DISTINCT u.id as id, p.name as type, " +
 				"u.activationCode as code, u.firstName as firstName," +
-				"u.lastName as lastName, u.displayName as displayName " +
-				"ORDER BY type DESC, displayName ASC ";
+				"u.lastName as lastName, u.displayName as displayName ";
 
-		// // Apply search parameters and sort order
-		// if( sortOn==null || sortOn.length()<2 ) {
-		// 	// Default sort order, historical behaviour.
-		// 	query += "ORDER BY type DESC, displayName ASC ";
-		// } else {
-		// 	final String order = sortOn.startsWith("-") ? "DESC" : "ASC";
-		// 	if( sortOn.charAt(0)=='+'|| sortOn.charAt(0)=='-' ) {
-		// 		sortOn = sortOn.substring(1);
-		// 	}
-		// 	query += "ORDER BY "+ sortOn +" "+ order;
-		// }
+		// Apply sort order
+		if(isValidSortField(sortingField) && isValidSortOrder(sortingOrder)) {
+			query += "ORDER BY "+ sortingField +" "+ sortingOrder +" ";
+		} else {
+			// Default sort order, historical behaviour.
+			query += "ORDER BY type DESC, displayName ASC ";
+		}		
+
 		if( fromIndex != null && fromIndex.intValue() > 0 ) {
 			query += " SKIP {skip}";
 			params.put( "skip", fromIndex );
@@ -810,6 +807,16 @@ public class DefaultUserService implements UserService {
 		}
 		return str;
 	}
+
+	private boolean isValidSortField(final String sortingField) {
+		final String[] validFields = {"displayName", "email"};
+		return sortingField!=null && Arrays.stream(validFields).anyMatch(f->f.equals(sortingField));
+	}
+	private boolean isValidSortOrder(final String sortingOrder) {
+		final String[] validOrders = {"ASC", "DESC"};
+		return sortingOrder!=null && Arrays.stream(validOrders).anyMatch(o->o.equals(sortingOrder));
+	}
+
 
 	@Override
 	public void delete(List<String> users, Handler<Either<String, JsonObject>> result) {
