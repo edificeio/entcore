@@ -41,6 +41,7 @@ import org.entcore.common.http.filter.AdmlOfStructure;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
+import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -746,6 +747,13 @@ public class StructureController extends BaseController {
 
 									JsonArray usersId = r.getJsonArray("result").getJsonObject(0).getJsonArray("usersId");
 									eb.publish("auth.store.lock.event", new JsonObject().put("ids", usersId).put("block", block));
+									if (block) {
+										NotificationUtils.deleteFcmTokens(usersId, ar -> {
+											if (ar.isLeft()) {
+												log.error("Failed to delete FCM tokens when block structure : " + structureId, ar.left().getValue());
+											}
+										});
+									}
 									for (Object userId : usersId) {
 										UserUtils.deletePermanentSession(eb, (String) userId, null, null, false, new Handler<Boolean>() {
 											@Override

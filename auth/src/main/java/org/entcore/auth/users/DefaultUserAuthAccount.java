@@ -47,6 +47,7 @@ import org.entcore.common.http.renders.TemplatedEmailRenders;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
+import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.sms.SmsSender;
 import org.entcore.common.sms.SmsSenderFactory;
 import org.entcore.common.user.UserUtils;
@@ -863,6 +864,11 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 			@Override
 			public void handle(Message<JsonObject> r) {
 				storeLockEvent(new JsonArray().add(id), block);
+				NotificationUtils.deleteFcmTokens(new JsonArray().add(id), ar -> {
+					if (ar.isLeft()) {
+						log.error("Failed to delete FCM tokens when block user : " + id, ar.left().getValue());
+					}
+				});
 				handler.handle("ok".equals(r.body().getString("status")) &&
 						r.body().getJsonArray("result") != null && r.body().getJsonArray("result").getValue(0) != null &&
 						(r.body().getJsonArray("result").getJsonObject(0)).getBoolean("exists", false));
@@ -878,6 +884,11 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 			@Override
 			public void handle(Message<JsonObject> r) {
 				storeLockEvent(ids, block);
+				NotificationUtils.deleteFcmTokens(ids, ar -> {
+					if (ar.isLeft()) {
+						log.error("Failed to delete FCM tokens when block users.", ar.left().getValue());
+					}
+				});
 				handler.handle("ok".equals(r.body().getString("status")) &&
 						r.body().getJsonArray("result") != null && r.body().getJsonArray("result").getValue(0) != null &&
 						(r.body().getJsonArray("result").getJsonObject(0)).getBoolean("exists", false));
