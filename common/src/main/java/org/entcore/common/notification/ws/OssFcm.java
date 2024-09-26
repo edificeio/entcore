@@ -128,6 +128,9 @@ public class OssFcm {
                 headers.put("Content-type", "application/json");
                 headers.put("Accept-Language", message.getString("language", "fr"));
                 sendMessageCounter.increment();
+                if (isNotEmpty(userId)) {
+                    message.getJsonObject("message").getJsonObject("data").put("receiver", userId);
+                }
                 client.postProtectedResource(url, token, headers, message.encode(),
                         new Handler<HttpClientResponse>() {
                             @Override
