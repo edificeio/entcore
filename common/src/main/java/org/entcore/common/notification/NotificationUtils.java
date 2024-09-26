@@ -98,6 +98,18 @@ public class NotificationUtils {
 
     }
 
+    public static void deleteFcmTokens(JsonArray userIds, Handler<Either<String, JsonObject>> handler){
+        final JsonObject params = new JsonObject().put("userIds", userIds);
+
+        final String query =
+                "MATCH (u:User)-[:PREFERS]->(uac:UserAppConf) " +
+                "WHERE u.id IN {userIds} " +
+                "SET uac.fcmTokens = null ";
+
+        Neo4j.getInstance().execute(query, params, validUniqueResultHandler(handler));
+
+    }
+
     public static void getFcmTokensByUsers(JsonArray userIds,final Handler<Either<String, JsonArray>> handler){
         final JsonObject params = new JsonObject().put("userIds", userIds);
 
