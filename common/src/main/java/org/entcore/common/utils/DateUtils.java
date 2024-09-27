@@ -26,6 +26,8 @@ import javax.xml.bind.DatatypeConverter;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -40,6 +42,11 @@ public final class DateUtils {
 
     /** The Constant DEFAULT_DATE_LOCAL. */
     private static final Locale DEFAULT_DATE_LOCAL = Locale.FRENCH;
+
+    public static final DateTimeFormatter DEFAULT_LOCAL_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+
+    public static final ZoneId UTC_ZONE = ZoneId.of("UTC");
 
     private DateUtils()  {}
 
