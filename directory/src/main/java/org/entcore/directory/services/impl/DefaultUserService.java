@@ -47,6 +47,8 @@ import org.entcore.directory.pojo.TransversalSearchType;
 import org.entcore.directory.services.UserBookService;
 import org.entcore.directory.services.UserService;
 
+import com.google.common.collect.Sets;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -56,12 +58,15 @@ import static org.entcore.common.user.DefaultFunctions.*;
 
 public class DefaultUserService implements UserService {
 
+	private static final Set<String> VALID_SORT_FIELDS = Sets.newHashSet("displayName", "email");
+	private static final Set<String> VALID_SORT_ORDERS = Sets.newHashSet("ASC", "DESC");
 	private static final int LIMIT = 1000;
 	private final Neo4j neo = Neo4j.getInstance();
 	private final EmailSender notification;
 	private final EventBus eb;
 	private final JsonObject userBookData;
 	private Logger logger = LoggerFactory.getLogger(DefaultUserService.class);
+
 
 	public DefaultUserService(EmailSender notification, EventBus eb, JsonObject aUserBookData) {
 		this.userBookData = aUserBookData;
@@ -809,12 +814,10 @@ public class DefaultUserService implements UserService {
 	}
 
 	private boolean isValidSortField(final String sortingField) {
-		final String[] validFields = {"displayName", "email"};
-		return sortingField!=null && Arrays.stream(validFields).anyMatch(f->f.equals(sortingField));
+		return sortingField!=null && VALID_SORT_FIELDS.contains(sortingField);
 	}
 	private boolean isValidSortOrder(final String sortingOrder) {
-		final String[] validOrders = {"ASC", "DESC"};
-		return sortingOrder!=null && Arrays.stream(validOrders).anyMatch(o->o.equals(sortingOrder));
+		return sortingOrder!=null && VALID_SORT_ORDERS.contains(sortingOrder);
 	}
 
 
