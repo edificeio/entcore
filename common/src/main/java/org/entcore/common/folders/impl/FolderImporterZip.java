@@ -5,6 +5,7 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.AsyncFile;
@@ -14,9 +15,9 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.streams.Pump;
 import io.vertx.core.streams.ReadStream;
-import org.entcore.common.folders.FolderImporter;
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.service.impl.MongoDbRepositoryEvents;
 import org.entcore.common.storage.AntivirusClient;
@@ -31,6 +32,8 @@ import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.apache.commons.lang3.ObjectUtils.isEmpty;
 
 public class FolderImporterZip {
     static final Logger logger = LoggerFactory.getLogger(FolderImporterZip.class);
@@ -57,7 +60,7 @@ public class FolderImporterZip {
                 }
             }
         } catch (Exception e) {
-
+            logger.warn("An error occurred while initializing importer", e);
         }
     }
 
@@ -95,9 +98,10 @@ public class FolderImporterZip {
     }
 
     public static Future<FolderImporterZipContext> createContext(Vertx vertx, UserInfos user, ReadStream<Buffer> buffer, String invalidMessage) {
-        final Future<FolderImporterZipContext> future = Future.future();
-        final String name = UUID.randomUUID().toString() + ".zip";
-        final String zipPath = Paths.get(System.getProperty("java.io.tmpdir"), name).normalize().toString();
+        final Promise<FolderImporterZipContext> future = Promise.promise();
+        final String name = UUID.randomUUID() + ".zip";
+        final String importPath = getImportPath(vertx);
+        final String zipPath = Paths.get(importPath, name).normalize().toString();
         buffer.pause();
         vertx.fileSystem().open(zipPath, new OpenOptions().setTruncateExisting(true).setCreate(true).setWrite(true), fileRes -> {
             if (fileRes.succeeded()) {
@@ -105,7 +109,7 @@ public class FolderImporterZip {
                 final Pump pump = Pump.pump(buffer, file);
                 buffer.endHandler(r -> {
                     file.end();
-                    future.complete(new FolderImporterZipContext(zipPath, user, invalidMessage));
+                    future.complete(new FolderImporterZipContext(zipPath, importPath, user, invalidMessage));
                 });
                 buffer.exceptionHandler(e -> {
                     file.end();
@@ -117,7 +121,24 @@ public class FolderImporterZip {
                 future.fail(fileRes.cause());
             }
         });
-        return future;
+        return future.future();
+    }
+
+    /**
+     * Looks into the configuration to fetch the path to import the archive in the following order :
+     * - 'import-path' in the configuration of the module
+     * - 'import-path' in the shared configuration of the ENT
+     * - 'java.io.tmpdir' environment variable if all else fails
+     * @param vertx Vertx instance of the called
+     * @return The path to import the zip file
+     */
+    private static String getImportPath(Vertx vertx) {
+        String importPath = vertx.getOrCreateContext().config().getString("import-path");
+        if(org.apache.commons.lang3.StringUtils.isEmpty(importPath)) {
+            final LocalMap<Object, Object> localMap = vertx.sharedData().getLocalMap("server");
+            importPath = (String)localMap.getOrDefault("import-path", System.getProperty("java.io.tmpdir"));
+        }
+        return importPath;
     }
 
     public Future<Void> doPrepare(final FolderImporterZipContext context) {
@@ -221,7 +242,7 @@ public class FolderImporterZip {
             return future;
         }
         final String fileName = Paths.get(context.zipPath).getFileName().toString().replaceAll(".zip", "");
-        final Path tempDir = Paths.get(System.getProperty("java.io.tmpdir"), fileName).normalize();
+        final Path tempDir = Paths.get(context.tmpPath, fileName).normalize();
         vertx.fileSystem().mkdir(tempDir.toString(), dir -> {
             if (dir.succeeded()) {
                 context.toClean.add(tempDir.toString());
@@ -374,6 +395,7 @@ public class FolderImporterZip {
 
     public static class FolderImporterZipContext {
         private final String zipPath;
+        private final String tmpPath;
         private final String userId;
         private final String userName;
         private final Map<String, FileInfo> docToInsertById = new HashMap<>();
@@ -386,15 +408,16 @@ public class FolderImporterZip {
         private final String invalidMessage;
         private Optional<String> guessedEncodingCache;
 
-        public FolderImporterZipContext(final String aZipPath, UserInfos user, String invalidMessage) {
-            this(aZipPath, user.getUserId(), user.getUsername(), invalidMessage);
+        public FolderImporterZipContext(final String aZipPath, final String tmpPath, UserInfos user, String invalidMessage) {
+            this(aZipPath, tmpPath, user.getUserId(), user.getUsername(), invalidMessage);
         }
 
-        public FolderImporterZipContext(final String aZipPath, final String aUserId, final String aUserName, final String invalidMessage) {
+        public FolderImporterZipContext(final String aZipPath, final String tmpPath, final String aUserId, final String aUserName, final String invalidMessage) {
             this.zipPath = aZipPath;
             this.userId = aUserId;
             this.userName = aUserName;
             this.invalidMessage = invalidMessage;
+            this.tmpPath = isEmpty(tmpPath) ? System.getProperty("java.io.tmpdir") : tmpPath;
         }
 
         public FolderImporterZipContext setRootFolder(final JsonObject parentFolder) {
