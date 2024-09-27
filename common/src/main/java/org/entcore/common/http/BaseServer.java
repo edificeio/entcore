@@ -108,6 +108,7 @@ public abstract class BaseServer extends Server {
 
 		repositoryHandler = new RepositoryHandler(getEventBus(vertx));
 		searchingHandler = new SearchingHandler(getEventBus(vertx));
+		i18nHandler = new I18nHandler();
 
 		Config.getInstance().setConfig(config);
 

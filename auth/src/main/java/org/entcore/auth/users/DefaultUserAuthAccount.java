@@ -487,29 +487,32 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 		final String i18nKey = reset ? "email.password.reset.subject" : "email.password.change.subject";
 
 		processEmailTemplate(request, templateParams, emailTemplate, false, processedTemplate -> {
-			final String emailSubject = getProjectNameFromTimelineI18n(request)
-					+ I18n.getInstance().translate(i18nKey, getHost(request), I18n.acceptLanguage(request));
+			getProjectNameFromTimelineI18n(request).onComplete( ar -> {
+				final String projectName = ar.succeeded() ? ar.result() : "ENT";
+				final String emailSubject = projectName
+						+ I18n.getInstance().translate(i18nKey, getHost(request), I18n.acceptLanguage(request));
 
-			notification.sendEmail(
-					request,
-					email,
-					null,
-					null,
-					emailSubject,
-					processedTemplate,
-					null,
-					false,
-					ar -> {
-						sendEmailAck.set(true);
-						if (ar.succeeded()) {
-							if (log.isDebugEnabled()) {
-								log.debug("Success sending changedPassword by email: " + login + "/" + email);
+				notification.sendEmail(
+						request,
+						email,
+						null,
+						null,
+						emailSubject,
+						processedTemplate,
+						null,
+						false,
+						ar2 -> {
+							sendEmailAck.set(true);
+							if (ar2.succeeded()) {
+								if (log.isDebugEnabled()) {
+									log.debug("Success sending changedPassword by email: " + login + "/" + email);
+								}
+							} else {
+								log.error("Error sending changedPassword by email: " + login + "/" + email, ar2.cause());
 							}
-						} else {
-							log.error("Error sending changedPassword by email: " + login + "/" + email, ar.cause());
 						}
-					}
-			);
+				);
+			});
 		});
 	}
 
