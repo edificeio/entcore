@@ -6,7 +6,7 @@ import {
 } from "https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
 import {
   listIsolated,
-  createUser,
+  getOrCreateUser,
   detachUserFromStructures,
   deleteOrPresuppressUsers
 } from "../admin/utils.js";
@@ -48,13 +48,13 @@ export function setup() {
     //////////////////////////////////
     // Create 1 structure and 4 users
     const structure = createEmptyStructure(schoolName, false, session);
-    const user1 = createUser(structure, "User1", "Isolated", "Personnel", session);
+    const user1 = getOrCreateUser(structure, "User1", "Isolated", "Personnel", session);
     detachUserFromStructures(user1, [structure], session);
-    const user2 = createUser(structure, "User2", "Isolated", "Teacher", session);
+    const user2 = getOrCreateUser(structure, "User2", "Isolated", "Teacher", session);
     detachUserFromStructures(user2, [structure], session);
-    const user3 = createUser(structure, "User3", "Isolated", "Personnel", session);
+    const user3 = getOrCreateUser(structure, "User3", "Isolated", "Personnel", session);
     detachUserFromStructures(user3, [structure], session);
-    const user4 = createUser(structure, "User4", "Isolated", "Relative", session);
+    const user4 = getOrCreateUser(structure, "User4", "Isolated", "Relative", session);
     detachUserFromStructures(user4, [structure], session);
 
     data = {users: [user1, user2, user3, user4]};
@@ -87,16 +87,16 @@ export function testListIsolated({users}) {
 function tryListing(users, session) {
   const requesterType = "ADMC";
   const userIds = users.map(u=>u.id);
-  const results = listIsolated(session);
+  const results = listIsolated("+displayName", session);
   const checks = {};
-  checks[`${requesterType} should be able to list 4 isolated users`] = () => {
+  checks[`${requesterType} should be able to list all isolated users`] = () => {
     let ok;
     const isAnArray = Array.isArray(results);
     const foundUsers = isAnArray ? filterById(results,userIds) : 0;
     ok = isAnArray && foundUsers.length===4;
     if(!ok) {
       console.error(`------------------- ${requesterType} ----------------------`);
-      console.error(`${requesterType} should be able to list 4 isolated users`);
+      console.error(`${requesterType} should be able to list all isolated users`);
       console.error('isAnArray', isAnArray);
       console.error('foundUsers', foundUsers.length);
       console.error(`------------------- End ----------------------`);
@@ -108,26 +108,23 @@ function tryListing(users, session) {
 
 function tryListingInDescOrder(session) {
   const requesterType = "ADMC";
-  const results = listIsolated(session, "-displayName");
+  const results = listIsolated("-displayName", session);
   const checks = {};
-  checks[`${requesterType} should be able to list isolated users in descending order`] = () => {
-    let ok;
-    const isAnArray = Array.isArray(results);
-    let isDescendingOrder = isAnArray ? true : false;
-    if(isDescendingOrder) {
+  checks[`${requesterType} should be able to list all isolated users in descending order`] = () => {
+    let ok = Array.isArray(results);
+    if(ok) {
       let previous;
       for(let result of results) {
         if(previous && result.displayName > previous) {
-          isDescendingOrder = false;
+          ok = false;
           break;
         }
         previous = result.displayName;
       }
     }
-    ok = isAnArray && isDescendingOrder;
     if(!ok) {
       console.error(`------------------- ${requesterType} ----------------------`);
-      console.error(`${requesterType} should be able to list 4 isolated users in descending order`);
+      console.error(`${requesterType} should be able to list all isolated users in descending order`);
       console.error('isAnArray', isAnArray);
       console.error('isDescendingOrder', isDescendingOrder);
       console.error(`------------------- End ----------------------`);
@@ -141,8 +138,7 @@ function tryInjectCode(session) {
   const requesterType = "ADMC";
   let requestAccepted = true;
   try {
-    listIsolated(session, 
-      "-(CASE WHEN MATCH (u:User{lastName:\"Isolated\"}) DETACH DELETE u RETURN true THEN \"displayName\" ELSE \"displayName\" END)");
+    listIsolated("-(CASE WHEN MATCH (u:User{lastName:\"Isolated\"}) DETACH DELETE u RETURN true THEN \"displayName\" ELSE \"displayName\" END)", session);
   } catch {
     requestAccepted = false;
   }
