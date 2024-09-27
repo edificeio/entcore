@@ -105,7 +105,7 @@ public interface FolderManager {
 	 * @param handler  the handler that emit the file object save or an error if any
 	 */
 	default void importFileZip(String zipPath, UserInfos user, Handler<AsyncResult<JsonObject>> handler){
-		importFileZip(new FolderImporterZip.FolderImporterZipContext(zipPath, user, "invalid"), handler);
+		importFileZip(new FolderImporterZip.FolderImporterZipContext(zipPath, null, user, "invalid"), handler);
 	}
 
 	/**
