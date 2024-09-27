@@ -145,7 +145,7 @@ public abstract class BaseServer extends Server {
 		}
 		vertx.eventBus().localConsumer("user.repository", repositoryHandler);
 		vertx.eventBus().localConsumer("search.searching", this.searchingHandler);
-		vertx.eventBus().localConsumer(moduleName+".i18n", this.i18nHandler);
+		vertx.eventBus().localConsumer(moduleName.toLowerCase()+".i18n", this.i18nHandler);
 
 		loadI18nAssetsFiles();
 
