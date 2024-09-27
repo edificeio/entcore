@@ -122,29 +122,43 @@ public class PostImport {
 			public void handle(Void v) {
 				if (config.getJsonArray("active-user-from-old-platform") != null &&
 						config.getJsonArray("active-user-from-old-platform").contains(source)) {
+					logger.info(e-> "Start activeUserFromOldPlatform", true);
 					User.searchUserFromOldPlatform(vertx);
+					logger.info(e-> "SUCCEED to activeUserFromOldPlatform", true);
 				}
 				if (config.getBoolean("notify-apps-after-import", true)) {
+					logger.info(e-> "Start notifyAppsAfterImport", true);
 					ApplicationUtils.afterImport(eb);
+					logger.info(e-> "SUCCEED to notifyAppsAfterImport", true);
 				}
 				if (config.getJsonObject("ws-call-after-import") != null) {
+					logger.info(e-> "Start notifyAppsAfterImport", true);
 					wsCall(config.getJsonObject("ws-call-after-import"));
+					logger.info(e-> "SUCCEED to wsCallAfterImport", true);
 				}
 				if (config.getJsonArray("publish-classes-update") != null &&
 						config.getJsonArray("publish-classes-update").contains(source)) {
+					logger.info(e-> "Start publishClassesUpdate", true);
 					publishClassesUpdate();
+					logger.info(e-> "SUCCEED to publishClassesUpdate", true);
 				}
 				if (Boolean.TRUE.equals(config.getBoolean("tenant-link-structure", true)) &&
 					tenantLinkStructureSources.contains(source)) {
+					logger.info(e-> "Start tenantLinkStructure", true);
 					Tenant.linkStructures(eb);
+					logger.info(e-> "SUCCEED to tenantLinkStructure", true);
 				}
 				if(Boolean.TRUE.equals(config.getBoolean("manual-group-link-users-auto", true)) &&
 						manualGroupLinkUsersAutoSources.contains(source)) {
+					logger.info(e-> "Start manualGroupLinkUsersAuto", true);
 					Group.runLinkRules();
+					logger.info(e-> "SUCCEED to manualGroupLinkUsersAuto", true);
 				}
 				if(Boolean.TRUE.equals(config.getBoolean("fix-incorrect-storages", true)) &&
 						fixIncorrectStoragesSources.contains(source)) {
+					logger.info(e-> "Start fixIncorrectStorages", true);
 					fixIncorrectStorages();
+					logger.info(e-> "SUCCEED to fixIncorrectStorages", true);
 				}
 			}
 		};
