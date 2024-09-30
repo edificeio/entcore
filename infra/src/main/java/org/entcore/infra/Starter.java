@@ -27,6 +27,7 @@ import fr.wseduc.webutils.request.filter.SecurityHandler;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.metrics.MetricsOptions;
 import io.vertx.core.shareddata.AsyncMap;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.email.EmailFactory;
@@ -37,6 +38,7 @@ import org.entcore.common.utils.MapFactory;
 import org.entcore.infra.controllers.*;
 import org.entcore.infra.cron.HardBounceTask;
 import org.entcore.infra.cron.MonitoringEventsChecker;
+import org.entcore.infra.metrics.MicrometerInfraMetricsRecorder;
 import org.entcore.infra.services.EventStoreService;
 import org.entcore.infra.services.impl.ClamAvService;
 import org.entcore.infra.services.impl.ExecCommandWorker;
@@ -224,6 +226,20 @@ public class Starter extends BaseServer {
 				checkMonitoringEvents.getLong("session-window-duration", 300000L)
 			);
 			vertx.setPeriodic(checkMonitoringEvents.getLong("period", 300000L), monitoringEventsChecker);
+		}
+		final boolean metricsActivated;
+		if(config.getJsonObject("metricsOptions") == null) {
+			final String metricsOptions = (String) vertx.sharedData().getLocalMap("server").get("metricsOptions");
+			if(metricsOptions == null){
+				metricsActivated = false;
+			}else{
+				metricsActivated = new MetricsOptions(new JsonObject(metricsOptions)).isEnabled();
+			}
+		} else {
+			metricsActivated = new MetricsOptions(config.getJsonObject("metricsOptions")).isEnabled();
+		}
+		if(metricsActivated) {
+			new MicrometerInfraMetricsRecorder(vertx);
 		}
 	}
 
