@@ -16,7 +16,7 @@ export function listIsolated(sortOn, session) {
     limitResult:50
   }).toString();
 
-  let res = http.get(`${rootUrl}/directory/list/isolated?${params}`, null, {headers});
+  let res = http.get(`${rootUrl}/directory/list/isolated?${params}`, {headers});
   assertOk(res, `Impossible to list isolated users with query params ?${params}`);
   return JSON.parse(res.body);
 }

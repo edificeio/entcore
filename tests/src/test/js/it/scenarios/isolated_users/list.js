@@ -111,25 +111,28 @@ function tryListingInDescOrder(session) {
   const results = listIsolated("-displayName", session);
   const checks = {};
   checks[`${requesterType} should be able to list all isolated users in descending order`] = () => {
-    let ok = Array.isArray(results);
-    if(ok) {
+    let cause = true;
+    if(Array.isArray(results)) {
       let previous;
       for(let result of results) {
-        if(previous && result.displayName > previous) {
-          ok = false;
-          break;
+        if( result.displayName != null ) {
+          if(previous && result.displayName > previous) {
+            cause = "order is not descending";
+            break;
+          }
+          previous = result.displayName;
         }
-        previous = result.displayName;
       }
+    } else {
+      cause = "list is not an array";
     }
-    if(!ok) {
+    if(typeof cause === "string") {
       console.error(`------------------- ${requesterType} ----------------------`);
       console.error(`${requesterType} should be able to list all isolated users in descending order`);
-      console.error('isAnArray', isAnArray);
-      console.error('isDescendingOrder', isDescendingOrder);
+      console.error(`=> ${cause}.`);
       console.error(`------------------- End ----------------------`);
     }
-    return ok;
+    return typeof cause === "boolean";
   };
   return check(results, checks);
 }
