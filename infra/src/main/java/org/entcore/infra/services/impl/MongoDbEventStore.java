@@ -41,12 +41,14 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 public class MongoDbEventStore implements EventStoreService {
 
+	private static final long QUERY_TIMEOUT = 90000L;
 	private MongoDb mongoDb = MongoDb.getInstance();
 	private PostgresqlEventStore pgEventStore;
 	private static final String COLLECTION = "events";
@@ -135,7 +137,8 @@ public class MongoDbEventStore implements EventStoreService {
 		if (skipSynced) {
 			query.put("synced", new JsonObject().put("$exists", false));
 		}
-		mongoDb.find(eventStoreType, query, validAsyncResultsHandler(handler));
+		mongoDb.find(eventStoreType, query,  (JsonObject) null, (JsonObject) null, -1, -1, Integer.MAX_VALUE,
+				new DeliveryOptions().setSendTimeout(QUERY_TIMEOUT), validAsyncResultsHandler(handler));
 	}
 
 	@Override
