@@ -115,7 +115,7 @@ public class Directory extends BaseServer {
 		SmsSenderFactory.getInstance().init(vertx, config);
 		final JsonObject userBookData = config.getJsonObject("user-book-data");
 		UserService userService = new DefaultUserService(emailSender, eb, userBookData);
-		UserBookService userBookService = new DefaultUserBookService(eb, storageAvatar, wsHelper, userBookData);
+		UserBookService userBookService = new DefaultUserBookService(vertx, eb, storageAvatar, wsHelper, userBookData);
 		TimelineHelper timeline = new TimelineHelper(vertx, eb, config);
 		ClassService classService = new DefaultClassService(eb);
 		SchoolService schoolService = new DefaultSchoolService(eb).setListUserMode(config.getString("listUserMode", "multi"));
