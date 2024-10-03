@@ -115,14 +115,20 @@ public class SplitTimelineEventStore implements TimelineEventStore {
             }
             if (combineResult) {
                 CompositeFuture.all(futures).setHandler(res -> {
-                    final JsonObject json = res.result().list().stream().map(JsonObject.class::cast)
+                    if (res.succeeded()) {
+                        final JsonObject json = res.result().list().stream().map(JsonObject.class::cast)
                             .reduce(new JsonObject().put("_ids", new JsonArray()), (a, b) -> {
                                 final String idb = b.getString("_id");
                                 final String status = b.getString("status");
                                 final JsonArray ids = a.getJsonArray("_ids", new JsonArray()).add(idb);
                                 return new JsonObject().put("_ids", ids).put("status", status);
                             });
-                    result.handle(json);
+                        result.handle(json);
+                    } else {
+                        log.error("Error when persist split timeline events", res.cause());
+                        result.handle(new JsonObject().put("status", "error")
+                        .put("message", "Error when persist split timeline events."));
+                    }
                 });
             } else {
                 for (Future<JsonObject> future : futures) {
