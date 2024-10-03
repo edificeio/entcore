@@ -852,7 +852,6 @@ public class AuthController extends BaseController {
 
 	/**
 	 * Try to log a user in, checking his activation code.
-	 * On success, the `request` will be responded with an HTML page.
 	 * @param login the user to log in. Can be a user alias.
 	 * @param activationCode to be checked
 	 * @return a future of user's details : login, displayName, email, mobile.
@@ -866,7 +865,6 @@ public class AuthController extends BaseController {
 
 	/**
 	 * Try to log a user in, checking his reset code.
-	 * On success, the `request` will be responded with an HTML page.
 	 * @param login the user to log in. Can be a user alias.
 	 * @param resetCode to be checked
 	 * @return a future of user's details : login, displayName, email, mobile.
