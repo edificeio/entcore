@@ -270,72 +270,64 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 	}
 	
 	@Override
-	public void matchActivationCode(final String login, String potentialActivationCode,
-			final Handler<Boolean> handler) {
-		matchActivationCode("login", login, potentialActivationCode, handler);
+	public Future<JsonObject> matchActivationCode(final String login, String potentialActivationCode) {
+		return matchActivationCode("login", login, potentialActivationCode);
 	}
 
 	@Override
-	public void matchActivationCodeByLoginAlias(final String login, String potentialActivationCode,
-			final Handler<Boolean> handler) {
-		matchActivationCode("loginAlias", login, potentialActivationCode, handler);
+	public Future<JsonObject> matchActivationCodeByLoginAlias(final String login, String potentialActivationCode) {
+		return matchActivationCode("loginAlias", login, potentialActivationCode);
 	}
 
-	private void matchActivationCode(final String loginFieldName, final String login, String potentialActivationCode,
-		 final Handler<Boolean> handler) {
+	private Future<JsonObject> matchActivationCode(final String loginFieldName, final String login, String potentialActivationCode) {
+		Promise<JsonObject> promise = Promise.promise();
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n." + loginFieldName + "={login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
 				"AND (NOT EXISTS(n.blocked) OR n.blocked = false) " +
-				"RETURN true as exists";
+				"RETURN true as exists, n.displayName as displayName, n.email as email, n.mobile as mobile";
 
 		JsonObject params = new JsonObject()
 			.put("login", login)
 			.put("activationCode", potentialActivationCode);
-		neo.execute(query, params, Neo4jResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
-			@Override
-			public void handle(Either<String, JsonObject> event) {
-				if(event.isLeft() || !event.right().getValue().getBoolean("exists", false))
-					handler.handle(false);
-				else
-					handler.handle(true);
-			}
+		neo.execute(query, params, Neo4jResult.validUniqueResultHandler( event -> {
+			if(event.isLeft() || !event.right().getValue().getBoolean("exists", false))
+				promise.fail("not.found");
+			else
+				promise.complete(event.right().getValue());
 		}));
+		return promise.future();
 	}
 
 	@Override
-	public void matchResetCode(final String login, String potentialResetCode,
-			final Handler<Boolean> handler) {
-		matchResetCode("login", login, potentialResetCode, handler);
+	public Future<JsonObject> matchResetCode(final String login, String potentialResetCode) {
+		return matchResetCode("login", login, potentialResetCode);
 	}
 
 	@Override
-	public void matchResetCodeByLoginAlias(final String login, String potentialResetCode,
-		   final Handler<Boolean> handler) {
-		matchResetCode("loginAlias", login, potentialResetCode, handler);
+	public Future<JsonObject> matchResetCodeByLoginAlias(final String login, String potentialResetCode) {
+		return matchResetCode("loginAlias", login, potentialResetCode);
 	}
 
-	private void matchResetCode(final String loginFieldName, final String login, String potentialResetCode,
-		final Handler<Boolean> handler) {
+	private Future<JsonObject> matchResetCode(final String loginFieldName, final String login, String potentialResetCode) {
+		Promise<JsonObject> promise = Promise.promise();
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n." + loginFieldName + "={login} AND has(n.resetDate) " +
 				"AND n.resetDate > {nowMinusDelay} AND n.resetCode = {resetCode} " +
-				"RETURN true as exists";
+				"RETURN true as exists, n.displayName as displayName, n.email as email, n.mobile as mobile";
 
 		JsonObject params = new JsonObject()
 			.put("login", login)
 			.put("resetCode", potentialResetCode)
 			.put("nowMinusDelay", (System.currentTimeMillis() - resetCodeExpireDelay));
-		neo.execute(query, params, Neo4jResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
-			@Override
-			public void handle(Either<String, JsonObject> event) {
-				if(event.isLeft() || !event.right().getValue().getBoolean("exists", false))
-					handler.handle(false);
-				else
-					handler.handle(true);
-			}
+		neo.execute(query, params, Neo4jResult.validUniqueResultHandler( event -> {
+			if(event.isLeft() || !event.right().getValue().getBoolean("exists", false))
+				promise.fail("not.found");
+			else
+				promise.complete(event.right().getValue());
 		}));
+		return promise.future();
 	}
 
 	@Override

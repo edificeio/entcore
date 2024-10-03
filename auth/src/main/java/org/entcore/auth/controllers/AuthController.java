@@ -34,6 +34,7 @@ import fr.wseduc.webutils.logging.TracerFactory;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.RequestUtils;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
@@ -354,31 +355,6 @@ public class AuthController extends BaseController {
 		}
 		return location;
 	}
-
-	/* FIXME FAKE OAUTH for dev purposes only
-	@Get("/oauth2/fake")
-	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
-	public void generateOAuthTokenFromSession(final HttpServerRequest request) {
-		UserUtils.getUserInfos(eb, request, user -> {
-			final String clientId = request.getParam("clientId");
-			if( user != null && clientId != null && !clientId.trim().isEmpty() ) {
-				final DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(request));
-				data.createOrUpdateAuthInfo(clientId, user.getUserId(), "auth timeline", authInfo -> {
-					if( authInfo==null ) {
-						log.info("NULL AUTH INFO");
-					} else {
-						data.createOrUpdateAccessToken(authInfo, res -> {
-							log.debug("fake token = "+res.getToken());
-							renderJson( request, new JsonObject().put("status","ok").put("result", res.getToken()) );
-						});
-					}
-				});
-			} else {
-				unauthorized(request);
-			}
-		});
-	}
-	*/
 
 	/** 
 	 * Endpoint to convert a valid OAuth2 token in another platform-recognized token representing a user session.
@@ -780,106 +756,47 @@ public class AuthController extends BaseController {
 			@Override
 			public void handle(Void v) {
 				String c = request.formAttributes().get("callBack");
-				final StringBuilder callBack = new StringBuilder();
+				final StringBuilder callBackBuilder = new StringBuilder();
 				if (c != null && !c.trim().isEmpty()) {
 					try {
 						if (request.formAttributes().get("details") != null && !request.formAttributes().get("details").isEmpty()) {
 							c += "#" + request.formAttributes().get("details");
 						}
-						callBack.append(URLDecoder.decode(c, "UTF-8"));
+						callBackBuilder.append(URLDecoder.decode(c, "UTF-8"));
 					} catch (UnsupportedEncodingException ex) {
 						log.error(ex.getMessage(), ex);
-						callBack.append(config.getJsonObject("authenticationServer").getString("loginCallback"));
+						callBackBuilder.append(config.getJsonObject("authenticationServer").getString("loginCallback"));
 					}
 				} else {
-					checkAndAppendCookieCallback(callBack, request);
+					checkAndAppendCookieCallback(callBackBuilder, request);
 				}
-				DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(request));
 				final String login = request.formAttributes().get("email");
 				final String password = request.formAttributes().get("password");
-				data.getUserId(login, password, new Handler<Try<AccessDenied, String>>() {
+				final String callBack = callBackBuilder.toString();
+				logInWithPasswordThenRedirect(login, password, request, callBack)
+				.onFailure(e -> {
+					// try activation code
+					logInWithActivationCode(login, password)
+					.onSuccess(infos -> handleMatchActivationCode(login, password, infos, request))
+					// try reset code
+					.recover(throwable -> logInWithResetCode(login, password)
+						.onSuccess(infos -> handleMatchResetCode(login, password, request))
+					)
+					.onFailure(throwable -> {
+						final OAuthError oauthError = OAuthError.class.isInstance(e)
+						? OAuthError.class.cast(e)
+						: null;
+						final String description = oauthError!=null ? oauthError.getDescription() : e.getMessage();
+						final String message = (oauthError!=null && !StringUtils.isEmpty(description) && oauthError.getCode() == 401)
+						? getIp(request) + " - Erreur de connexion (" +  description + ") pour l'utilisateur "
+							+ login + " - Referer " + request.headers().get("Referer")
+						: getIp(request) + " - Erreur de connexion pour l'utilisateur "
+							+ login + " - Referer " + request.headers().get("Referer");
 
-					@Override
-					public void handle(final Try<AccessDenied, String> tryUserId) {
-						final String c = callBack.toString();
-						try {
-							final String userId = tryUserId.get();
-							if (userId != null && !userId.trim().isEmpty()) {
-								handleGetUserId(login, userId, request, c);
-							} else {
-								throw new AccessDenied(OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED);
-							}
-						} catch (AccessDenied e) {
-							// try activation with login
-							userAuthAccount.matchActivationCode(login, password, new io.vertx.core.Handler<Boolean>() {
-								@Override
-								public void handle(Boolean passIsActivationCode) {
-									if (passIsActivationCode) {
-										handleMatchActivationCode(login, password, request);
-									} else {
-										// try activation with loginAlias
-										userAuthAccount.matchActivationCodeByLoginAlias(login, password,
-												new io.vertx.core.Handler<Boolean>() {
-													@Override
-													public void handle(Boolean passIsActivationCode) {
-														if (passIsActivationCode) {
-															handleMatchActivationCode(login, password, request);
-														} else {
-															// try reset with login
-															userAuthAccount.matchResetCode(login, password,
-																	new io.vertx.core.Handler<Boolean>() {
-																		@Override
-																		public void handle(Boolean passIsResetCode) {
-																			if (passIsResetCode) {
-																				handleMatchResetCode(login, password,
-																						request);
-																			} else {
-																				// try reset with loginAlias
-																				userAuthAccount
-																						.matchResetCodeByLoginAlias(
-																								login, password,
-																								new io.vertx.core.Handler<Boolean>() {
-																									@Override
-																									public void handle(
-																											Boolean passIsResetCode) {
-																										if (passIsResetCode) {
-																											handleMatchResetCode(
-																													login,
-																													password,
-																													request);
-																										} else {
-
-																											if(!e.getDescription().isEmpty() && e.getCode() == 401) {
-																												trace.info(
-																														getIp(request) + " - Erreur de connexion (" +  e.getDescription() + ") pour l'utilisateur "
-																																+ login + " - Referer " + request.headers().get("Referer"));
-																											} else {
-																												trace.info(
-																														getIp(request) + " - Erreur de connexion pour l'utilisateur "
-																																+ login + " - Referer " + request.headers().get("Referer"));
-																											}
-
-																											loginResult(
-																													request,
-																													e.getDescription(),
-																													c);
-																										}
-																									}
-																								});
-																			}
-																		}
-																	});
-														}
-													}
-												});
-									}
-								}
-							});
-
-						}
-					}
+						trace.info(message);
+						loginResult(request, description, callBack);
+					});
 				});
-
 			}
 		});
 	}
@@ -901,6 +818,66 @@ public class AuthController extends BaseController {
 		callBack.append(config.getJsonObject("authenticationServer").getString("loginCallback"));
 	}
 
+	/**
+	 * Try to log a user in, checking his password.
+	 * On success, the `request` will be responded with an HTTP 302 Redirect Location:`callBack`
+	 * @param login the user to log in
+	 * @param password to be checked
+	 * @param request to respond to
+	 * @param callBack where to redirect on success
+	 * @return a future, useful for composing/recovering.
+	 */
+	private Future<String> logInWithPasswordThenRedirect(
+		final String login, final String password, final HttpServerRequest request, final String callBack
+		) {
+		Promise<String> promise = Promise.promise();
+		DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(request));
+		data.getUserId(login, password, tryUserId -> {
+			String userId;
+			try {
+				userId = tryUserId.get();
+				if (!StringUtils.isEmpty(userId)) {
+					// Log the user in and redirect him as needed
+					handleGetUserId(login, userId, request, callBack);
+					promise.complete(userId);
+				} else {
+					throw new AccessDenied(OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED);
+				}
+			} catch (AccessDenied e) {
+				promise.fail(e);
+			}
+		});
+		return promise.future();
+	}
+
+	/**
+	 * Try to log a user in, checking his activation code.
+	 * On success, the `request` will be responded with an HTML page.
+	 * @param login the user to log in. Can be a user alias.
+	 * @param activationCode to be checked
+	 * @return a future of user's details : login, displayName, email, mobile.
+	 */
+	private Future<JsonObject> logInWithActivationCode(final String login, final String activationCode) {
+		// try activation with login
+		return userAuthAccount.matchActivationCode(login, activationCode)
+		// try activation with loginAlias
+		.recover(throwable -> userAuthAccount.matchActivationCodeByLoginAlias(login, activationCode));
+	}
+
+	/**
+	 * Try to log a user in, checking his reset code.
+	 * On success, the `request` will be responded with an HTML page.
+	 * @param login the user to log in. Can be a user alias.
+	 * @param resetCode to be checked
+	 * @return a future of user's details : login, displayName, email, mobile.
+	 */
+	private Future<JsonObject> logInWithResetCode(final String login, final String resetCode) {
+		// try reset with login
+		return userAuthAccount.matchResetCode(login, resetCode)
+		// try reset with loginAlias
+		.recover(throwable -> userAuthAccount.matchResetCodeByLoginAlias(login, resetCode));
+	}
+	
 	private void handleGetUserId(String login, String userId, HttpServerRequest request, String callback) {
 		trace.info(getIp(request) + " - Connexion de l'utilisateur " + login + " - Referer " + request.headers().get("Referer"));
 		userAuthAccount.storeDomain(userId, Renders.getHost(request), Renders.getScheme(request),
@@ -915,7 +892,7 @@ public class AuthController extends BaseController {
 		createSession(userId, request, callback);
 	}
 
-	private void handleMatchActivationCode(String login, String password, HttpServerRequest request) {
+	private void handleMatchActivationCode(String login, String password, final JsonObject infos, HttpServerRequest request) {
 		trace.info(getIp(request) + " - Code d'activation entré pour l'utilisateur " + login + " - Referer " + request.headers().get("Referer"));
 		final JsonObject json = new JsonObject();
 		json.put("activationCode", password);
@@ -923,6 +900,9 @@ public class AuthController extends BaseController {
 		if (config.getBoolean("cgu", true)) {
 			json.put("cgu", true);
 		}
+		json.put("displayName", StringUtils.trimToBlank(infos.getString("displayName")));
+		json.put("email", StringUtils.trimToBlank(infos.getString("email")));
+		json.put("phone", StringUtils.trimToBlank(infos.getString("mobile")));
 		UserUtils.getUserInfos(eb, request, new io.vertx.core.Handler<UserInfos>() {
 			@Override
 			public void handle(UserInfos user) {
@@ -1187,16 +1167,10 @@ public class AuthController extends BaseController {
 			}
 			final String login = data.getString("login");
 			final String password = data.getString("password");
-			// try activation with login
-			userAuthAccount.matchActivationCode(login, password, match -> {
-				if (match) {
-					renderJson(request, new JsonObject().put("match", match));
-				} else {
-					// try activation with loginAlias
-					userAuthAccount.matchActivationCodeByLoginAlias(login, password, matchAlias -> {
-						renderJson(request, new JsonObject().put("match", matchAlias));
-					});
-				}
+			// try activation with login or loginAlias
+			logInWithActivationCode(login, password)
+			.onComplete(ar -> {
+				renderJson(request, new JsonObject().put("match", ar.succeeded()));
 			});
 		});
 	}
@@ -1215,14 +1189,9 @@ public class AuthController extends BaseController {
 			}
 			final String login = data.getString("login");
 			final String password = data.getString("password");
-			userAuthAccount.matchResetCode(login, password, matchReset -> {
-				if (matchReset) {
-					renderJson(request, new JsonObject().put("match", matchReset));
-				} else {
-					userAuthAccount.matchResetCodeByLoginAlias(login, password, matchResetAlias -> {
-						renderJson(request, new JsonObject().put("match", matchResetAlias));
-					});
-				}
+			logInWithResetCode(login, password)
+			.onComplete(ar -> {
+				renderJson(request, new JsonObject().put("match", ar.succeeded()));
 			});
 		});
 	}
