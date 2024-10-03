@@ -139,7 +139,7 @@ public class PersEducNat extends AbstractUser {
 				}
 				if (externalId != null && structuresByFunctions != null && structuresByFunctions.size() > 0)
 				{
-
+					structuresByFunctions = getMappingStructures(structuresByFunctions);
 					List<ExternalId<Structure>> structuresIds = new ArrayList<ExternalId<Structure>>(structuresByFunctions.size());
 					for(int i = structuresByFunctions.size(); i-- > 0;)
 						structuresIds.add(new ExternalId<Structure>(structuresByFunctions.getString(i)));
