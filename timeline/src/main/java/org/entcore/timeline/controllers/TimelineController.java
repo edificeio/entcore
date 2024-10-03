@@ -130,9 +130,6 @@ public class TimelineController extends BaseController {
 			final Integer cacheLen = config.getInteger("cache-size", PAGELIMIT);
 			store = new CachedTimelineEventStore(store, cacheService, cacheLen, configService, registeredNotifications);
 		}
-		if(config.getBoolean("isolate-mobile", false)){
-			store = new MobileTimelineEventStore(store);
-		}
 
 		// TEMPORARY to handle both timeline and timeline2 view
 		this.defaultSkin = config.getString("skin", "raw");
