@@ -34,6 +34,7 @@ import io.vertx.core.eventbus.DeliveryOptions;
 
 import io.vertx.core.http.HttpServerRequest;
 import org.entcore.common.editor.IContentTransformerEventRecorder;
+import org.entcore.common.conversation.LegacySearchVisibleRequest;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.sql.SqlStatementsBuilder;
@@ -96,6 +97,17 @@ public class SqlConversationService implements ConversationService{
 		optimizedThreadList = vertx.getOrCreateContext().config().getBoolean("optimized-thread-list", false);
 		this.contentTransformerClient = contentTransformerClient;
 		this.contentTransformerEventRecorder = contentTransformerEventRecorder;
+		eb.consumer("conversation.legacy.search.visible", message -> {
+			final JsonObject payload = (JsonObject) message.body();
+			final LegacySearchVisibleRequest request = payload.mapTo(LegacySearchVisibleRequest.class);
+			this.doFindVisibleRecipients(request.getParentMessageId(), request.getUserId(),
+				request.getLanguage(), request.getSearch())
+				.onSuccess(message::reply)
+				.onFailure(th -> {
+					log.warn("An error occurred while finding visibles", th);
+					message.fail(500, th.getMessage());
+				});
+		});
 	}
 
 	public SqlConversationService setSendTimeout(int sendTimeout) {
@@ -919,12 +931,22 @@ public class SqlConversationService implements ConversationService{
 		sql.prepared(query, values, SqlResult.validUniqueResultHandler(result));
 	}
 
+
+
 	@Override
 	public void findVisibleRecipients(final String parentMessageId, final UserInfos user,
 			final String acceptLanguage, final String search, final Handler<Either<String, JsonObject>> result) {
-		if (validationParamsError(user, result))
+		if (validationParamsError(user, result)) {
 			return;
+		}
+		doFindVisibleRecipients(parentMessageId, user.getUserId(), acceptLanguage, search)
+			.onSuccess(data -> result.handle(new Either.Right<>(data)))
+			.onFailure(th -> result.handle(new Either.Left<>(th.getMessage())));
+	}
 
+	private Future<JsonObject> doFindVisibleRecipients(final String parentMessageId, final String userId,
+																						  final String acceptLanguage, final String search) {
+		final Promise<JsonObject> promise = Promise.promise();
 		final JsonObject visible = new JsonObject();
 
 		final JsonObject params = new JsonObject();
@@ -944,7 +966,7 @@ public class SqlConversationService implements ConversationService{
 				SqlResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
 				public void handle(Either<String, JsonObject> event) {
 					if(event.isLeft()){
-						result.handle(event);
+						promise.fail(event.left().getValue());
 						return;
 					}
 
@@ -960,7 +982,7 @@ public class SqlConversationService implements ConversationService{
 							"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
 							"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
 							"visibles.profiles[0] as profile, visibles.structureName as structureName, visibles.filter as groupProfile ";
-					callFindVisibles(user, acceptLanguage, result, visible, params, preFilter, customReturn);
+					callFindVisibles(userId, acceptLanguage, visible, params, preFilter, customReturn).onComplete(promise);
 				}
 			}));
 		} else {
@@ -968,44 +990,45 @@ public class SqlConversationService implements ConversationService{
 					"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
 					"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
 					"visibles.profiles[0] as profile, visibles.structureName as structureName, visibles.filter as groupProfile";
-			callFindVisibles(user, acceptLanguage, result, visible, params, preFilter, customReturn);
+			callFindVisibles(userId, acceptLanguage, visible, params, preFilter, customReturn).onComplete(promise);
 		}
+		return promise.future();
 	}
 
-	private void callFindVisibles(UserInfos user, final String acceptLanguage, final Handler<Either<String, JsonObject>> result,
+	private Future<JsonObject> callFindVisibles(final String userId, final String acceptLanguage,
 			final JsonObject visible, JsonObject params, String preFilter, String customReturn) {
-		findVisibles(eb, user.getUserId(), customReturn, params, true, true, false, acceptLanguage, preFilter, new Handler<JsonArray>() {
-			@Override
-			public void handle(JsonArray visibles) {
-				JsonArray users = new fr.wseduc.webutils.collections.JsonArray();
-				JsonArray groups = new fr.wseduc.webutils.collections.JsonArray();
-				visible.put("groups", groups).put("users", users);
+		final Promise<JsonObject> promise = Promise.promise();
+		findVisibles(eb, userId, customReturn, params, true, true, false, acceptLanguage, preFilter, visibles -> {
+      JsonArray users = new fr.wseduc.webutils.collections.JsonArray();
+      JsonArray groups = new fr.wseduc.webutils.collections.JsonArray();
+      visible.put("groups", groups).put("users", users);
 
-				logger.info("callFindVisibles Count = " + visibles.size());
+      logger.info("callFindVisibles Count = " + visibles.size());
 
-				for (Object o: visibles) {
-					if (!(o instanceof JsonObject)) continue;
-					JsonObject j = (JsonObject) o;
-					// NOTE: the management rule below is "if a visible JsonObject has a non-null *name* field, then it is a Group". 
-					// TODO It should be defined more clearly. See #39835
-					if (j.getString("name") != null) {
-						if( j.getString("groupProfile") == null ) {
-							// This is a Manual group, without a clearly defined "profile" (neither Student nor Teacher nor...) => Set it as "Manual"
-							j.put("groupProfile", "Manual");
-						}
-						j.remove("displayName");
-						UserUtils.groupDisplayName(j, acceptLanguage);
-						j.put("profile", j.remove("groupProfile"));	// JCBE: set the *profile* field for this Group.
-						groups.add(j);
-					} else {
-						j.remove("name");
-						j.remove("groupProfile");	// JCBE: remove this unused and empty data for a User. 
-						users.add(j);
-					}
-				}
-				result.handle(new Either.Right<String,JsonObject>(visible));
-			}
-		});
+      for (Object o: visibles) {
+        if (!(o instanceof JsonObject)) continue;
+        JsonObject j = (JsonObject) o;
+        // NOTE: the management rule below is "if a visible JsonObject has a non-null *name* field, then it is a Group".
+        // TODO It should be defined more clearly. See #39835
+
+        if (j.getString("name") != null) {
+          if( j.getString("groupProfile") == null ) {
+            // This is a Manual group, without a clearly defined "profile" (neither Student nor Teacher nor...) => Set it as "Manual"
+            j.put("groupProfile", "Manual");
+          }
+          j.remove("displayName");
+          UserUtils.groupDisplayName(j, acceptLanguage);
+          j.put("profile", j.remove("groupProfile"));	// JCBE: set the *profile* field for this Group.
+          groups.add(j);
+        } else {
+          j.remove("name");
+          j.remove("groupProfile");	// JCBE: remove this unused and empty data for a User.
+          users.add(j);
+        }
+      }
+      promise.complete(visible);
+    });
+		return promise.future();
 	}
 
 	@Override

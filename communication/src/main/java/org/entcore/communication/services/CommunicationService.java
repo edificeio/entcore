@@ -21,6 +21,7 @@ package org.entcore.communication.services;
 
 import fr.wseduc.webutils.Either;
 
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -168,7 +169,15 @@ public interface CommunicationService {
 	void addDiscoverVisibleGroupUsers(UserInfos user, String groupId, JsonObject body, HttpServerRequest request, Handler<Either<String, JsonObject>> handler);
 
 	void getDiscoverVisibleAcceptedProfile(Handler<Either<String, JsonArray>> handler);
-	
-	void searchVisibleContacts(UserInfos user, String search, String language, Handler<Either<String, JsonArray>> results);
+
+
+	/**
+	 * Search visible users.
+	 * @param user Requester
+	 * @param search Keyword to filter the search results
+	 * @param language User's language
+	 */
+	Future<JsonArray> searchVisibles(UserInfos user, String search, String language);
+
 }
 

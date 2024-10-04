@@ -21,16 +21,16 @@ package org.entcore.communication.services.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.collections.Joiner;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
+import io.vertx.codegen.annotations.Nullable;
+import io.vertx.core.*;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.conversation.LegacySearchVisibleRequest;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.common.notification.TimelineHelper;
@@ -51,6 +51,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import static io.vertx.core.json.JsonObject.mapFrom;
 import static org.entcore.common.neo4j.Neo4jResult.fullNodeMergeHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validEmptyHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
@@ -66,10 +67,14 @@ public class DefaultCommunicationService implements CommunicationService {
 
 	private final TimelineHelper notifyTimeline;
 	final JsonArray discoverVisibleExpectedProfile = new JsonArray();
+	private final String visiblesSearchType;
+	private final EventBus eventBus;
 
-	public DefaultCommunicationService(TimelineHelper notifyTimeline, JsonArray discoverVisibleExpectedProfile) {
+	public DefaultCommunicationService(final Vertx vertx, final TimelineHelper notifyTimeline, final JsonObject config) {
 		this.notifyTimeline = notifyTimeline;
-		this.discoverVisibleExpectedProfile.addAll(discoverVisibleExpectedProfile);
+		this.discoverVisibleExpectedProfile.addAll(config.getJsonArray("discoverVisibleExpectedProfile", new JsonArray()));
+		this.visiblesSearchType = config.getString("visibles-search-type", "light");
+		this.eventBus = vertx.eventBus();
 	}
 
 	@Override
@@ -1503,7 +1508,61 @@ public class DefaultCommunicationService implements CommunicationService {
 	}
 
 	@Override
-	public void searchVisibleContacts(UserInfos user, String search, String language, Handler<Either<String, JsonArray>> handler) {
+	public Future<JsonArray> searchVisibles(UserInfos user, String search, String language) {
+		final Future<JsonArray> visibles;
+		switch (this.visiblesSearchType) {
+			case "legacy":
+				visibles = legacySearchVisible(user, search, language);
+				break;
+			case "complete":
+				visibles = searchVisibleContacts(user, search, language);
+				break;
+			case "optimized":
+				visibles = searchVisibleContactsOptimized(user, search, language);
+				break;
+			default:
+				visibles = searchVisibleContactsLight(user, search, language);
+		}
+		return visibles;
+	}
+
+	private Future<JsonArray> legacySearchVisible(final UserInfos user, final String search, final String language) {
+		final Promise<JsonArray> promise = Promise.promise();
+		final LegacySearchVisibleRequest payload = new LegacySearchVisibleRequest(
+			user.getUserId(),
+			search, language,
+			null
+		);
+		eventBus.request("conversation.legacy.search.visible", mapFrom(payload), e -> {
+			if(e.succeeded()) {
+				final JsonObject legacyResult = (JsonObject) e.result().body();
+				final JsonArray adaptedLegacyresult = adaptLegacyResultFormat(legacyResult);
+				promise.complete(adaptedLegacyresult);
+			} else {
+				promise.fail(e.cause());
+			}
+		});
+		return promise.future();
+	}
+
+	private JsonArray adaptLegacyResultFormat(
+		final String userProfile,
+		final String language,
+		final JsonObject legacyResult) {
+		final JsonArray visibles = new JsonArray();
+		// TODO jber check output result
+		visibles.addAll(legacyResult.getJsonArray("users", new JsonArray()));
+		visibles.addAll(legacyResult.getJsonArray("groups", new JsonArray()));
+		return UserUtils.mapObjectToContact(
+			userProfile,
+			new JsonArray(),
+			visibles,
+			language
+		);
+	}
+
+	public Future<JsonArray> searchVisibleContacts(UserInfos user, String search, String language) {
+		final Promise<JsonArray> promise = Promise.promise();
 		String match = "MATCH (visibles) " +
 
 				"OPTIONAL MATCH visibles-[:RELATED]->(parent: User) " +
@@ -1577,7 +1636,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				"toLower(sortDisplayName), " +
 				"sorted_children_names, " +
 				"sorted_functions, " +
-				"sorted_disciplines ";
+			"    sorted_disciplines ";
 
 		Promise<Either<String, JsonArray>> getVisiblePromise = Promise.promise();
 		visibleUsers(
@@ -1627,8 +1686,124 @@ public class DefaultCommunicationService implements CommunicationService {
 				.onComplete(ar -> {
 
 					if (ar.failed()) {
-						handler.handle(new Either.Left<>(ar.cause().getMessage()));
+						promise.fail(ar.cause());
+					} else {
+
+						final Either<String, JsonArray> resVisible = getVisiblePromise.future().result();
+						final Either<String, JsonArray> resShareBookmark = getShareBookmarksPromise.future().result();
+
+						if (resVisible.isLeft()) {
+							log.error(resVisible.left().getValue());
+						}
+
+						if (resShareBookmark.isLeft()) {
+							log.error(resShareBookmark.left().getValue());
+						}
+
+						JsonArray visible = resVisible.isLeft() ? new JsonArray() : resVisible.right().getValue();
+						JsonArray shareBookmarks = resShareBookmark.isLeft() ? new JsonArray() : resShareBookmark.right().getValue();
+
+						promise.complete(
+							UserUtils.mapObjectToContact(
+								user.getType(),
+								shareBookmarks,
+								visible,
+								language
+							)
+						);
 					}
+				});
+		return promise.future();
+	}
+
+	public Future<JsonArray> searchVisibleContactsLight(UserInfos user, String search, String language) {
+		final Promise<JsonArray> promise = Promise.promise();
+		String match = "MATCH (visibles) " +
+
+			"OPTIONAL MATCH visibles-[:RELATED]->(parent: User) " +
+			"WITH DISTINCT visibles, collect({id: parent.id, displayName: parent.displayName}) as relatives " +
+
+			"OPTIONAL MATCH visibles<-[:RELATED]-(child: User) " +
+			"WITH visibles, relatives, child " +
+			"ORDER BY child.displayName " +
+			"WITH visibles, relatives, collect({id: child.id, displayName: child.displayName}) AS children, collect(distinct child.displayName) AS sorted_children " +
+			"WITH visibles, relatives, children, reduce(s = '', name IN sorted_children | s + name) AS sorted_children_names ";
+
+		String preFilter = "";
+		JsonObject params = new JsonObject();
+
+		if (!StringUtils.isEmpty(search)) {
+			preFilter = "AND m.displayNameSearchField CONTAINS {search} ";
+			String sanitizedSearch = StringValidation.sanitize(search);
+			params.put("search", sanitizedSearch);
+		}
+
+		final String customReturn = match +
+			"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
+			"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
+			"HEAD(visibles.profiles) as profile, visibles.nbUsers as nbUsers, " +
+			"labels(visibles) as groupType, visibles.filter as groupProfile, visibles.subType as subType, " +
+			"filter(x IN coalesce(children, []) WHERE x.id IS NOT NULL) as children, " +
+			"filter(x IN coalesce(relatives, []) WHERE x.id IS NOT NULL) as relatives, " +
+			"sorted_children_names, " +
+			"CASE " +
+			"WHEN visibles.displayName IS NOT NULL THEN visibles.displayName " +
+			"WHEN visibles.name IS NOT NULL THEN visibles.name " +
+			"ELSE '' " +
+			"END as sortDisplayName " +
+			"ORDER BY " +
+			"toLower(sortDisplayName) ";
+
+		Promise<Either<String, JsonArray>> getVisiblePromise = Promise.promise();
+		visibleUsers(
+			user.getUserId(),
+			null,
+			null,
+			true,
+			true,
+			false,
+			preFilter,
+			customReturn,
+			params,
+			user.getType(),
+			true,
+			getVisiblePromise::complete);
+
+		// Share bookmarks
+		final Promise<Either<String, JsonArray>> getShareBookmarksPromise = Promise.promise();
+
+					/*
+					final String queryShareBookmarks = "MATCH (:User {id:{userId}})-[:HAS_SB]->(bm:ShareBookmark) return bm";
+					Neo4j.getInstance()
+							.execute(
+									queryShareBookmarks,
+									new JsonObject().put("userId", userInfos.getUserId()),
+									fullNodeMergeHandler("bm", getShareBookmarksPromise::complete)
+							);
+					 */
+
+		String sbFilter = "";
+		JsonObject sbParams = new JsonObject().put("userId", user.getUserId());
+		if (!StringUtils.isEmpty(search)) {
+			sbFilter = " AND lower(sbValue[0]) contains {search} ";
+			sbParams.put("search", StringValidation.sanitize(search));
+		}
+		String queryShareBookmarks = "MATCH (:User {id: {userId}})-[:HAS_SB]->(sb:ShareBookmark) " +
+			"WITH sb, keys(sb) AS ids " +
+			"UNWIND ids AS id " +
+			"WITH sb, id, sb[id] AS sbValue " +
+			"WHERE size(sbValue) >= 2 " + sbFilter +
+			"WITH sb, id, sb[id] AS sbValue ORDER BY sbValue[0] " +
+			"RETURN id as id, sbValue[0] as displayName ";
+
+		Neo4j.getInstance().execute(queryShareBookmarks, sbParams, validResultHandler(getShareBookmarksPromise::complete));
+
+		CompositeFuture.join(getVisiblePromise.future(), getShareBookmarksPromise.future())
+			.onComplete(ar -> {
+
+				if (ar.failed()) {
+					promise.fail(ar.cause().getMessage());
+				} else {
 
 					final Either<String, JsonArray> resVisible = getVisiblePromise.future().result();
 					final Either<String, JsonArray> resShareBookmark = getShareBookmarksPromise.future().result();
@@ -1644,16 +1819,151 @@ public class DefaultCommunicationService implements CommunicationService {
 					JsonArray visible = resVisible.isLeft() ? new JsonArray() : resVisible.right().getValue();
 					JsonArray shareBookmarks = resShareBookmark.isLeft() ? new JsonArray() : resShareBookmark.right().getValue();
 
-					handler.handle(new Either.Right<>(
-							UserUtils.mapObjectToContact(
-									user.getType(),
-									shareBookmarks,
-									visible,
-									language
-							)
-					));
-				});
+					promise.complete(
+						UserUtils.mapObjectToContact(
+							user.getType(),
+							shareBookmarks,
+							visible,
+							language
+						)
+					);
+				}
+			});
+		return promise.future();
+	}
 
+
+	public Future<JsonArray> searchVisibleContactsOptimized(UserInfos user, String search, String language) {
+		final Promise<JsonArray> promise = Promise.promise();
+		String match = "MATCH (visibles) " +
+			"WITH visibles, HEAD(visibles.profiles) AS primaryProfile " +
+			"OPTIONAL MATCH (visibles)-[:RELATED]-(related:User) " +
+			"WITH visibles, primaryProfile, " +
+			"     collect(CASE \n" +
+			"                WHEN primaryProfile == 'Student' THEN {id: related.id, displayName: related.displayName, role: 'parent'} \n" +
+			"                WHEN primaryProfile != 'Student' THEN {id: related.id, displayName: related.displayName, role: 'child'}\n" +
+			"              END) AS relatedUsers\n" +
+			"WITH visibles, \n" +
+			"     [x IN relatedUsers WHERE x.role = 'parent'] AS relatives, \n" +
+			"     [x IN relatedUsers WHERE x.role = 'child'] AS children " +
+			"OPTIONAL MATCH (visibles)-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class) " +
+			"WITH visibles, relatives, children \n" +
+			"OPTIONAL MATCH (visibles)-[:IN]->(fdg:Group) WHERE fdg:FuncGroup OR fdg:DisciplineGroup " +
+			"WITH visibles, " +
+			"     relatives, " +
+			"     children, " +
+			"     collect(DISTINCT {id: c.id, name: c.name}) as classrooms, " +
+			"     collect(CASE " +
+			"               WHEN fdg:FuncGroup AND fdg.id IS NOT NULL THEN {id: fdg.id, name: fdg.filter, type: 'function'} " +
+			"               WHEN fdg:DisciplineGroup AND fdg.id IS NOT NULL THEN {id: fdg.id, name: fdg.filter, typ: 'discipline'}" +
+			"             END) AS groups " +
+			"WITH visibles, " +
+			"     relatives," +
+			"     children," +
+			"     classrooms, " +
+			"     [g IN groups WHERE g.type = 'function'] AS functions, " +
+			"     [g IN groups WHERE g.type = 'discipline'] AS disciplines ";
+
+		String preFilter = "";
+		JsonObject params = new JsonObject();
+
+		if (!StringUtils.isEmpty(search)) {
+			preFilter = "AND m.displayNameSearchField CONTAINS {search} ";
+			String sanitizedSearch = StringValidation.sanitize(search);
+			params.put("search", sanitizedSearch);
+		}
+
+		final String customReturn = match +
+			" WITH visibles, \n" +
+			"     labels(visibles) AS visibleLabels, \n" +
+			"     HEAD(visibles.profiles) AS primaryProfile, \n" +
+			"     filter(x IN coalesce(children, []) WHERE x.id IS NOT NULL) as validChildren, \n" +
+			"     filter(x IN coalesce(relatives, []) WHERE x.id IS NOT NULL) as validRelatives, \n" +
+			"     filter(x IN coalesce(classrooms, []) WHERE x.id IS NOT NULL) as validClassrooms, \n" +
+			"     filter(x IN coalesce(functions, []) WHERE x.id IS NOT NULL) as validFunctions, \n" +
+			"     filter(x IN coalesce(disciplines, []) WHERE x.id IS NOT NULL) as validDisciplines\n" +
+			"RETURN DISTINCT \n" +
+			"    visibles.id as id, \n" +
+			"    visibles.name as name, \n" +
+			"    visibles.displayName as displayName, \n" +
+			"    visibles.groupDisplayName as groupDisplayName, \n" +
+			"    primaryProfile as profile, \n" +
+			"    visibles.nbUsers as nbUsers, \n" +
+			"    visibleLabels as groupType, \n" +
+			"    visibles.filter as groupProfile, \n" +
+			"    visibles.subType as subType, \n" +
+			"    validChildren as children, \n" +
+			"    validRelatives as relatives, \n" +
+			"    validClassrooms as classrooms, \n" +
+			"    validFunctions as functions, \n" +
+			"    validDisciplines as disciplines \n";
+
+		Promise<Either<String, JsonArray>> getVisiblePromise = Promise.promise();
+		visibleUsers(
+			user.getUserId(),
+			null,
+			null,
+			true,
+			true,
+			false,
+			preFilter,
+			customReturn,
+			params,
+			user.getType(),
+			true,
+			getVisiblePromise::complete);
+
+		// Share bookmarks
+		final Promise<Either<String, JsonArray>> getShareBookmarksPromise = Promise.promise();
+
+		String sbFilter = "";
+		JsonObject sbParams = new JsonObject().put("userId", user.getUserId());
+		if (!StringUtils.isEmpty(search)) {
+			sbFilter = " AND lower(sbValue[0]) contains {search} ";
+			sbParams.put("search", StringValidation.sanitize(search));
+		}
+		String queryShareBookmarks = "MATCH (:User {id: {userId}})-[:HAS_SB]->(sb:ShareBookmark) " +
+			"WITH sb, keys(sb) AS ids " +
+			"UNWIND ids AS id " +
+			"WITH sb, id, sb[id] AS sbValue " +
+			"WHERE size(sbValue) >= 2 " + sbFilter +
+			"WITH sb, id, sb[id] AS sbValue ORDER BY sbValue[0] " +
+			"RETURN id as id, sbValue[0] as displayName ";
+
+		Neo4j.getInstance().execute(queryShareBookmarks, sbParams, validResultHandler(getShareBookmarksPromise::complete));
+
+		CompositeFuture.join(getVisiblePromise.future(), getShareBookmarksPromise.future())
+			.onComplete(ar -> {
+
+				if (ar.failed()) {
+					promise.fail(ar.cause());
+				} else {
+
+					final Either<String, JsonArray> resVisible = getVisiblePromise.future().result();
+					final Either<String, JsonArray> resShareBookmark = getShareBookmarksPromise.future().result();
+
+					if (resVisible.isLeft()) {
+						log.error(resVisible.left().getValue());
+					}
+
+					if (resShareBookmark.isLeft()) {
+						log.error(resShareBookmark.left().getValue());
+					}
+
+					JsonArray visible = resVisible.isLeft() ? new JsonArray() : resVisible.right().getValue();
+					JsonArray shareBookmarks = resShareBookmark.isLeft() ? new JsonArray() : resShareBookmark.right().getValue();
+
+					promise.complete(
+						UserUtils.mapObjectToContact(
+							user.getType(),
+							shareBookmarks,
+							visible,
+							language
+						)
+					);
+				}
+			});
+		return promise.future();
 	}
 
 
