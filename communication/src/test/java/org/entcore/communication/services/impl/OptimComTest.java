@@ -77,7 +77,7 @@ public class OptimComTest {
 	//@Before
 	public void setUp(TestContext context) {
 		vertx = test.vertx();
-		defaultComService = new DefaultCommunicationService(new TimelineHelper(vertx, vertx.eventBus(), new JsonObject()), new JsonArray());
+		defaultComService = new DefaultCommunicationService(new TimelineHelper(vertx, vertx.eventBus(), new JsonObject()), new JsonObject());
 	}
 
 	//@Test
