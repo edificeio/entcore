@@ -238,7 +238,7 @@ public class UserUtils {
 			public void handle(AsyncResult<Message<JsonArray>> res) {
 				if (res.succeeded()) {
 					JsonArray r = res.result().body();
-					log.info("UserUtils.findVisibles - r.size = " + r.size());
+					log.info("UserUtils.findVisibles - r.size = " + r.size()); // TODO JBER : exposer métrique
 					if (acceptLanguage != null) {
 						translateGroupsNames(r, acceptLanguage);
 					}
@@ -412,7 +412,7 @@ public class UserUtils {
 				UserUtils.groupDisplayName(j, acceptLanguage);
 				j.put("displayName", j.getString("name"));
 
-				if (j.getString("groupType").equals("ManualGroup") && j.getString("subType").equals("BroadcastGroup")) {
+				if ("ManualGroup".equals(j.getString("groupType")) && "BroadcastGroup".equals(j.getString("subType")))  {
 					j.put("type", "BroadcastGroup");
 					j.put("usedIn", usedInCCI);
 				} else {
@@ -771,6 +771,13 @@ public class UserUtils {
 		});
 	}
 
+	/**
+	 * Fetch the user's session information and return an unauthorized response if the user has no session. Therefore,
+	 * <b>there is no need to handle a failure of the returned Future</b>.
+	 * @param eb Event bus to be used to fetch the user's session
+	 * @param request Caller's request
+	 * @return The user's session information
+	 */
 	public static Future<UserInfos> getAuthenticatedUserInfos(EventBus eb, HttpServerRequest request) {
 		final Promise<UserInfos> promise = Promise.promise();
 		getSession(eb, request, session -> {

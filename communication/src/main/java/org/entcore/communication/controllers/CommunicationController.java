@@ -883,28 +883,47 @@ public class CommunicationController extends BaseController {
 		});
 	}
 
+	/**
+	 * Search entities (users, groups) visible by the requester.
+	 * This endpoint can serve 2 different types of results based on the configuration :
+	 * - the old format that used to be served by the module conversation
+	 * - the new format which returns more data
+	 * @param request Caller's HTTP request
+	 */
 	@Get("/visible/search")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void searchVisibleContacts(HttpServerRequest request) {
 		UserUtils.getAuthenticatedUserInfos(eb, request)
-				.onSuccess(userInfos -> {
-					final String query = request.params().get("query");
-					final boolean isAdmin = userInfos.isADML() || userInfos.isADMC();
+		.onSuccess(userInfos -> {
+			final String query = request.params().get("query");
+			communicationService.searchVisibles(userInfos, query, I18n.acceptLanguage(request))
+				.onSuccess(visibles -> renderJson(request, visibles))
+				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
+		});
+	}
 
-					// if Admin query param is mandatory ??
+	@Get("/visible/search-optimized")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void searchVisibleContactsOptimized(HttpServerRequest request) {
+		UserUtils.getAuthenticatedUserInfos(eb, request)
+			.onSuccess(userInfos -> {
+				final String query = request.params().get("query");
+				final boolean isAdmin = userInfos.isADML() || userInfos.isADMC();
+
+				// if Admin query param is mandatory ??
 					/*
 					if (isAdmin && StringUtils.isEmpty(query)) {
 						badRequest(request, "query.param.required");
 					}
 					//*/
 
-					communicationService.searchVisibleContacts(userInfos, query, I18n.acceptLanguage(request), res -> {
-						if (res.isRight()) {
-							renderJson(request, res.right().getValue());
-						} else {
-							leftToResponse(request, res.left());
-						}
-					});
-				}).onFailure(e -> log.error("An error occurred when retrieving authenticated user infos"));
+				communicationService.searchVisibleContactsOptimized(userInfos, query, I18n.acceptLanguage(request), res -> {
+					if (res.isRight()) {
+						renderJson(request, res.right().getValue());
+					} else {
+						leftToResponse(request, res.left());
+					}
+				});
+			}).onFailure(e -> log.error("An error occurred when retrieving authenticated user infos"));
 	}
 }
