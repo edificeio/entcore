@@ -412,7 +412,7 @@ public class UserUtils {
 				UserUtils.groupDisplayName(j, acceptLanguage);
 				j.put("displayName", j.getString("name"));
 
-				if (j.getString("groupType").equals("ManualGroup") && j.getString("subType").equals("BroadcastGroup")) {
+				if ("ManualGroup".equals(j.getString("groupType")) && "BroadcastGroup".equals(j.getString("subType")))  {
 					j.put("type", "BroadcastGroup");
 					j.put("usedIn", usedInCCI);
 				} else {
