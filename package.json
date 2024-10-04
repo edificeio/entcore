@@ -1,6 +1,6 @@
 {
   "name": "ent-core",
-  "version": "5.4.0-%branch%.%generateVersion%",
+  "version": "5.4.3",
   "description": "",
   "main": "gulpfile.js",
   "directories": {
@@ -27,7 +27,7 @@
     "angular-sanitize": "1.8.3",
     "axios": "0.15.3",
     "core-js": "^2.4.1",
-    "entcore": "dev",
+    "entcore": "4.8.10",
     "entcore-generic-icons": "https://github.com/edificeio/generic-icons.git",
     "entcore-toolkit": "^1.0.1",
     "humane-js": "^3.2.2",
@@ -75,8 +75,8 @@
     "karma-jasmine": "~1.1.0",
     "karma-jasmine-html-reporter": "^0.2.2",
     "merge2": "^1.0.3",
-    "ode-ngjs-front": "dev",
-    "ode-ts-client": "dev",
+    "ode-ngjs-front": "1.4.6",
+    "ode-ts-client": "1.2.2",
     "sass-loader": "^13.0.2",
     "source-map-loader": "^0.1.5",
     "ts-loader": "^3.1.1",
