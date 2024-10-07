@@ -99,22 +99,22 @@ object DuplicateScenario {
     .post("""/directory/duplicates/mark""")
     .header("Content-Length", "0")
     .check(status.is(200)))
-    .exec(http("List duplicates")
+    .exec(http("List duplicates - 1")
     .get("""/directory/duplicates""")
     .check(status.is(200), jsonPath("$").find.transformOption(_.map{ j =>
       JSONValue.parse(j).asInstanceOf[JSONArray].size()
     }).is(4)))
 
     .exec(Authenticate.authenticateUser("${teacherLogin}", "blipblop"))
-    .exec(http("List duplicates")
+    .exec(http("List duplicates - 2")
     .get("""/directory/duplicates""")
     .check(status.is(401)))
-    .exec(http("List duplicates")
+    .exec(http("List duplicates - 3")
     .get("""/directory/duplicates?structure=${parent-structure-id}""")
     .check(status.is(200), jsonPath("$").find.transformOption(_.map{ j =>
       JSONValue.parse(j).asInstanceOf[JSONArray].size()
     }).is(0)))
-    .exec(http("List duplicates")
+    .exec(http("List duplicates - 4")
     .get("""/directory/duplicates?structure=${parent-structure-id}&inherit=true""")
     .check(status.is(200), jsonPath("$").find.transformOption(_.map{ j =>
       JSONValue.parse(j).asInstanceOf[JSONArray].size()}).is(4),
@@ -152,7 +152,7 @@ object DuplicateScenario {
         .delete("""/directory/duplicate/ignore/${ignore(0)}/${ignore(1)}""")
         .check(status.is(200)))
     }
-    .exec(http("List duplicates")
+    .exec(http("List duplicates - 5")
     .get("""/directory/duplicates?structure=${parent-structure-id}&inherit=true""")
     .check(status.is(200), jsonPath("$").find.transformOption(_.map{ j =>
       JSONValue.parse(j).asInstanceOf[JSONArray].size()
