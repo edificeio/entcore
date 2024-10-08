@@ -490,33 +490,33 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 		final String emailTemplate = reset ? "email/resetPassword.html" : "email/changedPassword.html";
 		final String i18nKey = reset ? "email.password.reset.subject" : "email.password.change.subject";
 
-		processEmailTemplate(request, templateParams, emailTemplate, false, processedTemplate -> {
-			getProjectNameFromTimelineI18n(request).onComplete( ar -> {
-				final String projectName = ar.succeeded() ? ar.result() : "ENT";
-				final String emailSubject = projectName
-						+ I18n.getInstance().translate(i18nKey, getHost(request), I18n.acceptLanguage(request));
-
+		formatEmailSubject(request, i18nKey, templateParams).compose(subject -> {
+			Promise<String> promise = Promise.promise();
+			processEmailTemplate(request, templateParams, emailTemplate, false, processedTemplate -> {
 				notification.sendEmail(
-						request,
-						email,
-						null,
-						null,
-						emailSubject,
-						processedTemplate,
-						null,
-						false,
-						ar2 -> {
-							sendEmailAck.set(true);
-							if (ar2.succeeded()) {
-								if (log.isDebugEnabled()) {
-									log.debug("Success sending changedPassword by email: " + login + "/" + email);
-								}
-							} else {
-								log.error("Error sending changedPassword by email: " + login + "/" + email, ar2.cause());
+					request,
+					email,
+					null,
+					null,
+					subject,
+					processedTemplate,
+					null,
+					false,
+					ar2 -> {
+						sendEmailAck.set(true);
+						if (ar2.succeeded()) {
+							if (log.isDebugEnabled()) {
+								log.debug("Success sending changedPassword by email: " + login + "/" + email);
+								promise.complete("");
 							}
+						} else {
+							log.error("Error sending changedPassword by email: " + login + "/" + email, ar2.cause());
+							promise.fail("Error sending changedPassword by email: " + login + "/" + email);
 						}
+					}
 				);
 			});
+			return promise.future();
 		});
 	}
 
