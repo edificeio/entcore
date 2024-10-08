@@ -39,14 +39,14 @@ public class UserAuthAccountTest {
     @Test
     public void testAccountShouldActivate(TestContext context) {
         final Async async = context.async();
-        test.directory().createInactiveUser("user0", "activationCode0", "User0@test.com").setHandler(resAcUser -> {
+        test.directory().createInactiveUser("user0", "activationCode0", "User0@test.com").onComplete(resAcUser -> {
             context.assertTrue(resAcUser.succeeded());
             final HttpServerRequest request = test.http().post("/auth/activation");
             authAccount.activateAccount("user0", "activationCode0", "password0", "User0@test.com", "0666666666",
                     "theme1", request, resActiv -> {
                         context.assertTrue(resActiv.isRight());
                         final String id = resActiv.right().getValue();
-                        test.directory().fetchOneUser(id).setHandler(resUser -> {
+                        test.directory().fetchOneUser(id).onComplete(resUser -> {
                             context.assertTrue(resUser.succeeded());
                             context.assertNull(resUser.result().getString("activationCode"));
                             context.assertNotNull(resUser.result().getString("password"));
@@ -62,14 +62,14 @@ public class UserAuthAccountTest {
     @Test
     public void testAccountShouldActivateAndRevalidateTerms(TestContext context) {
         final Async async = context.async();
-        test.directory().createInactiveUser("user1", "activationCode1", "user1@test.com").setHandler(resAcUser -> {
+        test.directory().createInactiveUser("user1", "activationCode1", "user1@test.com").onComplete(resAcUser -> {
             context.assertTrue(resAcUser.succeeded());
             final HttpServerRequest request = test.http().post("/auth/activation");
             authAccount.activateAccountWithRevalidateTerms("user1", "activationCode1", "password1", "user1@test.com",
                     "0666666666", "theme1", request, resActiv -> {
                         context.assertTrue(resActiv.isRight());
                         final String id = resActiv.right().getValue();
-                        test.directory().fetchOneUser(id).setHandler(resUser -> {
+                        test.directory().fetchOneUser(id).onComplete(resUser -> {
                             context.assertTrue(resUser.succeeded());
                             context.assertEquals(true, resUser.result().getBoolean("needRevalidateTerms"));
                             async.complete();
@@ -81,7 +81,7 @@ public class UserAuthAccountTest {
     @Test
     public void testAccountShouldNotActivateOnBadActivationCode(TestContext context) {
         final Async async = context.async();
-        test.directory().createInactiveUser("user2", "activationCode2", "user2@test.com").setHandler(resAcUser -> {
+        test.directory().createInactiveUser("user2", "activationCode2", "user2@test.com").onComplete(resAcUser -> {
             context.assertTrue(resAcUser.succeeded());
             final HttpServerRequest request = test.http().post("/auth/activation");
             authAccount.activateAccount("user2", "fake", "password2", "user2@test.com", "0666666666", "theme1", request,
@@ -96,7 +96,7 @@ public class UserAuthAccountTest {
     @Test
     public void testAccountShouldNotActivateButLogin(TestContext context) {
         final Async async = context.async();
-        test.directory().createActiveUser("user3", "password3", "user3@test.com").setHandler(resAcUser -> {
+        test.directory().createActiveUser("user3", "password3", "user3@test.com").onComplete(resAcUser -> {
             context.assertTrue(resAcUser.succeeded());
             final HttpServerRequest request = test.http().post("/auth/activation");
             authAccount.activateAccount("user3", "fake", "password3", "user3@test.com", "0666666666", "theme1", request,
@@ -111,7 +111,7 @@ public class UserAuthAccountTest {
     public void testAccountShouldActivateByAlias(TestContext context) {
         final Async async = context.async();
         test.directory().createInactiveUser("user4", "userAlias4", "activationCode4", "user4@test.com")
-                .setHandler(resAcUser -> {
+                .onComplete(resAcUser -> {
                     context.assertTrue(resAcUser.succeeded());
                     final HttpServerRequest request = test.http().post("/auth/activation");
                     authAccount.activateAccountByLoginAlias("userAlias4", "activationCode4", "password4",
@@ -126,7 +126,7 @@ public class UserAuthAccountTest {
     public void testAccountShouldNotActivateButLoginByAlias(TestContext context) {
         final Async async = context.async();
         test.directory().createActiveUser("user5", "userAlias5", "password5", "user5@test.com")
-                .setHandler(resAcUser -> {
+                .onComplete(resAcUser -> {
                     context.assertTrue(resAcUser.succeeded());
                     final HttpServerRequest request = test.http().post("/auth/activation");
                     authAccount.activateAccountByLoginAlias("userAlias5", "fake", "password5", "user5@test.com",
@@ -140,10 +140,11 @@ public class UserAuthAccountTest {
     @Test
     public void testAccountShouldMatchActivationCode(TestContext context) {
         final Async async = context.async();
-        test.directory().createInactiveUser("user6", "activationCode6", "user6@test.com").setHandler(resAcUser -> {
+        test.directory().createInactiveUser("user6", "activationCode6", "user6@test.com")
+        .onComplete(resAcUser -> {
             context.assertTrue(resAcUser.succeeded());
             authAccount.matchActivationCode("user6", "activationCode6", resActiv -> {
-                context.assertTrue(resActiv);
+                context.assertTrue(resActiv.isRight());
                 async.complete();
             });
         });
@@ -153,22 +154,23 @@ public class UserAuthAccountTest {
     public void testAccountShouldMatchActivationCodeByAlias(TestContext context) {
         final Async async = context.async();
         test.directory().createInactiveUser("user7", "userAlias7", "activationCode7", "user7@test.com")
-                .setHandler(resAcUser -> {
-                    context.assertTrue(resAcUser.succeeded());
-                    authAccount.matchActivationCodeByLoginAlias("userAlias7", "activationCode7", resActiv -> {
-                        context.assertTrue(resActiv);
-                        async.complete();
-                    });
-                });
+        .onComplete(resAcUser -> {
+            context.assertTrue(resAcUser.succeeded());
+            authAccount.matchActivationCodeByLoginAlias("userAlias7", "activationCode7", resActiv -> {
+                context.assertTrue(resActiv.isRight());
+                async.complete();
+            });
+        });
     }
 
     @Test
     public void testAccountShouldNotMatchActivationCode(TestContext context) {
         final Async async = context.async();
-        test.directory().createInactiveUser("user8", "activationCode8", "user8@test.com").setHandler(resAcUser -> {
+        test.directory().createInactiveUser("user8", "activationCode8", "user8@test.com")
+        .onComplete(resAcUser -> {
             context.assertTrue(resAcUser.succeeded());
             authAccount.matchActivationCode("user8", "bad", resActiv -> {
-                context.assertFalse(resActiv);
+                context.assertFalse(resActiv.isRight());
                 async.complete();
             });
         });
@@ -177,12 +179,12 @@ public class UserAuthAccountTest {
     @Test
     public void testAccountShouldMatchResetCode(TestContext context) {
         final Async async = context.async();
-        test.directory().createActiveUser("user9", "activationCode9", "user9@test.com").compose(resAcUser -> {
-            return test.directory().resetUser(resAcUser, "resetCode9");
-        }).setHandler(resAcUser -> {
+        test.directory().createActiveUser("user9", "activationCode9", "user9@test.com")
+        .compose(resAcUser -> test.directory().resetUser(resAcUser, "resetCode9"))
+        .onComplete(resAcUser -> {
             context.assertTrue(resAcUser.succeeded());
             authAccount.matchResetCode("user9", "resetCode9", resActiv -> {
-                context.assertTrue(resActiv);
+                context.assertTrue(resActiv.isRight());
                 async.complete();
             });
         });
@@ -192,26 +194,25 @@ public class UserAuthAccountTest {
     public void testAccountShouldMatchResetCodeByAlias(TestContext context) {
         final Async async = context.async();
         test.directory().createActiveUser("user10", "userAlias10", "activationCode10", "user10@test.com")
-                .compose(resAcUser -> {
-                    return test.directory().resetUser(resAcUser, "resetCode10");
-                }).setHandler(resAcUser -> {
-                    context.assertTrue(resAcUser.succeeded());
-                    authAccount.matchResetCodeByLoginAlias("userAlias10", "resetCode10", resActiv -> {
-                        context.assertTrue(resActiv);
-                        async.complete();
-                    });
-                });
+        .compose(resAcUser -> test.directory().resetUser(resAcUser, "resetCode10"))
+        .onComplete(resAcUser -> {
+            context.assertTrue(resAcUser.succeeded());
+            authAccount.matchResetCodeByLoginAlias("userAlias10", "resetCode10", resActiv -> {
+                context.assertTrue(resActiv.isRight());
+                async.complete();
+            });
+        });
     }
 
     @Test
     public void testAccountShouldNotMatchResetCode(TestContext context) {
         final Async async = context.async();
-        test.directory().createActiveUser("user11", "activationCode11", "user11@test.com").compose(resAcUser -> {
-            return test.directory().resetUser(resAcUser, "resetCode11");
-        }).setHandler(resAcUser -> {
+        test.directory().createActiveUser("user11", "activationCode11", "user11@test.com")
+        .compose(resAcUser -> test.directory().resetUser(resAcUser, "resetCode11"))
+        .onComplete(resAcUser -> {
             context.assertTrue(resAcUser.succeeded());
             authAccount.matchResetCode("user11", "bad", resActiv -> {
-                context.assertFalse(resActiv);
+                context.assertFalse(resActiv.isRight());
                 async.complete();
             });
         });
@@ -255,7 +256,7 @@ public class UserAuthAccountTest {
         final Async async = context.async();
         test.directory().createActiveUser("user13", "activationCode13", "user13@test.com").compose(resAcUser -> {
             return test.directory().resetUser(resAcUser, "resetCode13");
-        }).setHandler(resAcUser -> {
+        }).onComplete(resAcUser -> {
             context.assertTrue(resAcUser.succeeded());
             authAccount.resetPassword("user13", "bad", "password13", null, resActiv -> {
                 context.assertFalse(resActiv != null);
