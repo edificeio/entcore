@@ -1,6 +1,6 @@
 <div class="twelve cell" pulsar-highlight="0">
 	<div data-ng-controller="FlashMessages" class="twelve cell">
-		<flash-msg ng-repeat="message in messages.all" mark-message="markMessage" message="message"
+		<flash-msg ng-repeat="message in messages.all" mark-message="markMessage(message)" message="message"
 			current-language="currentLanguage">
 		</flash-msg>
 	</div>
