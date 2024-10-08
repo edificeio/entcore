@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Locale;
 
 import fr.wseduc.webutils.I18n;
+import org.apache.commons.lang3.ArrayUtils;
 
 
 public class I18nBusRequest {
@@ -47,8 +48,8 @@ public class I18nBusRequest {
         m.put(ACCEPT_LANGUAGE, I18n.acceptLanguage(request));
         m.put(DOMAIN, Renders.getHost(request));
         m.put(THEME, I18n.getTheme(request));
-        m.put(KEYS, new JsonArray(Arrays.asList(keys)));
-        m.put(ARGS, new JsonArray(Arrays.asList(args)));
+        m.put(KEYS, new JsonArray(Arrays.asList(ArrayUtils.nullToEmpty(keys))));
+        m.put(ARGS, new JsonArray(Arrays.asList(ArrayUtils.nullToEmpty(args))));
 
         return new I18nBusRequest(m);
     }
