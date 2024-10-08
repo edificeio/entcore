@@ -20,17 +20,16 @@ const flashMsgCollapsable = ng.directive('flashMsg', ['$window', ($window) => ({
 				</svg>\
 				<div class="flash-msg-collapsable flash-msg-collapsable--collapsable flash-msg-collapsable--collapsed">\
 					<div bind-html="contents"></div>\
-						<span class="flash-msg-collapsable-button" ng-if="collapsable && collapsed">\
-							<b ng-click="toggleCollapse()">\
-								<i18n>timeline.flash.message.seemore</i18n>\
-							</b>\
-						</span>\
-						<span class="flash-msg-collapsable-button" ng-if="collapsable && !collapsed">\
-							<b ng-click="toggleCollapse()">\
-								<i18n>timeline.flash.message.seeless</i18n>\
-							</b>\
-						</span>\
-					</div>\
+					<span class="flash-msg-collapsable-button" ng-if="collapsable && collapsed">\
+						<b ng-click="toggleCollapse()">\
+							<i18n>timeline.flash.message.seemore</i18n>\
+						</b>\
+					</span>\
+					<span class="flash-msg-collapsable-button" ng-if="collapsable && !collapsed">\
+						<b ng-click="toggleCollapse()">\
+							<i18n>timeline.flash.message.seeless</i18n>\
+						</b>\
+					</span>\
 				</div>\
 			</div>\
 		</div>',
@@ -48,31 +47,27 @@ const flashMsgCollapsable = ng.directive('flashMsg', ['$window', ($window) => ({
 		if ($scope.message.signature)
 			$scope.contents += '<p class="flash-content-signature">' + $scope.message.signature + '</p>';
 		else $scope.contents += '<p class="flash-content-signature"></p>';
-		$scope.$watch(function () {
-			return $element.children().length;
-		}, function () {
-			$scope.$evalAsync(function () {
-				$scope.onResize();
-			});
-		});
+
 		$scope.onResize = function () {
+			if ($scope.collapsable !== undefined) return;
 			$scope.collapsable = $collapsableElement[0].scrollHeight - 8 > $collapsableElement[0].clientHeight;
 			$collapsableElement[$scope.collapsable ? 'addClass' : 'removeClass']('flash-msg-collapsable--collapsable');
+			$scope.$apply();
 		};
-		angular.element($window).on('resize', $scope.onResize);
-		$element.on('load', function () {
-			$scope.onResize();
-		});
-		window.setTimeout(function () {
-			$scope.onResize();
-		}, 20);
-		$scope.$on('$destroy', function () {
-			angular.element($window).off('resize', $scope.onResize);
-		});
 		$scope.toggleCollapse = function () {
 			$scope.collapsed = !$scope.collapsed;
 			$collapsableElement[$scope.collapsed ? 'addClass' : 'removeClass']('flash-msg-collapsable--collapsed');
 		};
+
+		window.setTimeout(function () {
+			$scope.onResize();
+		}, 100); // let time to render everything
+
+		angular.element($window).on('resize', $scope.onResize);
+		$scope.$on('$destroy', function () {
+			angular.element($window).off('resize', $scope.onResize);
+		});
+
 	}
 })]);
 
