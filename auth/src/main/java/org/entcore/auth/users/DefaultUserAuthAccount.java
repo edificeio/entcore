@@ -272,70 +272,64 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 	
 	@Override
 	public void matchActivationCode(final String login, String potentialActivationCode,
-			final Handler<Boolean> handler) {
+			final Handler<Either<String, JsonObject>> handler) {
 		matchActivationCode("login", login, potentialActivationCode, handler);
 	}
 
 	@Override
 	public void matchActivationCodeByLoginAlias(final String login, String potentialActivationCode,
-			final Handler<Boolean> handler) {
+			final Handler<Either<String, JsonObject>> handler) {
 		matchActivationCode("loginAlias", login, potentialActivationCode, handler);
 	}
 
 	private void matchActivationCode(final String loginFieldName, final String login, String potentialActivationCode,
-		 final Handler<Boolean> handler) {
+		 final Handler<Either<String, JsonObject>> handler) {
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n." + loginFieldName + "={login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
 				"AND (NOT EXISTS(n.blocked) OR n.blocked = false) " +
-				"RETURN true as exists";
+				"RETURN true as exists, n.displayName as displayName, n.email as email, n.mobile as mobile";
 
 		JsonObject params = new JsonObject()
 			.put("login", login)
 			.put("activationCode", potentialActivationCode);
-		neo.execute(query, params, Neo4jResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
-			@Override
-			public void handle(Either<String, JsonObject> event) {
-				if(event.isLeft() || !event.right().getValue().getBoolean("exists", false))
-					handler.handle(false);
-				else
-					handler.handle(true);
-			}
+		neo.execute(query, params, Neo4jResult.validUniqueResultHandler( event -> {
+			if(event.isLeft() || !event.right().getValue().getBoolean("exists", false))
+				handler.handle(new Either.Left<String, JsonObject>("not.found"));
+			else
+				handler.handle(event);
 		}));
 	}
 
 	@Override
 	public void matchResetCode(final String login, String potentialResetCode,
-			final Handler<Boolean> handler) {
+			final Handler<Either<String, JsonObject>> handler) {
 		matchResetCode("login", login, potentialResetCode, handler);
 	}
 
 	@Override
 	public void matchResetCodeByLoginAlias(final String login, String potentialResetCode,
-		   final Handler<Boolean> handler) {
+		   final Handler<Either<String, JsonObject>> handler) {
 		matchResetCode("loginAlias", login, potentialResetCode, handler);
 	}
 
 	private void matchResetCode(final String loginFieldName, final String login, String potentialResetCode,
-		final Handler<Boolean> handler) {
+		final Handler<Either<String, JsonObject>> handler) {
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n." + loginFieldName + "={login} AND has(n.resetDate) " +
 				"AND n.resetDate > {nowMinusDelay} AND n.resetCode = {resetCode} " +
-				"RETURN true as exists";
+				"RETURN true as exists, n.displayName as displayName, n.email as email, n.mobile as mobile";
 
 		JsonObject params = new JsonObject()
 			.put("login", login)
 			.put("resetCode", potentialResetCode)
 			.put("nowMinusDelay", (System.currentTimeMillis() - resetCodeExpireDelay));
-		neo.execute(query, params, Neo4jResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
-			@Override
-			public void handle(Either<String, JsonObject> event) {
+			neo.execute(query, params, Neo4jResult.validUniqueResultHandler( event -> {
 				if(event.isLeft() || !event.right().getValue().getBoolean("exists", false))
-					handler.handle(false);
+					handler.handle(new Either.Left<String, JsonObject>("not.found"));
 				else
-					handler.handle(true);
-			}
+					handler.handle(event);
 		}));
 	}
 

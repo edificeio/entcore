@@ -27,8 +27,6 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import fr.wseduc.webutils.Either;
-
 public interface UserAuthAccount {
 
 	void activateAccount(String login, String activationCode, String password, String email,
@@ -59,16 +57,16 @@ public interface UserAuthAccount {
 	void needToValidateCgu(String userId, Handler<Boolean> handler);
 	
 	void matchActivationCode(String login, String potentialActivationCode,
-			Handler<Boolean> handler);
+			Handler<Either<String, JsonObject>> handler);
 
 	void matchActivationCodeByLoginAlias(String loginAlias, String potentialActivationCode,
-			 Handler<Boolean> handler);
+			 Handler<Either<String, JsonObject>> handler);
 
 	void matchResetCode(String login, String potentialResetCode,
-			Handler<Boolean> handler);
+			Handler<Either<String, JsonObject>> handler);
 
 	void matchResetCodeByLoginAlias(String loginAlias, String potentialResetCode,
-			Handler<Boolean> handler);
+			Handler<Either<String, JsonObject>> handler);
 
 	void findByMail(String email, Handler<Either<String, JsonObject>> handler);
 
