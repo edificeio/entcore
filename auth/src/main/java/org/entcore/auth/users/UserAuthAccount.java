@@ -21,13 +21,11 @@ package org.entcore.auth.users;
 
 import org.entcore.auth.pojo.SendPasswordDestination;
 import fr.wseduc.webutils.Either;
-
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
-import fr.wseduc.webutils.Either;
 
 public interface UserAuthAccount {
 
@@ -58,17 +56,13 @@ public interface UserAuthAccount {
 
 	void needToValidateCgu(String userId, Handler<Boolean> handler);
 	
-	void matchActivationCode(String login, String potentialActivationCode,
-			Handler<Boolean> handler);
+	Future<JsonObject> matchActivationCode(String login, String potentialActivationCode);
 
-	void matchActivationCodeByLoginAlias(String loginAlias, String potentialActivationCode,
-			 Handler<Boolean> handler);
+	Future<JsonObject> matchActivationCodeByLoginAlias(String loginAlias, String potentialActivationCode);
 
-	void matchResetCode(String login, String potentialResetCode,
-			Handler<Boolean> handler);
+	Future<JsonObject> matchResetCode(String login, String potentialResetCode);
 
-	void matchResetCodeByLoginAlias(String loginAlias, String potentialResetCode,
-			Handler<Boolean> handler);
+	Future<JsonObject> matchResetCodeByLoginAlias(String loginAlias, String potentialResetCode);
 
 	void findByMail(String email, Handler<Either<String, JsonObject>> handler);
 
