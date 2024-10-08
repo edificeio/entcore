@@ -1,21 +1,18 @@
 <div class="widget widget-flash" 
         ng-repeat="message in ctrl.messages track by message.id" 
         ng-class="message.customColor ? 'blue' : message.color">
-        <svg class="icon-svg flash-icon" width="20" height="20" viewBox="0 0 24 24">
-            <use href="/timeline/public/icons/icons.svg{{message.color==='red'?'#alert-triangle':'#info-circle'}}"></use>
+    <svg class="icon-svg flash-icon" width="20" height="20" viewBox="0 0 24 24">
+        <use href="/timeline/public/icons/icons.svg{{message.color==='red'?'#alert-triangle':'#info-circle'}}"></use>
+    </svg>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" ng-click="ctrl.dismiss(message)">
+        <svg class="icon-svg" width="20" height="20" viewBox="0 0 24 24">
+            <use href="/timeline/public/icons/icons.svg#close"></use>
         </svg>
-    <div class="widget-body">
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" ng-click="ctrl.dismiss(message)">
-            <svg class="icon-svg" width="20" height="20" viewBox="0 0 24 24">
-                <use href="/timeline/public/icons/icons.svg#close"></use>
-            </svg>
-        </button>
-        <div class="flash-content">
-            <p flash-message-content="message"></p>
-            <div ng-if="message.signature" class="flash-content-signature mt-3 font-italic">
-                {{ message.signature }}
-            </div>
-            <div ng-if="!message.signature" class="flash-content-signature"></div>
-        </div>
+    </button>
+    <div class="flash-content">
+        <p flash-message-content="message"></p>
+    </div>
+    <div ng-if="message.signature" class="flash-content-signature mt-3 font-italic">
+        {{ message.signature }}
     </div>
 </div>
