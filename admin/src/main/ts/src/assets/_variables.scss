@@ -51,18 +51,25 @@ $user-profile-img-width:  220px;
 $fontawesome-size:        1.5em;
 
 // MESSAGE FLASH
-$flash-red: #FFECEE;
-$flash-red-border: #FFADB9;
-$flash-red-badge: #FF3A55;
-$flash-orange: #FFEFE3;
-$flash-orange-border: #FFCBA0;
-$flash-orange-badge: #FF8D2E;
-$flash-green: #E6F9F8;
-$flash-green-border: #B6EDE5;
-$flash-green-badge: #46BFAF;
-$flash-blue: #E5F5FF;
-$flash-blue-border: #B9E3F8;
-$flash-blue-badge: #2A9CC8;
-$flash-grey: #FAFAFA;
-$flash-grey-border: #E4E4E4;
-$flash-grey-badge: #B0B0B0;
+$widget-flash-colors: (
+  "red": (
+    "background": #FFECEE,
+    "shadow": #FFADB9,
+    "badge": #FF3A55),
+  "orange": (
+    "background": #FFEFE3,
+    "shadow": #FFCBA0,
+    "badge": #FF8D2E),
+  "green": (
+    "background": #E6F9F8,
+    "shadow": #B6EDE5,
+    "badge": #46BFAF),
+  "blue": (
+    "background": #E5F5FF,
+    "shadow": #B9E3F8,
+    "badge": #2A9CC8),
+  "grey-dark": (
+    "background": #FAFAFA,
+    "shadow": #E4E4E4,
+    "badge": #B0B0B0 ),
+);
