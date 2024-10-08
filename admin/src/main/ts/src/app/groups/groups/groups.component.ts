@@ -97,7 +97,7 @@ export class GroupsComponent extends OdeComponent implements OnInit, OnDestroy {
     if (this.isADMC) {
       this.tabs.find(tab => tab.view==="classes").visible = true;
     }
-    if ((isADML || this.isADMC) && this.groupsStore.structure.children?.length) {
+    if ((isADML || this.isADMC) && this.groupsStore.structure?.children?.length) {
       this.tabs.find(tab => tab.view==="broadcastGroup").visible = true;
     }
     this.changeDetector.markForCheck();
