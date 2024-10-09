@@ -37,6 +37,8 @@ class Directive implements IDirective<Scope, JQLite, IAttributes, IController[]>
 
 		let messageContent = (scope.message.contents[parentCtrl.currentLanguage] ?? '');
 		messageContent = messageContent.replaceAll(/(<div>[\s\u200B]*<\/div>){2,}/g, '<div>\u200B</div>'); // This code merges consecutive empty lines from adminV1 editor
+		messageContent = messageContent.replaceAll(/(<div>([\s\u200B]|<br\/?>)*<\/div>)$/g, ''); // This code remove last empty line from adminV1 editor
+		messageContent = messageContent.replaceAll(/(<p><br><\/p>)+/g, ''); // This code merges consecutive empty lines from adminV2 editor
 		this.richContentSvc.apply(this.$sanitize(messageContent), elem, scope);
 
 		// If needed, limit the height of displayed text, and add a button "See more" which toggles the full message display back and forth.

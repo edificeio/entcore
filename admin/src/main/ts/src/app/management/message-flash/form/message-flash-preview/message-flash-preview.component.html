@@ -6,7 +6,7 @@
       <use [attr.href]="'/admin/public/icons/icons.svg' + (color === 'red' ? '#alert-triangle' : '#info-circle')"></use>
     </svg>
     <div class="flash-content">
-      <p [innerHTML]="domSanitizer.bypassSecurityTrustHtml(text)"></p>
+      <p [innerHTML]="domSanitizer.bypassSecurityTrustHtml(computedText)"></p>
     </div>
     <div *ngIf="signature !== ''" class="flash-content-signature mt-3 font-italic">
       {{ signature }}
