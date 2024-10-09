@@ -170,5 +170,7 @@ public interface CommunicationService {
 	void getDiscoverVisibleAcceptedProfile(Handler<Either<String, JsonArray>> handler);
 	
 	void searchVisibleContacts(UserInfos user, String search, String language, Handler<Either<String, JsonArray>> results);
+
+	void searchVisibleContactsOptimized(UserInfos user, String search, String language, Handler<Either<String, JsonArray>> results);
 }
 
