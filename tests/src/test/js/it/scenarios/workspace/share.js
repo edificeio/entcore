@@ -7,10 +7,8 @@ import {
   getStudentRole,
   getParentRole,
   getUsersOfSchool,
-  createStructure,
   createAndSetRole,
   linkRoleToUsers,
-  activateUsers,
   uploadFile,
   shareFile,
   getBroadcastGroup,
@@ -22,13 +20,16 @@ import {
   WS_READER_SHARE,
   WS_MANAGER_SHARE,
   triggerImport,
-  createEmptyStructure
-} from "https://raw.githubusercontent.com/juniorode/edifice-k6-commons/develop/dist/index.js";
+  createEmptyStructure,
+  initStructure,
+  getRandomUser,
+  getRandomUserWithProfile
+} from "https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
 
 const aafImport = (__ENV.AAF_IMPORT || "true") === "true";
 const aafImportPause =  parseInt(__ENV.AAF_IMPORT_PAUSE || "10");
 const maxDuration = __ENV.MAX_DURATION || "1m";
-const schoolName = __ENV.DATA_SCHOOL_NAME || "General3";
+const schoolName = __ENV.DATA_SCHOOL_NAME || "General";
 const schoolName2 = `${schoolName}-2`
 const dataRootPath = __ENV.DATA_ROOT_PATH;
 const gracefulStop = parseInt(__ENV.GRACEFUL_STOP || "2s");
@@ -52,10 +53,7 @@ export const options = {
   },
 };
 
-const teachersData = open(`${dataRootPath}/general/enseignants.csv`, "b");
-const studentsData = open(`${dataRootPath}/general/eleves.csv`, "b");
-const responsablesData = open(`${dataRootPath}/general/responsables.csv`, "b");
-const fileToUpload = open(`${dataRootPath}/random_text_file.txt`, "b");
+const fileToUpload = open(`${dataRootPath}/workspace/random_text_file.txt`, "b");
 
 export function setup() {
   let structure1;
@@ -65,8 +63,8 @@ export function setup() {
     const session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
     chapeau = createEmptyStructure(`Chapeau - ${schoolName}`, false, session)
     const commonBG = createBroadcastGroup(broadcastGroupNameChapeau, chapeau, session)
-    structure1 = initStructure(schoolName, session)
-    structure2 = initStructure(schoolName2, session)
+    structure1 = initSchool(schoolName, session)
+    structure2 = initSchool(schoolName2, session)
     attachStructureAsChild(chapeau, structure1, session)
     attachStructureAsChild(chapeau, structure2, session)
     const teacherRole1 = getTeacherRole(structure1, session)
@@ -88,8 +86,8 @@ export function setup() {
   return { structure1, structure2, chapeau};
 }
 
-function initStructure(structureName, session) {
-  const structure = createStructure(structureName, {teachers: teachersData, students: studentsData, responsables: responsablesData}, session);
+function initSchool(structureName, session) {
+  const structure = initStructure(structureName);
   const role = createAndSetRole('Espace documentaire', session);
   const groups = [
     `Teachers from group ${structure.name}.`,
@@ -100,7 +98,6 @@ function initStructure(structureName, session) {
     `Parents du groupe ${structure.name}.`
   ]
   linkRoleToUsers(structure, role, groups, session);
-  activateUsers(structure, session);
   const teacherRole = getTeacherRole(structure, session)
   const broadcastGroup = createBroadcastGroup(broadcastGroupName, structure, session);
   addCommunicationBetweenGroups(teacherRole.id, broadcastGroup.id, session)
@@ -113,21 +110,6 @@ export default (data) => {
   testSharesViaProfileGroupInDifferentSchools(data)
 };
 
-function getRandomUser(arrayOfUsers, exceptUsers) {
-  const idToAvoid = (exceptUsers || []).map(u => u.id)
-  for(let i = 0; i < 1000; i++) {
-    const user = arrayOfUsers[Math.floor(Math.random() * arrayOfUsers.length)]
-    if(idToAvoid.indexOf(user.id) < 0) {
-      return user;
-    }
-  }
-  throw 'cannot.find.random.user'
-}
-
-function getRandomUserWithProfile(arrayOfUsers, profileGroup, exceptUsers) {
-  const usersOfGroup = arrayOfUsers.filter(u => u.type === profileGroup)
-  return getRandomUser(usersOfGroup, exceptUsers)
-}
 
 function checkShareOk(res, checkName) {
   const checks = {}
@@ -257,9 +239,8 @@ function testSharesViaBroadcastGroupInSameSchool(data) {
     const session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
     const users = getUsersOfSchool(structure1, session);
     const broadcastGroup = getBroadcastGroup(broadcastGroupName, structure1, session);
-    const teachers = users.filter(u => u.type === 'Teacher')
     const students = users.filter(u => u.type === 'Student')
-    const teacher = getRandomUser(teachers);
+    const teacher = getRandomUserWithProfile(users, 'Teacher');
     const classId = teacher.classes[0].id
     const classUsers = students.filter(u => u.classes.map(c => c.id).indexOf(classId) >= 0);
     const firstStudent = getRandomUser(classUsers);
