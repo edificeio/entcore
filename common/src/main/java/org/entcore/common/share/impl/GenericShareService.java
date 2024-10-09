@@ -469,7 +469,12 @@ public abstract class GenericShareService implements ShareService {
 		final Map<String, Set<String>> shareUpdates) {
 		final Promise<Boolean> promise = Promise.promise();
 		final String customReturn = "RETURN DISTINCT visibles.id as id, has(visibles.login) as isUser";
-		UserUtils.findVisibles(eb, userId, customReturn, null, true, true, false, "fr", visibleResponse -> {
+		final JsonObject extraParams = new JsonObject()
+			.put("expectedIdsOfUsersAndGroups", getIdOfGroupsAndUsersConcernedByShares(originalShares, shareUpdates));
+		UserUtils.findVisibles(eb, userId, customReturn,
+			extraParams,
+			true, true, false,
+			"fr", "AND (m.id IN {expectedIdsOfUsersAndGroups}) ",visibleResponse -> {
 			final Set<String> visibleUsersAndGroups = visibleResponse.stream()
 				.map(entry -> ((JsonObject) entry).getString("id"))
 				.collect(Collectors.toSet());
@@ -530,6 +535,21 @@ public abstract class GenericShareService implements ShareService {
 			}
 		});
 		return promise.future();
+	}
+
+	private JsonArray getIdOfGroupsAndUsersConcernedByShares(final JsonArray originalShares, final Map<String, Set<String>> shareUpdates) {
+		final JsonArray prefilteredIds = new JsonArray();
+		final Set<String> ids = new HashSet<>();
+		for (Object originalShare : originalShares) {
+			final JsonObject share = (JsonObject) originalShare;
+			final String idOfShare = getUserOrGroupIdOfShare(share);
+			ids.add(idOfShare);
+		}
+		ids.addAll(shareUpdates.keySet());
+		for (String id : ids) {
+			prefilteredIds.add(id);
+		}
+		return prefilteredIds;
 	}
 
 	private String getUserOrGroupIdOfShare(final JsonObject share) {
