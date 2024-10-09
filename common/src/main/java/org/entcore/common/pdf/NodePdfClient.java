@@ -37,6 +37,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.net.ClientOptionsBase;
 import io.vertx.core.net.TCPSSLOptions;
+import org.entcore.common.pdf.metrics.PdfMetricsContext;
+import org.entcore.common.pdf.metrics.PdfMetricsRecorder;
+import org.entcore.common.pdf.metrics.PdfMetricsRecorderFactory;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 
@@ -54,6 +57,7 @@ public class NodePdfClient implements PdfGenerator {
 	private final HttpClient client;
 	private final String authHeader;
 	private final String clientId;
+	private final PdfMetricsRecorder metricsRecorder;
 
 	public NodePdfClient(Vertx vertx, JsonObject conf) throws URISyntaxException {
 		this.vertx = vertx;
@@ -69,6 +73,8 @@ public class NodePdfClient implements PdfGenerator {
 				.setHttp2KeepAliveTimeout(conf.getInteger("pdf-keepalive-timeout", HttpClientOptions.DEFAULT_HTTP2_KEEP_ALIVE_TIMEOUT))
 				.setDefaultHost(uri.getHost()).setDefaultPort(uri.getPort()).setSsl("https".equals(uri.getScheme()));
 		this.client = vertx.createHttpClient(options);
+		PdfMetricsRecorderFactory.init(vertx, conf);
+		this.metricsRecorder = PdfMetricsRecorderFactory.getPdfMetricsRecorder();
 	}
 
 	@Override
@@ -77,12 +83,15 @@ public class NodePdfClient implements PdfGenerator {
 	}
 
 	private void generatePdfFromTemplate(String name, String template, String token, Handler<AsyncResult<Pdf>> handler) {
-		final HttpClientRequest req = client.post("/generate/pdf", responseHandler(handler));
+		final PdfMetricsContext context = metricsRecorder.onPdfGenerationStart(PdfMetricsRecorder.TaskKind.Print, PdfMetricsRecorder.Content.fromText(template));
+		final HttpClientRequest req = client.post("/generate/pdf", responseHandler(handler, context));
 		final String boundary = UUID.randomUUID().toString();
 		req.putHeader("Authorization", authHeader);
 		req.putHeader("Content-Type","multipart/form-data; boundary=" + boundary);
 		req.exceptionHandler(res->{
 			log.error("[generatePdfFromTemplate] Failed to generatepdf from template: "+template, res);
+			metricsRecorder.onPdfGenerationUnfinished(context, PdfMetricsRecorder.Phase.Request, res.getMessage());
+			handler.handle(new DefaultAsyncResult<>(new PdfException("closed.pdf.response")));
 		});
 		req.end(multipartBody(name, token, template, boundary));
 	}
@@ -93,9 +102,12 @@ public class NodePdfClient implements PdfGenerator {
 	}
 
 	private void generatePdfFromUrl(String name, String url, String token, Handler<AsyncResult<Pdf>> handler) {
-		final HttpClientRequest req = client.post("/print/pdf", responseHandler(handler));
+		final PdfMetricsContext context = metricsRecorder.onPdfGenerationStart(PdfMetricsRecorder.TaskKind.Print, PdfMetricsRecorder.Content.fromUrl(url));
+		final HttpClientRequest req = client.post("/print/pdf", responseHandler(handler, context));
 		req.exceptionHandler(res->{
 			log.error("[generatePdfFromUrl] Failed to generate pdf from url: " + url, res);
+			metricsRecorder.onPdfGenerationUnfinished(context, PdfMetricsRecorder.Phase.Request, res.getMessage());
+			handler.handle(new DefaultAsyncResult<>(new PdfException("closed.pdf.response")));
 		});
 		req.putHeader("Authorization", authHeader);
 		req.putHeader("Content-Type", "application/json");
@@ -164,7 +176,7 @@ public class NodePdfClient implements PdfGenerator {
 		return future;
 	}
 
-	private Handler<HttpClientResponse> responseHandler(Handler<AsyncResult<Pdf>> handler) {
+	private Handler<HttpClientResponse> responseHandler(Handler<AsyncResult<Pdf>> handler, final PdfMetricsContext context) {
 		return res -> {
 			if (res.statusCode() == 200) {
 				res.bodyHandler(buffer -> {
@@ -176,11 +188,17 @@ public class NodePdfClient implements PdfGenerator {
 						name = "nop.pdf";
 					}
 					final Pdf pdf = new Pdf(name, buffer);
+					metricsRecorder.onPdfGenerationSucceed(context);
 					handler.handle(new DefaultAsyncResult<>(pdf));
+				});
+				res.exceptionHandler(e -> {
+					metricsRecorder.onPdfGenerationUnfinished(context, PdfMetricsRecorder.Phase.Response, e.getMessage());
+					handler.handle(new DefaultAsyncResult<>(new PdfException("closed.pdf.response")));
 				});
 			} else {
 				log.error("[responseHandler] Invalid status code when receive pdf response with status: " +
 						res.statusCode() + " , message: " + res.statusMessage());
+				metricsRecorder.onPdfGenerationFailed(context, res.statusCode());
 				handler.handle(new DefaultAsyncResult<>(new PdfException("invalid.pdf.response")));
 			}
 		};
@@ -227,11 +245,14 @@ public class NodePdfClient implements PdfGenerator {
 		buffer.appendBuffer(file);
 		buffer.appendString("\r\n");
 		buffer.appendString("--" + boundary + "--\r\n");
-		final HttpClientRequest req = client.post("/convert/pdf?kind="+kind.name(), responseHandler(handler));
+		final PdfMetricsContext context = metricsRecorder.onPdfGenerationStart(PdfMetricsRecorder.TaskKind.Preview, PdfMetricsRecorder.Content.fromBuffer(file), kind);
+		final HttpClientRequest req = client.post("/convert/pdf?kind="+kind.name(), responseHandler(handler, context));
 		req.putHeader("Authorization", authHeader);
 		req.putHeader("Content-Type","multipart/form-data; boundary=" + boundary);
 		req.exceptionHandler(res->{
 			log.error("[convertToPdfFromBuffer] Http request Failed to convertToPdf: "+kind, res);
+			metricsRecorder.onPdfGenerationUnfinished(context, PdfMetricsRecorder.Phase.Request, res.getMessage());
+			handler.handle(new DefaultAsyncResult<>(new PdfException("closed.pdf.response")));
 		});
 		req.end(buffer);
 	}
