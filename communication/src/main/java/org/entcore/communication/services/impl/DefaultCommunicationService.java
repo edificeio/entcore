@@ -1577,7 +1577,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				"toLower(sortDisplayName), " +
 				"sorted_children_names, " +
 				"sorted_functions, " +
-				"sorted_disciplines ";
+			"    sorted_disciplines ";
 
 		Promise<Either<String, JsonArray>> getVisiblePromise = Promise.promise();
 		visibleUsers(
@@ -1653,6 +1653,137 @@ public class DefaultCommunicationService implements CommunicationService {
 							)
 					));
 				});
+
+	}
+
+
+	@Override
+	public void searchVisibleContactsOptimized(UserInfos user, String search, String language, Handler<Either<String, JsonArray>> handler) {
+		String match = "MATCH (visibles) " +
+			"OPTIONAL MATCH (visibles)-[:RELATED]-(related:User) " +
+			" WITH visibles, \n" +
+			"     collect(CASE \n" +
+			"                WHEN (visibles)-[:RELATED]->(related) THEN {id: related.id, displayName: related.displayName, role: 'parent'} \n" +
+			"                WHEN (visibles)<-[:RELATED]-(related) THEN {id: related.id, displayName: related.displayName, role: 'child'}\n" +
+			"              END) AS relatedUsers\n" +
+			"WITH visibles, \n" +
+			"     [x IN relatedUsers WHERE x.role = 'parent'] AS relatives, \n" +
+			"     [x IN relatedUsers WHERE x.role = 'child'] AS children " +
+			"OPTIONAL MATCH (visibles)-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class) " +
+			"OPTIONAL MATCH (visibles)-[:IN]->(fdg:Group) WHERE fdg:FuncGroup OR fdg:DisciplineGroup " +
+			"WITH visibles, " +
+			"     relatives, " +
+			"     children, " +
+			"     collect(DISTINCT {id: c.id, name: c.name}) as classrooms, " +
+			"     collect(CASE " +
+			"               WHEN fdg:FuncGroup AND fdg.id IS NOT NULL THEN {id: fdg.id, name: fdg.filter, type: 'function'} " +
+			"               WHEN fdg:DisciplineGroup AND fdg.id IS NOT NULL THEN {id: fdg.id, name: fdg.filter, typ: 'discipline'}" +
+			"             END) AS groups " +
+			"WITH visibles, " +
+			"     relatives, " +
+			"     children," +
+			"     classrooms, " +
+			"     [g IN groups WHERE g.type = 'function'] AS functions, " +
+			"     [g IN groups WHERE g.type = 'discipline'] AS disciplines ";
+
+		String preFilter = "";
+		JsonObject params = new JsonObject();
+
+		if (!StringUtils.isEmpty(search)) {
+			preFilter = "AND m.displayNameSearchField CONTAINS {search} ";
+			String sanitizedSearch = StringValidation.sanitize(search);
+			params.put("search", sanitizedSearch);
+		}
+
+		final String customReturn = match +
+			" WITH visibles, \n" +
+			"     labels(visibles) AS visibleLabels, \n" +
+			"     HEAD(visibles.profiles) AS primaryProfile, \n" +
+			"     filter(x IN coalesce(children, []) WHERE x.id IS NOT NULL) as validChildren, \n" +
+			"     filter(x IN coalesce(relatives, []) WHERE x.id IS NOT NULL) as validRelatives, \n" +
+			"     filter(x IN coalesce(classrooms, []) WHERE x.id IS NOT NULL) as validClassrooms, \n" +
+			"     filter(x IN coalesce(functions, []) WHERE x.id IS NOT NULL) as validFunctions, \n" +
+			"     filter(x IN coalesce(disciplines, []) WHERE x.id IS NOT NULL) as validDisciplines\n" +
+			"RETURN DISTINCT \n" +
+			"    visibles.id as id, \n" +
+			"    visibles.name as name, \n" +
+			"    visibles.displayName as displayName, \n" +
+			"    visibles.groupDisplayName as groupDisplayName, \n" +
+			"    primaryProfile as profile, \n" +
+			"    visibles.nbUsers as nbUsers, \n" +
+			"    visibleLabels as groupType, \n" +
+			"    visibles.filter as groupProfile, \n" +
+			"    visibles.subType as subType, \n" +
+			"    validChildren as children, \n" +
+			"    validRelatives as relatives, \n" +
+			"    validClassrooms as classrooms, \n" +
+			"    validFunctions as functions, \n" +
+			"    validDisciplines as disciplines \n";
+
+		Promise<Either<String, JsonArray>> getVisiblePromise = Promise.promise();
+		visibleUsers(
+			user.getUserId(),
+			null,
+			null,
+			true,
+			true,
+			false,
+			preFilter,
+			customReturn,
+			params,
+			user.getType(),
+			true,
+			getVisiblePromise::complete);
+
+		// Share bookmarks
+		final Promise<Either<String, JsonArray>> getShareBookmarksPromise = Promise.promise();
+
+		String sbFilter = "";
+		JsonObject sbParams = new JsonObject().put("userId", user.getUserId());
+		if (!StringUtils.isEmpty(search)) {
+			sbFilter = " AND lower(sbValue[0]) contains {search} ";
+			sbParams.put("search", StringValidation.sanitize(search));
+		}
+		String queryShareBookmarks = "MATCH (:User {id: {userId}})-[:HAS_SB]->(sb:ShareBookmark) " +
+			"WITH sb, keys(sb) AS ids " +
+			"UNWIND ids AS id " +
+			"WITH sb, id, sb[id] AS sbValue " +
+			"WHERE size(sbValue) >= 2 " + sbFilter +
+			"WITH sb, id, sb[id] AS sbValue ORDER BY sbValue[0] " +
+			"RETURN id as id, sbValue[0] as displayName ";
+
+		Neo4j.getInstance().execute(queryShareBookmarks, sbParams, validResultHandler(getShareBookmarksPromise::complete));
+
+		CompositeFuture.join(getVisiblePromise.future(), getShareBookmarksPromise.future())
+			.onComplete(ar -> {
+
+				if (ar.failed()) {
+					handler.handle(new Either.Left<>(ar.cause().getMessage()));
+				}
+
+				final Either<String, JsonArray> resVisible = getVisiblePromise.future().result();
+				final Either<String, JsonArray> resShareBookmark = getShareBookmarksPromise.future().result();
+
+				if (resVisible.isLeft()) {
+					log.error(resVisible.left().getValue());
+				}
+
+				if (resShareBookmark.isLeft()) {
+					log.error(resShareBookmark.left().getValue());
+				}
+
+				JsonArray visible = resVisible.isLeft() ? new JsonArray() : resVisible.right().getValue();
+				JsonArray shareBookmarks = resShareBookmark.isLeft() ? new JsonArray() : resShareBookmark.right().getValue();
+
+				handler.handle(new Either.Right<>(
+					UserUtils.mapObjectToContact(
+						user.getType(),
+						shareBookmarks,
+						visible,
+						language
+					)
+				));
+			});
 
 	}
 

@@ -227,7 +227,7 @@ public class UserUtils {
 			public void handle(AsyncResult<Message<JsonArray>> res) {
 				if (res.succeeded()) {
 					JsonArray r = res.result().body();
-					log.info("UserUtils.findVisibles - r.size = " + r.size());
+					log.info("UserUtils.findVisibles - r.size = " + r.size()); // TODO JBER : exposer métrique
 					if (acceptLanguage != null) {
 						translateGroupsNames(r, acceptLanguage);
 					}
