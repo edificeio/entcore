@@ -53,7 +53,13 @@ export const options = {
   },
 };
 
-const fileToUpload = open(`${dataRootPath}/workspace/random_text_file.txt`, "b");
+let fileToUpload;
+try {
+  fileToUpload = open(`${dataRootPath}/workspace/random_text_file.txt`, "b");
+} catch(e) {
+  fileToUpload = open(`${dataRootPath}/data/workspace/random_text_file.txt`, "b");
+}
+
 
 export function setup() {
   let structure1;
