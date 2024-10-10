@@ -10,6 +10,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.schema.Source;
 import org.entcore.feeder.Feeder;
 import org.entcore.feeder.ManualFeeder;
 import org.entcore.common.neo4j.TransactionHelper;
@@ -88,7 +89,7 @@ public class FeederTest {
                 test.vertx().setTimer(300, e -> {
                     //recreate the link between u AND cpg (when aaf)
                     test.database().executeNeo4j("MATCH (u:User { id : {userId}}), (cpg:ProfileGroup)-[:DEPENDS]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure {id: {structureId}}) MERGE u-[r:IN]->cpg RETURN ID(u)", params).onComplete(context.asyncAssertSuccess(res20 -> {
-                        final TransactionHelper transaction = new TransactionHelper(Neo4j.getInstance());
+                        final TransactionHelper transaction = new TransactionHelper(Neo4j.getInstance(), Source.UNKNOWN);
                         ManualFeeder.applyRemoveUserFromStructure(userId, null, "1", null, transaction);
                         transaction.commit((Message<JsonObject> message2) -> {
                             context.assertEquals("ok", message2.body().getString("status"));

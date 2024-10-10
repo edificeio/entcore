@@ -40,6 +40,11 @@ import {CalendarService} from './calendar/calendar.service';
 import {ImportEDTReportsService} from './import-edt/import-edt-reports.service';
 import {SubjectsGuardService} from './subjects/subjects-guard.service';
 import { StructureAttachmentComponent } from './structure-attachment/structure-attachment.component';
+import {StructureGarComponent} from './structure-gar/structure-gar.component';
+import { StructureUserPositionComponent } from './structure-user-positions/structure-user-position/structure-user-position.component';
+import { MatDialogModule } from '@angular/material/dialog';
+import { StructureUserPositionsComponent } from './structure-user-positions/structure-user-positions.component';
+import { SharedModule } from '../_shared/shared.module';
 
 @NgModule({
     imports: [
@@ -49,6 +54,7 @@ import { StructureAttachmentComponent } from './structure-attachment/structure-a
         NgxOdeSijilModule.forChild(),
         RouterModule.forChild(routes),
         MatPaginatorModule,
+        MatDialogModule,
         MatSortModule,
         MatTableModule,
         NgxTrumbowygModule.withConfig({
@@ -66,7 +72,8 @@ import { StructureAttachmentComponent } from './structure-attachment/structure-a
         }),
         MatRadioModule,
         MatDividerModule,
-        FlexLayoutModule
+        FlexLayoutModule,
+        SharedModule
     ],
     declarations: [
         ZimbraComponent,
@@ -85,8 +92,10 @@ import { StructureAttachmentComponent } from './structure-attachment/structure-a
         SubjectCreate,
         SubjectDetails,
         CalendarComponent,
-        StructureAttachmentComponent
-
+        StructureAttachmentComponent,
+        StructureGarComponent,
+        StructureUserPositionsComponent,
+        StructureUserPositionComponent,
     ],
     exports: [
         RouterModule

@@ -589,7 +589,7 @@ public class DuplicateUsers {
 
 								// Backup users relations before they are merged.
 								// This will allow restoring relations if/when unmerged later.
-								mergeUserIds.forEach(id -> User.backupRelationship(id.toString(), tx));
+								mergeUserIds.forEach(id -> User.backupRelationship(id.toString(), false, tx));
 
 								// Do merge
 								tx.add(

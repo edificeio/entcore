@@ -33,7 +33,7 @@ import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 
 import fr.wseduc.webutils.request.RequestUtils;
-import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.file.FileSystem;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.appregistry.ApplicationUtils;
@@ -68,6 +68,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -124,7 +125,7 @@ public class StructureController extends BaseController {
 			@Override
 			public void handle(Either<String, JsonObject> r) {
 				if (r.isRight()) {
-					if (r.right().getValue() != null && r.right().getValue().size() > 0) {
+					if (r.right().getValue() != null) {
 						JsonArray a = new fr.wseduc.webutils.collections.JsonArray().add(userId);
 						ApplicationUtils.sendModifiedUserGroup(eb, a, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 							@Override
@@ -152,7 +153,7 @@ public class StructureController extends BaseController {
 	public void unlinkUser(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		final String structureId = request.params().get("structureId");
-		structureService.unlink(structureId, userId, notEmptyResponseHandler(request));
+		structureService.unlink(structureId, userId, defaultResponseHandler(request));
 	}
 
 	@Get("/structure/admin/list")
@@ -357,6 +358,47 @@ public class StructureController extends BaseController {
 
 				massMailService.massMailAllUsersByStructure(structureId, infos, arrayResponseHandler(request));
 			}
+		});
+	}
+
+	@Get("/structure/massmessaging/template")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
+	public void getMassMessageTemplate(final HttpServerRequest request) {
+		FileSystem fs = vertx.fileSystem();
+
+		this.assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath");
+		this.skins = vertx.sharedData().getLocalMap("skins");
+
+		getSkin(request, res -> {
+
+			final String skin;
+			if (res.isLeft() || res.right().getValue() == null) {
+				skin = this.skins.get(Renders.getHost(request));
+			} else {
+				skin = res.right().getValue();
+			}
+
+			final String assetsPath = this.assetsPath + "/assets/themes/" + skin;
+			final String templatePath = assetsPath + "/template/directory/massmessage_asm_default.html";
+
+			fs.readFile(templatePath, result -> {
+
+				if (result.succeeded()) {
+					String html = result.result().toString(StandardCharsets.UTF_8);
+
+					request.response()
+							.setStatusCode(200)
+							.putHeader("content-type", "text/html; charset=utf-8")
+							.end(html);
+				} else {
+					request.response()
+							.setStatusCode(500)
+							.putHeader("content-type", "text/plain; charset=utf-8")
+							.end("Failed to load template");
+				}
+
+			});
 		});
 	}
 
@@ -844,6 +886,48 @@ public class StructureController extends BaseController {
 							}));
 				});
 			});
+		});
+	}
+
+	@Put("/structure/check/gar")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
+	public void checkGAR(final HttpServerRequest request) {
+		bodyToJson(request, body -> {
+			JsonArray uais = body.getJsonArray("uais");
+			structureService.checkGAR(uais, handler -> {
+				if (handler.isLeft()) {
+					renderError(request, new JsonObject().put("error", handler.left().getValue()));
+				} else {
+					renderJson(request, handler.right().getValue());
+				}
+			});
+		});
+	}
+
+	@Put("/structure/gar/activate")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
+	public void activateGar(final HttpServerRequest request) {
+		bodyToJson(request, body -> {
+			JsonArray targetUAIs = body.getJsonArray("uais", new JsonArray());
+			String garId = body.getString("garId");
+
+			if (StringUtils.isEmpty(garId) || targetUAIs.isEmpty()) {
+				badRequest(request);
+				return;
+			}
+
+			this.structureService.activateGar(garId, targetUAIs, config.getString("gar-group-name", "RESP-AFFECT-GAR"),
+				config.getString("gar-app-name", "GAR_AFFECTATION_IHM_CONNECTEUR"), result -> {
+					if (result.isRight()) {
+						renderJson(request, result.right().getValue());
+					} else {
+						renderError(request);
+					}
+				});
 		});
 	}
 }

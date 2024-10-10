@@ -33,6 +33,7 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
+import org.entcore.common.user.position.impl.DefaultUserPositionService;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.feeder.aaf.AafFeeder;
 import org.entcore.feeder.aaf1d.Aaf1dFeeder;
@@ -188,7 +189,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			}
 		}
 
-		manual = new ManualFeeder(neo4j, eb);
+		manual = new ManualFeeder(neo4j, eb, new DefaultUserPositionService(eb));
 		duplicateUsers = new DuplicateUsers(config.getBoolean("timetable", true),
 				config.getBoolean("autoMergeOnlyInSameStructure", true), vertx.eventBus());
 		postImport = new PostImport(vertx, duplicateUsers, config);
