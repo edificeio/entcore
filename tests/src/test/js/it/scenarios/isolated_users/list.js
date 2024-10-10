@@ -9,7 +9,7 @@ import {
   getOrCreateUser,
   detachUserFromStructures,
   deleteOrPresuppressUsers
-} from "../admin/utils.js";
+} from "../admin/_utils.js";
 
 chai.config.logFailures = true;
 
