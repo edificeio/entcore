@@ -91,7 +91,13 @@ public class Directory extends BaseServer {
 		SchoolService schoolService = new DefaultSchoolService(eb).setListUserMode(config.getString("listUserMode", "multi"));
 		GroupService groupService = new DefaultGroupService(eb);
 		SubjectService subjectService = new DefaultSubjectService(eb);
-		UserPositionService userPositionService = new DefaultUserPositionService(eb);
+		final JsonObject emptyJsonObject = new JsonObject();
+		UserPositionService userPositionService = new DefaultUserPositionService(eb)
+			.restrictCrudToADMC( config
+			.getJsonObject("publicConf", emptyJsonObject)
+			.getJsonObject("userPosition", emptyJsonObject)
+			.getBoolean("restrictCRUDToADMC", false)
+		);
 		ConversationNotification conversationNotification = new ConversationNotification(vertx, eb, config);
 
 		DirectoryController directoryController = new DirectoryController();

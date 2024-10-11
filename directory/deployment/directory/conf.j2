@@ -64,6 +64,9 @@
                 {% if disabledFederatedAdress is defined %}
                 "disabledFederatedAdress": {{ disabledFederatedAdress }},
                 {% endif %}
+                "userPosition": {
+                    "restrictCRUDToADMC":{{ restrictCRUDToADMC|default('false') }}
+                },
                 "xiti": {
                     "ID_SERVICE": {
                         "default": 2,

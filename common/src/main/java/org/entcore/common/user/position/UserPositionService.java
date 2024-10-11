@@ -7,6 +7,9 @@ import org.entcore.common.user.UserInfos;
 import java.util.Set;
 
 public interface UserPositionService {
+	/** Check if CRUD operations are restricted to ADMC. */
+	Boolean isCrudRestrictedToADMC();
+
 	/**
 	 * Retrieve user positions linked to structures the user or admin is attached to.
 	 * @return the retrieved user positions
