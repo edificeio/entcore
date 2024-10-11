@@ -857,10 +857,23 @@ public class AuthController extends BaseController {
 	 * @return a future of user's details : login, displayName, email, mobile.
 	 */
 	private Future<JsonObject> logInWithActivationCode(final String login, final String activationCode) {
+		Promise<JsonObject> promise = Promise.promise();
 		// try activation with login
-		return userAuthAccount.matchActivationCode(login, activationCode)
-		// try activation with loginAlias
-		.recover(throwable -> userAuthAccount.matchActivationCodeByLoginAlias(login, activationCode));
+		userAuthAccount.matchActivationCode(login, activationCode, event1 -> {
+			if( event1.isRight() ) {
+				promise.complete(event1.right().getValue());
+			} else {
+				// try activation with loginAlias
+				userAuthAccount.matchActivationCodeByLoginAlias(login, activationCode, event2 -> {
+					if( event2.isRight() ) {
+						promise.complete(event2.right().getValue());
+					} else {
+						promise.fail(event2.left().getValue());
+					}
+				});
+			}
+		});
+		return promise.future();
 	}
 
 	/**
@@ -870,10 +883,23 @@ public class AuthController extends BaseController {
 	 * @return a future of user's details : login, displayName, email, mobile.
 	 */
 	private Future<JsonObject> logInWithResetCode(final String login, final String resetCode) {
+		Promise<JsonObject> promise = Promise.promise();
 		// try reset with login
-		return userAuthAccount.matchResetCode(login, resetCode)
-		// try reset with loginAlias
-		.recover(throwable -> userAuthAccount.matchResetCodeByLoginAlias(login, resetCode));
+		userAuthAccount.matchResetCode(login, resetCode, event1 -> {
+			if( event1.isRight() ) {
+				promise.complete(event1.right().getValue());
+			} else {
+				// try reset with loginAlias
+				userAuthAccount.matchResetCodeByLoginAlias(login, resetCode, event2 -> {
+					if( event2.isRight() ) {
+						promise.complete(event2.right().getValue());
+					} else {
+						promise.fail(event2.left().getValue());
+					}
+				});
+			}
+		});
+		return promise.future();
 	}
 	
 	private void handleGetUserId(String login, String userId, HttpServerRequest request, String callback) {

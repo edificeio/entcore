@@ -143,9 +143,8 @@ public class UserAuthAccountTest {
         test.directory().createInactiveUser("user6", "activationCode6", "user6@test.com")
         .onComplete(resAcUser -> {
             context.assertTrue(resAcUser.succeeded());
-            authAccount.matchActivationCode("user6", "activationCode6")
-            .onComplete(resActiv -> {
-                context.assertNotNull(resActiv);
+            authAccount.matchActivationCode("user6", "activationCode6", resActiv -> {
+                context.assertTrue(resActiv.isRight());
                 async.complete();
             });
         });
@@ -157,9 +156,8 @@ public class UserAuthAccountTest {
         test.directory().createInactiveUser("user7", "userAlias7", "activationCode7", "user7@test.com")
         .onComplete(resAcUser -> {
             context.assertTrue(resAcUser.succeeded());
-            authAccount.matchActivationCodeByLoginAlias("userAlias7", "activationCode7")
-            .onComplete(resActiv -> {
-                context.assertNotNull(resActiv);
+            authAccount.matchActivationCodeByLoginAlias("userAlias7", "activationCode7", resActiv -> {
+                context.assertTrue(resActiv.isRight());
                 async.complete();
             });
         });
@@ -171,9 +169,8 @@ public class UserAuthAccountTest {
         test.directory().createInactiveUser("user8", "activationCode8", "user8@test.com")
         .onComplete(resAcUser -> {
             context.assertTrue(resAcUser.succeeded());
-            authAccount.matchActivationCode("user8", "bad")
-            .onComplete(resActiv -> {
-                context.assertNotNull(resActiv);
+            authAccount.matchActivationCode("user8", "bad", resActiv -> {
+                context.assertFalse(resActiv.isRight());
                 async.complete();
             });
         });
@@ -186,9 +183,8 @@ public class UserAuthAccountTest {
         .compose(resAcUser -> test.directory().resetUser(resAcUser, "resetCode9"))
         .onComplete(resAcUser -> {
             context.assertTrue(resAcUser.succeeded());
-            authAccount.matchResetCode("user9", "resetCode9")
-            .onComplete(resActiv -> {
-                context.assertNotNull(resActiv);
+            authAccount.matchResetCode("user9", "resetCode9", resActiv -> {
+                context.assertTrue(resActiv.isRight());
                 async.complete();
             });
         });
@@ -201,9 +197,8 @@ public class UserAuthAccountTest {
         .compose(resAcUser -> test.directory().resetUser(resAcUser, "resetCode10"))
         .onComplete(resAcUser -> {
             context.assertTrue(resAcUser.succeeded());
-            authAccount.matchResetCodeByLoginAlias("userAlias10", "resetCode10")
-            .onComplete(resActiv -> {
-                context.assertNotNull(resActiv);
+            authAccount.matchResetCodeByLoginAlias("userAlias10", "resetCode10", resActiv -> {
+                context.assertTrue(resActiv.isRight());
                 async.complete();
             });
         });
@@ -216,9 +211,8 @@ public class UserAuthAccountTest {
         .compose(resAcUser -> test.directory().resetUser(resAcUser, "resetCode11"))
         .onComplete(resAcUser -> {
             context.assertTrue(resAcUser.succeeded());
-            authAccount.matchResetCode("user11", "bad")
-            .onComplete(resActiv -> {
-                context.assertNotNull(resActiv);
+            authAccount.matchResetCode("user11", "bad", resActiv -> {
+                context.assertFalse(resActiv.isRight());
                 async.complete();
             });
         });

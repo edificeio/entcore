@@ -270,17 +270,19 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 	}
 	
 	@Override
-	public Future<JsonObject> matchActivationCode(final String login, String potentialActivationCode) {
-		return matchActivationCode("login", login, potentialActivationCode);
+	public void matchActivationCode(final String login, String potentialActivationCode,
+			final Handler<Either<String, JsonObject>> handler) {
+		matchActivationCode("login", login, potentialActivationCode, handler);
 	}
 
 	@Override
-	public Future<JsonObject> matchActivationCodeByLoginAlias(final String login, String potentialActivationCode) {
-		return matchActivationCode("loginAlias", login, potentialActivationCode);
+	public void matchActivationCodeByLoginAlias(final String login, String potentialActivationCode,
+			final Handler<Either<String, JsonObject>> handler) {
+		matchActivationCode("loginAlias", login, potentialActivationCode, handler);
 	}
 
-	private Future<JsonObject> matchActivationCode(final String loginFieldName, final String login, String potentialActivationCode) {
-		Promise<JsonObject> promise = Promise.promise();
+	private void matchActivationCode(final String loginFieldName, final String login, String potentialActivationCode,
+		 final Handler<Either<String, JsonObject>> handler) {
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n." + loginFieldName + "={login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
@@ -292,25 +294,26 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 			.put("activationCode", potentialActivationCode);
 		neo.execute(query, params, Neo4jResult.validUniqueResultHandler( event -> {
 			if(event.isLeft() || !event.right().getValue().getBoolean("exists", false))
-				promise.fail("not.found");
+				handler.handle(new Either.Left<String, JsonObject>("not.found"));
 			else
-				promise.complete(event.right().getValue());
+				handler.handle(event);
 		}));
-		return promise.future();
 	}
 
 	@Override
-	public Future<JsonObject> matchResetCode(final String login, String potentialResetCode) {
-		return matchResetCode("login", login, potentialResetCode);
+	public void matchResetCode(final String login, String potentialResetCode,
+			final Handler<Either<String, JsonObject>> handler) {
+		matchResetCode("login", login, potentialResetCode, handler);
 	}
 
 	@Override
-	public Future<JsonObject> matchResetCodeByLoginAlias(final String login, String potentialResetCode) {
-		return matchResetCode("loginAlias", login, potentialResetCode);
+	public void matchResetCodeByLoginAlias(final String login, String potentialResetCode,
+		   final Handler<Either<String, JsonObject>> handler) {
+		matchResetCode("loginAlias", login, potentialResetCode, handler);
 	}
 
-	private Future<JsonObject> matchResetCode(final String loginFieldName, final String login, String potentialResetCode) {
-		Promise<JsonObject> promise = Promise.promise();
+	private void matchResetCode(final String loginFieldName, final String login, String potentialResetCode,
+		final Handler<Either<String, JsonObject>> handler) {
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n." + loginFieldName + "={login} AND has(n.resetDate) " +
@@ -321,13 +324,12 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 			.put("login", login)
 			.put("resetCode", potentialResetCode)
 			.put("nowMinusDelay", (System.currentTimeMillis() - resetCodeExpireDelay));
-		neo.execute(query, params, Neo4jResult.validUniqueResultHandler( event -> {
-			if(event.isLeft() || !event.right().getValue().getBoolean("exists", false))
-				promise.fail("not.found");
-			else
-				promise.complete(event.right().getValue());
+			neo.execute(query, params, Neo4jResult.validUniqueResultHandler( event -> {
+				if(event.isLeft() || !event.right().getValue().getBoolean("exists", false))
+					handler.handle(new Either.Left<String, JsonObject>("not.found"));
+				else
+					handler.handle(event);
 		}));
-		return promise.future();
 	}
 
 	@Override
