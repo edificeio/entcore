@@ -94,10 +94,10 @@ public class Directory extends BaseServer {
 		final JsonObject emptyJsonObject = new JsonObject();
 		UserPositionService userPositionService = new DefaultUserPositionService(eb)
 			.restrictCrudToADMC( config
-			.getJsonObject("publicConf", emptyJsonObject)
-			.getJsonObject("userPosition", emptyJsonObject)
-			.getBoolean("restrictCRUDToADMC", false)
-		);
+				.getJsonObject("publicConf", emptyJsonObject)
+				.getJsonObject("userPosition", emptyJsonObject)
+				.getBoolean("restrictCRUDToADMC", false)
+			);
 		ConversationNotification conversationNotification = new ConversationNotification(vertx, eb, config);
 
 		DirectoryController directoryController = new DirectoryController();
@@ -106,7 +106,6 @@ public class Directory extends BaseServer {
 		directoryController.setUserService(userService);
 		directoryController.setGroupService(groupService);
 		directoryController.setSlotProfileService(new DefaultSlotProfileService(SLOTPROFILE_COLLECTION));
-		directoryController.setUserPositionService(userPositionService);
 		addController(directoryController);
 		vertx.setTimer(5000l, event -> directoryController.createSuperAdmin());
 
@@ -135,7 +134,6 @@ public class Directory extends BaseServer {
 		userController.setNotification(timeline);
 		userController.setUserBookService(userBookService);
 		userController.setUserService(userService);
-		userController.setUserPositionService(userPositionService);
 		addController(userController);
 
 		ProfileController profileController = new ProfileController();
