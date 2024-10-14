@@ -195,20 +195,6 @@ public class DefaultUserValidationService implements UserValidationService {
             return promise.future();
         }
 
-        /**
-         * Generate email subject by loading Timeline i18n to retrieve PF/Project name and add it to custom email subject.
-         * @param request to get host, language, ...
-         * @param i18nKey key for email subject
-         * @return subject
-         */
-        private Future<String> formatEmailSubject(HttpServerRequest request, String i18nKey, JsonObject parameters) {
-            return getProjectNameFromTimelineI18n(request).compose( projectName -> {
-                parameters.put("projectName", projectName);
-                final String initialValue = I18n.getInstance().translate(i18nKey, getHost(request), I18n.acceptLanguage(request));
-                return processEmailTemplate(request, parameters, initialValue, true);
-            });
-        }
-
     }
 
     //---------------------------------------------------------------
