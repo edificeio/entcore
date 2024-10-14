@@ -22,12 +22,12 @@ const flashMsgCollapsable = ng.directive('flashMsg', ['$window', ($window) => ({
 					<div bind-html="contents"></div>\
 						<span class="flash-msg-collapsable-button" ng-if="collapsable && collapsed">\
 							<b ng-click="toggleCollapse()">\
-								<i18n>Voir plus</i18n>\
+								<i18n>timeline.flash.message.seemore</i18n>\
 							</b>\
 						</span>\
 						<span class="flash-msg-collapsable-button" ng-if="collapsable && !collapsed">\
 							<b ng-click="toggleCollapse()">\
-								<i18n>Voir moins</i18n>\
+								<i18n>timeline.flash.message.seeless</i18n>\
 							</b>\
 						</span>\
 					</div>\
