@@ -1,6 +1,6 @@
-<div class="widget widget-flash" 
-        ng-repeat="message in ctrl.messages track by message.id" 
-        ng-class="message.customColor ? 'blue' : message.color">
+<div class="widget widget-flash"
+    ng-repeat="message in ctrl.messages track by message.id"
+    ng-class="message.customColor ? 'blue' : message.color">
     <svg class="icon-svg flash-icon" width="20" height="20" viewBox="0 0 24 24">
         <use href="/timeline/public/icons/icons.svg{{message.color==='red'?'#alert-triangle':'#info-circle'}}"></use>
     </svg>
