@@ -534,32 +534,34 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 				.put("resetCode", resetCode)
 				.put("displayName", displayName);
 
-
-
-		notification.sendEmail(
-				request,
-				email,
-				config.getString("email", "noreply@one1d.fr"),
-				null,
-				null,
-				"mail.reset.pw.subject",
-				sendForgotPasswordEmailWithResetCode ? "email/forgotPasswordResetCode.html" : "email/forgotPassword.html",
-				json,
-				true,
-				handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
-					public void handle(Message<JsonObject> event) {
-						if(!ignoreSendResetPasswordMailError) {
-							if ("error".equals(event.body().getString("status"))) {
-								handler.handle(new Either.Left<String, JsonObject>(event.body().getString("message", "")));
-							} else {
-								handler.handle(new Either.Right<String, JsonObject>(event.body()));
+		formatEmailSubject(request, "email.password.reset.subject", new JsonObject()).compose(subject -> {
+			Promise<String> promise = Promise.promise();
+			notification.sendEmail(
+					request,
+					email,
+					config.getString("email", "noreply@one1d.fr"),
+					null,
+					null,
+					subject,
+					"email/forgotPassword.html",
+					json,
+					true,
+					handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+						public void handle(Message<JsonObject> event) {
+							if(!ignoreSendResetPasswordMailError) {
+								if ("error".equals(event.body().getString("status"))) {
+									handler.handle(new Either.Left<String, JsonObject>(event.body().getString("message", "")));
+								} else {
+									handler.handle(new Either.Right<String, JsonObject>(event.body()));
+								}
 							}
 						}
-					}
-				}));
-		if(ignoreSendResetPasswordMailError) {
-			handler.handle(new Either.Right<>(new ResultMessage().body()));
-		}
+					}));
+			if(ignoreSendResetPasswordMailError) {
+				handler.handle(new Either.Right<>(new ResultMessage().body()));
+			}
+			return promise.future();
+		});
 	}
 
 	@Override
