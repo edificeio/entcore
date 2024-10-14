@@ -81,10 +81,10 @@ public class I18nBusRequest {
     }
     public String[] getKeys() {
         final JsonArray value = message.getJsonArray(KEYS);
-        return (value!=null) ? (String[]) value.stream().toArray() : null;
+        return (value!=null) ? value.stream().toArray(String[]::new) : null;
     }
     public String[] getArgs() {
         final JsonArray value = message.getJsonArray(ARGS);
-        return (value!=null) ? (String[]) value.stream().toArray() : null;
+        return (value!=null) ? value.stream().toArray(String[]::new) : null;
     }
 }
