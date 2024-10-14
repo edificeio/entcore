@@ -151,7 +151,7 @@ function AdminFlashMsgController($scope) {
 	}
 
     $scope.banner = {
-        colors: ['red', 'orange', 'green', 'blue']
+        colors: ['red', 'orange', 'green', 'blue', 'grey-dark']
     }
     $scope.setColor = function(color) {
         $scope.edited.message.color = color

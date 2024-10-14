@@ -4,6 +4,7 @@
  -->
 
 <html>
+
 <head>
     <title>{{#i18n}}auth.title{{/i18n}}</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -21,22 +22,29 @@
         body portal header {
             pointer-events: none;
         }
-        .flashmsg {
-            min-height: 20px;
-            margin-right: 0px !important;
-            background-color: gray;
-        }
     </style>
     <script type="text/javascript" src="/infra/public/js/loader.js" id="context"></script>
 </head>
+
 <body ng-controller="MainController">
     <portal>
-        <div class="flashmsg"
-            ng-class="edited.message.color"
-            ng-style="{ 'background-color': edited.message.customColor }">
-            <i class="close-2x right-magnet"></i>
-            <div bind-html="edited.message.contents[edited.message.lang]"></div>
+        <div class="flashmsg" ng-class="edited.message.customColor ? 'blue' : edited.message.color">
+            <svg class="icon-svg flashmsg-icon" width="20" height="20" viewBox="0 0 24 24">
+                <use
+                    href="/timeline/public/icons/icons.svg[[edited.message.color==='red'?'#alert-triangle':'#info-circle']]">
+                </use>
+            </svg>
+            <div class="flash-msg-collapse">
+                <svg class="icon-svg flashmsg-close" tooltip="timeline.mark.flashmsg" width="20" height="20"
+                    viewBox="0 0 24 24">
+                    <use href="/timeline/public/icons/icons.svg#close"></use>
+                </svg>
+                <div class="flash-msg-collapsable flash-msg-collapsable--collapsable">
+                    <div bind-html="edited.message.contents[edited.message.lang]"></div>
+                </div>
+            </div>
         </div>
     </portal>
 </body>
+
 </html>
