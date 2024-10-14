@@ -205,7 +205,7 @@ public class DefaultUserValidationService implements UserValidationService {
             return getProjectNameFromTimelineI18n(request).compose( projectName -> {
                 parameters.put("projectName", projectName);
                 final String initialValue = I18n.getInstance().translate(i18nKey, getHost(request), I18n.acceptLanguage(request));
-                return processEmailTemplate(request, parameters, initialValue, false);
+                return processEmailTemplate(request, parameters, initialValue, true);
             });
         }
 
