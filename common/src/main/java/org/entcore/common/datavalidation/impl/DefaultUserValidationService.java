@@ -202,9 +202,11 @@ public class DefaultUserValidationService implements UserValidationService {
          * @return subject
          */
         private Future<String> formatEmailSubject(HttpServerRequest request, String i18nKey, JsonObject parameters) {
-            parameters.put("projectName", getProjectNameFromTimelineI18n(request));
-            final String initialValue = I18n.getInstance().translate(i18nKey, getHost(request), I18n.acceptLanguage(request));
-            return processEmailTemplate(request, parameters,initialValue, false);
+            return getProjectNameFromTimelineI18n(request).compose( projectName -> {
+                parameters.put("projectName", projectName);
+                final String initialValue = I18n.getInstance().translate(i18nKey, getHost(request), I18n.acceptLanguage(request));
+                return processEmailTemplate(request, parameters, initialValue, false);
+            });
         }
 
     }
