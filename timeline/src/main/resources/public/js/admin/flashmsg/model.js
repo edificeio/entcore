@@ -10,6 +10,7 @@ function FlashMsg(){
     this.lang = this.lang || currentLanguage
     this.author = this.author || ""
     this.lastModifier = this.lastModifier || ""
+    this.color = this.color || "red"
 }
 FlashMsg.prototype.api = {
     post:   "/timeline/flashmsg",
