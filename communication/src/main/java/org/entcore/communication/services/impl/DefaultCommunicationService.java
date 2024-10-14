@@ -1660,16 +1660,18 @@ public class DefaultCommunicationService implements CommunicationService {
 	@Override
 	public void searchVisibleContactsOptimized(UserInfos user, String search, String language, Handler<Either<String, JsonArray>> handler) {
 		String match = "MATCH (visibles) " +
+			"WITH visibles, HEAD(visibles.profiles) AS primaryProfile " +
 			"OPTIONAL MATCH (visibles)-[:RELATED]-(related:User) " +
-			" WITH visibles, \n" +
+			"WITH visibles, primaryProfile, " +
 			"     collect(CASE \n" +
-			"                WHEN (visibles)-[:RELATED]->(related) THEN {id: related.id, displayName: related.displayName, role: 'parent'} \n" +
-			"                WHEN (visibles)<-[:RELATED]-(related) THEN {id: related.id, displayName: related.displayName, role: 'child'}\n" +
+			"                WHEN primaryProfile == 'Student' THEN {id: related.id, displayName: related.displayName, role: 'parent'} \n" +
+			"                WHEN primaryProfile != 'Student' THEN {id: related.id, displayName: related.displayName, role: 'child'}\n" +
 			"              END) AS relatedUsers\n" +
 			"WITH visibles, \n" +
 			"     [x IN relatedUsers WHERE x.role = 'parent'] AS relatives, \n" +
 			"     [x IN relatedUsers WHERE x.role = 'child'] AS children " +
 			"OPTIONAL MATCH (visibles)-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(c:Class) " +
+			"WITH visibles, relatives, children \n" +
 			"OPTIONAL MATCH (visibles)-[:IN]->(fdg:Group) WHERE fdg:FuncGroup OR fdg:DisciplineGroup " +
 			"WITH visibles, " +
 			"     relatives, " +
@@ -1680,7 +1682,7 @@ public class DefaultCommunicationService implements CommunicationService {
 			"               WHEN fdg:DisciplineGroup AND fdg.id IS NOT NULL THEN {id: fdg.id, name: fdg.filter, typ: 'discipline'}" +
 			"             END) AS groups " +
 			"WITH visibles, " +
-			"     relatives, " +
+			"     relatives," +
 			"     children," +
 			"     classrooms, " +
 			"     [g IN groups WHERE g.type = 'function'] AS functions, " +
