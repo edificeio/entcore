@@ -63,24 +63,31 @@ public abstract class TemplatedEmailRenders extends Renders {
         boolean reader, 
         final Handler<String> handler
         ) {
-        // From now until the end of the template processing, code execution cannot be async.
-        // So initialize requestedThemeKV here and now.
-        loadThemeKVs(request)
-        .onSuccess( themeKV -> {
-            this.requestThemeKV = themeKV;
-            if(reader){
-                final StringReader templateReader = new StringReader(template);
-                processTemplate(request, parameters, "", templateReader, new Handler<Writer>() {
-                    public void handle(Writer writer) {
-                        handler.handle(writer.toString());
-                    }
-                });
-    
-            } else {
-                processTemplate(request, template, parameters, handler);
-            }
-        });
+		processEmailTemplate(request, parameters, template, reader).onSuccess(handler);
     }
+
+	protected Future<String> processEmailTemplate(
+			final HttpServerRequest request,
+			JsonObject parameters,
+			String template,
+			boolean reader
+	) {
+		Promise<String> promise = Promise.promise();
+		// From now until the end of the template processing, code execution cannot be async.
+		// So initialize requestedThemeKV here and now.
+		loadThemeKVs(request)
+				.onSuccess( themeKV -> {
+					this.requestThemeKV = themeKV;
+					if(reader){
+						final StringReader templateReader = new StringReader(template);
+						processTemplate(request, parameters, "", templateReader, writer -> promise.complete(writer.toString()));
+
+					} else {
+						processTemplate(request, template, parameters, promise::complete);
+					}
+				}).onFailure(promise::fail);
+		return promise.future();
+	}
 
 	/** Find the theme associated to the request. */
 	protected Future<String> getThemePath(HttpServerRequest request) {
@@ -147,7 +154,7 @@ public abstract class TemplatedEmailRenders extends Renders {
 	protected String getProjectNameFromTimelineI18n(final HttpServerRequest request) {
 		final JsonObject timelineI18n = (requestThemeKV == null ? getThemeDefaults() : requestThemeKV)
 				.getOrDefault(I18n.acceptLanguage(request).split(",")[0].split("-")[0], new JsonObject());
-		return timelineI18n.getString("timeline.immediate.mail.subject.header", "");
+		return timelineI18n.getString("timeline.mail.projectName", "");
 	}
 
 	/** Load and parse i18n files. */
