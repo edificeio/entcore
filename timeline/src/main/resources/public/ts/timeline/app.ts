@@ -43,7 +43,8 @@ const flashMsgCollapsable = ng.directive('flashMsg', ['$window', ($window) => ({
 		$scope.collapsable = undefined;
 		var $collapsableElement = $element.find('.flash-msg-collapsable');
 		var $collapsableElementInner = $collapsableElement.find('div');
-		$scope.contents = '<p>' + $scope.message.contents[$scope.currentLanguage] + '</p>';
+		// Note : replace is here to merge consecutive empty lines from adminV1 editor
+		$scope.contents = '<p>' + $scope.message.contents[$scope.currentLanguage].replaceAll(/(<div>[\s\u200B]*<\/div>){2,}/g, '<div>\u200B</div>') + '</p>';
 
 		$scope.onResize = function () {
 			if ($scope.collapsable !== undefined) return;
