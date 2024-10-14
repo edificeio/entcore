@@ -14,7 +14,7 @@ const flashMsgCollapsable = ng.directive('flashMsg', ['$window', ($window) => ({
 			<svg class="icon-svg flashmsg-icon" width="20" height="20" viewBox="0 0 24 24">\
 				<use href="{{icon}}"></use>\
 			</svg>\
-			<svg class="icon-svg flashmsg-close" tooltip="timeline.mark.flashmsg" ng-click="markMessage(message)" width="20" height="20" viewBox="0 0 24 24">\
+			<svg class="icon-svg flashmsg-close" tooltip="timeline.mark.flashmsg" ng-click="markMessage()" width="20" height="20" viewBox="0 0 24 24">\
 				<use href="/timeline/public/icons/icons.svg#close"></use>\
 			</svg>\
 			<div class="flash-msg-collapsable flash-msg-collapsable--collapsable flash-msg-collapsable--collapsed">\
