@@ -14,24 +14,23 @@ const flashMsgCollapsable = ng.directive('flashMsg', ['$window', ($window) => ({
 			<svg class="icon-svg flashmsg-icon" width="20" height="20" viewBox="0 0 24 24">\
 				<use href="{{icon}}"></use>\
 			</svg>\
-			<div class="flash-msg-collapse">\
-				<svg class="icon-svg flashmsg-close" tooltip="timeline.mark.flashmsg" ng-click="markMessage(message)" width="20" height="20" viewBox="0 0 24 24">\
-					<use href="/timeline/public/icons/icons.svg#close"></use>\
-				</svg>\
-				<div class="flash-msg-collapsable flash-msg-collapsable--collapsable flash-msg-collapsable--collapsed">\
-					<div bind-html="contents"></div>\
-					<span class="flash-msg-collapsable-button" ng-if="collapsable && collapsed">\
-						<b ng-click="toggleCollapse()">\
-							<i18n>timeline.flash.message.seemore</i18n>\
-						</b>\
-					</span>\
-					<span class="flash-msg-collapsable-button" ng-if="collapsable && !collapsed">\
-						<b ng-click="toggleCollapse()">\
-							<i18n>timeline.flash.message.seeless</i18n>\
-						</b>\
-					</span>\
-				</div>\
+			<svg class="icon-svg flashmsg-close" tooltip="timeline.mark.flashmsg" ng-click="markMessage(message)" width="20" height="20" viewBox="0 0 24 24">\
+				<use href="/timeline/public/icons/icons.svg#close"></use>\
+			</svg>\
+			<div class="flash-msg-collapsable flash-msg-collapsable--collapsable flash-msg-collapsable--collapsed">\
+				<div bind-html="contents"></div>\
 			</div>\
+			<span ng-if="message.signature" class="flash-content-signature">{{message.signature}}</span>\
+			<span class="flash-msg-collapsable-button" ng-if="collapsable && collapsed">\
+				<b ng-click="toggleCollapse()">\
+					<i18n>timeline.flash.message.seemore</i18n>\
+				</b>\
+			</span>\
+			<span class="flash-msg-collapsable-button" ng-if="collapsable && !collapsed">\
+				<b ng-click="toggleCollapse()">\
+					<i18n>timeline.flash.message.seeless</i18n>\
+				</b>\
+			</span>\
 		</div>',
 	scope: {
 		message: '=',
@@ -43,15 +42,13 @@ const flashMsgCollapsable = ng.directive('flashMsg', ['$window', ($window) => ({
 		$scope.collapsed = true;
 		$scope.collapsable = undefined;
 		var $collapsableElement = $element.find('.flash-msg-collapsable');
+		var $collapsableElementInner = $collapsableElement.find('div');
 		$scope.contents = '<p>' + $scope.message.contents[$scope.currentLanguage] + '</p>';
-		if ($scope.message.signature)
-			$scope.contents += '<p class="flash-content-signature">' + $scope.message.signature + '</p>';
-		else $scope.contents += '<p class="flash-content-signature"></p>';
 
 		$scope.onResize = function () {
 			if ($scope.collapsable !== undefined) return;
-			$scope.collapsable = $collapsableElement[0].scrollHeight - 8 > $collapsableElement[0].clientHeight;
-			$collapsableElement[$scope.collapsable ? 'addClass' : 'removeClass']('flash-msg-collapsable--collapsable');
+			$scope.collapsable = $collapsableElementInner[0].scrollHeight > $collapsableElementInner[0].clientHeight;
+			$collapsableElementInner[$scope.collapsable ? 'addClass' : 'removeClass']('flash-msg-collapsable--collapsable');
 			$scope.$apply();
 		};
 		$scope.toggleCollapse = function () {
