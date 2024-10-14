@@ -10,7 +10,7 @@ const flashMsgCollapsable = ng.directive('flashMsg', ['$window', ($window) => ({
 	restrict: 'E',
 	replace: true,
 	template: '\
-		<div class="flashmsg" ng-class="message.color" flash-msg-collapse>\
+		<div class="flashmsg" ng-class="message.customColor ? "blue" : message.color" flash-msg-collapse>\
 			<svg class="icon-svg flashmsg-icon" width="20" height="20" viewBox="0 0 24 24">\
 				<use href="{{icon}}"></use>\
 			</svg>\
