@@ -15,8 +15,10 @@ export class MessageFlashPreviewComponent extends OdeComponent implements OnInit
     @Input() signature: string;
     @Input() signatureColor: string;
 
+    computedText: string;
+
     constructor(injector: Injector,
-                public domSanitizer: DomSanitizer) {
+        public domSanitizer: DomSanitizer) {
         super(injector);
     }
 
@@ -26,5 +28,11 @@ export class MessageFlashPreviewComponent extends OdeComponent implements OnInit
         if (!this.text) {
             this.text = '';
         }
+    }
+
+    ngOnChanges(): void {
+        this.computedText = (this.text as any).replaceAll(/(<div>[\s\u200B]*<\/div>){2,}/g, '<div>\u200B</div>'); // This code merges consecutive empty lines from adminV1 editor
+        this.computedText = (this.text as any).replaceAll(/(<div>([\s\u200B]|<br\/?>)*<\/div>)$/g, ''); // This code remove last empty line from adminV1 editor
+        this.computedText = (this.text as any).replaceAll(/(<p><br><\/p>)+/g, ''); // This code merges consecutive empty lines from adminV2 editor;
     }
 }

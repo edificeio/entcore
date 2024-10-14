@@ -2804,6 +2804,8 @@ ode-message-sticker {
   margin: 32px 4px 36px 0;
   left: 4px;
   bottom: 4px;
+  display: flex;
+  flex-direction: column;
 
   @each $key, $value in $widget-flash-colors {
     &.#{$key} {
@@ -2865,17 +2867,30 @@ ode-message-sticker {
   .flash-content {
     padding-right: 1rem;
 
-    // Merge multiple <br> into one and delete the first empty line if present
-    p,
-    p>div {
-      &>br:first-child,
-      &>br:not(:not(br)+br) {
-        display: none;
-      }
+    // This block merges empty lines and trim empty lines of the content.
+    &>p {
+      margin-block-start: 1em;
     }
-    > p:first-child {
-      margin-top: 0;
+  
+    &>p:not(:last-child) {
+      margin-block-end: 1em;
     }
+  
+    &::before {
+      content: '';
+      display: block;
+      margin-block-end: 1em;
+    }
+  
+    margin-block-start: -1em;
+  
+    &::after {
+      content: '';
+      display: block;
+      margin-block-start: 1em;
+    }
+  
+    margin-block-end: -1em;
 
     a {
       color: inherit;
