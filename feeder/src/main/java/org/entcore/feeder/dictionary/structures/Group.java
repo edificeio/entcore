@@ -58,7 +58,7 @@ public class Group {
 					"SET " + Neo4jUtils.nodeSetPropertiesFromJson("t", object, "id", "name", "displayNameSearchField", "create") +
 					", t.name = CASE WHEN EXISTS(t.lockDelete) AND t.lockDelete = true AND {create} = false THEN t.name ELSE {name} END " +
 					", t.displayNameSearchField = CASE WHEN EXISTS(t.lockDelete) AND t.lockDelete = true AND {create} = false THEN t.displayNameSearchField ELSE {displayNameSearchField} END " +
-					"RETURN t.id as id ";
+					"RETURN t.id as id, t.createdAt as createdAt, t.createdByName as createdByName, t.modifiedAt as modifiedAt, t.modifiedByName as modifiedByName ";
 			transactionHelper.add(query, object);
 			if (create) {
 				if (structureId != null && !structureId.trim().isEmpty()) {

@@ -58,34 +58,55 @@ export class GroupCreateComponent extends OdeComponent {
     
         let internalCommunicationRule = this.isBroadcastGroup ? "NONE" : "BOTH"
 
-        this.spinner.perform('portal-content', this.http.post<{ id: string }>('/directory/group', body).pipe(
-          flatMap(groupIdHolder =>
-            this.http.post<{ number: number }>(`/communication/group/${groupIdHolder.id}?direction=${internalCommunicationRule}`, {
-            }).pipe(map(() => groupIdHolder))
-          ),
-          tap(groupIdHolder => {
-            this.newGroup.id = groupIdHolder.id;
-            this.newGroup.type = 'ManualGroup';
-            this.newGroup.subType = this.isBroadcastGroup && 'BroadcastGroup';
-            this.groupsStore.structure.groups.data.push(this.newGroup);
-            this.groupsStore.group = this.newGroup;
+        this.spinner.perform(
+          "portal-content",
+          this.http
+            .post<GroupModel>("/directory/group", body)
+            .pipe(
+              flatMap((createdGroup) =>
+                this.http
+                  .post<{ number: number }>(
+                    `/communication/group/${createdGroup.id}?direction=${internalCommunicationRule}`,
+                    {}
+                  )
+                  .pipe(map(() => createdGroup))
+              ),
+              tap((createdGroup) => {
+                this.newGroup.id = createdGroup.id;
+                this.newGroup.createdAt = createdGroup.createdAt;
+                this.newGroup.createdByName = createdGroup.createdByName;
+                this.newGroup.type = "ManualGroup";
+                this.newGroup.subType =
+                  this.isBroadcastGroup && "BroadcastGroup";
+                this.groupsStore.structure.groups.data.push(this.newGroup);
+                this.groupsStore.group = this.newGroup;
 
-            this.ns.success({
-              key: 'notify.group.create.content',
-              parameters: {group: this.newGroup.name}
-            }, 'notify.group.create.title');
+                this.ns.success(
+                  {
+                    key: "notify.group.create.content",
+                    parameters: { group: this.newGroup.name },
+                  },
+                  "notify.group.create.title"
+                );
 
-            this.router.navigate(['..', groupIdHolder.id, 'details'],
-              {relativeTo: this.route, replaceUrl: false});
-          }),
-          catchError( err => {
-            this.ns.error({
-              key: 'notify.group.create.error.content',
-              parameters: {group: this.newGroup.name}
-            }, 'notify.group.create.error.title', err);
-            throw err;
-          })
-        ).toPromise()
+                this.router.navigate(["..", createdGroup.id, "details"], {
+                  relativeTo: this.route,
+                  replaceUrl: false,
+                });
+              }),
+              catchError((err) => {
+                this.ns.error(
+                  {
+                    key: "notify.group.create.error.content",
+                    parameters: { group: this.newGroup.name },
+                  },
+                  "notify.group.create.error.title",
+                  err
+                );
+                throw err;
+              })
+            )
+            .toPromise()
         );
     }
 
