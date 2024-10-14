@@ -1198,6 +1198,14 @@ public class Importer {
 		transactionHelper.add(query, new JsonObject().put("prefix", prefix).put("currentSource", currentSource));
 	}
 
+	public void removeUnusedAAFPositions() {
+		String query = "" +
+				"MATCH (p:UserPosition {source : \"AAF\"}) " +
+				"WHERE NOT (:User)-[:HAS_POSITION]->(p) " +
+				"DETACH DELETE p";
+		transactionHelper.add(query, null);
+	}
+
 	public void countUsersInGroups() {
 		User.countUsersInGroups(null, null, transactionHelper);
 	}
