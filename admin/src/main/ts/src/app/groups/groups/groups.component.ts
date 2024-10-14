@@ -8,11 +8,11 @@ import {
 import { Data, NavigationEnd } from "@angular/router";
 import { OdeComponent } from "ngx-ode-core";
 import { Subscription } from "rxjs";
+import { Session } from "src/app/core/store/mappings/session";
+import { SessionModel } from "src/app/core/store/models/session.model";
 import { CommunicationRulesService } from "../../communication/communication-rules.service";
 import { routing } from "../../core/services/routing.service";
 import { GroupsStore } from "../groups.store";
-import { Session } from "src/app/core/store/mappings/session";
-import { SessionModel } from "src/app/core/store/models/session.model";
 import { GroupType } from "src/app/core/store/models/group.model";
 
 @Component({
@@ -97,7 +97,7 @@ export class GroupsComponent extends OdeComponent implements OnInit, OnDestroy {
     if (this.isADMC) {
       this.tabs.find(tab => tab.view==="classes").visible = true;
     }
-    if ((isADML || this.isADMC) && this.groupsStore.structure.children.length) {
+    if ((isADML || this.isADMC) && this.groupsStore.structure.children?.length) {
       this.tabs.find(tab => tab.view==="broadcastGroup").visible = true;
     }
     this.changeDetector.markForCheck();
