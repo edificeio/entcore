@@ -229,7 +229,7 @@ public class UserUtils {
 					}
 					handler.handle(r);
 				} else {
-					log.error("An error occurred while fetching visible users for user {0}", userId, res.cause());
+					log.error("An error occurred while fetching visible users for user " + userId, res.cause());
 					handler.handle(new fr.wseduc.webutils.collections.JsonArray());
 				}
 			}
