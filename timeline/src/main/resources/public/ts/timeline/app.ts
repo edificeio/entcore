@@ -46,7 +46,8 @@ const flashMsgCollapsable = ng.directive('flashMsg', ['$window', ($window) => ({
 		var $collapsableElement = $element.find('.flash-msg-collapsable');
 		$scope.contents = '<p>' + $scope.message.contents[$scope.currentLanguage] + '</p>';
 		if ($scope.message.signature)
-			$scope.contents += '<p style="font-style: italic">' + $scope.message.signature + '</p>';
+			$scope.contents += '<p class="flash-content-signature">' + $scope.message.signature + '</p>';
+		else $scope.contents += '<p class="flash-content-signature"></p>';
 		$scope.$watch(function () {
 			return $element.children().length;
 		}, function () {
