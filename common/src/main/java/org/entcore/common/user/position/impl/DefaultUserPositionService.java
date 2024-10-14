@@ -34,26 +34,16 @@ public class DefaultUserPositionService implements UserPositionService {
 	private final EventBus eventBus;
 
 	/** WB-3374 Restrict CRUD operations to ADMC. */
-	private Boolean restrictCrudToADMC;
+	private final Boolean restrictCrudToADMC;
 
-  public DefaultUserPositionService(EventBus eventBus) {
+  public DefaultUserPositionService(EventBus eventBus, boolean restrictCrudToADMC) {
     this.eventBus = eventBus;
-  }
-
-  public Boolean isCrudRestrictedToADMC() {
-    return restrictCrudToADMC;
-  }
-
-  /** Put a restriction on admin accesses, fluently. */
-  public DefaultUserPositionService restrictCrudToADMC(boolean value) {
-    restrictCrudToADMC = Boolean.valueOf(value);
-    return this;
+	this.restrictCrudToADMC = Boolean.valueOf(restrictCrudToADMC);
   }
 
   private Future<Void> checkCrudAccess(final UserInfos adminInfos) {
     if(restrictCrudToADMC.booleanValue() && !adminInfos.isADMC()) {
-        logger.warn("unauthorized");
-        return Future.failedFuture("unauthorized");
+        return Future.failedFuture("common.service.admc-only");
     }
 	return Future.succeededFuture();
  }
@@ -86,11 +76,14 @@ public class DefaultUserPositionService implements UserPositionService {
 	}
 
 	private Future<Set<UserPosition>> getUserPositionsForAdmin(String positionId, String content, String structureId, UserInfos adminInfos) {
-		return fetchAdminStructures(adminInfos)
+		return checkCrudAccess(adminInfos)
+			.recover( throwable -> {
+				// Read access may be authorized if the structure is known.
+				return structureId==null ? Future.failedFuture(throwable) : Future.succeededFuture();
+			})
+			.compose( Void -> fetchAdminStructures(adminInfos) )
 			.compose(structureIds -> {
-				if (structureIds.isEmpty() ||
-					(restrictCrudToADMC.booleanValue() && !adminInfos.isADMC() && structureId==null)
-					) {
+				if (structureIds.isEmpty()) {
 					logger.warn(ADMIN_WITHOUT_STRUCTURE);
 					return Future.failedFuture(ADMIN_WITHOUT_STRUCTURE);
 				}

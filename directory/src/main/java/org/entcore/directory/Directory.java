@@ -92,12 +92,11 @@ public class Directory extends BaseServer {
 		GroupService groupService = new DefaultGroupService(eb);
 		SubjectService subjectService = new DefaultSubjectService(eb);
 		final JsonObject emptyJsonObject = new JsonObject();
-		UserPositionService userPositionService = new DefaultUserPositionService(eb)
-			.restrictCrudToADMC( config
-				.getJsonObject("publicConf", emptyJsonObject)
-				.getJsonObject("userPosition", emptyJsonObject)
-				.getBoolean("restrictCRUDToADMC", false)
-			);
+		UserPositionService userPositionService = new DefaultUserPositionService(eb, config
+			.getJsonObject("publicConf", emptyJsonObject)
+			.getJsonObject("userPosition", emptyJsonObject)
+			.getBoolean("restrictCRUDToADMC", false)
+		);
 		ConversationNotification conversationNotification = new ConversationNotification(vertx, eb, config);
 
 		DirectoryController directoryController = new DirectoryController();
