@@ -2851,10 +2851,19 @@ ode-message-sticker {
     transform: translateY(-1px);
   }
 
-  .flash-content {
-    padding-right: 1rem;
+  .flash-content, .flash-content-signature{
     font-size: 14px;
     line-height: calc(22 / 14);
+  }
+
+  .flash-content-signature {
+    margin-top: 12px !important;
+    color: $grey-graphite;
+    font-weight: bold;
+  }
+
+  .flash-content {
+    padding-right: 1rem;
 
     // Merge multiple <br> into one and delete the first empty line if present
     p,
@@ -2880,12 +2889,6 @@ ode-message-sticker {
       &:active {
         color: #550070;
       }
-    }
-
-    .flash-content-signature {
-      font-style: italic;
-      margin-top: 22px !important;
-      margin-right: 12em;
     }
 
     >*:last-child {
