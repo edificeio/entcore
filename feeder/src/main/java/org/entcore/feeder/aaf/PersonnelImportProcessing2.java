@@ -70,6 +70,7 @@ public class PersonnelImportProcessing2 extends PersonnelImportProcessing {
 			structuresByFunctions = new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(s));
 		}
 		createFunctionGroups(object.getJsonArray("functions"), groups);
+		createPositions(object.getJsonArray("functions", null));
 		createHeadTeacherGroups(object.getJsonArray("headTeacher"), groups);
 		createDirectionGroups(object.getJsonArray("direction"), groups);
 		importer.createOrUpdatePersonnel(object, detectProfile(object), structuresByFunctions,

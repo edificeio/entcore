@@ -31,7 +31,7 @@
     <attr name="ENTAuxEnsClassesPrincipal"><value/></attr>
     <attr name="ENTPersonFonctions">
         <value>43$DIR$PRESTATIONS$D0011$ENTRETIEN</value>
-        <value>43$ENS$ENSEIGNEMENT DEVANT ELEVES$G0170$ENSEIGNER EN SEGPA OU EREA</value>
+        <value>43$AEH$ACCOMPAGNEMENT$D0021$ACCOMPAGNEMENT ELEVES SITUATION HANDICAP</value>
     </attr>
     <attr name="ENTPersonCategorieEnseignant"><value>O</value></attr>
     <attr name="PersEducNatPresenceDevantEleves"><value>N</value></attr>
@@ -91,9 +91,9 @@
     <attr name="ENTAuxEnsGroupesMatieres"><value/></attr>
     <attr name="ENTAuxEnsClassesPrincipal"><value/></attr>
     <attr name="ENTPersonFonctions">
-        <value>43$ENS$ARTICHAUT$D0012$PATATES</value>
-        <value>43$ENS$LEGUMES$D0013$HARICOTS</value>
-        <value>43$ENS$LEGUMES$D0014$PETITS POIS</value>
+        <value>43$DIR$ARTICHAUT$D0012$PATATES</value>
+        <value>43$DIR$LEGUMES$D0013$HARICOTS</value>
+        <value>43$DIR$LEGUMES$D0014$PETITS POIS</value>
     </attr>
     <attr name="ENTPersonCategorieEnseignant"><value>N</value></attr>
     <attr name="PersEducNatPresenceDevantEleves"><value>N</value></attr>

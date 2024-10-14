@@ -29,7 +29,10 @@
     <attr name="ENTAuxEnsClassesMatieres"><value/></attr>
     <attr name="ENTAuxEnsGroupesMatieres"><value/></attr>
     <attr name="ENTAuxEnsClassesPrincipal"><value/></attr>
-    <attr name="ENTPersonFonctions"><value>43$DIR$DIRECTION$D0011$CHEF D&apos;ETABLISSEMENT ADJOINT</value><value>43$ENS$ENSEIGNEMENT DEVANT ELEVES$G0170$ENSEIGNER EN SEGPA OU EREA</value></attr>
+    <attr name="ENTPersonFonctions">
+        <value>43$DIR$DIRECTION$D0011$CHEF D&apos;ETABLISSEMENT ADJOINT</value>
+        <value>43$AEH$ACCOMPAGNEMENT$D0021$ACCOMPAGNEMENT ELEVES SITUATION HANDICAP</value>
+    </attr>
     <attr name="ENTPersonCategorieEnseignant"><value>O</value></attr>
     <attr name="PersEducNatPresenceDevantEleves"><value>N</value></attr>
     </attributes>
@@ -57,7 +60,8 @@
     <attr name="ENTAuxEnsClassesMatieres"><value/></attr>
     <attr name="ENTAuxEnsGroupesMatieres"><value/></attr>
     <attr name="ENTAuxEnsClassesPrincipal"><value/></attr>
-    <attr name="ENTPersonFonctions"><value>43$DIR$DIRECTION$D0011$CHEF D&apos;ETABLISSEMENT ADJOINT</value><value>43$ENS$ENSEIGNEMENT DEVANT ELEVES$G0170$ENSEIGNER EN SEGPA OU EREA</value></attr>
+    <attr name="ENTPersonFonctions">
+        <value>43$ENS$ENSEIGNEMENT DEVANT ELEVES$G0170$ENSEIGNER EN SEGPA OU EREA</value></attr>
     <attr name="ENTPersonCategorieEnseignant"><value>O</value></attr>
     <attr name="PersEducNatPresenceDevantEleves"><value>N</value></attr>
     </attributes>

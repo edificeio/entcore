@@ -37,7 +37,7 @@ export const options = {
  */
 export function testImportUserWithFunctionsInAAF() {
   describe("[Position-AAFImport]", () => {
-    const allPositions = [`DIRECTION / CHEF D'ETABLISSEMENT ADJOINT`, `ENSEIGNEMENT DEVANT ELEVES / ENSEIGNER EN SEGPA OU EREA`];
+    const allPositions = [`DIRECTION / CHEF D'ETABLISSEMENT ADJOINT`, `ACCOMPAGNEMENT / ACCOMPAGNEMENT ELEVES SITUATION HANDICAP`];
     const session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
     console.log("Launching import....")
     triggerImport(session)
@@ -61,7 +61,7 @@ export function testImportUserWithFunctionsInAAF() {
     })
     const users = getUsersOfSchool(importedStructure, session);
     const expectedValues = [
-      ['AAAA', 'User with 2 positions', [`DIRECTION / CHEF D'ETABLISSEMENT ADJOINT`, `ENSEIGNEMENT DEVANT ELEVES / ENSEIGNER EN SEGPA OU EREA`]],
+      ['AAAA', 'User with 2 positions', [`DIRECTION / CHEF D'ETABLISSEMENT ADJOINT`, `ACCOMPAGNEMENT / ACCOMPAGNEMENT ELEVES SITUATION HANDICAP`]],
       ['BBBB', 'User with no positions', []]
     ]
     checkUserAndPositions(expectedValues, users, session)

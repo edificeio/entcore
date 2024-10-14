@@ -7,10 +7,14 @@ import {
   getUsersOfSchool,
   getPositionsOfStructure,
   attributePositions,
+  deletePosition,
   getOrCreatePosition
 } from "https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
 import { sleep } from 'k6';
-import {checkUserAndPositions} from './_utils.js';
+import {
+  checkUserAndPositions,
+  getUserByLastName
+} from './_utils.js';
 
 chai.config.logFailures = true;
 
@@ -31,6 +35,8 @@ export const options = {
   },
 };
 
+let positionsToBeTornDown = new Set();
+
 
 /**
  * Ensure that after an AAF import :
@@ -41,7 +47,7 @@ export function testImportUserWithFunctionsInAAFStep2() {
   describe("[Position-AAFImport]", () => {
     const allPositions = [
       /*`DIRECTION / CHEF D'ETABLISSEMENT ADJOINT`,*/ //this one has disappeared
-      `ENSEIGNEMENT DEVANT ELEVES / ENSEIGNER EN SEGPA OU EREA`, // <-- already existed
+      `ACCOMPAGNEMENT / ACCOMPAGNEMENT ELEVES SITUATION HANDICAP`, // <-- already existed
       // Below are the new positions
       `PRESTATIONS / ENTRETIEN`,
       `ARTICHAUT / PATATES`,
@@ -79,10 +85,19 @@ export function testImportUserWithFunctionsInAAFStep2() {
       })
     })
     const expectedValues = [
-      ['AAAA', 'User with 2 AAF positions and 1 manual', [`PRESTATIONS / ENTRETIEN`, `ENSEIGNEMENT DEVANT ELEVES / ENSEIGNER EN SEGPA OU EREA`, `IT Position - Manual`]],
-      ['BBBB', 'User who didn\'t have positions before', [`ENSEIGNEMENT DEVANT ELEVES / ENSEIGNER EN SEGPA OU EREA`]],
+      ['AAAA', 'User with 2 AAF positions and 1 manual', [`PRESTATIONS / ENTRETIEN`, `ACCOMPAGNEMENT / ACCOMPAGNEMENT ELEVES SITUATION HANDICAP`, `IT Position - Manual`]],
+      ['BBBB', 'User who didn\'t have positions before', []],
       ['CCCC', 'New user with multiple positions', [`ARTICHAUT / PATATES`, `LEGUMES / HARICOTS`, `LEGUMES / PETITS POIS`]]
     ]
     checkUserAndPositions(expectedValues, users, session)
 })
 };
+
+export function teardown() {
+    const session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
+    // Removing all positions from structure, for subsequent test runs
+    const structurePositions = getPositionsOfStructure(getSchoolByName("CLG-CLG INTEGRATION-PARIS"), session)
+    for (let p of structurePositions) {
+      deletePosition(p.id, session)
+    }
+}

@@ -20,10 +20,11 @@
 package org.entcore.feeder.csv;
 
 import com.opencsv.CSVReader;
+import org.entcore.common.user.position.UserPosition;
+import org.entcore.common.user.position.UserPositionSource;
 import org.entcore.feeder.Feed;
 import org.entcore.feeder.ManualFeeder;
 import org.entcore.feeder.dictionary.structures.DefaultFunctions;
-import org.entcore.feeder.dictionary.structures.DefaultProfiles;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.dictionary.structures.ImporterStructure;
 import org.entcore.feeder.utils.*;
@@ -480,12 +481,14 @@ public class CsvFeeder implements Feed {
 					switch (profile) {
 						case "Teacher":
 							createFunctionDisciplineGroup(profile, structure, user, groups);
+							createUserPositions(structure, user.getJsonArray("functions", null));
 							importer.createOrUpdatePersonnel(user, TEACHER_PROFILE_EXTERNAL_ID,
 									user.getJsonArray("structures"), classes.toArray(new String[classes.size()][2]),
 									groups.toArray(new String[groups.size()][3]), true, true);
 							break;
 						case "Personnel":
 							createFunctionDisciplineGroup(profile, structure, user, groups);
+							createUserPositions(structure, user.getJsonArray("functions", null));
 							importer.createOrUpdatePersonnel(user, PERSONNEL_PROFILE_EXTERNAL_ID,
 									user.getJsonArray("structures"), classes.toArray(new String[classes.size()][2]),
 									groups.toArray(new String[groups.size()][3]), true, true);
@@ -712,6 +715,18 @@ public class CsvFeeder implements Feed {
 				groupId[1] = groupExternalId;
 				groups.add(groupId);
 			}
+		}
+	}
+
+	private void createUserPositions(ImporterStructure structure, JsonArray functions) {
+		if (functions != null) {
+			functions.stream()
+					.filter(function -> function instanceof String)
+					.map(function -> (String) function)
+					.forEach(function -> {
+						UserPosition.getUserPositionFromEncodedFunction(function, UserPositionSource.CSV)
+								.ifPresent(structure::createPosition);
+					});
 		}
 	}
 
