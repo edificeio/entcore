@@ -7,10 +7,9 @@
     </svg>
     <div class="flash-content">
       <p [innerHTML]="domSanitizer.bypassSecurityTrustHtml(text)"></p>
-      <div *ng-if="!!signature" class="flash-content-signature mt-3 font-italic">
-        {{ signature }}
-      </div>
-      <div *ng-if="!signature" class="flash-content-signature"></div>
+    </div>
+    <div *ngIf="signature !== ''" class="flash-content-signature mt-3 font-italic">
+      {{ signature }}
     </div>
   </div>
 </article>
