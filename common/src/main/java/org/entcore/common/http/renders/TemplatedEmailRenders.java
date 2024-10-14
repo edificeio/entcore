@@ -41,6 +41,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.entcore.common.utils.I18nUtils;
+
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
@@ -151,10 +153,10 @@ public abstract class TemplatedEmailRenders extends Renders {
 	}
 
 	/** Load Timeline i18n to retrieve PF/Project name and add it to custom email subject. */
-	protected String getProjectNameFromTimelineI18n(final HttpServerRequest request) {
-		final JsonObject timelineI18n = (requestThemeKV == null ? getThemeDefaults() : requestThemeKV)
-				.getOrDefault(I18n.acceptLanguage(request).split(",")[0].split("-")[0], new JsonObject());
-		return timelineI18n.getString("timeline.mail.projectName", "");
+	protected Future<String> getProjectNameFromTimelineI18n(final HttpServerRequest request) {
+		final String[] keys = {"timeline.mail.projectName"};
+		return I18nUtils.getI18nOfModule(vertx, request, "timeline", keys, null)
+			.map(i18n->i18n.getString(keys[0]));
 	}
 
 	/** Load and parse i18n files. */
