@@ -524,7 +524,7 @@
     "email.signature": "L'équipe Open Digital Education",
     "email.user.created.info": "Votre demande de création de classe a été validée.",
     "error.missing.mail": "Veuillez renseigner votre adresse courriel",
-    "email.validation.subject": "Votre code de vérification d’email",
+    "email.validation.subject": "{{projectName}} : Votre code de vérification d’email",
     "email.validation.hi": "Bonjour",
     "email.validation.intro": "Pour vérifier votre adresse email, veuillez utiliser le code suivant",
     "email.validation.duration.part1": "ce code n’est valable que",
