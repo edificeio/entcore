@@ -279,6 +279,7 @@ public class PersEducNat extends AbstractUser {
 			functions.stream()
 					.filter(function -> function instanceof String)
 					.map(function -> (String) function)
+					// the source of the user position can either be aaf or csv here
 					.map(function -> UserPosition.getUserPositionFromEncodedFunction(function, null))
 					.filter(Optional::isPresent)
 					.map(Optional::get)

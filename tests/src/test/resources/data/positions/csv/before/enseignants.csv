@@ -1,5 +1,5 @@
 "Civilité";"Nom usage";"Nom";"Prénom";"Adresse";"CP";"Commune";"Pays";"Courriel";"Téléphone domicile";"Téléphone portable";"Directeur";"Classe";"Fonction"
-"MME";;"A000";"A000";;;;;;;;"non";"TPS";"DIR$DIRECTION$D0011$CHEF D&apos;ETABLISSEMENT ADJOINT"
+"MME";;"A000";"A000";;;;;;;;"non";"TPS";"DIR$DIRECTION$D0011$CHEF D'ETABLISSEMENT ADJOINT"
 "M.";;"A001";"A001";;;;;;;;"non";"PS";
 "M.";;"A002";"A002";;;;;;;;"non";"MS";"Fonction qui ne sera plus attribuée"
 "M.";;"A003";"A003";;;;;;;;"non";"GS";"Fonction qui restera attribuée"

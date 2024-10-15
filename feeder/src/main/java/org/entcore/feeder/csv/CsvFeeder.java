@@ -481,14 +481,14 @@ public class CsvFeeder implements Feed {
 					switch (profile) {
 						case "Teacher":
 							createFunctionDisciplineGroup(profile, structure, user, groups);
-							createUserPositions(structure, user.getJsonArray("functions", null));
+							cleanAndCreateUserPositions(structure, user);
 							importer.createOrUpdatePersonnel(user, TEACHER_PROFILE_EXTERNAL_ID,
 									user.getJsonArray("structures"), classes.toArray(new String[classes.size()][2]),
 									groups.toArray(new String[groups.size()][3]), true, true);
 							break;
 						case "Personnel":
 							createFunctionDisciplineGroup(profile, structure, user, groups);
-							createUserPositions(structure, user.getJsonArray("functions", null));
+							cleanAndCreateUserPositions(structure, user);
 							importer.createOrUpdatePersonnel(user, PERSONNEL_PROFILE_EXTERNAL_ID,
 									user.getJsonArray("structures"), classes.toArray(new String[classes.size()][2]),
 									groups.toArray(new String[groups.size()][3]), true, true);
@@ -689,44 +689,50 @@ public class CsvFeeder implements Feed {
 				String name = null;
 
 				String [] g = ((String) o).split("\\$");
-				if (g.length == 5) {
-					if ("ENS".equals(g[1])) {
-						groupExternalId = structure.getExternalId() + "$" + g[3];
-						name = g[4];
-					} else if (!g[1].isEmpty() && !"-".equals(g[1])) {
-						groupExternalId = structure.getExternalId() + "$" + g[1];
-						name = g[2];
+				// Function Groups are created only for functions matching aaf format
+				if (g.length != 2) {
+					if (g.length == 5) {
+						if ("ENS".equals(g[1])) {
+							groupExternalId = structure.getExternalId() + "$" + g[3];
+							name = g[4];
+						} else if (!g[1].isEmpty() && !"-".equals(g[1])) {
+							groupExternalId = structure.getExternalId() + "$" + g[1];
+							name = g[2];
+						}
 					}
-				}
 
-				if (groupExternalId == null) {
-					groupExternalId = ((String) o).replaceFirst("\\${4}", "\\$");
+					if (groupExternalId == null) {
+						groupExternalId = ((String) o).replaceFirst("\\${4}", "\\$");
+					}
+					if (name == null) {
+						name = groupExternalId.substring(structure.getExternalId().length() + 1);
+					}
+					if ("Teacher".equals(profile)) {
+						structure.createFunctionGroupIfAbsent(groupExternalId, name, "Discipline");
+					} else {
+						structure.createFunctionGroupIfAbsent(groupExternalId, name, "Func");
+					}
+					final String[] groupId = new String[3];
+					groupId[0] = structure.getExternalId();
+					groupId[1] = groupExternalId;
+					groups.add(groupId);
 				}
-				if (name == null) {
-					name = groupExternalId.substring(structure.getExternalId().length() + 1);
-				}
-				if ("Teacher".equals(profile)) {
-					structure.createFunctionGroupIfAbsent(groupExternalId, name, "Discipline");
-				} else {
-					structure.createFunctionGroupIfAbsent(groupExternalId, name, "Func");
-				}
-				final String[] groupId = new String[3];
-				groupId[0] = structure.getExternalId();
-				groupId[1] = groupExternalId;
-				groups.add(groupId);
 			}
 		}
 	}
 
-	private void createUserPositions(ImporterStructure structure, JsonArray functions) {
+	private void cleanAndCreateUserPositions(ImporterStructure structure, JsonObject user) {
+		String userExternalId = user.getString("externalId");
+		if (userExternalId != null) {
+			structure.detachUserFromItsPositions(userExternalId);
+		}
+		JsonArray functions = user.getJsonArray("functions", null);
 		if (functions != null) {
 			functions.stream()
 					.filter(function -> function instanceof String)
 					.map(function -> (String) function)
-					.forEach(function -> {
-						UserPosition.getUserPositionFromEncodedFunction(function, UserPositionSource.CSV)
-								.ifPresent(structure::createPosition);
-					});
+					.forEach(function -> UserPosition.getUserPositionFromEncodedFunction(function, UserPositionSource.MANUAL)
+							.ifPresent(structure::createPosition));
 		}
 	}
 
