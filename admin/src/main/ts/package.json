@@ -1,6 +1,6 @@
 {
   "name": "admin-app",
-  "version": "5.4-%branch%.%generateVersion%",
+  "version": "5.4-SNAPSHOT",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --host 0.0.0.0",
