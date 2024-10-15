@@ -72,7 +72,6 @@ public class DirectoryController extends BaseController {
 	private UserService userService;
 	private GroupService groupService;
 	private SlotProfileService slotProfileService;
-	private UserPositionService userPositionService;
 	private EventStore eventStore;
 
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
@@ -666,10 +665,6 @@ public class DirectoryController extends BaseController {
 
 	public void setSlotProfileService (SlotProfileService slotProfileService) {
 		this.slotProfileService = slotProfileService;
-	}
-
-	public void setUserPositionService(UserPositionService userPositionService) {
-		this.userPositionService = userPositionService;
 	}
 
 	// Methods used to create Workflow rights

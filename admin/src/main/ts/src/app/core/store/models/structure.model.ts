@@ -6,7 +6,7 @@ import { ApplicationCollection } from '../collections/application.collection';
 import { ConnectorCollection } from '../collections/connector.collection';
 import { WidgetCollection } from '../collections/widget.collection';
 import { UserPosition } from './userPosition.model';
-import { UserPositionServices } from '../../services/user-position.service';
+import { UserPositionService } from '../../services/user-position.service';
 
 export type ClassModel = { id: string, name: string };
 
@@ -126,7 +126,7 @@ export class StructureModel extends Model<StructureModel> {
 
     syncPositions(force?: boolean) {
         if (this.userPositions.length < 1 || force === true) {
-            const userPositionServices = new UserPositionServices();
+            const userPositionServices = new UserPositionService();
             return userPositionServices.searchUserPositions({structureId: this.id})
                 .then(res => {
                     this.userPositions = res;
