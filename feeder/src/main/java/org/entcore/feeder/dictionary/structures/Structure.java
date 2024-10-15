@@ -255,6 +255,18 @@ public class Structure {
 		}
 	}
 
+	public void detachUserFromItsPositions(String userExternalId) {
+		String query = "" +
+				"MATCH (u:User)-[hasPosition:HAS_POSITION]->(:UserPosition)-[:IN]->(s:Structure) " +
+				"WHERE s.externalId = {structureExternalId} " +
+				"AND u.externalId = {userExternalId} " +
+				"DELETE hasPosition ";
+		JsonObject params = new JsonObject()
+				.put("structureExternalId", externalId)
+				.put("userExternalId", userExternalId);
+		getTransaction().add(query, params);
+	}
+
 	public void createPosition(UserPosition userPosition) {
 		String query =
 				"MATCH (s:Structure {externalId : {structureExternalId}}) " +

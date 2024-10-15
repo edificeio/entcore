@@ -55,8 +55,10 @@ export function testUserPositionsFromCSVImport() {
         describe("Second import", () => {
             importCSVToStructure(structure, teacherDataAfter, {}, session)
             checkStructureHasOnlyThesePositions(structure, [
-                'Ma nouvelle fonction',
-                'Fonction qui restera attribuée'
+                'DIRECTION / CHEF D\'ETABLISSEMENT ADJOINT',
+                'Fonction qui ne sera plus attribuée',
+                'Fonction qui restera attribuée',
+                'Ma nouvelle fonction'
             ], session)
             const users = getUsersOfSchool(structure, session);
             const expectedValues = [
