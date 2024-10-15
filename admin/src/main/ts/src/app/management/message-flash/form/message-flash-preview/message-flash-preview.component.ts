@@ -27,10 +27,16 @@ export class MessageFlashPreviewComponent extends OdeComponent implements OnInit
         // prevents domSanitizer to display "undefined"
         if (!this.text) {
             this.text = '';
+            this.computedText = '';
         }
     }
 
     ngOnChanges(): void {
+        if (!this.text) {
+            this.text = '';
+            this.computedText = '';
+            return;
+        }
         this.computedText = (this.text as any).replaceAll(/(<div>[\s\u200B]*<\/div>){2,}/g, '<div>\u200B</div>'); // This code merges consecutive empty lines from adminV1 editor
         this.computedText = (this.text as any).replaceAll(/(<div>([\s\u200B]|<br\/?>)*<\/div>)$/g, ''); // This code remove last empty line from adminV1 editor
         this.computedText = (this.text as any).replaceAll(/(<p><br><\/p>)+/g, ''); // This code merges consecutive empty lines from adminV2 editor;
