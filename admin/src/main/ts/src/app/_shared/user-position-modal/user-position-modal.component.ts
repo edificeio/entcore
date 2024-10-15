@@ -10,7 +10,7 @@ import {
 } from "@angular/core";
 import { OdeComponent } from "ngx-ode-core";
 import { UserPosition } from "src/app/core/store/models/userPosition.model";
-import { UserPositionServices } from "src/app/core/services/user-position.service";
+import { UserPositionService } from "src/app/core/services/user-position.service";
 import { NotifyService } from "src/app/core/services/notify.service";
 import { SpinnerService } from "ngx-ode-ui";
 
@@ -56,7 +56,7 @@ export class UserPositionModalComponent extends OdeComponent implements OnInit {
     injector: Injector,
     private ns: NotifyService,
     public spinner: SpinnerService,
-    private userPositionServices: UserPositionServices
+    private userPositionService: UserPositionService
   ) {
     super(injector);
   }
@@ -76,7 +76,7 @@ export class UserPositionModalComponent extends OdeComponent implements OnInit {
       this.userPosition = await this.spinner
         .perform(
           "portal-content",
-          this.userPositionServices.updateUserPosition({
+          this.userPositionService.updateUserPosition({
             ...this.userPosition,
             name: this.editableName,
           })
@@ -105,7 +105,7 @@ export class UserPositionModalComponent extends OdeComponent implements OnInit {
       this.userPosition = await this.spinner
         .perform(
           "portal-content",
-          this.userPositionServices.createUserPosition({
+          this.userPositionService.createUserPosition({
             name: this.editableName,
             structureId: this.structureId,
           })

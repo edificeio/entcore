@@ -6,7 +6,7 @@ import { SessionModel } from "src/app/core/store/models/session.model";
 import { UserPosition } from "src/app/core/store/models/userPosition.model";
 import { routing } from "src/app/core/services/routing.service";
 import { Data } from "@angular/router";
-import { UserPositionServices } from "src/app/core/services/user-position.service";
+import { UserPositionService } from "src/app/core/services/user-position.service";
 import { Location } from "@angular/common";
 import { MatDialog } from "@angular/material/dialog";
 
@@ -42,7 +42,7 @@ export class StructureUserPositionsComponent
   constructor(
     injector: Injector,
     private location: Location,
-    private userPositionServices: UserPositionServices,
+    private userPositionServices: UserPositionService,
     public dialog: MatDialog
   ) {
     super(injector);

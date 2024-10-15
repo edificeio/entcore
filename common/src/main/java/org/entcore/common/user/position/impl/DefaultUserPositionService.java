@@ -33,9 +33,20 @@ public class DefaultUserPositionService implements UserPositionService {
 
 	private final EventBus eventBus;
 
-  public DefaultUserPositionService(EventBus eventBus) {
+	/** WB-3374 Restrict CRUD operations to ADMC. */
+	private final Boolean restrictCrudToADMC;
+
+  public DefaultUserPositionService(EventBus eventBus, boolean restrictCrudToADMC) {
     this.eventBus = eventBus;
+	this.restrictCrudToADMC = Boolean.valueOf(restrictCrudToADMC);
   }
+
+  private Future<Void> checkCrudAccess(final UserInfos adminInfos) {
+    if(restrictCrudToADMC.booleanValue() && !adminInfos.isADMC()) {
+        return Future.failedFuture("common.service.admc-only");
+    }
+	return Future.succeededFuture();
+ }
 
   @Override
 	public Future<Set<UserPosition>> getUserPositions(UserInfos user) {
@@ -65,7 +76,12 @@ public class DefaultUserPositionService implements UserPositionService {
 	}
 
 	private Future<Set<UserPosition>> getUserPositionsForAdmin(String positionId, String content, String structureId, UserInfos adminInfos) {
-		return fetchAdminStructures(adminInfos)
+		return checkCrudAccess(adminInfos)
+			.recover( throwable -> {
+				// Read access may be authorized if the structure is known.
+				return structureId==null ? Future.failedFuture(throwable) : Future.succeededFuture();
+			})
+			.compose( Void -> fetchAdminStructures(adminInfos) )
 			.compose(structureIds -> {
 				if (structureIds.isEmpty()) {
 					logger.warn(ADMIN_WITHOUT_STRUCTURE);
@@ -130,7 +146,9 @@ public class DefaultUserPositionService implements UserPositionService {
 	@Override
 	public Future<UserPosition> createUserPosition(String positionName, String structureId, UserPositionSource source, UserInfos adminInfos) {
 		Promise<UserPosition> promise = Promise.promise();
-		fetchAdminStructures(adminInfos).onSuccess(adminStructureIds -> {
+		checkCrudAccess(adminInfos)
+		.compose( Void -> fetchAdminStructures(adminInfos) )
+		.onSuccess(adminStructureIds -> {
 			if (adminStructureIds.isEmpty()) {
 				logger.warn(ADMIN_WITHOUT_STRUCTURE);
 				promise.fail(ADMIN_WITHOUT_STRUCTURE);
@@ -179,7 +197,9 @@ public class DefaultUserPositionService implements UserPositionService {
 	@Override
 	public Future<UserPosition> renameUserPosition(String positionName, String positionId, UserInfos adminInfos) {
 		Promise<UserPosition> promise = Promise.promise();
-		fetchAdminStructures(adminInfos).onSuccess(structureIds -> {
+		checkCrudAccess(adminInfos)
+		.compose( Void -> fetchAdminStructures(adminInfos) )
+		.onSuccess(structureIds -> {
 			if (structureIds.isEmpty()) {
 				logger.warn(ADMIN_WITHOUT_STRUCTURE);
 				promise.fail(ADMIN_WITHOUT_STRUCTURE);
@@ -236,7 +256,9 @@ public class DefaultUserPositionService implements UserPositionService {
 	@Override
 	public Future<Void> deleteUserPosition(String positionId, UserInfos adminInfos) {
 		Promise<Void> promise = Promise.promise();
-		fetchAdminStructures(adminInfos).onSuccess(structureIds -> {
+		checkCrudAccess(adminInfos)
+		.compose( Void -> fetchAdminStructures(adminInfos) )
+		.onSuccess(structureIds -> {
 			if (structureIds.isEmpty()) {
 				logger.warn(ADMIN_WITHOUT_STRUCTURE);
 				promise.fail(ADMIN_WITHOUT_STRUCTURE);

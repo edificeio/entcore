@@ -8,8 +8,8 @@ import { UserChildrenListService } from 'src/app/core/services/userlist.service'
 import { routing } from '../../core/services/routing.service';
 import { UserModel } from '../../core/store/models/user.model';
 import { UsersStore } from '../users.store';
-import { UserPosition } from 'src/app/core/store/models/userPosition.model';
-import { UserPositionServices } from 'src/app/core/services/user-position.service';
+import { UserPosition, UserPositionElementQuery } from 'src/app/core/store/models/userPosition.model';
+import { UserPositionService } from 'src/app/core/services/user-position.service';
 
 
 @Component({
@@ -57,6 +57,7 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
         return this.searchContent.length > 0 && this.filteredList.length === 0;
     };
     showUserPositionCreationLightbox = false;
+    isUserPositionCrudAllowed: boolean = true;
 
     constructor(
         injector: Injector,
@@ -64,7 +65,7 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
         private ns: NotifyService,
         private spinner: SpinnerService,
         private location: Location,
-        private userPositionServices: UserPositionServices,
+        private userPositionService: UserPositionService,
         public userChildrenListService: UserChildrenListService) {
             super(injector);
     }
@@ -78,8 +79,14 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
         this.newUser.structures = [{id, name, externalId}];
         this.classeOptions = [{value: null, label: 'create.user.sansclasse'}];
 
+        this.isUserPositionCrudAllowed = !(await this.userPositionService.isCrudRestricted());
+
+        const params:UserPositionElementQuery = {};
+        if(!this.isUserPositionCrudAllowed && id) {
+          params.structureId = id;
+        }
         this.positionList = await this.spinner
-          .perform('portal-content', this.userPositionServices.searchUserPositions())
+          .perform('portal-content', this.userPositionService.searchUserPositions(params))
           .catch(err => []);
         this.newUser.userDetails.userPositions = [];
 
@@ -138,7 +145,7 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
             ? positionToAdd
             // If none is found then create one before selecting it.
             : await this.spinner.perform<UserPosition|undefined>('portal-content', 
-                this.userPositionServices.createUserPosition({name, structureId})
+                this.userPositionService.createUserPosition({name, structureId})
                 .then(created => {
                     this.positionList.push(created);
                     this.ns.success(

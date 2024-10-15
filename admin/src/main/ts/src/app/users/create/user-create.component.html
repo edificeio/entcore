@@ -81,8 +81,10 @@
                   height="100"
                   src="/admin/public/img/user-position-empty-screen.svg"
                 />
-                <s5l>user-position.input-name.not-found</s5l>
-                <button type="button" (click)="showPositionCreation()">
+                <s5l>{{isUserPositionCrudAllowed ? 'user-position.input-name.not-found' : 'portal.no.result'}}</s5l>
+                <button *ngIf="isUserPositionCrudAllowed"
+                        type="button"
+                        (click)="showPositionCreation()">
                   <s5l>user-position.add</s5l>
                   <i class="fa fa-plus-circle is-size-5"></i>
                 </button>

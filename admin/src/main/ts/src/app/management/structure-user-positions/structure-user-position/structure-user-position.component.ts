@@ -7,7 +7,7 @@ import {
 } from "@angular/core";
 import { OdeComponent } from "ngx-ode-core";
 import { UserPosition } from "src/app/core/store/models/userPosition.model";
-import { UserPositionServices } from "src/app/core/services/user-position.service";
+import { UserPositionService } from "src/app/core/services/user-position.service";
 import { MatDialog } from "@angular/material/dialog";
 import { BundlesService } from "ngx-ode-sijil";
 import { NotifyService } from "src/app/core/services/notify.service";
@@ -36,7 +36,7 @@ export class StructureUserPositionComponent extends OdeComponent {
 
   constructor(
     injector: Injector,
-    private userPositionServices: UserPositionServices,
+    private userPositionServices: UserPositionService,
     private ns: NotifyService,
     private bundles: BundlesService,
     public dialog: MatDialog

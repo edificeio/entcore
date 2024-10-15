@@ -61,7 +61,6 @@ import org.entcore.directory.pojo.TransversalSearchType;
 import org.entcore.directory.pojo.Users;
 import org.entcore.directory.security.*;
 import org.entcore.directory.services.UserBookService;
-import org.entcore.common.user.position.UserPositionService;
 import org.entcore.directory.services.UserService;
 import org.vertx.java.core.http.RouteMatcher;
 
@@ -87,7 +86,6 @@ public class UserController extends BaseController {
 	static final String MOOD_RESOURCE_NAME = "mood";
 	private UserService userService;
 	private UserBookService userBookService;
-	private UserPositionService userPositionService;
 	private TimelineHelper notification;
 	private static final int MOTTO_MAX_LENGTH = 75;
 	private final EventHelper eventHelper;
@@ -1190,10 +1188,6 @@ public class UserController extends BaseController {
 
 	public void setUserBookService(UserBookService userBookService) {
 		this.userBookService = userBookService;
-	}
-
-	public void setUserPositionService(UserPositionService userPositionService) {
-		this.userPositionService = userPositionService;
 	}
 
 	public void setNotification(TimelineHelper notification) {

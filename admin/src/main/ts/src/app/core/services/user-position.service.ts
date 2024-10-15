@@ -6,10 +6,31 @@ import {
 } from "src/app/core/store/models/userPosition.model";
 
 import http from "axios";
+import { Session } from "../store/mappings/session";
+import { SessionModel } from "../store/models/session.model";
+import { Observable } from "rxjs";
+import { map } from "rxjs/operators";
+
+type DirectoryPublicConf = {
+  userPosition: {
+    restrictCRUDToADMC: boolean;
+  }
+}
 
 @Injectable()
-export class UserPositionServices {
+export class UserPositionService {
   private positionsURL = "/directory/positions";
+  private _restrictCrud;
+  private $restrictCrud = new Observable<boolean>( subscriber => {
+    Promise
+    .resolve(typeof this._restrictCrud === "undefined")
+    .then( async needChecking => needChecking ? await this.checkRestricted() : this._restrictCrud)
+    .then( isRestricted => {
+      subscriber.next(isRestricted);
+      subscriber.complete();
+    })
+    .catch( e => subscriber.error(e));
+  });
 
   public async createUserPosition(userPositionCreation: UserPositionCreation) {
     return (
@@ -31,6 +52,32 @@ export class UserPositionServices {
   public async deleteUserPosition(id: string) {
     const res = await http.delete<void>(`${this.positionsURL}/${id}`);
     return res.data;
+  }
+
+  public async isCrudRestricted(): Promise<boolean> {
+    return this.$restrictCrud.toPromise();
+  }
+
+  /**
+   * Non-AMDC users may be restricted in usage.
+   */
+  private async checkRestricted(): Promise<boolean> {
+    const session:Session = await SessionModel.getSession();
+    this._restrictCrud = !session.isADMC();
+    if( this._restrictCrud ) {
+      try {
+        const conf = (await http.get<DirectoryPublicConf>(`/directory/conf/public?_=${new Date().getMilliseconds()}`)).data;
+        this._restrictCrud = conf.userPosition.restrictCRUDToADMC;
+      } catch(e) {
+        console.log("Could not read parameter 'restrictCRUDToADMC' from /directory/conf/public");
+        this._restrictCrud = false;
+      }
+    }
+    return Promise.resolve(this._restrictCrud);
+  }
+
+  public isTabEnabled(): Observable<boolean> {
+    return this.$restrictCrud.pipe( map(restricted => !restricted) );
   }
 
   /**

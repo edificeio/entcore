@@ -13,7 +13,7 @@ import { NotifyService } from './services/notify.service';
 import { SijilLabelsService } from './services/sijil.labels.service';
 import { UserService } from './services/user.service';
 import { WidgetService } from './services/widgets.service';
-import { UserPositionServices } from './services/user-position.service';
+import { UserPositionService } from './services/user-position.service';
 import { FavIconResolver } from './resolvers/favicon.resolver';
 
 @NgModule({
@@ -37,7 +37,7 @@ import { FavIconResolver } from './resolvers/favicon.resolver';
         WidgetService,
         ConfigResolver,
         UserService,
-        UserPositionServices,
+        UserPositionService,
         FavIconResolver
     ],
 })
