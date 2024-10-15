@@ -9,6 +9,7 @@ import {CalendarService} from '../calendar/calendar.service';
 import {ImportEDTReportsService} from '../import-edt/import-edt-reports.service';
 import { Session } from 'src/app/core/store/mappings/session';
 import { SessionModel } from 'src/app/core/store/models/session.model';
+import { UserPositionService } from 'src/app/core/services/user-position.service';
 
 @Component({
     selector: 'ode-management-root',
@@ -41,7 +42,8 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
     private displayCalendar: boolean;
 
     constructor(injector: Injector, private zimbraService: ZimbraService, private subjectsService: SubjectsService,
-                private calendarService: CalendarService, private importEDTReportsService: ImportEDTReportsService) {
+                private calendarService: CalendarService, private importEDTReportsService: ImportEDTReportsService,
+                private userPositionService: UserPositionService) {
         super(injector);
     }
 
@@ -51,6 +53,7 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
         this.subjectsTabEnable();
         this.edtTabEnable();
         this.calendarTabEnable();
+        this.userPositionsTabEnable();
         this.tabEnable("gar", false);
         this.changeDetector.markForCheck();
         // Watch selected structure
@@ -114,6 +117,13 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
         this.calendarService.getCalendarConfKey().subscribe((conf) => {
             this.displayCalendar = conf.displayCalendar;
             this.tabEnable("calendar", this.displayCalendar);
+        });
+    }
+
+    userPositionsTabEnable(): void {
+        /* Remove UserPosition tab if the config restricts its use */
+        this.userPositionService.isTabEnabled().subscribe(enabled => {
+            this.tabEnable("positions", enabled);
         });
     }
 

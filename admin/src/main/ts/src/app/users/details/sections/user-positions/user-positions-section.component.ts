@@ -7,8 +7,8 @@ import {
 
 import { AbstractSection } from "../abstract.section";
 import { SpinnerService } from "ngx-ode-ui";
-import { UserPosition } from "src/app/core/store/models/userPosition.model";
-import { UserPositionServices } from "src/app/core/services/user-position.service";
+import { UserPosition, UserPositionElementQuery } from "src/app/core/store/models/userPosition.model";
+import { UserPositionService } from "src/app/core/services/user-position.service";
 import { UserInfoService } from "../info/user-info.service";
 import { NotifyService } from "src/app/core/services/notify.service";
 
@@ -35,6 +35,7 @@ export class UserPositionsSectionComponent
     return this.filteredList.length === 0 && this.searchContent?.length > 0;
   };
 
+  isUserPositionCrudAllowed: boolean = true;
   showConfirmRemovePosition: boolean = false;
   positionToRemove: UserPosition;
 
@@ -60,14 +61,20 @@ export class UserPositionsSectionComponent
     public spinner: SpinnerService,
     protected cdRef: ChangeDetectorRef,
     private userInfoService: UserInfoService,
-    private userPositionServices: UserPositionServices
+    private userPositionService: UserPositionService
   ) {
     super();
   }
 
   async ngOnInit() {
+    this.isUserPositionCrudAllowed = !(await this.userPositionService.isCrudRestricted());
+    
+    const params:UserPositionElementQuery = {};
+    if(!this.isUserPositionCrudAllowed && this.structure.id) {
+      params.structureId = this.structure.id;
+    }
     this.positionList = await this.spinner
-      .perform('portal-content', this.userPositionServices.searchUserPositions())
+      .perform('portal-content', this.userPositionService.searchUserPositions(params))
       .catch(err => {
         this.ns.error(
           'notify.user-position.read.error.content',
@@ -98,7 +105,7 @@ export class UserPositionsSectionComponent
         ? positionToAdd
         // If none is found then create one before selecting it.
         : await this.spinner.perform<UserPosition|undefined>('portal-content', 
-            this.userPositionServices.createUserPosition({name, structureId})
+            this.userPositionService.createUserPosition({name, structureId})
             .then(created => {
                 this.positionList.push(created);
                 this.ns.success(
