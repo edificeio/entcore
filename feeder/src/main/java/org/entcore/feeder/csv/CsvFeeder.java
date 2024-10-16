@@ -731,7 +731,7 @@ public class CsvFeeder implements Feed {
 			functions.stream()
 					.filter(function -> function instanceof String)
 					.map(function -> (String) function)
-					.forEach(function -> UserPosition.getUserPositionFromEncodedFunction(function, UserPositionSource.MANUAL)
+					.forEach(function -> UserPosition.getUserPositionFromEncodedFunction(function, UserPositionSource.CSV)
 							.ifPresent(structure::createPosition));
 		}
 	}
