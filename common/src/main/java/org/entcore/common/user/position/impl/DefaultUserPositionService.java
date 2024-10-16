@@ -291,9 +291,7 @@ public class DefaultUserPositionService implements UserPositionService {
 	 * @param userId the id of the user
 	 * @return the neo4j query and the associated params
 	 */
-	public Future<Neo4jQueryAndParams> getUserPositionSettingQueryAndParam(final Set<String> positionIds,
-																																				 final String userId,
-																																				 final String callerId) {
+	public Future<Neo4jQueryAndParams> getUserPositionSettingQueryAndParam(final Set<String> positionIds, final String userId, final String callerId) {
 		final Promise<UserInfos> promise = Promise.promise();
 		if(callerId == null) {
 			final UserInfos adminInfos = new UserInfos();
@@ -409,7 +407,7 @@ public class DefaultUserPositionService implements UserPositionService {
 	 * @param source the source string to be simplified
 	 * @return the source string set to lower case and without diacritics
 	 */
-	private static String getSimplifiedString(String source) {
+	public static String getSimplifiedString(String source) {
 		return Pattern.compile("\\p{M}")
 				.matcher(Normalizer.normalize(source, Normalizer.Form.NFD))
 				.replaceAll("")

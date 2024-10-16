@@ -20,6 +20,9 @@
 package org.entcore.feeder.aaf;
 
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.*;
+
+import org.entcore.common.user.position.UserPosition;
+import org.entcore.common.user.position.UserPositionSource;
 import org.entcore.feeder.dictionary.structures.ImporterStructure;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -29,8 +32,8 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.Arrays;
+import java.util.Optional;
 
 public class PersonnelImportProcessing extends BaseImportProcessing {
 
@@ -61,6 +64,7 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 		createGroups(object.getJsonArray("groups"), c, null);
 		createClasses(new fr.wseduc.webutils.collections.JsonArray(c));
 		createFunctionGroups(object.getJsonArray("functions"), null);
+		createPositions(object.getJsonArray("functions", null));
 		createHeadTeacherGroups(object.getJsonArray("headTeacher"), null);
 		createDirectionGroups(object.getJsonArray("direction"), null);
 		linkMef(object.getJsonArray("modules"));
@@ -158,6 +162,21 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 			}
 		}
 		return linkStructureClasses;
+	}
+
+	protected void createPositions(JsonArray functions) {
+		if (functions != null) {
+			functions.stream()
+					.filter(function -> function instanceof String)
+					.map(function -> (String) function)
+					.forEach(function -> {
+						Optional<UserPosition> userPosition = UserPosition.getUserPositionFromEncodedFunction(function, UserPositionSource.AAF);
+						if (userPosition.isPresent()) {
+							ImporterStructure structure = importer.getStructure(userPosition.get().getStructureId());
+							structure.createPosition(userPosition.get());
+						}
+					});
+		}
 	}
 
 	protected void createFunctionGroups(JsonArray functions, List<String[]> linkStructureGroups) {
