@@ -494,7 +494,7 @@ public class Structure {
 		JsonObject params = new JsonObject().put("id", id);
 		String query =
 				"MATCH (s:Structure {id : {id}})<-[:IN]-(p:UserPosition) " +
-				"WHERE p.source in [\"CSV\", \"MANUAL\"] " +
+				"WHERE p.source = \"CSV\" " +
 				"DETACH DELETE p";
 		tx.add(query, params);
 	}
