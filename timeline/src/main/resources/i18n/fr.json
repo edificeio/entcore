@@ -28,6 +28,7 @@
     "language.es": "Español",
     "language.de": "Deutsch",
     "language.it": "Italiano",
+    "language.co": "Corsu",
     "xtnotifications.title": "Mes notifications externes",
     "xtnotifications.mail": "Adresse mail utilisée :",
     "xtnotifications.mail.change": "Modifier",
@@ -150,9 +151,7 @@
     "timeline.admin.action.done.KEEP": "Notification conservée",
     "timeline.admin.action.done.DELETE": "Notification supprimée",
     "timeline.admin.no.more": "Toutes les notifications ont été chargées",
-    "timeline.notify.report.text": "Une notification a été signalée par",
-    "timeline.notify.report.text2": "Pour traiter le signalement",
-    "timeline.notify.report.text3": "cliquez ici",
+    "timeline.notify.report.text": "<a href=\"{{#host}}/admin{{/host}}\" target=\"_blank\">Une notification</a> a été signalée par",
     "timeline.notify.new.flash.message": "a publié un nouveau message flash",
     "timeline": "Fil de nouveautés",
     "timeline.notification": "Signalements",
@@ -254,7 +253,7 @@
     "assistant.1d.teaching.myapps": "Je découvre les services et les ressources à ma disposition dans l’onglet <b>Mes applis</b>.",
     "assistant.1d.teaching.external.notifications": "J’indique mon adresse mail et je paramètre mes <b>notifications externes</b> dans Mon compte.",
     "assistant.1d.teaching.title.3": "Un doute, une question ?",
-    "assistant.1d.teaching.help": "Consultez l’aide en ligne contextuelle située dans le menu en haut de votre écran. Elle vous présente le mode d’emploi de la page que vous êtes en train de consulter !",
+    "assistant.1d.teaching.help": "Consultez l’aide en ligne contextuelle située en bas à droite de votre écran. Elle vous présente le mode d’emploi de la page que vous êtes en train de consulter.",
     "assistant.2d.student.title": "Bienvenue sur le réseau social de ton établissement",
     "assistant.2d.student.news": "Le <b>Fil de nouveautés</b> en page d’accueil présente tes dernières notifications.",
     "assistant.2d.student.myapps": "Retrouve tous les services pour créer et partager des contenus dans <b>Mes applis</b>.",
@@ -289,5 +288,8 @@
     "assistant.2d.teaching.myapps": "Découvrez les services et les ressources à disposition dans l’onglet <b>Mes applis</b>.",
     "assistant.2d.teaching.external.notifications": "Indiquez votre adresse mail et paramétrez vos notifications externes dans <b>Mon compte</b>.",
     "assistant.2d.teaching.title.3": "Un doute, une question ?",
-    "assistant.2d.teaching.help": "Consultez l’aide en ligne contextuelle située dans le menu en haut de votre écran. Elle vous présente le mode d’emploi de la page que vous êtes en train de consulter."
+    "assistant.2d.teaching.help": "Consultez l’aide en ligne contextuelle située en bas à droite de votre écran. Elle vous présente le mode d’emploi de la page que vous êtes en train de consulter.",
+    "userbook_discovervisiblegroups": "Explorer le réseau",
+    "userbook.discover.visible.groups.add.user.notify": "vous a ajouté au groupe de travail",
+    "userbook.discover.visible.user.add.user.notify": "vous a ajouté à son réseau."
 }

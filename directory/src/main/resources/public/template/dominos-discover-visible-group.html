@@ -1,0 +1,22 @@
+<section class="domino overflow-hd" ng-class="colorFromType('Relative')" ng-click="discoverVisibleDisplayUsersInGroup(group.id)">
+    <div class="top domino-group" ng-class="lightenColorFromType('Relative')">
+        <div>
+            <img class="domino-group round active" skin-src="/img/illustrations/group-avatar.svg" />
+        </div>
+        <div class="nb-users">
+            <span>[[ group.nbUsers != null ? group.nbUsers : 0 ]]</span> <i class="person"></i>
+        </div>
+    </div>
+
+    <div class="center">
+        <span translate content="userbook.discover.visible.group.title"></span>
+    </div>
+
+    <div class="bottom">
+        <div class="content">
+            <div class="multiline-ellipsis-three">
+                <span>[[group.name]]</span>
+            </div>
+        </div>
+    </div>
+</section>

@@ -75,6 +75,15 @@ public class PersonnelImportProcessing1d extends PersonnelImportProcessing {
 		final JsonObject supportPers1D2D;
 		if (isNotEmpty(externalId) && importer.getToSupportPerseducnat1D2D().containsKey(externalId)) {
 			supportPers1D2D = importer.getToSupportPerseducnat1D2D().get(externalId);
+			final JsonArray functions2d = supportPers1D2D.getJsonArray("functions");
+			if (functions2d != null && !functions2d.isEmpty()) {
+				final JsonArray function1d2d = object.getJsonArray("functions", new JsonArray());
+				for (Object o: functions2d) {
+					if (!(o instanceof String) || !o.toString().contains("$")) continue;
+					function1d2d.add(o);
+				}
+				if (!function1d2d.isEmpty()) object.put("functions", function1d2d);
+			}
 			log.info(x -> "Use 1D2D support for user : " + externalId);
 		} else {
 			supportPers1D2D = null;
@@ -95,7 +104,7 @@ public class PersonnelImportProcessing1d extends PersonnelImportProcessing {
 		final List<String[]> groups = new ArrayList<>();
 		JsonArray functions = object.getJsonArray("functions");
 		createDirectionGroups(object.getJsonArray("direction"), groups);
-		getDirectionFromFunctions(functions, groups);
+		getDirectionOrFunctionFromFunctions(functions, groups);
 		JsonArray structuresByFunctions = null;
 		if (functions != null) {
 			Set<String> s = new HashSet<>();
@@ -114,7 +123,7 @@ public class PersonnelImportProcessing1d extends PersonnelImportProcessing {
 		importer.createOrUpdatePersonnel(object, profile, structuresByFunctions, null, groups.toArray(new String[][]{}), true, true);
 	}
 
-	protected void getDirectionFromFunctions(JsonArray functions, List<String[]> linkStructureGroups) {
+	protected void getDirectionOrFunctionFromFunctions(JsonArray functions, List<String[]> linkStructureGroups) {
 		if (functions != null && functions.size() > 0) {
 			for (Object o : functions) {
 				if (!(o instanceof String)) continue;
@@ -123,7 +132,25 @@ public class PersonnelImportProcessing1d extends PersonnelImportProcessing {
 					ImporterStructure s = importer.getStructure(g[0]);
 
 					if(s != null && DIRECTION_FONCTIONS.contains(g[4]) == true)
-							createDirectionGroups(new JsonArray().add(g[0]), linkStructureGroups);
+						createDirectionGroups(new JsonArray().add(g[0]), linkStructureGroups);
+
+					//supportPers1D2D
+					if (s != null && "AAF".equals(s.getStruct().getString("source"))) {
+						String groupExternalId;
+						if ("ENS".equals(g[1])) {
+							groupExternalId = s.getExternalId() + "$" + g[3];
+						} else if (!"-".equals(g[1])) {
+							groupExternalId = s.getExternalId() + "$" + g[1];
+						} else {
+							continue;
+						}
+						if (linkStructureGroups != null) {
+							final String[] group = new String[2];
+							group[0] = s.getExternalId();
+							group[1] = groupExternalId;
+							linkStructureGroups.add(group);
+						}
+					}
 				}
 			}
 		}

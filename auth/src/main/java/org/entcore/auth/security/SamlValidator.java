@@ -30,6 +30,7 @@ import org.entcore.auth.services.SamlVectorService;
 import org.entcore.auth.services.impl.DefaultServiceProviderFactory;
 import org.entcore.auth.services.impl.FrEduVecteurService;
 import org.entcore.auth.services.impl.MongoDBIDPAssertionStore;
+import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.joda.time.DateTime;
 import org.opensaml.DefaultBootstrap;
@@ -127,6 +128,8 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		final EventBus eb = getEventBus(vertx);
 		super.start();
 
+		EventStoreFactory eventStoreFactory = EventStoreFactory.getFactory();
+		eventStoreFactory.setVertx(vertx);
 		spFactory = new DefaultServiceProviderFactory(config.getJsonObject("saml-services-providers"));
 
 		String neo4jConfig = (String) vertx.sharedData().getLocalMap("server").get("neo4jConfig");

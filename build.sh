@@ -165,7 +165,7 @@ watch () {
 # ex: ./build.sh -m=workspace -s=paris watch
 
 ngWatch () {
-  docker compose run --rm $USER_OPTION node16 sh -c "npm run start"
+  docker compose run --rm $USER_OPTION --publish 4200:4200 node16 sh -c "npm run start"
 }
 
 infra () {
@@ -181,6 +181,25 @@ publish () {
     echo "sonatypePassword=$NEXUS_SONATYPE_PASSWORD" >> "?/.gradle/gradle.properties"
   fi
   docker compose run --rm $USER_OPTION gradle gradle "$GRADLE_OPTION"publish
+}
+
+itTests() {
+  all_successful=true
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  for script in $(find "$script_dir/tests/src/test/js/it" -type f -name "run.sh"); do
+    # Execute the script
+    bash "$script"
+    
+    # Check the exit status of the script
+    if [ $? -ne 0 ]; then
+        all_successful=false  # If any script fails, exit with status 1
+    fi
+  done
+  if [ "$all_successful" = true ]; then
+    exit 0
+  else
+    exit 1
+  fi
 }
 
 for param in "$@"
@@ -214,6 +233,9 @@ do
       ;;
     test)
       testGradle
+      ;;
+    itTests)
+      itTests
       ;;
     infra)
       infra

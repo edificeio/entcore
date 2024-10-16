@@ -38,6 +38,9 @@
     },
     "childrenIds": {
       "type": ["string", "null"]
+    },
+    "positionIds": {
+      "type": ["array"], "items": {"type": "string"}
     }
   }
 }

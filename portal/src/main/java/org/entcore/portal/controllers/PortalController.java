@@ -44,10 +44,7 @@ import fr.wseduc.security.SecuredAction;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.file.NoSuchFileException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -575,6 +572,49 @@ public class PortalController extends BaseController {
 		} else {
 			badRequest(request);
 		}
+	}
+	
+	@Get("zendeskGuide/config")
+	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
+	public void zendeskGuideConfig(HttpServerRequest request) {
+
+		final JsonObject zendeskConfig = config.getJsonObject("zendeskGuide", new JsonObject());
+		String module = request.params().get("module");
+		if(zendeskConfig.isEmpty() || !zendeskConfig.containsKey("key")) {
+			renderJson(request, new JsonObject());
+			return;
+		}
+
+
+		// If module is not provided, try to get it from the referer
+		if(module == null && request.headers().get("Referer") != null) {
+			final String urlPath = request.headers().get("Referer");
+			final String[] pathSegments = urlPath.split("/");
+			if(pathSegments.length > 3 && !pathSegments[3].isEmpty()) {
+				module = pathSegments[3];
+				if(module.contains("?")) {
+					final String[] moduleSegments = module.split("\\?");
+					module = moduleSegments[0];
+				}
+			} else {
+				module = "portal";
+			}
+		}
+
+		if(module != null && zendeskConfig.containsKey("modules") && zendeskConfig.getJsonObject("modules").containsKey(module)) {
+			zendeskConfig.put("module", zendeskConfig.getJsonObject("modules").getJsonObject(module));
+		} else {
+			zendeskConfig.put("module", new JsonObject());
+		}
+
+		renderJson(request, zendeskConfig);
+	}
+
+	//TODO: remove this method when the old help is removed from all projects
+	@Get("/oldHelp")
+	@SecuredAction("portal.oldHelpEnable")
+	public void oldHelpEnable(HttpServerRequest request) {
+		renderJson(request, new JsonObject().put("enable", true));
 	}
 
 }

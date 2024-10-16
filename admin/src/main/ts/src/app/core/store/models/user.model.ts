@@ -40,6 +40,7 @@ export class UserModel extends Model<UserModel> {
     functionalGroups: string[] = [];
     manualGroups: string[] = [];
     functions?: Array<[string, Array<string>]> = [];
+    userPositions?: Array<{id: string}> = [];
     structures: { id: string, name: string, externalId: string }[] = [];
     classes: Classe[] = [];
     duplicates: { id: string, firstName: string, lastName: string, code: string, score: number, structures: { id: string, name: string }[] }[] = [];
@@ -127,8 +128,9 @@ export class UserModel extends Model<UserModel> {
         userPayload.append('structureId', structureId);
         userPayload.append('birthDate', this.userDetails.birthDate);
         this.userDetails.children.forEach(child => userPayload.append('childrenIds', child.id));
+        this.userDetails.userPositions?.forEach(position => userPayload.append('positionIds', position.id));
 
-        return this.http.post('/directory/api/user'
+        return this.http.post(`/directory/api/user`
             , userPayload
             , {headers: {'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'}});
     }

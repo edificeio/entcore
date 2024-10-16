@@ -1,7 +1,6 @@
 package org.entcore.workspace.controllers;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
-import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.asyncArrayResponseHandler;
@@ -44,7 +43,6 @@ import org.vertx.java.core.http.RouteMatcher;
 
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.security.ActionType;
-import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
@@ -52,7 +50,7 @@ import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.ETag;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import io.vertx.core.Handler;	
 import io.vertx.core.Vertx;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.eventbus.Message;
@@ -916,8 +914,9 @@ public class WorkspaceController extends BaseController {
 		});
 	}
 
-	private void getFile(final HttpServerRequest request, String owner, boolean publicOnly) {
-		workspaceService.findById(request.params().get("id"), owner, publicOnly, new Handler<JsonObject>() {
+	private void getFile(final HttpServerRequest request, final String owner, boolean publicOnly) {
+		final String fileId = request.params().get("id");
+		workspaceService.findById(fileId, owner, publicOnly, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject res) {
 				String status = res.getString("status");
@@ -926,76 +925,96 @@ public class WorkspaceController extends BaseController {
 				if ("ok".equals(status) && jo != null) {
 					boolean createThumbnails = !StringUtils.isEmpty(thumbSize) && (jo.getJsonObject("thumbnails") == null ||
 							StringUtils.isEmpty(jo.getJsonObject("thumbnails").getString(thumbSize)));
-					JsonObject thumbnails = createThumbnails ? new JsonObject().put(thumbSize, "") : new JsonObject();
-					folderManager.createThumbnailIfNeeded(jo, thumbnails, asyncDefaultResponseHandler ->
-					{
-						JsonObject result;
-						boolean failed = asyncDefaultResponseHandler.failed();
-						if (failed == true)
-						{
-							log.error(asyncDefaultResponseHandler.cause());
-							result = jo;
+					boolean useAnyThumbnail;
+					if(createThumbnails) {
+						// We launch the creation of the thumbnail if it was required but we won't wait for its creation.
+						// Instead, we will send the first thumbnail that we find and if none is present, we will send back the original file.
+						// It is a workaround to cut the dependency on the thumbnail creation service.
+						final JsonObject thumbnails = new JsonObject().put(thumbSize, "");
+						folderManager.createThumbnailIfNeeded(jo, thumbnails, asyncDefaultResponseHandler -> {
+							boolean failed = asyncDefaultResponseHandler.failed();
+							if (failed) {
+								log.error("An error occurred while creating file thumbnail " + fileId, asyncDefaultResponseHandler.cause());
+							}
+							else {
+								log.debug("Successfully created thumbnail for file " + fileId);
+							}
+						});
+						useAnyThumbnail = true; // Send back the first thumbnail that we find
+					} else {
+						useAnyThumbnail = false;
+					}
+					String file;
+					if (!createThumbnails && thumbSize != null && !thumbSize.trim().isEmpty()) {
+						file = DocumentHelper.getThumbnails(jo).getString(thumbSize,
+								jo.getString("file"));
+						if(StringUtils.isEmpty(file)) {
+							file = jo.getString("file");
 						}
-						else
-							result = asyncDefaultResponseHandler.result();
-
-						String file;
-						if (failed == false && thumbSize != null && !thumbSize.trim().isEmpty()) {
-							file = DocumentHelper.getThumbnails(result).getString(thumbSize,
-									result.getString("file"));
-							if(file == null || file.trim().isEmpty() == true)
-								file = result.getString("file");
+						// If we looked for a specific thumbnail but couldn't find one "file" has
+						// the value of jo.get("file"), so we use that as a marker that we will instead
+						// return any thumbnail that is present
+						useAnyThumbnail = file != null && file.equals(jo.getString("file"));
+					} else {
+						file = jo.getString("file");
+					}
+					if(useAnyThumbnail) {
+						file = getAnyThumbnail(jo);
+					}
+					if (!StringUtils.isEmpty(file)) {
+						boolean inline = inlineDocumentResponse(jo, request.params().get("application"));
+						if (inline && ETag.check(request, file)) {
+							notModified(request, file);
 						} else {
-							file = result.getString("file");
-						}
+							JsonObject metadata = DocumentHelper.getMetadata(jo);
+							if (!StringUtils.isEmpty(thumbSize) &&
+									DocumentHelper.getContentType(jo).startsWith("video")) {
+								String thumbDownloadName = jo.getString("name");
+								String[] nameSplit = jo.getString("name").split("\\.");
 
-						if (file != null && !file.trim().isEmpty()) {
-							boolean inline = inlineDocumentResponse(result, request.params().get("application"));
-							if (inline && ETag.check(request, file)) {
-								notModified(request, file);
-							} else {
-								JsonObject metadata = DocumentHelper.getMetadata(result);
-								if (thumbSize != null
-										&& !thumbSize.trim().isEmpty()
-										&& DocumentHelper.getContentType(result).startsWith("video")) {
-									String thumbDownloadName = result.getString("name");
-									String[] nameSplit = result.getString("name").split("\\.");
-
-									if (nameSplit != null && nameSplit.length > 1) {
-										thumbDownloadName = nameSplit[0] + ".png";
-									}
-
-									JsonObject thumbMetadata = new JsonObject()
-											.put("content-type", "image/png")
-											.put("filename", thumbDownloadName)
-											.put("size", metadata.getLong("size"));
-
-									storage.sendFile(file, thumbDownloadName, request, inline, thumbMetadata);
-								} else {
-									storage.sendFile(file, result.getString("name"), request, inline, metadata);
+								if (nameSplit != null && nameSplit.length > 1) {
+									thumbDownloadName = nameSplit[0] + ".png";
 								}
-							}
-							// eventStore.createAndStoreEvent(WokspaceEvent.GET_RESOURCE.name(), request,
-							// 		new JsonObject().put("resource", request.params().get("id")));
 
-							// Log Video Event
-							if (request.headers().get("Range") != null
-                                    && request.headers().get("Range").startsWith("bytes=0-")
-                                    && jo.getJsonObject("metadata") != null
-                                    && jo.getJsonObject("metadata").getBoolean("captation", false)) {
-								// TODO: Ici semble le meilleur endroit pour prélever/générer les mesures nécessaires aux VIDEO_EVENT_STREAM
+								JsonObject thumbMetadata = new JsonObject()
+										.put("content-type", "image/png")
+										.put("filename", thumbDownloadName)
+										.put("size", metadata.getLong("size"));
+
+								storage.sendFile(file, thumbDownloadName, request, inline, thumbMetadata);
+							} else {
+								if(useAnyThumbnail) {
+									// Deactivate the cache because we know that the image that we are
+									// sending back is not the version that was asked
+									metadata.put("ETag", String.valueOf(System.currentTimeMillis()));
+								}
+								storage.sendFile(file, jo.getString("name"), request, inline, metadata);
 							}
-						} else {
-							request.response().setStatusCode(404).end();
 						}
-					});
+						// eventStore.createAndStoreEvent(WokspaceEvent.GET_RESOURCE.name(), request,
+						// 		new JsonObject().put("resource", request.params().get("id")));
 
-
+						// Log Video Event
+						if (request.headers().get("Range") != null
+								&& request.headers().get("Range").startsWith("bytes=0-")
+								&& jo.getJsonObject("metadata") != null
+								&& jo.getJsonObject("metadata").getBoolean("captation", false)) {
+							// TODO: Ici semble le meilleur endroit pour prélever/générer les mesures nécessaires aux VIDEO_EVENT_STREAM
+						}
+					} else {
+						request.response().setStatusCode(404).end();
+					}
 				} else {
 					request.response().setStatusCode(404).end();
 				}
 			}
 		});
+	}
+
+	private String getAnyThumbnail(final JsonObject file) {
+		final JsonObject thumbnails = DocumentHelper.getThumbnails(file);
+		final Optional<String> thumbnail = thumbnails.stream().findAny().map(th -> (String)th.getValue());
+		return thumbnail.orElseGet(() -> file.getString("file"));
 	}
 
 	@Get("/pub/document/:id")
