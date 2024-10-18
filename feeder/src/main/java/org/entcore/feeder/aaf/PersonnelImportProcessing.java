@@ -65,7 +65,7 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 		createGroups(object.getJsonArray("groups"), c, null);
 		createClasses(new fr.wseduc.webutils.collections.JsonArray(c));
 		createFunctionGroups(object.getJsonArray("functions"), null);
-		createPositions(object.getJsonArray("functions", null));
+		createPositions(object.getJsonArray("functions"));
 		createHeadTeacherGroups(object.getJsonArray("headTeacher"), null);
 		createDirectionGroups(object.getJsonArray("direction"), null);
 		linkMef(object.getJsonArray("modules"));
