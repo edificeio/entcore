@@ -725,7 +725,7 @@ public class CsvFeeder implements Feed {
 		if (userExternalId != null) {
 			structure.detachUserFromItsPositions(userExternalId);
 		}
-		JsonArray functions = user.getJsonArray("functions", null);
+		JsonArray functions = user.getJsonArray("functions");
 		if (functions != null) {
 			functions.stream()
 					.filter(function -> function instanceof String)
