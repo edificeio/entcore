@@ -20,14 +20,6 @@
 package org.entcore.feeder.csv;
 
 import com.opencsv.CSVReader;
-import org.entcore.common.user.position.UserPosition;
-import org.entcore.common.user.position.UserPositionSource;
-import org.entcore.feeder.Feed;
-import org.entcore.feeder.ManualFeeder;
-import org.entcore.feeder.dictionary.structures.DefaultFunctions;
-import org.entcore.feeder.dictionary.structures.Importer;
-import org.entcore.feeder.dictionary.structures.ImporterStructure;
-import org.entcore.feeder.utils.*;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -36,8 +28,17 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.user.position.UserPosition;
+import org.entcore.common.user.position.UserPositionSource;
+import org.entcore.feeder.Feed;
+import org.entcore.feeder.ManualFeeder;
+import org.entcore.feeder.dictionary.structures.DefaultFunctions;
+import org.entcore.feeder.dictionary.structures.Importer;
+import org.entcore.feeder.dictionary.structures.ImporterStructure;
+import org.entcore.feeder.utils.*;
 
-import java.io.*;
+import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -45,9 +46,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
-import static fr.wseduc.webutils.Utils.getOrElse;
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.*;
-import static org.entcore.feeder.dictionary.structures.DefaultProfiles.GUEST_PROFILE;
 import static org.entcore.feeder.utils.CSVUtil.emptyLine;
 import static org.entcore.feeder.utils.CSVUtil.getCsvReader;
 

@@ -19,21 +19,22 @@
 
 package org.entcore.feeder.aaf;
 
-import static org.entcore.feeder.dictionary.structures.DefaultProfiles.*;
-
-import org.entcore.common.user.position.UserPosition;
-import org.entcore.common.user.position.UserPositionSource;
-import org.entcore.feeder.dictionary.structures.ImporterStructure;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.position.UserPosition;
+import org.entcore.common.user.position.UserPositionSource;
+import org.entcore.feeder.dictionary.structures.ImporterStructure;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Arrays;
 import java.util.Optional;
+
+import static org.entcore.feeder.dictionary.structures.DefaultProfiles.PERSONNEL_PROFILE_EXTERNAL_ID;
+import static org.entcore.feeder.dictionary.structures.DefaultProfiles.TEACHER_PROFILE_EXTERNAL_ID;
 
 public class PersonnelImportProcessing extends BaseImportProcessing {
 

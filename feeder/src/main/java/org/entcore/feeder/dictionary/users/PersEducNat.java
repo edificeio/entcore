@@ -30,6 +30,7 @@ import org.entcore.common.schema.users.User;
 import org.entcore.common.schema.utils.matchers.IdentifierMatcher;
 import org.entcore.common.schema.utils.matchers.Matcher;
 import org.entcore.common.user.position.UserPosition;
+import org.entcore.common.user.position.impl.DefaultUserPositionService;
 import org.entcore.common.utils.ExternalId;
 import org.entcore.feeder.dictionary.structures.DefaultProfiles;
 import org.entcore.feeder.timetable.edt.EDTImporter;
@@ -283,17 +284,7 @@ public class PersEducNat extends AbstractUser {
 					.map(function -> UserPosition.getUserPositionFromEncodedFunction(function, null))
 					.filter(Optional::isPresent)
 					.map(Optional::get)
-					.forEach(userPosition -> {
-						String query = "" +
-								"MATCH (p:UserPosition)-[:IN]->(s:Structure {externalId : {structureExternalId}}), (u:User {externalId : {userExternalId}}) " +
-								"WHERE p.name = {positionName} " +
-								"MERGE (u)-[:HAS_POSITION]->(p) ";
-						JsonObject params = new JsonObject()
-								.put("structureExternalId", userPosition.getStructureId())
-								.put("userExternalId", user.getString("externalId"))
-								.put("positionName", userPosition.getName());
-						transactionHelper.add(query, params);
-					});
+					.forEach(userPosition -> DefaultUserPositionService.linkPositionToUser(userPosition, user.getString("externalId"), transactionHelper));
 		}
 	}
 

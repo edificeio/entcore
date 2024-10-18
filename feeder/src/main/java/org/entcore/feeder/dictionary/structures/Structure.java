@@ -257,9 +257,7 @@ public class Structure {
 
 	public void detachUserFromItsPositions(String userExternalId) {
 		String query = "" +
-				"MATCH (u:User)-[hasPosition:HAS_POSITION]->(:UserPosition)-[:IN]->(s:Structure) " +
-				"WHERE s.externalId = {structureExternalId} " +
-				"AND u.externalId = {userExternalId} " +
+				"MATCH (u:User {externalId: {userExternalId}})-[hasPosition:HAS_POSITION]->(:UserPosition)-[:IN]->(s:Structure {externalId: {structureExternalId}}) " +
 				"DELETE hasPosition ";
 		JsonObject params = new JsonObject()
 				.put("structureExternalId", externalId)
@@ -268,20 +266,7 @@ public class Structure {
 	}
 
 	public void createPosition(UserPosition userPosition) {
-		String query =
-				"MATCH (s:Structure {externalId : {structureExternalId}}) " +
-				"MERGE (s)<-[:IN]-(p:UserPosition {name : {positionName}}) " +
-				"ON CREATE SET " +
-				"   p.id = {id}, " +
-				"   p.simplifiedName = {simplifiedName}, " +
-				"   p.source = {source} ";
-		JsonObject params = new JsonObject()
-				.put("structureExternalId", externalId)
-				.put("positionName", userPosition.getName())
-				.put("id", UUID.randomUUID().toString())
-				.put("simplifiedName", DefaultUserPositionService.getSimplifiedString(userPosition.getName()))
-				.put("source", userPosition.getSource().toString());
-		getTransaction().add(query, params);
+		DefaultUserPositionService.createUserPosition(userPosition, getTransaction());
 	}
 
 	public String getHeadTeacherGroupExternalId() {

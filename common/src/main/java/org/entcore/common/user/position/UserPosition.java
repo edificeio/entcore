@@ -20,8 +20,8 @@ public class UserPosition {
 	/**
 	 * Method providing a User Position built upon the Function codification
 	 * @param dollarEncodedFunction function codification separated with dollars
-	 *  - in AAF format :       [ExternalId]$[FunctionCode]$[FunctionName]$[PositionCode]$[PositionName]
-	 *  - in free CSV format :  [ExternalId]$[PositionName]
+	 *  - in AAF format :       [StructureExternalId]$[FunctionCode]$[FunctionName]$[PositionCode]$[PositionName]
+	 *  - in free CSV format :  [StructureExternalId]$[PositionName]
 	 * @param source the source type of data feed
 	 * @return a User Position built upon Function information if possible
 	 */
