@@ -11,6 +11,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jQueryAndParams;
 import org.entcore.common.neo4j.Neo4jResult;
+import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -393,6 +394,47 @@ public class DefaultUserPositionService implements UserPositionService {
 			}
 		}));
 		return promise.future();
+	}
+
+	/**
+	 * Static method to create user positions in Feeder importation process
+	 * Note: in Feeder context, the structure id used is the external structure id
+	 * @param userPosition the user position to create
+	 * @param transactionHelper the transaction helper for current query to commit
+	 */
+	public static void createUserPosition(UserPosition userPosition, TransactionHelper transactionHelper) {
+		String query =
+				"MATCH (s:Structure {externalId : {structureExternalId}}) " +
+				"MERGE (s)<-[:IN]-(p:UserPosition {name : {positionName}}) " +
+				"ON CREATE SET " +
+				"   p.id = {id}, " +
+				"   p.simplifiedName = {simplifiedName}, " +
+				"   p.source = {source} ";
+		JsonObject params = new JsonObject()
+				.put("structureExternalId", userPosition.getStructureId())
+				.put("positionName", userPosition.getName())
+				.put("id", UUID.randomUUID().toString())
+				.put("simplifiedName", DefaultUserPositionService.getSimplifiedString(userPosition.getName()))
+				.put("source", userPosition.getSource().toString());
+		transactionHelper.add(query, params);
+	}
+
+	/**
+	 * Static method to link positions to a user in Feeder importation process
+	 * Note: in Feeder context, the structure id used is the external structure id
+	 * @param userPosition the user position to link
+	 * @param userExternalId the external id of the target user
+	 * @param transactionHelper transaction helper for current query to commit
+	 */
+	public static void linkPositionToUser(UserPosition userPosition, String userExternalId, TransactionHelper transactionHelper) {
+		String query = "" +
+				"MATCH (p:UserPosition {name: {positionName}})-[:IN]->(s:Structure {externalId : {structureExternalId}}), (u:User {externalId : {userExternalId}}) " +
+				"MERGE (u)-[:HAS_POSITION]->(p) ";
+		JsonObject params = new JsonObject()
+				.put("structureExternalId", userPosition.getStructureId())
+				.put("userExternalId", userExternalId)
+				.put("positionName", userPosition.getName());
+		transactionHelper.add(query, params);
 	}
 
 	private static UserPosition createUserPositionFromResult(JsonObject jsonResult) {
