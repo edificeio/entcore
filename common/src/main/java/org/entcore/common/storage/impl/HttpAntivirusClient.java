@@ -47,6 +47,7 @@ public class HttpAntivirusClient implements AntivirusClient {
 		HttpClientOptions options = new HttpClientOptions()
 				.setDefaultHost(host)
 				.setDefaultPort(port)
+				.setSsl(port == 443)
 				.setMaxPoolSize(16)
 				.setConnectTimeout(10000)
 				.setKeepAlive(true);
