@@ -230,6 +230,10 @@ itTests() {
     fi
   done
   cd -
+
+  echo "|-------------------------|"
+  [ $exit_code -ne 0 ] && echo "|---- itTests  FAILED ----|" || echo "|--- itTests SUCCEEDED ---|"
+  echo "|-------------------------|"
   exit $exit_code
 }
 
