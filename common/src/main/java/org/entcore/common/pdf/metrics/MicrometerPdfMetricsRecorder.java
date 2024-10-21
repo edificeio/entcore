@@ -6,6 +6,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -15,9 +16,12 @@ import org.entcore.common.pdf.PdfGenerator;
 import java.io.File;
 import java.net.InetAddress;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * Record pdf metrics using micrometer
@@ -64,6 +68,8 @@ public class MicrometerPdfMetricsRecorder implements PdfMetricsRecorder {
             tempHostname = "";
         }
         this.hostName = tempHostname;
+        // create parking path if needed
+        vertx.fileSystem().mkdirs(this.configuration.parkingPath, res -> {});
     }
 
     /**
@@ -162,6 +168,9 @@ public class MicrometerPdfMetricsRecorder implements PdfMetricsRecorder {
         ongoingConversions.addAndGet(-1);
         getFailed(context, statusCode).increment();
         failedConversionTime.record(context.getElapsedTime());
+        if(configuration.parkingEnabledForHttpCode.contains(statusCode)){
+            parkFile(context, context.getElapsedTime(), Phase.Response, "HTTP Error:" + statusCode);
+        }
     }
 
     /**
@@ -180,6 +189,10 @@ public class MicrometerPdfMetricsRecorder implements PdfMetricsRecorder {
         getUnfinished(context, phase, errorKind).increment();
         unfinishedConversionTime.record(duration);
         // parking file that could not be convert (because of timeout?)
+        this.parkFile(context, duration, phase, errorKind);
+    }
+
+    private void parkFile(final PdfMetricsContext context, final Duration duration, final Phase phase, final String errorKind){
         if(configuration.parkingEnabled){
             if(context.getFileContent().isPresent()){
                 final String fileName = context.getFileName();
@@ -204,9 +217,13 @@ public class MicrometerPdfMetricsRecorder implements PdfMetricsRecorder {
     public static class Configuration {
         final String parkingPath;
         final boolean parkingEnabled;
-        public Configuration(String parkingPath, boolean parkingEnabled) {
+        final List<Integer> parkingEnabledForHttpCode;
+        public Configuration(String parkingPath, boolean parkingEnabled, final JsonArray parkingEnabledForHttpCode) {
             this.parkingPath = parkingPath;
             this.parkingEnabled = parkingEnabled;
+            this.parkingEnabledForHttpCode = parkingEnabledForHttpCode.stream()
+                    .filter(e -> e instanceof Integer)
+                    .map(e -> (Integer)e).collect(Collectors.toList());
         }
 
         /**
@@ -224,7 +241,8 @@ public class MicrometerPdfMetricsRecorder implements PdfMetricsRecorder {
         static Configuration fromJson(final JsonObject config) {
             return new Configuration(
                     config.getString("parking-path", "/srv/storage/tmp/pdf/"),
-                    config.getBoolean("parking-enabled", false)
+                    config.getBoolean("parking-enabled", false),
+                    config.getJsonArray("parking-error-codes", new JsonArray().add(502).add(504))
             );
         }
     }

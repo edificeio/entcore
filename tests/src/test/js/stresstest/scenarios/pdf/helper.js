@@ -1,9 +1,9 @@
 import { check } from "k6";
 import {
   assertOk,
-  getHeaders,
-  uploadFile
+  getHeaders
 } from "https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
+import { FormData } from "https://jslib.k6.io/formdata/0.0.2/index.js";
 import http from "k6/http";
 
 const dataRootPath = __ENV.DATA_ROOT_PATH || "./";
@@ -47,12 +47,19 @@ export function createBlog(session, user, nbPosts) {
           return posts.length && posts.length > 0;
         },
       });
+      const resPublish = http.put(`${rootUrl}/blog/post/publish/${blogId}/${postId}`, {}, { headers });
+      assertOk(resPublish, "publish post");
+      check(resPublish, {
+        "post was published": (r) => {
+          return r.status === 200;
+        },
+      });
     }
   }
   return blogId;
 }
 
-export function printBlog(blogId) {
+export function publishBlog(blogId, session) {
   const title = "My Blog";
   const boundary = "----WebKitFormBoundary7MA4YWxkTrZu0gW";
   const description = "My Best Blog";
@@ -82,19 +89,52 @@ ${boundary}\r\nContent-Disposition: form-data; name="application"\r\n\r\n${appli
 ${boundary}\r\nContent-Disposition: form-data; name="resourceId"\r\n\r\n${blogId}\r\n
 ${boundary}\r\nContent-Disposition: form-data; name="teacherSchool"\r\n\r\n${school}\r\n
 ${boundary}--\r\n`;
-  const headers = {
-    "Content-Type": `multipart/form-data; boundary=${boundary}`,
-  };
+  const headers = getHeaders(session);
+  headers["Content-Type"] = `multipart/form-data; boundary=${boundary}`;
   const res = http.post(`${rootUrl}/appregistry/library/resource`, formData, {
     headers: headers,
   });
-  assertOk(res, "print blog");
+  check(res, {
+    "print blog ok": (r) => r.status === 201,
+  });
+}
+
+export function printBlog(blogId, session) {
+  const headers = getHeaders(session);
+  headers['Content-Type'] = 'application/json';
+  headers['Accept'] = 'application/json';
+  const printUrl = `/blog/print/${blogId}`;
+
+  const pdfUrl = `${rootUrl}/infra/pdf?name=print.pdf&url=${encodeURIComponent(printUrl)}`;
+  const response = http.get(pdfUrl, { headers });
+
+  check(response, {
+    'print blog ok': (r) => r.status === 200,
+  });
+
+  return response;
 }
 
 
-const fileToUpload = open(`${dataRootPath}/file-sample_500kB.odt`, "b");
+const fileToUpload = open(`${dataRootPath}/pdf/file-sample_500kB.odt`, "b");
 export function previewFile(session){
     const uploadedFile = uploadFile(fileToUpload, session)
     const res = http.get(`${rootUrl}/workspace/document/preview/${uploadedFile._id}`)
-    assertOk(res, "preview odt");
+    check(res, {
+      "preview odt ok": (r) => r.status === 200,
+    });
+}
+
+function uploadFile(fileData, session) {
+  let headers = getHeaders(session);
+  const fd = new FormData();
+  //@ts-ignore
+  fd.append("file", http.file(fileData, "file.odt"));
+  //@ts-ignore
+  headers["Content-Type"] = "multipart/form-data; boundary=" + fd.boundary;
+  let res = http.post(`${rootUrl}/workspace/document`, fd.body(), { headers });
+  check(res, {
+    "upload doc ok": (r) => r.status === 201,
+  });
+  return JSON.parse(res.body);
 }

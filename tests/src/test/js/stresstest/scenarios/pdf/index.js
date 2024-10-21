@@ -6,7 +6,7 @@ import {
   switchSession,
   Session,
 } from "https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
-import { createBlog, previewFile, printBlog } from "./helper";
+import { createBlog, previewFile, printBlog } from "./helper.js";
 const dataRootPath = __ENV.DATA_ROOT_PATH || "./";
 const nbPosts = parseInt(__ENV.NB_POST || "100");
 const nbPreview = parseInt(__ENV.NB_PREVIEW || "100");
@@ -15,9 +15,9 @@ chai.config.logFailures = true;
 
 export const options = {
   setupTimeout: "1h",
-  /*thresholds: {
-    checks: ["rate == 1.00"],
-  },*/
+  thresholds: {
+    checks: ["rate>0.9"],
+  },
   scenarios: {
     shareFile: {
       executor: "ramping-vus",
@@ -29,13 +29,20 @@ export const options = {
       ],
       gracefulRampDown: "60s",
     },
+    /*
+    shareFile: {
+      executor: "shared-iterations",
+      vus: 1,
+      iterations: 1,
+    },
+    */
   },
 };
 
 // Load CSV data using SharedArray to reduce memory consumption
 const users = new SharedArray("users", function () {
   // Parse the CSV file with header option enabled
-  return papaparse.parse(open(`${dataRootPath}/audience/accounts.csv`), {
+  return papaparse.parse(open(`${dataRootPath}/pdf/accounts.csv`), {
     header: true,
   }).data;
 });
@@ -74,7 +81,7 @@ export default ({ sessions }) => {
     const session = Session.from(sessions[user.email]);
     switchSession(session);
     for(const id of blogIds){
-        printBlog(id);
+        printBlog(id, session);
     }
   });
   describe("[Pdf][Print] Preview ODT File", () => {
