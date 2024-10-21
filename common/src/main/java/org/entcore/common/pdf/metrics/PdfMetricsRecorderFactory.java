@@ -14,9 +14,13 @@ public class PdfMetricsRecorderFactory {
     private static PdfMetricsRecorder ingestJobMetricsRecorder;
     private static JsonObject config;
     public static void init(final Vertx vertx, final JsonObject config){
+        if(PdfMetricsRecorderFactory.vertx != null){
+            // already init
+            return;
+        }
         PdfMetricsRecorderFactory.vertx = vertx;
-        PdfMetricsRecorderFactory.config = config;
-        if(config.getJsonObject("metricsOptions") == null) {
+        PdfMetricsRecorderFactory.config = config == null? new JsonObject() : config;
+        if(PdfMetricsRecorderFactory.config.getJsonObject("metricsOptions") == null) {
             final String metricsOptions = (String) vertx.sharedData().getLocalMap("server").get("metricsOptions");
             if(metricsOptions == null){
                 PdfMetricsRecorderFactory.metricsOptions = new MetricsOptions().setEnabled(false);
@@ -24,7 +28,7 @@ public class PdfMetricsRecorderFactory {
                 PdfMetricsRecorderFactory.metricsOptions = new MetricsOptions(new JsonObject(metricsOptions));
             }
         } else {
-            metricsOptions = new MetricsOptions(config.getJsonObject("metricsOptions"));
+            metricsOptions = new MetricsOptions(PdfMetricsRecorderFactory.config.getJsonObject("metricsOptions"));
         }
     }
 
@@ -41,7 +45,7 @@ public class PdfMetricsRecorderFactory {
                 throw new IllegalStateException("pdf.metricsrecorder.factory.not.set");
             }
             if(metricsOptions.isEnabled()) {
-                ingestJobMetricsRecorder = new MicrometerPdfMetricsRecorder(vertx, MicrometerPdfMetricsRecorder.Configuration.fromJson(config));
+                ingestJobMetricsRecorder = new MicrometerPdfMetricsRecorder(vertx, MicrometerPdfMetricsRecorder.Configuration.fromJson(metricsOptions.toJson()));
             } else {
                 ingestJobMetricsRecorder = new MicrometerPdfMetricsRecorder.NoopIngestJobMetricsRecorder();
             }
