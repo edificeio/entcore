@@ -33,7 +33,9 @@ public class UserPosition {
 			userPosition = Optional.of(new UserPosition(null, functionCodification[1], source, functionCodification[0]));
 		} else {
 			// avoiding creating user position from teaching subjects
-			if (!"ENS".equals(functionCodification[1]) && !"-".equals(functionCodification[1])) {
+			if (!"ENS".equals(functionCodification[1]) 
+				&& !"-".equals(functionCodification[1])
+				&& functionCodification.length > 4 ) {
 				userPosition = Optional.of(new UserPosition(null, functionCodification[2] + " / " + functionCodification[4], source, functionCodification[0]));
 			}
 		}
