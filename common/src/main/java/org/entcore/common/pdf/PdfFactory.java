@@ -22,6 +22,7 @@ package org.entcore.common.pdf;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
+import org.entcore.common.pdf.metrics.PdfMetricsRecorderFactory;
 
 public class PdfFactory {
 
@@ -43,6 +44,7 @@ public class PdfFactory {
 		if (config != null && config.getJsonObject("node-pdf-generator") != null) {
 			this.node = config.getJsonObject("node-pdf-generator");
 		}
+		PdfMetricsRecorderFactory.init(vertx, config);
 	}
 
 	public PdfGenerator getPdfGenerator() throws Exception {
