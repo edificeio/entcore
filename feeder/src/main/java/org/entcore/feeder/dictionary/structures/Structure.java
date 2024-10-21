@@ -28,6 +28,7 @@ import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.common.user.position.UserPosition;
+import org.entcore.common.user.position.UserPositionSource;
 import org.entcore.common.user.position.impl.DefaultUserPositionService;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.utils.ResultMessage;
@@ -256,13 +257,7 @@ public class Structure {
 	}
 
 	public void detachUserFromItsPositions(String userExternalId) {
-		String query = "" +
-				"MATCH (u:User {externalId: {userExternalId}})-[hasPosition:HAS_POSITION]->(:UserPosition)-[:IN]->(s:Structure {externalId: {structureExternalId}}) " +
-				"DELETE hasPosition ";
-		JsonObject params = new JsonObject()
-				.put("structureExternalId", externalId)
-				.put("userExternalId", userExternalId);
-		getTransaction().add(query, params);
+		DefaultUserPositionService.detachUserFromItsPositions(userExternalId, externalId, getTransaction());
 	}
 
 	public void createPosition(UserPosition userPosition) {
@@ -474,14 +469,12 @@ public class Structure {
 		tx.add(query, params);
 	}
 
-	private void transitionPositions() {
+	private void transitionPositions()
+	{
 		TransactionHelper tx = TransactionManager.getInstance().getTransaction("GraphDataUpdate");
-		JsonObject params = new JsonObject().put("id", id);
-		String query =
-				"MATCH (s:Structure {id : {id}})<-[:IN]-(p:UserPosition) " +
-				"WHERE p.source = \"CSV\" " +
-				"DETACH DELETE p";
-		tx.add(query, params);
+		DefaultUserPositionService.detachSourcedUserPositionsFromStructure(
+			UserPositionSource.CSV, id, tx
+		);
 	}
 
 	public static void load(String externalId, TransactionHelper transactionHelper, Handler<Structure> handler)

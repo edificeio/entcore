@@ -395,6 +395,40 @@ public class DefaultUserPositionService implements UserPositionService {
 		}));
 		return promise.future();
 	}
+	
+	/**
+	 * Static method to detach a user from his positions in a Structure,
+	 * in Feeder importation process.
+	 * Note: in Feeder context, external IDs are used.
+	 * @param userExternalId the user external ID
+	 * @param structureExternalId the structure external ID
+	 * @param transactionHelper the transaction helper for current query to commit
+	 */
+	public static void detachUserFromItsPositions(String userExternalId, String structureExternalId, TransactionHelper transactionHelper) {
+		String query = "" +
+			"MATCH (u:User {externalId: {userExternalId}})-[hasPosition:HAS_POSITION]->(:UserPosition)-[:IN]->(s:Structure {externalId: {structureExternalId}}) " +
+			"DELETE hasPosition ";
+		JsonObject params = new JsonObject()
+				.put("structureExternalId", structureExternalId)
+				.put("userExternalId", userExternalId);
+		transactionHelper.add(query, params);
+	}
+
+	/**
+	 * Static method to detach and delete user positions of a source from a Structure.
+	 * @param source the source of user positions to detach
+	 * @param structureId ID of the structure
+	 * @param transactionHelper the transaction helper for current query to commit
+	 */
+	public static void detachSourcedUserPositionsFromStructure(UserPositionSource source, String structureId, TransactionHelper transactionHelper) {
+		JsonObject params = new JsonObject()
+			.put("id", structureId)
+			.put("source", source.toString());
+		String query =
+				"MATCH (s:Structure {id : {id}})<-[:IN]-(p:UserPosition {source: {source}}) " +
+				"DETACH DELETE p";
+		transactionHelper.add(query, params);
+	}
 
 	/**
 	 * Static method to create user positions in Feeder importation process
