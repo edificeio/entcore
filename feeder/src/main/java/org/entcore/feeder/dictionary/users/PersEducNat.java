@@ -19,33 +19,28 @@
 
 package org.entcore.feeder.dictionary.users;
 
-import org.entcore.common.neo4j.Neo4jUtils;
-import org.entcore.feeder.timetable.edt.EDTImporter;
-import org.entcore.feeder.utils.Report;
-import org.entcore.common.neo4j.TransactionHelper;
-import org.entcore.feeder.utils.Validator;
-import org.entcore.feeder.dictionary.structures.DefaultProfiles;
-import org.entcore.common.utils.Identifier;
-import org.entcore.common.utils.ExternalId;
-import org.entcore.common.schema.users.User;
-import org.entcore.common.schema.users.Teacher;
-import org.entcore.common.schema.users.Personnel;
-import org.entcore.common.schema.structures.Structure;
-import org.entcore.common.schema.utils.matchers.Matcher;
-import org.entcore.common.schema.utils.matchers.IdentifierMatcher;
-
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.neo4j.Neo4jUtils;
+import org.entcore.common.neo4j.TransactionHelper;
+import org.entcore.common.schema.structures.Structure;
+import org.entcore.common.schema.users.Personnel;
+import org.entcore.common.schema.users.Teacher;
+import org.entcore.common.schema.users.User;
+import org.entcore.common.schema.utils.matchers.IdentifierMatcher;
+import org.entcore.common.schema.utils.matchers.Matcher;
+import org.entcore.common.user.position.UserPosition;
+import org.entcore.common.user.position.impl.DefaultUserPositionService;
+import org.entcore.common.utils.ExternalId;
+import org.entcore.feeder.dictionary.structures.DefaultProfiles;
+import org.entcore.feeder.timetable.edt.EDTImporter;
+import org.entcore.feeder.utils.Report;
+import org.entcore.feeder.utils.Validator;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
-
-import org.entcore.feeder.ManualFeeder;
 
 public class PersEducNat extends AbstractUser {
 
@@ -119,6 +114,7 @@ public class PersEducNat extends AbstractUser {
 				transactionHelper.add(sb.toString(), params);
 				checkUpdateEmail(object);
 			}
+			linkPositionsToUser(object);
 			if (relationshipQueries) {
 				final String externalId = object.getString("externalId");
 				JsonArray structures = getMappingStructures(object.getJsonArray("structures"));
@@ -275,6 +271,20 @@ public class PersEducNat extends AbstractUser {
 					}
 				}
 			}
+		}
+	}
+
+	private void linkPositionsToUser(JsonObject user) {
+		JsonArray functions = user.getJsonArray("functions");
+		if (functions != null) {
+			functions.stream()
+					.filter(function -> function instanceof String)
+					.map(function -> (String) function)
+					// the source of the user position can either be aaf or csv here
+					.map(function -> UserPosition.getUserPositionFromEncodedFunction(function, null))
+					.filter(Optional::isPresent)
+					.map(Optional::get)
+					.forEach(userPosition -> DefaultUserPositionService.linkPositionToUser(userPosition, user.getString("externalId"), transactionHelper));
 		}
 	}
 

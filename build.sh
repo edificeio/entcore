@@ -183,23 +183,58 @@ publish () {
   docker compose run --rm $USER_OPTION gradle gradle "$GRADLE_OPTION"publish
 }
 
+check_prefix_sh_file() {
+    dir_path=$1      # Directory path
+    search_str=$2    # String to check
+    # Loop over each .sh file in the directory
+    for file in "$dir_path"/*.sh; do
+        if [ -f "$file" ]; then
+            # Get the file name without the extension
+            base_name=$(basename "$file" .sh)
+
+            # Check if the file name is a prefix of the search string
+            if [[ "$search_str" == "$base_name"* ]]; then
+                return 0  # Found a match, return 0 (success)
+            fi
+        fi
+    done
+
+    return 1  # No match found, return 1 (failure)
+}
+
 itTests() {
-  all_successful=true
   script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-  for script in $(find "$script_dir/tests/src/test/js/it" -type f -name "run.sh"); do
-    # Execute the script
-    bash "$script"
-    
-    # Check the exit status of the script
-    if [ $? -ne 0 ]; then
-        all_successful=false  # If any script fails, exit with status 1
+  cd $script_dir/tests/src/test/js/it/scenarios
+  exit_code=0
+  js_files=($(find . -type f -name '*.js' ! -name '_*'))
+  for it_file in "${js_files[@]}"; do
+    short_file_name=$(basename -s .js $it_file)
+    file_dir=$(dirname $it_file)
+    check_prefix_sh_file "$file_dir" "$short_file_name"
+    if [ $? -eq 1 ]; then
+      echo executing $it_file
+      docker compose run --rm -T k6 run file:///home/k6/src/it/scenarios/$it_file
+      if [ $? -ne 0 ]; then
+          exit_code=1
+          echo "Error while executing : $it_file"
+      fi
     fi
   done
-  if [ "$all_successful" = true ]; then
-    exit 0
-  else
-    exit 1
-  fi
+  sh_files=($(find . -type f -name '*.sh'))
+  for sh_file in "${sh_files[@]}"; do
+    echo executing $sh_file
+    "$sh_file" "$script_dir/tests/src/test/resources/data" "$script_dir/../$SPRINGBOARD"
+    if [ $? -ne 0 ]; then
+        exit_code=1
+        echo "Error while executing : $sh_file"
+    fi
+  done
+  cd -
+
+  echo "|-------------------------|"
+  [ $exit_code -ne 0 ] && echo "|---- itTests  FAILED ----|" || echo "|--- itTests SUCCEEDED ---|"
+  echo "|-------------------------|"
+  exit $exit_code
 }
 
 for param in "$@"

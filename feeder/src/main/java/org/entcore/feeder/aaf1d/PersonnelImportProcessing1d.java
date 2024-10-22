@@ -105,6 +105,7 @@ public class PersonnelImportProcessing1d extends PersonnelImportProcessing {
 		JsonArray functions = object.getJsonArray("functions");
 		createDirectionGroups(object.getJsonArray("direction"), groups);
 		getDirectionOrFunctionFromFunctions(functions, groups);
+		createPositions(functions);
 		JsonArray structuresByFunctions = null;
 		if (functions != null) {
 			Set<String> s = new HashSet<>();

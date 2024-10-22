@@ -11,6 +11,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jQueryAndParams;
 import org.entcore.common.neo4j.Neo4jResult;
+import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -291,9 +292,7 @@ public class DefaultUserPositionService implements UserPositionService {
 	 * @param userId the id of the user
 	 * @return the neo4j query and the associated params
 	 */
-	public Future<Neo4jQueryAndParams> getUserPositionSettingQueryAndParam(final Set<String> positionIds,
-																																				 final String userId,
-																																				 final String callerId) {
+	public Future<Neo4jQueryAndParams> getUserPositionSettingQueryAndParam(final Set<String> positionIds, final String userId, final String callerId) {
 		final Promise<UserInfos> promise = Promise.promise();
 		if(callerId == null) {
 			final UserInfos adminInfos = new UserInfos();
@@ -396,6 +395,81 @@ public class DefaultUserPositionService implements UserPositionService {
 		}));
 		return promise.future();
 	}
+	
+	/**
+	 * Static method to detach a user from his positions in a Structure,
+	 * in Feeder importation process.
+	 * Note: in Feeder context, external IDs are used.
+	 * @param userExternalId the user external ID
+	 * @param structureExternalId the structure external ID
+	 * @param transactionHelper the transaction helper for current query to commit
+	 */
+	public static void detachUserFromItsPositions(String userExternalId, String structureExternalId, TransactionHelper transactionHelper) {
+		String query = "" +
+			"MATCH (u:User {externalId: {userExternalId}})-[hasPosition:HAS_POSITION]->(:UserPosition)-[:IN]->(s:Structure {externalId: {structureExternalId}}) " +
+			"DELETE hasPosition ";
+		JsonObject params = new JsonObject()
+				.put("structureExternalId", structureExternalId)
+				.put("userExternalId", userExternalId);
+		transactionHelper.add(query, params);
+	}
+
+	/**
+	 * Static method to detach and delete user positions of a source from a Structure.
+	 * @param source the source of user positions to detach
+	 * @param structureId ID of the structure
+	 * @param transactionHelper the transaction helper for current query to commit
+	 */
+	public static void detachSourcedUserPositionsFromStructure(UserPositionSource source, String structureId, TransactionHelper transactionHelper) {
+		JsonObject params = new JsonObject()
+			.put("id", structureId)
+			.put("source", source.toString());
+		String query =
+				"MATCH (s:Structure {id : {id}})<-[:IN]-(p:UserPosition {source: {source}}) " +
+				"DETACH DELETE p";
+		transactionHelper.add(query, params);
+	}
+
+	/**
+	 * Static method to create user positions in Feeder importation process
+	 * Note: in Feeder context, the structure id used is the external structure id
+	 * @param userPosition the user position to create
+	 * @param transactionHelper the transaction helper for current query to commit
+	 */
+	public static void createUserPosition(UserPosition userPosition, TransactionHelper transactionHelper) {
+		String query =
+				"MATCH (s:Structure {externalId : {structureExternalId}}) " +
+				"MERGE (s)<-[:IN]-(p:UserPosition {name : {positionName}}) " +
+				"ON CREATE SET " +
+				"   p.id = {id}, " +
+				"   p.simplifiedName = {simplifiedName}, " +
+				"   p.source = {source} ";
+		JsonObject params = new JsonObject()
+				.put("structureExternalId", userPosition.getStructureId())
+				.put("positionName", userPosition.getName())
+				.put("id", UUID.randomUUID().toString())
+				.put("simplifiedName", DefaultUserPositionService.getSimplifiedString(userPosition.getName()))
+				.put("source", userPosition.getSource().toString());
+		transactionHelper.add(query, params);
+	}
+
+	/**
+	 * Static method to link positions to a user in Feeder importation process
+	 * Note: in Feeder context, the structure id used is the external structure id
+	 * @param userPosition the user position to link
+	 * @param userExternalId the external id of the target user
+	 * @param transactionHelper transaction helper for current query to commit
+	 */
+	public static void linkPositionToUser(UserPosition userPosition, String userExternalId, TransactionHelper transactionHelper) {
+		String query = "" +
+				"MATCH (p:UserPosition {name: {positionName}})-[:IN]->(s:Structure {externalId : {structureExternalId}}), (u:User {externalId : {userExternalId}}) " +
+				"MERGE (u)-[:HAS_POSITION]->(p) ";
+		JsonObject params = new JsonObject()
+				.put("structureExternalId", userPosition.getStructureId())
+				.put("userExternalId", userExternalId)
+				.put("positionName", userPosition.getName());
+		transactionHelper.add(query, params);
+	}
 
 	private static UserPosition createUserPositionFromResult(JsonObject jsonResult) {
 		return new UserPosition(jsonResult.getString("id"),
@@ -409,7 +483,7 @@ public class DefaultUserPositionService implements UserPositionService {
 	 * @param source the source string to be simplified
 	 * @return the source string set to lower case and without diacritics
 	 */
-	private static String getSimplifiedString(String source) {
+	public static String getSimplifiedString(String source) {
 		return Pattern.compile("\\p{M}")
 				.matcher(Normalizer.normalize(source, Normalizer.Form.NFD))
 				.replaceAll("")
