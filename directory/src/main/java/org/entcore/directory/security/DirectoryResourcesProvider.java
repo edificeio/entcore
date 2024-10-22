@@ -452,15 +452,24 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			handler.handle(true);
 			return;
 		}
-		bodyToJson(request, body -> {
-			// If the requester is an ADML and the target user is also an ADML, allow the update to proceed iff the requester
-			// wants to update the allowed fields specified in fieldsUpdatableByADMLOnOtherADML
-      final boolean admlCanUpdateADML =
-        body != null &&
-				fieldsUpdatableByADMLOnOtherADML.containsAll(body.fieldNames());
-      adminOrTeacher(request, user, admlCanUpdateADML, handler);
-    }
-    );
+		final HttpMethod requestMethod = request.method();
+		switch (requestMethod) {
+			case POST:
+			case PUT:
+			case PATCH:
+				bodyToJson(request, body -> {
+						// If the requester is an ADML and the target user is also an ADML, allow the update to proceed iff the requester
+						// wants to update the allowed fields specified in fieldsUpdatableByADMLOnOtherADML
+						final boolean admlCanUpdateADML =
+							body != null &&
+								fieldsUpdatableByADMLOnOtherADML.containsAll(body.fieldNames());
+						adminOrTeacher(request, user, admlCanUpdateADML, handler);
+					}
+				);
+				break;
+			default:
+				adminOrTeacher(request, user, false, handler);
+		}
 	}
 
 	private void adminOrTeacher(final HttpServerRequest request, final UserInfos user, boolean admlCanUpdateADML, final Handler<Boolean> handler) {
