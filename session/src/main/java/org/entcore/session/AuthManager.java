@@ -122,6 +122,9 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		case "recreate":
 			doReCreate(message);
 			break;
+		case "dropAllByUserId":
+			dropAllByUserId(message);
+			break;
 		case "drop":
 			doDrop(message);
 			break;
@@ -158,6 +161,32 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			} else {
 				logger.error("Error when get session number", ar.cause());
 				sendError(message, "Error when get session number");
+			}
+		});
+	}
+
+	public void dropAllByUserId(Message<JsonObject> message) {
+		final String userId = message.body().getString("userId");
+		if (userId == null || userId.trim().isEmpty()) {
+			sendError(message, "[doDropCacheSession] Invalid userId : " + message.body().encode());
+			return;
+		}
+		String uid = message.body().getString("userId");
+		sessionStore.listSessionsIds(uid, ar -> {
+			if (ar.succeeded()) {
+				JsonArray removedSessions = new JsonArray();
+				for (Object sessionId : ar.result()) {
+					if (sessionId instanceof String) {
+						removedSessions.add((String) sessionId);
+						JsonObject json = new JsonObject().put("_id", sessionId).put("userId", userId);
+						mongo.delete(SESSIONS_COLLECTION, json);
+						dropSession(null, (String) sessionId, null);
+					}
+				}
+				sendOK(message, new JsonObject().put("dropped", removedSessions));
+			} else {
+				logger.error("[doDropCacheSession] error when list sessions ids with userId : " + userId, ar.cause());
+				sendError(message, "[doDropCacheSession] Invalid userId : " + userId);
 			}
 		});
 	}
@@ -730,6 +759,12 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 					final String userId = ar.result().getString("userId");
 					eb.send("saml", new JsonObject().put("action", "soap-slo").put("sessionId", sessionId).put("userId", userId));
 				}
+				if (getOrElse(config.getBoolean("slo-oidc-backchannel-logout"), true)) {
+					final String userId = ar.result().getString("userId");
+					eb.send("openid",
+							new JsonObject().put("action", "oidc-slo").put("userId", userId).put("sessionId",
+									sessionId));
+				}
 			} else {
 				logger.error("In doDrop - Error getting object after removing hazelcast session " + sessionId, ar.cause());
 			}
@@ -836,7 +871,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"OPTIONAL MATCH n-[rf:HAS_FUNCTION]->(f:Function) " +
 				"OPTIONAL MATCH n<-[:RELATED]-(child:User) " +
 				"RETURN distinct " +
-				"n.classes as classNames, n.level as level, n.login as login, COLLECT(distinct [c.id, c.name]) as classes, " +
+				"n.classes as classNames, n.level as level, n.email as email, n.mobile as mobile, n.login as login, COLLECT(distinct [c.id, c.name]) as classes, " +
 				"n.lastName as lastName, n.firstName as firstName, n.externalId as externalId, n.federated as federated, " +
 				"n.birthDate as birthDate, n.changePw as forceChangePassword, COALESCE(n.needRevalidateTerms, FALSE) as needRevalidateTerms,HAS(n.deleteDate) as deletePending, " +
 				"n.displayName as username, HEAD(n.profiles) as type, " +

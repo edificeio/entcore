@@ -27,11 +27,9 @@ import java.util.Optional;
 import java.util.UUID;
 
 
-enum REASON {BAD_CONFIGURATION, LIBRARY, OK}
-
-enum MESSAGE {API_URL_NOT_SET, DISABLED, WRONG_TOKEN, LIBRARY_KO, OK}
-
 public class DefaultLibraryService implements LibraryService {
+    public enum REASON {BAD_CONFIGURATION, LIBRARY, OK};
+    public enum MESSAGE {API_URL_NOT_SET, DISABLED, WRONG_TOKEN, LIBRARY_KO, CONTENT_TOO_LARGE, OK};
     private static final String RESSOURCE_ENDPOINT = "api/documents";
     private static final String CONFIG_LIBRARY_ENABLED = "library-enabled";
     private static final String CONFIG_LIBRARY_API_URL = "library-api-url";
@@ -155,6 +153,8 @@ public class DefaultLibraryService implements LibraryService {
                     } else {
                         if (response.statusCode() == 401) {
                             future.complete(generateJsonResponse(false, REASON.LIBRARY, MESSAGE.WRONG_TOKEN));
+                        } else if (response.statusCode() == 413) {
+                            future.complete(generateJsonResponse(false, REASON.LIBRARY, MESSAGE.CONTENT_TOO_LARGE));
                         } else {
                             future.complete(generateJsonResponse(false, REASON.LIBRARY, MESSAGE.LIBRARY_KO));
                         }

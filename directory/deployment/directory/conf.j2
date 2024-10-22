@@ -17,6 +17,7 @@
             "host": "https://{{ host }}",
             "port": 8003,
             "email": "{{fromEmail}}",
+            "massMessagingDefaultSenderId": {{massMessagingDefaultSenderId}},
             "app-name": "Directory",
             "workspace-url": "localhost",
             "workspace-port": 8011,
@@ -63,6 +64,9 @@
                 {% if disabledFederatedAdress is defined %}
                 "disabledFederatedAdress": {{ disabledFederatedAdress }},
                 {% endif %}
+                "userPosition": {
+                    "restrictCRUDToADMC":{{ restrictCRUDToADMC|default('false') }}
+                },
                 "xiti": {
                     "ID_SERVICE": {
                         "default": 2,
@@ -77,6 +81,9 @@
                         "/userbook/annuaire": "PRODUCTION_COLLABORATIVE"
                     }
                 }
-            }
+            },
+            {% if templateHostnameConnection is defined %}
+            "template-hostname-connection": {{templateHostnameConnection}}, 
+            {% endif %}
         }
     }
