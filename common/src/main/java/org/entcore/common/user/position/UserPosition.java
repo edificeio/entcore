@@ -2,6 +2,8 @@ package org.entcore.common.user.position;
 
 import io.vertx.core.json.JsonObject;
 
+import java.util.Optional;
+
 public class UserPosition {
 	private final String id;
 	private final String name;
@@ -13,6 +15,31 @@ public class UserPosition {
 		this.name = name;
 		this.source = source;
 		this.structureId = structureId;
+	}
+
+	/**
+	 * Method providing a User Position built upon the Function codification
+	 * @param dollarEncodedFunction function codification separated with dollars
+	 *  - in AAF format :       [StructureExternalId]$[FunctionCode]$[FunctionName]$[PositionCode]$[PositionName]
+	 *  - in free CSV format :  [StructureExternalId]$[PositionName]
+	 * @param source the source type of data feed
+	 * @return a User Position built upon Function information if possible
+	 */
+	public static Optional<UserPosition> getUserPositionFromEncodedFunction(String dollarEncodedFunction, UserPositionSource source) {
+		Optional<UserPosition> userPosition = Optional.empty();
+		String [] functionCodification = dollarEncodedFunction.split("\\$");
+		// non aaf format
+		if (functionCodification.length == 2) {
+			userPosition = Optional.of(new UserPosition(null, functionCodification[1], source, functionCodification[0]));
+		} else {
+			// avoiding creating user position from teaching subjects
+			if (!"ENS".equals(functionCodification[1]) 
+				&& !"-".equals(functionCodification[1])
+				&& functionCodification.length > 4 ) {
+				userPosition = Optional.of(new UserPosition(null, functionCodification[2] + " / " + functionCodification[4], source, functionCodification[0]));
+			}
+		}
+		return userPosition;
 	}
 
 	public String getId() {

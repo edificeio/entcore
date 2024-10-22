@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE ficAlimMENESR SYSTEM "ficAlimMENESR.dtd">
+<ficAlimMENESR>
+<!-- versionAF="AAF-VE2407" -->
+<!-- versionSDET="Annexe 4bis version 6.4" -->
+<!-- codeAcademieExport="13" -->
+<!-- degre="2D" -->
+<!-- dateGenerationExport="16/09/2024" -->
+
+<addRequest>
+    <operationalAttributes><attr name="categoriePersonne"><value>PersEducNat</value></attr></operationalAttributes>
+    <identifier><id>314159</id></identifier>
+    <attributes>
+    <attr name="ENTPersonJointure"><value>314159</value></attr>
+    <attr name="ENTPersonDateNaissance"><value>01/01/1980</value></attr>
+    <attr name="ENTPersonNomPatro"><value>AAAA</value></attr>
+    <attr name="sn"><value>AAAA</value></attr>
+    <attr name="givenName"><value>Prénom AAAA</value></attr>
+    <attr name="ENTPersonAutresPrenoms"><value/></attr>
+    <attr name="personalTitle"><value>M.</value></attr>
+    <attr name="mail"><value>aaaa@mailinator.fr</value></attr>
+    <attr name="ENTPersonStructRattach"><value>43</value></attr>
+    <attr name="ENTAuxEnsCategoDiscipline"><value>00$NON SPECIALISE</value><value>01$PHILOSOPHIE</value></attr>
+    <attr name="ENTAuxEnsDisciplinesPoste"><value>CHEF D&apos;ETABLISSEMENT ADJOINT$00</value></attr>
+    <attr name="ENTAuxEnsMEF"><value/></attr>
+    <attr name="ENTAuxEnsMatiereEnseignEtab"><value/></attr>
+    <attr name="ENTAuxEnsClasses"><value/></attr>
+    <attr name="ENTAuxEnsGroupes"><value/></attr>
+    <attr name="ENTAuxEnsClassesMatieres"><value/></attr>
+    <attr name="ENTAuxEnsGroupesMatieres"><value/></attr>
+    <attr name="ENTAuxEnsClassesPrincipal"><value/></attr>
+    <attr name="ENTPersonFonctions">
+        <value>43$DIR$DIRECTION$D0011$CHEF D&apos;ETABLISSEMENT ADJOINT</value>
+        <value>43$AEH$ACCOMPAGNEMENT$D0021$ACCOMPAGNEMENT ELEVES SITUATION HANDICAP</value>
+    </attr>
+    <attr name="ENTPersonCategorieEnseignant"><value>O</value></attr>
+    <attr name="PersEducNatPresenceDevantEleves"><value>N</value></attr>
+    </attributes>
+</addRequest>
+
+<addRequest>
+    <operationalAttributes><attr name="categoriePersonne"><value>PersEducNat</value></attr></operationalAttributes>
+    <identifier><id>314160</id></identifier>
+    <attributes>
+    <attr name="ENTPersonJointure"><value>314160</value></attr>
+    <attr name="ENTPersonDateNaissance"><value>01/01/1980</value></attr>
+    <attr name="ENTPersonNomPatro"><value>BBBB</value></attr>
+    <attr name="sn"><value>BBBB</value></attr>
+    <attr name="givenName"><value>Prénom BBBB</value></attr>
+    <attr name="ENTPersonAutresPrenoms"><value/></attr>
+    <attr name="personalTitle"><value>Mme</value></attr>
+    <attr name="mail"><value>bbbb@mailinator.fr</value></attr>
+    <attr name="ENTPersonStructRattach"><value>43</value></attr>
+    <attr name="ENTAuxEnsCategoDiscipline"><value>00$NON SPECIALISE</value><value>01$PHILOSOPHIE</value></attr>
+    <attr name="ENTAuxEnsDisciplinesPoste"><value>CHEF D&apos;ETABLISSEMENT ADJOINT$00</value></attr>
+    <attr name="ENTAuxEnsMEF"><value/></attr>
+    <attr name="ENTAuxEnsMatiereEnseignEtab"><value/></attr>
+    <attr name="ENTAuxEnsClasses"><value/></attr>
+    <attr name="ENTAuxEnsGroupes"><value/></attr>
+    <attr name="ENTAuxEnsClassesMatieres"><value/></attr>
+    <attr name="ENTAuxEnsGroupesMatieres"><value/></attr>
+    <attr name="ENTAuxEnsClassesPrincipal"><value/></attr>
+    <attr name="ENTPersonFonctions">
+        <value>43$ENS$ENSEIGNEMENT DEVANT ELEVES$G0170$ENSEIGNER EN SEGPA OU EREA</value></attr>
+    <attr name="ENTPersonCategorieEnseignant"><value>O</value></attr>
+    <attr name="PersEducNatPresenceDevantEleves"><value>N</value></attr>
+    </attributes>
+</addRequest>
+
+</ficAlimMENESR>
