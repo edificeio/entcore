@@ -1,35 +1,27 @@
 {
   "message.new.console": "Bienvenue sur la nouvelle version de la nouvelle console d'administration. Pour revenir à l'ancienne version de la console d'administration, veuillez cliquer ici : ",
-
   "admin.title": "Console d'administration",
-
   "admc.navbar.title": "Console d'administration centrale",
   "admc.home.title": "Console d'administration centrale",
-
   "admc.communications": "Communications",
   "admc.communications.welcome-message": "Message d'accueil",
   "admc.communications.flash-message": "Message flash ADMC",
   "admc.communications.notifications": "Notifications (fil, mail, push)",
-
   "admc.search": "Trouver un utilisateur",
   "admc.search.transverse": "Recherche transverse",
   "admc.search.unlinked": "Personnes non rattachées",
-
   "admc.search.currentStructure": "Rechercher dans la structure courante",
   "admc.search.linkedStructures": "Rechercher dans toutes les structures",
-
   "admc.apps": "Gérer les applications",
   "admc.apps.configuration": "Paramétrage des applications",
   "admc.apps.roles": "Rôles applicatifs",
   "admc.apps.roles.newRoleName": "Nom du nouveau rôle",
   "admc.apps.calendar": "Calendrier",
-
   "admc.misc": "Autres",
   "admc.misc.xiti": "Paramétrage Xiti",
   "admc.misc.keys": "Trousseau",
   "admc.misc.multimedia": "Ressources multimedia",
   "admc.misc.gar": "Paramétrage du GAR",
-
   "admc.misc.gar.deploy": "Déployer le GAR",
   "admc.misc.gar.choice": "Sélectionner le projet GAR à paramétrer",
   "admc.misc.gar.uai": "Copier ici la liste des UAI cibles",
@@ -46,13 +38,10 @@
   "admc.misc.gar.lightbox.confirm.message": "Vous allez paramétrer le projet {{label}} - {{id}} à la liste des structures suivantes:",
   "admc.misc.gar.lightbox.confirm.error.title": "Attention",
   "admc.misc.gar.lightbox.confirm.error.message": "Seules les structures avec une source d'alimentation automatique, disposant d'utilisateurs et dont l'UAI existe peuvent être paramétrées pour le GAR, les UAI suivants ne respectent pas ces exigences:",
-
-
   "admc.nav.dashboard": "Dashboard",
   "admc.nav.communications": "Communications",
   "admc.nav.search": "Trouver un utilisateur",
   "admc.nav.apps": "Gérer les applications",
-
   "search.structure": "Rechercher un établissement",
   "search.user": "Rechercher un utilisateur",
   "search.user.firstname": "Prénom",
@@ -91,7 +80,6 @@
   "manage.duplicates": "Gérer les doublons",
   "manage.reports": "Gérer les signalements",
   "management.structure": "Gérer mon établissement",
-
   "management.structure.informations.tab": "Informations",
   "management.structure.informations.general": "Général",
   "management.structure.informations.name": "Nom",
@@ -153,7 +141,6 @@
   "management.structure.informations.mfa.warn.title": "Modification de l’authentification forte",
   "management.structure.informations.mfa.warn.activation": "Vous êtes sur le point d’activer une option de sécurité importante. Elle impose aux utilisateurs administrateurs une connexion à 2 facteurs, êtes-vous sûr de vouloir continuer ?",
   "management.structure.informations.mfa.warn.deactivation": "Vous êtes sur le point de désactiver une option de sécurité importante. Elle impose aux utilisateurs administrateurs une connexion à 2 facteurs, êtes-vous sûr de vouloir continuer ?",
-
   "management.structure.parent.attachment": "Rattachement structure parente",
   "management.structure.parent.title": "Ajouter des structures parentes",
   "management.structure.parent.lightbox": "Ajouter une structure parente",
@@ -165,12 +152,10 @@
   "management.structure.informations.attach.parent.success.content": "Cette structure a bien été attachée à une structure parente",
   "management.structure.informations.attach.parent.error.title": "Erreur d'ajout",
   "management.structure.informations.attach.parent.error.content": "Cette structure ne peut pas être attaché comme structure parente.",
-
   "management.structure.user-position.tab": "Gestion des fonctions",
   "management.structure.user-position.title": "Gestion des fonctions",
   "management.structure.user-position.description": "Les fonctions de votre établissement peuvent provenir d’une source manuelle ou d’une source automatique. Seules les fonctions qui sont créées manuellement peuvent être modifiées ou supprimées. Pour gérer les fonctions créées automatiquement, veuillez contacter l’organisme d’origine.",
   "management.structure.user-position.create.": "Les fonctions de votre établissement peuvent provenir d’une source manuelle ou d’une source automatique. Seules les fonctions qui sont créées manuellement peuvent être modifiées ou supprimées. Pour gérer les fonctions créées automatiquement, veuillez contacter l’organisme d’origine.",
-
   "user-position.add": "Ajouter une nouvelle fonction",
   "user-position.create-title": "Créer une fonction",
   "user-position.create": "Créer",
@@ -191,7 +176,6 @@
   "user-position.input-name.not-found": "Cette fonction n’est pas répertoriée, souhaitez-vous l’ajouter ?",
   "user-position.confirm.remove.title": "Enlever la fonction",
   "user-position.confirm.remove.text": "Êtes vous sûr de vouloir enlever la fonction {{name}} ?",
-
   "management.message.flash": "Message Flash",
   "management.message.flash.edit": "Éditer un message flash",
   "management.message.flash.create": "Créer un message flash",
@@ -242,7 +226,6 @@
   "management.message.flash.language.it": "Italien",
   "management.message.flash.language.pt": "Portugais",
   "management.message.flash.language.co": "Corse",
-
   "management.block.profile.tab": "Blocage en lot",
   "management.block.profile.header": "Bloquer/Débloquer en lot",
   "management.block.profile.info.1": "Vous pouvez bloquer des utilisateurs par profil.",
@@ -261,7 +244,6 @@
   "management.block.profile.traces.table.header.action": "Type d'action",
   "management.block.profile.traces.table.header.profile": "Profil",
   "management.block.profile.traces.table.header.displayName": "Nom d'affichage",
-
   "management.zimbra.warning.content": "Attention, lorsque vous ouvrez des droits vers l'extérieur, les règles de communication définies par l'établissement ne sont plus appliquées dans la messagerie pour les utilisateurs contenus dans les groupes sélectionnés.",
   "management.zimbra.panel.opening": "Ouverture de la messagerie vers l'exterieur",
   "management.zimbra.panel.returning": "Rappeler un message",
@@ -313,10 +295,8 @@
   "management.zimbra.return.lightbox.list": "Vous allez rappeler les messages envoyés suivants :",
   "management.zimbra.return.lightbox.remove": "Les messages seront supprimés de la messagerie des utilisateurs.",
   "management.zimbra.return.lightbox.delete": "Le rappel de mail suivant sera supprimé et ne pourra plus être validé par la suite :",
-
   "BLOCK": "Blocage",
   "UNBLOCK": "Déblocage",
-
   "management.edt.tab": "Emploi du temps",
   "management.edt.intro": "Cette section vous permet de changer la source d'alimentation des groupes d'enseignement et d'importer vos données d'emplois du temps.",
   "management.edt.reports.header": "Derniers rapports de chargement",
@@ -363,7 +343,6 @@
   "management.edt.correspondance.group.notify.success.content": "La correspondance des groupes a été effectuée",
   "management.edt.correspondance.group.notify.error.title": "Erreur de mise à jour",
   "management.edt.correspondance.group.notify.error.content": "Une erreur a été rencontrée lors de la mise en place de la correspondance des groupes",
-
   "management.calendar": "Grilles horaires",
   "management.calendar.header": "Paramétrage des grilles horaires",
   "management.calendar.create.grid": "Créer une grille",
@@ -393,7 +372,6 @@
   "management.calendar.grid.delete.confirm.content": "Vous êtes sur le point de supprimer la grille horaire {{name}} et tous les créneaux associés.",
   "management.calendar.slot.delete.confirm.title": "Suppression du créneau horaire",
   "management.calendar.slot.delete.confirm.content": "Vous êtes sur le point de supprimer le créneau horaire.",
-
   "management.structure.gar.tab": "GAR",
   "management.structure.gar.title": "Activation du GAR",
   "management.structure.gar.inactive": "Le GAR n'est pas activé sur cette structure",
@@ -403,7 +381,7 @@
   "management.structure.gar.active.label": "Projet GAR",
   "management.structure.gar.choice": "Sélectionner le projet GAR à paramétrer sur cette structure",
   "management.structure.gar.error.notify.title": "Erreur",
-  "management.structure.gar.error.uai.notify.notfound" : "Cette structure n'a pas d'UAI.",
+  "management.structure.gar.error.uai.notify.notfound": "Cette structure n'a pas d'UAI.",
   "management.structure.gar.error.uai.notify.content": "Une erreur s'est produite à la détection des structures.",
   "management.structure.gar.global.error.notify.content": "Échec du paramétrage de la structure pour le GAR.",
   "management.structure.gar.success.notify.title": "Paramétrage du GAR",
@@ -412,7 +390,6 @@
   "management.structure.gar.lightbox.confirm.message": "Vous allez paramétrer le projet {{label}} - {{id}} sur la structure suivante:",
   "management.structure.gar.lightbox.confirm.error.title": "Attention",
   "management.structure.gar.lightbox.confirm.error.message": "Seules les structures avec une source d'alimentation automatique, disposant d'utilisateurs et dont l'UAI existe peuvent être paramétrées pour le GAR, l'UAI suivant ne respecte pas ces exigences:",
-
   "filters": "Filtres",
   "filter": "Filtre",
   "sort.alphabetical": "Trier par nom",
@@ -720,7 +697,6 @@
   "group.manage.users.button.remove": "Retirer du groupe les utilisateurs sélectionnés en bleu",
   "group.manage.tab.search.structure": "Rechercher dans un établissement",
   "group.manage.tab.search.allStructures": "Rechercher dans toutes les structures",
-
   "group.delete.button": "Supprimer",
   "group.delete.button.lock": "Groupe verouillé",
   "group.delete.confirm.content": "Veuillez confirmer la suppression définitive du groupe <strong>{{groupName}}</strong>.",
@@ -736,7 +712,6 @@
   "group.rename.notify.success.content": "Le groupe a bien été renommé.",
   "group.rename.notify.error.title": "Erreur lors du renommage",
   "group.rename.notify.error.content": "Le groupe n'a pas pu être renommé.",
-
   "create.class": "Créer une classe",
   "create.class.name": "Nom de la classe",
   "create.class.submit": "Créer",
@@ -760,12 +735,10 @@
   "class.create.notify.error.title": "Erreur lors de la création",
   "class.create.notify.error.content": "La classe {{className}} n'a pas pu être créée.",
   "class.details.message.content": "Pour afficher la liste des utilisateurs, aller dans l’onglet Groupe de profil. Les classes y sont affichées par profil.",
-
   "import.files.deposit": "Dépôt des fichiers",
   "import.fields.checking": "Vérification des champs",
   "import.class.checking": "Vérification des classes",
   "import.warning.aaf": "Attention, les comptes utilisateurs et les classes sont importés automatiquement via l’Annuaire Académique Fédérateur (AAF) : vous n’avez donc pas à les créer. Pour les voir apparaître, il faut mettre à jour vos bases élèves et parents et s’assurer auprès de l'Erun ou de l’académie que votre école figure bien dans les fichiers (AAF).",
-
   "import.filesDeposit": "Dépôt des fichiers",
   "import.header.selectFile": "Sélectionnez les profils pour lesquels vous souhaitez lancer un import :",
   "import.file.Teacher": "Fichier Enseignants",
@@ -781,16 +754,13 @@
   "import.header.parameters": "Paramètres de l'import",
   "import.deleteAccountOption": "Pré-supprimer les comptes des utilisateurs absents des fichiers",
   "import.transitionOption": "Changement d'année scolaire",
-
   "import.mapping.ignore": "-- IGNORER --",
-
   "import.fieldsChecking": "Vérification des champs",
   "import.fieldFromFile": "Champs de votre fichier",
   "import.fieldToMap": "Champs associés",
   "import.fieldsChecking.success": "Tous les champs sont bien reconnus. Vous pouvez passer à l'étape suivante.",
   "import.fieldsChecking.warning.ignore": "Ignorer",
   "import.fieldsChecking.warning.ignore.1": "Le champ <strong>{{value}}</strong> de votre fichier n'a pas été identifié et ne sera pas utilisé lors de l'import.",
-
   "import.classesChecking": "Vérification des classes",
   "import.classFromFile": "Classes de votre fichier",
   "import.classToMap": "Classes associées",
@@ -803,7 +773,6 @@
   "import.step1.deleteAccountOption": "Pré-supprimer les comptes des utilisateurs absents des fichiers",
   "import.step1.transitionOption": "Changement d'année scolaire",
   "import.classesChecking.warning.create.1": "La classe {{value}} n'a pas été reconnue ou associée à une classe existante : la classe {{value}} sera créée",
-
   "import.report": "Rapport intermédiaire",
   "import.report.success": "Vos fichiers sont valides, vous pouvez valider votre import !",
   "line": "N°",
@@ -825,7 +794,6 @@
   "empty.lastName": "pas de nom",
   "empty.firstName": "pas de prénom",
   "empty.loginAlias": "pas d'alias",
-
   "import.finish": "Import effectué",
   "import.finish.success": "L'import s'est correctement déroulé.",
   "import.finish.error": "Erreur lors de l'import",
@@ -834,12 +802,10 @@
   "import.finish.report": "Télécharger le rapport d'import",
   "import.finish.report.filename": "Import",
   "import.finish.notabene.sync": "N.B.: Suite à l'import il est possible que les données de classe ne soient pas synchronisées sur la vue Utilisateurs. Dans ce cas, procéder à un rafraichissement de la vue Utilisateurs via la touche F5.",
-
   "import.cancel.header": "Annuler l'import ?",
   "import.cancel.message": "Attention, vous êtes sur le point d'annuler l'import en cours, toutes les données importées et modifiées dans l'assistant d'import seront perdues. Êtes-vous sûr de vouloir annuler l'import ?",
   "import.cancel.confirm": "Annuler l'import",
   "import.cancel.backToImport": "Retour à l'import",
-
   "import.file.warning": "Ce fichier contient des avertissements qui ne bloquent pas le chargement du fichier",
   "import.global.warning": "Les avertissements sont affichés en orange avec ce symbole : <i class=\"fa fa-exclamation-circle is-warning\"></i> Vous pouvez passer à l'étape suivante.",
   "import.global.error": "Les fichiers que vous souhaitez importer contiennent les erreurs bloquantes suivantes :",
@@ -847,7 +813,6 @@
   "import.warning.": "",
   "missing.student.soft": "Élève inconnu",
   "missing.student.soft.message": "Votre fichier contient <strong>{{errorNumber}}  parent(s) avec des élèves non reconnus</strong>. Si vous poursuivez l'import, le compte parent sera créé mais sans lien avec le compte élève.",
-
   "import.error.importIdNotFound": "La référence de l'import est inconnue",
   "import.error.noColumnsMappingFound": "Les données d'association de champs de colonnes sont indisponibles. Vérifiez que vos fichiers possèdent bien une ligne d'entête",
   "import.error.malformedFiles": "Les erreurs affichées en rouge bloquent l'import des fichiers : <strong>Vous devez apporter des modifications aux fichiers</strong>",
@@ -1072,7 +1037,6 @@
   "notify.user-position.delete.success.content": "La fonction a été supprimée.",
   "notify.user-position.delete.error.title": "Erreur lors de la suppression",
   "notify.user-position.delete.error.content": "La fonction {{position}} n'a pas pu être supprimée.",
-
   "datepicker.open": "Ouvrir le calendrier",
   "datepicker.delete": "Supprimer la date",
   "roles": "Rôles applicatifs",
@@ -1143,7 +1107,7 @@
   "services.connector.oauth.scope": "Scope",
   "services.connector.oauth.secret": "Code secret",
   "services.connector.oauth.certUri": "URL du certificat",
-  "services.connector.oauth.logoutUrl" : "URL de déconnexion",
+  "services.connector.oauth.logoutUrl": "URL de déconnexion",
   "services.connector.oauth.grantType": "Mode d'identification",
   "services.connector.oauth.grantType.authorizationCode": "Code",
   "services.connector.oauth.grantType.jwtBearer": "JWT Bearer",
@@ -1239,7 +1203,6 @@
   "services.widget.list.empty": "Aucun widget",
   "services.widget.roles.access": "Accès au paramétrage du widget",
   "services.widget.mandatory.icon.title": "Épingler le widget et le rendre obligatoire sur la page d'accueil",
-
   "services.widget.myapps.message.info": "Les applications ajoutées ici sont ajoutées comme application favorites pour les nouveaux comptes de l’établissement.",
   "services.widget.myapps.parameters.apps": "Liste des applications choisies par l’établissement",
   "services.widget.myapps.add.app": "Ajouter une application",
@@ -1250,7 +1213,6 @@
   "services.widget.myapps.select.profiles": "Sélectionnez des profils",
   "services.widget.myapps.choose.profiles": "Choisir les profils concernés",
   "services.widget.myapps.prefs.load.error": "Les paramètres spécifiques n'ont pas pu être chargés. Veuillez réessayer.",
-
   "notify.services.widgets.notmandatory.success.title": "Widget désépinglé avec succès.",
   "notify.services.widgets.notmandatory.success.content": "Le widget a été désépinglé et retiré de la page d'accueil.",
   "notify.services.widgets.notmandatory.error.title": "Le widget n'a pas pu être désépinglé.",
@@ -1267,7 +1229,6 @@
   "notify.services.assignment.role.deleted.success.content": "Le groupe a été supprimé correctement.",
   "notify.services.assignment.role.deleted.error.title": "Erreur lors de la suppression",
   "notify.services.assignment.role.deleted.error.content": "Le groupe n'a pas pu être supprimé.",
-
   "widget.mass-assignment.description": "L'attribution en masse permet d'attribuer un widget aux utilisateurs des structures sous-jacentes pour les profils choisis.",
   "widget.mass-assignment.profiles": "Profils concernés",
   "widget.mass-assignment.profiles-select-label": "Sélectionnez des profils",
@@ -1457,7 +1418,6 @@
   "duplicate.add.subject.label": "Vous ne pouvez pas avoir deux fois le même libellé de matière",
   "duplicate.add.subject.code": "Vous ne pouvez pas avoir deux fois le même code de matière",
   "letters.add.subject.code": "Vous ne pouvez pas avoir de lettres dans le code de la matière",
-
   "role.actualites.create": "Actualites - Accès avec création",
   "role.actualites.access": "Actualites - Accès",
   "role.admin.access": "Administration - Accès",
@@ -1564,10 +1524,9 @@
   "role.viescolaire.admin": "Vie Scolaire - Admin",
   "role.viescolaire.settings": "Vie Scolaire - Parametrage",
   "role.webconference.create": "Web-conference - Accès avec création",
-  "role.wiki.create": "Wiki - Accès avec création",
-  "role.wiki.library.publish": "Wiki - Publier dans la Bibliothèque",
-  "role.wiki.access": "Wiki - Accès",
-
+  "role.wiki.create": "Cours et Wiki - Accès avec création",
+  "role.wiki.library.publish": "Cours et Wiki - Publier dans la Bibliothèque",
+  "role.wiki.access": "Cours et Wiki - Accès",
   "actualites.admin": "Actualités : gérer les fils d'actualités",
   "actualites.create": "Actualités : créer des actualités",
   "actualites.edit": "Actualités : modifier ses actualités",
@@ -1607,10 +1566,10 @@
   "support.ticket.list": "Aide et support : lister les demandes",
   "support.ticket.escalate": "Aide et support: Escalader un ticket",
   "support.view": "Aide et support : accéder au module",
-  "wiki.create": "Wiki : créer des wikis",
-  "wiki.list": "Wiki : lister les wikis",
-  "wiki.print": "Wiki : imprimer les wikis",
-  "wiki.view": "Wiki : accéder au service",
+  "wiki.create": "Cours et Wiki : créer des cours",
+  "wiki.list": "Cours et Wiki : lister les cours",
+  "wiki.print": "Cours et Wiki : imprimer les cours",
+  "wiki.view": "Cours et Wiki : accéder au service",
   "workspace.document.add": "Espace documentaire : créer un document",
   "workspace.document.copy": "Espace documentaire : copier un document",
   "workspace.document.list.folders": "Espace documentaire : afficher les dossiers de l'espace documentaire",
@@ -1628,7 +1587,6 @@
   "workspace.rack.restore": "Espace documentaire : restaurer les fichiers du casier dans la corbeille",
   "workspace.share.json": "Espace documentaire : partager un document",
   "workspace.view": "Espace documentaire : accéder à l'espace documentaire",
-
   "calendar-widget": "Calendrier",
   "agenda-widget": "Agenda",
   "record-me": "Le studio",
@@ -1646,20 +1604,16 @@
   "dicodelazone-widget": "Dico de la zone",
   "edumalin-widget": "Édumalin",
   "mediacentre-widget": "Mes favoris Médiacentre",
-
   "panel.motto": "Devise",
   "non-existent.user.motto": "Aucune devise définie pour ce compte",
   "delete.user.motto": "Supprimer la devise",
   "user.administration.rights": "Droits d'administration",
   "user.toggle.rights": "Modifier les droits",
   "non-existent.user.rights": "Aucun droit d'administration",
-
   "user.searchType.label": "Rechercher par :",
   "user.searchType.name": "Nom",
   "user.searchType.email": "Mail",
-
   "show.more.results": "Afficher plus de résultats",
-
   "incidents.punishment.create": "Punitions-Sanctions : Créer une punition",
   "incidents.punishments.view": "Punitions-Sanctions : Accéder aux punitions",
   "incidents.sanction.create": "Punitions-Sanctions : Créer une sanction",
