@@ -68,7 +68,7 @@ export function testUserPositionsFromCSVImport() {
               ['A002', 'User with new position', ['Ma nouvelle fonction']],
               ['A003', 'User with no positions att all', []],
               ['A004', 'New user with no positions att all', []],
-              ['A005', 'User with a position with AAF format from CSV import', ['Fonction au format AAF via import CSV']]
+              ['A005', 'User with not fully filled AAF format from CSV import', ['Fonction au format AAF via import CSV']]
             ]
             checkUserAndPositions(expectedValues, users, session)
         })
