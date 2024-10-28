@@ -65,7 +65,7 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 		createGroups(object.getJsonArray("groups"), c, null);
 		createClasses(new fr.wseduc.webutils.collections.JsonArray(c));
 		createFunctionGroups(object.getJsonArray("functions"), null);
-		createPositions(object.getJsonArray("functions"));
+		cleanAndCreatePositions(object.getJsonArray("structures"), object.getJsonArray("functions"), object.getString("externalId"));
 		createHeadTeacherGroups(object.getJsonArray("headTeacher"), null);
 		createDirectionGroups(object.getJsonArray("direction"), null);
 		linkMef(object.getJsonArray("modules"));
@@ -165,7 +165,18 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 		return linkStructureClasses;
 	}
 
-	protected void createPositions(JsonArray functions) {
+	protected void cleanAndCreatePositions(JsonArray structureExternalIds, JsonArray functions, String userExternalId) {
+		// clean user's positions
+		if (structureExternalIds != null) {
+			structureExternalIds.stream()
+					.filter(structureId -> structureId instanceof String)
+					.map(structureId -> (String) structureId)
+					.forEach(structureExternalId -> {
+						ImporterStructure structure = importer.getStructure(structureExternalId);
+						structure.detachUserFromItsPositions(userExternalId, UserPositionSource.AAF);
+					});
+		}
+		// create positions
 		if (functions != null) {
 			functions.stream()
 					.filter(function -> function instanceof String)
