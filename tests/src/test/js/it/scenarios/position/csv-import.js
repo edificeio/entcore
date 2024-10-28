@@ -58,7 +58,8 @@ export function testUserPositionsFromCSVImport() {
                 'DIRECTION / CHEF D\'ETABLISSEMENT ADJOINT',
                 'Fonction qui ne sera plus attribuée',
                 'Fonction qui restera attribuée',
-                'Ma nouvelle fonction'
+                'Ma nouvelle fonction',
+                'Fonction au format AAF via import CSV'
             ], session)
             const users = getUsersOfSchool(structure, session);
             const expectedValues = [
@@ -66,7 +67,8 @@ export function testUserPositionsFromCSVImport() {
               ['A001', 'User with a position which stayed', ['Fonction qui restera attribuée']],
               ['A002', 'User with new position', ['Ma nouvelle fonction']],
               ['A003', 'User with no positions att all', []],
-              ['A004', 'New user with no positions att all', []]
+              ['A004', 'New user with no positions att all', []],
+              ['A005', 'User with a position with AAF format from CSV import', ['Fonction au format AAF via import CSV']]
             ]
             checkUserAndPositions(expectedValues, users, session)
         })

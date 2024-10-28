@@ -21,7 +21,7 @@ public class UserPosition {
 	 * Method providing a User Position built upon the Function codification
 	 * @param dollarEncodedFunction function codification separated with dollars
 	 *  - in AAF format :       [StructureExternalId]$[FunctionCode]$[FunctionName]$[PositionCode]$[PositionName]
-	 *  - in free CSV format :  [StructureExternalId]$[PositionName]
+	 *  - in free CSV format :  [StructureExternalId]$[PositionName] or [StructureExternalId]$$$$[PositionName]
 	 * @param source the source type of data feed
 	 * @return a User Position built upon Function information if possible
 	 */
@@ -36,7 +36,11 @@ public class UserPosition {
 			if (!"ENS".equals(functionCodification[1]) 
 				&& !"-".equals(functionCodification[1])
 				&& functionCodification.length > 4 ) {
-				userPosition = Optional.of(new UserPosition(null, functionCodification[2] + " / " + functionCodification[4], source, functionCodification[0]));
+				if (functionCodification[2].isEmpty()){
+					userPosition = Optional.of(new UserPosition(null, functionCodification[4], source, functionCodification[0]));
+				} else {
+					userPosition = Optional.of(new UserPosition(null, functionCodification[2] + " / " + functionCodification[4], source, functionCodification[0]));
+				}
 			}
 		}
 		return userPosition;
