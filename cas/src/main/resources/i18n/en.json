@@ -62,5 +62,7 @@
   "EleaRegisteredService.name": "Elea",
   "EleaRegisteredService.description": "Service CAS for Elea",
   "GenericRegisteredService.name": "Generic",
-  "GenericRegisteredService.description": "Service CAS générique."
+  "GenericRegisteredService.description": "Service CAS générique.",
+  "OdeRegisteredService.name": "ODE",
+  "OdeRegisteredService.description": "Service CAS 3.0 spécifique pour ODE, le service ODE utilise l'identifiant externe sans préfixe académique comme attribut principal."
 }
