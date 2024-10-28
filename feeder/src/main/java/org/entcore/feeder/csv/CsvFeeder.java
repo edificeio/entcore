@@ -688,8 +688,8 @@ public class CsvFeeder implements Feed {
 				String name = null;
 
 				String [] g = ((String) o).split("\\$");
-				// Function Groups are created only for functions matching aaf format
-				if (g.length != 2) {
+				// Function Groups are created only for functions matching fully filled aaf format
+				if (g.length != 2 && !g[2].isEmpty()) {
 					if (g.length == 5) {
 						if ("ENS".equals(g[1])) {
 							groupExternalId = structure.getExternalId() + "$" + g[3];
