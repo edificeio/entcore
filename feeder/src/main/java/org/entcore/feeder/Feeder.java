@@ -123,9 +123,10 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		final Long timetableReportEraseAfterSeconds = config.getLong("timetable-report-erase-after-seconds");
 		final JsonObject imports = config.getJsonObject("imports");
 		final JsonObject preDelete = config.getJsonObject("pre-delete");
+		final Long deleteDelay = config.getLong("delete-delay", 240l); // To small platform default value to 300 and to big platform put value 900 in config
 		final TimelineHelper timeline = new TimelineHelper(vertx, eb, config);
 		try {
-			new CronTrigger(vertx, deleteCron).schedule(new User.DeleteTask(deleteUserDelay, eb, vertx));
+			new CronTrigger(vertx, deleteCron).schedule(new User.DeleteTask(deleteUserDelay, eb, vertx, deleteDelay));
 			if (preDelete != null) {
 				if (preDelete.size() == ManualFeeder.profiles.size() &&
 						ManualFeeder.profiles.keySet().containsAll(preDelete.fieldNames())) {
