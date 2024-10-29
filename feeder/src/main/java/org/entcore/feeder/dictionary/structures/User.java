@@ -88,11 +88,13 @@ public class User {
 		private EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Feeder.class.getSimpleName());
 		private static final int LIMIT = 1000;
 		private int page;
+		private final long deleteDelay;
 
-		public DeleteTask(long delay, EventBus eb, Vertx vertx) {
+		public DeleteTask(long delay, EventBus eb, Vertx vertx, long deleteDelay) {
 			this.delay = delay;
 			this.eb = eb;
 			this.vertx = vertx;
+			this.deleteDelay = deleteDelay;
 		}
 
 		@Override
@@ -128,7 +130,7 @@ public class User {
 											if ("ok".equals(m2.body().getString("status"))) {
 												publishDeleteUsers(eb, eventStore, r);
 												if (r.size() == LIMIT) {
-													vertx.setTimer(LIMIT * 100l, new Handler<Long>() {
+													vertx.setTimer(LIMIT * deleteDelay, new Handler<Long>() {
 														@Override
 														public void handle(Long event) {
 															log.info("Delete page " + ++page);
