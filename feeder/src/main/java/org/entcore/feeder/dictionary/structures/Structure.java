@@ -256,8 +256,8 @@ public class Structure {
 		}
 	}
 
-	public void detachUserFromItsPositions(String userExternalId) {
-		DefaultUserPositionService.detachUserFromItsPositions(userExternalId, externalId, getTransaction());
+	public void detachUserFromItsPositions(String userExternalId, UserPositionSource source) {
+		DefaultUserPositionService.detachUserFromItsPositions(userExternalId, externalId, source, getTransaction());
 	}
 
 	public void createPosition(UserPosition userPosition) {
@@ -473,7 +473,7 @@ public class Structure {
 	{
 		TransactionHelper tx = TransactionManager.getInstance().getTransaction("GraphDataUpdate");
 		DefaultUserPositionService.detachSourcedUserPositionsFromStructure(
-			UserPositionSource.CSV, id, tx
+			UserPositionSource.CSV, externalId, tx
 		);
 	}
 
