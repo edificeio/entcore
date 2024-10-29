@@ -386,7 +386,6 @@ public class Structure {
 									transitionClassGroup();
 									transitionReattachUsers();
 									transitionResetTimetable();
-								} else {
 									transitionPositions();
 								}
 								handler.handle(event);
