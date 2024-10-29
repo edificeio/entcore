@@ -723,7 +723,7 @@ public class CsvFeeder implements Feed {
 	private void cleanAndCreateUserPositions(ImporterStructure structure, JsonObject user) {
 		String userExternalId = user.getString("externalId");
 		if (userExternalId != null) {
-			structure.detachUserFromItsPositions(userExternalId);
+			structure.detachUserFromItsPositions(userExternalId, null);
 		}
 		JsonArray functions = user.getJsonArray("functions");
 		if (functions != null) {

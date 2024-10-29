@@ -402,30 +402,36 @@ public class DefaultUserPositionService implements UserPositionService {
 	 * Note: in Feeder context, external IDs are used.
 	 * @param userExternalId the user external ID
 	 * @param structureExternalId the structure external ID
+	 * @param sourceFilter a filter on the source of the user positions to detach
 	 * @param transactionHelper the transaction helper for current query to commit
 	 */
-	public static void detachUserFromItsPositions(String userExternalId, String structureExternalId, TransactionHelper transactionHelper) {
-		String query = "" +
-			"MATCH (u:User {externalId: {userExternalId}})-[hasPosition:HAS_POSITION]->(:UserPosition)-[:IN]->(s:Structure {externalId: {structureExternalId}}) " +
-			"DELETE hasPosition ";
+	public static void detachUserFromItsPositions(String userExternalId, String structureExternalId, UserPositionSource sourceFilter, TransactionHelper transactionHelper) {
 		JsonObject params = new JsonObject()
 				.put("structureExternalId", structureExternalId)
 				.put("userExternalId", userExternalId);
-		transactionHelper.add(query, params);
+		StringBuilder query = new StringBuilder()
+				.append("MATCH (u:User {externalId: {userExternalId}})-[hasPosition:HAS_POSITION]->(p:UserPosition)-[:IN]->(s:Structure {externalId: {structureExternalId}}) ");
+		if (sourceFilter != null) {
+			query.append("WHERE p.source = {sourceFilter} ");
+			params.put("sourceFilter", sourceFilter.name());
+		}
+		query.append("DELETE hasPosition ");
+		transactionHelper.add(query.toString(), params);
 	}
 
 	/**
 	 * Static method to detach and delete user positions of a source from a Structure.
+	 * Note: in Feeder context, the structure id used is the external structure id
 	 * @param source the source of user positions to detach
-	 * @param structureId ID of the structure
+	 * @param structureExternalId external ID of the structure
 	 * @param transactionHelper the transaction helper for current query to commit
 	 */
-	public static void detachSourcedUserPositionsFromStructure(UserPositionSource source, String structureId, TransactionHelper transactionHelper) {
+	public static void detachSourcedUserPositionsFromStructure(UserPositionSource source, String structureExternalId, TransactionHelper transactionHelper) {
 		JsonObject params = new JsonObject()
-			.put("id", structureId)
+			.put("externalId", structureExternalId)
 			.put("source", source.toString());
 		String query =
-				"MATCH (s:Structure {id : {id}})<-[:IN]-(p:UserPosition {source: {source}}) " +
+				"MATCH (s:Structure {externalId : {externalId}})<-[:IN]-(p:UserPosition {source: {source}}) " +
 				"DETACH DELETE p";
 		transactionHelper.add(query, params);
 	}
