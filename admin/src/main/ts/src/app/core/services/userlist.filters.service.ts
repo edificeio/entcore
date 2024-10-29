@@ -277,6 +277,7 @@ export class UserlistFiltersService {
     private functionalGroupsFilter = new FunctionalGroupsFilter(this.$updateSubject);
     private manualGroupsFilter = new ManualGroupsFilter(this.$updateSubject);
     private activationFilter = new ActivationFilter(this.$updateSubject);
+    private positionFilter = new PositionFilter(this.$updateSubject);
     private functionsFilter = new FunctionsFilter(this.$updateSubject);
     private sourcesFilter = new SourcesFilter(this.$updateSubject);
     private duplicatesFilter = new DuplicatesFilter(this.$updateSubject);
@@ -285,7 +286,6 @@ export class UserlistFiltersService {
     private dateFilter = new DateFilter(this.$updateSubject);
     private deleteFilter = new DeleteFilter(this.$updateSubject);
     private blockedFilter = new BlockedFilter(this.$updateSubject);
-    private positionFilter = new PositionFilter(this.$updateSubject);
 
     filters: UserFilterList<any> = [
         this.profileFilter,
@@ -293,6 +293,7 @@ export class UserlistFiltersService {
         this.functionalGroupsFilter,
         this.manualGroupsFilter,
         this.activationFilter,
+        this.positionFilter,
         this.functionsFilter,
         this.sourcesFilter,
         this.duplicatesFilter,
@@ -300,8 +301,7 @@ export class UserlistFiltersService {
         this.admlFilter,
         this.dateFilter,
         this.deleteFilter,
-        this.blockedFilter,
-        this.positionFilter
+        this.blockedFilter
     ];
 
     resetFilters() {
