@@ -138,6 +138,7 @@ public class Tenant {
 											.put("deleted", d)
 									);
 								}
+								log.info("PostImport | SUCCEED to tenantLinkStructure");
 							} else {
 								log.error("Error when commit tenant link structures transaction : " +
 										res.body().getString("message"));

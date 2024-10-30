@@ -36,8 +36,6 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -124,7 +122,6 @@ public class PostImport {
 						config.getJsonArray("active-user-from-old-platform").contains(source)) {
 					logger.info(e-> "Start activeUserFromOldPlatform", true);
 					User.searchUserFromOldPlatform(vertx);
-					logger.info(e-> "SUCCEED to activeUserFromOldPlatform", true);
 				}
 				if (config.getBoolean("notify-apps-after-import", true)) {
 					logger.info(e-> "Start notifyAppsAfterImport", true);
@@ -134,31 +131,26 @@ public class PostImport {
 				if (config.getJsonObject("ws-call-after-import") != null) {
 					logger.info(e-> "Start notifyAppsAfterImport", true);
 					wsCall(config.getJsonObject("ws-call-after-import"));
-					logger.info(e-> "SUCCEED to wsCallAfterImport", true);
 				}
 				if (config.getJsonArray("publish-classes-update") != null &&
 						config.getJsonArray("publish-classes-update").contains(source)) {
 					logger.info(e-> "Start publishClassesUpdate", true);
 					publishClassesUpdate();
-					logger.info(e-> "SUCCEED to publishClassesUpdate", true);
 				}
 				if (Boolean.TRUE.equals(config.getBoolean("tenant-link-structure", true)) &&
 					tenantLinkStructureSources.contains(source)) {
 					logger.info(e-> "Start tenantLinkStructure", true);
 					Tenant.linkStructures(eb);
-					logger.info(e-> "SUCCEED to tenantLinkStructure", true);
 				}
 				if(Boolean.TRUE.equals(config.getBoolean("manual-group-link-users-auto", true)) &&
 						manualGroupLinkUsersAutoSources.contains(source)) {
 					logger.info(e-> "Start manualGroupLinkUsersAuto", true);
 					Group.runLinkRules();
-					logger.info(e-> "SUCCEED to manualGroupLinkUsersAuto", true);
 				}
 				if(Boolean.TRUE.equals(config.getBoolean("fix-incorrect-storages", true)) &&
 						fixIncorrectStoragesSources.contains(source)) {
 					logger.info(e-> "Start fixIncorrectStorages", true);
 					fixIncorrectStorages();
-					logger.info(e-> "SUCCEED to fixIncorrectStorages", true);
 				}
 			}
 		};
@@ -187,6 +179,7 @@ public class PostImport {
 								.put("action", "users-classes-update")
 								.put("users-classes-update", r.getJsonArray(0)));
 					}
+					logger.info(e-> "SUCCEED to publishClassesUpdate", true);
 				} else {
 					logger.error(t -> "Error in publish classes update transaction : " + res.body().getString("message"));
 				}
@@ -253,6 +246,7 @@ public class PostImport {
 				logger.error(t ->"Invalid uri in ws call after import : " + url, e);
 			}
 		}
+		logger.info(e-> "SUCCEED to wsCallAfterImport", true);
 	}
 
 	private void storeImportedEvent() {
@@ -337,6 +331,7 @@ public class PostImport {
 				} else {
 					logger.error(t -> "Error in fixing incorrect storages transaction : " + res.body().getString("message"));
 				}
+				logger.info(e-> "SUCCEED to fixIncorrectStorages", true);
 			});
 		} catch (TransactionException e) {
 			logger.error(t -> "Error in fixing incorrect storages transaction.", e);
