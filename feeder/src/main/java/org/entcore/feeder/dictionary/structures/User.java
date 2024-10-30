@@ -983,6 +983,7 @@ public class User {
 						tryActivateUser(vertx, emailSender, forged, (JsonObject) o);
 					}
 				}
+				log.info("PostImport | SUCCEED to activeUserFromOldPlatform");
 			} else {
 				log.error("Error find user old platform : " + m.body().getString("message"));
 			}

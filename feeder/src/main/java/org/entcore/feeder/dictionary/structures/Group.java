@@ -176,6 +176,7 @@ public class Group {
 			User.countUsersInGroups(null, "ManualGroup", tx);
 
 			tx.commit(null);
+			log.info("PostImport | SUCCEED to manualGroupLinkUsersAuto");
 		}
 		catch(TransactionException e)
 		{
