@@ -157,17 +157,18 @@ public class DefaultUserPositionService implements UserPositionService {
 				logger.warn("The user tried to create a position on structure {0} but only can access structures {1}", structureId, adminStructureIds);
 				promise.fail("cannot.create.position.on.this.structure");
 			} else {
-				getPositionByNameInStructure(positionName, structureId, adminStructureIds).onSuccess(userPosition -> {
+				final String finalPositionName = positionName.trim();
+				getPositionByNameInStructure(finalPositionName, structureId, adminStructureIds).onSuccess(userPosition -> {
 					if (userPosition.isPresent()) {
 						promise.fail("position.already.exists:"+userPosition.get().getId());
 					} else {
-						final String simplifiedName = getSimplifiedString(positionName);
+						final String simplifiedName = getSimplifiedString(finalPositionName);
 						final JsonArray adminStructureArray = new JsonArray();
 						adminStructureIds.forEach(adminStructureArray::add);
 						final String positionId = UUID.randomUUID().toString();
 						final JsonObject userPositionProps = new JsonObject()
 								.put("id", positionId)
-								.put("name", positionName)
+								.put("name", finalPositionName)
 								.put("simplifiedName", simplifiedName)
 								.put("source", source.toString());
 						final JsonObject params = new JsonObject()
