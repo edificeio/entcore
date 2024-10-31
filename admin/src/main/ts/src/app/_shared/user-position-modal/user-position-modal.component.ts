@@ -29,8 +29,9 @@ export class UserPositionModalComponent extends OdeComponent implements OnInit {
     return this._userPosition;
   }
   @Input() set userPosition(value: UserPosition) {
+    this.editableName = value?.name?.trim();
     this._userPosition = value;
-    this.editableName = value?.name;
+    this._userPosition.name = this.editableName ?? "";
   }
   private _show: boolean = true;
   @Input() get show(): boolean {
@@ -71,7 +72,11 @@ export class UserPositionModalComponent extends OdeComponent implements OnInit {
 
   async save(): Promise<void> {
     if (this.saving) return;
+    this.editableName = this.editableName?.trim();
+    if(!this.editableName) return;
+
     this.saving = true;
+    
     if (this.isUpdateModal) {
       this.userPosition = await this.spinner
         .perform(
