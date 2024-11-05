@@ -344,6 +344,15 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		}
 	}
 
+	/**
+	 * Override this method to filter the resources to export
+	 * @param resources The resources to filter
+	 * @return The filtered resources
+	 */
+	protected JsonArray exportResourcesFilter(final JsonArray resources){
+		return resources;
+	}
+
 	@Override
 	public void exportResources(JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources, String exportId, String userId,
 								JsonArray g, String exportPath, String locale, String host, Handler<Boolean> handler) {
@@ -377,7 +386,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		mongo.find(collection, query, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				JsonArray results = event.body().getJsonArray("results");
+				JsonArray results = exportResourcesFilter(event.body().getJsonArray("results"));
 
 				if ("ok".equals(event.body().getString("status")) && results != null) {
 					for(int i = results.size(); i-->0;)
