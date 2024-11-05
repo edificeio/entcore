@@ -29,9 +29,11 @@ export class UserPositionModalComponent extends OdeComponent implements OnInit {
     return this._userPosition;
   }
   @Input() set userPosition(value: UserPosition) {
-    this.editableName = value?.name?.trim();
     this._userPosition = value;
-    this._userPosition.name = this.editableName ?? "";
+    this.editableName = value?.name?.trim();
+    if( this._userPosition ) {
+      this._userPosition.name = this.editableName ?? ""; 
+    }
   }
   private _show: boolean = true;
   @Input() get show(): boolean {
