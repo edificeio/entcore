@@ -349,7 +349,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 	 * @param resources The resources to filter
 	 * @return The filtered resources
 	 */
-	protected JsonArray exportResourcesFilter(final JsonArray resources){
+	protected JsonArray exportResourcesFilter(final JsonArray resources, String exportId, String userId){
 		return resources;
 	}
 
@@ -386,7 +386,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		mongo.find(collection, query, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
-				JsonArray results = exportResourcesFilter(event.body().getJsonArray("results"));
+				JsonArray results = exportResourcesFilter(event.body().getJsonArray("results"), exportId, userId);
 
 				if ("ok".equals(event.body().getString("status")) && results != null) {
 					for(int i = results.size(); i-->0;)
