@@ -371,27 +371,29 @@ public class DefaultUserPositionService implements UserPositionService {
 		final StringBuilder query = new StringBuilder();
 		final JsonObject params = new JsonObject();
 		if (adminInfos.isADMC()) {
-			query.append("MATCH (s:Structure) ");
+			query.append("MATCH (s:Structure) RETURN COLLECT(distinct s.id) as ids");
 		} else if (adminInfos.isADML()) {
-			query.append("MATCH (:User {id:{adminId}})-[:IN]->(:FunctionGroup {filter:\"AdminLocal\"})-[:DEPENDS]->(s:Structure) ");
+			query.append("MATCH (:User {id:{adminId}})-[rf:HAS_FUNCTION]->(:Function {externalId:\"ADMIN_LOCAL\"}) RETURN COALESCE(rf.scope,[]) as ids");
 			params.put("adminId", adminInfos.getUserId());
 		} else {
 			promise.complete(new HashSet<>());
 			return promise.future();
 		}
-		query.append("RETURN s.id as id");
-		neo4jClient.execute(query.toString(), params, Neo4jResult.validResultHandler(event -> {
+		query.append("");
+		neo4jClient.execute(query.toString(), params, Neo4jResult.validUniqueResultHandler(event -> {
 			if (event.isLeft()) {
 				logger.warn("Failed fetching structures of admin : " + event.left().getValue());
 				promise.fail(event.left().getValue());
 			} else {
-			JsonArray results = event.right().getValue();
-			Set<String> structureIds = new HashSet<>();
-			results.forEach(result -> {
-				JsonObject jsonResult = (JsonObject) result;
-				structureIds.add(jsonResult.getString("id"));
-			});
-			promise.complete(structureIds);
+				Set<String> structureIds = new HashSet<>();
+				JsonObject result = event.right().getValue();
+				JsonArray ids = result.getJsonArray("ids", new JsonArray());
+				ids.forEach( id -> {
+					if(id instanceof String) {
+						structureIds.add((String) id);
+					}
+				});
+				promise.complete(structureIds);
 			}
 		}));
 		return promise.future();
