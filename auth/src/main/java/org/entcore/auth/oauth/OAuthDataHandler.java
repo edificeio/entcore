@@ -291,18 +291,20 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 				handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_ACTIVATION_CODE, 403)));
 				return;
 			}
+
+			// Handle hijack scenario to return a 403 error when a reset code is used as a password in the auth2 flow
+			if (r.containsKey("resetCode") && password.equals(r.getString("resetCode")) && !isDateWithinLimit(r.getLong("resetDate")) && !isMobile) {
+				handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_PASSWORD_RESET, 403)));
+				return;
+			}
+
 			dbPassword = r.getString("password");
 			if (isEmpty(dbPassword)) {
 				incrBanAuthentication(username);
 				handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_AUTHENTICATION_FAILED)));
 				return;
 			}
-			// Handle hijack scenario to return a 403 error when a reset code is used as a password in the auth2 flow
-			if (r.containsKey("resetCode") && password.equals(r.getString("resetCode"))
-					&& !isDateWithinLimit(r.getLong("resetDate")) && !isMobile) {
-				handler.handle(new Try<AccessDenied, String>(new AccessDenied(AUTH_ERROR_PASSWORD_RESET, 403)));
-				return;
-			}
+
 			boolean success = false;
 			String hash = null;
 			try {
