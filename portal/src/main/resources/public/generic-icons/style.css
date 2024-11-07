@@ -1,9 +1,9 @@
 @font-face {
   font-family: 'generic-icons';
   src:
-    url('fonts/generic-icons.ttf?sk2e0p') format('truetype'),
-    url('fonts/generic-icons.woff?sk2e0p') format('woff'),
-    url('fonts/generic-icons.svg?sk2e0p#generic-icons') format('svg');
+    url('fonts/generic-icons.ttf?r39qk1') format('truetype'),
+    url('fonts/generic-icons.woff?r39qk1') format('woff'),
+    url('fonts/generic-icons.svg?r39qk1#generic-icons') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -24,56 +24,47 @@ i {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.wiki:before {
+  content: "\e969";
+}
 .mediacentre:before {
   content: "\e968";
 }
 .edumalin:before {
   content: "\e967";
-  color: #4a4a4a;
 }
 .edt:before {
   content: "\e964";
-  color: #4a4a4a;
 }
 .diary:before {
   content: "\e965";
-  color: #4a4a4a;
 }
 .agenda:before {
   content: "\e966";
-  color: #4a4a4a;
 }
 .lool:before {
   content: "\e962";
-  color: #4a4a4a;
 }
 .magneto:before {
   content: "\e961";
-  color: #4a4a4a;
 }
 .minibadge:before {
   content: "\e960";
-  color: #4a4a4a;
 }
 .crre:before {
   content: "\e95f";
-  color: #4a4a4a;
 }
 .universalis-1:before {
   content: "\e95e";
-  color: #feffff;
 }
 .briefme:before {
   content: "\e963";
-  color: #fff;
 }
 .forms:before {
   content: "\e95c";
-  color: #4a4a4a;
 }
 .presence:before {
   content: "\e95d";
-  color: #4a4a4a;
 }
 .icone-paths:before {
   content: "\e94d";
@@ -320,9 +311,6 @@ i {
 }
 .book-open:before {
   content: "\e812";
-}
-.wikipedia:before {
-  content: "\e813";
 }
 .share:before {
   content: "\e814";
@@ -1013,7 +1001,6 @@ i {
 }
 .competences:before {
   content: "\e927";
-  color: #4a4a4a;
 }
 .sort-asc:before {
   content: "\e924";
