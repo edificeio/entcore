@@ -103,11 +103,9 @@ public class Structure implements IdObject {
         String inSource = "{source}";
         params.put("source", tx.source.toString());
 
-        query += "WHERE COALESCE(rg.source, 'UNKNOWN') IN ['UNKNOWN'," + inSource + "] "; // Exclude manual groups
-
         if(tx.source == Source.MANUAL) {
             query +=
-                "AND not(g.name ENDS WITH 'AdminLocal') " + // Exclude admin local groups
+                "WHERE not(g.name ENDS WITH 'AdminLocal') " + // Exclude admin local groups
                 "WITH u, rg, g, s " +
 			    "SET u.removedFromStructures = [rsId IN coalesce(u.removedFromStructures, []) WHERE rsId <> coalesce(s.externalId, '')] + coalesce(s.externalId, []), " + // Add the structure to the removed structures
                 "u.structures = FILTER(sId IN u.structures WHERE sId <> s.externalId) " + // Remove user from the structure
@@ -115,6 +113,8 @@ public class Structure implements IdObject {
                 "OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(pg:ProfileGroup)<-[rc:IN|COMMUNIQUE]-(u) SET u.classes = FILTER(cId IN u.classes WHERE cId <> c.externalId) " + // Remove user from the classes of the structure
                 "DELETE rc " + // Remove the user from the class
                 "WITH u, rg, g, s ";
+        } else {
+            query += "WHERE COALESCE(rg.source, 'UNKNOWN') IN ['UNKNOWN'," + inSource + "] "; // Exclude manual groups
         }
 
         query +=
