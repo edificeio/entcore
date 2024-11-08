@@ -468,7 +468,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				);
 				break;
 			default:
-				adminOrTeacher(request, user, false, handler);
+				adminOrTeacher(request, user, true, handler);
 		}
 	}
 
