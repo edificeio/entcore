@@ -90,14 +90,14 @@ class SourcesFilter extends UserFilter<string> {
     }
 }
 
-class FunctionsFilter extends UserFilter<Array<string>> {
+class FunctionsFilter extends UserFilter<string> {
     type = 'aafFunctions';
     label = 'functions.multi.combo.title';
-    comboModel: Array<Array<string>> = [];
+    comboModel: Array<string> = [];
     order = '+';
     filterProp = 'this';
 
-    filter = (functions: Array<Array<string>>) => {
+    filter = (functions: Array<string>) => {
         const outputModel = this.outputModel;
         let res = false;
 
@@ -322,7 +322,7 @@ export class UserlistFiltersService {
         this.sourcesFilter.comboModel = combos;
     }
 
-    setFunctionsComboModel(combos: Array<Array<string>>) {
+    setFunctionsComboModel(combos: Array<string>) {
         this.functionsFilter.comboModel = combos;
     }
 
