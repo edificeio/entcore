@@ -84,7 +84,7 @@ clean () {
 }
 
 buildNode () {
-  if [ "$MODULE" = "" ] || [ ! "$MODULE" = "admin" ]; then
+  if [ "$MODULE" = "" ] || [ ! "$MODULE" = "admin" ]|| [ ! "$MODULE" = "conversation" ]; then
     #try jenkins branch name => then local git branch name => then jenkins params
     echo "[buildNode] Get branch name from jenkins env..."
     BRANCH_NAME=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
@@ -124,14 +124,35 @@ buildNode () {
   fi
 }
 
+buildReactNode() {
+  if [ "$MODULE" = "" ] || [ "$MODULE" = "conversation" ]; then
+
+    # Will build the frontend for all modules that include a frontend folder (react modules)
+    pnpm --filter "./**/frontend" run build
+
+    # On doit copier les fichiers buildés dans les resources du backend
+    
+    # # Move to backend folder
+    # cd ../backend
+
+    # # Copy build files to resources
+    # rm -rf ./src/main/resources/public/*.js
+    # rm -rf ./src/main/resources/public/*.css
+    # cp -R ../frontend/dist/* ./src/main/resources/
+
+    # # Create view directory and copy HTML files
+    # mv ./src/main/resources/*.html ./src/main/resources/view
+  fi
+}
+
 buildAdminNode() {
   if [ "$MODULE" = "" ] || [ "$MODULE" = "admin" ]; then
     case `uname -s` in
       MINGW*)
-        docker compose run --rm $USER_OPTION node16 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
+        docker compose run --rm $USER_OPTION node16 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@dev ngx-ode-sijil@dev ngx-ode-ui@dev && npm run build-docker-prod"
         ;;
       *)
-        docker compose run --rm $USER_OPTION node16 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
+        docker compose run --rm $USER_OPTION node16 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@dev ngx-ode-sijil@dev ngx-ode-ui@dev && npm run build-docker-prod"
     esac
   fi
 }
@@ -261,8 +282,11 @@ do
     buildNode)
       buildNode
       ;;
+    buildReactNode)
+      buildReactNode
+      ;;
     install)
-      buildNode && buildAdminNode && install
+      buildNode && buildReactNode && buildAdminNode && install
       ;;
     localDep)
       localDep
