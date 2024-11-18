@@ -714,6 +714,14 @@ public class AuthController extends BaseController {
 
 	@Get("/login")
 	public void login(final HttpServerRequest request) {
+		final String app = CookieHelper.get("X-APP", request);
+		if ("mobileV2".equalsIgnoreCase(app)) {
+			final JsonObject params = new JsonObject();
+			params.put("type", "ENT");
+			params.put("token", "");
+			renderView(request, params, "mobile-message.html", null);
+			return;
+		}
 		final String host = getHost(request);
 		if (authorizedHostsLogin != null && isNotEmpty(host) && !authorizedHostsLogin.contains(host)) {
 			redirectionService.redirect(request, pathPrefix + "/openid/login");
