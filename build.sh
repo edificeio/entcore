@@ -125,24 +125,39 @@ buildNode () {
 }
 
 buildReactNode() {
-  if [ "$MODULE" = "" ] || [ "$MODULE" = "conversation" ]; then
-
-    # Will build the frontend for all modules that include a frontend folder (react modules)
-    pnpm --filter "./**/frontend" run build
-
-    # On doit copier les fichiers buildés dans les resources du backend
-    
-    # # Move to backend folder
-    # cd ../backend
-
-    # # Copy build files to resources
-    # rm -rf ./src/main/resources/public/*.js
-    # rm -rf ./src/main/resources/public/*.css
-    # cp -R ../frontend/dist/* ./src/main/resources/
-
-    # # Create view directory and copy HTML files
-    # mv ./src/main/resources/*.html ./src/main/resources/view
+  # Will build the frontend for all react modules
+  if [ "$MODULE" = "" ]; then
+    modules=($(ls -d */ | cut -f1 -d'/'))
+  else 
+    modules=($MODULE)
   fi
+  
+  for module in "${modules[@]}"; do
+    cd ./"$module"
+
+    if [ -e ./frontend ]; then
+      # Building frontend $module
+      cd ./frontend
+      ./build.sh --no-docker clean init build
+
+      # Create directory structure and copy frontend build files to backend
+      cd ../backend
+      rm -rf ./src/main/resources/public/*.js
+      rm -rf ./src/main/resources/public/*.css
+      cp -R ../frontend/dist/* ./src/main/resources/
+
+      # Create view directory and copy HTML files
+      mv ./src/main/resources/*.html ./src/main/resources/view
+
+      # Clean up - remove frontend/dist and backend/src/main/resources
+      rm -rf ../frontend/dist
+      cd ..
+    else 
+      echo -e "\e[31m[Build React] No frontend directory found for module $module\e[0m"
+    fi
+
+    cd ..
+  done
 }
 
 buildAdminNode() {

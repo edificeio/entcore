@@ -4,7 +4,7 @@ import { RouteObject, createBrowserRouter } from 'react-router-dom';
 import { NotFound } from './errors/not-found';
 import { PageError } from './errors/page-error';
 
-const routes = (queryClient: QueryClient): RouteObject[] => [
+const routes = (_queryClient: QueryClient): RouteObject[] => [
   /* Main route */
   {
     path: '/',

@@ -43,7 +43,7 @@
         <module>cas</module>
         <module>common</module>
         <module>communication</module>
-        <module>conversation</module>
+        <module>conversation/backend</module>
         <module>directory</module>
         <module>feeder</module>
         <module>infra</module>
