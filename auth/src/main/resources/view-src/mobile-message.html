@@ -1,0 +1,19 @@
+<!--
+
+ -->
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="text/javascript">
+            function htmlUnescape(input) {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(input, "text/html");
+                return doc.documentElement.textContent;
+            }
+            const unescapeToken = htmlUnescape("{{token}}");
+            window.ReactNativeWebView.postMessage(JSON.stringify({type:"{{type}}", token:unescapeToken}));
+        </script>
+    </head>
+    <body/>
+</html>
