@@ -225,7 +225,7 @@ public class SamlController extends AbstractFederateController {
 
 			final String userAgent = request.getHeader("User-Agent");
 			final String xRequestedWith = request.getHeader("X-Requested-With");
-			if ((userAgent != null && (userAgent.contains("iPhone") || userAgent.contains("Android"))) ||
+			if ((userAgent != null && (userAgent.contains("iPhone") || userAgent.contains("Android") || userAgent.startsWith("X-APP=mobile"))) ||
 					(xRequestedWith != null && xRequestedWith.startsWith("com.ode")) ||
 					("true".equals(request.params().get("mobile")))) {
 				renderView(request, swmf, "wayf-mobile.html", null);
@@ -566,8 +566,18 @@ public class SamlController extends AbstractFederateController {
 	@Post("/saml/acs")
 	public void acs(final HttpServerRequest request) {
 		final String app = CookieHelper.get("X-APP", request);
-		if ("mobile".equals(app) && app != null) {
+		final String userAgent = request.getHeader("User-Agent");
+		if ("mobile".equals(app)) {
 			redirectionService.redirect(request, LOGIN_PAGE);
+			return;
+		} else if (userAgent != null && userAgent.startsWith("X-APP=mobile")) {
+			request.setExpectMultipart(true);
+			request.endHandler(v -> {
+                final JsonObject params = new JsonObject();
+                params.put("type", "SAML");
+                params.put("token", request.formAttributes().get("SAMLResponse"));
+                renderView(request, params, "mobile-message.html", null);
+            });
 			return;
 		}
 		if (sessionsLimit > 0L) {
