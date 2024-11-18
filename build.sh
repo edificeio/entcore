@@ -136,6 +136,7 @@ buildReactNode() {
     cd ./"$module"
 
     if [ -e ./frontend ]; then
+      echo -e "[Build React] Build react frontend directory for module $module"
       # Building frontend $module
       cd ./frontend
       ./build.sh --no-docker clean init build
@@ -152,8 +153,6 @@ buildReactNode() {
       # Clean up - remove frontend/dist and backend/src/main/resources
       rm -rf ../frontend/dist
       cd ..
-    else 
-      echo -e "\e[31m[Build React] No frontend directory found for module $module\e[0m"
     fi
 
     cd ..
