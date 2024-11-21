@@ -1,6 +1,5 @@
 import { ng, notify, idiom as lang, template, skin, moment, Document, $, _, ui, Folder } from 'entcore';
 import { Mail, User, UserFolder, quota, Conversation, Trash, SystemFolder, Attachment , Folder as FolderModel} from '../model';
-import words from '../ressources/keywords.json';
 
 export let conversationController = ng.controller('ConversationController', [
     '$scope', '$timeout', '$compile', '$sanitize', 'model', 'route', function ($scope, $timeout, $compile, $sanitize, model, route) {
@@ -19,7 +18,27 @@ export let conversationController = ng.controller('ConversationController', [
             mailLimit: 5000,
             recipientLimit: ui.breakpoints.checkMaxWidth("fatMobile") ? 5 : 10
         };
-        const keywords: string[] = words;
+        const keywords: string[] = [
+            "devoir", 
+            "devoirs", 
+            "rendre", 
+            "evaluations", 
+            "evaluation",
+            "limite", 
+            "correction",
+            "corrections",
+            "exercice", 
+            "exercices",  
+            "consigne", 
+            "consignes", 
+            "travail",
+            "projet",
+            "livrable",
+            "contrôle",
+            "test",
+            "examen",
+            "deadline"
+        ];
         $scope.defaultAvatar = "img/illustrations/unknown-avatar.svg?thumbnail=100x100";
         $scope.conversation = Conversation.instance;
         $scope.ccCciShow = false;
@@ -952,6 +971,7 @@ export let conversationController = ng.controller('ConversationController', [
             } else {
                 await mail.postAttachments($scope);
             }
+            $scope.checkExercise()
         }
 
         $scope.deleteAttachment = function (event, attachment, mail) {
