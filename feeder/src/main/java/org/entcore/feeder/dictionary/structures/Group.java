@@ -175,8 +175,13 @@ public class Group {
 			tx.add(removeQuery, params);
 			User.countUsersInGroups(null, "ManualGroup", tx);
 
-			tx.commit(null);
-			log.info("PostImport | SUCCEED to manualGroupLinkUsersAuto");
+			tx.commit(res -> {
+				if("ok".equals(res.body().getString("status"))) {
+					log.info("PostImport | SUCCEED to manualGroupLinkUsersAuto");
+				} else{
+					log.error("PostImport | Failed to manualGroupLinkUsersAuto: " + res.body().getString("message"));
+				}
+			});
 		}
 		catch(TransactionException e)
 		{

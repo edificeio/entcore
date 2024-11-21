@@ -129,7 +129,7 @@ public class PostImport {
 					logger.info(e-> "SUCCEED to notifyAppsAfterImport", true);
 				}
 				if (config.getJsonObject("ws-call-after-import") != null) {
-					logger.info(e-> "Start notifyAppsAfterImport", true);
+					logger.info(e-> "Start wsCallAfterImport", true);
 					wsCall(config.getJsonObject("ws-call-after-import"));
 				}
 				if (config.getJsonArray("publish-classes-update") != null &&
@@ -208,6 +208,7 @@ public class PostImport {
 					@Override
 					public void handle(Void v) {
 						client.close();
+						logger.info(e-> "SUCCEED to wsCallAfterImport", true);
 					}
 				};
 				for (int i = endpoints.size() - 1; i >= 0; i--) {
@@ -246,7 +247,6 @@ public class PostImport {
 				logger.error(t ->"Invalid uri in ws call after import : " + url, e);
 			}
 		}
-		logger.info(e-> "SUCCEED to wsCallAfterImport", true);
 	}
 
 	private void storeImportedEvent() {
