@@ -1,9 +1,11 @@
 import { ng, notify, idiom as lang, template, skin, moment, Document, $, _, ui, Folder } from 'entcore';
 import { Mail, User, UserFolder, quota, Conversation, Trash, SystemFolder, Attachment , Folder as FolderModel} from '../model';
+import words from '../ressources/keywords.json';
 
 export let conversationController = ng.controller('ConversationController', [
     '$scope', '$timeout', '$compile', '$sanitize', 'model', 'route', function ($scope, $timeout, $compile, $sanitize, model, route) {
         $scope.state = {
+            isConvertibleToExercise: false,
             selectAll: false,
             filterUnread: false,
             searching: false,
@@ -17,10 +19,28 @@ export let conversationController = ng.controller('ConversationController', [
             mailLimit: 5000,
             recipientLimit: ui.breakpoints.checkMaxWidth("fatMobile") ? 5 : 10
         };
+        const keywords: string[] = words;
         $scope.defaultAvatar = "img/illustrations/unknown-avatar.svg?thumbnail=100x100";
         $scope.conversation = Conversation.instance;
         $scope.ccCciShow = false;
         $scope.showWarnAboutCommunicationRules = false;
+        $scope.event = {
+            "event-type": "MAIL_TO_EXERCISES",
+            "suggestion": false,
+            "distributed": false,
+            "not-now": false,
+            "not-homework": false,
+            "exercise-created": false,
+            "message-body": "",
+            "message-subject": ""
+        };
+        $scope.editEvent = (eventValueName: string, value: any) => {
+            $scope.event[eventValueName] = value;
+        }
+
+        $scope.trackEvent = async (event: any) => {
+            //await ($scope.mail as Mail).trackEvent(event);
+        }
 
         route({
             readMail: async function (params) {
@@ -508,6 +528,7 @@ export let conversationController = ng.controller('ConversationController', [
         $scope.result = {};
 
         $scope.sendMail = async () => {
+            $scope.editEvent("message-body", $scope.cleanBodyContent());
             $scope.sending = true; //Blocks submit button while message hasn't been send
             const mail: Mail = $scope.state.newItem;
             $scope.result = await mail.send();
@@ -517,8 +538,101 @@ export let conversationController = ng.controller('ConversationController', [
             await Conversation.instance.folders.draft.countTotal();
             $scope.$root.$emit('refreshMails');
             $scope.sending = false;
+            if ($scope.event["suggestion"]) {
+                $scope.trackEvent($scope.event);
+            }
         };
 
+
+
+        $scope.checkExerciseBeforeSendMail = async () => {
+            const mail: Mail = $scope.state.newItem;
+            const hasWorkflow = model.me.hasWorkflow('org.entcore.conversation.controllers.ConversationController|conversationStimulationExercise');
+            await mail.getConfPublic().then((response) => {
+                if (response.data['mail-to-exercizer'] as boolean && hasWorkflow) {
+                    if ($scope.state.isConvertibleToExercise) {
+                        $scope.openNewExerciseCreator();
+                    } else {
+                        $scope.sendMail();
+                    }
+                } else {
+                    $scope.sendMail();
+                };
+            }).catch((error) => {
+                $scope.sendMail();
+            })
+        }
+
+        $scope.openNewExerciseCreator = function () {
+            $scope.editEvent("suggestion", true);
+            if (!$scope.event["not-now"] || !$scope.event["not-homework"]) {
+                $scope.lightbox.show = true;
+                template.open('lightbox', 'create-exercise')
+            }
+        }
+
+        $scope.cleanBodyContent = () => {
+            if ($scope.state.newItem && $scope.state.newItem.body) {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = $scope.state.newItem.body;
+                let cleanedContent = tempDiv.textContent || tempDiv.innerText || '';
+                return cleanedContent;
+            }
+            return '';
+        };
+
+        $scope.checkExercise = () => {
+            const bodyContent = $scope.state.newItem.body.toLowerCase();
+            const containsKeyword = keywords.some(keyword => bodyContent.includes(keyword.toLowerCase()));
+            if (containsKeyword) {
+                $scope.state.isConvertibleToExercise = true;
+            } else {
+                $scope.state.isConvertibleToExercise = false;
+            }
+        }
+
+        $scope.redirectToUrlExercise = async function () {
+            $scope.editEvent("distributed", true);
+            $scope.editEvent("message-body", $scope.cleanBodyContent());
+            $scope.editEvent("message-subject", $scope.state.newItem.subject);
+            let ids = [];
+            const mail = new Mail();
+
+            const attachments = Array.from($scope.state.newItem.newAttachments);
+            const attachmentPromises = attachments.map(async (attachment: any) => {
+                const id = await mail.importDocumentInWorkspace(attachment, "[ORPHAN_FILE]-" + attachment.name);
+                $scope.editEvent("attachment-" + id, true);
+                ids.push({ id: id, name: attachment.name });
+            });
+
+            await Promise.all(attachmentPromises);
+
+            const messageBody = encodeURIComponent(JSON.stringify(ids));
+            const eventData = encodeURIComponent(JSON.stringify($scope.event));
+
+            try {
+                const encodedMessageBody = btoa(messageBody);
+                const encodedEvent = btoa(eventData);
+                window.location.href = '/exercizer#/subject/create/simple?messagebody=' +
+                    encodedMessageBody + "&event=" + encodedEvent;
+            } catch (err) {
+                console.error('Error encoding data:', err);
+                notify.error('exercizer.error.invalid.characters');
+            }
+        };
+
+        $scope.closeExerciseModal = function () {
+            $scope.editEvent("not-now", true);
+            $scope.lightbox.show = false
+            $scope.sendMail()
+        };
+
+        $scope.falsePositiveGeneration = function () {
+            $scope.editEvent("not-homework", true);
+            template.close('lightbox');
+            $scope.lightbox.show = false
+            $scope.sendMail()
+        };
 
         $scope.restore = async () => {
             await Conversation.instance.folders.trash.restore();
