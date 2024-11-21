@@ -510,7 +510,42 @@ export class Mail implements Selectable {
             }
         });
     }
+    public async trackEvent(eventType: any) {
+        if (eventType != null) {
+            const eventJson: any = { ...eventType };
+            try {
+                await http.post("/conversation/store/event", eventJson);
+            } catch (e) {
+                console.error("[TrackingInternal] failed to trackEvent: ", e);
+            }
+        }
+    }
+
+    public async importDocumentInWorkspace(file: any, name: string): Promise<string> {
+        const formData = new FormData();
+        formData.append('blob', file, name);
+        const thumbnails = "thumbnail=120x120&thumbnail=150x150&thumbnail=100x100&thumbnail=290x290&thumbnail=48x48&thumbnail=82x82&thumbnail=381x381";
+        try {
+            const response = await http.post('/workspace/document?protected=true&application=media-library&' + thumbnails, formData, {
+                withCredentials: false,
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                },
+                responseType: 'json'
+            });
+            return response.data._id;
+        } catch (error) {
+            console.error("Failed to import image:", error);
+            throw new Error("exercizer.error");
+        }
+    }
+
+    public async getConfPublic() {
+        return await http.get('/conversation/conf/public');
+    }
+
 }
+
 
 export class Mails {
     pageNumber: number;

@@ -27,6 +27,7 @@ import fr.wseduc.rs.Post;
 import fr.wseduc.rs.Put;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.RequestUtils;
 
 import io.vertx.core.AsyncResult;
@@ -55,6 +56,7 @@ import org.entcore.conversation.filters.VisiblesFilter;
 import org.entcore.conversation.filters.FoldersFilter;
 import org.entcore.conversation.filters.FoldersMessagesFilter;
 import org.entcore.conversation.service.ConversationService;
+import org.entcore.conversation.service.impl.MailToExercizer;
 import org.entcore.conversation.service.impl.Neo4jConversationService;
 import org.entcore.conversation.service.impl.SqlConversationService;
 
@@ -98,6 +100,7 @@ public class ConversationController extends BaseController {
 	private EventHelper eventHelper;
 	private enum ConversationEvent {GET_RESOURCE, ACCESS }
 	private final String exportPath;
+	private MailToExercizer mailToExercizer;
 
 	public ConversationController(Storage storage, String exportPath) {
 		this.storage = storage;
@@ -119,6 +122,7 @@ public class ConversationController extends BaseController {
 		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Conversation.class.getSimpleName());
 		this.eventHelper =  new EventHelper(eventStore);
 		this.threshold = config.getInteger("alertStorage", 80);
+		this.mailToExercizer = new MailToExercizer(vertx, config);
 	}
 
 	@Get("conversation")
@@ -1800,6 +1804,26 @@ public class ConversationController extends BaseController {
 		recipients.add(userId);
 		notification.notifyTimeline(new JsonHttpServerRequest(new JsonObject()),
 				"messagerie.storage", null, recipients, null, new JsonObject());
+	}
+
+	@SecuredAction("conversation.stimulation.exercise")
+	public void stimulationExercise() {}
+
+
+	@Post("store/event")
+	@SecuredAction(value="", type=ActionType.AUTHENTICATED)
+	public void eventStoreLangFuse(HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					mailToExercizer.storeEvent(request, user.getUserId(),
+							res -> renderJson(request, res));
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
 	}
 
 }

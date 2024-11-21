@@ -1541,6 +1541,7 @@
   "blog.print": "Blog : imprimer des blogs",
   "blog.view": "Blog : accéder au module",
   "conversation.create.draft": "Messagerie : créer un brouillon",
+  "conversation.stimulation.exercise" : "Messagerie : suggestion de création d'exercice",
   "conversation.send": "Messagerie : envoyer un message",
   "conversation.view": "Messagerie : accéder à la messagerie",
   "forum.create": "Forum : créer des catégories",
