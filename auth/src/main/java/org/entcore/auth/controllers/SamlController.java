@@ -474,7 +474,11 @@ public class SamlController extends AbstractFederateController {
 			String rs = URLEncoder.encode(relayState, StandardCharsets.UTF_8.toString());
 			String callback = URLEncoder.encode(String.format(path, authnRequestB64, rs), StandardCharsets.UTF_8.toString());
 			String cookieCallback = getScheme(request) + "://" + getHost(request) + String.format(path, authnRequestB64, rs);
-			if (config.containsKey("authLocations")) {
+			if (config.containsKey("samlLoginUri")) {
+				final String authLocation = config.getString("samlLoginUri");
+				location = extractLocation(authLocation, request, callback, cookieCallback, serviceProviderId);
+				location = String.format("%s?callback=%s", location, URLEncoder.encode(cookieCallback, StandardCharsets.UTF_8.toString()));
+			} else if (config.containsKey("authLocations")) {
 				final String host = Renders.getHost(request);
 				final String authLocation = config.getJsonObject("authLocations", new JsonObject()).getJsonObject(host, new JsonObject()).getString("loginUri");
 				location = extractLocation(authLocation, request, callback, cookieCallback, serviceProviderId);
