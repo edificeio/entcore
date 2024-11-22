@@ -614,31 +614,34 @@ export let conversationController = ng.controller('ConversationController', [
             $scope.editEvent("distributed", true);
             $scope.editEvent("message-body", $scope.cleanBodyContent());
             $scope.editEvent("message-subject", $scope.state.newItem.subject);
-            let ids = [];
+        
+            const files = [];
             const mail = new Mail();
-
-            const attachments = Array.from($scope.state.newItem.newAttachments);
-            const attachmentPromises = attachments.map(async (attachment: any) => {
-                const id = await mail.importDocumentInWorkspace(attachment, "[ORPHAN_FILE]-" + attachment.name);
-                $scope.editEvent("attachment-" + id, true);
-                ids.push({ id: id, name: attachment.name });
-            });
-
-            await Promise.all(attachmentPromises);
-
-            const messageBody = encodeURIComponent(JSON.stringify(ids));
-            const eventData = encodeURIComponent(JSON.stringify($scope.event));
-
+            const attachments : any = Array.from($scope.state.newItem.newAttachments);
+                
             try {
+                await Promise.all(attachments.map(async (attachment) => {
+                    const id = await mail.importDocumentInWorkspace(
+                        attachment,
+                        `[ORPHAN_FILE]-${attachment['name']}`
+                    );
+                    files.push({ id, name: attachment["name"] });
+                }));
+        
+        
+                const messageBody = encodeURIComponent(JSON.stringify(files));
+                const eventData = encodeURIComponent(JSON.stringify($scope.event));
+        
                 const encodedMessageBody = btoa(messageBody);
                 const encodedEvent = btoa(eventData);
-                window.location.href = '/exercizer#/subject/create/simple?messagebody=' +
-                    encodedMessageBody + "&event=" + encodedEvent;
-            } catch (err) {
-                console.error('Error encoding data:', err);
-                notify.error('exercizer.error.invalid.characters');
+        
+                window.location.href = `/exercizer#/subject/create/simple?messagebody=${encodedMessageBody}&event=${encodedEvent}`;
+            } catch (error) {
+                console.error("Erreur lors du traitement des fichiers ou de l'encodage :", error);
+                notify.error("exercizer.error.invalid.characters");
             }
         };
+        
 
         $scope.closeExerciseModal = function () {
             $scope.editEvent("not-now", true);
