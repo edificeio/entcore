@@ -17,17 +17,13 @@ pipeline {
       stage('Build') {
         steps {
           checkout scm
-          sh 'GIT_BRANCH=develop-b2school ./build.sh $BUILD_SH_EXTRA_PARAM init clean install'
+          sh './build.sh $BUILD_SH_EXTRA_PARAM init clean install'
         }
       }
       stage('Test') {
         steps {
           script {
-            sh 'sleep 6'
-//            try {
-//              sh 'GIT_BRANCH=develop-b2school ./build.sh $BUILD_SH_EXTRA_PARAM test'
-//            } catch (err) {
-//            }
+            sh './build.sh $BUILD_SH_EXTRA_PARAM test'
           }
         }
       }
