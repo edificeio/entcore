@@ -128,7 +128,7 @@
 			</section>
 			<section class="margin-four">
 				<h3 class="zero-desktop twelve-mobile">[[currentFolderName()]]</h3>
-				<nav class="twelve cell">
+				<nav class="twelve cell toggle-buttons-spacer">
 					<div class="row">
 						<!--IMPORT MOBILE-->
 						<div ng-if="openedFolder.all.length || reloadingContent" class="zero-desktop six-mobile" ng-repeat="button in currentTree.buttons">
@@ -183,8 +183,6 @@
 							<i18n>workspace.search.results.inworkspace</i18n>
 						</label>
 					</div>
-				</nav>
-				<div class="twelve cell toggle-buttons-spacer">
 
 					<!-- Empty screen Owner -->
 					<div class="emptyscreen" ng-if="currentTree.filter === 'owner' && !openedFolder.all.length && !reloadingContent">
@@ -260,7 +258,7 @@
 							</div>
 						</div>
 					</div>
-				</div>
+				</nav>
 			</section>
 		</div>
 	</portal>
