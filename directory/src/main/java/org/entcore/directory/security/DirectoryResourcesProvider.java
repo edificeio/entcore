@@ -478,6 +478,10 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				handler.handle(false);
 				return;
 			}
+			if (TeacherOfClass.userNotHasClassParam(user)) {
+				handler.handle(false);
+				return;
+			}
 			Set<String> ids = getIds(user);
 			if (ids == null) return;
 			String query =
@@ -526,7 +530,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 	private void isClassTeacher(final HttpServerRequest request, final UserInfos user,
 								final Handler<Boolean> handler) {
 		final String classId = request.params().get("classId");
-		if (classId == null || classId.trim().isEmpty()) {
+		if (classId == null || classId.trim().isEmpty() || TeacherOfClass.userNotHasClassParam(user)) {
 			handler.handle(false);
 			return;
 		}
@@ -569,7 +573,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			return;
 		}
 		String userId = request.params().get("userId");
-		if (userId == null || userId.trim().isEmpty()) {
+		if (userId == null || userId.trim().isEmpty() || TeacherOfClass.userNotHasClassParam(user)) {
 			handler.handle(false);
 			return;
 		}
@@ -603,7 +607,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			@Override
 			public void handle(JsonObject json) {
 				JsonArray userIds = json.getJsonArray("ids");
-				if (userIds == null || userIds.isEmpty()) {
+				if (userIds == null || userIds.isEmpty() || TeacherOfClass.userNotHasClassParam(user)) {
 					handler.handle(false);
 					return;
 				}

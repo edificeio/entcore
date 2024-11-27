@@ -20,7 +20,6 @@
 package org.entcore.directory.security;
 
 import fr.wseduc.webutils.http.Binding;
-import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
