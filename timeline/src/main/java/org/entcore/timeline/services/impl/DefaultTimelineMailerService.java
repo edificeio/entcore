@@ -84,6 +84,25 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 		super.init(vertx, config);
 	}
 
+	/**
+	 * Light duplicate an existing service for use in a loop,
+	 * where distinct parameters are applied to the inner templateRenderer during each iteration.
+	 * @return a (not deep) duplicate of the source
+	 */
+	private DefaultTimelineMailerService(final DefaultTimelineMailerService source) {
+		super(source.vertx, source.config);
+		eb = Server.getEventBus(vertx);
+		emailSender = source.emailSender;
+		USERS_LIMIT = source.USERS_LIMIT;
+		QUERY_TIMEOUT = source.QUERY_TIMEOUT;
+		super.init(vertx, config);
+
+		registeredNotifications = source.registeredNotifications;
+		configService = source.configService;
+		eventsI18n = source.eventsI18n;
+		lazyEventsI18n = source.lazyEventsI18n;
+	}
+
 	/* Override i18n to use additional timeline translations and nested templates */
 	@Override
 	protected void setLambdaTemplateRequest(final HttpServerRequest request) {
@@ -185,13 +204,15 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 			if(!processedTemplates.get(userDomain).containsKey(userLanguage)) {
 				processedTemplates.get(userDomain).put(userLanguage, new HashMap<>());
 			}
-			processTimelineTemplate(tParameters, "", "notifications/immediate-mail.html",
-					userDomain, userScheme, userLanguage, false, new Handler<String>(){
-						public void handle(String processedTemplate) {
-							processedTemplates.get(userDomain).get(userLanguage).put(userPref.getString("userId", ""), processedTemplate);
-							templatesHandler.handle(null);
-						}
-					});
+			new DefaultTimelineMailerService(this) // fix WB-3530, some recipients receive emails styled with another recipient's theme.
+			.processTimelineTemplate(
+				tParameters, "", "notifications/immediate-mail.html",
+				userDomain, userScheme, userLanguage, false, 
+				processedTemplate -> {
+					processedTemplates.get(userDomain).get(userLanguage).put(userPref.getString("userId", ""), processedTemplate);
+					templatesHandler.handle(null);
+				}
+			);
 		}
 	}
 
