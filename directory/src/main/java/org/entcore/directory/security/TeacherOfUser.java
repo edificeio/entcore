@@ -51,6 +51,10 @@ public class TeacherOfUser implements ResourcesProvider {
 					handler.handle(false);
 					return;
 				}
+				if (TeacherOfClass.userNotHasClassParam(user)) {
+                    handler.handle(false);
+					return;
+                }
 				String query =
 						"MATCH (t:User { id : {teacherId}})-[:IN]->(g:ProfileGroup)-[:DEPENDS]->(c:Class) " +
 								"WITH c " +

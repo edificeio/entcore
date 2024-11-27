@@ -63,4 +63,12 @@ public class ActionsUtils {
 		});
 	}
 
+	public static boolean userHasWorkflowAction(UserInfos user, String expectedAction) {
+		if (user != null && expectedAction != null) {
+			return user.getAuthorizedActions().stream()
+					.anyMatch(action -> expectedAction.equals(action.getName()));
+		}
+		return false;
+	}
+
 }

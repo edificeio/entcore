@@ -51,6 +51,10 @@ public class TeacherOfUserFromDifferentClass implements ResourcesProvider {
 					handler.handle(false);
 					return;
 				}
+				if (TeacherOfClass.userNotHasClassParam(user)) {
+                    handler.handle(false);
+					return;
+                }
 				String query = "MATCH (:User {id: {teacherId}})-[:IN]->(:Group)-[:DEPENDS]->(:Structure)<-[:DEPENDS]-(:Group)<-[:IN]-(u:User) USING INDEX u:User(id) " +
 						"WHERE u.id in {ids} " +
 						"RETURN count(distinct u) = {size} as exists";
