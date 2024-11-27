@@ -50,7 +50,11 @@ public class AdmlOfStructureOrClassOrTeachOfUser implements ResourcesProvider {
             if (res) {
                 handler.handle(res);
             } else {
-                new TeacherOfUserFromDifferentClass().authorize(request, binding, user, handler);
+                if (TeacherOfClass.userNotHasClassParam(user)) {
+                    handler.handle(false);
+                } else {
+                    new TeacherOfUserFromDifferentClass().authorize(request, binding, user, handler);
+                }
             }
         });
     }
