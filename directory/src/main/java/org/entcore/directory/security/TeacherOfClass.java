@@ -26,21 +26,25 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.http.filter.ResourcesProvider;
+import org.entcore.common.http.request.ActionsUtils;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Set;
 
 
 public class TeacherOfClass implements ResourcesProvider {
 
+	public static final String CLASS_ADMIN_ACTIONS = "org.entcore.directory.controllers.DirectoryController|classAdmin";
 	private final Neo4j neo = Neo4j.getInstance();
 
 	@Override
 	public void authorize(final HttpServerRequest request, Binding binding, final UserInfos user, final Handler<Boolean> handler) {
 		final String classId = request.params().get("classId");
-		if (classId == null || classId.trim().isEmpty()) {
+		if (classId == null || classId.trim().isEmpty() || userNotHasClassParam(user)) {
 			handler.handle(false);
 			return;
 		}
@@ -91,6 +95,15 @@ public class TeacherOfClass implements ResourcesProvider {
 				);
 			}
 		});
+	}
+
+	public static boolean userNotHasClassParam(UserInfos user) {
+		final Map<String, UserInfos.Function> functions = user.getFunctions();
+		if (functions != null && !functions.isEmpty() &&
+			(functions.containsKey(DefaultFunctions.SUPER_ADMIN) || functions.containsKey(DefaultFunctions.ADMIN_LOCAL))) {
+			return false;
+		}
+		return !ActionsUtils.userHasWorkflowAction(user, CLASS_ADMIN_ACTIONS);
 	}
 
 }
