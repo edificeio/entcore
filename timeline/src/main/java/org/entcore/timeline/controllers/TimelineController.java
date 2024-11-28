@@ -80,13 +80,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.isEmpty;
-import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static java.util.Collections.emptySet;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 
 public class TimelineController extends BaseController {
-    public static Logger log = LoggerFactory.getLogger(TimelineController.class);
+    private static final long IMMEDIATE_NOTIF_DELAY_BY_CHUNK = 30000L;
+
+	public static Logger log = LoggerFactory.getLogger(TimelineController.class);
 
 	private TimelineEventStore store;
 	private TimelineConfigService configService;
@@ -860,7 +861,23 @@ public class TimelineController extends BaseController {
 					final JsonObject notification = notificationResult.succeeded() ? notificationResult.result() : json;
 					store.add(notification, new Handler<JsonObject>() {
 						public void handle(JsonObject result) {
-							notificationHelper.sendImmediateNotifications(new JsonHttpServerRequest(notification.getJsonObject("request")), notification);
+							// IF call only when recipient size > maxRecipientLength (10k by default)
+							// timer for performance (thread block) reasons
+							if (result.containsKey(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS)) {
+								final JsonArray chunkedNotifications = result.getJsonArray(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS);
+								result.remove(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS);
+								for (int i = 0; i < chunkedNotifications.size(); i++) {
+									final JsonObject cn = chunkedNotifications.getJsonObject(i);
+									vertx.setTimer((i* IMMEDIATE_NOTIF_DELAY_BY_CHUNK) + 1000L, t -> {
+										final JsonArray chunkRecipientsIds = cn.getJsonArray("recipientsIds");
+										log.info("Launch chunked immediate notification. Recipients :  " +
+											(chunkRecipientsIds != null ? chunkRecipientsIds.size():0));
+										notificationHelper.sendImmediateNotifications(new JsonHttpServerRequest(cn.getJsonObject("request")), cn);
+									});
+								}
+							} else {
+								notificationHelper.sendImmediateNotifications(new JsonHttpServerRequest(notification.getJsonObject("request")), notification);
+							}
 							handler.handle(result);
 						}
 					});

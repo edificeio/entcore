@@ -19,6 +19,7 @@
 package org.entcore.common.notification;
 
 import fr.wseduc.webutils.Either;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import org.entcore.common.neo4j.Neo4j;
@@ -32,6 +33,9 @@ import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 
 public class NotificationUtils {
+
+    private static final long GET_PREFERENCES_TIMEOUT = 5 * 60 * 1000L;
+
     private static final String USERBOOK_ADDRESS = "userbook.preferences";
 
     private static final int NB_CHARACTERS_IN_TEXT_NOTIFICATION = 150;
@@ -44,7 +48,7 @@ public class NotificationUtils {
                 .put("additionalMatch", ", u-[:IN]->(g:Group)-[:AUTHORIZED]->(r:Role)-[:AUTHORIZE]->(act:WorkflowAction) ")
                 .put("additionalWhere", "AND act.name = \"org.entcore.timeline.controllers.TimelineController|mixinConfig\" ")
                 .put("additionalCollectFields", ", " + fields)
-                .put("userIds", userIds), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+                .put("userIds", userIds), new DeliveryOptions().setSendTimeout(GET_PREFERENCES_TIMEOUT), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
             public void handle(Message<JsonObject> event) {
                 if (!"error".equals(event.body().getString("status"))) {
                     handler.handle(event.body().getJsonArray("results"));

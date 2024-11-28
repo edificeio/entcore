@@ -19,10 +19,7 @@
 package org.entcore.timeline.events;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -36,6 +33,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 public class SplitTimelineEventStore implements TimelineEventStore {
+    public static final String CHUNKED_NOTIFICATIONS = "chunked-notifications";
     private boolean combineResult;
     private final int maxRecipients;
     private final TimelineEventStore original;
@@ -102,11 +100,13 @@ public class SplitTimelineEventStore implements TimelineEventStore {
             final JsonObject base = event.copy();
             base.remove("recipients");
             base.remove("recipientsIds");
+            final JsonArray chunkedNotifications = new JsonArray();
             for (final NotificationChunk part : chunks) {
                 final JsonObject copy = base.copy();
                 copy.put("recipients", new JsonArray(part.recipients));
-                copy.put("recipientsIds", new JsonArray(part.recipients));
+                copy.put("recipientsIds", new JsonArray(part.recipientsIds));
                 log.info("Save chunk. recipients="+ copy.getJsonArray("recipients").size()+ " | "+copy.fieldNames());
+                chunkedNotifications.add(copy);
                 final Future<JsonObject> future = Future.future();
                 original.add(copy, res -> {
                     future.complete(res);
@@ -123,7 +123,7 @@ public class SplitTimelineEventStore implements TimelineEventStore {
                                 final JsonArray ids = a.getJsonArray("_ids", new JsonArray()).add(idb);
                                 return new JsonObject().put("_ids", ids).put("status", status);
                             });
-                        result.handle(json);
+                        result.handle(json.put(CHUNKED_NOTIFICATIONS, chunkedNotifications));
                     } else {
                         log.error("Error when persist split timeline events", res.cause());
                         result.handle(new JsonObject().put("status", "error")
@@ -136,7 +136,9 @@ public class SplitTimelineEventStore implements TimelineEventStore {
                         if (res.succeeded()) {
                             result.handle(res.result());
                         } else {
-                            result.handle(null);
+                            log.error("Error when persist split timeline events not combined", res.cause());
+                            result.handle(new JsonObject().put("status", "error")
+                            .put("message", "Error when persist split timeline events. Result not combined."));
                         }
                     });
                 }
