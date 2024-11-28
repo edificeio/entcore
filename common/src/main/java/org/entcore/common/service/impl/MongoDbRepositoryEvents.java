@@ -349,8 +349,8 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 	 * @param resources The resources to filter
 	 * @return The filtered resources
 	 */
-	protected JsonArray exportResourcesFilter(final JsonArray resources, String exportId, String userId){
-		return resources;
+	protected Future<JsonArray> exportResourcesFilter(final JsonArray resources, String exportId, String userId){
+		return Future.succeededFuture(resources);
 	}
 
 	@Override
@@ -383,18 +383,13 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		final AtomicBoolean exported = new AtomicBoolean(false);
 		final String collection = MongoDbConf.getInstance().getCollection();
 
-		mongo.find(collection, query, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				JsonArray results = exportResourcesFilter(event.body().getJsonArray("results"), exportId, userId);
-
-				if ("ok".equals(event.body().getString("status")) && results != null) {
-					for(int i = results.size(); i-->0;)
-						DocumentHelper.clearComments(results.getJsonObject(i), true);
-
-					createExportDirectory(exportPath, locale, new Handler<String>() {
-						@Override
-						public void handle(String path) {
+		mongo.find(collection, query, event -> {
+				exportResourcesFilter(event.body().getJsonArray("results"), exportId, userId).onSuccess(results -> {
+					if ("ok".equals(event.body().getString("status")) && results != null) {
+						for(int i = results.size(); i-->0;) {
+							DocumentHelper.clearComments(results.getJsonObject(i), true);
+						}
+						createExportDirectory(exportPath, locale, path -> {
 							if (path != null) {
 								Handler<Boolean> finish = new Handler<Boolean>() {
 									@Override
@@ -415,14 +410,15 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 							} else {
 								handler.handle(exported.get());
 							}
-						}
-					});
-				} else {
-					log.error(title + " : Could not proceed query " + query.encode(),
-							event.body().getString("message"));
+						});
+					} else {
+						log.error(title + " : Could not proceed query " + query.encode(), event.body().getString("message"));
+						handler.handle(exported.get());
+					}
+				}).onFailure(error -> {
+					log.error(title + " : Could not filter resources ", error);
 					handler.handle(exported.get());
-				}
-			}
+				});
 		});
 	}
 
