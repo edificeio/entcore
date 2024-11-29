@@ -37,11 +37,10 @@ node_modules
 auth/src/main/resources/view/*
 auth/src/main/resources/public/js
 auth/src/main/resources/public/temp
-conversation/src/main/resources/view/*
-conversation/src/main/resources/public/js
-conversation/src/main/resources/public/ts/entcore
-conversation/src/main/resources/public/temp
-conversation/src/main/resources/public/template/entcore
+# Ignore some JS and HTML files in "backend/resources" folder
+conversation/backend/src/main/resources/public/*.js
+conversation/backend/src/main/resources/public/*.css
+conversation/backend/src/main/resources/view/index.html
 workspace/src/main/resources/view/*
 workspace/src/main/resources/public/js
 workspace/src/main/resources/public/temp
