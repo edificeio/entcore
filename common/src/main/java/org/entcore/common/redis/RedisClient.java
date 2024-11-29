@@ -1,10 +1,15 @@
 package org.entcore.common.redis;
 
 import io.vertx.core.*;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.redis.client.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.entcore.common.utils.StringUtils;
 
 public class RedisClient implements IRedisClient {
@@ -41,24 +46,42 @@ public class RedisClient implements IRedisClient {
     }
 
     public RedisClient(final Vertx vertx, final JsonObject redisConfig) {
-        final String host = redisConfig.getString("host");
+        List<String> hosts = new ArrayList<>();
+        if (redisConfig.containsKey("hosts")) {
+            JsonArray hostsList = redisConfig.getJsonArray("hosts");
+            for (int i = 0; i < hostsList.size(); i++) {
+                hosts.add(hostsList.getString(i));
+            }
+        }
+        else {
+            hosts.add(redisConfig.getString("host"));
+        }
+
         final Integer port = redisConfig.getInteger("port");
         final String username = redisConfig.getString("username","");
         final String password = redisConfig.getString("password");
         final String auth = redisConfig.getString("auth");
         final Integer select = redisConfig.getInteger("select", 0);
-        if (StringUtils.isEmpty(password)) {
-            if (StringUtils.isEmpty(auth)) {
-                final String url = String.format("redis://%s:%s/%s", host, port, select);
-                this.redisOptions = new RedisOptions().setConnectionString(url);
-            }else{
-                final String url = String.format("redis://%s:%s/%s?password=%s", host, port, select, auth);
-                this.redisOptions = new RedisOptions().setConnectionString(url);
+
+        RedisOptions redisOptions = new RedisOptions();
+        for(int i = 0; i < hosts.size(); i++) {
+            String host = hosts.get(i);
+            if (StringUtils.isEmpty(password)) {
+                if (StringUtils.isEmpty(auth)) {
+                    final String url = String.format("redis://%s:%s/%s", host, port, select);
+                    redisOptions.addConnectionString(url);
+                }else{
+                    final String url = String.format("redis://%s:%s/%s?password=%s", host, port, select, auth);
+                    redisOptions.addConnectionString(url);
+                }
+            } else {
+                final String url = String.format("redis://%s:%s@%s:%s/%s", username, password, host, port, select);
+                redisOptions.addConnectionString(url);
             }
-        } else {
-            final String url = String.format("redis://%s:%s@%s:%s/%s", username, password, host, port, select);
-            this.redisOptions = new RedisOptions().setConnectionString(url);
         }
+        this.redisOptions = redisOptions;
+
+        redisOptions.setType(hosts.size() > 1 ? RedisClientType.SENTINEL : RedisClientType.STANDALONE);
         if(redisConfig.getInteger("maxWaitingHandlers") !=null){
             redisOptions.setMaxWaitingHandlers(redisConfig.getInteger("maxWaitingHandlers"));
         }
