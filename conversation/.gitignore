@@ -1,4 +1,11 @@
 .DS_Store
 .idea
 .gradle
+.classpath
+.project
+.settings
 .pnpm-store
+# Ignore some JS and HTML files in "backend/resources" folder
+backend/src/main/resources/public/*.js
+backend/src/main/resources/public/*.css
+backend/src/main/resources/view/index.html
