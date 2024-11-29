@@ -16,7 +16,7 @@ export const PageError = () => {
           {t('oops')}
         </Heading>
         <div className="text">
-          {t('collaborativewall.notfound.or.unauthorized')}
+          {t('conversation.notfound.or.unauthorized')}
         </div>
         <Button color="primary" onClick={() => navigate(-1)}>
           {t('back')}
