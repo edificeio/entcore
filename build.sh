@@ -171,7 +171,7 @@ buildAdminNode() {
   fi
 }
 
-install () {
+buildBackend () {
   docker compose run --rm $USER_OPTION maven mvn $MVN_OPTS install -DskipTests
 }
 
@@ -299,8 +299,11 @@ do
     buildReactNode)
       buildReactNode
       ;;
+    buildBackend)
+      buildBackend
+      ;;
     install)
-      buildNode && buildReactNode && buildAdminNode && install
+      buildNode && buildReactNode && buildAdminNode && buildBackend
       ;;
     localDep)
       localDep
