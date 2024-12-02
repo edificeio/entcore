@@ -125,7 +125,7 @@ public class ConversationController extends BaseController {
 	@SecuredAction("conversation.view")
 	@Cache(value = "/conversation/count/INBOX",useQueryParams = true,scope = CacheScope.USER, operation = CacheOperation.INVALIDATE)
 	public void view(HttpServerRequest request) {
-		renderView(request);
+		renderView(request, new JsonObject(), "index.html", null);
 		eventHelper.onAccess(request);
 	}
 
