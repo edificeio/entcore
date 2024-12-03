@@ -175,6 +175,14 @@
 
     <build>
         <plugins>
+            <plugin> <!-- Overrides inherited compiler to set java version and debug infos -->
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <debug>true</debug>
+                    <debuglevel>lines,vars,source</debuglevel>
+                </configuration>
+            </plugin>
             <plugin> <!-- Plugin enabling parent pom version to be resolved when building any submodule alone -->
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
