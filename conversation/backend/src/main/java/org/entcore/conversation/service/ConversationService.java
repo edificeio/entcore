@@ -60,6 +60,7 @@ public interface ConversationService {
 		Handler<Either<String, JsonObject>> result);
 
 	void list(String folder, String restrain, Boolean unread, UserInfos user, int page, String searchWords, Handler<Either<String, JsonArray>> results);
+	void list(String folder, String restrain, Boolean unread, UserInfos user, int page, int page_size, String searchWords, Handler<Either<String, JsonArray>> results);
 
 	void listThreads(UserInfos user, int page, Handler<Either<String, JsonArray>> results);
 

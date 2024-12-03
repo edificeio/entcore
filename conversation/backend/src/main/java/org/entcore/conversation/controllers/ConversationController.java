@@ -93,7 +93,7 @@ public class ConversationController extends BaseController {
 	private int threshold;
 
 	private ConversationService conversationService;
-	private Neo4jConversationService neoConversationService;
+	private Neo4jConversationService userService;
 	private TimelineHelper notification;
 	private EventHelper eventHelper;
 	private enum ConversationEvent {GET_RESOURCE, ACCESS }
@@ -104,17 +104,20 @@ public class ConversationController extends BaseController {
 		this.exportPath = exportPath;
 	}
 
+	public ConversationController setConversationService(final ConversationService conversationService) {
+		this.conversationService = conversationService;
+		return this;
+	}
+	public ConversationController setUserService(final Neo4jConversationService userService) {
+		this.userService = userService;
+		return this;
+	}
+
 	@Override
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
-		/*
-		this.conversationService = new DefaultConversationService(vertx,
-				config.getString("app-name", Conversation.class.getSimpleName()));
-				*/
-		this.conversationService = new SqlConversationService(vertx, config.getString("db-schema", "conversation"))
-				.setSendTimeout(config.getInteger("send-timeout",SqlConversationService.DEFAULT_SENDTIMEOUT));
-		this.neoConversationService = new Neo4jConversationService();
+
 		notification = new TimelineHelper(vertx, eb, config);
 		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Conversation.class.getSimpleName());
 		this.eventHelper =  new EventHelper(eventStore);
@@ -149,7 +152,7 @@ public class ConversationController extends BaseController {
 									final String threadId = ConversationController.getShouldCreateThread(parent, message, user)
 											? null
 											: parent != null ? parent.getString("thread_id") : null;
-									neoConversationService.addDisplayNames(message, parent, new Handler<JsonObject>() {
+									userService.addDisplayNames(message, parent, new Handler<JsonObject>() {
 										public void handle(JsonObject message) {
 											conversationService.saveDraft(parentMessageId, threadId, message, user, defaultResponseHandler(request, 201));
 										}
@@ -339,7 +342,7 @@ public class ConversationController extends BaseController {
 						@Override
 						public void handle(JsonObject message) {
 							message.put("from", user.getUserId());
-							neoConversationService.addDisplayNames(message, null, new Handler<JsonObject>() {
+							userService.addDisplayNames(message, null, new Handler<JsonObject>() {
 								public void handle(JsonObject message) {
 									conversationService.updateDraft(messageId, message, user,
 											defaultResponseHandler(request));
@@ -384,7 +387,7 @@ public class ConversationController extends BaseController {
 							size.addAndGet(((JsonObject) att).getLong("size", 0l));
 						}
 
-						neoConversationService.findInactives(message, size.get(), new Handler<JsonObject>() {
+						userService.findInactives(message, size.get(), new Handler<JsonObject>() {
 							public void handle(JsonObject userDetails) {
 								message.mergeIn(userDetails);
 
@@ -434,7 +437,7 @@ public class ConversationController extends BaseController {
 									final String threadId = ConversationController.getShouldCreateThread(parentMsg, message, user)
 											? null
 											: parentMsg != null ? parentMsg.getString("thread_id") : null;
-									neoConversationService.addDisplayNames(message, parentMsg, new Handler<JsonObject>() {
+									userService.addDisplayNames(message, parentMsg, new Handler<JsonObject>() {
 										public void handle(final JsonObject message) {
 											saveAndSend(messageId, message, user, parentMessageId, threadId,
 													new Handler<Either<String, JsonObject>>() {
@@ -1728,7 +1731,7 @@ public class ConversationController extends BaseController {
 		user.setUserId(message.body().getString("userId"));
 		user.setUsername(message.body().getString("username"));
 		m.put("from", user.getUserId());
-		neoConversationService.addDisplayNames(m, null, new Handler<JsonObject>() {
+		userService.addDisplayNames(m, null, new Handler<JsonObject>() {
 			public void handle(final JsonObject m) {
 				saveAndSend(null, m, user, null, null,
 					new Handler<Either<String, JsonObject>>() {
