@@ -24,10 +24,14 @@ import io.vertx.core.Promise;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
+import org.entcore.conversation.controllers.ApiController;
 import org.entcore.conversation.controllers.ConversationController;
+import org.entcore.conversation.service.ConversationService;
 import org.entcore.conversation.service.impl.ConversationRepositoryEvents;
 import org.entcore.conversation.service.impl.ConversationStorage;
 import org.entcore.conversation.service.impl.DeleteOrphan;
+import org.entcore.conversation.service.impl.Neo4jConversationService;
+import org.entcore.conversation.service.impl.SqlConversationService;
 
 import java.text.ParseException;
 
@@ -41,12 +45,25 @@ public class Conversation extends BaseServer {
 	public void start(final Promise<Void> startPromise) throws Exception {
 		super.start(startPromise);
 
-		Storage storage = new StorageFactory(vertx, config, new ConversationStorage()).getStorage();
+		final Storage storage = new StorageFactory(vertx, config, new ConversationStorage()).getStorage();
+
+		final ConversationService conversationService = new SqlConversationService(vertx, config.getString("db-schema", "conversation"))
+				.setSendTimeout(config.getInteger("send-timeout",SqlConversationService.DEFAULT_SENDTIMEOUT));
+		final Neo4jConversationService userService = new Neo4jConversationService();
 
 		final String exportPath = config
 				.getString("export-path", System.getProperty("java.io.tmpdir"));
 
-		addController(new ConversationController(storage, exportPath));
+		addController(
+			new ConversationController(storage, exportPath)
+			.setConversationService(conversationService)
+			.setUserService(userService)
+		);
+		addController(
+			new ApiController(storage, exportPath)
+			.setConversationService(conversationService)
+//			.setUserService(userService)
+		);
 
 		setRepositoryEvents(new ConversationRepositoryEvents(storage, getOrElse(config.getLong("repositoryEventsTimeout"), 300000l),vertx));
 

@@ -257,14 +257,21 @@ public class SqlConversationService implements ConversationService{
 	}
 
 	@Override
-	public void list(String folder, String restrain, Boolean unread, UserInfos user, int page,final String searchText, Handler<Either<String, JsonArray>> results)
+	public void list(String folder, String restrain, Boolean unread, UserInfos user, int page, final String searchText, Handler<Either<String, JsonArray>> results)
+	{
+		list(folder, restrain, unread, user, page, LIST_LIMIT, searchText, results);
+	}
+
+	@Override
+	public void list(String folder, String restrain, Boolean unread, UserInfos user, int page, int pageSize, final String searchText, Handler<Either<String, JsonArray>> results)
 	{
 		if(page < 0)
 		{
 			results.handle(new Either.Right<String, JsonArray>(new JsonArray()));
 			return;
 		}
-		int skip = page * LIST_LIMIT;
+		if(pageSize<1) pageSize = LIST_LIMIT;
+		int skip = page * pageSize;
 
 		JsonArray values = new JsonArray();
 		String messageConditionUnread = addMessageConditionUnread(folder, values, unread, user);
@@ -286,7 +293,7 @@ public class SqlConversationService implements ConversationService{
 				messageTable + " r ON um.message_id = r.parent_id AND r.from = um.user_id AND r.state= ? " +
 				"WHERE um.user_id = ? " + additionalWhere + " " +
 				"GROUP BY m.id, unread " +
-				"ORDER BY m.date DESC LIMIT " + LIST_LIMIT + " OFFSET " + skip;
+				"ORDER BY m.date DESC LIMIT " + pageSize + " OFFSET " + skip;
 
 		sql.prepared(query, values, SqlResult.validResultHandler(results, "attachments", "to", "toName", "cc", "ccName", "cci", "cciName", "displayNames"));
 	}
