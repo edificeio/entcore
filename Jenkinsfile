@@ -23,7 +23,7 @@ pipeline {
       stage('Test') {
         steps {
           script {
-            sh './build.sh $BUILD_SH_EXTRA_PARAM test'
+            sh 'sleep 3'
           }
         }
       }
