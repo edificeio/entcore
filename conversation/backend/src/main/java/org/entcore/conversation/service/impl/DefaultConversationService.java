@@ -402,12 +402,19 @@ public class DefaultConversationService implements ConversationService {
 	}
 
 	@Override
+	public void list(String folder, Boolean unread, UserInfos user, int page, int pageSize, final String searchText, Handler<Either<String, JsonArray>> results) {
+		list(folder, 
+			ConversationService.isSystemFolder(folder) ? null : "", // `restrain` can only applies to user's folders.
+			unread, user, page, pageSize, searchText, results
+		);
+	}
+
+	@Override
 	public void list(String folder, String restrain, Boolean unread, UserInfos user, int page, String searchWords, final Handler<Either<String, JsonArray>> results) {
 		list(folder, restrain, unread, user, page, LIST_LIMIT, searchWords, results);
 	}
 
-	@Override
-	public void list(String folder, String restrain, Boolean unread, UserInfos user, int page, int pageSize, String searchWords, final Handler<Either<String, JsonArray>> results) {
+	protected void list(String folder, String restrain, Boolean unread, UserInfos user, int page, int pageSize, String searchWords, final Handler<Either<String, JsonArray>> results) {
 		if (validationError(user, results, folder)) return;
 		if(pageSize<1) pageSize = LIST_LIMIT;
 		int skip = page * pageSize;
