@@ -455,7 +455,7 @@ public class DefaultUserService implements UserService {
 					"   childs: CASE WHEN children IS NULL THEN [] ELSE children END, " +
 					"   parents: CASE WHEN parents IS NULL THEN [] ELSE parents END, " +
 					"   classes2D: CASE WHEN (c) IS NULL THEN [] ELSE COLLECT(st.externalId + '$' + c.name) END " +
-					"} AS data";
+					"} AS data, u.profiles as profiles";
 
 			neo.execute(query, new JsonObject().put("id", id), validUniqueResultHandler(result));
 		} catch (Exception e) {
@@ -978,7 +978,7 @@ public class DefaultUserService implements UserService {
 				"WITH DISTINCT u, s, COLLECT(DISTINCT c.name) as classes " +
 				"RETURN u.id as id, u.externalId as externalId, u.firstName as firstName, u.lastName as lastName, " +
 				"u.email as email, u.emailAcademy as emailAcademy, head(u.profiles) as profile, u.login as login, " +
-				"COLLECT([s.UAI, s.name, classes]) as structuresWithClasses ";
+				"COLLECT([s.UAI, s.name, classes]) as structuresWithClasses, u.profiles as profiles ";
 		neo.execute(query, new JsonObject().put("id", userId), validUniqueResultHandler(result));
 	}
 

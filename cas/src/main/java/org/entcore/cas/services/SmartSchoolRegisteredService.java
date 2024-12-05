@@ -180,6 +180,7 @@ public class SmartSchoolRegisteredService extends AbstractCas20ExtensionRegister
                     User user = new User();
                     prepareUser(user, authCas.getUser(), service, userData);
                     userHandler.handle(user);
+                    createStatsEvent(authCas, userData, service);
                 });
     }
 
