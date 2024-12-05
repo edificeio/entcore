@@ -63,6 +63,7 @@ public class Validator {
 		patterns.put("siret", Pattern.compile("^[0-9]{3} ?[0-9]{3} ?[0-9]{3} ?[0-9]{5}$"));
 		patterns.put("uri", Pattern.compile("^(([^:/?#]+):)?(//([^/?#]*))?([^?#]*)(\\?([^#]*))?(#(.*))?"));
 		patterns.put("loginAlias", Pattern.compile("^([0-9a-z\\.]+)$"));
+		patterns.put("AdLoginAlias", Pattern.compile("^([0-9a-z]+[\\.0-9a-z]+[0-9a-z]+)$"));
 	}
 
 	public static final String SEARCH_FIELD = "SearchField";
@@ -579,7 +580,26 @@ public class Validator {
 		}
 
 		if (value.toString().length() > 64) {
-			return i18n.translate("invalid.maxSize", I18n.DEFAULT_DOMAIN, acceptLanguage, attr, (value != null ? value.toString() : "null"));
+			return i18n.translate("invalid.maxSize", I18n.DEFAULT_DOMAIN, acceptLanguage, attr, (value != null ? value.toString() : "null"), "64");
+		}
+		return null;
+	}
+
+	public static String validAdLoginAlias(String attr, Object value, String validator, String acceptLanguage, I18n i18n, Boolean checkDuplicate) {
+		Pattern p = patterns.get(validator);
+		if (p == null) {
+			return i18n.translate("missing.validator", I18n.DEFAULT_DOMAIN, acceptLanguage, validator);
+		}
+		if (!p.matcher((String) value).find()) {
+			return i18n.translate("invalid.aliasAd", I18n.DEFAULT_DOMAIN, acceptLanguage, attr);
+		}
+
+		if (checkDuplicate) {
+			if (logins.putIfAbsent(value, "") != null) return i18n.translate("invalid.duplicate", I18n.DEFAULT_DOMAIN, acceptLanguage, attr, (value != null ? value.toString() : "null"));
+		}
+
+		if (value.toString().length() > 20) {
+			return i18n.translate("invalid.maxSize", I18n.DEFAULT_DOMAIN, acceptLanguage, attr, (value != null ? value.toString() : "null"), "20");
 		}
 		return null;
 	}

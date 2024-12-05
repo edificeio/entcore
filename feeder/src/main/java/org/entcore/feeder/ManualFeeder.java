@@ -19,6 +19,7 @@
 
 package org.entcore.feeder;
 
+import fr.wseduc.webutils.I18n;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
@@ -67,6 +68,7 @@ public class ManualFeeder extends BusModBase {
 	private EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Feeder.class.getSimpleName());
 	public static final String SOURCE = "MANUAL";
 	private final UserPositionService userPositionService;
+	private Boolean loginAliasValidatorForAD;
 
 	static {
 		Map<String, Validator> p = new HashMap<>();
@@ -835,6 +837,7 @@ public class ManualFeeder extends BusModBase {
 		final String userId = getMandatoryString("userId", message);
 		final String callerId = message.body().getString("callerId");
 		if (userId == null) return;
+		final Boolean useLoginAliasValidatorForAD = this.loginAliasValidatorForAD;
 		String q =
 				"MATCH (u:User { id : {userId}})-[:IN]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
 				"RETURN DISTINCT p.name as profile, u.login as login, u.loginAlias as loginAlias ";
@@ -861,11 +864,18 @@ public class ManualFeeder extends BusModBase {
 							return;
 						}
 
-						// Remove the login alias if a user manually restores their original login
-						if(updatedLoginAlias != null && updatedLoginAlias.equals(((JsonObject) o).getString("login")))
-							user.putNull("loginAlias");
+						String error = null;
 
-						final String error = v.modifiableValidate(user);
+						// Remove the login alias if a user manually restores their original login
+						if(updatedLoginAlias != null) {
+							if (updatedLoginAlias.equals(((JsonObject) o).getString("login"))) {
+								user.putNull("loginAlias");
+							} else if (useLoginAliasValidatorForAD) {
+								error = Validator.validAdLoginAlias("loginAlias", updatedLoginAlias, "AdLoginAlias", "fr", I18n.getInstance(), false);
+							}
+						}
+
+						error = (error == null) ? v.modifiableValidate(user) : error;
 						if (error != null) {
 							logger.error(error);
 							sendError(message, error);
@@ -1562,5 +1572,9 @@ public class ManualFeeder extends BusModBase {
 				User.unlinkRelativeStudent(relativeId, studentId, tx);
 			}
 		});
+	}
+
+	public void setLoginAliasValidatorForAD(Boolean loginAliasValidatorForAD) {
+		this.loginAliasValidatorForAD = loginAliasValidatorForAD;
 	}
 }
