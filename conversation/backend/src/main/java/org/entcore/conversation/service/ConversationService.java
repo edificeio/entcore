@@ -31,12 +31,18 @@ import io.vertx.core.json.JsonObject;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 public interface ConversationService {
 
 	static final int LIST_LIMIT = 25;
 
 	enum State { DRAFT, SENT }
+
+	static final String[] SYSTEM_FOLDER_NAMES = {"INBOX", "OUTBOX", "DRAFT", "TRASH"};
+	static public boolean isSystemFolder(final String folder) {
+		return folder!=null && Stream.of(SYSTEM_FOLDER_NAMES).anyMatch(sysFolder -> folder.equalsIgnoreCase(sysFolder));
+	}
 
 	List<String> MESSAGE_FIELDS = Arrays.asList("id", "subject", "body", "from", "to", "cc", "date", "state",
 			"displayNames");
@@ -59,8 +65,17 @@ public interface ConversationService {
 	void send(String parentMessageId, String draftId, JsonObject message, UserInfos user,
 		Handler<Either<String, JsonObject>> result);
 
+	/**
+	 * List messages from any folder 
+	 * @param folder Any UserFolder ID, or any case-insensitive SystemFolder name.
+	 * @param unread Truthy when only unread messages must be returned.
+	 * @param user connected user
+	 * @param searchWords optional text filter
+	 */
+	void list(String folder, Boolean unread, UserInfos user, int page, int page_size, String searchWords, Handler<Either<String, JsonArray>> results);
+	/** Legacy */
 	void list(String folder, String restrain, Boolean unread, UserInfos user, int page, String searchWords, Handler<Either<String, JsonArray>> results);
-	void list(String folder, String restrain, Boolean unread, UserInfos user, int page, int page_size, String searchWords, Handler<Either<String, JsonArray>> results);
+//	void list(String folder, String restrain, Boolean unread, UserInfos user, int page, int page_size, String searchWords, Handler<Either<String, JsonArray>> results);
 
 	void listThreads(UserInfos user, int page, Handler<Either<String, JsonArray>> results);
 

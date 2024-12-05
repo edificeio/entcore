@@ -257,20 +257,26 @@ public class SqlConversationService implements ConversationService{
 	}
 
 	@Override
-	public void list(String folder, String restrain, Boolean unread, UserInfos user, int page, final String searchText, Handler<Either<String, JsonArray>> results)
-	{
-		list(folder, restrain, unread, user, page, LIST_LIMIT, searchText, results);
+	public void list(String folder, Boolean unread, UserInfos user, int page, int pageSize, final String searchText, Handler<Either<String, JsonArray>> results) {
+		list(folder, 
+			ConversationService.isSystemFolder(folder) ? null : "", // `restrain` can only applies to user's folders.
+			unread, user, page, pageSize, searchText, results
+		);
 	}
 
 	@Override
-	public void list(String folder, String restrain, Boolean unread, UserInfos user, int page, int pageSize, final String searchText, Handler<Either<String, JsonArray>> results)
+	public void list(String folder, String restrain, Boolean unread, UserInfos user, int page, final String searchText, Handler<Either<String, JsonArray>> results) {
+		list(folder, restrain, unread, user, page, LIST_LIMIT, searchText, results);
+	}
+
+	protected void list(String folder, String restrain, Boolean unread, UserInfos user, int page, int pageSize, final String searchText, Handler<Either<String, JsonArray>> results)
 	{
 		if(page < 0)
 		{
 			results.handle(new Either.Right<String, JsonArray>(new JsonArray()));
 			return;
 		}
-		if(pageSize<1) pageSize = LIST_LIMIT;
+		if(LIST_LIMIT<pageSize || pageSize<1) pageSize = LIST_LIMIT;
 		int skip = page * pageSize;
 
 		JsonArray values = new JsonArray();

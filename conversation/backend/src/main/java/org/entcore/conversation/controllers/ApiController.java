@@ -13,77 +13,51 @@
  *
  * You should have received a copy of the GNU Affero General Public License along with the software.
  * If not, please see : <http://www.gnu.org/licenses/>. Full compliance requires reading the terms of this license and following its directives.
-
  *
  */
 
 package org.entcore.conversation.controllers;
 
-
-import fr.wseduc.bus.BusAddress;
-import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
-import fr.wseduc.rs.Post;
-import fr.wseduc.rs.Put;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
-import fr.wseduc.webutils.request.RequestUtils;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.file.FileSystem;
-import io.vertx.core.http.HttpServerResponse;
-import org.entcore.common.cache.Cache;
-import org.entcore.common.cache.CacheOperation;
-import org.entcore.common.cache.CacheScope;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.ResourceFilter;
-import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import org.entcore.common.utils.Config;
-import org.entcore.common.utils.StringUtils;
-import org.entcore.common.utils.Zip;
 import org.entcore.conversation.Conversation;
-import org.entcore.conversation.filters.MessageOwnerFilter;
-import org.entcore.conversation.filters.MessageUserFilter;
-import org.entcore.conversation.filters.MultipleMessageUserFilter;
-import org.entcore.conversation.filters.VisiblesFilter;
-import org.entcore.conversation.filters.FoldersFilter;
-import org.entcore.conversation.filters.FoldersMessagesFilter;
+import org.entcore.conversation.filters.*;
 import org.entcore.conversation.service.ConversationService;
 import org.entcore.conversation.service.impl.Neo4jConversationService;
-import org.entcore.conversation.service.impl.SqlConversationService;
+import org.entcore.conversation.util.Message;
 
-import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.Utils;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 
-import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
 import org.vertx.java.core.http.RouteMatcher;
 
-import java.io.File;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.zip.Deflater;
+import java.util.stream.Collector;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
-import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
-import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
+
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
-import static org.entcore.common.user.UserUtils.getUserInfos;
+import static org.entcore.common.user.UserUtils.getAuthenticatedUserInfos;
 import static org.entcore.common.utils.StringUtils.isEmpty;
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
+
+import io.vertx.core.Promise;
+import io.vertx.core.Future;
 
 public class ApiController extends BaseController {
 	public static final String RESOURCE_NAME = "message";
@@ -94,10 +68,14 @@ public class ApiController extends BaseController {
 	private int threshold;
 
 	private ConversationService conversationService;
-//	private Neo4jConversationService userService;
+	// private Neo4jConversationService userService;
 	private TimelineHelper notification;
 	private EventHelper eventHelper;
-	private enum ConversationEvent {GET_RESOURCE, ACCESS }
+
+	private enum ConversationEvent {
+		GET_RESOURCE, ACCESS
+	}
+
 	private final String exportPath;
 
 	public ApiController(Storage storage, String exportPath) {
@@ -110,8 +88,8 @@ public class ApiController extends BaseController {
 		return this;
 	}
 	// public ApiController setUserService(final UserService userService) {
-	// 	this.userService = userService;
-	// 	return this;
+	// this.userService = userService;
+	// return this;
 	// }
 
 	@Override
@@ -119,39 +97,21 @@ public class ApiController extends BaseController {
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
 
+		// TODO clean up unused thingies
 		notification = new TimelineHelper(vertx, eb, config);
 		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Conversation.class.getSimpleName());
-		this.eventHelper =  new EventHelper(eventStore);
+		this.eventHelper = new EventHelper(eventStore);
 		this.threshold = config.getInteger("alertStorage", 80);
 	}
 
-	/**
-	 * Utility method to read a query param and convert it to an Integer.
-	 */
-	private Integer parseQueryParam(final HttpServerRequest request, String param, final Integer defaultValue) {
-		final String paramValue = getOrElse(request.params().get(param), ""+defaultValue, false);
-		try {
-			return Integer.valueOf(paramValue);
-		} catch (NumberFormatException e) {
-			return defaultValue;
-		}
-	}
-
-	/**
-	 * Utility method to read a query param and convert it to a Boolean.
-	 */
-	private Boolean parseQueryParam(final HttpServerRequest request, String param, final Boolean defaultValue) {
-		return Boolean.valueOf( getOrElse(request.params().get(param), ""+defaultValue, false) );
-	}
-
-
 	@Get("api/folders/:folderId/messages")
-	@SecuredAction(value = "conversation.list", type = ActionType.AUTHENTICATED)
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SystemOrUserFolderFilter.class)
 	public void ListFolderMessages(final HttpServerRequest request) {
 		final String folderId = request.params().get("folderId");
-		final Integer page = parseQueryParam(request, "page", Integer.valueOf(0));
-		final Integer page_size = parseQueryParam(request, "page_size", (Integer) null);
-		final Boolean unread = parseQueryParam(request, "unread", Boolean.valueOf(false));
+		final Integer page = parseQueryParam(request, "page", 0);
+		final Integer page_size = parseQueryParam(request, "page_size", ConversationService.LIST_LIMIT);
+		final Boolean unread = parseQueryParam(request, "unread", false);
 		final String search = request.params().get("search");
 
 		if (isEmpty(folderId)) {
@@ -163,30 +123,190 @@ public class ApiController extends BaseController {
 			return;
 		}
 
-		getUserInfos(eb, request, user -> {
-			if (user != null) {
-				conversationService.list(folderId, "true", unread, user, page, search, either -> {
-					if (either.isRight()) {
-						for (Object o : either.right().getValue()) {
-							if (!(o instanceof JsonObject)) {
-								continue;
-							}
-							translateGroupsNames((JsonObject) o, user, request);
-						}
-						renderJson(request, either.right().getValue());
-					} else {
-						JsonObject error = new JsonObject()
-								.put("error", either.left().getValue());
-						renderJson(request, error, 400);
-					}
-				});
+		final String acceptedLanguage = I18n.acceptLanguage(request);
+
+		getAuthenticatedUserInfos(eb, request)
+		.compose( user -> listAndFormat(folderId, unread, user, page, page_size, search, acceptedLanguage) )
+		.onSuccess( messages -> {
+			renderJson(request, messages);
+		})
+		.onFailure( throwable -> {
+			JsonObject error = new JsonObject().put("error", throwable.getMessage());
+			renderJson(request, error, 400);
+		});
+	}
+
+	@Get("api/messages/:id")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(MessageUserFilter.class)
+	public void GetFullMessage(final HttpServerRequest request) {
+		final String id = request.params().get("id");
+		if (isEmpty(id)) {
+			badRequest(request);
+			return;
+		}
+		getAuthenticatedUserInfos(eb, request)
+		.onSuccess( user -> {
+			conversationService.get(id, user, either -> {
+				if (either.isRight()) {
+					translateGroupsNames(either.right().getValue(), user,  I18n.acceptLanguage(request));
+					renderJson(request, either.right().getValue());
+					// eventStore.createAndStoreEvent(ConversationEvent.GET_RESOURCE.name(),
+					// request,
+					// new JsonObject().put("resource", id));
+				} else {
+					JsonObject error = new JsonObject()
+							.put("error", either.left().getValue());
+					renderJson(request, error, 400);
+				}
+			});
+		});
+	}
+
+	// List folders at a given depth, or trashed folders at depth 1 only.
+	@Get("api/folders")
+	@SecuredAction(value = "conversation.folder.list", type = ActionType.AUTHENTICATED)
+	public void listFolders(final HttpServerRequest request) {
+		final String parentId = request.params().get("parentId");
+		final String listTrash = request.params().get("trash");
+
+		getAuthenticatedUserInfos(eb, request)
+		.onSuccess(user -> {
+			if (listTrash != null) {
+				conversationService.listTrashedFolders(user, arrayResponseHandler(request));
 			} else {
-				unauthorized(request);
+				conversationService.listFolders(parentId, user, arrayResponseHandler(request));
 			}
 		});
 	}
 
-	private void translateGroupsNames(JsonObject message, UserInfos userInfos, HttpServerRequest request) {
+	@Get("api/userfolders/list")
+	@SecuredAction(value = "conversation.folder.list", type = ActionType.AUTHENTICATED)
+	public void listUserFolders(final HttpServerRequest request) {
+		final String parentId = request.params().get("parentId");
+		final String unread = request.params().get("unread");
+		final Boolean b = unread != null && !unread.isEmpty() ? Boolean.valueOf(unread) : null;
+		getAuthenticatedUserInfos(eb, request)
+		.onSuccess( user -> {
+			conversationService.listUserFolders(Optional.ofNullable(parentId), user, b, arrayResponseHandler(request));
+		});
+	}
+
+	/** Utility adapter */
+	private Future<JsonArray> listAndFormat(String folderId, Boolean unread, UserInfos userInfos, int page, int page_size, String search, String lang) {
+		final Promise<JsonArray> promise = Promise.promise();
+		final JsonObject userIndex = new JsonObject();
+		final JsonObject groupIndex = new JsonObject();
+		conversationService.list(folderId, unread, userInfos, page, page_size, search, either -> {
+			if (either.isRight()) {
+				final JsonArray messages = either.right().getValue();
+				for (Object message : messages) {
+					if (!(message instanceof JsonObject)) {
+						continue;
+					}
+					// Extract users and groups.
+					Message.extractUsersAndGroups((JsonObject) message, userInfos, lang, userIndex, groupIndex);
+				}
+
+				// Gather additional users and groups information.
+				Future.all(
+					loadUsersDetails(userInfos.getUserId(), userIndex),
+					loadGroupsDetails(userInfos.getUserId(), groupIndex)
+				)
+				// Compose final response
+				.onSuccess(infos -> {
+					JsonArray usersInfo = infos.resultAt(0);
+					usersInfo.stream().forEach(ui -> {
+						if(!(ui instanceof JsonObject)) return;
+						final JsonObject info = (JsonObject) ui;
+						final JsonObject user = userIndex.getJsonObject(info.getString("id"));
+						if(user!=null) {
+							user.put("profile", info.getString("type"));
+						}
+					});
+					JsonArray groupsInfo = infos.resultAt(1);
+					groupsInfo.stream().forEach(gi -> {
+						if(!(gi instanceof JsonObject)) return;
+						final JsonObject info = (JsonObject) gi;
+						final JsonObject group = groupIndex.getJsonObject(info.getString("id"));
+						if(group!=null ) {
+							group.put("size", info.getInteger("nbUsers"));
+							group.put("type", info.getString("type"));
+							group.put("subType", info.getString("subType"));
+						}
+					});
+
+					for (Object m : messages) {
+						if (!(m instanceof JsonObject)) {
+							continue;
+						}
+						Message.formatRecipients((JsonObject) m, userIndex, groupIndex);
+					}
+					promise.complete(messages);
+				})
+				.onFailure( throwable -> {
+					promise.fail(throwable.getMessage());
+				});
+			} else {
+				promise.fail(either.left().getValue());
+			}
+		});
+		return promise.future();
+	}
+
+	private Future<JsonArray> loadUsersDetails(final String userId, final JsonObject userIndex) {
+		Promise<JsonArray> promise = Promise.promise();
+		JsonObject action = new JsonObject()
+		.put("action", "list-users")
+		.put("userIds", userIndex.stream().map(entry->entry.getKey())
+				.collect(Collector.of(JsonArray::new, JsonArray::add, JsonArray::add)))
+		.put("itself", Boolean.TRUE)
+		.put("excludeUserId", userId);
+        eb.request("directory", action, handlerToAsyncHandler(event -> {
+            JsonArray res = event.body().getJsonArray("result", new JsonArray());
+            if ("ok".equals(event.body().getString("status")) && res != null) {
+                promise.complete(res);
+            } else {
+                promise.fail("User not found");
+            }
+        }));
+		return promise.future();
+	}
+
+	private Future<JsonArray> loadGroupsDetails(final String userId, final JsonObject groupIndex) {
+		Promise<JsonArray> promise = Promise.promise();
+		JsonObject action = new JsonObject()
+		.put("action", "getGroupsInfos")
+		.put("userId", userId)
+		.put("groupIds", groupIndex.stream().map(entry->entry.getKey())
+				.collect(Collector.of(JsonArray::new, JsonArray::add, JsonArray::add)));
+		eb.request("directory", action, handlerToAsyncHandler(event -> {
+            JsonArray res = event.body().getJsonArray("result", new JsonArray());
+            if ("ok".equals(event.body().getString("status")) && res != null) {
+                promise.complete(res);
+            } else {
+                promise.fail("Groups not found");
+            }
+        }));
+		return promise.future();
+	}
+
+	/** Utility method to read a query param and convert it to an Integer. */
+	private Integer parseQueryParam(final HttpServerRequest request, String param, final Integer defaultValue) {
+		final String paramValue = getOrElse(request.params().get(param), "" + defaultValue, false);
+		try {
+			return Integer.valueOf(paramValue);
+		} catch (NumberFormatException e) {
+			return defaultValue;
+		}
+	}
+
+	/** Utility method to read a query param and convert it to a Boolean. */
+	private Boolean parseQueryParam(final HttpServerRequest request, String param, final Boolean defaultValue) {
+		return Boolean.valueOf(getOrElse(request.params().get(param), "" + defaultValue, false));
+	}
+
+	private void translateGroupsNames(JsonObject message, UserInfos userInfos, String lang) {
 		final JsonArray cci = getOrElse(message.getJsonArray("cci"), new JsonArray());
 		final JsonArray cc = getOrElse(message.getJsonArray("cc"), new JsonArray());
 		final JsonArray to = getOrElse(message.getJsonArray("to"), new JsonArray());
@@ -206,9 +326,9 @@ public class ApiController extends BaseController {
 
 			if (notIsSender && cci.contains(a[0]) && !cc.contains(a[0]) && !to.contains(a[0]) && !from.equals(a[0])) continue;
 			JsonArray d2 = new JsonArray().add(a[0]);
-			if (!isEmpty(a[2])) {
-				final String groupDisplayName = isEmpty(a[3]) ? null : a[3];
-				d2.add(UserUtils.groupDisplayName(a[2], groupDisplayName, I18n.acceptLanguage(request)));
+			if (a[2] != null && !a[2].trim().isEmpty()) {
+				final String groupDisplayName = (a[3] != null && !a[3].trim().isEmpty()) ? a[3] : null;
+				d2.add(UserUtils.groupDisplayName(a[2], groupDisplayName, lang));
 				//is group
 				d2.add(true);
 			} else {
@@ -226,7 +346,7 @@ public class ApiController extends BaseController {
 				if (!(o instanceof String)) {
 					continue;
 				}
-				d2.add(UserUtils.groupDisplayName((String) o, null, I18n.acceptLanguage(request)));
+				d2.add(UserUtils.groupDisplayName((String) o, null, lang));
 			}
 		}
 		JsonArray ccName = message.getJsonArray("ccName");
@@ -237,7 +357,7 @@ public class ApiController extends BaseController {
 				if (!(o instanceof String)) {
 					continue;
 				}
-				d2.add(UserUtils.groupDisplayName((String) o, null, I18n.acceptLanguage(request)));
+				d2.add(UserUtils.groupDisplayName((String) o, null, lang));
 			}
 		}
 		JsonArray cciName = message.getJsonArray("cciName");
@@ -248,7 +368,7 @@ public class ApiController extends BaseController {
 				if (!(o instanceof String)) {
 					continue;
 				}
-				d2.add(UserUtils.groupDisplayName((String) o, null, I18n.acceptLanguage(request)));
+				d2.add(UserUtils.groupDisplayName((String) o, null, lang));
 			}
 		}
 
@@ -279,82 +399,4 @@ public class ApiController extends BaseController {
 		}
 	}
 
-	@Get("api/messages/:id")
-	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@ResourceFilter(MessageUserFilter.class)
-	public void GetFullMessage(final HttpServerRequest request) {
-		final String id = request.params().get("id");
-		if (isEmpty(id)) {
-			badRequest(request);
-			return;
-		}
-		getUserInfos(eb, request, user -> {
-			if (user != null) {
-				conversationService.get(id, user, either -> {
-					if (either.isRight()) {
-						translateGroupsNames(either.right().getValue(), user, request);
-						renderJson(request, either.right().getValue());
-						// eventStore.createAndStoreEvent(ConversationEvent.GET_RESOURCE.name(), request,
-						// 		new JsonObject().put("resource", id));
-					} else {
-						JsonObject error = new JsonObject()
-								.put("error", either.left().getValue());
-						renderJson(request, error, 400);
-					}
-				});
-			} else {
-				unauthorized(request);
-			}
-		});
-	}
-
-	//List folders at a given depth, or trashed folders at depth 1 only.
-	@Get("api/folders")
-	@SecuredAction(value = "conversation.folder.list", type = ActionType.AUTHENTICATED)
-	public void listFolders(final HttpServerRequest request){
-		final String parentId = request.params().get("parentId");
-		final String listTrash = request.params().get("trash");
-
-		Handler<UserInfos> userInfosHandler = user -> {
-			if(user == null){
-				unauthorized(request);
-				return;
-			}
-			if(listTrash != null){
-				conversationService.listTrashedFolders(user, arrayResponseHandler(request));
-			} else {
-				conversationService.listFolders(parentId, user, arrayResponseHandler(request));
-			}
-		};
-
-		UserUtils.getUserInfos(eb, request, userInfosHandler);
-	}
-
-	@Get("api/userfolders/list")
-	@SecuredAction(value = "conversation.folder.list", type = ActionType.AUTHENTICATED)
-	public void listUserFolders(final HttpServerRequest request){
-		final String parentId = request.params().get("parentId");
-		final String unread = request.params().get("unread");
-		final Boolean b = unread != null && !unread.isEmpty()? Boolean.valueOf(unread) : null;
-		UserUtils.getUserInfos(eb, request, user -> {
-			if(user == null){
-				unauthorized(request);
-				return;
-			}
-			conversationService.listUserFolders(Optional.ofNullable(parentId), user, b, arrayResponseHandler(request));
-		});
-	}
-
-/*
-	@BusAddress("org.entcore.conversation")
-	public void conversationEventBusHandler(Message<JsonObject> message) {
-		switch (message.body().getString("action", "")) {
-			case "send" : send(message);
-				break;
-			default:
-				message.reply(new JsonObject().put("status", "error")
-						.put("message", "invalid.action"));
-		}
-	}
-*/
 }
