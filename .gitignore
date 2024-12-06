@@ -37,10 +37,6 @@ node_modules
 auth/src/main/resources/view/*
 auth/src/main/resources/public/js
 auth/src/main/resources/public/temp
-# Ignore some JS and HTML files in "backend/resources" folder
-conversation/backend/src/main/resources/public/*.js
-conversation/backend/src/main/resources/public/*.css
-conversation/backend/src/main/resources/view/index.html
 workspace/src/main/resources/view/*
 workspace/src/main/resources/public/js
 workspace/src/main/resources/public/temp
@@ -82,8 +78,15 @@ infra/src/main/resources/public/js/pixi.min.js
 **/.vertx
 admin/src/main/ts/.angular
 *.lock
+**/pnpm-lock.yaml
 tests/src/test/resources/data/thumbnails/image.jpg
 admin/src/main/ts/.proxyRemoteConfig.js
+# Ignore some JS and HTML files in "backend/resources" folder
+**/backend/**/resources/public/*.js
+**/backend/**/resources/public/*.css
+**/backend/**/resources/view/*.html
+# Ignore package.json in "frontend" folder (where a template exists)
+**/frontend/package.json
 
 .env
 dependency-reduced-pom.xml
