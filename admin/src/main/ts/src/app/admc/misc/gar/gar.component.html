@@ -1,0 +1,76 @@
+<div class="container has-shadow gar">
+    <h2>
+        <s5l>admc.misc.gar.deploy</s5l>
+    </h2>
+    <form #garForm="ngForm" (ngSubmit)="check()">
+        <div class="gar-bloc">
+            <div>
+                <h3>
+                    <s5l>admc.misc.gar.choice</s5l>
+                </h3>
+                <ode-mono-select
+                        class="is-block"
+                        [options]="garOptions"
+                        [(ngModel)]="garSettings.garOptionSelected"
+                        [translateOptions]="false"
+                ></ode-mono-select>
+            </div>
+            <div>
+                <h3>
+                    <s5l>admc.misc.gar.uai</s5l>
+                    <ode-message-sticker
+                            class="sticker"
+                            type="info"
+                            [messages]="[
+              'admc.misc.gar.uai.tooltip'
+            ]"
+                    >
+                    </ode-message-sticker>
+                </h3>
+                <textarea
+                        name="uaiList"
+                        [(ngModel)]="garSettings.uaiList"
+                        [attr.placeholder]="
+            'admc.misc.gar.uai.placeholder'
+              | translate
+          "
+                >
+        </textarea>
+            </div>
+        </div>
+        <div class="action">
+            <button class="active" [disabled]="!garSettings.canApplyGar()">
+                <s5l>confirm</s5l>
+            </button>
+        </div>
+    </form>
+    <ode-lightbox-confirm
+            [show]="showConfirmLightbox"
+            [lightboxTitle]="garSettings.lightboxTitle"
+            [disableConfirm]="!garSettings.lightboxCanValidate"
+            (onCancel)="closeLightbox()"
+            (onConfirm)="applyGar()"
+    >
+        <p>
+            {{ garSettings.lightboxMessage }}
+        </p>
+        <ul>
+            <li *ngFor="let struc of garSettings.lightboxList">
+                {{ struc }}
+            </li>
+        </ul>
+    </ode-lightbox-confirm>
+    <ode-lightbox [show]="showErrorLightbox" (onClose)="showErrorLightbox = false">
+        <h2>
+            <s5l>admc.misc.gar.error.notify.title</s5l>
+        </h2>
+        <p>
+            <s5l>admc.misc.gar.partial.error.title</s5l>
+        </p>
+        <ul>
+            <li *ngFor="let struc of garSettings.lightboxList">
+                {{ struc }}
+            </li>
+        </ul>
+    </ode-lightbox>
+</div>

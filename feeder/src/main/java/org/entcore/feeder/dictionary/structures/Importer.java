@@ -30,6 +30,15 @@ import org.entcore.feeder.ManualFeeder;
 import org.entcore.feeder.dictionary.users.AbstractUser;
 import org.entcore.feeder.dictionary.users.PersEducNat;
 import org.entcore.feeder.utils.*;
+import org.entcore.common.schema.Source;
+import org.entcore.common.utils.ExternalId;
+import org.entcore.common.schema.users.Student;
+import org.entcore.common.schema.users.Relative;
+import org.entcore.common.schema.users.Guest;
+import org.entcore.common.schema.structures.Structure;
+import org.entcore.common.schema.utils.matchers.Matcher;
+import org.entcore.common.schema.utils.matchers.IdentifierMatcher;
+
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
@@ -66,6 +75,7 @@ public class Importer {
 	private AtomicBoolean isInUse = new AtomicBoolean(false);
 	private String currentSource;
 	private Neo4j neo4j;
+	private Source source;
 	private ConcurrentMap<String, ImporterStructure> structuresByUAI;
 	private ConcurrentHashMap<String, String> externalIdMapping;
 	private ConcurrentHashMap<String, List<String>> groupClasses = new ConcurrentHashMap<>();
@@ -101,8 +111,9 @@ public class Importer {
 		this.isInUse.set(true);
 		this.neo4j = neo4j;
 		this.currentSource = source;
+		this.source = Source.fromString(source);
 		this.report = new Report(acceptLanguage);
-		this.transactionHelper = new TransactionHelper(neo4j, 1000);
+		this.transactionHelper = new TransactionHelper(neo4j, this.source, 1000);
 		GraphData.loadData(neo4j, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
@@ -182,10 +193,10 @@ public class Importer {
 	private Future<Void> loadPersEducnat2D() {
 		final Promise<Void> promise = Promise.promise();
 		final String query =
-			"MATCH (s:Structure {source:'AAF'})<-[:DEPENDS]-(:ProfileGroup)<-[r:IN]-(u:User) " +
-			"WHERE u.source = 'AAF' and head(u.profiles) IN ['Personnel','Teacher'] and not(has(r.source)) " +
+			"MATCH (s:Structure {source:'AAF'})<-[:DEPENDS]-(pg:ProfileGroup)<-[r:IN]-(u:User) " +
+			"WHERE u.source = 'AAF' and pg.filter IN ['Personnel','Teacher'] and not(has(r.source)) " +
 			"RETURN DISTINCT u.externalId as externalId, u.source as source, head(u.profiles) as profile, " +
-			"COLLECT(distinct s.externalId) as structuresExternalIds";
+			"u.functions as functions, COLLECT(distinct s.externalId) as structuresExternalIds";
 		Neo4j.getInstance().execute(query, new JsonObject(), event -> {
 			final JsonArray res = event.body().getJsonArray("result");
 			if ("ok".equals(event.body().getString("status")) && res != null) {
@@ -333,7 +344,7 @@ public class Importer {
 	 * Warning : all data in old uncommitted transaction will be lost.
 	 */
 	public void reinitTransaction() {
-		transactionHelper = new TransactionHelper(neo4j, 1000);
+		transactionHelper = new TransactionHelper(neo4j, this.source, 1000);
 		if(persEducNat != null)
 			persEducNat.setTransactionHelper(transactionHelper);
 	}
@@ -498,6 +509,7 @@ public class Importer {
 			report.addIgnored("Relative", error, object);
 			log.warn(error);
 		} else {
+			org.entcore.common.schema.users.User relative = new Relative(new ExternalId<org.entcore.common.schema.users.User>(object.getString("externalId")));
 			object.put("source", currentSource);
 			userImportedExternalId.add(object.getString("externalId"));
 			String query =
@@ -525,18 +537,13 @@ public class Importer {
 			} else if (linkRelativeWithoutChild) {
 				final String externalId = object.getString("externalId");
 				JsonArray structures = getMappingStructures(object.getJsonArray("structures"));
-				if (externalId != null && structures != null && structures.size() > 0) {
-					JsonObject p = new JsonObject().put("userExternalId", externalId);
-					String q1 = "MATCH (s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
-							"(:User { externalId : {userExternalId}})-[:MERGED*0..1]->(u:User) " +
-							"USING INDEX s:Structure(externalId) " +
-							"USING INDEX p:Profile(externalId) " +
-							"WHERE s.externalId IN {structuresAdmin} " +
-							"AND p.externalId = {profileExternalId} AND NOT(HAS(u.mergedWith)) " +
-							"MERGE u-[:IN]->g";
-					p.put("structuresAdmin", structures)
-							.put("profileExternalId", DefaultProfiles.RELATIVE_PROFILE_EXTERNAL_ID);
-					transactionHelper.add(q1, p);
+				if (externalId != null && structures != null && structures.size() > 0)
+				{
+					List<ExternalId<Structure>> structuresIds = new ArrayList<ExternalId<Structure>>(structures.size());
+					for(int i = structures.size(); i-- > 0;)
+						structuresIds.add(new ExternalId<Structure>(structures.getString(i)));
+
+					relative.attach(transactionHelper, structuresIds);
 				}
 			}
 
@@ -567,6 +574,7 @@ public class Importer {
 			report.addIgnored("Guest", error, object);
 			log.warn(error);
 		} else {
+			org.entcore.common.schema.users.User guest = new Guest(new ExternalId<org.entcore.common.schema.users.User>(object.getString("externalId")));
 			object.put("source", currentSource);
 			final String externalId = object.getString("externalId");
 			userImportedExternalId.add(externalId);
@@ -581,27 +589,14 @@ public class Importer {
 			transactionHelper.add(query, object);
 			checkUpdateEmail(object);
 			JsonArray structures = getMappingStructures(object.getJsonArray("structures"));
-			if (externalId != null && structures != null && structures.size() > 0) {
-				JsonObject p = new JsonObject().put("userExternalId", externalId);
-				String q1 = "MATCH (s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
-							"(:User { externalId : {userExternalId}})-[:MERGED*0..1]->(u:User) " +
-							"USING INDEX s:Structure(externalId) " +
-							"USING INDEX p:Profile(externalId) " +
-							"WHERE s.externalId IN {structuresAdmin} " +
-							"AND p.externalId = {profileExternalId} AND NOT(HAS(u.mergedWith)) " +
-							"MERGE u-[:IN]->g";
-				p.put("structuresAdmin", structures)
-						.put("profileExternalId", DefaultProfiles.GUEST_PROFILE_EXTERNAL_ID);
-				transactionHelper.add(q1, p);
-				String qs =
-						"MATCH (u:User {externalId : {userExternalId}})-[r:IN]-(g:Group)-[:DEPENDS]->(s:Structure) " +
-						"WHERE NOT(s.externalId IN {structures}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
-						"DELETE r ";
-				JsonObject ps = new JsonObject()
-						.put("userExternalId", externalId)
-						.put("source", currentSource)
-						.put("structures", structures);
-				transactionHelper.add(qs, ps);
+			if (externalId != null && structures != null && structures.size() > 0)
+			{
+				List<ExternalId<Structure>> structuresIds = new ArrayList<ExternalId<Structure>>(structures.size());
+				for(int i = structures.size(); i-- > 0;)
+					structuresIds.add(new ExternalId<Structure>(structures.getString(i)));
+
+				guest.attach(transactionHelper, structuresIds);
+				guest.dettach(transactionHelper, new IdentifierMatcher<Structure>(Matcher.Operation.EXCLUDE, structuresIds));
 			}
 			if (externalId != null && linkClasses != null) {
 				JsonArray classes = new fr.wseduc.webutils.collections.JsonArray();
@@ -663,7 +658,10 @@ public class Importer {
 		if (error != null) {
 			report.addIgnored("Student", error, object);
 			log.warn(error);
-		} else {
+		}
+		else
+		{
+			org.entcore.common.schema.users.User student = new Student(new ExternalId<org.entcore.common.schema.users.User>(object.getString("externalId")));
 			if (nodeQueries) {
 				object.put("source", currentSource);
 				userImportedExternalId.add(object.getString("externalId"));
@@ -681,41 +679,37 @@ public class Importer {
 			if (relationshipQueries) {
 				final String externalId = object.getString("externalId");
 				JsonArray structures = getMappingStructures(object.getJsonArray("structures"));
+				List<ExternalId<Structure>> structuresIds = new ArrayList<ExternalId<Structure>>(structures.size());
+				for(int i = structures.size(); i-- > 0;)
+					structuresIds.add(new ExternalId<Structure>(structures.getString(i)));
+
 				if (externalId != null && structures != null && structures.size() > 0) {
 					String query;
-					if (studentsRelationshipsNotExists(externalId, CheckRelationshipsTypes.STRUCTURES, structures)) {
+					if (studentsRelationshipsHaveChanged(externalId, CheckRelationshipsTypes.STRUCTURES, structures)) {
 						JsonObject p = new JsonObject().put("userExternalId", externalId);
 						if (structures.size() == 1) {
-							query = "MATCH (s:Structure {externalId : {structureAdmin}})<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile {externalId : {profileExternalId}}), " +
+							query = "MATCH (s:Structure {externalId : {structureAdmin}}), " +
 									"(u:User { externalId : {userExternalId}}) " +
 									"WHERE NOT(HAS(u.mergedWith)) " +
-									"MERGE u-[:ADMINISTRATIVE_ATTACHMENT]->s " +
-									"WITH u, g " +
-									"MERGE u-[:IN]->g";
+									"MERGE u-[:ADMINISTRATIVE_ATTACHMENT]->s ";
 							p.put("structureAdmin", structures.getString(0))
 									.put("profileExternalId", profileExternalId);
 						} else {
-							query = "MATCH (s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
+							query = "MATCH (s:Structure), " +
 									"(u:User { externalId : {userExternalId}})) " +
 									"WHERE s.externalId IN {structuresAdmin} AND NOT(HAS(u.mergedWith)) " +
-									"AND p.externalId = {profileExternalId} " +
-									"MERGE u-[:ADMINISTRATIVE_ATTACHMENT]->s " +
-									"WITH u, g " +
-									"MERGE u-[:IN]->g";
+									"MERGE u-[:ADMINISTRATIVE_ATTACHMENT]->s ";
 							p.put("structuresAdmin", structures)
 									.put("profileExternalId", profileExternalId);
 						}
 						transactionHelper.add(query, p);
+						student.attach(transactionHelper, structuresIds);
+						student.dettach(transactionHelper, new IdentifierMatcher<Structure>(Matcher.Operation.EXCLUDE, structuresIds));
 					}
-					String qs =
-							"MATCH (u:User {externalId : {userExternalId}})-[r:IN]-(g:Group)-[:DEPENDS]->(s:Structure) " +
-							"WHERE NOT(s.externalId IN {structures}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
-							"DELETE r ";
 					JsonObject ps = new JsonObject()
 							.put("userExternalId", externalId)
 							.put("source", currentSource)
 							.put("structures", structures);
-					transactionHelper.add(qs, ps);
 					final String daa =
 							"MATCH (u:User {externalId : {userExternalId}})-[r:ADMINISTRATIVE_ATTACHMENT]->(s:Structure) " +
 							"WHERE NOT(s.externalId IN {structures}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
@@ -854,6 +848,19 @@ public class Importer {
 			return false;
 		}
 		return true;
+	}
+
+	private boolean studentsRelationshipsHaveChanged(String externalId, CheckRelationshipsTypes checkType, JsonArray importElements)
+	{
+		final JsonObject user = studentsStructuresClassesGroups.get(externalId);
+		if(user == null || importElements == null)
+			return true;
+
+		final JsonArray dbElements = user.getJsonArray(checkType.name().toLowerCase());
+		if(dbElements.size() == importElements.size())
+			return studentsRelationshipsNotExists(externalId, checkType, importElements);
+		else
+			return true;
 	}
 
 	public void linkRelativeToStructure(String profileExternalId) {
@@ -1189,6 +1196,14 @@ public class Importer {
 				"AND (c.source IS NULL OR c.source <> 'MANUAL') AND NOT (u)-[:IN]->(g) " +
 				"DELETE c";
 		transactionHelper.add(query, new JsonObject().put("prefix", prefix).put("currentSource", currentSource));
+	}
+
+	public void removeUnusedAAFPositions() {
+		String query = "" +
+				"MATCH (p:UserPosition {source : \"AAF\"}) " +
+				"WHERE NOT (:User)-[:HAS_POSITION]->(p) " +
+				"DETACH DELETE p";
+		transactionHelper.add(query, null);
 	}
 
 	public void countUsersInGroups() {

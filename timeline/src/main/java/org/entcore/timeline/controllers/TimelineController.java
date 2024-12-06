@@ -46,6 +46,7 @@ import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.AdmlOfStructures;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
+import org.entcore.common.http.filter.Trace;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.mute.MuteHelper;
 import org.entcore.common.neo4j.Neo4j;
@@ -128,9 +129,6 @@ public class TimelineController extends BaseController {
 			final CacheService cacheService = CacheService.create(vertx, config);
 			final Integer cacheLen = config.getInteger("cache-size", PAGELIMIT);
 			store = new CachedTimelineEventStore(store, cacheService, cacheLen, configService, registeredNotifications);
-		}
-		if(config.getBoolean("isolate-mobile", false)){
-			store = new MobileTimelineEventStore(store);
 		}
 
 		// TEMPORARY to handle both timeline and timeline2 view
@@ -736,6 +734,7 @@ public class TimelineController extends BaseController {
 	}
 
 
+	@Trace(value = "FCM_LIST_TOKENS", retentionDays = 5, body = false)
 	@Get("/pushNotif/fcmTokens")
 	@SecuredAction(value = "timeline.api", type = ActionType.AUTHENTICATED)
 	public void getFcmTokens(final HttpServerRequest request){
@@ -762,6 +761,7 @@ public class TimelineController extends BaseController {
 		});
 	}
 
+	@Trace(value = "FCM_UPDATE_TOKEN", retentionDays = 5, body = false)
 	@Put("/pushNotif/fcmToken")
 	@SecuredAction(value = "timeline.api", type = ActionType.AUTHENTICATED)
 	public void putFcmToken(final HttpServerRequest request){
@@ -793,6 +793,7 @@ public class TimelineController extends BaseController {
 		}
 	}
 
+	@Trace(value = "FCM_DELETE_TOKEN", retentionDays = 5, body = false)
 	@Delete("/pushNotif/fcmToken")
 	@SecuredAction(value = "timeline.api", type = ActionType.AUTHENTICATED)
 	public void deleteFcmToken(final HttpServerRequest request){

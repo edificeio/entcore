@@ -1,0 +1,80 @@
+<!doctype html>
+<!--
+
+ -->
+
+<html ng-controller="appCtrl as app" lang="[[app.currentLanguage]]" with-theme>
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
+        integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.7.9/angular.min.js"
+        integrity="sha512-CjpXuCK2f47gfxIjQvOwKRVGj01yHWI5qdMTO0qzERireNL30uf+fXLeZ5OxKGDj7r8xpRK4XVxgqXhBbW8Tbg=="
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-route/1.7.9/angular-route.min.js"
+        integrity="sha512-xI+5CA/dWcCSEtcnBohNOo6SuqCjePmu4fOqPYOp70rhpbzd+KBYJPclQCsSX3iBc/Qe3s8LITKixOy1gZCGwg=="
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-sanitize/1.7.9/angular-sanitize.min.js"
+        integrity="sha512-eY2WqVT7O50HLSp/1/tZOUWYlAcPUl+WH3wu5NynvKNV5l/sKowxffGe1I91y3AuMvpyVvevOBOA3LEOBaemTw=="
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.6.1/gsap.min.js"></script>
+
+    <script>if (typeof window !== 'undefined') { window.entcore = window.entcore || {}; window.entcore["deploymentTag"] = '{{#modVersion}}deployment-tag{{/modVersion}}'; }</script>
+    <script src="/assets/js/ode-ts-client/ode-ts-client.js?version={{#modVersion}}ode-ts-client{{/modVersion}}"
+        type="text/javascript"></script>
+    <script src="/assets/js/ode-ngjs-front/ode-ngjs-front.js?version={{#modVersion}}ode-ngjs-front{{/modVersion}}"
+        type="text/javascript"></script>
+    <script type="text/javascript" src="/timeline/public/dist/timeline2/application.js"></script>
+
+    <script>
+        function MainController($scope, $timeout) {
+            $scope.edited = parent.model.edited;
+            window.setInterval(function () {
+                $scope.$apply();
+            }, 1000);
+        }
+        angular.module("app")
+            .controller("mainController", ['$scope', MainController])
+    </script>
+    <style>
+        body ode-portal header {
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+    <ode-portal app="timeline" name="[[app.lang.translate('timeline.title.responsive')]]" ode-modal-container>
+        <ng-controller ng-controller="mainController">
+            <div class="widget widget-flash" ng-class="edited.message.customColor ? 'blue' : edited.message.color">
+                <svg class="icon-svg flash-icon" width="20" height="20" viewBox="0 0 24 24">
+                    <use
+                        href="/timeline/public/icons/icons.svg[[edited.message.color==='red'?'#alert-triangle':'#info-circle']]">
+                    </use>
+                </svg>
+                <div class="widget-body">
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close">
+                        <svg class="icon-svg" width="20" height="20" viewBox="0 0 24 24">
+                            <use href="/timeline/public/icons/icons.svg#close"></use>
+                        </svg>
+                    </button>
+                    <div class="flash-content">
+                        <p bind-html="edited.message.contents[edited.message.lang]"></p>
+                        <div ng-if="edited.message.signature" class="flash-content-signature mt-3 font-italic">
+                            {{ edited.message.signature }}
+                        </div>
+                        <div ng-if="!edited.message.signature" class="flash-content-signature"></div>
+                    </div>
+                </div>
+            </div>
+        </ng-controller>
+
+        <ode-infotips></ode-infotips>
+
+    </ode-portal>
+</body>
+
+</html>

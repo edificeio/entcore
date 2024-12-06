@@ -19,6 +19,8 @@
 
 package org.entcore.common.sql;
 
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
 import org.entcore.common.bus.ErrorMessage;
 import io.vertx.core.Handler;
@@ -73,6 +75,17 @@ public class Sql implements ISql {
 				.put("statement", query)
 				.put("values", values);
 		eb.send(address, j, deliveryOptions, handlerToAsyncHandler(handler));
+	}
+
+	@Override
+	public Future<Message<JsonObject>> prepared(String query, JsonArray values, DeliveryOptions deliveryOptions) {
+		Promise<Message<JsonObject>> responseMessagePromise = Promise.promise();
+		JsonObject message = new JsonObject()
+				.put("action", "prepared")
+				.put("statement", query)
+				.put("values", values);
+		eb.request(address, message, deliveryOptions, handlerToAsyncHandler(responseMessagePromise::complete));
+		return responseMessagePromise.future();
 	}
 
 	@Override

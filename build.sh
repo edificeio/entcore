@@ -165,7 +165,7 @@ watch () {
 # ex: ./build.sh -m=workspace -s=paris watch
 
 ngWatch () {
-  docker compose run --rm $USER_OPTION node16 sh -c "npm run start"
+  docker compose run --rm $USER_OPTION --publish 4200:4200 node16 sh -c "npm run start"
 }
 
 infra () {
@@ -181,6 +181,60 @@ publish () {
     echo "sonatypePassword=$NEXUS_SONATYPE_PASSWORD" >> "?/.gradle/gradle.properties"
   fi
   docker compose run --rm $USER_OPTION gradle gradle "$GRADLE_OPTION"publish
+}
+
+check_prefix_sh_file() {
+    dir_path=$1      # Directory path
+    search_str=$2    # String to check
+    # Loop over each .sh file in the directory
+    for file in "$dir_path"/*.sh; do
+        if [ -f "$file" ]; then
+            # Get the file name without the extension
+            base_name=$(basename "$file" .sh)
+
+            # Check if the file name is a prefix of the search string
+            if [[ "$search_str" == "$base_name"* ]]; then
+                return 0  # Found a match, return 0 (success)
+            fi
+        fi
+    done
+
+    return 1  # No match found, return 1 (failure)
+}
+
+itTests() {
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  cd $script_dir/tests/src/test/js/it/scenarios
+  exit_code=0
+  js_files=($(find . -type f -name '*.js' ! -name '_*'))
+  for it_file in "${js_files[@]}"; do
+    short_file_name=$(basename -s .js $it_file)
+    file_dir=$(dirname $it_file)
+    check_prefix_sh_file "$file_dir" "$short_file_name"
+    if [ $? -eq 1 ]; then
+      echo executing $it_file
+      docker compose run --rm -T k6 run file:///home/k6/src/it/scenarios/$it_file
+      if [ $? -ne 0 ]; then
+          exit_code=1
+          echo "Error while executing : $it_file"
+      fi
+    fi
+  done
+  sh_files=($(find . -type f -name '*.sh'))
+  for sh_file in "${sh_files[@]}"; do
+    echo executing $sh_file
+    "$sh_file" "$script_dir/tests/src/test/resources/data" "$script_dir/../$SPRINGBOARD"
+    if [ $? -ne 0 ]; then
+        exit_code=1
+        echo "Error while executing : $sh_file"
+    fi
+  done
+  cd -
+
+  echo "|-------------------------|"
+  [ $exit_code -ne 0 ] && echo "|---- itTests  FAILED ----|" || echo "|--- itTests SUCCEEDED ---|"
+  echo "|-------------------------|"
+  exit $exit_code
 }
 
 for param in "$@"
@@ -214,6 +268,9 @@ do
       ;;
     test)
       testGradle
+      ;;
+    itTests)
+      itTests
       ;;
     infra)
       infra

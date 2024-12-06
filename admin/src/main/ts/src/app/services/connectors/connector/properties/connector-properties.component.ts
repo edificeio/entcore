@@ -39,6 +39,9 @@ export class ConnectorPropertiesComponent extends OdeComponent implements OnInit
     @ViewChild('propertiesForm')
     propertiesFormRef: NgForm;
 
+    @ViewChild('casTypeFormRef')
+    casTypeFormRef: NgForm;
+
     LINKPARAMS_TARGET_PORTAL = '';
     LINKPARAMS_TARGET_NEWPAGE = '_blank';
     LINKPARAMS_TARGET_ADAPTOR = 'adapter';
@@ -52,12 +55,14 @@ export class ConnectorPropertiesComponent extends OdeComponent implements OnInit
     ];
 
     OAUTH_GRANTTYPE_AUTHORIZATION_CODE = 'authorization_code';
+    OAUTH_GRANTTYPE_JWT_BEARER = 'urn:ietf:params:oauth:grant-type:jwt-bearer';
     OAUTH_GRANTTYPE_CLIENT_CREDENTIALS = 'client_credentials';
     OAUTH_GRANTTYPE_PASSWORD = 'password';
     OAUTH_GRANTTYPE_BASIC = 'Basic';
 
     grantTypeOptions: SelectOption<string>[] = [
         {value: this.OAUTH_GRANTTYPE_AUTHORIZATION_CODE, label: 'services.connector.oauth.grantType.authorizationCode'},
+        { value: this.OAUTH_GRANTTYPE_JWT_BEARER, label: 'services.connector.oauth.grantType.jwtBearer' },
         {value: this.OAUTH_GRANTTYPE_CLIENT_CREDENTIALS, label: 'services.connector.oauth.grantType.clientCredentials'},
         {value: this.OAUTH_GRANTTYPE_PASSWORD, label: 'services.connector.oauth.grantType.password'},
         {value: this.OAUTH_GRANTTYPE_BASIC, label: 'services.connector.oauth.grantType.basic'}
@@ -137,6 +142,10 @@ export class ConnectorPropertiesComponent extends OdeComponent implements OnInit
         }
     }
 
+    public get isCasTypeValid(): boolean {
+        return this.casTypeFormRef?.invalid ?? false;
+    }
+
     public getCasTypeDescription(): string {
         if (this.connector.casTypeId && this.casTypes) {
             return this.casTypes.find(casType => casType.id === this.connector.casTypeId).description;
@@ -188,7 +197,7 @@ export class ConnectorPropertiesComponent extends OdeComponent implements OnInit
     public async closeCasRemove(confirm: boolean)
     {
         try {
-            if(confirm){
+            if(confirm && this.propertiesFormRef.invalid){
                 await this.casMappingCollection.removeMapping(this.casTypeToRemove);
                 this.casMappings = this.casMappingCollection.data;
                 this.changeDetector.markForCheck();

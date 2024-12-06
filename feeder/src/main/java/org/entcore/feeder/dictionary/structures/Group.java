@@ -46,6 +46,7 @@ public class Group {
 		} else {
 			final boolean create = (object.getString("id") == null || object.getString("id").trim().isEmpty());
 			final String id = create ? UUID.randomUUID().toString() : object.getString("id");
+			object.put("create", create);
 			if (create) {
 				object.put("id", id);
 			}
@@ -54,10 +55,10 @@ public class Group {
 			}
 			String query =
 					"MERGE (t:Group:ManualGroup:Visible { id : {id}}) " +
-					"SET " + Neo4jUtils.nodeSetPropertiesFromJson("t", object, "id", "name", "displayNameSearchField") +
-					", t.name = CASE WHEN EXISTS(t.lockDelete) AND t.lockDelete = true THEN t.name ELSE {name} END " +
-					", t.displayNameSearchField = CASE WHEN EXISTS(t.lockDelete) AND t.lockDelete = true THEN t.displayNameSearchField ELSE {displayNameSearchField} END " +
-					"RETURN t.id as id ";
+					"SET " + Neo4jUtils.nodeSetPropertiesFromJson("t", object, "id", "name", "displayNameSearchField", "create") +
+					", t.name = CASE WHEN EXISTS(t.lockDelete) AND t.lockDelete = true AND {create} = false THEN t.name ELSE {name} END " +
+					", t.displayNameSearchField = CASE WHEN EXISTS(t.lockDelete) AND t.lockDelete = true AND {create} = false THEN t.displayNameSearchField ELSE {displayNameSearchField} END " +
+					"RETURN t.id as id, t.createdAt as createdAt, t.createdByName as createdByName, t.modifiedAt as modifiedAt, t.modifiedByName as modifiedByName ";
 			transactionHelper.add(query, object);
 			if (create) {
 				if (structureId != null && !structureId.trim().isEmpty()) {
@@ -160,11 +161,12 @@ public class Group {
 				"AND target.filter IN g.autolinkUsersFromGroups " +
 				"WITH g, u " +
 				"MERGE (u)-[new:IN]->(g) " +
+				"ON CREATE SET new.source = 'AUTO' " +
 				"SET new.updated = {now} ";
 
 			final String removeQuery =
 				"MATCH (g:ManualGroup)<-[old:IN]-(:User) " +
-				"WHERE (NOT EXISTS(old.source) OR old.source <> 'MANUAL') AND (NOT EXISTS(old.updated) OR old.updated <> {now}) " +
+				"WHERE EXISTS(g.autolinkUsersFromGroups) AND old.source = 'AUTO' AND (NOT EXISTS(old.updated) OR old.updated <> {now}) " +
 				"DELETE old ";
 
 			final JsonObject params = new JsonObject().put("now", System.currentTimeMillis());
@@ -174,6 +176,7 @@ public class Group {
 			User.countUsersInGroups(null, "ManualGroup", tx);
 
 			tx.commit(null);
+			log.info("PostImport | SUCCEED to manualGroupLinkUsersAuto");
 		}
 		catch(TransactionException e)
 		{
