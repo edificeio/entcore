@@ -147,7 +147,7 @@
     "validate-mail.step1.title": "Vérification de votre adresse mail",
     "validate-mail.step1.hint.force": "La sécurité sur votre plateforme évolue.",
     "validate-mail.step1.hint.adml": "En tant qu’administrateur de votre établissement, vous avez accès à des informations sensibles.",
-    "validate-mail.step1.hint": "Pour améliorer la sécurité de votre compte vous devez vérifier votre adresse mail.",
+    "validate-mail.step1.hint": "Veuillez renseignez votre nouvelle adresse email. Nous allons ensuite vous envoyer un code à cette adresse pour vérifier sa validité.",
     "validate-mail.step1.form.mail": "Email",
     "validate-mail.step1.form.placeholder": "exemple@exemple.com",
     "validate-mail.step1.btn": "Vérifier mon email",
