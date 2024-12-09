@@ -5,6 +5,9 @@ import java.io.FileNotFoundException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 import org.entcore.common.storage.FallbackStorage;
 
@@ -25,8 +28,6 @@ public class S3FallbackStorage implements FallbackStorage {
 
     private final FileSystem fs;
     private final HttpClient httpClient;
-    private final boolean multiBuckets;
-    private final int nbStorageFolder;
     private final String region;
     private final String accessKey;
     private final String secretKey;
@@ -35,10 +36,8 @@ public class S3FallbackStorage implements FallbackStorage {
 
     private static final Logger log = LoggerFactory.getLogger(S3FallbackStorage.class);
 
-    public S3FallbackStorage(Vertx vertx, String host, String name, boolean multiBuckets,
-            int nbStorageFolder, String region, String accessKey, String secretKey) {
-        this.multiBuckets = multiBuckets;
-        this.nbStorageFolder = nbStorageFolder;
+    public S3FallbackStorage(Vertx vertx, String host, String name,
+            String region, String accessKey, String secretKey) {
         this.region = region;
         this.accessKey = accessKey;
         this.secretKey = secretKey;
@@ -57,11 +56,12 @@ public class S3FallbackStorage implements FallbackStorage {
 
     @Override
     public void downloadFile(String file,  String destination, Handler<AsyncResult<String>> handler) {
-        downloadFile(file, destination, 1, 3, handler);
+        downloadFile(file, destination, 0, 3, handler);
     }
 
-    private void downloadFile(String file, String destination, int storageIdx, int retryIndex, Handler<AsyncResult<String>> handler) {
-        final String uri = generateUri(file, storageIdx);
+    private void downloadFile(String file, String destination, int monthDelta, int retryIndex, Handler<AsyncResult<String>> handler) {
+        final String uri = generateUri(file, monthDelta);
+
         HttpClientRequest req = httpClient.get(uri);
         req.setHost(this.host);
         req.handler(resp -> {
@@ -84,12 +84,13 @@ public class S3FallbackStorage implements FallbackStorage {
                     }
                 });
             } else {
-                if (nbStorageFolder > 1 && storageIdx < nbStorageFolder) {
-                    downloadFile(file, destination, storageIdx+1, retryIndex, handler);
-                } else {
-                    if (retryIndex - 1 > 0) {
+                if (resp.statusCode() == 404 && monthDelta + 1 < 2) {
+                    downloadFile(file, destination, monthDelta+1, 3, handler);
+                }
+                else {
+                    if (resp.statusCode() != 404 && retryIndex - 1 > 0) {
                         log.error("S3Fallback error downloading " + file + " (" + resp.statusCode() + "), retryIndex " + retryIndex);
-                        downloadFile(file, destination, storageIdx, retryIndex-1, handler);
+                        downloadFile(file, destination, monthDelta, retryIndex-1, handler);
                     }
                     else {
                         resp.bodyHandler(body -> log.error("S3Fallback error - " + file + " - " + resp.statusCode() + " - " + body.toString().trim()));
@@ -108,25 +109,27 @@ public class S3FallbackStorage implements FallbackStorage {
         }
     }
 
-    private String generateUri(String fileName, int storageIdx) {
+    private String generateUri(String fileName, int monthDelta) {
         String file;
         if (fileName.contains(File.separator)) {
             file = fileName.substring(fileName.lastIndexOf(File.separator) + 1);
         } else {
             file = fileName;
         }
-        final String bucketName;
-        if (multiBuckets) {
-            bucketName = name + "-" + file.substring(file.length() - 2);
-        } else {
-            bucketName = name;
-        }
-        final String storageNb = (nbStorageFolder > 1 && storageIdx > 1) ? "" + storageIdx : "";
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(Calendar.MONTH, monthDelta*-1);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMM");
+        String date = dateFormat.format(calendar.getTime());
+
+        final String bucketName = name + "-" + date;
+
         final int l = file.length();
         if (l < 4) {
             file = "0000".substring(0, 4 - l) + file;
         }
-        return "/" + bucketName + "/storage" + storageNb + "/" + file.substring(l - 2) + "/" + file.substring(l - 4, l - 2) + "/" + file;
+        return "/" + bucketName + "/" + file.substring(l - 2) + "/" + file.substring(l - 4, l - 2) + "/" + file;
     }
 
     @Override
