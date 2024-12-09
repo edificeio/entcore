@@ -41,8 +41,8 @@ export class SmartUserCommunicationComponent extends OdeComponent implements OnI
         super.ngOnInit();
         this.subscriptions.add(this.communicationRulesService.changes()
             .subscribe(rules => {
-                this.userSendingCommunicationRules = rules.sending;
-                this.userReceivingCommunicationRules = rules.receiving;
+                this.userSendingCommunicationRules = rules.sending.filter(rule => rule.sender?.subType!=="BroadcastGroup");
+                this.userReceivingCommunicationRules = rules.receiving.filter(rule => rule.receivers.findIndex(group => group.subType==="BroadcastGroup")==-1);
                 this.changeDetector.markForCheck();
             }));
         this.subscriptions.add(this.route.data.subscribe((data: Data) => {
