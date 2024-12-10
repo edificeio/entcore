@@ -246,5 +246,11 @@
   "explorer.tree.trash": "Trash",
   "explorer.create.folder": "Create folder",
   "explorer.create.folder.name": "Folder's name",
-  "explorer.rename.folder": "Rename folder"
+  "explorer.rename.folder": "Rename folder",
+  "tiptap.toolbar.cantoo.choice": "Cantoo",
+  "tiptap.toolbar.cantoo.speech2text": "Voice dictation",
+  "tiptap.toolbar.cantoo.text2speech": "Read text",
+  "tiptap.toolbar.cantoo.formatText": "Text formatting",
+  "tiptap.cantoo.formatText": "Text formatting",
+  "tiptap.cantoo.close": "Close"
 }
