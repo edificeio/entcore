@@ -30,6 +30,8 @@ import fr.wseduc.webutils.http.BaseController;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.http.filter.AdminFilter;
+import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserUtils;
 import org.entcore.directory.services.ShareBookmarkService;
 
@@ -101,6 +103,46 @@ public class ShareBookmarkController extends BaseController {
 				badRequest(request, "invalid.user");
 			}
 		});
+	}
+
+	@Get("/sharebookmark/:userId/:id")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void getByUserId(HttpServerRequest request) {
+		final String userId = request.params().get("userId");
+		final String id = request.params().get("id");
+
+		if(userId == null || userId.isEmpty()) {
+			badRequest(request, "invalid.user");
+			return;
+		}
+
+		if ("all".equals(id)) {
+			shareBookmarkService.list(userId, arrayResponseHandler(request));
+		} else {
+			shareBookmarkService.get(userId, id, r -> {
+				if (r.isRight()) {
+					final JsonObject res = r.right().getValue();
+					JsonArray members = res.getJsonArray("members");
+					if (members == null || members.isEmpty()) {
+						shareBookmarkService.delete(userId, id, dres -> {
+							if (dres.isLeft()) {
+								log.error("Error deleting sharebookmark " + id + " : " + dres.left().getValue());
+							}
+						});
+						notFound(request, "empty.sharebookmark");
+						return;
+					}
+					res.mergeIn(UserUtils.translateAndGroupVisible(
+							members, I18n.acceptLanguage(request), true)
+					);
+					res.remove("members");
+					renderJson(request, res);
+				} else {
+					leftToResponse(request, r.left());
+				}
+			});
+		}
 	}
 
 	@Delete("/sharebookmark/:id")

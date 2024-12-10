@@ -45,7 +45,6 @@ import org.entcore.common.datavalidation.utils.DataStateUtils;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
-import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.notification.TimelineHelper;
@@ -71,9 +70,9 @@ import javax.xml.bind.Marshaller;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
@@ -81,6 +80,8 @@ import static org.entcore.common.http.response.DefaultResponseHandler.*;
 import static org.entcore.common.user.SessionAttributes.PERSON_ATTRIBUTE;
 
 public class UserController extends BaseController {
+	private static String SORTON_REGEXP = "^(?<order>\\+|\\-)(?<field>firstName|lastName|displayName)$";
+	private static final Pattern SORTON_PATTERN = Pattern.compile(SORTON_REGEXP);
 	static final String MOTTO_RESOURCE_NAME = "motto";
 	static final String MOOD_RESOURCE_NAME = "mood";
 	private UserService userService;
@@ -129,34 +130,88 @@ public class UserController extends BaseController {
 			public void handle(final JsonObject body) {
 				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 					public void handle(UserInfos user) {
-						final  String userId = request.params().get("userId");
-						//User name modification prevention for non-admins.
+						final String userId = request.params().get("userId");
+						//User name and user position modification prevention for non-admins.
 						if(!user.getFunctions().containsKey(DefaultFunctions.SUPER_ADMIN) &&
-								!user.getFunctions().containsKey(DefaultFunctions.ADMIN_LOCAL) &&
-								!user.getFunctions().containsKey(DefaultFunctions.CLASS_ADMIN)){
-							body.remove("lastName");
-							body.remove("firstName");
+								!user.getFunctions().containsKey(DefaultFunctions.ADMIN_LOCAL)){
+							body.remove("positionIds");
+							if (!user.getFunctions().containsKey(DefaultFunctions.CLASS_ADMIN)) {
+								body.remove("lastName");
+								body.remove("firstName");
+							}
 						}
 						final Promise<Either<String, JsonObject>> onUpdateDone = Promise.promise();
 						final Promise<Void> onRemoveSessionAttributeDone = Promise.promise();
-						userService.update(userId, body, e -> onUpdateDone.complete(e));
-						UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> onRemoveSessionAttributeDone.complete());
-						CompositeFuture.join(onUpdateDone.future(), onRemoveSessionAttributeDone.future()).onComplete(compositeResult -> {
-							final Future<Either<String, JsonObject>> futureUpdateDone = onUpdateDone.future();
-							if(futureUpdateDone.succeeded()) {
-								final Either<String, JsonObject> updateDoneResult = futureUpdateDone.result();
-								recreateSession(user, userId, request, eb).onComplete(e -> {
-									notEmptyResponseHandler(request).handle(updateDoneResult);
-								});
-							} else {
-								final JsonObject error = new JsonObject().put("error", futureUpdateDone.cause().getMessage());
-								Renders.renderJson(request, error, 400);
-							}
+
+						// Retrieving user data in order to send notifications in case of changes of the email or mobile phone number.
+						final Promise<JsonObject> getUserPromise = Promise.promise();
+						if (body.containsKey("email") || body.containsKey("mobile")) {
+							userService.get(userId, false, false, ev -> {
+								if (ev.isRight() && ev.right().getValue() != null && !ev.right().getValue().isEmpty()) {
+										getUserPromise.complete(ev.right().getValue());
+								} else {
+									getUserPromise.complete(null);
+								}
+							});
+						} else {
+							getUserPromise.complete(null);
+						}
+
+						getUserPromise.future().onComplete(userBeforeUpdate -> {
+							userService.update(userId, body, user, onUpdateDone::complete);
+							UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> onRemoveSessionAttributeDone.complete());
+
+							CompositeFuture.join(onUpdateDone.future(), onRemoveSessionAttributeDone.future())
+									.onComplete(compositeResult -> {
+										final Future<Either<String, JsonObject>> futureUpdateDone = onUpdateDone.future();
+										if (futureUpdateDone.succeeded()) {
+											final Either<String, JsonObject> updateDoneResult = futureUpdateDone.result();
+											recreateSession(user, userId, request, eb).onComplete(e -> {
+												notEmptyResponseHandler(request).handle(updateDoneResult);
+											});
+
+											if (userBeforeUpdate != null && userBeforeUpdate.result() != null) {
+												sendEmailOrMobileUpdateNotifications(request, userBeforeUpdate.result(), body);
+											}
+										} else {
+											final JsonObject error = new JsonObject().put("error", futureUpdateDone.cause().getMessage());
+											Renders.renderJson(request, error, 400);
+										}
+									});
 						});
 					}
 				});
 			}
 		});
+	}
+
+	/*
+		Send update notifications if email or mobile phone number has been updated
+	 */
+	private void sendEmailOrMobileUpdateNotifications(final HttpServerRequest request, final JsonObject user, final JsonObject submittedValues) {
+		final UserInfos userInfos = new UserInfos();
+		userInfos.setFirstName(user.getString("firstName"));
+		userInfos.setLastName(user.getString("lastName"));
+		userInfos.setEmail(user.getString("email"));
+		userInfos.setMobile(user.getString("mobile"));
+
+		String oldEmail = user.getString("email");
+		String newEmail = submittedValues.getString("email");
+		if (!StringUtils.isEmpty(newEmail) && !StringUtils.isEmpty(oldEmail) && !oldEmail.equalsIgnoreCase(newEmail)) {
+			final JsonObject emailState = new JsonObject()
+					.put("valid", newEmail);
+			EmailValidation.sendWarningEmail(request, userInfos, emailState)
+					.onFailure(e -> log.error("Failed to send email update notification", e));
+		}
+
+		String oldMobile = user.getString("mobile");
+		String newMobile = submittedValues.getString("mobile");
+		if (!StringUtils.isEmpty(newMobile) && !StringUtils.isEmpty(oldMobile) && !oldMobile.equalsIgnoreCase(newMobile)) {
+			final JsonObject mobileState = new JsonObject()
+					.put("valid", newMobile);
+			MobileValidation.sendWarning(request, userInfos, mobileState)
+					.onFailure(e -> log.error("Failed to send mobile update notification", e));
+		}
 	}
 
 	@Put("/user/login/:userId")
@@ -393,10 +448,23 @@ public class UserController extends BaseController {
 		final String searchType = request.params().get("searchType");
 		final String searchTerm = request.params().get("searchTerm");
 
+		String sortingField = null;
+		String sortingOrder = null;
+		if(sortOn!=null) {
+			Matcher matcher = SORTON_PATTERN.matcher(sortOn);
+			if(!matcher.find()) {
+				badRequest(request);
+				return;
+			}
+			sortingField = matcher.group("field");
+			sortingOrder = matcher.group("order").charAt(0)=='-' ? "DESC" : "ASC";
+		}
+
 		userService.listIsolated(
 				structureId,
 				expectedProfile,
-				sortOn,
+				sortingField,
+				sortingOrder,
 				fromIndexInt,
 				limitResultInt,
 				searchType,
@@ -523,7 +591,6 @@ public class UserController extends BaseController {
 	@Post("/user/function/:userId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AddFunctionFilter.class)
-	@IgnoreCsrf
 	@MfaProtected()
 	public void addFunction(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
@@ -552,7 +619,6 @@ public class UserController extends BaseController {
 	@Post("/:structure/user/:userId/headteacher")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructures.class)
-	@IgnoreCsrf
 	@MfaProtected()
 	public void addHeadTeacherManual(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
@@ -587,7 +653,6 @@ public class UserController extends BaseController {
 	@Post("/:structure/user/:userId/direction")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdmlOfStructures.class)
-	@IgnoreCsrf
 	@MfaProtected()
 	public void addDirectionManual(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
@@ -967,7 +1032,7 @@ public class UserController extends BaseController {
 	public void getAttachmentSchool(HttpServerRequest request) {
 		String userId = request.params().get("userId");
 		JsonArray structuresToExclude = config.getJsonArray("library-structures-blacklist", new JsonArray());
-		userService.getAttachmentSchool(userId, structuresToExclude, notEmptyResponseHandler(request));
+		userService.getAttachmentSchool(userId, structuresToExclude, defaultResponseHandler(request));
 	}
 
 	@Get("/user/mobilestate")
@@ -994,22 +1059,20 @@ public class UserController extends BaseController {
 	@MfaProtected()
 	public void putMobileState(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, pathPrefix + "putMobileState", payload -> {
-			UserUtils.getUserInfos(eb, request, infos -> {
-				if (infos != null) {
-					// Initialize a new mobile phone number validation flow
-					MobileValidation.setPending(eb, infos.getUserId(), payload.getString("mobile"))
+			UserUtils
+					.getAuthenticatedUserInfos(eb, request)
+					.onSuccess(userInfos -> {
+						// Initialize a new mobile phone number validation flow
+						MobileValidation.setPending(eb, userInfos.getUserId(), payload.getString("mobile"))
 							.compose( pendingMobileState -> {
 								// Send the validation email to the user
-								return MobileValidation.sendSMS(eb, request, infos, pendingMobileState);
+								return MobileValidation.sendSMS(eb, request, userInfos, pendingMobileState);
 							})
 							.onSuccess(e -> ok(request))
 							.onFailure( e -> {
 								renderError( request, new JsonObject().put("error", e.getMessage()) );
 							});
-				} else {
-					notFound(request, "user.not.found");
-				}
-			});
+					});
 		});
 	}
 
@@ -1018,27 +1081,31 @@ public class UserController extends BaseController {
 	@MfaProtected()
 	public void postMobileState(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, pathPrefix + "postMobileState", payload -> {
-			UserUtils.getUserInfos(eb, request, infos -> {
-				if (infos != null) {
-					// Try a validation code
-					final String userId = infos.getUserId();
-					MobileValidation.tryValidate(eb, UserUtils.getSessionIdOrTokenId(request).get(), userId, payload.getString("key"))
-							.onSuccess( mobileState -> {
-								// Mobile is validated and updated => session has evolved and must be recreated.
-								UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> {
-									recreateSession(infos, userId, request, eb).onComplete(complete ->
-											renderJson( request, mobileState )
-									);
+			UserUtils
+					.getAuthenticatedUserInfos(eb, request)
+					.onSuccess(userInfos -> {
+						// Try a validation code
+						final String userId = userInfos.getUserId();
+						MobileValidation.tryValidate(eb, UserUtils.getSessionIdOrTokenId(request).get(), userId, payload.getString("key"))
+								.onSuccess( mobileState -> {
+									// Send the warning email & sms to the user
+									if ("valid".equalsIgnoreCase(mobileState.getString("state")) && !StringUtils.isEmpty(userInfos.getMobile())) {
+										MobileValidation.sendWarning(request, userInfos, mobileState)
+												.onFailure(e -> log.error("Failed to send mobile update alert", e));
+									}
+
+									// Mobile is validated and updated => session has evolved and must be recreated.
+									UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> {
+										recreateSession(userInfos, userId, request, eb).onComplete(complete ->
+												renderJson( request, mobileState )
+										);
+									});
+									CookieHelper.set("userbookVersion", System.currentTimeMillis()+"", request);
+								})
+								.onFailure( e -> {
+									renderError( request, new JsonObject().put("error", e.getMessage()) );
 								});
-								CookieHelper.set("userbookVersion", System.currentTimeMillis()+"", request);
-							})
-							.onFailure( e -> {
-								renderError( request, new JsonObject().put("error", e.getMessage()) );
-							});
-				} else {
-					notFound(request, "user.not.found");
-				}
-			});
+					});
 		});
 	}
 
@@ -1066,22 +1133,21 @@ public class UserController extends BaseController {
 	@MfaProtected()
 	public void putMailState(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, pathPrefix + "putMailState", payload -> {
-			UserUtils.getUserInfos(eb, request, infos -> {
-				if (infos != null) {
-					// Initialize a new mail validation flow
-					EmailValidation.setPending(eb, infos.getUserId(), payload.getString("email"))
-							.compose( pendingEmailState -> {
-								// Send the validation email to the user
-								return EmailValidation.sendEmail(eb, request, infos, pendingEmailState);
-							})
-							.onSuccess(e -> ok(request))
-							.onFailure( e -> {
-								renderError( request, new JsonObject().put("error", e.getMessage()) );
-							});
-				} else {
-					notFound(request, "user.not.found");
-				}
-			});
+			UserUtils
+					.getAuthenticatedUserInfos(eb, request)
+					.onSuccess(userInfos -> {
+						// Initialize a new mail validation flow
+						EmailValidation
+								.setPending(eb, userInfos.getUserId(), payload.getString("email"))
+								.compose(pendingEmailState -> {
+									// Send the validation email to the user
+									return EmailValidation.sendEmail(eb, request, userInfos, pendingEmailState);
+								})
+								.onSuccess(e -> ok(request))
+								.onFailure(e -> {
+									renderError(request, new JsonObject().put("error", e.getMessage()));
+								});
+					});
 		});
 	}
 
@@ -1090,25 +1156,28 @@ public class UserController extends BaseController {
 	@MfaProtected()
 	public void postMailState(final HttpServerRequest request) {
 		RequestUtils.bodyToJson(request, pathPrefix + "postMailState", payload -> {
-			UserUtils.getUserInfos(eb, request, infos -> {
-				if (infos != null) {
-					// Try a validation code
-					final String userId = infos.getUserId();
-					EmailValidation.tryValidate(eb, userId, payload.getString("key"))
-							.onSuccess( emailState -> {
-
-								UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> {
-									recreateSession(infos, userId, request, eb)
-											.onComplete(result -> renderJson( request, emailState ));
-								});
-							})
-							.onFailure( e -> {
-								renderError( request, new JsonObject().put("error", e.getMessage()) );
+			UserUtils
+					.getAuthenticatedUserInfos(eb, request)
+							.onSuccess(userInfos -> {
+								// Try a validation code
+								final String userId = userInfos.getUserId();
+								EmailValidation.tryValidate(eb, userId, payload.getString("key"))
+										.onSuccess(emailState -> {
+											if ("valid".equalsIgnoreCase(emailState.getString("state")) && !StringUtils.isEmpty(userInfos.getEmail())) {
+												EmailValidation.sendWarningEmail(request, userInfos, emailState)
+														.onFailure(e -> {
+															log.error("Failed to send email update alert", e);
+														});
+											}
+											UserUtils.removeSessionAttribute(eb, userId, PERSON_ATTRIBUTE, e -> {
+												recreateSession(userInfos, userId, request, eb)
+														.onComplete(result -> renderJson(request, emailState));
+											});
+										})
+										.onFailure(e -> {
+											renderError(request, new JsonObject().put("error", e.getMessage()));
+										});
 							});
-				} else {
-					notFound(request, "user.not.found");
-				}
-			});
 		});
 	}
 

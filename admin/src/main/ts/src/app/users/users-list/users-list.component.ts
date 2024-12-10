@@ -64,14 +64,18 @@ export class UsersListComponent extends OdeComponent {
         this.listFilters.setClassesComboModel(structure.classes);
         this.listFilters.setSourcesComboModel(structure.userSources);
 
-        const filterAafFunctions: Array<Array<string>> = [];
+        const filterAafFunctions: Array<string> = [];
         structure.aafFunctions.forEach(structureAafFunctions => {
             structureAafFunctions.forEach(structureAafFunction => {
-                if (!includes(filterAafFunctions, [structureAafFunction[2], structureAafFunction[4]])) {
-                    filterAafFunctions.push([structureAafFunction[2], structureAafFunction[4]]);
+                // WB-3416 Only keep "enseignement" groups (a.k.a. DisciplineGroup)
+                if ("ENS" == structureAafFunction[1] &&
+                    !includes(filterAafFunctions, [structureAafFunction[2], structureAafFunction[4]])
+                ) {
+                    filterAafFunctions.push(structureAafFunction[2] +', ' + structureAafFunction[4]);
                 }
             });
         });
+        this.listFilters.setPositionComboModel(structure.userPositions);
         this.listFilters.setFunctionsComboModel(filterAafFunctions);
 
         this.listFilters.setProfilesComboModel(structure.profiles.map(p => p.name));

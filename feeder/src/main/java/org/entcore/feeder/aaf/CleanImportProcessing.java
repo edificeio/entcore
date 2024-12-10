@@ -55,6 +55,7 @@ public class CleanImportProcessing extends BaseImportProcessing {
 
 		importer.addStructureNameInGroups(getAcademyPrefix());
 		importer.removeOldCommunicationRules(getAcademyPrefix());
+		importer.removeUnusedAAFPositions();
 	}
 
 	@Override

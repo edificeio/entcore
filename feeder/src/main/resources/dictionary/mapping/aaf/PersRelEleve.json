@@ -3,6 +3,7 @@
 	"ENTPersonDateNaissance" : { "attribute" : "birthDate", "type" : "string" },
 	"sn" : { "attribute" : "lastName", "type" : "string" },
 	"givenName" : { "attribute" : "firstName", "type" : "string" },
+	"ENTPersonAutresPrenoms" : { "attribute" : "otherNames", "type" : "array-string" },
 	"ENTPersonNomPatro" : { "attribute" : "surname", "type" : "string" },
 	"personalTitle" : { "attribute" : "title", "type" : "string" },
 	"homePhone" : { "attribute" : "homePhone", "type" : "string" },

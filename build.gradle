@@ -211,6 +211,11 @@ subprojects {
         mavenJava(MavenPublication) {
           from components.java
           groupId "${modowner}"
+          if ("tests".equals(project.name)) {
+            artifact("build/libs/${modname}-$version-it.jar") {
+              classifier "it"
+            }
+          }
         }
       }
     }
@@ -245,6 +250,9 @@ project(':common') {
     compile "io.vertx:vertx-pg-client:$vertxVersion"
     compile "com.ongres.scram:client:$scramVersion"
     compile "org.mongodb:mongodb-driver-async:$mongoVersion"
+    compile ("io.vertx:vertx-mongo-client:$vertxVersion") {
+      exclude group: 'org.mongodb', module: 'mongodb-driver-async'
+    }
     compile ("io.vertx:vertx-mongo-client:$vertxVersion") {
       exclude group: 'org.mongodb', module: 'mongodb-driver-async'
     }
@@ -286,7 +294,7 @@ project(':auth') {
     compile "fr.wseduc:vertx-cron-timer:$vertxCronTimer"
     compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
-    compile "jp.eisbahn:oauth2-server:1.3.1"
+    compile "jp.eisbahn:oauth2-server:$oAuth2ServerVersion"
     compile "org.opensaml:opensaml:2.6.4"
     compile "org.slf4j:slf4j-api:1.7.12"
     compile "joda-time:joda-time:$jodaTimeVersion"
@@ -310,6 +318,7 @@ project(':directory') {
     compile "fr.wseduc:web-utils:$webUtilsVersion"
     compile "fr.wseduc:mongodb-helper:$mongodbHelperVersion"
     compile "joda-time:joda-time:$jodaTimeVersion"
+    compile "com.opencsv:opencsv:$opencsvVersion"
     testCompile project(':test')
   }
 }
@@ -424,8 +433,32 @@ project(':tests') {
     compile 'net.minidev:json-smart:1.1.1'
   }
 
-}
+  task itJar(type: Jar) {
+    classifier = 'it'
+    baseName = "${modname}"
+    from 'it'
 
+
+    // Add contents of src/test/js to the JAR file
+    from('src/test/js') {
+      into 'js' // Place the files under the 'js' directory in the JAR
+    }
+
+    // Add contents of src/test/resources to the JAR file
+    from('src/test/resources') {
+      into 'resources' // Place the files under the 'resources' directory in the JAR
+    }
+
+    // Optionally specify the destination directory for the JAR file
+    destinationDir = file("$buildDir/libs")
+  }
+
+  artifacts {
+    archives itJar
+    archives shadowJar
+  }
+
+}
 /*
 task runEnt(type:Exec, dependsOn: subprojects.copyMod) {
   workingDir '.'

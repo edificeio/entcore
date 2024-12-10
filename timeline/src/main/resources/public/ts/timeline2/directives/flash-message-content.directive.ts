@@ -1,4 +1,4 @@
-import { IAttributes, IController, IDirective, IScope, ICompileService } from "angular";
+import { IAttributes, ICompileService, IController, IDirective, IScope } from "angular";
 import { NgHelperService, RichContentService } from "ode-ngjs-front";
 import { IFlashMessageModel } from "ode-ts-client";
 import { FlashMsgController } from "./flash-messages.directive";
@@ -15,31 +15,34 @@ interface Scope extends IScope {
 }
 
 /* Directive */
-class Directive implements IDirective<Scope,JQLite,IAttributes,IController[]> {
-	constructor( 
-		private $compile:ICompileService,
+class Directive implements IDirective<Scope, JQLite, IAttributes, IController[]> {
+	constructor(
+		private $compile: ICompileService,
 		private $sanitize: any,
-		private richContentSvc:RichContentService, 
-		private helperSvc:NgHelperService ) {
+		private richContentSvc: RichContentService,
+		private helperSvc: NgHelperService) {
 	}
 
-	restrict= 'A';
-	scope= {
+	restrict = 'A';
+	scope = {
 		message: '=flashMessageContent'
 	};
-	require= ["^flashMessages"];
+	require = ["^flashMessages"];
 
-    link(scope:Scope, elem:JQLite, attr:IAttributes, controllers?:IController[]): void {
+	link(scope: Scope, elem: JQLite, attr: IAttributes, controllers?: IController[]): void {
 		const isExpandableClass = "flash-content-is-expandable";
-		const maxHeightText = 88;
+		const maxHeightText = 44; // Magic value here ? From 88 -> 44 to have only two lines of text befor ellipsis
 		const parentCtrl = controllers[0] as FlashMsgController;
-		if( !parentCtrl || !scope.message ) return;
+		if (!parentCtrl || !scope.message) return;
 
-		let messageContent = scope.message.contents[parentCtrl.currentLanguage] ?? '';
+		let messageContent = (scope.message.contents[parentCtrl.currentLanguage] ?? '');
+		messageContent = messageContent.replaceAll(/(<div>[\s\u200B]*<\/div>){2,}/g, '<div>\u200B</div>'); // This code merges consecutive empty lines from adminV1 editor
+		messageContent = messageContent.replaceAll(/(<div>([\s\u200B]|<br\/?>)*<\/div>)$/g, ''); // This code remove last empty line from adminV1 editor
+		messageContent = messageContent.replaceAll(/(<p><br><\/p>)+/g, ''); // This code merges consecutive empty lines from adminV2 editor
 		this.richContentSvc.apply(this.$sanitize(messageContent), elem, scope);
 
 		// If needed, limit the height of displayed text, and add a button "See more" which toggles the full message display back and forth.
-		if( this.helperSvc ) {
+		if (this.helperSvc) {
 			scope.isExpandable = true;
 			scope.isFullyExpandable = () => scope.isExpandable;
 
@@ -51,33 +54,26 @@ class Directive implements IDirective<Scope,JQLite,IAttributes,IController[]> {
 					</span>
 				</div>
 			`);
-			
-			const initialHTML = elem.html();
-			const dummyHTML = () => elem.find("p").each(function () {
-				$(this).replaceWith($(this).html()+'<br>');
-			});
+
+			console.log(scope.message.color, elem.height(), maxHeightText);
 
 			if (elem.height() > maxHeightText) {
-
-				dummyHTML();
 
 				elem.parent().addClass("can-be-truncated");
 				scope.toggleContent = function () {
 					if (scope.isFullyExpandable()) {
 						elem.parent().removeClass(isExpandableClass);
 						scope.isExpandable = false;
-						dummyHTML();
 					} else {
 						elem.parent().addClass(isExpandableClass);
 						scope.isExpandable = true;
-						elem.html(initialHTML);
 					}
 				};
-				elem.parent().append(this.$compile(moreContainer)(scope));
+				elem.parent().parent().append(this.$compile(moreContainer)(scope));
 				scope.toggleContent();
 			}
 		}
-    }
+	}
 }
 
 /**
@@ -86,7 +82,7 @@ class Directive implements IDirective<Scope,JQLite,IAttributes,IController[]> {
  * Usage:
  *   &lt;flash-message-content>The content to display which can be very very long</flash-message-content&gt;
  */
-export function DirectiveFactory($compile:ICompileService, $sanitize: any, richContentSvc:RichContentService, helperSvc:NgHelperService) {
+export function DirectiveFactory($compile: ICompileService, $sanitize: any, richContentSvc: RichContentService, helperSvc: NgHelperService) {
 	return new Directive($compile, $sanitize, richContentSvc, helperSvc);
 }
 DirectiveFactory.$inject = ["$compile", "$sanitize", "odeRichContentService", "odeNgHelperService"];

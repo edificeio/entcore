@@ -88,11 +88,13 @@ public class User {
 		private EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Feeder.class.getSimpleName());
 		private static final int LIMIT = 1000;
 		private int page;
+		private final long deleteDelay;
 
-		public DeleteTask(long delay, EventBus eb, Vertx vertx) {
+		public DeleteTask(long delay, EventBus eb, Vertx vertx, long deleteDelay) {
 			this.delay = delay;
 			this.eb = eb;
 			this.vertx = vertx;
+			this.deleteDelay = deleteDelay;
 		}
 
 		@Override
@@ -128,7 +130,7 @@ public class User {
 											if ("ok".equals(m2.body().getString("status"))) {
 												publishDeleteUsers(eb, eventStore, r);
 												if (r.size() == LIMIT) {
-													vertx.setTimer(LIMIT * 100l, new Handler<Long>() {
+													vertx.setTimer(LIMIT * deleteDelay, new Handler<Long>() {
 														@Override
 														public void handle(Long event) {
 															log.info("Delete page " + ++page);
@@ -326,7 +328,7 @@ public class User {
 						nullIdUserNodes.add(nodeId);
 					else
 					{
-						backupRelationship(userId, tx);
+						backupRelationship(userId, false, tx);
 						preDelete(userId, tx);
 					}
 				}
@@ -359,26 +361,51 @@ public class User {
 		}
 
 	}
+	public static void backupRelationship(final String userId,
+																				final TransactionHelper transaction) {
+		backupRelationship(userId, true, transaction);
+	}
 
-	public static void backupRelationship(String userId, TransactionHelper transaction) {
+	/**
+	 * Adds to the current transaction the queries to create a backup node which will save the id of :
+	 * - the groups the user was in
+	 * - the groups the user could communicate with (incoming and outoing)
+	 * - the direct communication links
+	 * - the relationships to other users
+	 * - the structures in which they were
+	 * @param userId id of the user to backup
+	 * @param backupAdmlGroups {@code true} if we want to backup ADML related links. If set to {@code false} (for densely
+	 *                         connected users) it won't backup ADML relationships to prevent the fields IN_OUTGOING and
+	 *                         COMMUNIQUE_* from reaching the maximum size of an indexed array of strings.
+	 * @param transaction Transaction in which these actions should be executed
+	 */
+	public static void backupRelationship(final String userId,
+																				final boolean backupAdmlGroups,
+																				final TransactionHelper transaction) {
 		JsonObject params = new JsonObject().put("userId", userId);
+		final String filterGroupsToBeBackedUp;
+		if(backupAdmlGroups) {
+			filterGroupsToBeBackedUp = "";
+		} else {
+			filterGroupsToBeBackedUp = " AND NOT n.filter ='AdminLocal' ";
+		}
 		String query =
 				"MATCH (u:User { id : {userId}})-[r:IN]->(n) " +
-				"WHERE HAS(n.id) AND NOT(n:DeleteGroup) " +
+				"WHERE HAS(n.id) AND NOT(n:DeleteGroup) " + filterGroupsToBeBackedUp +
 				"WITH u, COLLECT(n.id) as ids " +
 				"MERGE u-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
 				"SET b.IN_OUTGOING = coalesce(b.IN_OUTGOING, []) + ids ";
 		transaction.add(query, params);
 		query =
 				"MATCH (u:User { id : {userId}})-[r:COMMUNIQUE]->(n) " +
-				"WHERE HAS(n.id) AND NOT(n:DeleteGroup) " +
+				"WHERE HAS(n.id) AND NOT(n:DeleteGroup) " + filterGroupsToBeBackedUp +
 				"WITH u, COLLECT(n.id) as ids " +
 				"MERGE u-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
 				"SET b.COMMUNIQUE_OUTGOING = ids ";
 		transaction.add(query, params);
 		query =
 				"MATCH (u:User { id : {userId}})<-[r:COMMUNIQUE]-(n) " +
-				"WHERE HAS(n.id) AND NOT(n:DeleteGroup) " +
+				"WHERE HAS(n.id) AND NOT(n:DeleteGroup) " + filterGroupsToBeBackedUp +
 				"WITH u, COLLECT(n.id) as ids " +
 				"MERGE u-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
 				"SET b.COMMUNIQUE_INCOMING = ids ";
@@ -457,6 +484,7 @@ public class User {
 			"MATCH (n:User) WHERE n.id IN b.RELATED_INCOMING MERGE (u)<-[:RELATED]-(n)";
 		transaction.add(query, params);
 	}
+
 
 	public static void preDelete(String userId, TransactionHelper transaction) {
 		JsonObject params = new JsonObject().put("userId", userId);
@@ -547,10 +575,9 @@ public class User {
 				.put("limit", limit);
 		String query =
 				"MATCH (:DeleteGroup)<-[:IN]-(u:User) " +
-				"WHERE HAS(u.deleteDate) AND u.deleteDate < {date} " +
+				"WHERE HAS(u.deleteDate) AND u.deleteDate < {date} WITH DISTINCT u LIMIT {limit} " +
 				"OPTIONAL MATCH (u)-[:HAS_RELATIONSHIPS]->(b:Backup) " +
-				 GET_DELETE_OPTIONS +
-				"LIMIT {limit} ";
+				 GET_DELETE_OPTIONS;
 		transactionHelper.add(query, params);
 	}
 
@@ -956,6 +983,7 @@ public class User {
 						tryActivateUser(vertx, emailSender, forged, (JsonObject) o);
 					}
 				}
+				log.info("PostImport | SUCCEED to activeUserFromOldPlatform");
 			} else {
 				log.error("Error find user old platform : " + m.body().getString("message"));
 			}
@@ -1113,5 +1141,4 @@ public class User {
 			}
 		});
 	}
-
 }

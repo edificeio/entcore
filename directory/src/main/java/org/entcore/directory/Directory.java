@@ -39,6 +39,8 @@ import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.storage.impl.FileStorage;
 import org.entcore.common.storage.impl.MongoDBApplicationStorage;
 import org.entcore.common.user.RepositoryHandler;
+import org.entcore.common.user.position.UserPositionService;
+import org.entcore.common.user.position.impl.DefaultUserPositionService;
 import org.entcore.directory.controllers.*;
 import org.entcore.directory.security.DirectoryResourcesProvider;
 import org.entcore.directory.security.UserbookCsrfFilter;
@@ -89,6 +91,12 @@ public class Directory extends BaseServer {
 		SchoolService schoolService = new DefaultSchoolService(eb).setListUserMode(config.getString("listUserMode", "multi"));
 		GroupService groupService = new DefaultGroupService(eb);
 		SubjectService subjectService = new DefaultSubjectService(eb);
+		final JsonObject emptyJsonObject = new JsonObject();
+		UserPositionService userPositionService = new DefaultUserPositionService(eb, config
+			.getJsonObject("publicConf", emptyJsonObject)
+			.getJsonObject("userPosition", emptyJsonObject)
+			.getBoolean("restrictCRUDToADMC", false)
+		);
 		ConversationNotification conversationNotification = new ConversationNotification(vertx, eb, config);
 
 		DirectoryController directoryController = new DirectoryController();
@@ -104,6 +112,7 @@ public class Directory extends BaseServer {
 		UserBookController userBookController = new UserBookController();
 		userBookController.setSchoolService(schoolService);
 		userBookController.setUserBookService(userBookService);
+		userBookController.setUserPositionService(userPositionService);
 		userBookController.setConversationNotification(conversationNotification);
 		addController(userBookController);
 
@@ -143,6 +152,10 @@ public class Directory extends BaseServer {
 		importController.setSchoolService(schoolService);
 		addController(importController);
 
+		MassMessagingController massMessagingController = new MassMessagingController();
+		massMessagingController.setMassMesssagingService(new DefaultMassMessagingService(vertx, eb));
+		addController(massMessagingController);
+
 		TimetableController timetableController = new TimetableController();
 		timetableController.setTimetableService(new DefaultTimetableService(eb));
 		addController(timetableController);
@@ -160,6 +173,9 @@ public class Directory extends BaseServer {
 		addController(subjectController);
 
         addController(new CalendarController());
+
+		UserPositionController userPositionController = new UserPositionController(userPositionService);
+		addController(userPositionController);
 
         vertx.eventBus().localConsumer("user.repository",
                 new RepositoryHandler(new UserbookRepositoryEvents(userBookService), eb));

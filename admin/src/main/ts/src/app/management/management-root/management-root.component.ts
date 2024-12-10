@@ -9,6 +9,7 @@ import {CalendarService} from '../calendar/calendar.service';
 import {ImportEDTReportsService} from '../import-edt/import-edt-reports.service';
 import { Session } from 'src/app/core/store/mappings/session';
 import { SessionModel } from 'src/app/core/store/models/session.model';
+import { UserPositionService } from 'src/app/core/services/user-position.service';
 
 @Component({
     selector: 'ode-management-root',
@@ -25,7 +26,9 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
         { label: 'management.calendar', view: 'calendar', active: 'calendar', right: "fr.openent.DisplayController|view"},
         { label: 'management.zimbra.tab', view: 'zimbra', active: 'zimbra', right: "fr.openent.zimbra.controllers.ZimbraController|view"},
         { label: 'management.subjects.tab', view: 'subjects/create', active: 'subjects', right: "fr.openent.DisplayController|view"},
-        { label: 'management.edt.tab', view: 'import-edt', active: 'import-edt', right: "fr.cgi.edt.controllers.EdtController|view" }
+        { label: 'management.edt.tab', view: 'import-edt', active: 'import-edt', right: "fr.cgi.edt.controllers.EdtController|view" },
+        { label: 'management.structure.gar.tab', view: 'gar', active: 'gar'},
+        { label: "management.structure.user-position.tab", view: "positions", active: "positions" },
     ];
 
     private structure: StructureModel;
@@ -39,7 +42,8 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
     private displayCalendar: boolean;
 
     constructor(injector: Injector, private zimbraService: ZimbraService, private subjectsService: SubjectsService,
-                private calendarService: CalendarService, private importEDTReportsService: ImportEDTReportsService) {
+                private calendarService: CalendarService, private importEDTReportsService: ImportEDTReportsService,
+                private userPositionService: UserPositionService) {
         super(injector);
     }
 
@@ -49,6 +53,8 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
         this.subjectsTabEnable();
         this.edtTabEnable();
         this.calendarTabEnable();
+        this.userPositionsTabEnable();
+        this.tabEnable("gar", false);
         this.changeDetector.markForCheck();
         // Watch selected structure
         this.subscriptions.add(routing.observe(this.route, 'data').subscribe((data: Data) => {
@@ -111,6 +117,13 @@ export class ManagementRootComponent extends OdeComponent implements OnInit, OnD
         this.calendarService.getCalendarConfKey().subscribe((conf) => {
             this.displayCalendar = conf.displayCalendar;
             this.tabEnable("calendar", this.displayCalendar);
+        });
+    }
+
+    userPositionsTabEnable(): void {
+        /* Remove UserPosition tab if the config restricts its use */
+        this.userPositionService.isTabEnabled().subscribe(enabled => {
+            this.tabEnable("positions", enabled);
         });
     }
 
