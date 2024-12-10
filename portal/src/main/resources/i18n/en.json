@@ -247,5 +247,12 @@
   "explorer.create.folder": "Create folder",
   "explorer.create.folder.name": "Folder's name",
   "explorer.rename.folder": "Rename folder",
-  "nabook": "Nabook"
+  "nabook": "Nabook",
+  "tiptap.toolbar.cantoo.choice": "Cantoo",
+  "tiptap.toolbar.cantoo.speech2text": "Voice dictation",
+  "tiptap.toolbar.cantoo.text2speech": "Read text",
+  "tiptap.toolbar.cantoo.formatText": "Text formatting",
+  "tiptap.toolbar.cantoo.formatText.show.on.right": "Display on the right",
+  "tiptap.toolbar.cantoo.formatText.show.on.bottom": "Display on the bottom",
+  "tiptap.toolbar.cantoo.settings": "Settings"
 }
