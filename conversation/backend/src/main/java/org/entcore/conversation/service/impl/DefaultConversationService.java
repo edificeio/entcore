@@ -795,6 +795,11 @@ public class DefaultConversationService implements ConversationService {
 	}
 
 	@Override
+	public void getFolderTree(UserInfos user, int depth, Optional<String> parentId, Handler<Either<String, JsonArray>> result) {
+		result.handle(new Either.Left("not.implemented"));
+	}
+
+	@Override
 	public void listFolders(String parentId, UserInfos user, Handler<Either<String, JsonArray>> result) {
 		if(validationError(user, result)) return;
 

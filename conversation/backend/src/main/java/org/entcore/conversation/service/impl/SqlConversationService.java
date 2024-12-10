@@ -19,7 +19,9 @@
 
 package org.entcore.conversation.service.impl;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
+
 import static org.entcore.common.user.UserUtils.findVisibles;
 
 import java.util.ArrayList;
@@ -27,8 +29,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import io.vertx.core.DeploymentOptions;
 import io.vertx.core.eventbus.DeliveryOptions;
+
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.sql.SqlStatementsBuilder;
@@ -39,6 +41,8 @@ import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.conversation.Conversation;
 import org.entcore.conversation.service.ConversationService;
+import org.entcore.conversation.util.FolderUtil;
+
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
@@ -49,6 +53,8 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.Either.Right;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 
 public class SqlConversationService implements ConversationService{
 	public static final int DEFAULT_SENDTIMEOUT = 15 * 60 * 1000;
@@ -858,6 +864,80 @@ public class SqlConversationService implements ConversationService{
 			.add(user.getUserId());
 
 		sql.prepared(query, values, SqlResult.validUniqueResultHandler(result));
+	}
+
+	/**
+	 * @param user
+	 * @param depth requested levels of results (when parentId is non-present)
+	 * @param parentId When present, depth is limited to 1
+	 * @param result
+	 */
+	@Override
+	public void getFolderTree(final UserInfos user, int depth, final Optional<String> parentId, final Handler<Either<String, JsonArray>> result) {
+		if(validationError(user, result, (0<depth && depth<=MAX_FOLDERS_LEVEL) ? "ok":(String)null))
+			return;
+
+		final StringBuilder query = new StringBuilder()
+		.append("WITH sub AS (")
+		.append(" SELECT COUNT(um.message_id) as nb_messages, COALESCE(SUM(CASE WHEN um.unread = TRUE THEN 1 ELSE 0 END), 0) as nb_unread, um.folder_id")
+		.append(" FROM ").append(userMessageTable).append(" um ")
+		.append(" INNER JOIN ").append(messageTable).append(" m ON (um.message_id = m.id AND m.state='SENT')")
+		.append(" WHERE um.folder_id IS NOT NULL AND um.trashed = FALSE AND um.user_id = ? ")
+		.append(" GROUP BY um.folder_id")
+		.append(") ")
+		.append(" SELECT f.id, f.parent_id, f.name, f.depth")
+		.append("   ,COALESCE(sub.nb_messages,0) as \"nbMessages\"")
+		.append("   ,COALESCE(sub.nb_unread,0) as \"nbUnread\"")
+		.append(" FROM ").append(folderTable).append(" AS f")
+		.append(" LEFT JOIN sub ON (f.id=sub.folder_id)")
+		.append(" WHERE f.user_id = ?")
+		;
+		final JsonArray values = new JsonArray()
+		.add(user.getUserId())
+		.add(user.getUserId());
+
+		// Apply parentId / depth filters
+		if(parentId.isPresent()) {
+			// Limit depth to subfolders of this parent folder.
+			query.append(" AND f.parent_id = ?");
+			values.add(parentId.get());
+			depth = 1;
+		} else {
+			query.append(" AND ? <= f.depth AND f.depth <= ?");
+			values.add(1).add(depth);
+		}
+
+		// When depth is 1, the resulting list contains the tree leaves.
+		sql.prepared(query.toString(), values, SqlResult.validResultHandler(depth<2 ? result : either->{
+			// More process is only needed when depth is greater than 1.
+			if( either.isLeft() ) {
+				result.handle(either);
+				return;
+			}
+			final JsonArray tree = FolderUtil.listToTree(getOrElse(either.right().getValue(), new JsonArray()));
+			result.handle(new Either.Right<>(tree));
+		}));
+	}
+
+	/**
+	 * Retrieve a folder.
+	 * @param folderId
+	 * @return folder data
+	 */
+	private Future<JsonObject> getFolder(final String folderId) {
+		Promise<JsonObject> promise = Promise.promise();
+		sql.prepared(
+			"SELECT f.* FROM " + folderTable + " AS f WHERE f.id = ?", 
+			new JsonArray().add(folderId), 
+			SqlResult.validUniqueResultHandler(either -> {
+				if( either.isLeft() ) {
+					promise.fail(either.left().getValue());
+				} else {
+					promise.complete(either.right().getValue());
+				}
+			})
+		);
+		return promise.future();
 	}
 
 	@Override
