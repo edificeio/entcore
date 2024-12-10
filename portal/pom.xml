@@ -19,11 +19,5 @@
             <version>${revision}</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
-            <groupId>fr.wseduc</groupId>
-            <artifactId>web-utils</artifactId>
-            <version>${webUtilsVersion}</version>
-            <scope>compile</scope>
-        </dependency>
     </dependencies>
 </project>
