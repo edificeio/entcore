@@ -163,32 +163,14 @@ public class ApiController extends BaseController {
 		});
 	}
 
-	// List folders at a given depth, or trashed folders at depth 1 only.
+	// List user's folders with a given depth.
 	@Get("api/folders")
 	@SecuredAction(value = "conversation.folder.list", type = ActionType.AUTHENTICATED)
 	public void listFolders(final HttpServerRequest request) {
-		final String parentId = request.params().get("parentId");
-		final String listTrash = request.params().get("trash");
-
+		Integer depth = parseQueryParam(request, "depth", 1);
 		getAuthenticatedUserInfos(eb, request)
 		.onSuccess(user -> {
-			if (listTrash != null) {
-				conversationService.listTrashedFolders(user, arrayResponseHandler(request));
-			} else {
-				conversationService.listFolders(parentId, user, arrayResponseHandler(request));
-			}
-		});
-	}
-
-	@Get("api/userfolders/list")
-	@SecuredAction(value = "conversation.folder.list", type = ActionType.AUTHENTICATED)
-	public void listUserFolders(final HttpServerRequest request) {
-		final String parentId = request.params().get("parentId");
-		final String unread = request.params().get("unread");
-		final Boolean b = unread != null && !unread.isEmpty() ? Boolean.valueOf(unread) : null;
-		getAuthenticatedUserInfos(eb, request)
-		.onSuccess( user -> {
-			conversationService.listUserFolders(Optional.ofNullable(parentId), user, b, arrayResponseHandler(request));
+			conversationService.getFolderTree(user, depth, Optional.empty(), arrayResponseHandler(request));
 		});
 	}
 

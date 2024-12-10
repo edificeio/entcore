@@ -861,6 +861,36 @@ public class SqlConversationService implements ConversationService{
 	}
 
 	@Override
+	public void getFolderTree(UserInfos user, int depth, Optional<String> parentId, Handler<Either<String, JsonArray>> result) {
+		if(validationError(user, result, (depth<=MAX_FOLDER_DEPTH) ? "ok":(String)null))
+			return;
+		final StringBuilder query = new StringBuilder()
+		.append("WITH (")
+		.append(" SELECT COUNT(um.message_id) as nb_messages, COALESCE(SUM(CASE WHEN um.unread = TRUE THEN 1 ELSE 0 END), 0) as nb_unread, um.folder_id")
+		.append(" FROM ").append(userMessageTable).append(" um ")
+		.append(" INNER JOIN ").append(messageTable).append(" m ON (um.message_id = m.id AND m.state='SENT')")
+		.append(" WHERE um.folder_id IS NOT NULL AND um.trashed = FALSE AND um.user_id = ? ")
+		.append(" GROUP BY um.folder_id")
+		.append(") ")
+		.append(" SELECT f.id, f.parent_id, f.name")
+		.append("   ,COALESCE(sub.nb_messages,0) as \"nbMessages\"")
+		.append("   ,COALESCE(sub.nb_unread,0) as \"nbUnread\"")
+		.append(" FROM ").append(folderTable).append(" AS f")
+		.append(" LEFT JOIN sub ON (f.id=sub.folder_id)")
+		.append(" WHERE f.user_id = ? AND f.depth <= ?")
+		;
+		final JsonArray values = new JsonArray()
+			.add(user.getUserId())
+			.add(user.getUserId())
+			.add(Math.max(1 , Math.min(depth, MAX_LISTABLE_DEPTH)));
+
+		//TODO apply optional parentId
+		//TODO flat folders to tree
+
+		sql.prepared(query.toString(), values, SqlResult.validResultHandler(result));
+	}
+
+	@Override
 	public void listFolders(String parentId, UserInfos user, Handler<Either<String, JsonArray>> result) {
 		if(validationError(user, result))
 			return;
