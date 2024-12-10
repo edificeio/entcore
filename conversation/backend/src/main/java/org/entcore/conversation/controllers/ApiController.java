@@ -34,7 +34,7 @@ import org.entcore.conversation.Conversation;
 import org.entcore.conversation.filters.*;
 import org.entcore.conversation.service.ConversationService;
 import org.entcore.conversation.service.impl.Neo4jConversationService;
-import org.entcore.conversation.util.Message;
+import org.entcore.conversation.util.MessageUtil;
 
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
@@ -163,32 +163,14 @@ public class ApiController extends BaseController {
 		});
 	}
 
-	// List folders at a given depth, or trashed folders at depth 1 only.
+	// List user's folders with a given depth.
 	@Get("api/folders")
 	@SecuredAction(value = "conversation.folder.list", type = ActionType.AUTHENTICATED)
 	public void listFolders(final HttpServerRequest request) {
-		final String parentId = request.params().get("parentId");
-		final String listTrash = request.params().get("trash");
-
+		Integer depth = parseQueryParam(request, "depth", 1);
 		getAuthenticatedUserInfos(eb, request)
 		.onSuccess(user -> {
-			if (listTrash != null) {
-				conversationService.listTrashedFolders(user, arrayResponseHandler(request));
-			} else {
-				conversationService.listFolders(parentId, user, arrayResponseHandler(request));
-			}
-		});
-	}
-
-	@Get("api/userfolders/list")
-	@SecuredAction(value = "conversation.folder.list", type = ActionType.AUTHENTICATED)
-	public void listUserFolders(final HttpServerRequest request) {
-		final String parentId = request.params().get("parentId");
-		final String unread = request.params().get("unread");
-		final Boolean b = unread != null && !unread.isEmpty() ? Boolean.valueOf(unread) : null;
-		getAuthenticatedUserInfos(eb, request)
-		.onSuccess( user -> {
-			conversationService.listUserFolders(Optional.ofNullable(parentId), user, b, arrayResponseHandler(request));
+			conversationService.getFolderTree(user, depth, Optional.empty(), arrayResponseHandler(request));
 		});
 	}
 
@@ -205,7 +187,7 @@ public class ApiController extends BaseController {
 						continue;
 					}
 					// Extract users and groups.
-					Message.extractUsersAndGroups((JsonObject) message, userInfos, lang, userIndex, groupIndex);
+					MessageUtil.extractUsersAndGroups((JsonObject) message, userInfos, lang, userIndex, groupIndex);
 				}
 
 				// Gather additional users and groups information.
@@ -240,7 +222,7 @@ public class ApiController extends BaseController {
 						if (!(m instanceof JsonObject)) {
 							continue;
 						}
-						Message.formatRecipients((JsonObject) m, userIndex, groupIndex);
+						MessageUtil.formatRecipients((JsonObject) m, userIndex, groupIndex);
 					}
 					promise.complete(messages);
 				})

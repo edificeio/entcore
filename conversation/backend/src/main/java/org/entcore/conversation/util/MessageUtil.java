@@ -29,7 +29,7 @@ import static fr.wseduc.webutils.Utils.getOrElse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-public class Message {
+public class MessageUtil {
     final static public String RECIPIENT_ID     = "id";
     final static public String RECIPIENT_NAME   = "displayName";
     final static public String MSG_FROM         = "from";

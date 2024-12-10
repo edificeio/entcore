@@ -19,24 +19,14 @@
 
 package org.entcore.conversation.filters;
 
-import java.util.List;
-
-import fr.wseduc.webutils.request.RequestUtils;
 import org.entcore.common.http.filter.ResourcesProvider;
-import org.entcore.common.sql.Sql;
-import org.entcore.common.sql.SqlResult;
 import org.entcore.common.user.UserInfos;
+import static org.entcore.common.utils.StringUtils.isEmpty;
 import org.entcore.conversation.service.ConversationService;
 
+import fr.wseduc.webutils.http.Binding;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-
-import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.http.Binding;
-
-import static org.entcore.common.utils.StringUtils.isEmpty;
 
 public class SystemOrUserFolderFilter implements ResourcesProvider {
 

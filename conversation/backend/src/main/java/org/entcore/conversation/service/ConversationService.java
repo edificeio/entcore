@@ -20,22 +20,32 @@
 package org.entcore.conversation.service;
 
 
-import org.entcore.common.user.UserInfos;
-
-import fr.wseduc.webutils.Either;
-
-import io.vertx.core.Handler;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-public interface ConversationService {
+import org.entcore.common.user.UserInfos;
 
+import fr.wseduc.webutils.Either;
+import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+
+public interface ConversationService {
+	/** Maximum number of results a paginated query can return at once. */
 	static final int LIST_LIMIT = 25;
+	/** Maximum number of folders a user can create, at root or in another folder. */
+	public static final int MAX_FOLDER_NUMBER = 50;
+	/** This is the maximum depth for a subfolder (1 being a root folder). */
+	public static final int MAX_FOLDER_DEPTH = 2;
+	/**
+	 * Maximum number of levels of folders that can be listed in one request,
+	 * limiting the number of returned folders as a power of MAX_FOLDER_NUMBER.
+	 * 
+	 * For example, listing folders with a depth of 2 => returning MAX_FOLDER_NUMBER^2 =2500 folders at once in the worst case.
+	 */
+	public static final int MAX_FOLDERS_LEVEL = 2;
 
 	enum State { DRAFT, SENT }
 
@@ -103,6 +113,7 @@ public interface ConversationService {
 	void toggleUnreadThread(List<String> threadIds, boolean unread, UserInfos user, Handler<Either<String, JsonObject>> result);
 
 	//Folders
+	void getFolderTree(UserInfos user, int depth, Optional<String> parentId, Handler<Either<String, JsonArray>> result);
 	void createFolder(String folderName, String parentFolderId, UserInfos user, Handler<Either<String, JsonObject>> result);
 	void updateFolder(String folderId, JsonObject data, UserInfos user, Handler<Either<String, JsonObject>> result);
 	void listFolders(String parentId, UserInfos user, Handler<Either<String, JsonArray>> result);
