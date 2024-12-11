@@ -185,7 +185,11 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 						Optional<UserPosition> userPosition = UserPosition.getUserPositionFromEncodedFunction(function, UserPositionSource.AAF);
 						if (userPosition.isPresent()) {
 							ImporterStructure structure = importer.getStructure(userPosition.get().getStructureId());
-							structure.createPosition(userPosition.get());
+
+							if(structure != null) {
+								structure.createPosition(userPosition.get());
+							}
+
 						}
 					});
 		}
