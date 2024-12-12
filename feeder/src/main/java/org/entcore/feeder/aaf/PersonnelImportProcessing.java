@@ -173,7 +173,9 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 					.map(structureId -> (String) structureId)
 					.forEach(structureExternalId -> {
 						ImporterStructure structure = importer.getStructure(structureExternalId);
-						structure.detachUserFromItsPositions(userExternalId, UserPositionSource.AAF);
+						if(structure != null) {
+							structure.detachUserFromItsPositions(userExternalId, UserPositionSource.AAF);
+						}
 					});
 		}
 		// create positions
