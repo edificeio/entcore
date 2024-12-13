@@ -1,11 +1,12 @@
-import chai, { describe } from "https://jslib.k6.io/k6chaijs/4.3.4.2/index.js";
+import {chai, describe } from "https://jslib.k6.io/k6chaijs/4.3.4.0/index.js";
 import {
   authenticateWeb,
   createStructure,
   importCSVToStructure,
-  getUsersOfSchool
-} from "https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
-import { checkUserAndPositions, checkStructureHasOnlyThesePositions } from './_utils.js';
+  getUsersOfSchool,
+  Session
+} from "../../../node_modules/edifice-k6-commons/dist/index.js";
+import { checkUserAndPositions, checkStructureHasOnlyThesePositions } from './_utils.ts';
 
 chai.config.logFailures = true;
 
@@ -34,7 +35,7 @@ const teacherDataAfter = open(`${dataRootPath}/positions/csv/after/enseignants.c
 
 export function testUserPositionsFromCSVImport() {
     describe("[Position-CSV]", () => {
-        let session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
+        let session = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
         const schoolName = `IT - Positions - CSV - ${seed}`
         const structure = createStructure(schoolName, teacherDataBefore, session)
         describe("First import", () => {
