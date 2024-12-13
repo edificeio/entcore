@@ -251,18 +251,22 @@ check_prefix_sh_file() {
 
 itTests() {
   script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  cd $script_dir/tests/src/test/js
+  docker compose run --rm -T node18 pnpm i --force
   cd $script_dir/tests/src/test/js/it/scenarios
+  failed_files=()
   exit_code=0
-  js_files=($(find . -type f -name '*.js' ! -name '_*'))
+  js_files=($(find . -type f -name '*.ts' ! -name '_*'))
   for it_file in "${js_files[@]}"; do
-    short_file_name=$(basename -s .js $it_file)
+    short_file_name=$(basename -s .ts $it_file)
     file_dir=$(dirname $it_file)
     check_prefix_sh_file "$file_dir" "$short_file_name"
     if [ $? -eq 1 ]; then
       echo executing $it_file
-      docker compose run --rm -T k6 run file:///home/k6/src/it/scenarios/$it_file
+      docker compose run --rm -T k6 run --compatibility-mode=experimental_enhanced file:///home/k6/src/it/scenarios/$it_file
       if [ $? -ne 0 ]; then
           exit_code=1
+          failed_files+=("$it_file")
           echo "Error while executing : $it_file"
       fi
     fi
@@ -273,11 +277,22 @@ itTests() {
     "$sh_file" "$script_dir/tests/src/test/resources/data" "$script_dir/../$SPRINGBOARD"
     if [ $? -ne 0 ]; then
         exit_code=1
+        failed_files+=("$sh_file")
         echo "Error while executing : $sh_file"
     fi
   done
   cd -
 
+  # Output summary of failed files
+  if [ ${#failed_files[@]} -ne 0 ]; then
+    echo "|-------------------------|"
+    echo "|--- FAILED TEST FILES ---|"
+    for failed in "${failed_files[@]}"; do
+      echo "| $failed"
+    done
+    echo "|-------------------------|"
+  fi
+  
   echo "|-------------------------|"
   [ $exit_code -ne 0 ] && echo "|---- itTests  FAILED ----|" || echo "|--- itTests SUCCEEDED ---|"
   echo "|-------------------------|"
