@@ -1,6 +1,6 @@
 import { check } from "k6";
 import http from "k6/http";
-import chai, { describe } from "https://jslib.k6.io/k6chaijs/4.3.4.2/index.js";
+import {chai, describe } from "https://jslib.k6.io/k6chaijs/4.3.4.0/index.js";
 import {
   authenticateWeb,
   searchPositions,

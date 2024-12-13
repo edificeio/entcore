@@ -1,9 +1,9 @@
 import { check } from "k6";
-import { describe } from "https://jslib.k6.io/k6chaijs/4.3.4.2/index.js";
+import { describe } from "https://jslib.k6.io/k6chaijs/4.3.4.0/index.js";
 import {
   getUserProfileOrFail,
   getPositionsOfStructure
-} from "https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
+} from "../../../node_modules/edifice-k6-commons/dist/index.js";
 
 export function checkUserAndPositions(expectedValues, users, session) {
     for(let expectedValue of expectedValues) {

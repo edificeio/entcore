@@ -1,5 +1,5 @@
 import { check } from "k6";
-import chai, { describe } from "https://jslib.k6.io/k6chaijs/4.3.4.2/index.js";
+import {chai, describe } from "https://jslib.k6.io/k6chaijs/4.3.4.0/index.js";
 import {
   authenticateWeb,
   triggerImport,
@@ -8,13 +8,14 @@ import {
   getPositionsOfStructure,
   attributePositions,
   deletePosition,
-  getOrCreatePosition
-} from "https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
+  getOrCreatePosition,
+  Session
+} from "../../../node_modules/edifice-k6-commons/dist/index.js";
 import { sleep } from 'k6';
 import {
   checkUserAndPositions,
   getUserByLastName
-} from './_utils.js';
+} from './_utils.ts';
 
 chai.config.logFailures = true;
 
@@ -54,8 +55,8 @@ export function testImportUserWithFunctionsInAAFStep2() {
       `LEGUMES / HARICOTS`,
       `LEGUMES / PETITS POIS`
     ];
-    const session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
-    const importedStructure = getSchoolByName("CLG-CLG INTEGRATION-PARIS")
+    const session = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
+    const importedStructure = getSchoolByName("CLG-CLG INTEGRATION-PARIS", session)
     const users = getUsersOfSchool(importedStructure, session);
     
 
@@ -94,9 +95,9 @@ export function testImportUserWithFunctionsInAAFStep2() {
 };
 
 export function teardown() {
-    const session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
+    const session = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
     // Removing all positions from structure, for subsequent test runs
-    const structurePositions = getPositionsOfStructure(getSchoolByName("CLG-CLG INTEGRATION-PARIS"), session)
+    const structurePositions = getPositionsOfStructure(getSchoolByName("CLG-CLG INTEGRATION-PARIS", session), session)
     for (let p of structurePositions) {
       deletePosition(p.id, session)
     }

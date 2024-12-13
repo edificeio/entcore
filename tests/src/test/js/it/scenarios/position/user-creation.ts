@@ -1,5 +1,5 @@
 import { check } from "k6";
-import chai, { describe } from "https://jslib.k6.io/k6chaijs/4.3.4.2/index.js";
+import {chai, describe } from "https://jslib.k6.io/k6chaijs/4.3.4.0/index.js";
 import {
   authenticateWeb,
   getOrCreatePosition,
@@ -10,8 +10,9 @@ import {
   checkReturnCode,
   attachUserToStructures,
   createUser,
-  getUserProfileOrFail
-} from "https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
+  getUserProfileOrFail,
+  Session
+} from "../../../node_modules/edifice-k6-commons/dist/index.js";
 
 chai.config.logFailures = true;
 
@@ -38,7 +39,7 @@ export function setup() {
   let structureTree;
   describe("[Position-UserCreation] Initialize data", () => {
     const schoolName = `IT Positions-Creation`
-    let session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
+    let session = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
     //////////////////////////////////
     // Create 1 head structure and 2
     // depending structures
@@ -75,12 +76,12 @@ export function testCreateUserWithPositions({structures, admls, positions, headA
   const [adml1, adml2] = admls
   const [structure1, structure2] = structures
   describe("[Position-UserCreation] Attribute positions to users on creation", () => {
-    const session = authenticateWeb(adml1.login)
+    const session = <Session>authenticateWeb(adml1.login)
     const profilesThatCannotBeCreatedWithPositions = ['Student', 'Relative', 'Teacher']
     for(let profile of profilesThatCannotBeCreatedWithPositions) {
         describe(`Creation of a ${profile} should not be possible with a position`, () => {
             const userCreationRequest = createUserCreationRequest(profile, structure1, positions)
-            let res = createUser(userCreationRequest, structure1, session);
+            let res = createUser(userCreationRequest, session);
             checkReturnCode(res, `should not be able to create a ${profile} with positions`, 403)
         })
     }
@@ -88,9 +89,9 @@ export function testCreateUserWithPositions({structures, admls, positions, headA
     for(let profile of profilesThatCanBeCreatedWithPositions) {
         describe(`Creation of a ${profile} should be possible with a position`, () => {
           const userCreationRequest = createUserCreationRequest(profile, structure1, positions)
-          let res = createUser(userCreationRequest, structure1, session);
+          let res = createUser(userCreationRequest, session);
           assertOk(res, `should be able to create a ${profile} with positions`)
-          const user = JSON.parse(res.body)
+          const user = JSON.parse(<string>res.body)
           const newUserPositions = (getUserProfileOrFail(user.id, session).userPositions || []);
           const actualPositionIds = newUserPositions.map(p => p.id)
           const checkOk = check(newUserPositions, {

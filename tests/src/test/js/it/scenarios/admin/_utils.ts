@@ -4,7 +4,7 @@ import {
   getHeaders,
   getUsersOfSchool,
   createUser,
-} from "https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
+} from "../../../node_modules/edifice-k6-commons/dist/index.js";
 
 const rootUrl = __ENV.ROOT_URL;
 
@@ -12,13 +12,13 @@ export function listIsolated(sortOn, session) {
   const headers = getHeaders(session);
   const params = new URLSearchParams({
     sortOn: sortOn ? sortOn : "+displayName",
-    fromIndex:0,
-    limitResult:50
+    fromIndex: "0",
+    limitResult: "50"
   }).toString();
 
   let res = http.get(`${rootUrl}/directory/list/isolated?${params}`, {headers});
   assertOk(res, `Impossible to list isolated users with query params ?${params}`);
-  return JSON.parse(res.body);
+  return JSON.parse(<string>res.body);
 }
 
 function getUserByName(structure, firstName, lastName, session) {
@@ -38,10 +38,11 @@ export function getOrCreateUser(structure, firstName, lastName, type, session) {
       firstName: encodeURIComponent(firstName),
       lastName: encodeURIComponent(lastName),
       type,
-      birthDate: "undefined"
+      birthDate: "undefined",
+      positionIds: []
     }, session);
     assertOk(res, `Impossible to create user "${firstName} ${lastName}" of ${structure.id}`);
-    user = JSON.parse(res.body);
+    user = JSON.parse(<string>res.body);
   }
   return user;
 }

@@ -1,5 +1,5 @@
 import { check } from "k6";
-import chai, { describe } from "https://jslib.k6.io/k6chaijs/4.3.4.2/index.js";
+import {chai, describe } from "https://jslib.k6.io/k6chaijs/4.3.4.0/index.js";
 import {
   authenticateWeb,
   createPositionOrFail,
@@ -13,8 +13,10 @@ import {
   getAdmlsOrMakThem,
   checkReturnCode,
   switchSession,
-  attachUserToStructures
-} from "https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
+  attachUserToStructures,
+  Session,
+  UserInfo
+} from "../../../node_modules/edifice-k6-commons/dist/index.js";
 
 chai.config.logFailures = true;
 
@@ -50,7 +52,7 @@ export function setup() {
   let structureTree;
   describe("[Position-Attribute] Initialize data", () => {
     const schoolName = `IT Positions-Attribute-${SEED}`
-    let session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
+    let session = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
     //////////////////////////////////
     // Create 1 head structure and 2
     // depending structures
@@ -103,7 +105,7 @@ export function testAttributePositions({structures, admls, positions, headAdml, 
   const [structure1, structure2] = structures
   const [position1, position2] = positions
   describe("[Position-Attribute] Attribute positions to users", () => {
-    const admcSession = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
+    const admcSession = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
     let session;
     const users1 = getUsersOfSchool(structure1, session)
     const teacher1 = getRandomUserWithProfile(users1, 'Teacher', [adml1, headAdml, multiEtabUser]);
@@ -119,7 +121,7 @@ export function testAttributePositions({structures, admls, positions, headAdml, 
     ////////////////////////////
     // Check that non ADML users
     // cannot attribute a position to any other profile
-    const profiles = [
+    const profiles: [UserInfo | null, string][] = [
         [null, "Unauthenticated user"],
         [teacher1, "Non ADML (teacher)"],
         [relative1, "Non ADML (relative)"],
@@ -136,7 +138,7 @@ export function testAttributePositions({structures, admls, positions, headAdml, 
         const [user, label] = profile
         let returnCode;
         if(user) {
-            session = authenticateWeb(user.login)
+            session = <Session>authenticateWeb(user.login)
             returnCode = 401;
         } else {
             session = null
@@ -163,7 +165,7 @@ export function testAttributePositions({structures, admls, positions, headAdml, 
         }
     }
 
-    session = authenticateWeb(adml1.login)
+    session = <Session>authenticateWeb(adml1.login)
     //////////////////////////////
     // Try to attribute position 
     // from another structure
@@ -191,11 +193,11 @@ export function testAttributePositions({structures, admls, positions, headAdml, 
     })
 
     describe("ADML attributes a function to another ADML in the same structure", () => {
-      session = authenticateWeb(headAdml.login)
+      session = <Session>authenticateWeb(headAdml.login)
       assignNewPositionAndCheckThatItSucceeded(adml2, [position2], 'ADML', 'Other ADML', session, admcSession);
     })
 
-    session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
+    session = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
     
     describe("ADMC attributes to a user a position from another structure", () => {
       tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(relative1, [position2], 'ADMC', 'relative', 200, session, admcSession);
@@ -222,16 +224,16 @@ export function testAttributePositions({structures, admls, positions, headAdml, 
     })
     
     describe("2 ADML attributes position to a user in 2 different structures", () => {
-      session = authenticateWeb(adml1.login)
+      session = <Session>authenticateWeb(adml1.login)
       assignNewPositionAndCheckThatItSucceeded(multiEtabUser, [position1], 'ADML of structure 1', 'Multi Etab', session, admcSession);
-      session = authenticateWeb(adml2.login)
+      session = <Session>authenticateWeb(adml2.login)
       assignNewPositionAndCheckThatItSucceeded(multiEtabUser, [position2], 'ADML of structure 2', 'Multi Etab', session, admcSession);
       let userPositions = getUserProfileOrFail(multiEtabUser.id).userPositions;
       check(userPositions, {
         'ADML chapeau has positions of structure 1': () => containsPosition(userPositions, position1),
         'ADML chapeau has positions of structure 2': () => containsPosition(userPositions, position2),
       })
-      session = authenticateWeb(adml1.login)
+      session = <Session>authenticateWeb(adml1.login)
       attributePositions(multiEtabUser, [], session)
       userPositions = getUserProfileOrFail(multiEtabUser.id).userPositions;
       check(userPositions, {
@@ -298,9 +300,9 @@ function tryToAssignNewPositionAndCheckUserPositionsRemainUnchanged(user, positi
 }
 
 function cleanUsersPositions(structures) {
-  const session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
+  const session = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
   for(let structure of structures) {
-    const users = getUsersOfSchool(structure)
+    const users = getUsersOfSchool(structure, session)
     for(let user of users) {
       attributePositions(user, [], session)
     }
@@ -310,8 +312,8 @@ function cleanUsersPositions(structures) {
 function getOrCreateMultiEtabUser(structures, profile, usersToAvoid) {
   const structIds = structures.map(s => s.id)
   const forbidenUserIds = (usersToAvoid || []).map(u => u.id)
-  const session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
-  let usersToChooseFrom = [];
+  const session = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
+  let usersToChooseFrom: UserInfo[] = [];
   const structure = structures[0]
   const users = getUsersOfSchool(structure, session)
   for(let user of users) {

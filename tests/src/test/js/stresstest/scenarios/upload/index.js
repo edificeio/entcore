@@ -1,6 +1,6 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import chai, { describe, expect } from 'https://jslib.k6.io/k6chaijs/4.3.4.2/index.js';
+import chai, { describe, expect } from 'https://jslib.k6.io/k6chaijs/4.3.4.0/index.js';
 import {authenticateOAuth2, authenticateWeb, getConnectedUserId, getHeaders, searchUser} from '../../utils/user.utils.js';
 import {getMetricValue} from '../../utils/metrics.utils.js';
 import {BASE_URL} from '../../utils/env.utils.js';

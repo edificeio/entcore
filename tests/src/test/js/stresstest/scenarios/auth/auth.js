@@ -1,5 +1,5 @@
 import { check, sleep } from "k6";
-import chai, { describe } from "https://jslib.k6.io/k6chaijs/4.3.4.2/index.js";
+import {chai, describe } from "https://jslib.k6.io/k6chaijs/4.3.4.0/index.js";
 
 import {
   getTeacherRole,
