@@ -211,16 +211,18 @@ check_prefix_sh_file() {
 
 itTests() {
   script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  cd $script_dir/tests/src/test/js
+  docker compose run --rm -T node18 pnpm i --force
   cd $script_dir/tests/src/test/js/it/scenarios
   exit_code=0
-  js_files=($(find . -type f -name '*.js' ! -name '_*'))
+  js_files=($(find . -type f -name '*.ts' ! -name '_*'))
   for it_file in "${js_files[@]}"; do
-    short_file_name=$(basename -s .js $it_file)
+    short_file_name=$(basename -s .ts $it_file)
     file_dir=$(dirname $it_file)
     check_prefix_sh_file "$file_dir" "$short_file_name"
     if [ $? -eq 1 ]; then
       echo executing $it_file
-      docker compose run --rm -T k6 run file:///home/k6/src/it/scenarios/$it_file
+      docker compose run --rm -T k6 run --compatibility-mode=experimental_enhanced file:///home/k6/src/it/scenarios/$it_file
       if [ $? -ne 0 ]; then
           exit_code=1
           echo "Error while executing : $it_file"
