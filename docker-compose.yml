@@ -29,6 +29,15 @@ services:
     environment:
       - NG_CLI_ANALYTICS=false
 
+  node18:
+    image: opendigitaleducation/node:18-alpine-pnpm
+    working_dir: /home/node/app
+    volumes:
+      - ./tests/src/test/js:/home/node/app
+      - ~/.npm:/.npm
+    environment:
+      - NG_CLI_ANALYTICS=false
+
   k6:
     image: grafana/k6:master
     volumes:

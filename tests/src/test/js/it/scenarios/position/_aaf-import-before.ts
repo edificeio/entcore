@@ -1,14 +1,15 @@
 import { check } from "k6";
-import chai, { describe } from "https://jslib.k6.io/k6chaijs/4.3.4.2/index.js";
+import {chai, describe } from "https://jslib.k6.io/k6chaijs/4.3.4.0/index.js";
 import {
   authenticateWeb,
   triggerImport,
   getSchoolByName,
   getUsersOfSchool,
-  getPositionsOfStructure
-} from "https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
+  getPositionsOfStructure,
+  Session
+} from "../../../node_modules/edifice-k6-commons/dist/index.js";
 import { sleep } from 'k6';
-import {checkUserAndPositions} from './_utils.js';
+import {checkUserAndPositions} from './_utils.ts';
 
 chai.config.logFailures = true;
 
@@ -38,13 +39,13 @@ export const options = {
 export function testImportUserWithFunctionsInAAF() {
   describe("[Position-AAFImport]", () => {
     const allPositions = [`DIRECTION / CHEF D'ETABLISSEMENT ADJOINT`, `ACCOMPAGNEMENT / ACCOMPAGNEMENT ELEVES SITUATION HANDICAP`];
-    const session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
+    const session = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
     console.log("Launching import....")
     triggerImport(session)
     console.log("....waiting for import to be done....")
     sleep(3)
     console.log("....stopped waiting")
-    const importedStructure = getSchoolByName("CLG-CLG INTEGRATION-PARIS")
+    const importedStructure = getSchoolByName("CLG-CLG INTEGRATION-PARIS", session)
     const structurePositions = getPositionsOfStructure(importedStructure, session)
     describe("Imported structure", () => {
       check(structurePositions, {
