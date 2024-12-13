@@ -1,5 +1,5 @@
 import { check, sleep } from "k6";
-import chai, { describe } from "https://jslib.k6.io/k6chaijs/4.3.4.2/index.js";
+import {chai, describe } from "https://jslib.k6.io/k6chaijs/4.3.4.0/index.js";
 
 import {
   getTeacherRole,
@@ -23,8 +23,9 @@ import {
   createEmptyStructure,
   initStructure,
   getRandomUser,
-  getRandomUserWithProfile
-} from "https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
+  getRandomUserWithProfile,
+  Session
+} from "../../../node_modules/edifice-k6-commons/dist/index.js";
 
 const aafImport = (__ENV.AAF_IMPORT || "true") === "true";
 const aafImportPause =  parseInt(__ENV.AAF_IMPORT_PAUSE || "10");
@@ -33,7 +34,7 @@ const schoolName = __ENV.DATA_SCHOOL_NAME || "General";
 const schoolName2 = `${schoolName}-2`
 const dataRootPath = __ENV.DATA_ROOT_PATH;
 const gracefulStop = parseInt(__ENV.GRACEFUL_STOP || "2s");
-chai.config.logFailures = true;
+
 const broadcastGroupName = "IT - liste de diffusion profs"
 const broadcastGroupNameChapeau = "IT - Chapeau liste de diffusion profs"
 
@@ -46,7 +47,6 @@ export const options = {
     shareFile: {
       executor: "per-vu-iterations",
       vus: 1,
-      maxDuration: "30s",
       maxDuration: maxDuration,
       gracefulStop,
     },
@@ -66,7 +66,7 @@ export function setup() {
   let structure2;
   let chapeau;
   describe("[Workspace-Init] Initialize data", () => {
-    const session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+    const session: Session = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
     chapeau = createEmptyStructure(`Chapeau - ${schoolName}`, false, session)
     const commonBG = createBroadcastGroup(broadcastGroupNameChapeau, chapeau, session)
     structure1 = initSchool(schoolName, session)
@@ -146,7 +146,7 @@ function testSharesViaProfileGroupInDifferentSchools(data) {
   const { structure1, structure2 } = data;
   describe('[Workspace] Test shares via profile groups in two different schools', () => {
     let res;
-    const session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+    const session = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
     const users1 = getUsersOfSchool(structure1, session);
     const users2 = getUsersOfSchool(structure2, session);
     const parentRole2 = getParentRole(structure2, session)
@@ -158,7 +158,7 @@ function testSharesViaProfileGroupInDifferentSchools(data) {
     console.log("Teacher 1.2 - ", teacher12.login);
     console.log("Parent - ", parent.login);
     // Teacher upload a file
-    let teacherSession = authenticateWeb(teacher1.login, 'password');
+    let teacherSession = <Session>authenticateWeb(teacher1.login, 'password');
     const uploadedFile = uploadFile(fileToUpload, teacherSession);
     const fileId = uploadedFile._id;
     // Share this file to parents 2 as a manager -> ok
@@ -167,13 +167,13 @@ function testSharesViaProfileGroupInDifferentSchools(data) {
     res = shareFile(fileId, shares, teacherSession);
     checkShareOk(res, 'teacher of school 1 shares to parents group of school 2')
     // Parent of school 2 tries to share it to students of school 2 -> ok
-    let parentSession = authenticateWeb(parent.login, 'password');
+    let parentSession = <Session>authenticateWeb(parent.login, 'password');
     shares.groups[studentRole2.id] = WS_READER_SHARE;
     res = shareFile(fileId, shares, parentSession)
     checkShareOk(res, 'parent of school 2 shares to students of school 2')
     // Teacher 2 of school 1 tries to modify shares of students of school 2 -> ko
     shares.groups[studentRole2.id] = WS_MANAGER_SHARE;
-    let teacher12Session = authenticateWeb(teacher12.login, 'password')
+    let teacher12Session = <Session>authenticateWeb(teacher12.login, 'password')
     res = shareFile(fileId, shares, teacher12Session)
     checkShareKo(res, 'other teacher of school 1 tries to modify shares of student of school 2')
     // Parent of school 2 tries to do the same thing -> ok
@@ -190,7 +190,7 @@ function testSharesViaBroadcastGroupInDifferentSchools(data) {
   const { structure1, structure2, chapeau } = data;
   describe('[Workspace] Test shares to broadcast group in two different schools', () => {
     let res;
-    const session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+    const session = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
     const users1 = getUsersOfSchool(structure1, session);
     const users2 = getUsersOfSchool(structure2, session);
     const broadcastGroup = getBroadcastGroup(broadcastGroupNameChapeau, chapeau, session);
@@ -212,7 +212,7 @@ function testSharesViaBroadcastGroupInDifferentSchools(data) {
     console.log("Student 1 - ", firstStudent1.login);
     console.log("Student 2 - ", firstStudent2.login);
     // Teacher upload a file
-    let teacherSession = authenticateWeb(teacher1.login, 'password');
+    let teacherSession = <Session>authenticateWeb(teacher1.login, 'password');
     const uploadedFile = uploadFile(fileToUpload, teacherSession);
     const fileId = uploadedFile._id;
     // Share this file to teacher 2 as a manager
@@ -221,12 +221,12 @@ function testSharesViaBroadcastGroupInDifferentSchools(data) {
     res = shareFile(fileId, shares, teacherSession);
     checkShareOk(res, 'teacher of school 1 shares to chapeau broadcast group')
     // Teacher of school 2 shares it to one of the student of school 2 => ok
-    let teacher2Session = authenticateWeb(teacher2.login, 'password');
+    let teacher2Session = <Session>authenticateWeb(teacher2.login, 'password');
     shares.users[firstStudent2.id] = WS_MANAGER_SHARE;
     res = shareFile(fileId, shares, teacher2Session);
     checkShareOk(res, 'teacher of school 2 shares to student of school 2')
     // Student of school 2 tries to share it to student of school 1 -> ko
-    let studentSession = authenticateWeb(firstStudent1.login, 'password');
+    let studentSession = <Session>authenticateWeb(firstStudent1.login, 'password');
     shares.users[firstStudent1.id] = WS_READER_SHARE;
     res = shareFile(fileId, shares, studentSession)
     checkShareKo(res, 'student of school 2 shares to student of school 1')
@@ -242,7 +242,7 @@ function testSharesViaBroadcastGroupInSameSchool(data) {
   const { structure1 } = data;
   describe('[Workspace] Test shares to broadcast group in the same school', () => {
     let res;
-    const session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+    const session = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
     const users = getUsersOfSchool(structure1, session);
     const broadcastGroup = getBroadcastGroup(broadcastGroupName, structure1, session);
     const students = users.filter(u => u.type === 'Student')
@@ -257,7 +257,7 @@ function testSharesViaBroadcastGroupInSameSchool(data) {
     console.log("Student 2 - ", secondStudent.login);
     console.log("Student 3 - ", thirdStudent.login);
     // Teacher upload a file
-    let teacherSession = authenticateWeb(teacher.login, 'password');
+    let teacherSession = <Session>authenticateWeb(teacher.login, 'password');
     const uploadedFile = uploadFile(fileToUpload, teacherSession);
     const fileId = uploadedFile._id;
     // Share this file to firstStudent as a manager
@@ -266,7 +266,7 @@ function testSharesViaBroadcastGroupInSameSchool(data) {
     res = shareFile(fileId, shares, teacherSession);
     checkShareOk(res, 'teacher shares to first student')
     // First student tries to share it to the list -> ko
-    let firstStudentSession = authenticateWeb(firstStudent.login, 'password');
+    let firstStudentSession = <Session>authenticateWeb(firstStudent.login, 'password');
     shares.groups[broadcastGroup.id] = WS_READER_SHARE;
     res = shareFile(fileId, shares, firstStudentSession)
     checkShareKo(res, 'student shares to broadcast group')
@@ -287,7 +287,7 @@ function testSharesViaBroadcastGroupInSameSchool(data) {
     checkShareOk(res, 'student shares to third student')
     // thrid student tries to remove share to the list -> ko
     delete shares.groups[broadcastGroup.id];
-    let thirdStudentSession = authenticateWeb(thirdStudent.login, 'password')
+    let thirdStudentSession = <Session>authenticateWeb(thirdStudent.login, 'password')
     res = shareFile(fileId, shares, thirdStudentSession)
     checkShareKo(res, 'non manager cannot remove shares')
   })

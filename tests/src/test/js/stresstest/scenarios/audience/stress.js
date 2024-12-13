@@ -1,6 +1,6 @@
 import { check, sleep } from "k6";
 import { SharedArray } from 'k6/data';
-import chai, { describe } from "https://jslib.k6.io/k6chaijs/4.3.4.2/index.js";
+import {chai, describe } from "https://jslib.k6.io/k6chaijs/4.3.4.0/index.js";
 import papaparse from 'https://jslib.k6.io/papaparse/5.1.1/index.js';
 import {
   authenticateWeb,

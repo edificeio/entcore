@@ -1,9 +1,10 @@
 import { check } from "k6";
-import chai, { describe } from "https://jslib.k6.io/k6chaijs/4.3.4.2/index.js";
+import {chai, describe } from "https://jslib.k6.io/k6chaijs/4.3.4.0/index.js";
 import {
   authenticateWeb,
-  createEmptyStructure
-} from "https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
+  createEmptyStructure,
+  Session
+} from "edifice-k6-commons";
 import {
   listIsolated,
   getOrCreateUser,
@@ -44,7 +45,7 @@ export function setup() {
   let data;
   describe("[Isolated users] Initialize data", () => {
     const schoolName = `IT Isolated users`;
-    const session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+    const session = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
     //////////////////////////////////
     // Create 1 structure and 4 users
     const structure = createEmptyStructure(schoolName, false, session);
@@ -111,7 +112,7 @@ function tryListingInDescOrder(session) {
   const results = listIsolated("-displayName", session);
   const checks = {};
   checks[`${requesterType} should be able to list all isolated users in descending order`] = () => {
-    let cause = true;
+    let cause: string | boolean = true;
     if(Array.isArray(results)) {
       let previous;
       for(let result of results) {
