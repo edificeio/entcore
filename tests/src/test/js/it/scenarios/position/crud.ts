@@ -1,5 +1,5 @@
 import { check } from "k6";
-import chai, { describe } from "https://jslib.k6.io/k6chaijs/4.3.4.2/index.js";
+import {chai, describe } from "https://jslib.k6.io/k6chaijs/4.3.4.0/index.js";
 import {
   authenticateWeb,
   assertCondition,
@@ -21,8 +21,10 @@ import {
   attachUserToStructures,
   getRandomUser,
   switchSession,
-  getPositionByIdOrFail
-} from "https://raw.githubusercontent.com/edificeio/edifice-k6-commons/develop/dist/index.js";
+  getPositionByIdOrFail,
+  Session,
+  UserPosition
+} from "../../../node_modules/edifice-k6-commons/dist/index.js";
 
 
 chai.config.logFailures = true;
@@ -92,8 +94,8 @@ export function setup() {
     // Create a simple structure and create one ADML for it
     const suffix = __ENV.RECREATE_STRUCTURES === 'true' ? ` - ${Date.now()}` : ''
     structure = initStructure(`IT - Fonctions${suffix}`, 'tiny');
-    let session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
-    adml = getAdmlsOrMakThem(structure, 'Teacher', 1, session)[0]
+    let session = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+    adml = getAdmlsOrMakThem(structure, 'Teacher', 1, [], session)[0]
 
 
     const schoolName = `IT Positions - NEtab`
@@ -129,7 +131,7 @@ export function setup() {
 export function testCreatePosition({structure, adml, structureTree}) {
   const {admls: [adml1, adml2], structures: [structure1, structure2], headAdml} = structureTree
   describe("[Position-CRUD] Create positions", () => {
-    let session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
+    let session = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
     const positionName = "IT Position - Create - " + Date.now();
     const users = getUsersOfSchool(structure, session)
     const teacher = getRandomUserWithProfile(users, 'Teacher', [adml]);
@@ -138,29 +140,29 @@ export function testCreatePosition({structure, adml, structureTree}) {
     let res = createPosition(positionName, structure);
     assertCondition(() => res.status === 401, "An unauthenticated user should not be able to create a position");
 
-    session = authenticateWeb(teacher.login)
+    session = <Session>authenticateWeb(teacher.login)
     res = createPosition(positionName, structure, session);
     assertCondition(() => res.status === 401, "An authenticated user without special rights should not be able to create a position");
 
 
-    session = authenticateWeb(adml.login)
-    let positions = []
+    session = <Session>authenticateWeb(adml.login)
+    let positions: UserPosition[] = []
     res = createPosition(positionName, structure, session);
     assertCondition(() => res.status === 201, "An ADML user should be able to create a position");
-    positions.push(JSON.parse(res.body));
+    positions.push(<UserPosition>JSON.parse(<string>res.body));
     res = createPosition(positionName, structure, session);
     checkReturnCode(res, "A position cannot be created multiple times", 409);
     res = createPosition(`${positionName} - bis`, structure, session);
-    positions.push(JSON.parse(res.body));
+    positions.push(JSON.parse(<string>res.body));
     //assertSearchCriteriaContainSpecifiedPositionsAndNotOther(positions, p => p.structureId !==  structure.id, "ADML with a structure with these positions", session);
-    session = authenticateWeb(adml1.login)
+    session = <Session>authenticateWeb(adml1.login)
 
     res = createPosition(`${positionName}-ADML2`, structure, session);
     assertCondition(() => res.status === 401, "An ADML of another structure should not be able to create a position");
     assertSearchCriteriaContainSpecifiedPositionsAndNotOther([], p => p.structureId !==  structure.id, "ADML in a structure without these positions", session);
 
     // An ADMC should be able to create a position
-    session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+    session = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
     createPositionOrFail(`${positionName}-ADMC`, structure1, session);
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -170,12 +172,12 @@ export function testCreatePosition({structure, adml, structureTree}) {
     // then the head adml fetches the searchCriteria and we check if the previously
     // created positions are accessible
     positions = []
-    session = authenticateWeb(adml1.login);
+    session = <Session>authenticateWeb(adml1.login);
     positions.push(createPositionOrFail(`${positionName}-ADML1-0`, structure1, session));
     positions.push(createPositionOrFail(`${positionName}-ADML1-1`, structure1, session));
-    session = authenticateWeb(adml2.login);
+    session = <Session>authenticateWeb(adml2.login);
     positions.push(createPositionOrFail(`${positionName}-ADML2-0`, structure2, session));
-    session = authenticateWeb(headAdml.login);
+    session = <Session>authenticateWeb(headAdml.login);
     assertSearchCriteriaContainSpecifiedPositionsAndNotOther(positions, p => p.structureId ===  structure1.id || p.structureId ===  structure2.id, "ADML of multiple structures", session);
 })
 };
@@ -184,19 +186,19 @@ export function testCreatePosition({structure, adml, structureTree}) {
 export function testRenamePosition({structure, adml, structureTree}) {
   const {admls: [adml1, adml2], structures: [structure1, structure2], headAdml} = structureTree
   describe("[Position-CRUD] Rename position", () => {
-    let session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+    let session = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
     const users1 = getUsersOfSchool(structure1, session)
     const unprivilegedUserOfStructure1 = getRandomUser(users1, [adml1, headAdml])
     const users2 = getUsersOfSchool(structure2, session)
     const unprivilegedUserOfStructure2 = getRandomUser(users2, [adml2, headAdml])
-    const adml1Session = authenticateWeb(adml1.login)
+    const adml1Session = <Session>authenticateWeb(adml1.login)
     const positionName = "IT Position - Rename - To rename" + Date.now();
     const positionToRename = createPositionOrFail(positionName, structure1, adml1Session)
     let previousName = positionName
-    const usersThatCanRename = [
-      [authenticateWeb(adml1.login), "ADML of administered structure"],
-      [authenticateWeb(headAdml.login), "ADML of head structure"],
-      [authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD), "ADMC"]
+    const usersThatCanRename: [Session, string][] = [
+      [<Session>authenticateWeb(adml1.login), "ADML of administered structure"],
+      [<Session>authenticateWeb(headAdml.login), "ADML of head structure"],
+      [<Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD), "ADMC"]
     ]
     for(let userThatCanRename of usersThatCanRename) {
       let [sessionToTry, label] = userThatCanRename
@@ -207,7 +209,7 @@ export function testRenamePosition({structure, adml, structureTree}) {
         assertOk(updatePosition(positionToRename, session), `should be able to rename a position`)
         switchSession(adml1Session)
         let res = searchPositions(positionName, adml1Session)
-        check(JSON.parse(res.body), {
+        check(JSON.parse(<string>res.body), {
           'should only find the renamed position': positions => positions.length === 1,
           'position should be renamed': positions => positions[0].name === successfullRename
         })
@@ -215,9 +217,9 @@ export function testRenamePosition({structure, adml, structureTree}) {
       })
     }
     const usersThatCannotRename = [
-      [authenticateWeb(adml2.login), "ADML of an unadministered structure", 403],
-      [authenticateWeb(unprivilegedUserOfStructure1.login), "Unprivileged user of the structure of the position", 401],
-      [authenticateWeb(unprivilegedUserOfStructure2.login), "Unprivileged user of an unrelated structure", 401],
+      [<Session>authenticateWeb(adml2.login), "ADML of an unadministered structure", 403],
+      [<Session>authenticateWeb(unprivilegedUserOfStructure1.login), "Unprivileged user of the structure of the position", 401],
+      [<Session>authenticateWeb(unprivilegedUserOfStructure2.login), "Unprivileged user of an unrelated structure", 401],
       [null, "Unauthenticated user", 302]
     ]
     for(let user of usersThatCannotRename) {
@@ -242,7 +244,7 @@ export function testRenamePosition({structure, adml, structureTree}) {
       })
     }
     describe('Forbidden actions', () => {
-      session = authenticateWeb(headAdml.login)
+      session = <Session>authenticateWeb(headAdml.login)
       const fixedName = `${positionName} - fixed`
       const fixedNameInOtherStructure = `${positionName} - fixed in structure 2`
       createPositionOrFail(fixedName, structure1, session)
@@ -274,7 +276,7 @@ export function testRenamePosition({structure, adml, structureTree}) {
  */
 export function searchPositionsOnOneEtab({structure, adml}) {
   describe("[Position-CRUD] Search Positions - One Etab", () => {
-    let session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+    let session = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
     createPosition(`IT Position - Search - Coucou`, structure, session)
     createPosition(`IT Position - Search - Hello`, structure, session)
     createPosition(`IT Position - Search - HellÔ les amis`, structure, session)
@@ -288,12 +290,12 @@ export function searchPositionsOnOneEtab({structure, adml}) {
     assertCondition(() => res.status === 401, "An unauthenticated user should not be able to search positions");
 
 
-    session = authenticateWeb(teacher.login)
+    session = <Session>authenticateWeb(teacher.login)
     res = searchPositions('Coucou', session);
     assertCondition(() => res.status === 401, "An authenticated user without special rights should not be able to search positions");
 
 
-    session = authenticateWeb(adml.login)
+    session = <Session>authenticateWeb(adml.login)
     res = searchPositions('Coucou', session);
     assertOk(res, "An ADML should be able to search positions");
     res = searchPositions('hello', session);
@@ -305,7 +307,7 @@ export function searchPositionsOnOneEtab({structure, adml}) {
     })
 
 
-    session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+    session = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
     res = searchPositions('Coucou', structure, session);
     assertOk(res, "An ADMC should be able to search positions"); 
 })
@@ -319,7 +321,7 @@ export function searchPositionsOnOneEtab({structure, adml}) {
 export function searchPositionsOnMultipleEtabs({structureTree}) {
   const {structures: [structure1, structure2], admls: [adml1, adml2], headAdml} = structureTree
   describe("[Position-CRUD] Search Positions - Multiple Etab", () => {
-    let session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+    let session = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
     //////////////////////////////////
     // Search positions
     //////////////////////////////////
@@ -336,7 +338,7 @@ export function searchPositionsOnMultipleEtabs({structureTree}) {
       getOrCreatePosition(`IT Position - Search - MEtab2 Hello`, structure2, session),
       getOrCreatePosition(`IT Position - Search - MEtab2 Hello les amis`, structure2, session)
     ]
-    session = authenticateWeb(adml1.login)
+    session = <Session>authenticateWeb(adml1.login)
 
     let res = searchPositions('IT Position - Search - MEtab', session);
     check(JSON.parse(res.body), {
@@ -348,14 +350,14 @@ export function searchPositionsOnMultipleEtabs({structureTree}) {
       'adml of structure1 should see no positions of structure 2': pos => pos && pos.length === 0
     })
 
-    session = authenticateWeb(adml2.login)
+    session = <Session>authenticateWeb(adml2.login)
     res = searchPositions('IT Position - Search - MEtab', session);
     check(JSON.parse(res.body), {
       'all positions of structure2 should be fetched': pos => allPositionsOk(positions2, pos),
       'no duplicates were returned': pos => noDuplicates(pos)
     })
 
-    session = authenticateWeb(headAdml.login)
+    session = <Session>authenticateWeb(headAdml.login)
     res = searchPositions('IT Position - Search - MEtab', session);
     check(JSON.parse(res.body), {
       'adml of structure1 and structure2 should see the positions of both structures': pos => pos && pos.length === (positions2.length + positions1.length),
@@ -375,7 +377,7 @@ export function searchPositionsOnMultipleEtabs({structureTree}) {
 export function testDeletePosition({structureTree}) {
   const {structures: [structure1, structure2], admls: [adml1], headAdml} = structureTree
   describe("[Position-CRUD] Delete position", () => {
-    let session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+    let session = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
 
     /////////////////////////////////////
     // Create 2 positions for structure 1
@@ -400,24 +402,24 @@ export function testDeletePosition({structureTree}) {
     logout(session);
     let res = deletePosition(postionEtab2_1);
     assertCondition(() => res.status === 401, "An unauthenticated user should not be able to delete a position");
-    session = authenticateWeb(teacher.login)
+    session = <Session>authenticateWeb(teacher.login)
     res = deletePosition(postionEtab2_1, session);
     assertCondition(() => res.status === 401, "A user who is not ADML should not be able to delete a position");
-    session = authenticateWeb(adml1.login)
+    session = <Session>authenticateWeb(adml1.login)
     res = deletePosition(postionEtab2_1, session);
     assertCondition(() => res.status === 401, "An ADML of another structure should not be able to delete this position");
     res = deletePosition(postionEtab1_1, session);
     assertOk(res, "An ADML of a structure should be able to delete a position");
 
-    session = authenticateWeb(headAdml.login)
+    session = <Session>authenticateWeb(headAdml.login)
     res = deletePosition(postionEtab1_2, session);
     assertOk(res, "An ADML of a head structure should be able to delete a position of an administered structure");
 
-    session = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
+    session = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
     res = deletePosition(postionEtab2_2, session);
     assertOk(res, "An ADMC should be able to delete any position");
 
-    session = authenticateWeb(headAdml.login);
+    session = <Session>authenticateWeb(headAdml.login);
 })
 };
 
