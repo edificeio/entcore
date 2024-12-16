@@ -19,8 +19,8 @@
 
 package org.entcore.conversation;
 
-import fr.wseduc.cron.CronTrigger;
-import io.vertx.core.Promise;
+import java.text.ParseException;
+
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
@@ -33,9 +33,9 @@ import org.entcore.conversation.service.impl.DeleteOrphan;
 import org.entcore.conversation.service.impl.Neo4jConversationService;
 import org.entcore.conversation.service.impl.SqlConversationService;
 
-import java.text.ParseException;
-
+import fr.wseduc.cron.CronTrigger;
 import static fr.wseduc.webutils.Utils.getOrElse;
+import io.vertx.core.Promise;
 
 public class Conversation extends BaseServer {
 
@@ -60,7 +60,7 @@ public class Conversation extends BaseServer {
 			.setUserService(userService)
 		);
 		addController(
-			new ApiController(storage, exportPath)
+			new ApiController()
 			.setConversationService(conversationService)
 //			.setUserService(userService)
 		);

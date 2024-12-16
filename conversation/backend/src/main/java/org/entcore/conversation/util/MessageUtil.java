@@ -19,6 +19,7 @@ package org.entcore.conversation.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 import org.entcore.common.user.UserInfos;
@@ -26,6 +27,10 @@ import org.entcore.common.user.UserUtils;
 import static org.entcore.common.utils.StringUtils.isEmpty;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -38,19 +43,20 @@ public class MessageUtil {
     final static public String MSG_CCI          = "cci";
 
     /**
-     * Extract users and group informations from a message loaded from DB.
+     * Extract users and group (and their displayName), from a message loaded from DB, into `userIndex` and `groupIndex`.
+     * Also hide cci recipients in the message who should not be visible.
      * @param message message read from DB
      * @param userInfos
      * @param lang
      * @param userIndex Map of ID <-> {"id": user ID, "displayName": username}
      * @param groupIndex Map of ID <-> {"id": group ID, "displayName": groupname}
      */
-    static public void extractUsersAndGroups(
+    static public void computeUsersAndGroupsDisplayNames(
             JsonObject message, UserInfos userInfos, String lang, final JsonObject userIndex, final JsonObject groupIndex
         ) {
         final String userId = userInfos.getUserId();
 		final Boolean notIsSender = (!userId.equals(message.getString(MSG_FROM)));
-		final List<String> userGroups = getOrElse(userInfos.getGroupsIds(), new ArrayList<String>());
+		final List<String> userGroups = getOrElse(userInfos.getGroupsIds(), new ArrayList<>());
 
         // Add connected user to index
         userIndex.put(
@@ -84,7 +90,12 @@ public class MessageUtil {
             correctIndex.put(a[0], newEntry);
 		}
 
-        // Pre-format deleted users/groups names ?
+        /* NOTE JCBE 2024-12-16 : 
+         * this code mimics (and simplifies) the implementation of ConversationController.translateGroupsNames()
+         * Excepting the management of cci and cciName, i do not understand its utility.
+         * Maybe pre-formating deleted users/groups displayNames ?
+         * Anyway, it should not cause any harm, so let's keep it there.
+         */
         Stream.of("toName", "ccName", "cciName").forEach(field -> {
             if(notIsSender && "cciName".equals(field)) {
                 // keep cci for user recipient only
@@ -144,8 +155,81 @@ public class MessageUtil {
         });
 
         // Final clean up
-        Stream.of("fromName", "toName", "ccName", "cciName", "displayNames").forEach(key -> {
+        Stream.of("fromName", "toName", "ccName", "cciName", "displayNames", "text_searchable").forEach(key -> {
             message.remove(key);
         });
     }
+
+	/** 
+	 * Async utility method to get additional information about users and groups.
+	 */
+	static public Future<Void> loadUsersAndGroupsDetails(final EventBus eb, final UserInfos userInfos, final JsonObject userIndex, final JsonObject groupIndex) {
+		// Gather additional users and groups information.
+		return Future.join(
+			loadUsersDetails(eb, userInfos.getUserId(), userIndex),
+			loadGroupsDetails(eb, userInfos.getUserId(), groupIndex)
+		)
+		// Compose final response
+		.map( infos -> {
+			JsonArray usersInfo = infos.resultAt(0);
+			usersInfo.stream().forEach(ui -> {
+				if(!(ui instanceof JsonObject)) return;
+				final JsonObject info = (JsonObject) ui;
+				final JsonObject user = userIndex.getJsonObject(info.getString("id"));
+				if(user!=null) {
+					user.put("profile", info.getString("type"));
+				}
+			});
+			JsonArray groupsInfo = infos.resultAt(1);
+			groupsInfo.stream().forEach(gi -> {
+				if(!(gi instanceof JsonObject)) return;
+				final JsonObject info = (JsonObject) gi;
+				final JsonObject group = groupIndex.getJsonObject(info.getString("id"));
+				if(group!=null ) {
+					group.put("size", info.getInteger("nbUsers"));
+					group.put("type", info.getString("type"));
+					group.put("subType", info.getString("subType"));
+				}
+			});
+            return null; // Avoid a warning
+		});
+	}
+
+	static private Future<JsonArray> loadUsersDetails(final EventBus eb, final String userId, final JsonObject userIndex) {
+		Promise<JsonArray> promise = Promise.promise();
+		JsonObject action = new JsonObject()
+		.put("action", "list-users")
+		.put("userIds", userIndex.stream().map(entry->entry.getKey())
+				.collect(Collector.of(JsonArray::new, JsonArray::add, JsonArray::add)))
+		.put("itself", Boolean.TRUE)
+		.put("excludeUserId", userId);
+        eb.request("directory", action, handlerToAsyncHandler(event -> {
+            JsonArray res = event.body().getJsonArray("result", new JsonArray());
+            if ("ok".equals(event.body().getString("status")) && res != null) {
+                promise.complete(res);
+            } else {
+                promise.fail("User not found");
+            }
+        }));
+		return promise.future();
+	}
+
+	static private Future<JsonArray> loadGroupsDetails(final EventBus eb, final String userId, final JsonObject groupIndex) {
+		Promise<JsonArray> promise = Promise.promise();
+		JsonObject action = new JsonObject()
+		.put("action", "getGroupsInfos")
+		.put("userId", userId)
+		.put("groupIds", groupIndex.stream().map(entry->entry.getKey())
+				.collect(Collector.of(JsonArray::new, JsonArray::add, JsonArray::add)));
+		eb.request("directory", action, handlerToAsyncHandler(event -> {
+            JsonArray res = event.body().getJsonArray("result", new JsonArray());
+            if ("ok".equals(event.body().getString("status")) && res != null) {
+                promise.complete(res);
+            } else {
+                promise.fail("Groups not found");
+            }
+        }));
+		return promise.future();
+	}
+
 }
