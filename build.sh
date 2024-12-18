@@ -79,6 +79,11 @@ echo "======================"
 echo "BRANCH_NAME = $BRANCH_NAME"
 echo "======================"
 
+init() {
+  me=`id -u`:`id -g`
+  echo "DEFAULT_DOCKER_USER=$me" > .env
+}
+
 clean () {
   docker compose run --rm $USER_OPTION maven mvn $MVN_OPTS clean
 }
@@ -283,6 +288,9 @@ for param in "$@"
 do
   case $param in
     '--no-user')
+      ;;
+    init)
+      init
       ;;
     clean)
       clean

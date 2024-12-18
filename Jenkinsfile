@@ -17,7 +17,7 @@ pipeline {
       stage('Build') {
         steps {
           checkout scm
-          sh './build.sh $BUILD_SH_EXTRA_PARAM clean install'
+          sh './build.sh $BUILD_SH_EXTRA_PARAM init clean install'
         }
       }
       stage('Test') {
