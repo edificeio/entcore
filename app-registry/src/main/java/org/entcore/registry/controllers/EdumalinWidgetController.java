@@ -6,9 +6,8 @@ import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.http.*;
+import io.vertx.core.http.impl.headers.HeadersMultiMap;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
@@ -64,10 +63,15 @@ public class EdumalinWidgetController extends BaseController {
      */
     private void displayWidgetEdumalin(final HttpServerRequest request, boolean retryGetEdumalinToken) {
 
-        UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-            @Override
-            public void handle(UserInfos infos) {
-                httpClient.getAbs(edumalinUrl + "/widget/getDisplay/" + (infos.getType().equals("Student") ? "Student" : "Teacher"), response -> {
+        UserUtils.getUserInfos(eb, request, infos ->
+                httpClient.request(new RequestOptions()
+                        .setMethod(HttpMethod.GET)
+                        .setAbsoluteURI(edumalinUrl + "/widget/getDisplay/" + (infos.getType().equals("Student") ? "Student" : "Teacher"))
+                        .setHeaders(new HeadersMultiMap()
+                                .add("Authorization", "Bearer " + edumalinToken)
+                                .add("Content-Type", "application/json")))
+                .flatMap(HttpClientRequest::send)
+                .onSuccess(response -> {
                     if (response.statusCode() == 200) {
                         response.bodyHandler(body -> {
                             JsonObject json = body.toJsonObject();
@@ -95,9 +99,7 @@ public class EdumalinWidgetController extends BaseController {
                             }
                         });
                     }
-                }).putHeader("Authorization", "Bearer " + edumalinToken).putHeader("Content-Type", "application/json").end();
-            }
-        });
+                }));
     }
 
     /**
@@ -109,7 +111,14 @@ public class EdumalinWidgetController extends BaseController {
     private void authLoginEdumalin(final HttpServerRequest request) {
 
         String requestBody = new JsonObject().put("username", usernameEdumalin).put("password", passwordEdumalin).toString();
-        httpClient.postAbs(referrerEdumalin + "/auth/login", response -> {
+        httpClient.request(new RequestOptions()
+                .setMethod(HttpMethod.POST)
+                .setAbsoluteURI(referrerEdumalin + "auth/login")
+                .setHeaders(new HeadersMultiMap()
+                        .add("Content-Type", "application/json")
+                        .add("Content-Length", Integer.toString(requestBody.length()))))
+                .flatMap(serviceRequest -> serviceRequest.send(requestBody))
+                .onSuccess(response -> {
                     if (response.statusCode() == 200) {
                         response.bodyHandler(body -> {
                             JsonObject json = body.toJsonObject();
@@ -133,8 +142,6 @@ public class EdumalinWidgetController extends BaseController {
                             }
                         });
                     }
-                }).putHeader("Content-Type", "application/json")
-                .putHeader("Content-Length", Integer.toString(requestBody.length()))
-                .write(requestBody).end();
+                });
     }
 }

@@ -47,6 +47,8 @@ import org.entcore.directory.pojo.TransversalSearchType;
 import org.entcore.directory.services.UserBookService;
 import org.entcore.directory.services.UserService;
 
+import com.google.common.collect.Sets;
+
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -56,12 +58,15 @@ import static org.entcore.common.user.DefaultFunctions.*;
 
 public class DefaultUserService implements UserService {
 
+	private static final Set<String> VALID_SORT_FIELDS = Sets.newHashSet("displayName", "email");
+	private static final Set<String> VALID_SORT_ORDERS = Sets.newHashSet("ASC", "DESC");
 	private static final int LIMIT = 1000;
 	private final Neo4j neo = Neo4j.getInstance();
 	private final EmailSender notification;
 	private final EventBus eb;
 	private final JsonObject userBookData;
 	private Logger logger = LoggerFactory.getLogger(DefaultUserService.class);
+
 
 	public DefaultUserService(EmailSender notification, EventBus eb, JsonObject aUserBookData) {
 		this.userBookData = aUserBookData;
@@ -70,34 +75,37 @@ public class DefaultUserService implements UserService {
 	}
 
 	@Override
-	public void createInStructure(String structureId, JsonObject user, Handler<Either<String, JsonObject>> result) {
-		user.put("profiles", new fr.wseduc.webutils.collections.JsonArray().add(user.getString("type")));
+	public void createInStructure(String structureId, JsonObject user, final UserInfos caller, Handler<Either<String, JsonObject>> result) {
+		user.put("profiles", new JsonArray().add(user.getString("type")));
 		JsonObject action = new JsonObject()
 				.put("action", "manual-create-user")
 				.put("structureId", structureId)
 				.put("profile", user.getString("type"))
-				.put("data", user);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+				.put("data", user)
+				.put("callerId", caller == null ? null : caller.getUserId());
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
-	public void createInClass(String classId, JsonObject user, Handler<Either<String, JsonObject>> result) {
-		user.put("profiles", new fr.wseduc.webutils.collections.JsonArray().add(user.getString("type")));
+	public void createInClass(String classId, JsonObject user, final UserInfos caller, Handler<Either<String, JsonObject>> result) {
+		user.put("profiles", new JsonArray().add(user.getString("type")));
 		JsonObject action = new JsonObject()
 				.put("action", "manual-create-user")
 				.put("classId", classId)
 				.put("profile", user.getString("type"))
-				.put("data", user);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+				.put("data", user)
+				.put("callerId", caller == null ? null : caller.getUserId());
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
-	public void update(final String id, final JsonObject user, final Handler<Either<String, JsonObject>> result) {
+	public void update(final String id, final JsonObject user, final UserInfos caller, final Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-update-user")
 				.put("userId", id)
-				.put("data", user);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+				.put("data", user)
+				.put("callerId", caller == null ? null : caller.getUserId());
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
@@ -107,7 +115,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "manual-update-user-login")
 				.put("userId", id)
 				.put("login", newLogin);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
 	}
 
 	@Override
@@ -314,12 +322,6 @@ public class DefaultUserService implements UserService {
 	public void get(String id, boolean getManualGroups, JsonArray filterAttributes, boolean filterNullReturn, boolean withClasses,
 					Handler<Either<String, JsonObject>> result) {
 
-		String getMgroups = "";
-		String resultMgroups = "";
-		if (getManualGroups) {
-			getMgroups = "OPTIONAL MATCH u-[:IN]->(mgroup: ManualGroup) WITH COLLECT(distinct {id: mgroup.id, name: mgroup.name}) as manualGroups, subjectCodes, admStruct, admGroups, parents, children, functions, u, structureNodes ";
-			resultMgroups = "CASE WHEN manualGroups IS NULL THEN [] ELSE manualGroups END as manualGroups, ";
-		}
 		String query =
 				"MATCH (u:`User` { id : {id}}) " +
 				"OPTIONAL MATCH u-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) WITH COLLECT(distinct s) as structureNodes, u " +
@@ -329,11 +331,13 @@ public class DefaultUserService implements UserService {
 				"OPTIONAL MATCH u-[:IN]->(fgroup: FunctionalGroup) WITH COLLECT(distinct {id: fgroup.id, name: fgroup.name}) as admGroups, parents, children, functions, u, structureNodes " +
 				"OPTIONAL MATCH u-[:ADMINISTRATIVE_ATTACHMENT]->(admStruct: Structure) WITH COLLECT(distinct {id: admStruct.id}) as admStruct, admGroups, parents, children, functions, u, structureNodes " +
 				"OPTIONAL MATCH u-[r:TEACHES]->(s:Subject) WITH COLLECT(distinct s.code) as subjectCodes, admStruct, admGroups, parents, children, functions, u, structureNodes " +
-				getMgroups;
+				"OPTIONAL MATCH u-[h:HAS_POSITION]->(p:UserPosition)-[:IN]->(struct:Structure) WITH CASE WHEN p IS NOT NULL THEN COLLECT(distinct {id: p.id, name: p.name, source: p.source, structureId: struct.id}) ELSE [] END as userPositions, subjectCodes, admStruct, admGroups, parents, children, functions, u, structureNodes ";
 
-		if(withClasses) {
+		if (getManualGroups)
+			query += "OPTIONAL MATCH u-[:IN]->(mgroup: ManualGroup) WITH COLLECT(distinct {id: mgroup.id, name: mgroup.name}) as manualGroups, userPositions, subjectCodes, admStruct, admGroups, parents, children, functions, u, structureNodes ";
+
+		if(withClasses)
 			query += "OPTIONAL MATCH s<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) WHERE u.classes IS NOT NULL ";
-		}
 		
 		if(filterNullReturn){
 			query += "RETURN DISTINCT u.profiles as type, structureNodes, " +
@@ -342,22 +346,25 @@ public class DefaultUserService implements UserService {
 					"filter(x IN coalesce(parents, []) WHERE x.id IS NOT NULL) as parents, " +
 					"filter(x IN coalesce(admGroups, []) WHERE x.id IS NOT NULL) as functionalGroups, " +
 					"filter(x IN coalesce(admStruct, []) WHERE x.id IS NOT NULL) as administrativeStructures, " +
-					"filter(x IN coalesce(subjectCodes, []) WHERE x IS NOT NULL) as subjectCodes, ";
+					"filter(x IN coalesce(subjectCodes, []) WHERE x IS NOT NULL) as subjectCodes, " +
+					"filter(x IN coalesce(userPositions, []) WHERE x IS NOT NULL) as userPositions, ";
 		} else {
 			query += "RETURN DISTINCT u.profiles as type, structureNodes, functions, " +
 					"CASE WHEN children IS NULL THEN [] ELSE children END as children, " +
 					"CASE WHEN parents IS NULL THEN [] ELSE parents END as parents, " +
 					"CASE WHEN admGroups IS NULL THEN [] ELSE admGroups END as functionalGroups, " +
 					"CASE WHEN admStruct IS NULL THEN [] ELSE admStruct END as administrativeStructures, " +
-					"CASE WHEN subjectCodes IS NULL THEN [] ELSE subjectCodes END as subjectCodes, ";
+					"CASE WHEN subjectCodes IS NULL THEN [] ELSE subjectCodes END as subjectCodes, " +
+					"CASE WHEN userPositions IS NULL THEN [] ELSE userPositions END as userPositions, ";
 		}
 
-		if(withClasses) {
+		if (getManualGroups)
+			query += "CASE WHEN manualGroups IS NULL THEN [] ELSE manualGroups END as manualGroups, ";
+
+		if(withClasses)
 			query += "CASE WHEN c IS NULL THEN [] ELSE COLLECT(s.externalId + '$' + c.name) END as classes2D, ";
-		}
 
-		query += resultMgroups +
-				"u";
+		query += "u";
 
 		final Handler<Either<String, JsonObject>> filterResultHandler = event -> {
 			if (event.isRight()) {
@@ -365,7 +372,7 @@ public class DefaultUserService implements UserService {
 				filterAttributes.add("password").add("resetCode").add("lastNameSearchField").add("firstNameSearchField")
 						.add("displayNameSearchField").add("checksum").add("emailSearchField")
 						.add("emailInternal").add("resetDate").add("lastScheme").add("lastDomain")
-						.add("mfaState").add("emailState").add("mobileState");
+						.add("mfaState").add("emailState").add("mobileState").add("oldPasswords").add("oldPassword");
 				for (Object o : filterAttributes) {
 					r.remove((String) o);
 				}
@@ -405,10 +412,62 @@ public class DefaultUserService implements UserService {
 		neo.execute(query, new JsonObject().put("id", id), fullNodeMergeHandler("u", filterResultHandler, "structureNodes"));
 	}
 
+	@Override
+	public void getUserStructuresGroup(String id,
+			Handler<Either<String, JsonObject>> result) {
+		try {
+			final String query = "MATCH (u:`User` {id: {id}}) " +
+					"OPTIONAL MATCH (u)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+					"WITH COLLECT(DISTINCT s) AS sn, u " +
+					"OPTIONAL MATCH (u)-[rf:HAS_FUNCTION]->(f:Function) " +
+					"WITH COLLECT(DISTINCT [f.externalId, rf.scope]) AS functions, u, sn " +
+					"OPTIONAL MATCH (u)-[:IN]->(fgroup:FunctionalGroup)-[:DEPENDS]->(s:Structure) " +
+					"WITH COLLECT(DISTINCT {functionalGroup: fgroup, structureExternalId: s.externalId}) AS admGroups, functions, u, sn "
+					+
+					"OPTIONAL MATCH (u)-[:ADMINISTRATIVE_ATTACHMENT]->(admStruct:Structure) " +
+					"WITH COLLECT(DISTINCT {id: admStruct.id}) AS admStruct, admGroups, functions, u, sn " +
+					"OPTIONAL MATCH (u)-[r:TEACHES]->(s:Subject) " +
+					"WITH COLLECT(DISTINCT s.code) AS subjectCodes, admStruct, admGroups, functions, u, sn " +
+					"OPTIONAL MATCH u<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup {filter:'Student'})-[:DEPENDS]->(cs:Structure) " +
+					"WITH COLLECT(distinct {id: child.id, displayName: child.displayName, externalId: child.externalId, UAI: cs.UAI}) as children, subjectCodes, admStruct, admGroups, functions, u, sn " +
+					"OPTIONAL MATCH u-[:RELATED]->(parent: User)-[:IN]->(:ProfileGroup {filter:'Relative'})-[:DEPENDS]->(ps:Structure) WHERE ps IN sn " +
+					"WITH COLLECT(distinct {id: parent.id, displayName: parent.displayName, externalId: parent.externalId, UAI: ps.UAI}) as parents, children, subjectCodes, admStruct, admGroups, functions, u, sn " +
+					"OPTIONAL MATCH (st:Structure)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) " +
+					"RETURN DISTINCT " +
+					"{ " +
+					"   structureNodes: [s in sn | {created: s.created, name: s.name, externalId: s.externalId, id: s.id, UAI: s.UAI}], "
+					+
+					"   lastLogin: u.lastLogin, " +
+					"   displayName: u.displayName, " +
+					"   classes: u.classes, " +
+					"   login: u.login, " +
+					"   id: u.id, " +
+					"   email: u.email, " +
+					"   structures: u.structures, " +
+					"   externalId: u.externalId, " +
+					"   birthDate: u.birthDate, " +
+					"   lastName: u.lastName, " +
+					"   firstName: u.firstName, " +
+					"   type: u.profiles, " +
+					"   functionalGroups: CASE WHEN admGroups IS NULL THEN [] ELSE admGroups END, " +
+					"   administrativeStructures: CASE WHEN admStruct IS NULL THEN [] ELSE admStruct END, " +
+					"   subjectCodes: CASE WHEN subjectCodes IS NULL THEN [] ELSE subjectCodes END, " +
+					"   childs: CASE WHEN children IS NULL THEN [] ELSE children END, " +
+					"   parents: CASE WHEN parents IS NULL THEN [] ELSE parents END, " +
+					"   classes2D: CASE WHEN (c) IS NULL THEN [] ELSE COLLECT(st.externalId + '$' + c.name) END " +
+					"} AS data, u.profiles as profiles";
+
+			neo.execute(query, new JsonObject().put("id", id), validUniqueResultHandler(result));
+		} catch (Exception e) {
+			logger.error("Error exception", e);
+		}
+
+	}
+
 	private void extractReformatUserFunctions(JsonObject r) {
 		//reformat functions
 		JsonObject functions = new JsonObject();
-		for (Object o : getOrElse(r.getJsonArray("aafFunctions"), new fr.wseduc.webutils.collections.JsonArray())) {
+		for (Object o : getOrElse(r.getJsonArray("aafFunctions"), new JsonArray())) {
 			if (o == null) continue;
 			String[] sf = o.toString().split("\\$");
 			if (sf.length == 5) {
@@ -416,8 +475,8 @@ public class DefaultUserService implements UserService {
 				if (jo == null) {
 					jo = new JsonObject().put("code", sf[1])
 							.put("functionName", sf[2])
-							.put("scope", new fr.wseduc.webutils.collections.JsonArray())
-							.put("structureExternalIds", new fr.wseduc.webutils.collections.JsonArray())
+							.put("scope", new JsonArray())
+							.put("structureExternalIds", new JsonArray())
 							.put("subjects", new JsonObject());
 					functions.put(sf[1], jo);
 				}
@@ -426,8 +485,8 @@ public class DefaultUserService implements UserService {
 					subject = new JsonObject()
 							.put("subjectCode", sf[3])
 							.put("subjectName", sf[4])
-							.put("scope", new fr.wseduc.webutils.collections.JsonArray())
-							.put("structureExternalIds", new fr.wseduc.webutils.collections.JsonArray());
+							.put("scope", new JsonArray())
+							.put("structureExternalIds", new JsonArray());
 					jo.getJsonObject("subjects").put(sf[3], subject);
 				}
 				jo.getJsonArray("structureExternalIds").add(sf[0]);
@@ -435,7 +494,7 @@ public class DefaultUserService implements UserService {
 			}
 		}
 		r.remove("aafFunctions");
-		for (Object o : getOrElse(r.getJsonArray("functions"), new fr.wseduc.webutils.collections.JsonArray())) {
+		for (Object o : getOrElse(r.getJsonArray("functions"), new JsonArray())) {
 			if (!(o instanceof JsonArray)) continue;
 			JsonArray a = (JsonArray) o;
 			String code = a.getString(0);
@@ -532,7 +591,8 @@ public class DefaultUserService implements UserService {
 	public void listIsolated(
 			String structureId, 
 			List<String> profile, 
-			String sortOn,
+			final String sortingField,
+			final String sortingOrder,
 			final Integer fromIndex,
 			final Integer limitResult,
 			final String searchType,
@@ -562,7 +622,7 @@ public class DefaultUserService implements UserService {
 			params.put("structureId", structureId);
 			if (profile != null && !profile.isEmpty()) {
 				query += "AND p.name IN {profile} ";
-				params.put("profile", new fr.wseduc.webutils.collections.JsonArray(profile));
+				params.put("profile", new JsonArray(profile));
 			}
 		} else { // users without structure
 			query = "MATCH (u:User)" +
@@ -572,20 +632,16 @@ public class DefaultUserService implements UserService {
 		
 		query += "RETURN DISTINCT u.id as id, p.name as type, " +
 				"u.activationCode as code, u.firstName as firstName," +
-				"u.lastName as lastName, u.displayName as displayName " +
-				"ORDER BY type DESC, displayName ASC ";
+				"u.lastName as lastName, u.displayName as displayName ";
 
-		// // Apply search parameters and sort order
-		// if( sortOn==null || sortOn.length()<2 ) {
-		// 	// Default sort order, historical behaviour.
-		// 	query += "ORDER BY type DESC, displayName ASC ";
-		// } else {
-		// 	final String order = sortOn.startsWith("-") ? "DESC" : "ASC";
-		// 	if( sortOn.charAt(0)=='+'|| sortOn.charAt(0)=='-' ) {
-		// 		sortOn = sortOn.substring(1);
-		// 	}
-		// 	query += "ORDER BY "+ sortOn +" "+ order;
-		// }
+		// Apply sort order
+		if(isValidSortField(sortingField) && isValidSortOrder(sortingOrder)) {
+			query += "ORDER BY "+ sortingField +" "+ sortingOrder +" ";
+		} else {
+			// Default sort order, historical behaviour.
+			query += "ORDER BY type DESC, displayName ASC ";
+		}		
+
 		if( fromIndex != null && fromIndex.intValue() > 0 ) {
 			query += " SKIP {skip}";
 			params.put( "skip", fromIndex );
@@ -699,7 +755,7 @@ public class DefaultUserService implements UserService {
 			if (restrictResultsToFunction && scope != null && !scope.isEmpty()) {
 				filterFunction += "MATCH (fs:Structure)<-[:DEPENDS]-(pg:ProfileGroup)<-[:IN]-(u:User) ";
 				conditionFunction += "AND (fs.id IN {scope}) ";
-				params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
+				params.put("scope", new JsonArray(scope));
 			}
 		} else if(userInfos.getFunctions().containsKey(CLASS_ADMIN)){
 			UserInfos.Function f = userInfos.getFunctions().get(CLASS_ADMIN);
@@ -707,7 +763,7 @@ public class DefaultUserService implements UserService {
 			if (scope != null && !scope.isEmpty()) {
 				filterFunction += "MATCH (c:Class)<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), u-[:IN]->pg ";
 				conditionFunction += "AND c.id IN {scope} ";
-				params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
+				params.put("scope", new JsonArray(scope));
 			}
 		}
 		String query =
@@ -757,20 +813,28 @@ public class DefaultUserService implements UserService {
 		return str;
 	}
 
+	private boolean isValidSortField(final String sortingField) {
+		return sortingField!=null && VALID_SORT_FIELDS.contains(sortingField);
+	}
+	private boolean isValidSortOrder(final String sortingOrder) {
+		return sortingOrder!=null && VALID_SORT_ORDERS.contains(sortingOrder);
+	}
+
+
 	@Override
 	public void delete(List<String> users, Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-delete-user")
-				.put("users", new fr.wseduc.webutils.collections.JsonArray(users));
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+				.put("users", new JsonArray(users));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
 	public void restore(List<String> users, Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-restore-user")
-				.put("users", new fr.wseduc.webutils.collections.JsonArray(users));
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+				.put("users", new JsonArray(users));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
@@ -782,7 +846,7 @@ public class DefaultUserService implements UserService {
 				.put("function", functionCode)
 				.put("inherit", inherit)
 				.put("scope", scope);
-		eb.send(Directory.FEEDER, action, ar -> {
+		eb.request(Directory.FEEDER, action, ar -> {
 			if (ar.succeeded()) {
 				JsonArray res = ((JsonObject) ar.result().body()).getJsonArray("results");
 				JsonObject json = new JsonObject();
@@ -807,7 +871,7 @@ public class DefaultUserService implements UserService {
 				.put("userId", id)
 				.put("classExternalId", classExternalId)
 				.put("structureExternalId", structureExternalId);
-		eb.send(Directory.FEEDER, action,handlerToAsyncHandler(validEmptyHandler(result)));
+		eb.request(Directory.FEEDER, action,handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
@@ -817,7 +881,7 @@ public class DefaultUserService implements UserService {
 				.put("userId", id)
 				.put("classExternalId", classExternalId)
 				.put("structureExternalId", structureExternalId);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
@@ -826,7 +890,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "manual-add-direction")
 				.put("userId", id)
 				.put("structureExternalId", structureExternalId);
-		eb.send(Directory.FEEDER, action,handlerToAsyncHandler(validEmptyHandler(result)));
+		eb.request(Directory.FEEDER, action,handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
@@ -835,7 +899,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "manual-remove-direction")
 				.put("userId", id)
 				.put("structureExternalId", structureExternalId);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
@@ -844,7 +908,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "manual-remove-user-function")
 				.put("userId", id)
 				.put("function", functionCode);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	public void listFunctions(String userId, Handler<Either<String, JsonArray>> result) {
@@ -862,7 +926,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "manual-add-user-group")
 				.put("userId", id)
 				.put("groupId", groupId);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
@@ -871,7 +935,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "manual-remove-user-group")
 				.put("userId", id)
 				.put("groupId", groupId);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
@@ -914,7 +978,7 @@ public class DefaultUserService implements UserService {
 				"WITH DISTINCT u, s, COLLECT(DISTINCT c.name) as classes " +
 				"RETURN u.id as id, u.externalId as externalId, u.firstName as firstName, u.lastName as lastName, " +
 				"u.email as email, u.emailAcademy as emailAcademy, head(u.profiles) as profile, u.login as login, " +
-				"COLLECT([s.UAI, s.name, classes]) as structuresWithClasses ";
+				"COLLECT([s.UAI, s.name, classes]) as structuresWithClasses, u.profiles as profiles ";
 		neo.execute(query, new JsonObject().put("id", userId), validUniqueResultHandler(result));
 	}
 
@@ -924,7 +988,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "manual-relative-student")
 				.put("relativeId", relativeId)
 				.put("studentId", studentId);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, eitherHandler)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, eitherHandler)));
 	}
 
 	@Override
@@ -933,7 +997,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "manual-unlink-relative-student")
 				.put("relativeId", relativeId)
 				.put("studentId", studentId);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(eitherHandler)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(eitherHandler)));
 	}
 
 	@Override
@@ -942,7 +1006,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "ignore-duplicate")
 				.put("userId1", userId1)
 				.put("userId2", userId2);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
@@ -951,7 +1015,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "list-duplicate")
 				.put("structures", structures)
 				.put("inherit", inherit);
-		eb.send(Directory.FEEDER, action, new DeliveryOptions().setSendTimeout(600000l), handlerToAsyncHandler(validResultHandler(results)));
+		eb.request(Directory.FEEDER, action, new DeliveryOptions().setSendTimeout(600000l), handlerToAsyncHandler(validResultHandler(results)));
 	}
 
 	@Override
@@ -961,7 +1025,7 @@ public class DefaultUserService implements UserService {
 				.put("userId1", userId1)
 				.put("userId2", userId2)
 				.put("keepRelations", keepRelations);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(handler)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(handler)));
 	}
 
 	@Override
@@ -979,7 +1043,7 @@ public class DefaultUserService implements UserService {
 		}
 
 		if (fields == null || fields.size() == 0) {
-			fields = new fr.wseduc.webutils.collections.JsonArray().add("id").add("externalId").add("lastName").add("firstName").add("login");
+			fields = new JsonArray().add("id").add("externalId").add("lastName").add("firstName").add("login");
 		}
 
 		//user's fields for Full Export
@@ -995,7 +1059,7 @@ public class DefaultUserService implements UserService {
 		// Init params and filter for all type of queries
 		String  filter =  "WHERE s.UAI IN {uai} ";
 
-		JsonObject params = new JsonObject().put("uai", new fr.wseduc.webutils.collections.JsonArray(UAI));
+		JsonObject params = new JsonObject().put("uai", new JsonArray(UAI));
 
 		StringBuilder query = new StringBuilder();
 		query.append("MATCH (s:Structure)<-[:DEPENDS]-(cpg:ProfileGroup)");
@@ -1057,7 +1121,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "merge-by-keys")
 				.put("originalUserId", userId)
 				.put("mergeKeys", body.getJsonArray("mergeKeys"));
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(13, handler)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(13, handler)));
 	}
 
 	@Override
@@ -1067,7 +1131,7 @@ public class DefaultUserService implements UserService {
 				.put("action", "unmerge-by-logins")
 				.put("originalUserId", body.getString("originalUserId"))
 				.put("mergedLogins", body.getJsonArray("mergedLogins"));
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(handler)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(handler)));
 	}
 
 	@Override

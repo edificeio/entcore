@@ -19,11 +19,11 @@
 
 package org.entcore.common.service.impl;
 
-import com.mongodb.DBObject;
-import com.mongodb.QueryBuilder;
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.Either;
+import org.bson.conversions.Bson;
 import org.entcore.common.service.SearchService;
 import org.entcore.common.service.VisibilityFilter;
 import org.entcore.common.utils.StringUtils;
@@ -61,25 +61,23 @@ public class MongoDbSearchService implements SearchService {
                        Integer page, Integer limit, Handler<Either<String, JsonArray>> handler) {
         final int skip = (0 == page) ? -1 : page * limit;
 
-        final List<DBObject> groups = new ArrayList<DBObject>();
-        groups.add(QueryBuilder.start("userId").is(userId).get());
+        final List<Bson> groups = new ArrayList<>();
+        groups.add(Filters.eq("userId", userId));
         for (String gpId: groupIds) {
-           groups.add(QueryBuilder.start("groupId").is(gpId).get());
+           groups.add(Filters.eq("groupId", gpId));
         }
 
-        final QueryBuilder worldsQuery = new QueryBuilder();
         //no stemming (in fact, stemming works only with words and for a given language) and no list of stop words
-        worldsQuery.text(textSearchedComposition(searchWords));
+        final Bson worldsQuery = Filters.text(textSearchedComposition(searchWords));
 
-        final QueryBuilder rightsOrQuery = new QueryBuilder().or(
-                QueryBuilder.start("visibility").is(VisibilityFilter.PUBLIC.name()).get(),
-                QueryBuilder.start("visibility").is(VisibilityFilter.PROTECTED.name()).get(),
-                QueryBuilder.start(this.ownerUserId).is(userId).get(),
-                QueryBuilder.start("shared").elemMatch(
-                        new QueryBuilder().or(groups.toArray(new DBObject[groups.size()])).get()
-                ).get());
+        final Bson rightsOrQuery = Filters.or(
+                Filters.eq("visibility", VisibilityFilter.PUBLIC.name()),
+                Filters.eq("visibility", VisibilityFilter.PROTECTED.name()),
+                Filters.eq(this.ownerUserId, userId),
+                Filters.elemMatch("shared", Filters.or(groups))
+        );
 
-        final QueryBuilder query = new QueryBuilder().and(worldsQuery.get(),rightsOrQuery.get());
+        final Bson query = Filters.and(worldsQuery,rightsOrQuery);
 
         JsonObject sort = new JsonObject().put("modified", -1);
         final JsonObject projection = new JsonObject();

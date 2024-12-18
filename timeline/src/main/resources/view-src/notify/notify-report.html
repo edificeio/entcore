@@ -1,20 +1,4 @@
 <span>
     <span>{{#i18n}}timeline.notify.report.text{{/i18n}}</span>
     <a href="{{#host}}{{uri}}{{/host}}">{{username}}</a>.
-	<br /><span>{{#i18n}}timeline.notify.report.text2{{/i18n}}</span>:
-    <a ng-if="showAdminv1Link()" 
-        href="{{#host}}/timeline/admin-history{{/host}}" 
-        target="_blank">
-        {{#i18n}}timeline.notify.report.text3{{/i18n}}
-    </a>
-    <a ng-if="showAdminv2HomeLink()" 
-        href="{{#host}}/admin{{/host}}" 
-        target="_blank">
-        {{#i18n}}timeline.notify.report.text3{{/i18n}}
-    </a>
-    <a ng-if="showAdminv2AlertsLink()" 
-        ng-href="{{#host}}/admin/[[userStructure]]/alertes/signalements{{/host}}" 
-        target="_blank">
-        {{#i18n}}timeline.notify.report.text3{{/i18n}}
-    </a>
 </span>

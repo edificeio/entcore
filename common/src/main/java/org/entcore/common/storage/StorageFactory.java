@@ -34,21 +34,15 @@ import org.entcore.common.storage.impl.HttpAntivirusClient;
 import org.entcore.common.storage.impl.S3FallbackStorage;
 import org.entcore.common.storage.impl.StorageFileAnalyzer;
 import static org.entcore.common.storage.impl.StorageFileAnalyzer.Configuration.DEFAULT_CONTENT;
-import org.entcore.common.storage.impl.SwiftStorage;
 import org.entcore.common.validation.ExtensionValidator;
 import org.entcore.common.validation.FileValidator;
 import org.entcore.common.validation.QuotaFileSizeValidation;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Collections;
-import java.util.List;
 
 public class StorageFactory {
 
 	private final Vertx vertx;
 	private final IMessagingClient messagingClient;
-	private JsonObject swift;
 	private JsonObject fs;
 	private String gridfsAddress;
 	private final StorageFileAnalyzer.Configuration storageFileAnalyzerConfiguration;
@@ -64,18 +58,12 @@ public class StorageFactory {
 	public StorageFactory(Vertx vertx, JsonObject config, AbstractApplicationStorage applicationStorage) {
 		this.vertx = vertx;
 		LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
-		String s = (String) server.get("swift");
-		if (s != null) {
-			this.swift = new JsonObject(s);
-		}
-		s = (String) server.get("file-system");
+		String s = (String) server.get("file-system");
 		if (s != null) {
 			this.fs = new JsonObject(s);
 		}
 		this.gridfsAddress = (String) server.get("gridfsAddress");
-		if (config != null && config.getJsonObject("swift") != null) {
-			this.swift = config.getJsonObject("swift");
-		} else if (config != null && config.getJsonObject("file-system") != null) {
+		if (config != null && config.getJsonObject("file-system") != null) {
 			this.fs = config.getJsonObject("file-system");
 		} else if (config != null && config.getString("gridfs-address") != null) {
 			this.gridfsAddress = config.getString("gridfs-address");
@@ -113,17 +101,7 @@ public class StorageFactory {
 
 	public Storage getStorage() {
 		Storage storage = null;
-		if (swift != null) {
-			String uri = swift.getString("uri");
-			String container = swift.getString("container");
-			String username = swift.getString("user");
-			String password = swift.getString("key");
-			try {
-				storage = new SwiftStorage(vertx, new URI(uri), container, username, password);
-			} catch (URISyntaxException e) {
-				e.printStackTrace();
-			}
-		} else if (fs != null) {
+		if (fs != null) {
 			if (fs.containsKey("paths")) {
 				storage = new FileStorage(vertx, fs.getJsonArray("paths"), fs.getBoolean("flat", false), messagingClient, storageFileAnalyzerConfiguration);
 			} else {

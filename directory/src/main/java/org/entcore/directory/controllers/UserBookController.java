@@ -49,6 +49,8 @@ import org.entcore.common.user.UserUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.directory.services.SchoolService;
 import org.entcore.directory.services.UserBookService;
+import org.entcore.common.user.position.UserPositionService;
+import org.entcore.common.user.position.UserPosition;
 import org.vertx.java.core.http.RouteMatcher;
 
 import fr.wseduc.bus.BusAddress;
@@ -62,6 +64,7 @@ import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.HttpClientUtils;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -80,6 +83,7 @@ public class UserBookController extends BaseController {
 	private HttpClient client;
 	private SchoolService schoolService;
 	private UserBookService userBookService;
+	private UserPositionService userPositionService;
 	private EventStore eventStore;
 	private ConversationNotification conversationNotification;
 	protected enum DirectoryEvent { ACCESS }
@@ -90,6 +94,10 @@ public class UserBookController extends BaseController {
 		this.userBookService = userBookService;
 	}
 	
+	public void setUserPositionService(UserPositionService userPositionService) {
+		this.userPositionService = userPositionService;
+	}
+
 	@Override
 	public void init(final Vertx vertx, JsonObject config, RouteMatcher rm,
 					 Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -275,8 +283,8 @@ public class UserBookController extends BaseController {
 							public void handle(JsonArray manualGroups) {
 								JsonObject result = new JsonObject()
 									.put("users", personnel)
-									.put("classes", classesAndProfileGroups.getJsonObject(0).getJsonArray("classes", new fr.wseduc.webutils.collections.JsonArray()))
-									.put("profileGroups", classesAndProfileGroups.getJsonObject(0).getJsonArray("profileGroups", new fr.wseduc.webutils.collections.JsonArray()))
+									.put("classes", classesAndProfileGroups.getJsonObject(0).getJsonArray("classes", new JsonArray()))
+									.put("profileGroups", classesAndProfileGroups.getJsonObject(0).getJsonArray("profileGroups", new JsonArray()))
 									.put("manualGroups", manualGroups);
 								renderJson(request, result);
 							}
@@ -460,7 +468,7 @@ public class UserBookController extends BaseController {
 					welcomeMessage = messages.get("default");
 				}
 				if (welcomeMessage != null) {
-					conversationNotification.notify(request, "", new fr.wseduc.webutils.collections.JsonArray().add(message.body().getString("userId")),
+					conversationNotification.notify(request, "", new JsonArray().add(message.body().getString("userId")),
 							null, I18n.getInstance().translate("welcome.subject", getHost(request), I18n.acceptLanguage(request)),
 							welcomeMessage, new Handler<Either<String, JsonObject>>() {
 
@@ -510,7 +518,7 @@ public class UserBookController extends BaseController {
 				});
 				break;
 			case "get.userlist":
-				final JsonArray userIds = message.body().getJsonArray("userIds", new fr.wseduc.webutils.collections.JsonArray());
+				final JsonArray userIds = message.body().getJsonArray("userIds", new JsonArray());
 				String query =
 						"MATCH (u:User) " +
 						message.body().getString("additionalMatch", "") +
@@ -529,7 +537,7 @@ public class UserBookController extends BaseController {
 									.put("message", event.left().getValue()));
 								return;
 							}
-							JsonArray results = (event.right().getValue().getJsonObject(0)).getJsonArray("preferences", new fr.wseduc.webutils.collections.JsonArray());
+							JsonArray results = (event.right().getValue().getJsonObject(0)).getJsonArray("preferences", new JsonArray());
 							for(Object resultObj : results){
 								JsonObject result = (JsonObject) resultObj;
 								JsonObject prefs = new JsonObject();
@@ -790,11 +798,36 @@ public class UserBookController extends BaseController {
 	@Get("/search/criteria")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void searchCriteria(HttpServerRequest request) {
+		final boolean getClassesMonoStructureOnly = Boolean.parseBoolean(request.params().get("getClassesMonoStructureOnly"));
 		UserUtils.getUserInfos(eb, request, user -> {
 			if (user != null) {
-				schoolService.searchCriteria(user.getStructures()
-						, Boolean.parseBoolean(request.params().get("getClassesMonoStructureOnly"))
-						, defaultResponseHandler(request));
+				userPositionService.getUserPositions(user)
+				.onComplete( ar -> {
+					Set<UserPosition> positions;
+					if(ar.failed()) {
+						log.debug("Unable to get UserPositions, considering it empty.");
+						positions = Collections.emptySet();
+					} else {
+						positions = ar.result();
+					}
+
+					schoolService.searchCriteria(
+						user.getStructures(), 
+						getClassesMonoStructureOnly, 
+						(Either<String, JsonObject> either) -> {
+							if (either.isRight()) {
+								JsonObject result = either.right().getValue();
+								if(result != null) {
+									// Add UserPositions to the resulting JsonObject
+									final JsonArray positionsArray = new JsonArray();
+									positions.forEach(position -> positionsArray.add(position.toJsonObject()));
+									result.put("positions", positionsArray);
+								}
+							}
+							defaultResponseHandler(request).handle(either);
+						}
+					);
+			 	});
 			} else {
 				badRequest(request, "invalid.user");
 			}

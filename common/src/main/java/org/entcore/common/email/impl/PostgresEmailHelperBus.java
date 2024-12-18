@@ -1,6 +1,7 @@
 package org.entcore.common.email.impl;
 
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
@@ -20,14 +21,14 @@ public class PostgresEmailHelperBus implements PostgresEmailHelper {
 
     @Override
     public Future<Void> setRead(UUID mailId, final JsonObject extraParams) {
-        final Future<Void> future = Future.future();
+        final Promise<Void> future = Promise.promise();
         final JsonObject payload = new JsonObject();
         for(String key : extraParams.fieldNames()){
             payload.put(key, extraParams.getValue(key));
         }
         payload.put("action", "setRead");
         payload.put("mailId", mailId.toString());
-        this.eventBus.send(MAILER_ADDRESS, payload, res -> {
+        this.eventBus.request(MAILER_ADDRESS, payload, res -> {
             if(res.failed()){
                 future.fail(res.cause());
                 log.error("Failed to setRead mail with remote worker: ", res.cause());
@@ -35,11 +36,11 @@ public class PostgresEmailHelperBus implements PostgresEmailHelper {
                 future.complete();
             }
         });
-        return future;
+        return future.future();
     }
     @Override
     public Future<Void> createWithAttachments(PostgresEmailBuilder.EmailBuilder mailB, List<PostgresEmailBuilder.AttachmentBuilder> attachmentsB) {
-        final Future<Void> future = Future.future();
+        final Promise<Void> future = Promise.promise();
         final JsonObject payload = new JsonObject();
         final JsonArray attachments = new JsonArray();
         if(attachmentsB != null){
@@ -50,7 +51,7 @@ public class PostgresEmailHelperBus implements PostgresEmailHelper {
         payload.put("action", "send");
         payload.put("mail", mailB.toJsonObject());
         payload.put("attachments", attachments);
-        this.eventBus.send(MAILER_ADDRESS, payload, res -> {
+        this.eventBus.request(MAILER_ADDRESS, payload, res -> {
            if(res.failed()){
                future.fail(res.cause());
                log.error("Failed to send mail with remote worker: ", res.cause());
@@ -58,6 +59,6 @@ public class PostgresEmailHelperBus implements PostgresEmailHelper {
                future.complete();
            }
         });
-        return future;
+        return future.future();
     }
 }

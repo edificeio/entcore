@@ -33,7 +33,7 @@ object AuthScenario {
     .exec(http("Get OAuth2 code with disconnected user")
       .get("/auth/oauth2/auth?response_type=code&state=blip&scope=userinfo&client_id=test" +
         AppRegistryScenario.now + "&redirect_uri=http%3A%2F%2Flocalhost%3A1500%2Fcode")
-      .check(status.is(200)))
+      .check(status.is(302)))
     .exec(http("User login for OAuth2")
       .post("""/auth/login""")
       .formParam("""email""", """${teacherLogin}""")

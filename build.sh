@@ -1,5 +1,7 @@
 #!/bin/bash
 
+MVN_OPTS="-Duser.home=/var/maven"
+
 if [ ! -e node_modules ]
 then
   mkdir node_modules
@@ -72,12 +74,17 @@ echo "======================"
 echo "BRANCH_NAME = $BRANCH_NAME"
 echo "======================"
 
+init() {
+  me=`id -u`:`id -g`
+  echo "DEFAULT_DOCKER_USER=$me" > .env
+}
+
 clean () {
-  docker compose run --rm $USER_OPTION gradle gradle clean
+  docker compose run --rm maven mvn $MVN_OPTS clean
 }
 
 buildNode () {
-  if [ "$MODULE" = "" ] || [ ! "$MODULE" = "admin" ]; then
+  if [ "$MODULE" = "" ] || [ ! "$MODULE" = "admin" ] && [ ! -e ./"$MODULE"/frontend ]; then
     #try jenkins branch name => then local git branch name => then jenkins params
     echo "[buildNode] Get branch name from jenkins env..."
     BRANCH_NAME=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
@@ -117,28 +124,63 @@ buildNode () {
   fi
 }
 
+buildReactNode() {
+  # Will build the frontend for all react modules
+  if [ "$MODULE" = "" ]; then
+    modules=($(ls -d */ | cut -f1 -d'/'))
+  else 
+    modules=($MODULE)
+  fi
+  
+  for module in "${modules[@]}"; do
+    cd ./"$module"
+
+    if [ -e ./frontend ]; then
+      echo -e "[Build React] Build react frontend directory for module $module"
+      # Building frontend $module
+      cd ./frontend
+      ./build.sh --no-docker clean init build
+
+      # Create directory structure and copy frontend build files to backend
+      cd ../backend
+      rm -rf ./src/main/resources/public/*.js
+      rm -rf ./src/main/resources/public/*.css
+      cp -R ../frontend/dist/* ./src/main/resources/
+
+      # Create view directory and copy HTML files
+      mv ./src/main/resources/*.html ./src/main/resources/view
+
+      # Clean up - remove frontend/dist and backend/src/main/resources
+      rm -rf ../frontend/dist
+      cd ..
+    fi
+
+    cd ..
+  done
+}
+
 buildAdminNode() {
   if [ "$MODULE" = "" ] || [ "$MODULE" = "admin" ]; then
     case `uname -s` in
       MINGW*)
-        docker compose run --rm $USER_OPTION node16 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
+        docker compose run --rm $USER_OPTION node16 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@dev ngx-ode-sijil@dev ngx-ode-ui@dev && npm run build-docker-prod"
         ;;
       *)
-        docker compose run --rm $USER_OPTION node16 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
+        docker compose run --rm $USER_OPTION node16 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@dev ngx-ode-sijil@dev ngx-ode-ui@dev && npm run build-docker-prod"
     esac
   fi
 }
 
-buildGradle () {
-  docker compose run --rm $USER_OPTION gradle bash -c "git config --add safe.directory /home/gradle/project && gradle ${GRADLE_OPTION}shadowJar ${GRADLE_OPTION}install"
+install () {
+  docker compose run --rm maven mvn $MVN_OPTS install -DskipTests
 }
 
-testGradle () {
+test () {
   if [ -z "$JAVA_8_HOME" ]
   then
-    ./gradlew "$GRADLE_OPTION"test
+    mvn test
   else
-    JAVA_HOME=$JAVA_8_HOME ./gradlew "$GRADLE_OPTION"test
+    JAVA_HOME=$JAVA_8_HOME mvn test
   fi
 }
 
@@ -165,28 +207,85 @@ watch () {
 # ex: ./build.sh -m=workspace -s=paris watch
 
 ngWatch () {
-  docker compose run --rm $USER_OPTION node16 sh -c "npm run start"
+  docker compose run --rm $USER_OPTION --publish 4200:4200 node16 sh -c "npm run start"
 }
 
 infra () {
   docker compose run --rm $USER_OPTION node sh -c "npm install /home/node/infra-front"
 }
 
-publish () {
-  if [ -e "?/.gradle" ] && [ ! -e "?/.gradle/gradle.properties" ]
-  then
-    echo "odeUsername=$NEXUS_ODE_USERNAME" > "?/.gradle/gradle.properties"
-    echo "odePassword=$NEXUS_ODE_PASSWORD" >> "?/.gradle/gradle.properties"
-    echo "sonatypeUsername=$NEXUS_SONATYPE_USERNAME" >> "?/.gradle/gradle.properties"
-    echo "sonatypePassword=$NEXUS_SONATYPE_PASSWORD" >> "?/.gradle/gradle.properties"
-  fi
-  docker compose run --rm $USER_OPTION gradle gradle "$GRADLE_OPTION"publish
+publish() {
+  version=`docker-compose run --rm maven mvn $MVN_OPTS help:evaluate -Dexpression=project.version -q -DforceStdout`
+  level=`echo $version | cut -d'-' -f3`
+  case "$level" in
+    *SNAPSHOT) export nexusRepository='snapshots' ;;
+    *)         export nexusRepository='releases' ;;
+  esac
+
+  docker compose run --rm  maven mvn -DrepositoryId=ode-$nexusRepository -DskipTests --settings /var/maven/.m2/settings.xml deploy
+}
+
+check_prefix_sh_file() {
+    dir_path=$1      # Directory path
+    search_str=$2    # String to check
+    # Loop over each .sh file in the directory
+    for file in "$dir_path"/*.sh; do
+        if [ -f "$file" ]; then
+            # Get the file name without the extension
+            base_name=$(basename "$file" .sh)
+
+            # Check if the file name is a prefix of the search string
+            if [[ "$search_str" == "$base_name"* ]]; then
+                return 0  # Found a match, return 0 (success)
+            fi
+        fi
+    done
+
+    return 1  # No match found, return 1 (failure)
+}
+
+itTests() {
+  script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  cd $script_dir/tests/src/test/js/it/scenarios
+  exit_code=0
+  js_files=($(find . -type f -name '*.js' ! -name '_*'))
+  for it_file in "${js_files[@]}"; do
+    short_file_name=$(basename -s .js $it_file)
+    file_dir=$(dirname $it_file)
+    check_prefix_sh_file "$file_dir" "$short_file_name"
+    if [ $? -eq 1 ]; then
+      echo executing $it_file
+      docker compose run --rm -T k6 run file:///home/k6/src/it/scenarios/$it_file
+      if [ $? -ne 0 ]; then
+          exit_code=1
+          echo "Error while executing : $it_file"
+      fi
+    fi
+  done
+  sh_files=($(find . -type f -name '*.sh'))
+  for sh_file in "${sh_files[@]}"; do
+    echo executing $sh_file
+    "$sh_file" "$script_dir/tests/src/test/resources/data" "$script_dir/../$SPRINGBOARD"
+    if [ $? -ne 0 ]; then
+        exit_code=1
+        echo "Error while executing : $sh_file"
+    fi
+  done
+  cd -
+
+  echo "|-------------------------|"
+  [ $exit_code -ne 0 ] && echo "|---- itTests  FAILED ----|" || echo "|--- itTests SUCCEEDED ---|"
+  echo "|-------------------------|"
+  exit $exit_code
 }
 
 for param in "$@"
 do
   case $param in
     '--no-user')
+      ;;
+    init)
+      init
       ;;
     clean)
       clean
@@ -197,11 +296,11 @@ do
     buildNode)
       buildNode
       ;;
-    buildGradle)
-      buildGradle
+    buildReactNode)
+      buildReactNode
       ;;
     install)
-      buildNode && buildAdminNode && buildGradle
+      buildNode && buildReactNode && buildAdminNode && install
       ;;
     localDep)
       localDep
@@ -213,7 +312,10 @@ do
       ngWatch
       ;;
     test)
-      testGradle
+      test
+      ;;
+    itTests)
+      itTests
       ;;
     infra)
       infra

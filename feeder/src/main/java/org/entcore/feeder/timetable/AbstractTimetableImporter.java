@@ -21,9 +21,7 @@ package org.entcore.feeder.timetable;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.DefaultAsyncResult;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
+import io.vertx.core.*;
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.common.storage.Storage;
@@ -35,8 +33,6 @@ import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.exceptions.ValidationException;
 import org.entcore.feeder.utils.*;
 import org.joda.time.DateTime;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -157,7 +153,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected final String UAI;
 	protected final Report report;
 	protected final TimetableReport ttReport;
-	protected final JsonArray structure = new fr.wseduc.webutils.collections.JsonArray();
+	protected final JsonArray structure = new JsonArray();
 	protected String structureExternalId;
 	protected String structureId;
 	protected JsonObject classesMapping;
@@ -225,7 +221,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	protected final String basePath;
 	private boolean txSuccess = false;
 	protected Set<String> userImportedExternalId = new HashSet<>();
-	private volatile JsonArray coursesBuffer = new fr.wseduc.webutils.collections.JsonArray();
+	private volatile JsonArray coursesBuffer = new JsonArray();
 	protected final boolean authorizeUserCreation;
 	protected final boolean authorizeUpdateGroups;
 	protected final boolean authoriseUpdateTimetable;
@@ -554,7 +550,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			return;
 
 		final JsonArray cf = coursesBuffer;
-		coursesBuffer = new fr.wseduc.webutils.collections.JsonArray();
+		coursesBuffer = new JsonArray();
 		final int countCoursesBuffer = cf.size();
 		if (countCoursesBuffer > 0) {
 			mongoDb.bulk(COURSES, cf, new Handler<Message<JsonObject>>() {
@@ -623,7 +619,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	}
 
 	private JsonArray getExternalIdClasses(JsonArray classes) {
-		JsonArray a = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray a = new JsonArray();
 		if (classes != null && classes.size() > 0) {
 			for (Object c: classes) {
 				if (!(c instanceof String)) continue;
@@ -637,7 +633,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	}
 
 	private JsonArray getExternalIdGroups(JsonArray groups) {
-		JsonArray a = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray a = new JsonArray();
 		if (groups != null && groups.size() > 0) {
 			for (Object g: groups) {
 				if (!(g instanceof String)) continue;
@@ -682,7 +678,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			final JsonObject baseQuery = new JsonObject().put("structureId", structureId);
 			if (txSuccess) {
 				CompositeFuture.all(updateMongoCourses(baseQuery), subjectAutoMapping())
-						.setHandler(ar -> endHandler.handle(new DefaultAsyncResult<>(report)));
+						.onComplete(ar -> endHandler.handle(new DefaultAsyncResult<>(report)));
 			} else {
 				mongoDb.delete(COURSES, baseQuery.copy()
 						.put("pending", importTimestamp)
@@ -728,7 +724,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	}
 
 	private Future<Void> updateMongoCourses(JsonObject baseQuery) {
-		Future<Void> future = Future.future();
+		Promise<Void> future = Promise.promise();
 		mongoDb.update(COURSES, baseQuery.copy().put("pending", importTimestamp),
 				new JsonObject().put("$rename", new JsonObject().put("pending", "modified")).put("$unset", new JsonObject().put("deleted", "")),
 				false, true, new Handler<Message<JsonObject>>() {
@@ -757,7 +753,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 						}
 					}
 				});
-		return future;
+		return future.future();
 	}
 
 	protected void removeUselessGroups(JsonObject baseParams)
@@ -775,7 +771,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 
 		JsonArray mappedGroups = groupsMapping != null ? new JsonArray(new ArrayList<String>(groupsMapping.getMap().keySet())) : new JsonArray();
 		persistBulKCourses();
-		txXDT.add(DELETE_SUBJECT, params.copy().put("subjects", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(subjects.values()))));
+		txXDT.add(DELETE_SUBJECT, params.copy().put("subjects", new JsonArray(new ArrayList<>(subjects.values()))));
 		txXDT.add(UNLINK_SUBJECT, params);
 		if(authorizeUpdateGroups == true)
 		{
@@ -844,7 +840,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 	}
 
 	private Future<Void> subjectAutoMapping() {
-		final Future<Void> future = Future.future();
+		final Promise<Void> future = Promise.promise();
 		final JsonObject params = new JsonObject().put("UAI", UAI);
 		final TransactionHelper tx1;
 		try {
@@ -862,7 +858,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			log.error("Transaction1 error on subject auto mapping", e);
 			report.addError("error.tx1.subject.auto.mapping");
 			future.complete();
-			return future;
+			return future.future();
 		}
 		tx1.commit(r -> {
 			JsonArray a = r.body().getJsonArray("results");
@@ -915,7 +911,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 				future.complete();
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	private void createSubject(String code, boolean bcnSubject, TransactionHelper tx) {

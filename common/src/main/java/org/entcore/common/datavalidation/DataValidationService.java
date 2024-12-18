@@ -23,6 +23,8 @@ import io.vertx.core.Future;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 
+import java.util.Map;
+
 public interface DataValidationService {
 
 	/**
@@ -69,4 +71,13 @@ public interface DataValidationService {
 	 * @return the message ID
 	 */
 	Future<String> sendValidationMessage(HttpServerRequest request, String target, JsonObject templateParams, String module);
+
+	/**
+	 * Send the warning message (email and/or sms).
+	 * @param request required to translate things...
+	 * @param targets targets where to send (email and/or mobile)
+	 * @param templateParams email template data
+	 * @return the message ID
+	 */
+	Future<String> sendWarningMessage(HttpServerRequest request, Map<String, String> targets, JsonObject templateParams);
 }

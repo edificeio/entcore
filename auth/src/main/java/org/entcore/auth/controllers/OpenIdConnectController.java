@@ -24,23 +24,31 @@ import fr.wseduc.rs.Post;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.oauth.OpenIdConnectClient;
 import fr.wseduc.webutils.request.CookieHelper;
+import fr.wseduc.webutils.request.RequestUtils;
 import fr.wseduc.webutils.security.HmacSha1;
 import org.entcore.auth.services.OpenIdConnectServiceProvider;
 import org.entcore.auth.services.OpenIdServiceProviderFactory;
+import org.entcore.auth.services.impl.OpenIdSloServiceImpl;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
+import org.vertx.java.core.http.RouteMatcher;
+
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.Map;
 import java.util.UUID;
 
 import static fr.wseduc.webutils.Utils.isEmpty;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.eventbus.Message;
 
 public class OpenIdConnectController extends AbstractFederateController {
 
@@ -48,27 +56,78 @@ public class OpenIdConnectController extends AbstractFederateController {
 	private JsonObject certificates = new JsonObject();
 	private boolean subMapping;
 	private JsonObject activationThemes;
+	private OpenIdSloServiceImpl sloServiceImpl;
+
+	@Override
+	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
+			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
+		super.init(vertx, config, rm, securedActions);
+		sloServiceImpl = new OpenIdSloServiceImpl(vertx, null);
+	}
 
 	@Get("/openid/certs")
 	public void certs(HttpServerRequest request) {
 		renderJson(request, certificates);
 	}
 
+
 	@Get("/openid/login")
 	public void login(HttpServerRequest request) {
-		final OpenIdConnectServiceProvider openIdConnectServiceProvider = openIdConnectServiceProviderFactory.serviceProvider(request);
-		if (openIdConnectServiceProvider == null) return;
-		OpenIdConnectClient oic = openIdConnectServiceProviderFactory.openIdClient(request);
-		if (oic == null) return;
-		final String state = UUID.randomUUID().toString();
-		CookieHelper.getInstance().setSigned("csrfstate", state, 900, request);
-		final String nonce = UUID.randomUUID().toString();
-		CookieHelper.getInstance().setSigned("nonce", nonce, 900, request);
-		oic.authorizeRedirect(request, state, nonce, openIdConnectServiceProvider.getScope());
+		final String callBack;
+		if (request.params().contains("callback") && isNotEmpty(request.params().get("callback"))) {
+			callBack = request.params().get("callback");
+		} else {
+			callBack = null;
+		}
+
+		UserUtils.getUserInfos(eb, request, userInfos -> {
+			if (userInfos != null && userInfos.getUserId() != null) {
+				final String host;
+				final String path;
+				if (callBack != null) {
+                    try {
+                        final URL fullUrl = new URL(callBack);
+						host = String.format("%s://%s", fullUrl.getProtocol(), fullUrl.getHost());
+						path = fullUrl.getPath();
+                    } catch (Exception e) {
+						log.error("Error due to url format  : ", e);
+						badRequest(request);
+						return;
+                    }
+				} else {
+					host = getScheme(request) + "://" + getHost(request);
+					path = "";
+				}
+				redirectionService.redirect(request, host, path);
+			} else {
+				final OpenIdConnectServiceProvider openIdConnectServiceProvider = openIdConnectServiceProviderFactory.serviceProvider(request);
+				if (openIdConnectServiceProvider == null) return;
+				OpenIdConnectClient oic = openIdConnectServiceProviderFactory.openIdClient(request);
+				if (oic == null) return;
+				String state = UUID.randomUUID().toString();
+				CookieHelper.getInstance().setSigned("csrfstate", state, 900, request);
+				final String nonce = UUID.randomUUID().toString();
+				CookieHelper.getInstance().setSigned("nonce", nonce, 900, request);
+				String stateWithCallback = null;
+				if (callBack != null) {
+					String baseUrl = null;
+					try {
+						baseUrl = extractBaseUrl(callBack);
+						stateWithCallback = URLEncoder.encode(String.format("%s:%s", state, baseUrl),
+								"UTF-8");
+					} catch (Exception e) {
+						log.info("Error due to url format  : ", e);
+					}
+
+				}
+				oic.authorizeRedirect(request, stateWithCallback == null ? state : stateWithCallback, nonce,
+						openIdConnectServiceProvider.getScope());
+			}
+        });
 	}
 
 	@Get("/openid/authenticate")
-	public void authenticate(final HttpServerRequest request) {
+	public void authenticate(final HttpServerRequest request)  {
 		final OpenIdConnectServiceProvider openIdConnectServiceProvider = openIdConnectServiceProviderFactory.serviceProvider(request);
 		if (openIdConnectServiceProvider == null) return;
 		OpenIdConnectClient oic = openIdConnectServiceProviderFactory.openIdClient(request);
@@ -82,6 +141,14 @@ public class OpenIdConnectController extends AbstractFederateController {
 		if (nonce == null) {
 			forbidden(request, "invalid_replay");
 			return;
+		}
+		if (request.params().contains("state")) {
+			String[] stateAndCallbackArray = parseString(request.params().get("state"));
+			if (stateAndCallbackArray != null) {
+				request.params().remove("state");
+				request.params().set("state", stateAndCallbackArray[0]);
+				request.params().set("callbackFromState", stateAndCallbackArray[1]);
+			}
 		}
 		oic.authorizationCodeToken(request, state, nonce, new Handler<JsonObject>() {
 			@Override
@@ -163,6 +230,27 @@ public class OpenIdConnectController extends AbstractFederateController {
 		sloUser(request);
 	}
 
+	@Post("/openid/logout/slo")
+	public void logoutWithSlo(final HttpServerRequest request) {
+		request.setExpectMultipart(true);
+		request.endHandler(v -> {
+			String logout = request.getFormAttribute("logout_token");
+			OpenIdConnectClient oic = openIdConnectServiceProviderFactory.openIdClient(request);
+			if (logout == null) {
+				badRequest(request);
+				log.warn("Request body not formated");
+				return;
+			}
+			if (oic != null && logout != null) {
+				sloServiceImpl.logoutWithSlo(logout, oic, request);
+			} else {
+				request.response().setStatusCode(403).end();
+			}
+
+		});
+
+	}
+
 	@Post("/openid/webhook")
 	public void webhookLogout(final HttpServerRequest request)
 	{
@@ -198,6 +286,26 @@ public class OpenIdConnectController extends AbstractFederateController {
 
 	public void setActivationThemes(JsonObject activationThemes) {
 		this.activationThemes = activationThemes;
+	}
+
+	public static String[] parseString(String input) {
+		String separator = ":";
+		try {
+			input = URLDecoder.decode(input, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			log.info("Error due to url encoding  : ", e);
+		}
+		if (input != null && !input.isEmpty() && input.contains(separator)) {
+			return input.split(separator, 2);
+		} else {
+			return null;
+		}
+	}
+
+	public static String extractBaseUrl(String url) throws Exception {
+		URL fullUrl = new URL(url);
+		return String.format("%s://%s%s", fullUrl.getProtocol(), fullUrl.getHost(), fullUrl.getPath());
 	}
 
 }

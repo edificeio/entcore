@@ -1,6 +1,6 @@
 package org.entcore.common.explorer.impl;
 
-import com.mongodb.QueryBuilder;
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
@@ -13,7 +13,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mongo.BulkOperation;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.MongoClientDeleteResult;
-import org.apache.commons.collections4.CollectionUtils;
+import org.bson.conversions.Bson;
 import org.entcore.common.explorer.ExplorerStream;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.IngestJobState;
@@ -28,6 +28,7 @@ import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.mongodb.client.model.Filters.in;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 
 /**
@@ -182,31 +183,31 @@ public abstract class ExplorerPluginResourceMongo extends ExplorerPluginResource
 
     @Override
     protected void doFetchForIndex(final ExplorerStream<JsonObject> stream, final ExplorerReindexResourcesRequest request) {
-        final QueryBuilder query = QueryBuilder.start();
+        final List<Bson> queryFilters = new ArrayList<>();
         final Date from = request.getFrom();
         final Date to = request.getTo();
         final Set<String> states = request.getStates();
         if(isNotEmpty(request.getIds())) {
-            query.and(getIdColumn()).in(request.getIds());
+            queryFilters.add(in(getIdColumn(), request.getIds()));
         }
         if (from != null || to != null) {
             if (from != null) {
                 final LocalDateTime localFrom = Instant.ofEpochMilli(from.getTime())
                         .atZone(ZoneId.systemDefault())
                         .toLocalDateTime();
-                query.and(getCreatedAtColumn()).greaterThanEquals(toMongoDate(localFrom));
+                queryFilters.add(Filters.gte(getCreatedAtColumn(), toMongoDate(localFrom)));
             }
             if (to != null) {
                 final LocalDateTime localTo = Instant.ofEpochMilli(to.getTime())
                         .atZone(ZoneId.systemDefault())
                         .toLocalDateTime();
-                query.and(getCreatedAtColumn()).lessThan(toMongoDate(localTo));
+                queryFilters.add(Filters.lt(getCreatedAtColumn(), toMongoDate(localTo)));
             }
         }
         if(isNotEmpty(states)) {
-            query.and(INGEST_JOB_STATE).in(states);
+            queryFilters.add(in(INGEST_JOB_STATE, states));
         }
-        final JsonObject queryJson = MongoQueryBuilder.build(query);
+        final JsonObject queryJson = queryFilters.isEmpty() ? new JsonObject() : MongoQueryBuilder.build(Filters.and(queryFilters));
         mongoClient.findBatch(getCollectionName(),queryJson).handler(result -> {
             stream.add(Arrays.asList(result));
         }).endHandler(e->{
@@ -227,13 +228,7 @@ public abstract class ExplorerPluginResourceMongo extends ExplorerPluginResource
             setCreatedAtForModel(user, json);
             final Promise<String> promise = Promise.promise();
             futures.add(promise.future());
-            if(json instanceof fr.wseduc.webutils.collections.JsonObject){
-                final JsonObject jsonObject = new JsonObject();
-                jsonObject.mergeIn(json);
-                mongoClient.insert(getCollectionName(), jsonObject, promise);
-            }else{
-                mongoClient.insert(getCollectionName(), json, promise);
-            }
+	        mongoClient.insert(getCollectionName(), json, promise);
         }
         return CompositeFuture.all(futures).map(ids);
     }
@@ -243,7 +238,7 @@ public abstract class ExplorerPluginResourceMongo extends ExplorerPluginResource
         if(ids.isEmpty()){
             return Future.succeededFuture(new ArrayList<>());
         }
-        final JsonObject query = MongoQueryBuilder.build(QueryBuilder.start(getIdColumn()).in(ids));
+        final JsonObject query = MongoQueryBuilder.build(in(getIdColumn(), ids));
         final Promise<MongoClientDeleteResult> promise = Promise.promise();
         mongoClient.removeDocuments(getCollectionName(), query , promise);
         return promise.future().map(e->{
@@ -260,7 +255,7 @@ public abstract class ExplorerPluginResourceMongo extends ExplorerPluginResource
             return Future.succeededFuture(new ArrayList<>());
         }
         final Promise<List<JsonObject>> future = Promise.promise();
-        final JsonObject query = MongoQueryBuilder.build(QueryBuilder.start(getIdColumn()).in(ids));
+        final JsonObject query = MongoQueryBuilder.build(in(getIdColumn(), ids));
         mongoClient.find(getCollectionName(),query, future);
         return future.future();
     }

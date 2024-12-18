@@ -84,7 +84,7 @@ public class DefaultGroupService implements GroupService {
 			List<String> scope = f.getScope();
 			if (scope != null && !scope.isEmpty()) {
 				condition += "AND s.id IN {structures} ";
-				params.put("structures", new fr.wseduc.webutils.collections.JsonArray(scope));
+				params.put("structures", new JsonArray(scope));
 			}
 		}
 
@@ -98,6 +98,7 @@ public class DefaultGroupService implements GroupService {
 				"WITH g, collect({name: c.name, id: c.id}) as classes, collect( distinct {name: s.name, id: s.id}) as structures, " +
 				"HEAD(filter(x IN labels(g) WHERE x <> 'Visible' AND x <> 'Group')) as type " +
 				"RETURN DISTINCT g.id as id, g.name as name, g.displayName as displayName, g.filter as filter, labels(g) as labels, " +
+				"g.createdAt as createdAt, g.createdByName as createdByName, g.modifiedAt as modifiedAt, g.modifiedByName as modifiedByName, " +
 				"g.autolinkTargetAllStructs as autolinkTargetAllStructs, g.autolinkTargetStructs as autolinkTargetStructs," +
 				"g.autolinkUsersFromGroups as autolinkUsersFromGroups, type, g.users as internalCommunicationRule, "+
 				"g.lockDelete AS lockDelete, coalesce(g.nbUsers,0) as nbUsers, " +
@@ -124,7 +125,7 @@ public class DefaultGroupService implements GroupService {
 				.put("structureId", structureId)
 				.put("classId", classId)
 				.put("group", group);
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, result)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, result)));
 	}
 
 	@Override
@@ -132,7 +133,7 @@ public class DefaultGroupService implements GroupService {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-delete-group")
 				.put("groupId", groupId);
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
@@ -165,7 +166,7 @@ public class DefaultGroupService implements GroupService {
 				.put("action", "manual-add-group-users")
 				.put("groupId", groupId)
 				.put("userIds", userIds);
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 	
 	@Override
@@ -174,7 +175,7 @@ public class DefaultGroupService implements GroupService {
 				.put("action", "manual-remove-group-users")
 				.put("groupId", groupId)
 				.put("userIds", userIds);
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
@@ -209,7 +210,7 @@ public class DefaultGroupService implements GroupService {
 			List<String> scope = f.getScope();
 			if (scope != null && !scope.isEmpty()) {
 				structureCondition += " AND s.id IN {structures} ";
-				params.put("structures", new fr.wseduc.webutils.collections.JsonArray(scope));
+				params.put("structures", new JsonArray(scope));
 			}
 		}
 

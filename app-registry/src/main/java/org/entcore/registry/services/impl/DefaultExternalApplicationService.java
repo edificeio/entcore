@@ -30,6 +30,7 @@ import java.util.UUID;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import io.vertx.core.Promise;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.registry.services.ExternalApplicationService;
@@ -93,7 +94,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 					row.put("data", appData);
 					row.remove("application");
 
-					JsonArray actionsCopy = new fr.wseduc.webutils.collections.JsonArray();
+					JsonArray actionsCopy = new JsonArray();
 					for(Object actionObj: actions){
 						JsonObject action = (JsonObject) actionObj;
 						JsonObject data = action.getJsonObject("data");
@@ -106,7 +107,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 						JsonObject data = role.getJsonObject("role").getJsonObject("data");
 						role.put("role", data);
 						JsonArray acts = role.getJsonArray("actions");
-						JsonArray actsCopy = new fr.wseduc.webutils.collections.JsonArray();
+						JsonArray actsCopy = new JsonArray();
 						for(Object actionObj : acts){
 							JsonObject action = (JsonObject) actionObj;
 							actsCopy.add(action.getJsonObject("data"));
@@ -164,7 +165,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 
 		final String applicationName = application.getString("name");
 		final String id = UUID.randomUUID().toString();
-		application.put("scope", new fr.wseduc.webutils.collections.JsonArray("[\"" + application.getString("scope", "").replaceAll("\\s", "\",\"") + "\"]"));
+		application.put("scope", new JsonArray("[\"" + application.getString("scope", "").replaceAll("\\s", "\",\"") + "\"]"));
 		application.put("id", id);
 		application.put("structureId", structureId);
 
@@ -260,7 +261,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 		params.put("appId", appId);
 		params.put("inputStructureId", structureId);
 		if (profiles != null && profiles.size() > 0) {
-			params.put("profiles", new fr.wseduc.webutils.collections.JsonArray(profiles));
+			params.put("profiles", new JsonArray(profiles));
 		}
 		neo.execute(query, params, validResultHandler(res->{
 			if(res.isRight()){
@@ -280,7 +281,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 						allQueries.clear();
 						final int total = queries.size();
 						futures = futures.compose(previous->{
-							final Future<Integer> future = Future.future();
+							final Promise<Integer> future = Promise.promise();
 							logger.info("Mass authorize batch finish : "+total + "("+previous+")");
 							neo.executeTransaction(queries, null, true, resBatch -> {
 								if(resBatch.body().containsKey("message")){
@@ -289,7 +290,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 									future.complete(total + previous);
 								}
 							});
-							return future;
+							return future.future();
 						});
 					}
 				}
@@ -302,7 +303,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 					final int total = queries.size();
 					allQueries.clear();
 					futures = futures.compose(previous->{
-						final Future<Integer> future = Future.future();
+						final Promise<Integer> future = Promise.promise();
 						logger.info("Mass authorize batch finish : "+total + "("+previous+")");
 						neo.executeTransaction(queries, null, true, resBatch -> {
 							if(resBatch.body().containsKey("message")){
@@ -311,19 +312,19 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 								future.complete(previous + total);
 							}
 						});
-						return future;
+						return future.future();
 					});
 				}
-				futures.setHandler(resAll -> {
+				futures.onComplete(resAll -> {
 					if(resAll.succeeded()){
 						final JsonObject payload = new JsonObject().put("nbCreation", resAll.result());
-						handler.handle(new Either.Right<String,JsonObject>(payload));
+						handler.handle(new Either.Right<>(payload));
 					}else{
-						handler.handle(new Either.Left<String,JsonObject>(resAll.cause().getMessage()));
+						handler.handle(new Either.Left<>(resAll.cause().getMessage()));
 					}
 				});
 			} else {
-				handler.handle(new Either.Left<String,JsonObject>(res.left().getValue()));
+				handler.handle(new Either.Left<>(res.left().getValue()));
 			}
 		}));
 	}
@@ -361,7 +362,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 		params.put("appId", appId);
 		params.put("inputStructureId", structureId);
 		if (profiles != null && profiles.size() > 0) {
-			params.put("profiles", new fr.wseduc.webutils.collections.JsonArray(profiles));
+			params.put("profiles", new JsonArray(profiles));
 		}
 		neo.execute(query, params, validResultHandler(res->{
 			if(res.isRight()){
@@ -380,7 +381,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 						allQueries.clear();
 						final int total = queries.size();
 						futures = futures.compose(previous->{
-							final Future<Integer> future = Future.future();
+							final Promise<Integer> future = Promise.promise();
 							logger.info("Mass unauthorize batch : "+total + "("+previous+")");
 							neo.executeTransaction(queries, null, true, resBatch -> {
 								if(resBatch.body().containsKey("message")){
@@ -389,7 +390,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 									future.complete(total + previous);
 								}
 							});
-							return future;
+							return future.future();
 						});
 					}
 				}
@@ -402,7 +403,7 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 					final int total = queries.size();
 					allQueries.clear();
 					futures = futures.compose(previous->{
-						final Future<Integer> future = Future.future();
+						final Promise<Integer> future = Promise.promise();
 						logger.info("Mass unauthorize batch : "+total + "("+previous+")");
 						neo.executeTransaction(queries, null, true, resBatch -> {
 							if(resBatch.body().containsKey("message")){
@@ -411,19 +412,19 @@ public class DefaultExternalApplicationService implements ExternalApplicationSer
 								future.complete(previous + total);
 							}
 						});
-						return future;
+						return future.future();
 					});
 				}
-				futures.setHandler(resAll -> {
+				futures.onComplete(resAll -> {
 					if(resAll.succeeded()){
 						final JsonObject payload = new JsonObject().put("nbDeletion", resAll.result());
-						handler.handle(new Either.Right<String,JsonObject>(payload));
+						handler.handle(new Either.Right<>(payload));
 					}else{
-						handler.handle(new Either.Left<String,JsonObject>(resAll.cause().getMessage()));
+						handler.handle(new Either.Left<>(resAll.cause().getMessage()));
 					}
 				});
 			} else {
-				handler.handle(new Either.Left<String,JsonObject>(res.left().getValue()));
+				handler.handle(new Either.Left<>(res.left().getValue()));
 			}
 		}));
 	}
