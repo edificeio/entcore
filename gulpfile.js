@@ -107,7 +107,7 @@ apps.forEach((app) => {
     gulp.task('watch-' + app, () => {
         gulp.watch('./' + app + '/src/main/resources/public/ts/**/*.ts', () => startWebpack('dev'));
 
-        fs.readFile("./vertx.properties", "utf8", function(error, content){
+        fs.readFile("./gradle.properties", "utf8", function(error, content){
             var modName = getModName(content, app);
             gulp.watch(['./' + app + '/src/main/resources/public/template/**/*.html', '!./' + app + '/src/main/resources/public/template/entcore/*.html'], () => {
                 console.log('Copying resources to ' + springboardPath + '/mods/' + modName);
