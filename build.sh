@@ -84,7 +84,7 @@ clean () {
 }
 
 buildNode () {
-  if [ "$MODULE" = "" ] || [ ! "$MODULE" = "admin" ] && [ ! "$MODULE" = "conversation" ]; then
+  if [ "$MODULE" = "" ] || [ ! "$MODULE" = "admin" ] && [ ! -e ./"$MODULE"/frontend ]; then
     #try jenkins branch name => then local git branch name => then jenkins params
     echo "[buildNode] Get branch name from jenkins env..."
     BRANCH_NAME=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
