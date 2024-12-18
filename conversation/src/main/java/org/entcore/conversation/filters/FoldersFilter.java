@@ -56,7 +56,7 @@ public class FoldersFilter implements ResourcesProvider {
 		String foldersQuery =
 				"SELECT count(*) as number FROM conversation.folders " +
 						"WHERE user_id = ? AND id = ?";
-		JsonArray values = new JsonArray()
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
 				.add(user.getUserId())
 				.add(folderId);
 
