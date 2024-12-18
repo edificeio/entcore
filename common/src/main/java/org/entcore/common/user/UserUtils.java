@@ -658,16 +658,13 @@ public class UserUtils {
 
 	public static Future<UserInfos> getAuthenticatedUserInfos(EventBus eb, HttpServerRequest request) {
 		final Promise<UserInfos> promise = Promise.promise();
-		getSession(eb, request, new Handler<JsonObject>() {
-			@Override
-			public void handle(JsonObject session) {
-				final UserInfos userInfo = sessionToUserInfos(session);
-				if(userInfo == null) {
-					unauthorized(request);
-					promise.fail("user.not.found");
-				} else {
-					promise.complete(userInfo);
-				}
+		getSession(eb, request, session -> {
+			final UserInfos userInfo = sessionToUserInfos(session);
+			if(userInfo == null) {
+				unauthorized(request);
+				promise.fail("user.not.found");
+			} else {
+				promise.complete(userInfo);
 			}
 		});
 		return promise.future();

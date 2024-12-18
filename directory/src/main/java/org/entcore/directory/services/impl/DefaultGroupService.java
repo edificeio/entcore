@@ -32,6 +32,7 @@ import org.entcore.directory.services.GroupService;
 
 import java.util.List;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static org.entcore.common.neo4j.Neo4jResult.*;
 import static org.entcore.common.user.DefaultFunctions.ADMIN_LOCAL;
@@ -185,6 +186,32 @@ public class DefaultGroupService implements GroupService {
 				"RETURN g.id as id, g.name as name, g.nbUsers as nbUsers ";
 		final JsonObject params = new JsonObject().put("id", groupId);
 		neo.execute(query, params, validUniqueResultHandler(handler));
+	}
+
+	@Override
+	public void getBatchInfos(JsonArray groupIds, int fieldMask, Handler<Either<String, JsonArray>> handler) {
+		final boolean withDisplayName = Field.DISPLAY_NAME.isSetIn(fieldMask);
+		final boolean withTypeSubType = Field.TYPE_SUBTYPE.isSetIn(fieldMask);
+		final boolean withNbUsers = Field.NB_USERS.isSetIn(fieldMask);
+		final String query =
+			"MATCH (g:Group) WHERE g.id IN {groupIds} " +
+			"WITH g " +
+			(withTypeSubType ? ", HEAD(filter(x IN labels(g) WHERE x <> 'Visible' AND x <> 'Group')) as type " : "") +
+			"RETURN DISTINCT g.id as id, g.name as name " +
+			(withDisplayName ? ", g.displayName as displayName " : "") +
+			(withNbUsers ? ", coalesce(g.nbUsers,0) as nbUsers " : "") +
+			(withTypeSubType ? ", type, CASE " +
+				" WHEN (g: ProfileGroup)-[:DEPENDS]-(:Structure) THEN 'StructureGroup' " +
+				" WHEN (g: ProfileGroup)-[:DEPENDS]->(:Class) THEN 'ClassGroup' " +
+				" WHEN HAS(g.subType) THEN g.subType " +
+				" WHEN (g: ManualGroup) AND (" +
+					" g.autolinkTargetAllStructs = true " +
+					" OR size(coalesce(g.autolinkUsersFromGroups, [])) > 0 " +
+					" OR size(coalesce(g.autolinkTargetStructs, [])) > 0 " +
+				") THEN 'BroadcastGroup' END as subType" : "");
+
+		final JsonObject params = new JsonObject().put("groupIds", getOrElse(groupIds, new JsonArray()));
+		neo.execute(query, params, validResultHandler(handler));
 	}
 
 	@Override
