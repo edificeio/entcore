@@ -1,8 +1,15 @@
-import { Layout, LoadingScreen, useOdeClient } from '@edifice-ui/react';
+import {
+  AppHeader,
+  Breadcrumb,
+  Layout,
+  LoadingScreen,
+  useOdeClient,
+} from '@edifice-ui/react';
 
 import { matchPath, Outlet } from 'react-router-dom';
 
 import { basename } from '..';
+import { AppActionBar } from '~/features/ActionBar/AppActionBar';
 
 /** Check old format URL and redirect if needed */
 export const loader = async () => {
@@ -25,15 +32,18 @@ export const loader = async () => {
 };
 
 export const Root = () => {
-  const { init } = useOdeClient();
+  const { init, currentApp } = useOdeClient();
 
-  if (!init) return <LoadingScreen position={false} />;
+  if (!init || !currentApp) return <LoadingScreen position={false} />;
 
-  return init ? (
+  return (
     <Layout>
+      <AppHeader render={() => <AppActionBar />}>
+        <Breadcrumb app={currentApp} />
+      </AppHeader>
       <Outlet />
     </Layout>
-  ) : null;
+  );
 };
 
 export default Root;
