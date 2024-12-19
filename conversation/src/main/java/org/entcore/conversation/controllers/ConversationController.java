@@ -577,6 +577,7 @@ public class ConversationController extends BaseController {
 		final String from = message.getString("from");
 		final Boolean notIsSender = (!userInfos.getUserId().equals(from));
 		final List<String> userGroups = getOrElse(userInfos.getGroupsIds(), new ArrayList<String>());
+		final String i18nAcceptLanguage = I18n.acceptLanguage(request);
 
 		JsonArray d3 = new fr.wseduc.webutils.collections.JsonArray();
 		for (Object o2 : getOrElse(message.getJsonArray("displayNames"), new fr.wseduc.webutils.collections.JsonArray())) {
@@ -592,7 +593,7 @@ public class ConversationController extends BaseController {
 			JsonArray d2 = new fr.wseduc.webutils.collections.JsonArray().add(a[0]);
 			if (a[2] != null && !a[2].trim().isEmpty()) {
 				final String groupDisplayName = (a[3] != null && !a[3].trim().isEmpty()) ? a[3] : null;
-				d2.add(UserUtils.groupDisplayName(a[2], groupDisplayName, I18n.acceptLanguage(request)));
+				d2.add(UserUtils.groupDisplayName(a[2], groupDisplayName, i18nAcceptLanguage));
 				//is group
 				d2.add(true);
 			} else {
@@ -610,7 +611,7 @@ public class ConversationController extends BaseController {
 				if (!(o instanceof String)) {
 					continue;
 				}
-				d2.add(UserUtils.groupDisplayName((String) o, null, I18n.acceptLanguage(request)));
+				d2.add(UserUtils.groupDisplayName((String) o, null, i18nAcceptLanguage));
 			}
 		}
 		JsonArray ccName = message.getJsonArray("ccName");
@@ -621,7 +622,7 @@ public class ConversationController extends BaseController {
 				if (!(o instanceof String)) {
 					continue;
 				}
-				d2.add(UserUtils.groupDisplayName((String) o, null, I18n.acceptLanguage(request)));
+				d2.add(UserUtils.groupDisplayName((String) o, null, i18nAcceptLanguage));
 			}
 		}
 		JsonArray cciName = message.getJsonArray("cciName");
@@ -632,7 +633,7 @@ public class ConversationController extends BaseController {
 				if (!(o instanceof String)) {
 					continue;
 				}
-				d2.add(UserUtils.groupDisplayName((String) o, null, I18n.acceptLanguage(request)));
+				d2.add(UserUtils.groupDisplayName((String) o, null, i18nAcceptLanguage));
 			}
 		}
 
