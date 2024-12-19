@@ -1,6 +1,6 @@
 import { Layout, LoadingScreen, useOdeClient } from '@edifice-ui/react';
 
-import { matchPath } from 'react-router-dom';
+import { matchPath, Outlet } from 'react-router-dom';
 
 import { basename } from '..';
 
@@ -29,7 +29,11 @@ export const Root = () => {
 
   if (!init) return <LoadingScreen position={false} />;
 
-  return init ? <Layout>Conversation</Layout> : null;
+  return init ? (
+    <Layout>
+      <Outlet />
+    </Layout>
+  ) : null;
 };
 
 export default Root;

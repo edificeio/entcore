@@ -15,9 +15,7 @@ export const PageError = () => {
         <Heading level="h2" headingStyle="h2" className="text-secondary">
           {t('oops')}
         </Heading>
-        <div className="text">
-          {t('conversation.notfound.or.unauthorized')}
-        </div>
+        <div className="text">{t('conversation.notfound.or.unauthorized')}</div>
         <Button color="primary" onClick={() => navigate(-1)}>
           {t('back')}
         </Button>
