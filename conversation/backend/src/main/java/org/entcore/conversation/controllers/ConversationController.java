@@ -610,6 +610,7 @@ public class ConversationController extends BaseController {
 		final String from = message.getString("from");
 		final Boolean isSender = userInfos.getUserId().equals(from);
 		final List<String> userGroups = getOrElse(userInfos.getGroupsIds(), new ArrayList<String>());
+		final String i18nAcceptLanguage = I18n.acceptLanguage(request);
 
 		JsonArray d3 = new JsonArray();
 		for (Object o2 : getOrElse(message.getJsonArray("displayNames"), new JsonArray())) {
@@ -637,7 +638,7 @@ public class ConversationController extends BaseController {
 				if (!(o instanceof String)) {
 					continue;
 				}
-				d2.add(UserUtils.groupDisplayName((String) o, null, I18n.acceptLanguage(request)));
+				d2.add(UserUtils.groupDisplayName((String) o, null, i18nAcceptLanguage));
 			}
 		}
 		JsonArray ccName = message.getJsonArray("ccName");
@@ -648,7 +649,7 @@ public class ConversationController extends BaseController {
 				if (!(o instanceof String)) {
 					continue;
 				}
-				d2.add(UserUtils.groupDisplayName((String) o, null, I18n.acceptLanguage(request)));
+				d2.add(UserUtils.groupDisplayName((String) o, null, i18nAcceptLanguage));
 			}
 		}
 		JsonArray cciName = message.getJsonArray("cciName");
@@ -659,7 +660,7 @@ public class ConversationController extends BaseController {
 				if (!(o instanceof String)) {
 					continue;
 				}
-				d2.add(UserUtils.groupDisplayName((String) o, null, I18n.acceptLanguage(request)));
+				d2.add(UserUtils.groupDisplayName((String) o, null, i18nAcceptLanguage));
 			}
 		}
 
