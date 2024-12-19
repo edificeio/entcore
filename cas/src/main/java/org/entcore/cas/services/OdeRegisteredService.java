@@ -68,7 +68,7 @@ public class OdeRegisteredService extends AbstractCas20ExtensionRegisteredServic
 	public void configure(EventBus eb, Map<String,Object> conf) {
 		super.configure(eb, conf);
 		this.directoryAction = "getUserInfos";
-	};
+	}
 
 	@Override
 	protected void prepareUserCas20(User user, final String userId, String service, final JsonObject data, final Document doc, final List<Element> additionnalAttributes) {
@@ -156,11 +156,13 @@ public class OdeRegisteredService extends AbstractCas20ExtensionRegisteredServic
 	private Map<String, String> buildStructuresExternalIdsUaisMap(JsonArray structures) {
 		Map<String, String> structuresExternalIdsUaisMap = new HashMap<>();
 
-		structures.stream()
-			.filter(JsonObject.class::isInstance)
-			.map(JsonObject.class::cast)
-			.filter(structure -> structure.containsKey(EXTERNAL_ID) && structure.containsKey(UAI))
-			.forEach(structure -> structuresExternalIdsUaisMap.put(structure.getString(EXTERNAL_ID), structure.getString(UAI)));
+		if (structures != null && !structures.isEmpty()) {
+			structures.stream()
+				.filter(JsonObject.class::isInstance)
+				.map(JsonObject.class::cast)
+				.filter(structure -> structure.containsKey(EXTERNAL_ID) && structure.containsKey(UAI))
+				.forEach(structure -> structuresExternalIdsUaisMap.put(structure.getString(EXTERNAL_ID), structure.getString(UAI)));
+		}
 
 		return structuresExternalIdsUaisMap;
 	}
@@ -168,21 +170,23 @@ public class OdeRegisteredService extends AbstractCas20ExtensionRegisteredServic
 	private Map<String, List<String>> buildStructuresExternalIdsFunctionsMap(JsonArray functions) {
 		Map<String, List<String>> structuresExternalIdsFunctionsMap = new HashMap<>();
 
-		functions.stream()
-			.filter(String.class::isInstance)
-			.map(String.class::cast)
-			.forEach(rawFunction -> {
-				int first$pos = rawFunction.indexOf(DOLLAR);
-				String externalId = rawFunction.substring(0, first$pos);
+		if (functions != null && !functions.isEmpty()) {
+			functions.stream()
+				.filter(String.class::isInstance)
+				.map(String.class::cast)
+				.forEach(rawFunction -> {
+					int first$pos = rawFunction.indexOf(DOLLAR);
+					String externalId = rawFunction.substring(0, first$pos);
 
-				int last$pos = rawFunction.lastIndexOf(DOLLAR);
-				String function = rawFunction.substring(last$pos + 1);
+					int last$pos = rawFunction.lastIndexOf(DOLLAR);
+					String function = rawFunction.substring(last$pos + 1);
 
-				if (!structuresExternalIdsFunctionsMap.containsKey(externalId)) {
-					structuresExternalIdsFunctionsMap.put(externalId, new ArrayList<>());
-				}
-				structuresExternalIdsFunctionsMap.get(externalId).add(function);
-			});
+					if (!structuresExternalIdsFunctionsMap.containsKey(externalId)) {
+						structuresExternalIdsFunctionsMap.put(externalId, new ArrayList<>());
+					}
+					structuresExternalIdsFunctionsMap.get(externalId).add(function);
+				});
+		}
 
 		return structuresExternalIdsFunctionsMap;
 	}
