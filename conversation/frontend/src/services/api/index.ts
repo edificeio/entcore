@@ -7,3 +7,5 @@
  */
 
 export const baseUrl = '/app';
+export * from './folder';
+export * from './message';
