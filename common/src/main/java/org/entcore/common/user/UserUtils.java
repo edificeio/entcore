@@ -77,7 +77,7 @@ public class UserUtils {
 	private static final String COMMUNICATION_USERS = "wse.communication.users";
 	private static final String DIRECTORY = "directory";
 	public static final String SESSION_ADDRESS = "wse.session";
-	private static final JsonArray usersTypes = new JsonArray().add("User");
+	private static final JsonArray usersTypes = new fr.wseduc.webutils.collections.JsonArray().add("User");
 	private static final JsonObject QUERY_VISIBLE_PROFILS_GROUPS = new JsonObject()
 			.put("action", "visibleProfilsGroups");
 	private static final JsonObject QUERY_VISIBLE_MANUAL_GROUPS = new JsonObject()
@@ -96,7 +96,7 @@ public class UserUtils {
 						&& !session.getString("userId").trim().isEmpty()) {
 					findUsers(eb, session.getString("userId"), query, handler);
 				} else {
-					handler.handle(new JsonArray());
+					handler.handle(new fr.wseduc.webutils.collections.JsonArray());
 				}
 			}
 		});
@@ -113,12 +113,12 @@ public class UserUtils {
 					if (res.succeeded()) {
 						handler.handle(res.result().body());
 					} else {
-						handler.handle(new JsonArray());
+						handler.handle(new fr.wseduc.webutils.collections.JsonArray());
 					}
 				}
 			});
 		} else {
-			handler.handle(new JsonArray());
+			handler.handle(new fr.wseduc.webutils.collections.JsonArray());
 		}
 	}
 
@@ -241,7 +241,7 @@ public class UserUtils {
 					handler.handle(r);
 				} else {
 					log.error("An error occurred while fetching visible users for user " + userId, res.cause());
-					handler.handle(new JsonArray());
+					handler.handle(new fr.wseduc.webutils.collections.JsonArray());
 				}
 			}
 		});
@@ -291,8 +291,8 @@ public class UserUtils {
 
 	public static JsonObject translateAndGroupVisible(JsonArray visibles, String acceptLanguage, boolean returnGroupType) {
 		final JsonObject visible = new JsonObject();
-		final JsonArray users = new JsonArray();
-		final JsonArray groups = new JsonArray();
+		final JsonArray users = new fr.wseduc.webutils.collections.JsonArray();
+		final JsonArray groups = new fr.wseduc.webutils.collections.JsonArray();
 		visible.put("groups", groups).put("users", users);
 		for (Object o: visibles) {
 			if (!(o instanceof JsonObject)) continue;
@@ -417,7 +417,7 @@ public class UserUtils {
 				if (res.succeeded()) {
 					handler.handle(res.result().body());
 				} else {
-					handler.handle(new JsonArray());
+					handler.handle(new fr.wseduc.webutils.collections.JsonArray());
 				}
 			}
 		});

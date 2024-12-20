@@ -30,7 +30,7 @@ public class StatementsBuilder {
 	private final JsonArray statements;
 
 	public StatementsBuilder() {
-		this.statements = new JsonArray();
+		this.statements = new fr.wseduc.webutils.collections.JsonArray();
 	}
 
 	public StatementsBuilder add(String query, JsonObject params) {
