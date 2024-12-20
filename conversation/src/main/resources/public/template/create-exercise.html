@@ -1,0 +1,51 @@
+<!--
+
+
+ -->
+ <style>
+    .button-custom {
+		width: 80%;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background-color 0.3s ease;
+    }
+    .button-custom:nth-of-type(2) {
+        background-color: #aaaaaa;
+        color: white;
+    }
+    .button-custom:nth-of-type(3) {
+        background-color: #aaaaaa;
+		color: black;
+    }
+    .button-custom:hover {
+        opacity: 0.8;
+    }
+    .close-lightbox{
+        display: none;
+    }
+</style>
+
+<h2><i18n>exercice.create</i18n></h2>
+
+
+<div>
+	<div class="emptyscreen" style="margin-top: 0px;">
+		<img class="emptyscreen-image__mini" src="/conversation/public/img/training-empty-sided.svg">
+		<p class="emptyscreen-footer">
+			<i18n>exercice.create.description</i18n>
+		</p>
+		<button class="button-custom" ng-click="redirectToUrlExercise()"  class="cell-ellipsis right-magnet">
+			<i18n>exercice.create.button</i18n>
+		</button>
+		<button class="button-custom" ng-click="closeExerciseModal()"  class="cell-ellipsis right-magnet">
+			<i18n>exercice.create.cancel</i18n>
+		</button>
+		<button class="button-custom" ng-click="falsePositiveGeneration()"  class="cell-ellipsis right-magnet">
+			<i18n>exercice.create.stop</i18n>
+		</button>
+	</div>
+</div>
+
+

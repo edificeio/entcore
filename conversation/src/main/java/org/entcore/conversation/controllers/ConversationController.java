@@ -1802,4 +1802,7 @@ public class ConversationController extends BaseController {
 				"messagerie.storage", null, recipients, null, new JsonObject());
 	}
 
+	@SecuredAction("conversation.stimulation.exercise")
+	public void conversationStimulationExercise(){}
+
 }
