@@ -20,23 +20,39 @@
 package org.entcore.conversation.service;
 
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Stream;
+
 import org.entcore.common.user.UserInfos;
 
 import fr.wseduc.webutils.Either;
-
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
 public interface ConversationService {
-
+	/** Maximum number of results a paginated query can return at once. */
 	static final int LIST_LIMIT = 25;
+	/** Maximum number of folders a user can create, at root or in another folder. */
+	public static final int MAX_FOLDER_NUMBER = 50;
+	/** This is the maximum depth for a subfolder (1 being a root folder). */
+	public static final int MAX_FOLDER_DEPTH = 2;
+	/**
+	 * Maximum number of levels of folders that can be listed in one request,
+	 * limiting the number of returned folders as a power of MAX_FOLDER_NUMBER.
+	 * 
+	 * For example, listing folders with a depth of 2 => returning MAX_FOLDER_NUMBER^2 =2500 folders at once in the worst case.
+	 */
+	public static final int MAX_FOLDERS_LEVEL = 2;
 
 	enum State { DRAFT, SENT }
+
+	static final String[] SYSTEM_FOLDER_NAMES = {"INBOX", "OUTBOX", "DRAFT", "TRASH"};
+	static public boolean isSystemFolder(final String folder) {
+		return folder!=null && Stream.of(SYSTEM_FOLDER_NAMES).anyMatch(sysFolder -> folder.equalsIgnoreCase(sysFolder));
+	}
 
 	List<String> MESSAGE_FIELDS = Arrays.asList("id", "subject", "body", "from", "to", "cc", "date", "state",
 			"displayNames");
@@ -59,6 +75,17 @@ public interface ConversationService {
 	void send(String parentMessageId, String draftId, JsonObject message, UserInfos user,
 		Handler<Either<String, JsonObject>> result);
 
+	/**
+	 * List messages from any folder 
+	 * @param folder Any UserFolder ID, or any case-insensitive SystemFolder name.
+	 * @param unread Truthy when only unread messages must be returned.
+	 * @param user connected user
+	 * @param page page number
+	 * @param page_size number of messages per page
+	 * @param searchWords optional text filter
+	 */
+	void list(String folder, Boolean unread, UserInfos user, int page, int page_size, String searchWords, Handler<Either<String, JsonArray>> results);
+	/** Legacy */
 	void list(String folder, String restrain, Boolean unread, UserInfos user, int page, String searchWords, Handler<Either<String, JsonArray>> results);
 
 	void listThreads(UserInfos user, int page, Handler<Either<String, JsonArray>> results);
@@ -87,6 +114,7 @@ public interface ConversationService {
 	void toggleUnreadThread(List<String> threadIds, boolean unread, UserInfos user, Handler<Either<String, JsonObject>> result);
 
 	//Folders
+	void getFolderTree(UserInfos user, int depth, Optional<String> parentId, Handler<Either<String, JsonArray>> result);
 	void createFolder(String folderName, String parentFolderId, UserInfos user, Handler<Either<String, JsonObject>> result);
 	void updateFolder(String folderId, JsonObject data, UserInfos user, Handler<Either<String, JsonObject>> result);
 	void listFolders(String parentId, UserInfos user, Handler<Either<String, JsonArray>> result);
