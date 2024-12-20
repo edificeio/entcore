@@ -102,7 +102,7 @@ public final class SqlSearchService implements SearchService {
                 " GROUP BY " + resourceTable + ".id, " + displayNameField +
                 " ORDER BY modified DESC " +
                 " LIMIT ? OFFSET ?";
-        final JsonArray values = new JsonArray(gu).add(userId);
+        final JsonArray values = new fr.wseduc.webutils.collections.JsonArray(gu).add(userId);
         if (checkVisibility) {
             values.add(VisibilityFilter.PROTECTED.name()).add(VisibilityFilter.PUBLIC.name());
         }
