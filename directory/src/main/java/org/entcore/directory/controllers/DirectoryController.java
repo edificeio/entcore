@@ -623,6 +623,11 @@ public class DirectoryController extends BaseController {
 			case "getUserStructuresGroup":
 				userService.getUserStructuresGroup(userId, BusResponseHandler.busResponseHandler(message));
 				break;
+			case "getGroupsInfos": 
+				JsonArray batchIds = message.body().getJsonArray("groupIds");
+				int fieldMask = message.body().getInteger("fieldMask", GroupService.Field.ALL.value());
+				groupService.getBatchInfos(batchIds, fieldMask, BusResponseHandler.busArrayHandler(message));
+				break;
 		default:
 			message.reply(new JsonObject()
 				.put("status", "error")

@@ -19,12 +19,12 @@
 
 package org.entcore.directory.services;
 
-import fr.wseduc.webutils.Either;
-
 import java.util.Arrays;
 import java.util.List;
 
 import org.entcore.common.user.UserInfos;
+
+import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -34,6 +34,25 @@ public interface GroupService {
 	List<String> GROUP_TYPES = Arrays.asList("Group", "Visible", "ProfileGroup", "HTGroup", "DefaultProfileGroup",
 			"FunctionGroup", "ManualGroup", "FuncGroup", "DeleteGroup", "DirectionGroup", "FunctionalGroup",
 			"DisciplineGroup", "CommunityGroup");
+
+	enum Field {
+		@SuppressWarnings("PointlessBitwiseExpression")
+		DISPLAY_NAME(1<<0),
+		TYPE_SUBTYPE(1<<1),
+		NB_USERS(1<<2),
+		ALL(~0);
+
+		private int mask;
+		private Field(int mask) {
+			this.mask = mask;
+		}
+		public int value() {
+			return mask;
+		}
+		public boolean isSetIn(int value) {
+			return ( mask==(value & this.mask) );
+		}
+	}
 
 	void listAdmin(String structureId, Boolean onlyAutomaticGroups, Boolean recursive, UserInfos userInfos, JsonArray expectedTypes,
 			Handler<Either<String, JsonArray>> results);
@@ -50,6 +69,8 @@ public interface GroupService {
 	void removeUsers(String groupId, JsonArray userIds, Handler<Either<String, JsonObject>> result);
 
 	void getInfos(String groupId, Handler<Either<String,JsonObject>> handler);
+
+	void getBatchInfos(JsonArray groupIds, int fieldMask, Handler<Either<String, JsonArray>> handler);
 
 	void getFuncAndDisciplinesGroups(String structureId, Boolean recursive, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
 
