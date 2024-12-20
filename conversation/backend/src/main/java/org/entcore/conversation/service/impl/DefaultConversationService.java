@@ -402,15 +402,28 @@ public class DefaultConversationService implements ConversationService {
 	}
 
 	@Override
+	public void list(String folder, Boolean unread, UserInfos user, int page, int pageSize, final String searchText, Handler<Either<String, JsonArray>> results) {
+		list(folder, 
+			ConversationService.isSystemFolder(folder) ? null : "", // `restrain` can only applies to user's folders.
+			unread, user, page, pageSize, searchText, results
+		);
+	}
+
+	@Override
 	public void list(String folder, String restrain, Boolean unread, UserInfos user, int page, String searchWords, final Handler<Either<String, JsonArray>> results) {
+		list(folder, restrain, unread, user, page, LIST_LIMIT, searchWords, results);
+	}
+
+	protected void list(String folder, String restrain, Boolean unread, UserInfos user, int page, int pageSize, String searchWords, final Handler<Either<String, JsonArray>> results) {
 		if (validationError(user, results, folder)) return;
-		int skip = page * LIST_LIMIT;
+		if(pageSize<1) pageSize = LIST_LIMIT;
+		int skip = page * pageSize;
 
 		JsonObject params = new JsonObject()
 			.put("userId", user.getUserId())
 			.put("folder", folder)
 			.put("skip", skip)
-			.put("limit", LIST_LIMIT)
+			.put("limit", pageSize)
 			.put("true", true);
 
 		String messageFilter = "";
@@ -779,6 +792,11 @@ public class DefaultConversationService implements ConversationService {
 			"SET target.name = {newName}";
 
 		neo.execute(query, params, validEmptyHandler(result));
+	}
+
+	@Override
+	public void getFolderTree(UserInfos user, int depth, Optional<String> parentId, Handler<Either<String, JsonArray>> result) {
+		result.handle(new Either.Left("not.implemented"));
 	}
 
 	@Override

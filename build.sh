@@ -7,7 +7,6 @@ then
   mkdir node_modules
 fi
 
-
 if [[ "$*" == *"--no-user"* ]]
 then
   USER_OPTION=""
@@ -52,6 +51,12 @@ if [ "$MODULE" = "" ]; then
 else
   GRADLE_OPTION=":$MODULE:"
   NODE_OPTION="--module $MODULE"
+  if [ -e "$MODULE/backend" ]; then
+    echo "BACKEND SUB-PROJECT $MODULE/backend DETECTED"
+    MVN_OPTS="$MVN_OPTS --projects $MODULE/backend -am"
+  else
+    MVN_OPTS="$MVN_OPTS --projects $MODULE -am"
+  fi
 fi
 
 #try jenkins branch name => then local git branch name => then jenkins params
@@ -80,7 +85,7 @@ init() {
 }
 
 clean () {
-  docker compose run --rm maven mvn $MVN_OPTS clean
+  docker compose run --rm $USER_OPTION maven mvn $MVN_OPTS clean
 }
 
 buildNode () {
@@ -171,8 +176,8 @@ buildAdminNode() {
   fi
 }
 
-install () {
-  docker compose run --rm maven mvn $MVN_OPTS install -DskipTests
+buildBackend () {
+  docker compose run --rm $USER_OPTION maven mvn $MVN_OPTS install -DskipTests
 }
 
 test () {
@@ -215,14 +220,14 @@ infra () {
 }
 
 publish() {
-  version=`docker-compose run --rm maven mvn $MVN_OPTS help:evaluate -Dexpression=project.version -q -DforceStdout`
+  version=`docker-compose run --rm $USER_OPTION maven mvn $MVN_OPTS help:evaluate -Dexpression=project.version -q -DforceStdout`
   level=`echo $version | cut -d'-' -f3`
   case "$level" in
     *SNAPSHOT) export nexusRepository='snapshots' ;;
     *)         export nexusRepository='releases' ;;
   esac
 
-  docker compose run --rm  maven mvn -DrepositoryId=ode-$nexusRepository -DskipTests --settings /var/maven/.m2/settings.xml deploy
+  docker compose run --rm $USER_OPTION maven mvn -DrepositoryId=ode-$nexusRepository -DskipTests --settings /var/maven/.m2/settings.xml deploy
 }
 
 check_prefix_sh_file() {
@@ -299,8 +304,11 @@ do
     buildReactNode)
       buildReactNode
       ;;
+    buildBackend)
+      buildBackend
+      ;;
     install)
-      buildNode && buildReactNode && buildAdminNode && install
+      buildNode && buildReactNode && buildAdminNode && buildBackend
       ;;
     localDep)
       localDep

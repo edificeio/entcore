@@ -32,6 +32,7 @@ import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpServerResponse;
+
 import org.entcore.common.cache.Cache;
 import org.entcore.common.cache.CacheOperation;
 import org.entcore.common.cache.CacheScope;
@@ -57,6 +58,7 @@ import org.entcore.conversation.filters.FoldersMessagesFilter;
 import org.entcore.conversation.service.ConversationService;
 import org.entcore.conversation.service.impl.Neo4jConversationService;
 import org.entcore.conversation.service.impl.SqlConversationService;
+import org.entcore.conversation.util.DecodedDisplayName;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Utils;
@@ -69,6 +71,7 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
 import org.vertx.java.core.http.RouteMatcher;
 
 import java.io.File;
@@ -76,13 +79,16 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Stream;
 import java.util.zip.Deflater;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
+
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 import static org.entcore.common.user.UserUtils.getUserInfos;
+import org.entcore.conversation.util.DecodedDisplayName;
 
 public class ConversationController extends BaseController {
 	public static final String RESOURCE_NAME = "message";
@@ -93,7 +99,7 @@ public class ConversationController extends BaseController {
 	private int threshold;
 
 	private ConversationService conversationService;
-	private Neo4jConversationService neoConversationService;
+	private Neo4jConversationService userService;
 	private TimelineHelper notification;
 	private EventHelper eventHelper;
 	private enum ConversationEvent {GET_RESOURCE, ACCESS }
@@ -104,17 +110,20 @@ public class ConversationController extends BaseController {
 		this.exportPath = exportPath;
 	}
 
+	public ConversationController setConversationService(final ConversationService conversationService) {
+		this.conversationService = conversationService;
+		return this;
+	}
+	public ConversationController setUserService(final Neo4jConversationService userService) {
+		this.userService = userService;
+		return this;
+	}
+
 	@Override
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
-		/*
-		this.conversationService = new DefaultConversationService(vertx,
-				config.getString("app-name", Conversation.class.getSimpleName()));
-				*/
-		this.conversationService = new SqlConversationService(vertx, config.getString("db-schema", "conversation"))
-				.setSendTimeout(config.getInteger("send-timeout",SqlConversationService.DEFAULT_SENDTIMEOUT));
-		this.neoConversationService = new Neo4jConversationService();
+
 		notification = new TimelineHelper(vertx, eb, config);
 		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Conversation.class.getSimpleName());
 		this.eventHelper =  new EventHelper(eventStore);
@@ -149,7 +158,7 @@ public class ConversationController extends BaseController {
 									final String threadId = ConversationController.getShouldCreateThread(parent, message, user)
 											? null
 											: parent != null ? parent.getString("thread_id") : null;
-									neoConversationService.addDisplayNames(message, parent, new Handler<JsonObject>() {
+									userService.addDisplayNames(message, parent, new Handler<JsonObject>() {
 										public void handle(JsonObject message) {
 											conversationService.saveDraft(parentMessageId, threadId, message, user, defaultResponseHandler(request, 201));
 										}
@@ -339,7 +348,7 @@ public class ConversationController extends BaseController {
 						@Override
 						public void handle(JsonObject message) {
 							message.put("from", user.getUserId());
-							neoConversationService.addDisplayNames(message, null, new Handler<JsonObject>() {
+							userService.addDisplayNames(message, null, new Handler<JsonObject>() {
 								public void handle(JsonObject message) {
 									conversationService.updateDraft(messageId, message, user,
 											defaultResponseHandler(request));
@@ -384,7 +393,7 @@ public class ConversationController extends BaseController {
 							size.addAndGet(((JsonObject) att).getLong("size", 0l));
 						}
 
-						neoConversationService.findInactives(message, size.get(), new Handler<JsonObject>() {
+						userService.findInactives(message, size.get(), new Handler<JsonObject>() {
 							public void handle(JsonObject userDetails) {
 								message.mergeIn(userDetails);
 
@@ -434,7 +443,7 @@ public class ConversationController extends BaseController {
 									final String threadId = ConversationController.getShouldCreateThread(parentMsg, message, user)
 											? null
 											: parentMsg != null ? parentMsg.getString("thread_id") : null;
-									neoConversationService.addDisplayNames(message, parentMsg, new Handler<JsonObject>() {
+									userService.addDisplayNames(message, parentMsg, new Handler<JsonObject>() {
 										public void handle(final JsonObject message) {
 											saveAndSend(messageId, message, user, parentMessageId, threadId,
 													new Handler<Either<String, JsonObject>>() {
@@ -575,7 +584,7 @@ public class ConversationController extends BaseController {
 		final JsonArray cc = getOrElse(message.getJsonArray("cc"), new JsonArray());
 		final JsonArray to = getOrElse(message.getJsonArray("to"), new JsonArray());
 		final String from = message.getString("from");
-		final Boolean notIsSender = (!userInfos.getUserId().equals(from));
+		final Boolean isSender = userInfos.getUserId().equals(from);
 		final List<String> userGroups = getOrElse(userInfos.getGroupsIds(), new ArrayList<String>());
 
 		JsonArray d3 = new JsonArray();
@@ -583,23 +592,17 @@ public class ConversationController extends BaseController {
 			if (!(o2 instanceof String)) {
 				continue;
 			}
-			String [] a = ((String) o2).split("\\$");
-			if (a.length != 4) {
-				continue;
-			}
+			Stream.of(DecodedDisplayName.decode((String)o2, I18n.acceptLanguage(request)))
+			.filter( Optional::isPresent )
+			.map( Optional::get )
+			.filter( decoded -> isSender || !cci.contains(decoded.getId()) || cc.contains(decoded.getId()) || to.contains(decoded.getId()) || from.equals(decoded.getId()) )
+			.forEach( decoded -> {
+				JsonArray d2 = new JsonArray().add(decoded.getId());
+				d2.add(decoded.getDisplayName());
+				d2.add(decoded.ofGroup());
 
-			if (notIsSender && cci.contains(a[0]) && !cc.contains(a[0]) && !to.contains(a[0]) && !from.equals(a[0])) continue;
-			JsonArray d2 = new JsonArray().add(a[0]);
-			if (a[2] != null && !a[2].trim().isEmpty()) {
-				final String groupDisplayName = (a[3] != null && !a[3].trim().isEmpty()) ? a[3] : null;
-				d2.add(UserUtils.groupDisplayName(a[2], groupDisplayName, I18n.acceptLanguage(request)));
-				//is group
-				d2.add(true);
-			} else {
-				d2.add(a[1]);
-				d2.add(false);
-			}
-			d3.add(d2);
+				d3.add(d2);
+			});
 		}
 		message.put("displayNames", d3);
 		JsonArray toName = message.getJsonArray("toName");
@@ -636,7 +639,7 @@ public class ConversationController extends BaseController {
 			}
 		}
 
-		if (notIsSender) {
+		if (!isSender) {
 			//keep cci for user recipient only
 			final JsonArray newCci = new JsonArray();
 			if (cci.contains(userInfos.getUserId())) {
@@ -1728,7 +1731,7 @@ public class ConversationController extends BaseController {
 		user.setUserId(message.body().getString("userId"));
 		user.setUsername(message.body().getString("username"));
 		m.put("from", user.getUserId());
-		neoConversationService.addDisplayNames(m, null, new Handler<JsonObject>() {
+		userService.addDisplayNames(m, null, new Handler<JsonObject>() {
 			public void handle(final JsonObject m) {
 				saveAndSend(null, m, user, null, null,
 					new Handler<Either<String, JsonObject>>() {
