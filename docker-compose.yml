@@ -1,7 +1,6 @@
 services:
   maven:
     image: maven:3.8.6-jdk-8
-    user: "$DEFAULT_DOCKER_USER"
     working_dir: /usr/src/maven
     volumes:
       - ./:/usr/src/maven
