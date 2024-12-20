@@ -46,7 +46,6 @@ public class ApiController extends BaseController {
 	public static final String RESOURCE_NAME = "message";
 
 	private ConversationService conversationService;
-	// private Neo4jConversationService userService;
 
 	private enum ConversationEvent {
 		GET_RESOURCE, ACCESS
@@ -59,10 +58,6 @@ public class ApiController extends BaseController {
 		this.conversationService = conversationService;
 		return this;
 	}
-	// public ApiController setUserService(final UserService userService) {
-	// this.userService = userService;
-	// return this;
-	// }
 
 	@Get("api/folders/:folderId/messages")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
@@ -91,6 +86,7 @@ public class ApiController extends BaseController {
 			renderJson(request, messages);
 		})
 		.onFailure( throwable -> {
+			log.error("Unable to list and format messages from folder id="+folderId, throwable);
 			JsonObject error = new JsonObject().put("error", throwable.getMessage());
 			renderJson(request, error, 400);
 		});
@@ -113,6 +109,7 @@ public class ApiController extends BaseController {
 			renderJson(request, message);
 		})
 		.onFailure( throwable -> {
+			log.error("Unable to get and format message id="+id, throwable);
 			JsonObject error = new JsonObject().put("error", throwable.getMessage());
 			renderJson(request, error, 400);
 		});

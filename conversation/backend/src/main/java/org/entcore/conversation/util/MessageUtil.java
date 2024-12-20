@@ -19,12 +19,12 @@ package org.entcore.conversation.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collector;
 import java.util.stream.Stream;
 
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import static org.entcore.common.utils.StringUtils.isEmpty;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
@@ -34,26 +34,32 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Utility class for handling messages, particularly for decoding display names stored in the database,
+ * extracting users and groups from messages, and formatting recipients.
+ */
 public class MessageUtil {
-    final static public String RECIPIENT_ID     = "id";
-    final static public String RECIPIENT_NAME   = "displayName";
-    final static public String MSG_FROM         = "from";
-    final static public String MSG_TO           = "to";
-    final static public String MSG_CC           = "cc";
-    final static public String MSG_CCI          = "cci";
+    /*
+     * Constants representing various message fields.
+     */
+    final static public String RECIPIENT_ID = "id";
+    final static public String RECIPIENT_NAME = "displayName";
+    final static public String MSG_FROM = "from";
+    final static public String MSG_TO = "to";
+    final static public String MSG_CC = "cc";
+    final static public String MSG_CCI = "cci";
 
     /**
-     * Extract users and group (and their displayName), from a message loaded from DB, into `userIndex` and `groupIndex`.
-     * Also hide cci recipients in the message who should not be visible.
-     * @param message message read from DB
-     * @param userInfos
-     * @param lang
+     * Extracts users and groups from a message loaded from the database and populates the user and group indices.
+     * Also hides CCI recipients in the message who should not be visible.
+     * @param message the message read from the database
+     * @param userInfos the user information
+     * @param lang the language
      * @param userIndex Map of ID <-> {"id": user ID, "displayName": username}
      * @param groupIndex Map of ID <-> {"id": group ID, "displayName": groupname}
      */
     static public void computeUsersAndGroupsDisplayNames(
-            JsonObject message, UserInfos userInfos, String lang, final JsonObject userIndex, final JsonObject groupIndex
-        ) {
+            JsonObject message, UserInfos userInfos, String lang, final JsonObject userIndex, final JsonObject groupIndex) {
         final String userId = userInfos.getUserId();
 		final Boolean notIsSender = (!userId.equals(message.getString(MSG_FROM)));
 		final List<String> userGroups = getOrElse(userInfos.getGroupsIds(), new ArrayList<>());
@@ -61,34 +67,25 @@ public class MessageUtil {
         // Add connected user to index
         userIndex.put(
             userId, 
-            new JsonObject().put(RECIPIENT_ID, userId).put(RECIPIENT_NAME, userInfos.getUsername())
+            JsonObject.of(RECIPIENT_ID, userId, RECIPIENT_NAME, userInfos.getUsername())
         );
 
-		JsonArray displayNames = getOrElse((JsonArray) message.remove("displayNames"), new JsonArray());
-		for (Object o2 : displayNames) {
-			if (!(o2 instanceof String)) {
-				continue;
-			}
-			String[] a = ((String) o2).split("\\$");
-			if (a.length != 4) {
-				continue;
-			}
-
-            final boolean isGroup = !isEmpty(a[2]);
-            final JsonObject correctIndex = isGroup ? groupIndex : userIndex;
-            JsonObject newEntry = correctIndex.getJsonObject(a[0]);
-            if( newEntry != null ) continue;
-
-            newEntry = new JsonObject().put(RECIPIENT_ID, a[0]);
-
-			if (isGroup) {
-				final String groupDisplayName = isEmpty(a[3]) ? null : a[3];
-				newEntry.put(RECIPIENT_NAME, UserUtils.groupDisplayName(a[2], groupDisplayName, lang));
-			} else {
-				newEntry.put(RECIPIENT_NAME, a[1]);
-			}
-            correctIndex.put(a[0], newEntry);
-		}
+		getOrElse((JsonArray) message.remove("displayNames"), new JsonArray())
+		.stream()
+        .filter(encodedDisplayName -> (encodedDisplayName instanceof String))
+        .map(encodedDisplayName -> DecodedDisplayName.decode((String)encodedDisplayName, lang))
+        .filter(Optional::isPresent)
+        .map(Optional::get)
+        .forEach(decoded -> {
+            final JsonObject index = decoded.ofGroup() ? groupIndex : userIndex;
+            JsonObject newEntry = index.getJsonObject(decoded.getId());
+            if( newEntry == null ) {
+                index.put(
+                    decoded.getId(), 
+                    JsonObject.of(RECIPIENT_ID, decoded.getId(), RECIPIENT_NAME, decoded.getDisplayName())
+                );
+            }
+        });
 
         /* NOTE JCBE 2024-12-16 : 
          * this code mimics (and simplifies) the implementation of ConversationController.translateGroupsNames()
@@ -124,13 +121,13 @@ public class MessageUtil {
                 }
             }
         });
-	}
+    }
 
     /**
-     * Replace recipients in a message (in DB format) with those found in an index.
-     * @param message message read from DB
-     * @param userIndex Map of ID <-> {"id": user ID, "displayName": username, "profile": profile}
-     * @param groupIndex Map of ID <-> {"id": group ID, "displayName": groupname, "nbUsers": nb users, "type": type, "subType": subtype}
+     * Replaces recipients in a message (in DB format) with those found in an index.
+     * @param message the message read from the database
+     * @param userIndex the user index
+     * @param groupIndex the group index
      */
     static public void formatRecipients(JsonObject message, final JsonObject userIndex, final JsonObject groupIndex) {
         final String from = message.getString(MSG_FROM);
@@ -160,10 +157,15 @@ public class MessageUtil {
         });
     }
 
-	/** 
-	 * Async utility method to get additional information about users and groups.
-	 */
-	static public Future<Void> loadUsersAndGroupsDetails(final EventBus eb, final UserInfos userInfos, final JsonObject userIndex, final JsonObject groupIndex) {
+    /**
+     * Asynchronous utility method to get additional information about users and groups.
+     * @param eb the event bus
+     * @param userInfos the user information
+     * @param userIndex the user index
+     * @param groupIndex the group index
+     * @return a Future representing the completion of the operation
+     */
+    static public Future<Void> loadUsersAndGroupsDetails(final EventBus eb, final UserInfos userInfos, final JsonObject userIndex, final JsonObject groupIndex) {
 		// Gather additional users and groups information.
 		return Future.join(
 			loadUsersDetails(eb, userInfos.getUserId(), userIndex),
@@ -193,9 +195,16 @@ public class MessageUtil {
 			});
             return null; // Avoid a warning
 		});
-	}
+    }
 
-	static private Future<JsonArray> loadUsersDetails(final EventBus eb, final String userId, final JsonObject userIndex) {
+    /**
+     * Loads additional details about users.
+     * @param eb the event bus
+     * @param userId the user ID
+     * @param userIndex the user index
+     * @return a Future representing the completion of the operation
+     */
+    static private Future<JsonArray> loadUsersDetails(final EventBus eb, final String userId, final JsonObject userIndex) {
 		Promise<JsonArray> promise = Promise.promise();
 		JsonObject action = new JsonObject()
 		.put("action", "list-users")
@@ -212,9 +221,16 @@ public class MessageUtil {
             }
         }));
 		return promise.future();
-	}
+    }
 
-	static private Future<JsonArray> loadGroupsDetails(final EventBus eb, final String userId, final JsonObject groupIndex) {
+    /**
+     * Loads additional details about groups.
+     * @param eb the event bus
+     * @param userId the user ID
+     * @param groupIndex the group index
+     * @return a Future representing the completion of the operation
+     */
+    static private Future<JsonArray> loadGroupsDetails(final EventBus eb, final String userId, final JsonObject groupIndex) {
 		Promise<JsonArray> promise = Promise.promise();
 		JsonObject action = new JsonObject()
 		.put("action", "getGroupsInfos")
@@ -230,6 +246,5 @@ public class MessageUtil {
             }
         }));
 		return promise.future();
-	}
-
+    }
 }

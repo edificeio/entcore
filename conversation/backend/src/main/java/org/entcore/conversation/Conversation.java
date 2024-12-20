@@ -62,7 +62,6 @@ public class Conversation extends BaseServer {
 		addController(
 			new ApiController()
 			.setConversationService(conversationService)
-//			.setUserService(userService)
 		);
 
 		setRepositoryEvents(new ConversationRepositoryEvents(storage, getOrElse(config.getLong("repositoryEventsTimeout"), 300000l),vertx));
