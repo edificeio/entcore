@@ -40,7 +40,7 @@ public class Neo4jResult {
 					if (e instanceof JsonObject) {
 						data.put(attr, ((JsonObject) e).getJsonObject("data"));
 					} else if (e instanceof JsonArray) {
-						JsonArray a = new JsonArray();
+						JsonArray a = new fr.wseduc.webutils.collections.JsonArray();
 						for (Object o : (JsonArray) e) {
 							if (!(o instanceof JsonObject)) continue;
 							JsonObject jo = (JsonObject) o;
@@ -85,7 +85,7 @@ public class Neo4jResult {
 
 	public static Either<String, JsonArray> validResult(Message<JsonObject> res) {
 		if ("ok".equals(res.body().getString("status"))) {
-			JsonArray r = res.body().getJsonArray("result", new JsonArray());
+			JsonArray r = res.body().getJsonArray("result", new fr.wseduc.webutils.collections.JsonArray());
 			return new Either.Right<>(r);
 		} else {
 			return new Either.Left<>(res.body().getString("message", ""));
@@ -94,7 +94,7 @@ public class Neo4jResult {
 
 	public static Either<String, JsonArray> validResults(Message<JsonObject> res) {
 		if ("ok".equals(res.body().getString("status"))) {
-			return new Either.Right<>(res.body().getJsonArray("results", new JsonArray()));
+			return new Either.Right<>(res.body().getJsonArray("results", new fr.wseduc.webutils.collections.JsonArray()));
 		} else {
 			return new Either.Left<>(res.body().getString("message", ""));
 		}

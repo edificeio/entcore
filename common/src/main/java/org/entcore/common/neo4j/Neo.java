@@ -140,7 +140,7 @@ public class Neo  {
 
 	@Deprecated
 	public static JsonArray resultToJsonArray(JsonObject j) {
-		JsonArray r = new JsonArray();
+		JsonArray r = new fr.wseduc.webutils.collections.JsonArray();
 		if (j != null) {
 			for (String idx : j.fieldNames()) {
 				r.add(j.getJsonObject(idx));

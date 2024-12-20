@@ -27,7 +27,7 @@ public class SqlStatementsBuilder {
 	private final JsonArray statements;
 
 	public SqlStatementsBuilder() {
-		this.statements = new JsonArray();
+		this.statements = new fr.wseduc.webutils.collections.JsonArray();
 	}
 
 	public SqlStatementsBuilder raw(String query) {
@@ -59,13 +59,13 @@ public class SqlStatementsBuilder {
 		if (params == null) {
 			return this;
 		}
-		JsonArray fields = new JsonArray();
-		JsonArray values = new JsonArray();
+		JsonArray fields = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 		for (String attr : params.fieldNames()) {
 			fields.add(attr);
 			values.add(params.getValue(attr));
 		}
-		insert(table, fields, new JsonArray().add(values), returning);
+		insert(table, fields, new fr.wseduc.webutils.collections.JsonArray().add(values), returning);
 		return this;
 	}
 
