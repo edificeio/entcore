@@ -437,24 +437,21 @@ export function testDeletePosition({structureTree}) {
 // structure of the resulting adml.
 // It covers the bugfix of WB-3640
 export function testGetPositionsAfterMergingAdml({structureTree}) {
-  const {structures: [structure1], admls: [adml1], headAdml} = structureTree
-  describe("", () => {
+  describe("[Position-CRUD] Get positions after merging adml", () => {
     authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
 
-    ////////////////////////////////////
-    // Create 2 ADML for structure 1
-    // and merge them
-    const admlToMerge1 = getAdmlsOrMakThem(structure1, 'Teacher', 1, [headAdml, adml1])[0]
-    const admlToMerge2 = getAdmlsOrMakThem(structure1, 'Teacher', 1, [headAdml, adml1, admlToMerge1])[0]
-
-    console.log("ID structure 1 : ", structure1.id)
-    console.log("ADML ids : ", admlToMerge1.id, " and ", admlToMerge2.id)
+    const structure = initStructure(`IT - WB-3640 - ${Date.now()}`, `tiny`)
+    const positionName = "position-3640"
+    createPosition(positionName, structure);
+    // Create 2 ADML for structure and merge them
+    const admlToMerge1 = getAdmlsOrMakThem(structure, 'Teacher', 1, [])[0]
+    const admlToMerge2 = getAdmlsOrMakThem(structure, 'Teacher', 1, [admlToMerge1])[0]
     mergeUsers(admlToMerge1.id, admlToMerge2.id, true)
 
     authenticateWeb(admlToMerge1.login)
-    let res = getPositionsOfStructure(structure1)
+    let res = getPositionsOfStructure(structure)
 
-    assertOk(res, "An ADML that has got merged with another ADML account should be able to retrieve the user positions of its structure.")
+    assertCondition(() => res.length === 1 && res[0].name === positionName, "The position created for the structure can be retrieved by the adml resulting from merge")
   })
 }
 
