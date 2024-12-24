@@ -74,6 +74,13 @@ export const options = {
       maxDuration: "5s",
       gracefulStop: '1s'
     },
+    testGetPositionsAfterMergingAdml: {
+      exec: 'testGetPositionsAfterMergingAdml',
+      executor: "per-vu-iterations",
+      vus: 1,
+      maxDuration: "5s",
+      gracefulStop: '1s'
+    },
   },
 };
 
