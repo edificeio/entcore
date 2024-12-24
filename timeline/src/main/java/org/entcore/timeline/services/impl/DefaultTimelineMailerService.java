@@ -293,6 +293,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 	}
 
 	protected void sendDailyMails(Optional<Date> forDate, int dayDelta, final Handler<Either<String, JsonObject>> handler){
+		final DefaultTimelineMailerService that = this;
 		final HttpServerRequest request = new JsonHttpServerRequest(new JsonObject());
 		final AtomicInteger userPagination = new AtomicInteger(0);
 		final AtomicInteger endPage = new AtomicInteger(0);
@@ -400,7 +401,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 													.put("notificationDates", dates)
 													.put("displayName", userDisplayName);
 
-											processTimelineTemplate(templateParams, "", "notifications/daily-mail.html",
+											new DefaultTimelineMailerService(that).processTimelineTemplate(templateParams, "", "notifications/daily-mail.html",
 													userDomain, userScheme, userLanguage, false, new Handler<String>() {
 														public void handle(final String processedTemplate) {
 															//On completion : log
@@ -506,6 +507,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 	}
 
 	protected void sendWeeklyMails(Optional<Date> forDate, int dayDelta, final Handler<Either<String, JsonObject>> handler) {
+		final DefaultTimelineMailerService that = this;
 		final HttpServerRequest request = new JsonHttpServerRequest(new JsonObject());
 		final AtomicInteger userPagination = new AtomicInteger(0);
 		final AtomicInteger endPage = new AtomicInteger(0);
@@ -630,7 +632,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 											JsonObject templateParams = new JsonObject().put("notifications", weeklyNotificationsGroupedArray);
 											templateParams.put("displayName", userDisplayName);
 
-											processTimelineTemplate(templateParams, "", "notifications/weekly-mail.html",
+											new DefaultTimelineMailerService(that).processTimelineTemplate(templateParams, "", "notifications/weekly-mail.html",
 													userDomain, userScheme, userLanguage, false, new Handler<String>() {
 														public void handle(final String processedTemplate) {
 															//On completion : log
