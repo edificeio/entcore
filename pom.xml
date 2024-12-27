@@ -69,7 +69,7 @@
         <owaspVersion>20220608.1</owaspVersion>
         <jacksonVersion>2.15.2</jacksonVersion>
         <casVersion>0.2.2</casVersion>
-        <vertxCronTimerVersion>3.0.0</vertxCronTimerVersion>
+        <vertxCronTimerVersion>3.0-SNAPSHOT</vertxCronTimerVersion>
         <jnaVersion>3.0.2</jnaVersion>
         <lamejbVersion>0.2.0</lamejbVersion>
         <opencsvVersion>3.9</opencsvVersion>
