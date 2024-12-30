@@ -33,7 +33,7 @@ export function Component() {
   }
 
   return (
-    <div className="d-md-inline-flex">
+    <div className="d-md-flex">
       <div className="d-block d-md-none p-12 border-bottom bg-white">Combo</div>
 
       <div
