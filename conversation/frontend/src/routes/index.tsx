@@ -18,9 +18,8 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
     },
     errorElement: <PageError />,
     children: [
-      // The loader of this page loads folders tree.
+      // Loads and display folders tree.
       {
-        index: true,
         async lazy() {
           const { Component, loader } = await import('~/routes/folders-tree');
           return {
@@ -28,19 +27,21 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
             Component,
           };
         },
-      },
-      // This page lists messages in a folder.
-      {
-        path: ':folderId',
-        async lazy() {
-          const { Component, loader } = await import('~/routes/folder-display');
-          return {
-            loader: loader(_queryClient),
-            Component,
-          };
-        },
         children: [
-          // This page displays a message.
+          // Display messages from selected folder.
+          {
+            path: ':folderId',
+            async lazy() {
+              const { Component, loader } = await import(
+                '~/routes/folder-display'
+              );
+              return {
+                loader: loader(_queryClient),
+                Component,
+              };
+            },
+          },
+          // Displays selected message.
           {
             path: ':folderId/:messageId',
             async lazy() {
@@ -53,7 +54,7 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
               };
             },
           },
-          // This page displays a new blank message in edit mode.
+          // Displays a new blank message in edit mode.
           {
             path: ':folderId/create',
             async lazy() {

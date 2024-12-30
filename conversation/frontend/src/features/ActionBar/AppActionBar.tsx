@@ -40,7 +40,7 @@ export const AppActionBar = () => {
         onClick={handleAddClick}
         className="text-nowrap"
       >
-        {t('blog.create.post')}
+        {t('new.message')}
       </Button>
 
       <IconButton

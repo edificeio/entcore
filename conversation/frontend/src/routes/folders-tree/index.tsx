@@ -1,7 +1,7 @@
 import { QueryClient } from '@tanstack/react-query';
+import { Outlet, useLoaderData } from 'react-router-dom';
 import { existingActions } from '~/config';
-//import { LoaderFunctionArgs } from 'react-router-dom';
-
+import { Folder } from '~/models';
 //import { actions } from '~/config/actions';
 import {
   actionsQueryOptions,
@@ -11,17 +11,45 @@ import {
 export const loader =
   (queryClient: QueryClient) =>
   async (/*{ params, request }: LoaderFunctionArgs*/) => {
-    const foldersTree = foldersTreeQueryOptions();
-    const actions = actionsQueryOptions(existingActions);
+    const foldersTreeOptions = foldersTreeQueryOptions();
+    const actionsOptions = actionsQueryOptions(existingActions);
 
-    await Promise.all([
-      queryClient.fetchQuery(foldersTree),
-      queryClient.fetchQuery(actions),
+    const [foldersTree, actions] = await Promise.all([
+      queryClient.fetchQuery(foldersTreeOptions),
+      queryClient.fetchQuery(actionsOptions),
     ]);
 
-    return null;
+    return { foldersTree, actions };
   };
 
 export function Component() {
-  return <></>;
+  const { foldersTree, actions } = useLoaderData() as {
+    foldersTree: Folder[];
+    actions: Record<string, boolean>;
+  };
+
+  if (!foldersTree || !actions) {
+    return null;
+  }
+
+  return (
+    <div className="d-md-inline-flex">
+      <div className="d-block d-md-none p-12 border-bottom bg-white">Combo</div>
+
+      <div
+        className="d-none d-md-flex flex-column overflow-x-hidden p-16 gap-16 border-end bg-white"
+        style={{ width: '300px' }}
+      >
+        {JSON.stringify(foldersTree)}
+        <div className="w-100 border-bottom"></div>
+        Mes dossiers
+        <div className="w-100 border-bottom"></div>
+        Espace utilisé
+      </div>
+
+      <div className="align-self-md-stretch">
+        <Outlet />
+      </div>
+    </div>
+  );
 }
