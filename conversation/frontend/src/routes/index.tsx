@@ -18,22 +18,24 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
     },
     errorElement: <PageError />,
     children: [
-      // Loads and display folders tree.
+      /* Layout = route without a path */
+      // Manages folders tree and occupied space.
       {
         async lazy() {
-          const { Component, loader } = await import('~/routes/folders-tree');
+          const { Component, loader } = await import('~/routes/layout');
           return {
             loader: loader(_queryClient),
             Component,
           };
         },
+        /* Pages */
         children: [
           // Display messages from selected folder.
           {
             path: ':folderId',
             async lazy() {
               const { Component, loader } = await import(
-                '~/routes/folder-display'
+                '~/routes/pages/folder-display'
               );
               return {
                 loader: loader(_queryClient),
@@ -46,7 +48,7 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
             path: ':folderId/:messageId',
             async lazy() {
               const { Component, loader } = await import(
-                '~/routes/message-display'
+                '~/routes/pages/message-display'
               );
               return {
                 loader: loader(_queryClient),
@@ -59,7 +61,7 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
             path: ':folderId/create',
             async lazy() {
               const { Component, loader } = await import(
-                '~/routes/message-create'
+                '~/routes/pages/message-create'
               );
               return {
                 loader: loader(_queryClient),
