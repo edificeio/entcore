@@ -1,0 +1,147 @@
+import { NOOP } from '@edifice-ui/react';
+import { odeServices } from 'edifice-ts-client';
+
+import { Message } from '~/models';
+
+/** Utility function to map one or more IDs to an array of IDs */
+function asArray(ids: string | string[]): string[] {
+  return typeof ids == 'string' ? [ids] : ids;
+}
+
+/**
+ * Utility function to HTTP PUT an optional payload to an endoint.
+ * Then discard the response to void.
+ */
+function putThenVoid(endpoint: string, payload?: any) {
+  return odeServices.http().put<object>(endpoint, payload).then(NOOP);
+}
+
+/**
+ * Utility function to HTTP POST an optional payload to an endoint.
+ * Then discard the response to void.
+ */
+function postThenVoid(endpoint: string, payload?: any) {
+  return odeServices.http().post<object>(endpoint, payload).then(NOOP);
+}
+
+/**
+ * Creates a message service with the specified base URL.
+ *
+ * @param baseURL The base URL for the message service API.
+ * @returns A service to interact with messages.
+ */
+export const factory = (baseURL: string) => ({
+  /**
+   * Fully load a message.
+   * @returns
+   */
+  loadMessage(id: string) {
+    return odeServices.http().get<Message[]>(`${baseURL}/api/messages/${id}`);
+  },
+
+  /** Set one or more messages as `read`. */
+  markRead(ids: string | string[]) {
+    return postThenVoid(`${baseURL}/toggleUnread`, {
+      id: asArray(ids),
+      unread: false,
+    });
+  },
+
+  /** Set one or more messages as `unread`. */
+  markUnread(ids: string | string[]) {
+    return postThenVoid(`${baseURL}/toggleUnread`, {
+      id: asArray(ids),
+      unread: true,
+    });
+  },
+
+  /** Trash one or more messages. */
+  moveToTrash(ids: string | string[]) {
+    return putThenVoid(`${baseURL}/trash`, {
+      id: asArray(ids),
+    });
+  },
+
+  /** Restore one or more messages. */
+  restoreFromTrash(ids: string | string[]) {
+    return odeServices
+      .http()
+      .put<object>(`${baseURL}/restore`, {
+        id: asArray(ids),
+      })
+      .then(NOOP); // Send crappy result to void
+  },
+
+  /** Permanently delete one or more messages. */
+  burn(ids: string | string[]) {
+    return putThenVoid(`${baseURL}/delete`, {
+      id: asArray(ids),
+    });
+  },
+
+  /** Move one or more messages into a user-created folder. */
+  moveToFolder(targetFolderId: string, ids: string | string[]) {
+    return putThenVoid(`${baseURL}/move/userfolder/${targetFolderId}`, {
+      id: asArray(ids),
+    });
+  },
+
+  /** Move one or more messages into inbox. */
+  moveToInbox(ids: string | string[]) {
+    return putThenVoid(`${baseURL}/move/root?id=${asArray(ids).join()}`);
+  },
+
+  /**
+   * Send an existing draft email, optionaly updating its subject, body and/or recipients.
+   * @returns up-to-date information about the sent email and its recipients.
+   */
+  send(
+    draftId: string,
+    payload?: {
+      subject?: string;
+      body?: string;
+      /** IDs of recipients */
+      to?: string[];
+      /** IDs of recipients in "copie-carbone" */
+      cc?: string[];
+      /** IDs of recipients in "copie-carbone-invisible" */
+      cci?: string[];
+    },
+  ) {
+    return odeServices.http().post<{
+      id: string;
+      subject: string;
+      body: string;
+      thread_id: string;
+      /** Number of reached recipients. */
+      sent: number;
+      /** IDs of unreachable recipients. */
+      undelivered: [];
+      /** IDs of inactive recipients. */
+      inactive: string[];
+    }>(`${baseURL}/send?id=${draftId}`, payload);
+  },
+
+  createDraft(payload: {
+    subject?: string;
+    body?: string;
+    to?: string[];
+    cc?: string[];
+    cci?: string[];
+  }) {
+    return odeServices.http().post<{ id: string }>(`${baseURL}/draft`, payload);
+  },
+
+  updateDraft(
+    draftId: string,
+    payload: {
+      subject?: string;
+      body?: string;
+      to?: string[];
+      cc?: string[];
+      cci?: string[];
+    },
+  ) {
+    return postThenVoid(`${baseURL}/draft/${draftId}`, payload);
+  },
+});

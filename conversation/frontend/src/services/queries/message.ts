@@ -1,5 +1,5 @@
 import { queryOptions } from '@tanstack/react-query';
-import { loadMessage } from '../api';
+import { messageService } from '..';
 
 /**
  * Query options to load folders tree.
@@ -8,6 +8,6 @@ import { loadMessage } from '../api';
 export const messageQueryOptions = (messageId: string) => {
   return queryOptions({
     queryKey: ['message'],
-    queryFn: () => loadMessage(messageId),
+    queryFn: () => messageService.loadMessage(messageId),
   });
 };

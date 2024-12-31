@@ -6,4 +6,4 @@ export * from './api';
 /**
  * Queries
  */
-export * from './queries/action';
+export * from './queries';

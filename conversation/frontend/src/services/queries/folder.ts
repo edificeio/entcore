@@ -1,5 +1,5 @@
 import { queryOptions } from '@tanstack/react-query';
-import { loadFoldersTree } from '../api/folder';
+import { folderService } from '..';
 
 const TREE_DEPTH = 2;
 
@@ -10,7 +10,7 @@ const TREE_DEPTH = 2;
 export const foldersTreeQueryOptions = () => {
   return queryOptions({
     queryKey: ['foldersTree'],
-    queryFn: () => loadFoldersTree(TREE_DEPTH),
+    queryFn: () => folderService.loadTree(TREE_DEPTH),
     staleTime: Infinity,
   });
 };

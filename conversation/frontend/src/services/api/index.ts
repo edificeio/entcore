@@ -1,11 +1,6 @@
-/*
- * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- This is a starter file and can be deleted.
- * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- Delete this file and get started with your project!
- * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- */
+import { factory as createFolderService } from './folderServiceFactory';
+import { factory as createMessageService } from './messageServiceFactory';
 
-export const baseUrl = '/app';
-export * from './folder';
-export * from './message';
+export const baseUrl = '/conversation';
+export const folderService = createFolderService(baseUrl);
+export const messageService = createMessageService(baseUrl);
