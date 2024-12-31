@@ -24,7 +24,7 @@ export const factory = (baseURL: string) => ({
    */
   loadMessages(
     folderId: string,
-    params: {
+    options?: {
       /** (optional) Search string */
       search?: string;
       /** (optional) 0-based Page number */
@@ -39,7 +39,7 @@ export const factory = (baseURL: string) => ({
       .http()
       .get<
         MessageMetadata[]
-      >(`${baseURL}/api/folders/${folderId}/messages`, { queryParams: params });
+      >(`${baseURL}/api/folders/${folderId}/messages`, { queryParams: options });
   },
 
   create(payload: { name: string; parentID?: string }) {

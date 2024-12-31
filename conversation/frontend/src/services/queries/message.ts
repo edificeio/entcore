@@ -8,6 +8,6 @@ import { messageService } from '..';
 export const messageQueryOptions = (messageId: string) => {
   return queryOptions({
     queryKey: ['message'],
-    queryFn: () => messageService.loadMessage(messageId),
+    queryFn: () => messageService.getById(messageId),
   });
 };

@@ -35,7 +35,7 @@ export const factory = (baseURL: string) => ({
    * Fully load a message.
    * @returns
    */
-  loadMessage(id: string) {
+  getById(id: string) {
     return odeServices.http().get<Message[]>(`${baseURL}/api/messages/${id}`);
   },
 
@@ -56,14 +56,14 @@ export const factory = (baseURL: string) => ({
   },
 
   /** Trash one or more messages. */
-  moveToTrash(ids: string | string[]) {
+  trash(ids: string | string[]) {
     return putThenVoid(`${baseURL}/trash`, {
       id: asArray(ids),
     });
   },
 
   /** Restore one or more messages. */
-  restoreFromTrash(ids: string | string[]) {
+  restore(ids: string | string[]) {
     return odeServices
       .http()
       .put<object>(`${baseURL}/restore`, {
@@ -73,7 +73,7 @@ export const factory = (baseURL: string) => ({
   },
 
   /** Permanently delete one or more messages. */
-  burn(ids: string | string[]) {
+  delete(ids: string | string[]) {
     return putThenVoid(`${baseURL}/delete`, {
       id: asArray(ids),
     });

@@ -3,15 +3,12 @@ import { Outlet, useLoaderData } from 'react-router-dom';
 import { existingActions } from '~/config';
 import { Folder } from '~/models';
 //import { actions } from '~/config/actions';
-import {
-  actionsQueryOptions,
-  foldersTreeQueryOptions,
-} from '~/services/queries';
+import { actionsQueryOptions, folderQueryOptions } from '~/services/queries';
 
 export const loader =
   (queryClient: QueryClient) =>
   async (/*{ params, request }: LoaderFunctionArgs*/) => {
-    const foldersTreeOptions = foldersTreeQueryOptions();
+    const foldersTreeOptions = folderQueryOptions.loadFoldersTree();
     const actionsOptions = actionsQueryOptions(existingActions);
 
     const [foldersTree, actions] = await Promise.all([

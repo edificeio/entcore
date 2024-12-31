@@ -2,7 +2,7 @@ import { Attachment } from './attachment';
 import { Recipients } from './recipient';
 import { User } from './user';
 
-type MessageBase = {
+export interface MessageBase {
   id: string;
   date: number;
   subject: string;
@@ -15,17 +15,17 @@ type MessageBase = {
   trashed: boolean;
   responded: boolean;
   forwarded: boolean;
-};
+}
 
-export type MessageMetadata = MessageBase & {
+export interface MessageMetadata extends MessageBase {
   hasAttachments: boolean;
-};
+}
 
-export type Message = MessageBase & {
+export interface Message extends MessageBase {
   attachments: Attachment[];
   body: string;
   language: string;
   folder_id: string;
   parent_id: string;
   thread_id: string;
-};
+}
