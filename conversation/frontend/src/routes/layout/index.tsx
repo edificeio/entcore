@@ -34,17 +34,19 @@ export function Component() {
 
   return (
     <div className="d-md-flex">
-      <div className="d-block d-md-none p-12 border-bottom bg-white">Combo</div>
+      <div className="d-block d-md-none p-12 border-bottom bg-white">
+        TODO Combo
+      </div>
 
       <div
         className="d-none d-md-flex flex-column overflow-x-hidden p-16 gap-16 border-end bg-white"
         style={{ width: '300px' }}
       >
-        {JSON.stringify(foldersTree)}
+        TODO {JSON.stringify(foldersTree)}
         <div className="w-100 border-bottom"></div>
-        Mes dossiers
+        TODO Mes dossiers
         <div className="w-100 border-bottom"></div>
-        Espace utilisé
+        TODO Espace utilisé
       </div>
 
       <div className="align-self-md-stretch">
