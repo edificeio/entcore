@@ -1,12 +1,11 @@
 #!/bin/bash
 
-MVN_OPTS="-Duser.home=/var/maven"
-
 if [ ! -e node_modules ]
 then
   mkdir node_modules
 fi
 
+# user options
 if [[ "$*" == *"--no-user"* ]]
 then
   USER_OPTION=""
@@ -26,21 +25,28 @@ else
   USER_OPTION="-u $USER_UID:$GROUP_GID"
 fi
 
-# options
+# build options
+NO_DOCKER=""
 SPRINGBOARD="recette"
 MODULE=""
+MVN_OPTS="-Duser.home=/var/maven"
 for i in "$@"
 do
 case $i in
-    -s=*|--springboard=*)
+  --no-docker*)
+    NO_DOCKER="true"
+    MVN_OPTS=""
+    shift
+    ;;
+  -s=*|--springboard=*)
     SPRINGBOARD="${i#*=}"
     shift
     ;;
-    -m=*|--module=*)
+  -m=*|--module=*)
     MODULE="${i#*=}"
     shift
     ;;
-    *)
+  *)
     ;;
 esac
 done
@@ -85,10 +91,15 @@ init() {
 }
 
 clean () {
-  docker compose run --rm $USER_OPTION maven mvn $MVN_OPTS clean
+  if [ "$NO_DOCKER" = "true" ] ; then
+    mvn $MVN_OPTS clean
+  else
+    docker compose run --rm $USER_OPTION maven mvn $MVN_OPTS clean
+  fi
 }
 
-buildNode () {
+buildFrontend () {
+  # --- Build angularJS-based frontends
   if [ "$MODULE" = "" ] || [ ! "$MODULE" = "admin" ] && [ ! -e ./"$MODULE"/frontend ]; then
     #try jenkins branch name => then local git branch name => then jenkins params
     echo "[buildNode] Get branch name from jenkins env..."
@@ -127,10 +138,9 @@ buildNode () {
         esac
     fi
   fi
-}
 
-buildReactNode() {
-  # Will build the frontend for all react modules
+  # --- Build react-based frontends
+  local modules
   if [ "$MODULE" = "" ]; then
     modules=($(ls -d */ | cut -f1 -d'/'))
   else 
@@ -138,33 +148,30 @@ buildReactNode() {
   fi
   
   for module in "${modules[@]}"; do
-    cd ./"$module"
-
-    if [ -e ./frontend ]; then
-      echo -e "[Build React] Build react frontend directory for module $module"
-      # Building frontend $module
-      cd ./frontend
-      ./build.sh --no-docker clean init build
+    if [ -e ./"$module"/frontend ]; then
+      echo -e "[Build React] Build react frontend for module $module"
+      cd ./"$module"/frontend
+      if [ "$NO_DOCKER" = "true" ] ; then
+        ./build.sh --no-docker clean init build
+      else 
+        ./build.sh clean init build
+      fi
 
       # Create directory structure and copy frontend build files to backend
-      cd ../backend
-      rm -rf ./src/main/resources/public/*.js
-      rm -rf ./src/main/resources/public/*.css
-      cp -R ../frontend/dist/* ./src/main/resources/
+      rm -rf ../backend/src/main/resources/public/*.js
+      rm -rf ../backend/src/main/resources/public/*.css
+      cp -R ./dist/* ../backend/src/main/resources/
 
       # Create view directory and copy HTML files
-      mv ./src/main/resources/*.html ./src/main/resources/view
+      mv ../backend/src/main/resources/*.html ../backend/src/main/resources/view
 
-      # Clean up - remove frontend/dist and backend/src/main/resources
-      rm -rf ../frontend/dist
-      cd ..
+      # Clean up
+      rm -rf ./dist
+      cd ../..
     fi
-
-    cd ..
   done
-}
 
-buildAdminNode() {
+  # --- Build angular-based frontends
   if [ "$MODULE" = "" ] || [ "$MODULE" = "admin" ]; then
     case `uname -s` in
       MINGW*)
@@ -177,7 +184,11 @@ buildAdminNode() {
 }
 
 buildBackend () {
-  docker compose run --rm $USER_OPTION maven mvn $MVN_OPTS install -DskipTests
+  if [ "$NO_DOCKER" = "true" ] ; then
+    mvn $MVN_OPTS install -DskipTests
+  else
+    docker compose run --rm $USER_OPTION maven mvn $MVN_OPTS install -DskipTests
+  fi
 }
 
 test () {
@@ -299,6 +310,12 @@ itTests() {
   exit $exit_code
 }
 
+if [ "$#" -lt 1 ]; then
+  echo "Usage: $0 <clean|buildFrontend|buildBackend|install|watch>"
+  echo "Example: $0 clean install"
+  exit 1
+fi
+
 for param in "$@"
 do
   case $param in
@@ -310,20 +327,14 @@ do
     clean)
       clean
       ;;
-    buildAdminNode)
-      buildAdminNode
-      ;;
-    buildNode)
-      buildNode
-      ;;
-    buildReactNode)
-      buildReactNode
+    buildFrontend)
+      buildFrontend
       ;;
     buildBackend)
       buildBackend
       ;;
     install)
-      buildNode && buildReactNode && buildAdminNode && buildBackend
+      buildFrontend && buildBackend
       ;;
     localDep)
       localDep
