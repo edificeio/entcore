@@ -55,14 +55,7 @@ export const factory = (baseURL: string) => ({
     });
   },
 
-  /** Trash one or more messages. */
-  trash(ids: string | string[]) {
-    return putThenVoid(`${baseURL}/trash`, {
-      id: asArray(ids),
-    });
-  },
-
-  /** Restore one or more messages. */
+  /** Restore one or more messages from trash bin. */
   restore(ids: string | string[]) {
     return odeServices
       .http()
@@ -79,16 +72,30 @@ export const factory = (baseURL: string) => ({
     });
   },
 
-  /** Move one or more messages into a user-created folder. */
-  moveToFolder(targetFolderId: string, ids: string | string[]) {
-    return putThenVoid(`${baseURL}/move/userfolder/${targetFolderId}`, {
+  /**
+   * Move one or more messages into a user-created folder, or "inbox", or "trash".
+   * @param targetFolderId ID of a user-created folder, or "inbox" or "trash".
+   * @param ids One or more messages ID to move to the target folder.
+   */
+  moveToFolder(
+    targetFolderId: 'inbox' | 'trash' | string,
+    ids: string | string[],
+  ) {
+    if (!targetFolderId) return Promise.reject('folderpicker.move.empty.text');
+    const payload = {
       id: asArray(ids),
-    });
-  },
-
-  /** Move one or more messages into inbox. */
-  moveToInbox(ids: string | string[]) {
-    return putThenVoid(`${baseURL}/move/root?id=${asArray(ids).join()}`);
+    };
+    switch (targetFolderId.toLowerCase()) {
+      case 'trash':
+        return putThenVoid(`${baseURL}/trash`, payload);
+      case 'inbox':
+        return putThenVoid(`${baseURL}/move/root?id=${payload.id.join()}`);
+      default:
+        return putThenVoid(
+          `${baseURL}/move/userfolder/${targetFolderId}`,
+          payload,
+        );
+    }
   },
 
   /**

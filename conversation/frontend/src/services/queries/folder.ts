@@ -90,7 +90,7 @@ export const useUpdateFolder = () => {
     mutationFn: ({ id: folderId, name }: Pick<Folder, 'id' | 'name'>) =>
       folderService.rename(folderId, name),
     onSuccess: (_data, _context) => {
-      // TODO live update
+      // TODO optimistic update
     },
   });
 };
