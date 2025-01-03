@@ -36,12 +36,12 @@ export const createMessageService = (baseURL: string) => ({
    * @returns
    */
   getById(id: string) {
-    return odeServices.http().get<Message[]>(`${baseURL}/api/messages/${id}`);
+    return odeServices.http().get<Message>(`${baseURL}/api/messages/${id}`);
   },
 
   /** Set one or more messages as `read`. */
   markRead(ids: string | string[]) {
-    return postThenVoid(`${baseURL}/toggleUnread`, {
+    return postThenVoid(`${baseURL}/conversation/toggleUnread`, {
       id: asArray(ids),
       unread: false,
     });
@@ -49,7 +49,7 @@ export const createMessageService = (baseURL: string) => ({
 
   /** Set one or more messages as `unread`. */
   markUnread(ids: string | string[]) {
-    return postThenVoid(`${baseURL}/toggleUnread`, {
+    return postThenVoid(`${baseURL}/conversation/toggleUnread`, {
       id: asArray(ids),
       unread: true,
     });
@@ -57,17 +57,14 @@ export const createMessageService = (baseURL: string) => ({
 
   /** Restore one or more messages from trash bin. */
   restore(ids: string | string[]) {
-    return odeServices
-      .http()
-      .put<object>(`${baseURL}/restore`, {
-        id: asArray(ids),
-      })
-      .then(NOOP); // Send crappy result to void
+    return putThenVoid(`${baseURL}/conversation/restore`, {
+      id: asArray(ids),
+    });
   },
 
   /** Permanently delete one or more messages. */
   delete(ids: string | string[]) {
-    return putThenVoid(`${baseURL}/delete`, {
+    return putThenVoid(`${baseURL}/conversation/delete`, {
       id: asArray(ids),
     });
   },
@@ -87,12 +84,14 @@ export const createMessageService = (baseURL: string) => ({
     };
     switch (targetFolderId.toLowerCase()) {
       case 'trash':
-        return putThenVoid(`${baseURL}/trash`, payload);
+        return putThenVoid(`${baseURL}/conversation/trash`, payload);
       case 'inbox':
-        return putThenVoid(`${baseURL}/move/root?id=${payload.id.join()}`);
+        return putThenVoid(
+          `${baseURL}/conversation/move/root?id=${payload.id.join()}`,
+        );
       default:
         return putThenVoid(
-          `${baseURL}/move/userfolder/${targetFolderId}`,
+          `${baseURL}/conversation/move/userfolder/${targetFolderId}`,
           payload,
         );
     }
@@ -126,7 +125,7 @@ export const createMessageService = (baseURL: string) => ({
       undelivered: [];
       /** IDs of inactive recipients. */
       inactive: string[];
-    }>(`${baseURL}/send?id=${draftId}`, payload);
+    }>(`${baseURL}/conversation/send?id=${draftId}`, payload);
   },
 
   createDraft(payload: {
@@ -136,7 +135,9 @@ export const createMessageService = (baseURL: string) => ({
     cc?: string[];
     cci?: string[];
   }) {
-    return odeServices.http().post<{ id: string }>(`${baseURL}/draft`, payload);
+    return odeServices
+      .http()
+      .post<{ id: string }>(`${baseURL}/conversation/draft`, payload);
   },
 
   updateDraft(
@@ -149,6 +150,6 @@ export const createMessageService = (baseURL: string) => ({
       cci?: string[];
     },
   ) {
-    return postThenVoid(`${baseURL}/draft/${draftId}`, payload);
+    return postThenVoid(`${baseURL}/conversation/draft/${draftId}`, payload);
   },
 });

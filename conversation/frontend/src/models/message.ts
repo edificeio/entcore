@@ -13,7 +13,7 @@ export interface MessageBase {
   state: 'DRAFT' | 'SENT';
   unread: boolean;
   trashed: boolean;
-  responded: boolean;
+  response: boolean;
   forwarded: boolean;
 }
 
