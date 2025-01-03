@@ -1,15 +1,8 @@
-import {
-  AppHeader,
-  Breadcrumb,
-  Layout,
-  LoadingScreen,
-  useOdeClient,
-} from '@edifice-ui/react';
+import { Layout, LoadingScreen, useOdeClient } from '@edifice-ui/react';
 
 import { matchPath, Outlet } from 'react-router-dom';
 
 import { basename } from '..';
-import { AppActionBar } from '~/features/ActionBar/AppActionBar';
 
 function redirectTo(redirectPath: string) {
   window.location.replace(
@@ -50,9 +43,6 @@ export const Root = () => {
 
   return (
     <Layout>
-      <AppHeader render={() => <AppActionBar />}>
-        <Breadcrumb app={currentApp} />
-      </AppHeader>
       <Outlet />
     </Layout>
   );
