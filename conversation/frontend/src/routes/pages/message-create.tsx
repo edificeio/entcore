@@ -5,5 +5,5 @@ export const loader = (_queryClient: QueryClient) => async () => {
 };
 
 export function Component() {
-  return <></>;
+  return <>TODO</>;
 }

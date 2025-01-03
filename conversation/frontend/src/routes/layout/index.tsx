@@ -14,8 +14,8 @@ export const loader =
     const actionsOptions = actionsQueryOptions(existingActions);
 
     const [foldersTree, actions] = await Promise.all([
-      queryClient.fetchQuery(foldersTreeOptions),
-      queryClient.fetchQuery(actionsOptions),
+      queryClient.ensureQueryData(foldersTreeOptions),
+      queryClient.ensureQueryData(actionsOptions),
     ]);
 
     return { foldersTree, actions };

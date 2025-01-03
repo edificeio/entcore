@@ -10,11 +10,11 @@ export const loader =
       params.messageId as string,
     );
 
-    await Promise.all([queryClient.fetchQuery(queryMessage)]);
+    await Promise.all([queryClient.ensureQueryData(queryMessage)]);
 
     return null;
   };
 
 export function Component() {
-  return <></>;
+  return <>TODO</>;
 }
