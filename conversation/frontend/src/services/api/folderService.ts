@@ -42,19 +42,21 @@ export const createFolderService = (baseURL: string) => ({
       >(`${baseURL}/api/folders/${folderId}/messages`, { queryParams: options });
   },
 
-  create(payload: { name: string; parentID?: string }) {
+  create(payload: { name: string; parentId?: string }) {
     return odeServices
       .http()
-      .post<{ id: string }>(`${baseURL}/folder`, payload);
+      .post<{ id: string }>(`${baseURL}/conversation/folder`, payload);
   },
 
   rename(folderId: string, name: string) {
     return odeServices
       .http()
-      .put<void>(`${baseURL}/folder/${folderId}`, { name });
+      .put<void>(`${baseURL}/conversation/folder/${folderId}`, { name });
   },
 
   trash(folderId: string) {
-    return odeServices.http().put<void>(`${baseURL}/folder/trash/${folderId}`);
+    return odeServices
+      .http()
+      .put<void>(`${baseURL}/conversation/folder/trash/${folderId}`);
   },
 });

@@ -1,4 +1,6 @@
 import { HttpResponse, http } from 'msw';
+import { baseUrl } from '~/services';
+import { mockFolderTree, mockMessagesOfInbox } from '.';
 
 /**
  * DO NOT MODIFY
@@ -229,4 +231,25 @@ const defaultHandlers = [
  * MSW Handlers
  * Mock HTTP methods for your own application
  */
-export const handlers = [...defaultHandlers];
+export const handlers = [
+  ...defaultHandlers,
+  http.get(`${baseUrl}/api/folders`, () => {
+    return HttpResponse.json(mockFolderTree, { status: 200 });
+  }),
+  http.get(`${baseUrl}/api/folders/:folderId/messages`, ({ params }) => {
+    if (params['folderId'] != 'inbox') {
+      return HttpResponse.text('Unexpected error', { status: 500 });
+    } else {
+      return HttpResponse.json(mockMessagesOfInbox, { status: 200 });
+    }
+  }),
+  http.post(`${baseUrl}/conversation/folder`, async () => {
+    return HttpResponse.json({ id: 'folder_Z' }, { status: 201 });
+  }),
+  http.put(`${baseUrl}/conversation/folder/:folderId`, async () => {
+    return HttpResponse.json({}, { status: 200 });
+  }),
+  http.put(`${baseUrl}/conversation/folder/trash/:folderId`, async () => {
+    return HttpResponse.json({}, { status: 200 });
+  }),
+];
