@@ -29,7 +29,6 @@ export const useMessage = (messageId: string) => {
 
 export const useMarkRead = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: ({ id }: { id: string | string[] }) =>
       messageService.markRead(id),
@@ -46,7 +45,6 @@ export const useMarkRead = () => {
 
 export const useMarkUnread = () => {
   const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: ({ id }: { id: string | string[] }) =>
       messageService.markUnread(id),
@@ -189,7 +187,7 @@ export const useSendDraft = () => {
     onSuccess: (_data /*, { draftId }*/) => {
       // TODO optimistic update ?
       queryClient.invalidateQueries({
-        queryKey: folderQueryOptions.loadFoldersTree().queryKey,
+        queryKey: folderQueryOptions.getFoldersTree().queryKey,
       });
     },
   });

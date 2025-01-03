@@ -30,7 +30,7 @@ function postThenVoid(endpoint: string, payload?: any) {
  * @param baseURL The base URL for the message service API.
  * @returns A service to interact with messages.
  */
-export const factory = (baseURL: string) => ({
+export const createMessageService = (baseURL: string) => ({
   /**
    * Fully load a message.
    * @returns

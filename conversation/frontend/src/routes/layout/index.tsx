@@ -8,7 +8,7 @@ import { actionsQueryOptions, folderQueryOptions } from '~/services/queries';
 export const loader =
   (queryClient: QueryClient) =>
   async (/*{ params, request }: LoaderFunctionArgs*/) => {
-    const foldersTreeOptions = folderQueryOptions.loadFoldersTree();
+    const foldersTreeOptions = folderQueryOptions.getFoldersTree();
     const actionsOptions = actionsQueryOptions(existingActions);
 
     const [foldersTree, actions] = await Promise.all([

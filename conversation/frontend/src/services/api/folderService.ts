@@ -8,12 +8,12 @@ import { Folder, MessageMetadata } from '~/models';
  * @param baseURL The base URL for the folder service API.
  * @returns A service to interact with folders.
  */
-export const factory = (baseURL: string) => ({
+export const createFolderService = (baseURL: string) => ({
   /**
    * Load folders tree.
    * @returns
    */
-  loadTree(depth: number) {
+  getTree(depth: number) {
     return odeServices
       .http()
       .get<Folder[]>(`${baseURL}/api/folders?depth=${depth}`);
@@ -22,7 +22,7 @@ export const factory = (baseURL: string) => ({
   /**
    * Load paginated list of messages from a folder.
    */
-  loadMessages(
+  getMessages(
     folderId: string,
     options?: {
       /** (optional) Search string */

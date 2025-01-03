@@ -1,5 +1,5 @@
-import { factory as createFolderService } from './folderServiceFactory';
-import { factory as createMessageService } from './messageServiceFactory';
+import { createFolderService } from './folderService';
+import { createMessageService } from './messageService';
 
 export const baseUrl = '/conversation';
 export const folderService = createFolderService(baseUrl);

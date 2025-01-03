@@ -13,16 +13,16 @@ import { Folder } from '~/models';
 export const folderQueryOptions = {
   base: ['folder'] as const,
 
-  loadFoldersTree() {
+  getFoldersTree() {
     const TREE_DEPTH = 2;
     return queryOptions({
       queryKey: [...folderQueryOptions.base, 'tree'] as const,
-      queryFn: () => folderService.loadTree(TREE_DEPTH),
+      queryFn: () => folderService.getTree(TREE_DEPTH),
       staleTime: 5000,
     });
   },
 
-  loadMessages(
+  getMessages(
     folderId: string,
     options?: {
       /** (optional) Search string */
@@ -42,7 +42,7 @@ export const folderQueryOptions = {
         'messages',
         options,
       ] as const,
-      queryFn: () => folderService.loadMessages(folderId, options),
+      queryFn: () => folderService.getMessages(folderId, options),
       staleTime: 5000,
     });
   },
@@ -52,7 +52,7 @@ export const folderQueryOptions = {
  * All queries and mutations
  */
 export const useFoldersTree = () => {
-  return useQuery(folderQueryOptions.loadFoldersTree());
+  return useQuery(folderQueryOptions.getFoldersTree());
 };
 
 export const useFolderMessages = (
@@ -68,7 +68,7 @@ export const useFolderMessages = (
     unread?: boolean;
   },
 ) => {
-  return useQuery(folderQueryOptions.loadMessages(folderId, options));
+  return useQuery(folderQueryOptions.getMessages(folderId, options));
 };
 
 export const useCreateFolder = () => {
@@ -78,7 +78,7 @@ export const useCreateFolder = () => {
       folderService.create(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: folderQueryOptions.loadFoldersTree().queryKey,
+        queryKey: folderQueryOptions.getFoldersTree().queryKey,
       });
     },
   });
@@ -101,7 +101,7 @@ export const useTrashFolder = () => {
     mutationFn: ({ id }: Pick<Folder, 'id'>) => folderService.trash(id),
     onSuccess: (_data, _context) => {
       queryClient.invalidateQueries({
-        queryKey: folderQueryOptions.loadFoldersTree().queryKey,
+        queryKey: folderQueryOptions.getFoldersTree().queryKey,
       });
     },
   });
