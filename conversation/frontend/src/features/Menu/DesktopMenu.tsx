@@ -5,11 +5,23 @@ import {
   IconSmiley,
   IconWrite,
 } from '@edifice.io/react/icons';
-import { Menu } from '@edifice.io/react';
+import { Button, Menu, SortableTree, TreeItem } from '@edifice.io/react';
 import { NOOP } from '@edifice.io/utilities';
 import { useLoaderData } from 'react-router-dom';
 import { Folder } from '~/models';
 import { t } from 'i18next';
+
+function buildTree(folders: Folder[]) {
+  return folders
+    .sort((a, b) => (a.name < b.name ? -1 : a.name == b.name ? 0 : 1))
+    .map(({ id, name, subFolders }) => {
+      const item = { id, name } as TreeItem;
+      if (subFolders) {
+        item.children = buildTree(subFolders);
+      }
+      return item;
+    });
+}
 
 export function DesktopMenu() {
   // See `layout` loader
@@ -22,9 +34,26 @@ export function DesktopMenu() {
     return null;
   }
 
+  const userFolders = buildTree(foldersTree);
+
+  function renderUserFolder({
+    node,
+  }: {
+    node: TreeItem;
+    hasChildren?: boolean;
+    isChild?: boolean;
+  }) {
+    return (
+      <div className="w-100 d-flex">
+        {node.name}
+        <IconSmiley />
+      </div>
+    );
+  }
+
   return (
     <>
-      <Menu label="generic.folders">
+      <Menu label={t('generic.folders')}>
         <Menu.Item>
           <Menu.Button
             leftIcon={<IconDepositeInbox />}
@@ -56,9 +85,17 @@ export function DesktopMenu() {
           </Menu.Button>
         </Menu.Item>
       </Menu>
-      TODO {JSON.stringify(foldersTree)}
       <div className="w-100 border-bottom"></div>
-      TODO Mes dossiers
+      <Menu label={t('user.folders')}>
+        <b>{t('user.folders')}</b>
+        <SortableTree
+          nodes={userFolders}
+          onSortable={NOOP}
+          onTreeItemClick={NOOP}
+          renderNode={renderUserFolder}
+          selectedNodeId={'1'}
+        />
+      </Menu>
       <div className="w-100 border-bottom"></div>
       TODO Espace utilisé
     </>
