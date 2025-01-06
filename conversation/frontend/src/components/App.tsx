@@ -1,4 +1,4 @@
-import { Button } from '@edifice-ui/react';
+import { Button } from '@edifice.io/react';
 
 export const App = () => {
   return (

@@ -1,19 +1,18 @@
 import { Fragment, RefAttributes } from 'react';
-
-import { Options, Plus, Print } from '@edifice-ui/icons';
+import { useEdificeClient } from '@edifice.io/react';
+import { IconOptions, IconPlus, IconPrint } from '@edifice.io/react/icons';
 import {
   Button,
   Dropdown,
   IconButton,
   IconButtonProps,
-  useOdeClient,
-} from '@edifice-ui/react';
+} from '@edifice.io/react';
 import { useTranslation } from 'react-i18next';
 import { AppActionMenuOptions } from './AppActionMenuOptions';
 import { useAppActions } from '~/store/actions';
 
 export const AppActionHeader = () => {
-  const { appCode } = useOdeClient();
+  const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
   const { t: common_t } = useTranslation('common');
   const { setOpenPrintModal } = useAppActions();
@@ -22,7 +21,7 @@ export const AppActionHeader = () => {
     {
       id: 'print',
       label: t('print'),
-      icon: <Print />,
+      icon: <IconPrint />,
       action: () => setOpenPrintModal(true),
       visibility: true,
     },
@@ -35,7 +34,7 @@ export const AppActionHeader = () => {
   return (
     <div className="d-flex flex-fill align-items-center justify-content-end gap-12 align-self-end">
       <Button
-        leftIcon={<Plus />}
+        leftIcon={<IconPlus />}
         onClick={handleCreateNewClick}
         className="text-nowrap"
       >
@@ -55,7 +54,7 @@ export const AppActionHeader = () => {
               aria-label={common_t('tiptap.tooltip.plus')}
               color="primary"
               variant="outline"
-              icon={<Options />}
+              icon={<IconOptions />}
             />
 
             <Dropdown.Menu>

@@ -1,4 +1,4 @@
-import { OdeClientProvider } from '@edifice-ui/react';
+import { EdificeClientProvider } from '@edifice.io/react';
 import {
   QueryCache,
   QueryClient,
@@ -29,13 +29,13 @@ export const queryClient = new QueryClient({
 export const Providers = ({ children }: { children: ReactNode }) => {
   return (
     <QueryClientProvider client={queryClient}>
-      <OdeClientProvider
+      <EdificeClientProvider
         params={{
           app: 'conversation',
         }}
       >
         {children}
-      </OdeClientProvider>
+      </EdificeClientProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );
