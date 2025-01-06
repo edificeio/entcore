@@ -1,4 +1,4 @@
-import { DropdownMenuOptions } from '@edifice-ui/react';
+import { DropdownMenuOptions } from '@edifice.io/react';
 
 export type AppActionMenuOptions = {
   id: string;
