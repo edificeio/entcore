@@ -47,13 +47,11 @@ export default ({ mode }: { mode: string }) => {
       proxy: {
         '/applications-list': proxyObj,
         '/conf/public': proxyObj,
-        '^/(?=help-1d|help-2d)': proxyObj,
-        '^/(?=assets)': proxyObj,
-        '^/(?=theme|locale|i18n|skin)': proxyObj,
-        '^/(?=auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra)':
+        '^/(?=help-1d|help-2d|assets|theme|locale|i18n|skin|explorer)':
           proxyObj,
-        '/explorer': proxyObj,
-        '/conversation': proxyObj,
+        '^/(?=auth|appregistry|cas|userbook|directory|communication|portal|session|timeline|workspace|infra)':
+          proxyObj,
+        '^/conversation/(?=api|messages/|folders/)': proxyObj,
       },
       port: 4200,
       headers,
