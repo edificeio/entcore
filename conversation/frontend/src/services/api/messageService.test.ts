@@ -1,0 +1,62 @@
+import { describe, expect, test } from 'vitest';
+import { messageService } from '.';
+import { mockFullMessage } from '~/mocks';
+
+describe('Conversation Message GET Methods', () => {
+  test('makes a GET request to get a full message', async () => {
+    const response = await messageService.getById('f43d3783');
+
+    expect(response).toBeDefined();
+    expect(response).toStrictEqual(mockFullMessage);
+  });
+});
+
+describe('Conversation Message Mutation Methods', () => {
+  test('makes a POST request to mark a message as read', async () => {
+    const response = await messageService.markRead('f43d3783');
+    expect(response).toBeUndefined();
+  });
+
+  test('makes a POST request to mark two messages as unread', async () => {
+    const response = await messageService.markUnread(['f43d3783', '4d14920b']);
+    expect(response).toBeUndefined();
+  });
+
+  test('makes a PUT request to restore a trashed message', async () => {
+    const response = await messageService.restore('f43d3783');
+    expect(response).toBeUndefined();
+  });
+
+  test('makes a PUT request to delete a message', async () => {
+    const response = await messageService.delete(['f43d3783']);
+    expect(response).toBeUndefined();
+  });
+
+  test('makes a POST request to create a draft message', async () => {
+    const response = await messageService.createDraft({
+      body: 'New content',
+    });
+
+    expect(response).toBeDefined();
+    expect(response).toHaveProperty('id');
+  });
+
+  test('makes a POST request to update a draft message', async () => {
+    const response = await messageService.updateDraft('message_draft', {
+      body: 'New content',
+    });
+
+    expect(response).toBeUndefined();
+  });
+
+  test('makes a POST request to send a draft message', async () => {
+    const response = await messageService.send('message_draft', {
+      body: 'New content',
+    });
+
+    expect(response).toBeDefined();
+    expect(response).toHaveProperty('id');
+    expect(response).toHaveProperty('body');
+    expect(response).toHaveProperty('sent');
+  });
+});

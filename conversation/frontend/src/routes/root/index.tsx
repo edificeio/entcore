@@ -1,23 +1,35 @@
 import { Layout, LoadingScreen, useOdeClient } from '@edifice-ui/react';
 
-import { matchPath } from 'react-router-dom';
+import { matchPath, Outlet } from 'react-router-dom';
 
 import { basename } from '..';
 
+function redirectTo(redirectPath: string) {
+  window.location.replace(
+    window.location.origin + basename.replace(/\/$/g, '') + redirectPath,
+  );
+}
+
 /** Check old format URL and redirect if needed */
 export const loader = async () => {
-  const hashLocation = location.hash.substring(1);
+  const hashLocation = window.location.hash.substring(1);
 
   // Check if the URL is an old format (angular root with hash) and redirect to the new format
   if (hashLocation) {
-    const isPath = matchPath('/view/:id', hashLocation);
-
-    if (isPath) {
+    const isFolder = matchPath('/:folderId', hashLocation);
+    if (isFolder) {
       // Redirect to the new format
-      const redirectPath = `/id/${isPath?.params.id}`;
-      location.replace(
-        location.origin + basename.replace(/\/$/g, '') + redirectPath,
-      );
+      const redirectPath = `/${isFolder.params.folderId}`;
+      redirectTo(redirectPath);
+      return;
+    }
+
+    const isMessage = matchPath('/read-mail/:mailId', hashLocation);
+    if (isMessage) {
+      // Redirect to the new format
+      const redirectPath = `/inbox/${isMessage.params.mailId}`;
+      redirectTo(redirectPath);
+      return;
     }
   }
 
@@ -25,11 +37,15 @@ export const loader = async () => {
 };
 
 export const Root = () => {
-  const { init } = useOdeClient();
+  const { init, currentApp } = useOdeClient();
 
-  if (!init) return <LoadingScreen position={false} />;
+  if (!init || !currentApp) return <LoadingScreen position={false} />;
 
-  return init ? <Layout>Conversation</Layout> : null;
+  return (
+    <Layout>
+      <Outlet />
+    </Layout>
+  );
 };
 
 export default Root;

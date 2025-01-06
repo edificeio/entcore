@@ -1,4 +1,11 @@
 import { HttpResponse, http } from 'msw';
+import { baseUrl } from '~/services';
+import {
+  mockFolderTree,
+  mockFullMessage,
+  mockMessagesOfInbox,
+  mockSentMessage,
+} from '.';
 
 /**
  * DO NOT MODIFY
@@ -229,4 +236,90 @@ const defaultHandlers = [
  * MSW Handlers
  * Mock HTTP methods for your own application
  */
-export const handlers = [...defaultHandlers];
+export const handlers = [
+  ...defaultHandlers,
+  // Folder service
+  http.get(`${baseUrl}/api/folders`, () => {
+    return HttpResponse.json(mockFolderTree, { status: 200 });
+  }),
+  http.get(`${baseUrl}/api/folders/:folderId/messages`, ({ params }) => {
+    if (params['folderId'] != 'inbox') {
+      return HttpResponse.text('Unexpected error', { status: 500 });
+    } else {
+      return HttpResponse.json(mockMessagesOfInbox, { status: 200 });
+    }
+  }),
+  http.post(`${baseUrl}/conversation/folder`, () => {
+    return HttpResponse.json({ id: 'folder_Z' }, { status: 201 });
+  }),
+  http.put(`${baseUrl}/conversation/folder/:folderId`, () => {
+    return HttpResponse.json({}, { status: 200 });
+  }),
+  http.put(`${baseUrl}/conversation/folder/trash/:folderId`, () => {
+    return HttpResponse.json({}, { status: 200 });
+  }),
+  // Message service
+  http.get(`${baseUrl}/api/messages/:messageId`, () => {
+    return HttpResponse.json(mockFullMessage, { status: 200 });
+  }),
+  http.post<
+    object,
+    {
+      id: string[];
+      unread: boolean;
+    }
+  >(`${baseUrl}/conversation/toggleUnread`, async ({ request }) => {
+    const payload = await request.json();
+    if (
+      !payload ||
+      !Array.isArray(payload.id) ||
+      typeof payload.unread !== 'boolean'
+    ) {
+      return HttpResponse.text('Bad Request', { status: 400 });
+    }
+    return HttpResponse.text('', { status: 200 });
+  }),
+  http.put<
+    object,
+    {
+      id: string[];
+    }
+  >(`${baseUrl}/conversation/restore`, async ({ request }) => {
+    const payload = await request.json();
+    if (!payload || !Array.isArray(payload.id)) {
+      return HttpResponse.text('Bad Request', { status: 400 });
+    }
+    return HttpResponse.text('', { status: 200 });
+  }),
+  http.put<
+    object,
+    {
+      id: string[];
+    }
+  >(`${baseUrl}/conversation/delete`, async ({ request }) => {
+    const payload = await request.json();
+    if (!payload || !Array.isArray(payload.id)) {
+      return HttpResponse.text('Bad Request', { status: 400 });
+    }
+    return HttpResponse.text('', { status: 200 });
+  }),
+  http.post(`${baseUrl}/conversation/draft`, () => {
+    return HttpResponse.json({ id: 'message_draft' }, { status: 201 });
+  }),
+  http.post(`${baseUrl}/conversation/draft/:draftId`, () => {
+    return HttpResponse.text('', { status: 200 });
+  }),
+  http.post(`${baseUrl}/conversation/send`, async ({ request }) => {
+    const url = new URL(request.url);
+    const id = url.searchParams.get('id');
+    const payload = await request.json();
+    if (!id) {
+      return HttpResponse.text('Bad Request', {
+        status: 400,
+      });
+    }
+    return HttpResponse.json(Object.assign({ id }, mockSentMessage, payload), {
+      status: 200,
+    });
+  }),
+];
