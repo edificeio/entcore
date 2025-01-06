@@ -1,11 +1,11 @@
-import { Button, Heading, Layout, useOdeClient } from '@edifice-ui/react';
+import { Button, Heading, Layout, useEdificeClient } from '@edifice.io/react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useRouteError } from 'react-router-dom';
 
 export const PageError = () => {
   const error = useRouteError();
   const navigate = useNavigate();
-  const { appCode } = useOdeClient();
+  const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
   console.error(error);
 
