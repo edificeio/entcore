@@ -1,4 +1,4 @@
-import { NOOP } from '@edifice-ui/react';
+import { NOOP } from '@edifice.io/utilities';
 import { odeServices } from 'edifice-ts-client';
 
 import { Message } from '~/models';
