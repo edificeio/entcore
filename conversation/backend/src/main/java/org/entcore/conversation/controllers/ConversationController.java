@@ -52,17 +52,15 @@ import org.entcore.conversation.Conversation;
 import org.entcore.conversation.filters.MessageOwnerFilter;
 import org.entcore.conversation.filters.MessageUserFilter;
 import org.entcore.conversation.filters.MultipleMessageUserFilter;
+import org.entcore.conversation.filters.SystemOrUserFolderFilter;
 import org.entcore.conversation.filters.VisiblesFilter;
 import org.entcore.conversation.filters.FoldersFilter;
 import org.entcore.conversation.filters.FoldersMessagesFilter;
 import org.entcore.conversation.service.ConversationService;
 import org.entcore.conversation.service.impl.Neo4jConversationService;
-import org.entcore.conversation.service.impl.SqlConversationService;
-import org.entcore.conversation.util.DecodedDisplayName;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Utils;
-import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 
 import io.vertx.core.Handler;
@@ -89,6 +87,8 @@ import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 import static org.entcore.common.user.UserUtils.getUserInfos;
 import org.entcore.conversation.util.DecodedDisplayName;
+
+import fr.wseduc.security.ActionType;
 
 public class ConversationController extends BaseController {
 	public static final String RESOURCE_NAME = "message";
@@ -130,12 +130,30 @@ public class ConversationController extends BaseController {
 		this.threshold = config.getInteger("alertStorage", 80);
 	}
 
+	private void renderViewWeb(HttpServerRequest request) {
+		renderView(request, new JsonObject(), "index.html", null);
+		eventHelper.onAccess(request);
+	}
+
 	@Get("conversation")
 	@SecuredAction("conversation.view")
 	@Cache(value = "/conversation/count/INBOX",useQueryParams = true,scope = CacheScope.USER, operation = CacheOperation.INVALIDATE)
 	public void view(HttpServerRequest request) {
-		renderView(request, new JsonObject(), "index.html", null);
-		eventHelper.onAccess(request);
+		renderViewWeb(request);
+	}
+
+	@Get("conversation/:folderId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SystemOrUserFolderFilter.class)
+	public void viewFolder(HttpServerRequest request) {
+		renderViewWeb(request);
+	}
+
+	@Get("conversation/:folderId/:messageId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SystemOrUserFolderFilter.class)
+	public void viewMessage(HttpServerRequest request) {
+		renderViewWeb(request);
 	}
 
 	@Post("draft")
