@@ -5,12 +5,14 @@ import {
   IconSmiley,
   IconWrite,
 } from '@edifice.io/react/icons';
-import { Button, Menu, SortableTree, TreeItem } from '@edifice.io/react';
+import { Menu, SortableTree, TreeItem } from '@edifice.io/react';
 import { NOOP } from '@edifice.io/utilities';
-import { useLoaderData } from 'react-router-dom';
+import { useLoaderData, useNavigate } from 'react-router-dom';
 import { Folder } from '~/models';
 import { t } from 'i18next';
+import { useSelectedFolder } from '~/hooks';
 
+/** Build a tree of TreeItems from Folders  */
 function buildTree(folders: Folder[]) {
   return folders
     .sort((a, b) => (a.name < b.name ? -1 : a.name == b.name ? 0 : 1))
@@ -24,16 +26,22 @@ function buildTree(folders: Folder[]) {
 }
 
 export function DesktopMenu() {
+  const navigate = useNavigate();
   // See `layout` loader
   const { foldersTree, actions } = useLoaderData() as {
     foldersTree: Folder[];
     actions: Record<string, boolean>;
   };
+  const folder = useSelectedFolder();
+
+  const selectedSystemFolderId =
+    typeof folder === 'string' ? folder : undefined;
+  const selectedUserFolderId =
+    typeof folder === 'object' ? folder.name : undefined;
 
   if (!foldersTree || !actions) {
     return null;
   }
-
   const userFolders = buildTree(foldersTree);
 
   function renderUserFolder({
@@ -44,60 +52,75 @@ export function DesktopMenu() {
     isChild?: boolean;
   }) {
     return (
-      <div className="w-100 d-flex">
-        {node.name}
-        <IconSmiley />
-      </div>
+      <span
+        className="w-100 d-flex justify-content-between align-content-center"
+        style={{ lineHeight: '24px' }}
+      >
+        <div className="overflow-x-hidden text-no-wrap text-truncate">
+          {node.name}
+        </div>
+        <IconSmiley width={20} height={24} />
+      </span>
     );
   }
 
+  const navigateTo = (systemFolderId: string) => {
+    navigate(`/${systemFolderId}`);
+  };
+
   return (
-    <>
-      <Menu label={t('generic.folders')}>
-        <Menu.Item>
-          <Menu.Button
-            leftIcon={<IconDepositeInbox />}
-            onClick={NOOP}
-            rightIcon={<IconSmiley />}
-          >
-            {t('inbox')}
-          </Menu.Button>
-          <Menu.Button
-            leftIcon={<IconSend />}
-            onClick={NOOP}
-            rightIcon={<IconSmiley />}
-          >
-            {t('outbox')}
-          </Menu.Button>
-          <Menu.Button
-            leftIcon={<IconWrite />}
-            onClick={NOOP}
-            rightIcon={<IconSmiley />}
-          >
-            {t('draft')}
-          </Menu.Button>
-          <Menu.Button
-            leftIcon={<IconDelete />}
-            onClick={NOOP}
-            rightIcon={<IconSmiley />}
-          >
-            {t('trash')}
-          </Menu.Button>
-        </Menu.Item>
-      </Menu>
-      <div className="w-100 border-bottom"></div>
-      <Menu label={t('user.folders')}>
+    <Menu label={t('generic.folders')}>
+      <Menu.Item>
+        <Menu.Button
+          selected={selectedSystemFolderId === 'inbox'}
+          leftIcon={<IconDepositeInbox />}
+          onClick={() => navigateTo('inbox')}
+          rightIcon={<IconSmiley />}
+        >
+          {t('inbox')}
+        </Menu.Button>
+        <Menu.Button
+          selected={selectedSystemFolderId === 'outbox'}
+          leftIcon={<IconSend />}
+          onClick={() => navigateTo('outbox')}
+          rightIcon={<IconSmiley />}
+        >
+          {t('outbox')}
+        </Menu.Button>
+        <Menu.Button
+          selected={selectedSystemFolderId === 'draft'}
+          leftIcon={<IconWrite />}
+          onClick={() => navigateTo('draft')}
+          rightIcon={<IconSmiley />}
+        >
+          {t('draft')}
+        </Menu.Button>
+        <Menu.Button
+          selected={selectedSystemFolderId === 'trash'}
+          leftIcon={<IconDelete />}
+          onClick={() => navigateTo('trash')}
+          rightIcon={<IconSmiley />}
+        >
+          {t('trash')}
+        </Menu.Button>
+      </Menu.Item>
+      <Menu.Item>
+        <div className="w-100 border-bottom pt-8 mb-12"></div>
+      </Menu.Item>
+      <Menu.Item>
         <b>{t('user.folders')}</b>
         <SortableTree
           nodes={userFolders}
           onSortable={NOOP}
-          onTreeItemClick={NOOP}
+          onTreeItemClick={(folderId) => navigateTo(folderId)}
           renderNode={renderUserFolder}
-          selectedNodeId={'1'}
+          selectedNodeId={selectedUserFolderId}
         />
-      </Menu>
-      <div className="w-100 border-bottom"></div>
-      TODO Espace utilisé
-    </>
+      </Menu.Item>
+      <Menu.Item>
+        <div className="w-100 border-bottom pt-8 mb-12"></div>
+      </Menu.Item>
+      <Menu.Item>TODO Espace utilisé</Menu.Item>
+    </Menu>
   );
 }
