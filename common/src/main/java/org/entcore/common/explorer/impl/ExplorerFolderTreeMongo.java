@@ -8,6 +8,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mongo.MongoClient;
+import org.bson.BsonDocument;
+import org.bson.BsonString;
 import org.bson.conversions.Bson;
 import org.entcore.common.explorer.ExplorerStream;
 import org.entcore.common.user.UserInfos;
@@ -18,6 +20,8 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.entcore.common.utils.DateUtils.formatUtcDateTime;
 
 public abstract class ExplorerFolderTreeMongo extends ExplorerFolderTree{
     protected final Logger log = LoggerFactory.getLogger(getClass());
@@ -81,16 +85,14 @@ public abstract class ExplorerFolderTreeMongo extends ExplorerFolderTree{
         final Set<Bson> indexFilters = new HashSet<>();
         if (from != null || to != null) {
             if (from != null) {
-                final LocalDateTime localFrom = Instant.ofEpochMilli(from.getTime())
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDateTime();
-                indexFilters.add(Filters.gte(getCreatedAtColumn(), toMongoDate(localFrom)));
+                indexFilters.add(new BsonDocument().append(getCreatedAtColumn(),
+                  new BsonDocument().append("$gte",
+                    new BsonDocument().append("$date", new BsonString(formatUtcDateTime(from))))));
             }
             if (to != null) {
-                final LocalDateTime localTo = Instant.ofEpochMilli(to.getTime())
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDateTime();
-                indexFilters.add(Filters.lt(getCreatedAtColumn(), toMongoDate(localTo)));
+                indexFilters.add(new BsonDocument().append(getCreatedAtColumn(),
+                  new BsonDocument().append("$lt",
+                    new BsonDocument().append("$date", new BsonString(formatUtcDateTime(to))))));
             }
         }
         final JsonObject queryJson = MongoQueryBuilder.build(Filters.and(indexFilters));

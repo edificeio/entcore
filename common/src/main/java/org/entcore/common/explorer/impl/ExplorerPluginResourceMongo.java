@@ -13,6 +13,8 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mongo.BulkOperation;
 import io.vertx.ext.mongo.MongoClient;
 import io.vertx.ext.mongo.MongoClientDeleteResult;
+import org.bson.BsonDocument;
+import org.bson.BsonString;
 import org.bson.conversions.Bson;
 import org.entcore.common.explorer.ExplorerStream;
 import org.entcore.common.explorer.IExplorerPluginCommunication;
@@ -21,7 +23,6 @@ import org.entcore.common.explorer.IngestJobStateUpdateMessage;
 import org.entcore.common.explorer.to.ExplorerReindexResourcesRequest;
 import org.entcore.common.user.UserInfos;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
 
 import static com.mongodb.client.model.Filters.in;
 import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
+import static org.entcore.common.utils.DateUtils.formatUtcDateTime;
 
 /**
  * Assuming that {@code T} is the name of the class of your plugin and {@code TXXX} the name of the classes depending on
@@ -192,16 +194,14 @@ public abstract class ExplorerPluginResourceMongo extends ExplorerPluginResource
         }
         if (from != null || to != null) {
             if (from != null) {
-                final LocalDateTime localFrom = Instant.ofEpochMilli(from.getTime())
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDateTime();
-                queryFilters.add(Filters.gte(getCreatedAtColumn(), toMongoDate(localFrom)));
+                queryFilters.add(new BsonDocument().append(getCreatedAtColumn(),
+                                    new BsonDocument().append("$gte",
+                                      new BsonDocument().append("$date", new BsonString(formatUtcDateTime(from))))));
             }
             if (to != null) {
-                final LocalDateTime localTo = Instant.ofEpochMilli(to.getTime())
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDateTime();
-                queryFilters.add(Filters.lt(getCreatedAtColumn(), toMongoDate(localTo)));
+                queryFilters.add(new BsonDocument().append(getCreatedAtColumn(),
+                  new BsonDocument().append("$lt",
+                    new BsonDocument().append("$date", new BsonString(formatUtcDateTime(to))))));
             }
         }
         if(isNotEmpty(states)) {
