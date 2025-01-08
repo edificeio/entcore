@@ -24,13 +24,16 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 import static org.entcore.common.user.UserUtils.findVisibles;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
+import fr.wseduc.transformer.IContentTransformerClient;
+import fr.wseduc.transformer.to.ContentTransformerFormat;
+import fr.wseduc.transformer.to.ContentTransformerRequest;
+import fr.wseduc.transformer.to.ContentTransformerResponse;
 import io.vertx.core.eventbus.DeliveryOptions;
 
+import io.vertx.core.http.HttpServerRequest;
+import org.entcore.common.editor.IContentTransformerEventRecorder;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.sql.SqlStatementsBuilder;
@@ -55,9 +58,12 @@ import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.Either.Right;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SqlConversationService implements ConversationService{
 	public static final int DEFAULT_SENDTIMEOUT = 15 * 60 * 1000;
+	private static final Logger log = LoggerFactory.getLogger(SqlConversationService.class);
 	private final EventBus eb;
 	private final Sql sql;
 
@@ -68,10 +74,14 @@ public class SqlConversationService implements ConversationService{
 	private final String attachmentTable;
 	private final String userMessageTable;
 	private final String userMessageAttachmentTable;
+	private final String originalMessageTable;
 	private final boolean optimizedThreadList;
 	private int sendTimeout = DEFAULT_SENDTIMEOUT;
 
-	public SqlConversationService(Vertx vertx, String schema) {
+	private final IContentTransformerClient contentTransformerClient;
+	private final IContentTransformerEventRecorder contentTransformerEventRecorder;
+
+	public SqlConversationService(Vertx vertx, String schema, IContentTransformerClient contentTransformerClient, IContentTransformerEventRecorder contentTransformerEventRecorder) {
 		this.eb = Server.getEventBus(vertx);
 		this.sql = Sql.getInstance();
 		this.maxFolderDepth = Config.getConf().getInteger("max-folder-depth", Conversation.DEFAULT_FOLDER_DEPTH);
@@ -80,7 +90,10 @@ public class SqlConversationService implements ConversationService{
 		attachmentTable = schema + ".attachments";
 		userMessageTable = schema + ".usermessages";
 		userMessageAttachmentTable = schema + ".usermessagesattachments";
+		originalMessageTable = schema + ".originalmessages";
 		optimizedThreadList = vertx.getOrCreateContext().config().getBoolean("optimized-thread-list", false);
+		this.contentTransformerClient = contentTransformerClient;
+		this.contentTransformerEventRecorder = contentTransformerEventRecorder;
 	}
 
 	public SqlConversationService setSendTimeout(int sendTimeout) {
@@ -89,11 +102,11 @@ public class SqlConversationService implements ConversationService{
 	}
 
 	@Override
-	public void saveDraft(String parentMessageId, String threadId, JsonObject message, UserInfos user, Handler<Either<String, JsonObject>> result) {
-		save(parentMessageId, threadId, message, user, result);
+	public void saveDraft(String parentMessageId, String threadId, JsonObject message, UserInfos user, Handler<Either<String, JsonObject>> result, HttpServerRequest request) {
+		save(parentMessageId, threadId, message, user, result, request);
 	}
 
-	private void save(String parentMessageId, String threadId, JsonObject message, UserInfos user, Handler<Either<String, JsonObject>> result){
+	private void save(String parentMessageId, String threadId, JsonObject message, UserInfos user, Handler<Either<String, JsonObject>> result, HttpServerRequest request){
 		message
 			.put("id", UUID.randomUUID().toString())
 			.put("from", user.getUserId())
@@ -115,6 +128,8 @@ public class SqlConversationService implements ConversationService{
 			message.put("thread_id", message.getString("id"));
 		}
 
+		updateMessageWithTransformedContent(message, request);
+
 		// 1 - Insert message
 		builder.insert(messageTable, message, "id");
 
@@ -127,16 +142,18 @@ public class SqlConversationService implements ConversationService{
 	}
 
 	@Override
-	public void updateDraft(String messageId, JsonObject message, UserInfos user, Handler<Either<String, JsonObject>> result) {
-		update(messageId, message, user, result);
+	public void updateDraft(String messageId, JsonObject message, UserInfos user, Handler<Either<String, JsonObject>> result, HttpServerRequest request) {
+		update(messageId, message, user, result, request);
 	}
 
-	private void update(String messageId, JsonObject message, UserInfos user, Handler<Either<String, JsonObject>> result) {
+	private void update(String messageId, JsonObject message, UserInfos user, Handler<Either<String, JsonObject>> result, HttpServerRequest request) {
 		message.put("date", System.currentTimeMillis())
 				.put("from", user.getUserId());
 		JsonObject m = Utils.validAndGet(message, UPDATE_DRAFT_FIELDS, UPDATE_DRAFT_REQUIRED_FIELDS);
 		if (validationError(user, m, result, messageId))
 			return;
+
+		updateMessageWithTransformedContent(message, request);
 
 		StringBuilder sb = new StringBuilder();
 		JsonArray values = new JsonArray();
@@ -159,6 +176,32 @@ public class SqlConversationService implements ConversationService{
 		values.add(messageId).add("DRAFT");
 
 		sql.prepared(query, values, SqlResult.validUniqueResultHandler(result));
+	}
+
+	/**
+	 * Update a message content with its transformed version
+	 * @param message the message whose content must be transformed and updated
+	 * @param request the request
+	 */
+	private void updateMessageWithTransformedContent(JsonObject message, HttpServerRequest request) {
+		Future<ContentTransformerResponse> contentTransformerResponseFuture ;
+		if (message.containsKey("body")) {
+			contentTransformerResponseFuture = transformMessageContent(message.getString("body"), message.getString("id"), request);
+		} else {
+			contentTransformerResponseFuture = Future.succeededFuture();
+		}
+		contentTransformerResponseFuture.onComplete(transformerResponse -> {
+			if (transformerResponse.failed()) {
+				log.error("Error while transforming message content", transformerResponse.cause());
+			} else {
+				if (transformerResponse.result() == null) {
+					log.debug("No content transformed");
+				} else {
+					message.put("body", transformerResponse.result().getCleanHtml());
+					message.put("contentVersion", transformerResponse.result().getContentVersion());
+				}
+			}
+		});
 	}
 
 	private void getSenderAttachments(String senderId, String messageId, Handler<Either<String, JsonObject>> handler){
@@ -601,6 +644,85 @@ public class SqlConversationService implements ConversationService{
 		sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(2, result, "attachments", "to", "toName", "cc", "ccName", "displayNames", "cci", "cciName"));
 	}
 
+	/**
+	 * Retrieve the original content of a message (i.e. before being transformed) in the dedicated table : conversation.originalmessages
+	 * @param messageId the id of the message whose original content must be retrieved
+	 * @return a {@link Future} of the original content
+	 */
+	@Override
+	public Future<String> getOriginalMessageContent(String messageId) {
+		Promise<String> originalMessagePromise = Promise.promise();
+		String query = "" +
+				"SELECT body " +
+				"FROM " + originalMessageTable + " om " +
+				"WHERE om.id = ?";
+		JsonArray values = new JsonArray().add(messageId);
+
+		sql.prepared(query, values, SqlResult.validUniqueResultHandler(sqlResult -> {
+			if (sqlResult.isLeft()) {
+				originalMessagePromise.fail("Failed fetching message original content : " + sqlResult.left().getValue());
+			} else {
+				JsonObject result = sqlResult.right().getValue();
+				originalMessagePromise.complete(result.getString("body"));
+			}
+		}));
+		return originalMessagePromise.future();
+	}
+
+	/**
+	 * Transform the content of a message
+	 * @param originalMessageContent the content of the message to be transformed
+	 * @param messageId the id of the message to transform
+	 * @param request the request
+	 * @return a {@link Future} of the {@link ContentTransformerResponse} (containing the transformed content, the content version...)
+	 */
+	@Override
+	public Future<ContentTransformerResponse> transformMessageContent(String originalMessageContent, String messageId, HttpServerRequest request) {
+		Promise<ContentTransformerResponse> transformedMessagePromise = Promise.promise();
+		contentTransformerClient.transform(new ContentTransformerRequest(
+				new HashSet<>(Collections.singletonList(ContentTransformerFormat.HTML)),
+				0,
+				originalMessageContent,
+				null)
+				).onSuccess(transformerResponse -> {
+					contentTransformerEventRecorder.recordTransformation(messageId, "message", transformerResponse, request);
+					transformedMessagePromise.complete(transformerResponse);
+				})
+				.onFailure(throwable -> {
+					log.error("Failed transforming message content", throwable);
+					transformedMessagePromise.fail(throwable);
+				});
+		return transformedMessagePromise.future();
+	}
+
+	/**
+	 * Update a message content (its body and content version)
+	 * @param messageId the id of the message to udpate
+	 * @param body the new message body
+	 * @param contentVersion the new message content version
+	 * @return a {@link Future} whether the query has been performed
+	 */
+	@Override
+	public Future<Void> updateMessageContent(String messageId, String body, int contentVersion) {
+		Promise<Void> updatedPromise = Promise.promise();
+		String updateQuery = "" +
+				"UPDATE " + messageTable + " m " +
+				"SET body = ? , contentVersion = ? " +
+				"WHERE m.id = ? ";
+		JsonArray values = new JsonArray()
+				.add(body)
+				.add(contentVersion)
+				.add(messageId);
+		sql.prepared(updateQuery, values, SqlResult.validUniqueResultHandler(sqlResult -> {
+			if (sqlResult.isLeft()) {
+				updatedPromise.fail("Failed updating message body : " + sqlResult.left().getValue());
+			} else {
+				updatedPromise.complete();
+			}
+		}));
+		return updatedPromise.future();
+	}
+
 	@Override
 	public void count(String folder, String restrain, Boolean unread, UserInfos user, Handler<Either<String, JsonObject>> result) {
 		if (validationParamsError(user, result, folder))
@@ -693,7 +815,6 @@ public class SqlConversationService implements ConversationService{
 					JsonObject j = (JsonObject) o;
 					// NOTE: the management rule below is "if a visible JsonObject has a non-null *name* field, then it is a Group". 
 					// TODO It should be defined more clearly. See #39835
-					// See also DefaultConversationService.java
 					if (j.getString("name") != null) {
 						if( j.getString("groupProfile") == null ) {
 							// This is a Manual group, without a clearly defined "profile" (neither Student nor Teacher nor...) => Set it as "Manual"

@@ -25,6 +25,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import fr.wseduc.transformer.to.ContentTransformerResponse;
+import io.vertx.core.Future;
+import io.vertx.core.http.HttpServerRequest;
 import org.entcore.common.user.UserInfos;
 
 import fr.wseduc.webutils.Either;
@@ -64,10 +67,10 @@ public interface ConversationService {
 	List<String> UPDATE_DRAFT_REQUIRED_FIELDS = Arrays.asList("date");
 
 	void saveDraft(String parentMessageId, String threadId, JsonObject message, UserInfos user,
-			Handler<Either<String, JsonObject>> result);
+			Handler<Either<String, JsonObject>> result, HttpServerRequest request);
 
 	void updateDraft(String messageId, JsonObject message, UserInfos user,
-			Handler<Either<String, JsonObject>> result);
+			Handler<Either<String, JsonObject>> result, HttpServerRequest request);
 
 	/**
 	 * Reply if parentMessageId isn't null.
@@ -104,6 +107,12 @@ public interface ConversationService {
 
 	void get(String messageId, UserInfos user, Handler<Either<String, JsonObject>> result);
 	void get(String messageId, UserInfos user, int apiVersion, Handler<Either<String, JsonObject>> result);
+
+	Future<String> getOriginalMessageContent(String messageId);
+
+	Future<ContentTransformerResponse> transformMessageContent(String originalMessageContent, String messageId, HttpServerRequest request);
+
+	Future<Void> updateMessageContent(String messageId, String body, int contentVersion);
 
 	void count(String folder, String restrain, Boolean unread, UserInfos user, Handler<Either<String, JsonObject>> result);
 

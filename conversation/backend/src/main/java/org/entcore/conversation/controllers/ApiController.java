@@ -62,7 +62,7 @@ public class ApiController extends BaseController {
 	@Get("api/folders/:folderId/messages")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SystemOrUserFolderFilter.class)
-	public void ListFolderMessages(final HttpServerRequest request) {
+	public void listFolderMessages(final HttpServerRequest request) {
 		final String folderId = request.params().get("folderId");
 		final Integer page = parseQueryParam(request, "page", 0);
 		final Integer page_size = parseQueryParam(request, "page_size", ConversationService.LIST_LIMIT);
@@ -95,8 +95,9 @@ public class ApiController extends BaseController {
 	@Get("api/messages/:id")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(MessageUserFilter.class)
-	public void GetFullMessage(final HttpServerRequest request) {
+	public void getFullMessage(final HttpServerRequest request) {
 		final String id = request.params().get("id");
+		final boolean originalFormat = "true".equalsIgnoreCase(request.params().get("originalFormat"));
 		if (isEmpty(id)) {
 			badRequest(request);
 			return;
@@ -104,7 +105,7 @@ public class ApiController extends BaseController {
 		final String acceptedLanguage = I18n.acceptLanguage(request);
 
 		getAuthenticatedUserInfos(eb, request)
-		.compose( user -> getAndFormat(id, user, acceptedLanguage) )
+		.compose( user -> getAndFormat(id, user, acceptedLanguage, originalFormat, request) )
 		.onSuccess( message -> {
 			renderJson(request, message);
 		})
@@ -126,14 +127,54 @@ public class ApiController extends BaseController {
 		});
 	}
 
-	/** Utility adapter */
-	private Future<JsonObject> getAndFormat(String id, UserInfos userInfos, String lang) {
+	/**
+	 * Method fetching and formatting a message details
+	 * @param id the id of the message to fetch and format
+	 * @param userInfos the user infos
+	 * @param lang the user language
+	 * @param originalFormat true if the message body must be rendered with the original format, false by default
+	 * @param request the request
+	 * @return a {@link Future} of the message details to be rendered, after several formatting operations :
+	 * <ul>
+	 *     <li>body replaced with its original format (before rich content transformation) if requested</li>
+	 *     <li>content transformation if the message content is still stored with the original format</li>
+	 *     <li>a series of operation to retrieve users and groups display names and details</li>
+	 * </ul>
+	 */
+	private Future<JsonObject> getAndFormat(String id, UserInfos userInfos, String lang, boolean originalFormat, HttpServerRequest request) {
 		final Promise<JsonObject> promise = Promise.promise();
 		final JsonObject userIndex = new JsonObject();
 		final JsonObject groupIndex = new JsonObject();
 		conversationService.get(id, userInfos, 1, either -> {
 			if (either.isRight()) {
 				final JsonObject message = either.right().getValue();
+				// replace message body with original content if requested
+				if (originalFormat) {
+					Future<String> originalContentFuture = conversationService.getOriginalMessageContent(id);
+					originalContentFuture
+							.onSuccess(originalContent -> message.put("body", originalContent))
+							.onFailure(throwable -> {
+								log.error("Failed to retrieve original message content", throwable);
+								promise.fail(throwable.getMessage());
+							});
+				}
+				// transform and persist message content if needed
+				else if (message.getInteger("contentVersion") == 0) {
+					conversationService.transformMessageContent(message.getString("body"), id, request)
+							.onSuccess(transformerResponse -> conversationService.updateMessageContent(id, transformerResponse.getCleanHtml(), transformerResponse.getContentVersion())
+									.onSuccess(res -> {
+										message.put("body", transformerResponse.getCleanHtml());
+										message.put("contentVersion", transformerResponse.getContentVersion());
+									})
+									.onFailure(throwable -> {
+										log.error("Failed to update message with transformed content", throwable);
+										promise.fail(throwable.getMessage());
+									}))
+							.onFailure(throwable -> {
+								log.error("Failed to transform message content", throwable);
+								promise.fail(throwable.getMessage());
+							});
+				}
 				// Extract distinct users and groups.
 				MessageUtil.computeUsersAndGroupsDisplayNames(message, userInfos, lang, userIndex, groupIndex);
 
