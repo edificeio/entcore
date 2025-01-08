@@ -27,6 +27,7 @@ import io.vertx.core.http.HttpServerRequest;
 
 import static org.entcore.common.mongodb.MongoDbResult.validAsyncActionResultHandler;
 import static org.entcore.common.mongodb.MongoDbResult.validAsyncResultsHandler;
+import static org.entcore.common.utils.DateUtils.formatUtcDateTime;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -146,14 +147,15 @@ public class MongoDbEventStore implements EventStoreService {
 		final long endEpoch = (startEpoch + duration);
 		final JsonObject query = new JsonObject()
 			.put("date", new JsonObject()
-				.put("$gte", startEpoch).put("$lt", endEpoch))
+				.put("$gte", startEpoch)
+				.put("$lt", endEpoch))
 			.put("synced", new JsonObject().put("$exists", false));
 
 		final JsonObject modifier = new JsonObject()
-			.put("$set", new JsonObject().put("synced", new JsonObject().put("$date", endEpoch)));
+			.put("$set", new JsonObject().put("synced", new JsonObject().put("$date", formatUtcDateTime(endEpoch))));
 
 		if ("traces".equals(eventStoreType)) {
-			mongoDb.distinct(eventStoreType, "retention-days", query, validAsyncActionResultHandler(ar -> {
+			mongoDb.distinct(eventStoreType, "retention-days", query, Integer.class.getName(), validAsyncActionResultHandler(ar -> {
 				if (ar.succeeded()) {
 					final JsonArray values = ar.result().getJsonArray("values");
 					if (values != null && values.size() > 0) {
@@ -161,7 +163,7 @@ public class MongoDbEventStore implements EventStoreService {
 						for (Object retention: values) {
 							final JsonObject q = query.copy().put("retention-days", ((int) retention));
 							final JsonObject m = new JsonObject().put("$set", new JsonObject()
-								.put("synced", new JsonObject().put("$date", endEpoch + (((int) retention) * 24 * 3600 * 1000L)) ));
+								.put("synced", new JsonObject().put("$date", formatUtcDateTime(endEpoch + (((int) retention) * 24 * 3600 * 1000L))) ));
 							futures.add(execMarkSyncedEvents(eventStoreType, q, m));
 						}
 						CompositeFuture.all(futures).onComplete(res -> {
