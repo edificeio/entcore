@@ -28,8 +28,8 @@ import fr.wseduc.rs.Put;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
-
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpServerResponse;
 import org.entcore.common.cache.Cache;
@@ -549,13 +549,9 @@ public class ConversationController extends BaseController {
 						@Override
 						public void handle(Either<String, JsonArray> r) {
 							if (r.isRight()) {
-								for (Object o : r.right().getValue()) {
-									if (!(o instanceof JsonObject)) {
-										continue;
-									}
-									translateGroupsNames((JsonObject) o, user, request);
-								}
-								renderJson(request, r.right().getValue());
+								translateGroupsNamesList(r.right().getValue(), user, request)
+									.onSuccess(result -> renderJson(request, result))
+									.onFailure(cause -> renderError(request, new JsonObject().put("error", cause.getMessage())));
 							} else {
 								JsonObject error = new JsonObject()
 										.put("error", r.left().getValue());
@@ -567,6 +563,21 @@ public class ConversationController extends BaseController {
 					unauthorized(request);
 				}
 			}
+		});
+	}
+
+	private Future<JsonArray> translateGroupsNamesList(JsonArray messages, UserInfos user, HttpServerRequest request) {
+		return vertx.executeBlocking(() -> {
+			final JsonArray translatedMessages = new JsonArray();
+			for (Object o : messages) {
+				if (!(o instanceof JsonObject)) {
+					continue;
+				}
+				final JsonObject message = ((JsonObject) o).copy();
+				translatedMessages.add(message);
+				translateGroupsNames(message, user, request);
+			}
+			return translatedMessages;
 		});
 	}
 
@@ -680,13 +691,9 @@ public class ConversationController extends BaseController {
 						@Override
 						public void handle(Either<String, JsonArray> r) {
 							if (r.isRight()) {
-								for (Object o : r.right().getValue()) {
-									if (!(o instanceof JsonObject)) {
-										continue;
-									}
-									translateGroupsNames((JsonObject) o, user, request);
-								}
-								renderJson(request, r.right().getValue());
+								translateGroupsNamesList(r.right().getValue(), user, request)
+									.onSuccess(result -> renderJson(request, result))
+									.onFailure(cause -> renderError(request, new JsonObject().put("error", cause.getMessage())));
 							} else {
 								JsonObject error = new JsonObject()
 										.put("error", r.left().getValue());
@@ -723,13 +730,9 @@ public class ConversationController extends BaseController {
 						@Override
 						public void handle(Either<String, JsonArray> r) {
 							if (r.isRight()) {
-								for (Object o : r.right().getValue()) {
-									if (!(o instanceof JsonObject)) {
-										continue;
-									}
-									translateGroupsNames((JsonObject) o, user, request);
-								}
-								renderJson(request, r.right().getValue());
+								translateGroupsNamesList(r.right().getValue(), user, request)
+									.onSuccess(result -> renderJson(request, result))
+									.onFailure(cause -> renderError(request, new JsonObject().put("error", cause.getMessage())));
 							} else {
 								JsonObject error = new JsonObject()
 										.put("error", r.left().getValue());
@@ -777,13 +780,9 @@ public class ConversationController extends BaseController {
 						@Override
 						public void handle(Either<String, JsonArray> r) {
 							if (r.isRight()) {
-								for (Object o : r.right().getValue()) {
-									if (!(o instanceof JsonObject)) {
-										continue;
-									}
-									translateGroupsNames((JsonObject) o, user, request);
-								}
-								renderJson(request, r.right().getValue());
+								translateGroupsNamesList(r.right().getValue(), user, request)
+									.onSuccess(result -> renderJson(request, result))
+									.onFailure(cause -> renderError(request, new JsonObject().put("error", cause.getMessage())));
 							} else {
 								JsonObject error = new JsonObject()
 										.put("error", r.left().getValue());
