@@ -5,39 +5,45 @@ import {
   IconSmiley,
   IconWrite,
 } from '@edifice.io/react/icons';
-import { Menu, SortableTree, TreeItem } from '@edifice.io/react';
+import { Badge, Menu, SortableTree, TreeItem } from '@edifice.io/react';
 import { NOOP } from '@edifice.io/utilities';
-import { useLoaderData, useNavigate } from 'react-router-dom';
+import { useNavigate, useRouteLoaderData } from 'react-router-dom';
 import { Folder } from '~/models';
 import { t } from 'i18next';
 import { useSelectedFolder } from '~/hooks';
 
-/** Build a tree of TreeItems from Folders  */
+type FolderTreeItem = TreeItem & { folder: Folder };
+
+/** Convert a tree of Folders to custom TreeItems  */
 function buildTree(folders: Folder[]) {
   return folders
     .sort((a, b) => (a.name < b.name ? -1 : a.name == b.name ? 0 : 1))
-    .map(({ id, name, subFolders }) => {
-      const item = { id, name } as TreeItem;
-      if (subFolders) {
-        item.children = buildTree(subFolders);
+    .map((folder) => {
+      const item = {
+        id: folder.id,
+        name: folder.name,
+        folder,
+      } as FolderTreeItem;
+      if (folder.subFolders) {
+        item.children = buildTree(folder.subFolders);
       }
       return item;
     });
 }
 
+/** The navigation menu among folders, intended for desktop resolutions */
 export function DesktopMenu() {
   const navigate = useNavigate();
-  // See `layout` loader
-  const { foldersTree, actions } = useLoaderData() as {
+  const { foldersTree, actions } = useRouteLoaderData('layout') as {
     foldersTree: Folder[];
     actions: Record<string, boolean>;
   };
-  const folder = useSelectedFolder();
+  const { folderId, userFolder } = useSelectedFolder();
 
   const selectedSystemFolderId =
-    typeof folder === 'string' ? folder : undefined;
+    typeof folderId === 'string' && !userFolder ? folderId : undefined;
   const selectedUserFolderId =
-    typeof folder === 'object' ? folder.name : undefined;
+    typeof userFolder === 'object' ? folderId : undefined;
 
   if (!foldersTree || !actions) {
     return null;
@@ -59,7 +65,16 @@ export function DesktopMenu() {
         <div className="overflow-x-hidden text-no-wrap text-truncate">
           {node.name}
         </div>
-        <IconSmiley width={20} height={24} />
+        {node.folder.nbUnread > 0 && (
+          <Badge
+            variant={{
+              level: 'warning',
+              type: 'notification',
+            }}
+          >
+            {node.folder.nbUnread}
+          </Badge>
+        )}
       </span>
     );
   }

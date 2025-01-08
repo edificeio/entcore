@@ -1,10 +1,9 @@
-import { useLoaderData } from 'react-router-dom';
+import { useRouteLoaderData } from 'react-router-dom';
 import { Folder } from '~/models';
 import { t } from 'i18next';
 
 export function MobileMenu() {
-  // See `layout` loader
-  const { foldersTree, actions } = useLoaderData() as {
+  const { foldersTree, actions } = useRouteLoaderData('layout') as {
     foldersTree: Folder[];
     actions: Record<string, boolean>;
   };
