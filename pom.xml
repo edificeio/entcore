@@ -56,13 +56,13 @@
     </modules>
 
     <properties>
-        <revision>6.0.0</revision>
+        <revision>6.0.1</revision>
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
         <modPostgresVersion>2.0.0</modPostgresVersion>
-        <modMongoVersion>4.0.0</modMongoVersion>
+        <modMongoVersion>4.0.1</modMongoVersion>
         <webUtilsVersion>3.0.0</webUtilsVersion>
-        <mongodbHelperVersion>3.0.0</mongodbHelperVersion>
+        <mongodbHelperVersion>3.0.1</mongodbHelperVersion>
         <jodaTimeVersion>2.9.4</jodaTimeVersion>
         <scramVersion>2.1</scramVersion>
         <micrometerPrometheusVersion>1.11.4</micrometerPrometheusVersion>
