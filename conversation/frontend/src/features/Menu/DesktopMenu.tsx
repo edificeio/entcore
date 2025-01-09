@@ -2,7 +2,6 @@ import {
   IconDelete,
   IconDepositeInbox,
   IconSend,
-  IconSmiley,
   IconWrite,
 } from '@edifice.io/react/icons';
 import { Badge, Menu, SortableTree, TreeItem } from '@edifice.io/react';
@@ -11,6 +10,8 @@ import { useNavigate, useRouteLoaderData } from 'react-router-dom';
 import { Folder } from '~/models';
 import { t } from 'i18next';
 import { useSelectedFolder } from '~/hooks';
+import { useMessagesCount } from '~/services';
+import './DesktopMenu.css';
 
 type FolderTreeItem = TreeItem & { folder: Folder };
 
@@ -40,6 +41,14 @@ export function DesktopMenu() {
   };
   const { folderId, userFolder } = useSelectedFolder();
 
+  const inboxCount =
+    useMessagesCount('inbox', { unread: true }).data?.count ?? 0;
+  const outboxCount =
+    useMessagesCount('outbox', { unread: true }).data?.count ?? 0;
+  const draftCount = useMessagesCount('draft').data?.count ?? 0;
+  const trashCount =
+    useMessagesCount('trash', { unread: true }).data?.count ?? 0;
+
   const selectedSystemFolderId =
     typeof folderId === 'string' && !userFolder ? folderId : undefined;
   const selectedUserFolderId =
@@ -50,6 +59,23 @@ export function DesktopMenu() {
   }
   const userFolders = buildTree(foldersTree);
 
+  function renderBadge(count: number) {
+    return (
+      <>
+        {count > 0 && (
+          <Badge
+            variant={{
+              level: 'warning',
+              type: 'notification',
+            }}
+          >
+            {count}
+          </Badge>
+        )}
+      </>
+    );
+  }
+
   function renderUserFolder({
     node,
   }: {
@@ -58,23 +84,11 @@ export function DesktopMenu() {
     isChild?: boolean;
   }) {
     return (
-      <span
-        className="w-100 d-flex justify-content-between align-content-center"
-        style={{ lineHeight: '24px' }}
-      >
+      <span className="user-folder w-100 d-flex justify-content-between align-content-center">
         <div className="overflow-x-hidden text-no-wrap text-truncate">
           {node.name}
         </div>
-        {node.folder.nbUnread > 0 && (
-          <Badge
-            variant={{
-              level: 'warning',
-              type: 'notification',
-            }}
-          >
-            {node.folder.nbUnread}
-          </Badge>
-        )}
+        {renderBadge(node.folder)}
       </span>
     );
   }
@@ -90,7 +104,7 @@ export function DesktopMenu() {
           selected={selectedSystemFolderId === 'inbox'}
           leftIcon={<IconDepositeInbox />}
           onClick={() => navigateTo('inbox')}
-          rightIcon={<IconSmiley />}
+          rightIcon={renderBadge(inboxCount)}
         >
           {t('inbox')}
         </Menu.Button>
@@ -98,7 +112,7 @@ export function DesktopMenu() {
           selected={selectedSystemFolderId === 'outbox'}
           leftIcon={<IconSend />}
           onClick={() => navigateTo('outbox')}
-          rightIcon={<IconSmiley />}
+          rightIcon={renderBadge(outboxCount)}
         >
           {t('outbox')}
         </Menu.Button>
@@ -106,7 +120,7 @@ export function DesktopMenu() {
           selected={selectedSystemFolderId === 'draft'}
           leftIcon={<IconWrite />}
           onClick={() => navigateTo('draft')}
-          rightIcon={<IconSmiley />}
+          rightIcon={renderBadge(draftCount)}
         >
           {t('draft')}
         </Menu.Button>
@@ -114,7 +128,7 @@ export function DesktopMenu() {
           selected={selectedSystemFolderId === 'trash'}
           leftIcon={<IconDelete />}
           onClick={() => navigateTo('trash')}
-          rightIcon={<IconSmiley />}
+          rightIcon={renderBadge(trashCount)}
         >
           {t('trash')}
         </Menu.Button>
