@@ -1,5 +1,6 @@
 import { Badge } from '@edifice.io/react';
 import { useSelectedFolder } from '~/hooks';
+import { SystemFolder } from '~/models';
 import { useMessagesCount } from '~/services';
 
 /** Render a badge with a counter */
@@ -28,8 +29,10 @@ export function useMenuData() {
   const draft = useMessagesCount('draft').data?.count ?? 0;
   const trash = useMessagesCount('trash', { unread: true }).data?.count ?? 0;
 
-  const selectedSystemFolderId =
-    typeof folderId === 'string' && !userFolder ? folderId : undefined;
+  const selectedSystemFolderId: SystemFolder | undefined =
+    typeof folderId === 'string' && !userFolder
+      ? (folderId as SystemFolder)
+      : undefined;
   const selectedUserFolderId =
     typeof userFolder === 'object' ? folderId : undefined;
 

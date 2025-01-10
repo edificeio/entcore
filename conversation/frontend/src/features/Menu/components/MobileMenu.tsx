@@ -15,18 +15,40 @@ import { useMenuData } from '../hooks/useMenuData';
 type FolderItem = { name: string; folder: Folder };
 
 /** Convert a tree of Folders to a flat array */
-function buildMenu(folders: Folder[], prefix?: string) {
-  const flat: FolderItem[] = [];
+function buildMenuItemsWithSelection(
+  selectedFolderId: string | undefined,
+  folders: Folder[],
+  prefix?: string,
+) {
+  const items: FolderItem[] = [];
+  let selectedItem: FolderItem | undefined;
   folders
     .sort((a, b) => (a.name < b.name ? -1 : a.name == b.name ? 0 : 1))
     .forEach((folder) => {
+      // Build an item representing this folder
       const name = `${prefix ? prefix : ''}${folder.name}`;
-      flat.push({ name, folder });
+      const item = { name, folder };
+      items.push(item);
+
+      // Is this the selected folder ?
+      if (selectedFolderId === folder.id) {
+        selectedItem = item;
+      }
+
+      // Recursively build items for subFolders
       if (folder.subFolders) {
-        flat.push(...buildMenu(folder.subFolders, `${name}/`));
+        const subs = buildMenuItemsWithSelection(
+          selectedFolderId,
+          folder.subFolders,
+          `${name}/`,
+        );
+        items.push(...subs.menuItems);
+        if (subs.selectedItem) {
+          selectedItem = subs.selectedItem;
+        }
       }
     });
-  return flat;
+  return { menuItems: items, selectedItem };
 }
 
 /** Build a FolderItem representing a system folder. */
@@ -69,11 +91,18 @@ export function MobileMenu() {
     return null;
   }
 
-  const userFolders = buildMenu(foldersTree);
+  const menu = buildMenuItemsWithSelection(selectedUserFolderId, foldersTree);
+  let { selectedItem } = menu;
 
-  const navigateTo = (systemFolderId: string) => {
-    navigate(`/${systemFolderId}`);
+  const systemMenuItems = {
+    inbox: asFolderItem('inbox', counters),
+    outbox: asFolderItem('outbox', counters),
+    draft: asFolderItem('draft', counters),
+    trash: asFolderItem('trash', counters),
   };
+  if (!selectedItem && selectedSystemFolderId) {
+    selectedItem = systemMenuItems[selectedSystemFolderId];
+  }
 
   function renderFolderItem(item: FolderItem) {
     return (
@@ -86,27 +115,46 @@ export function MobileMenu() {
     );
   }
 
+  function handleClickItem(item: FolderItem) {
+    navigate(`/${item.folder.id}`);
+  }
+
   return (
     <>
       <Dropdown block>
-        <Dropdown.Trigger label="Dropdown" />
+        <Dropdown.Trigger label={selectedItem?.name || selectedUserFolderId} />
         <Dropdown.Menu>
-          <Dropdown.Item onClick={NOOP} icon={<IconDepositeInbox />}>
-            {renderFolderItem(asFolderItem('inbox', counters))}
+          <Dropdown.Item
+            onClick={() => handleClickItem(systemMenuItems.inbox)}
+            icon={<IconDepositeInbox />}
+          >
+            {renderFolderItem(systemMenuItems.inbox)}
           </Dropdown.Item>
-          <Dropdown.Item onClick={NOOP} icon={<IconSend />}>
-            {renderFolderItem(asFolderItem('outbox', counters))}
+          <Dropdown.Item
+            onClick={() => handleClickItem(systemMenuItems.outbox)}
+            icon={<IconSend />}
+          >
+            {renderFolderItem(systemMenuItems.outbox)}
           </Dropdown.Item>
-          <Dropdown.Item onClick={NOOP} icon={<IconWrite />}>
-            {renderFolderItem(asFolderItem('draft', counters))}
+          <Dropdown.Item
+            onClick={() => handleClickItem(systemMenuItems.draft)}
+            icon={<IconWrite />}
+          >
+            {renderFolderItem(systemMenuItems.draft)}
           </Dropdown.Item>
-          <Dropdown.Item onClick={NOOP} icon={<IconDelete />}>
-            {renderFolderItem(asFolderItem('trash', counters))}
+          <Dropdown.Item
+            onClick={() => handleClickItem(systemMenuItems.trash)}
+            icon={<IconDelete />}
+          >
+            {renderFolderItem(systemMenuItems.trash)}
           </Dropdown.Item>
           <Dropdown.Separator />
           <Dropdown.MenuGroup label={t('user.folders')}>
-            {userFolders.map((item) => (
-              <Dropdown.Item onClick={NOOP} icon={<IconFolder />}>
+            {menu.menuItems.map((item) => (
+              <Dropdown.Item
+                onClick={() => handleClickItem(item)}
+                icon={<IconFolder />}
+              >
                 {renderFolderItem(item)}
               </Dropdown.Item>
             ))}
