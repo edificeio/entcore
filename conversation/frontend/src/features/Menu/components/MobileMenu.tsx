@@ -2,7 +2,6 @@ import { useNavigate, useRouteLoaderData } from 'react-router-dom';
 import { Folder, SystemFolder } from '~/models';
 import { t } from 'i18next';
 import { Dropdown } from '@edifice.io/react';
-import { NOOP } from '@edifice.io/utilities';
 import {
   IconDelete,
   IconDepositeInbox,
@@ -14,7 +13,10 @@ import { useMenuData } from '../hooks/useMenuData';
 
 type FolderItem = { name: string; folder: Folder };
 
-/** Convert a tree of Folders to a flat array */
+/**
+ * Convert a tree of Folders to a flat array of FolderItems,
+ * and get a reference to the currently selected item.
+ */
 function buildMenuItemsWithSelection(
   selectedFolderId: string | undefined,
   folders: Folder[],
@@ -74,6 +76,7 @@ function asFolderItem(
   };
 }
 
+/** The folder navigation menu, in mobile responsive mode. */
 export function MobileMenu() {
   const navigate = useNavigate();
   const { foldersTree, actions } = useRouteLoaderData('layout') as {
@@ -120,47 +123,45 @@ export function MobileMenu() {
   }
 
   return (
-    <>
-      <Dropdown block>
-        <Dropdown.Trigger label={selectedItem?.name || selectedUserFolderId} />
-        <Dropdown.Menu>
-          <Dropdown.Item
-            onClick={() => handleClickItem(systemMenuItems.inbox)}
-            icon={<IconDepositeInbox />}
-          >
-            {renderFolderItem(systemMenuItems.inbox)}
-          </Dropdown.Item>
-          <Dropdown.Item
-            onClick={() => handleClickItem(systemMenuItems.outbox)}
-            icon={<IconSend />}
-          >
-            {renderFolderItem(systemMenuItems.outbox)}
-          </Dropdown.Item>
-          <Dropdown.Item
-            onClick={() => handleClickItem(systemMenuItems.draft)}
-            icon={<IconWrite />}
-          >
-            {renderFolderItem(systemMenuItems.draft)}
-          </Dropdown.Item>
-          <Dropdown.Item
-            onClick={() => handleClickItem(systemMenuItems.trash)}
-            icon={<IconDelete />}
-          >
-            {renderFolderItem(systemMenuItems.trash)}
-          </Dropdown.Item>
-          <Dropdown.Separator />
-          <Dropdown.MenuGroup label={t('user.folders')}>
-            {menu.menuItems.map((item) => (
-              <Dropdown.Item
-                onClick={() => handleClickItem(item)}
-                icon={<IconFolder />}
-              >
-                {renderFolderItem(item)}
-              </Dropdown.Item>
-            ))}
-          </Dropdown.MenuGroup>
-        </Dropdown.Menu>
-      </Dropdown>
-    </>
+    <Dropdown block>
+      <Dropdown.Trigger label={selectedItem?.name || selectedUserFolderId} />
+      <Dropdown.Menu>
+        <Dropdown.Item
+          onClick={() => handleClickItem(systemMenuItems.inbox)}
+          icon={<IconDepositeInbox />}
+        >
+          {renderFolderItem(systemMenuItems.inbox)}
+        </Dropdown.Item>
+        <Dropdown.Item
+          onClick={() => handleClickItem(systemMenuItems.outbox)}
+          icon={<IconSend />}
+        >
+          {renderFolderItem(systemMenuItems.outbox)}
+        </Dropdown.Item>
+        <Dropdown.Item
+          onClick={() => handleClickItem(systemMenuItems.draft)}
+          icon={<IconWrite />}
+        >
+          {renderFolderItem(systemMenuItems.draft)}
+        </Dropdown.Item>
+        <Dropdown.Item
+          onClick={() => handleClickItem(systemMenuItems.trash)}
+          icon={<IconDelete />}
+        >
+          {renderFolderItem(systemMenuItems.trash)}
+        </Dropdown.Item>
+        <Dropdown.Separator />
+        <Dropdown.MenuGroup label={t('user.folders')}>
+          {menu.menuItems.map((item) => (
+            <Dropdown.Item
+              onClick={() => handleClickItem(item)}
+              icon={<IconFolder />}
+            >
+              {renderFolderItem(item)}
+            </Dropdown.Item>
+          ))}
+        </Dropdown.MenuGroup>
+      </Dropdown.Menu>
+    </Dropdown>
   );
 }
