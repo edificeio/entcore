@@ -4,13 +4,12 @@ import {
   IconSend,
   IconWrite,
 } from '@edifice.io/react/icons';
-import { Badge, Menu, SortableTree, TreeItem } from '@edifice.io/react';
+import { Menu, SortableTree, TreeItem } from '@edifice.io/react';
 import { NOOP } from '@edifice.io/utilities';
 import { useNavigate, useRouteLoaderData } from 'react-router-dom';
 import { Folder } from '~/models';
+import { useMenuData } from '../hooks/useMenuData';
 import { t } from 'i18next';
-import { useSelectedFolder } from '~/hooks';
-import { useMessagesCount } from '~/services';
 import './DesktopMenu.css';
 
 type FolderTreeItem = TreeItem & { folder: Folder };
@@ -39,43 +38,24 @@ export function DesktopMenu() {
     foldersTree: Folder[];
     actions: Record<string, boolean>;
   };
-  const { folderId, userFolder } = useSelectedFolder();
-
-  const inboxCount =
-    useMessagesCount('inbox', { unread: true }).data?.count ?? 0;
-  const outboxCount =
-    useMessagesCount('outbox', { unread: true }).data?.count ?? 0;
-  const draftCount = useMessagesCount('draft').data?.count ?? 0;
-  const trashCount =
-    useMessagesCount('trash', { unread: true }).data?.count ?? 0;
-
-  const selectedSystemFolderId =
-    typeof folderId === 'string' && !userFolder ? folderId : undefined;
-  const selectedUserFolderId =
-    typeof userFolder === 'object' ? folderId : undefined;
+  const {
+    counters,
+    renderBadge,
+    selectedSystemFolderId,
+    selectedUserFolderId,
+  } = useMenuData();
 
   if (!foldersTree || !actions) {
     return null;
   }
+
   const userFolders = buildTree(foldersTree);
 
-  function renderBadge(count: number) {
-    return (
-      <>
-        {count > 0 && (
-          <Badge
-            variant={{
-              level: 'warning',
-              type: 'notification',
-            }}
-          >
-            {count}
-          </Badge>
-        )}
-      </>
-    );
-  }
+  const navigateTo = (systemFolderId: string) => {
+    navigate(`/${systemFolderId}`);
+  };
 
+  // Render a user's folder, to be used in a SortableTree
   function renderUserFolder({
     node,
   }: {
@@ -93,10 +73,6 @@ export function DesktopMenu() {
     );
   }
 
-  const navigateTo = (systemFolderId: string) => {
-    navigate(`/${systemFolderId}`);
-  };
-
   return (
     <Menu label={t('generic.folders')}>
       <Menu.Item>
@@ -104,7 +80,7 @@ export function DesktopMenu() {
           selected={selectedSystemFolderId === 'inbox'}
           leftIcon={<IconDepositeInbox />}
           onClick={() => navigateTo('inbox')}
-          rightIcon={renderBadge(inboxCount)}
+          rightIcon={renderBadge(counters.inbox)}
         >
           {t('inbox')}
         </Menu.Button>
@@ -112,7 +88,7 @@ export function DesktopMenu() {
           selected={selectedSystemFolderId === 'outbox'}
           leftIcon={<IconSend />}
           onClick={() => navigateTo('outbox')}
-          rightIcon={renderBadge(outboxCount)}
+          rightIcon={renderBadge(counters.outbox)}
         >
           {t('outbox')}
         </Menu.Button>
@@ -120,7 +96,7 @@ export function DesktopMenu() {
           selected={selectedSystemFolderId === 'draft'}
           leftIcon={<IconWrite />}
           onClick={() => navigateTo('draft')}
-          rightIcon={renderBadge(draftCount)}
+          rightIcon={renderBadge(counters.draft)}
         >
           {t('draft')}
         </Menu.Button>
@@ -128,7 +104,7 @@ export function DesktopMenu() {
           selected={selectedSystemFolderId === 'trash'}
           leftIcon={<IconDelete />}
           onClick={() => navigateTo('trash')}
-          rightIcon={renderBadge(trashCount)}
+          rightIcon={renderBadge(counters.trash)}
         >
           {t('trash')}
         </Menu.Button>
