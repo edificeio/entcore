@@ -11,6 +11,7 @@ import { Folder } from '~/models';
 import { useMenuData } from '../hooks/useMenuData';
 import { t } from 'i18next';
 import './DesktopMenu.css';
+import { FolderActionDropDown } from '~/components';
 
 type FolderTreeItem = TreeItem & { folder: Folder };
 
@@ -64,11 +65,14 @@ export function DesktopMenu() {
     isChild?: boolean;
   }) {
     return (
-      <span className="user-folder w-100 d-flex justify-content-between align-content-center">
+      <span className="user-folder w-100 d-flex justify-content-between align-content-center align-items-center">
         <div className="overflow-x-hidden text-no-wrap text-truncate">
           {node.name}
         </div>
-        {renderBadge(node.folder)}
+        <div className="d-flex align-items-center">
+          {renderBadge(node.folder)}
+          <FolderActionDropDown folder={node.folder} />
+        </div>
       </span>
     );
   }

@@ -10,7 +10,7 @@ function renderBadge(count: number) {
       {count > 0 && (
         <Badge
           variant={{
-            level: 'warning',
+            level: 'info',
             type: 'notification',
           }}
         >
