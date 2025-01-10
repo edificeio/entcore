@@ -1,5 +1,5 @@
 import { useNavigate, useRouteLoaderData } from 'react-router-dom';
-import { Folder } from '~/models';
+import { Folder, SystemFolder } from '~/models';
 import { t } from 'i18next';
 import { Dropdown } from '@edifice.io/react';
 import { NOOP } from '@edifice.io/utilities';
@@ -29,6 +29,29 @@ function buildMenu(folders: Folder[], prefix?: string) {
   return flat;
 }
 
+/** Build a FolderItem representing a system folder. */
+function asFolderItem(
+  folder: SystemFolder,
+  counters: {
+    inbox: number;
+    outbox: number;
+    draft: number;
+    trash: number;
+  },
+) {
+  return {
+    name: t(folder),
+    folder: {
+      id: folder,
+      depth: 1,
+      nbUnread: counters[folder],
+      name: t(folder),
+      trashed: false,
+      nbMessages: 0,
+    },
+  };
+}
+
 export function MobileMenu() {
   const navigate = useNavigate();
   const { foldersTree, actions } = useRouteLoaderData('layout') as {
@@ -54,7 +77,7 @@ export function MobileMenu() {
 
   function renderFolderItem(item: FolderItem) {
     return (
-      <span className="w-100 d-flex justify-content-between align-content-center">
+      <span className="w-100 d-flex justify-content-between align-content-center align-items-center">
         <div className="overflow-x-hidden text-no-wrap text-truncate">
           {item.name}
         </div>
@@ -69,17 +92,16 @@ export function MobileMenu() {
         <Dropdown.Trigger label="Dropdown" />
         <Dropdown.Menu>
           <Dropdown.Item onClick={NOOP} icon={<IconDepositeInbox />}>
-            {t('inbox')}
-            {renderBadge(counters.inbox)}
+            {renderFolderItem(asFolderItem('inbox', counters))}
           </Dropdown.Item>
           <Dropdown.Item onClick={NOOP} icon={<IconSend />}>
-            {t('outbox')}
+            {renderFolderItem(asFolderItem('outbox', counters))}
           </Dropdown.Item>
           <Dropdown.Item onClick={NOOP} icon={<IconWrite />}>
-            {t('draft')}
+            {renderFolderItem(asFolderItem('draft', counters))}
           </Dropdown.Item>
           <Dropdown.Item onClick={NOOP} icon={<IconDelete />}>
-            {t('trash')}
+            {renderFolderItem(asFolderItem('trash', counters))}
           </Dropdown.Item>
           <Dropdown.Separator />
           <Dropdown.MenuGroup label={t('user.folders')}>
