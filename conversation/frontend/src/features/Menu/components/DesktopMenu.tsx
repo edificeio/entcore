@@ -65,7 +65,7 @@ export function DesktopMenu() {
     isChild?: boolean;
   }) {
     return (
-      <span className="user-folder w-100 d-flex justify-content-between align-content-center align-items-center">
+      <div className="user-folder w-100 d-flex justify-content-between align-content-center align-items-center">
         <div className="overflow-x-hidden text-no-wrap text-truncate">
           {node.name}
         </div>
@@ -73,7 +73,7 @@ export function DesktopMenu() {
           {renderBadge(node.folder)}
           <FolderActionDropDown folder={node.folder} />
         </div>
-      </span>
+      </div>
     );
   }
 

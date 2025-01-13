@@ -109,12 +109,12 @@ export function MobileMenu() {
 
   function renderFolderItem(item: FolderItem) {
     return (
-      <span className="w-100 d-flex justify-content-between align-content-center align-items-center">
+      <div className="w-100 d-flex justify-content-between align-content-center align-items-center">
         <div className="overflow-x-hidden text-no-wrap text-truncate">
           {item.name}
         </div>
         {renderBadge(item.folder.nbUnread)}
-      </span>
+      </div>
     );
   }
 
