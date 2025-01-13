@@ -25,31 +25,34 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
+import io.vertx.core.Vertx;
+import io.vertx.sqlclient.Tuple;
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.sql.Sql;
-import org.entcore.common.sql.SqlResult;
 import org.entcore.common.user.UserInfos;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.request.RequestUtils;
+import org.entcore.conversation.service.impl.ReactivePGClient;
+import org.entcore.conversation.service.impl.ReactiveSql;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class VisiblesFilter implements ResourcesProvider{
 
 	private Neo4j neo;
-	private Sql sql;
+	private final ReactivePGClient sql;
 	private final MessageOwnerFilter messageOwnerFilter;
 
 	public VisiblesFilter() {
 		neo = Neo4j.getInstance();
-		sql = Sql.getInstance();
+		final Vertx vertx = Vertx.currentContext().owner();
+		final JsonObject config = vertx.getOrCreateContext().config();
+		this.sql = new ReactivePGClient(vertx, config);
 		this.messageOwnerFilter = new MessageOwnerFilter();
 	}
 
@@ -85,45 +88,44 @@ public class VisiblesFilter implements ResourcesProvider{
 				ids.addAll(message.getJsonArray("cc", new fr.wseduc.webutils.collections.JsonArray()).getList());
 				ids.addAll(message.getJsonArray("cci", new fr.wseduc.webutils.collections.JsonArray()).getList());
 
-				final Handler<Void> checkHandler = new Handler<Void>() {
-					public void handle(Void v) {
-						params.put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
-						findVisibles(neo.getEventBus(), user.getUserId(), customReturn, params, true, true, false, new Handler<JsonArray>() {
-							public void handle(JsonArray visibles) {
-								handler.handle(visibles.size() == ids.size());
-							}
-						});
-					}
-				};
+				final Handler<Void> checkHandler = v -> {
+          params.put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
+          findVisibles(neo.getEventBus(), user.getUserId(), customReturn, params, true, true, false, new Handler<JsonArray>() {
+            public void handle(JsonArray visibles) {
+              handler.handle(visibles.size() == ids.size());
+            }
+          });
+        };
 
 				if(parentMessageId == null || parentMessageId.trim().isEmpty()){
 					checkHandler.handle(null);
 					return;
 				}
+				sql.withReadOnlyTransaction(connection ->
+					sql.prepared(
+						"SELECT m.*  " +
+						"FROM conversation.messages m " +
+						"WHERE m.id = $1",
+						Tuple.tuple().addString(parentMessageId),
+						connection)
+					.onComplete(r -> ReactiveSql.validUniqueResult(r, parentMsgEvent -> {
+								if(parentMsgEvent.isLeft()){
+									handler.handle(false);
+									return;
+								}
 
-				sql.prepared(
-					"SELECT m.*  " +
-					"FROM conversation.messages m " +
-					"WHERE m.id = ?",
-					new fr.wseduc.webutils.collections.JsonArray().add(parentMessageId),
-					SqlResult.validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
-						public void handle(Either<String, JsonObject> parentMsgEvent) {
-							if(parentMsgEvent.isLeft()){
-								handler.handle(false);
-								return;
+								JsonObject parentMsg = parentMsgEvent.right().getValue();
+								ids.remove(parentMsg.getString("from"));
+								ids.removeAll(parentMsg.getJsonArray("to", new fr.wseduc.webutils.collections.JsonArray()).getList());
+								ids.removeAll(parentMsg.getJsonArray("cc", new fr.wseduc.webutils.collections.JsonArray()).getList());
+
+								checkHandler.handle(null);
 							}
+						)
+					)
+				);
+		}
 
-							JsonObject parentMsg = parentMsgEvent.right().getValue();
-							ids.remove(parentMsg.getString("from"));
-							ids.removeAll(parentMsg.getJsonArray("to", new fr.wseduc.webutils.collections.JsonArray()).getList());
-							ids.removeAll(parentMsg.getJsonArray("cc", new fr.wseduc.webutils.collections.JsonArray()).getList());
-
-							checkHandler.handle(null);
-						}
-					}, "cc", "to"));
-			}
-		});
-
-	}
-
+	});
+}
 }

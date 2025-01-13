@@ -19,24 +19,26 @@
 
 package org.entcore.conversation.filters;
 
+import io.vertx.core.Vertx;
+import io.vertx.sqlclient.Tuple;
 import org.entcore.common.http.filter.ResourcesProvider;
-import org.entcore.common.sql.Sql;
-import org.entcore.common.sql.SqlResult;
 import org.entcore.common.user.UserInfos;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Binding;
+import org.entcore.conversation.service.impl.ReactivePGClient;
+import org.entcore.conversation.service.impl.ReactiveSql;
 
 public class MessageOwnerFilter implements ResourcesProvider {
 
-	private Sql sql;
+	private final ReactivePGClient sql;
 
 	public MessageOwnerFilter(){
-		this.sql = Sql.getInstance();
+		final Vertx vertx = Vertx.currentContext().owner();
+		final JsonObject config = vertx.getOrCreateContext().config();
+		this.sql = new ReactivePGClient(vertx, config);
 	}
 
 	public void authorize(final HttpServerRequest request, Binding binding, UserInfos user, final Handler<Boolean> handler) {
@@ -51,29 +53,29 @@ public class MessageOwnerFilter implements ResourcesProvider {
 		String query =
 			"SELECT count(distinct m) AS number FROM conversation.messages m " +
 			"JOIN conversation.usermessages um ON m.id = um.message_id " +
-			"WHERE um.user_id = ? AND um.message_id = ? AND m.from = ?";
+			"WHERE um.user_id = $1 AND um.message_id = $2 AND m.from = $3";
 
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
-			.add(user.getUserId())
-			.add(messageId)
-			.add(user.getUserId());
+		final Tuple values = Tuple.tuple()
+			.addString(user.getUserId())
+			.addString(messageId)
+			.addString(user.getUserId());
 
 		request.pause();
 
-		sql.prepared(query, values, SqlResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
-			public void handle(Either<String, JsonObject> event) {
+		sql.withReadOnlyTransaction(connection ->
+			sql.prepared(query, values, connection)
+			.onComplete(r -> ReactiveSql.validUniqueResult(r, event -> {
+					request.resume();
+					if(event.isLeft()){
+						handler.handle(false);
+						return;
+					}
 
-				request.resume();
-
-				if(event.isLeft()){
-					handler.handle(false);
-					return;
-				}
-
-				int count = event.right().getValue().getInteger("number", 0);
-				handler.handle(count == 1);
-			}
-		}));
+					int count = event.right().getValue().getInteger("number", 0);
+					handler.handle(count == 1);
+				})
+			)
+		);
 	}
 
 }
