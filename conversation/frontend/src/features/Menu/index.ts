@@ -1,2 +1,3 @@
-export * from './DesktopMenu';
-export * from './MobileMenu';
+export * from './hooks/useMenuData';
+export * from './components/DesktopMenu';
+export * from './components/MobileMenu';

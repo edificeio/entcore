@@ -22,6 +22,25 @@ export const folderQueryOptions = {
     });
   },
 
+  getMessagesCount(
+    folderId: string,
+    options?: {
+      /** (optional) Load un/read message only ? */
+      unread?: boolean;
+    },
+  ) {
+    return queryOptions({
+      queryKey: [
+        ...folderQueryOptions.base,
+        folderId,
+        'count',
+        options,
+      ] as const,
+      queryFn: () => folderService.getCount(folderId, options?.unread),
+      staleTime: 5000,
+    });
+  },
+
   getMessages(
     folderId: string,
     options?: {
@@ -69,6 +88,16 @@ export const useFolderMessages = (
   },
 ) => {
   return useQuery(folderQueryOptions.getMessages(folderId, options));
+};
+
+export const useMessagesCount = (
+  folderId: string,
+  options?: {
+    /** (optional) Load un/read message only ? */
+    unread?: boolean;
+  },
+) => {
+  return useQuery(folderQueryOptions.getMessagesCount(folderId, options));
 };
 
 export const useCreateFolder = () => {
