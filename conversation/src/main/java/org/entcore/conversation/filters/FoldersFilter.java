@@ -19,27 +19,30 @@
 
 package org.entcore.conversation.filters;
 
-import java.util.List;
-
-import fr.wseduc.webutils.request.RequestUtils;
+import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.sqlclient.Tuple;
 import org.entcore.common.http.filter.ResourcesProvider;
-import org.entcore.common.sql.Sql;
-import org.entcore.common.sql.SqlResult;
 import org.entcore.common.user.UserInfos;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Binding;
+import org.entcore.conversation.service.impl.ReactivePGClient;
+import org.entcore.conversation.service.impl.ReactiveSql;
 
 public class FoldersFilter implements ResourcesProvider {
 
-	protected Sql sql;
+	private final Logger logger = LoggerFactory.getLogger(FoldersFilter.class);
+	public final ReactivePGClient sql;
 
 	public FoldersFilter(){
-		this.sql = Sql.getInstance();
+		final Vertx vertx = Vertx.currentContext().owner();
+		final JsonObject config = vertx.getOrCreateContext().config();
+		logger.info("FoldersFilter of config = " + config.encodePrettily());
+		this.sql = new ReactivePGClient(vertx, config);
 	}
 
 	@Override
@@ -56,26 +59,24 @@ public class FoldersFilter implements ResourcesProvider {
 		String foldersQuery =
 				"SELECT count(*) as number FROM conversation.folders " +
 						"WHERE user_id = ? AND id = ?";
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
-				.add(user.getUserId())
-				.add(folderId);
+		final Tuple values = Tuple.tuple()
+				.addString(user.getUserId())
+				.addString(folderId);
 
 		request.pause();
 
-		sql.prepared(foldersQuery, values, SqlResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
-			public void handle(Either<String, JsonObject> event) {
-
-				request.resume();
-
-				if(event.isLeft()){
-					handler.handle(false);
-					return;
-				}
-
-				int folderCount = event.right().getValue().getInteger("number", 0);
-				handler.handle(folderCount == 1);
-			}
-		}));
+		sql.withReadOnlyTransaction(connection ->
+			sql.prepared(foldersQuery, values, connection)
+			.onSuccess(r -> ReactiveSql.validUniqueResult(r, event -> {
+					request.resume();
+					if(event.isLeft()){
+						handler.handle(false);
+						return;
+					}
+					int folderCount = event.right().getValue().getInteger("number", 0);
+					handler.handle(folderCount == 1);
+			}))
+		);
 	}
 
 }
