@@ -1,6 +1,10 @@
 import { describe, expect, test } from 'vitest';
 import { folderService } from '.';
-import { mockFolderTree, mockMessagesOfInbox } from '~/mocks';
+import {
+  mockCountOfMessagesInInbox,
+  mockFolderTree,
+  mockMessagesOfInbox,
+} from '~/mocks';
 
 describe('Conversation Folder GET Methods', () => {
   test("makes a GET request to get user's folders tree with at depth 2", async () => {
@@ -9,6 +13,13 @@ describe('Conversation Folder GET Methods', () => {
     expect(response).toBeDefined();
     expect(response).toHaveLength(2);
     expect(response).toStrictEqual(mockFolderTree);
+  });
+
+  test('makes a GET request to count the number of unread messages in the inbox folder', async () => {
+    const response = await folderService.getCount('inbox', true);
+
+    expect(response).toBeDefined();
+    expect(response).toStrictEqual(mockCountOfMessagesInInbox);
   });
 
   test('makes a GET request to get list of messages from inbox', async () => {

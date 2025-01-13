@@ -1,12 +1,13 @@
 import { QueryClient } from '@tanstack/react-query';
-import { useParams, Outlet } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
+import { useSelectedFolder } from '~/hooks';
 
 export const loader = (_queryClient: QueryClient) => async () => {
   return null;
 };
 
 export function Component() {
-  const { folderId } = useParams();
+  const { folderId } = useSelectedFolder();
 
   return (
     <>

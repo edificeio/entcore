@@ -29,6 +29,8 @@ export const mockFolderTree = [
   },
 ];
 
+export const mockCountOfMessagesInInbox = { count: 2 };
+
 export const mockMessagesOfInbox = [
   {
     id: 'f43d3783',

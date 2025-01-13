@@ -21,6 +21,7 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
       /* Layout = route without a path */
       // Manages folders tree and occupied space.
       {
+        id: 'layout',
         async lazy() {
           const { Component, loader } = await import('~/routes/layout');
           return {

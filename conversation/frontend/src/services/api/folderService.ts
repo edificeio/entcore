@@ -1,6 +1,6 @@
 import { odeServices } from 'edifice-ts-client';
 
-import { Folder, MessageMetadata } from '~/models';
+import { Folder, MessageMetadata, SYSTEM_FOLDER_IDS } from '~/models';
 
 /**
  * Creates a folder service with the specified base URL.
@@ -17,6 +17,26 @@ export const createFolderService = (baseURL: string) => ({
     return odeServices
       .http()
       .get<Folder[]>(`${baseURL}/api/folders?depth=${depth}`);
+  },
+
+  /**
+   * Count the number of messages in a system or user folder.
+   * @param folderId system folder, or a user's folder ID.
+   * @param unread (optional) truthy when only unread must be counted
+   * @returns count of [unread] messages
+   */
+  getCount(folderId: string, unread?: boolean) {
+    const queryParams = [] as string[];
+    // `restrain` query parameter applies to users folders only.
+    if (SYSTEM_FOLDER_IDS.findIndex((f) => f === folderId) === -1) {
+      queryParams.push('restrain');
+    }
+    if (typeof unread === 'boolean') {
+      queryParams.push(`unread=${unread}`);
+    }
+    return odeServices.http().get<{
+      count: number;
+    }>(`${baseURL}/count/${folderId}?${queryParams.join('&')}`);
   },
 
   /**
