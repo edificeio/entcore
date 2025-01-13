@@ -45,14 +45,24 @@ export class AppsService {
      * @param applicationsListFromAPI applications list from /applications-list API
      */
     async syncUserPrefAppsWith(applicationsListFromAPI: Array<App>): Promise<void> {
+        // remove duplicates model.me.myApps.bookmarks
+        model.me.myApps.bookmarks = Array.from(new Set(model.me.myApps.bookmarks));
+        // remove duplicates model.me.myApps.apps
+        model.me.myApps.applications = Array.from(new Set(model.me.myApps.applications));
+
+        // WB-3745, do not overwrite preferences when applications list is obviously defective.
+        if(!applicationsListFromAPI || applicationsListFromAPI.length < 1)
+            return;
+
         const userAppsPrefResponse = await http.get('/userbook/preference/apps');
         if (userAppsPrefResponse.data && userAppsPrefResponse.data.preference) {
+            const originalPrefs: UserAppsPreference = JSON.parse(userAppsPrefResponse.data.preference);
             const userPrefs: UserAppsPreference = JSON.parse(userAppsPrefResponse.data.preference);
-            
+
             // remove duplicates bookmarks
-            userPrefs.bookmarks = Array.from(new Set(userPrefs.bookmarks));
+            userPrefs.bookmarks = Array.from(new Set<string>(userPrefs.bookmarks));
             // remove duplicates apps
-            userPrefs.applications = Array.from(new Set(userPrefs.applications));
+            userPrefs.applications = Array.from(new Set<string>(userPrefs.applications));
 
             // remove missing bookmarks from user prefs if not in application-list API
             const missingBookmarks: Array<string> = [];
@@ -61,7 +71,11 @@ export class AppsService {
                     missingBookmarks.push(prefBookmark);
                 }
             });
-            userPrefs.bookmarks = userPrefs.bookmarks.filter(b => !missingBookmarks.find(m => m === b));
+            if(missingBookmarks.length > 0) {
+                userPrefs.bookmarks = userPrefs.bookmarks.filter(b => !missingBookmarks.find(m => m === b));
+                // sync model.me.myApps lists too
+                model.me.myApps.bookmarks = model.me.myApps.bookmarks.filter(b => !missingBookmarks.find(m => m === b));
+            }
 
             // remove missing apps from user prefs if not in application-list API
             const missingApps: Array<string> = [];
@@ -70,15 +84,19 @@ export class AppsService {
                     missingApps.push(prefApp);
                 }
             });
-            userPrefs.applications = userPrefs.applications.filter(b => !missingApps.find(m => m === b));
-                
-            await http.put('/userbook/preference/apps', userPrefs);
+            if(missingApps.length > 0) {
+                userPrefs.applications = userPrefs.applications.filter(b => !missingApps.find(m => m === b));
+                // sync model.me.myApps lists too
+                model.me.myApps.applications = model.me.myApps.applications.filter(a => !missingApps.find(m => m === a));
+            }
 
-            // sync model.me.myApps lists too
-            model.me.myApps.bookmarks = Array.from(new Set(model.me.myApps.bookmarks));
-            model.me.myApps.bookmarks = model.me.myApps.bookmarks.filter(b => !missingBookmarks.find(m => m === b));
-            model.me.myApps.applications = Array.from(new Set(model.me.myApps.applications));
-            model.me.myApps.applications = model.me.myApps.applications.filter(a => !missingApps.find(m => m === a));
+            // Sync any change.
+            if(userPrefs.bookmarks.length !== originalPrefs.bookmarks.length
+                || 
+               userPrefs.applications.length !== originalPrefs.applications.length
+            ) {
+                await http.put('/userbook/preference/apps', userPrefs);
+            }
         }
     }
 
