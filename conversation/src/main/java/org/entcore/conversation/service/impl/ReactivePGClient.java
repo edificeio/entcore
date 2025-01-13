@@ -9,8 +9,8 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.SslMode;
 import io.vertx.sqlclient.*;
-import org.apache.commons.lang3.NotImplementedException;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 import static io.vertx.pgclient.PgConnectOptions.DEFAULT_SSLMODE;
@@ -25,51 +25,38 @@ public class ReactivePGClient {
 
     JsonObject pgConfig = configuration.getJsonObject("postgresConfig");
     if(pgConfig == null) {
-      final String rawConf = (String) vertx.sharedData().getLocalMap("server").get("postgresConfig");
-      if (rawConf != null) {
-        pgConfig = new JsonObject(rawConf);
-      }
+      throw new IllegalArgumentException("'postgresConfig' is missing in 'conversation' module");
     }
-    String primaryUrl = pgConfig.getString("url", "postgresql://localhost:5432/test").replaceFirst("^jdbc:", "");
-    String secondaryUrl = pgConfig.getString("url-slave", "").replaceFirst("^jdbc:", "");
+    primaryPool = createPool(vertx, pgConfig, "primary").orElseThrow(() -> new IllegalArgumentException("Missing mandatory configuration postgresConfig."));
+    secondaryPool = createPool(vertx, pgConfig, "secondary").orElse(primaryPool);
+  }
+
+  private Optional<Pool> createPool(final Vertx vertx, final JsonObject config,
+                                   final String name) {
+    JsonObject pgConfig = config.getJsonObject(name);
+    if(pgConfig == null) {
+        return Optional.empty();
+    }
+    String url = pgConfig.getString("url", "postgresql://localhost:5432/test").replaceFirst("^jdbc:", "");
     String username = pgConfig.getString("user", "postgres");
     String password = pgConfig.getString("password", "");
     int maxPoolSize = pgConfig.getInteger("pool-size", 10);
 
-    // Extract primary database connection options
-    PgConnectOptions primaryConnectOptions = PgConnectOptions.fromUri(primaryUrl)
+    PgConnectOptions connectOptions = PgConnectOptions.fromUri(url)
       .setUser(username)
       .setPassword(password)
-      //.addProperty("stringtype", "unspecified") // Query parameter
-      .setSslMode(primaryUrl.contains("ssl=require") ? SslMode.REQUIRE : DEFAULT_SSLMODE);
+      .setSslMode(SslMode.valueOf(pgConfig.getString("ssl-mode", DEFAULT_SSLMODE.name())));
 
-    // Configure connection pool
-    PoolOptions primaryPoolOptions = new PoolOptions()
-      .setMaxSize(maxPoolSize);
-
-    // Initialize primary pool
-    primaryPool = Pool.pool(vertx, primaryConnectOptions, primaryPoolOptions);
-
-    if (secondaryUrl.isEmpty()) {
-      secondaryPool = primaryPool;
-    } else {
-      // Extract secondary database connection options
-      PgConnectOptions secondaryConnectOptions = PgConnectOptions.fromUri(secondaryUrl)
-        .setUser(username)
-        .setPassword(password)
-        //.addProperty("stringtype", "unspecified") // Query parameter
-        .setSslMode(primaryConnectOptions.getSslMode());
-
-      // Configure secondary pool
-      PoolOptions secondaryPoolOptions = new PoolOptions()
-        .setMaxSize(maxPoolSize);
-
-      // Initialize secondary pool
-      secondaryPool = Pool.pool(vertx, secondaryConnectOptions, secondaryPoolOptions);
+    final PoolOptions poolOptions = new PoolOptions().setMaxSize(maxPoolSize);
+    if(pgConfig.getBoolean("shared", false)) {
+      poolOptions.setShared(true)
+        .setName(pgConfig.getString("pool-name", "general-" +name + "-pg-pool"));
     }
+
+    return Optional.ofNullable(Pool.pool(vertx, connectOptions, poolOptions));
   }
 
-  public <T> Future<RowSet<Row>> prepared(final String query, final Tuple values, SqlConnection connection) {
+  public Future<RowSet<Row>> prepared(final String query, final Tuple values, SqlConnection connection) {
     final Promise<RowSet<Row>> promise = Promise.promise();
     connection.preparedQuery(query).execute(values).onComplete(r -> {
       if(r.failed()) {

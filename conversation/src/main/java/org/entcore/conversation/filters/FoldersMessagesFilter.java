@@ -19,17 +19,14 @@
 
 package org.entcore.conversation.filters;
 
-import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import org.entcore.common.http.filter.ResourcesProvider;
-import org.entcore.common.sql.Sql;
-import org.entcore.common.sql.SqlResult;
+import io.vertx.sqlclient.Tuple;
 import org.entcore.common.user.UserInfos;
+import org.entcore.conversation.service.impl.ReactiveSql;
 
 import java.util.List;
 
@@ -39,48 +36,45 @@ public class FoldersMessagesFilter extends FoldersFilter {
 	public void authorize(final HttpServerRequest request, Binding binding,
 			final UserInfos user, final Handler<Boolean> handler) {
 
-		super.authorize(request, binding, user, new Handler<Boolean>() {
-			@Override
-			public void handle(Boolean event) {
-				if(event){
-					RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
-						public void handle(final JsonObject body) {
-							final List<String> messageIds = body.getJsonArray("id", new fr.wseduc.webutils.collections.JsonArray()).getList();
-							String usersQuery =
-									"SELECT count(distinct um) AS number FROM conversation.usermessages um " +
-											"WHERE um.user_id = ? AND um.message_id IN " + Sql.listPrepared(messageIds.toArray());
-							JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
-									.add(user.getUserId());
-							for(String id : messageIds){
-								values.add(id);
-							}
+		super.authorize(request, binding, user, event -> {
+      if(event){
+        RequestUtils.bodyToJson(request, body -> {
+final List<String> messageIds = body.getJsonArray("id", new fr.wseduc.webutils.collections.JsonArray()).getList();
+String usersQuery =
+"SELECT count(distinct um) AS number FROM conversation.usermessages um " +
+"WHERE um.user_id = $1 AND um.message_id IN " + ReactiveSql.listPrepared(messageIds, 2);
+final Tuple values = Tuple.tuple().addString(user.getUserId());
+for(String id : messageIds){
+values.addString(id);
+}
 
-							request.pause();
+request.pause();
 
-							sql.prepared(usersQuery, values, SqlResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
-								public void handle(Either<String, JsonObject> event) {
+sql.withReadOnlyTransaction(connection -> {
+final Promise<Void> promise = Promise.promise();
+sql.prepared(usersQuery, values, connection).onComplete(r -> ReactiveSql.validUniqueResult(r, event1 -> {
+request.resume();
 
-									request.resume();
+if (event1.isLeft()) {
+handler.handle(false);
+promise.complete();
+return;
+}
 
-									if(event.isLeft()){
-										handler.handle(false);
-										return;
-									}
-
-									int count = event.right().getValue().getInteger("number", 0);
-									handler.handle(count == messageIds.size());
-								}
-							}));
-						}
-					});
+int count = event1.right().getValue().getInteger("number", 0);
+handler.handle(count == messageIds.size());
+promise.complete();
+}));
+return promise.future();
+});
+});
 
 
-				}else{
-					handler.handle(false);
-					return;
-				}
-			}
-		});
+      }else{
+        handler.handle(false);
+        return;
+      }
+    });
 
 	}
 
