@@ -1,12 +1,17 @@
-import { AppHeader, Breadcrumb, useEdificeClient } from '@edifice.io/react';
+import {
+  AppHeader,
+  Breadcrumb,
+  useBreakpoint,
+  useEdificeClient,
+} from '@edifice.io/react';
 import { QueryClient } from '@tanstack/react-query';
 import { Outlet, useLoaderData } from 'react-router-dom';
 import { existingActions } from '~/config';
 import { AppActionHeader } from '~/features/app/Action/AppActionHeader';
 import { DesktopMenu, MobileMenu } from '~/features';
 import { Folder } from '~/models';
-//import { actions } from '~/config/actions';
 import { actionsQueryOptions, folderQueryOptions } from '~/services/queries';
+import './index.css';
 
 export const loader =
   (queryClient: QueryClient) =>
@@ -30,6 +35,8 @@ export function Component() {
     actions: Record<string, boolean>;
   };
 
+  const { md } = useBreakpoint();
+
   if (!foldersTree || !actions) {
     return null;
   }
@@ -41,15 +48,12 @@ export function Component() {
       </AppHeader>
 
       <div className="d-md-flex">
-        <div className="d-block d-md-none p-12 border-bottom bg-white">
-          <MobileMenu />
+        <div className="d-block d-md-none px-0 py-12 border-bottom bg-white">
+          {!md && <MobileMenu />}
         </div>
 
-        <div
-          className="d-none d-md-flex flex-column overflow-x-hidden p-16 ps-0 gap-16 border-end bg-white"
-          style={{ width: '300px' }}
-        >
-          <DesktopMenu />
+        <div className="desktop-menu d-none d-md-flex flex-column overflow-x-hidden p-16 ps-0 gap-16 border-end bg-white">
+          {md && <DesktopMenu />}
         </div>
 
         <div className="align-self-md-stretch">
