@@ -44,10 +44,7 @@ import fr.wseduc.security.SecuredAction;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.file.NoSuchFileException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -98,7 +95,7 @@ public class PortalController extends BaseController {
 				@Override
 				public void handle(List<String> event) {
 					themes.put(skin, event);
-					JsonArray a = new fr.wseduc.webutils.collections.JsonArray();
+					JsonArray a = new JsonArray();
 					for (final String s : event) {
 						String path = assetsPath + "/assets/themes/" + skin + "/skins/" + s + "/";
 						final JsonObject j = new JsonObject()
@@ -161,7 +158,7 @@ public class PortalController extends BaseController {
 			public void handle(JsonObject session) {
 				JsonArray myAppsForceAsApplication = config.getJsonArray("my-apps-force-as-application", new JsonArray());
 				JsonArray myAppsForceAsConnector = config.getJsonArray("my-apps-force-as-connector", new JsonArray());
-				JsonArray apps = session.getJsonArray("apps", new fr.wseduc.webutils.collections.JsonArray());
+				JsonArray apps = session.getJsonArray("apps", new JsonArray());
 				for (Object o : apps) {
 					if (!(o instanceof JsonObject)) continue;
 					JsonObject j = (JsonObject) o;
@@ -366,7 +363,7 @@ public class PortalController extends BaseController {
 
 	@Get("/skins")
 	public void getSkins(final  HttpServerRequest request) {
-		renderJson(request, new JsonObject().put("skins", new fr.wseduc.webutils.collections.JsonArray()), 200);
+		renderJson(request, new JsonObject().put("skins", new JsonArray()), 200);
 	}
 
 	@Put("skin")
@@ -394,18 +391,18 @@ public class PortalController extends BaseController {
 	@Get("/admin-urls")
 	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
 	public void adminURLS(HttpServerRequest request){
-		renderJson(request, config.getJsonArray("admin-urls", new fr.wseduc.webutils.collections.JsonArray()));
+		renderJson(request, config.getJsonArray("admin-urls", new JsonArray()));
 	}
 
 	@Get("/resources-applications")
 	public void resourcesApplications(HttpServerRequest request){
-		renderJson(request, config.getJsonArray("resources-applications", new fr.wseduc.webutils.collections.JsonArray()));
+		renderJson(request, config.getJsonArray("resources-applications", new JsonArray()));
 	}
 
 	@Get("/quickstart")
 	@SecuredAction("portal.quickstart")
 	public void quickstart(HttpServerRequest request){
-		renderJson(request, new fr.wseduc.webutils.collections.JsonArray());
+		renderJson(request, new JsonArray());
 	}
 
 	@Get("/themes")
@@ -413,7 +410,7 @@ public class PortalController extends BaseController {
 	public void themes(HttpServerRequest request){
 		JsonArray themes = themesDetails.get(getSkinFromConditions(request));
 		if (themes == null) {
-			themes = new fr.wseduc.webutils.collections.JsonArray();
+			themes = new JsonArray();
 		}
 		renderJson(request, themes);
 	}
@@ -575,6 +572,49 @@ public class PortalController extends BaseController {
 		} else {
 			badRequest(request);
 		}
+	}
+	
+	@Get("zendeskGuide/config")
+	@SecuredAction(value = "config", type = ActionType.AUTHENTICATED)
+	public void zendeskGuideConfig(HttpServerRequest request) {
+
+		final JsonObject zendeskConfig = config.getJsonObject("zendeskGuide", new JsonObject());
+		String module = request.params().get("module");
+		if(zendeskConfig.isEmpty() || !zendeskConfig.containsKey("key")) {
+			renderJson(request, new JsonObject());
+			return;
+		}
+
+
+		// If module is not provided, try to get it from the referer
+		if(module == null && request.headers().get("Referer") != null) {
+			final String urlPath = request.headers().get("Referer");
+			final String[] pathSegments = urlPath.split("/");
+			if(pathSegments.length > 3 && !pathSegments[3].isEmpty()) {
+				module = pathSegments[3];
+				if(module.contains("?")) {
+					final String[] moduleSegments = module.split("\\?");
+					module = moduleSegments[0];
+				}
+			} else {
+				module = "portal";
+			}
+		}
+
+		if(module != null && zendeskConfig.containsKey("modules") && zendeskConfig.getJsonObject("modules").containsKey(module)) {
+			zendeskConfig.put("module", zendeskConfig.getJsonObject("modules").getJsonObject(module));
+		} else {
+			zendeskConfig.put("module", new JsonObject());
+		}
+
+		renderJson(request, zendeskConfig);
+	}
+
+	//TODO: remove this method when the old help is removed from all projects
+	@Get("/oldHelp")
+	@SecuredAction("portal.oldHelpEnable")
+	public void oldHelpEnable(HttpServerRequest request) {
+		renderJson(request, new JsonObject().put("enable", true));
 	}
 
 }

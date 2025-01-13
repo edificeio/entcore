@@ -1,10 +1,10 @@
 package org.entcore.common.postgres;
 
+import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.streams.ReadStream;
 import io.vertx.pgclient.PgPool;
 import io.vertx.pgclient.pubsub.PgSubscriber;
 import io.vertx.sqlclient.*;
@@ -12,6 +12,7 @@ import io.vertx.sqlclient.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 public class PostgresClientPool implements IPostgresClient {
     private static final Logger log = LoggerFactory.getLogger(PostgresClientPool.class);
@@ -96,7 +97,7 @@ public class PostgresClientPool implements IPostgresClient {
     }
 
     public Future<Void> notify(final String channel, final String message) {
-        final Future<Void> future = Future.future();
+        final Promise<Void> future = Promise.promise();
         this.pgPool.query(
                 "NOTIFY " + channel + ", '" + message + "'").execute(notified -> {
                     if (notified.failed()) {
@@ -104,62 +105,54 @@ public class PostgresClientPool implements IPostgresClient {
                     }
                     future.handle(notified.mapEmpty());
                 });
-        return future;
+        return future.future();
     }
 
-    public Future<IPostgresTransaction> transaction() {
-        final Future<IPostgresTransaction> future = Future.future();
-        this.pgPool.begin(r -> {
-            if (r.succeeded()) {
-                future.complete(new PostgresClient.PostgresTransaction(r.result()));
-            } else {
-                future.fail(r.cause());
-            }
-        });
-        return future;
+    public <T> Future<@Nullable T>  transaction(Function<SqlConnection, Future<@Nullable T>> function) {
+        return this.pgPool.withTransaction(function);
     }
 
     public Future<RowSet<Row>> preparedQuery(final String query, final Tuple tuple) {
-        final Future<RowSet<Row>> future = Future.future();
-        this.pgPool.preparedQuery(query).execute(tuple, future.completer());
-        return future;
+        final Promise<RowSet<Row>> future = Promise.promise();
+        this.pgPool.preparedQuery(query).execute(tuple, future);
+        return future.future();
     }
 
     public Future<RowStream<Row>> queryStream(final String query, final Tuple tuple, final int batchSize) {
-        final Promise<RowStream<Row>> future = Promise.promise();
-        this.pgPool.begin(resConn -> {
-            if(resConn.succeeded()){
-                //need transaction https://github.com/eclipse-vertx/vertx-sql-client/issues/128
-                final Transaction transaction = resConn.result();
-                transaction.prepare(query, resPrepare -> {
-                    if(resPrepare.succeeded()){
-                        final PreparedStatement prepared = resPrepare.result();
-                        final RowStream<Row> stream = prepared.createStream(batchSize,tuple);
-                        future.complete(new RowStream<Row>() {
-                            private boolean closed = false;
-                            private void closeIfNeeded(){
-                                if(closed) {
-                                    log.debug("[PostgresClientPool@queryStream] Transaction already closed");
-                                } else {
-                                    log.debug("[PostgresClientPool@queryStream] Closing transaction...");
-                                    transaction.rollback(e -> {
-                                        if(e.succeeded()) {
-                                            log.debug("[PostgresClientPool@queryStream] ... transaction closed !");
-                                        } else {
-                                            log.error("[PostgresClientPool@queryStream] ... could not close transaction", e.cause());
-                                        }
-                                    });
-                                }
-                                closed = true;
+        final Promise<RowStream<Row>> rowStreamPromise = Promise.promise();
+        this.pgPool.withTransaction(sqlConnection -> {
+            final Promise<Void> promise = Promise.promise();
+            //need transaction https://github.com/eclipse-vertx/vertx-sql-client/issues/128
+            sqlConnection.prepare(query, resPrepare -> {
+                if(resPrepare.succeeded()){
+                    final PreparedStatement prepared = resPrepare.result();
+                    final RowStream<Row> stream = prepared.createStream(batchSize,tuple);
+                    rowStreamPromise.complete(new RowStream<Row>() {
+                        private boolean closed = false;
+                        private void closeIfNeeded(){
+                            if(closed){
+	                            log.debug("[PostgresClientPool@queryStream] Transaction already closed");
+                            } else {
+	                            log.debug("[PostgresClientPool@queryStream] Closing transaction...");
+	                            sqlConnection.transaction().rollback(e -> {
+		                            if(e.succeeded()) {
+			                            log.debug("[PostgresClientPool@queryStream] ... transaction closed !");
+		                            } else {
+			                            log.error("[PostgresClientPool@queryStream] ... could not close transaction", e.cause());
+		                            }
+	                            });
                             }
-                            @Override
-                            public RowStream<Row> exceptionHandler(Handler<Throwable> handler) {
-                                stream.exceptionHandler(e -> {
-                                    closeIfNeeded();
-                                    handler.handle(e);
-                                });
-                                return this;
-                            }
+                            promise.complete();
+                            closed = true;
+                        }
+                        @Override
+                        public RowStream<Row> exceptionHandler(Handler<Throwable> handler) {
+	                        stream.exceptionHandler(e -> {
+		                        closeIfNeeded();
+		                        handler.handle(e);
+	                        });
+                            return this;
+                        }
 
                             @Override
                             public RowStream<Row> handler(Handler<Row> handler) {
@@ -188,31 +181,29 @@ public class PostgresClientPool implements IPostgresClient {
                                 return this;
                             }
 
-                            @Override
-                            public void close() {
-                                stream.close();
-                                closeIfNeeded();
-                            }
+                        @Override
+                        public Future<Void> close() {
+                            return stream.close().onComplete(e -> closeIfNeeded());
+                        }
 
-                            @Override
-                            public void close(Handler<AsyncResult<Void>> completionHandler) {
-                                stream.close(completionHandler);
-                                closeIfNeeded();
-                            }
+                        @Override
+                        public void close(Handler<AsyncResult<Void>> completionHandler) {
+                            stream.close(completionHandler);
+                            closeIfNeeded();
+                        }
 
-                            @Override
-                            public ReadStream<Row> fetch(long amount) {
-                                return stream.fetch(amount);
-                            }
-                        });
-                    }else{
-                        future.fail(resPrepare.cause());
-                    }
-                });
-            }else{
-                future.fail(resConn.cause());
-            }
+                        @Override
+                        public RowStream<Row> fetch(long l) {
+                            return stream.fetch(l);
+                        }
+                    });
+                }else{
+                    rowStreamPromise.fail(resPrepare.cause());
+                    promise.fail(resPrepare.cause());
+                }
+            });
+            return promise.future();
         });
-        return future.future();
+        return rowStreamPromise.future();
     }
 }

@@ -57,7 +57,7 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 	@Override
 	public void update(String id, String structureId, JsonObject data, Handler<Either<String, JsonObject>> handler){
 		StringBuilder sb = new StringBuilder();
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 		for (String attr : data.fieldNames()) {
 			if("startDate".equals(attr) || "endDate".equals(attr)){
 				sb.append("\"" + attr + "\"").append(" = ?::timestamptz, ");
@@ -82,7 +82,7 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 	public void delete(String id, String structureId, Handler<Either<String, JsonObject>> handler)
 	{
 		String query = "DELETE FROM " + resourceTable + " WHERE id = ? " + (structureId != null ? "AND \"structureId\" = ? " : "AND \"structureId\" IS NULL ");
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray().add(parseId(id));
+		JsonArray values = new JsonArray().add(parseId(id));
 		if(structureId != null)
 			values.add(structureId);
 		sql.prepared(query, values, validRowsResultHandler(handler));
@@ -91,7 +91,7 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 	@Override
 	public void deleteMultiple(List<String> ids, String structureId, Handler<Either<String, JsonObject>> handler) {
 		String query = "DELETE FROM " + resourceTable + " WHERE " + (structureId != null ? "\"structureId\" = ? " : "\"structureId\" IS NULL ") + " AND id IN " + Sql.listPrepared(ids.toArray());
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray values = new JsonArray();
 		if(structureId != null)
 			values.add(structureId);
 		for(String id : ids){
@@ -112,7 +112,7 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 			"SELECT *, \"startDate\"::text, \"endDate\"::text "+
 			"FROM " + resourceTable + " m  WHERE domain = ? AND \"structureId\" IS NULL ORDER BY modified DESC";
 
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray().add(domain);
+		JsonArray values = new JsonArray().add(domain);
 		sql.prepared(query, values, validResultHandler(handler, "contents", "profiles"));
 	}
 
@@ -125,7 +125,7 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 						"WHERE \"structureId\" = ? " +
 						"OR messStru.structure_id = ? ORDER BY modified DESC";
 
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray().add(structureId).add(structureId);
+		JsonArray values = new JsonArray().add(structureId).add(structureId);
 		sql.prepared(query, values, validResultHandler(handler, "contents", "profiles"));
 	}
 
@@ -177,7 +177,7 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 	public void getSubstructuresByMessageId(String messageId, Handler<Either<String, JsonArray>> handler) {
 		String query = "SELECT structure_id FROM " + STRUCT_JOIN_TABLE + " m " +
 				"WHERE m.message_id = ?";
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray().add(messageId);
+		JsonArray values = new JsonArray().add(messageId);
 		sql.prepared(query, values, validResultHandler(handler, "contents", "profiles"));
 	}
 
@@ -203,7 +203,7 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 	public void markAsRead(UserInfos user, String id, Handler<Either<String, JsonObject>> handler) {
 		String query = "INSERT INTO " + JOIN_TABLE + " " +
 				"(message_id, user_id) VALUES (?,?) ON CONFLICT DO NOTHING";
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray().add(id).add(user.getUserId());
+		JsonArray values = new JsonArray().add(id).add(user.getUserId());
 		sql.prepared(query, values, validUniqueResultHandler(handler));
 	}
 

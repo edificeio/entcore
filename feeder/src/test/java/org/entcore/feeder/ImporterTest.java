@@ -42,20 +42,20 @@ public class ImporterTest {
         final String path = getClass().getResource("/aaf").getFile();
         final AafFeeder feeder = new AafFeeder(test.vertx(), path);
         final Importer importer = Importer.getInstance();
-        importer.init(Neo4j.getInstance(), test.vertx(), "aaf", "fr", false, false, false, resInit -> {
+        importer.init(Neo4j.getInstance(), test.vertx(), "AAF", "fr", false, false, false, resInit -> {
             context.assertEquals("ok", resInit.body().getString("status"));
             try {
                 feeder.launch(importer, res -> {
                     context.assertEquals("ok", res.body().getString("status"));
                     final Async async1 = context.async();
                     final Async async2 = context.async();
-                    test.database().executeNeo4j("MATCH (s:Structure) RETURN s", new JsonObject()).setHandler(s->{
+                    test.database().executeNeo4j("MATCH (s:Structure) RETURN s", new JsonObject()).onComplete(s->{
                         context.assertTrue(s.succeeded());
                         context.assertEquals(1, s.result().size());
                         System.out.println(s.result().encodePrettily());
                         async1.complete();
                     });
-                    test.database().executeNeo4j("MATCH (u:User) RETURN u", new JsonObject()).setHandler(u -> {
+                    test.database().executeNeo4j("MATCH (u:User) RETURN u", new JsonObject()).onComplete(u -> {
                         context.assertTrue(u.succeeded());
                         context.assertEquals(1, u.result().size());
                         System.out.println(u.result().encodePrettily());

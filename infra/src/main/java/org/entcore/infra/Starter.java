@@ -25,8 +25,10 @@ import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.filter.SecurityHandler;
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.metrics.MetricsOptions;
 import io.vertx.core.shareddata.AsyncMap;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.email.EmailFactory;
@@ -37,6 +39,7 @@ import org.entcore.common.utils.MapFactory;
 import org.entcore.infra.controllers.*;
 import org.entcore.infra.cron.HardBounceTask;
 import org.entcore.infra.cron.MonitoringEventsChecker;
+import org.entcore.infra.metrics.MicrometerInfraMetricsRecorder;
 import org.entcore.infra.services.EventStoreService;
 import org.entcore.infra.services.impl.ClamAvService;
 import org.entcore.infra.services.impl.ExecCommandWorker;
@@ -57,9 +60,9 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 public class Starter extends BaseServer {
 
 	@Override
-	public void start() {
+	public void start(Promise<Void> startPromise) {
 		try {
-			super.start();
+			super.start(startPromise);
 			final LocalMap<Object, Object> serverMap = vertx.sharedData().getLocalMap("server");
 			serverMap.put("signKey", config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK" + Math.random()));
 
@@ -225,6 +228,20 @@ public class Starter extends BaseServer {
 			);
 			vertx.setPeriodic(checkMonitoringEvents.getLong("period", 300000L), monitoringEventsChecker);
 		}
+		final boolean metricsActivated;
+		if(config.getJsonObject("metricsOptions") == null) {
+			final String metricsOptions = (String) vertx.sharedData().getLocalMap("server").get("metricsOptions");
+			if(metricsOptions == null){
+				metricsActivated = false;
+			}else{
+				metricsActivated = new MetricsOptions(new JsonObject(metricsOptions)).isEnabled();
+			}
+		} else {
+			metricsActivated = new MetricsOptions(config.getJsonObject("metricsOptions")).isEnabled();
+		}
+		if(metricsActivated) {
+			new MicrometerInfraMetricsRecorder(vertx);
+		}
 	}
 
 	private void loadInvalidEmails() {
@@ -287,7 +304,7 @@ public class Starter extends BaseServer {
 
 		JsonObject message = new JsonObject()
 				.put("widget", widget);
-		vertx.eventBus().send("wse.app.registry.widgets", message, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		vertx.eventBus().request("wse.app.registry.widgets", message, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> event) {
 				if("error".equals(event.body().getString("status"))){
 					log.error("Error while registering widget "+widgetName+". "+event.body().getJsonArray("errors"));

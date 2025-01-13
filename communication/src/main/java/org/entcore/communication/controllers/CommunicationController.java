@@ -41,8 +41,9 @@ import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.validation.StringValidation;
+import org.entcore.communication.filters.CommunicationDiscoverVisibleFilter;
 import org.entcore.communication.services.CommunicationService;
-import org.entcore.communication.services.impl.XpCommunicationService;
+import org.entcore.communication.services.impl.DefaultCommunicationService;
 
 import java.util.List;
 
@@ -149,9 +150,9 @@ public class CommunicationController extends BaseController {
 		if (userId != null && !userId.trim().isEmpty()) {
 			String schoolId = request.params().get("schoolId");
 			List<String> expectedTypes = request.params().getAll("expectedType");
-			visibleUsers(userId, schoolId, new fr.wseduc.webutils.collections.JsonArray(expectedTypes), arrayResponseHandler(request));
+			visibleUsers(userId, schoolId, new JsonArray(expectedTypes), arrayResponseHandler(request));
 		} else {
-			renderJson(request, new fr.wseduc.webutils.collections.JsonArray());
+			renderJson(request, new JsonArray());
 		}
 	}
 
@@ -223,6 +224,17 @@ public class CommunicationController extends BaseController {
 									where += "g2.filter IN {filters2} ";
 								}
 								break;
+							case "positions":
+								JsonArray positionIds = filter.getJsonArray(criteria);
+								if (positionIds == null || positionIds.isEmpty()) continue;
+								params.put("positionIds", positionIds);
+								if (!match.contains("MATCH ")) {
+									where = " WHERE ";
+								} else {
+									where += "AND ";
+								}
+								where += "  ANY(id IN positionIds WHERE id IN {positionIds}) ";
+                break;
 							case "search":
 								final String search = filter.getString(criteria);
 								if (isNotEmpty(search)) {
@@ -253,6 +265,7 @@ public class CommunicationController extends BaseController {
 				final boolean returnGroupType = !groupTypes.isEmpty();
 				final String customReturn = match + where +
 						"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
+						"positionNames, positionIds, " +
 						"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
 						"HEAD(visibles.profiles) as profile, subjects" + nbUsers + groupTypes;
 				communicationService.visibleUsers(user.getUserId(), null, expectedTypes, true, true, false,
@@ -313,7 +326,7 @@ public class CommunicationController extends BaseController {
 						j = res.right().getValue();
 					} else {
 						log.warn(res.left().getValue());
-						j = new fr.wseduc.webutils.collections.JsonArray();
+						j = new JsonArray();
 					}
 					message.reply(j);
 				}
@@ -324,7 +337,7 @@ public class CommunicationController extends BaseController {
 				String customReturn = message.body().getString("customReturn");
 				JsonObject ap = message.body().getJsonObject("additionnalParams");
 				boolean itSelf = message.body().getBoolean("itself", false);
-				boolean myGroup = communicationService instanceof XpCommunicationService ? true :
+				boolean myGroup = communicationService instanceof DefaultCommunicationService ? true :
 						message.body().getBoolean("mygroup", false);
 				boolean profile = message.body().getBoolean("profile", true);
 				communicationService.visibleUsers(userId, schoolId, expectedTypes, itSelf, myGroup,
@@ -345,11 +358,11 @@ public class CommunicationController extends BaseController {
 				communicationService.visibleManualGroups(userId, cr, pa, responseHandler);
 				break;
 			default:
-				message.reply(new fr.wseduc.webutils.collections.JsonArray());
+				message.reply(new JsonArray());
 				break;
 			}
 		} else {
-			message.reply(new fr.wseduc.webutils.collections.JsonArray());
+			message.reply(new JsonArray());
 		}
 	}
 
@@ -403,7 +416,7 @@ public class CommunicationController extends BaseController {
 			badRequest(request);
 			return;
 		}
-		communicationService.applyDefaultRules(new fr.wseduc.webutils.collections.JsonArray().add(structureId),
+		communicationService.applyDefaultRules(new JsonArray().add(structureId),
 				defaultResponseHandler(request));
 	}
 
@@ -445,7 +458,7 @@ public class CommunicationController extends BaseController {
 				});
 				break;
 			case "setDefaultCommunicationRules" :
-				communicationService.applyDefaultRules(new fr.wseduc.webutils.collections.JsonArray().add(
+				communicationService.applyDefaultRules(new JsonArray().add(
 						message.body().getString("schoolId")), responseHandler);
 				break;
 			case "setMultipleDefaultCommunicationRules" :
@@ -644,4 +657,222 @@ public class CommunicationController extends BaseController {
 		}
 		communicationService.verify(from, to, notEmptyResponseHandler(request));
 	}
+
+	/**
+	 * Discover visible users, return list of users that can be dicover by the user
+	 * @param request
+	 * 	{
+	 * 		"structures": ["id1", "id2"],
+	 * 		"profiles": ["Teacher"],
+	 * 		"search": "search",
+	 * 	}
+	 *
+	 * */
+	@Post("/discover/visible/users")
+	@SecuredAction(value= "", type = ActionType.RESOURCE)
+	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
+	public void getDiscoverVisibleUsers(HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, filter -> UserUtils.getUserInfos(eb, request, user -> {
+			if(user == null) {
+				badRequest(request, "invalid.user");
+				return;
+			}
+			communicationService.getDiscoverVisibleUsers( user.getUserId(), filter, arrayResponseHandler(request));
+		}));
+	}
+
+	/**
+	 * Return list of accepted profile for discover visible
+	 * */
+	@Get("/discover/visible/profiles")
+	@SecuredAction(value= "", type = ActionType.RESOURCE)
+	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
+	public void getDiscoverVisibleAcceptedProfile(HttpServerRequest request) {
+		communicationService.getDiscoverVisibleAcceptedProfile(arrayResponseHandler(request));
+	}
+
+	/**
+	 * Return list of all structures, to be use to filter discover visible users
+	 * */
+	@Get("/discover/visible/structures")
+	@SecuredAction(value= "", type = ActionType.RESOURCE)
+	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
+	public void getDiscoverVisibleStructures(HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, user -> {
+			if(user == null) {
+				badRequest(request, "invalid.user");
+				return;
+			}
+			communicationService.getDiscoverVisibleStructures(arrayResponseHandler(request));
+		});
+	}
+
+	/**
+	 * Add communication rights between two users, this methode use "COMMUIQUE_DIRECT" with source 'MANUAL'
+	 * @param request
+	 * 	{
+	 * 		"receiverId": "receiverId"
+	 * 	}
+	 * */
+	@Post("/discover/visible/add/commuting/:receiverId")
+	@SecuredAction(value= "", type = ActionType.RESOURCE)
+	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
+	public void discoverVisibleAddCommuteUsers(HttpServerRequest request) {
+		String receiverId = request.params().get("receiverId");
+		if(receiverId == null || receiverId.trim().isEmpty()) {
+			badRequest(request, "invalid.parameter");
+			return;
+		}
+
+		UserUtils.getUserInfos(eb, request, user -> {
+			if(user == null) {
+				badRequest(request, "invalid.user");
+				return;
+			}
+			communicationService.discoverVisibleAddCommuteUsers(user, receiverId, request, notEmptyResponseHandler(request));
+		});
+	}
+
+	/**
+	 * Delete communication rights between two users, this methode delete "COMMUIQUE_DIRECT" with source 'MANUAL'
+	 * */
+	@Delete("/discover/visible/remove/commuting/:receiverId")
+	@SecuredAction(value= "", type = ActionType.RESOURCE)
+	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
+	public void discoverVisibleRemoveCommuteUsers(HttpServerRequest request) {
+		String receiverId = request.params().get("receiverId");
+		if(receiverId == null || receiverId.trim().isEmpty()) {
+			badRequest(request, "invalid.parameter");
+			return;
+		}
+
+		UserUtils.getUserInfos(eb, request, user -> {
+			if(user == null) {
+				badRequest(request, "invalid.user");
+				return;
+			}
+			communicationService.discoverVisibleRemoveCommuteUsers(user.getUserId(), receiverId, notEmptyResponseHandler(request));
+		});
+	}
+
+	/**
+	 * This methode return all groups that the user can see, with the group type 'manager'
+	 * */
+	@Get("/discover/visible/groups")
+	@SecuredAction(value= "", type = ActionType.RESOURCE)
+	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
+	public void discoverVisibleGetGroups(HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, user -> {
+			if(user == null) {
+				badRequest(request, "invalid.user");
+				return;
+			}
+			communicationService.discoverVisibleGetGroups(user.getUserId(), arrayResponseHandler(request));
+		});
+	}
+
+	/**
+	 * Get the list of users in a group
+	 * @param request
+	 * 	{
+	 * 		"groupId": "groupId"
+	 * 	}
+	 * */
+	@Get("/discover/visible/group/:groupId/users")
+	@SecuredAction(value= "", type = ActionType.RESOURCE)
+	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
+	public void discoverVisibleGetUsersInGroup(HttpServerRequest request) {
+
+		String groupId = request.params().get("groupId");
+
+		UserUtils.getUserInfos(eb, request, user -> {
+			if(user == null) {
+				badRequest(request, "invalid.user");
+				return;
+			}
+			communicationService.discoverVisibleGetUsersInGroup(user.getUserId(), groupId, arrayResponseHandler(request));
+		});
+
+	}
+
+	/**
+	 * Create a group with the group type 'manager'
+	 * @param request
+	 * 	{
+	 * 		"name": "name",
+	 * 	}
+	 * */
+	@Post("/discover/visible/group")
+	@SecuredAction(value= "", type = ActionType.RESOURCE)
+	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
+	public void createDiscoverVisibleGroup(HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, body -> {
+			UserUtils.getUserInfos(eb, request, user -> {
+				if(user == null) {
+					badRequest(request, "invalid.user");
+					return;
+				}
+				communicationService.createDiscoverVisibleGroup(user.getUserId(), body, notEmptyResponseHandler(request));
+			});
+		});
+	}
+
+	/**
+	 * Update a group with the group type 'manager'
+	 * @param request
+	 * 	{
+	 * 		"groupId": "groupId",
+	 * 		"name": "name",
+	 * 	}
+	 * */
+	@Put("/discover/visible/group/:groupId")
+	@SecuredAction(value= "", type = ActionType.RESOURCE)
+	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
+	public void updateDiscoverVisibleGroup(HttpServerRequest request) {
+		String groupId = request.params().get("groupId");
+		if(groupId == null || groupId.trim().isEmpty()) {
+			badRequest(request, "invalid.parameter");
+			return;
+		}
+		RequestUtils.bodyToJson(request, body -> {
+			UserUtils.getUserInfos(eb, request, user -> {
+				if(user == null) {
+					badRequest(request, "invalid.user");
+					return;
+				}
+				communicationService.updateDiscoverVisibleGroup(user.getUserId(), groupId, body, notEmptyResponseHandler(request));
+			});
+		});
+	}
+
+	/**
+	 * Update the groups member, with adding the new user in the group and send a notification to the user, and removing the user from the group
+	 * @param request
+	 * 	{
+	 * 		"groupId": "groupId",
+	 * 		"oldUsers": ["userId1", "userId2"], // list of users befor change
+	 * 		"newUsers": "["userId1", "userId2"]" //list of users after change
+	 * 	}
+	 * */
+	@Put("/discover/visible/group/:groupId/users")
+	@SecuredAction(value= "", type = ActionType.RESOURCE)
+	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
+	public void addDiscoverVisibleGroupUsers(HttpServerRequest request) {
+		String groupId = request.params().get("groupId");
+		if(groupId == null || groupId.trim().isEmpty()) {
+			badRequest(request, "invalid.parameter");
+			return;
+		}
+
+		RequestUtils.bodyToJson(request, body -> {
+			UserUtils.getUserInfos(eb, request, user -> {
+				if(user == null) {
+					badRequest(request, "invalid.user");
+					return;
+				}
+				communicationService.addDiscoverVisibleGroupUsers(user, groupId, body, request, defaultResponseHandler(request));
+			});
+		});
+	}
+
 }

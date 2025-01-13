@@ -9,6 +9,10 @@ public class StopWatch {
         start = System.currentTimeMillis();
     }
 
+    public Duration elapsedTime() {
+        return Duration.ofMillis(elapsedTimeMillis());
+    }
+
     public long elapsedTimeMillis() {
         long now = System.currentTimeMillis();
         return now - start;

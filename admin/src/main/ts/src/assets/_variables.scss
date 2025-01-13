@@ -2,7 +2,8 @@
 // COLOR PALETTE
 $grey-light:              #eaedf2;
 $grey-dark:               #5b6472;
-$grey-medium:               #aaa;
+$grey-medium:             #aaa;
+$grey-graphite:           #909090;
 
 $main:                    rgb(42, 156, 200);
 $main-light:              lighten($main, 10%);
@@ -51,8 +52,25 @@ $user-profile-img-width:  220px;
 $fontawesome-size:        1.5em;
 
 // MESSAGE FLASH
-$flash-red:               #C74848;
-$flash-orange:            #FF9057;
-$flash-green:             #3CB371;
-$flash-blue:              #2A9CC8;
-$flash-grey:              #5B6472;
+$widget-flash-colors: (
+  "red": (
+    "background": #FFECEE,
+    "shadow": #FFADB9,
+    "badge": #FF3A55),
+  "orange": (
+    "background": #FFEFE3,
+    "shadow": #FFCBA0,
+    "badge": #FF8D2E),
+  "green": (
+    "background": #E6F9F8,
+    "shadow": #B6EDE5,
+    "badge": #46BFAF),
+  "blue": (
+    "background": #E5F5FF,
+    "shadow": #B9E3F8,
+    "badge": #2A9CC8),
+  "grey-dark": (
+    "background": #FAFAFA,
+    "shadow": #E4E4E4,
+    "badge": #B0B0B0 ),
+);

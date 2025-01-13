@@ -1,6 +1,7 @@
 package org.entcore.common.email.impl;
 
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
@@ -20,7 +21,7 @@ public interface PostgresEmailHelper {
 
     default Future<Void> setRead(UUID uuid, EventBus bus, HttpServerRequest request, final JsonObject extraParams){
         if (request != null) {
-            final Future<Void> future = Future.future();
+            final Promise<Void> future = Promise.promise();
             final String ua = request.headers().get("User-Agent");
             if (ua != null) {
                 extraParams.put("ua", ua);
@@ -32,9 +33,9 @@ public interface PostgresEmailHelper {
                         extraParams.put("profile", user.getType());
                     }
                 }
-                setRead(uuid, extraParams).setHandler(future);
+                setRead(uuid, extraParams).onComplete(future);
             });
-            return future;
+            return future.future();
         } else {
             return setRead(uuid, extraParams);
         }

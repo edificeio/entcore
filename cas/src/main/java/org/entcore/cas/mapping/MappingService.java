@@ -4,6 +4,7 @@ import fr.wseduc.mongodb.MongoDb;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -15,16 +16,16 @@ import java.util.*;
 
 public class MappingService {
     private boolean splitByStructure = true;
-    private static MappingService instance = new MappingService();
+    private static final MappingService instance = new MappingService();
     public static final String COLLECTION = "casMapping";
     private final MongoDb mongoDb = MongoDb.getInstance();
     private final Neo4j neo = Neo4j.getInstance();
     private Date cacheMappingDate;
     private Date cacheStructuresDate;
     private Future<Mappings> cacheMapping;
-    private List<Future<Mappings>> cacheMappingPending = new ArrayList<>();
-    private Future<JsonArray> cacheStructures;
-    private List<Future<JsonArray>> cacheStructuresPending = new ArrayList<>();
+    private final List<Promise<Mappings>> cacheMappingPending = new ArrayList<>();
+    private Promise<JsonArray> cacheStructures;
+    private final List<Promise<JsonArray>> cacheStructuresPending = new ArrayList<>();
     private MappingService(){ }
 
     public static MappingService getInstance(){
@@ -55,7 +56,7 @@ public class MappingService {
     }
 
     public Future<Void> create(JsonObject data){
-        final Future<Void> future = Future.future();
+        final Promise<Void> future = Promise.promise();
         if(data.containsKey("type")){
             data.put("_id", data.getString("type"));
             data.remove("type");
@@ -67,12 +68,12 @@ public class MappingService {
                 future.fail(r.body().getString("message"));
             }
         });
-        return future;
+        return future.future();
     }
 
     public Future<Mappings> getMappings() {
         if (cacheMapping == null) {
-            final Future<Mappings> futureMapping = Future.future();
+            final Promise<Mappings> futureMapping = Promise.promise();
             //load mappings
             final Map<String, Mapping> rows = new HashMap<>();
             //final String mappingJson = new String(Files.readAllBytes(Paths.get(RegisteredServices.class.getResource(MAPPING_FILE).toURI())));
@@ -92,10 +93,10 @@ public class MappingService {
                 }
             });
             //load structures
-            cacheMapping = futureMapping.compose(r->{
-                final Mappings tmp = (Mappings)r;
-                final Future<Mappings> future = Future.future();
-                getStructures().setHandler(resStruct -> {
+            cacheMapping = futureMapping.future().compose(r->{
+                final Mappings tmp = r;
+                final Promise<Mappings> future = Promise.promise();
+                getStructures().onComplete(resStruct -> {
                     if(resStruct.succeeded()){
                         for(final Object o : resStruct.result()){
                             final JsonObject json = (JsonObject)o;
@@ -113,20 +114,22 @@ public class MappingService {
                         future.fail(resStruct.cause());
                     }
                 });
-                return future;
+                return future.future();
             });
-            cacheMapping.setHandler(r -> {
-                for(final Future<Mappings> f : cacheMappingPending){
-                    if(!f.isComplete()){
-                        f.handle(r);
+            cacheMapping.onComplete(r -> {
+                for(final Promise<Mappings> f : cacheMappingPending){
+                    if(r.succeeded()) {
+                        f.tryComplete(r.result());
+                    } else {
+                        f.tryFail(r.cause());
                     }
                 }
                 cacheMappingPending.clear();
                 cacheMappingDate = new Date();
             });
-            final Future<Mappings> future = Future.future();
+            final Promise<Mappings> future = Promise.promise();
             cacheMappingPending.add(future);
-            return future;
+            return future.future();
         } else if(cacheMapping.isComplete()){
             if(cacheMapping.succeeded()){
                 return Future.succeededFuture(cacheMapping.result());
@@ -134,126 +137,122 @@ public class MappingService {
                 return Future.failedFuture(cacheMapping.cause());
             }
         }else {//pending
-            final Future<Mappings> future = Future.future();
+            final Promise<Mappings> future = Promise.promise();
             cacheMappingPending.add(future);
-            return future;
+            return future.future();
         }
     }
 
     public Future<JsonArray> getStructures(){
         if(cacheStructures==null){//init
-            cacheStructures = Future.future();
-            final StringBuilder query = new StringBuilder();
-            query.append("MATCH (s:Structure) OPTIONAL MATCH (s)-[r:HAS_ATTACHMENT]->(ps:Structure) ");
-            query.append("WITH s, COLLECT({id: ps.id, name: ps.name}) as parents ");
-            query.append("RETURN s.id as id , CASE WHEN any(p in parents where p <> {id: null, name: null}) THEN parents END as parents ");
-            neo.execute(query.toString(), new JsonObject(), Neo4jResult.validResultHandler(r->{
+            cacheStructures = Promise.promise();
+            String query =
+                "MATCH (s:Structure) OPTIONAL MATCH (s)-[r:HAS_ATTACHMENT]->(ps:Structure) " +
+                "WITH s, COLLECT({id: ps.id, name: ps.name}) as parents " +
+                "RETURN s.id as id , CASE WHEN any(p in parents where p <> {id: null, name: null}) THEN parents END as parents ";
+            neo.execute(query, new JsonObject(), Neo4jResult.validResultHandler(r->{
                 if(r.isLeft()){
                     cacheStructures.fail(r.left().getValue());
                 }else{
                     cacheStructures.complete(r.right().getValue());
                 }
             }));
-            cacheStructures.setHandler(r -> {
-               for(final Future<JsonArray> f : cacheStructuresPending){
-                   if(!f.isComplete()){
-                       f.handle(r);
+            cacheStructures.future().onComplete(r -> {
+               for(final Promise<JsonArray> f : cacheStructuresPending){
+                   if(r.succeeded()) {
+                       f.tryComplete(r.result());
+                   } else {
+                       f.tryFail(r.cause());
                    }
                }
                cacheStructuresPending.clear();
                cacheStructuresDate = new Date();
             });
-            final Future<JsonArray> future = Future.future();
+            final Promise<JsonArray> future = Promise.promise();
             cacheStructuresPending.add(future);
-            return future;
-        } else if(cacheStructures.isComplete()){
-            if(cacheStructures.succeeded()){
-                return Future.succeededFuture(cacheStructures.result());
+            return future.future();
+        } else if(cacheStructures.future().isComplete()){
+            if(cacheStructures.future().succeeded()){
+                return Future.succeededFuture(cacheStructures.future().result());
             } else {
-                return Future.failedFuture(cacheStructures.cause());
+                return Future.failedFuture(cacheStructures.future().cause());
             }
         }else {//pending
-            final Future<JsonArray> future = Future.future();
+            final Promise<JsonArray> future = Promise.promise();
             cacheStructuresPending.add(future);
-            return future;
+            return future.future();
         }
     }
 
     public Future<JsonObject> getMappingUsage(String mappingId, Optional<String> structureId)
     {
-        final Future<JsonObject> future = Future.future();
-        getMappings().setHandler(new Handler<AsyncResult<Mappings>>()
-        {
-            @Override
-            public void handle(AsyncResult<Mappings> cacheRes)
+        final Promise<JsonObject> future = Promise.promise();
+        getMappings().onComplete(cacheRes -> {
+            if(cacheRes.failed())
             {
-                if(cacheRes.failed() == true)
-                {
-                    future.fail(cacheRes.cause().getMessage());
-                    return;
-                }
-                final Mappings mps = cacheRes.result();
-                final Optional<Mapping> requested = mps.getById(mappingId);
-                if(requested.isPresent() == false)
-                {
-                    //if mapping changes -> all nodes cannot receive it and mapping could not be found
-                    future.complete(new JsonObject().put("usesInOtherStructs", 0).put("totalUses", 0));
-                    return;
-                }
-
-                Mapping found = requested.get();
-                String usageQuery = "MATCH (a:Application:External)-[:PROVIDE]->(:Action)<-[:AUTHORIZE]-(r:Role) "+
-                                    "WHERE a.casType = {type} AND a.pattern = {pattern} " +
-                                    "RETURN r.structureId AS sID, COLLECT(a.name) AS connectors";
-                neo.execute(usageQuery, new JsonObject().put("type", found.getCasType()).put("pattern", found.getPattern()), Neo4jResult.validResultHandler(r ->
-                {
-                    if(r.isLeft())
-                        future.fail(r.left().getValue());
-                    else
-                    {
-                        JsonObject usageStats = new JsonObject();
-                        long otherStructUsage = 0;
-                        long totalUsages = 0;
-
-                        JsonArray res = r.right().getValue();
-
-                        for(int i = res.size(); i-- > 0;)
-                        {
-                            JsonObject stats = res.getJsonObject(i);
-                            JsonArray cntrs = stats.getJsonArray("connectors");
-                            totalUsages += cntrs.size();
-                            if(stats.getString("sID").equals(structureId.orElse("")) == true)
-                                usageStats.put("connectorsInThisStruct", cntrs);
-                            else
-                                otherStructUsage += cntrs.size();
-
-                        }
-                        usageStats.put("usesInOtherStructs", otherStructUsage);
-                        usageStats.put("totalUses", totalUsages);
-                        future.complete(usageStats);
-                    }
-                }));
+                future.fail(cacheRes.cause().getMessage());
+                return;
             }
+            final Mappings mps = cacheRes.result();
+            final Optional<Mapping> requested = mps.getById(mappingId);
+            if(!requested.isPresent())
+            {
+                //if mapping changes -> all nodes cannot receive it and mapping could not be found
+                future.complete(new JsonObject().put("usesInOtherStructs", 0).put("totalUses", 0));
+                return;
+            }
+
+            Mapping found = requested.get();
+            String usageQuery = "MATCH (a:Application:External)-[:PROVIDE]->(:Action)<-[:AUTHORIZE]-(r:Role) "+
+                                "WHERE a.casType = {type} AND a.pattern = {pattern} " +
+                                "RETURN r.structureId AS sID, COLLECT(a.name) AS connectors";
+            neo.execute(usageQuery, new JsonObject().put("type", found.getCasType()).put("pattern", found.getPattern()), Neo4jResult.validResultHandler(r ->
+            {
+                if(r.isLeft())
+                    future.fail(r.left().getValue());
+                else
+                {
+                    JsonObject usageStats = new JsonObject();
+                    long otherStructUsage = 0;
+                    long totalUsages = 0;
+
+                    JsonArray res = r.right().getValue();
+
+                    for(int i = res.size(); i-- > 0;)
+                    {
+                        JsonObject stats = res.getJsonObject(i);
+                        JsonArray cntrs = stats.getJsonArray("connectors");
+                        totalUsages += cntrs.size();
+                        if(stats.getString("sID").equals(structureId.orElse("")))
+                            usageStats.put("connectorsInThisStruct", cntrs);
+                        else
+                            otherStructUsage += cntrs.size();
+
+                    }
+                    usageStats.put("usesInOtherStructs", otherStructUsage);
+                    usageStats.put("totalUses", totalUsages);
+                    future.complete(usageStats);
+                }
+            }));
         });
-        return future;
+        return future.future();
     }
 
     public Future<Void> delete(String mappingId)
     {
-        final Future<Void> future = Future.future();
+        final Promise<Void> future = Promise.promise();
         final JsonObject deleteData = new JsonObject().put("_id", mappingId);
 
         if(mappingId == null)
         {
-            future.fail("cas.mappings.emptyId");
-            return future;
+            return Future.failedFuture("cas.mappings.emptyId");
         }
-        this.getMappingUsage(mappingId, Optional.empty()).setHandler(new Handler<AsyncResult<JsonObject>>()
+        this.getMappingUsage(mappingId, Optional.empty()).onComplete(new Handler<AsyncResult<JsonObject>>()
         {
             @Override
             public void handle(AsyncResult<JsonObject> res)
             {
-                if(res.failed() == true)
+                if(res.failed())
                 {
                     future.fail(res.cause().getMessage());
                     return;
@@ -277,7 +276,7 @@ public class MappingService {
                 }
             }
         });
-        return future;
+        return future.future();
     }
 
     public static class Mappings{
