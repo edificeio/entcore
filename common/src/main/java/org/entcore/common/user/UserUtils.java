@@ -41,6 +41,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
@@ -49,6 +50,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import static org.entcore.common.http.filter.AppOAuthResourceProvider.getTokenId;
+
+import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.session.SessionRecreationRequest;
 import org.entcore.common.utils.HostUtils;
@@ -57,7 +60,6 @@ import org.entcore.common.utils.StringUtils;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -66,6 +68,8 @@ import java.util.stream.Collectors;
 
 public class UserUtils {
 
+	private static final Vertx vertx = Vertx.currentContext().owner();
+	private static final int DEFAULT_VISIBLES_TIMEOUT = 60000;
 	public static final String FIND_SESSION = "findSession";
 	public static final String MONITORINGEVENTS = "monitoringevents";
 	private static final String USERBOOK_ADDRESS = "userbook.preferences";
@@ -218,7 +222,14 @@ public class UserUtils {
 			m.put("additionnalParams", additionnalParams);
 		}
 		m.put("userId", userId);
-		eb.request(COMMUNICATION_USERS, m, new Handler<AsyncResult<Message<JsonArray>>>() {
+		LocalMap<Object, Object> serverConfig = vertx.sharedData().getLocalMap("server");
+		final int timeout;
+		if (serverConfig != null) {
+			timeout = (int) serverConfig.getOrDefault("findVisiblesTimeout", DEFAULT_VISIBLES_TIMEOUT);
+		} else {
+			timeout = DEFAULT_VISIBLES_TIMEOUT;
+		}
+		eb.request(COMMUNICATION_USERS, m, new DeliveryOptions().setSendTimeout(timeout), new Handler<AsyncResult<Message<JsonArray>>>() {
 
 			@Override
 			public void handle(AsyncResult<Message<JsonArray>> res) {
