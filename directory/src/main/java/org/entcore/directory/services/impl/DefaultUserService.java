@@ -1455,4 +1455,25 @@ public class DefaultUserService implements UserService {
 		neo.execute(query.toString(), params, validResultHandler(results));
 	}
 
+	@Override
+	public Future<JsonArray> getAttachmentInfos(JsonArray userIds, JsonArray structuresSources) {
+		final Promise<JsonArray> promise = Promise.promise();
+		final String query =
+				"MATCH (u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+				"WHERE u.id IN {userIds} and s.source IN {structuresSources} and has(s.UAI) " +
+				"RETURN u.id AS userId, u.externalId AS externalId, COLLECT(DISTINCT s.UAI) as structuresUAI";
+		final JsonObject params = new JsonObject();
+		params.put("userIds", userIds);
+		params.put("structuresSources", structuresSources);
+
+		neo.execute(query, params, validResultHandler(results -> {
+			if (results.isRight()) {
+				promise.complete(results.right().getValue());
+			} else {
+				promise.fail(results.left().getValue());
+			}
+		}));
+		return promise.future();
+	}
+
 }
