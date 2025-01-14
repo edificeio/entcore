@@ -929,7 +929,7 @@ public class StructureController extends BaseController {
 			}
 
 			this.structureService.activateGar(garId, targetUAIs, config.getString("gar-group-name", "RESP-AFFECT-GAR"),
-				config.getString("gar-app-name", "GAR_AFFECTATION_IHM_CONNECTEUR"), result -> {
+				config.getString("gar-app-name", "GAR_AFFECTATION_IHM_CONNECTEUR"), config.getString("gar-role-name", "Mediacentre - Accès"), result -> {
 					if (result.isRight()) {
 						renderJson(request, result.right().getValue());
 					} else {
