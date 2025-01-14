@@ -41,6 +41,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
@@ -218,7 +219,7 @@ public class UserUtils {
 			m.put("additionnalParams", additionnalParams);
 		}
 		m.put("userId", userId);
-		eb.request(COMMUNICATION_USERS, m, new Handler<AsyncResult<Message<JsonArray>>>() {
+		eb.request(COMMUNICATION_USERS, m, new DeliveryOptions().setSendTimeout(60000), new Handler<AsyncResult<Message<JsonArray>>>() {
 
 			@Override
 			public void handle(AsyncResult<Message<JsonArray>> res) {
