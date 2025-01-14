@@ -42,6 +42,8 @@ import static org.entcore.common.http.response.DefaultResponseHandler.asyncArray
 import static org.entcore.common.http.response.DefaultResponseHandler.asyncDefaultResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.voidResponseHandler;
 
+import java.util.List;
+
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 
@@ -156,7 +158,8 @@ public class EventStoreController extends BaseController {
 					Long.parseLong(request.params().get("duration")) : EventStoreService.ONE_DAY_DURATION;
 			final boolean skipSynced =
 					("true".equals(request.params().get("skip-synced")) || !request.params().contains("skip-synced"));
-			eventStoreService.listEvents(type, epoch, duration, skipSynced, asyncArrayResponseHandler(request));
+			final List<String> eventTypes = request.params().getAll("event-types");
+			eventStoreService.listEvents(type, epoch, duration, skipSynced, eventTypes, asyncArrayResponseHandler(request));
 		} catch (RuntimeException e) {
 			badRequest(request, "invalid.input.format");
 		}
