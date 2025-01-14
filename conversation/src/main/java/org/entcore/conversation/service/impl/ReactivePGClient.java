@@ -14,6 +14,7 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import static io.vertx.pgclient.PgConnectOptions.DEFAULT_SSLMODE;
+import static io.vertx.sqlclient.SqlConnectOptions.DEFAULT_PREPARED_STATEMENT_CACHE_MAX_SIZE;
 
 public class ReactivePGClient {
 
@@ -45,7 +46,9 @@ public class ReactivePGClient {
     PgConnectOptions connectOptions = PgConnectOptions.fromUri(url)
       .setUser(username)
       .setPassword(password)
-      .setSslMode(SslMode.valueOf(pgConfig.getString("ssl-mode", DEFAULT_SSLMODE.name())));
+      .setSslMode(SslMode.valueOf(pgConfig.getString("ssl-mode", DEFAULT_SSLMODE.name())))
+      .setCachePreparedStatements(true)
+      .setPreparedStatementCacheMaxSize(pgConfig.getInteger("prepared-statement-cache-max-size", DEFAULT_PREPARED_STATEMENT_CACHE_MAX_SIZE));
 
     final PoolOptions poolOptions = new PoolOptions().setMaxSize(maxPoolSize);
     if(pgConfig.getBoolean("shared", false)) {
