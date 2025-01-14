@@ -103,6 +103,7 @@ public interface ConversationService {
 	void delete(List<String> messagesId, Boolean deleteAll, UserInfos user, Handler<Either<String, JsonArray>> result);
 
 	void get(String messageId, UserInfos user, Handler<Either<String, JsonObject>> result);
+	void get(String messageId, UserInfos user, int apiVersion, Handler<Either<String, JsonObject>> result);
 
 	void count(String folder, String restrain, Boolean unread, UserInfos user, Handler<Either<String, JsonObject>> result);
 
