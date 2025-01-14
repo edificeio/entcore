@@ -167,4 +167,7 @@ public interface UserService {
 	
 	public void listUsersByStructure(List<String> structures, Handler<Either<String, JsonArray>> results);
 	void getUserStructuresGroup(String id, Handler<Either<String, JsonObject>> result);
+
+	Future<JsonArray> getAttachmentInfos(JsonArray userIds, JsonArray structuresSources);
+
 }
