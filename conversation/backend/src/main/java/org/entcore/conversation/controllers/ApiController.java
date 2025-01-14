@@ -131,7 +131,7 @@ public class ApiController extends BaseController {
 		final Promise<JsonObject> promise = Promise.promise();
 		final JsonObject userIndex = new JsonObject();
 		final JsonObject groupIndex = new JsonObject();
-		conversationService.get(id, userInfos, either -> {
+		conversationService.get(id, userInfos, 1, either -> {
 			if (either.isRight()) {
 				final JsonObject message = either.right().getValue();
 				// Extract distinct users and groups.
