@@ -593,7 +593,12 @@ public class DefaultConversationService implements ConversationService {
 
 	@Override
 	public void get(String messageId, UserInfos user, Handler<Either<String, JsonObject>> result) {
-		if (validationParamsError(user, result, messageId)) return;
+		get(messageId, user, 0, result);
+	}
+
+	@Override
+	public void get(String messageId, UserInfos user, int apiVersion, Handler<Either<String, JsonObject>> result) {
+			if (validationParamsError(user, result, messageId)) return;
 
 		String query =
 				"MATCH (m:ConversationMessage)<-[r:HAS_CONVERSATION_MESSAGE]-(f:ConversationSystemFolder)" +
