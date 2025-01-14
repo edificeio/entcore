@@ -30,6 +30,8 @@ import fr.wseduc.webutils.request.RequestUtils;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import io.vertx.core.file.FileSystemException;
 import io.vertx.core.shareddata.LocalMap;
+
+import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.request.JsonHttpServerRequest;
@@ -75,6 +77,7 @@ public class PortalController extends BaseController {
 	private enum PortalEvent { ACCESS_ADAPTER, ACCESS }
 	private String defaultSkin;
 	private JsonObject defaultTracker;
+	private EventHelper eventHelper;
 
 	@Override
 	public void init(final Vertx vertx, JsonObject config, RouteMatcher rm,
@@ -125,12 +128,16 @@ public class PortalController extends BaseController {
 		defaultTracker = config.getJsonObject( "tracker", new JsonObject().put("type", "none") );
 		eventStore = EventStoreFactory.getFactory().getEventStore(Portal.class.getSimpleName());
 		vertx.sharedData().getLocalMap("server").put("assetPath", assetsPath);
+
+		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Portal.class.getSimpleName());
+		this.eventHelper =  new EventHelper(eventStore);
 	}
 
 	@Get("/welcome")
 	@SecuredAction(value = "portal.auth",type = ActionType.AUTHENTICATED)
 	public void welcome(HttpServerRequest request) {
 		renderView(request);
+		eventHelper.onAccess(request);
 	}
 
 	@Get("/")
