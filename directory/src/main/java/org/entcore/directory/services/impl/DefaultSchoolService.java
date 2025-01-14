@@ -671,13 +671,13 @@ public class DefaultSchoolService implements SchoolService {
 	}
 
 	@Override
-	public void activateGar(String garId, JsonArray targetUAIs, String groupName, String appName, Handler<Either<String, JsonObject>> handler) {
+	public void activateGar(String garId, JsonArray targetUAIs, String groupName, String appName, String roleName, Handler<Either<String, JsonObject>> handler) {
 		final List<String> list = targetUAIs.getList();
 		final AtomicInteger countDown = new AtomicInteger(list.size());
 		final JsonArray errors = new JsonArray();
 
 		for (String uai : list) {
-			activateGar(garId, uai, groupName, appName, result -> {
+			activateGar(garId, uai, groupName, appName, roleName, result -> {
 				if (result.isLeft()) {
 					final JsonObject error = result.left().getValue();
 					errors.add(error.getString("uai"));
@@ -691,7 +691,7 @@ public class DefaultSchoolService implements SchoolService {
 		}
 	}
 
-	private void activateGar(String garId, String uai, String groupName, String appName, Handler<Either<JsonObject, JsonObject>> handler) {
+	private void activateGar(String garId, String uai, String groupName, String appName, String roleName, Handler<Either<JsonObject, JsonObject>> handler) {
 		final String query = "MATCH (s:Structure {UAI:{uai}}) OPTIONAL MATCH (s)<-[:DEPENDS]-(g:ManualGroup{name:{groupName}}) SET " +
 				"s.exports = CASE WHEN ('GAR-' + {garId}) IN coalesce(s.exports, []) then s.exports " +
 				"WHEN ANY(x IN coalesce(s.exports, []) WHERE x starts WITH 'GAR-') then [x IN s.exports | CASE WHEN x STARTS WITH 'GAR-' THEN 'GAR-' + {garId} ELSE x END] " +
@@ -738,6 +738,11 @@ public class DefaultSchoolService implements SchoolService {
 						"CREATE UNIQUE u-[:IN {source:'MANUAL'}]->g";
 				final JsonObject populateParams = new JsonObject().put("uai", uai).put("groupId", groupId);
 				builder.add(populateQuery, populateParams);
+
+				final String affectQuery = "MATCH (r:Role {name : {roleName}}), (s:Structure {UAI:{uai}})-[:DEPENDS]-(pg:ProfileGroup) WHERE NOT pg.filter IN ['Guest','Relative'] " +
+						"CREATE UNIQUE (pg)-[:AUTHORIZED]->(r)";
+				final JsonObject affectParams = new JsonObject().put("roleName", roleName).put("uai", uai);
+				builder.add(affectQuery, affectParams);
 
 				neo.executeTransaction(builder.build(), null, true, res -> {
                     if ("ok".equals(res.body().getString("status"))) {
