@@ -1237,4 +1237,23 @@ public class UserController extends BaseController {
 		userService.listUsersByStructure(structures, arrayResponseHandler(request));
 	}
 
+	@Put("/user/attachments/infos")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void getAttachmentInfos(HttpServerRequest request) {
+		bodyToJson(request, pathPrefix + "getAttachmentsInfos", body ->
+			userService.getAttachmentInfos(
+				body.getJsonArray("usersIds"),
+				body.getJsonArray("structuresSources")
+			).onComplete(res->{
+				if (res.succeeded()) {
+					Renders.renderJson(request, res.result());
+				} else {
+					Renders.renderError(request, new JsonObject().put("error", "user.attachments.infos.cantload"));
+					log.error("Failed to load user attachments infos : ", res.cause());
+				}
+			})
+		);
+	}
+
 }
