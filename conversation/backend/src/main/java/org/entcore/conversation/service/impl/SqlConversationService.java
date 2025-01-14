@@ -547,6 +547,11 @@ public class SqlConversationService implements ConversationService{
 
 	@Override
 	public void get(String messageId, UserInfos user, Handler<Either<String, JsonObject>> result) {
+		get(messageId, user, 0, result);
+	}
+
+	@Override
+	public void get(String messageId, UserInfos user, int apiVersion, Handler<Either<String, JsonObject>> result) {
 		if (validationParamsError(user, result, messageId))
 			return;
 
@@ -569,6 +574,7 @@ public class SqlConversationService implements ConversationService{
 		String selectQuery =
 			"SELECT " +
 				"m.*, " +
+				(apiVersion>0 ? "um.folder_id as folder_id, um.trashed as trashed, um.unread as unread, " : "") +
 				"CASE WHEN COUNT(distinct att) = 0 THEN '[]' ELSE json_agg(distinct att.*) END AS attachments " +
 			"FROM " + messageTable + " m " +
 			"JOIN " + userMessageTable + " um " +
@@ -577,7 +583,7 @@ public class SqlConversationService implements ConversationService{
 			"LEFT JOIN " + attachmentTable + " att " +
 				"ON att.id = uma.attachment_id " +
 			"WHERE um.user_id = ? AND m.id = ?  " +
-			"GROUP BY m.id";
+			(apiVersion>0 ? "GROUP BY m.id, um.folder_id, um.trashed, um.unread" : "GROUP BY m.id");
 
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
 			.add(user.getUserId())
