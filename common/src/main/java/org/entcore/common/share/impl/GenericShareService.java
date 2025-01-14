@@ -491,10 +491,6 @@ public abstract class GenericShareService implements ShareService {
 				.map(futures -> futures.list().stream()
 						.map(result -> (JsonArray) result)
 						.collect(Collectors.toList()))
-				.onFailure(th -> {
-					log.error("Failed fetching visibles", th);
-					promise.fail("Failed fetching visibles : " + th.getMessage());
-				})
 				.onSuccess(visibleChunks -> {
 					final JsonArray visibleArray = new JsonArray();
 					visibleChunks.forEach(visibleArray::addAll);
