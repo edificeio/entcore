@@ -33,11 +33,9 @@ import java.util.*;
 
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
-import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import org.entcore.cas.mapping.Mapping;
 import org.entcore.cas.mapping.MappingService;
-import org.entcore.cas.services.RegisteredService;
 import org.entcore.cas.services.RegisteredServices;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
@@ -78,6 +76,20 @@ public class ConfigurationController extends BaseController {
 			}else{
 				Renders.renderError(request, new JsonObject().put("error", "cas.mappings.cantload"));
 				log.error("Failed to load mapping : ", res.cause());
+			}
+		});
+	}
+
+	@Get("/configuration/types/mappings")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void getTypesMappings(HttpServerRequest request) {
+		mappingService.getTypesMappings().onComplete(res->{
+			if(res.succeeded()){
+				Renders.renderJson(request, res.result());
+			}else{
+				Renders.renderError(request, new JsonObject().put("error", "cas.types.mappings.cantload"));
+				log.error("Failed to load cas type mapping : ", res.cause());
 			}
 		});
 	}
