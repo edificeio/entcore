@@ -132,11 +132,14 @@ public class MongoDbEventStore implements EventStoreService {
 	}
 
 	@Override
-	public void listEvents(String eventStoreType, long startEpoch, long duration, boolean skipSynced, Handler<AsyncResult<JsonArray>> handler) {
+	public void listEvents(String eventStoreType, long startEpoch, long duration, boolean skipSynced, List<String> eventTypes, Handler<AsyncResult<JsonArray>> handler) {
 		final JsonObject query = new JsonObject().put("date", new JsonObject()
 			.put("$gte", startEpoch).put("$lt", (startEpoch + duration)));
 		if (skipSynced) {
 			query.put("synced", new JsonObject().put("$exists", false));
+		}
+		if (eventTypes != null && !eventTypes.isEmpty()) {
+			query.put("event-type", new JsonObject().put("$in", new JsonArray(eventTypes)));
 		}
 		mongoDb.find(eventStoreType, query,  (JsonObject) null, (JsonObject) null, -1, -1, Integer.MAX_VALUE,
 				new DeliveryOptions().setSendTimeout(QUERY_TIMEOUT), validAsyncResultsHandler(handler));
