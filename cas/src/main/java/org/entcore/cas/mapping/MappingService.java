@@ -71,6 +71,19 @@ public class MappingService {
         return future.future();
     }
 
+    public Future<JsonArray> getTypesMappings() {
+        final Promise<JsonArray> futureMapping = Promise.promise();
+        mongoDb.find(COLLECTION, new JsonObject(),r->{
+            final JsonArray results = r.body().getJsonArray("results");
+            if ("ok".equals(r.body().getString("status")) && results != null) {
+                futureMapping.complete(results);
+            } else {
+                futureMapping.fail(r.body().getString("message"));
+            }
+        });
+        return futureMapping.future();
+    }
+
     public Future<Mappings> getMappings() {
         if (cacheMapping == null) {
             final Promise<Mappings> futureMapping = Promise.promise();
