@@ -19,10 +19,7 @@
 
 package org.entcore.timeline.controllers;
 
-import fr.wseduc.webutils.request.CookieHelper;
-import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import io.vertx.core.*;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import fr.wseduc.bus.BusAddress;
@@ -40,8 +37,10 @@ import fr.wseduc.webutils.collections.TTLSet;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.shareddata.LocalMap;
-import org.apache.commons.lang3.function.FailableDoubleUnaryOperator;
 import org.entcore.common.cache.CacheService;
+import org.entcore.common.events.EventHelper;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.AdmlOfStructures;
 import org.entcore.common.http.filter.ResourceFilter;
@@ -49,13 +48,12 @@ import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.http.filter.Trace;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.mute.MuteHelper;
-import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.notification.TimelineNotificationsLoader;
 import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import org.entcore.common.utils.StringUtils;
+import org.entcore.timeline.Timeline;
 import org.entcore.timeline.controllers.helper.NotificationHelper;
 import org.entcore.timeline.events.CachedTimelineEventStore;
 import org.entcore.timeline.events.DefaultTimelineEventStore;
@@ -110,6 +108,8 @@ public class TimelineController extends BaseController {
 	private Map<String, String> hostSkin;
 	private JsonObject skinLevels;
 
+	private EventHelper eventHelper;
+
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
@@ -140,6 +140,9 @@ public class TimelineController extends BaseController {
 			this.hostSkin.put(domain, skins.getString(domain));
 		}
 		this.skinLevels = new JsonObject(vertx.sharedData().getLocalMap("skin-levels"));
+
+		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Timeline.class.getSimpleName());
+		this.eventHelper =  new EventHelper(eventStore);
 	}
 
 	/* Override i18n to use additional timeline translations and nested templates */
@@ -201,7 +204,7 @@ public class TimelineController extends BaseController {
 				renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)));
 			}
 		});
-
+		eventHelper.onAccess(request);
 	}
 
 	@Get("/timeline2")
@@ -209,6 +212,7 @@ public class TimelineController extends BaseController {
 	public void view2(HttpServerRequest request) {
 		final boolean cache = config.getBoolean("cache", false);
 		renderView(request, new JsonObject().put("lightMode",isLightmode()).put("cache", cache));
+		eventHelper.onAccess(request);
 	}
 
 	@Get("/preferencesView")
