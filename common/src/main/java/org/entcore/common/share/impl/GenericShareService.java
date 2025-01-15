@@ -460,15 +460,15 @@ public abstract class GenericShareService implements ShareService {
 	 * @param userId Id of the user who wants to perform the update
 	 * @param originalShares Actual shares of the user
 	 * @param shareUpdates Shares that the user wants to apply
-	 * @return A {@code Future} that completes with {@code true} iff all the detailed conditions
-	 * above were met and {@code false} otherwise.
+	 * @return A {@code Future} that completes with a set of visible shares iff all the detailed conditions
+	 * above were met and an empty set otherwise.
 	 */
-	private Future<Boolean> checkCanApplyShares(
+	private Future<Set<String>> getVisibleShares(
 		final String userId,
 		final String resourceId,
 		final JsonArray originalShares,
 		final Map<String, Set<String>> shareUpdates) {
-		final Promise<Boolean> promise = Promise.promise();
+		final Promise<Set<String>> promise = Promise.promise();
 		final String customReturn = "RETURN DISTINCT visibles.id as id, has(visibles.login) as isUser";
 
 		// Parallelizing the process of fetching the visibles
@@ -506,7 +506,7 @@ public abstract class GenericShareService implements ShareService {
 							.collect(Collectors.toSet());
 					// Check that original shares are untouched or that the ones that are modified, are modified accordingly to
 					// users/groups visibility
-					boolean ok = true;
+					boolean sharesAreValid = true;
 					final Set<String> originalUsersAndGroups = new HashSet<>();
 					for (Object originalShare : originalShares) {
 						final JsonObject share = (JsonObject) originalShare;
@@ -526,38 +526,23 @@ public abstract class GenericShareService implements ShareService {
 								log.debug("OK - desired rights and original rights are the same for " + idOfShare);
 							} else {
 								log.warn("KO - desired rights and original rights differ for " + idOfShare + " but the user has no visibility on it");
-								ok = false;
+								sharesAreValid = false;
 								break;
 							}
 						}
 					}
-					if(ok) {
-						// Check that added groups or users do not concern users or groups that the user does not have access to
+					if(sharesAreValid) {
 						final Set<String> unmatchedUserIds = shareUpdates.keySet().stream()
 								.filter(id -> !originalUsersAndGroups.contains(id)) // Added users and groups
 								.filter(id -> !visibleUsersAndGroups.contains(id))
 								.collect(Collectors.toSet());
-						if(unmatchedUserIds.isEmpty()) {
-							promise.complete(true);
-						} else if(unmatchedUserIds.size() > 1) {
-							// If there is more than 2 invisible users, we know that at least one of them is not visible at all so we cannot
-							// share the resource
-							log.warn("KO - tried to add rights to a user/group " + unmatchedUserIds + " not visible to user");
-							promise.complete(false);
-						} else {
-							//
-							getResourceOwnerUserId(resourceId).onSuccess(creatorId -> {
-								if(unmatchedUserIds.contains(creatorId)) {
-									promise.complete(true);
-								} else {
-									// For workspace, check if we want to add the owner of the resource
-									log.warn("KO - tried to add rights to a user/group " + unmatchedUserIds + " not visible to user");
-									promise.complete(false);
-								}
-							}).onFailure(promise::fail);
+						if(!unmatchedUserIds.isEmpty()) {
+							// Warning if added groups or users do not concern users or groups that the user does not have access to
+							log.warn("WARNING - tried to add rights to a user/group " + unmatchedUserIds + " not visible to user");
 						}
+						promise.complete(visibleUsersAndGroups);
 					} else {
-						promise.complete(ok);
+						promise.complete(Collections.emptySet());
 					}
 				});
 		return promise.future();
@@ -601,11 +586,13 @@ public abstract class GenericShareService implements ShareService {
 																			final Map<String, Set<String>> membersActions,
 																			final Set<String> shareBookmarkIds) {
 		getOriginalShares(resourceId, userId)
-		.compose(shares -> checkCanApplyShares(userId, resourceId, shares, membersActions))
-		.onSuccess(e -> {
-			if(e) {
+		.compose(shares -> getVisibleShares(userId, resourceId, shares, membersActions))
+		.onSuccess(visibleShares -> {
+			if(!visibleShares.isEmpty()) {
 				//		final String preFilter = "AND m.id IN {members} ";
-				final Set<String> members = membersActions.keySet();
+				final Set<String> members = membersActions.keySet().stream()
+						.filter(visibleShares::contains)
+						.collect(Collectors.toSet());
 				final JsonObject params = new JsonObject().put("members", new JsonArray(new ArrayList<>(members)));
 				//		final String customReturn = "RETURN DISTINCT visibles.id as id, has(visibles.login) as isUser";
 				//		UserUtils.findVisibles(eb, userId, customReturn, params, true, true, false, null, preFilter, res -> {
