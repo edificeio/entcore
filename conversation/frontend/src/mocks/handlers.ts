@@ -268,7 +268,7 @@ export const handlers = [
       id: string[];
       unread: boolean;
     }
-  >(`${baseUrl}/conversation/toggleUnread`, async ({ request }) => {
+  >(`${baseUrl}/toggleUnread`, async ({ request }) => {
     const payload = await request.json();
     if (
       !payload ||

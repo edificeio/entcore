@@ -6,6 +6,7 @@ import {
   hashEdificeBootstrap,
   queryHashVersion,
 } from './plugins/vite-plugin-edifice';
+import { resolve } from 'node:path';
 
 // https://vitejs.dev/config/
 export default ({ mode }: { mode: string }) => {
@@ -43,6 +44,15 @@ export default ({ mode }: { mode: string }) => {
     root: __dirname,
     cacheDir: './node_modules/.vite/conversation',
 
+    resolve: {
+      alias: {
+        '@images': resolve(
+          __dirname,
+          'node_modules/@edifice.io/bootstrap/dist/images',
+        ),
+      },
+    },
+    
     server: {
       proxy: {
         '/applications-list': proxyObj,
@@ -51,7 +61,7 @@ export default ({ mode }: { mode: string }) => {
           proxyObj,
         '^/(?=auth|appregistry|cas|userbook|directory|communication|portal|session|timeline|workspace|infra)':
           proxyObj,
-        '^/conversation/(?=api|messages/|folders/|count/)': proxyObj,
+        '^/conversation/(?=api|messages/|folders/|count/|toggleUnread)': proxyObj,
       },
       port: 4200,
       headers,

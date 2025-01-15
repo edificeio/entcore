@@ -1,11 +1,17 @@
 import {
+  infiniteQueryOptions,
   queryOptions,
   useMutation,
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
 import { folderService } from '..';
-import { Folder } from '~/models';
+import { Folder, MessageMetadata } from '~/models';
+import { useInfiniteQuery } from '@tanstack/react-query';
+import {
+  useFilterUnreadMessageList,
+  useSearchMessageList,
+} from '~/store/actions';
 
 /**
  * Folder Query Options Factory.
@@ -46,23 +52,31 @@ export const folderQueryOptions = {
     options?: {
       /** (optional) Search string */
       search?: string;
-      /** (optional) 0-based Page number */
-      page?: number;
-      /** (optional) Page size */
-      pageSize?: number;
       /** (optional) Load un/read message only ? */
       unread?: boolean;
     },
   ) {
-    return queryOptions({
+    const pageSize = 20;
+
+    return infiniteQueryOptions({
       queryKey: [
         ...folderQueryOptions.base,
         folderId,
         'messages',
         options,
       ] as const,
-      queryFn: () => folderService.getMessages(folderId, options),
+      queryFn: ({ pageParam = 0 }) => folderService.getMessages(folderId, {...options, page: pageParam, pageSize}),
       staleTime: 5000,
+      initialPageParam: 0,
+      getNextPageParam: (lastPage: any, _allPages: any, lastPageParam: any) => {
+        if (
+          (pageSize && lastPage?.length < pageSize) ||
+          (!pageSize && lastPage?.length === 0)
+        ) {
+          return undefined;
+        }
+        return lastPageParam + 1;
+      },
     });
   },
 };
@@ -74,20 +88,20 @@ export const useFoldersTree = () => {
   return useQuery(folderQueryOptions.getFoldersTree());
 };
 
-export const useFolderMessages = (
-  folderId: string,
-  options?: {
-    /** (optional) Search string */
-    search?: string;
-    /** (optional) 0-based Page number */
-    page?: number;
-    /** (optional) Page size */
-    pageSize?: number;
-    /** (optional) Load un/read message only ? */
-    unread?: boolean;
-  },
-) => {
-  return useQuery(folderQueryOptions.getMessages(folderId, options));
+export const useFolderMessages = (folderId: string) => {
+  const search = useSearchMessageList();
+  const filterUnreadMessageList = useFilterUnreadMessageList();
+
+  const query = useInfiniteQuery(
+    folderQueryOptions.getMessages(folderId, {
+      search: search === '' ? undefined : search,
+      unread: filterUnreadMessageList? true : undefined,
+    }),
+  )
+  return {
+    ...query,
+    messages: query.data?.pages.flatMap((page) => page) as MessageMetadata[],
+  };
 };
 
 export const useMessagesCount = (

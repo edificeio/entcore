@@ -1,10 +1,12 @@
 import {
   queryOptions,
+  useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
 import { folderQueryOptions, messageService } from '..';
+import { useSelectedFolder } from '~/hooks';
 
 /**
  * Message Query Options Factory.
@@ -15,7 +17,7 @@ export const messageQueryOptions = {
     return queryOptions({
       queryKey: [...messageQueryOptions.base, messageId] as const,
       queryFn: () => messageService.getById(messageId),
-      staleTime: 5000,
+      staleTime: 500000,
     });
   },
 };
@@ -27,36 +29,33 @@ export const useMessage = (messageId: string) => {
   return useQuery(messageQueryOptions.getById(messageId));
 };
 
-export const useMarkRead = () => {
+const useToggleUnread = (unread: boolean) => {
+  const { folderId } = useSelectedFolder();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id }: { id: string | string[] }) =>
-      messageService.markRead(id),
+      messageService.toggleUnread(id, unread),
     onSuccess: (_data, { id }) => {
       const messageIds = typeof id === 'string' ? [id] : id;
-      messageIds.forEach((messageId) => {
-        queryClient.invalidateQueries({
-          queryKey: messageQueryOptions.getById(messageId).queryKey,
-        });
-      });
+      return Promise.all([
+        ...messageIds.map((messageId) => {
+          queryClient.invalidateQueries(messageQueryOptions.getById(messageId));
+        }),
+        queryClient.refetchQueries({queryKey: [
+          ...folderQueryOptions.base,
+          folderId,
+        ]}),
+      ]);
     },
   });
 };
 
+export const useMarkRead = () => {
+  return useToggleUnread(false);
+};
+
 export const useMarkUnread = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ id }: { id: string | string[] }) =>
-      messageService.markUnread(id),
-    onSuccess: (_data, { id }) => {
-      const messageIds = typeof id === 'string' ? [id] : id;
-      messageIds.forEach((messageId) => {
-        queryClient.invalidateQueries({
-          queryKey: messageQueryOptions.getById(messageId).queryKey,
-        });
-      });
-    },
-  });
+  return useToggleUnread(true);
 };
 
 export const useTrashMessage = () => {
