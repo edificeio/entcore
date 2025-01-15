@@ -52,8 +52,15 @@ export default ({ mode }: { mode: string }) => {
         ),
       },
     },
-    
+
     server: {
+      fs: {
+        /**
+         * Allow the server to access the node_modules folder (for the images)
+         * This is a solution to allow the server to access the images and fonts of the bootstrap package for 1D theme
+         */
+        allow: ['../../'],
+      },
       proxy: {
         '/applications-list': proxyObj,
         '/conf/public': proxyObj,
@@ -61,7 +68,8 @@ export default ({ mode }: { mode: string }) => {
           proxyObj,
         '^/(?=auth|appregistry|cas|userbook|directory|communication|portal|session|timeline|workspace|infra)':
           proxyObj,
-        '^/conversation/(?=api|messages/|folders/|count/|toggleUnread)': proxyObj,
+        '^/conversation/(?=api|messages/|folders/|count/|toggleUnread)':
+          proxyObj,
       },
       port: 4200,
       headers,
@@ -112,6 +120,11 @@ export default ({ mode }: { mode: string }) => {
       coverage: {
         reportsDirectory: './coverage/conversation',
         provider: 'v8',
+      },
+      server: {
+        deps: {
+          inline: ['@edifice.io/react'],
+        },
       },
     },
   });

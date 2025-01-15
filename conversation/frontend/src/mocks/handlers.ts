@@ -1,6 +1,7 @@
 import { HttpResponse, http } from 'msw';
 import { baseUrl } from '~/services';
 import {
+  mockCountOfMessagesInInbox,
   mockFolderTree,
   mockFullMessage,
   mockMessagesOfInbox,
@@ -247,6 +248,13 @@ export const handlers = [
       return HttpResponse.text('Unexpected error', { status: 500 });
     } else {
       return HttpResponse.json(mockMessagesOfInbox, { status: 200 });
+    }
+  }),
+  http.get(`${baseUrl}/count/:folderId`, ({ params }) => {
+    if (params['folderId'] != 'inbox') {
+      return HttpResponse.text('Unexpected error', { status: 500 });
+    } else {
+      return HttpResponse.json(mockCountOfMessagesInInbox, { status: 200 });
     }
   }),
   http.post(`${baseUrl}/conversation/folder`, () => {
