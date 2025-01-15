@@ -1,4 +1,8 @@
 import { clsx } from 'clsx';
+import './ProgressBar.css';
+
+type BarColor = 'info' | 'warning' | 'danger';
+type BarFill = 'plain' | 'stripes' | 'animated-stripes';
 
 export type ProgressBarProps = {
   /** Label to display. */
@@ -6,8 +10,8 @@ export type ProgressBarProps = {
   /** Options to customize the label. */
   labelOptions?: {
     /**
-     * Force the position of the label within the bar container.
-     * When `undefined`, the label is centered in the progress, not container.
+     * Force the position of the label within the bar *container*.
+     * When `undefined`, the label is centered inside the *progress bar*, not the container.
      */
     justify?: 'start' | 'center' | 'end';
     /**
@@ -21,9 +25,9 @@ export type ProgressBarProps = {
   progress: number;
   progressOptions?: {
     /** Keyword defining the color of the bar. */
-    color?: 'info' | 'warning' | 'danger';
+    color?: BarColor;
     /** Style of bar. */
-    fill?: 'plain' | 'stripes' | 'animated-stripes';
+    fill?: BarFill;
   };
 };
 
@@ -33,26 +37,30 @@ export function ProgressBar({
   progressOptions,
   ...props
 }: ProgressBarProps) {
-  const progress = Math.round(props.progress);
+  const progress = Math.min(100, Math.max(0, Math.round(props.progress)));
 
   let overflow = false;
-  if (labelOptions) {
-    if (labelOptions.overflow === true || labelOptions.justify) {
-      overflow = true;
-    }
+  if (labelOptions?.overflow === true || labelOptions?.justify) {
+    overflow = true;
   }
 
-  let color: 'info' | 'warning' | 'danger' = 'info';
-  if (progressOptions) {
-    if (progressOptions.color) {
-      color = progressOptions.color;
-    }
+  let color: BarColor = 'info',
+    fill: BarFill = 'plain';
+  if (progressOptions?.color) {
+    color = progressOptions.color;
+  }
+  if (progressOptions?.fill) {
+    fill = progressOptions.fill;
   }
 
-  const barClassName = clsx('progress-bar text-gray-800', {
+  const barClassName = clsx('progress-bar', {
     'overflow-visible': overflow,
-    'bg-warning': color === 'warning',
-    'bg-danger': color === 'danger',
+    'bg-secondary-300': color === 'info',
+    'bg-orange-300': color === 'warning',
+    'bg-red-300': color === 'danger',
+    'progress-bar-striped': fill === 'stripes' || fill === 'animated-stripes',
+    'progress-bar-animated': fill === 'animated-stripes',
+    'w-100': typeof labelOptions?.justify === 'string',
   });
 
   return (
@@ -63,11 +71,28 @@ export function ProgressBar({
       aria-valuenow={25}
       aria-valuemin={0}
       aria-valuemax={100}
-      style={{ height: '20px' }}
     >
-      <div className={barClassName} style={{ width: `${progress}%` }}>
-        {label}
-      </div>
+      {labelOptions?.justify ? (
+        <div
+          className={barClassName}
+          style={{
+            background: `linear-gradient(to right, transparent ${progress}%, white ${100 - progress}%)`,
+          }}
+        >
+          <div
+            className={clsx(
+              'label text-gray-800 mx-8',
+              labelOptions?.justify && 'align-self-' + labelOptions.justify,
+            )}
+          >
+            {label}
+          </div>
+        </div>
+      ) : (
+        <div className={barClassName} style={{ width: `${progress}%` }}>
+          <div className="label text-gray-800">{label}</div>
+        </div>
+      )}
     </div>
   );
 }

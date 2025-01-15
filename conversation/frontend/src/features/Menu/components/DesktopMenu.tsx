@@ -64,14 +64,14 @@ export function DesktopMenu() {
   const userFolders = buildTree(foldersTree);
 
   const progressBarProps: ProgressBarProps = {
-    label: 'Tagada',
-    progress: 90,
+    label: 'TODO',
+    progress: 45.8,
     labelOptions: {
       justify: 'end',
     },
     progressOptions: {
-      fill: 'stripes',
-      color: 'danger',
+      fill: 'animated-stripes',
+      color: 'warning',
     },
   };
 
