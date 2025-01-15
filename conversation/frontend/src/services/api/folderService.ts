@@ -59,7 +59,7 @@ export const createFolderService = (baseURL: string) => ({
       .http()
       .get<
         MessageMetadata[]
-      >(`${baseURL}/api/folders/${folderId}/messages`, { queryParams: {search: options?.search === ''? undefined : options?.search, unread: options?.unread , page_size: options?.pageSize} });
+      >(`${baseURL}/api/folders/${folderId}/messages`, { queryParams: { search: options?.search === '' ? undefined : options?.search, unread: options?.unread, page_size: options?.pageSize, page: options?.page } });
   },
 
   create(payload: { name: string; parentId?: string }) {

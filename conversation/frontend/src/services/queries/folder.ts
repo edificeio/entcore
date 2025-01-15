@@ -14,11 +14,19 @@ import {
 } from '~/store/actions';
 
 /**
- * Folder Query Options Factory.
+ * Provides query options for folder-related operations.
  */
 export const folderQueryOptions = {
+  /**
+   * Base query key for folder-related queries.
+   */
   base: ['folder'] as const,
 
+  /**
+   * Retrieves the folder tree with a predefined depth.
+   * 
+   * @returns Query options for fetching the folder tree.
+   */
   getFoldersTree() {
     const TREE_DEPTH = 2;
     return queryOptions({
@@ -28,6 +36,14 @@ export const folderQueryOptions = {
     });
   },
 
+  /**
+   * Retrieves the count of messages in a specific folder.
+   * 
+   * @param folderId - The ID of the folder.
+   * @param options - Optional parameters to filter the count.
+   * @param options.unread - If true, only count unread messages.
+   * @returns Query options for fetching the message count.
+   */
   getMessagesCount(
     folderId: string,
     options?: {
@@ -47,6 +63,15 @@ export const folderQueryOptions = {
     });
   },
 
+  /**
+   * Retrieves messages from a specific folder with pagination support.
+   * 
+   * @param folderId - The ID of the folder.
+   * @param options - Optional parameters to filter the messages.
+   * @param options.search - A search string to filter messages.
+   * @param options.unread - If true, only load unread messages.
+   * @returns Query options for fetching messages with pagination.
+   */
   getMessages(
     folderId: string,
     options?: {
@@ -81,13 +106,21 @@ export const folderQueryOptions = {
   },
 };
 
-/*
- * All queries and mutations
+/**
+ * Hook to fetch the folder tree.
+ * 
+ * @returns Query result for fetching the folder tree.
  */
 export const useFoldersTree = () => {
   return useQuery(folderQueryOptions.getFoldersTree());
 };
 
+/**
+ * Hook to fetch messages from a specific folder with pagination support.
+ * 
+ * @param folderId - The ID of the folder.
+ * @returns Query result for fetching messages with pagination.
+ */
 export const useFolderMessages = (folderId: string) => {
   const search = useSearchMessageList();
   const filterUnreadMessageList = useFilterUnreadMessageList();
@@ -104,6 +137,14 @@ export const useFolderMessages = (folderId: string) => {
   };
 };
 
+/**
+ * Hook to fetch the count of messages in a specific folder.
+ * 
+ * @param folderId - The ID of the folder.
+ * @param options - Optional parameters to filter the count.
+ * @param options.unread - If true, only count unread messages.
+ * @returns Query result for fetching the message count.
+ */
 export const useMessagesCount = (
   folderId: string,
   options?: {
@@ -114,6 +155,11 @@ export const useMessagesCount = (
   return useQuery(folderQueryOptions.getMessagesCount(folderId, options));
 };
 
+/**
+ * Hook to create a new folder.
+ * 
+ * @returns Mutation result for creating a new folder.
+ */
 export const useCreateFolder = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -127,6 +173,11 @@ export const useCreateFolder = () => {
   });
 };
 
+/**
+ * Hook to update an existing folder.
+ * 
+ * @returns Mutation result for updating a folder.
+ */
 export const useUpdateFolder = () => {
   //  const queryClient = useQueryClient();
   return useMutation({
@@ -138,6 +189,11 @@ export const useUpdateFolder = () => {
   });
 };
 
+/**
+ * Hook to move a folder to trash.
+ * 
+ * @returns Mutation result for trashing a folder.
+ */
 export const useTrashFolder = () => {
   const queryClient = useQueryClient();
   return useMutation({

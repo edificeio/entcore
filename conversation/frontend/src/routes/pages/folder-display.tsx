@@ -70,6 +70,7 @@ export function Component() {
   const {
     messages,
     isPending: isLoadingMessage,
+    isFetchingNextPage: isLoadingNextPage,
     hasNextPage,
     fetchNextPage,
   } = useFolderMessages(folderId!);
@@ -146,7 +147,7 @@ export function Component() {
   useEffect(() => {
     const handleScroll = () => {
       if (
-        isLoadingMessage ||
+        isLoadingMessage || isLoadingNextPage ||
         window.innerHeight + document.documentElement.scrollTop <
           document.documentElement.offsetHeight - 250
       ) {
@@ -157,7 +158,7 @@ export function Component() {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [isLoadingMessage, fetchNextPage, hasNextPage]);
+  }, [isLoadingMessage, isLoadingNextPage, fetchNextPage, hasNextPage]);
 
   return (
     <>
@@ -173,6 +174,7 @@ export function Component() {
             <Dropdown.Trigger
               label={!md ? '' : t('filter')}
               size="sm"
+              variant='ghost'
               icon={<IconFilter />}
             />
             <Dropdown.Menu>
@@ -191,7 +193,7 @@ export function Component() {
         )}
       </div>
       <List
-        data={messages?.map((message) => ({ ...message, _id: message.id }))}
+        data={messages?.length === 0 ? undefined : messages?.map((message) => ({ ...message, _id: message.id }))}
         items={toolbar}
         isCheckable={true}
         onSelectedItems={(selectedIds) => setSelectedMessageIds(selectedIds)}

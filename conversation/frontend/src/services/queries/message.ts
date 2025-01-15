@@ -1,18 +1,22 @@
 import {
   queryOptions,
-  useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
 import { folderQueryOptions, messageService } from '..';
-import { useSelectedFolder } from '~/hooks';
+import { useParams } from 'react-router-dom';
 
 /**
  * Message Query Options Factory.
  */
 export const messageQueryOptions = {
   base: ['message'] as const,
+  /**
+   * Generates query options for fetching a message by its ID.
+   * @param messageId - The ID of the message to fetch.
+   * @returns Query options for fetching the message.
+   */
   getById(messageId: string) {
     return queryOptions({
       queryKey: [...messageQueryOptions.base, messageId] as const,
@@ -22,15 +26,22 @@ export const messageQueryOptions = {
   },
 };
 
-/*
- * All queries and mutations
+/**
+ * Hook to fetch a message by its ID.
+ * @param messageId - The ID of the message to fetch.
+ * @returns Query result for the message.
  */
 export const useMessage = (messageId: string) => {
   return useQuery(messageQueryOptions.getById(messageId));
 };
 
+/**
+ * Hook to toggle the unread status of a message.
+ * @param unread - The unread status to set.
+ * @returns Mutation result for toggling the unread status.
+ */
 const useToggleUnread = (unread: boolean) => {
-  const { folderId } = useSelectedFolder();
+  const { folderId } = useParams() as { folderId: string };
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: ({ id }: { id: string | string[] }) =>
@@ -50,14 +61,26 @@ const useToggleUnread = (unread: boolean) => {
   });
 };
 
+/**
+ * Hook to mark a message as read.
+ * @returns Mutation result for marking the message as read.
+ */
 export const useMarkRead = () => {
   return useToggleUnread(false);
 };
 
+/**
+ * Hook to mark a message as unread.
+ * @returns Mutation result for marking the message as unread.
+ */
 export const useMarkUnread = () => {
   return useToggleUnread(true);
 };
 
+/**
+ * Hook to move a message to the trash folder.
+ * @returns Mutation result for moving the message to the trash.
+ */
 export const useTrashMessage = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -74,6 +97,10 @@ export const useTrashMessage = () => {
   });
 };
 
+/**
+ * Hook to restore a message from the trash.
+ * @returns Mutation result for restoring the message.
+ */
 export const useRestoreMessage = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -90,6 +117,10 @@ export const useRestoreMessage = () => {
   });
 };
 
+/**
+ * Hook to delete a message.
+ * @returns Mutation result for deleting the message.
+ */
 export const useDeleteMessage = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -106,6 +137,10 @@ export const useDeleteMessage = () => {
   });
 };
 
+/**
+ * Hook to move a message to a different folder.
+ * @returns Mutation result for moving the message.
+ */
 export const useMoveMessage = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -127,6 +162,10 @@ export const useMoveMessage = () => {
   });
 };
 
+/**
+ * Hook to create a draft message.
+ * @returns Mutation result for creating the draft.
+ */
 export const useCreateDraft = () => {
   return useMutation({
     mutationFn: ({
@@ -143,6 +182,10 @@ export const useCreateDraft = () => {
   });
 };
 
+/**
+ * Hook to update a draft message.
+ * @returns Mutation result for updating the draft.
+ */
 export const useUpdateDraft = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -167,6 +210,10 @@ export const useUpdateDraft = () => {
   });
 };
 
+/**
+ * Hook to send a draft message.
+ * @returns Mutation result for sending the draft.
+ */
 export const useSendDraft = () => {
   const queryClient = useQueryClient();
   return useMutation({
