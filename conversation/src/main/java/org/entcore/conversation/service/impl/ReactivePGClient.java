@@ -32,6 +32,8 @@ public class ReactivePGClient {
   private static Timer acquireConnection = null;
   private static Timer acquireTransaction = null;
   private static Counter requestCounter = null;
+  /** The probability of choosing the primary source to perform read-only operations (use to improve load balance).*/
+  private float primaryRatio;
 
   public ReactivePGClient(final Vertx vertx, final JsonObject configuration) {
     initMetrics();
@@ -39,6 +41,7 @@ public class ReactivePGClient {
     if(pgConfig == null) {
       throw new IllegalArgumentException("'postgresConfig' is missing in 'conversation' module");
     }
+    primaryRatio = pgConfig.getFloat("primary-ratio", 0F);
     primaryPool = createPool(vertx, pgConfig, "primary").orElseThrow(() -> new IllegalArgumentException("Missing mandatory configuration postgresConfig."));
     secondaryPool = createPool(vertx, pgConfig, "secondary").orElse(primaryPool);
   }
@@ -113,7 +116,8 @@ public class ReactivePGClient {
 
   public <T> Future<T> withReadOnlyConnection(Function<SqlConnection,Future<T>> function) {
     final long start = currentTimeMillis();
-    return secondaryPool.withConnection(connection -> {
+    Pool pool = (Math.random() < primaryRatio) ? primaryPool : secondaryPool;
+    return pool.withConnection(connection -> {
       acquireConnection.record(currentTimeMillis() - start, TimeUnit.MILLISECONDS);
       return function.apply(connection);
     });
@@ -136,7 +140,8 @@ public class ReactivePGClient {
 
   public <T> Future<T> withReadOnlyTransaction(final Function<SqlConnection, Future<T>> function) {
     final long start = currentTimeMillis();
-    return secondaryPool.withTransaction(connection -> {
+    Pool pool = (Math.random() < primaryRatio) ? primaryPool : secondaryPool;
+    return pool.withTransaction(connection -> {
       acquireTransaction.record(currentTimeMillis() - start, TimeUnit.MILLISECONDS);
       return function.apply(connection);
     });
