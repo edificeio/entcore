@@ -1,11 +1,11 @@
 import { createStore, useStore } from 'zustand';
 interface State {
-  openPrintModal: boolean;
+  selectedMessageIds: string[];
 }
 
 type Action = {
   actions: {
-    setOpenPrintModal: (value: boolean) => void;
+    setSelectedMessageIds: (value: string[]) => void;
   };
 };
 
@@ -18,27 +18,28 @@ type ExtractState<S> = S extends {
 type Params<U> = Parameters<typeof useStore<typeof store, U>>;
 
 const initialState = {
-  openPrintModal: false,
+  selectedMessageIds: [],
 };
 
 const store = createStore<State & Action>()((set) => ({
   ...initialState,
   actions: {
-    setOpenPrintModal: (openPrintModal: boolean) => set({ openPrintModal }),
+    setSelectedMessageIds: (selectedMessageIds: string[]) => set({ selectedMessageIds }),
   },
 }));
 
 // Selectors
-const openPrintModal = (state: ExtractState<typeof store>) =>
-  state.openPrintModal;
+const selectedMessageIds = (state: ExtractState<typeof store>) =>  state.selectedMessageIds;
 const actionsSelector = (state: ExtractState<typeof store>) => state.actions;
+
 // Getters
-export const getOpenPrintModal = () => openPrintModal(store.getState());
+export const getSelectedMessageIds = () => selectedMessageIds(store.getState());
+
 // React Store
 function useAppStore<U>(selector: Params<U>[1]) {
   return useStore(store, selector);
 }
 
 // Hooks
-export const useOpenPrintModal = () => useAppStore(openPrintModal);
+export const useSelectedMessageIds = () => useAppStore(selectedMessageIds);
 export const useAppActions = () => useAppStore(actionsSelector);
