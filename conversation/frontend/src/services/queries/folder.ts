@@ -1,18 +1,29 @@
 import {
+  infiniteQueryOptions,
   queryOptions,
+  useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
 import { folderService } from '..';
-import { Folder } from '~/models';
+import { Folder, MessageMetadata } from '~/models';
+import { useSearchParams } from 'react-router-dom';
 
 /**
- * Folder Query Options Factory.
+ * Provides query options for folder-related operations.
  */
 export const folderQueryOptions = {
+  /**
+   * Base query key for folder-related queries.
+   */
   base: ['folder'] as const,
 
+  /**
+   * Retrieves the folder tree with a predefined depth.
+   * 
+   * @returns Query options for fetching the folder tree.
+   */
   getFoldersTree() {
     const TREE_DEPTH = 2;
     return queryOptions({
@@ -22,6 +33,14 @@ export const folderQueryOptions = {
     });
   },
 
+  /**
+   * Retrieves the count of messages in a specific folder.
+   * 
+   * @param folderId - The ID of the folder.
+   * @param options - Optional parameters to filter the count.
+   * @param options.unread - If true, only count unread messages.
+   * @returns Query options for fetching the message count.
+   */
   getMessagesCount(
     folderId: string,
     options?: {
@@ -41,55 +60,89 @@ export const folderQueryOptions = {
     });
   },
 
+  /**
+   * Retrieves messages from a specific folder with pagination support.
+   * 
+   * @param folderId - The ID of the folder.
+   * @param options - Optional parameters to filter the messages.
+   * @param options.search - A search string to filter messages.
+   * @param options.unread - If true, only load unread messages.
+   * @returns Query options for fetching messages with pagination.
+   */
   getMessages(
     folderId: string,
     options?: {
       /** (optional) Search string */
       search?: string;
-      /** (optional) 0-based Page number */
-      page?: number;
-      /** (optional) Page size */
-      pageSize?: number;
       /** (optional) Load un/read message only ? */
       unread?: boolean;
     },
   ) {
-    return queryOptions({
+    const pageSize = 20;
+
+    return infiniteQueryOptions({
       queryKey: [
         ...folderQueryOptions.base,
         folderId,
         'messages',
         options,
       ] as const,
-      queryFn: () => folderService.getMessages(folderId, options),
+      queryFn: ({ pageParam = 0 }) => folderService.getMessages(folderId, {...options, page: pageParam, pageSize}),
       staleTime: 5000,
+      initialPageParam: 0,
+      getNextPageParam: (lastPage: any, _allPages: any, lastPageParam: any) => {
+        if (
+          (pageSize && lastPage?.length < pageSize) ||
+          (!pageSize && lastPage?.length === 0)
+        ) {
+          return undefined;
+        }
+        return lastPageParam + 1;
+      },
     });
   },
 };
 
-/*
- * All queries and mutations
+/**
+ * Hook to fetch the folder tree.
+ * 
+ * @returns Query result for fetching the folder tree.
  */
 export const useFoldersTree = () => {
   return useQuery(folderQueryOptions.getFoldersTree());
 };
 
-export const useFolderMessages = (
-  folderId: string,
-  options?: {
-    /** (optional) Search string */
-    search?: string;
-    /** (optional) 0-based Page number */
-    page?: number;
-    /** (optional) Page size */
-    pageSize?: number;
-    /** (optional) Load un/read message only ? */
-    unread?: boolean;
-  },
-) => {
-  return useQuery(folderQueryOptions.getMessages(folderId, options));
+/**
+ * Hook to fetch messages from a specific folder with pagination support.
+ * 
+ * @param folderId - The ID of the folder.
+ * @returns Query result for fetching messages with pagination.
+ */
+export const useFolderMessages = (folderId: string) => {
+  const [searchParams] = useSearchParams();
+  const search = searchParams.get('search') || undefined;
+  const filterUnread = searchParams.get('unread') || undefined;
+
+  const query = useInfiniteQuery(
+    folderQueryOptions.getMessages(folderId, {
+      search: search === '' ? undefined : search,
+      unread: filterUnread? true : undefined,
+    }),
+  )
+  return {
+    ...query,
+    messages: query.data?.pages.flatMap((page) => page) as MessageMetadata[],
+  };
 };
 
+/**
+ * Hook to fetch the count of messages in a specific folder.
+ * 
+ * @param folderId - The ID of the folder.
+ * @param options - Optional parameters to filter the count.
+ * @param options.unread - If true, only count unread messages.
+ * @returns Query result for fetching the message count.
+ */
 export const useMessagesCount = (
   folderId: string,
   options?: {
@@ -100,6 +153,11 @@ export const useMessagesCount = (
   return useQuery(folderQueryOptions.getMessagesCount(folderId, options));
 };
 
+/**
+ * Hook to create a new folder.
+ * 
+ * @returns Mutation result for creating a new folder.
+ */
 export const useCreateFolder = () => {
   const queryClient = useQueryClient();
   return useMutation({
@@ -113,6 +171,11 @@ export const useCreateFolder = () => {
   });
 };
 
+/**
+ * Hook to update an existing folder.
+ * 
+ * @returns Mutation result for updating a folder.
+ */
 export const useUpdateFolder = () => {
   //  const queryClient = useQueryClient();
   return useMutation({
@@ -124,6 +187,11 @@ export const useUpdateFolder = () => {
   });
 };
 
+/**
+ * Hook to move a folder to trash.
+ * 
+ * @returns Mutation result for trashing a folder.
+ */
 export const useTrashFolder = () => {
   const queryClient = useQueryClient();
   return useMutation({

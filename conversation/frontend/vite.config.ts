@@ -6,6 +6,7 @@ import {
   hashEdificeBootstrap,
   queryHashVersion,
 } from './plugins/vite-plugin-edifice';
+import { resolve } from 'node:path';
 
 // https://vitejs.dev/config/
 export default ({ mode }: { mode: string }) => {
@@ -43,7 +44,23 @@ export default ({ mode }: { mode: string }) => {
     root: __dirname,
     cacheDir: './node_modules/.vite/conversation',
 
+    resolve: {
+      alias: {
+        '@images': resolve(
+          __dirname,
+          'node_modules/@edifice.io/bootstrap/dist/images',
+        ),
+      },
+    },
+
     server: {
+      fs: {
+        /**
+         * Allow the server to access the node_modules folder (for the images)
+         * This is a solution to allow the server to access the images and fonts of the bootstrap package for 1D theme
+         */
+        allow: ['../../'],
+      },
       proxy: {
         '/applications-list': proxyObj,
         '/conf/public': proxyObj,
@@ -51,7 +68,8 @@ export default ({ mode }: { mode: string }) => {
           proxyObj,
         '^/(?=auth|appregistry|cas|userbook|directory|communication|portal|session|timeline|workspace|infra)':
           proxyObj,
-        '^/conversation/(?=api|messages/|folders/|count/)': proxyObj,
+        '^/conversation/(?=api|messages/|folders/|count/|toggleUnread)':
+          proxyObj,
       },
       port: 4200,
       headers,
@@ -102,6 +120,11 @@ export default ({ mode }: { mode: string }) => {
       coverage: {
         reportsDirectory: './coverage/conversation',
         provider: 'v8',
+      },
+      server: {
+        deps: {
+          inline: ['@edifice.io/react'],
+        },
       },
     },
   });
