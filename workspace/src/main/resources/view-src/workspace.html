@@ -19,6 +19,7 @@
 		var LAZY_MODE = {{lazyMode}}
 		var CACHE_DOC_TTL_SEC = {{cacheDocTTl}}
 		var CACHE_FOLDER_TTL_SEC = {{cacheFolderTtl}}
+		var DISABLE_FULL_TEXT_SEARCH = {{disableFullTextSearch}}
 	</script>
 	
 	<script type="text/ng-template" id="folder-content">
@@ -167,7 +168,7 @@
 							<i class="search" ng-click="searchSubmit()"></i>
 						</div>
 					</div>
-					<div class="row top-spacing-twice notification primary-color no-margin-bottom" ng-if="showSearchOptions()">
+					<div class="row top-spacing-twice notification primary-color no-margin-bottom" ng-if="showSearchOptions() && !DISABLE_FULL_TEXT_SEARCH">
 						<label class=""><input type="checkbox" ng-model="search.everywhere">
 							<span><i18n>workspace.search.inworkspace</i18n></span>
 						</label>
@@ -176,7 +177,7 @@
 						<label class="cell top-spacing-twice horizontal-spacing">
 							<i18n>workspace.search.results.infolder</i18n> "[[currentFolderName()]]"
 						</label>
-						<div class="is-light cell margin-left-search-in-all-button-workspace"  ng-click="searchInWorkspace()"><label><a><i18n>workspace.search.inworkspace</i18n></a></label></div>
+						<div class="is-light cell margin-left-search-in-all-button-workspace" ng-if="!DISABLE_FULL_TEXT_SEARCH"  ng-click="searchInWorkspace()"><label><a><i18n>workspace.search.inworkspace</i18n></a></label></div>
 					</div>
 					<div class="row top-spacing-three notification primary-color no-margin-bottom" ng-if="showSearchResultForWorkspace()">
 						<label class="cell top-spacing-one horizontal-spacing">

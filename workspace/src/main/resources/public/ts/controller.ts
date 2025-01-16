@@ -35,11 +35,13 @@ declare var ENABLE_LOOL: boolean;
 declare var ENABLE_SCRATCH: boolean;
 declare var ENABLE_NEXTCLOUD: boolean;
 declare var ENABLE_GGB: boolean;
+declare var DISABLE_FULL_TEXT_SEARCH: boolean;
 export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegateScope, TreeDelegateScope, ActionDelegateScope, CommentDelegateScope, DragDelegateScope, SearchDelegateScope, KeyboardDelegateScope, LoolDelegateScope, ScratchDelegateScope, GeogebraDelegateScope {
 	ENABLE_LOOL: boolean;
 	ENABLE_SCRATCH: boolean;
 	ENABLE_GGB: boolean;
 	ENABLE_NEXTCLOUD: boolean;
+	DISABLE_FULL_TEXT_SEARCH: boolean;
 	documentList:models.DocumentsListModel;
 	documentListSorted:models.DocumentsListModel;
 	//new
@@ -167,6 +169,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	$scope.ENABLE_SCRATCH = ENABLE_SCRATCH;
 	$scope.ENABLE_GGB = ENABLE_GGB;
 	$scope.ENABLE_NEXTCLOUD = ENABLE_NEXTCLOUD;
+	$scope.DISABLE_FULL_TEXT_SEARCH = DISABLE_FULL_TEXT_SEARCH;
 
 	/**
 	 * INIT

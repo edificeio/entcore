@@ -73,7 +73,8 @@ public class WorkspaceController extends BaseController {
 	private final PdfGenerator pdfGenerator;
 	private DocumentDao dao;
 	private FolderManager folderManager;
-
+	// disable full text search for workspace
+	private boolean disableFullTextSearch;
 	private Storage storage;
 
 	public WorkspaceController(Storage storage, WorkspaceService workspaceService,
@@ -85,6 +86,10 @@ public class WorkspaceController extends BaseController {
 		this.pdfGenerator = aPdfGenerator;
 		this.dao = new DocumentDao(mongo);
 		this.folderManager = fm;
+	}
+
+	public void setDisableFullTextSearch(boolean disableFullTextSearch) {
+		this.disableFullTextSearch = disableFullTextSearch;
 	}
 
 	@Post("/document")
@@ -691,7 +696,11 @@ public class WorkspaceController extends BaseController {
 		// search
 		if (!StringUtils.isEmpty(search)) {
 			final List<String> searchs = StringUtils.split(search, "\\s+");
-			query.setFullTextSearch(searchs);
+			if(disableFullTextSearch) {
+				log.warn("Full text search is disabled for workspace");
+			} else {
+				query.setFullTextSearch(searchs);
+			}
 			query.addSort("modified", ElementSort.Desc);
 		}
 		// parent
@@ -1761,6 +1770,7 @@ public class WorkspaceController extends BaseController {
 		context.put("lazyMode", config.getJsonObject("publicConf", new JsonObject()).getBoolean("lazy-mode", false));
 		context.put("cacheDocTTl", config.getJsonObject("publicConf", new JsonObject()).getInteger("ttl-documents", -1));
 		context.put("cacheFolderTtl", config.getJsonObject("publicConf", new JsonObject()).getInteger("ttl-folders", -1));
+		context.put("disableFullTextSearch", disableFullTextSearch);
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(final UserInfos user) {
