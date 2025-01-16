@@ -4,6 +4,7 @@ import { Observable, Subject } from "rxjs";
 
 
 export interface SearchDelegateScope {
+    DISABLE_FULL_TEXT_SEARCH: boolean;
     search: { criteria: string, everywhere: boolean, state: "initial" | "searching" | "finished" }
     //search
     showSearchResultForFolder(): boolean
@@ -51,21 +52,24 @@ export function SearchDelegate($scope: SearchDelegateScope) {
         }
         try {
             $scope.search.state = "searching";
-            if ($scope.search.everywhere) {
-                let all = await workspaceService.fetchDocuments({ filter: "all", hierarchical: true, search: $scope.search.criteria, includeall: true })
-                $scope.openedFolder.setFilter(all);
-            } else {
-                //use a backend search on current directory 
-                if ($scope.openedFolder && $scope.openedFolder.folder && $scope.openedFolder.folder._id) {
-                    let all = await workspaceService.fetchDocuments({ filter: "all", hierarchical: true, search: $scope.search.criteria, includeall: true, ancestorId: $scope.openedFolder.folder._id })
+            if(!$scope.DISABLE_FULL_TEXT_SEARCH) {
+                if ($scope.search.everywhere) {
+                    //use a backend search on all documents
+                    let all = await workspaceService.fetchDocuments({ filter: "all", hierarchical: true, search: $scope.search.criteria, includeall: true })
                     $scope.openedFolder.setFilter(all);
                 } else {
-                    let all = await workspaceService.fetchDocuments({ filter: $scope.currentTree.filter, hierarchical: true, search: $scope.search.criteria, includeall: true })
-                    $scope.openedFolder.setFilter(all);
+                    //use a backend search on current directory 
+                    if ($scope.openedFolder && $scope.openedFolder.folder && $scope.openedFolder.folder._id) {
+                        let all = await workspaceService.fetchDocuments({ filter: "all", hierarchical: true, search: $scope.search.criteria, includeall: true, ancestorId: $scope.openedFolder.folder._id })
+                        $scope.openedFolder.setFilter(all);
+                    } else {
+                        let all = await workspaceService.fetchDocuments({ filter: $scope.currentTree.filter, hierarchical: true, search: $scope.search.criteria, includeall: true })
+                        $scope.openedFolder.setFilter(all);
+                    }
                 }
-                /**
+            } else { 
+                // for performance reasons, we disable full text search for workspace
                 let criteria = $scope.search.criteria;
-                //
                 if (criteria) {
                     criteria = criteria.toLowerCase();
                     const filter = c => {
@@ -76,7 +80,7 @@ export function SearchDelegate($scope: SearchDelegateScope) {
                     $scope.openedFolder.applyFilter(filter);
                 } else {
                     $scope.openedFolder.restore();
-                }*/
+                }
             }
         } finally {
             $scope.search.state = "finished";
