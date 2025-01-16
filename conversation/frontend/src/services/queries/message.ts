@@ -21,7 +21,7 @@ export const messageQueryOptions = {
     return queryOptions({
       queryKey: [...messageQueryOptions.base, messageId] as const,
       queryFn: () => messageService.getById(messageId),
-      staleTime: 500000,
+      staleTime: 5000,
     });
   },
 };
@@ -52,7 +52,7 @@ const useToggleUnread = (unread: boolean) => {
         ...messageIds.map((messageId) => {
           queryClient.invalidateQueries(messageQueryOptions.getById(messageId));
         }),
-        queryClient.refetchQueries({queryKey: [
+        queryClient.invalidateQueries({queryKey: [
           ...folderQueryOptions.base,
           folderId,
         ]}),

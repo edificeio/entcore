@@ -1,17 +1,14 @@
 import {
   infiniteQueryOptions,
   queryOptions,
+  useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
 import { folderService } from '..';
 import { Folder, MessageMetadata } from '~/models';
-import { useInfiniteQuery } from '@tanstack/react-query';
-import {
-  useFilterUnreadMessageList,
-  useSearchMessageList,
-} from '~/store/actions';
+import { useSearchParams } from 'react-router-dom';
 
 /**
  * Provides query options for folder-related operations.
@@ -122,13 +119,14 @@ export const useFoldersTree = () => {
  * @returns Query result for fetching messages with pagination.
  */
 export const useFolderMessages = (folderId: string) => {
-  const search = useSearchMessageList();
-  const filterUnreadMessageList = useFilterUnreadMessageList();
+  const [searchParams] = useSearchParams();
+  const search = searchParams.get('search') || undefined;
+  const filterUnread = searchParams.get('unread') || undefined;
 
   const query = useInfiniteQuery(
     folderQueryOptions.getMessages(folderId, {
       search: search === '' ? undefined : search,
-      unread: filterUnreadMessageList? true : undefined,
+      unread: filterUnread? true : undefined,
     }),
   )
   return {

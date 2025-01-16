@@ -1,5 +1,9 @@
 import { QueryClient } from '@tanstack/react-query';
-import { LoaderFunctionArgs, useNavigate } from 'react-router-dom';
+import {
+  LoaderFunctionArgs,
+  useNavigate,
+  useSearchParams,
+} from 'react-router-dom';
 import { MessageMetadata } from '~/models';
 import {
   folderQueryOptions,
@@ -9,7 +13,6 @@ import {
 } from '~/services';
 import { MessagePreview } from './message-preview';
 import {
-  IconAdd,
   IconEdit,
   IconFilter,
   IconReadMail,
@@ -24,24 +27,27 @@ import {
   SearchBar,
   ToolbarItem,
   useBreakpoint,
+  useEdificeClient,
   useEdificeTheme,
 } from '@edifice.io/react';
 import clsx from 'clsx';
-import { useEffect, useState } from 'react';
-import {
-  useAppActions,
-  useFilterUnreadMessageList,
-  useSelectedMessageIds,
-} from '~/store/actions';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useAppActions, useSelectedMessageIds } from '~/store/actions';
 import { useTranslation } from 'react-i18next';
 import { useSelectedFolder } from '~/hooks';
 import illuMessagerie from '@images/emptyscreen/illu-messagerie.svg';
 
 export const loader =
   (_queryClient: QueryClient) =>
-  async ({ params }: LoaderFunctionArgs) => {
-    const messagesQuery = folderQueryOptions.getMessages(params.folderId!);
-    const messages = await _queryClient.ensureQueryData(messagesQuery);
+  async ({ params, request }: LoaderFunctionArgs) => {
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get('search');
+    const unread = searchParams.get('unread');
+    const messagesQuery = folderQueryOptions.getMessages(params.folderId!, {
+      search: search && search !== '' ? search : undefined,
+      unread: unread === 'true' ? true : undefined,
+    });
+    const messages = await _queryClient.ensureInfiniteQueryData(messagesQuery);
     return { messages };
   };
 
@@ -50,22 +56,21 @@ export function Component() {
   const { theme } = useEdificeTheme();
   const navigate = useNavigate();
 
-  const { t } = useTranslation('conversation');
+  const { appCode } = useEdificeClient();
+  const { t } = useTranslation(appCode);
 
-  const [searchText, setSearchText] = useState('');
-  const {
-    setSearchMessageList,
-    setSelectedMessageIds,
-    setFilterUnreadMessageList,
-  } = useAppActions();
-  const selectedIds = useSelectedMessageIds();
-  const filterUnread = useFilterUnreadMessageList();
-  const markAsReadQuery = useMarkRead();
-  const markAsUnreadQuery = useMarkUnread();
-  const { md } = useBreakpoint();
   const filterEnum = {
     unread: 'UNREAD',
   };
+  const [searchText, setSearchText] = useState<string>('');
+  const filterRef = useRef<string[]>([]);
+
+  const { setSelectedMessageIds } = useAppActions();
+  const selectedIds = useSelectedMessageIds();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const markAsReadQuery = useMarkRead();
+  const markAsUnreadQuery = useMarkUnread();
+  const { md } = useBreakpoint();
 
   const {
     messages,
@@ -75,27 +80,40 @@ export function Component() {
     fetchNextPage,
   } = useFolderMessages(folderId!);
 
-  const handlerChangeSearchText = (
+  const setFilterUnread = (value: boolean) => {
+    filterRef.current = value
+      ? [...filterRef.current, filterEnum.unread]
+      : filterRef.current.filter((filter) => filter !== filterEnum.unread);
+  };
+
+  const handleSearchTextChange = (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const newText = event.target.value;
-    setSearchText(newText);
-
-    if (newText === '') {
-      setSearchMessageList(newText);
-    }
+    setSearchText(newText === '' ? '' : newText);
   };
 
-  const handleClickSearch = () => {
-    setSearchMessageList(searchText);
+  const handleSearchClick = () => {
+    updateSearchParams();
   };
 
-  const handleMarkAsRead = () => {
+  const handleMarkAsReadClick = () => {
     markAsReadQuery.mutate({ id: selectedIds });
   };
 
-  const handleMarkAsUnread = () => {
+  const handleMarkAsUnreadClick = () => {
     markAsUnreadQuery.mutate({ id: selectedIds });
+  };
+
+  const updateSearchParams = () => {
+    const params = new URLSearchParams();
+    if (searchText && searchText !== '') {
+      params.set('search', searchText);
+    }
+    if (filterRef.current.includes(filterEnum.unread)) {
+      params.set('unread', 'true');
+    }
+    setSearchParams(params, { replace: true });
   };
 
   const toolbar: ToolbarItem[] = [
@@ -109,9 +127,7 @@ export function Component() {
             <span>{t('tag.read')}</span>
           </>
         ),
-        onClick: () => {
-          handleMarkAsRead();
-        },
+        onClick: handleMarkAsReadClick,
         hidden: !selectedIds.length,
       },
     },
@@ -125,29 +141,27 @@ export function Component() {
             <span>{t('tag.unread')}</span>
           </>
         ),
-        onClick: () => {
-          handleMarkAsUnread();
-        },
+        onClick: handleMarkAsUnreadClick,
         hidden: !selectedIds.length,
       },
     },
   ];
 
-  const handleClickNavigate = (message: MessageMetadata) => {
+  const handleMessageClick = (message: MessageMetadata) => {
     navigate(message.id);
   };
 
-  const handleChangeFilter = (filter: string) => {
-    if (filter === filterEnum.unread) {
-      setFilterUnreadMessageList(!filterUnread);
-    }
+  const handleFilterChange = (filter: string | number) => {
+    setFilterUnread(!filterRef.current.includes(filter as string));
+    updateSearchParams();
   };
 
-  // Handle infite scroll
+  // Handle infinite scroll
   useEffect(() => {
     const handleScroll = () => {
       if (
-        isLoadingMessage || isLoadingNextPage ||
+        isLoadingMessage ||
+        isLoadingNextPage ||
         window.innerHeight + document.documentElement.scrollTop <
           document.documentElement.offsetHeight - 250
       ) {
@@ -160,29 +174,38 @@ export function Component() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isLoadingMessage, isLoadingNextPage, fetchNextPage, hasNextPage]);
 
+  useEffect(() => {
+    const search = searchParams.get('search');
+    if (search) {
+      setSearchText(search);
+    }
+    const unread = searchParams.get('unread');
+    setFilterUnread(!!unread);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
   return (
     <>
       <div className="d-flex gap-16 align-items-center justify-content-between px-16 px-md-24 py-16 border-bottom">
         <SearchBar
           placeholder="Search messages"
-          onChange={handlerChangeSearchText}
-          onClick={handleClickSearch}
+          onChange={handleSearchTextChange}
+          onClick={handleSearchClick}
           isVariant={false}
+          defaultValue={searchText}
         />
         {!theme?.is1d && (
           <Dropdown>
             <Dropdown.Trigger
               label={!md ? '' : t('filter')}
               size="sm"
-              variant='ghost'
+              variant="ghost"
               icon={<IconFilter />}
             />
             <Dropdown.Menu>
               <Dropdown.CheckboxItem
-                model={filterUnread ? [filterEnum.unread] : []}
-                onChange={(value) => {
-                  handleChangeFilter(value as string);
-                }}
+                model={filterRef.current}
+                onChange={handleFilterChange}
                 value={filterEnum.unread}
                 key={filterEnum.unread}
               >
@@ -193,10 +216,11 @@ export function Component() {
         )}
       </div>
       <List
-        data={messages?.length === 0 ? undefined : messages?.map((message) => ({ ...message, _id: message.id }))}
+        data={messages.map((message) => ({ ...message, _id: message.id }))
+        }
         items={toolbar}
         isCheckable={true}
-        onSelectedItems={(selectedIds) => setSelectedMessageIds(selectedIds)}
+        onSelectedItems={setSelectedMessageIds}
         className="ps-16 ps-md-24"
         renderNode={(message, checkbox, checked) => (
           <div
@@ -207,8 +231,7 @@ export function Component() {
                 'fw-bold bg-primary-200': message.unread,
               },
             )}
-            style={{ '--edifice-columns': 8 } as React.CSSProperties}
-            onClick={() => handleClickNavigate(message)}
+            onClick={() => handleMessageClick(message)}
             tabIndex={0}
             role="button"
             key={message.id}
@@ -225,7 +248,11 @@ export function Component() {
       )}
       {!isLoadingMessage && !messages?.length && (
         <div className="d-flex flex-column gap-24 align-items-center justify-content-center">
-          <EmptyScreen imageSrc={illuMessagerie} title={t('folder.empty.title')} text={t('folder.empty.text')}/>
+          <EmptyScreen
+            imageSrc={illuMessagerie}
+            title={t('folder.empty.title')}
+            text={t('folder.empty.text')}
+          />
           <div>
             <Button>
               <IconEdit />
