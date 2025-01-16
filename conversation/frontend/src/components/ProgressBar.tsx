@@ -2,7 +2,6 @@ import { clsx } from 'clsx';
 import './ProgressBar.css';
 
 type BarColor = 'info' | 'warning' | 'danger';
-type BarFill = 'plain' | 'stripes' | 'animated-stripes';
 
 export type ProgressBarProps = {
   /** Label to display. */
@@ -21,22 +20,24 @@ export type ProgressBarProps = {
      */
     overflow?: boolean;
   };
+  /** Invisible Label, for accessibility purposes. Default to the value of `label`.  */
+  ariaLabel?: string;
   /** Progress to display, in percent from 0 to 100. */
   progress: number;
   progressOptions?: {
     /** Keyword defining the color of the bar. */
     color?: BarColor;
-    /** Style of bar. */
-    fill?: BarFill;
   };
 };
 
 export function ProgressBar({
   label,
   labelOptions,
+  ariaLabel,
   progressOptions,
   ...props
 }: ProgressBarProps) {
+  // Ensure progress is between 0 and 100, inclusive.
   const progress = Math.min(100, Math.max(0, Math.round(props.progress)));
 
   let overflow = false;
@@ -44,13 +45,9 @@ export function ProgressBar({
     overflow = true;
   }
 
-  let color: BarColor = 'info',
-    fill: BarFill = 'plain';
+  let color: BarColor = 'info';
   if (progressOptions?.color) {
     color = progressOptions.color;
-  }
-  if (progressOptions?.fill) {
-    fill = progressOptions.fill;
   }
 
   const barClassName = clsx('progress-bar', {
@@ -58,8 +55,6 @@ export function ProgressBar({
     'bg-secondary-300': color === 'info',
     'bg-orange-300': color === 'warning',
     'bg-red-300': color === 'danger',
-    'progress-bar-striped': fill === 'stripes' || fill === 'animated-stripes',
-    'progress-bar-animated': fill === 'animated-stripes',
     'w-100': typeof labelOptions?.justify === 'string',
   });
 
@@ -67,8 +62,8 @@ export function ProgressBar({
     <div
       className="progress border"
       role="progressbar"
-      aria-label="Success example"
-      aria-valuenow={25}
+      aria-label={ariaLabel ?? label}
+      aria-valuenow={progress}
       aria-valuemin={0}
       aria-valuemax={100}
     >
@@ -76,7 +71,7 @@ export function ProgressBar({
         <div
           className={barClassName}
           style={{
-            background: `linear-gradient(to right, transparent ${progress}%, white ${100 - progress}%)`,
+            background: `linear-gradient(to right, transparent ${progress}%, white ${progress}%, white ${100 - progress}%)`,
           }}
         >
           <div

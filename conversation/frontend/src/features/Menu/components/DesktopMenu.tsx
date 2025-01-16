@@ -21,6 +21,7 @@ import {
   ProgressBarProps,
 } from '~/components';
 import { useTranslation } from 'react-i18next';
+import { useUsedSpace } from '~/hooks';
 
 type FolderTreeItem = TreeItem & { folder: Folder };
 
@@ -40,6 +41,8 @@ function buildTree(folders: Folder[]) {
       return item;
     });
 }
+/** Converts a value in bytes to mega-bytes (rounded) */
+const bytesToMegabytes = (bytes: number) => Math.round(bytes / (1024 * 1024));
 
 /** The navigation menu among folders, intended for desktop resolutions */
 export function DesktopMenu() {
@@ -50,12 +53,15 @@ export function DesktopMenu() {
   };
   const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
+  const { t: common_t } = useTranslation('common');
   const {
     counters,
     renderBadge,
     selectedSystemFolderId,
     selectedUserFolderId,
   } = useMenuData();
+
+  const { usage, quota } = useUsedSpace();
 
   if (!foldersTree || !actions) {
     return null;
@@ -64,13 +70,15 @@ export function DesktopMenu() {
   const userFolders = buildTree(foldersTree);
 
   const progressBarProps: ProgressBarProps = {
-    label: 'TODO',
-    progress: 45.8,
+    label:
+      quota > 0
+        ? `${bytesToMegabytes(usage)} / ${bytesToMegabytes(quota)} ${common_t('mb')}`
+        : '',
+    progress: quota > 0 ? (usage * 100) / quota : 0,
     labelOptions: {
       justify: 'end',
     },
     progressOptions: {
-      fill: 'animated-stripes',
       color: 'warning',
     },
   };

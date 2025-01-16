@@ -670,6 +670,7 @@
   "mediacentre": "Médiacentre",
   "max.file.size": "52428800",
   "maxicours": "Maxicours",
+  "mb": "Mo",
   "medialibrary.backtolist": "Retour à la liste",
   "medialibrary.compression.info": "Privilégiez des images qui pèsent moins de 500 ko pour éviter de ralentir le chargement des pages. Utilisez le curseur pour ajuster la taille de l'image.",
   "media.library.compression.max": "Fichier lourd",
