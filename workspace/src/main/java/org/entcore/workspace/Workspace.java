@@ -39,6 +39,8 @@ import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.security.WorkspaceResourcesProvider;
 import org.entcore.workspace.service.WorkspaceService;
 import org.entcore.workspace.service.impl.*;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import fr.wseduc.mongodb.MongoDb;
 import io.vertx.core.DeploymentOptions;
@@ -47,7 +49,7 @@ import io.vertx.core.http.HttpServerOptions;
 public class Workspace extends BaseServer {
 
 	public static final String REVISIONS_COLLECTION = "documentsRevisions";
-
+	private static final Logger log = LoggerFactory.getLogger(Workspace.class);
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
 		WorkspaceResourcesProvider resourceProvider = new WorkspaceResourcesProvider();
@@ -93,8 +95,11 @@ public class Workspace extends BaseServer {
 		/**
 		 * SearchEvent
 		 */
-		if (config.getBoolean("searching-event", true)) {
+		final boolean searchingEvent = config.getBoolean("searching-event", true);
+		if (searchingEvent) {
 			setSearchingEvents(new WorkspaceSearchingEvents(folderManagerWithQuota));
+		} else {
+			log.warn("Searching event is disabled for workspace");
 		}
 		/**
 		 * Controllers
@@ -106,6 +111,10 @@ public class Workspace extends BaseServer {
 		final PdfGenerator pdfGenerator = new PdfFactory(vertx, config).getPdfGenerator();
 		workspaceService.setAllowDuplicate(config.getBoolean("allowDuplicate", false));
 		WorkspaceController workspaceController = new WorkspaceController(storage, workspaceService, shareService,pdfGenerator, MongoDb.getInstance(), folderManagerWithQuota);
+		// disable full text search for workspace for performance reasons
+		if(!searchingEvent) {
+			workspaceController.setDisableFullTextSearch(true);
+		}
 		addController(workspaceController);
 		//
 
