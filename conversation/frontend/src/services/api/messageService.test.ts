@@ -13,12 +13,12 @@ describe('Conversation Message GET Methods', () => {
 
 describe('Conversation Message Mutation Methods', () => {
   test('makes a POST request to mark a message as read', async () => {
-    const response = await messageService.markRead('f43d3783');
+    const response = await messageService.toggleUnread('f43d3783', false);
     expect(response).toBeUndefined();
   });
 
   test('makes a POST request to mark two messages as unread', async () => {
-    const response = await messageService.markUnread(['f43d3783', '4d14920b']);
+    const response = await messageService.toggleUnread(['f43d3783', '4d14920b']);
     expect(response).toBeUndefined();
   });
 

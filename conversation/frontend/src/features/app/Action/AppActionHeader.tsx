@@ -9,20 +9,18 @@ import {
 } from '@edifice.io/react';
 import { useTranslation } from 'react-i18next';
 import { AppActionMenuOptions } from './AppActionMenuOptions';
-import { useAppActions } from '~/store/actions';
 
 export const AppActionHeader = () => {
   const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
   const { t: common_t } = useTranslation('common');
-  const { setOpenPrintModal } = useAppActions();
 
   const dropdownOptions: AppActionMenuOptions[] = [
     {
       id: 'print',
       label: t('print'),
       icon: <IconPrint />,
-      action: () => setOpenPrintModal(true),
+      action: () => {console.log(appCode)},
       visibility: true,
     },
   ];

@@ -39,19 +39,11 @@ export const createMessageService = (baseURL: string) => ({
     return odeServices.http().get<Message>(`${baseURL}/api/messages/${id}`);
   },
 
-  /** Set one or more messages as `read`. */
-  markRead(ids: string | string[]) {
-    return postThenVoid(`${baseURL}/conversation/toggleUnread`, {
+  /** Toggle one or more messages as `read` or `unread`. */
+  toggleUnread(ids: string | string[], unread = true) {
+    return postThenVoid(`${baseURL}/toggleUnread`, {
       id: asArray(ids),
-      unread: false,
-    });
-  },
-
-  /** Set one or more messages as `unread`. */
-  markUnread(ids: string | string[]) {
-    return postThenVoid(`${baseURL}/conversation/toggleUnread`, {
-      id: asArray(ids),
-      unread: true,
+      unread,
     });
   },
 

@@ -56,7 +56,7 @@ export function Component() {
           {md && <DesktopMenu />}
         </div>
 
-        <div className="align-self-md-stretch">
+        <div className="align-self-md-stretch flex-fill mx-n16 ms-md-0">
           <Outlet />
         </div>
       </div>
