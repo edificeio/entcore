@@ -4,14 +4,24 @@ import {
   IconSend,
   IconWrite,
 } from '@edifice.io/react/icons';
-import { Menu, SortableTree, TreeItem } from '@edifice.io/react';
+import {
+  Menu,
+  SortableTree,
+  TreeItem,
+  useEdificeClient,
+} from '@edifice.io/react';
 import { NOOP } from '@edifice.io/utilities';
 import { useNavigate, useRouteLoaderData } from 'react-router-dom';
 import { Folder } from '~/models';
 import { useMenuData } from '../hooks/useMenuData';
-import { t } from 'i18next';
 import './DesktopMenu.css';
-import { FolderActionDropDown } from '~/components';
+import {
+  FolderActionDropDown,
+  ProgressBar,
+  ProgressBarProps,
+} from '~/components';
+import { useTranslation } from 'react-i18next';
+import { useUsedSpace } from '~/hooks';
 
 type FolderTreeItem = TreeItem & { folder: Folder };
 
@@ -31,6 +41,8 @@ function buildTree(folders: Folder[]) {
       return item;
     });
 }
+/** Converts a value in bytes to mega-bytes (rounded) */
+const bytesToMegabytes = (bytes: number) => Math.round(bytes / (1024 * 1024));
 
 /** The navigation menu among folders, intended for desktop resolutions */
 export function DesktopMenu() {
@@ -39,6 +51,9 @@ export function DesktopMenu() {
     foldersTree: Folder[];
     actions: Record<string, boolean>;
   };
+  const { appCode } = useEdificeClient();
+  const { t } = useTranslation(appCode);
+  const { t: common_t } = useTranslation('common');
   const {
     counters,
     renderBadge,
@@ -46,11 +61,27 @@ export function DesktopMenu() {
     selectedUserFolderId,
   } = useMenuData();
 
+  const { usage, quota } = useUsedSpace();
+
   if (!foldersTree || !actions) {
     return null;
   }
 
   const userFolders = buildTree(foldersTree);
+
+  const progressBarProps: ProgressBarProps = {
+    label:
+      quota > 0
+        ? `${bytesToMegabytes(usage)} / ${bytesToMegabytes(quota)} ${common_t('mb')}`
+        : '',
+    progress: quota > 0 ? (usage * 100) / quota : 0,
+    labelOptions: {
+      justify: 'end',
+    },
+    progressOptions: {
+      color: 'warning',
+    },
+  };
 
   const navigateTo = (systemFolderId: string) => {
     navigate(`/${systemFolderId}`);
@@ -129,7 +160,10 @@ export function DesktopMenu() {
       <Menu.Item>
         <div className="w-100 border-bottom pt-8 mb-12"></div>
       </Menu.Item>
-      <Menu.Item>TODO Espace utilisé</Menu.Item>
+      <Menu.Item>
+        <b>{t('used.space')}</b>
+        <ProgressBar {...progressBarProps} />
+      </Menu.Item>
     </Menu>
   );
 }
