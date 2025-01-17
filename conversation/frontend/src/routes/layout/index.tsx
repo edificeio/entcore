@@ -12,7 +12,7 @@ import { DesktopMenu, MobileMenu } from '~/features';
 import { Folder } from '~/models';
 import { actionsQueryOptions, folderQueryOptions } from '~/services/queries';
 import './index.css';
-import { useFoldersActions } from '~/store';
+import { useAppActions } from '~/store';
 
 export const loader =
   (queryClient: QueryClient) =>
@@ -37,7 +37,7 @@ export function Component() {
   };
 
   const { md } = useBreakpoint();
-  const { setFoldersTree } = useFoldersActions();
+  const { setFoldersTree } = useAppActions();
 
   if (!foldersTree || !actions) {
     return null;

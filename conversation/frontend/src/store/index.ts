@@ -5,4 +5,4 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 export * from './rights';
-export * from './folders';
+export * from './actions';
