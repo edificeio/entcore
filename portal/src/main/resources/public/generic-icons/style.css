@@ -1,9 +1,9 @@
 @font-face {
   font-family: 'generic-icons';
   src:
-    url('fonts/generic-icons.ttf?r39qk1') format('truetype'),
-    url('fonts/generic-icons.woff?r39qk1') format('woff'),
-    url('fonts/generic-icons.svg?r39qk1#generic-icons') format('svg');
+    url('fonts/generic-icons.ttf?i4r2z7') format('truetype'),
+    url('fonts/generic-icons.woff?i4r2z7') format('woff'),
+    url('fonts/generic-icons.svg?i4r2z7#generic-icons') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -24,6 +24,9 @@ i {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.appointments:before {
+  content: "\e96a";
+}
 .wiki:before {
   content: "\e969";
 }
