@@ -31,7 +31,7 @@ import {
   useEdificeTheme,
 } from '@edifice.io/react';
 import clsx from 'clsx';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAppActions, useSelectedMessageIds } from '~/store/actions';
 import { useTranslation } from 'react-i18next';
 import { useSelectedFolder } from '~/hooks';
@@ -216,8 +216,7 @@ export function Component() {
         )}
       </div>
       <List
-        data={messages.map((message) => ({ ...message, _id: message.id }))
-        }
+        data={messages.map((message) => ({ ...message, _id: message.id }))}
         items={toolbar}
         isCheckable={true}
         onSelectedItems={setSelectedMessageIds}
