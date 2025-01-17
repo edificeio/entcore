@@ -486,3 +486,13 @@ i.visioconf-large {
     color: $purple;
   }
 }
+
+i.appointments,
+i.appointments-large,
+i.type.appointments {
+  @include fonticon;
+  &::before {
+    content: "\e96a";
+    color: $green;
+  }
+}
