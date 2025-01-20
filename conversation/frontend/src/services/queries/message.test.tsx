@@ -12,10 +12,10 @@ describe('Message Queries', () => {
     });
 
     const variables = { id: '1234' };
-    
+
     act(() => {
       result.current.mutate(variables);
-    } );
+    });
 
     await waitFor(() => {
       expect(result.current.isSuccess).toBe(true);

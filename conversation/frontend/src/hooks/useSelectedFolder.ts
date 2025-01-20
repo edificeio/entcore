@@ -1,5 +1,6 @@
-import { useParams, useRouteLoaderData } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Folder } from '~/models';
+import { useFoldersTree } from '~/store';
 
 /** Build a tree of TreeItems from Folders  */
 function recursiveSearch(
@@ -27,10 +28,7 @@ export function useSelectedFolder(): {
   folderId?: string;
   userFolder?: Folder;
 } {
-  // See `layout` loader
-  const { foldersTree } = useRouteLoaderData('layout') as {
-    foldersTree: Folder[];
-  };
+  const foldersTree = useFoldersTree();
   const { folderId } = useParams() as { folderId: string };
 
   if (!folderId) return {};
