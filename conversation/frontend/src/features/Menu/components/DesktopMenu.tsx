@@ -11,7 +11,7 @@ import {
   useEdificeClient,
 } from '@edifice.io/react';
 import { NOOP } from '@edifice.io/utilities';
-import { useNavigate, useRouteLoaderData } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Folder } from '~/models';
 import { useMenuData } from '../hooks/useMenuData';
 import './DesktopMenu.css';
@@ -22,6 +22,7 @@ import {
 } from '~/components';
 import { useTranslation } from 'react-i18next';
 import { useUsedSpace } from '~/hooks';
+import { useFoldersTree } from '~/store';
 
 type FolderTreeItem = TreeItem & { folder: Folder };
 
@@ -47,10 +48,7 @@ const bytesToMegabytes = (bytes: number) => Math.round(bytes / (1024 * 1024));
 /** The navigation menu among folders, intended for desktop resolutions */
 export function DesktopMenu() {
   const navigate = useNavigate();
-  const { foldersTree, actions } = useRouteLoaderData('layout') as {
-    foldersTree: Folder[];
-    actions: Record<string, boolean>;
-  };
+  const foldersTree = useFoldersTree();
   const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
   const { t: common_t } = useTranslation('common');
@@ -63,7 +61,7 @@ export function DesktopMenu() {
 
   const { usage, quota } = useUsedSpace();
 
-  if (!foldersTree || !actions) {
+  if (!foldersTree) {
     return null;
   }
 
