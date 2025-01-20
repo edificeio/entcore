@@ -62,8 +62,9 @@ export function Component() {
   const filterEnum = {
     unread: 'UNREAD',
   };
-  const [searchText, setSearchText] = useState<string>('');
+  const searchTextRef = useRef<string>();
   const filterRef = useRef<string[]>([]);
+  const [contentKey, setContentKey] = useState(0);
 
   const { setSelectedMessageIds } = useAppActions();
   const selectedIds = useSelectedMessageIds();
@@ -89,8 +90,10 @@ export function Component() {
   const handleSearchTextChange = (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    const newText = event.target.value;
-    setSearchText(newText === '' ? '' : newText);
+    searchTextRef.current = event.target.value;
+    if (searchTextRef.current === '') {
+      updateSearchParams();
+    }
   };
 
   const handleSearchClick = () => {
@@ -107,12 +110,18 @@ export function Component() {
 
   const updateSearchParams = () => {
     const params = new URLSearchParams();
-    if (searchText && searchText !== '') {
-      params.set('search', searchText);
+    if (searchTextRef.current && searchTextRef.current !== '') {
+      params.set('search', searchTextRef.current);
+    } else {
+      params.delete('search');
     }
     if (filterRef.current.includes(filterEnum.unread)) {
       params.set('unread', 'true');
+    } else {
+      params.delete('unread');
     }
+    setContentKey((prev) => prev + 1);
+    setSelectedMessageIds([]);
     setSearchParams(params, { replace: true });
   };
 
@@ -154,6 +163,7 @@ export function Component() {
   const handleFilterChange = (filter: string | number) => {
     setFilterUnread(!filterRef.current.includes(filter as string));
     updateSearchParams();
+    setSelectedMessageIds([]);
   };
 
   // Handle infinite scroll
@@ -177,7 +187,7 @@ export function Component() {
   useEffect(() => {
     const search = searchParams.get('search');
     if (search) {
-      setSearchText(search);
+      searchTextRef.current = search;
     }
     const unread = searchParams.get('unread');
     setFilterUnread(!!unread);
@@ -192,7 +202,7 @@ export function Component() {
           onChange={handleSearchTextChange}
           onClick={handleSearchClick}
           isVariant={false}
-          defaultValue={searchText}
+          defaultValue={searchTextRef.current}
         />
         {!theme?.is1d && (
           <Dropdown>
@@ -216,10 +226,10 @@ export function Component() {
         )}
       </div>
       <List
-        data={messages.map((message) => ({ ...message, _id: message.id }))
-        }
+        data={messages.map((message) => ({ ...message, _id: message.id }))}
         items={toolbar}
         isCheckable={true}
+        key={contentKey}
         onSelectedItems={setSelectedMessageIds}
         className="ps-16 ps-md-24"
         renderNode={(message, checkbox, checked) => (
