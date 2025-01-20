@@ -159,7 +159,8 @@ public class EventStoreController extends BaseController {
 			final boolean skipSynced =
 					("true".equals(request.params().get("skip-synced")) || !request.params().contains("skip-synced"));
 			final List<String> eventTypes = request.params().getAll("event-types");
-			eventStoreService.listEvents(type, epoch, duration, skipSynced, eventTypes, asyncArrayResponseHandler(request));
+			final boolean sorted = "true".equals(request.params().get("sorted"));
+			eventStoreService.listEvents(type, epoch, duration, skipSynced, eventTypes, sorted, asyncArrayResponseHandler(request));
 		} catch (RuntimeException e) {
 			badRequest(request, "invalid.input.format");
 		}
