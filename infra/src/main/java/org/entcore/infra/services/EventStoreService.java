@@ -43,7 +43,7 @@ public interface EventStoreService {
 
 	void storeCustomEvent(String baseEventType, JsonObject payload);
 
-	void listEvents(String eventStoreType, long startEpoch, long duration, boolean skipSynced, List<String> eventTypes, Handler<AsyncResult<JsonArray>> handler);
+	void listEvents(String eventStoreType, long startEpoch, long duration, boolean skipSynced, List<String> eventTypes, boolean sorted, Handler<AsyncResult<JsonArray>> handler);
 
 	void markSyncedEvents(String eventStoreType, long startEpoch, long duration, Handler<AsyncResult<JsonObject>> handler);
 
