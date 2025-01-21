@@ -49,14 +49,14 @@ export const createMessageService = (baseURL: string) => ({
 
   /** Restore one or more messages from trash bin. */
   restore(ids: string | string[]) {
-    return putThenVoid(`${baseURL}/conversation/restore`, {
+    return putThenVoid(`${baseURL}/restore`, {
       id: asArray(ids),
     });
   },
 
   /** Permanently delete one or more messages. */
   delete(ids: string | string[]) {
-    return putThenVoid(`${baseURL}/conversation/delete`, {
+    return putThenVoid(`${baseURL}/delete`, {
       id: asArray(ids),
     });
   },
@@ -115,7 +115,7 @@ export const createMessageService = (baseURL: string) => ({
       undelivered: [];
       /** IDs of inactive recipients. */
       inactive: string[];
-    }>(`${baseURL}/conversation/send?id=${draftId}`, payload);
+    }>(`${baseURL}/send?id=${draftId}`, payload);
   },
 
   createDraft(payload: {
@@ -125,9 +125,7 @@ export const createMessageService = (baseURL: string) => ({
     cc?: string[];
     cci?: string[];
   }) {
-    return odeServices
-      .http()
-      .post<{ id: string }>(`${baseURL}/conversation/draft`, payload);
+    return odeServices.http().post<{ id: string }>(`${baseURL}/draft`, payload);
   },
 
   updateDraft(
@@ -140,6 +138,6 @@ export const createMessageService = (baseURL: string) => ({
       cci?: string[];
     },
   ) {
-    return postThenVoid(`${baseURL}/conversation/draft/${draftId}`, payload);
+    return postThenVoid(`${baseURL}/draft/${draftId}`, payload);
   },
 });
