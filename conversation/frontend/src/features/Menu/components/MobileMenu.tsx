@@ -119,7 +119,7 @@ export function MobileMenu() {
   }
 
   function handleClickItem(item: FolderItem) {
-    navigate(`/${item.folder.id}`);
+    navigate(`/id/${item.folder.id}`);
   }
 
   return (

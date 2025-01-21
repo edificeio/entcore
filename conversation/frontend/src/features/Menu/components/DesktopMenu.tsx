@@ -82,7 +82,7 @@ export function DesktopMenu() {
   };
 
   const navigateTo = (systemFolderId: string) => {
-    navigate(`/${systemFolderId}`);
+    navigate(`/id/${systemFolderId}`);
   };
 
   // Render a user's folder, to be used in a SortableTree
