@@ -66,18 +66,19 @@ export function DesktopMenu() {
   }
 
   const userFolders = buildTree(foldersTree);
+  const progress = quota > 0 ? (usage * 100) / quota : 0;
 
   const progressBarProps: ProgressBarProps = {
     label:
       quota > 0
         ? `${bytesToMegabytes(usage)} / ${bytesToMegabytes(quota)} ${common_t('mb')}`
         : '',
-    progress: quota > 0 ? (usage * 100) / quota : 0,
+    progress: progress,
     labelOptions: {
       justify: 'end',
     },
     progressOptions: {
-      color: 'warning',
+      color: progress < 70 ? 'info' : progress < 90 ? 'warning' : 'danger',
     },
   };
 
