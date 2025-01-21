@@ -16,8 +16,8 @@ export const loader = async () => {
   const hashLocation = window.location.hash.substring(1);
 
   if (
-    pathLocation === '/' ||
     pathLocation === '/conversation' ||
+    pathLocation === '/conversation/' ||
     pathLocation === '/conversation/conversation'
   ) {
     // Redirect to inbox
