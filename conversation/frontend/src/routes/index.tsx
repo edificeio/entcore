@@ -21,7 +21,6 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
       /* Layout = route without a path */
       // Manages folders tree and occupied space.
       {
-        id: 'layout',
         async lazy() {
           const { Component, loader } = await import('~/routes/layout');
           return {
@@ -33,7 +32,7 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
         children: [
           // Display messages from selected folder.
           {
-            path: ':folderId',
+            path: 'id/:folderId',
             async lazy() {
               const { Component, loader } = await import(
                 '~/routes/pages/folder-display'
@@ -46,7 +45,7 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
           },
           // Displays selected message.
           {
-            path: ':folderId/:messageId',
+            path: 'id/:folderId/:messageId',
             async lazy() {
               const { Component, loader } = await import(
                 '~/routes/pages/message-display'
@@ -59,7 +58,7 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
           },
           // Displays a new blank message in edit mode.
           {
-            path: ':folderId/create',
+            path: 'id/:folderId/create',
             async lazy() {
               const { Component, loader } = await import(
                 '~/routes/pages/message-create'
@@ -81,7 +80,7 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
   },
 ];
 
-export const basename = import.meta.env.PROD ? '/conversation/conversation' : '/';
+export const basename = import.meta.env.PROD ? '/conversation' : '/';
 
 export const router = (queryClient: QueryClient) =>
   createBrowserRouter(routes(queryClient), {

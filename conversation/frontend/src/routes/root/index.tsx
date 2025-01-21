@@ -12,7 +12,17 @@ function redirectTo(redirectPath: string) {
 
 /** Check old format URL and redirect if needed */
 export const loader = async () => {
+  const pathLocation = window.location.pathname;
   const hashLocation = window.location.hash.substring(1);
+
+  if (
+    pathLocation === '/conversation' ||
+    pathLocation === '/conversation/conversation'
+  ) {
+    // Redirect to inbox
+    redirectTo(`/id/inbox`);
+    return;
+  }
 
   // Check if the URL is an old format (angular root with hash) and redirect to the new format
   if (hashLocation) {
@@ -24,10 +34,34 @@ export const loader = async () => {
       return;
     }
 
-    const isMessage = matchPath('/read-mail/:mailId', hashLocation);
-    if (isMessage) {
+    const isReadMessage = matchPath('/read-mail/:mailId', hashLocation);
+    if (isReadMessage) {
       // Redirect to the new format
-      const redirectPath = `/inbox/${isMessage.params.mailId}`;
+      const redirectPath = `/id/inbox/${isReadMessage.params.mailId}`;
+      redirectTo(redirectPath);
+      return;
+    }
+
+    const isWriteMessage = matchPath('/write-mail', hashLocation);
+    if (isWriteMessage) {
+      // Redirect to the new format
+      const redirectPath = `/id/draft`;
+      redirectTo(redirectPath);
+      return;
+    }
+
+    const isEditMessage = matchPath('/write-mail/:mailId', hashLocation);
+    if (isEditMessage) {
+      // Redirect to the new format
+      const redirectPath = `/id/draft/${isEditMessage.params.mailId}`;
+      redirectTo(redirectPath);
+      return;
+    }
+
+    const isPrintMessage = matchPath('/printMail/:mailId', hashLocation);
+    if (isPrintMessage) {
+      // Redirect to the new format
+      const redirectPath = `/print/${isPrintMessage.params.mailId}`;
       redirectTo(redirectPath);
       return;
     }
