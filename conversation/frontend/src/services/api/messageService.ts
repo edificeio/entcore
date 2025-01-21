@@ -76,14 +76,12 @@ export const createMessageService = (baseURL: string) => ({
     };
     switch (targetFolderId.toLowerCase()) {
       case 'trash':
-        return putThenVoid(`${baseURL}/conversation/trash`, payload);
+        return putThenVoid(`${baseURL}/trash`, payload);
       case 'inbox':
-        return putThenVoid(
-          `${baseURL}/conversation/move/root?id=${payload.id.join()}`,
-        );
+        return putThenVoid(`${baseURL}/move/root?id=${payload.id.join()}`);
       default:
         return putThenVoid(
-          `${baseURL}/conversation/move/userfolder/${targetFolderId}`,
+          `${baseURL}/move/userfolder/${targetFolderId}`,
           payload,
         );
     }

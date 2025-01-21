@@ -30,7 +30,7 @@ export const loader = async () => {
     const isFolder = matchPath('/:folderId', hashLocation);
     if (isFolder) {
       // Redirect to the new format
-      const redirectPath = `/${isFolder.params.folderId}`;
+      const redirectPath = `/id/${isFolder.params.folderId}`;
       redirectTo(redirectPath);
       return;
     }
