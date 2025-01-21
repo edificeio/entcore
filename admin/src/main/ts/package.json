@@ -1,6 +1,6 @@
 {
   "name": "admin-app",
-  "version": "6.1.0",
+  "version": "6.1.0-%branch%.%generateVersion%",
   "scripts": {
     "ng": "ng",
     "start": "ng serve --host 0.0.0.0",
@@ -33,9 +33,9 @@
     "font-awesome": "4.7.0",
     "jquery": "^3.4.1",
     "ngx-infinite-scroll": "14.0.1",
-    "ngx-ode-core": "4.7.1",
-    "ngx-ode-sijil": "4.7.1",
-    "ngx-ode-ui": "4.7.1",
+    "ngx-ode-core": "dev",
+    "ngx-ode-sijil": "dev",
+    "ngx-ode-ui": "dev",
     "ngx-trumbowyg": "^6.0.7",
     "noty": "2.4.1",
     "reflect-metadata": "0.1.10",
