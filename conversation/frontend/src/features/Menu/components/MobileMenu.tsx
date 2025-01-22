@@ -118,8 +118,8 @@ export function MobileMenu() {
     );
   }
 
-  function handleClickItem(item: FolderItem) {
-    navigate(`/${item.folder.id}`);
+  function handleClickItem(item: FolderItem, isUserFolder = false) {
+    navigate(`${isUserFolder ? '/folder/' : '/'}${item.folder.id}`);
   }
 
   return (
@@ -154,7 +154,7 @@ export function MobileMenu() {
         <Dropdown.MenuGroup label={t('user.folders')}>
           {menu.menuItems.map((item) => (
             <Dropdown.Item
-              onClick={() => handleClickItem(item)}
+              onClick={() => handleClickItem(item, true)}
               icon={<IconFolder />}
             >
               {renderFolderItem(item)}

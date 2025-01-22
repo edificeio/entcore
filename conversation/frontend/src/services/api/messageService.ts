@@ -49,14 +49,14 @@ export const createMessageService = (baseURL: string) => ({
 
   /** Restore one or more messages from trash bin. */
   restore(ids: string | string[]) {
-    return putThenVoid(`${baseURL}/conversation/restore`, {
+    return putThenVoid(`${baseURL}/restore`, {
       id: asArray(ids),
     });
   },
 
   /** Permanently delete one or more messages. */
   delete(ids: string | string[]) {
-    return putThenVoid(`${baseURL}/conversation/delete`, {
+    return putThenVoid(`${baseURL}/delete`, {
       id: asArray(ids),
     });
   },
@@ -76,14 +76,12 @@ export const createMessageService = (baseURL: string) => ({
     };
     switch (targetFolderId.toLowerCase()) {
       case 'trash':
-        return putThenVoid(`${baseURL}/conversation/trash`, payload);
+        return putThenVoid(`${baseURL}/trash`, payload);
       case 'inbox':
-        return putThenVoid(
-          `${baseURL}/conversation/move/root?id=${payload.id.join()}`,
-        );
+        return putThenVoid(`${baseURL}/move/root?id=${payload.id.join()}`);
       default:
         return putThenVoid(
-          `${baseURL}/conversation/move/userfolder/${targetFolderId}`,
+          `${baseURL}/move/userfolder/${targetFolderId}`,
           payload,
         );
     }
@@ -117,7 +115,7 @@ export const createMessageService = (baseURL: string) => ({
       undelivered: [];
       /** IDs of inactive recipients. */
       inactive: string[];
-    }>(`${baseURL}/conversation/send?id=${draftId}`, payload);
+    }>(`${baseURL}/send?id=${draftId}`, payload);
   },
 
   createDraft(payload: {
@@ -127,9 +125,7 @@ export const createMessageService = (baseURL: string) => ({
     cc?: string[];
     cci?: string[];
   }) {
-    return odeServices
-      .http()
-      .post<{ id: string }>(`${baseURL}/conversation/draft`, payload);
+    return odeServices.http().post<{ id: string }>(`${baseURL}/draft`, payload);
   },
 
   updateDraft(
@@ -142,6 +138,6 @@ export const createMessageService = (baseURL: string) => ({
       cci?: string[];
     },
   ) {
-    return postThenVoid(`${baseURL}/conversation/draft/${draftId}`, payload);
+    return postThenVoid(`${baseURL}/draft/${draftId}`, payload);
   },
 });
