@@ -139,24 +139,30 @@ public class ConversationController extends BaseController {
 		eventHelper.onAccess(request);
 	}
 
-	@Get("conversation")
+	@Get(value = "(?:[/]?(?:conversation|inbox|outbox|draft|trash))?", regex = true)
 	@SecuredAction("conversation.view")
-	@Cache(value = "/conversation/count/INBOX",useQueryParams = true,scope = CacheScope.USER, operation = CacheOperation.INVALIDATE)
+	@Cache(value = "/conversation/count/INBOX", useQueryParams = true, scope = CacheScope.USER, operation = CacheOperation.INVALIDATE)
 	public void view(HttpServerRequest request) {
 		renderViewWeb(request);
 	}
 
-	@Get("conversation/:folderId")
+	@Get("folder/:folderId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SystemOrUserFolderFilter.class)
 	public void viewFolder(HttpServerRequest request) {
 		renderViewWeb(request);
 	}
 
-	@Get("conversation/:folderId/:messageId")
+	@Get("folder/:folderId/message/:messageId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SystemOrUserFolderFilter.class)
 	public void viewMessage(HttpServerRequest request) {
+		renderViewWeb(request);
+	}
+
+	@Get("/print")
+	@SecuredAction(value = "conversation.print", type = ActionType.AUTHENTICATED)
+	public void print(final HttpServerRequest request) {
 		renderViewWeb(request);
 	}
 
@@ -1724,12 +1730,6 @@ public class ConversationController extends BaseController {
 			}
 		};
 		UserUtils.getUserInfos(eb, request, userInfosHandler);
-	}
-
-	@Get("/print")
-	@SecuredAction(value = "conversation.print", type = ActionType.AUTHENTICATED)
-	public void print(final HttpServerRequest request) {
-		renderView(request, null, "print.html", null);
 	}
 
 	@BusAddress("org.entcore.conversation")
