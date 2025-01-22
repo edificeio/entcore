@@ -135,21 +135,21 @@ public class ConversationController extends BaseController {
 		eventHelper.onAccess(request);
 	}
 
-	@Get(value = "(?:[/]?conversation)?", regex = true)
+	@Get(value = "(?:[/]?(?:conversation|inbox|outbox|draft|trash))?", regex = true)
 	@SecuredAction("conversation.view")
 	@Cache(value = "/conversation/count/INBOX", useQueryParams = true, scope = CacheScope.USER, operation = CacheOperation.INVALIDATE)
 	public void view(HttpServerRequest request) {
 		renderViewWeb(request);
 	}
 
-	@Get("id/:folderId")
+	@Get("folder/:folderId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SystemOrUserFolderFilter.class)
 	public void viewFolder(HttpServerRequest request) {
 		renderViewWeb(request);
 	}
 
-	@Get("id/:folderId/:messageId")
+	@Get("folder/:folderId/message/:messageId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SystemOrUserFolderFilter.class)
 	public void viewMessage(HttpServerRequest request) {
@@ -159,7 +159,7 @@ public class ConversationController extends BaseController {
 	@Get("/print")
 	@SecuredAction(value = "conversation.print", type = ActionType.AUTHENTICATED)
 	public void print(final HttpServerRequest request) {
-		renderView(request, null, "print.html", null);
+		renderViewWeb(request);
 	}
 
 	@Post("draft")

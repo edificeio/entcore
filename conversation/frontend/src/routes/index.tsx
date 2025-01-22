@@ -1,61 +1,45 @@
 import { QueryClient } from '@tanstack/react-query';
 import { Outlet, RouteObject, createBrowserRouter } from 'react-router-dom';
+import { manageRedirections } from '~/routes/redirections';
 
 import { NotFound } from './errors/not-found';
 import { PageError } from './errors/page-error';
 
 const routes = (_queryClient: QueryClient): RouteObject[] => [
-  // Manages redirections whatever the final routing.
   {
-    async lazy() {
-      const { loader } = await import('~/routes/root');
-      return {
-        loader,
-        element: <Outlet></Outlet>,
-      };
-    },
+    // Manage redirections before resolving to the final route.
+    loader: manageRedirections,
+    element: <Outlet></Outlet>,
     children: [
       /* Main route */
-      // Manages user's access rights and redirections.
       {
         path: '/',
         async lazy() {
-          const { loader, Root: Component } = await import('~/routes/root');
+          const { loader, Component } = await import('~/routes/root');
           return {
-            loader,
+            loader: loader(_queryClient),
             Component,
           };
         },
         errorElement: <PageError />,
+        /* Pages */
         children: [
-          /* Layout = route without a path */
-          // Manages folders tree and occupied space.
           {
+            // Display messages from /inbox, /outbox, /trash, /draft
+            path: ':folderId',
             async lazy() {
-              const { Component, loader } = await import('~/routes/layout');
+              const { Component, loader } = await import(
+                '~/routes/pages/folder-display'
+              );
               return {
                 loader: loader(_queryClient),
                 Component,
               };
             },
-            /* Pages */
             children: [
-              // Display messages from selected folder.
-              {
-                path: 'id/:folderId',
-                async lazy() {
-                  const { Component, loader } = await import(
-                    '~/routes/pages/folder-display'
-                  );
-                  return {
-                    loader: loader(_queryClient),
-                    Component,
-                  };
-                },
-              },
               // Displays selected message.
               {
-                path: 'id/:folderId/:messageId',
+                path: 'message/:messageId',
                 async lazy() {
                   const { Component, loader } = await import(
                     '~/routes/pages/message-display'
@@ -66,12 +50,27 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
                   };
                 },
               },
-              // Displays a new blank message in edit mode.
+            ],
+          },
+          {
+            // Display messages from /folder/anyUserFolderID
+            path: 'folder/:folderId',
+            async lazy() {
+              const { Component, loader } = await import(
+                '~/routes/pages/folder-display'
+              );
+              return {
+                loader: loader(_queryClient),
+                Component,
+              };
+            },
+            children: [
+              // Displays selected message.
               {
-                path: 'id/:folderId/create',
+                path: 'message/:messageId',
                 async lazy() {
                   const { Component, loader } = await import(
-                    '~/routes/pages/message-create'
+                    '~/routes/pages/message-display'
                   );
                   return {
                     loader: loader(_queryClient),
@@ -80,6 +79,18 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
                 },
               },
             ],
+          }, // Displays a new blank message in edit mode.
+          {
+            path: 'draft/create',
+            async lazy() {
+              const { Component, loader } = await import(
+                '~/routes/pages/message-create'
+              );
+              return {
+                loader: loader(_queryClient),
+                Component,
+              };
+            },
           },
         ],
       },

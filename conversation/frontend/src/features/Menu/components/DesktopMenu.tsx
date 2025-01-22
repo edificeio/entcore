@@ -81,8 +81,8 @@ export function DesktopMenu() {
     },
   };
 
-  const navigateTo = (systemFolderId: string) => {
-    navigate(`/id/${systemFolderId}`);
+  const navigateTo = (folderId: string, isUserFolder = false) => {
+    navigate((isUserFolder ? '/folder/' : '/') + folderId);
   };
 
   // Render a user's folder, to be used in a SortableTree
@@ -150,7 +150,7 @@ export function DesktopMenu() {
         <SortableTree
           nodes={userFolders}
           onSortable={NOOP}
-          onTreeItemClick={(folderId) => navigateTo(folderId)}
+          onTreeItemClick={(folderId) => navigateTo(folderId, true)}
           renderNode={renderUserFolder}
           selectedNodeId={selectedUserFolderId}
         />
