@@ -257,13 +257,13 @@ export const handlers = [
       return HttpResponse.json(mockCountOfMessagesInInbox, { status: 200 });
     }
   }),
-  http.post(`${baseUrl}/conversation/folder`, () => {
+  http.post(`${baseUrl}/folder`, () => {
     return HttpResponse.json({ id: 'folder_Z' }, { status: 201 });
   }),
-  http.put(`${baseUrl}/conversation/folder/:folderId`, () => {
+  http.put(`${baseUrl}/folder/:folderId`, () => {
     return HttpResponse.json({}, { status: 200 });
   }),
-  http.put(`${baseUrl}/conversation/folder/trash/:folderId`, () => {
+  http.put(`${baseUrl}/folder/trash/:folderId`, () => {
     return HttpResponse.json({}, { status: 200 });
   }),
   // Message service
@@ -292,7 +292,7 @@ export const handlers = [
     {
       id: string[];
     }
-  >(`${baseUrl}/conversation/restore`, async ({ request }) => {
+  >(`${baseUrl}/restore`, async ({ request }) => {
     const payload = await request.json();
     if (!payload || !Array.isArray(payload.id)) {
       return HttpResponse.text('Bad Request', { status: 400 });
@@ -304,20 +304,20 @@ export const handlers = [
     {
       id: string[];
     }
-  >(`${baseUrl}/conversation/delete`, async ({ request }) => {
+  >(`${baseUrl}/delete`, async ({ request }) => {
     const payload = await request.json();
     if (!payload || !Array.isArray(payload.id)) {
       return HttpResponse.text('Bad Request', { status: 400 });
     }
     return HttpResponse.text('', { status: 200 });
   }),
-  http.post(`${baseUrl}/conversation/draft`, () => {
+  http.post(`${baseUrl}/draft`, () => {
     return HttpResponse.json({ id: 'message_draft' }, { status: 201 });
   }),
-  http.post(`${baseUrl}/conversation/draft/:draftId`, () => {
+  http.post(`${baseUrl}/draft/:draftId`, () => {
     return HttpResponse.text('', { status: 200 });
   }),
-  http.post(`${baseUrl}/conversation/send`, async ({ request }) => {
+  http.post(`${baseUrl}/send`, async ({ request }) => {
     const url = new URL(request.url);
     const id = url.searchParams.get('id');
     const payload = await request.json();
