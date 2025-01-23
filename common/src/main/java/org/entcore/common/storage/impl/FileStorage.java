@@ -440,7 +440,17 @@ public class FileStorage implements Storage {
 				@Override
 				public void handle(AsyncResult<Void> event) {
 					if (event.succeeded()) {
-						copyFilePath(filename, path, handler);
+						copyFilePath(filename, path, copyHandlerResult -> {
+							if ("ok".equals(copyHandlerResult.getString("status"))) {
+								final JsonObject metadata = new JsonObject()
+										.put("filename", filename)
+										.put("content-type", FileUtils.getContentType(path))
+										.put("size", 0L); // prevent null pointer exception when unbox Long in long
+								sendFileMetadataForSecurityThreatsAnalysis(id, metadata);
+								scanFile(path);
+							}
+							handler.handle(copyHandlerResult);
+						});
 					} else {
 						handler.handle(new JsonObject().put("status", "error")
 								.put("message", event.cause().getMessage()));
