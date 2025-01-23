@@ -147,21 +147,25 @@ export function DesktopMenu() {
         <div className="w-100 border-bottom pt-8 mb-12"></div>
       </Menu.Item>
       <Menu.Item>
-        <b>{t('user.folders')}</b>
-        <SortableTree
-          nodes={userFolders}
-          onSortable={NOOP}
-          onTreeItemClick={(folderId) => navigateTo(folderId, true)}
-          renderNode={renderUserFolder}
-          selectedNodeId={selectedUserFolderId}
-        />
+        <div className="d-flex flex-column gap-8">
+          <b className="fs-6">{t('user.folders')}</b>
+          <SortableTree
+            nodes={userFolders}
+            onSortable={NOOP}
+            onTreeItemClick={(folderId) => navigateTo(folderId, true)}
+            renderNode={renderUserFolder}
+            selectedNodeId={selectedUserFolderId}
+          />
+        </div>
       </Menu.Item>
       <Menu.Item>
         <div className="w-100 border-bottom pt-8 mb-12"></div>
       </Menu.Item>
       <Menu.Item>
-        <b>{t('used.space')}</b>
-        <ProgressBar {...progressBarProps} />
+        <div className="d-flex flex-column gap-8">
+          <b className="fs-6">{t('used.space')}</b>
+          <ProgressBar {...progressBarProps} />
+        </div>
       </Menu.Item>
     </Menu>
   );
