@@ -3,6 +3,6 @@ CREATE TABLE conversation.originalmessages (
   "body" TEXT
 );
 
-CREATE INDEX idx_originalmessages ON conversation.originalmessages USING GIN ("id");
+CREATE INDEX idx_originalmessages ON conversation.originalmessages (id);
 
 ALTER TABLE conversation.messages ADD "contentVersion" INTEGER DEFAULT 0;
