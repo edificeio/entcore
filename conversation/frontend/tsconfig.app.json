@@ -24,7 +24,7 @@
     "paths": {
       "~/*": ["src/*"]
     },
-    "types": ["vite/client"]
+    "types": ["vite/client", "vitest/globals", "vitest/importMeta", "vitest"]
   },
   "include": ["src"]
 }
