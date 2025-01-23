@@ -297,4 +297,15 @@ public final class FileUtils {
 			}
 			r.fail("fileutils.encoding.guess.failed");
 		}, handler);
-	}}
+	}
+
+	public static String getContentType(String path) {
+		try {
+			final Path source = Paths.get(path);
+			return Files.probeContentType(source);
+		} catch (IOException e) {
+			return "";
+		}
+	}
+
+}
