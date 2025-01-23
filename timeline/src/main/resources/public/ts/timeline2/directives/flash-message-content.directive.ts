@@ -35,7 +35,13 @@ class Directive implements IDirective<Scope, JQLite, IAttributes, IController[]>
 		const parentCtrl = controllers[0] as FlashMsgController;
 		if (!parentCtrl || !scope.message) return;
 
-		let messageContent = (scope.message.contents[parentCtrl.currentLanguage] ?? '');
+		// get the content in the user's language or in french or in the first language available
+		let messageContent = scope.message.contents[parentCtrl.currentLanguage] 
+			?? scope.message.contents["fr"] 
+			?? Object.keys(scope.message.contents)
+				.map(key => scope.message.contents[key])
+				.filter(content => content !== null)[0] ?? '';
+		// replace empty lines from adminV1 editor
 		messageContent = messageContent.replaceAll(/(<div>[\s\u200B]*<\/div>){2,}/g, '<div>\u200B</div>'); // This code merges consecutive empty lines from adminV1 editor
 		messageContent = messageContent.replaceAll(/(<div>([\s\u200B]|<br\/?>)*<\/div>)$/g, ''); // This code remove last empty line from adminV1 editor
 		messageContent = messageContent.replaceAll(/(<p><br><\/p>)+/g, ''); // This code merges consecutive empty lines from adminV2 editor
