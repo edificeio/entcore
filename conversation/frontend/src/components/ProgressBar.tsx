@@ -52,7 +52,7 @@ export function ProgressBar({
 
   const barClassName = clsx('progress-bar', {
     'overflow-visible': overflow,
-    'bg-secondary-300': color === 'info',
+    'bg-blue-300': color === 'info',
     'bg-orange-300': color === 'warning',
     'bg-red-300': color === 'danger',
     'w-100': typeof labelOptions?.justify === 'string',
