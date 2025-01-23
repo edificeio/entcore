@@ -153,10 +153,9 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 		} catch(Exception e) {
 			isADMLOfOneStructure = false;
 		}
+		// we don't need to check if the message is in the user's language he has to see it
 		String query = "SELECT id, contents, color, \"customColor\", signature, \"signatureColor\" FROM " + resourceTable + " m " +
-			"WHERE contents -> '"+ lang +"' IS NOT NULL " +
-			"AND trim(contents ->> '"+ lang +"') <> '' " +
-			"AND (profiles ? '" + user.getType() + "' " +
+			"WHERE (profiles ? '" + user.getType() + "' " +
 				"OR (profiles ? 'AdminLocal' AND ("+
 				"(\"structureId\" IS NULL AND " + (isADMLOfOneStructure ? "TRUE" : "FALSE") + ") " +
 				"OR (\"structureId\" IN (" + myADMLStructuresId + ") " +
