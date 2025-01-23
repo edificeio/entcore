@@ -31,18 +31,19 @@ export const manageRedirections = async () => {
   const pathLocation = window.location.pathname;
   const hashLocation = window.location.hash.substring(1);
 
-  if (
-    pathLocation === '/conversation' ||
-    pathLocation === '/conversation/' ||
-    pathLocation === '/conversation/conversation'
-  ) {
-    // Redirect to inbox
-    redirectTo(asSubPath('inbox'));
-    return;
-  }
-
-  // Check if the URL is an old format (angular root with hash) and redirect to the new format
-  if (hashLocation) {
+  if (!hashLocation) {
+    // Check if the URL is an old route without a hash and then redirect to the inbox folder
+    if (
+      pathLocation === '/conversation' ||
+      pathLocation === '/conversation/' ||
+      pathLocation === '/conversation/conversation'
+    ) {
+      // Redirect to inbox
+      redirectTo(asSubPath('inbox'));
+      return;
+    }
+  } else {
+    // Check if the URL is an old format (angular root with hash) and redirect to the new format
     const isFolder = matchPath('/:folderId', hashLocation);
     if (isFolder?.params.folderId) {
       redirectTo(asSubPath(isFolder.params.folderId));
