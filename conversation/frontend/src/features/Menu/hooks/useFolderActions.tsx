@@ -1,19 +1,27 @@
 import { Folder } from '~/models';
+import { useAppActions } from '~/store';
 
-export function useFolderActions({ folder }: { folder: Folder }) {
-  const handleMove = () => {
-    alert(`move ${folder.name}`);
+export function useFolderActions() {
+  const { setOpenFolderModal } = useAppActions();
+
+  const handleCreate = () => {
+    setOpenFolderModal('create');
   };
 
-  const handleRename = () => {
-    alert(`rename ${folder.name}`);
+  const handleMove = (_folder: Folder) => {
+    setOpenFolderModal('move');
   };
 
-  const handleDelete = () => {
-    alert(`delete ${folder.name}`);
+  const handleRename = (_folder: Folder) => {
+    setOpenFolderModal('rename');
+  };
+
+  const handleDelete = (_folder: Folder) => {
+    setOpenFolderModal('delete');
   };
 
   return {
+    handleCreate,
     handleMove,
     handleRename,
     handleDelete,

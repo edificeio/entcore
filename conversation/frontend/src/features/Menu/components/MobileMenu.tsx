@@ -6,10 +6,13 @@ import {
   IconDelete,
   IconDepositeInbox,
   IconFolder,
+  IconPlus,
   IconSend,
   IconWrite,
 } from '@edifice.io/react/icons';
 import { useMenuData } from '../hooks/useMenuData';
+import { useFolderActions } from '../hooks/useFolderActions';
+import { useFoldersTree } from '~/store';
 
 type FolderItem = { name: string; folder: Folder };
 
@@ -79,18 +82,16 @@ function asFolderItem(
 /** The folder navigation menu, in mobile responsive mode. */
 export function MobileMenu() {
   const navigate = useNavigate();
-  const { foldersTree, actions } = useRouteLoaderData('layout') as {
-    foldersTree: Folder[];
-    actions: Record<string, boolean>;
-  };
+  const foldersTree = useFoldersTree();
   const {
     counters,
     renderBadge,
     selectedSystemFolderId,
     selectedUserFolderId,
   } = useMenuData();
+  const { handleCreate: handleNewFolderClick } = useFolderActions();
 
-  if (!foldersTree || !actions) {
+  if (!foldersTree) {
     return null;
   }
 
@@ -118,7 +119,7 @@ export function MobileMenu() {
     );
   }
 
-  function handleClickItem(item: FolderItem, isUserFolder = false) {
+  function handleItemClick(item: FolderItem, isUserFolder = false) {
     navigate(`${isUserFolder ? '/folder/' : '/'}${item.folder.id}`);
   }
 
@@ -127,25 +128,25 @@ export function MobileMenu() {
       <Dropdown.Trigger label={selectedItem?.name || selectedUserFolderId} />
       <Dropdown.Menu>
         <Dropdown.Item
-          onClick={() => handleClickItem(systemMenuItems.inbox)}
+          onClick={() => handleItemClick(systemMenuItems.inbox)}
           icon={<IconDepositeInbox />}
         >
           {renderFolderItem(systemMenuItems.inbox)}
         </Dropdown.Item>
         <Dropdown.Item
-          onClick={() => handleClickItem(systemMenuItems.outbox)}
+          onClick={() => handleItemClick(systemMenuItems.outbox)}
           icon={<IconSend />}
         >
           {renderFolderItem(systemMenuItems.outbox)}
         </Dropdown.Item>
         <Dropdown.Item
-          onClick={() => handleClickItem(systemMenuItems.draft)}
+          onClick={() => handleItemClick(systemMenuItems.draft)}
           icon={<IconWrite />}
         >
           {renderFolderItem(systemMenuItems.draft)}
         </Dropdown.Item>
         <Dropdown.Item
-          onClick={() => handleClickItem(systemMenuItems.trash)}
+          onClick={() => handleItemClick(systemMenuItems.trash)}
           icon={<IconDelete />}
         >
           {renderFolderItem(systemMenuItems.trash)}
@@ -154,12 +155,19 @@ export function MobileMenu() {
         <Dropdown.MenuGroup label={t('user.folders')}>
           {menu.menuItems.map((item) => (
             <Dropdown.Item
-              onClick={() => handleClickItem(item, true)}
+              onClick={() => handleItemClick(item, true)}
               icon={<IconFolder />}
             >
               {renderFolderItem(item)}
             </Dropdown.Item>
           ))}
+          <Dropdown.Item
+            className="text-secondary"
+            onClick={handleNewFolderClick}
+            icon={<IconPlus />}
+          >
+            {t('new.folder')}
+          </Dropdown.Item>
         </Dropdown.MenuGroup>
       </Dropdown.Menu>
     </Dropdown>

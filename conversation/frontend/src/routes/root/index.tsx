@@ -3,6 +3,7 @@ import {
   Breadcrumb,
   Layout,
   LoadingScreen,
+  Modal,
   useBreakpoint,
   useEdificeClient,
 } from '@edifice.io/react';
@@ -14,7 +15,9 @@ import { DesktopMenu, MobileMenu } from '~/features';
 import { Folder } from '~/models';
 import { actionsQueryOptions, folderQueryOptions } from '~/services/queries';
 import './index.css';
-import { useAppActions } from '~/store';
+import { useAppActions, useOpenFolderModal } from '~/store';
+import { Suspense } from 'react';
+import { useTranslation } from 'react-i18next';
 
 export const loader =
   (queryClient: QueryClient) =>
@@ -34,7 +37,8 @@ export const loader =
   };
 
 export function Component() {
-  const { init, currentApp } = useEdificeClient();
+  const { init, currentApp, appCode } = useEdificeClient();
+  const { t } = useTranslation(appCode);
 
   const { foldersTree, actions } = useLoaderData() as {
     foldersTree: Folder[];
@@ -42,7 +46,10 @@ export function Component() {
   };
 
   const { md } = useBreakpoint();
-  const { setFoldersTree } = useAppActions();
+  const { setFoldersTree, setOpenFolderModal } = useAppActions();
+  const folderModal = useOpenFolderModal();
+
+  const handleCloseFolderModal = () => setOpenFolderModal(null);
 
   if (!init || !currentApp) return <LoadingScreen position={false} />;
 
@@ -72,6 +79,22 @@ export function Component() {
           <Outlet />
         </div>
       </div>
+
+      <Suspense>
+        {folderModal === 'create' && (
+          <Modal
+            id="modalFolderCreate"
+            isOpen={true}
+            onModalClose={handleCloseFolderModal}
+          >
+            <Modal.Header onModalClose={handleCloseFolderModal}>
+              {t('create.folder')}
+            </Modal.Header>
+            <Modal.Body>Tagada</Modal.Body>
+            <Modal.Footer>Tsouin tsouin</Modal.Footer>
+          </Modal>
+        )}
+      </Suspense>
     </Layout>
   );
 }
