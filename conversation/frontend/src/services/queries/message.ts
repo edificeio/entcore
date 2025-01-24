@@ -1,11 +1,13 @@
 import {
+  InfiniteData,
   queryOptions,
   useMutation,
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
 import { folderQueryOptions, messageService } from '..';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
+import { Message } from '~/models';
 
 /**
  * Message Query Options Factory.
@@ -42,21 +44,56 @@ export const useMessage = (messageId: string) => {
  */
 const useToggleUnread = (unread: boolean) => {
   const { folderId } = useParams() as { folderId: string };
+  const [searchParams] = useSearchParams();
+  const search = searchParams.get('search');
+  const unreadFilter = searchParams.get('unread');
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: ({ id }: { id: string | string[] }) =>
       messageService.toggleUnread(id, unread),
     onSuccess: (_data, { id }) => {
       const messageIds = typeof id === 'string' ? [id] : id;
-      return Promise.all([
-        ...messageIds.map((messageId) => {
-          queryClient.invalidateQueries(messageQueryOptions.getById(messageId));
-        }),
-        queryClient.invalidateQueries({queryKey: [
-          ...folderQueryOptions.base,
+      queryClient.setQueryData(
+        [
+          'folder',
           folderId,
-        ]}),
-      ]);
+          'count',
+          folderId !== 'trash' ? { unread: true } : null,
+        ],
+        ({ count }: { count: number }) => {
+          if (count !== undefined) {
+            return {
+              count: count + (unread ? messageIds.length : -messageIds.length),
+            };
+          }
+          return { count: unread ? messageIds.length : 0 };
+        },
+      );
+      queryClient.setQueryData(
+        folderQueryOptions.getMessagesQuerykey(folderId, {
+          search: search === '' ? undefined : search || undefined,
+          unread: !unreadFilter ? undefined : true,
+        }),
+        (data: InfiniteData<Message>) => {
+          data.pages.forEach((page: any) => {
+            page.forEach((message: any) => {
+              if (messageIds.includes(message.id)) {
+                message.unread = unread;
+              }
+            });
+          });
+          return data;
+        },
+      );
+      messageIds.map((messageId) => {
+        queryClient.setQueryData(
+          messageQueryOptions.getById(messageId).queryKey,
+          (message: Message | undefined) => {
+            return message ? { ...message, unread } : undefined;
+          },
+        );
+      });
     },
   });
 };
