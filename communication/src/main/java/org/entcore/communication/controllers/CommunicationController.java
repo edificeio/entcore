@@ -898,7 +898,7 @@ public class CommunicationController extends BaseController {
 					}
 					//*/
 
-					communicationService.searchVisibleContacts(userInfos, query, I18n.acceptLanguage(request), res -> {
+					communicationService.searchVisibleContactsLight(userInfos, query, I18n.acceptLanguage(request), res -> {
 						if (res.isRight()) {
 							renderJson(request, res.right().getValue());
 						} else {

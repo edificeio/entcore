@@ -1658,6 +1658,122 @@ public class DefaultCommunicationService implements CommunicationService {
 
 
 	@Override
+	public void searchVisibleContactsLight(UserInfos user, String search, String language, Handler<Either<String, JsonArray>> handler) {
+		String match = "MATCH (visibles) " +
+
+			"OPTIONAL MATCH visibles-[:RELATED]->(parent: User) " +
+			"WITH DISTINCT visibles, collect({id: parent.id, displayName: parent.displayName}) as relatives " +
+
+			"OPTIONAL MATCH visibles<-[:RELATED]-(child: User) " +
+			"WITH visibles, relatives, child " +
+			"ORDER BY child.displayName " +
+			"WITH visibles, relatives, collect({id: child.id, displayName: child.displayName}) AS children, collect(distinct child.displayName) AS sorted_children " +
+			"WITH visibles, relatives, children, reduce(s = '', name IN sorted_children | s + name) AS sorted_children_names ";
+
+		String preFilter = "";
+		JsonObject params = new JsonObject();
+
+		if (!StringUtils.isEmpty(search)) {
+			preFilter = "AND m.displayNameSearchField CONTAINS {search} ";
+			String sanitizedSearch = StringValidation.sanitize(search);
+			params.put("search", sanitizedSearch);
+		}
+
+		final String customReturn = match +
+			"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
+			"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
+			"HEAD(visibles.profiles) as profile, visibles.nbUsers as nbUsers, " +
+			"labels(visibles) as groupType, visibles.filter as groupProfile, visibles.subType as subType, " +
+			"filter(x IN coalesce(children, []) WHERE x.id IS NOT NULL) as children, " +
+			"filter(x IN coalesce(relatives, []) WHERE x.id IS NOT NULL) as relatives, " +
+			"sorted_children_names, " +
+			"CASE " +
+			"WHEN visibles.displayName IS NOT NULL THEN visibles.displayName " +
+			"WHEN visibles.name IS NOT NULL THEN visibles.name " +
+			"ELSE '' " +
+			"END as sortDisplayName " +
+			"ORDER BY " +
+			"toLower(sortDisplayName) ";
+
+		Promise<Either<String, JsonArray>> getVisiblePromise = Promise.promise();
+		visibleUsers(
+			user.getUserId(),
+			null,
+			null,
+			true,
+			true,
+			false,
+			preFilter,
+			customReturn,
+			params,
+			user.getType(),
+			true,
+			getVisiblePromise::complete);
+
+		// Share bookmarks
+		final Promise<Either<String, JsonArray>> getShareBookmarksPromise = Promise.promise();
+
+					/*
+					final String queryShareBookmarks = "MATCH (:User {id:{userId}})-[:HAS_SB]->(bm:ShareBookmark) return bm";
+					Neo4j.getInstance()
+							.execute(
+									queryShareBookmarks,
+									new JsonObject().put("userId", userInfos.getUserId()),
+									fullNodeMergeHandler("bm", getShareBookmarksPromise::complete)
+							);
+					 */
+
+		String sbFilter = "";
+		JsonObject sbParams = new JsonObject().put("userId", user.getUserId());
+		if (!StringUtils.isEmpty(search)) {
+			sbFilter = " AND lower(sbValue[0]) contains {search} ";
+			sbParams.put("search", StringValidation.sanitize(search));
+		}
+		String queryShareBookmarks = "MATCH (:User {id: {userId}})-[:HAS_SB]->(sb:ShareBookmark) " +
+			"WITH sb, keys(sb) AS ids " +
+			"UNWIND ids AS id " +
+			"WITH sb, id, sb[id] AS sbValue " +
+			"WHERE size(sbValue) >= 2 " + sbFilter +
+			"WITH sb, id, sb[id] AS sbValue ORDER BY sbValue[0] " +
+			"RETURN id as id, sbValue[0] as displayName ";
+
+		Neo4j.getInstance().execute(queryShareBookmarks, sbParams, validResultHandler(getShareBookmarksPromise::complete));
+
+		CompositeFuture.join(getVisiblePromise.future(), getShareBookmarksPromise.future())
+			.onComplete(ar -> {
+
+				if (ar.failed()) {
+					handler.handle(new Either.Left<>(ar.cause().getMessage()));
+				}
+
+				final Either<String, JsonArray> resVisible = getVisiblePromise.future().result();
+				final Either<String, JsonArray> resShareBookmark = getShareBookmarksPromise.future().result();
+
+				if (resVisible.isLeft()) {
+					log.error(resVisible.left().getValue());
+				}
+
+				if (resShareBookmark.isLeft()) {
+					log.error(resShareBookmark.left().getValue());
+				}
+
+				JsonArray visible = resVisible.isLeft() ? new JsonArray() : resVisible.right().getValue();
+				JsonArray shareBookmarks = resShareBookmark.isLeft() ? new JsonArray() : resShareBookmark.right().getValue();
+
+				handler.handle(new Either.Right<>(
+					UserUtils.mapObjectToContact(
+						user.getType(),
+						shareBookmarks,
+						visible,
+						language
+					)
+				));
+			});
+
+	}
+
+
+	@Override
 	public void searchVisibleContactsOptimized(UserInfos user, String search, String language, Handler<Either<String, JsonArray>> handler) {
 		String match = "MATCH (visibles) " +
 			"WITH visibles, HEAD(visibles.profiles) AS primaryProfile " +

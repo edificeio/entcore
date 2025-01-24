@@ -171,6 +171,8 @@ public interface CommunicationService {
 	
 	void searchVisibleContacts(UserInfos user, String search, String language, Handler<Either<String, JsonArray>> results);
 
-	void searchVisibleContactsOptimized(UserInfos user, String search, String language, Handler<Either<String, JsonArray>> results);
+  void searchVisibleContactsLight(UserInfos user, String search, String language, Handler<Either<String, JsonArray>> handler);
+
+  void searchVisibleContactsOptimized(UserInfos user, String search, String language, Handler<Either<String, JsonArray>> results);
 }
 
