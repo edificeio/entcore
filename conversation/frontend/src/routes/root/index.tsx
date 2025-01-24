@@ -3,7 +3,6 @@ import {
   Breadcrumb,
   Layout,
   LoadingScreen,
-  Modal,
   useBreakpoint,
   useEdificeClient,
 } from '@edifice.io/react';
@@ -14,10 +13,9 @@ import { AppActionHeader } from '~/features/app/Action/AppActionHeader';
 import { DesktopMenu, MobileMenu } from '~/features';
 import { Folder } from '~/models';
 import { actionsQueryOptions, folderQueryOptions } from '~/services/queries';
+import { CreateFolderModal } from '~/features';
 import './index.css';
-import { useAppActions, useOpenFolderModal } from '~/store';
-import { Suspense } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useAppActions } from '~/store';
 
 export const loader =
   (queryClient: QueryClient) =>
@@ -37,8 +35,7 @@ export const loader =
   };
 
 export function Component() {
-  const { init, currentApp, appCode } = useEdificeClient();
-  const { t } = useTranslation(appCode);
+  const { init, currentApp } = useEdificeClient();
 
   const { foldersTree, actions } = useLoaderData() as {
     foldersTree: Folder[];
@@ -46,10 +43,7 @@ export function Component() {
   };
 
   const { md } = useBreakpoint();
-  const { setFoldersTree, setOpenFolderModal } = useAppActions();
-  const folderModal = useOpenFolderModal();
-
-  const handleCloseFolderModal = () => setOpenFolderModal(null);
+  const { setFoldersTree } = useAppActions();
 
   if (!init || !currentApp) return <LoadingScreen position={false} />;
 
@@ -80,21 +74,7 @@ export function Component() {
         </div>
       </div>
 
-      <Suspense>
-        {folderModal === 'create' && (
-          <Modal
-            id="modalFolderCreate"
-            isOpen={true}
-            onModalClose={handleCloseFolderModal}
-          >
-            <Modal.Header onModalClose={handleCloseFolderModal}>
-              {t('create.folder')}
-            </Modal.Header>
-            <Modal.Body>Tagada</Modal.Body>
-            <Modal.Footer>Tsouin tsouin</Modal.Footer>
-          </Modal>
-        )}
-      </Suspense>
+      <CreateFolderModal />
     </Layout>
   );
 }
