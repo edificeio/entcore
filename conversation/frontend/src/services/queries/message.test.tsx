@@ -32,10 +32,10 @@ describe('Message Queries', () => {
     const messageServiceSpy = vi.spyOn(messageService, 'toggleUnread');
 
     const variables = { id: ['1234', '15619'] };
-    
+
     act(() => {
       result.current.mutate(variables);
-    } );
+    });
 
     await waitFor(() => {
       expect(messageServiceSpy).toHaveBeenCalledWith(variables.id, true);

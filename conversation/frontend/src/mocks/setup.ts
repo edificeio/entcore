@@ -3,7 +3,7 @@
  */
 
 import '@testing-library/jest-dom';
-import {  RenderOptions, render} from '@testing-library/react';
+import { RenderOptions, render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactElement } from 'react';
 import { afterAll, afterEach, beforeAll } from 'vitest';
@@ -29,10 +29,20 @@ const user = userEvent.setup();
 
 export const wrapper = MockedProviders;
 
-const customRender = (ui: ReactElement, options?: Omit<RenderOptions, 'wrapper'>) => {
+const customRender = (
+  ui: ReactElement,
+  options?: Omit<RenderOptions & { path: string }, 'wrapper'>,
+) => {
   return {
     user,
-    ...render(ui, { wrapper, ...options }),
+    ...render(ui, {
+      wrapper: ({ children }: { children: React.ReactNode }) =>
+        wrapper({
+          initialEntries: options?.path ? [options.path] : undefined,
+          children,
+        }),
+      ...options,
+    }),
   };
 };
 

@@ -1,9 +1,6 @@
 import { HttpResponse, http } from 'msw';
 import { baseUrl } from '~/services';
-import {
-  mockFullMessage,
-  mockSentMessage,
-} from '..';
+import { mockFullMessage, mockSentMessage } from '..';
 
 /**
  * MSW Handlers

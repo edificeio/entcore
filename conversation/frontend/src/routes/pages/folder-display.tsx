@@ -1,12 +1,8 @@
 import { QueryClient } from '@tanstack/react-query';
-import {
-  LoaderFunctionArgs,
-} from 'react-router-dom';
+import { LoaderFunctionArgs } from 'react-router-dom';
 import { FolderHeader } from '~/features/Folder/folder-header';
 import { FolderList } from '~/features/Folder/folder-list';
-import {
-  folderQueryOptions,
-} from '~/services';
+import { folderQueryOptions } from '~/services';
 
 export const loader =
   (queryClient: QueryClient) =>

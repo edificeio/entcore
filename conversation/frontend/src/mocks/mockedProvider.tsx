@@ -1,6 +1,4 @@
-import {
-  EdificeClientProvider,
-} from '@edifice.io/react';
+import { EdificeClientProvider } from '@edifice.io/react';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router-dom';
@@ -22,9 +20,9 @@ export const MockedProviders = ({
           app: 'conversation',
         }}
       >
-          <MemoryRouter initialEntries={initialEntries || ['']}>
-            {children}
-          </MemoryRouter>
+        <MemoryRouter initialEntries={initialEntries || ['']}>
+          {children}
+        </MemoryRouter>
       </EdificeClientProvider>
     </QueryClientProvider>
   );

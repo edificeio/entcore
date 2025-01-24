@@ -15,17 +15,11 @@ import illuMessagerie from '@images/emptyscreen/illu-messagerie.svg';
 import clsx from 'clsx';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  useNavigate,
-} from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { MessagePreview } from '~/features/Message/message-preview';
 import { useSelectedFolder } from '~/hooks';
 import { MessageMetadata } from '~/models';
-import {
-  useFolderMessages,
-  useMarkRead,
-  useMarkUnread,
-} from '~/services';
+import { useFolderMessages, useMarkRead, useMarkUnread } from '~/services';
 import { useAppActions, useSelectedMessageIds } from '~/store/actions';
 
 export function FolderList() {
@@ -140,7 +134,7 @@ export function FolderList() {
             </div>
           )}
         />
-          )}
+      )}
       {isLoadingMessage && (
         <Loading isLoading={true} className="justify-content-center my-12" />
       )}

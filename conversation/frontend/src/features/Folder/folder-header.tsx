@@ -82,8 +82,7 @@ export function FolderHeader() {
         data-testid="search-bar"
       />
       {!theme?.is1d && (
-        <Dropdown
-        data-testid="filter-dropdown">
+        <Dropdown data-testid="filter-dropdown">
           <Dropdown.Trigger
             label={!md ? '' : t('filter')}
             size="sm"
