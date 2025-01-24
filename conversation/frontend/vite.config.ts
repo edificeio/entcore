@@ -40,7 +40,7 @@ export default ({ mode }: { mode: string }) => {
       };
 
   return defineConfig({
-    base: mode === 'production' ? '/conversation/conversation' : '',
+    base: mode === 'production' ? '/conversation' : '',
     root: __dirname,
     cacheDir: './node_modules/.vite/conversation',
 

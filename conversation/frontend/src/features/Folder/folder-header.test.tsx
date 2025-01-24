@@ -1,6 +1,13 @@
-import { fireEvent, render, screen } from '~/mocks/setup';
+import {
+  fireEvent,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+  wrapper,
+} from '~/mocks/setup';
 import { FolderHeader } from './folder-header';
-import { folderService } from '~/services';
+import { useFolderMessages } from '~/services';
 
 /**
  * Mock window.matchMedia used in useBreakpoint hook
@@ -38,27 +45,43 @@ describe('Folder header component', () => {
     expect(baseElement).toBeTruthy();
   });
 
-  it('should handle search input change and click', async () => {
-    const folderServiceSpy = vi.spyOn(folderService, 'getMessages');
+  it('should not change searchparams when search input change', async () => {
+    const setSearchParamsSpy = vi.spyOn(URLSearchParams.prototype, 'set');
 
     render(<FolderHeader />);
     const searchInput = await screen.findByTestId('search-bar');
     fireEvent.change(searchInput, { target: { value: 'test' } });
-    expect(folderServiceSpy).not.toHaveBeenCalled();
+
+    expect(setSearchParamsSpy).not.toHaveBeenCalled();
   });
 
-  it('should display filter dropdown', async () => {
+  it('should change searchparams when search input change and click', async () => {
+    const setSearchParamsSpy = vi.spyOn(URLSearchParams.prototype, 'set');
+
+    render(<FolderHeader />);
+
+    const searchInput = await screen.findByTestId('search-bar');
+    fireEvent.change(searchInput, { target: { value: 'test' } });
+    const searchButton = await screen.findByLabelText('search');
+    fireEvent.click(searchButton);
+
+    expect(setSearchParamsSpy).toHaveBeenCalled();
+  });
+
+  it('should display filter dropdown with 2D theme', async () => {
     mocks.useEdificeTheme.mockReturnValue({ theme: { is1d: false } });
 
     render(<FolderHeader />);
+
     const searchInput = await screen.findByText('filter');
     expect(searchInput).toBeInTheDocument();
   });
 
-  it('should not display filter dropdown', async () => {
+  it('should not display filter dropdown with 1D theme', async () => {
     mocks.useEdificeTheme.mockReturnValue({ theme: { is1d: true } });
 
     render(<FolderHeader />);
+
     const searchInput = await screen.queryByText('filter');
     expect(searchInput).not.toBeInTheDocument();
   });

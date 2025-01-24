@@ -30,6 +30,16 @@ export function FolderHeader() {
     [searchParams],
   );
 
+  useEffect(() => {
+    const srch = searchParams.get('search');
+    if (srch) {
+      setSearchText(srch);
+    } else {
+      setSearchText('');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleSearchTextChange = (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
@@ -61,20 +71,10 @@ export function FolderHeader() {
     setSearchParams(searchParams, { replace: true });
   }, [searchParams, setSearchParams, setSelectedMessageIds]);
 
-  useEffect(() => {
-    const srch = searchParams.get('search');
-    if (srch) {
-      setSearchText(srch);
-    } else {
-      setSearchText('');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   return (
     <div className="d-flex gap-16 align-items-center justify-content-between px-16 px-md-24 py-16 border-bottom">
       <SearchBar
-        placeholder="Search messages"
+        placeholder={t('search.placeholder')}
         onChange={handleSearchTextChange}
         onClick={handleSearchClick}
         isVariant={false}

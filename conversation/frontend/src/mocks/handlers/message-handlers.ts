@@ -33,7 +33,7 @@ export const messageHandlers = [
     {
       id: string[];
     }
-  >(`${baseUrl}/conversation/restore`, async ({ request }) => {
+  >(`${baseUrl}/restore`, async ({ request }) => {
     console.log('trash test');
     const payload = await request.json();
     if (!payload || !Array.isArray(payload.id)) {
@@ -46,7 +46,7 @@ export const messageHandlers = [
     {
       id: string[];
     }
-  >(`${baseUrl}/conversation/trash`, async ({ request }) => {
+  >(`${baseUrl}/trash`, async ({ request }) => {
     const payload = await request.json();
     if (!payload || !Array.isArray(payload.id)) {
       return HttpResponse.text('Bad Request', { status: 400 });
@@ -58,20 +58,20 @@ export const messageHandlers = [
     {
       id: string[];
     }
-  >(`${baseUrl}/conversation/delete`, async ({ request }) => {
+  >(`${baseUrl}/delete`, async ({ request }) => {
     const payload = await request.json();
     if (!payload || !Array.isArray(payload.id)) {
       return HttpResponse.text('Bad Request', { status: 400 });
     }
     return HttpResponse.text('', { status: 200 });
   }),
-  http.post(`${baseUrl}/conversation/draft`, () => {
+  http.post(`${baseUrl}/draft`, () => {
     return HttpResponse.json({ id: 'message_draft' }, { status: 201 });
   }),
-  http.post(`${baseUrl}/conversation/draft/:draftId`, () => {
+  http.post(`${baseUrl}/draft/:draftId`, () => {
     return HttpResponse.text('', { status: 200 });
   }),
-  http.post(`${baseUrl}/conversation/send`, async ({ request }) => {
+  http.post(`${baseUrl}/send`, async ({ request }) => {
     const url = new URL(request.url);
     const id = url.searchParams.get('id');
     const payload = await request.json();

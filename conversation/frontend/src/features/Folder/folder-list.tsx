@@ -33,7 +33,6 @@ export function FolderList() {
   const selectedIds = useSelectedMessageIds();
   const markAsReadQuery = useMarkRead();
   const markAsUnreadQuery = useMarkUnread();
-
   const {
     messages,
     isPending: isLoadingMessage,
@@ -42,12 +41,34 @@ export function FolderList() {
     fetchNextPage,
   } = useFolderMessages(folderId!);
 
+  // Handle infinite scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (
+        isLoadingMessage ||
+        isLoadingNextPage ||
+        window.innerHeight + document.documentElement.scrollTop <
+          document.documentElement.offsetHeight - 250
+      ) {
+        return;
+      }
+      fetchNextPage();
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [isLoadingMessage, isLoadingNextPage, fetchNextPage, hasNextPage]);
+
   const handleMarkAsReadClick = () => {
     markAsReadQuery.mutate({ id: selectedIds });
   };
 
   const handleMarkAsUnreadClick = () => {
     markAsUnreadQuery.mutate({ id: selectedIds });
+  };
+
+  const handleMessageClick = (message: MessageMetadata) => {
+    navigate(message.id);
   };
 
   const toolbar: ToolbarItem[] = [
@@ -80,29 +101,6 @@ export function FolderList() {
       },
     },
   ];
-
-  const handleMessageClick = (message: MessageMetadata) => {
-    navigate(message.id);
-  };
-
-  // Handle infinite scroll
-  useEffect(() => {
-    const handleScroll = () => {
-      if (
-        isLoadingMessage ||
-        isLoadingNextPage ||
-        window.innerHeight + document.documentElement.scrollTop <
-          document.documentElement.offsetHeight - 250
-      ) {
-        return;
-      }
-      fetchNextPage();
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isLoadingMessage, isLoadingNextPage, fetchNextPage, hasNextPage]);
-
   return (
     <>
       {!!messages?.length && (
