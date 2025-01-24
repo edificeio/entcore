@@ -27,20 +27,24 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
           {
             // Display messages from /inbox, /outbox, /trash, /draft
             path: ':folderId',
-            async lazy() {
-              const { Component, loader } = await import(
-                '~/routes/pages/folder-display'
-              );
-              return {
-                loader: loader(_queryClient),
-                Component,
-              };
-            },
             children: [
+              {
+                path: '',
+                async lazy() {
+                  const { Component, loader } = await import(
+                    '~/routes/pages/folder-display'
+                  );
+                  return {
+                    loader: loader(_queryClient),
+                    Component,
+                  };
+                },
+              },
               // Displays selected message.
               {
                 path: 'message/:messageId',
                 async lazy() {
+                  console.log('messageId');
                   const { Component, loader } = await import(
                     '~/routes/pages/message-display'
                   );
@@ -55,16 +59,19 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
           {
             // Display messages from /folder/anyUserFolderID
             path: 'folder/:folderId',
-            async lazy() {
-              const { Component, loader } = await import(
-                '~/routes/pages/folder-display'
-              );
-              return {
-                loader: loader(_queryClient),
-                Component,
-              };
-            },
             children: [
+              {
+                path: '',
+                async lazy() {
+                  const { Component, loader } = await import(
+                    '~/routes/pages/folder-display'
+                  );
+                  return {
+                    loader: loader(_queryClient),
+                    Component,
+                  };
+                },
+              },
               // Displays selected message.
               {
                 path: 'message/:messageId',

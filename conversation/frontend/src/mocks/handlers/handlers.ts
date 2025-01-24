@@ -1,27 +1,11 @@
 import { HttpResponse, http } from 'msw';
-import { baseUrl } from '~/services';
-import {
-  mockCountOfMessagesInInbox,
-  mockFolderTree,
-  mockFullMessage,
-  mockMessagesOfInbox,
-  mockSentMessage,
-} from '.';
+import { folderHandlers } from './folder-handlers';
+import { messageHandlers } from './message-handlers';
 
 /**
  * DO NOT MODIFY
  */
 const defaultHandlers = [
-  http.get('/conversation/conf/public', () => {
-    return HttpResponse.json({
-      ID_SERVICE: {
-        default: 2,
-      },
-      LIBELLE_SERVICE: {
-        default: 'PRODUCTION_COLLABORATIVE',
-      },
-    });
-  }),
   http.get('/userbook/preference/apps', () => {
     return HttpResponse.json({
       preference: '{"bookmarks":[],"applications":["FakeApp"]}',
@@ -250,94 +234,7 @@ const defaultHandlers = [
 export const handlers = [
   ...defaultHandlers,
   // Folder service
-  http.get(`${baseUrl}/api/folders`, () => {
-    return HttpResponse.json(mockFolderTree, { status: 200 });
-  }),
-  http.get(`${baseUrl}/api/folders/:folderId/messages`, ({ params }) => {
-    if (params['folderId'] != 'inbox') {
-      return HttpResponse.text('Unexpected error', { status: 500 });
-    } else {
-      return HttpResponse.json(mockMessagesOfInbox, { status: 200 });
-    }
-  }),
-  http.get(`${baseUrl}/count/:folderId`, ({ params }) => {
-    if (params['folderId'] != 'inbox') {
-      return HttpResponse.text('Unexpected error', { status: 500 });
-    } else {
-      return HttpResponse.json(mockCountOfMessagesInInbox, { status: 200 });
-    }
-  }),
-  http.post(`${baseUrl}/folder`, () => {
-    return HttpResponse.json({ id: 'folder_Z' }, { status: 201 });
-  }),
-  http.put(`${baseUrl}/folder/:folderId`, () => {
-    return HttpResponse.json({}, { status: 200 });
-  }),
-  http.put(`${baseUrl}/folder/trash/:folderId`, () => {
-    return HttpResponse.json({}, { status: 200 });
-  }),
+  ...folderHandlers,
   // Message service
-  http.get(`${baseUrl}/api/messages/:messageId`, () => {
-    return HttpResponse.json(mockFullMessage, { status: 200 });
-  }),
-  http.post<
-    object,
-    {
-      id: string[];
-      unread: boolean;
-    }
-  >(`${baseUrl}/toggleUnread`, async ({ request }) => {
-    const payload = await request.json();
-    if (
-      !payload ||
-      !Array.isArray(payload.id) ||
-      typeof payload.unread !== 'boolean'
-    ) {
-      return HttpResponse.text('Bad Request', { status: 400 });
-    }
-    return HttpResponse.text('', { status: 200 });
-  }),
-  http.put<
-    object,
-    {
-      id: string[];
-    }
-  >(`${baseUrl}/restore`, async ({ request }) => {
-    const payload = await request.json();
-    if (!payload || !Array.isArray(payload.id)) {
-      return HttpResponse.text('Bad Request', { status: 400 });
-    }
-    return HttpResponse.text('', { status: 200 });
-  }),
-  http.put<
-    object,
-    {
-      id: string[];
-    }
-  >(`${baseUrl}/delete`, async ({ request }) => {
-    const payload = await request.json();
-    if (!payload || !Array.isArray(payload.id)) {
-      return HttpResponse.text('Bad Request', { status: 400 });
-    }
-    return HttpResponse.text('', { status: 200 });
-  }),
-  http.post(`${baseUrl}/draft`, () => {
-    return HttpResponse.json({ id: 'message_draft' }, { status: 201 });
-  }),
-  http.post(`${baseUrl}/draft/:draftId`, () => {
-    return HttpResponse.text('', { status: 200 });
-  }),
-  http.post(`${baseUrl}/send`, async ({ request }) => {
-    const url = new URL(request.url);
-    const id = url.searchParams.get('id');
-    const payload = await request.json();
-    if (!id) {
-      return HttpResponse.text('Bad Request', {
-        status: 400,
-      });
-    }
-    return HttpResponse.json(Object.assign({ id }, mockSentMessage, payload), {
-      status: 200,
-    });
-  }),
+  ...messageHandlers,
 ];

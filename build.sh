@@ -156,6 +156,10 @@ buildFrontend () {
       else 
         ./build.sh clean init build
       fi
+      if [ $? -ne 0 ]; then
+        echo "Error while building React frontend for module $module"
+        exit 1
+      fi
 
       # Create directory structure and copy frontend build files to backend
       rm -rf ../backend/src/main/resources/public/*.js
