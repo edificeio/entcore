@@ -12,7 +12,7 @@ import { Folder } from '~/models';
 
 export function FolderActionDropDown({ folder }: { folder: Folder }) {
   const { t: common_t } = useTranslation('common');
-  const { handleMove, handleRename, handleDelete } = useFolderHandlers();
+  const { handleMove, handleRename, handleTrash } = useFolderHandlers();
 
   const options = [
     {
@@ -28,7 +28,7 @@ export function FolderActionDropDown({ folder }: { folder: Folder }) {
     {
       label: common_t('delete'),
       icon: <IconDelete />,
-      action: handleDelete,
+      action: handleTrash,
     },
   ];
 
