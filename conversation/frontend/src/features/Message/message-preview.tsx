@@ -13,7 +13,7 @@ export function MessagePreview({ message }: MessagePreviewProps) {
   const { fromNow } = useDate();
 
   return (
-    <div className="d-flex gap-12 align-items-center flex-fill overflow-hidden">
+    <div className="d-flex gap-12 align-items-center flex-fill overflow-hidden fs-14">
       <Avatar
         alt={t('author.avatar')}
         size="sm"
@@ -25,9 +25,18 @@ export function MessagePreview({ message }: MessagePreviewProps) {
           <div className="text-truncate flex-fill">
             {message.from.displayName}
           </div>
-          <div className="fw-bold text-nowrap">{fromNow(message.date)}</div>
+          <div className="fw-bold text-nowrap fs-12 gray-800">
+            {fromNow(message.date)}
+          </div>
         </div>
-        <div className="text-truncate flex-fill">{message.subject}</div>
+        {message.subject && (
+          <div className="text-truncate flex-fill">{message.subject}</div>
+        )}
+        {!message.subject && (
+          <div className="text-truncate flex-fill gray-800">
+            {t('nosubject')}
+          </div>
+        )}
       </div>
     </div>
   );

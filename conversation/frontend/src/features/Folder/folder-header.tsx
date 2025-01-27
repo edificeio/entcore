@@ -52,7 +52,7 @@ export function FolderHeader() {
   };
 
   const handleSearchClick = () => {
-    if (searchText && searchText !== '') {
+    if (searchText && searchText !== '' && searchText.length > 2) {
       searchParams.set('search', searchText);
     } else {
       searchParams.delete('search');
