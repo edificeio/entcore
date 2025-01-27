@@ -18,7 +18,7 @@ export class UserDetailsResolver implements Resolve<UserModel | Error> {
         let removedUser = structure &&
             structure.removedUsers.data.find(u => u.id === route.params.userId);
 
-        if (user && !removedUser) {
+        if ((user && !removedUser) || (user && removedUser)) {
             return this.spinner.perform('portal-content', user.userDetails.sync()
                 .catch((err) => {
                     this.router.navigate(['/admin', structure.id, 'users', 'list'], {replaceUrl: false});
