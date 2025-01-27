@@ -1,5 +1,4 @@
-import { useTranslation } from 'react-i18next';
-import { useAppActions, useFoldersTree, useOpenFolderModal } from '~/store';
+import { useAppActions, useOpenFolderModal } from '~/store';
 import {
   Button,
   Checkbox,
@@ -9,46 +8,44 @@ import {
   Modal,
   OptionsType,
   Select,
-  useEdificeClient,
 } from '@edifice.io/react';
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
+import { useFolderActions, useI18n } from '~/hooks';
 
 export function CreateFolderModal() {
-  const { appCode } = useEdificeClient();
-  const { t } = useTranslation(appCode);
-  const { t: t_common } = useTranslation('common');
-  const foldersTree = useFoldersTree();
+  const { t, common_t } = useI18n();
   const { setOpenFolderModal } = useAppActions();
+  const { createFolder } = useFolderActions();
   const folderModal = useOpenFolderModal();
-
+  const { foldersTree } = useFolderActions();
   const [checked, setChecked] = useState(false);
-  const [folderOptions, setFolderOptions] = useState<OptionsType[]>([]);
   const [subFolderId, setSubfolderId] = useState<string | undefined>(undefined);
+  const refInputName = useRef<HTMLInputElement>(null);
 
-  // Used to regenerate folders options, and reset the Select component
-  const computeFolderOptions = useCallback(
-    () =>
-      foldersTree.map((f) => ({
-        label: f.name,
-        value: f.id,
-      })),
-    [foldersTree],
-  );
+  const handleCreateClick = useCallback(() => {
+    const created = createFolder(
+      refInputName.current?.value,
+      checked ? subFolderId : undefined,
+    );
+    if (created === false) {
+      refInputName.current?.focus();
+    }
+  }, [checked, createFolder, subFolderId]);
 
   const handleSubfolderCheckChange = useCallback(() => {
     const newValue = !checked;
     setChecked(newValue);
-    if (newValue === false) {
-      setFolderOptions([]);
-    } else {
-      setFolderOptions(computeFolderOptions());
-    }
-  }, [checked, computeFolderOptions]);
+  }, [checked]);
 
   const handleCloseFolderModal = () => setOpenFolderModal(null);
+
   const handleOptionChange = (option: OptionsType | string) =>
     setSubfolderId(typeof option === 'object' ? option.value : option);
-  const handleCreateClick = () => true;
+
+  const folderOptions = foldersTree.map((f) => ({
+    label: f.name,
+    value: f.id,
+  }));
 
   return (
     <>
@@ -64,12 +61,14 @@ export function CreateFolderModal() {
           </Modal.Header>
 
           <Modal.Body>
-            <FormControl id="modalFolderNewName">
+            <FormControl id="modalFolderNewName" isRequired={true}>
               <Label>{t('folder.new.name.label')}</Label>
               <Input
+                ref={refInputName}
                 placeholder={t('folder.new.name.placeholder')}
                 size="md"
                 type="text"
+                maxLength={50}
               />
             </FormControl>
             <div className="mt-24"></div>
@@ -97,7 +96,7 @@ export function CreateFolderModal() {
               variant="ghost"
               onClick={handleCloseFolderModal}
             >
-              {t_common('cancel')}
+              {common_t('cancel')}
             </Button>
             <Button
               type="button"
@@ -105,7 +104,7 @@ export function CreateFolderModal() {
               variant="filled"
               onClick={handleCreateClick}
             >
-              {t_common('create')}
+              {common_t('create')}
             </Button>
           </Modal.Footer>
         </Modal>

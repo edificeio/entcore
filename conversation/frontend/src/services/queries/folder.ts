@@ -169,7 +169,7 @@ export const useMessagesCount = (
 export const useCreateFolder = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (payload: { name: string; parentID?: string }) =>
+    mutationFn: (payload: { name: string; parentId?: string }) =>
       folderService.create(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({
