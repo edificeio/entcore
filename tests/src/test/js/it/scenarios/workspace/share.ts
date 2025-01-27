@@ -25,7 +25,15 @@ import {
   initStructure,
   getRandomUser,
   getRandomUserWithProfile,
-  Session
+  Session,
+  createUser,
+  ShareBookMarkCreationRequest,
+  createUserAndGetData,
+  createShareBookMarkOrFail,
+  getProfileGroupOfStructure,
+  getProfileGroupOfStructureByType,
+  removeCommunicationBetweenGroups,
+  getGuestRole
 } from "../../../node_modules/edifice-k6-commons/dist/index.js";
 
 const aafImport = (__ENV.AAF_IMPORT || "true") === "true";
@@ -115,6 +123,7 @@ export default (data) => {
   testSharesViaBroadcastGroupInSameSchool(data)
   testSharesViaBroadcastGroupInDifferentSchools(data)
   testSharesViaProfileGroupInDifferentSchools(data)
+  testSharesViaFavouritesWithUsersWhoBecameInvisible(data)
 };
 
 
@@ -333,5 +342,78 @@ function testSharesViaBroadcastGroupInSameSchool(data) {
     authenticateWeb(thirdStudent.login, 'password')
     res = shareFile(fileId, shares)
     checkShareKo(res, 'non manager cannot remove shares')
+  })
+}
+
+/**
+ * Checks that if a user tries to share a resource via a sharebookmark then the share operation shares
+ * the resource only to visible users, meaning that all the users of the sharebookmark who lost
+ * visibility do not prevent the share AND do not raise an error.
+ * 
+ * Steps :
+ * - Create 2 users, one teacher (whose visibility will remain) and one guest (who will lose visibility)
+ * - ADMC makes guests visible to teachers
+ * - With another teacher, create a share bookmark with the previous 2 users
+ * - ADMC removes guests visibility by teachers
+ * - The teacher shares a document with his bookmark
+ * 
+ * Checks :
+ * - The teacher of the share bookmark is in the shares
+ * - The guest is absent from the shares 
+ */
+function testSharesViaFavouritesWithUsersWhoBecameInvisible(data) {
+  const { structure1 } = data;
+  describe('[Workspace] Test shares via favourites and invisible users', () => {
+    let res;
+    const admcSession = authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+    const users1 = getUsersOfSchool(structure1);
+    const teacher1 = getRandomUserWithProfile(users1, 'Teacher');
+    const newGuest = createUserAndGetData({
+      firstName: 'New',
+      lastName: 'Guest',
+      type: 'Guest',
+      structureId: structure1.id,
+      birthDate: '1986-12-29',
+      positionIds: []
+    })
+    const newTeacher = createUserAndGetData({
+      firstName: 'New',
+      lastName: 'Teacher',
+      type: 'Teacher',
+      structureId: structure1.id,
+      birthDate: '1986-12-29',
+      positionIds: []
+    })
+    console.log("Structure 1 - ", structure1.id)
+    console.log("Teacher 1 - ", teacher1.login);
+    console.log("Teacher 2 - ", newTeacher.login);
+    console.log("Guest - ", newGuest.login);
+    // Allow teachers to see guests
+    const guestProfileGroup = getGuestRole(structure1);
+    const teacherProfileGroup = getTeacherRole(structure1);
+    res = addCommunicationBetweenGroups(teacherProfileGroup.id, guestProfileGroup.id)
+    // Teacher creates a bookmark....
+    const teacherSession = authenticateWeb(teacher1.login, 'password');
+    const sbmCreationRequest: ShareBookMarkCreationRequest = {
+      name: "Favori " + Date.now(),
+      members: [newGuest.id, newTeacher.id]
+    }
+    const shareBookMark = createShareBookMarkOrFail(sbmCreationRequest)
+    // Now ADMC removes the visibility of guests by teachers
+    switchSession(admcSession);
+    removeCommunicationBetweenGroups(teacherProfileGroup.id, guestProfileGroup.id)
+    // The teacher uploads document....
+    switchSession(teacherSession)
+    const uploadedFile = uploadFile(fileToUpload);
+    // ... shares it with her bookmark
+    const fileId = uploadedFile._id;
+    // Share this file to parents 2 as a manager -> ok
+    const shares = {bookmarks: {}, groups: {}, users: {}}
+    shares.bookmarks[shareBookMark.id] = WS_READER_SHARE
+    res = shareFile(fileId, shares);
+    checkShareOk(res, 'user can share document to share bookmark')
+    res = getShares(fileId)
+    checkPresentShares(res, "users", [newTeacher.id], "user of sharebookmark who is still visible appears in shares")
+    checkAbsentShares(res, "users", [newGuest.id], "user of sharebookmark who is now invisible does not appear in shares")
   })
 }
