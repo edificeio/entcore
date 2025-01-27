@@ -1,4 +1,4 @@
-import { useAppActions, useOpenFolderModal } from '~/store';
+import { useAppActions } from '~/store';
 import {
   Button,
   Checkbox,
@@ -16,7 +16,6 @@ export function CreateFolderModal() {
   const { t, common_t } = useI18n();
   const { setOpenFolderModal } = useAppActions();
   const { createFolder, isActionPending } = useFolderActions();
-  const folderModal = useOpenFolderModal();
   const { foldersTree } = useFolderActions();
   const [checked, setChecked] = useState(false);
   const [subFolderId, setSubfolderId] = useState<string | undefined>(undefined);
@@ -53,68 +52,68 @@ export function CreateFolderModal() {
   }));
 
   return (
-    <>
-      {folderModal === 'create' && (
-        <Modal
-          size="sm"
-          id="modalFolderNew"
-          isOpen={true}
-          onModalClose={handleCloseFolderModal}
+    <Modal
+      size="sm"
+      id="modalFolderNew"
+      isOpen={true}
+      onModalClose={handleCloseFolderModal}
+    >
+      <Modal.Header onModalClose={handleCloseFolderModal}>
+        {t('folder.new.title')}
+      </Modal.Header>
+
+      <Modal.Body>
+        <FormControl id="modalFolderNewName" isRequired={true}>
+          <Label>{t('folder.new.name.label')}</Label>
+          <Input
+            ref={refInputName}
+            placeholder={t('folder.new.name.placeholder')}
+            size="md"
+            type="text"
+            maxLength={50}
+            data-testid="inputNewName"
+          />
+        </FormControl>
+        <div className="mt-24"></div>
+        <Checkbox
+          checked={checked}
+          label={t('folder.new.subfolder.label')}
+          onChange={handleSubfolderCheckChange}
+          data-testid="checkParentFolder"
+        />
+        <div className="mt-8"></div>
+        <Select
+          disabled={!checked}
+          size="md"
+          placeholderOption={t('folder.new.subfolder.placeholder')}
+          overflow={true}
+          block={true}
+          options={folderOptions}
+          onValueChange={handleOptionChange}
+          data-testid="selectParentFolder"
+        />
+      </Modal.Body>
+
+      <Modal.Footer>
+        <Button
+          type="button"
+          color="tertiary"
+          variant="ghost"
+          onClick={handleCloseFolderModal}
         >
-          <Modal.Header onModalClose={handleCloseFolderModal}>
-            {t('folder.new.title')}
-          </Modal.Header>
-
-          <Modal.Body>
-            <FormControl id="modalFolderNewName" isRequired={true}>
-              <Label>{t('folder.new.name.label')}</Label>
-              <Input
-                ref={refInputName}
-                placeholder={t('folder.new.name.placeholder')}
-                size="md"
-                type="text"
-                maxLength={50}
-              />
-            </FormControl>
-            <div className="mt-24"></div>
-            <Checkbox
-              checked={checked}
-              label={t('folder.new.subfolder.label')}
-              onChange={handleSubfolderCheckChange}
-            />
-            <div className="mt-8"></div>
-            <Select
-              disabled={!checked}
-              size="md"
-              placeholderOption={t('folder.new.subfolder.placeholder')}
-              overflow={true}
-              block={true}
-              options={folderOptions}
-              onValueChange={handleOptionChange}
-            />
-          </Modal.Body>
-
-          <Modal.Footer>
-            <Button
-              type="button"
-              color="tertiary"
-              variant="ghost"
-              onClick={handleCloseFolderModal}
-            >
-              {common_t('cancel')}
-            </Button>
-            <Button
-              type="button"
-              color="primary"
-              variant="filled"
-              onClick={handleCreateClick}
-              disabled={isActionPending === true}
-            >
-              {common_t('create')}
-            </Button>
-          </Modal.Footer>
-        </Modal>
-      )}
-    </>
+          {common_t('cancel')}
+        </Button>
+        <Button
+          type="button"
+          color="primary"
+          variant="filled"
+          onClick={handleCreateClick}
+          isLoading={isActionPending === true}
+          disabled={isActionPending === true}
+        >
+          {common_t('create')}
+        </Button>
+      </Modal.Footer>
+    </Modal>
   );
 }

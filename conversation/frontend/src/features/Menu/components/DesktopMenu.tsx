@@ -25,7 +25,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useUsedSpace } from '~/hooks';
 import { useFoldersTree } from '~/store';
-import { useFolderActions } from '../hooks/useFolderActions';
+import { useFolderHandlers } from '../hooks/useFolderHandlers';
 
 type FolderTreeItem = TreeItem & { folder: Folder };
 
@@ -64,7 +64,7 @@ export function DesktopMenu() {
 
   const { usage, quota } = useUsedSpace();
 
-  const { handleCreate: handleNewFolderClick } = useFolderActions();
+  const { handleCreate: handleNewFolderClick } = useFolderHandlers();
 
   if (!foldersTree) {
     return null;

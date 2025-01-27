@@ -11,7 +11,7 @@ import {
   IconWrite,
 } from '@edifice.io/react/icons';
 import { useMenuData } from '../hooks/useMenuData';
-import { useFolderActions } from '../hooks/useFolderActions';
+import { useFolderHandlers } from '../hooks/useFolderHandlers';
 import { useFoldersTree } from '~/store';
 
 type FolderItem = { name: string; folder: Folder };
@@ -89,7 +89,7 @@ export function MobileMenu() {
     selectedSystemFolderId,
     selectedUserFolderId,
   } = useMenuData();
-  const { handleCreate: handleNewFolderClick } = useFolderActions();
+  const { handleCreate: handleNewFolderClick } = useFolderHandlers();
 
   if (!foldersTree) {
     return null;

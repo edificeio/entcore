@@ -15,7 +15,7 @@ import { Folder } from '~/models';
 import { actionsQueryOptions, folderQueryOptions } from '~/services/queries';
 import { CreateFolderModal } from '~/features';
 import './index.css';
-import { useAppActions } from '~/store';
+import { useAppActions, useOpenFolderModal } from '~/store';
 
 export const loader =
   (queryClient: QueryClient) =>
@@ -44,6 +44,7 @@ export function Component() {
 
   const { md } = useBreakpoint();
   const { setFoldersTree } = useAppActions();
+  const folderModal = useOpenFolderModal();
 
   if (!init || !currentApp) return <LoadingScreen position={false} />;
 
@@ -74,7 +75,7 @@ export function Component() {
         </div>
       </div>
 
-      <CreateFolderModal />
+      {folderModal === 'create' && <CreateFolderModal />}
     </Layout>
   );
 }

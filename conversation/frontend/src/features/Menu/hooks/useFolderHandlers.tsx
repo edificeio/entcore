@@ -1,7 +1,7 @@
 import { Folder } from '~/models';
 import { useAppActions } from '~/store';
 
-export function useFolderActions() {
+export function useFolderHandlers() {
   const { setOpenFolderModal } = useAppActions();
 
   const handleCreate = () => {

@@ -6,13 +6,13 @@ import {
   IconOptions,
 } from '@edifice.io/react/icons';
 import { Fragment, RefAttributes } from 'react';
-import { useFolderActions } from '~/features/Menu/hooks/useFolderActions';
+import { useFolderHandlers } from '~/features/Menu/hooks/useFolderHandlers';
 import { useTranslation } from 'react-i18next';
 import { Folder } from '~/models';
 
 export function FolderActionDropDown({ folder }: { folder: Folder }) {
   const { t: common_t } = useTranslation('common');
-  const { handleMove, handleRename, handleDelete } = useFolderActions();
+  const { handleMove, handleRename, handleDelete } = useFolderHandlers();
 
   const options = [
     {
