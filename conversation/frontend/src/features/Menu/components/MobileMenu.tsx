@@ -1,4 +1,4 @@
-import { useNavigate, useRouteLoaderData } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Folder, SystemFolder } from '~/models';
 import { t } from 'i18next';
 import { Dropdown } from '@edifice.io/react';

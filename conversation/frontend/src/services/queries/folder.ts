@@ -36,7 +36,7 @@ export const folderQueryOptions = {
     return queryOptions({
       queryKey: [...folderQueryOptions.base, 'tree'] as const,
       queryFn: () => folderService.getTree(TREE_DEPTH),
-      staleTime: 5000,
+      staleTime: 5 * 60 * 1000, // 5 minutes
     });
   },
 
@@ -63,7 +63,7 @@ export const folderQueryOptions = {
         options,
       ] as const,
       queryFn: () => folderService.getCount(folderId, options?.unread),
-      staleTime: 5000,
+      staleTime: 5 * 60 * 1000, // 5 minutes
     });
   },
 
@@ -96,7 +96,7 @@ export const folderQueryOptions = {
           pageSize,
         });
       },
-      staleTime: 5000,
+      staleTime: 5 * 60 * 1000, // 5 minutes
       initialPageParam: 0,
       getNextPageParam: (lastPage: any, _allPages: any, lastPageParam: any) => {
         if (
@@ -171,8 +171,8 @@ export const useCreateFolder = () => {
   return useMutation({
     mutationFn: (payload: { name: string; parentId?: string }) =>
       folderService.create(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
+    onSuccess: async () => {
+      return queryClient.invalidateQueries({
         queryKey: folderQueryOptions.getFoldersTree().queryKey,
       });
     },

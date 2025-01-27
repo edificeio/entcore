@@ -9,18 +9,23 @@ import {
   OptionsType,
   Select,
 } from '@edifice.io/react';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useFolderActions, useI18n } from '~/hooks';
 
 export function CreateFolderModal() {
   const { t, common_t } = useI18n();
   const { setOpenFolderModal } = useAppActions();
-  const { createFolder } = useFolderActions();
+  const { createFolder, isActionPending } = useFolderActions();
   const folderModal = useOpenFolderModal();
   const { foldersTree } = useFolderActions();
   const [checked, setChecked] = useState(false);
   const [subFolderId, setSubfolderId] = useState<string | undefined>(undefined);
   const refInputName = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isActionPending === false) setOpenFolderModal(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isActionPending]);
 
   const handleCreateClick = useCallback(() => {
     const created = createFolder(
@@ -103,6 +108,7 @@ export function CreateFolderModal() {
               color="primary"
               variant="filled"
               onClick={handleCreateClick}
+              disabled={isActionPending === true}
             >
               {common_t('create')}
             </Button>
