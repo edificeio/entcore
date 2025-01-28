@@ -1,2 +1,2 @@
-export * from './folder/CreateFolderModal';
+export * from './Modals/CreateFolderModal';
 export * from './Menu';
