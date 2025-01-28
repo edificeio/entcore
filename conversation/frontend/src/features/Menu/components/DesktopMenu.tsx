@@ -1,10 +1,12 @@
 import {
   IconDelete,
   IconDepositeInbox,
+  IconPlus,
   IconSend,
   IconWrite,
 } from '@edifice.io/react/icons';
 import {
+  Button,
   Menu,
   SortableTree,
   TreeItem,
@@ -23,6 +25,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useUsedSpace } from '~/hooks';
 import { useFoldersTree } from '~/store';
+import { useFolderHandlers } from '../hooks/useFolderHandlers';
 
 type FolderTreeItem = TreeItem & { folder: Folder };
 
@@ -60,6 +63,8 @@ export function DesktopMenu() {
   } = useMenuData();
 
   const { usage, quota } = useUsedSpace();
+
+  const { handleCreate: handleNewFolderClick } = useFolderHandlers();
 
   if (!foldersTree) {
     return null;
@@ -147,8 +152,8 @@ export function DesktopMenu() {
         <div className="w-100 border-bottom pt-8 mb-12"></div>
       </Menu.Item>
       <Menu.Item>
-        <div className="d-flex flex-column gap-8">
-          <b className="fs-6">{t('user.folders')}</b>
+        <div className="d-flex flex-column">
+          <b className="fs-6 mb-8">{t('user.folders')}</b>
           <SortableTree
             nodes={userFolders}
             onSortable={NOOP}
@@ -156,6 +161,17 @@ export function DesktopMenu() {
             renderNode={renderUserFolder}
             selectedNodeId={selectedUserFolderId}
           />
+          <Button
+            type="button"
+            color="secondary"
+            variant="ghost"
+            size="sm"
+            leftIcon={<IconPlus />}
+            className="d-inline-flex"
+            onClick={handleNewFolderClick}
+          >
+            {t('new.folder')}
+          </Button>
         </div>
       </Menu.Item>
       <Menu.Item>

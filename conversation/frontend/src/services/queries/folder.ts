@@ -6,8 +6,12 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { folderService } from '..';
+import { folderService, recursiveSearch } from '..';
 import { Folder, MessageMetadata } from '~/models';
+import {
+  useAppActions,
+  useFoldersTree as useFoldersTreeFromStore,
+} from '~/store';
 import { useSearchParams } from 'react-router-dom';
 
 /**
@@ -36,7 +40,7 @@ export const folderQueryOptions = {
     return queryOptions({
       queryKey: [...folderQueryOptions.base, 'tree'] as const,
       queryFn: () => folderService.getTree(TREE_DEPTH),
-      staleTime: 5000,
+      staleTime: 5 * 60 * 1000, // 5 minutes
     });
   },
 
@@ -63,7 +67,7 @@ export const folderQueryOptions = {
         options,
       ] as const,
       queryFn: () => folderService.getCount(folderId, options?.unread),
-      staleTime: 5000,
+      staleTime: 5 * 60 * 1000, // 5 minutes
     });
   },
 
@@ -96,7 +100,7 @@ export const folderQueryOptions = {
           pageSize,
         });
       },
-      staleTime: 5000,
+      staleTime: 5 * 60 * 1000, // 5 minutes
       initialPageParam: 0,
       getNextPageParam: (lastPage: any, _allPages: any, lastPageParam: any) => {
         if (
@@ -109,15 +113,6 @@ export const folderQueryOptions = {
       },
     });
   },
-};
-
-/**
- * Hook to fetch the folder tree.
- *
- * @returns Query result for fetching the folder tree.
- */
-export const useFoldersTree = () => {
-  return useQuery(folderQueryOptions.getFoldersTree());
 };
 
 /**
@@ -168,13 +163,44 @@ export const useMessagesCount = (
  */
 export const useCreateFolder = () => {
   const queryClient = useQueryClient();
+  const foldersTree = useFoldersTreeFromStore();
+  const { setFoldersTree } = useAppActions();
+
   return useMutation({
-    mutationFn: (payload: { name: string; parentID?: string }) =>
+    mutationFn: (payload: { name: string; parentId?: string }) =>
       folderService.create(payload),
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: folderQueryOptions.getFoldersTree().queryKey,
-      });
+    onSuccess: async ({ id }, { name, parentId }) => {
+      if (parentId) {
+        // try optimistic update...
+        const parent = recursiveSearch(parentId, foldersTree);
+        if (!parent) {
+          // ...or fallback to full refreshing the whole folders tree.
+          return queryClient.invalidateQueries(
+            folderQueryOptions.getFoldersTree(),
+          );
+        } else {
+          if (!parent.subFolders) parent.subFolders = [];
+          parent.subFolders.push({
+            id,
+            depth: 2,
+            name,
+            nbMessages: 0,
+            nbUnread: 0,
+            trashed: false,
+          });
+        }
+      } else {
+        // optimistic update : push new folder at root level (depth=1)
+        foldersTree.push({
+          id,
+          depth: 1,
+          name,
+          nbMessages: 0,
+          nbUnread: 0,
+          trashed: false,
+        });
+      }
+      setFoldersTree(foldersTree);
     },
   });
 };

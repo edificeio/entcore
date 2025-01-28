@@ -13,8 +13,9 @@ import { AppActionHeader } from '~/features/app/Action/AppActionHeader';
 import { DesktopMenu, MobileMenu } from '~/features';
 import { Folder } from '~/models';
 import { actionsQueryOptions, folderQueryOptions } from '~/services/queries';
+import { CreateFolderModal } from '~/features';
 import './index.css';
-import { useAppActions } from '~/store';
+import { useAppActions, useOpenFolderModal } from '~/store';
 
 export const loader =
   (queryClient: QueryClient) =>
@@ -43,6 +44,7 @@ export function Component() {
 
   const { md } = useBreakpoint();
   const { setFoldersTree } = useAppActions();
+  const folderModal = useOpenFolderModal();
 
   if (!init || !currentApp) return <LoadingScreen position={false} />;
 
@@ -72,6 +74,8 @@ export function Component() {
           <Outlet />
         </div>
       </div>
+
+      {folderModal === 'create' && <CreateFolderModal />}
     </Layout>
   );
 }
