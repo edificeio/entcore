@@ -128,17 +128,17 @@ public class SqlConversationService implements ConversationService{
 			message.put("thread_id", message.getString("id"));
 		}
 
-		updateMessageWithTransformedContent(message, request);
+		updateMessageWithTransformedContent(message, request).onSuccess(event -> {
+			// 1 - Insert message
+			builder.insert(messageTable, message, "id");
 
-		// 1 - Insert message
-		builder.insert(messageTable, message, "id");
+			// 2 - Link message to the user
+			builder.insert(userMessageTable, new JsonObject()
+					.put("user_id", user.getUserId())
+					.put("message_id", message.getString("id")));
 
-		// 2 - Link message to the user
-		builder.insert(userMessageTable, new JsonObject()
-			.put("user_id", user.getUserId())
-			.put("message_id", message.getString("id")));
-
-		sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(0, result));
+			sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(0, result));
+		}).onFailure(th -> log.error("Content transformation failed for message with id : {}", message.getString("id")));
 	}
 
 	@Override
@@ -153,55 +153,55 @@ public class SqlConversationService implements ConversationService{
 		if (validationError(user, m, result, messageId))
 			return;
 
-		updateMessageWithTransformedContent(message, request);
+		updateMessageWithTransformedContent(message, request).onSuccess(event -> {
+			StringBuilder sb = new StringBuilder();
+			JsonArray values = new JsonArray();
 
-		StringBuilder sb = new StringBuilder();
-		JsonArray values = new JsonArray();
-
-		for (String attr : message.fieldNames()) {
-			if("to".equals(attr) || "cc".equals(attr) || "displayNames".equals(attr)){
-				sb.append("\"" + attr+ "\"").append(" = CAST(? AS JSONB),");
-			} else {
-				sb.append("\"" + attr+ "\"").append(" = ?,");
+			for (String attr : message.fieldNames()) {
+				if("to".equals(attr) || "cc".equals(attr) || "displayNames".equals(attr)){
+					sb.append("\"" + attr+ "\"").append(" = CAST(? AS JSONB),");
+				} else {
+					sb.append("\"" + attr+ "\"").append(" = ?,");
+				}
+				values.add(message.getValue(attr));
 			}
-			values.add(message.getValue(attr));
-		}
-		if(sb.length() > 0)
-			sb.deleteCharAt(sb.length() - 1);
+			if(sb.length() > 0)
+				sb.deleteCharAt(sb.length() - 1);
 
-		String query =
-			"UPDATE " + messageTable +
-			" SET " + sb.toString() + " " +
-			"WHERE id = ? AND state = ?";
-		values.add(messageId).add("DRAFT");
+			String query =
+					"UPDATE " + messageTable +
+							" SET " + sb.toString() + " " +
+							"WHERE id = ? AND state = ?";
+			values.add(messageId).add("DRAFT");
 
-		sql.prepared(query, values, SqlResult.validUniqueResultHandler(result));
+			sql.prepared(query, values, SqlResult.validUniqueResultHandler(result));
+		}).onFailure(th -> log.error("Content transformation failed for message with id : {}", messageId));
 	}
 
 	/**
 	 * Update a message content with its transformed version
 	 * @param message the message whose content must be transformed and updated
 	 * @param request the request
+	 * @return a future completed if the message has been updated with transformed content successfully
 	 */
-	private void updateMessageWithTransformedContent(JsonObject message, HttpServerRequest request) {
+	private Future<Void> updateMessageWithTransformedContent(JsonObject message, HttpServerRequest request) {
+		Promise<Void> updatedMessagePromise = Promise.promise();
 		Future<ContentTransformerResponse> contentTransformerResponseFuture ;
 		if (message.containsKey("body")) {
 			contentTransformerResponseFuture = transformMessageContent(message.getString("body"), message.getString("id"), request);
 		} else {
 			contentTransformerResponseFuture = Future.succeededFuture();
 		}
-		contentTransformerResponseFuture.onComplete(transformerResponse -> {
-			if (transformerResponse.failed()) {
-				log.error("Error while transforming message content", transformerResponse.cause());
+		contentTransformerResponseFuture.onSuccess(transformerResponse -> {
+			if (transformerResponse == null) {
+				log.debug("No content transformed");
 			} else {
-				if (transformerResponse.result() == null) {
-					log.debug("No content transformed");
-				} else {
-					message.put("body", transformerResponse.result().getCleanHtml());
-					message.put("contentVersion", transformerResponse.result().getContentVersion());
-				}
+				message.put("body", transformerResponse.getCleanHtml());
+				message.put("contentVersion", transformerResponse.getContentVersion());
 			}
-		});
+			updatedMessagePromise.complete();
+		}).onFailure(updatedMessagePromise::fail);
+		return updatedMessagePromise.future();
 	}
 
 	private void getSenderAttachments(String senderId, String messageId, Handler<Either<String, JsonObject>> handler){
@@ -663,7 +663,11 @@ public class SqlConversationService implements ConversationService{
 				originalMessagePromise.fail("Failed fetching message original content : " + sqlResult.left().getValue());
 			} else {
 				JsonObject result = sqlResult.right().getValue();
-				originalMessagePromise.complete(result.getString("body"));
+				if (result.getString("body") == null) {
+					originalMessagePromise.fail("No original content found for message with id : " + messageId);
+				} else {
+					originalMessagePromise.complete(result.getString("body"));
+				}
 			}
 		}));
 		return originalMessagePromise.future();

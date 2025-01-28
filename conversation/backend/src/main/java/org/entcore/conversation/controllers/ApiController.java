@@ -136,8 +136,7 @@ public class ApiController extends BaseController {
 	 * @param request the request
 	 * @return a {@link Future} of the message details to be rendered, after several formatting operations :
 	 * <ul>
-	 *     <li>body replaced with its original format (before rich content transformation) if requested</li>
-	 *     <li>content transformation if the message content is still stored with the original format</li>
+	 *     <li>transformation of message content</li>
 	 *     <li>a series of operation to retrieve users and groups display names and details</li>
 	 * </ul>
 	 */
@@ -148,49 +147,74 @@ public class ApiController extends BaseController {
 		conversationService.get(id, userInfos, 1, either -> {
 			if (either.isRight()) {
 				final JsonObject message = either.right().getValue();
-				// replace message body with original content if requested
-				if (originalFormat) {
-					Future<String> originalContentFuture = conversationService.getOriginalMessageContent(id);
-					originalContentFuture
-							.onSuccess(originalContent -> message.put("body", originalContent))
-							.onFailure(throwable -> {
-								log.error("Failed to retrieve original message content", throwable);
-								promise.fail(throwable.getMessage());
-							});
-				}
-				// transform and persist message content if needed
-				else if (message.getInteger("contentVersion") == 0) {
-					conversationService.transformMessageContent(message.getString("body"), id, request)
-							.onSuccess(transformerResponse -> conversationService.updateMessageContent(id, transformerResponse.getCleanHtml(), transformerResponse.getContentVersion())
-									.onSuccess(res -> {
-										message.put("body", transformerResponse.getCleanHtml());
-										message.put("contentVersion", transformerResponse.getContentVersion());
-									})
-									.onFailure(throwable -> {
-										log.error("Failed to update message with transformed content", throwable);
-										promise.fail(throwable.getMessage());
-									}))
-							.onFailure(throwable -> {
-								log.error("Failed to transform message content", throwable);
-								promise.fail(throwable.getMessage());
-							});
-				}
-				// Extract distinct users and groups.
-				MessageUtil.computeUsersAndGroupsDisplayNames(message, userInfos, lang, userIndex, groupIndex);
+				transformMessageContent(id, originalFormat, request, message)
+						.onSuccess(event -> {
+							// Extract distinct users and groups.
+							MessageUtil.computeUsersAndGroupsDisplayNames(message, userInfos, lang, userIndex, groupIndex);
 
-				MessageUtil.loadUsersAndGroupsDetails(eb, userInfos, userIndex, groupIndex)
-				.onSuccess( unused -> {
-					MessageUtil.formatRecipients(message, userIndex, groupIndex);
-					promise.complete(message);
-				})
-				.onFailure( throwable -> {
-					promise.fail(throwable.getMessage());
-				});
+							MessageUtil.loadUsersAndGroupsDetails(eb, userInfos, userIndex, groupIndex)
+								.onSuccess( unused -> {
+									MessageUtil.formatRecipients(message, userIndex, groupIndex);
+									promise.complete(message);
+								})
+								.onFailure( throwable -> {
+									promise.fail(throwable.getMessage());
+								});})
+						.onFailure(th -> {
+							promise.fail(th.getMessage());
+						});
 			} else {
 				promise.fail(either.left().getValue());
 			}
 		});
 		return promise.future();
+	}
+
+	/**
+	 * Method handling the different message content transformations requested
+	 * @param messageId the message id
+	 * @param originalFormat true if original format of the message content must be returned
+	 * @param request the request
+	 * @param message the message details to return
+	 * @return a void future completed if all message content transformations succeeded
+	 */
+	private Future<Void> transformMessageContent(String messageId, boolean originalFormat, HttpServerRequest request, JsonObject message) {
+		Promise<Void> updatedMessagePromise= Promise.promise();
+		// replace message body with original content if requested
+		if (originalFormat) {
+			Future<String> originalContentFuture = conversationService.getOriginalMessageContent(messageId);
+			originalContentFuture
+					.onSuccess(originalContent -> {
+						message.put("body", originalContent);
+						updatedMessagePromise.complete();
+					})
+					.onFailure(throwable -> {
+						log.error("Failed to retrieve original message content", throwable);
+						updatedMessagePromise.fail(throwable.getMessage());
+					});
+		}
+		// transform and persist message content if needed
+		else if (message.getInteger("contentVersion") == 0) {
+			conversationService.transformMessageContent(message.getString("body"), messageId, request)
+					.onSuccess(transformerResponse -> conversationService.updateMessageContent(messageId, transformerResponse.getCleanHtml(), transformerResponse.getContentVersion())
+							.onSuccess(res -> {
+								message.put("body", transformerResponse.getCleanHtml());
+								message.put("contentVersion", transformerResponse.getContentVersion());
+								updatedMessagePromise.complete();
+							})
+							.onFailure(throwable -> {
+								log.error("Failed to update message with transformed content", throwable);
+								updatedMessagePromise.fail(throwable.getMessage());
+							}))
+					.onFailure(throwable -> {
+						log.error("Failed to transform message content", throwable);
+						updatedMessagePromise.fail(throwable.getMessage());
+					});
+		// message content has already been transformed
+		} else {
+			updatedMessagePromise.complete();
+		}
+		return updatedMessagePromise.future();
 	}
 
 	/** Utility adapter */
