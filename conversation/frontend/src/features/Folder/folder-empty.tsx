@@ -31,7 +31,7 @@ export function FolderEmpty() {
         withNewMessage: false,
       };
     } else {
-      if (['draft', 'sent', 'inbox'].includes(folderId!)) {
+      if (['draft', 'inbox', 'outbox'].includes(folderId!)) {
         return {
           illu: illuMessagerie,
           title: 'messagerie.empty.title',

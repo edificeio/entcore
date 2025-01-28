@@ -33,6 +33,20 @@ describe('Folder empty component', () => {
       withNewMessage: true,
     },
     {
+      folderId: 'outbox',
+      key: 'messagerie',
+      illuSrc: 'illu-messagerie.svg',
+      path: '/outbox',
+      withNewMessage: true,
+    },
+    {
+      folderId: 'draft',
+      key: 'messagerie',
+      illuSrc: 'illu-messagerie.svg',
+      path: '/draft',
+      withNewMessage: true,
+    },
+    {
       folderId: 'inbox',
       key: 'search',
       illuSrc: 'illu-search.svg',
