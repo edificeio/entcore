@@ -7,7 +7,7 @@
     <parent>
         <groupId>io.edifice</groupId>
         <artifactId>app-parent</artifactId>
-        <version>1.0</version>
+        <version>2.0-SNAPSHOT</version>
     </parent>
 
     <groupId>org.entcore</groupId>
@@ -52,17 +52,17 @@
         <module>test</module>
         <module>timeline</module>
         <module>workspace</module>
-        <module>tests</module>
+        <!-- <module>tests</module> -->
     </modules>
 
     <properties>
-        <revision>6.1-SNAPSHOT</revision>
+        <revision>7.0-SNAPSHOT</revision>
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
-        <modPostgresVersion>2.0-SNAPSHOT</modPostgresVersion>
-        <modMongoVersion>4.0-SNAPSHOT</modMongoVersion>
-        <webUtilsVersion>3.1-SNAPSHOT</webUtilsVersion>
-        <mongodbHelperVersion>3.0-SNAPSHOT</mongodbHelperVersion>
+        <modPostgresVersion>3.0-SNAPSHOT</modPostgresVersion>
+        <modMongoVersion>5.0-SNAPSHOT</modMongoVersion>
+        <webUtilsVersion>4.0-SNAPSHOT</webUtilsVersion>
+        <mongodbHelperVersion>4.0-SNAPSHOT</mongodbHelperVersion>
         <jodaTimeVersion>2.9.4</jodaTimeVersion>
         <scramVersion>2.1</scramVersion>
         <micrometerPrometheusVersion>1.11.4</micrometerPrometheusVersion>
@@ -75,7 +75,7 @@
         <opencsvVersion>3.9</opencsvVersion>
         <juniversalchardetVersion>1.0.3</juniversalchardetVersion>
         <commonsLangVersion>3.13.0</commonsLangVersion>
-        <gatlingHighchartsVersion>2.3.1</gatlingHighchartsVersion>
+        <gatlingHighchartsVersion>3.13.3</gatlingHighchartsVersion>
         <postgres-driver.version>42.2.26</postgres-driver.version>
         <hikari.version>2.4.2</hikari.version>
     </properties>

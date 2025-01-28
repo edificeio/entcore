@@ -25,14 +25,14 @@ import java.util.ArrayList;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.xml.namespace.QName;
-import javax.xml.soap.MessageFactory;
-import javax.xml.soap.SOAPBody;
-import javax.xml.soap.SOAPBodyElement;
-import javax.xml.soap.SOAPElement;
-import javax.xml.soap.SOAPEnvelope;
-import javax.xml.soap.SOAPException;
-import javax.xml.soap.SOAPMessage;
-import javax.xml.soap.SOAPPart;
+import jakarta.xml.soap.MessageFactory;
+import jakarta.xml.soap.SOAPBody;
+import jakarta.xml.soap.SOAPBodyElement;
+import jakarta.xml.soap.SOAPElement;
+import jakarta.xml.soap.SOAPEnvelope;
+import jakarta.xml.soap.SOAPException;
+import jakarta.xml.soap.SOAPMessage;
+import jakarta.xml.soap.SOAPPart;
 
 import org.entcore.common.soap.SoapHelper.SoapDescriptor.*;
 

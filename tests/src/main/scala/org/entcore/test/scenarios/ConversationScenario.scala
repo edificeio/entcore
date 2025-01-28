@@ -112,7 +112,7 @@ object ConversationScenario {
 
   .exec(http("Get folder depth")
     .get("/conversation/max-depth")
-    .check(status.is(200), jsonPath("$['max-depth']").find.transform(_.toInt).greaterThan(-1)))
+    .check(status.is(200), jsonPath("$['max-depth']").find.transform(_.toInt).isGreaterThan(-1)))
   .exec(http("Create a folder")
     .post("/conversation/folder")
     .header("Content-Type", "application/json")
@@ -213,7 +213,7 @@ object ConversationScenario {
       jsonPath("$.attachments[0::].id").find.saveAs("attachmentId")))
   .exec(http("Check teacher quota after adding the attachment")
     .get("""/workspace/quota/user/${teacherId}""")
-    .check(status.is(200), jsonPath("$.storage").find.greaterThan("${teacherStorageInitial}")))
+    .check(status.is(200), jsonPath("$.storage").find.isGreaterThan("${teacherStorageInitial}")))
   .exec(http("Send message")
     .post("/conversation/send?id=${attachmentDraftId}")
     .header("Content-Type", "application/json")
@@ -259,5 +259,5 @@ object ConversationScenario {
     .check(status.is(200)))
   .exec(http("Check student quota after deleting the attachment")
     .get("""/workspace/quota/user/${studentId}""")
-    .check(status.is(200), jsonPath("$.storage").find.lessThan("${studentStorageInitial}")))
+    .check(status.is(200), jsonPath("$.storage").find.isLessThan("${studentStorageInitial}")))
 }

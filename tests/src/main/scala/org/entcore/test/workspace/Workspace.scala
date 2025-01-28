@@ -3,7 +3,7 @@ package org.entcore.test.workspace
 import io.gatling.core.Predef._
 import io.gatling.http.Predef._
 import scala.concurrent.duration._
-
+import scala.language.postfixOps
 
 import scala.collection.mutable.ArrayBuffer
 import scala.Some

@@ -276,6 +276,9 @@ do
     buildNode)
       buildNode
       ;;
+    mvn)
+      install
+      ;;
     install)
       buildNode && buildAdminNode && install
       ;;

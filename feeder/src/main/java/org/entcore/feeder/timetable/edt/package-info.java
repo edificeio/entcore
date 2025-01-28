@@ -17,5 +17,5 @@
 
  */
 
-@javax.xml.bind.annotation.XmlSchema(namespace = "http://www.index-education.com/conteneurexportchiffre", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
+@jakarta.xml.bind.annotation.XmlSchema(namespace = "http://www.index-education.com/conteneurexportchiffre", elementFormDefault = jakarta.xml.bind.annotation.XmlNsForm.QUALIFIED)
 package org.entcore.feeder.timetable.edt;

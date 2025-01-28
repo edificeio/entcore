@@ -22,7 +22,7 @@ package org.entcore.common.utils;
 import fr.wseduc.mongodb.MongoDb;
 import io.vertx.core.json.JsonObject;
 
-import javax.xml.bind.DatatypeConverter;
+import jakarta.xml.bind.DatatypeConverter;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;

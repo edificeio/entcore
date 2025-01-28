@@ -67,6 +67,18 @@
             <version>${owaspVersion}</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>jakarta.xml.bind</groupId>
+            <artifactId>jakarta.xml.bind-api</artifactId>
+            <version>4.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.xml.soap</groupId>
+            <artifactId>jakarta.xml.soap-api</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+
+
     </dependencies>
     <build>
         <plugins>

@@ -24,17 +24,14 @@ import java.net.URLEncoder;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBIntrospector;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBIntrospector;
+import jakarta.xml.bind.Unmarshaller;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.Handler;
 import io.vertx.core.http.*;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.buffer.Buffer;
 
 import edu.yale.tp.cas.AuthenticationFailureType;
 import edu.yale.tp.cas.AuthenticationSuccessType;
@@ -44,9 +41,6 @@ import org.vertx.java.core.http.RouteMatcher;
 
 import fr.wseduc.webutils.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
-import fr.wseduc.webutils.http.Renders;
-
-import org.entcore.auth.controllers.AuthController;
 
 public class CasClientController extends BaseController
 {

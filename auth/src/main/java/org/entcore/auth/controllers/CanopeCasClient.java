@@ -24,18 +24,14 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.UUID;
 
-import javax.xml.bind.JAXBElement;
-
 import io.vertx.core.Vertx;
 import io.vertx.core.Handler;
 import io.vertx.core.http.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.AsyncResult;
 
-import edu.yale.tp.cas.AttributesType;
 import edu.yale.tp.cas.AuthenticationSuccessType;
 
 import org.vertx.java.core.http.RouteMatcher;
