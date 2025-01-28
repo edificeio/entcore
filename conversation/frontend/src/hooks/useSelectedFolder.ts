@@ -1,20 +1,7 @@
 import { useParams } from 'react-router-dom';
 import { Folder } from '~/models';
+import { recursiveSearch } from '~/services';
 import { useFoldersTree } from '~/store';
-
-/** Build a tree of TreeItems from Folders  */
-function recursiveSearch(
-  folderId: string,
-  folders: Folder[],
-): Folder | undefined {
-  for (const f of folders) {
-    if (f.id === folderId) return f;
-    if (f.subFolders) {
-      const folder = recursiveSearch(folderId, f.subFolders);
-      if (folder) return folder;
-    }
-  }
-}
 
 /**
  * Hook to extract the selected folder ID from the URL,
