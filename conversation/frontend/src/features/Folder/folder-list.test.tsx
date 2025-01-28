@@ -1,9 +1,30 @@
-import { render, screen } from '~/mocks/setup';
+import { render, renderHook, screen, waitFor, wrapper } from '~/mocks/setup';
 import { FolderList } from './folder-list';
-import { folderService } from '~/services';
-import { renderWithRouter } from '~/mocks/renderWithRouter';
+import { useFolderMessages } from '~/services';
 
-describe('Folder header component', () => {
+/**
+ * Mock useParams
+ */
+const mocks = vi.hoisted(() => ({
+  useParams: vi.fn(),
+}));
+
+vi.mock('react-router-dom', async () => {
+  const actual =
+    await vi.importActual<typeof import('react-router-dom')>(
+      'react-router-dom',
+    );
+  return {
+    ...actual,
+    useParams: mocks.useParams,
+  };
+});
+
+describe('Folder list component', () => {
+  beforeEach(() => {
+    mocks.useParams.mockReturnValue({ folderId: 'inbox' });
+  });
+
   afterEach(() => {
     vi.clearAllMocks();
   });
@@ -14,12 +35,22 @@ describe('Folder header component', () => {
     expect(baseElement).toBeTruthy();
   });
 
-  it('should render successfully', async () => {
-    const folderServiceSpy = vi.spyOn(folderService, 'getMessages');
-    renderWithRouter('/inbox', <FolderList />);
+  it('should render successfully a list of messages', async () => {
+    const { result } = renderHook(() => useFolderMessages('inbox'), {
+      wrapper: ({ children }: { children: React.ReactNode }) =>
+        wrapper({
+          initialEntries: ['/inbox'],
+          children,
+        }),
+    });
 
-    expect(folderServiceSpy).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    render(<FolderList />, { path: '/inbox' });
+
     const messages = await screen.queryAllByTestId('message-item');
-    expect(messages).toHaveLength(1);
+    expect(messages).toHaveLength(2);
   });
 });

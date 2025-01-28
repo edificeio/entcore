@@ -1,23 +1,15 @@
 import {
-  Button,
-  EmptyScreen,
   List,
   Loading,
   ToolbarItem,
   useEdificeClient,
 } from '@edifice.io/react';
-import {
-  IconEdit,
-  IconReadMail,
-  IconUnreadMail,
-} from '@edifice.io/react/icons';
-import illuMessagerie from '@images/emptyscreen/illu-messagerie.svg';
+import { IconReadMail, IconUnreadMail } from '@edifice.io/react/icons';
 import clsx from 'clsx';
-import { useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { MessagePreview } from '~/features/Message/message-preview';
-import { useSelectedFolder } from '~/hooks';
 import { MessageMetadata } from '~/models';
 import { useFolderMessages, useMarkRead, useMarkUnread } from '~/services';
 import { useAppActions, useSelectedMessageIds } from '~/store/actions';
@@ -25,10 +17,12 @@ import { useAppActions, useSelectedMessageIds } from '~/store/actions';
 export function FolderList() {
   const navigate = useNavigate();
 
-  const { folderId } = useSelectedFolder();
+  const { folderId } = useParams();
+  const [searchParams] = useSearchParams();
   const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
   const { setSelectedMessageIds } = useAppActions();
+  const [current, setCurrent] = useState(0);
 
   const selectedIds = useSelectedMessageIds();
   const markAsReadQuery = useMarkRead();
@@ -59,6 +53,28 @@ export function FolderList() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isLoadingMessage, isLoadingNextPage, fetchNextPage, hasNextPage]);
 
+  useEffect(() => {
+    setCurrent((prev) => prev + 1);
+  }, [searchParams]);
+
+  const hasUnreadMessages = useMemo(() => {
+    return messages?.some(
+      (message) =>
+        selectedIds.length &&
+        selectedIds.includes(message.id) &&
+        message.unread,
+    );
+  }, [selectedIds, messages]);
+
+  const hasReadMessages = useMemo(() => {
+    return messages?.some(
+      (message) =>
+        selectedIds.length &&
+        selectedIds.includes(message.id) &&
+        !message.unread,
+    );
+  }, [selectedIds, messages]);
+
   const handleMarkAsReadClick = () => {
     markAsReadQuery.mutate({ id: selectedIds });
   };
@@ -68,7 +84,7 @@ export function FolderList() {
   };
 
   const handleMessageClick = (message: MessageMetadata) => {
-    navigate(message.id);
+    navigate(`message/${message.id}`);
   };
 
   const toolbar: ToolbarItem[] = [
@@ -83,7 +99,7 @@ export function FolderList() {
           </>
         ),
         onClick: handleMarkAsReadClick,
-        hidden: !selectedIds.length,
+        hidden: !hasUnreadMessages,
       },
     },
     {
@@ -97,7 +113,7 @@ export function FolderList() {
           </>
         ),
         onClick: handleMarkAsUnreadClick,
-        hidden: !selectedIds.length,
+        hidden: !hasReadMessages,
       },
     },
   ];
@@ -110,13 +126,14 @@ export function FolderList() {
           isCheckable={true}
           onSelectedItems={setSelectedMessageIds}
           className="ps-16 ps-md-24"
+          key={current}
           renderNode={(message, checkbox, checked) => (
             <div
               className={clsx(
                 'd-flex gap-24 px-16 ps-md-24 py-12 mb-2 overflow-hidden',
                 {
                   'bg-secondary-200': checked,
-                  'fw-bold bg-primary-200': message.unread,
+                  'fw-bold bg-primary-200 gray-800': message.unread,
                 },
               )}
               onClick={() => handleMessageClick(message)}
@@ -125,7 +142,7 @@ export function FolderList() {
               key={message.id}
               data-testid="message-item"
             >
-              <div className="d-flex align-items-center gap-8 g-col-3 flex-fill overflow-hidden">
+              <div className="d-flex align-items-center gap-12 g-col-3 flex-fill overflow-hidden">
                 {checkbox}
                 <MessagePreview message={message} />
               </div>
@@ -135,21 +152,6 @@ export function FolderList() {
       )}
       {isLoadingMessage && (
         <Loading isLoading={true} className="justify-content-center my-12" />
-      )}
-      {!isLoadingMessage && !messages?.length && (
-        <div className="d-flex flex-column gap-24 align-items-center justify-content-center">
-          <EmptyScreen
-            imageSrc={illuMessagerie}
-            title={t('folder.empty.title')}
-            text={t('folder.empty.text')}
-          />
-          <div>
-            <Button>
-              <IconEdit />
-              {t('new.message')}
-            </Button>
-          </div>
-        </div>
       )}
     </>
   );

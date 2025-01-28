@@ -1,8 +1,13 @@
 import { QueryClient } from '@tanstack/react-query';
-import { LoaderFunctionArgs } from 'react-router-dom';
+import {
+  LoaderFunctionArgs,
+  useParams,
+  useSearchParams,
+} from 'react-router-dom';
+import { FolderEmpty } from '~/features/Folder/folder-empty';
 import { FolderHeader } from '~/features/Folder/folder-header';
 import { FolderList } from '~/features/Folder/folder-list';
-import { folderQueryOptions } from '~/services';
+import { folderQueryOptions, useFolderMessages } from '~/services';
 
 export const loader =
   (queryClient: QueryClient) =>
@@ -19,10 +24,19 @@ export const loader =
   };
 
 export function Component() {
+  const { folderId } = useParams();
+  const [searchParams] = useSearchParams();
+
+  const { messages, isPending: isLoadingMessage } = useFolderMessages(
+    folderId!,
+  );
   return (
     <>
-      <FolderHeader />
+      {(!!messages.length ||
+        searchParams.get('search') ||
+        searchParams.get('unread')) && <FolderHeader />}
       <FolderList />
+      {!isLoadingMessage && !messages.length && <FolderEmpty />}
     </>
   );
 }
