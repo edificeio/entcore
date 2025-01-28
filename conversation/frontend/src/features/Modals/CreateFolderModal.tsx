@@ -41,6 +41,8 @@ export function CreateFolderModal() {
     setChecked(newValue);
   }, [checked]);
 
+  if (!foldersTree) return <></>;
+
   const handleCloseFolderModal = () => setOpenFolderModal(null);
 
   const handleOptionChange = (option: OptionsType | string) =>

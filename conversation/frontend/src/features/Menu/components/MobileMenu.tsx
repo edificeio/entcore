@@ -12,7 +12,6 @@ import {
 } from '@edifice.io/react/icons';
 import { useMenuData } from '../hooks/useMenuData';
 import { useFolderHandlers } from '../hooks/useFolderHandlers';
-import { useFoldersTree } from '~/store';
 
 type FolderItem = { name: string; folder: Folder };
 
@@ -82,7 +81,7 @@ function asFolderItem(
 /** The folder navigation menu, in mobile responsive mode. */
 export function MobileMenu() {
   const navigate = useNavigate();
-  const foldersTree = useFoldersTree();
+  const foldersTreeQuery = useFoldersTree();
   const {
     counters,
     renderBadge,
@@ -91,11 +90,14 @@ export function MobileMenu() {
   } = useMenuData();
   const { handleCreate: handleNewFolderClick } = useFolderHandlers();
 
-  if (!foldersTree) {
+  if (!foldersTreeQuery.data) {
     return null;
   }
 
-  const menu = buildMenuItemsWithSelection(selectedUserFolderId, foldersTree);
+  const menu = buildMenuItemsWithSelection(
+    selectedUserFolderId,
+    foldersTreeQuery.data,
+  );
   let { selectedItem } = menu;
 
   const systemMenuItems = {

@@ -7,7 +7,6 @@ interface State {
   selectedMessageIds: string[];
   selectedFolders: Folder[];
   openFolderModal: FolderModal;
-  foldersTree: Folder[];
 }
 
 type Action = {
@@ -15,7 +14,6 @@ type Action = {
     setSelectedMessageIds: (value: string[]) => void;
     setSelectedFolders: (value: Folder[]) => void;
     setOpenFolderModal: (value: FolderModal) => void;
-    setFoldersTree: (folders: Folder[]) => void;
   };
 };
 
@@ -31,7 +29,6 @@ const initialState = {
   selectedMessageIds: [],
   selectedFolders: [],
   openFolderModal: null,
-  foldersTree: [],
 };
 
 const store = createStore<State & Action>()((set) => ({
@@ -42,7 +39,6 @@ const store = createStore<State & Action>()((set) => ({
     setSelectedFolders: (selectedFolders: Folder[]) => set({ selectedFolders }),
     setOpenFolderModal: (openFolderModal: FolderModal) =>
       set({ openFolderModal }),
-    setFoldersTree: (foldersTree: Folder[]) => set(() => ({ foldersTree })),
   },
 }));
 
@@ -53,14 +49,12 @@ const selectedFolders = (state: ExtractState<typeof store>) =>
   state.selectedFolders;
 const setOpenFolderModal = (state: ExtractState<typeof store>) =>
   state.openFolderModal;
-const foldersTree = (state: ExtractState<typeof store>) => state.foldersTree;
 const actionsSelector = (state: ExtractState<typeof store>) => state.actions;
 
 // Getters
 export const getSelectedMessageIds = () => selectedMessageIds(store.getState());
 export const getSelectedFolders = () => selectedFolders(store.getState());
 export const getOpenFolderModal = () => setOpenFolderModal(store.getState());
-export const getFoldersTree = () => foldersTree(store.getState());
 
 // React Store
 function useAppStore<U>(selector: Params<U>[1]) {
@@ -71,5 +65,4 @@ function useAppStore<U>(selector: Params<U>[1]) {
 export const useSelectedMessageIds = () => useAppStore(selectedMessageIds);
 export const useSelectedFolders = () => useAppStore(selectedFolders);
 export const useOpenFolderModal = () => useAppStore(setOpenFolderModal);
-export const useFoldersTree = () => useAppStore(foldersTree);
 export const useAppActions = () => useAppStore(actionsSelector);
