@@ -158,7 +158,7 @@ export function DesktopMenu() {
       </Menu.Item>
       <Menu.Item>
         <div className="d-flex flex-column">
-          <b className="fs-6 mb-8">{t('user.folders')}</b>
+          <strong className="fs-6 mb-8">{t('user.folders')}</strong>
           <SortableTree
             nodes={userFolders}
             onSortable={NOOP}

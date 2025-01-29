@@ -9,14 +9,13 @@ import {
   OptionsType,
   Select,
 } from '@edifice.io/react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFolderActions, useI18n } from '~/hooks';
 
 export function CreateFolderModal() {
   const { t, common_t } = useI18n();
   const { setOpenFolderModal } = useAppActions();
-  const { createFolder, isActionPending } = useFolderActions();
-  const { foldersTree } = useFolderActions();
+  const { createFolder, isActionPending, foldersTree } = useFolderActions();
   const [checked, setChecked] = useState(false);
   const [subFolderId, setSubfolderId] = useState<string | undefined>(undefined);
   const refInputName = useRef<HTMLInputElement>(null);
@@ -41,17 +40,21 @@ export function CreateFolderModal() {
     setChecked(newValue);
   }, [checked]);
 
+  const folderOptions = useMemo(
+    () =>
+      foldersTree?.map((f) => ({
+        label: f.name,
+        value: f.id,
+      })) ?? [],
+    [foldersTree],
+  );
+
   if (!foldersTree) return <></>;
 
   const handleCloseFolderModal = () => setOpenFolderModal(null);
 
   const handleOptionChange = (option: OptionsType | string) =>
     setSubfolderId(typeof option === 'object' ? option.value : option);
-
-  const folderOptions = foldersTree.map((f) => ({
-    label: f.name,
-    value: f.id,
-  }));
 
   return (
     <Modal
