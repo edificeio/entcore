@@ -53,14 +53,13 @@ export function FolderActionDropDown({ folder }: { folder: Folder }) {
 
           <Dropdown.Menu>
             {options.map((option) => (
-              <Fragment key={option.label}>
-                <Dropdown.Item
-                  icon={option.icon}
-                  onClick={() => option.action(folder)}
-                >
-                  {option.label}
-                </Dropdown.Item>
-              </Fragment>
+              <Dropdown.Item
+                key={option.label}
+                icon={option.icon}
+                onClick={() => option.action(folder)}
+              >
+                {option.label}
+              </Dropdown.Item>
             ))}
           </Dropdown.Menu>
         </div>

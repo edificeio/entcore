@@ -79,24 +79,28 @@ export function CreateFolderModal() {
             data-testid="inputNewName"
           />
         </FormControl>
-        <div className="mt-24"></div>
-        <Checkbox
-          checked={checked}
-          label={t('folder.new.subfolder.label')}
-          onChange={handleSubfolderCheckChange}
-          data-testid="checkParentFolder"
-        />
-        <div className="mt-8"></div>
-        <Select
-          disabled={!checked}
-          size="md"
-          placeholderOption={t('folder.new.subfolder.placeholder')}
-          overflow={true}
-          block={true}
-          options={folderOptions}
-          onValueChange={handleOptionChange}
-          data-testid="selectParentFolder"
-        />
+        {folderOptions.length > 0 && (
+          <>
+            <div className="mt-24"></div>
+            <Checkbox
+              checked={checked}
+              label={t('folder.new.subfolder.label')}
+              onChange={handleSubfolderCheckChange}
+              data-testid="checkParentFolder"
+            />
+            <div className="mt-8"></div>
+            <Select
+              disabled={!checked}
+              size="md"
+              placeholderOption={t('folder.new.subfolder.placeholder')}
+              overflow={true}
+              block={true}
+              options={folderOptions}
+              onValueChange={handleOptionChange}
+              data-testid="selectParentFolder"
+            />
+          </>
+        )}
       </Modal.Body>
 
       <Modal.Footer>
