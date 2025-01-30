@@ -21,16 +21,16 @@ package org.entcore.communication.services.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.collections.Joiner;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
+import io.vertx.codegen.annotations.Nullable;
+import io.vertx.core.*;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.conversation.LegacySearchVisibleRequest;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.common.notification.TimelineHelper;
@@ -51,6 +51,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import static io.vertx.core.json.JsonObject.mapFrom;
 import static org.entcore.common.neo4j.Neo4jResult.fullNodeMergeHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validEmptyHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
@@ -66,10 +67,14 @@ public class DefaultCommunicationService implements CommunicationService {
 
 	private final TimelineHelper notifyTimeline;
 	final JsonArray discoverVisibleExpectedProfile = new JsonArray();
+	private final String visiblesSearchType;
+	private final EventBus eventBus;
 
-	public DefaultCommunicationService(TimelineHelper notifyTimeline, JsonArray discoverVisibleExpectedProfile) {
+	public DefaultCommunicationService(final Vertx vertx, final TimelineHelper notifyTimeline, final JsonObject config) {
 		this.notifyTimeline = notifyTimeline;
-		this.discoverVisibleExpectedProfile.addAll(discoverVisibleExpectedProfile);
+		this.discoverVisibleExpectedProfile.addAll(config.getJsonArray("discoverVisibleExpectedProfile", new JsonArray()));
+		this.visiblesSearchType = config.getString("visibles-search-type", "light");
+		this.eventBus = vertx.eventBus();
 	}
 
 	@Override
@@ -1503,7 +1508,61 @@ public class DefaultCommunicationService implements CommunicationService {
 	}
 
 	@Override
-	public void searchVisibleContacts(UserInfos user, String search, String language, Handler<Either<String, JsonArray>> handler) {
+	public Future<JsonArray> searchVisibles(UserInfos user, String search, String language) {
+		final Future<JsonArray> visibles;
+		switch (this.visiblesSearchType) {
+			case "legacy":
+				visibles = legacySearchVisible(user, search, language);
+				break;
+			case "complete":
+				visibles = searchVisibleContacts(user, search, language);
+				break;
+			case "optimized":
+				visibles = searchVisibleContactsOptimized(user, search, language);
+				break;
+			default:
+				visibles = searchVisibleContactsLight(user, search, language);
+		}
+		return visibles;
+	}
+
+	private Future<JsonArray> legacySearchVisible(final UserInfos user, final String search, final String language) {
+		final Promise<JsonArray> promise = Promise.promise();
+		final LegacySearchVisibleRequest payload = new LegacySearchVisibleRequest(
+			user.getUserId(),
+			search, language,
+			null
+		);
+		eventBus.request("conversation.legacy.search.visible", mapFrom(payload), e -> {
+			if(e.succeeded()) {
+				final JsonObject legacyResult = (JsonObject) e.result().body();
+				final JsonArray adaptedLegacyresult = adaptLegacyResultFormat(legacyResult);
+				promise.complete(adaptedLegacyresult);
+			} else {
+				promise.fail(e.cause());
+			}
+		});
+		return promise.future();
+	}
+
+	private JsonArray adaptLegacyResultFormat(
+		final String userProfile,
+		final String language,
+		final JsonObject legacyResult) {
+		final JsonArray visibles = new JsonArray();
+		// TODO jber check output result
+		visibles.addAll(legacyResult.getJsonArray("users", new JsonArray()));
+		visibles.addAll(legacyResult.getJsonArray("groups", new JsonArray()));
+		return UserUtils.mapObjectToContact(
+			userProfile,
+			new JsonArray(),
+			visibles,
+			language
+		);
+	}
+
+	public Future<JsonArray> searchVisibleContacts(UserInfos user, String search, String language) {
+		final Promise<JsonArray> promise = Promise.promise();
 		String match = "MATCH (visibles) " +
 
 				"OPTIONAL MATCH visibles-[:RELATED]->(parent: User) " +
@@ -1627,38 +1686,38 @@ public class DefaultCommunicationService implements CommunicationService {
 				.onComplete(ar -> {
 
 					if (ar.failed()) {
-						handler.handle(new Either.Left<>(ar.cause().getMessage()));
-					}
+						promise.fail(ar.cause());
+					} else {
 
-					final Either<String, JsonArray> resVisible = getVisiblePromise.future().result();
-					final Either<String, JsonArray> resShareBookmark = getShareBookmarksPromise.future().result();
+						final Either<String, JsonArray> resVisible = getVisiblePromise.future().result();
+						final Either<String, JsonArray> resShareBookmark = getShareBookmarksPromise.future().result();
 
-					if (resVisible.isLeft()) {
-						log.error(resVisible.left().getValue());
-					}
+						if (resVisible.isLeft()) {
+							log.error(resVisible.left().getValue());
+						}
 
-					if (resShareBookmark.isLeft()) {
-						log.error(resShareBookmark.left().getValue());
-					}
+						if (resShareBookmark.isLeft()) {
+							log.error(resShareBookmark.left().getValue());
+						}
 
-					JsonArray visible = resVisible.isLeft() ? new JsonArray() : resVisible.right().getValue();
-					JsonArray shareBookmarks = resShareBookmark.isLeft() ? new JsonArray() : resShareBookmark.right().getValue();
+						JsonArray visible = resVisible.isLeft() ? new JsonArray() : resVisible.right().getValue();
+						JsonArray shareBookmarks = resShareBookmark.isLeft() ? new JsonArray() : resShareBookmark.right().getValue();
 
-					handler.handle(new Either.Right<>(
+						promise.complete(
 							UserUtils.mapObjectToContact(
-									user.getType(),
-									shareBookmarks,
-									visible,
-									language
+								user.getType(),
+								shareBookmarks,
+								visible,
+								language
 							)
-					));
+						);
+					}
 				});
-
+		return promise.future();
 	}
 
-
-	@Override
-	public void searchVisibleContactsLight(UserInfos user, String search, String language, Handler<Either<String, JsonArray>> handler) {
+	public Future<JsonArray> searchVisibleContactsLight(UserInfos user, String search, String language) {
+		final Promise<JsonArray> promise = Promise.promise();
 		String match = "MATCH (visibles) " +
 
 			"OPTIONAL MATCH visibles-[:RELATED]->(parent: User) " +
@@ -1743,38 +1802,39 @@ public class DefaultCommunicationService implements CommunicationService {
 			.onComplete(ar -> {
 
 				if (ar.failed()) {
-					handler.handle(new Either.Left<>(ar.cause().getMessage()));
+					promise.fail(ar.cause().getMessage());
+				} else {
+
+					final Either<String, JsonArray> resVisible = getVisiblePromise.future().result();
+					final Either<String, JsonArray> resShareBookmark = getShareBookmarksPromise.future().result();
+
+					if (resVisible.isLeft()) {
+						log.error(resVisible.left().getValue());
+					}
+
+					if (resShareBookmark.isLeft()) {
+						log.error(resShareBookmark.left().getValue());
+					}
+
+					JsonArray visible = resVisible.isLeft() ? new JsonArray() : resVisible.right().getValue();
+					JsonArray shareBookmarks = resShareBookmark.isLeft() ? new JsonArray() : resShareBookmark.right().getValue();
+
+					promise.complete(
+						UserUtils.mapObjectToContact(
+							user.getType(),
+							shareBookmarks,
+							visible,
+							language
+						)
+					);
 				}
-
-				final Either<String, JsonArray> resVisible = getVisiblePromise.future().result();
-				final Either<String, JsonArray> resShareBookmark = getShareBookmarksPromise.future().result();
-
-				if (resVisible.isLeft()) {
-					log.error(resVisible.left().getValue());
-				}
-
-				if (resShareBookmark.isLeft()) {
-					log.error(resShareBookmark.left().getValue());
-				}
-
-				JsonArray visible = resVisible.isLeft() ? new JsonArray() : resVisible.right().getValue();
-				JsonArray shareBookmarks = resShareBookmark.isLeft() ? new JsonArray() : resShareBookmark.right().getValue();
-
-				handler.handle(new Either.Right<>(
-					UserUtils.mapObjectToContact(
-						user.getType(),
-						shareBookmarks,
-						visible,
-						language
-					)
-				));
 			});
-
+		return promise.future();
 	}
 
 
-	@Override
-	public void searchVisibleContactsOptimized(UserInfos user, String search, String language, Handler<Either<String, JsonArray>> handler) {
+	public Future<JsonArray> searchVisibleContactsOptimized(UserInfos user, String search, String language) {
+		final Promise<JsonArray> promise = Promise.promise();
 		String match = "MATCH (visibles) " +
 			"WITH visibles, HEAD(visibles.profiles) AS primaryProfile " +
 			"OPTIONAL MATCH (visibles)-[:RELATED]-(related:User) " +
@@ -1876,33 +1936,34 @@ public class DefaultCommunicationService implements CommunicationService {
 			.onComplete(ar -> {
 
 				if (ar.failed()) {
-					handler.handle(new Either.Left<>(ar.cause().getMessage()));
+					promise.fail(ar.cause());
+				} else {
+
+					final Either<String, JsonArray> resVisible = getVisiblePromise.future().result();
+					final Either<String, JsonArray> resShareBookmark = getShareBookmarksPromise.future().result();
+
+					if (resVisible.isLeft()) {
+						log.error(resVisible.left().getValue());
+					}
+
+					if (resShareBookmark.isLeft()) {
+						log.error(resShareBookmark.left().getValue());
+					}
+
+					JsonArray visible = resVisible.isLeft() ? new JsonArray() : resVisible.right().getValue();
+					JsonArray shareBookmarks = resShareBookmark.isLeft() ? new JsonArray() : resShareBookmark.right().getValue();
+
+					promise.complete(
+						UserUtils.mapObjectToContact(
+							user.getType(),
+							shareBookmarks,
+							visible,
+							language
+						)
+					);
 				}
-
-				final Either<String, JsonArray> resVisible = getVisiblePromise.future().result();
-				final Either<String, JsonArray> resShareBookmark = getShareBookmarksPromise.future().result();
-
-				if (resVisible.isLeft()) {
-					log.error(resVisible.left().getValue());
-				}
-
-				if (resShareBookmark.isLeft()) {
-					log.error(resShareBookmark.left().getValue());
-				}
-
-				JsonArray visible = resVisible.isLeft() ? new JsonArray() : resVisible.right().getValue();
-				JsonArray shareBookmarks = resShareBookmark.isLeft() ? new JsonArray() : resShareBookmark.right().getValue();
-
-				handler.handle(new Either.Right<>(
-					UserUtils.mapObjectToContact(
-						user.getType(),
-						shareBookmarks,
-						visible,
-						language
-					)
-				));
 			});
-
+		return promise.future();
 	}
 
 

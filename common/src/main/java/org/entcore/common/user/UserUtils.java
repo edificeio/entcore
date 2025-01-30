@@ -771,6 +771,13 @@ public class UserUtils {
 		});
 	}
 
+	/**
+	 * Fetch the user's session information and return an unauthorized response if the user has no session. Therefore,
+	 * <b>there is no need to handle a failure of the returned Future</b>.
+	 * @param eb Event bus to be used to fetch the user's session
+	 * @param request Caller's request
+	 * @return The user's session information
+	 */
 	public static Future<UserInfos> getAuthenticatedUserInfos(EventBus eb, HttpServerRequest request) {
 		final Promise<UserInfos> promise = Promise.promise();
 		getSession(eb, request, session -> {
