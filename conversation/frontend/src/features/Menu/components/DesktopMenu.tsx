@@ -24,8 +24,9 @@ import {
 } from '~/components';
 import { useTranslation } from 'react-i18next';
 import { useUsedSpace } from '~/hooks';
-import { useFoldersTree } from '~/store';
 import { useFolderHandlers } from '../hooks/useFolderHandlers';
+import { useMemo } from 'react';
+import { useFoldersTree } from '~/services';
 
 type FolderTreeItem = TreeItem & { folder: Folder };
 
@@ -51,7 +52,7 @@ const bytesToMegabytes = (bytes: number) => Math.round(bytes / (1024 * 1024));
 /** The navigation menu among folders, intended for desktop resolutions */
 export function DesktopMenu() {
   const navigate = useNavigate();
-  const foldersTree = useFoldersTree();
+  const foldersTreeQuery = useFoldersTree();
   const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
   const { t: common_t } = useTranslation('common');
@@ -66,12 +67,16 @@ export function DesktopMenu() {
 
   const { handleCreate: handleNewFolderClick } = useFolderHandlers();
 
-  if (!foldersTree) {
+  const userFolders = useMemo(() => {
+    const foldersTree = foldersTreeQuery.data;
+    return foldersTree ? buildTree(foldersTree) : null;
+  }, [foldersTreeQuery]);
+
+  const progress = quota > 0 ? (usage * 100) / quota : 0;
+
+  if (!userFolders) {
     return null;
   }
-
-  const userFolders = buildTree(foldersTree);
-  const progress = quota > 0 ? (usage * 100) / quota : 0;
 
   const progressBarProps: ProgressBarProps = {
     label:
@@ -153,7 +158,7 @@ export function DesktopMenu() {
       </Menu.Item>
       <Menu.Item>
         <div className="d-flex flex-column">
-          <b className="fs-6 mb-8">{t('user.folders')}</b>
+          <strong className="fs-6 mb-8">{t('user.folders')}</strong>
           <SortableTree
             nodes={userFolders}
             onSortable={NOOP}
