@@ -58,7 +58,7 @@ public class CityConnectServiceProvider implements OpenIdConnectServiceProvider 
 	private static final String QUERY_SUB_CC = "MATCH (u:User {subCC : {sub}}) " + AbstractSSOProvider.RETURN_QUERY;
 	private static final String QUERY_PIVOT_CC =
 			"MATCH (u:User) WHERE lower(u.email) = lower({email}) AND NOT(HAS(u.subCC)) " +
-			"SET u.subCC = {sub}, u.federated = {setFederated} " +
+			"SET u.subCC = {sub}, u.federated = {setFederated}, u.changePw=null " +
 			"WITH u " + AbstractSSOProvider.RETURN_QUERY;
 	private static final String QUERY_MAPPING_CC =
 			"MATCH (n:User {login:{login}}) " +
@@ -67,7 +67,7 @@ public class CityConnectServiceProvider implements OpenIdConnectServiceProvider 
 	private static final String QUERY_SET_MAPPING_CC =
 			"MATCH (u:User {login:{login}}) " +
 			"WHERE NOT(HAS(u.subCC)) " +
-			"SET u.subCC = {sub}, u.federated = {setFederated} " +
+			"SET u.subCC = {sub}, u.federated = {setFederated}, u.changePw=null " +
 			"WITH u " + AbstractSSOProvider.RETURN_QUERY;
 	private boolean setFederated = true;
 
