@@ -1,7 +1,7 @@
-import { useFoldersTree } from '~/store';
+import { useSelectedFolders } from '~/store';
 import { useI18n } from './useI18n';
 import { useToast } from '@edifice.io/react';
-import { useCreateFolder } from '~/services';
+import { useCreateFolder, useFoldersTree, useTrashFolder } from '~/services';
 import { useCallback, useState } from 'react';
 
 const MAX_LENGTH = 50;
@@ -9,8 +9,10 @@ const MAX_LENGTH = 50;
 export function useFolderActions() {
   const { t } = useI18n();
   const { success, error } = useToast();
-  const foldersTree = useFoldersTree();
+  const foldersTreeQuery = useFoldersTree();
+  const selectedFolders = useSelectedFolders();
   const createMutation = useCreateFolder();
+  const trashMutation = useTrashFolder();
 
   const [isPending, setIsPending] = useState<boolean | undefined>(undefined);
 
@@ -20,6 +22,9 @@ export function useFolderActions() {
       if (name.length > MAX_LENGTH) {
         name = name.substring(0, MAX_LENGTH);
       }
+
+      const foldersTree = foldersTreeQuery.data;
+      if (!foldersTree) return;
 
       // Check if a folder with the same name exists at this level.
       const siblings = parentId
@@ -41,8 +46,30 @@ export function useFolderActions() {
       );
       setIsPending(true);
     },
-    [createMutation, error, foldersTree, success, t],
+    [createMutation, error, foldersTreeQuery.data, success, t],
   );
 
-  return { foldersTree, createFolder, isActionPending: isPending };
+  const trashFolder = useCallback(() => {
+    if (selectedFolders.length > 0) {
+      const id = selectedFolders[0].id;
+      trashMutation.mutate(
+        { id },
+        {
+          onSuccess: () => success(t('conversation.success.trash.folder')),
+          onError: () => error(t('conversation.error.trash.folder')),
+          onSettled: () => setIsPending(false),
+        },
+      );
+      setIsPending(true);
+    } else {
+      return false;
+    }
+  }, [error, selectedFolders, success, t, trashMutation]);
+
+  return {
+    foldersTree: foldersTreeQuery.data,
+    createFolder,
+    trashFolder,
+    isActionPending: isPending,
+  };
 }

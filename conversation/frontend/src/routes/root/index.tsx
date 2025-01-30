@@ -10,50 +10,41 @@ import { QueryClient } from '@tanstack/react-query';
 import { Outlet, useLoaderData } from 'react-router-dom';
 import { existingActions } from '~/config';
 import { AppActionHeader } from '~/features/app/Action/AppActionHeader';
-import { DesktopMenu, MobileMenu } from '~/features';
-import { Folder } from '~/models';
+import { DesktopMenu, MobileMenu, TrashFolderModal } from '~/features';
 import { actionsQueryOptions, folderQueryOptions } from '~/services/queries';
 import { CreateFolderModal } from '~/features';
 import './index.css';
-import { useAppActions, useOpenFolderModal } from '~/store';
+import { useOpenFolderModal } from '~/store';
 
-export const loader =
-  (queryClient: QueryClient) =>
-  async (/*{ params, request }: LoaderFunctionArgs*/) => {
-    const foldersTreeOptions = folderQueryOptions.getFoldersTree();
-    const actionsOptions = actionsQueryOptions(existingActions);
+export const loader = (queryClient: QueryClient) => async () => {
+  const actionsOptions = actionsQueryOptions(existingActions);
 
-    try {
-      const [foldersTree, actions] = await Promise.all([
-        queryClient.ensureQueryData(foldersTreeOptions),
-        queryClient.ensureQueryData(actionsOptions),
-      ]);
-      return { foldersTree, actions };
-    } catch {
-      return { foldersTree: [], actions: {} as Record<string, boolean> };
-    }
-  };
+  // Non-blocking: display a skeleton in the meantime
+  queryClient.ensureQueryData(folderQueryOptions.getFoldersTree());
+
+  try {
+    const actions = await queryClient.ensureQueryData(actionsOptions);
+    return { actions };
+  } catch {
+    return { actions: {} as Record<string, boolean> };
+  }
+};
 
 export function Component() {
   const { init, currentApp } = useEdificeClient();
 
-  const { foldersTree, actions } = useLoaderData() as {
-    foldersTree: Folder[];
+  const { actions } = useLoaderData() as {
     actions: Record<string, boolean>;
   };
 
   const { md } = useBreakpoint();
-  const { setFoldersTree } = useAppActions();
   const folderModal = useOpenFolderModal();
 
   if (!init || !currentApp) return <LoadingScreen position={false} />;
 
-  if (!foldersTree || !actions) {
+  if (!actions) {
     throw 'Unexpected error';
   }
-
-  // Update folders store
-  setFoldersTree(foldersTree);
 
   return (
     <Layout>
@@ -76,6 +67,7 @@ export function Component() {
       </div>
 
       {folderModal === 'create' && <CreateFolderModal />}
+      {folderModal === 'trash' && <TrashFolderModal />}
     </Layout>
   );
 }

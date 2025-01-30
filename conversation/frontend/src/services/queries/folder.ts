@@ -6,12 +6,8 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { folderService, recursiveSearch } from '..';
+import { folderService, searchFolder } from '..';
 import { Folder, MessageMetadata } from '~/models';
-import {
-  useAppActions,
-  useFoldersTree as useFoldersTreeFromStore,
-} from '~/store';
 import { useSearchParams } from 'react-router-dom';
 
 /**
@@ -116,6 +112,15 @@ export const folderQueryOptions = {
 };
 
 /**
+ * Hook to fetch the folder tree.
+ *
+ * @returns Query result for fetching the folder tree.
+ */
+export const useFoldersTree = () => {
+  return useQuery(folderQueryOptions.getFoldersTree());
+};
+
+/**
  * Hook to fetch messages from a specific folder with pagination support.
  *
  * @param folderId - The ID of the folder.
@@ -163,24 +168,27 @@ export const useMessagesCount = (
  */
 export const useCreateFolder = () => {
   const queryClient = useQueryClient();
-  const foldersTree = useFoldersTreeFromStore();
-  const { setFoldersTree } = useAppActions();
+  const foldersTreeQuery = useFoldersTree();
 
   return useMutation({
     mutationFn: (payload: { name: string; parentId?: string }) =>
       folderService.create(payload),
     onSuccess: async ({ id }, { name, parentId }) => {
-      if (parentId) {
-        // try optimistic update...
-        const parent = recursiveSearch(parentId, foldersTree);
-        if (!parent) {
-          // ...or fallback to full refreshing the whole folders tree.
-          return queryClient.invalidateQueries(
-            folderQueryOptions.getFoldersTree(),
-          );
-        } else {
-          if (!parent.subFolders) parent.subFolders = [];
-          parent.subFolders.push({
+      const foldersTree = foldersTreeQuery.data;
+      // Try optimistic update...
+      do {
+        if (!foldersTree) break;
+
+        if (parentId) {
+          // Look for the parent folder in the tree.
+          const found = searchFolder(parentId, foldersTree);
+          if (!found?.folder) break;
+
+          if (!found.folder.subFolders) {
+            found.folder.subFolders = [];
+          }
+          // Update parent folder data.
+          found.folder.subFolders.push({
             id,
             depth: 2,
             name,
@@ -188,19 +196,30 @@ export const useCreateFolder = () => {
             nbUnread: 0,
             trashed: false,
           });
+        } else {
+          // Push new folder at root level (depth=1)
+          foldersTree.push({
+            id,
+            depth: 1,
+            name,
+            nbMessages: 0,
+            nbUnread: 0,
+            trashed: false,
+          });
+
+          // Optimistic update
+          queryClient.setQueryData(
+            folderQueryOptions.getFoldersTree().queryKey,
+            [...foldersTree],
+          );
+
+          return;
         }
-      } else {
-        // optimistic update : push new folder at root level (depth=1)
-        foldersTree.push({
-          id,
-          depth: 1,
-          name,
-          nbMessages: 0,
-          nbUnread: 0,
-          trashed: false,
-        });
-      }
-      setFoldersTree(foldersTree);
+        // eslint-disable-next-line no-constant-condition
+      } while (false);
+
+      // ...or full refresh the whole folders tree as a fallback.
+      return queryClient.invalidateQueries(folderQueryOptions.getFoldersTree());
     },
   });
 };
@@ -228,10 +247,44 @@ export const useUpdateFolder = () => {
  */
 export const useTrashFolder = () => {
   const queryClient = useQueryClient();
+  const foldersTreeQuery = useFoldersTree();
+
   return useMutation({
     mutationFn: ({ id }: Pick<Folder, 'id'>) => folderService.trash(id),
-    onSuccess: (_data, _context) => {
-      queryClient.invalidateQueries({
+    onSuccess: async (_data, { id }) => {
+      const foldersTree = foldersTreeQuery.data;
+
+      // Try optimistic update...
+      do {
+        if (!foldersTree) break;
+
+        const found = searchFolder(id, foldersTree);
+        if (!found) break;
+
+        if (found.parent) {
+          // This is a sub-folder. Remove it from its parent sub-folders list.
+          found.parent.subFolders = found.parent.subFolders?.filter(
+            (f) => f.id !== id,
+          );
+          // Optimistic update
+          queryClient.setQueryData(
+            folderQueryOptions.getFoldersTree().queryKey,
+            [...foldersTree],
+          );
+        } else {
+          // Optimistic update
+          queryClient.setQueryData(
+            folderQueryOptions.getFoldersTree().queryKey,
+            foldersTree.filter((f) => f.id !== id),
+          );
+        }
+
+        return;
+        // eslint-disable-next-line no-constant-condition
+      } while (false);
+
+      // ...or full refresh the whole folders tree as a fallback.
+      return queryClient.refetchQueries({
         queryKey: folderQueryOptions.getFoldersTree().queryKey,
       });
     },

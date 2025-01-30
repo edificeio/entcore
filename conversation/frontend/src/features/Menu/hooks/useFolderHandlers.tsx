@@ -2,28 +2,31 @@ import { Folder } from '~/models';
 import { useAppActions } from '~/store';
 
 export function useFolderHandlers() {
-  const { setOpenFolderModal } = useAppActions();
+  const { setOpenFolderModal, setSelectedFolders } = useAppActions();
 
   const handleCreate = () => {
     setOpenFolderModal('create');
   };
 
-  const handleMove = (_folder: Folder) => {
+  const handleMove = (folder: Folder) => {
+    setSelectedFolders([folder]);
     setOpenFolderModal('move');
   };
 
-  const handleRename = (_folder: Folder) => {
+  const handleRename = (folder: Folder) => {
+    setSelectedFolders([folder]);
     setOpenFolderModal('rename');
   };
 
-  const handleDelete = (_folder: Folder) => {
-    setOpenFolderModal('delete');
+  const handleTrash = (folder: Folder) => {
+    setSelectedFolders([folder]);
+    setOpenFolderModal('trash');
   };
 
   return {
     handleCreate,
     handleMove,
     handleRename,
-    handleDelete,
+    handleTrash,
   };
 }

@@ -9,14 +9,13 @@ import {
   OptionsType,
   Select,
 } from '@edifice.io/react';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFolderActions, useI18n } from '~/hooks';
 
 export function CreateFolderModal() {
   const { t, common_t } = useI18n();
   const { setOpenFolderModal } = useAppActions();
-  const { createFolder, isActionPending } = useFolderActions();
-  const { foldersTree } = useFolderActions();
+  const { createFolder, isActionPending, foldersTree } = useFolderActions();
   const [checked, setChecked] = useState(false);
   const [subFolderId, setSubfolderId] = useState<string | undefined>(undefined);
   const refInputName = useRef<HTMLInputElement>(null);
@@ -41,15 +40,21 @@ export function CreateFolderModal() {
     setChecked(newValue);
   }, [checked]);
 
+  const folderOptions = useMemo(
+    () =>
+      foldersTree?.map((f) => ({
+        label: f.name,
+        value: f.id,
+      })) ?? [],
+    [foldersTree],
+  );
+
+  if (!foldersTree) return <></>;
+
   const handleCloseFolderModal = () => setOpenFolderModal(null);
 
   const handleOptionChange = (option: OptionsType | string) =>
     setSubfolderId(typeof option === 'object' ? option.value : option);
-
-  const folderOptions = foldersTree.map((f) => ({
-    label: f.name,
-    value: f.id,
-  }));
 
   return (
     <Modal
@@ -74,24 +79,28 @@ export function CreateFolderModal() {
             data-testid="inputNewName"
           />
         </FormControl>
-        <div className="mt-24"></div>
-        <Checkbox
-          checked={checked}
-          label={t('folder.new.subfolder.label')}
-          onChange={handleSubfolderCheckChange}
-          data-testid="checkParentFolder"
-        />
-        <div className="mt-8"></div>
-        <Select
-          disabled={!checked}
-          size="md"
-          placeholderOption={t('folder.new.subfolder.placeholder')}
-          overflow={true}
-          block={true}
-          options={folderOptions}
-          onValueChange={handleOptionChange}
-          data-testid="selectParentFolder"
-        />
+        {folderOptions.length > 0 && (
+          <>
+            <div className="mt-24"></div>
+            <Checkbox
+              checked={checked}
+              label={t('folder.new.subfolder.label')}
+              onChange={handleSubfolderCheckChange}
+              data-testid="checkParentFolder"
+            />
+            <div className="mt-8"></div>
+            <Select
+              disabled={!checked}
+              size="md"
+              placeholderOption={t('folder.new.subfolder.placeholder')}
+              overflow={true}
+              block={true}
+              options={folderOptions}
+              onValueChange={handleOptionChange}
+              data-testid="selectParentFolder"
+            />
+          </>
+        )}
       </Modal.Body>
 
       <Modal.Footer>

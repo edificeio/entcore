@@ -1,7 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { Folder } from '~/models';
-import { recursiveSearch } from '~/services';
-import { useFoldersTree } from '~/store';
+import { searchFolder, useFoldersTree } from '~/services';
 
 /**
  * Hook to extract the selected folder ID from the URL,
@@ -15,10 +14,13 @@ export function useSelectedFolder(): {
   folderId?: string;
   userFolder?: Folder;
 } {
-  const foldersTree = useFoldersTree();
   const { folderId } = useParams() as { folderId: string };
+  const foldersTreeQuery = useFoldersTree();
+  const foldersTree = foldersTreeQuery.data;
 
-  if (!folderId) return {};
+  if (!folderId || !foldersTree) return {};
+
+  const found = searchFolder(folderId, foldersTree);
 
   switch (folderId.toLowerCase()) {
     case 'inbox':
@@ -32,6 +34,6 @@ export function useSelectedFolder(): {
 
   return {
     folderId,
-    userFolder: recursiveSearch(folderId, foldersTree),
+    userFolder: found?.folder,
   };
 }

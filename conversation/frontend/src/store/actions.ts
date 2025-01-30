@@ -1,19 +1,19 @@
 import { createStore, useStore } from 'zustand';
 import { Folder } from '~/models';
 
-type FolderModal = null | 'create' | 'move' | 'rename' | 'delete';
+type FolderModal = null | 'create' | 'move' | 'rename' | 'trash';
 
 interface State {
-  openFolderModal: FolderModal;
   selectedMessageIds: string[];
-  foldersTree: Folder[];
+  selectedFolders: Folder[];
+  openFolderModal: FolderModal;
 }
 
 type Action = {
   actions: {
-    setOpenFolderModal: (value: FolderModal) => void;
     setSelectedMessageIds: (value: string[]) => void;
-    setFoldersTree: (folders: Folder[]) => void;
+    setSelectedFolders: (value: Folder[]) => void;
+    setOpenFolderModal: (value: FolderModal) => void;
   };
 };
 
@@ -26,34 +26,35 @@ type ExtractState<S> = S extends {
 type Params<U> = Parameters<typeof useStore<typeof store, U>>;
 
 const initialState = {
-  openFolderModal: null,
   selectedMessageIds: [],
-  foldersTree: [],
+  selectedFolders: [],
+  openFolderModal: null,
 };
 
 const store = createStore<State & Action>()((set) => ({
   ...initialState,
   actions: {
-    setOpenFolderModal: (openFolderModal: FolderModal) =>
-      set({ openFolderModal }),
     setSelectedMessageIds: (selectedMessageIds: string[]) =>
       set({ selectedMessageIds }),
-    setFoldersTree: (foldersTree: Folder[]) => set(() => ({ foldersTree })),
+    setSelectedFolders: (selectedFolders: Folder[]) => set({ selectedFolders }),
+    setOpenFolderModal: (openFolderModal: FolderModal) =>
+      set({ openFolderModal }),
   },
 }));
 
 // Selectors
-const setOpenFolderModal = (state: ExtractState<typeof store>) =>
-  state.openFolderModal;
 const selectedMessageIds = (state: ExtractState<typeof store>) =>
   state.selectedMessageIds;
-const foldersTree = (state: ExtractState<typeof store>) => state.foldersTree;
+const selectedFolders = (state: ExtractState<typeof store>) =>
+  state.selectedFolders;
+const setOpenFolderModal = (state: ExtractState<typeof store>) =>
+  state.openFolderModal;
 const actionsSelector = (state: ExtractState<typeof store>) => state.actions;
 
 // Getters
-export const getOpenFolderModal = () => setOpenFolderModal(store.getState());
 export const getSelectedMessageIds = () => selectedMessageIds(store.getState());
-export const getFoldersTree = () => foldersTree(store.getState());
+export const getSelectedFolders = () => selectedFolders(store.getState());
+export const getOpenFolderModal = () => setOpenFolderModal(store.getState());
 
 // React Store
 function useAppStore<U>(selector: Params<U>[1]) {
@@ -61,7 +62,7 @@ function useAppStore<U>(selector: Params<U>[1]) {
 }
 
 // Hooks
-export const useOpenFolderModal = () => useAppStore(setOpenFolderModal);
 export const useSelectedMessageIds = () => useAppStore(selectedMessageIds);
-export const useFoldersTree = () => useAppStore(foldersTree);
+export const useSelectedFolders = () => useAppStore(selectedFolders);
+export const useOpenFolderModal = () => useAppStore(setOpenFolderModal);
 export const useAppActions = () => useAppStore(actionsSelector);
