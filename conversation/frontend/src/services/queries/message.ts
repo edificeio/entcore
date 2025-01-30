@@ -71,6 +71,17 @@ const useToggleUnread = (unread: boolean) => {
         },
       );
       queryClient.setQueryData(
+        ['conversation-navbar-count'],
+        ({ count }: { count: number }) => {
+          if (count !== undefined) {
+            return {
+              count: count + (unread ? messageIds.length : -messageIds.length),
+            };
+          }
+          return { count: unread ? messageIds.length : 0 };
+        },
+      );
+      queryClient.setQueryData(
         folderQueryOptions.getMessagesQuerykey(folderId, {
           search: search === '' ? undefined : search || undefined,
           unread: !unreadFilter ? undefined : true,
