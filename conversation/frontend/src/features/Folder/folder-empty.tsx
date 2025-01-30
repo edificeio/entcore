@@ -7,7 +7,6 @@ import illuMessagerie from '@images/emptyscreen/illu-messagerie.svg';
 import illuNoContent from '@images/emptyscreen/illu-no-content-in-folder.svg';
 import illuSearch from '@images/emptyscreen/illu-search.svg';
 import illuTrash from '@images/emptyscreen/illu-trash.svg';
-import { useMemo } from 'react';
 
 export function FolderEmpty() {
   const { folderId } = useParams();
@@ -15,12 +14,7 @@ export function FolderEmpty() {
   const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
 
-  const emptyScreenData: {
-    illu: string;
-    title: string;
-    text: string;
-    withNewMessage: boolean;
-  } = useMemo(() => {
+  const getEmptyScreenData = () => {
     const search = searchParams.get('search');
     const unread = searchParams.get('unread');
     if ((search && search !== '') || !!unread) {
@@ -54,17 +48,17 @@ export function FolderEmpty() {
         };
       }
     }
-  }, [folderId, searchParams]);
+  };
 
   return (
     <div className="d-flex flex-column gap-24 align-items-center justify-content-center">
       <EmptyScreen
-        imageSrc={emptyScreenData.illu}
-        imageAlt={t(emptyScreenData.title)}
-        title={t(emptyScreenData.title)}
-        text={t(emptyScreenData.text)}
+        imageSrc={getEmptyScreenData().illu}
+        imageAlt={t(getEmptyScreenData().title)}
+        title={t(getEmptyScreenData().title)}
+        text={t(getEmptyScreenData().text)}
       />
-      {emptyScreenData.withNewMessage && (
+      {getEmptyScreenData().withNewMessage && (
         <div>
           <Button>
             <IconEdit />

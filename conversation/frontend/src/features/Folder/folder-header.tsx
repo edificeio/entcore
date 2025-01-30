@@ -52,7 +52,7 @@ export function FolderHeader() {
   };
 
   const handleSearchClick = () => {
-    if (searchText && searchText !== '' && searchText.length > 2) {
+    if (searchText && searchText.length > 2) {
       searchParams.set('search', searchText);
     } else {
       searchParams.delete('search');
@@ -78,6 +78,7 @@ export function FolderHeader() {
         onChange={handleSearchTextChange}
         onClick={handleSearchClick}
         isVariant={false}
+        size="lg"
         value={searchText}
         data-testid="search-bar"
       />
@@ -85,7 +86,7 @@ export function FolderHeader() {
         <Dropdown data-testid="filter-dropdown">
           <Dropdown.Trigger
             label={!md ? '' : t('filter')}
-            size="sm"
+            badgeContent={filters.length}
             variant="ghost"
             icon={<IconFilter />}
           />

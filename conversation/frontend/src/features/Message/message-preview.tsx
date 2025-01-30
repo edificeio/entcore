@@ -14,7 +14,7 @@ export function MessagePreview({ message }: MessagePreviewProps) {
   const { fromNow } = useDate();
 
   return (
-    <div className="d-flex gap-12 align-items-center flex-fill overflow-hidden fs-14">
+    <div className="d-flex gap-12 align-items-center flex-fill overflow-hidden fs-6">
       {(message.response || message.forwarded) && (
         <IconUndo className="gray-800" />
       )}
@@ -34,10 +34,9 @@ export function MessagePreview({ message }: MessagePreviewProps) {
           </div>
         </div>
         <div className="d-flex flex-fill justify-content-between overflow-hidden">
-          {message.subject && (
+          {message.subject ? (
             <div className="text-truncate flex-fill">{message.subject}</div>
-          )}
-          {!message.subject && (
+          ) : (
             <div className="text-truncate flex-fill gray-800">
               {t('nosubject')}
             </div>
