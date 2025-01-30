@@ -5,14 +5,14 @@ import {
   IconFolderMove,
   IconOptions,
 } from '@edifice.io/react/icons';
-import { Fragment, RefAttributes } from 'react';
+import { RefAttributes } from 'react';
 import { useFolderHandlers } from '~/features/Menu/hooks/useFolderHandlers';
 import { useTranslation } from 'react-i18next';
 import { Folder } from '~/models';
 
 export function FolderActionDropDown({ folder }: { folder: Folder }) {
   const { t: common_t } = useTranslation('common');
-  const { handleMove, handleRename, handleDelete } = useFolderHandlers();
+  const { handleMove, handleRename, handleTrash } = useFolderHandlers();
 
   const options = [
     {
@@ -28,7 +28,7 @@ export function FolderActionDropDown({ folder }: { folder: Folder }) {
     {
       label: common_t('delete'),
       icon: <IconDelete />,
-      action: handleDelete,
+      action: handleTrash,
     },
   ];
 
@@ -53,14 +53,13 @@ export function FolderActionDropDown({ folder }: { folder: Folder }) {
 
           <Dropdown.Menu>
             {options.map((option) => (
-              <Fragment key={option.label}>
-                <Dropdown.Item
-                  icon={option.icon}
-                  onClick={() => option.action(folder)}
-                >
-                  {option.label}
-                </Dropdown.Item>
-              </Fragment>
+              <Dropdown.Item
+                key={option.label}
+                icon={option.icon}
+                onClick={() => option.action(folder)}
+              >
+                {option.label}
+              </Dropdown.Item>
             ))}
           </Dropdown.Menu>
         </div>
