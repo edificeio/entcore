@@ -896,7 +896,7 @@ public class SqlConversationService implements ConversationService{
 		.append("   ,COALESCE(sub.nb_unread,0) as \"nbUnread\"")
 		.append(" FROM ").append(folderTable).append(" AS f")
 		.append(" LEFT JOIN sub ON (f.id=sub.folder_id)")
-		.append(" WHERE f.user_id = ?")
+		.append(" WHERE f.user_id = ? AND f.trashed = FALSE")
 		;
 		final JsonArray values = new JsonArray()
 		.add(user.getUserId())
