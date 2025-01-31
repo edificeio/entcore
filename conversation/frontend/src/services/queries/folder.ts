@@ -225,17 +225,39 @@ export const useCreateFolder = () => {
 };
 
 /**
- * Hook to update an existing folder.
+ * Hook to rename an existing folder.
  *
- * @returns Mutation result for updating a folder.
+ * @returns Mutation result for renaming a folder.
  */
-export const useUpdateFolder = () => {
-  //  const queryClient = useQueryClient();
+export const useRenameFolder = () => {
+  const queryClient = useQueryClient();
+  const foldersTreeQuery = useFoldersTree();
+
   return useMutation({
     mutationFn: ({ id: folderId, name }: Pick<Folder, 'id' | 'name'>) =>
       folderService.rename(folderId, name),
-    onSuccess: (_data, _context) => {
-      // TODO optimistic update
+    onSuccess: async (_data, { id, name }) => {
+      const foldersTree = foldersTreeQuery.data;
+      // Try optimistic update...
+      do {
+        if (!foldersTree) break;
+        // Look for the parent folder in the tree.
+        const found = searchFolder(id, foldersTree);
+        if (!found?.folder) break;
+
+        found.folder.name = name;
+
+        // Optimistic update
+        queryClient.setQueryData(folderQueryOptions.getFoldersTree().queryKey, [
+          ...foldersTree,
+        ]);
+
+        return;
+        // eslint-disable-next-line no-constant-condition
+      } while (false);
+
+      // ...or full refresh the whole folders tree as a fallback.
+      return queryClient.invalidateQueries(folderQueryOptions.getFoldersTree());
     },
   });
 };
