@@ -91,6 +91,8 @@ public interface ConversationService {
 	/** Legacy */
 	void list(String folder, String restrain, Boolean unread, UserInfos user, int page, String searchWords, Handler<Either<String, JsonArray>> results);
 
+	Future<JsonArray> listAndFormat(String folderId, Boolean unread, UserInfos userInfos, int page, int page_size, String search, String lang);
+
 	void listThreads(UserInfos user, int page, Handler<Either<String, JsonArray>> results);
 
 	void listThreadMessages(String threadId, int page, UserInfos user, Handler<Either<String, JsonArray>> results);
@@ -106,7 +108,10 @@ public interface ConversationService {
 	void delete(List<String> messagesId, Boolean deleteAll, UserInfos user, Handler<Either<String, JsonArray>> result);
 
 	void get(String messageId, UserInfos user, Handler<Either<String, JsonObject>> result);
+
 	void get(String messageId, UserInfos user, int apiVersion, Handler<Either<String, JsonObject>> result);
+
+	Future<JsonObject> getAndFormat(String id, UserInfos userInfos, String lang, boolean originalFormat, HttpServerRequest request);
 
 	Future<String> getOriginalMessageContent(String messageId);
 

@@ -81,7 +81,7 @@ public class ApiController extends BaseController {
 		final String acceptedLanguage = I18n.acceptLanguage(request);
 
 		getAuthenticatedUserInfos(eb, request)
-		.compose( user -> listAndFormat(folderId, unread, user, page, page_size, search, acceptedLanguage) )
+		.compose( user -> conversationService.listAndFormat(folderId, unread, user, page, page_size, search, acceptedLanguage) )
 		.onSuccess( messages -> {
 			renderJson(request, messages);
 		})
@@ -105,7 +105,7 @@ public class ApiController extends BaseController {
 		final String acceptedLanguage = I18n.acceptLanguage(request);
 
 		getAuthenticatedUserInfos(eb, request)
-		.compose( user -> getAndFormat(id, user, acceptedLanguage, originalFormat, request) )
+		.compose( user -> conversationService.getAndFormat(id, user, acceptedLanguage, originalFormat, request) )
 		.onSuccess( message -> {
 			renderJson(request, message);
 		})
@@ -125,132 +125,6 @@ public class ApiController extends BaseController {
 		.onSuccess(user -> {
 			conversationService.getFolderTree(user, depth, Optional.empty(), arrayResponseHandler(request));
 		});
-	}
-
-	/**
-	 * Method fetching and formatting a message details
-	 * @param id the id of the message to fetch and format
-	 * @param userInfos the user infos
-	 * @param lang the user language
-	 * @param originalFormat true if the message body must be rendered with the original format, false by default
-	 * @param request the request
-	 * @return a {@link Future} of the message details to be rendered, after several formatting operations :
-	 * <ul>
-	 *     <li>transformation of message content</li>
-	 *     <li>a series of operation to retrieve users and groups display names and details</li>
-	 * </ul>
-	 */
-	private Future<JsonObject> getAndFormat(String id, UserInfos userInfos, String lang, boolean originalFormat, HttpServerRequest request) {
-		final Promise<JsonObject> promise = Promise.promise();
-		final JsonObject userIndex = new JsonObject();
-		final JsonObject groupIndex = new JsonObject();
-		conversationService.get(id, userInfos, 1, either -> {
-			if (either.isRight()) {
-				final JsonObject message = either.right().getValue();
-				transformMessageContent(id, originalFormat, request, message)
-						.onSuccess(event -> {
-							// Extract distinct users and groups.
-							MessageUtil.computeUsersAndGroupsDisplayNames(message, userInfos, lang, userIndex, groupIndex);
-
-							MessageUtil.loadUsersAndGroupsDetails(eb, userInfos, userIndex, groupIndex)
-								.onSuccess( unused -> {
-									MessageUtil.formatRecipients(message, userIndex, groupIndex);
-									promise.complete(message);
-								})
-								.onFailure( throwable -> {
-									promise.fail(throwable.getMessage());
-								});})
-						.onFailure(th -> {
-							promise.fail(th.getMessage());
-						});
-			} else {
-				promise.fail(either.left().getValue());
-			}
-		});
-		return promise.future();
-	}
-
-	/**
-	 * Method handling the different message content transformations requested
-	 * @param messageId the message id
-	 * @param originalFormat true if original format of the message content must be returned
-	 * @param request the request
-	 * @param message the message details to return
-	 * @return a void future completed if all message content transformations succeeded
-	 */
-	private Future<Void> transformMessageContent(String messageId, boolean originalFormat, HttpServerRequest request, JsonObject message) {
-		Promise<Void> updatedMessagePromise= Promise.promise();
-		// replace message body with original content if requested
-		if (originalFormat) {
-			Future<String> originalContentFuture = conversationService.getOriginalMessageContent(messageId);
-			originalContentFuture
-					.onSuccess(originalContent -> {
-						message.put("body", originalContent);
-						updatedMessagePromise.complete();
-					})
-					.onFailure(throwable -> {
-						log.error("Failed to retrieve original message content", throwable);
-						updatedMessagePromise.fail(throwable.getMessage());
-					});
-		}
-		// transform and persist message content if needed
-		else if (message.getInteger("contentVersion") == 0) {
-			conversationService.transformMessageContent(message.getString("body"), messageId, request)
-					.onSuccess(transformerResponse -> conversationService.updateMessageContent(messageId, transformerResponse.getCleanHtml(), transformerResponse.getContentVersion())
-							.onSuccess(res -> {
-								message.put("body", transformerResponse.getCleanHtml());
-								message.put("contentVersion", transformerResponse.getContentVersion());
-								updatedMessagePromise.complete();
-							})
-							.onFailure(throwable -> {
-								log.error("Failed to update message with transformed content", throwable);
-								updatedMessagePromise.fail(throwable.getMessage());
-							}))
-					.onFailure(throwable -> {
-						log.error("Failed to transform message content", throwable);
-						updatedMessagePromise.fail(throwable.getMessage());
-					});
-		// message content has already been transformed
-		} else {
-			updatedMessagePromise.complete();
-		}
-		return updatedMessagePromise.future();
-	}
-
-	/** Utility adapter */
-	private Future<JsonArray> listAndFormat(String folderId, Boolean unread, UserInfos userInfos, int page, int page_size, String search, String lang) {
-		final Promise<JsonArray> promise = Promise.promise();
-		final JsonObject userIndex = new JsonObject();
-		final JsonObject groupIndex = new JsonObject();
-		conversationService.list(folderId, unread, userInfos, page, page_size, search, either -> {
-			if (either.isRight()) {
-				final JsonArray messages = either.right().getValue();
-				for (Object message : messages) {
-					if (!(message instanceof JsonObject)) {
-						continue;
-					}
-					// Extract distinct users and groups.
-					MessageUtil.computeUsersAndGroupsDisplayNames((JsonObject) message, userInfos, lang, userIndex, groupIndex);
-				}
-
-				MessageUtil.loadUsersAndGroupsDetails(eb, userInfos, userIndex, groupIndex)
-				.onSuccess( unused -> {
-					for (Object m : messages) {
-						if (!(m instanceof JsonObject)) {
-							continue;
-						}
-						MessageUtil.formatRecipients((JsonObject) m, userIndex, groupIndex);
-					}
-					promise.complete(messages);
-				})
-				.onFailure( throwable -> {
-					promise.fail(throwable.getMessage());
-				});
-			} else {
-				promise.fail(either.left().getValue());
-			}
-		});
-		return promise.future();
 	}
 
 	/** Utility method to read a query param and convert it to an Integer. */
