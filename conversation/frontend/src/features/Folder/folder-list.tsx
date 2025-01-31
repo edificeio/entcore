@@ -130,7 +130,7 @@ export function FolderList() {
           renderNode={(message, checkbox, checked) => (
             <div
               className={clsx(
-                'd-flex gap-24 px-16 ps-md-24 py-12 mb-2 overflow-hidden',
+                'd-flex gap-24 px-16 py-12 mb-2 overflow-hidden',
                 {
                   'bg-secondary-200': checked,
                   'fw-bold bg-primary-200 gray-800': message.unread,
@@ -143,7 +143,7 @@ export function FolderList() {
               data-testid="message-item"
             >
               <div className="d-flex align-items-center gap-12 g-col-3 flex-fill overflow-hidden">
-                {checkbox}
+                <div className="ps-md-8">{checkbox}</div>
                 <MessagePreview message={message} />
               </div>
             </div>
