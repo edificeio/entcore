@@ -64,7 +64,7 @@
     "xtnotifications.weekly": "Hebdomadaire",
     "xtnotifications.never": "Jamais",
     "timeline.home.url": "{{#host}}/timeline/timeline{{/host}}",
-    "timeline.mail.projectName": "ENT",
+    "timeline.mail.projectName": "Votre ENT",
     "timeline.mail.body.bg": "background-color: #f9f9f9;",
     "timeline.mail.body.bgcolor": "#f9f9f9",
     "timeline.mail.main": "background-color: #fff;",
