@@ -49,6 +49,10 @@ export function CreateFolderModal() {
     [foldersTree],
   );
 
+  useEffect(() => {
+    refInputName.current?.focus();
+  }, []);
+
   if (!foldersTree) return <></>;
 
   const handleCloseFolderModal = () => setOpenFolderModal(null);
@@ -76,6 +80,7 @@ export function CreateFolderModal() {
             size="md"
             type="text"
             maxLength={50}
+            autoComplete="off"
             data-testid="inputNewName"
           />
         </FormControl>
