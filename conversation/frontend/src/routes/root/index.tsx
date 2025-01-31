@@ -10,11 +10,16 @@ import { QueryClient } from '@tanstack/react-query';
 import { Outlet, useLoaderData } from 'react-router-dom';
 import { existingActions } from '~/config';
 import { AppActionHeader } from '~/features/app/Action/AppActionHeader';
-import { DesktopMenu, MobileMenu, TrashFolderModal } from '~/features';
+import {
+  DesktopMenu,
+  MobileMenu,
+  TrashFolderModal,
+  CreateFolderModal,
+  RenameFolderModal,
+} from '~/features';
 import { actionsQueryOptions, folderQueryOptions } from '~/services/queries';
-import { CreateFolderModal } from '~/features';
-import './index.css';
 import { useOpenFolderModal } from '~/store';
+import './index.css';
 
 export const loader = (queryClient: QueryClient) => async () => {
   const actionsOptions = actionsQueryOptions(existingActions);
@@ -67,6 +72,7 @@ export function Component() {
       </div>
 
       {folderModal === 'create' && <CreateFolderModal />}
+      {folderModal === 'rename' && <RenameFolderModal />}
       {folderModal === 'trash' && <TrashFolderModal />}
     </Layout>
   );
