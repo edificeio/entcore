@@ -29,6 +29,10 @@ export function useFolderActions() {
       if (name.length > MAX_LENGTH) {
         name = name.substring(0, MAX_LENGTH);
       }
+      if (name.length === 0) {
+        error(t('onversation.error.new.folder'));
+        return false;
+      }
 
       const foldersTree = foldersTreeQuery.data;
       if (!foldersTree) return;

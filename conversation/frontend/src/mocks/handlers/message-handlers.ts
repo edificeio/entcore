@@ -34,19 +34,6 @@ export const messageHandlers = [
       id: string[];
     }
   >(`${baseUrl}/restore`, async ({ request }) => {
-    console.log('trash test');
-    const payload = await request.json();
-    if (!payload || !Array.isArray(payload.id)) {
-      return HttpResponse.text('Bad Request', { status: 400 });
-    }
-    return HttpResponse.text('', { status: 200 });
-  }),
-  http.put<
-    object,
-    {
-      id: string[];
-    }
-  >(`${baseUrl}/trash`, async ({ request }) => {
     const payload = await request.json();
     if (!payload || !Array.isArray(payload.id)) {
       return HttpResponse.text('Bad Request', { status: 400 });

@@ -81,7 +81,6 @@ export function CreateFolderModal() {
             type="text"
             maxLength={50}
             autoComplete="off"
-            data-testid="inputNewName"
           />
         </FormControl>
         {folderOptions.length > 0 && (
@@ -91,7 +90,6 @@ export function CreateFolderModal() {
               checked={checked}
               label={t('folder.new.subfolder.label')}
               onChange={handleSubfolderCheckChange}
-              data-testid="checkParentFolder"
             />
             <div className="mt-8"></div>
             <Select
@@ -102,7 +100,6 @@ export function CreateFolderModal() {
               block={true}
               options={folderOptions}
               onValueChange={handleOptionChange}
-              data-testid="selectParentFolder"
             />
           </>
         )}
@@ -118,7 +115,7 @@ export function CreateFolderModal() {
           {common_t('cancel')}
         </Button>
         <Button
-          type="button"
+          type="submit"
           color="primary"
           variant="filled"
           onClick={handleCreateClick}

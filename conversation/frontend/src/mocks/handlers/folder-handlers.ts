@@ -11,7 +11,6 @@ import {
  * Mock HTTP methods for folder service
  */
 export const folderHandlers = [
-  // Folder service
   http.get(`${baseUrl}/api/folders`, () => {
     return HttpResponse.json(mockFolderTree, { status: 200 });
   }),
@@ -29,13 +28,13 @@ export const folderHandlers = [
       return HttpResponse.json(mockCountOfMessagesInInbox, { status: 200 });
     }
   }),
-  http.post(`${baseUrl}/conversation/folder`, () => {
+  http.post(`${baseUrl}/folder`, () => {
     return HttpResponse.json({ id: 'folder_Z' }, { status: 201 });
   }),
-  http.put(`${baseUrl}/conversation/folder/:folderId`, () => {
+  http.put(`${baseUrl}/folder/:folderId`, () => {
     return HttpResponse.json({}, { status: 200 });
   }),
-  http.put(`${baseUrl}/conversation/folder/trash/:folderId`, () => {
+  http.put(`${baseUrl}/folder/trash/:folderId`, () => {
     return HttpResponse.json({}, { status: 200 });
   }),
 ];
