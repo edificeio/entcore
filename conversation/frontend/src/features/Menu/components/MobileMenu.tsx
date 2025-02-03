@@ -71,10 +71,10 @@ function asFolderItem(
     name: t(folder),
     folder: {
       id: folder,
+      parent_id: null,
       depth: 1,
       nbUnread: counters[folder],
       name: t(folder),
-      trashed: false,
       nbMessages: 0,
     },
   };
