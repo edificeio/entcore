@@ -81,6 +81,7 @@ public class SqlConversationService implements ConversationService{
 
 	private final IContentTransformerClient contentTransformerClient;
 	private final IContentTransformerEventRecorder contentTransformerEventRecorder;
+	private final Set<String> CONVERSATION_TRANSFORMATION_EXTENSIONS = new HashSet<>(Arrays.asList("conversation-history"));
 
 	public SqlConversationService(Vertx vertx, String schema, IContentTransformerClient contentTransformerClient, IContentTransformerEventRecorder contentTransformerEventRecorder) {
 		this.eb = Server.getEventBus(vertx);
@@ -834,7 +835,8 @@ public class SqlConversationService implements ConversationService{
 				new HashSet<>(Arrays.asList(ContentTransformerFormat.HTML, ContentTransformerFormat.JSON)),
 				0,
 				originalMessageContent,
-				null)
+				null,
+				CONVERSATION_TRANSFORMATION_EXTENSIONS)
 				).onSuccess(transformerResponse -> {
 					contentTransformerEventRecorder.recordTransformation(messageId, "message", transformerResponse, request);
 					transformedMessagePromise.complete(transformerResponse);
