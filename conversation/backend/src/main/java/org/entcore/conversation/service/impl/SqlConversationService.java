@@ -384,17 +384,17 @@ public class SqlConversationService implements ConversationService{
 	 * @param unread whether a message has been read or not
 	 * @param userInfos the user infos
 	 * @param page the number of the page to display
-	 * @param page_size the number of element to display in the page
+	 * @param pageSize the number of element to display in the page
 	 * @param search a text search filter
 	 * @param lang the user language
 	 * @return a future of an array containing the folder's messages summary data to display
 	 */
 	@Override
-	public Future<JsonArray> listAndFormat(String folderId, Boolean unread, UserInfos userInfos, int page, int page_size, String search, String lang) {
+	public Future<JsonArray> listAndFormat(String folderId, Boolean unread, UserInfos userInfos, int page, int pageSize, String search, String lang) {
 		final Promise<JsonArray> promise = Promise.promise();
 		final JsonObject userIndex = new JsonObject();
 		final JsonObject groupIndex = new JsonObject();
-		this.list(folderId, unread, userInfos, page, page_size, search, either -> {
+		this.list(folderId, unread, userInfos, page, pageSize, search, either -> {
 			if (either.isRight()) {
 				final JsonArray messages = either.right().getValue();
 				for (Object message : messages) {
