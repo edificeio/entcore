@@ -184,7 +184,7 @@ public class ConversationController extends BaseController {
 											: parent != null ? parent.getString("thread_id") : null;
 									userService.addDisplayNames(message, parent, new Handler<JsonObject>() {
 										public void handle(JsonObject message) {
-											conversationService.saveDraft(parentMessageId, threadId, message, user, defaultResponseHandler(request, 201));
+											conversationService.saveDraft(parentMessageId, threadId, message, user, defaultResponseHandler(request, 201), request);
 										}
 									});
 								}
@@ -375,7 +375,7 @@ public class ConversationController extends BaseController {
 							userService.addDisplayNames(message, null, new Handler<JsonObject>() {
 								public void handle(JsonObject message) {
 									conversationService.updateDraft(messageId, message, user,
-											defaultResponseHandler(request));
+											defaultResponseHandler(request), request);
 								}
 							});
 						}
@@ -388,7 +388,7 @@ public class ConversationController extends BaseController {
 	}
 
 	private void saveAndSend(final String messageId, final JsonObject message, final UserInfos user,
-			final String parentMessageId, final String threadId, final Handler<Either<String, JsonObject>> result){
+			final String parentMessageId, final String threadId, final Handler<Either<String, JsonObject>> result, final HttpServerRequest request){
 
 		Handler<Either<String, JsonObject>> handler = new Handler<Either<String, JsonObject>>() {
 			@Override
@@ -440,9 +440,9 @@ public class ConversationController extends BaseController {
 			}
 		};
 		if (messageId != null && !messageId.trim().isEmpty()) {
-			conversationService.updateDraft(messageId, message, user, handler);
+			conversationService.updateDraft(messageId, message, user, handler, request);
 		} else {
-			conversationService.saveDraft(parentMessageId, threadId, message, user, handler);
+			conversationService.saveDraft(parentMessageId, threadId, message, user, handler, request);
 		}
 	}
 
@@ -492,7 +492,7 @@ public class ConversationController extends BaseController {
 														renderJson(request, error, 400);
 													}
 												}
-											});
+											}, request);
 										}
 									});
 								}
@@ -1772,7 +1772,7 @@ public class ConversationController extends BaseController {
 								message.reply(error);
 							}
 						}
-					});
+					}, request);
 			}
 		});
 
