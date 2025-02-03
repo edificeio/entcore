@@ -213,11 +213,22 @@ public class WorkspaceController extends BaseController {
 				if (userInfos != null) {
 					JsonObject folder = new JsonObject().put("name", name).put("application", MEDIALIB_APP);
                     if (externalId == null || externalId.trim().isEmpty()){
-						if (parentFolderId == null || parentFolderId.trim().isEmpty())
+						if (parentFolderId == null || parentFolderId.trim().isEmpty()) {
+							// if the parent folder id is null, we can create the folder in the root folder
 							workspaceService.createFolder(folder, userInfos, asyncDefaultResponseHandler(request, 201));
-						else
-							workspaceService.createFolder(parentFolderId, userInfos, folder,
-									asyncDefaultResponseHandler(request, 201));
+						} else {
+							// check if the user has write access on the parent folder (the api is only protected by workflow rights)
+ 							workspaceService.canWriteOn(Optional.ofNullable(parentFolderId), userInfos, canWrite -> {
+								if(canWrite.succeeded() && canWrite.result().isPresent()){
+									// if the user has write access on the parent folder, we can create the folder
+									workspaceService.createFolder(parentFolderId, userInfos, folder,
+											asyncDefaultResponseHandler(request, 201));
+								} else {
+									// if the user has no write access on the parent folder, we can't create the folder
+									unauthorized(request);
+								}
+							});
+						}
                     }else {
 						workspaceService.createExternalFolder(folder, userInfos, externalId, asyncDefaultResponseHandler(request, 200));
                     }
