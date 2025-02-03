@@ -134,19 +134,23 @@ export function ActionCreateDelegate($scope: CreateDelegateScope) {
         return $scope.currentTree.filter === "shared" || $scope.currentTree.filter === "trash" || $scope.isSearchResult();
     }
     $scope.createFolder = async function () {
-        const res = await workspaceService.createFolder($scope.newFolder, $scope.openedFolder.folder)
-        const error = (res as any).error;
-        if (error) {
-            notify.error(error);
-        } else {
-            const newFolder: models.Element = res as any;
-            if ($scope.currentTree.filter == "shared" && needAtLeastOneShared()) {
-                $scope.newElementSharing = [newFolder];
-                template.open('lightbox', 'create-folder/shared-step2');
+        try{
+            const res = await workspaceService.createFolder($scope.newFolder, $scope.openedFolder.folder)
+            const error = (res as any).error;
+            if (error) {
+                notify.error(error);
             } else {
-                template.close('lightbox');
+                const newFolder: models.Element = res as any;
+                if ($scope.currentTree.filter == "shared" && needAtLeastOneShared()) {
+                    $scope.newElementSharing = [newFolder];
+                    template.open('lightbox', 'create-folder/shared-step2');
+                } else {
+                    template.close('lightbox');
+                }
+                $scope.newFolder = models.emptySharedFolder()
             }
-            $scope.newFolder = models.emptySharedFolder()
+        } catch (error) {
+            notify.error(`e${(error as any).status}`);
         }
     };
     $scope.openNewFolderView = function () {
