@@ -8,11 +8,10 @@ import {
 import {
   Button,
   Menu,
-  SortableTree,
+  Tree,
   TreeItem,
   useEdificeClient,
 } from '@edifice.io/react';
-import { NOOP } from '@edifice.io/utilities';
 import { useNavigate } from 'react-router-dom';
 import { Folder } from '~/models';
 import { useMenuData } from '../hooks/useMenuData';
@@ -159,9 +158,8 @@ export function DesktopMenu() {
       <Menu.Item>
         <div className="d-flex flex-column">
           <strong className="fs-6 mb-8">{t('user.folders')}</strong>
-          <SortableTree
+          <Tree
             nodes={userFolders}
-            onSortable={NOOP}
             onTreeItemClick={(folderId) => navigateTo(folderId, true)}
             renderNode={renderUserFolder}
             selectedNodeId={selectedUserFolderId}
