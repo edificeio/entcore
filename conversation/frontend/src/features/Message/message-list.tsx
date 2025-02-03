@@ -4,14 +4,14 @@ import {
   ToolbarItem,
   useEdificeClient,
 } from '@edifice.io/react';
-import { IconReadMail, IconUnreadMail } from '@edifice.io/react/icons';
+import { IconReadMail, IconUnreadMail, IconDelete } from '@edifice.io/react/icons';
 import clsx from 'clsx';
 import { KeyboardEvent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { MessagePreview } from '~/features/Message/message-preview';
 import { MessageMetadata } from '~/models';
-import { useFolderMessages, useMarkRead, useMarkUnread } from '~/services';
+import { useFolderMessages, useMarkRead, useMarkUnread, useTrashMessage } from '~/services';
 import { useAppActions, useSelectedMessageIds } from '~/store/actions';
 
 export function MessageList() {
@@ -27,6 +27,8 @@ export function MessageList() {
   const selectedIds = useSelectedMessageIds();
   const markAsReadQuery = useMarkRead();
   const markAsUnreadQuery = useMarkUnread();
+  const moveToTrashQuery = useTrashMessage();
+
   const {
     messages,
     isPending: isLoadingMessage,
@@ -75,6 +77,14 @@ export function MessageList() {
     );
   }, [selectedIds, messages]);
 
+  const hasSelectMessages = useMemo(() => {
+    return messages?.some(
+      (message) =>
+        selectedIds.length &&
+        selectedIds.includes(message.id)
+    );
+  }, [selectedIds, messages]);
+
   const handleMarkAsReadClick = () => {
     markAsReadQuery.mutate({ id: selectedIds });
   };
@@ -90,6 +100,10 @@ export function MessageList() {
     if (event.key === ' ' || event.key === 'Enter') {
       handleMessageClick(message);
     }
+  }
+
+  const handleMoveToTrash = () => {
+    moveToTrashQuery.mutate({ id: selectedIds });
   };
 
   const handleMessageClick = (message: MessageMetadata) => {
@@ -123,6 +137,20 @@ export function MessageList() {
         ),
         onClick: handleMarkAsUnreadClick,
         hidden: !hasReadMessages,
+      },
+    },
+    {
+      type: 'button',
+      name: 'delete',
+      props: {
+        children: (
+          <>
+            <IconDelete />
+            <span>{t('tag.delete')}</span>
+          </>
+        ),
+        onClick: handleMoveToTrash,
+        hidden: !hasSelectMessages
       },
     },
   ];
