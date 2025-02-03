@@ -802,7 +802,7 @@ public class SqlConversationService implements ConversationService{
 		String query = "" +
 				"SELECT body " +
 				"FROM " + originalMessageTable + " om " +
-				"WHERE om.id = ?";
+				"WHERE om.message_id = ?";
 		JsonArray values = new JsonArray().add(messageId);
 
 		sql.prepared(query, values, SqlResult.validUniqueResultHandler(sqlResult -> {
