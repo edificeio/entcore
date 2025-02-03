@@ -41,7 +41,7 @@ export function MessagePreview({ message }: MessagePreviewProps) {
               {t('nosubject')}
             </div>
           )}
-          {message.hasAttachments && (
+          {message.hasAttachment && (
             <IconPaperclip className="gray-800" height={16} width={16} />
           )}
         </div>
