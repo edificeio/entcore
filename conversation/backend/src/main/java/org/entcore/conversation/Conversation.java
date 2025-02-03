@@ -19,23 +19,25 @@
 
 package org.entcore.conversation;
 
-import java.text.ParseException;
-
+import fr.wseduc.cron.CronTrigger;
+import fr.wseduc.transformer.ContentTransformerFactoryProvider;
+import fr.wseduc.transformer.IContentTransformerClient;
+import io.vertx.core.Promise;
+import io.vertx.core.json.JsonObject;
+import org.entcore.common.editor.ContentTransformerEventRecorderFactory;
+import org.entcore.common.editor.IContentTransformerEventRecorder;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.conversation.controllers.ApiController;
 import org.entcore.conversation.controllers.ConversationController;
 import org.entcore.conversation.service.ConversationService;
-import org.entcore.conversation.service.impl.ConversationRepositoryEvents;
-import org.entcore.conversation.service.impl.ConversationStorage;
-import org.entcore.conversation.service.impl.DeleteOrphan;
-import org.entcore.conversation.service.impl.Neo4jConversationService;
-import org.entcore.conversation.service.impl.SqlConversationService;
+import org.entcore.conversation.service.impl.*;
 
-import fr.wseduc.cron.CronTrigger;
+import java.text.ParseException;
+
 import static fr.wseduc.webutils.Utils.getOrElse;
-import io.vertx.core.Promise;
+import static org.entcore.common.editor.ContentTransformerConfig.getContentTransformerConfig;
 
 public class Conversation extends BaseServer {
 
@@ -47,7 +49,12 @@ public class Conversation extends BaseServer {
 
 		final Storage storage = new StorageFactory(vertx, config, new ConversationStorage()).getStorage();
 
-		final ConversationService conversationService = new SqlConversationService(vertx, config.getString("db-schema", "conversation"))
+		ContentTransformerFactoryProvider.init(vertx);
+		final JsonObject contentTransformerConfig = getContentTransformerConfig(vertx).orElse(null);
+		final IContentTransformerClient contentTransformerClient = ContentTransformerFactoryProvider.getFactory("conversation", contentTransformerConfig).create();
+		final IContentTransformerEventRecorder contentTransformerEventRecorder = new ContentTransformerEventRecorderFactory("conversation", contentTransformerConfig).create();
+
+		final ConversationService conversationService = new SqlConversationService(vertx, config.getString("db-schema", "conversation"), contentTransformerClient, contentTransformerEventRecorder)
 				.setSendTimeout(config.getInteger("send-timeout",SqlConversationService.DEFAULT_SENDTIMEOUT));
 		final Neo4jConversationService userService = new Neo4jConversationService();
 

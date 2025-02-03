@@ -1,0 +1,8 @@
+CREATE TABLE conversation.originalmessages (
+  "message_id" VARCHAR(36) NOT NULL PRIMARY KEY,
+  "body" TEXT
+);
+
+CREATE INDEX idx_originalmessages ON conversation.originalmessages (message_id);
+
+ALTER TABLE conversation.messages ADD "contentVersion" INTEGER DEFAULT 0;
