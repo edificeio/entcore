@@ -26,6 +26,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import fr.wseduc.transformer.ContentTransformerFactoryProvider;
+import fr.wseduc.transformer.IContentTransformerClient;
+import org.entcore.common.editor.IContentTransformerEventRecorder;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.Config;
 import org.entcore.conversation.service.ConversationService;
@@ -56,7 +59,7 @@ public class FolderTest {
     @BeforeClass
     public static void setUp(TestContext context) throws Exception {
         Config.getInstance().setConfig(new JsonObject());
-        conversationService = new SqlConversationService(test.vertx(), schema);
+        conversationService = new SqlConversationService(test.vertx(), schema, IContentTransformerClient.noop, IContentTransformerEventRecorder.noop);
         test.database().initPostgreSQL(context, pgContainer, schema);
     }
 
@@ -282,7 +285,7 @@ public class FolderTest {
             final String id = msg.getString("id");
             msg.put("allUsers", allUsers);
             conversationService.send(null, id, msg, from, result);
-        });
+        }, null);
     }
 
     @Test
