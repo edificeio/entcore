@@ -1,6 +1,6 @@
-import { Message } from '~/models';
+import { Folder, Message } from '~/models';
 
-export const mockFolderTree = [
+export const mockFolderTree: Array<Folder> = [
   {
     id: 'folder_A',
     parent_id: null,

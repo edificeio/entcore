@@ -10,10 +10,10 @@ export type SystemFolder =
 
 export type Folder = {
   id: string;
+  parent_id: string | null;
   name: string;
   depth: number;
   subFolders?: Folder[];
   nbMessages: number;
   nbUnread: number;
-  trashed: boolean;
 };

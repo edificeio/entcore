@@ -181,30 +181,30 @@ export const useCreateFolder = () => {
 
         if (parentId) {
           // Look for the parent folder in the tree.
-          const found = searchFolder(parentId, foldersTree);
-          if (!found?.folder) break;
+          const parent = searchFolder(parentId, foldersTree);
+          if (!parent?.folder) break;
 
-          if (!found.folder.subFolders) {
-            found.folder.subFolders = [];
+          if (!parent.folder.subFolders) {
+            parent.folder.subFolders = [];
           }
           // Update parent folder data.
-          found.folder.subFolders.push({
+          parent.folder.subFolders.push({
             id,
+            parent_id: parentId,
             depth: 2,
             name,
             nbMessages: 0,
             nbUnread: 0,
-            trashed: false,
           });
         } else {
           // Push new folder at root level (depth=1)
           foldersTree.push({
             id,
+            parent_id: null,
             depth: 1,
             name,
             nbMessages: 0,
             nbUnread: 0,
-            trashed: false,
           });
 
           // Optimistic update
