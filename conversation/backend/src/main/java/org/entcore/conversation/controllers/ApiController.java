@@ -62,7 +62,7 @@ public class ApiController extends BaseController {
 	@Get("api/folders/:folderId/messages")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SystemOrUserFolderFilter.class)
-	public void ListFolderMessages(final HttpServerRequest request) {
+	public void listFolderMessages(final HttpServerRequest request) {
 		final String folderId = request.params().get("folderId");
 		final Integer page = parseQueryParam(request, "page", 0);
 		final Integer page_size = parseQueryParam(request, "page_size", ConversationService.LIST_LIMIT);
@@ -81,7 +81,7 @@ public class ApiController extends BaseController {
 		final String acceptedLanguage = I18n.acceptLanguage(request);
 
 		getAuthenticatedUserInfos(eb, request)
-		.compose( user -> listAndFormat(folderId, unread, user, page, page_size, search, acceptedLanguage) )
+		.compose( user -> conversationService.listAndFormat(folderId, unread, user, page, page_size, search, acceptedLanguage) )
 		.onSuccess( messages -> {
 			renderJson(request, messages);
 		})
@@ -95,8 +95,9 @@ public class ApiController extends BaseController {
 	@Get("api/messages/:id")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(MessageUserFilter.class)
-	public void GetFullMessage(final HttpServerRequest request) {
+	public void getFullMessage(final HttpServerRequest request) {
 		final String id = request.params().get("id");
+		final boolean originalFormat = "true".equalsIgnoreCase(request.params().get("originalFormat"));
 		if (isEmpty(id)) {
 			badRequest(request);
 			return;
@@ -104,7 +105,7 @@ public class ApiController extends BaseController {
 		final String acceptedLanguage = I18n.acceptLanguage(request);
 
 		getAuthenticatedUserInfos(eb, request)
-		.compose( user -> getAndFormat(id, user, acceptedLanguage) )
+		.compose( user -> conversationService.getAndFormat(id, user, acceptedLanguage, originalFormat, request) )
 		.onSuccess( message -> {
 			renderJson(request, message);
 		})
@@ -124,68 +125,6 @@ public class ApiController extends BaseController {
 		.onSuccess(user -> {
 			conversationService.getFolderTree(user, depth, Optional.empty(), arrayResponseHandler(request));
 		});
-	}
-
-	/** Utility adapter */
-	private Future<JsonObject> getAndFormat(String id, UserInfos userInfos, String lang) {
-		final Promise<JsonObject> promise = Promise.promise();
-		final JsonObject userIndex = new JsonObject();
-		final JsonObject groupIndex = new JsonObject();
-		conversationService.get(id, userInfos, 1, either -> {
-			if (either.isRight()) {
-				final JsonObject message = either.right().getValue();
-				// Extract distinct users and groups.
-				MessageUtil.computeUsersAndGroupsDisplayNames(message, userInfos, lang, userIndex, groupIndex);
-
-				MessageUtil.loadUsersAndGroupsDetails(eb, userInfos, userIndex, groupIndex)
-				.onSuccess( unused -> {
-					MessageUtil.formatRecipients(message, userIndex, groupIndex);
-					promise.complete(message);
-				})
-				.onFailure( throwable -> {
-					promise.fail(throwable.getMessage());
-				});
-			} else {
-				promise.fail(either.left().getValue());
-			}
-		});
-		return promise.future();
-	}
-
-	/** Utility adapter */
-	private Future<JsonArray> listAndFormat(String folderId, Boolean unread, UserInfos userInfos, int page, int page_size, String search, String lang) {
-		final Promise<JsonArray> promise = Promise.promise();
-		final JsonObject userIndex = new JsonObject();
-		final JsonObject groupIndex = new JsonObject();
-		conversationService.list(folderId, unread, userInfos, page, page_size, search, either -> {
-			if (either.isRight()) {
-				final JsonArray messages = either.right().getValue();
-				for (Object message : messages) {
-					if (!(message instanceof JsonObject)) {
-						continue;
-					}
-					// Extract distinct users and groups.
-					MessageUtil.computeUsersAndGroupsDisplayNames((JsonObject) message, userInfos, lang, userIndex, groupIndex);
-				}
-
-				MessageUtil.loadUsersAndGroupsDetails(eb, userInfos, userIndex, groupIndex)
-				.onSuccess( unused -> {
-					for (Object m : messages) {
-						if (!(m instanceof JsonObject)) {
-							continue;
-						}
-						MessageUtil.formatRecipients((JsonObject) m, userIndex, groupIndex);
-					}
-					promise.complete(messages);
-				})
-				.onFailure( throwable -> {
-					promise.fail(throwable.getMessage());
-				});
-			} else {
-				promise.fail(either.left().getValue());
-			}
-		});
-		return promise.future();
 	}
 
 	/** Utility method to read a query param and convert it to an Integer. */
