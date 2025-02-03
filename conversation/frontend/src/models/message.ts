@@ -18,7 +18,7 @@ export interface MessageBase {
 }
 
 export interface MessageMetadata extends MessageBase {
-  hasAttachments: boolean;
+  hasAttachment: boolean;
 }
 
 export interface Message extends MessageBase {
