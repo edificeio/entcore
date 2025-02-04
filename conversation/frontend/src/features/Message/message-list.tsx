@@ -77,13 +77,14 @@ export function MessageList() {
     );
   }, [selectedIds, messages]);
 
-  const hasSelectMessages = useMemo(() => {
+  const canBeMovetoTrash = useMemo(() => {
+    if(folderId == 'trash') return;
     return messages?.some(
       (message) =>
         selectedIds.length &&
         selectedIds.includes(message.id)
     );
-  }, [selectedIds, messages]);
+  }, [selectedIds, messages, folderId]);
 
   const handleMarkAsReadClick = () => {
     markAsReadQuery.mutate({ id: selectedIds });
@@ -146,14 +147,15 @@ export function MessageList() {
         children: (
           <>
             <IconDelete />
-            <span>{t('tag.delete')}</span>
+            <span>{t('delete')}</span>
           </>
         ),
         onClick: handleMoveToTrash,
-        hidden: !hasSelectMessages
+        hidden: !canBeMovetoTrash
       },
     },
   ];
+
   return (
     <>
       {!!messages?.length && (

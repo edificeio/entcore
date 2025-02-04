@@ -139,17 +139,59 @@ export const useMarkUnread = () => {
  * @returns Mutation result for moving the message to the trash.
  */
 export const useTrashMessage = () => {
+  const { folderId } = useParams() as { folderId: string };
+  const [searchParams] = useSearchParams();
+  const search = searchParams.get('search');
+  const unreadFilter = searchParams.get('unread');
   const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: ({ id }: { id: string | string[] }) =>
       messageService.moveToFolder('trash', id),
     onSuccess: (_data, { id }) => {
       const messageIds = typeof id === 'string' ? [id] : id;
+
       messageIds.forEach((messageId) => {
         queryClient.invalidateQueries({
           queryKey: messageQueryOptions.getById(messageId).queryKey,
         });
       });
+
+      queryClient.invalidateQueries({
+        queryKey: ['folder', 'trash']
+      });
+
+      // Update list message
+      queryClient.setQueryData(
+        folderQueryOptions.getMessagesQuerykey(folderId, {
+          search: search === '' ? undefined : search || undefined,
+          unread: !unreadFilter ? undefined : true,
+        }),
+        // Remove deleted message from pages
+        (data: InfiniteData<Message[]>) => {
+          return {
+            ...data,
+            pages: data.pages.map((page: Message[]) => 
+              page.filter((message: Message) => !messageIds.includes(message.id))
+            )
+          };
+        }        
+      );
+
+      // Update draft count if It's a draft message
+      if(folderId === 'draft') {
+        queryClient.setQueryData(
+          [
+            'folder',
+            'draft',
+            'count',
+            null
+          ],
+          ({ count }: { count: number }) => {
+            return { count: count - messageIds.length };
+          },
+        );
+      }
     },
   });
 };
