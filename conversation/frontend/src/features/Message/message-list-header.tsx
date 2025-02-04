@@ -11,7 +11,7 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { useAppActions } from '~/store/actions';
 
-export function FolderHeader() {
+export function MessageListHeader() {
   const { theme } = useEdificeTheme();
   const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
