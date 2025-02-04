@@ -48,6 +48,12 @@ public interface UserBookService {
 
 	void getAvatar(String fileId, Optional<String> size, String defaultAVatar, HttpServerRequest request);
 
+	/**
+	 * Invalidate the cache of the user's avatar files (Cloudflare Varnish, etc...) but does not remove the files from the
+	 * cache.
+	 * @param userId Id of the user whise avatar has to be removed from the cache
+	 * @return
+	 */
 	Future<Void> banAvatarCache(String userId);
 
 	Future<Boolean> cleanAvatarCache(List<String> usersId);
