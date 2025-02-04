@@ -1,6 +1,6 @@
 import { render, renderHook, screen, waitFor, wrapper } from '~/mocks/setup';
-import { FolderList } from './folder-list';
 import { useFolderMessages } from '~/services';
+import { MessageList } from './message-list';
 
 /**
  * Mock useParams
@@ -20,7 +20,7 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-describe('Folder list component', () => {
+describe('Message list component', () => {
   beforeEach(() => {
     mocks.useParams.mockReturnValue({ folderId: 'inbox' });
   });
@@ -30,7 +30,7 @@ describe('Folder list component', () => {
   });
 
   it('should render successfully', async () => {
-    const { baseElement } = render(<FolderList />);
+    const { baseElement } = render(<MessageList />);
 
     expect(baseElement).toBeTruthy();
   });
@@ -48,7 +48,7 @@ describe('Folder list component', () => {
       expect(result.current.isSuccess).toBe(true);
     });
 
-    render(<FolderList />, { path: '/inbox' });
+    render(<MessageList />, { path: '/inbox' });
 
     const messages = await screen.queryAllByTestId('message-item');
     expect(messages).toHaveLength(2);

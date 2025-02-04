@@ -1,5 +1,5 @@
 import { render, screen } from '~/mocks/setup';
-import { FolderEmpty } from './folder-empty';
+import { MessageListEmpty } from './message-list-empty';
 
 /**
  * Mock useParams
@@ -19,7 +19,7 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
-describe('Folder empty component', () => {
+describe('Message list empty component', () => {
   afterEach(() => {
     vi.clearAllMocks();
   });
@@ -78,7 +78,7 @@ describe('Folder empty component', () => {
     }) => {
       mocks.useParams.mockReturnValue({ folderId: folderEmptyData.folderId });
 
-      render(<FolderEmpty />, { path: folderEmptyData.path });
+      render(<MessageListEmpty />, { path: folderEmptyData.path });
 
       const image = await screen.queryByAltText(
         `${folderEmptyData.key}.empty.title`,
