@@ -227,23 +227,22 @@ public class DefaultUserBookService implements UserBookService {
 		return future.future();
 	}
 
+	/**
+	 * Remove from the storage user's avatar and the corresponding thumbnails.
+	 * @param userId Id of the user whose avatar has to be discarded
+	 * @return {@code true} if the removal was successful
+	 */
 	private Future<Boolean> cleanAvatarCache(String userId) {
 		Promise<Boolean> future = Promise.promise();
-		banAvatarCache(userId)
-			.onSuccess(result -> {
-				this.avatarStorage.findByFilenameEndingWith(userId, res -> {
-					if (res.succeeded() && !res.result().isEmpty()) {
-						this.avatarStorage.removeFiles(res.result(), removeRes -> {
-							future.complete(true);
-						});
-					} else {
-						future.complete(false);
-					}
+		this.avatarStorage.findByFilenameEndingWith(userId, res -> {
+			if (res.succeeded() && !res.result().isEmpty()) {
+				this.avatarStorage.removeFiles(res.result(), removeRes -> {
+					future.complete(true);
 				});
-			})
-			.onFailure(exception -> {
+			} else {
 				future.complete(false);
-			});
+			}
+		});
 		return future.future();
 	}
 
@@ -355,6 +354,7 @@ public class DefaultUserBookService implements UserBookService {
 							if (cleanResult) {
 								cacheAvatarFromUserBook(userId, pictureId, StringUtils.isEmpty(picture)).onComplete(e -> {
 									if (e.succeeded()) {
+										banAvatarCache(userId);
 										log.info("Thumbnails created");
 									} else {
 										log.warn("Could not create thumbnails", e.cause());
