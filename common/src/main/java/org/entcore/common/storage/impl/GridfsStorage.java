@@ -607,7 +607,7 @@ public class GridfsStorage implements Storage {
 	@Override
 	public void writeToFileSystem(String [] ids, String destinationPath, JsonObject alias,
 			final Handler<JsonObject> handler) {
-		Bson q = Filters.eq("_id", ids);
+		Bson q = Filters.in("_id", ids);
 		JsonObject e = new JsonObject()
 				.put("action", "write")
 				.put("path", destinationPath)
