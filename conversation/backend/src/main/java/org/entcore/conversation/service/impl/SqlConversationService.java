@@ -25,6 +25,7 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.user.UserUtils.findVisibles;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import fr.wseduc.transformer.IContentTransformerClient;
 import fr.wseduc.transformer.to.ContentTransformerFormat;
@@ -33,6 +34,7 @@ import fr.wseduc.transformer.to.ContentTransformerResponse;
 import io.vertx.core.eventbus.DeliveryOptions;
 
 import io.vertx.core.http.HttpServerRequest;
+
 import org.entcore.common.editor.IContentTransformerEventRecorder;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
@@ -58,6 +60,7 @@ import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.Either.Right;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+
 import org.entcore.conversation.util.MessageUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -526,37 +529,8 @@ public class SqlConversationService implements ConversationService{
 	public void trash(List<String> messagesId, UserInfos user, Handler<Either<String, JsonObject>> result) {
 		if (validationParamsError(user, result))
 			return;
-
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
-
-		StringBuilder query = new StringBuilder(
-			"UPDATE " + userMessageTable + " " +
-			"SET trashed = true " +
-			"WHERE trashed = false AND user_id = ? AND message_id IN (");
-
-		values.add(user.getUserId());
-
-		for(String id : messagesId){
-			query.append("?,");
-			values.add(id);
-		}
-		if(messagesId.size() > 0)
-			query.deleteCharAt(query.length() - 1);
-		query.append(")");
-
-		final String deleteUserThreads =
-			"DELETE FROM conversation.userthreads " +
-			"WHERE user_id = ? AND thread_id NOT IN (" +
-				"SELECT DISTINCT m.thread_id " +
-				"FROM conversation.usermessages um " +
-				"LEFT JOIN conversation.messages m on um.message_id = m.id " +
-				"WHERE user_id = ? AND trashed = false " +
-			")";
-		final JsonArray values2 = new JsonArray().add(user.getUserId()).add(user.getUserId());
-
 		SqlStatementsBuilder builder = new SqlStatementsBuilder();
-		builder.prepared(query.toString(), values);
-		builder.prepared(deleteUserThreads, values2);
+		prepareTrashMessagesStatement(builder, messagesId, user, false);
 		sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(0, result));
 	}
 
@@ -1445,6 +1419,114 @@ public class SqlConversationService implements ConversationService{
 	}
 
 	@Override
+	public void deleteFoldersButTrashMessages(List<String> folderIds, UserInfos user, Handler<Either<String, JsonObject>> result) {
+		if(validationParamsError(user, result, folderIds.toArray(new String[0]))) {
+			return;
+		}
+
+		getIdsOfMessagesInUserFolders(folderIds, user, true, results -> {
+			if(results.isLeft()) {
+				result.handle(new Either.Left<>(results.left().getValue()));
+				return;
+			}
+			
+			final JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+			final JsonArray messageIds = results.right().getValue();
+			final SqlStatementsBuilder builder = new SqlStatementsBuilder();
+			if( !messageIds.isEmpty() ) {
+				prepareTrashMessagesStatement(
+					builder, 
+					messageIds.stream().map(String.class::cast).collect(Collectors.toList()), 
+					user, 
+					true
+				);
+			}
+			/*
+			   Physically delete the folders in cascade. 
+			   No quota is freed, since all messages have been removed from the folders (and subfolders) they won't be deleted.
+			*/
+			String deleteFolder =
+				"DELETE FROM "+ folderTable +" f WHERE f.user_id = ? AND f.id IN ";
+			values.add(user.getUserId());
+			deleteFolder += generateInVars(folderIds, values);
+
+			builder.prepared(deleteFolder, values);
+
+			sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(0, either -> {
+				if(either.isLeft()) {
+					result.handle(either);
+				} else {
+					result.handle(new Either.Right<>(new JsonObject().put("trashedMessageIds", messageIds)));
+				}
+			}));
+		});
+	}
+
+	private void getIdsOfMessagesInUserFolders(Collection<String> folderIds, UserInfos user, Boolean recurseOnSubfolders, Handler<Either<String, JsonArray>> results) {
+		if(folderIds==null || folderIds.isEmpty()) {
+			results.handle(new Either.Left<>("folderIds parameter cannot be null or empty"));
+			return;
+		}
+
+		String query;
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		if(Boolean.TRUE.equals(recurseOnSubfolders)) {
+			String nonRecursiveTerm = 
+				"SELECT DISTINCT f.id AS id FROM "+ folderTable +" AS f "+ 
+				"WHERE f.id IN "+ generateInVars(folderIds,values) +" AND f.user_id = ? ";
+			values.add(user.getUserId());
+
+			String recursiveTerm = 
+				"SELECT DISTINCT f.id AS id FROM "+ folderTable +" AS f "+
+				"JOIN folders ON f.parent_id = folders.id "+ 
+				"WHERE f.user_id = ? ";
+			values.add(user.getUserId());
+
+			query =
+				"WITH RECURSIVE folders AS ("+ nonRecursiveTerm +" UNION "+ recursiveTerm +") " +
+				"SELECT DISTINCT um.message_id AS id FROM folders "+
+				"JOIN "+ userMessageTable +" um ON um.folder_id = folders.id WHERE um.user_id = ? ";
+			values.add(user.getUserId());
+		} else {
+			query = 
+				"SELECT DISTINCT um.message_id AS id FROM "+ folderTable +" AS f "+
+				"JOIN "+ userMessageTable +" um ON um.folder_id = f.id "+
+				"WHERE f.id IN "+ generateInVars(folderIds, values) +" AND f.user_id = ? ";
+			values.add(user.getUserId());
+		}
+
+		sql.prepared(query, values, SqlResult.validResultHandler(results));
+	}
+
+	private void prepareTrashMessagesStatement(SqlStatementsBuilder builder, Collection<String> messagesId, UserInfos user, boolean removeFromFolder) {
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+
+		StringBuilder query = new StringBuilder()
+			.append("UPDATE ").append(userMessageTable).append(" SET trashed = true ");
+		if(removeFromFolder) {
+			query.append(", folder_id = NULL WHERE (trashed = false or folder_id IS NOT NULL) ");
+		} else {
+			query.append("WHERE trashed = false ");
+		}
+		query.append("AND user_id = ? ");
+		values.add(user.getUserId());
+		query.append("AND message_id IN ").append(generateInVars(messagesId, values));
+
+		final String deleteUserThreads =
+			"DELETE FROM conversation.userthreads " +
+			"WHERE user_id = ? AND thread_id NOT IN (" +
+				"SELECT DISTINCT m.thread_id " +
+				"FROM conversation.usermessages um " +
+				"LEFT JOIN conversation.messages m on um.message_id = m.id " +
+				"WHERE user_id = ? AND trashed = false " +
+			")";
+		final JsonArray values2 = new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).add(user.getUserId());
+
+		builder.prepared(query.toString(), values);
+		builder.prepared(deleteUserThreads, values2);
+	}
+
+	@Override
 	public void addAttachment(String messageId, UserInfos user, JsonObject uploaded, Handler<Either<String, JsonObject>> result) {
 		if(validationParamsError(user, result, messageId))
 			return;
@@ -1619,16 +1701,14 @@ public class SqlConversationService implements ConversationService{
 		return builder.toString();
 	}
 
-	private String generateInVars(List<String> list, JsonArray values){
-		StringBuilder builder = new StringBuilder();
-		builder.append("(");
+	private String generateInVars(Collection<String> list, JsonArray values){
+		StringBuilder builder = new StringBuilder("(");
 
+		int count = 0;
 		for(String item : list){
-			builder.append("?,");
+			builder.append(++count==1 ? "?" : ",?");
 			values.add(item);
 		}
-		if(list.size() > 0)
-			builder.deleteCharAt(builder.length() - 1);
 		builder.append(")");
 
 		return builder.toString();

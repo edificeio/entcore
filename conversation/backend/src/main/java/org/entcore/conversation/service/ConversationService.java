@@ -140,6 +140,7 @@ public interface ConversationService {
 	void trashFolder(String folderId, UserInfos user, Handler<Either<String, JsonObject>> result);
 	void restoreFolder(String folderId, UserInfos user, Handler<Either<String, JsonObject>> result);
 	void deleteFolder(String folderId, Boolean deleteAll, UserInfos user, Handler<Either<String, JsonArray>> result);
+	void deleteFoldersButTrashMessages(List<String> folderIds, UserInfos user, Handler<Either<String, JsonObject>> result);
 
 	//Attachments
 	void addAttachment(String messageId, UserInfos user, JsonObject uploaded, Handler<Either<String, JsonObject>> result);

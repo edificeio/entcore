@@ -18,18 +18,21 @@
 
 package org.entcore.conversation.controllers;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.entcore.common.http.filter.ResourceFilter;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
-import org.entcore.common.user.UserInfos;
 import static org.entcore.common.user.UserUtils.getAuthenticatedUserInfos;
 import static org.entcore.common.utils.StringUtils.isEmpty;
+import org.entcore.conversation.filters.FoldersFilter;
 import org.entcore.conversation.filters.MessageUserFilter;
 import org.entcore.conversation.filters.SystemOrUserFolderFilter;
 import org.entcore.conversation.service.ConversationService;
-import org.entcore.conversation.util.MessageUtil;
 
+import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
@@ -39,7 +42,6 @@ import fr.wseduc.webutils.http.BaseController;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 public class ApiController extends BaseController {
@@ -127,6 +129,37 @@ public class ApiController extends BaseController {
 		});
 	}
 
+	/** Delete a folder (and trash its messages) */
+	@Delete("api/folders/:folderId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(FoldersFilter.class)
+	public void deleteFolder(final HttpServerRequest request) {
+		final String folderId = request.params().get("folderId");
+		deleteFolders(request, Stream.of(folderId).collect(Collectors.toList()))
+		.onComplete( result -> {
+			if( result.failed() ) {
+				badRequest(request, result.cause().getMessage());
+			} else {
+				ok(request);
+			}
+		});
+	}
+
+	private Future<JsonObject> deleteFolders(final HttpServerRequest request, final List<String> folderIds) {
+		return getAuthenticatedUserInfos(eb, request)
+		.compose( user -> {
+			Promise<JsonObject> promise = Promise.promise();
+			conversationService.deleteFoldersButTrashMessages(folderIds, user, either -> {
+				if(either.isLeft()) {
+					promise.fail(either.left().getValue());
+				} else {
+					promise.complete(either.right().getValue());
+				}
+			});
+			return promise.future();
+		});
+	}
+	
 	/** Utility method to read a query param and convert it to an Integer. */
 	private Integer parseQueryParam(final HttpServerRequest request, String param, final Integer defaultValue) {
 		final String paramValue = getOrElse(request.params().get(param), "" + defaultValue, false);
