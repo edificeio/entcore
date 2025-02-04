@@ -5,9 +5,9 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { folderQueryOptions, messageService } from '..';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { Message } from '~/models';
+import { Message, MessageMetadata } from '~/models';
+import { folderQueryOptions, messageService } from '..';
 
 /**
  * Message Query Options Factory.
@@ -54,41 +54,48 @@ const useToggleUnread = (unread: boolean) => {
       messageService.toggleUnread(id, unread),
     onSuccess: (_data, { id }) => {
       const messageIds = typeof id === 'string' ? [id] : id;
-      queryClient.setQueryData(
-        [
-          'folder',
-          folderId,
-          'count',
-          folderId !== 'trash' ? { unread: true } : null,
-        ],
-        ({ count }: { count: number }) => {
-          if (count !== undefined) {
-            return {
-              count: count + (unread ? messageIds.length : -messageIds.length),
-            };
-          }
-          return { count: unread ? messageIds.length : 0 };
-        },
-      );
-      queryClient.setQueryData(
-        ['conversation-navbar-count'],
-        ({ count }: { count: number }) => {
-          if (count !== undefined) {
-            return {
-              count: count + (unread ? messageIds.length : -messageIds.length),
-            };
-          }
-          return { count: unread ? messageIds.length : 0 };
-        },
-      );
+
+      if (['inbox', 'sent', 'drafts'].includes(folderId)) {
+        // Update the folder count
+        queryClient.setQueryData(
+          ['folder', folderId, 'count', { unread: true }],
+          ({ count }: { count: number }) => {
+            if (count !== undefined) {
+              return {
+                count:
+                  count + (unread ? messageIds.length : -messageIds.length),
+              };
+            }
+            return { count: unread ? messageIds.length : 0 };
+          },
+        );
+
+        if (folderId === 'inbox') {
+          // Update the conversation navbar count for the inbox folder
+          queryClient.setQueryData(
+            ['conversation-navbar-count'],
+            ({ count }: { count: number }) => {
+              if (count !== undefined) {
+                return {
+                  count:
+                    count + (unread ? messageIds.length : -messageIds.length),
+                };
+              }
+              return { count: unread ? messageIds.length : 0 };
+            },
+          );
+        }
+      }
+
+      // Update the message unread status in the list
       queryClient.setQueryData(
         folderQueryOptions.getMessagesQuerykey(folderId, {
           search: search === '' ? undefined : search || undefined,
           unread: !unreadFilter ? undefined : true,
         }),
-        (data: InfiniteData<Message>) => {
+        (data: InfiniteData<MessageMetadata>) => {
           data.pages.forEach((page: any) => {
-            page.forEach((message: any) => {
+            page.forEach((message: MessageMetadata) => {
               if (messageIds.includes(message.id)) {
                 message.unread = unread;
               }
@@ -97,6 +104,8 @@ const useToggleUnread = (unread: boolean) => {
           return data;
         },
       );
+
+      // Update the message unread status in the message details
       messageIds.map((messageId) => {
         queryClient.setQueryData(
           messageQueryOptions.getById(messageId).queryKey,

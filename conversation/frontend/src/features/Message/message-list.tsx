@@ -6,7 +6,7 @@ import {
 } from '@edifice.io/react';
 import { IconReadMail, IconUnreadMail } from '@edifice.io/react/icons';
 import clsx from 'clsx';
-import { useEffect, useMemo, useState } from 'react';
+import { KeyboardEvent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { MessagePreview } from '~/features/Message/message-preview';
@@ -14,7 +14,7 @@ import { MessageMetadata } from '~/models';
 import { useFolderMessages, useMarkRead, useMarkUnread } from '~/services';
 import { useAppActions, useSelectedMessageIds } from '~/store/actions';
 
-export function FolderList() {
+export function MessageList() {
   const navigate = useNavigate();
 
   const { folderId } = useParams();
@@ -55,7 +55,7 @@ export function FolderList() {
 
   useEffect(() => {
     setCurrent((prev) => prev + 1);
-  }, [searchParams]);
+  }, [searchParams, folderId]);
 
   const hasUnreadMessages = useMemo(() => {
     return messages?.some(
@@ -81,6 +81,15 @@ export function FolderList() {
 
   const handleMarkAsUnreadClick = () => {
     markAsUnreadQuery.mutate({ id: selectedIds });
+  };
+
+  const handleMessageKeyUp = (
+    event: KeyboardEvent,
+    message: MessageMetadata,
+  ) => {
+    if (event.key === ' ' || event.key === 'Enter') {
+      handleMessageClick(message);
+    }
   };
 
   const handleMessageClick = (message: MessageMetadata) => {
@@ -137,6 +146,7 @@ export function FolderList() {
                 },
               )}
               onClick={() => handleMessageClick(message)}
+              onKeyUp={(event) => handleMessageKeyUp(event, message)}
               tabIndex={0}
               role="button"
               key={message.id}

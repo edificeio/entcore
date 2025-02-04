@@ -4,9 +4,9 @@ import {
   useParams,
   useSearchParams,
 } from 'react-router-dom';
-import { FolderEmpty } from '~/features/Folder/folder-empty';
-import { FolderHeader } from '~/features/Folder/folder-header';
-import { FolderList } from '~/features/Folder/folder-list';
+import { MessageList } from '~/features/Message/message-list';
+import { MessageListEmpty } from '~/features/Message/message-list-empty';
+import { MessageListHeader } from '~/features/Message/message-list-header';
 import { folderQueryOptions, useFolderMessages } from '~/services';
 
 export const loader =
@@ -34,9 +34,9 @@ export function Component() {
     <>
       {(!!messages.length ||
         searchParams.get('search') ||
-        searchParams.get('unread')) && <FolderHeader />}
-      <FolderList />
-      {!isLoadingMessage && !messages.length && <FolderEmpty />}
+        searchParams.get('unread')) && <MessageListHeader />}
+      <MessageList />
+      {!isLoadingMessage && !messages.length && <MessageListEmpty />}
     </>
   );
 }

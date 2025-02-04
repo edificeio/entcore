@@ -8,7 +8,7 @@ import illuNoContent from '@images/emptyscreen/illu-no-content-in-folder.svg';
 import illuSearch from '@images/emptyscreen/illu-search.svg';
 import illuTrash from '@images/emptyscreen/illu-trash.svg';
 
-export function FolderEmpty() {
+export function MessageListEmpty() {
   const { folderId } = useParams();
   const [searchParams] = useSearchParams();
   const { appCode } = useEdificeClient();
