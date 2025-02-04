@@ -54,6 +54,7 @@ export const accountController = ng.controller('MyAccount', ['$scope', '$timeout
 			$scope.cguUrl = lang.translate("cgu.file");
 			$scope.privacyPolicyUrl = lang.translate("privacyPolicy.file");
 			$scope.declaAccessibilityUrl = lang.translate("refAccessibility.file");
+			$scope.schemaAccessibilityUrl = lang.translate("schemaAccessibility.file");
 
 			if(model.me.type !== 'ELEVE'){
 				directory.account.edit.infos = true;
