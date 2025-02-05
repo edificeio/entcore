@@ -129,7 +129,7 @@ public class ApiController extends BaseController {
 		});
 	}
 
-	/** Delete a folder (and trash its messages) */
+	/** Delete a folder (and trash its messages) recursively */
 	@Delete("api/folders/:folderId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(FoldersFilter.class)
