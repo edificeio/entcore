@@ -19,6 +19,7 @@
 
 package org.entcore.feeder.aaf;
 
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -35,7 +36,7 @@ public class CleanImportProcessingGlobal extends BaseImportProcessing {
 	@Override
 	public void start(Handler<Message<JsonObject>> handler) {
 		initAcademyPrefix(path);
-		parse(handler, null);
+		beforeParse().onComplete(res -> parse(handler, null));
 	}
 
 	@Override
@@ -43,17 +44,41 @@ public class CleanImportProcessingGlobal extends BaseImportProcessing {
 		return "";
 	}
 
-	@Override
-	protected void preCommit() {
+	private Future<JsonArray> beforeParse() {
 		log.info(e-> "clean import process global", true);
 		final JsonArray importPrefixList = importer.getPrefixToImportList();
 
 		if (importPrefixList == null || importPrefixList.isEmpty()) {
 			log.info(e-> "Global method calls in clean import process", true);
-			importer.restorePreDeletedUsers();
-			importer.deleteOldProfileAttachments();
-			importer.countUsersInGroups();
-			importer.removeOldFunctionalGroup();
+			return importer.getTransaction().commit().compose(res -> {
+				log.info(e-> "tx restorePreDeletedUsers", true);
+				importer.restorePreDeletedUsers();
+				return importer.getTransaction().commit();
+			}).compose(res2 -> {
+				log.info(e-> "tx deleteOldProfileAttachments", true);
+				importer.deleteOldProfileAttachments();
+				return importer.getTransaction().commit();
+			}).compose(res3 -> {
+				log.info(e-> "tx countUsersInGroups", true);
+				importer.countUsersInGroups();
+				return importer.getTransaction().commit();
+			}).compose(res4 -> {
+				log.info(e-> "tx removeOldFunctionalGroup", true);
+				importer.removeOldFunctionalGroup();
+				return importer.getTransaction().commit();
+			});
+		} else {
+			return Future.succeededFuture(new JsonArray());
+		}
+	}
+
+	@Override
+	protected void preCommit() {
+		log.info(e-> "preCommit clean import process global", true);
+		final JsonArray importPrefixList = importer.getPrefixToImportList();
+
+		if (importPrefixList == null || importPrefixList.isEmpty()) {
+			log.info(e-> "tx removeEmptyClasses", true);
 			importer.removeEmptyClasses();
 		}
 	}
