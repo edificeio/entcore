@@ -5,4 +5,4 @@ CREATE TABLE conversation.originalmessages (
 
 CREATE INDEX idx_originalmessages ON conversation.originalmessages (message_id);
 
-ALTER TABLE conversation.messages ADD "contentVersion" INTEGER DEFAULT 0;
+ALTER TABLE conversation.messages ADD content_version INTEGER DEFAULT 0;
