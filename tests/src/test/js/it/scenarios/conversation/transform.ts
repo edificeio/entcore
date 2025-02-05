@@ -104,7 +104,7 @@ function checkMessageOk(res, senderId, recipientId, checkName) {
   }
   checks[`${checkName} - Content version is correct`] = (r) => {
     const message = JSON.parse(r.body)
-    return message.contentVersion === 1
+    return message.content_version === 1
   }
   checks[`${checkName} - Sender is correct`] = (r) => {
     const message = JSON.parse(r.body)

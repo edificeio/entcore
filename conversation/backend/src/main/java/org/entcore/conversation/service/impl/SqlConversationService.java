@@ -206,7 +206,7 @@ public class SqlConversationService implements ConversationService{
 				log.debug("No content transformed");
 			} else {
 				message.put("body", transformerResponse.getCleanHtml());
-				message.put("contentVersion", transformerResponse.getContentVersion());
+				message.put("content_version", transformerResponse.getContentVersion());
 			}
 			updatedMessagePromise.complete();
 		}).onFailure(updatedMessagePromise::fail);
@@ -768,12 +768,12 @@ public class SqlConversationService implements ConversationService{
 					});
 		}
 		// transform and persist message content if needed
-		else if (message.getInteger("contentVersion") == 0) {
+		else if (message.getInteger("content_version") == 0) {
 			transformMessageContent(message.getString("body"), messageId, request)
 					.onSuccess(transformerResponse -> updateMessageContent(messageId, transformerResponse.getCleanHtml(), transformerResponse.getContentVersion())
 							.onSuccess(res -> {
 								message.put("body", transformerResponse.getCleanHtml());
-								message.put("contentVersion", transformerResponse.getContentVersion());
+								message.put("content_version", transformerResponse.getContentVersion());
 								updatedMessagePromise.complete();
 							})
 							.onFailure(throwable -> {
@@ -858,7 +858,7 @@ public class SqlConversationService implements ConversationService{
 		Promise<Void> updatedPromise = Promise.promise();
 		String updateQuery = "" +
 				"UPDATE " + messageTable + " m " +
-				"SET body = ? , contentVersion = ? " +
+				"SET body = ? , content_version = ? " +
 				"WHERE m.id = ? ";
 		JsonArray values = new JsonArray()
 				.add(body)
