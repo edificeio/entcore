@@ -28,16 +28,18 @@ import org.entcore.feeder.exceptions.ValidationException;
 import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
-import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.eventbus.Message;
+import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class Group {
+
+	private static final Logger log = LoggerFactory.getLogger(Group.class);
+	private static final String TX_RUN_LINK_RULES = "TX_RUN_LINK_RULES";
 
 	public static void manualCreateOrUpdate(JsonObject object, String structureId, String classId,
 			TransactionHelper transactionHelper) throws ValidationException {
@@ -143,53 +145,71 @@ public class Group {
 		}
 	}
 
-	public static void runLinkRules()
-	{
-		TransactionHelper tx;
-		Logger log = LoggerFactory.getLogger(Group.class);
-		try
-		{
-			tx = TransactionManager.getInstance().begin();
-
-			final String linkQuery =
-				"MATCH (g:ManualGroup)-[:DEPENDS]->(:Structure)<-[:HAS_ATTACHMENT*0..]-(struct:Structure) " +
+	public static void runLinkRules() {
+		try {
+			final TransactionHelper tx = TransactionManager.getInstance().begin(TX_RUN_LINK_RULES);
+			final String listAutolinkGroups =
+				"MATCH (g:ManualGroup) " +
 				"WHERE EXISTS(g.autolinkUsersFromGroups) " +
-				"WITH g, struct " +
-				"MATCH (u:User)-[:IN]->(target:Group)-[:DEPENDS]->(struct) " +
-				"WHERE " +
-				"(g.autolinkTargetAllStructs = true OR struct.id IN g.autolinkTargetStructs) " +
-				"AND target.filter IN g.autolinkUsersFromGroups " +
-				"WITH g, u " +
-				"MERGE (u)-[new:IN]->(g) " +
-				"ON CREATE SET new.source = 'AUTO' " +
-				"SET new.updated = {now} ";
+				"RETURN g.id as id";
+			tx.add(listAutolinkGroups, new JsonObject());
 
-			final String removeQuery =
-				"MATCH (g:ManualGroup)<-[old:IN]-(:User) " +
-				"WHERE EXISTS(g.autolinkUsersFromGroups) AND old.source = 'AUTO' AND (NOT EXISTS(old.updated) OR old.updated <> {now}) " +
-				"DELETE old ";
-
-			final JsonObject params = new JsonObject().put("now", System.currentTimeMillis());
-
-			tx.add(linkQuery, params);
-			tx.add(removeQuery, params);
-			User.countUsersInGroups(null, "ManualGroup", tx);
-
-			tx.commit(res -> {
-				if("ok".equals(res.body().getString("status"))) {
+			tx.commit().compose(groups -> {
+				if (groups != null && groups.size() == 1 && groups.getJsonArray(0) != null) {
+					return groups.getJsonArray(0).stream().reduce(
+						Future.succeededFuture(new JsonArray()),
+						(previousFuture, group) -> previousFuture.compose(r ->
+								groupLinkRules(((JsonObject) group).getString("id"), tx).commit()),
+						(f1, f2) -> f2 // return last future
+					);
+				} else {
+					return Future.succeededFuture(new JsonArray());
+				}
+			}).onComplete(ar -> {
+				TransactionManager.getInstance().rollback(TX_RUN_LINK_RULES);
+				if (ar.succeeded()) {
 					log.info("PostImport | SUCCEED to manualGroupLinkUsersAuto");
-				} else{
-					log.error("PostImport | Failed to manualGroupLinkUsersAuto: " + res.body().getString("message"));
+				} else {
+					log.error("PostImport | Failed to manualGroupLinkUsersAuto", ar.cause());
 				}
 			});
 		}
-		catch(TransactionException e)
-		{
+		catch(TransactionException e) {
 			log.error("Error opening or running transaction in group link rules", e);
 		}
-		catch(Exception e)
-		{
+		catch(Exception e) {
 			log.error("Unknown error in group link rules", e);
 		}
 	}
+
+	private static TransactionHelper groupLinkRules(String groupId, TransactionHelper tx) {
+		log.info("tx groupLinkRules with groupId : " + groupId);
+		final String linkQuery =
+			"MATCH (g:ManualGroup {id: {groupId}})-[:DEPENDS]->(:Structure)<-[:HAS_ATTACHMENT*0..]-(struct:Structure) " +
+			"WHERE EXISTS(g.autolinkUsersFromGroups) " +
+			"WITH g, struct " +
+			"MATCH (u:User)-[:IN]->(target:Group)-[:DEPENDS]->(struct) " +
+			"WHERE " +
+			"(g.autolinkTargetAllStructs = true OR struct.id IN g.autolinkTargetStructs) " +
+			"AND target.filter IN g.autolinkUsersFromGroups " +
+			"WITH g, u " +
+			"MERGE (u)-[new:IN]->(g) " +
+			"ON CREATE SET new.source = 'AUTO' " +
+			"SET new.updated = {now} ";
+
+		final String removeQuery =
+			"MATCH (g:ManualGroup {id: {groupId}})<-[old:IN]-(:User) " +
+			"WHERE EXISTS(g.autolinkUsersFromGroups) AND old.source = 'AUTO' AND (NOT EXISTS(old.updated) OR old.updated <> {now}) " +
+			"DELETE old ";
+
+		final JsonObject params = new JsonObject()
+				.put("groupId", groupId)
+				.put("now", System.currentTimeMillis());
+
+		tx.add(linkQuery, params);
+		tx.add(removeQuery, params);
+		User.countUsersInGroups(groupId, "ManualGroup", tx);
+		return tx;
+	}
+
 }
