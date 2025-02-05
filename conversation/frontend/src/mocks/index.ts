@@ -1,4 +1,4 @@
-import { Folder, Message } from '~/models';
+import { Folder, Message, MessageMetadata } from '~/models';
 
 export const mockFolderTree: Array<Folder> = [
   {
@@ -31,7 +31,7 @@ export const mockFolderTree: Array<Folder> = [
 
 export const mockCountOfMessagesInInbox = { count: 2 };
 
-export const mockMessagesOfInbox = [
+export const mockMessagesOfInbox: MessageMetadata[] = [
   {
     id: 'f43d3783',
     subject: 'Prêt des manuels scolaires',
@@ -44,7 +44,8 @@ export const mockMessagesOfInbox = [
     date: 1503571892555,
     unread: true,
     response: false,
-    count: 6,
+    trashed: false,
+    forwarded: false,
     hasAttachment: false,
     to: {
       users: [],
@@ -100,8 +101,9 @@ export const mockMessagesOfInbox = [
     date: 1475753026475,
     unread: true,
     response: false,
-    count: 6,
     hasAttachment: false,
+    trashed: false,
+    forwarded: false,
     to: {
       users: [],
       groups: [
