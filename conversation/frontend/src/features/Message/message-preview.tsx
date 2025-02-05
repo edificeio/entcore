@@ -16,7 +16,7 @@ export function MessagePreview({ message }: MessagePreviewProps) {
   return (
     <div className="d-flex gap-12 align-items-center flex-fill overflow-hidden fs-6">
       {(message.response || message.forwarded) && (
-        <IconUndo className="gray-800" />
+        <IconUndo className="gray-800" title="message-response" />
       )}
       <Avatar
         alt={t('author.avatar')}
@@ -42,7 +42,12 @@ export function MessagePreview({ message }: MessagePreviewProps) {
             </div>
           )}
           {message.hasAttachment && (
-            <IconPaperclip className="gray-800" height={16} width={16} />
+            <IconPaperclip
+              className="gray-800"
+              height={16}
+              width={16}
+              title="message-has-attachment"
+            />
           )}
         </div>
       </div>
