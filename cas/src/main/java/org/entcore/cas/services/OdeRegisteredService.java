@@ -19,60 +19,80 @@
 
 package org.entcore.cas.services;
 
+import fr.wseduc.cas.async.Handler;
+import fr.wseduc.cas.entities.AuthCas;
 import fr.wseduc.cas.entities.User;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.user.position.UserPosition;
+import org.entcore.common.user.position.UserPositionService;
+import org.entcore.common.user.position.impl.DefaultUserPositionService;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.util.*;
+import java.util.stream.Collectors;
+
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 public class OdeRegisteredService extends AbstractCas20ExtensionRegisteredService {
+	UserPositionService userPositionService = new DefaultUserPositionService(eb, false);
 
 	private static final Logger log = LoggerFactory.getLogger(OdeRegisteredService.class);
+	private static final String ACTION = "action";
 	private static final String ATTRIBUTES = "attributes";
+	private static final String CAS_NAMESPACE = "http://www.yale.edu/tp/cas";
+	private static final String CAS_PREFIX = "cas";
+	private static final String DIRECTORY = "directory";
 	private static final String DOLLAR = "$";
 	private static final String EMAIL = "email";
 	private static final String EMAIL_ACADEMY = "emailAcademy";
 	private static final String EMAIL_INTERNAL = "emailInternal";
 	private static final String ENT_PERSON_FUNCTIONS = "ENTPersonFunctions";
 	private static final String ENT_PERSON_MAIL = "ENTPersonMail";
-	private static final String ENT_PERSON_PHONE_NUMBER = "ENTPersonTelephone";
 	private static final String ENT_PERSON_PROFILES = "ENTPersonProfiles";
 	private static final String EXTERNAL_ID = "externalId";
 	private static final String FIRST_NAME = "firstName";
 	private static final String FUNCTION = "function";
-	private static final String HOME_PHONE= "homePhone";
+	private static final String FUNCTIONS = "functions";
+	private static final String ID = "id";
 	private static final String LAST_NAME = "lastName";
-	private static final String MOBILE = "mobile";
 	private static final String NATIONAL_1 = "National_1";
 	private static final String NATIONAL_2 = "National_2";
 	private static final String NATIONAL_3 = "National_3";
 	private static final String NATIONAL_4 = "National_4";
 	private static final String NOMS = "Nom";
+	private static final String NAME = "name";
+	private static final String OK = "ok";
 	private static final String PERSONNEL = "Personnel";
 	private static final String PRENOMS = "Prenoms";
 	private static final String RELATIVE = "Relative";
+	private static final String RESULT = "result";
+	private static final String STATUS = "status";
+	private static final String STRUCTURE_ID = "structureId";
 	private static final String STRUCTURES = "structures";
+	private static final String STRUCTURE_NODES = "structureNodes";
+	private static final String SUBJECT_TAUGHT = "subjectTaught";
 	private static final String STUDENT = "Student";
 	private static final String TEACHER = "Teacher";
 	private static final String TYPE = "type";
 	private static final String UAI = "UAI";
 	private static final String UFUNCTIONS = "ufunctions";
-
-
-	@Override
-	public void configure(EventBus eb, Map<String,Object> conf) {
-		super.configure(eb, conf);
-		this.directoryAction = "getUserInfos";
-	}
+	private static final String USERID = "userId";
+	private static final String USER_POSITIONS = "userPositions";
 
 	@Override
 	protected void prepareUserCas20(User user, final String userId, String service, final JsonObject data, final Document doc, final List<Element> additionnalAttributes) {
 		user.setUser(data.getString(principalAttributeName)); // We use UID here
+		data.remove(principalAttributeName);
 
 		if (log.isDebugEnabled()){
 			log.debug("START : prepareUserCas20 userId : " + userId);
@@ -96,22 +116,30 @@ public class OdeRegisteredService extends AbstractCas20ExtensionRegisteredServic
 			}
 
 			// Functions
-			if (data.containsKey(STRUCTURES) && data.containsKey(UFUNCTIONS)) {
-				JsonArray structures = data.getJsonArray(STRUCTURES, new JsonArray());
-				JsonArray ufunctions = data.getJsonArray(UFUNCTIONS, new JsonArray());
+			if (data.containsKey(STRUCTURES) && data.containsKey(FUNCTIONS)) {
+				JsonArray positions = data.getJsonArray(USER_POSITIONS, new JsonArray());
+				JsonArray structures = data.getJsonArray(STRUCTURE_NODES, new JsonArray());
+				JsonArray functions = data.getJsonArray(SUBJECT_TAUGHT, new JsonArray());
 
-				Map<String, String> structuresExternalIdsUaisMap = buildStructuresExternalIdsUaisMap(structures);
-				Map<String, List<String>> structuresExternalIdsFunctionsMap = buildStructuresExternalIdsFunctionsMap(ufunctions);
+				Map<String, List<String>> structuresExternalIdsFunctionsMap = buildStructuresExternalIdsFunctionsMap(functions);
 
-				structuresExternalIdsUaisMap.forEach((structureExternalId, structureUai) -> {
-					List<String> functions = structuresExternalIdsFunctionsMap.getOrDefault(structureExternalId, new ArrayList<>());
+				structures.stream()
+					.filter(JsonObject.class::isInstance)
+					.map(JsonObject.class::cast)
+					.forEach(structure -> {
+						String structureId = structure.getString(ID);
+						String structureUai = structure.getString(UAI);
+						String structureExternalId = structure.getString(EXTERNAL_ID);
 
-					Element functionInfos = createElement(ENT_PERSON_FUNCTIONS, doc);
-					functionInfos.appendChild(createTextElement(UAI, structureUai, doc)); // UAI
-					functionInfos.appendChild(createTextElement(FUNCTION, functions.toString(), doc)); // Functions
+						List<String> structureFunctions = structuresExternalIdsFunctionsMap.getOrDefault(structureExternalId, new ArrayList<>());
+						addPositions(structureId, positions, structureFunctions); // Add manual functions for this structure if existing
 
-					rootAttributes.appendChild(functionInfos);
-				});
+						Element functionInfos = createElement(ENT_PERSON_FUNCTIONS, doc);
+						functionInfos.appendChild(createTextElement(UAI, structureUai, doc)); // UAI
+						functionInfos.appendChild(createTextElement(FUNCTION, structureFunctions.toString(), doc)); // Functions
+
+						rootAttributes.appendChild(functionInfos);
+					});
 			}
 
 			// Email
@@ -124,40 +152,28 @@ public class OdeRegisteredService extends AbstractCas20ExtensionRegisteredServic
 			}
 
 			// Profile
-			switch(data.getString(TYPE)) {
-				case STUDENT :
-					rootAttributes.appendChild(createTextElement(ENT_PERSON_PROFILES, NATIONAL_1, doc));
-					break;
-				case RELATIVE :
-					rootAttributes.appendChild(createTextElement(ENT_PERSON_PROFILES, NATIONAL_2, doc));
-					break;
-				case TEACHER :
-					rootAttributes.appendChild(createTextElement(ENT_PERSON_PROFILES, NATIONAL_3, doc));
-					break;
-				case PERSONNEL :
-					rootAttributes.appendChild(createTextElement(ENT_PERSON_PROFILES, NATIONAL_4, doc));
-					break;
+			if (data.getJsonArray(TYPE) != null && !data.getJsonArray(TYPE).isEmpty()) {
+				switch (data.getJsonArray(TYPE).getString(0)) {
+					case STUDENT:
+						rootAttributes.appendChild(createTextElement(ENT_PERSON_PROFILES, NATIONAL_1, doc));
+						break;
+					case RELATIVE:
+						rootAttributes.appendChild(createTextElement(ENT_PERSON_PROFILES, NATIONAL_2, doc));
+						break;
+					case TEACHER:
+						rootAttributes.appendChild(createTextElement(ENT_PERSON_PROFILES, NATIONAL_3, doc));
+						break;
+					case PERSONNEL:
+						rootAttributes.appendChild(createTextElement(ENT_PERSON_PROFILES, NATIONAL_4, doc));
+						break;
+				}
 			}
 
 			additionnalAttributes.add(rootAttributes);
-
-		} catch (Exception e) {
-			log.error("Failed to transform User for ODE", e);
 		}
-	}
-
-	private Map<String, String> buildStructuresExternalIdsUaisMap(JsonArray structures) {
-		Map<String, String> structuresExternalIdsUaisMap = new HashMap<>();
-
-		if (structures != null && !structures.isEmpty()) {
-			structures.stream()
-				.filter(JsonObject.class::isInstance)
-				.map(JsonObject.class::cast)
-				.filter(structure -> structure.containsKey(EXTERNAL_ID) && structure.containsKey(UAI))
-				.forEach(structure -> structuresExternalIdsUaisMap.put(structure.getString(EXTERNAL_ID), structure.getString(UAI)));
+		catch (Exception e) {
+			log.error("[Entcore@OdeRegisteredService::prepareUserCas20Future] Failed to transform User for ODE", e);
 		}
-
-		return structuresExternalIdsUaisMap;
 	}
 
 	private Map<String, List<String>> buildStructuresExternalIdsFunctionsMap(JsonArray functions) {
@@ -182,5 +198,15 @@ public class OdeRegisteredService extends AbstractCas20ExtensionRegisteredServic
 		}
 
 		return structuresExternalIdsFunctionsMap;
+	}
+
+	private void addPositions(String structureId, JsonArray positions, List<String> functions) {
+		List<String> manualPositions = positions.stream()
+				.filter(JsonObject.class::isInstance)
+				.map(JsonObject.class::cast)
+				.filter(position -> position.getString(STRUCTURE_ID).equals(structureId))
+				.map(position -> position.getString(NAME))
+				.collect(Collectors.toList());
+		functions.addAll(manualPositions);
 	}
 }
