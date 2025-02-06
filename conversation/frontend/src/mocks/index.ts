@@ -139,7 +139,26 @@ export const mockFullMessage: Message = {
   date: 1503571892555,
   unread: true,
   response: false,
-  attachments: [],
+  attachments: [
+    {
+      id: 'acc05149-3858-49f0-a436-ef129d8cb621',
+      name: 'file',
+      charset: 'UTF-8',
+      filename: 'Autorisation sortie scolaire.pdf',
+      contentType: 'application/pdf',
+      contentTransferEncoding: '7bit',
+      size: 37449,
+    },
+    {
+      id: 'acc05149-3858-49f0-a436-zqzd',
+      name: 'file',
+      charset: 'UTF-8',
+      filename: 'Yolo.pdf',
+      contentType: 'application/pdf',
+      contentTransferEncoding: '7bit',
+      size: 37449,
+    },
+  ],
   to: {
     users: [],
     groups: [
