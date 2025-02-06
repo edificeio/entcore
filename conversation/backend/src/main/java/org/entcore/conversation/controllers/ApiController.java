@@ -18,10 +18,9 @@
 
 package org.entcore.conversation.controllers;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.entcore.common.http.filter.ResourceFilter;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
@@ -40,7 +39,6 @@ import fr.wseduc.webutils.I18n;
 import static fr.wseduc.webutils.Utils.getOrElse;
 import fr.wseduc.webutils.http.BaseController;
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 
@@ -135,7 +133,7 @@ public class ApiController extends BaseController {
 	@ResourceFilter(FoldersFilter.class)
 	public void deleteFolder(final HttpServerRequest request) {
 		final String folderId = request.params().get("folderId");
-		deleteFolders(request, Stream.of(folderId).collect(Collectors.toList()))
+		deleteFolders(request, Collections.singletonList(folderId))
 		.onComplete( result -> {
 			if( result.failed() ) {
 				badRequest(request, result.cause().getMessage());
@@ -147,17 +145,7 @@ public class ApiController extends BaseController {
 
 	private Future<JsonObject> deleteFolders(final HttpServerRequest request, final List<String> folderIds) {
 		return getAuthenticatedUserInfos(eb, request)
-		.compose( user -> {
-			Promise<JsonObject> promise = Promise.promise();
-			conversationService.deleteFoldersButTrashMessages(folderIds, user, either -> {
-				if(either.isLeft()) {
-					promise.fail(either.left().getValue());
-				} else {
-					promise.complete(either.right().getValue());
-				}
-			});
-			return promise.future();
-		});
+			.compose( user -> conversationService.deleteFoldersAndTrashMessages(folderIds, user) );
 	}
 	
 	/** Utility method to read a query param and convert it to an Integer. */

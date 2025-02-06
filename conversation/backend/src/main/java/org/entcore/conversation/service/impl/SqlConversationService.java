@@ -1419,19 +1419,16 @@ public class SqlConversationService implements ConversationService{
 	}
 
 	@Override
-	public void deleteFoldersButTrashMessages(List<String> folderIds, UserInfos user, Handler<Either<String, JsonObject>> result) {
-		if(validationParamsError(user, result, folderIds.toArray(new String[0]))) {
-			return;
+	public Future<JsonObject> deleteFoldersAndTrashMessages(List<String> folderIds, UserInfos user) {
+		if (user == null) {
+			return Future.failedFuture("conversation.invalid.user");
 		}
-
-		getIdsOfMessagesInUserFolders(folderIds, user, true, results -> {
-			if(results.isLeft()) {
-				result.handle(new Either.Left<>(results.left().getValue()));
-				return;
-			}
-			
+		if (folderIds == null || folderIds.isEmpty()) {
+			return Future.failedFuture("conversation.invalid.parameter");
+		}
+		return getIdsOfMessagesInUserFolders(folderIds, user)
+		.compose( messageIds -> {
 			final JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
-			final JsonArray messageIds = results.right().getValue();
 			final SqlStatementsBuilder builder = new SqlStatementsBuilder();
 			if( !messageIds.isEmpty() ) {
 				prepareTrashMessagesStatement(
@@ -1452,25 +1449,32 @@ public class SqlConversationService implements ConversationService{
 
 			builder.prepared(deleteFolder, values);
 
+			final Promise<JsonObject> promise = Promise.promise();
 			sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(0, either -> {
 				if(either.isLeft()) {
-					result.handle(either);
+					promise.fail(either.left().getValue());
 				} else {
-					result.handle(new Either.Right<>(new JsonObject().put("trashedMessageIds", messageIds)));
+					promise.complete(new JsonObject().put("trashedMessageIds", messageIds));
 				}
 			}));
+			return promise.future();
 		});
 	}
 
-	private void getIdsOfMessagesInUserFolders(Collection<String> folderIds, UserInfos user, Boolean recurseOnSubfolders, Handler<Either<String, JsonArray>> results) {
+	/**
+	 * Retrieves the IDs of messages located in the specified user folders (and subfolders, recursively).
+	 * 
+	 * @param folderIds A collection of folder IDs to search within. Must not be null or empty.
+	 * @param user The user information object containing the user ID.
+	 * @return A Future that will be completed with a JsonArray of message IDs found in the folders.
+	 *         If the folderIds parameter is null or empty, the Future will fail with an appropriate error message.
+	 */
+	private Future<JsonArray> getIdsOfMessagesInUserFolders(Collection<String> folderIds, UserInfos user) {
+		final Promise<JsonArray> promise = Promise.promise();
 		if(folderIds==null || folderIds.isEmpty()) {
-			results.handle(new Either.Left<>("folderIds parameter cannot be null or empty"));
-			return;
-		}
-
-		String query;
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
-		if(Boolean.TRUE.equals(recurseOnSubfolders)) {
+			promise.fail("folderIds parameter cannot be null or empty");
+		} else {
+			JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 			String nonRecursiveTerm = 
 				"SELECT DISTINCT f.id AS id FROM "+ folderTable +" AS f "+ 
 				"WHERE f.id IN "+ generateInVars(folderIds,values) +" AND f.user_id = ? ";
@@ -1478,27 +1482,36 @@ public class SqlConversationService implements ConversationService{
 
 			String recursiveTerm = 
 				"SELECT DISTINCT f.id AS id FROM "+ folderTable +" AS f "+
-				"JOIN folders ON f.parent_id = folders.id "+ 
+				"JOIN userFolders ON f.parent_id = userFolders.id "+ 
 				"WHERE f.user_id = ? ";
 			values.add(user.getUserId());
 
-			query =
-				"WITH RECURSIVE folders AS ("+ nonRecursiveTerm +" UNION "+ recursiveTerm +") " +
-				"SELECT DISTINCT um.message_id AS id FROM folders "+
-				"JOIN "+ userMessageTable +" um ON um.folder_id = folders.id WHERE um.user_id = ? ";
+			String query =
+				"WITH RECURSIVE userFolders AS ("+ nonRecursiveTerm +" UNION "+ recursiveTerm +") " +
+				"SELECT DISTINCT um.message_id AS id FROM userFolders "+
+				"JOIN "+ userMessageTable +" um ON um.folder_id = userFolders.id WHERE um.user_id = ? ";
 			values.add(user.getUserId());
-		} else {
-			query = 
-				"SELECT DISTINCT um.message_id AS id FROM "+ folderTable +" AS f "+
-				"JOIN "+ userMessageTable +" um ON um.folder_id = f.id "+
-				"WHERE f.id IN "+ generateInVars(folderIds, values) +" AND f.user_id = ? ";
-			values.add(user.getUserId());
+	
+			sql.prepared(query, values, SqlResult.validResultHandler(results->{
+				if( results.isLeft() ) {
+					promise.fail(results.left().getValue());
+				} else {
+					promise.complete(results.right().getValue());
+				}
+			}));
 		}
-
-		sql.prepared(query, values, SqlResult.validResultHandler(results));
+		return promise.future();
 	}
 
-	private void prepareTrashMessagesStatement(SqlStatementsBuilder builder, Collection<String> messagesId, UserInfos user, boolean removeFromFolder) {
+	/**
+	 * Prepares SQL statements to mark messages as trashed for a specific user.
+	 *
+	 * @param builder The SqlStatementsBuilder to which the prepared statements will be added.
+	 * @param messageIds A collection of message IDs to be marked as trashed.
+	 * @param user The user information containing the user ID.
+	 * @param removeFromFolder A boolean indicating whether to remove the messages from their folder.
+	 */
+	private void prepareTrashMessagesStatement(SqlStatementsBuilder builder, Collection<String> messageIds, UserInfos user, boolean removeFromFolder) {
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 
 		StringBuilder query = new StringBuilder()
@@ -1510,7 +1523,7 @@ public class SqlConversationService implements ConversationService{
 		}
 		query.append("AND user_id = ? ");
 		values.add(user.getUserId());
-		query.append("AND message_id IN ").append(generateInVars(messagesId, values));
+		query.append("AND message_id IN ").append(generateInVars(messageIds, values));
 
 		final String deleteUserThreads =
 			"DELETE FROM conversation.userthreads " +
@@ -1704,11 +1717,12 @@ public class SqlConversationService implements ConversationService{
 	private String generateInVars(Collection<String> list, JsonArray values){
 		StringBuilder builder = new StringBuilder("(");
 
-		int count = 0;
 		for(String item : list){
-			builder.append(++count==1 ? "?" : ",?");
+			builder.append("?,");
 			values.add(item);
 		}
+		if(list.size() > 0)
+			builder.deleteCharAt(builder.length() - 1);
 		builder.append(")");
 
 		return builder.toString();
