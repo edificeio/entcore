@@ -38,6 +38,7 @@ import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.I18n;
 import static fr.wseduc.webutils.Utils.getOrElse;
 import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.Future;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
@@ -138,7 +139,7 @@ public class ApiController extends BaseController {
 			if( result.failed() ) {
 				badRequest(request, result.cause().getMessage());
 			} else {
-				ok(request);
+				Renders.render(request, result.result(), 200);
 			}
 		});
 	}
