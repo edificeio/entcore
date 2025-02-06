@@ -25,9 +25,7 @@ export function useMenuData() {
   const { folderId, userFolder } = useSelectedFolder();
 
   const inbox = useMessagesCount('inbox', { unread: true }).data?.count ?? 0;
-  const outbox = useMessagesCount('outbox', { unread: true }).data?.count ?? 0;
   const draft = useMessagesCount('draft').data?.count ?? 0;
-  const trash = useMessagesCount('trash', { unread: true }).data?.count ?? 0;
 
   const selectedSystemFolderId: SystemFolder | undefined =
     typeof folderId === 'string' && !userFolder
@@ -39,9 +37,7 @@ export function useMenuData() {
   return {
     counters: {
       inbox,
-      outbox,
       draft,
-      trash,
     },
     selectedSystemFolderId,
     selectedUserFolderId,
