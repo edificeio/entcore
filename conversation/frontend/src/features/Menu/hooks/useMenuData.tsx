@@ -37,7 +37,9 @@ export function useMenuData() {
   return {
     counters: {
       inbox,
+      outbox: 0,
       draft,
+      trash: 0,
     },
     selectedSystemFolderId,
     selectedUserFolderId,
