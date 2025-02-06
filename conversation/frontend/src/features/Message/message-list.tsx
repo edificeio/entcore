@@ -78,7 +78,7 @@ export function MessageList() {
   }, [selectedIds, messages]);
 
   const canBeMovetoTrash = useMemo(() => {
-    if(folderId == 'trash') return;
+    if(folderId === 'trash') return;
     return messages?.some(
       (message) =>
         selectedIds.length &&
