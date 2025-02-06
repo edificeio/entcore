@@ -8,6 +8,8 @@ import {
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Message, MessageMetadata } from '~/models';
 import { folderQueryOptions, messageService } from '..';
+import { useToast } from '@edifice.io/react';
+import { t } from 'i18next';
 
 /**
  * Message Query Options Factory.
@@ -144,6 +146,7 @@ export const useTrashMessage = () => {
   const search = searchParams.get('search');
   const unreadFilter = searchParams.get('unread');
   const queryClient = useQueryClient();
+  const toast = useToast();
 
   return useMutation({
     mutationFn: ({ id }: { id: string | string[] }) =>
@@ -224,6 +227,9 @@ export const useTrashMessage = () => {
           }
         );
       }
+
+      // Toast
+      toast.success(t(messageIds.length > 1 ? 'messages.trash' : 'message.trash'));
     },
   });
 };
