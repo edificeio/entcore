@@ -1,4 +1,4 @@
-import { Folder, Message } from '~/models';
+import { Folder, Message, MessageMetadata } from '~/models';
 
 export const mockFolderTree: Array<Folder> = [
   {
@@ -31,7 +31,7 @@ export const mockFolderTree: Array<Folder> = [
 
 export const mockCountOfMessagesInInbox = { count: 2 };
 
-export const mockMessagesOfInbox = [
+export const mockMessagesOfInbox: MessageMetadata[] = [
   {
     id: 'f43d3783',
     subject: 'Prêt des manuels scolaires',
@@ -44,7 +44,8 @@ export const mockMessagesOfInbox = [
     date: 1503571892555,
     unread: true,
     response: false,
-    count: 6,
+    trashed: false,
+    forwarded: false,
     hasAttachment: false,
     to: {
       users: [],
@@ -100,8 +101,9 @@ export const mockMessagesOfInbox = [
     date: 1475753026475,
     unread: true,
     response: false,
-    count: 6,
     hasAttachment: false,
+    trashed: false,
+    forwarded: false,
     to: {
       users: [],
       groups: [
@@ -137,7 +139,26 @@ export const mockFullMessage: Message = {
   date: 1503571892555,
   unread: true,
   response: false,
-  attachments: [],
+  attachments: [
+    {
+      id: 'acc05149-3858-49f0-a436-ef129d8cb621',
+      name: 'file',
+      charset: 'UTF-8',
+      filename: 'Autorisation sortie scolaire.pdf',
+      contentType: 'application/pdf',
+      contentTransferEncoding: '7bit',
+      size: 37449,
+    },
+    {
+      id: 'acc05149-3858-49f0-a436-zqzd',
+      name: 'file',
+      charset: 'UTF-8',
+      filename: 'Yolo.pdf',
+      contentType: 'application/pdf',
+      contentTransferEncoding: '7bit',
+      size: 37449,
+    },
+  ],
   to: {
     users: [],
     groups: [
