@@ -3,7 +3,7 @@ export type Attachment = {
   charset: string;
   contentTransferEncoding: string;
   contentType: string;
-  fileName: string;
+  filename: string;
   name: string;
   size: number;
 };

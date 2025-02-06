@@ -3,21 +3,6 @@ import { render, screen } from '~/mocks/setup';
 import { MessageMetadata } from '~/models';
 import { MessagePreview } from './message-preview';
 
-/**
- * Mock window.matchMedia used in useBreakpoint hook
- */
-const mocks = vi.hoisted(() => ({}));
-
-vi.mock('@edifice.io/react', async () => {
-  const actual =
-    await vi.importActual<typeof import('@edifice.io/react')>(
-      '@edifice.io/react',
-    );
-  return {
-    ...actual,
-  };
-});
-
 const message = mockMessagesOfInbox[0];
 
 describe('Message preview header component', () => {

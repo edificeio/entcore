@@ -1,7 +1,14 @@
+import {
+  ConversationHistoryNodeView,
+  ConversationHistoryRenderer,
+  Editor,
+} from '@edifice.io/react/editor';
 import { QueryClient } from '@tanstack/react-query';
-import { LoaderFunctionArgs } from 'react-router-dom';
+import { LoaderFunctionArgs, useParams } from 'react-router-dom';
+import { MessageAttachments } from '~/features/Message/message-attachments';
+import { MessageHeader } from '~/features/Message/message-header';
 
-import { messageQueryOptions } from '~/services';
+import { messageQueryOptions, useMessage } from '~/services';
 
 export const loader =
   (queryClient: QueryClient) =>
@@ -16,5 +23,33 @@ export const loader =
   };
 
 export function Component() {
-  return <>TODO</>;
+  const { messageId } = useParams();
+
+  const { data: message } = useMessage(messageId!);
+
+  const extensions = [ConversationHistoryNodeView(ConversationHistoryRenderer)];
+
+  return (
+    <>
+      {message && (
+        <div className="p-16">
+          <MessageHeader message={message} />
+          <div className="p-md-48">
+            <Editor
+              content={message.body}
+              mode="read"
+              variant="ghost"
+              extensions={extensions}
+            />
+            {!!message.attachments?.length && (
+              <MessageAttachments
+                attachments={message.attachments}
+                messageId={message.id}
+              />
+            )}
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
