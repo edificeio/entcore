@@ -8,6 +8,8 @@ import {
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Message, MessageMetadata } from '~/models';
 import { folderQueryOptions, messageService } from '..';
+import { useToast } from '@edifice.io/react';
+import { t } from 'i18next';
 
 /**
  * Message Query Options Factory.
@@ -139,17 +141,95 @@ export const useMarkUnread = () => {
  * @returns Mutation result for moving the message to the trash.
  */
 export const useTrashMessage = () => {
+  const { folderId } = useParams() as { folderId: string };
+  const [searchParams] = useSearchParams();
+  const search = searchParams.get('search');
+  const unreadFilter = searchParams.get('unread');
   const queryClient = useQueryClient();
+  const toast = useToast();
+
   return useMutation({
     mutationFn: ({ id }: { id: string | string[] }) =>
       messageService.moveToFolder('trash', id),
     onSuccess: (_data, { id }) => {
       const messageIds = typeof id === 'string' ? [id] : id;
+
       messageIds.forEach((messageId) => {
         queryClient.invalidateQueries({
           queryKey: messageQueryOptions.getById(messageId).queryKey,
         });
       });
+
+      queryClient.invalidateQueries({
+        queryKey: ['folder', 'trash']
+      });
+
+      let unreadTrashedInboxCount = 0;
+      // Update list message
+      queryClient.setQueryData(
+        folderQueryOptions.getMessagesQuerykey(folderId, {
+          search: search === '' ? undefined : search || undefined,
+          unread: !unreadFilter ? undefined : true,
+        }),
+        // Remove deleted message from pages
+        (data: InfiniteData<Message[]>) => {
+          if(folderId === 'inbox') {
+            unreadTrashedInboxCount = data.pages.reduce((count, page) => {
+              return count + page.filter((message) => message.unread && messageIds.includes(message.id)).length;
+            }, 0);
+          }
+
+          return {
+            ...data,
+            pages: data.pages.map((page: Message[]) => 
+              page.filter((message: Message) => !messageIds.includes(message.id))
+            )
+          };
+        }        
+      );
+
+      // Update unread inbox count
+      if(folderId === 'inbox' && unreadTrashedInboxCount) {
+        queryClient.setQueryData(
+          ['folder', 'inbox', 'count', { unread: true }],
+          ({ count }: { count: number }) => {
+            return { count: count - unreadTrashedInboxCount };
+          },
+        );
+        queryClient.setQueryData(
+          ['conversation-navbar-count'],
+          ({ count }: { count: number }) => {
+            return { count: count - unreadTrashedInboxCount };
+          },
+        );
+      }
+
+      // Update draft count if It's a draft message
+      if(folderId === 'draft') {
+        queryClient.setQueryData(
+          [
+            'folder',
+            'draft',
+            'count',
+            null
+          ],
+          ({ count }: { count: number }) => {
+            return { count: count - messageIds.length };
+          },
+        );
+      }
+
+      // Update custom folder count
+      if(!['inbox', 'trash', 'draft', 'outbox'].includes(folderId)) {
+        queryClient.invalidateQueries(
+          {
+            queryKey: folderQueryOptions.getFoldersTree().queryKey
+          }
+        );
+      }
+
+      // Toast
+      toast.success(t(messageIds.length > 1 ? 'messages.trash' : 'message.trash'));
     },
   });
 };
