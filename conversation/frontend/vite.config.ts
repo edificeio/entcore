@@ -68,7 +68,7 @@ export default ({ mode }: { mode: string }) => {
           proxyObj,
         '^/(?=auth|appregistry|cas|userbook|directory|communication|portal|session|timeline|workspace|infra)':
           proxyObj,
-        '^/conversation/(?=api|messages/|folders/|folder$|folder/trash|count/|toggleUnread)':
+        '^/conversation/(?=api|messages/|folders/|folder$|folder/trash|trash$|count/|toggleUnread)':
           proxyObj,
       },
       port: 4200,

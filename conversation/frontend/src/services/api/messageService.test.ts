@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest';
-import { messageService } from '.';
+import { baseUrl, messageService } from '.';
 import { mockFullMessage } from '~/mocks';
+import { odeServices } from 'edifice-ts-client';
 
 describe('Conversation Message GET Methods', () => {
   test('makes a GET request to get a full message', async () => {
@@ -62,4 +63,18 @@ describe('Conversation Message Mutation Methods', () => {
     expect(response).toHaveProperty('body');
     expect(response).toHaveProperty('sent');
   });
+  
+  test('makes a PUT request to move messages to trash', async () => {
+    const messageIds = ['f43d3783', '4d14920b'];
+  
+    const putMock = vi.spyOn(odeServices.http(), 'put').mockResolvedValue(undefined);
+  
+    const response = await messageService.moveToFolder('trash', messageIds);
+  
+    expect(putMock).toHaveBeenCalledWith(`${baseUrl}/trash`, { id: messageIds });
+    expect(response).toBeUndefined();
+  
+    putMock.mockRestore();
+  });
+  
 });

@@ -131,7 +131,6 @@ export function DesktopMenu() {
           selected={selectedSystemFolderId === 'outbox'}
           leftIcon={<IconSend />}
           onClick={() => navigateTo('outbox')}
-          rightIcon={renderBadge(counters.outbox)}
         >
           {t('outbox')}
         </Menu.Button>
@@ -147,7 +146,6 @@ export function DesktopMenu() {
           selected={selectedSystemFolderId === 'trash'}
           leftIcon={<IconDelete />}
           onClick={() => navigateTo('trash')}
-          rightIcon={renderBadge(counters.trash)}
         >
           {t('trash')}
         </Menu.Button>
