@@ -99,7 +99,7 @@ function checkTransformOk(res, checkName) {
   }
 }
 
-function checkMessageOk(res, senderId, recipientId, body, checkName) {
+function checkMessageOk(res, senderId, recipientId, body, hasOriginal, checkName) {
   const checks = {}
   checks[`${checkName} - HTTP status`] = (r) => r.status === 200
   checks[`${checkName} - Content is transformed`] = (r) => {
@@ -123,6 +123,10 @@ function checkMessageOk(res, senderId, recipientId, body, checkName) {
   checks[`${checkName} - Body is correct`] = (r) => {
     const message = JSON.parse(r.body)
     return message.body === body
+  }
+  checks[`${checkName} - Check original format`] = (r) => {
+    const message = JSON.parse(r.body)
+    return message.original_format_exists === hasOriginal
   }
   const ok = check(res, checks);
   if(!ok) {
@@ -169,7 +173,7 @@ function testTransformMessageContent(data) {
     // Teacher 2 retrieves message
     authenticateWeb(teacher2.login)
     res = getMessage(messageId, false)
-    checkMessageOk(res, teacher1.id, teacher2.id, transformedRichContent, 'Teacher 2 fetches message sent by teacher 1')
+    checkMessageOk(res, teacher1.id, teacher2.id, transformedRichContent, false, 'Teacher 2 fetches message sent by teacher 1')
     // Teacher 2 fails fetching message original format (because it has been directely created with transformed content)
     res = getMessage(messageId, true)
     checkMessageOriginalKo(res, messageId, 'Teacher 2 fails to fetch original format of message')
