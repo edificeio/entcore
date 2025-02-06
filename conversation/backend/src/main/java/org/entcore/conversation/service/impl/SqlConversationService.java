@@ -65,6 +65,8 @@ import org.entcore.conversation.util.MessageUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.vertx.core.json.Json;
+
 public class SqlConversationService implements ConversationService{
 	public static final int DEFAULT_SENDTIMEOUT = 15 * 60 * 1000;
 	private static final Logger log = LoggerFactory.getLogger(SqlConversationService.class);
@@ -1433,7 +1435,7 @@ public class SqlConversationService implements ConversationService{
 			if( !messageIds.isEmpty() ) {
 				prepareTrashMessagesStatement(
 					builder, 
-					messageIds.stream().map(String.class::cast).collect(Collectors.toList()), 
+					messageIds, 
 					user, 
 					true
 				);
@@ -1469,8 +1471,8 @@ public class SqlConversationService implements ConversationService{
 	 * @return A Future that will be completed with a JsonArray of message IDs found in the folders.
 	 *         If the folderIds parameter is null or empty, the Future will fail with an appropriate error message.
 	 */
-	private Future<JsonArray> getIdsOfMessagesInUserFolders(Collection<String> folderIds, UserInfos user) {
-		final Promise<JsonArray> promise = Promise.promise();
+	private Future<List<String>> getIdsOfMessagesInUserFolders(Collection<String> folderIds, UserInfos user) {
+		final Promise<List<String>> promise = Promise.promise();
 		if(folderIds==null || folderIds.isEmpty()) {
 			promise.fail("folderIds parameter cannot be null or empty");
 		} else {
@@ -1496,7 +1498,12 @@ public class SqlConversationService implements ConversationService{
 				if( results.isLeft() ) {
 					promise.fail(results.left().getValue());
 				} else {
-					promise.complete(results.right().getValue());
+					final List<String> ids = results.right().getValue()
+						.stream()
+						.map(JsonObject.class::cast)
+						.map(result -> result.getString("id"))
+						.collect(Collectors.toList());
+					promise.complete(ids);
 				}
 			}));
 		}
