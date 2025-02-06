@@ -105,6 +105,7 @@ export function MessageList() {
 
   const handleMoveToTrash = () => {
     moveToTrashQuery.mutate({ id: selectedIds });
+    setCurrent((prev) => prev + 1);
   };
 
   const handleMessageClick = (message: MessageMetadata) => {

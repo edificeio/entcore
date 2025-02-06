@@ -161,6 +161,7 @@ export const useTrashMessage = () => {
         queryKey: ['folder', 'trash']
       });
 
+      let unreadTrashedInboxCount = 0;
       // Update list message
       queryClient.setQueryData(
         folderQueryOptions.getMessagesQuerykey(folderId, {
@@ -169,6 +170,12 @@ export const useTrashMessage = () => {
         }),
         // Remove deleted message from pages
         (data: InfiniteData<Message[]>) => {
+          if(folderId === 'inbox') {
+            unreadTrashedInboxCount = data.pages.reduce((count, page) => {
+              return count + page.filter((message) => message.unread && messageIds.includes(message.id)).length;
+            }, 0);
+          }
+
           return {
             ...data,
             pages: data.pages.map((page: Message[]) => 
@@ -177,6 +184,22 @@ export const useTrashMessage = () => {
           };
         }        
       );
+
+      // Update unread inbox count
+      if(folderId === 'inbox' && unreadTrashedInboxCount) {
+        queryClient.setQueryData(
+          ['folder', 'inbox', 'count', { unread: true }],
+          ({ count }: { count: number }) => {
+            return { count: count - unreadTrashedInboxCount };
+          },
+        );
+        queryClient.setQueryData(
+          ['conversation-navbar-count'],
+          ({ count }: { count: number }) => {
+            return { count: count - unreadTrashedInboxCount };
+          },
+        );
+      }
 
       // Update draft count if It's a draft message
       if(folderId === 'draft') {
@@ -190,6 +213,15 @@ export const useTrashMessage = () => {
           ({ count }: { count: number }) => {
             return { count: count - messageIds.length };
           },
+        );
+      }
+
+      // Update custom folder count
+      if(!['inbox', 'trash', 'draft', 'outbox'].includes(folderId)) {
+        queryClient.invalidateQueries(
+          {
+            queryKey: folderQueryOptions.getFoldersTree().queryKey
+          }
         );
       }
     },
