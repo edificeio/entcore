@@ -67,8 +67,9 @@ describe('CreateFolderModal component', () => {
     );
     expect(checkParentFolder).not.toBeChecked();
 
-    const selectParentFolder = await screen.findByRole('combobox');
-    expect(selectParentFolder).toBeDisabled();
+    const dropdownParentFolder = await screen.findByText<HTMLButtonElement>('folder.new.subfolder.placeholder');
+    expect(dropdownParentFolder).toBeInTheDocument();
+    expect(dropdownParentFolder).toBeDisabled();
   });
 
   it('should forbid creating a folder named with only blank characters', async () => {
