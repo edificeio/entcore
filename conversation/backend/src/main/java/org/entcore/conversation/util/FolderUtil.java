@@ -33,12 +33,13 @@ public class FolderUtil {
     final static public String DEPTH        = "depth";
     final static public String SUB_FOLDERS  = "subFolders";
 
-    final static private Comparator<JsonObject> compareOnParentAsc = (JsonObject o1, JsonObject o2) -> {
-        return getParentId(o1).compareTo(getParentId(o2));
-    };
-
     final static private Comparator<JsonObject> compareOnIdAsc = (JsonObject o1, JsonObject o2) -> {
         return getId(o1).compareTo(getId(o2));
+    };
+
+    final static private Comparator<JsonObject> compareOnParentThenIdAsc = (JsonObject o1, JsonObject o2) -> {
+        int parentCompared = getParentId(o1).compareTo(getParentId(o2));
+        return parentCompared != 0 ? parentCompared : FolderUtil.compareOnIdAsc.compare(o1, o2);
     };
 
     /**
@@ -59,7 +60,7 @@ public class FolderUtil {
         // Sets of level 0 (for depth=1) are not initialized, because only `rootFolders` will be used for level 0.        
         for( int level=1; level<depth; level++ ) {
             folderLevelById[level] = new TreeSet<>(compareOnIdAsc);
-            folderLevelByParentId[level] = new TreeSet<>(compareOnParentAsc);
+            folderLevelByParentId[level] = new TreeSet<>(compareOnParentThenIdAsc);
         }
         // Put every folder in the SortedSet dedicated to its depth.
         list.stream().forEach((item) -> {
