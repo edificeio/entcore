@@ -25,13 +25,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import fr.wseduc.transformer.to.ContentTransformerResponse;
-import io.vertx.core.Future;
-import io.vertx.core.http.HttpServerRequest;
 import org.entcore.common.user.UserInfos;
 
+import fr.wseduc.transformer.to.ContentTransformerResponse;
 import fr.wseduc.webutils.Either;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -41,14 +41,14 @@ public interface ConversationService {
 	/** Maximum number of folders a user can create, at root or in another folder. */
 	public static final int MAX_FOLDER_NUMBER = 50;
 	/** This is the maximum depth for a subfolder (1 being a root folder). */
-	public static final int MAX_FOLDER_DEPTH = 2;
+	public static final int MAX_FOLDER_DEPTH = 3;
 	/**
 	 * Maximum number of levels of folders that can be listed in one request,
 	 * limiting the number of returned folders as a power of MAX_FOLDER_NUMBER.
 	 * 
 	 * For example, listing folders with a depth of 2 => returning MAX_FOLDER_NUMBER^2 =2500 folders at once in the worst case.
 	 */
-	public static final int MAX_FOLDERS_LEVEL = 2;
+	public static final int MAX_FOLDERS_LEVEL = 3;
 
 	enum State { DRAFT, SENT }
 
