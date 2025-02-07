@@ -2,15 +2,17 @@ import { useAppActions } from '~/store';
 import {
   Button,
   Checkbox,
+  Dropdown,
   FormControl,
   Input,
   Label,
   Modal,
-  OptionsType,
-  Select,
+  Tree,
+  TreeItem,
 } from '@edifice.io/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useFolderActions, useI18n } from '~/hooks';
+import { buildTree, searchFolder } from '~/services';
 
 export function CreateFolderModal() {
   const { t, common_t } = useI18n();
@@ -19,6 +21,7 @@ export function CreateFolderModal() {
   const [checked, setChecked] = useState(false);
   const [subFolderId, setSubfolderId] = useState<string | undefined>(undefined);
   const refInputName = useRef<HTMLInputElement>(null);
+  const refDropdownTrigger = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (isActionPending === false) setOpenFolderModal(null);
@@ -35,30 +38,46 @@ export function CreateFolderModal() {
     }
   }, [checked, createFolder, subFolderId]);
 
+  const dropdownLabel = useMemo(() => {
+    if (subFolderId && foldersTree) {
+      const folderNode = searchFolder(subFolderId, foldersTree);
+      if (folderNode) return folderNode.folder.name;
+    }
+    return t('folder.new.subfolder.placeholder');
+  }, [subFolderId, foldersTree, t]);
+
   const handleSubfolderCheckChange = useCallback(() => {
     const newValue = !checked;
     setChecked(newValue);
   }, [checked]);
 
-  const folderOptions = useMemo(
-    () =>
-      foldersTree?.map((f) => ({
-        label: f.name,
-        value: f.id,
-      })) ?? [],
-    [foldersTree],
-  );
+  const userFolders = useMemo(() => {
+    return foldersTree ? buildTree(foldersTree, 2) : null;
+  }, [foldersTree]);
 
   useEffect(() => {
     refInputName.current?.focus();
   }, []);
 
-  if (!foldersTree) return <></>;
+  if (!userFolders) return <></>;
+
+  // Render a user's folder, to be used in a Tree
+  function renderFolderTreeItem({
+    node,
+  }: {
+    node: TreeItem;
+    hasChildren?: boolean;
+    isChild?: boolean;
+  }) {
+    return <>{node.name}</>;
+  }
 
   const handleCloseFolderModal = () => setOpenFolderModal(null);
-
-  const handleOptionChange = (option: OptionsType | string) =>
-    setSubfolderId(typeof option === 'object' ? option.value : option);
+  const handleTreeItemClick = (folderId: string) => {
+    setSubfolderId(folderId);
+    // Close dropdown
+    refDropdownTrigger.current?.click();
+  };
 
   return (
     <Modal
@@ -83,7 +102,7 @@ export function CreateFolderModal() {
             autoComplete="off"
           />
         </FormControl>
-        {folderOptions.length > 0 && (
+        {userFolders.length > 0 && (
           <>
             <div className="mt-24"></div>
             <Checkbox
@@ -92,15 +111,23 @@ export function CreateFolderModal() {
               onChange={handleSubfolderCheckChange}
             />
             <div className="mt-8"></div>
-            <Select
-              disabled={!checked}
-              size="md"
-              placeholderOption={t('folder.new.subfolder.placeholder')}
-              overflow={true}
-              block={true}
-              options={folderOptions}
-              onValueChange={handleOptionChange}
-            />
+            <Dropdown block>
+              <Dropdown.Trigger
+                ref={refDropdownTrigger}
+                disabled={!checked}
+                label={dropdownLabel}
+              ></Dropdown.Trigger>
+              <Dropdown.Menu>
+                <Tree
+                  nodes={userFolders}
+                  onTreeItemClick={handleTreeItemClick}
+                  renderNode={renderFolderTreeItem}
+                  selectedNodeId={subFolderId}
+                  shouldExpandAllNodes={true}
+                  showIcon={false}
+                />
+              </Dropdown.Menu>
+            </Dropdown>
           </>
         )}
       </Modal.Body>

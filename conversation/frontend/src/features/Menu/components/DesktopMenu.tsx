@@ -13,7 +13,6 @@ import {
   useEdificeClient,
 } from '@edifice.io/react';
 import { useNavigate } from 'react-router-dom';
-import { Folder } from '~/models';
 import { useMenuData } from '../hooks/useMenuData';
 import './DesktopMenu.css';
 import {
@@ -25,26 +24,8 @@ import { useTranslation } from 'react-i18next';
 import { useUsedSpace } from '~/hooks';
 import { useFolderHandlers } from '../hooks/useFolderHandlers';
 import { useMemo } from 'react';
-import { useFoldersTree } from '~/services';
+import { buildTree, useFoldersTree } from '~/services';
 
-type FolderTreeItem = TreeItem & { folder: Folder };
-
-/** Convert a tree of Folders to custom TreeItems  */
-function buildTree(folders: Folder[]) {
-  return folders
-    .sort((a, b) => (a.name < b.name ? -1 : a.name == b.name ? 0 : 1))
-    .map((folder) => {
-      const item = {
-        id: folder.id,
-        name: folder.name,
-        folder,
-      } as FolderTreeItem;
-      if (folder.subFolders) {
-        item.children = buildTree(folder.subFolders);
-      }
-      return item;
-    });
-}
 /** Converts a value in bytes to mega-bytes (rounded) */
 const bytesToMegabytes = (bytes: number) => Math.round(bytes / (1024 * 1024));
 
@@ -95,7 +76,7 @@ export function DesktopMenu() {
     navigate((isUserFolder ? '/folder/' : '/') + folderId);
   };
 
-  // Render a user's folder, to be used in a SortableTree
+  // Render a user's folder, to be used in a Tree or SortableTree
   function renderUserFolder({
     node,
   }: {
