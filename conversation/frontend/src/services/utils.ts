@@ -45,7 +45,8 @@ export function buildTree(folders: Folder[], maxDepth?: number) {
         folder.subFolders &&
         (typeof maxDepth === 'undefined' || folder.depth < maxDepth)
       ) {
-        item.children = buildTree(folder.subFolders);
+        item.section = true;
+        item.children = buildTree(folder.subFolders, maxDepth);
       }
       return item;
     });
