@@ -62,15 +62,13 @@ export function CreateFolderModal() {
   if (!userFolders) return <></>;
 
   // Render a user's folder, to be used in a Tree
-  function renderFolderTreeItem({
+  const renderFolderTreeItem = ({
     node,
   }: {
     node: TreeItem;
     hasChildren?: boolean;
     isChild?: boolean;
-  }) {
-    return <>{node.name}</>;
-  }
+  }) => <span>{node.name}</span>;
 
   const handleCloseFolderModal = () => setOpenFolderModal(null);
   const handleTreeItemClick = (folderId: string) => {

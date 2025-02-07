@@ -89,7 +89,7 @@ export function DesktopMenu() {
         <div className="overflow-x-hidden text-no-wrap text-truncate">
           {node.name}
         </div>
-        <div className="d-flex align-items-center">
+        <div className="d-flex align-items-center text-dark fw-normal">
           {renderBadge(node.folder)}
           <FolderActionDropDown folder={node.folder} />
         </div>
