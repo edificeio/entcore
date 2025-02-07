@@ -1185,14 +1185,16 @@ public class SqlConversationService implements ConversationService{
 			values.add(1).add(depth);
 		}
 
+		final int finalDepth = depth;
+
 		// When depth is 1, the resulting list contains the tree leaves.
-		sql.prepared(query.toString(), values, SqlResult.validResultHandler(depth<2 ? result : either->{
+		sql.prepared(query.toString(), values, SqlResult.validResultHandler(finalDepth<2 ? result : either->{
 			// More process is only needed when depth is greater than 1.
 			if( either.isLeft() ) {
 				result.handle(either);
 				return;
 			}
-			final JsonArray tree = FolderUtil.listToTree(getOrElse(either.right().getValue(), new JsonArray()));
+			final JsonArray tree = FolderUtil.listToTree(getOrElse(either.right().getValue(), new JsonArray()), finalDepth);
 			result.handle(new Either.Right<>(tree));
 		}));
 	}

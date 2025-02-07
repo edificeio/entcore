@@ -32,7 +32,7 @@ export const folderQueryOptions = {
    * @returns Query options for fetching the folder tree.
    */
   getFoldersTree() {
-    const TREE_DEPTH = 2;
+    const TREE_DEPTH = 3;
     return queryOptions({
       queryKey: [...folderQueryOptions.base, 'tree'] as const,
       queryFn: () => folderService.getTree(TREE_DEPTH),
