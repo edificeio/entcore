@@ -61,8 +61,8 @@
         <testContainerVersion>1.19.3</testContainerVersion>
         <modPostgresVersion>2.0-SNAPSHOT</modPostgresVersion>
         <modMongoVersion>4.0-SNAPSHOT</modMongoVersion>
-        <webUtilsVersion>3.1-SNAPSHOT</webUtilsVersion>
-        <mongodbHelperVersion>3.0-SNAPSHOT</mongodbHelperVersion>
+        <webUtilsVersion>3.0-develop-b2school-SNAPSHOT</webUtilsVersion>
+        <mongodbHelperVersion>4.0-develop-b2school-SNAPSHOT</mongodbHelperVersion>
         <jodaTimeVersion>2.9.4</jodaTimeVersion>
         <scramVersion>2.1</scramVersion>
         <micrometerPrometheusVersion>1.11.4</micrometerPrometheusVersion>
