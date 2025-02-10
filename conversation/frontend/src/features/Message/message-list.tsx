@@ -4,14 +4,24 @@ import {
   ToolbarItem,
   useEdificeClient,
 } from '@edifice.io/react';
-import { IconReadMail, IconUnreadMail, IconDelete } from '@edifice.io/react/icons';
+import {
+  IconDelete,
+  IconReadMail,
+  IconUnreadMail,
+} from '@edifice.io/react/icons';
 import clsx from 'clsx';
 import { KeyboardEvent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { MessagePreview } from '~/features/Message/message-preview';
 import { MessageMetadata } from '~/models';
-import { useFolderMessages, useMarkRead, useMarkUnread, useTrashMessage } from '~/services';
+import {
+  useFolderMessages,
+  useMarkRead,
+  useMarkUnread,
+  useTrashMessage,
+  useUpdateFolderBadgeCountLocal,
+} from '~/services';
 import { useAppActions, useSelectedMessageIds } from '~/store/actions';
 
 export function MessageList() {
@@ -28,6 +38,7 @@ export function MessageList() {
   const markAsReadQuery = useMarkRead();
   const markAsUnreadQuery = useMarkUnread();
   const moveToTrashQuery = useTrashMessage();
+  const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
 
   const {
     messages,
@@ -78,11 +89,9 @@ export function MessageList() {
   }, [selectedIds, messages]);
 
   const canBeMovetoTrash = useMemo(() => {
-    if(folderId === 'trash') return;
+    if (folderId === 'trash') return;
     return messages?.some(
-      (message) =>
-        selectedIds.length &&
-        selectedIds.includes(message.id)
+      (message) => selectedIds.length && selectedIds.includes(message.id),
     );
   }, [selectedIds, messages, folderId]);
 
@@ -101,7 +110,7 @@ export function MessageList() {
     if (event.key === ' ' || event.key === 'Enter') {
       handleMessageClick(message);
     }
-  }
+  };
 
   const handleMoveToTrash = () => {
     moveToTrashQuery.mutate({ id: selectedIds });
@@ -109,6 +118,9 @@ export function MessageList() {
   };
 
   const handleMessageClick = (message: MessageMetadata) => {
+    if (message.unread) {
+      updateFolderBadgeCountLocal(folderId!, -1);
+    }
     navigate(`message/${message.id}`);
   };
 
@@ -152,7 +164,7 @@ export function MessageList() {
           </>
         ),
         onClick: handleMoveToTrash,
-        hidden: !canBeMovetoTrash
+        hidden: !canBeMovetoTrash,
       },
     },
   ];
