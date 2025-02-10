@@ -62,7 +62,6 @@ public class Zip {
 				.put("zipFile", zipPath)
 				.put("deletePath", deletePath)
 				.put("level", level);
-		log.info("Zipping file " + j.encodePrettily());
 		eb.request(address, j, new DeliveryOptions().setSendTimeout(900000l), handlerToAsyncHandler(handler));
 	}
 
