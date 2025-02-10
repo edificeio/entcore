@@ -27,9 +27,6 @@ import fr.wseduc.webutils.security.RSA;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.ext.web.client.HttpRequest;
-import io.vertx.ext.web.client.HttpResponse;
-import io.vertx.ext.web.client.WebClient;
 import org.entcore.archive.Archive;
 import org.entcore.archive.controllers.ArchiveController;
 import org.entcore.archive.services.ExportService;
@@ -237,9 +234,9 @@ public class FileSystemExportService implements ExportService {
 		final int counter = export.incrementAndGetCounter();
 		final boolean isFinished = counter == export.getExpectedExport().size();
 		if(isFinished) {
-			log.info("Export {} finished for user {}", exportId, userId);
+			log.debug("Export " + exportId + " finished for user " + userId);
 		} else {
-			log.info("Received {} parts out of {} for export {} of user {}", counter, export.getExpectedExport().size(), exportId, userId);
+			log.debug("Received " + counter + " parts out of " + export.getExpectedExport().size() + " for export " + exportId + " of user " + userId);
 		}
 		if (!"ok".equals(status)) {
 			export.setProgress(EXPORT_ERROR);
@@ -265,15 +262,15 @@ public class FileSystemExportService implements ExportService {
 			return;
 		}
 		if (isFinished) {
-			log.info("Export {} is finished and OK", exportId);
+			log.debug("Export " + exportId + " is finished and OK", exportId);
 			addManifestToExport(exportId, exportDirectory, locale, event -> {
-        log.info("Manifest added for export {}", exportId);
+        log.debug("Manifest added for export " + exportId);
         signExport(exportId, exportDirectory, new Handler<AsyncResult<Void>>()
         {
           @Override
           public void handle(AsyncResult<Void> signed)
           {
-						log.info("Zipping export {}", exportId);
+						log.debug("Zipping export " + exportId);
             Zip.getInstance().zipFolder(exportDirectory, exportDirectory + ".zip", true,
             Deflater.NO_COMPRESSION, new Handler<Message<JsonObject>>()
             {
@@ -297,14 +294,14 @@ public class FileSystemExportService implements ExportService {
                   });
                   publish(event);
                 } else {
-									log.info("Storing export zip in fs");
+									log.debug("Storing export zip in file storage");
                   storeZip(event);
                 }
               }
 
               private void storeZip(final Message<JsonObject> event)
               {
-								log.info("Starting to upload exported archive {} to fs.....", exportId);
+								log.debug("Starting to upload exported archive " + exportId + " to fs.....");
                 storage.writeFsFile(exportId, exportDirectory + ".zip", new Handler<JsonObject>() {
                   @Override
                   public void handle(JsonObject res) {
@@ -315,7 +312,7 @@ public class FileSystemExportService implements ExportService {
                       userExportInProgress.remove(userId);
                       publish(event);
                     } else {
-											log.info("Exported archive {} uploaded", exportId);
+											log.debug("Exported archive " + exportId + " uploaded");
                       userExportInProgress.put(userId,DOWNLOAD_READY);
                       publish(event);
                     }
@@ -326,14 +323,14 @@ public class FileSystemExportService implements ExportService {
 
               public void deleteTempZip(final String exportId1) {
                 final String path = exportPath + File.separator + exportId1 + ".zip";
-								log.info("Deleting temp exported archive {}", path);
+								log.debug("Deleting temp exported archive " + path);
                 fs.delete(path, new Handler<AsyncResult<Void>>() {
                   @Override
                   public void handle(AsyncResult<Void> event) {
                     if (event.failed()) {
                       log.error("Error deleting temp zip export " + exportId1, event.cause());
                     } else {
-											log.info("Temp archive {} deleted", path);
+											log.debug("Temp archive " + path + " deleted");
 										}
                   }
                 });
@@ -341,7 +338,7 @@ public class FileSystemExportService implements ExportService {
 
               private void publish(final Message<JsonObject> event) {
                 final String address = getExportBusAddress(exportId);
-								log.info("Notifying that export {} is done with body {}", exportId, event.body().encodePrettily());
+								log.debug("Notifying that export " + exportId + " is done with body " +event.body().encodePrettily());
                 eb.request(address, event.body(), new DeliveryOptions().setSendTimeout(5000l),
                     new Handler<AsyncResult<Message<JsonObject>>>() {
                       @Override
