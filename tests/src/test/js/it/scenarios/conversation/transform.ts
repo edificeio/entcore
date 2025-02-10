@@ -39,10 +39,13 @@ export const options = {
 };
 
 let originalRichContent;
+let transformedRichContent;
 try {
   originalRichContent = open(`${dataRootPath}/conversation/original_rich_content.html`, 't');
+  transformedRichContent = open(`${dataRootPath}/conversation/transformed_rich_content.html`, 't');
 } catch(e) {
   originalRichContent = open(`${dataRootPath}/data/conversation/original_rich_content.html`, 't');
+  transformedRichContent = open(`${dataRootPath}/data/conversation/transformed_rich_content.html`, 't');
 }
 
 export function setup() {
@@ -71,6 +74,7 @@ function initSchool(structureName) {
 
 export default (data) => {
   testTransformMessageContent(data)
+  testTransformEmptyMessageContent(data)
 }
 
 function checkCreateOk(res, checkName) {
@@ -95,7 +99,7 @@ function checkTransformOk(res, checkName) {
   }
 }
 
-function checkMessageOk(res, senderId, recipientId, checkName) {
+function checkMessageOk(res, senderId, recipientId, body, checkName) {
   const checks = {}
   checks[`${checkName} - HTTP status`] = (r) => r.status === 200
   checks[`${checkName} - Content is transformed`] = (r) => {
@@ -110,9 +114,15 @@ function checkMessageOk(res, senderId, recipientId, checkName) {
     const message = JSON.parse(r.body)
     return message.from.id === senderId
   }
-  checks[`${checkName} - Recipient is correct`] = (r) => {
+  if (recipientId.length !== 0) {
+    checks[`${checkName} - Recipient is correct`] = (r) => {
+      const message = JSON.parse(r.body)
+      return message.to.users.map(item => item.id).includes(recipientId)
+    }
+  }
+  checks[`${checkName} - Body is correct`] = (r) => {
     const message = JSON.parse(r.body)
-    return message.to.users.map(item => item.id).includes(recipientId)
+    return message.body === body
   }
   const ok = check(res, checks);
   if(!ok) {
@@ -159,12 +169,40 @@ function testTransformMessageContent(data) {
     // Teacher 2 retrieves message
     authenticateWeb(teacher2.login)
     res = getMessage(messageId, false)
-    checkMessageOk(res, teacher1.id, teacher2.id, 'Teacher 2 fetches message sent by teacher 1')
+    console.log("res.body", res.body)
+    checkMessageOk(res, teacher1.id, teacher2.id, transformedRichContent, 'Teacher 2 fetches message sent by teacher 1')
     // Teacher 2 fails fetching message original format (because it has been directely created with transformed content)
     res = getMessage(messageId, true)
     checkMessageOriginalKo(res, messageId, 'Teacher 2 fails to fetch original format of message')
   });
 }
+
+function testTransformEmptyMessageContent(data) {
+  const {structure} = data;
+  describe('[Conversation] Test - Transform message with empty body', () => {
+    authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+    const users = getUsersOfSchool(structure);
+    const teacher = getRandomUserWithProfile(users, 'Teacher')
+    authenticateWeb(teacher.login)
+    const draftMessage = <DraftMessage>({
+      to: [],
+      cc: [],
+      cci: [],
+      subject: "draft message from teacher with empty body",
+      body: ""
+    });
+    let res;
+    // Teacher creates message with empty body
+    res = createDraftMessage(draftMessage);
+    checkCreateOk(res, 'Teacher creates draft message')
+    const messageId = JSON.parse(res.body).id;
+    // Teacher retrieves message with empty body
+    res = getMessage(messageId, false)
+    checkMessageOk(res, teacher.id, [], "", 'Teacher fetches message')
+  });
+}
+
+
 
 
 
