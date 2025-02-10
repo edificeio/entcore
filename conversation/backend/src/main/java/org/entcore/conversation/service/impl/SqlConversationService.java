@@ -81,7 +81,7 @@ public class SqlConversationService implements ConversationService{
 
 	private final IContentTransformerClient contentTransformerClient;
 	private final IContentTransformerEventRecorder contentTransformerEventRecorder;
-	private final Set<String> CONVERSATION_TRANSFORMATION_EXTENSIONS = new HashSet<>(Arrays.asList("conversation-history"));
+	private final Set<String> CONVERSATION_TRANSFORMATION_EXTENSIONS = Collections.singleton("conversation-history");
 
 	public SqlConversationService(Vertx vertx, String schema, IContentTransformerClient contentTransformerClient, IContentTransformerEventRecorder contentTransformerEventRecorder) {
 		this.eb = Server.getEventBus(vertx);
