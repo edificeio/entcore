@@ -169,7 +169,6 @@ function testTransformMessageContent(data) {
     // Teacher 2 retrieves message
     authenticateWeb(teacher2.login)
     res = getMessage(messageId, false)
-    console.log("res.body", res.body)
     checkMessageOk(res, teacher1.id, teacher2.id, transformedRichContent, 'Teacher 2 fetches message sent by teacher 1')
     // Teacher 2 fails fetching message original format (because it has been directely created with transformed content)
     res = getMessage(messageId, true)
