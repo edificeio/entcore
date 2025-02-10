@@ -10,6 +10,7 @@ export enum UserCreateField {
     FName,
     Birthdate,
     Mail,
+    Mobile,
     Type
 }
 
@@ -55,6 +56,7 @@ export interface UserCreateDelegateScope extends EventDelegateScope {
     attachUserToMyClass(): void;
     attachUserToMyClassOnly(): void;
     selectUserToAttach(user: User): void;
+    isUserCreateMobilePhoneVisible(): boolean;
     //from others
     openLightbox(name: string)
     closeLightbox();
@@ -127,12 +129,13 @@ export async function UserCreateDelegate($scope: UserCreateDelegateScope) {
         }
     }
     const createUserAndAttach = async () => {
-        const { firstName, lastName, birthDate, type, relatives, email } = $scope.userCreate.form;
+        const { firstName, lastName, birthDate, type, relatives, email, mobile } = $scope.userCreate.form;
         const res = await directoryService.saveUserForClass(classroom.id, {
             birthDate,
             lastName,
             firstName,
             email,
+            mobile,
             childrenIds: relatives && relatives.map(c => c.id),
             type
         });
@@ -327,5 +330,9 @@ export async function UserCreateDelegate($scope: UserCreateDelegateScope) {
     }
     $scope.isUserAttachSelected = function (user: User) {
         return $scope.userCreate.userToAttach == user;
+    }
+    $scope.isUserCreateMobilePhoneVisible = function () {
+        const type = $scope.userCreate.form.type;
+        return type && type == "Relative";
     }
 }
