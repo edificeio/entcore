@@ -1,3 +1,4 @@
+import { useToast } from '@edifice.io/react';
 import {
   InfiniteData,
   queryOptions,
@@ -5,11 +6,14 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
+import { t } from 'i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Message, MessageMetadata } from '~/models';
-import { folderQueryOptions, messageService } from '..';
-import { useToast } from '@edifice.io/react';
-import { t } from 'i18next';
+import {
+  folderQueryOptions,
+  messageService,
+  useUpdateFolderBadgeCountLocal,
+} from '..';
 
 /**
  * Message Query Options Factory.
@@ -50,6 +54,7 @@ const useToggleUnread = (unread: boolean) => {
   const search = searchParams.get('search');
   const unreadFilter = searchParams.get('unread');
   const queryClient = useQueryClient();
+  const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
 
   return useMutation({
     mutationFn: ({ id }: { id: string | string[] }) =>
@@ -57,36 +62,12 @@ const useToggleUnread = (unread: boolean) => {
     onSuccess: (_data, { id }) => {
       const messageIds = typeof id === 'string' ? [id] : id;
 
-      if (['inbox', 'sent', 'drafts'].includes(folderId)) {
-        // Update the folder count
-        queryClient.setQueryData(
-          ['folder', folderId, 'count', { unread: true }],
-          ({ count }: { count: number }) => {
-            if (count !== undefined) {
-              return {
-                count:
-                  count + (unread ? messageIds.length : -messageIds.length),
-              };
-            }
-            return { count: unread ? messageIds.length : 0 };
-          },
+      if (folderId !== 'draft') {
+        // Update the unread count in the folder except for the draft folder wich count all messages and not only unread
+        updateFolderBadgeCountLocal(
+          folderId,
+          unread ? messageIds.length : -messageIds.length,
         );
-
-        if (folderId === 'inbox') {
-          // Update the conversation navbar count for the inbox folder
-          queryClient.setQueryData(
-            ['conversation-navbar-count'],
-            ({ count }: { count: number }) => {
-              if (count !== undefined) {
-                return {
-                  count:
-                    count + (unread ? messageIds.length : -messageIds.length),
-                };
-              }
-              return { count: unread ? messageIds.length : 0 };
-            },
-          );
-        }
       }
 
       // Update the message unread status in the list
@@ -147,6 +128,7 @@ export const useTrashMessage = () => {
   const unreadFilter = searchParams.get('unread');
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
 
   return useMutation({
     mutationFn: ({ id }: { id: string | string[] }) =>
@@ -161,10 +143,10 @@ export const useTrashMessage = () => {
       });
 
       queryClient.invalidateQueries({
-        queryKey: ['folder', 'trash']
+        queryKey: ['folder', 'trash'],
       });
 
-      let unreadTrashedInboxCount = 0;
+      let unreadTrashedCount = 0;
       // Update list message
       queryClient.setQueryData(
         folderQueryOptions.getMessagesQuerykey(folderId, {
@@ -173,63 +155,47 @@ export const useTrashMessage = () => {
         }),
         // Remove deleted message from pages
         (data: InfiniteData<Message[]>) => {
-          if(folderId === 'inbox') {
-            unreadTrashedInboxCount = data.pages.reduce((count, page) => {
-              return count + page.filter((message) => message.unread && messageIds.includes(message.id)).length;
+          if (!['trash', 'draft', 'outbox'].includes(folderId)) {
+            unreadTrashedCount = data.pages.reduce((count, page) => {
+              return (
+                count +
+                page.filter(
+                  (message) =>
+                    message.unread && messageIds.includes(message.id),
+                ).length
+              );
             }, 0);
           }
 
           return {
             ...data,
-            pages: data.pages.map((page: Message[]) => 
-              page.filter((message: Message) => !messageIds.includes(message.id))
-            )
+            pages: data.pages.map((page: Message[]) =>
+              page.filter(
+                (message: Message) => !messageIds.includes(message.id),
+              ),
+            ),
           };
-        }        
+        },
       );
 
       // Update unread inbox count
-      if(folderId === 'inbox' && unreadTrashedInboxCount) {
-        queryClient.setQueryData(
-          ['folder', 'inbox', 'count', { unread: true }],
-          ({ count }: { count: number }) => {
-            return { count: count - unreadTrashedInboxCount };
-          },
-        );
-        queryClient.setQueryData(
-          ['conversation-navbar-count'],
-          ({ count }: { count: number }) => {
-            return { count: count - unreadTrashedInboxCount };
-          },
-        );
+      // Update custom folder count
+      if (
+        !['trash', 'draft', 'outbox'].includes(folderId) &&
+        unreadTrashedCount
+      ) {
+        updateFolderBadgeCountLocal(folderId, -unreadTrashedCount);
       }
 
       // Update draft count if It's a draft message
-      if(folderId === 'draft') {
-        queryClient.setQueryData(
-          [
-            'folder',
-            'draft',
-            'count',
-            null
-          ],
-          ({ count }: { count: number }) => {
-            return { count: count - messageIds.length };
-          },
-        );
-      }
-
-      // Update custom folder count
-      if(!['inbox', 'trash', 'draft', 'outbox'].includes(folderId)) {
-        queryClient.invalidateQueries(
-          {
-            queryKey: folderQueryOptions.getFoldersTree().queryKey
-          }
-        );
+      if (folderId === 'draft') {
+        updateFolderBadgeCountLocal(folderId, -messageIds.length);
       }
 
       // Toast
-      toast.success(t(messageIds.length > 1 ? 'messages.trash' : 'message.trash'));
+      toast.success(
+        t(messageIds.length > 1 ? 'messages.trash' : 'message.trash'),
+      );
     },
   });
 };

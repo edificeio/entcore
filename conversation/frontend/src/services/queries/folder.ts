@@ -6,9 +6,9 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { folderService, searchFolder } from '..';
-import { Folder, MessageMetadata } from '~/models';
 import { useSearchParams } from 'react-router-dom';
+import { Folder, MessageMetadata } from '~/models';
+import { folderService, searchFolder } from '..';
 
 /**
  * Provides query options for folder-related operations.
@@ -311,4 +311,59 @@ export const useTrashFolder = () => {
       });
     },
   });
+};
+
+export const useUpdateFolderBadgeCountLocal = () => {
+  const queryClient = useQueryClient();
+  const updateFolderBadgeCountLocal = (
+    folderId: string,
+    countDelta: number,
+  ) => {
+    if (folderId === 'inbox') {
+      // Update inbox count unread
+      queryClient.setQueryData(
+        ['folder', 'inbox', 'count', { unread: true }],
+        ({ count }: { count: number }) => {
+          return { count: count + countDelta };
+        },
+      );
+
+      // Update conversation navbar count unread
+      queryClient.setQueryData(
+        ['conversation-navbar-count'],
+        ({ count }: { count: number }) => {
+          return { count: count + countDelta };
+        },
+      );
+    } else if (folderId === 'draft') {
+      // Update draft count
+      queryClient.setQueryData(
+        ['folder', 'draft', 'count', null],
+        ({ count }: { count: number }) => {
+          return { count: count + countDelta };
+        },
+      );
+    } else if (!['inbox', 'trash', 'draft', 'outbox'].includes(folderId)) {
+      // Update custom folder count unread
+      queryClient.setQueryData(['folder', 'tree'], (folders: Folder[]) => {
+        // go trow the folder tree to find the folder to update
+        const result = searchFolder(folderId, folders);
+        if (!result?.parent) {
+          return folders.map((folder) => {
+            if (folder.id === folderId) {
+              return { ...folder, nbUnread: folder.nbUnread + countDelta };
+            }
+            return folder;
+          });
+        } else if (result?.folder) {
+          result.folder = {
+            ...result.folder,
+            nbUnread: result.folder.nbUnread + countDelta,
+          };
+          return [...folders];
+        }
+      });
+    }
+  };
+  return { updateFolderBadgeCountLocal };
 };
