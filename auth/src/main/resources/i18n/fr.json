@@ -75,7 +75,7 @@
     "email.reset.pw.infos": "Vous avez demandé la réinitialisation du mot de passe.",
     "email.forgot.password.reset": "Vous pourrez alors saisir votre identifiant et le code de renouvellement",
     "email.reset.id.infos": "Vous avez demandé un rappel de votre identifiant de connexion.",
-    "email.signature" : "L'équipe Open Digital Education",
+    "email.signature" : "L'équipe Edifice",
     "email.new.device.subject": "Connexion sur un nouvel appareil",
     "email.new.device.infos": "Afin de protéger votre compte, nous vous informons qu'une connexion à votre plateforme éducative a été effectuée sur un nouvel appareil.",
     "email.new.device.date": "<b>Date et heure</b>: {{#datetime}}{{date}}{{/datetime}}",
