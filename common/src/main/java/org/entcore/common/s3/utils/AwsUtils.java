@@ -11,7 +11,6 @@ import org.entcore.common.s3.storage.StorageObject;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.math.BigInteger;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -19,10 +18,15 @@ import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AwsUtils {
 
     private static final Logger log = LoggerFactory.getLogger(AwsUtils.class);
+
+    /** Stores the md5 hash of SSE-C keys.*/
+    private static final Map<String, String> SSEC_MD5_HASH_CACHE = new HashMap<>();
 
     public static void sign(HttpClientRequest request, String accessKey, String secretKey, String region) throws SignatureException {
         sign(request, accessKey, secretKey, region, "");
@@ -76,21 +80,29 @@ public class AwsUtils {
 		}
 	}
 
-    public static void setSSEC(HttpClientRequest request, String ssec) {
-        if(ssec == null || ssec.isEmpty()) return;
-
+  private static String getOrComputeSSECKeyMD5Sum(final String ssecKey) {
+    return SSEC_MD5_HASH_CACHE.computeIfAbsent(ssecKey, k -> {
+      final String ssecKeyHeaderValue;
+      if (ssecKey == null || ssecKey.isEmpty()) {
+        ssecKeyHeaderValue = "";
+      } else {
         String md5Str = "";
         try {
-            byte[] hash = MessageDigest.getInstance("MD5").digest(Base64.getDecoder().decode(ssec));
-            md5Str = Base64.getEncoder().encodeToString(hash);
+          byte[] hash = MessageDigest.getInstance("MD5").digest(Base64.getDecoder().decode(ssecKey));
+          md5Str = Base64.getEncoder().encodeToString(hash);
+        } catch (NoSuchAlgorithmException e) {
+          log.error("An error occurred while computing the MD5 hash of a SSE-C key", e);
         }
-        catch (NoSuchAlgorithmException e) {
-			log.error(e.getMessage(), e);
-		}
+        ssecKeyHeaderValue = md5Str;
+      }
+      return ssecKeyHeaderValue;
+    });
+  }
 
-        request.putHeader("x-amz-server-side-encryption-customer-algorithm", "AES256");
-		request.putHeader("x-amz-server-side-encryption-customer-key", ssec);
-		request.putHeader("x-amz-server-side-encryption-customer-key-MD5", md5Str);
+    public static void setSSEC(HttpClientRequest request, String ssec) {
+      request.putHeader("x-amz-server-side-encryption-customer-algorithm", "AES256");
+      request.putHeader("x-amz-server-side-encryption-customer-key", ssec);
+      request.putHeader("x-amz-server-side-encryption-customer-key-MD5", getOrComputeSSECKeyMD5Sum(ssec));
     }
 
     public static void setSSECCopy(HttpClientRequest request, String ssec) {
