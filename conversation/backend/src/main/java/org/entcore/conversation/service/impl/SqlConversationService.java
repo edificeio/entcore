@@ -197,11 +197,11 @@ public class SqlConversationService implements ConversationService{
 	private Future<Void> updateMessageWithTransformedContent(JsonObject message, HttpServerRequest request) {
 		Promise<Void> updatedMessagePromise = Promise.promise();
 		Future<ContentTransformerResponse> contentTransformerResponseFuture ;
-		if (message.containsKey("body") && !StringUtils.isEmpty(message.getString("body"))) {
-			contentTransformerResponseFuture = transformMessageContent(message.getString("body"), message.getString("id"), request);
-		// no content to transform
-		} else {
+		if (StringUtils.isEmpty(message.getString("body"))) {
+			// no content to transform
 			contentTransformerResponseFuture = Future.succeededFuture();
+		} else {
+			contentTransformerResponseFuture = transformMessageContent(message.getString("body"), message.getString("id"), request);
 		}
 		contentTransformerResponseFuture.onSuccess(transformerResponse -> {
 			if (transformerResponse == null) {
@@ -771,7 +771,18 @@ public class SqlConversationService implements ConversationService{
 		}
 		// transform and persist message content if needed
 		else if (message.getInteger("content_version") == 0) {
-			if (message.containsKey("body") && !StringUtils.isEmpty(message.getString("body"))) {
+			if (StringUtils.isEmpty(message.getString("body"))) {
+				// no content to transform
+				updateMessageContent(messageId, "", 1)
+						.onSuccess(res -> {
+							message.put("content_version", 1);
+							updatedMessagePromise.complete();
+						})
+						.onFailure(throwable -> {
+							log.error("Failed to update message with content version", throwable);
+							updatedMessagePromise.fail(throwable);
+						});
+			} else {
 				transformMessageContent(message.getString("body"), messageId, request)
 						.onSuccess(transformerResponse -> updateMessageContent(messageId, transformerResponse.getCleanHtml(), transformerResponse.getContentVersion())
 								.onSuccess(res -> {
@@ -785,17 +796,6 @@ public class SqlConversationService implements ConversationService{
 								}))
 						.onFailure(throwable -> {
 							log.error("Failed to transform message content", throwable);
-							updatedMessagePromise.fail(throwable);
-						});
-			// no content to transform, update only content version
-			} else {
-				updateMessageContent(messageId, "", 1)
-						.onSuccess(res -> {
-							message.put("content_version", 1);
-							updatedMessagePromise.complete();
-						})
-						.onFailure(throwable -> {
-							log.error("Failed to update message with content version", throwable);
 							updatedMessagePromise.fail(throwable);
 						});
 			}
