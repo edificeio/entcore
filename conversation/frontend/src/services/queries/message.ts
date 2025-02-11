@@ -207,16 +207,14 @@ export const useTrashMessage = () => {
 export const useRestoreMessage = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id }: { id: string | string[] }) =>
-      messageService.restore(id),
-    onSuccess: (_data, { id }) => {
-      const messageIds = typeof id === 'string' ? [id] : id;
-      messageIds.forEach((messageId) => {
-        queryClient.invalidateQueries({
-          queryKey: messageQueryOptions.getById(messageId).queryKey,
-        });
+    mutationFn: async ({ id }: { id: string | string[] }) => 
+      messageService.restore(id)
+    ,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['folder']
       });
-    },
+    }
   });
 };
 
