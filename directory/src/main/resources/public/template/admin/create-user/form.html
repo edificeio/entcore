@@ -1,5 +1,5 @@
 <section class="vertical-spacing-twice ng-scope flex-row f-column align-center">
-    <form class="eleven" name="createForm" novalidate ng-submit="submitUserCreate()">
+    <form class="eleven" name="createForm" novalidate ng-submit="submitUserCreateThenQuit()">
         <h2 class="top-spacing-four bottom-spacing-three">
             <i18n>directory.admin.create-user</i18n>
         </h2>
@@ -90,10 +90,10 @@
             </div>
         </div>
         <div class="twelve flex-row justify-end top-spacing-four">
-            <button class="left-spacing-twice" ng-click="submitUserCreate()" ng-disabled="!canUserCreateSubmit(createForm)">
+            <button class="left-spacing-twice" ng-click="submitUserCreateThenQuit()" ng-disabled="!canUserCreateSubmit(createForm)">
                 <i18n>classAdmin.create.submit</i18n>
             </button>
-            <button class="left-spacing-twice" ng-click="submitUserCreate(true)" ng-disabled="!canUserCreateSubmit(createForm)">
+            <button class="left-spacing-twice" ng-click="submitUserCreateThenAdd()" ng-disabled="!canUserCreateSubmit(createForm)">
                 <i18n>classAdmin.create.submit.thenadd</i18n>
             </button>
         </div>
