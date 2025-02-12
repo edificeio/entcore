@@ -201,7 +201,7 @@ function testTransformEmptyMessageContent(data) {
     const messageId = JSON.parse(res.body).id;
     // Teacher retrieves message with empty body
     res = getMessage(messageId, false)
-    checkMessageOk(res, teacher.id, [], "", 'Teacher fetches message')
+    checkMessageOk(res, teacher.id, [], "", false, 'Teacher fetches message')
   });
 }
 
