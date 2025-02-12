@@ -206,17 +206,23 @@ export const useTrashMessage = () => {
  */
 export const useRestoreMessage = () => {
   const queryClient = useQueryClient();
+  const toast = useToast();
   return useMutation({
-    mutationFn: ({ id }: { id: string | string[] }) =>
-      messageService.restore(id),
+    mutationFn: async ({ id }: { id: string | string[] }) => 
+      messageService.restore(id)
+    ,
     onSuccess: (_data, { id }) => {
       const messageIds = typeof id === 'string' ? [id] : id;
-      messageIds.forEach((messageId) => {
-        queryClient.invalidateQueries({
-          queryKey: messageQueryOptions.getById(messageId).queryKey,
-        });
+
+      queryClient.invalidateQueries({
+        queryKey: ['folder']
       });
-    },
+
+      // Toast
+      toast.success(
+        t(messageIds.length > 1 ? 'messages.restore' : 'message.restore'),
+      );
+    }
   });
 };
 
