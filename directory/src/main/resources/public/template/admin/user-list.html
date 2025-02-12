@@ -13,7 +13,7 @@
                 <table class="row" id="searchUser">
                     <thead>
                         <tr>
-                            <th class="align-checkbox zero-mobile-fat-mobile relative">
+                            <th class="align-checkbox zero-mobile-fat-mobile relative" style="width: 100px;">
                                 <div class="check-col">
                                   <label class="wrapping-checkbox relative fix-checkbox">
                                     <input type="checkbox" ng-model="userList.selectAll" ng-change="switchAll()" />
@@ -21,8 +21,8 @@
                                   </label>
                                 </div>
                             </th>
-                            <th ng-click="toggleSort(columns.Name)">
-                                <span class="sortable">
+                            <th style="width: 30%; text-align: left;" ng-click="toggleSort(columns.Name)">
+                                <span class="sortable" style="justify-content: start;">
                                     <span class="icons right-spacing">
                                         <i ng-class="{'icon-off':!isSortAsc(columns.Name)}" ng-click="sortAsc(columns.Name,$event)" class="arrow"></i>
                                         <i ng-class="{'icon-off':!isSortDesc(columns.Name)}" ng-click="sortDesc(columns.Name,$event)" class="arrow bottom"></i>
@@ -87,8 +87,28 @@
                                 </div>
                               </label>
                             </td>
-                            <td>
-                                <span>[[user.safeDisplayName]]</span>
+                            <td style="text-align: left;">
+                              <div>[[user.safeDisplayName]]</div>
+                              <div ng-if="user.type === 'Student'"
+                                style="
+                                  overflow: hidden;
+                                  text-overflow: ellipsis;
+                                  white-space: nowrap;
+                                "
+                              >
+                                <span
+                                  ng-if="user.relativeList.length === 0"
+                                  style="color: #e13a3a"
+                                >
+                                  <i18n>classAdmin.no.relatives</i18n>
+                                </span>
+                                <span
+                                  style="color: #909090"
+                                  ng-repeat="relative in user.relativeList track by $index"
+                                >
+                                  <span ng-if="$index > 0">, </span>[[relative.relatedName]]
+                                </span>
+                              </div>
                             </td>
                             <td ng-if="isSelectedTab(kinds.Student)"><span ng-if="user.hasBirthDate">[[user.shortBirthDate]]</span></td>
                             <td>[[user.login]]</td>
