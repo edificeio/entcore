@@ -76,5 +76,18 @@ describe('Conversation Message Mutation Methods', () => {
   
     putMock.mockRestore();
   });
+
+  test('makes a PUT request to restore a single message from trash', async () => {
+    const messageId = 'f43d3783';
+
+    const putMock = vi.spyOn(odeServices.http(), 'put').mockResolvedValue(undefined);
+
+    const response = await messageService.restore([messageId]);
+
+    expect(putMock).toHaveBeenCalledWith(`${baseUrl}/restore`, { id: [messageId] });
+    expect(response).toBeUndefined();
+
+    putMock.mockRestore();
+  });
   
 });
