@@ -8,6 +8,7 @@ import {
   IconDelete,
   IconReadMail,
   IconUnreadMail,
+  IconRestore
 } from '@edifice.io/react/icons';
 import clsx from 'clsx';
 import { KeyboardEvent, useEffect, useMemo, useState } from 'react';
@@ -21,6 +22,7 @@ import {
   useMarkUnread,
   useTrashMessage,
   useUpdateFolderBadgeCountLocal,
+  useRestoreMessage
 } from '~/services';
 import { useAppActions, useSelectedMessageIds } from '~/store/actions';
 
@@ -38,6 +40,7 @@ export function MessageList() {
   const markAsReadQuery = useMarkRead();
   const markAsUnreadQuery = useMarkUnread();
   const moveToTrashQuery = useTrashMessage();
+  const restoreQuery = useRestoreMessage();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
 
   const {
@@ -70,30 +73,31 @@ export function MessageList() {
     setCurrent((prev) => prev + 1);
   }, [searchParams, folderId]);
 
-  const hasUnreadMessages = useMemo(() => {
-    return messages?.some(
-      (message) =>
-        selectedIds.length &&
-        selectedIds.includes(message.id) &&
-        message.unread,
-    );
+  const isInTrash = folderId === 'trash';
+
+  const selectedMessages = useMemo(() => {
+    return messages?.filter((message) => selectedIds.includes(message.id)) || [];
   }, [selectedIds, messages]);
+
+  const hasUnreadMessages = useMemo(() => {
+    if (isInTrash) return false;
+    return selectedMessages.some((message) => message.unread);
+  }, [isInTrash, selectedMessages]);
 
   const hasReadMessages = useMemo(() => {
-    return messages?.some(
-      (message) =>
-        selectedIds.length &&
-        selectedIds.includes(message.id) &&
-        !message.unread,
-    );
-  }, [selectedIds, messages]);
+    if (isInTrash) return false;
+    return selectedMessages.some((message) => !message.unread);
+  }, [isInTrash, selectedMessages]);
 
   const canBeMovetoTrash = useMemo(() => {
-    if (folderId === 'trash') return;
-    return messages?.some(
-      (message) => selectedIds.length && selectedIds.includes(message.id),
-    );
-  }, [selectedIds, messages, folderId]);
+    if (isInTrash) return false;
+    return selectedMessages.length > 0;
+  }, [isInTrash, selectedMessages]);
+
+  const canBeRestore = useMemo(() => {
+    if (!isInTrash) return false;
+    return selectedMessages.length > 0;
+  }, [isInTrash, selectedMessages]);
 
   const handleMarkAsReadClick = () => {
     markAsReadQuery.mutate({ id: selectedIds });
@@ -122,6 +126,11 @@ export function MessageList() {
       updateFolderBadgeCountLocal(folderId!, -1);
     }
     navigate(`message/${message.id}`);
+  };
+
+  const handleRestore = () => {
+    restoreQuery.mutate({ id: selectedIds });
+    setCurrent((prev) => prev + 1);
   };
 
   const toolbar: ToolbarItem[] = [
@@ -165,6 +174,20 @@ export function MessageList() {
         ),
         onClick: handleMoveToTrash,
         hidden: !canBeMovetoTrash,
+      }
+    },
+    {
+      type: 'button',
+      name: 'restore',
+      props: {
+        children: (
+          <>
+            <IconRestore />
+            <span>{t('restore')}</span>
+          </>
+        ),
+        onClick: handleRestore,
+        hidden: !canBeRestore
       },
     },
   ];
