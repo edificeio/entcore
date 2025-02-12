@@ -73,40 +73,31 @@ export function MessageList() {
     setCurrent((prev) => prev + 1);
   }, [searchParams, folderId]);
 
-  const hasUnreadMessages = useMemo(() => {
-    return messages?.some(
-      (message) =>
-        selectedIds.length &&
-        selectedIds.includes(message.id) &&
-        message.unread,
-    );
+  const isInTrash = folderId === 'trash';
+
+  const selectedMessages = useMemo(() => {
+    return messages?.filter((message) => selectedIds.includes(message.id)) || [];
   }, [selectedIds, messages]);
+
+  const hasUnreadMessages = useMemo(() => {
+    if (isInTrash) return false;
+    return selectedMessages.some((message) => message.unread);
+  }, [isInTrash, selectedMessages]);
 
   const hasReadMessages = useMemo(() => {
-    return messages?.some(
-      (message) =>
-        selectedIds.length &&
-        selectedIds.includes(message.id) &&
-        !message.unread,
-    );
-  }, [selectedIds, messages]);
+    if (isInTrash) return false;
+    return selectedMessages.some((message) => !message.unread);
+  }, [isInTrash, selectedMessages]);
 
   const canBeMovetoTrash = useMemo(() => {
-    if (folderId === 'trash') return;
-    return messages?.some(
-      (message) => selectedIds.length && selectedIds.includes(message.id),
-    );
-  }, [selectedIds, messages, folderId]);
+    if (isInTrash) return false;
+    return selectedMessages.length > 0;
+  }, [isInTrash, selectedMessages]);
 
   const canBeRestore = useMemo(() => {
-    if(folderId !== 'trash') return;
-
-    return messages?.some(
-      (message) =>
-        selectedIds.length &&
-        selectedIds.includes(message.id)
-    );
-  }, [selectedIds, messages, folderId]);
+    if (!isInTrash) return false;
+    return selectedMessages.length > 0;
+  }, [isInTrash, selectedMessages]);
 
   const handleMarkAsReadClick = () => {
     markAsReadQuery.mutate({ id: selectedIds });
