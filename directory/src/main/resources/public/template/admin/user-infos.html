@@ -208,6 +208,23 @@
 				</div>
 			</div>
 		</content-divider>
+		<!-- Search form -->
+		<div>
+			<div class="flex-row f-column twelve top-spacing-four">
+				<span class="bold">
+					<i18n>classAdmin.create.search</i18n>
+				</span>
+				<input type="text" ng-model="userInfos.search" class="seven vertical-spacing" ng-change="onUserInfosSearchChange()" i18n-placeholder="classAdmin.searchStudent" />
+				<drop-down options="userInfos.results" ng-change="onUserInfosSearchSelect()" on-close="onUserInfosSearchClean()"
+					ng-model="userInfos.select">
+				</drop-down>
+			</div>
+			<div class="flex-row f-wrap">
+				<contact-chip class="block relative removable" ng-model="user" action="onUserInfosRemoveChild(user)"
+					ng-repeat="user in userInfos.linked">
+				</contact-chip>
+			</div>
+		</div>
 	</article>
 	<!--END CHILDREN-->
 	<article class="row bottom-spacing-three" ng-if="userInfosDisplayUserbook()">

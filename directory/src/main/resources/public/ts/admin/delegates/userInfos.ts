@@ -2,6 +2,15 @@ import { EventDelegateScope, TRACK } from "./events";
 import { User, UserTypes, Mood, ClassRoom, School } from "../model";
 import { $, angular, Me, notify } from "entcore";
 import { directoryService } from "../service";
+import { Subject, Observable } from "rxjs";
+
+interface DropdownOption {
+    innerObject: User;
+    type?: string
+    structureName?: string
+    profile: UserTypes
+    toString(): string
+}
 
 export interface UserInfosDelegateScope extends EventDelegateScope {
     openUserInfos(user: User): void;
@@ -35,6 +44,18 @@ export interface UserInfosDelegateScope extends EventDelegateScope {
     userInfosDisplayUserbook(): boolean
     userInfoExport(user: User): void;
     userInfoExportFamily(user: User): void;
+    onUserInfosSearchChange(): void;
+    onUserInfosSearchClean(): void;
+    onUserInfosSearchSelect(): void;
+    onUserInfosRemoveChild(user: User): void; 
+    userInfos: {
+        searching: boolean;
+        linking: boolean,
+        search: string,
+        results: DropdownOption[],
+        select: DropdownOption,
+        linked: User[]
+    };
     selectedUser: User;
     mottoShouldPublish: boolean;
     showLoginInput: boolean;
@@ -48,6 +69,8 @@ export interface UserInfosDelegateScope extends EventDelegateScope {
     usersForType(type?: UserTypes): User[]
     openLightbox(path: string): void;
     userList: { selectedTab: UserTypes, selectAll: boolean, search: string, list: User[] };
+    selectedSchoolId(classroom: ClassRoom): string;
+    selectedClass: ClassRoom;
 }
 
 export async function UserInfosDelegate($scope: UserInfosDelegateScope) {
@@ -56,7 +79,17 @@ export async function UserInfosDelegate($scope: UserInfosDelegateScope) {
     $scope.showLoginInput = false;
     $scope.showEmailInput = false;
     $scope.temp = {};
+    $scope.userInfos = {
+        linking: false,
+        searching: false,
+        search: '',
+        select: null,
+        results: [],
+        linked: []
+    }
+
     // === Private attributs
+    const onSearchChange = new Subject<string>();
     let _classroom: ClassRoom;
     let _schools: School[] = [];
     let list = [];
@@ -67,6 +100,9 @@ export async function UserInfosDelegate($scope: UserInfosDelegateScope) {
     })
     $scope.onSchoolLoaded.subscribe(loaded => {
         _schools = loaded;
+    });
+    (onSearchChange as Observable<string>).distinctUntilChanged().debounceTime(450).subscribe(value => {
+        search(value);
     });
     //=== Private methods
     const getSchool = function () {
@@ -91,6 +127,7 @@ export async function UserInfosDelegate($scope: UserInfosDelegateScope) {
         $scope.showPhoneInput = false;
         $scope.temp.mobile = "";
         $scope.showMobileInput = false;
+        cleanSearch();
     }
     const setSelectedUser = async (user: User) => {
         $scope.mottoShouldPublish = false;
@@ -337,5 +374,64 @@ export async function UserInfosDelegate($scope: UserInfosDelegateScope) {
     }
     $scope.userInfosDisplayUserbook = function () {
         return $scope.selectedUser && !$scope.selectedUser.activationCode;
+    }
+
+    const cleanSearch = () => {
+        $scope.userInfos.search = "";
+        $scope.userInfos.results = [];
+        $scope.userInfos.select = null;
+        $scope.userInfos.searching = false;
+    }
+    const search = async (query: string) => {
+        try {
+            if (query && query.length >= 1) {
+                $scope.userInfos.results = [];
+                $scope.userInfos.searching = true;
+                const founded = await directoryService.searchInDirectory(query, {
+                    structures: [$scope.selectedSchoolId($scope.selectedClass)],
+                    profiles: ["Student"]
+                });
+                $scope.userInfos.results = founded.map(f => ({
+                    innerObject: f as User,
+                    profile: "Student" as UserTypes,
+                    toString: () => (f as User).displayName
+                }));
+                $scope.safeApply();
+            }
+        } finally {
+            $scope.userInfos.searching = false;
+        }
+    }
+    $scope.onUserInfosSearchChange = function () {
+        onSearchChange.next($scope.userInfos.search);
+    }
+    $scope.onUserInfosSearchClean = function () {
+        cleanSearch();
+    }
+    $scope.onUserInfosSearchSelect = async function () {
+        if($scope.userInfos.linking) return;
+        $scope.userInfos.linking = true;
+        try {
+            if ($scope.userInfos.select && $scope.userInfos.select.innerObject) {
+                const student = await directoryService.linkStudentToRelative($scope.selectedUser, $scope.userInfos.select.innerObject);
+                $scope.userInfos.linked.push(student);
+                $scope.safeApply();
+            }
+        }
+        finally {
+            $scope.userInfos.linking = false;
+        }
+    }
+    $scope.onUserInfosRemoveChild = async function (user) {
+        if($scope.userInfos.linking) return;
+        $scope.userInfos.linking = true;
+        try {
+            await directoryService.unlinkStudentToRelative($scope.selectedUser, user);
+            $scope.userInfos.linked = $scope.userInfos.linked.filter(u=>u.id!==user.id);
+            $scope.safeApply();
+        }
+        finally {
+            $scope.userInfos.linking = false;
+        }
     }
 }
