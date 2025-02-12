@@ -1,7 +1,6 @@
 package org.entcore.common.s3.utils;
 
 import io.vertx.core.buffer.Buffer;
-import org.checkerframework.checker.units.qual.C;
 
 public class Chunk {
 
@@ -66,13 +65,5 @@ public class Chunk {
     public void incrementRetryIndex() {
         retryIndex++;
     }
-
-    public Chunk copy() {
-        final Chunk copy = new Chunk();
-        copy.buffer = this.buffer;
-        copy.chunkNumber = this.chunkNumber;
-        copy.chunkSize = this.chunkSize;
-        copy.retryIndex = this.retryIndex;
-        return copy;
-    }
+    
 }
