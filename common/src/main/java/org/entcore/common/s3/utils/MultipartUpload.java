@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -44,8 +45,13 @@ public class MultipartUpload {
     protected final String region;
     protected final String bucket;
     protected final String ssec;
+    private final int nbChunks;
 
     public MultipartUpload(final Vertx vertx, final ResilientHttpClient httpClient, final String endPoint,final String accessKey, final String secretKey, final String region, final String bucket, final String ssec) {
+        this(vertx, httpClient, endPoint, accessKey, secretKey, region, bucket, ssec, 5);
+    }
+    public MultipartUpload(final Vertx vertx, final ResilientHttpClient httpClient, final String endPoint,final String accessKey, final String secretKey, final String region, final String bucket, final String ssec,
+                           final int nbChunks) {
         this.vertx = vertx;
         this.httpClient = httpClient;
 
@@ -56,6 +62,7 @@ public class MultipartUpload {
 
         this.bucket = bucket;
         this.ssec = ssec;
+        this.nbChunks = nbChunks;
     }
 
     public void upload(final String filepath, final String id, final Handler<JsonObject> handler) {
@@ -166,23 +173,30 @@ public class MultipartUpload {
 
                 List<String> eTags = new ArrayList<>();
                 Chunk chunk = new Chunk();
-
+                final AtomicInteger chunksCounter = new AtomicInteger(0);
                 asyncFile.handler(buff -> {
                     chunk.appendBuffer(buff);
 
                     if (chunk.getChunkSize() >= chunk.getMaxSize()) {
-                        asyncFile.pause();
+                        final int nbCurrentChunks  = chunksCounter.incrementAndGet();
+                        log.info(nbCurrentChunks + "out of " + nbChunks +" being processed for " + id);
+                        if(nbCurrentChunks >= nbChunks) {
+                            log.info("Pausing reading file because we have " + nbCurrentChunks + " for " + id);
+                            asyncFile.pause();
+                        }
 
-                        uploadPart(id, uploadId, chunk, eTag -> {
+                        uploadPart(id, uploadId, chunk.copy() , eTag -> {
                             if (eTag == null) {
                                 cancel(id, uploadId);
                                 handler.handle(new ArrayList<>());
                                 return;
                             }
                             eTags.add(eTag);
-
                             chunk.nextChunk();
-                            asyncFile.resume();
+                            if(chunksCounter.decrementAndGet()< nbChunks) {
+                                log.info("Releasing chunk for id " + id + " ...");
+                                asyncFile.resume();
+                            }
                         });
                     }
                 });

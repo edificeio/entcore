@@ -65,5 +65,13 @@ public class Chunk {
     public void incrementRetryIndex() {
         retryIndex++;
     }
-    
+
+    public Chunk copy() {
+        final Chunk copy = new Chunk();
+        copy.buffer = this.buffer;
+        copy.chunkNumber = this.chunkNumber;
+        copy.chunkSize = this.chunkSize;
+        copy.retryIndex = this.retryIndex;
+        return copy;
+    }
 }

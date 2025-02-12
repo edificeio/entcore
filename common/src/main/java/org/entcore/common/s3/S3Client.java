@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -77,6 +78,7 @@ public class S3Client {
 	private final String secretKey;
 	private final String region;
 	private final String ssec;
+	private final int maxNbChunks = 5;
 
 	public S3Client(Vertx vertx, URI uri, String accessKey, String secretKey, String region, String bucket, String ssec) {
 		this(vertx, uri, accessKey, secretKey, region, bucket, ssec, false);
@@ -173,6 +175,7 @@ public class S3Client {
 		AtomicLong size = new AtomicLong(0L);
 		List<String> eTags = new ArrayList<>();
 		Chunk chunk = new Chunk();
+		final AtomicInteger chunksCounter = new AtomicInteger(0);
 		StringBuilder multipartUploadId = new StringBuilder();
 
 		request.setExpectMultipart(true);
@@ -211,10 +214,15 @@ public class S3Client {
 				chunk.appendBuffer(buff);
 
 				if (chunk.getChunkSize() >= chunk.getMaxSize()) {
-					upload.pause();
+					final int nbCurrentChunks  = chunksCounter.incrementAndGet();
+					log.info(nbCurrentChunks + "out of " + maxNbChunks +" being processed for " + id);
+					if(nbCurrentChunks >= maxNbChunks) {
+						log.info("Pausing reading file because we have " + nbCurrentChunks + " for " + id);
+						upload.pause();
+					}
 					String uploadId = multipartUploadId.toString();
 
-					multipartUpload.uploadPart(id, uploadId, chunk, eTag -> {
+					multipartUpload.uploadPart(id, uploadId, chunk.copy(), eTag -> {
 						if (eTag == null) {
 							multipartUpload.cancel(id, uploadId);
 							handler.handle(
@@ -228,7 +236,10 @@ public class S3Client {
 						size.addAndGet(chunk.getChunkSize());
 
 						chunk.nextChunk();
-						upload.resume();
+						if(chunksCounter.decrementAndGet() < maxNbChunks) {
+							log.info("Releasing chunk for id " + id + " ...");
+							upload.resume();
+						}
 					});
 				}
 			});
