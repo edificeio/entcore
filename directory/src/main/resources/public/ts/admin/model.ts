@@ -1,5 +1,5 @@
-import { idiom as lang, ui, Model, model, moment, _ } from 'entcore';
 import http from 'axios';
+import { _, idiom as lang, Model, model, moment, ui } from 'entcore';
 
 // === Type definitions
 type Hobby = { visibility: string, values: string, category: string, displayName: string };
@@ -200,6 +200,10 @@ export class User extends Model {
     }
     get isDisabled() {
         return this.blocked || this.isMe;
+    }
+    get hasRelative() {
+        // We need to had this filter because when you click on the line it create a relative with null ID
+        return this.relativeList?.filter(r => r.relatedId !== null).length > 0;
     }
     updateData(data: Partial<User>) {
         /*if (data) {
