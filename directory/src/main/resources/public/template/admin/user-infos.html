@@ -208,7 +208,30 @@
 				</div>
 			</div>
 		</content-divider>
+		<!-- Dynamically linked children -->
+		<div class="flex-row top-spacing-twice" 
+			  ng-if="userInfos.linked.length>0"
+			  ng-repeat="user in userInfos.linked">
+			<div class="cell round bg-white square-medium left-spacing right-spacing"><img ng-src="/userbook/avatar/[[user.id]]?thumbnail=100x100" /></div>
+			<div>
+				<a href="/userbook/annuaire#[[user.id]]" target="_blank" class="cell-ellipsis small-text block left-text">[[user.displayName]]</a>
+				<span class="cell-ellipsis low-importance smaller-text medium-importance italic-text block left-text">[[selectedClass.name]]</span>
+			</div>
+			<button class="left-spacing red bottom-spacing-small" ng-click="onUserInfosRemoveChild(user)"><i class="close"></i></button>
+		</div>
 	</article>
+	<!-- Search form -->
+	<div>
+		<div class="flex-row f-column twelve top-spacing-four">
+			<span class="bold">
+				<i18n>classAdmin.create.search</i18n>
+			</span>
+			<input type="text" ng-model="userInfos.search" class="seven vertical-spacing" ng-change="onUserInfosSearchChange()" i18n-placeholder="classAdmin.searchStudent" />
+			<drop-down options="userInfos.results" ng-change="onUserInfosSearchSelect()" on-close="onUserInfosSearchClean()"
+				ng-model="userInfos.select">
+			</drop-down>
+		</div>
+	</div>
 	<!--END CHILDREN-->
 	<article class="row bottom-spacing-three" ng-if="userInfosDisplayUserbook()">
 		<h2 translate key="classAdmin.userInfos.hobbies"></h2>
