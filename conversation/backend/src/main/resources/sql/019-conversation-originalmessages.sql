@@ -6,3 +6,5 @@ CREATE TABLE conversation.originalmessages (
 CREATE INDEX idx_originalmessages ON conversation.originalmessages (message_id);
 
 ALTER TABLE conversation.messages ADD content_version INTEGER DEFAULT 0;
+
+GRANT SELECT, INSERT, UPDATE, DELETE, TRUNCATE ON conversation.originalmessages TO "apps";
