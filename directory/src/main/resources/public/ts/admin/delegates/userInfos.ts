@@ -1,8 +1,8 @@
-import { EventDelegateScope, TRACK } from "./events";
-import { User, UserTypes, Mood, ClassRoom, School } from "../model";
-import { $, angular, Me, notify } from "entcore";
+import { angular, Me, notify } from "entcore";
+import { Observable, Subject } from "rxjs";
+import { ClassRoom, Mood, School, User, UserTypes } from "../model";
 import { directoryService } from "../service";
-import { Subject, Observable } from "rxjs";
+import { EventDelegateScope, TRACK } from "./events";
 
 interface DropdownOption {
     innerObject: User;
