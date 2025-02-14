@@ -92,7 +92,7 @@ public class DuplicateUsers {
 					"UNWIND COALESCE(hf1.scope, []) + COALESCE(hf2.scope, []) as scopes " +
 					"WITH u1, u2, adml, COLLECT(DISTINCT scopes) as unionScope " +
 					"WHERE size(unionScope) > 0 " +
-					"MERGE (u1)-[:HAS_FUNCTION]->(adml) " +
+					"MERGE (u1)-[hf:HAS_FUNCTION]->(adml) " +
 					"ON CREATE SET hf.scope = unionScope " +
 					"ON MATCH SET hf.scope = unionScope " +
 					"WITH u1, u2 " +
