@@ -1709,6 +1709,16 @@
   "workspace.rack.restore": "Espace documentaire : restaurer les fichiers du casier dans la corbeille",
   "workspace.share.json": "Espace documentaire : partager un document",
   "workspace.view": "Espace documentaire : accéder à l'espace documentaire",
+  "functional.groups": "Groupes scolarité",
+  "import.classesChecking.info.0": "Association et création des classes",
+  "management.zimbra.panel.content": "Ouverture de la messagerie vers l'exterieur",
+  "management.zimbra.return.statut.ERROR": "Erreur pendant le rappel",
+  "management.zimbra.return.statut.PROGRESS": "Rappel en cours",
+  "management.zimbra.return.statut.REMOVED": "Rappel effectué",
+  "management.zimbra.return.statut.WAITING": "En attente de validation",
+  "manual.groups": "Groupes manuels",
+  "manualGroups.multi.combo.title": "Groupes manuels",
+  "profile.groups": "Groupes de profil",
   "zipCode": "Code postal",
   "zipCode2": "Code postal 2"
 }
