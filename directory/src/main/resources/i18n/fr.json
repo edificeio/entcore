@@ -28,6 +28,7 @@
     "classAdmin.required": "* Information obligatoire",
     "classAdmin.add.users": "Ajouter des utilisateurs",
     "classAdmin.add.myClass" : "Ajouter à ma classe",
+    "classAdmin.add.relative": "Ajouter un responsable",
     "classadmin.csv.import": "Importez un fichier CSV",
     "classAdmin.massmailing": "Créer les fiches de connexion",
     "classAdmin.apps.visibility": "Gérer les visibilité des applications",

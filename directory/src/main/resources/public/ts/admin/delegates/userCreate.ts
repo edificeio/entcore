@@ -1,8 +1,8 @@
-import { User, ClassRoom, UserTypes, School, Network } from "../model";
+import { idiom as lang, notify } from "entcore";
+import { Observable, Subject } from "rxjs";
+import { ClassRoom, User, UserTypes } from "../model";
 import { directoryService } from "../service";
-import { template, idiom as lang, notify } from "entcore";
 import { EventDelegateScope, TRACK } from "./events";
-import { Subject, Observable } from "rxjs";
 import moment = require("moment");
 
 export enum UserCreateField {
@@ -61,6 +61,7 @@ export interface UserCreateDelegateScope extends EventDelegateScope {
     attachUserToMyClassOnly(): void;
     selectUserToAttach(user: User): void;
     isUserCreateMobilePhoneVisible(): boolean;
+    openCreateRelativeFromStudent(student: User): void;
     //from others
     openLightbox(name: string)
     closeLightbox();
@@ -366,5 +367,11 @@ export async function UserCreateDelegate($scope: UserCreateDelegateScope) {
     $scope.isUserCreateMobilePhoneVisible = function () {
         const type = $scope.userCreate.form.type;
         return type && type == "Relative";
+    }
+    $scope.openCreateRelativeFromStudent = function (student) {
+        $scope.userCreate.form = new User;
+        $scope.userCreate.form.type = "Relative";
+        $scope.userCreate.form.relatives = [student];
+        $scope.goToCreateUserForm(false);
     }
 }
