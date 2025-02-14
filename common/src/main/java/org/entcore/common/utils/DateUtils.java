@@ -20,7 +20,10 @@
 package org.entcore.common.utils;
 
 import fr.wseduc.mongodb.MongoDb;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import javax.xml.bind.DatatypeConverter;
 import java.text.DateFormat;
@@ -31,15 +34,14 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * Created by dbreyton on 30/03/2016.
  */
 public final class DateUtils {
+    private final static Logger log = LoggerFactory.getLogger(DateUtils.class);
+
     /** The Constant DEFAULT_DATE_PATTERN. */
     private static final String DEFAULT_DATE_PATTERN = "dd/MM/yyyy";
 
@@ -222,5 +224,47 @@ public final class DateUtils {
 
     public static JsonObject getDateJsonObject(final Long date) {
         return new JsonObject().put("$date", date);
+    }
+
+
+    /**
+     * Convert $date: long into $date: string utc since mongo driver change.
+     * @param savePayload Documents to save
+     */
+    public static void reformatDateForMongoDB(JsonArray savePayload) {
+        if(savePayload != null) {
+            for (Object o : savePayload) {
+                if (o instanceof JsonObject) {
+                    reformatDateForMongoDB((JsonObject) o);
+                }
+            }
+        }
+    }
+
+    /**
+     * Convert $date: long into $date: string utc since mongo driver change.
+     * @param document Document to save
+     */
+    public static void reformatDateForMongoDB(JsonObject document) {
+        if(document != null) {
+            for (Map.Entry<String, Object> objectEntry : document) {
+                final String key = objectEntry.getKey();
+                final Object value = objectEntry.getValue();
+                if(value == null) {
+                    // Nothing to do
+                } else if("$date".equals(key) && value instanceof Number) {
+                    // Try to convert the long value into a utc date
+                    try {
+                        document.put(key, formatUtcDateTime((long) value));
+                    } catch(Exception e) {
+                        log.error("An error occurred when we try to convert the timestamp " + value + " into a utc date");
+                    }
+                } else if(value instanceof JsonArray) {
+                    reformatDateForMongoDB((JsonArray) value);
+                } else if(value instanceof JsonObject) {
+                    reformatDateForMongoDB((JsonObject) value);
+                }
+            }
+        }
     }
 }
