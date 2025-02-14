@@ -61,6 +61,7 @@ export const options = {
   },
   scenarios: {
     conversationFoldersTest: {
+      exec: "testDeleteFoldersAndTrashMessages",
       executor: "per-vu-iterations",
       vus: 1,
       maxDuration: maxDuration,
@@ -115,9 +116,9 @@ function checkDeleteFolderOk(res, draftId, checkName) {
   }
 }
 
-function testDeleteFoldersAndTrashMessages(data) {
+export function testDeleteFoldersAndTrashMessages(data) {
   const { structure } = data;
-  describe("[Conversation] Test - Create draft and send message", () => {
+  describe("[Conversation] Delete a folder while trashing its messages", () => {
     authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
     const users = getUsersOfSchool(structure);
     const teacher1 = getRandomUserWithProfile(users, "Teacher");
@@ -157,7 +158,3 @@ function testDeleteFoldersAndTrashMessages(data) {
     checkDeleteFolderOk(res, draftId, "Teacher deletes the first folders");
   });
 }
-
-export default (data) => {
-  testDeleteFoldersAndTrashMessages(data);
-};
