@@ -56,5 +56,7 @@
   "import.info": "Importer votre fichier d'export au format .zip <br /> <strong>Attention ce fichier doit être issu de l'onglet export de l'application \"Mes données\"</strong>.",
   "import.kilobytes": "Ko",
   "import.megabytes": "Mo",
-  "zip.export.error": "Erreur durant la création de l'archive"
+  "zip.export.error": "Erreur durant la création de l'archive",
+  "export.regards": "Cordialement,",
+  "import.info.warnpad": "Note : L'import de l'application Pad est actuellement indisponible."
 }
