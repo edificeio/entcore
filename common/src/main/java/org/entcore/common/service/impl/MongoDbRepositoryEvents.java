@@ -48,7 +48,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static org.entcore.common.utils.DateUtils.formatUtcDateTime;
+import static org.entcore.common.utils.DateUtils.reformatDateForMongoDB;
 
 public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 
@@ -700,7 +700,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 					if(oldIdsToNewIds.size() > 0) {
 						applyIdsChange(savePayload, oldIdsToNewIds);
 					}
-					reformatDate(savePayload);
+					reformatDateForMongoDB(savePayload);
 
 					final int totalDuplicates = nbDuplicates;
 					mongo.insert(collection, savePayload, new Handler<Message<JsonObject>>() {
@@ -753,42 +753,6 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 		});
 	}
 
-	/**
-	 * Convert $date: long into $date: string utc since mongo driver change.
-	 * @param savePayload Documents to save
-	 */
-	private static void reformatDate(JsonArray savePayload) {
-		if(savePayload != null) {
-			for (Object o : savePayload) {
-				if (o instanceof JsonObject) {
-					reformatDate((JsonObject) o);
-				}
-			}
-		}
-	}
-
-	private static void reformatDate(JsonObject document) {
-		if(document != null) {
-			for (Map.Entry<String, Object> objectEntry : document) {
-				final String key = objectEntry.getKey();
-				final Object value = objectEntry.getValue();
-				if(value == null) {
-					// Nothing to do
-        } else if("$date".equals(key) && value instanceof Number) {
-					// Try to convert the long value into a utc date
-					try {
-						document.put(key, formatUtcDateTime((long) value));
-					} catch(Exception e) {
-						log.error("An error occurred when we try to convert the timestamp " + value + " into a utc date");
-					}
-				} else if(value instanceof JsonArray) {
-					reformatDate((JsonArray) value);
-				} else if(value instanceof JsonObject) {
-					reformatDate((JsonObject) value);
-				}
-			}
-		}
-	}
 
 	/**
 	 *
