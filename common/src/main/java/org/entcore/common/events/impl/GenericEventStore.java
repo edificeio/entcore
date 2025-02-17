@@ -38,6 +38,13 @@ import io.vertx.core.logging.LoggerFactory;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 public abstract class GenericEventStore implements EventStore {
 
 	protected String module;
@@ -107,6 +114,88 @@ public abstract class GenericEventStore implements EventStore {
 	public void storeCustomEvent(String baseEventType, JsonObject payload) {
 
 	}
+
+	@Override
+	public void createAndStoreShareEvent(String userId, String resourceId, List<String> rights) {
+		final UserInfos user = new UserInfos();
+		user.setUserId(userId);
+		final JsonObject params = transformShares(rights);
+		final JsonArray shares = (JsonArray) params.remove("shares");
+		params.getJsonArray("users").add(userId);
+		final String query =
+			"MATCH (g:Group) where g.id IN {groups} RETURN DISTINCT g.id as id, g.filter as profile " +
+			"UNION " +
+			"MATCH (u:User) where u.id IN {users} RETURN DISTINCT u.id as id, head(u.profiles) as profile";
+
+		Neo4j.getInstance().execute(query, params, event -> {
+			final JsonArray res = event.body().getJsonArray("result");
+			if ("ok".equals(event.body().getString("status"))) {
+				final Map<String, String> shareMapping = new HashMap<>();
+				for (Object idProfile: res) {
+					if (!(idProfile instanceof JsonObject)) continue;
+					final JsonObject idProfil = (JsonObject) idProfile;
+					shareMapping.put(idProfil.getString("id"), idProfil.getString("profile"));
+				}
+				final Set<String> shareProfiles = new HashSet<>();
+				final Set<String> shareRights = new HashSet<>();
+				for (Object o: shares) {
+					if (!(o instanceof JsonObject)) continue;
+					JsonObject share = (JsonObject) o;
+					final String profile = shareMapping.get(share.getString("id"));
+					share.put("profile", profile);
+					shareProfiles.add(profile);
+					shareRights.addAll(share.getJsonArray("rights").stream().map(Object::toString).collect(Collectors.toList()));
+				}
+				final JsonObject customAttributes = new JsonObject()
+						.put("resource_id", resourceId)
+						.put("shares", shares)
+						.put("share_profiles", new JsonArray(shareProfiles.stream().collect(Collectors.toList())))
+						.put("share_rights", new JsonArray(shareRights.stream().collect(Collectors.toList())));
+				user.setType(shareMapping.get(userId));
+				execute(user, "SHARE", null, customAttributes);
+			} else {
+				logger.error("Error when store share event on module: " + module + ", resourceId: " + resourceId);
+			}
+		});
+	}
+
+	public static JsonObject transformShares(List<String> shares) {
+        final Map<String, JsonObject> shareMap = new HashMap<>();
+        for (String share : shares) {
+            final String[] parts = share.split(":");
+            if (parts.length != 3) continue;
+
+            final String type = parts[0];
+            final String id = parts[1];
+            final String right = parts[2];
+
+            final String key = type + ":" + id;
+            final JsonObject shareObject = shareMap.getOrDefault(key, new JsonObject()
+                    .put("type", type)
+                    .put("id", id)
+                    .put("rights", new JsonArray()));
+
+            shareObject.getJsonArray("rights").add(right);
+            shareMap.put(key, shareObject);
+        }
+
+        final JsonArray result = new JsonArray();
+		final JsonArray groups = new JsonArray();
+		final JsonArray users =  new JsonArray();
+        for (JsonObject shareObject : shareMap.values()) {
+            result.add(shareObject);
+			if ("group".equals(shareObject.getString("type"))) {
+				groups.add(shareObject.getString("id"));
+			} else {
+				users.add(shareObject.getString("id"));
+			}
+        }
+
+        return new JsonObject()
+				.put("users", users)
+				.put("groups", groups)
+				.put("shares", result);
+    }
 
 	private void createAndStoreEvent(final String eventType, final String attr, final String value,
 			final String clientId, final HttpServerRequest request) {

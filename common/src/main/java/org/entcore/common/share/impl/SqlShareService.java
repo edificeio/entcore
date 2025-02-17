@@ -34,12 +34,14 @@ import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.sql.SqlStatementsBuilder;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class SqlShareService extends GenericShareService {
 
@@ -297,6 +299,7 @@ public class SqlShareService extends GenericShareService {
 						JsonArray oldMembers = old.right().getValue();
 						JsonArray members = res.right().getValue().getJsonArray("notify-members");
 						getNotifyMembers(handler, oldMembers, members, (m -> ((JsonObject) m).getString("member_id")));
+						traceShare(userId, resourceId, res.right().getValue(), oldMembers);
 					} else {
 						handler.handle(new Either.Left<>(old.left().getValue()));
 					}
@@ -350,4 +353,40 @@ public class SqlShareService extends GenericShareService {
 		}
 
 	}
+
+	@Override
+	protected JsonArray prepareSharedForModel(JsonObject shared) {
+		final JsonArray groups = shared.getJsonArray("groups", new JsonArray());
+		final Map<String, JsonObject> sMapping = new HashMap<>();
+		for (Object o: shared.getJsonArray("shared", new JsonArray())) {
+			if (!(o instanceof JsonArray)) continue;
+			final JsonArray item = (JsonArray) o;
+			if (item.size() == 3) {
+				final String itemType = groups.contains(item.getString(0)) ? "groupId" : "userId";
+				final JsonObject oitem = sMapping.computeIfAbsent(item.getString(0),
+						key -> new JsonObject().put(itemType, item.getString(0)));
+				oitem.put(item.getString(2), true);
+			}
+		}
+		return new JsonArray(sMapping.values().stream().collect(Collectors.toList()));
+	}
+
+	@Override
+	protected List<String> removeOldSharedInSerializedModel(List<String> rights, JsonArray oldShared) {
+		final List<String> removeList = new ArrayList<>();
+		if (oldShared == null || oldShared.isEmpty()) {
+			return removeList;
+		}
+		final Set<String> oldMembers = oldShared.stream()
+				.map(o -> ((JsonObject)o).getString("member_id"))
+				.collect(Collectors.toSet());
+		for (String right: rights) {
+			final String[] rightArray = right.split(":");
+			if (rightArray.length == 3 && oldMembers.contains(rightArray[1])) {
+				removeList.add(right);
+			}
+		}
+		return removeList;
+	}
+
 }
