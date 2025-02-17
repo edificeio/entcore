@@ -33,7 +33,7 @@ import io.vertx.core.Promise;
 import com.mongodb.ReadPreference;
 import org.bson.conversions.Bson;
 import org.entcore.common.share.ShareInfosQuery;
-
+import org.entcore.common.share.ShareModel;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
@@ -444,6 +444,7 @@ public class MongoDbShareService extends GenericShareService {
 						getNotifyMembers(handler, oldShared, members,
 								(m -> getOrElse(((JsonObject) m).getString("groupId"),
 										((JsonObject) m).getString("userId"))));
+						traceShare(userId, resourceId, res.right().getValue(), oldShared);
 					} else {
 						handler.handle(new Either.Left<>(mongoRes.body().getString("message")));
 					}
@@ -514,6 +515,19 @@ public class MongoDbShareService extends GenericShareService {
 			el.put(action, true);
 		}
 		shared.add(el);
+	}
+
+	@Override
+	protected JsonArray prepareSharedForModel(JsonObject shared) {
+		return shared.getJsonArray("shared", new JsonArray());
+	}
+
+	@Override
+	protected List<String> removeOldSharedInSerializedModel(List<String> rights, JsonArray oldShared) {
+		return new ShareModel(
+				oldShared,
+				securedActions, Optional.empty())
+				.getSerializedRights();
 	}
 
 }

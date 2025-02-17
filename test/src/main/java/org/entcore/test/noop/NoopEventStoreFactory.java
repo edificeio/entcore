@@ -2,6 +2,9 @@ package org.entcore.test.noop;
 
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
+
+import java.util.List;
+
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.user.UserInfos;
@@ -65,6 +68,11 @@ public class NoopEventStoreFactory extends EventStoreFactory {
 
         @Override
         public void storeCustomEvent(final String baseEventType, final JsonObject payload) {
+
+        }
+
+        @Override
+        public void createAndStoreShareEvent(String userId, String resourceId, List<String> rights) {
 
         }
     };

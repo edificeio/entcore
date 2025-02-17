@@ -19,6 +19,8 @@
 
 package org.entcore.common.events;
 
+import java.util.List;
+
 import org.entcore.common.user.UserInfos;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
@@ -28,6 +30,8 @@ public interface EventStore {
 	void createAndStoreEvent(String eventType, HttpServerRequest request, JsonObject customAttributes);
 
 	void createAndStoreEvent(String eventType, UserInfos user, JsonObject customAttributes);
+
+	void createAndStoreShareEvent(String userId, String resourceId, List<String> rights);
 
 	void createAndStoreEvent(String eventType, HttpServerRequest request);
 

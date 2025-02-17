@@ -31,10 +31,14 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
+
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.common.share.ShareInfosQuery;
+import org.entcore.common.share.ShareModel;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.validation.StringValidation;
@@ -45,6 +49,7 @@ import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isEmpty;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 import static org.entcore.common.user.UserUtils.findVisibleProfilsGroups;
 import static org.entcore.common.user.UserUtils.findVisibleUsers;
@@ -66,12 +71,16 @@ public abstract class GenericShareService implements ShareService {
 	private JsonArray resourceActions;
 	private final Vertx vertx = Vertx.currentContext().owner();
 	private final int DEFAULT_SHARES_PARTITION_SIZE = 50;
+	private final EventStore eventStore;
 
 	public GenericShareService(EventBus eb, Map<String, SecuredAction> securedActions,
 			Map<String, List<String>> groupedActions) {
 		this.eb = eb;
 		this.securedActions = securedActions;
 		this.groupedActions = groupedActions;
+		final String main = vertx.getOrCreateContext().config().getString("main");
+		final String module = isNotEmpty(main) ? main.substring(main.lastIndexOf(".") + 1) : "unknown_module";
+		this.eventStore = EventStoreFactory.getFactory().getEventStore(module);
 	}
 
 	protected Future<Set<String>> userIdsForGroupIds(Set<String> groupsIds, String currentUserId) {
@@ -703,5 +712,21 @@ public abstract class GenericShareService implements ShareService {
 		}
 		return rmActions;
 	}
+
+	protected void traceShare(String userId, String resourceId, JsonObject shared, JsonArray oldShared) {
+		final List<String> rights = new ShareModel(
+				prepareSharedForModel(shared),
+				securedActions, Optional.empty())
+				.getSerializedRights();
+		if (oldShared != null && !oldShared.isEmpty()) {
+			final List<String> oldRights = removeOldSharedInSerializedModel(rights, oldShared);
+			rights.removeAll(oldRights);
+		}
+		eventStore.createAndStoreShareEvent(userId, resourceId, rights);
+	}
+
+	protected abstract JsonArray prepareSharedForModel(JsonObject shared);
+
+	protected abstract List<String> removeOldSharedInSerializedModel(List<String> rights, JsonArray oldShared);
 
 }
