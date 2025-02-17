@@ -263,6 +263,24 @@ export const directoryService = {
         }
         return Promise.all(res);
     },
+    async linkStudentToRelative(relative: User, student: User) {
+        await http.put(`/directory/user/${student.id}/related/${relative.id}`);
+
+        ((student.relatives) ? student.relatives : (student.relatives=[])).push(relative);
+        ((student.relativeIds) ? student.relativeIds : (student.relativeIds=[])).push(relative.id);
+        ((student.relativeList) ? student.relativeList : (student.relativeList=[])).push({
+            relatedId: relative.id,
+            relatedName: relative.displayName
+        });
+        return student;
+    },
+    async unlinkStudentToRelative(relative: User, student: User) {
+        await http.delete(`/directory/user/${student.id}/related/${relative.id}`);
+        student.relatives = student.relatives?.filter(u=>!(u?.id===relative.id)) ?? [];
+        student.relativeIds = student.relativeIds?.filter(u=>u!==relative.id);
+        student.relativeList = student.relativeList?.filter(u=>!(u?.relatedId===relative.id)) ?? [];
+        return student;
+    },
     async changeUserClass(user: User, args: { fromClasses: string[], toClass: string, withRelative: boolean }) {
         //+++ OLD Way
         //LINK before unlink
