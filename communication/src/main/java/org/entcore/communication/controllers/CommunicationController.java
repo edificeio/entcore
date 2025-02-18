@@ -901,29 +901,4 @@ public class CommunicationController extends BaseController {
 				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 		});
 	}
-
-	@Get("/visible/search-optimized")
-	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
-	public void searchVisibleContactsOptimized(HttpServerRequest request) {
-		UserUtils.getAuthenticatedUserInfos(eb, request)
-			.onSuccess(userInfos -> {
-				final String query = request.params().get("query");
-				final boolean isAdmin = userInfos.isADML() || userInfos.isADMC();
-
-				// if Admin query param is mandatory ??
-					/*
-					if (isAdmin && StringUtils.isEmpty(query)) {
-						badRequest(request, "query.param.required");
-					}
-					//*/
-
-				communicationService.searchVisibleContactsOptimized(userInfos, query, I18n.acceptLanguage(request), res -> {
-					if (res.isRight()) {
-						renderJson(request, res.right().getValue());
-					} else {
-						leftToResponse(request, res.left());
-					}
-				});
-			}).onFailure(e -> log.error("An error occurred when retrieving authenticated user infos"));
-	}
 }

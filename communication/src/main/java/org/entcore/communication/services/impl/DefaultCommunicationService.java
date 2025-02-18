@@ -21,7 +21,6 @@ package org.entcore.communication.services.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.collections.Joiner;
-import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
@@ -1528,37 +1527,78 @@ public class DefaultCommunicationService implements CommunicationService {
 
 	private Future<JsonArray> legacySearchVisible(final UserInfos user, final String search, final String language) {
 		final Promise<JsonArray> promise = Promise.promise();
+		// legacy visibles
 		final LegacySearchVisibleRequest payload = new LegacySearchVisibleRequest(
 			user.getUserId(),
 			search, language,
 			null
 		);
+		Promise<JsonObject> legacyVisiblesPromise = Promise.promise();
 		eventBus.request("conversation.legacy.search.visible", mapFrom(payload), e -> {
 			if(e.succeeded()) {
-				final JsonObject legacyResult = (JsonObject) e.result().body();
-				final JsonArray adaptedLegacyresult = adaptLegacyResultFormat(legacyResult);
-				promise.complete(adaptedLegacyresult);
+				legacyVisiblesPromise.complete((JsonObject) e.result().body());
 			} else {
-				promise.fail(e.cause());
+				legacyVisiblesPromise.fail(e.cause());
 			}
 		});
+		// Share bookmarks
+		final Future<Either<String, JsonArray>> shareBookmarksFuture = getShareBookmarks(user, search);
+
+		CompositeFuture.join(legacyVisiblesPromise.future(), shareBookmarksFuture)
+				.onComplete(ar -> {
+					if (ar.failed()) {
+						promise.fail(ar.cause().getMessage());
+					} else {
+
+						final JsonObject legacyResult = legacyVisiblesPromise.future().result();
+						final Either<String, JsonArray> resShareBookmark = shareBookmarksFuture.result();
+
+						if (resShareBookmark.isLeft()) {
+							log.error(resShareBookmark.left().getValue());
+						}
+						JsonArray shareBookmarks = resShareBookmark.isLeft() ? new JsonArray() : resShareBookmark.right().getValue();
+
+						final JsonArray adaptedLegacyResult = adaptLegacyResultFormat(user.getType(), language, legacyResult, shareBookmarks);
+						promise.complete(adaptedLegacyResult);
+					}
+				});
 		return promise.future();
 	}
 
 	private JsonArray adaptLegacyResultFormat(
 		final String userProfile,
 		final String language,
-		final JsonObject legacyResult) {
+		final JsonObject legacyResult,
+		final JsonArray shareBookmarks) {
 		final JsonArray visibles = new JsonArray();
-		// TODO jber check output result
-		visibles.addAll(legacyResult.getJsonArray("users", new JsonArray()));
-		visibles.addAll(legacyResult.getJsonArray("groups", new JsonArray()));
+		visibles.addAll(adaptLegacyUsersResult(legacyResult.getJsonArray("users", new JsonArray())));
+		visibles.addAll(adaptLegacyGroupsResult(legacyResult.getJsonArray("groups", new JsonArray())));
 		return UserUtils.mapObjectToContact(
 			userProfile,
-			new JsonArray(),
+			shareBookmarks,
 			visibles,
 			language
 		);
+	}
+
+	private JsonArray adaptLegacyUsersResult(final JsonArray users) {
+		users.stream()
+				.map(user -> (JsonObject) user)
+				.forEach(user -> {
+					user.remove("structureName");
+					user.put("name", null).put("groupType", new JsonArray().add("Visible").add("User"));
+				});
+		return users;
+	}
+
+	private JsonArray adaptLegacyGroupsResult(final JsonArray groups) {
+		groups.stream()
+				.map(group -> (JsonObject) group)
+				.forEach(group -> {
+					group.remove("structureName");
+					group.put("groupType", new JsonArray().add("Visible").add("Group").add("ProfileGroup")).put("groupProfile", group.remove("profile"));
+				});
+		return groups;
 	}
 
 	public Future<JsonArray> searchVisibleContacts(UserInfos user, String search, String language) {
@@ -1654,35 +1694,9 @@ public class DefaultCommunicationService implements CommunicationService {
 				getVisiblePromise::complete);
 
 		// Share bookmarks
-		final Promise<Either<String, JsonArray>> getShareBookmarksPromise = Promise.promise();
+		final Future<Either<String, JsonArray>> shareBookmarksFuture = getShareBookmarks(user, search);
 
-					/*
-					final String queryShareBookmarks = "MATCH (:User {id:{userId}})-[:HAS_SB]->(bm:ShareBookmark) return bm";
-					Neo4j.getInstance()
-							.execute(
-									queryShareBookmarks,
-									new JsonObject().put("userId", userInfos.getUserId()),
-									fullNodeMergeHandler("bm", getShareBookmarksPromise::complete)
-							);
-					 */
-
-		String sbFilter = "";
-		JsonObject sbParams = new JsonObject().put("userId", user.getUserId());
-		if (!StringUtils.isEmpty(search)) {
-			sbFilter = " AND lower(sbValue[0]) contains {search} ";
-			sbParams.put("search", StringValidation.sanitize(search));
-		}
-		String queryShareBookmarks = "MATCH (:User {id: {userId}})-[:HAS_SB]->(sb:ShareBookmark) " +
-				"WITH sb, keys(sb) AS ids " +
-				"UNWIND ids AS id " +
-				"WITH sb, id, sb[id] AS sbValue " +
-				"WHERE size(sbValue) >= 2 " + sbFilter +
-				"WITH sb, id, sb[id] AS sbValue ORDER BY sbValue[0] " +
-				"RETURN id as id, sbValue[0] as displayName ";
-
-		Neo4j.getInstance().execute(queryShareBookmarks, sbParams, validResultHandler(getShareBookmarksPromise::complete));
-
-		CompositeFuture.join(getVisiblePromise.future(), getShareBookmarksPromise.future())
+		CompositeFuture.join(getVisiblePromise.future(), shareBookmarksFuture)
 				.onComplete(ar -> {
 
 					if (ar.failed()) {
@@ -1690,7 +1704,7 @@ public class DefaultCommunicationService implements CommunicationService {
 					} else {
 
 						final Either<String, JsonArray> resVisible = getVisiblePromise.future().result();
-						final Either<String, JsonArray> resShareBookmark = getShareBookmarksPromise.future().result();
+						final Either<String, JsonArray> resShareBookmark = shareBookmarksFuture.result();
 
 						if (resVisible.isLeft()) {
 							log.error(resVisible.left().getValue());
@@ -1770,35 +1784,9 @@ public class DefaultCommunicationService implements CommunicationService {
 			getVisiblePromise::complete);
 
 		// Share bookmarks
-		final Promise<Either<String, JsonArray>> getShareBookmarksPromise = Promise.promise();
+		final Future<Either<String, JsonArray>> shareBookmarksFuture = getShareBookmarks(user, search);
 
-					/*
-					final String queryShareBookmarks = "MATCH (:User {id:{userId}})-[:HAS_SB]->(bm:ShareBookmark) return bm";
-					Neo4j.getInstance()
-							.execute(
-									queryShareBookmarks,
-									new JsonObject().put("userId", userInfos.getUserId()),
-									fullNodeMergeHandler("bm", getShareBookmarksPromise::complete)
-							);
-					 */
-
-		String sbFilter = "";
-		JsonObject sbParams = new JsonObject().put("userId", user.getUserId());
-		if (!StringUtils.isEmpty(search)) {
-			sbFilter = " AND lower(sbValue[0]) contains {search} ";
-			sbParams.put("search", StringValidation.sanitize(search));
-		}
-		String queryShareBookmarks = "MATCH (:User {id: {userId}})-[:HAS_SB]->(sb:ShareBookmark) " +
-			"WITH sb, keys(sb) AS ids " +
-			"UNWIND ids AS id " +
-			"WITH sb, id, sb[id] AS sbValue " +
-			"WHERE size(sbValue) >= 2 " + sbFilter +
-			"WITH sb, id, sb[id] AS sbValue ORDER BY sbValue[0] " +
-			"RETURN id as id, sbValue[0] as displayName ";
-
-		Neo4j.getInstance().execute(queryShareBookmarks, sbParams, validResultHandler(getShareBookmarksPromise::complete));
-
-		CompositeFuture.join(getVisiblePromise.future(), getShareBookmarksPromise.future())
+		CompositeFuture.join(getVisiblePromise.future(), shareBookmarksFuture)
 			.onComplete(ar -> {
 
 				if (ar.failed()) {
@@ -1806,7 +1794,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				} else {
 
 					final Either<String, JsonArray> resVisible = getVisiblePromise.future().result();
-					final Either<String, JsonArray> resShareBookmark = getShareBookmarksPromise.future().result();
+					final Either<String, JsonArray> resShareBookmark = shareBookmarksFuture.result();
 
 					if (resVisible.isLeft()) {
 						log.error(resVisible.left().getValue());
@@ -1840,8 +1828,8 @@ public class DefaultCommunicationService implements CommunicationService {
 			"OPTIONAL MATCH (visibles)-[:RELATED]-(related:User) " +
 			"WITH visibles, primaryProfile, " +
 			"     collect(CASE \n" +
-			"                WHEN primaryProfile == 'Student' THEN {id: related.id, displayName: related.displayName, role: 'parent'} \n" +
-			"                WHEN primaryProfile != 'Student' THEN {id: related.id, displayName: related.displayName, role: 'child'}\n" +
+			"                WHEN primaryProfile = 'Student' THEN {id: related.id, displayName: related.displayName, role: 'parent'} \n" +
+			"                WHEN primaryProfile <> 'Student' THEN {id: related.id, displayName: related.displayName, role: 'child'}\n" +
 			"              END) AS relatedUsers\n" +
 			"WITH visibles, \n" +
 			"     [x IN relatedUsers WHERE x.role = 'parent'] AS relatives, \n" +
@@ -1914,25 +1902,9 @@ public class DefaultCommunicationService implements CommunicationService {
 			getVisiblePromise::complete);
 
 		// Share bookmarks
-		final Promise<Either<String, JsonArray>> getShareBookmarksPromise = Promise.promise();
+		final Future<Either<String, JsonArray>> shareBookmarksFuture = getShareBookmarks(user, search);
 
-		String sbFilter = "";
-		JsonObject sbParams = new JsonObject().put("userId", user.getUserId());
-		if (!StringUtils.isEmpty(search)) {
-			sbFilter = " AND lower(sbValue[0]) contains {search} ";
-			sbParams.put("search", StringValidation.sanitize(search));
-		}
-		String queryShareBookmarks = "MATCH (:User {id: {userId}})-[:HAS_SB]->(sb:ShareBookmark) " +
-			"WITH sb, keys(sb) AS ids " +
-			"UNWIND ids AS id " +
-			"WITH sb, id, sb[id] AS sbValue " +
-			"WHERE size(sbValue) >= 2 " + sbFilter +
-			"WITH sb, id, sb[id] AS sbValue ORDER BY sbValue[0] " +
-			"RETURN id as id, sbValue[0] as displayName ";
-
-		Neo4j.getInstance().execute(queryShareBookmarks, sbParams, validResultHandler(getShareBookmarksPromise::complete));
-
-		CompositeFuture.join(getVisiblePromise.future(), getShareBookmarksPromise.future())
+		CompositeFuture.join(getVisiblePromise.future(), shareBookmarksFuture)
 			.onComplete(ar -> {
 
 				if (ar.failed()) {
@@ -1940,7 +1912,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				} else {
 
 					final Either<String, JsonArray> resVisible = getVisiblePromise.future().result();
-					final Either<String, JsonArray> resShareBookmark = getShareBookmarksPromise.future().result();
+					final Either<String, JsonArray> resShareBookmark = shareBookmarksFuture.result();
 
 					if (resVisible.isLeft()) {
 						log.error(resVisible.left().getValue());
@@ -1964,6 +1936,27 @@ public class DefaultCommunicationService implements CommunicationService {
 				}
 			});
 		return promise.future();
+	}
+
+	private static Future<Either<String, JsonArray>> getShareBookmarks(UserInfos user, String search) {
+		final Promise<Either<String, JsonArray>> getShareBookmarksPromise = Promise.promise();
+
+		String sbFilter = "";
+		JsonObject sbParams = new JsonObject().put("userId", user.getUserId());
+		if (!StringUtils.isEmpty(search)) {
+			sbFilter = " AND lower(sbValue[0]) contains {search} ";
+			sbParams.put("search", StringValidation.sanitize(search));
+		}
+		String queryShareBookmarks = "MATCH (:User {id: {userId}})-[:HAS_SB]->(sb:ShareBookmark) " +
+				"WITH sb, keys(sb) AS ids " +
+				"UNWIND ids AS id " +
+				"WITH sb, id, sb[id] AS sbValue " +
+				"WHERE size(sbValue) >= 2 " + sbFilter +
+				"WITH sb, id, sb[id] AS sbValue ORDER BY sbValue[0] " +
+				"RETURN id as id, sbValue[0] as displayName ";
+
+		Neo4j.getInstance().execute(queryShareBookmarks, sbParams, validResultHandler(getShareBookmarksPromise::complete));
+		return getShareBookmarksPromise.future();
 	}
 
 
