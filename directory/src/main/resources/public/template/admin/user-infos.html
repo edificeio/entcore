@@ -178,6 +178,11 @@
 						<i class="download-disk"></i> <i18n>classAdmin.report.family</i18n>
 					</a>
 			</div>
+			<div class="flex-row align-center top-spacing-twice" ng-if="!selectedUser.hasRelative" style="padding-top: 16px;">
+				<a class="block left-text" ng-click="openCreateRelativeFromStudent(selectedUser)">
+					<i class="add-user"></i> <i18n>classAdmin.add.relative</i18n>
+				</a>
+			</div>
 			<div class="flex-row align-center top-spacing-twice" ng-repeat="relative in selectedUser.relatives | orderBy:'displayName'">
 				<div class="cell round bg-white square-medium right-spacing">
 					<img ng-src="/userbook/avatar/[[relative.id]]?thumbnail=100x100">
