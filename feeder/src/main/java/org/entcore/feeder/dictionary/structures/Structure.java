@@ -441,6 +441,10 @@ public class Structure {
 				"OPTIONAL MATCH c-[r3]-() " +
 				"DELETE r, r1, r2, r3, c, cpg ";
 		tx.add(query, params);
+		query = "MATCH (s:Structure {id : {id}})<-[r:DEPENDS]-(ht:HTGroup) " +
+				"OPTIONAL MATCH ht-[r1]-() " +
+				"DELETE r, r1, ht";
+		tx.add(query, params);
 		query = "MATCH (s:Structure {id : {id}})<-[r:DEPENDS]-(fg:FunctionalGroup) " +
 				"OPTIONAL MATCH fg-[r1]-() " +
 				"DELETE r, r1, fg";
