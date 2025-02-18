@@ -144,7 +144,7 @@ public class EliotExporter implements Exporter {
 						public void handle(Message<JsonObject> event) {
 							if ("ok".equals(event.body().getString("status"))) {
 								sendWithWebDav(zipPath, handler);
-								vertx.fileSystem().deleteRecursive(path, true, null);
+								vertx.fileSystem().deleteRecursive(path, true);
 							} else {
 								log.error("Error zipping export : ");
 								log.error(event.body().encode());
