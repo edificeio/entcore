@@ -22,7 +22,8 @@ import {
   useMarkUnread,
   useTrashMessage,
   useUpdateFolderBadgeCountLocal,
-  useRestoreMessage
+  useRestoreMessage,
+  useDeleteMessage
 } from '~/services';
 import { useAppActions, useSelectedMessageIds } from '~/store/actions';
 
@@ -41,6 +42,7 @@ export function MessageList() {
   const markAsUnreadQuery = useMarkUnread();
   const moveToTrashQuery = useTrashMessage();
   const restoreQuery = useRestoreMessage();
+  const deleteMessage = useDeleteMessage();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
 
   const {
@@ -94,7 +96,7 @@ export function MessageList() {
     return selectedMessages.length > 0;
   }, [isInTrash, selectedMessages]);
 
-  const canBeRestore = useMemo(() => {
+  const isTrashMessage = useMemo(() => {
     if (!isInTrash) return false;
     return selectedMessages.length > 0;
   }, [isInTrash, selectedMessages]);
@@ -132,6 +134,11 @@ export function MessageList() {
     restoreQuery.mutate({ id: selectedIds });
     setCurrent((prev) => prev + 1);
   };
+
+  const handleDelete = () => {
+    deleteMessage.mutate({ id: selectedIds });
+    setCurrent((prev) => prev + 1);
+  }
 
   const toolbar: ToolbarItem[] = [
     {
@@ -187,8 +194,22 @@ export function MessageList() {
           </>
         ),
         onClick: handleRestore,
-        hidden: !canBeRestore
+        hidden: !isTrashMessage
       },
+    },
+    {
+      type: 'button',
+      name: 'delete-definitely',
+      props: {
+        children: (
+          <>
+            <IconDelete />
+            <span>{t('delete.definitely')}</span>
+          </>
+        ),
+        onClick: handleDelete,
+        hidden: !isTrashMessage,
+      }
     },
   ];
 

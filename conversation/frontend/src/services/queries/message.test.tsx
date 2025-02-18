@@ -1,6 +1,6 @@
 import { renderHook, waitFor } from '@testing-library/react';
 
-import { useMarkRead, useMarkUnread, useRestoreMessage, useTrashMessage } from './message';
+import { useDeleteMessage, useMarkRead, useMarkUnread, useRestoreMessage, useTrashMessage } from './message';
 import { wrapper } from '~/mocks/setup';
 import { act } from 'react';
 import { messageService } from '../api';
@@ -73,4 +73,20 @@ describe('Message Queries', () => {
       expect(messageServiceSpy).toHaveBeenCalledWith(variables.id);
     });
   });
+
+  test('use useDeleteMessage hook to delete messages', async () => {
+    const { result } = renderHook(() => useDeleteMessage(), { wrapper });
+  
+    const messageServiceSpy = vi.spyOn(messageService, 'delete');
+  
+    const variables = { id: ['1234', '5678'] };
+  
+    act(() => {
+      result.current.mutate(variables);
+    });
+  
+    await waitFor(() => {
+      expect(messageServiceSpy).toHaveBeenCalledWith(variables.id);
+    });
+  });  
 });
