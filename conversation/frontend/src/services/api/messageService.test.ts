@@ -89,5 +89,20 @@ describe('Conversation Message Mutation Methods', () => {
 
     putMock.mockRestore();
   });
+
+  test('makes a PUT request to delete messages', async () => {
+    const messageIds = ['f43d3783', '4d14920b'];
   
+    // Corrige le mock pour intercepter un "PUT" au lieu d'un "DELETE"
+    const putMock = vi.spyOn(odeServices.http(), 'put').mockResolvedValue(undefined);
+  
+    await messageService.delete(messageIds);
+  
+    expect(putMock).toHaveBeenCalledTimes(1);
+    expect(putMock).toHaveBeenCalledWith(`${baseUrl}/delete`, {
+      id: messageIds,
+    });
+  
+    putMock.mockRestore();
+  });
 });
