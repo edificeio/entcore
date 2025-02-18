@@ -114,7 +114,7 @@ public class CsvImportsLauncher implements Handler<Long> {
 														FileUtils.unzip(file.replaceAll("\\s", "%20"), dirName);
 																moveCsvFiles(structureExternalId, fs, dirName, parentDir, handlers, j);
 													} catch (IOException e) {
-														fs.deleteRecursive(parentDir, true, null);
+														fs.deleteRecursive(parentDir, true);
 														log.error("Error unzip : " + file, e);
 														handlers[j + 1].handle(null);
 													}
@@ -180,7 +180,7 @@ public class CsvImportsLauncher implements Handler<Long> {
 										importFiles(validFilesCount, parentDir, structureExternalId, handlers, j, fs);
 									}
 								} else {
-									fs.deleteRecursive(parentDir, true, null);
+									fs.deleteRecursive(parentDir, true);
 									log.error("Error mv csv file : " + f, l.cause());
 									handlers[j + 1].handle(null);
 								}
@@ -188,7 +188,7 @@ public class CsvImportsLauncher implements Handler<Long> {
 						});
 					}
 				} else {
-					fs.deleteRecursive(parentDir, true, null);
+					fs.deleteRecursive(parentDir, true);
 					log.error("Error listing csv in directory : " + dirName, l.cause());
 					handlers[j + 1].handle(null);
 				}
@@ -225,7 +225,7 @@ public class CsvImportsLauncher implements Handler<Long> {
 	}
 
 	private void emptyDirectory(FileSystem fs, String dirName, Handler<Void>[] handlers, int j) {
-		fs.deleteRecursive(dirName, true, null);
+		fs.deleteRecursive(dirName, true);
 		log.error("Empty directory : " + dirName);
 		handlers[j + 1].handle(null);
 	}
