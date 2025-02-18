@@ -6,7 +6,6 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { t } from 'i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Message, MessageMetadata } from '~/models';
 import {
@@ -14,7 +13,8 @@ import {
   messageService,
   useUpdateFolderBadgeCountLocal,
 } from '..';
-
+import { useTranslation } from 'react-i18next';
+const appCodeName = 'conversation';
 /**
  * Message Query Options Factory.
  */
@@ -127,6 +127,7 @@ export const useTrashMessage = () => {
   const search = searchParams.get('search');
   const unreadFilter = searchParams.get('unread');
   const queryClient = useQueryClient();
+  const { t } = useTranslation(appCodeName);
   const toast = useToast();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
 
@@ -207,6 +208,7 @@ export const useTrashMessage = () => {
 export const useRestoreMessage = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { t } = useTranslation(appCodeName);
   return useMutation({
     mutationFn: async ({ id }: { id: string | string[] }) => 
       messageService.restore(id)
@@ -232,16 +234,21 @@ export const useRestoreMessage = () => {
  */
 export const useDeleteMessage = () => {
   const queryClient = useQueryClient();
+  const toast = useToast();
+  const { t } = useTranslation(appCodeName);
   return useMutation({
     mutationFn: ({ id }: { id: string | string[] }) =>
       messageService.delete(id),
     onSuccess: (_data, { id }) => {
       const messageIds = typeof id === 'string' ? [id] : id;
-      messageIds.forEach((messageId) => {
-        queryClient.invalidateQueries({
-          queryKey: messageQueryOptions.getById(messageId).queryKey,
-        });
+
+      queryClient.invalidateQueries({
+        queryKey: ['folder', 'trash'],
       });
+
+      toast.success(
+        t(messageIds.length > 1 ? 'messages.delete' : 'message.delete'),
+      );
     },
   });
 };
@@ -339,7 +346,7 @@ export const useSendDraft = () => {
         cci?: string[];
       };
     }) => messageService.send(draftId, payload),
-    onSuccess: (_data /*, { draftId }*/) => {
+    onSuccess: () => {
       // TODO optimistic update ?
       queryClient.invalidateQueries({
         queryKey: folderQueryOptions.getFoldersTree().queryKey,
