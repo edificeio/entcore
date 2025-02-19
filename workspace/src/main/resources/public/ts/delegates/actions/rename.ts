@@ -97,9 +97,10 @@ export function ActionRenameDelegate($scope: RenameDelegateScope) {
     }
 
     $scope.preventForbiddenChars = function($event) {
+        const regexForbiddenChars = /[\/\\<>|]/;
         var char = $event.key;
       
-        if (forbiddenRegex.test(char)) {
+        if (regexForbiddenChars.test(char)) {
           $event.preventDefault();
         }
       };
