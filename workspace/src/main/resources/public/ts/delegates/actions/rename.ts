@@ -19,6 +19,7 @@ export interface RenameDelegateScope {
     openRenameView(document: models.Element)
     rename(item: models.Element, newName: string)
     getRenameManagers():Array<{id:string, name:string}>
+    preventForbiddenChars(event: KeyboardEvent): void; 
 }
 
 export function ActionRenameDelegate($scope: RenameDelegateScope) {
@@ -92,4 +93,14 @@ export function ActionRenameDelegate($scope: RenameDelegateScope) {
     $scope.getRenameManagers = () => {
         return $scope.renameManagers;
     }
+
+    $scope.preventForbiddenChars = function($event) {
+        var char = $event.key;
+      
+        var forbiddenRegex = /[\/\\<>|]/;
+      
+        if (forbiddenRegex.test(char)) {
+          $event.preventDefault();
+        }
+      };
 }
