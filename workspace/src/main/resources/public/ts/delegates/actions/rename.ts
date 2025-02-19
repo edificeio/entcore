@@ -24,6 +24,7 @@ export interface RenameDelegateScope {
 
 export function ActionRenameDelegate($scope: RenameDelegateScope) {
     $scope.renameManagers=[];
+    const forbiddenRegex = /[\/\\<>|]/;
     /**
       * Rename Action
       */
@@ -87,6 +88,7 @@ export function ActionRenameDelegate($scope: RenameDelegateScope) {
         $scope.selectedItems().forEach(folder => {
             folder.selected = false;
         });
+        newName.trim().replace(forbiddenRegex, '');
         await workspaceService.rename(item, newName);
     }
 
@@ -96,8 +98,6 @@ export function ActionRenameDelegate($scope: RenameDelegateScope) {
 
     $scope.preventForbiddenChars = function($event) {
         var char = $event.key;
-      
-        var forbiddenRegex = /[\/\\<>|]/;
       
         if (forbiddenRegex.test(char)) {
           $event.preventDefault();
