@@ -99,8 +99,8 @@ public class Neo4jConversationService {
 		if(size > 0){
 			returnClause =
 				"RETURN " +
-				"[t IN targets WHERE t.quotaLeft IS NULL OR t.quotaLeft < {attachmentsSize} | t.users.displayName] as undelivered, " +
-				"[t IN targets WHERE t.quotaLeft IS NOT NULL AND t.quotaLeft >= {attachmentsSize} | t.users.id] as userTargets ";
+				"[t IN targets WHERE t.quotaLeft IS NULL | t.users.displayName] as undelivered, " +
+				"[t IN targets WHERE t.quotaLeft IS NOT NULL | t.users.id] as userTargets ";
 			params.put("attachmentsSize", size);
 		} else {
 			returnClause =
