@@ -70,7 +70,13 @@
                     <i18n>directory.admin.mobilePhone</i18n>
                     <span class="warning-color" ng-if="isUserCreateRequired(fields.Mobile)">*</span>
                 </span>
-                <input type="tel" ng-model="userCreate.form.mobile" class="vertical-spacing" ng-required="isUserCreateRequired(fields.Mobile)" />
+                <input 
+                    type="tel" 
+                    ng-model="userCreate.form.mobile"
+                    data-intl-phone-input
+                    class="vertical-spacing" 
+                    intl-format-number="userCreate.intlFormatNumber"
+                    ng-required="isUserCreateRequired(fields.Mobile)" />
             </div>
         </div>
         <div ng-if="isUserCreateSearchVisible()">

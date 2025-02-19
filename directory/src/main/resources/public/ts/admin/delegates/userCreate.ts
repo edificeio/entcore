@@ -37,6 +37,7 @@ export interface UserCreateDelegateScope extends EventDelegateScope {
         maxDate: Date,
         submitting: boolean,
         checkRelations: boolean
+        intlFormatNumber: () => string
     };
     classnameForDuplicateUser(user: User): string;
     onUserCreateBlur(field: UserCreateField): void;
@@ -86,7 +87,8 @@ export async function UserCreateDelegate($scope: UserCreateDelegateScope) {
         submitting: false,
         checkRelations: true,
         minDate: moment().add(-100, "year").toDate(),
-        maxDate: moment().toDate()
+        maxDate: moment().toDate(),
+        intlFormatNumber: undefined
     }
     // === Private methods
     const checkField = (field: UserCreateField, method: string) => {
@@ -136,7 +138,11 @@ export async function UserCreateDelegate($scope: UserCreateDelegateScope) {
         }
     }
     const createUserAndAttach = async () => {
-        const { firstName, lastName, birthDate, type, relatives, email, mobile } = $scope.userCreate.form;
+        const { firstName, lastName, birthDate, type, relatives, email } = $scope.userCreate.form;
+        let mobile = $scope.userCreate.form.mobile;
+        if ($scope.userCreate.intlFormatNumber) {
+            mobile = $scope.userCreate.intlFormatNumber();
+        }
         const res = await directoryService.saveUserForClass(classroom.id, {
             birthDate,
             lastName,
