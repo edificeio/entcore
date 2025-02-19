@@ -1646,8 +1646,6 @@ public class ConversationController extends BaseController {
 							return;
 						}
 
-						final long quotaLeft = j.getLong("quota", 0l) - j.getLong("storage", 0l);
-
 						//3 - get forwarded message attachments
 						conversationService.get(forwardedId, user, new Handler<Either<String,JsonObject>>() {
 							@Override
@@ -1669,12 +1667,6 @@ public class ConversationController extends BaseController {
 									attachmentsSize += attachment.getLong("size", 0l);
 								}
 								final long finalAttachmentsSize = attachmentsSize;
-
-								// if total attachment size > quota left, return 403
-								if(attachmentsSize > quotaLeft){
-									forbidden(request, "forward.failed.quota");
-									return;
-								}
 
 								//4 - forward attachments, add relationships between the message and the already existing attachments
 								conversationService.forwardAttachments(forwardedId, messageId, user, new Handler<Either<String,JsonObject>>() {
