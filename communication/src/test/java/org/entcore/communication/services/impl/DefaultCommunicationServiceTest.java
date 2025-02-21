@@ -42,7 +42,7 @@ public class DefaultCommunicationServiceTest {
 
     @Before
     public void prepare() {
-        this.service = new DefaultCommunicationService(new TimelineHelper(Vertx.vertx(), Vertx.vertx().eventBus(), new JsonObject()), new JsonArray());
+        this.service = new DefaultCommunicationService(Vertx.vertx(), new TimelineHelper(Vertx.vertx(), Vertx.vertx().eventBus(), new JsonObject()), new JsonObject());
         this.userNoAdmin = test.directory().generateUser("notused");
         this.userNoAdmin.setFunctions(new HashMap<String, UserInfos.Function>(0));
     }

@@ -484,30 +484,33 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 		final String emailTemplate = reset ? "email/resetPassword.html" : "email/changedPassword.html";
 		final String i18nKey = reset ? "email.password.reset.subject" : "email.password.change.subject";
 
-		processEmailTemplate(request, templateParams, emailTemplate, false, processedTemplate -> {
-			final String emailSubject = getProjectNameFromTimelineI18n(request)
-					+ I18n.getInstance().translate(i18nKey, getHost(request), I18n.acceptLanguage(request));
-
-			notification.sendEmail(
+		formatEmailSubject(request, i18nKey, templateParams).compose(subject -> {
+			Promise<String> promise = Promise.promise();
+			processEmailTemplate(request, templateParams, emailTemplate, false, processedTemplate -> {
+				notification.sendEmail(
 					request,
 					email,
 					null,
 					null,
-					emailSubject,
+					subject,
 					processedTemplate,
 					null,
 					false,
-					ar -> {
+					ar2 -> {
 						sendEmailAck.set(true);
-						if (ar.succeeded()) {
+						if (ar2.succeeded()) {
 							if (log.isDebugEnabled()) {
 								log.debug("Success sending changedPassword by email: " + login + "/" + email);
+								promise.complete("");
 							}
 						} else {
-							log.error("Error sending changedPassword by email: " + login + "/" + email, ar.cause());
+							log.error("Error sending changedPassword by email: " + login + "/" + email, ar2.cause());
+							promise.fail("Error sending changedPassword by email: " + login + "/" + email);
 						}
 					}
-			);
+				);
+			});
+			return promise.future();
 		});
 	}
 
@@ -525,32 +528,34 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 				.put("resetCode", resetCode)
 				.put("displayName", displayName);
 
-
-
-		notification.sendEmail(
-				request,
-				email,
-				config.getString("email", "noreply@one1d.fr"),
-				null,
-				null,
-				"mail.reset.pw.subject",
-				sendForgotPasswordEmailWithResetCode ? "email/forgotPasswordResetCode.html" : "email/forgotPassword.html",
-				json,
-				true,
-				handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
-					public void handle(Message<JsonObject> event) {
-						if(!ignoreSendResetPasswordMailError) {
-							if ("error".equals(event.body().getString("status"))) {
-								handler.handle(new Either.Left<String, JsonObject>(event.body().getString("message", "")));
-							} else {
-								handler.handle(new Either.Right<String, JsonObject>(event.body()));
+		formatEmailSubject(request, "email.password.reset.subject", new JsonObject()).compose(subject -> {
+			Promise<String> promise = Promise.promise();
+			notification.sendEmail(
+					request,
+					email,
+					config.getString("email", "noreply@one1d.fr"),
+					null,
+					null,
+					subject,
+					"email/forgotPassword.html",
+					json,
+					true,
+					handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+						public void handle(Message<JsonObject> event) {
+							if(!ignoreSendResetPasswordMailError) {
+								if ("error".equals(event.body().getString("status"))) {
+									handler.handle(new Either.Left<String, JsonObject>(event.body().getString("message", "")));
+								} else {
+									handler.handle(new Either.Right<String, JsonObject>(event.body()));
+								}
 							}
 						}
-					}
-				}));
-		if(ignoreSendResetPasswordMailError) {
-			handler.handle(new Either.Right<>(new ResultMessage().body()));
-		}
+					}));
+			if(ignoreSendResetPasswordMailError) {
+				handler.handle(new Either.Right<>(new ResultMessage().body()));
+			}
+			return promise.future();
+		});
 	}
 
 	@Override

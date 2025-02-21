@@ -1,4 +1,5 @@
-/* Copyright © "Open Digital Education", 2014
+/*
+ * Copyright © "Open Digital Education", 2014
  *
  * This program is published by "Open Digital Education".
  * You must indicate the name of the software and the company in any production /contribution
@@ -14,46 +15,37 @@
  * You should have received a copy of the GNU Affero General Public License along with the software.
  * If not, please see : <http://www.gnu.org/licenses/>. Full compliance requires reading the terms of this license and following its directives.
 
- *
  */
 
-package org.entcore.common.neo4j;
+package org.entcore.common.http.i18n;
 
+import java.util.Locale;
 
-import io.vertx.core.json.JsonArray;
+import fr.wseduc.webutils.I18n;
+import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 
-import java.util.Map;
-
-public class StatementsBuilder {
-
-	private final JsonArray statements;
-
-	public StatementsBuilder() {
-		this.statements = new fr.wseduc.webutils.collections.JsonArray();
-	}
-
-	public StatementsBuilder add(String query, JsonObject params) {
-		if (query != null && !query.trim().isEmpty()) {
-			JsonObject statement = new JsonObject().put("statement", query);
-			if (params != null) {
-				statement.put("parameters", params);
+/**
+ * Handle access to i18n of a module through vertx bus.
+ * Required when a module has dependencies on another module's translations.
+ * @deprecated when current (2024-09) i18n implementation will be refactored.
+ */
+public class I18nHandler implements Handler<Message<JsonObject>> {
+	@Override
+	public void handle(final Message<JsonObject> message) {
+		final JsonObject translations = new JsonObject();
+		I18nBusRequest request = I18nBusRequest.fromMessage(message.body());
+		if(request!=null && request.isValid()) {
+			final String domain = request.getDomain();
+			final String theme = request.getTheme();
+			final Locale locale = request.getLocale();
+			final String[] args = request.getArgs();
+			for( String key : request.getKeys()) {
+				translations.put(key, I18n.getInstance().translate(
+					key, domain, theme, locale, args));
 			}
-			statements.add(statement);
 		}
-		return this;
+		message.reply(translations);
 	}
-
-	public StatementsBuilder add(String query, Map<String, Object> params) {
-		return add(query, new JsonObject(params));
-	}
-
-	public StatementsBuilder add(String query) {
-		return add(query, (JsonObject) null);
-	}
-
-	public JsonArray build() {
-		return statements;
-	}
-
 }
