@@ -1,8 +1,8 @@
 import http from "axios";
-import { ng, idiom as lang, model, notify, skin } from 'entcore';
+import { idiom as lang, model, ng, notify, skin } from 'entcore';
 import { create } from 'sortablejs';
-import { App } from "./myapps.types";
 import { AppsService } from './myapps.service';
+import { App } from "./myapps.types";
 
 export interface AppControllerScope {
     lang: typeof lang;
@@ -29,7 +29,7 @@ export interface AppControllerScope {
     $apply: () => any;
 }
 
-export const appController = ng.controller('ApplicationController', ['$scope', ($scope: AppControllerScope) => {
+export const appController = ng.controller('ApplicationController', ['$scope', async ($scope: AppControllerScope) => {
     $scope.lang = lang;
     
     $scope.display = {
@@ -77,6 +77,135 @@ export const appController = ng.controller('ApplicationController', ['$scope', (
 	}
 
     $scope.themeAssetsPath = skin.getBootstrapAssetsPath();
+
+    const connectorsThreshold: number = await AppsService.getInstance().getConnectorsThresold();
+
+    const applicationList = await AppsService.getInstance().getApplicationsList();
+    const is1DTheme: boolean = await AppsService.getInstance().is1DTheme();
+    if (applicationList) {
+        let displayedApplications: Array<App> = applicationList.
+            filter(app => app.display).
+            sort((a, b) => lang.translate(a.displayName).toLowerCase() > lang.translate(b.displayName).toLowerCase()? 1: -1);
+
+        await AppsService.getInstance().syncUserPrefAppsWith(displayedApplications);
+
+        const connectors = displayedApplications.filter(app => app.isExternal);
+        if (connectors && connectors.length > connectorsThreshold) {
+            $scope.display.showConnectorSection = true;
+        }
+        
+        // model.me.myApps.applications will contain apps and connectors not bookmarked
+        if ($scope.display.showConnectorSection) {
+            // first apps then connectors
+            displayedApplications
+                .filter(app => AppsService.getInstance().isApplication(app, is1DTheme))
+                .forEach(app => AppsService.getInstance().pushToMyApps(app));
+            displayedApplications
+                .filter(app => AppsService.getInstance().isConnector(app, is1DTheme))
+                .forEach(app => AppsService.getInstance().pushToMyApps(app));
+        } else {
+            displayedApplications
+                .filter(app => !AppsService.getInstance().isBookmark(app, is1DTheme))
+                .forEach(app => AppsService.getInstance().pushToMyApps(app));
+        }
+        
+        // if user is switching from no connector section to connector section,
+        // and a connector is before an app in model.me.myApps.applications
+        // then reorder myApps to have apps first and then connectors
+        const applications = displayedApplications.filter(app => !app.isExternal);
+        if ($scope.display.showConnectorSection && AppsService.getInstance().isConnectorBeforeLastAppInMyApps(applications, connectors)) {
+            AppsService.getInstance().orderAppsFirstInMyApps(applications);
+            console.log("Reordering myApps to have apps first and then connectors");
+            await http.put('/userbook/preference/apps', model.me.myApps);
+        }
+
+        // lists for template
+        $scope.bookmarks = displayedApplications
+            .filter(app => AppsService.getInstance().isBookmark(app, is1DTheme))
+            .sort((a, b) => model.me.myApps.bookmarks.indexOf(a.name) > model.me.myApps.bookmarks.indexOf(b.name)? 1: -1);
+            
+        if ($scope.display.showConnectorSection) {
+            $scope.applications = displayedApplications
+                .filter(app => AppsService.getInstance().isApplication(app, is1DTheme))
+                .sort((a, b) => AppsService.getInstance().sortApp(a, b));
+            $scope.connectors = displayedApplications
+                .filter(app => AppsService.getInstance().isConnector(app, is1DTheme))
+                .sort((a, b) => AppsService.getInstance().sortApp(a, b));
+        } else {
+            $scope.applications = displayedApplications
+                .filter(app => !AppsService.getInstance().isBookmark(app, is1DTheme))
+                .sort((a, b) => AppsService.getInstance().sortApp(a, b));
+        }
+        
+        $scope.$apply();
+    }
+
+    // Elements for D&D list
+    const bookmarkedAppsElement: Element = document.getElementById('bookmarked-apps');
+    if (bookmarkedAppsElement) {
+        create(bookmarkedAppsElement, {
+            animation: 150,
+            ghostClass: 'blue-background-class',
+            delay: 150,
+            delayOnTouchOnly: true,
+            // Moving within bookmarks
+            onUpdate: function (evt) {
+                updateSort(evt.item.id, evt.oldIndex, evt.newIndex, "bookmarks");
+            }
+        });
+    }
+
+    const appsElement: Element = document.getElementById('apps');
+    if (appsElement) {
+        create(appsElement, {
+            animation: 150,
+            ghostClass: 'blue-background-class',
+            delay: 150,
+            delayOnTouchOnly: true,
+            // Moving within applications
+            onUpdate: function (evt) {
+                updateSort(evt.item.id, evt.oldIndex, evt.newIndex, "applications");
+            }
+        });
+    }
+
+    const connectorsElement: Element = document.getElementById('connectors');
+    if (connectorsElement) {
+        create(connectorsElement, {
+            animation: 150,
+            ghostClass: 'blue-background-class',
+            delay: 150,
+            delayOnTouchOnly: true,
+            // Moving within connectors
+            onUpdate: function (evt) {
+                if ($scope.display.showConnectorSection) {
+                    updateSortConnectorsSection(evt.item.id, evt.oldIndex, evt.newIndex);
+                } else {
+                    updateSort(evt.item.id, evt.oldIndex, evt.newIndex, "applications");
+                }
+            }
+        });
+    }
+
+    const updateSort = async (name: string, oldIndex: number, newIndex: number, collection: string) => {
+        model.me.myApps[collection].splice(oldIndex, 1);
+        model.me.myApps[collection].splice(newIndex, 0, name);
+        const app: App = $scope[collection].find((app: App) => app.name === name);
+        $scope[collection].splice(oldIndex, 1);
+        $scope[collection].splice(newIndex, 0, app);
+        await http.put('/userbook/preference/apps', model.me.myApps);
+        $scope.$apply();
+    };
+    
+    const updateSortConnectorsSection = async (name: string, oldIndex: number, newIndex: number) => {
+        model.me.myApps.applications.splice(oldIndex + $scope.applications.length, 1);
+        model.me.myApps.applications.splice(newIndex + $scope.applications.length, 0, name);
+        const app: App = $scope.connectors.find((app: App) => app.name === name);
+        $scope.connectors.splice(oldIndex, 1);
+        $scope.connectors.splice(newIndex, 0, app);
+        await http.put('/userbook/preference/apps', model.me.myApps);
+        $scope.$apply();
+    };
 
     $scope.searchDisplayName = (item: App): boolean => {
         return !$scope.display.searchText ||
@@ -149,155 +278,4 @@ export const appController = ng.controller('ApplicationController', ['$scope', (
         await http.put('/userbook/preference/apps', model.me.myApps);
         notify.info('apps.bookmarks.notify.remove', 1000);
     }
-
-    // Async checks and final rendering
-    (async () => {
-        try {
-            const [connectorsThreshold, applicationList, is1DTheme] = await Promise.all([
-                AppsService.getInstance().getConnectorsThresold(),
-                AppsService.getInstance().getApplicationsList(),
-                AppsService.getInstance().is1DTheme()
-            ]);
-            const {
-                isApplication,
-                isBookmark,
-                isConnector,
-                isConnectorBeforeLastAppInMyApps,
-                orderAppsFirstInMyApps,
-                pushToMyApps,
-                sortApp,
-                syncUserPrefAppsWith,
-                } = AppsService.getInstance();
-        
-            if (applicationList) {
-                const displayedApplications: Array<App> = applicationList.
-                    filter(app => app.display).
-                    sort((a, b) => lang.translate(a.displayName).toLowerCase() > lang.translate(b.displayName).toLowerCase()? 1: -1);
-        
-                await syncUserPrefAppsWith(displayedApplications);
-        
-                const connectors = displayedApplications.filter(app => app.isExternal);
-                if (connectors && connectors.length > connectorsThreshold) {
-                    $scope.display.showConnectorSection = true;
-                }
-                
-                // model.me.myApps.applications will contain apps and connectors not bookmarked
-                if ($scope.display.showConnectorSection) {
-                    // first apps then connectors
-                    displayedApplications
-                        .filter(app => isApplication(app, is1DTheme))
-                        .forEach(app => pushToMyApps(app));
-                    displayedApplications
-                        .filter(app => isConnector(app, is1DTheme))
-                        .forEach(app => pushToMyApps(app));
-                } else {
-                    displayedApplications
-                        .filter(app => !isBookmark(app, is1DTheme))
-                        .forEach(app => pushToMyApps(app));
-                }
-                
-                // if user is switching from no connector section to connector section,
-                // and a connector is before an app in model.me.myApps.applications
-                // then reorder myApps to have apps first and then connectors
-                const applications = displayedApplications.filter(app => !app.isExternal);
-                if ($scope.display.showConnectorSection && isConnectorBeforeLastAppInMyApps(applications, connectors)) {
-                    orderAppsFirstInMyApps(applications);
-                    await http.put('/userbook/preference/apps', model.me.myApps);
-                }
-        
-                // lists for template
-                $scope.bookmarks = displayedApplications
-                    .filter(app => isBookmark(app, is1DTheme))
-                    .sort((a, b) => model.me.myApps.bookmarks.indexOf(a.name) > model.me.myApps.bookmarks.indexOf(b.name)? 1: -1);
-                    
-                if ($scope.display.showConnectorSection) {
-                    $scope.applications = displayedApplications
-                        .filter(app => isApplication(app, is1DTheme))
-                        .sort((a, b) => sortApp(a, b));
-                    $scope.connectors = displayedApplications
-                        .filter(app => isConnector(app, is1DTheme))
-                        .sort((a, b) => sortApp(a, b));
-                } else {
-                    $scope.applications = displayedApplications
-                        .filter(app => !isBookmark(app, is1DTheme))
-                        .sort((a, b) => sortApp(a, b));
-                }
-            }
-        } catch {
-            $scope.bookmarks = [];
-            $scope.applications = [];
-            if ($scope.display.showConnectorSection)
-                $scope.connectors = [];
-        } finally {
-            $scope.$apply();
-        }
-    
-        // Elements for D&D list
-        const bookmarkedAppsElement: Element = document.getElementById('bookmarked-apps');
-        if (bookmarkedAppsElement) {
-            create(bookmarkedAppsElement, {
-                animation: 150,
-                ghostClass: 'blue-background-class',
-                delay: 150,
-                delayOnTouchOnly: true,
-                // Moving within bookmarks
-                onUpdate: function (evt) {
-                    updateSort(evt.item.id, evt.oldIndex, evt.newIndex, "bookmarks");
-                }
-            });
-        }
-
-        const appsElement: Element = document.getElementById('apps');
-        if (appsElement) {
-            create(appsElement, {
-                animation: 150,
-                ghostClass: 'blue-background-class',
-                delay: 150,
-                delayOnTouchOnly: true,
-                // Moving within applications
-                onUpdate: function (evt) {
-                    updateSort(evt.item.id, evt.oldIndex, evt.newIndex, "applications");
-                }
-            });
-        }
-
-        const connectorsElement: Element = document.getElementById('connectors');
-        if (connectorsElement) {
-            create(connectorsElement, {
-                animation: 150,
-                ghostClass: 'blue-background-class',
-                delay: 150,
-                delayOnTouchOnly: true,
-                // Moving within connectors
-                onUpdate: function (evt) {
-                    if ($scope.display.showConnectorSection) {
-                        updateSortConnectorsSection(evt.item.id, evt.oldIndex, evt.newIndex);
-                    } else {
-                        updateSort(evt.item.id, evt.oldIndex, evt.newIndex, "applications");
-                    }
-                }
-            });
-        }
-
-        const updateSort = async (name: string, oldIndex: number, newIndex: number, collection: string) => {
-            model.me.myApps[collection].splice(oldIndex, 1);
-            model.me.myApps[collection].splice(newIndex, 0, name);
-            const app: App = $scope[collection].find((app: App) => app.name === name);
-            $scope[collection].splice(oldIndex, 1);
-            $scope[collection].splice(newIndex, 0, app);
-            await http.put('/userbook/preference/apps', model.me.myApps);
-            $scope.$apply();
-        };
-        
-        const updateSortConnectorsSection = async (name: string, oldIndex: number, newIndex: number) => {
-            model.me.myApps.applications.splice(oldIndex + $scope.applications.length, 1);
-            model.me.myApps.applications.splice(newIndex + $scope.applications.length, 0, name);
-            const app: App = $scope.connectors.find((app: App) => app.name === name);
-            $scope.connectors.splice(oldIndex, 1);
-            $scope.connectors.splice(newIndex, 0, app);
-            await http.put('/userbook/preference/apps', model.me.myApps);
-            $scope.$apply();
-        };
-    })();
-
 }]);
