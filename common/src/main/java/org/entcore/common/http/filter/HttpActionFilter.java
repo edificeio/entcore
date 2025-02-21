@@ -22,16 +22,13 @@ package org.entcore.common.http.filter;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
-import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.*;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.http.response.DefaultPages;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientResponse;
-import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 
 import java.util.Set;
@@ -77,21 +74,24 @@ public class HttpActionFilter extends AbstractActionFilter {
 		final SecureHttpServerRequest sreq = (SecureHttpServerRequest) request;
 		if (isNotEmpty(sreq.getParam(QUERYPARAM_TOKEN))) {
 			String tokenParam = QUERYPARAM_TOKEN+"="+sreq.getParam(QUERYPARAM_TOKEN).trim();
-			httpClient.get("/auth/oauth2/userinfo?"+tokenParam, getResponseHandler(request, handler))
-					.putHeader("Accept", "application/json; version=2.1")
-					.end();
+			httpClient.request(HttpMethod.GET, "/auth/oauth2/userinfo?"+tokenParam)
+					.map(req -> req.putHeader("Accept", "application/json; version=2.1"))
+					.flatMap(HttpClientRequest::send)
+					.onSuccess(getResponseHandler(request, handler));
 		} else if (isNotEmpty(sreq.getAttribute("remote_user"))) {
-			httpClient.get("/auth/internal/userinfo", getResponseHandler(request, handler))
-					.putHeader("Authorization", request.headers().get("Authorization"))
-					.putHeader("Accept", "application/json; version=2.1")
-					.end();
+			httpClient.request(HttpMethod.GET, "/auth/internal/userinfo")
+					.map(req -> req.putHeader("Authorization", request.headers().get("Authorization"))
+							.putHeader("Accept", "application/json; version=2.1"))
+					.flatMap(HttpClientRequest::send)
+					.onSuccess(getResponseHandler(request, handler));
 		} else if (isNotEmpty(sreq.getAttribute("client_id"))) {
 			clientIsAuthorizedByScope(sreq, handler);
 		} else {
-			httpClient.get("/auth/oauth2/userinfo", getResponseHandler(request, handler))
-					.putHeader("Cookie", request.headers().get("Cookie"))
-					.putHeader("Accept", "application/json; version=2.1")
-					.end();
+			httpClient.request(HttpMethod.GET, "/auth/oauth2/userinfo")
+					.map(req -> req.putHeader("Cookie", request.headers().get("Cookie"))
+							.putHeader("Accept", "application/json; version=2.1"))
+					.flatMap(HttpClientRequest::send)
+					.onSuccess(getResponseHandler(request, handler));
 		}
 	}
 

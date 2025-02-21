@@ -46,7 +46,7 @@ public class ActionsUtils {
 				if (user != null) {
 					for (UserInfos.Action action : user.getAuthorizedActions()) {
 						if (bindings.containsKey(action.getName())) {
-							JsonArray b = new fr.wseduc.webutils.collections.JsonArray();
+							JsonArray b = new JsonArray();
 							for (Binding binding: bindings.get(action.getName())) {
 								b.add(new JsonObject()
 										.put("verb", binding.getMethod().name())
@@ -61,6 +61,14 @@ public class ActionsUtils {
 				Renders.renderJson(request, actions);
 			}
 		});
+	}
+
+	public static boolean userHasWorkflowAction(UserInfos user, String expectedAction) {
+		if (user != null && expectedAction != null) {
+			return user.getAuthorizedActions().stream()
+					.anyMatch(action -> expectedAction.equals(action.getName()));
+		}
+		return false;
 	}
 
 }

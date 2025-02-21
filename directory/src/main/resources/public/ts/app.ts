@@ -1,8 +1,9 @@
-import { routes, ng } from 'entcore';
-import { accountController } from './controllers/account';
+import { ng, routes } from 'entcore';
 import { classAdminController } from './admin/controller';
+import { accountController } from './controllers/account';
 import { directoryController } from './controllers/directory';
 import { adaptiveHeight } from './directives/adaptiveHeight';
+import { intlPhoneInputDirective } from './directives/intlPhoneInput';
 
 routes.define(function ($routeProvider) {
     if (window.location.href.indexOf('mon-compte') !== -1) {
@@ -50,3 +51,4 @@ ng.controllers.push(accountController);
 ng.controllers.push(classAdminController);
 ng.controllers.push(directoryController);
 ng.directives.push(adaptiveHeight);
+ng.directives.push(intlPhoneInputDirective);

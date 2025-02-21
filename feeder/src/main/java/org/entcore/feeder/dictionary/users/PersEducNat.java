@@ -19,22 +19,28 @@
 
 package org.entcore.feeder.dictionary.users;
 
-import org.entcore.common.neo4j.Neo4jUtils;
-import org.entcore.feeder.timetable.edt.EDTImporter;
-import org.entcore.feeder.utils.Report;
-import org.entcore.common.neo4j.TransactionHelper;
-import org.entcore.feeder.utils.Validator;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.neo4j.Neo4jUtils;
+import org.entcore.common.neo4j.TransactionHelper;
+import org.entcore.common.schema.structures.Structure;
+import org.entcore.common.schema.users.Personnel;
+import org.entcore.common.schema.users.Teacher;
+import org.entcore.common.schema.users.User;
+import org.entcore.common.schema.utils.matchers.IdentifierMatcher;
+import org.entcore.common.schema.utils.matchers.Matcher;
+import org.entcore.common.user.position.UserPosition;
+import org.entcore.common.user.position.impl.DefaultUserPositionService;
+import org.entcore.common.utils.ExternalId;
+import org.entcore.feeder.dictionary.structures.DefaultProfiles;
+import org.entcore.feeder.timetable.edt.EDTImporter;
+import org.entcore.feeder.utils.Report;
+import org.entcore.feeder.utils.Validator;
 
-import java.util.ArrayList;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
-
-import org.entcore.feeder.ManualFeeder;
 
 public class PersEducNat extends AbstractUser {
 
@@ -60,6 +66,13 @@ public class PersEducNat extends AbstractUser {
 			}
 			log.warn(error);
 		} else {
+
+			User user;
+			if(DefaultProfiles.TEACHER_PROFILE_EXTERNAL_ID.equals(profileExternalId))
+				user = new Teacher(new ExternalId<User>(object.getString("externalId")));
+			else
+				user = new Personnel(new ExternalId<User>(object.getString("externalId")));
+
 			if (nodeQueries) {
 				object.put("source", currentSource);
 				if (userImportedExternalId != null) {
@@ -101,6 +114,7 @@ public class PersEducNat extends AbstractUser {
 				transactionHelper.add(sb.toString(), params);
 				checkUpdateEmail(object);
 			}
+			linkPositionsToUser(object);
 			if (relationshipQueries) {
 				final String externalId = object.getString("externalId");
 				JsonArray structures = getMappingStructures(object.getJsonArray("structures"));
@@ -119,38 +133,21 @@ public class PersEducNat extends AbstractUser {
 					}
 					transactionHelper.add(query, p);
 				}
-				if (externalId != null && structuresByFunctions != null && structuresByFunctions.size() > 0) {
-					String query;
+				if (externalId != null && structuresByFunctions != null && structuresByFunctions.size() > 0)
+				{
 					structuresByFunctions = getMappingStructures(structuresByFunctions);
-					JsonObject p = new JsonObject().put("userExternalId", externalId);
-					if (structuresByFunctions.size() == 1) {
-						query = "MATCH (s:Structure {externalId : {structureAdmin}})<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile {externalId : {profileExternalId}}), " +
-								"(u:User { externalId : {userExternalId}}) " +
-								"WHERE NOT(HAS(u.mergedWith)) " +
-								"MERGE u-[:IN]->g";
-						p.put("structureAdmin", structuresByFunctions.getString(0))
-								.put("profileExternalId", profileExternalId);
-					} else {
-						query = "MATCH (s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
-								"(u:User { externalId : {userExternalId}}) " +
-								"WHERE s.externalId IN {structuresAdmin} AND NOT(HAS(u.mergedWith)) " +
-								"AND p.externalId = {profileExternalId} " +
-								"MERGE u-[:IN]->g ";
-						p.put("structuresAdmin", structuresByFunctions)
-								.put("profileExternalId", profileExternalId);
-					}
-					transactionHelper.add(query, p);
+					List<ExternalId<Structure>> structuresIds = new ArrayList<ExternalId<Structure>>(structuresByFunctions.size());
+					for(int i = structuresByFunctions.size(); i-- > 0;)
+						structuresIds.add(new ExternalId<Structure>(structuresByFunctions.getString(i)));
 
-					if (Boolean.FALSE.equals(isMultiEtab)) {
-						String qs =
-								"MATCH (u:User {externalId : {userExternalId}})-[r:IN]-(g:Group)-[:DEPENDS]->(s:Structure) " +
-										"WHERE NOT(s.externalId IN {structures}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
-										"DELETE r ";
+					user.attach(transactionHelper, structuresIds);
+					if (Boolean.FALSE.equals(isMultiEtab))
+					{
+						user.dettach(transactionHelper, new IdentifierMatcher<Structure>(Matcher.Operation.EXCLUDE, structuresIds));
 						JsonObject ps = new JsonObject()
 								.put("userExternalId", externalId)
 								.put("source", currentSource)
 								.put("structures", structuresByFunctions);
-						transactionHelper.add(qs, ps);
 						final String daa =
 								"MATCH (u:User {externalId : {userExternalId}})-[r:ADMINISTRATIVE_ATTACHMENT]->(s:Structure) " +
 										"WHERE NOT(s.externalId IN {structures}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
@@ -160,7 +157,7 @@ public class PersEducNat extends AbstractUser {
 
 				}
 				final JsonObject fosm = new JsonObject();
-				final JsonArray classes = new fr.wseduc.webutils.collections.JsonArray();
+				final JsonArray classes = new JsonArray();
 				final JsonObject fcm = new JsonObject();
 				if (externalId != null && linkClasses != null) {
 					for (String[] structClass : linkClasses) {
@@ -169,7 +166,7 @@ public class PersEducNat extends AbstractUser {
 							if (structClass.length > 2 && isNotEmpty(structClass[2])) {
 								JsonArray fClasses = fcm.getJsonArray(structClass[2]);
 								if (fClasses == null) {
-									fClasses = new fr.wseduc.webutils.collections.JsonArray();
+									fClasses = new JsonArray();
 									fcm.put(structClass[2], fClasses);
 								}
 								fClasses.add(structClass[1]);
@@ -203,7 +200,7 @@ public class PersEducNat extends AbstractUser {
 							"MATCH (u:User {externalId : {userExternalId}})-[r:TEACHES_FOS]->(f:FieldOfStudy) " +
 							"WHERE NOT(f.externalId IN {fos}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
 							"SET r.classes = null ";
-					transactionHelper.add(removeOldFoslc, p.copy().put("fos", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(fcm.fieldNames()))));
+					transactionHelper.add(removeOldFoslc, p.copy().put("fos", new JsonArray(new ArrayList<>(fcm.fieldNames()))));
 					for (String fos: fcm.fieldNames()) {
 						String q2 =
 								"MATCH (u:User {externalId : {userExternalId}}), (f:FieldOfStudy {externalId:{feId}}) " +
@@ -212,7 +209,7 @@ public class PersEducNat extends AbstractUser {
 						transactionHelper.add(q2, p.copy().put("classes", fcm.getJsonArray(fos)).put("feId", fos));
 					}
 				}
-				final JsonArray groups = new fr.wseduc.webutils.collections.JsonArray();
+				final JsonArray groups = new JsonArray();
 				final JsonObject fgm = new JsonObject();
 				if (externalId != null && linkGroups != null) {
 					for (String[] structGroup : linkGroups) {
@@ -221,7 +218,7 @@ public class PersEducNat extends AbstractUser {
 							if (structGroup.length > 2 && isNotEmpty(structGroup[2])) {
 								JsonArray fGroups = fgm.getJsonArray(structGroup[2]);
 								if (fGroups == null) {
-									fGroups = new fr.wseduc.webutils.collections.JsonArray();
+									fGroups = new JsonArray();
 									fgm.put(structGroup[2], fGroups);
 								}
 								fGroups.add(structGroup[1]);
@@ -259,12 +256,12 @@ public class PersEducNat extends AbstractUser {
 							"MATCH (u:User {externalId : {userExternalId}})-[r:TEACHES_FOS]->(f:FieldOfStudy) " +
 							"WHERE NOT(f.externalId IN {fos}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
 							"DELETE r";
-					transactionHelper.add(deleteOldFoslg, pdfg.copy().put("fos", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(fosm.fieldNames()))));
+					transactionHelper.add(deleteOldFoslg, pdfg.copy().put("fos", new JsonArray(new ArrayList<>(fosm.fieldNames()))));
 					final String removeOldFoslg =
 							"MATCH (u:User {externalId : {userExternalId}})-[r:TEACHES_FOS]->(f:FieldOfStudy) " +
 							"WHERE NOT(f.externalId IN {fos}) AND (NOT(HAS(r.source)) OR r.source = {source}) " +
 							"SET r.groups = null ";
-					transactionHelper.add(removeOldFoslg, pdfg.copy().put("fos", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(fgm.fieldNames()))));
+					transactionHelper.add(removeOldFoslg, pdfg.copy().put("fos", new JsonArray(new ArrayList<>(fgm.fieldNames()))));
 					for (String fos: fgm.fieldNames()) {
 						String q2 =
 								"MATCH (u:User {externalId : {userExternalId}}), (f:FieldOfStudy {externalId:{feId}}) " +
@@ -274,6 +271,20 @@ public class PersEducNat extends AbstractUser {
 					}
 				}
 			}
+		}
+	}
+
+	private void linkPositionsToUser(JsonObject user) {
+		JsonArray functions = user.getJsonArray("functions");
+		if (functions != null) {
+			functions.stream()
+					.filter(function -> function instanceof String)
+					.map(function -> (String) function)
+					// the source of the user position can either be aaf or csv here
+					.map(function -> UserPosition.getUserPositionFromEncodedFunction(function, null))
+					.filter(Optional::isPresent)
+					.map(Optional::get)
+					.forEach(userPosition -> DefaultUserPositionService.linkPositionToUser(userPosition, user.getString("externalId"), transactionHelper));
 		}
 	}
 

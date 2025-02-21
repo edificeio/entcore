@@ -1,5 +1,5 @@
 <section class="vertical-spacing-twice ng-scope flex-row f-column align-center">
-    <form class="eleven" name="createForm" novalidate ng-submit="submitUserCreate()">
+    <form class="eleven" name="createForm" novalidate ng-submit="submitUserCreateThenQuit()">
         <h2 class="top-spacing-four bottom-spacing-three">
             <i18n>directory.admin.create-user</i18n>
         </h2>
@@ -65,6 +65,19 @@
                 </span>
                 <input type="email" ng-model="userCreate.form.email" class="vertical-spacing" ng-required="isUserCreateRequired(fields.Mail)" />
             </div>
+            <div ng-if="isUserCreateMobilePhoneVisible()" class="flex-row f-column seven top-spacing-four">
+                <span class="bold">
+                    <i18n>directory.admin.mobilePhone</i18n>
+                    <span class="warning-color" ng-if="isUserCreateRequired(fields.Mobile)">*</span>
+                </span>
+                <input 
+                    type="tel" 
+                    ng-model="userCreate.form.mobile"
+                    data-intl-phone-input
+                    class="vertical-spacing" 
+                    intl-format-number="userCreate.intlFormatNumber"
+                    ng-required="isUserCreateRequired(fields.Mobile)" />
+            </div>
         </div>
         <div ng-if="isUserCreateSearchVisible()">
             <div class="flex-row f-column twelve top-spacing-four">
@@ -83,10 +96,10 @@
             </div>
         </div>
         <div class="twelve flex-row justify-end top-spacing-four">
-            <button class="left-spacing-twice" ng-click="submitUserCreate()" ng-disabled="!canUserCreateSubmit(createForm)">
+            <button class="left-spacing-twice" ng-click="submitUserCreateThenQuit()" ng-disabled="!canUserCreateSubmit(createForm)">
                 <i18n>classAdmin.create.submit</i18n>
             </button>
-            <button class="left-spacing-twice" ng-click="submitUserCreate(true)" ng-disabled="!canUserCreateSubmit(createForm)">
+            <button class="left-spacing-twice" ng-click="submitUserCreateThenAdd()" ng-disabled="!canUserCreateSubmit(createForm)">
                 <i18n>classAdmin.create.submit.thenadd</i18n>
             </button>
         </div>

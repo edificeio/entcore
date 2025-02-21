@@ -108,7 +108,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 				if (types.size() == 1) {
 					typesQuery.put("type", types.get(0));
 				} else {
-					JsonArray typesFilter = new fr.wseduc.webutils.collections.JsonArray();
+					JsonArray typesFilter = new JsonArray();
 					for (String t: types) {
 						typesFilter.add(new JsonObject().put("type", t));
 					}
@@ -117,9 +117,9 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 			}
 			// 1.c Restriction filter
 			if(restrictionFilter != null && restrictionFilter.size() > 0){
-				JsonArray nor = new fr.wseduc.webutils.collections.JsonArray();
+				JsonArray nor = new JsonArray();
 				for(String type : restrictionFilter.getMap().keySet()){
-					for(Object eventType : restrictionFilter.getJsonArray(type, new fr.wseduc.webutils.collections.JsonArray())){
+					for(Object eventType : restrictionFilter.getJsonArray(type, new JsonArray())){
 						nor.add(new JsonObject()
 								.put("type", type)
 								.put("event-type", eventType.toString()));
@@ -205,9 +205,9 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status"))) {
-					result.handle(event.body().getJsonArray("values", new fr.wseduc.webutils.collections.JsonArray()));
+					result.handle(event.body().getJsonArray("values", new JsonArray()));
 				} else {
-					result.handle(new fr.wseduc.webutils.collections.JsonArray());
+					result.handle(new JsonArray());
 				}
 			}
 		});
@@ -247,7 +247,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 	private void markEventsAsRead(Message<JsonObject> message, String recipient) {
 		JsonArray events = message.body().getJsonArray("results");
 		if (events != null && "ok".equals(message.body().getString("status"))) {
-			JsonArray ids = new fr.wseduc.webutils.collections.JsonArray();
+			JsonArray ids = new JsonArray();
 			for (Object o : events) {
 				if (!(o instanceof JsonObject)) continue;
 				JsonObject json = (JsonObject) o;
@@ -270,7 +270,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 				.put("sender", sender);
 
 		JsonObject objNew = new JsonObject().put("$set", new JsonObject()
-				.put("recipients", new fr.wseduc.webutils.collections.JsonArray())
+				.put("recipients", new JsonArray())
 				.put("deleted", 1));
 
 		mongo.update(timelineCollection, matcher, objNew, MongoDbResult.validActionResultHandler(result));
@@ -301,7 +301,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 		JsonObject objNew = new JsonObject()
 				.put("$addToSet", new JsonObject()
 						.put("reportedStructures", new JsonObject()
-								.put("$each", new fr.wseduc.webutils.collections.JsonArray(user.getStructures())))
+								.put("$each", new JsonArray(user.getStructures())))
 						.put("reporters", new JsonObject()
 								.put("userId", user.getUserId())
 								.put("firstName", user.getFirstName())
@@ -351,7 +351,7 @@ public class DefaultTimelineEventStore implements TimelineEventStore {
 		JsonObject objNew = new JsonObject().put("$set", objSet);
 
 		if(action == AdminAction.DELETE) {
-			objSet.put("recipients", new fr.wseduc.webutils.collections.JsonArray());
+			objSet.put("recipients", new JsonArray());
 		}
 
 		mongo.update(timelineCollection, criteria, objNew, MongoDbResult.validActionResultHandler(result));

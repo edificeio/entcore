@@ -62,7 +62,7 @@ public class Zip {
 				.put("zipFile", zipPath)
 				.put("deletePath", deletePath)
 				.put("level", level);
-		eb.send(address, j, new DeliveryOptions().setSendTimeout(900000l), handlerToAsyncHandler(handler));
+		eb.request(address, j, new DeliveryOptions().setSendTimeout(900000l), handlerToAsyncHandler(handler));
 	}
 
 }

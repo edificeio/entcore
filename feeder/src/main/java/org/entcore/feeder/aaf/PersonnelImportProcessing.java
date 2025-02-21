@@ -19,18 +19,22 @@
 
 package org.entcore.feeder.aaf;
 
-import static org.entcore.feeder.dictionary.structures.DefaultProfiles.*;
-import org.entcore.feeder.dictionary.structures.ImporterStructure;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.position.UserPosition;
+import org.entcore.common.user.position.UserPositionSource;
+import org.entcore.feeder.dictionary.structures.ImporterStructure;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
-import java.util.Arrays;
+import java.util.Optional;
+
+import static org.entcore.feeder.dictionary.structures.DefaultProfiles.PERSONNEL_PROFILE_EXTERNAL_ID;
+import static org.entcore.feeder.dictionary.structures.DefaultProfiles.TEACHER_PROFILE_EXTERNAL_ID;
 
 public class PersonnelImportProcessing extends BaseImportProcessing {
 
@@ -59,13 +63,14 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 	public void process(JsonObject object) {
 		List<String> c = object.getJsonArray("classes") != null ? object.getJsonArray("classes").getList() : new LinkedList<>();
 		createGroups(object.getJsonArray("groups"), c, null);
-		createClasses(new fr.wseduc.webutils.collections.JsonArray(c));
+		createClasses(new JsonArray(c));
 		createFunctionGroups(object.getJsonArray("functions"), null);
+		cleanAndCreatePositions(object.getJsonArray("structures"), object.getJsonArray("functions"), object.getString("externalId"));
 		createHeadTeacherGroups(object.getJsonArray("headTeacher"), null);
 		createDirectionGroups(object.getJsonArray("direction"), null);
 		linkMef(object.getJsonArray("modules"));
 		String profile = detectProfile(object);
-		object.put("profiles", new fr.wseduc.webutils.collections.JsonArray()
+		object.put("profiles", new JsonArray()
 				.add((TEACHER_PROFILE_EXTERNAL_ID.equals(profile) ? "Teacher" : "Personnel")));
 		String email = object.getString("email");
 		if (email != null && !email.trim().isEmpty()) {
@@ -158,6 +163,38 @@ public class PersonnelImportProcessing extends BaseImportProcessing {
 			}
 		}
 		return linkStructureClasses;
+	}
+
+	protected void cleanAndCreatePositions(JsonArray structureExternalIds, JsonArray functions, String userExternalId) {
+		// clean user's positions
+		if (structureExternalIds != null) {
+			structureExternalIds.stream()
+					.filter(structureId -> structureId instanceof String)
+					.map(structureId -> (String) structureId)
+					.forEach(structureExternalId -> {
+						ImporterStructure structure = importer.getStructure(structureExternalId);
+						if(structure != null) {
+							structure.detachUserFromItsPositions(userExternalId, UserPositionSource.AAF);
+						}
+					});
+		}
+		// create positions
+		if (functions != null) {
+			functions.stream()
+					.filter(function -> function instanceof String)
+					.map(function -> (String) function)
+					.forEach(function -> {
+						Optional<UserPosition> userPosition = UserPosition.getUserPositionFromEncodedFunction(function, UserPositionSource.AAF);
+						if (userPosition.isPresent()) {
+							ImporterStructure structure = importer.getStructure(userPosition.get().getStructureId());
+
+							if(structure != null) {
+								structure.createPosition(userPosition.get());
+							}
+
+						}
+					});
+		}
 	}
 
 	protected void createFunctionGroups(JsonArray functions, List<String[]> linkStructureGroups) {
