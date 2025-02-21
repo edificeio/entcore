@@ -12,33 +12,40 @@ export function MessageHeader({ message }: MessageHeaderProps) {
   const { fromNow } = useDate();
   const { getAvatarURL, getUserbookURL } = useDirectory();
 
+  const { subject, from, date, to, cc, cci } = message;
+  const hasCC = cc.users.length > 0 || cc.groups.length > 0;
+  const hasCCI = cci && (cci.users.length > 0 || cci.groups.length > 0);
+
   return (
     <>
       {message && (
         <>
-          <h4>{message?.subject}</h4>
+          <h4>{subject}</h4>
           <div className="d-flex align-items-center mt-16 gap-12">
             <Avatar
               alt={t('author.avatar')}
               size="sm"
-              src={getAvatarURL(message.from.id, 'user')}
+              src={getAvatarURL(from.id, 'user')}
               variant="circle"
               className='align-self-start mt-4'
             />
             <div className="d-flex flex-fill flex-column overflow-hidden">
               <div className="d-flex flex-wrap column-gap-8">
                 <a
-                  href={getUserbookURL(message.from.id, 'user')}
+                  href={getUserbookURL(from.id, 'user')}
                   className="fw-600"
                 >
-                  {message.from.displayName}
+                  {from.displayName}
                 </a>
-                <em className="text-gray-700">{fromNow(message.date)}</em>
+                <em className="text-gray-700">{fromNow(date)}</em>
               </div>
-              <div className="text-gray-700 text-truncate">
-                <strong className='text-uppercase'>{t("at")} : </strong>
-                <MessageRecipientList recipients={message.to} />
-              </div>
+              <MessageRecipientList label={t("at")} recipients={to} />
+              {hasCC && (
+                <MessageRecipientList label={t("cc")} recipients={cc} />
+              )}
+              {hasCCI && (
+                <MessageRecipientList label={t("cci")} recipients={cci} />
+              )}
             </div>
           </div>
         </>
