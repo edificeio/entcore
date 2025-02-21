@@ -17,14 +17,19 @@ export function MessageRecipientList({
   const { user } = useEdificeClient();
   const { t } = useI18n();
 
+
   return (
     <div className="text-gray-700 text-truncate">
-      <strong className='text-uppercase'>{label} : </strong>
+      <strong className='text-uppercase'>{label}</strong>
       {recipientArray.map((recipient, index) => {
+
+        const url = getUserbookURL(recipient.id, 'size' in recipient ? 'group' : 'user')
+
         const link = <a
-          href={getUserbookURL(recipient.id, 'user')}
+          href={url}
           className="text-gray-700"
           target='_blank'
+          rel="noopener noreferrer nofollow"
         >
           {user?.userId === recipient.id ? t('me') : recipient.displayName}
         </a>
