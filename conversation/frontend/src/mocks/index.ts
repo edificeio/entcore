@@ -209,11 +209,19 @@ export const mockFullMessage: Message = {
     ],
   },
   cc: {
-    users: [],
+    users: [{
+      displayName: "CARPENTIER Béatrice",
+      id: "c0824335-ab0e-41fb-9ed3-d5c28a93087d",
+      profile: "Relative"
+    }],
     groups: [],
   },
   cci: {
-    users: [],
+    users: [{
+      displayName: "Alban Kerloc'h",
+      id: "412d7ea2-1478-436a-ac33-2b088cb58bfe",
+      profile: "Personnel"
+    }],
     groups: [],
   },
   body: 'Bonjour, à propos du prochain voyage...',
