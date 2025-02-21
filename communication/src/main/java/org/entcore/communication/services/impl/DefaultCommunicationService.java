@@ -1586,10 +1586,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				.map(user -> (JsonObject) user)
 				.forEach(user -> {
 					user.remove("structureName");
-					user.put("name", null)
-							.put("groupType", new JsonArray().add("Visible").add("User"))
-							.put("children", new JsonArray())
-							.put("relatives", new JsonArray());
+					user.put("name", null).put("groupType", new JsonArray().add("Visible").add("User"));
 				});
 		return users;
 	}
@@ -1599,11 +1596,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				.map(group -> (JsonObject) group)
 				.forEach(group -> {
 					group.remove("structureName");
-					group.put("groupType", new JsonArray().add("Visible").add("Group").add("ProfileGroup"))
-							.put("groupProfile", group.remove("profile"))
-							.put("children", new JsonArray())
-							.put("relatives", new JsonArray())
-							.put("nbUsers", null);
+					group.put("groupType", new JsonArray().add("Visible").add("Group").add("ProfileGroup")).put("groupProfile", group.remove("profile"));
 				});
 		return groups;
 	}
