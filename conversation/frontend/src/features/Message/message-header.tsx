@@ -1,7 +1,7 @@
 import { Avatar, useDate, useDirectory } from '@edifice.io/react';
-import { Fragment } from 'react/jsx-runtime';
 import { useI18n } from '~/hooks';
-import { Message, Recipients } from '~/models';
+import { Message } from '~/models';
+import { MessageRecipientList } from './message-recipient-list';
 
 export interface MessageHeaderProps {
   message: Message;
@@ -25,54 +25,24 @@ export function MessageHeader({ message }: MessageHeaderProps) {
               variant="circle"
               className='align-self-start mt-4'
             />
-            <div className="d-flex flex-fill flex-column align-items-start">
-              <div className="d-flex gap-8">
+            <div className="d-flex flex-fill flex-column overflow-hidden">
+              <div className="d-flex flex-wrap column-gap-8">
                 <a
                   href={getUserbookURL(message.from.id, 'user')}
                   className="fw-600"
                 >
                   {message.from.displayName}
                 </a>
-                <div className="text-gray-700">
-                  <em>{fromNow(message.date)}</em>
-                </div>
+                <em className="text-gray-700">{fromNow(message.date)}</em>
               </div>
-              <p className="text-gray-700">
-                <strong className='text-uppercase r-4'>{t("at")} : </strong>
-                <RecipientList recipients={message.to} />
-              </p>
+              <div className="text-gray-700 text-truncate">
+                <strong className='text-uppercase'>{t("at")} : </strong>
+                <MessageRecipientList recipients={message.to} />
+              </div>
             </div>
           </div>
         </>
       )}
     </>
   );
-}
-
-
-function RecipientList({ recipients }: { recipients: Recipients }) {
-  const recipientArray = [...recipients.users, ...recipients.groups]
-  const { getUserbookURL } = useDirectory();
-
-  return (
-    <>
-      {recipientArray.map((recipient, index) => {
-        const link = <a
-          href={getUserbookURL(recipient.id, 'user')}
-          className="text-gray-700"
-        >
-          {recipient.displayName}
-        </a>
-
-        const isLast = index === recipientArray.length - 1;
-        return (
-          <Fragment key={recipient.id}>
-            {link}
-            {!isLast && ', '}
-          </Fragment>
-        );
-      })}
-    </>
-  )
-
 }
