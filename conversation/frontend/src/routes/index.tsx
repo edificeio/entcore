@@ -44,7 +44,6 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
               {
                 path: 'message/:messageId',
                 async lazy() {
-                  console.log('messageId');
                   const { Component, loader } = await import(
                     '~/routes/pages/message-display'
                   );
