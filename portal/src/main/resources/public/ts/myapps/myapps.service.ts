@@ -1,6 +1,6 @@
+import http from "axios";
 import { model, ui } from "entcore";
 import { App } from "./myapps.types";
-import http from "axios";
 
 export interface UserAppsPreferenceResponse {
     preference: string;
@@ -53,12 +53,12 @@ export class AppsService {
         // WB-3745, do not overwrite preferences when applications list is obviously defective.
         if(!applicationsListFromAPI || applicationsListFromAPI.length < 1)
             return;
-
+        
         const userAppsPrefResponse = await http.get('/userbook/preference/apps');
         if (userAppsPrefResponse.data && userAppsPrefResponse.data.preference) {
             const originalPrefs: UserAppsPreference = JSON.parse(userAppsPrefResponse.data.preference);
             const userPrefs: UserAppsPreference = JSON.parse(userAppsPrefResponse.data.preference);
-
+            
             // remove duplicates bookmarks
             userPrefs.bookmarks = Array.from(new Set<string>(userPrefs.bookmarks));
             // remove duplicates apps
@@ -72,7 +72,7 @@ export class AppsService {
                 }
             });
             if(missingBookmarks.length > 0) {
-                userPrefs.bookmarks = userPrefs.bookmarks.filter(b => !missingBookmarks.find(m => m === b));
+            userPrefs.bookmarks = userPrefs.bookmarks.filter(b => !missingBookmarks.find(m => m === b));
                 // sync model.me.myApps lists too
                 model.me.myApps.bookmarks = model.me.myApps.bookmarks.filter(b => !missingBookmarks.find(m => m === b));
             }
@@ -85,15 +85,15 @@ export class AppsService {
                 }
             });
             if(missingApps.length > 0) {
-                userPrefs.applications = userPrefs.applications.filter(b => !missingApps.find(m => m === b));
+            userPrefs.applications = userPrefs.applications.filter(b => !missingApps.find(m => m === b));
                 // sync model.me.myApps lists too
                 model.me.myApps.applications = model.me.myApps.applications.filter(a => !missingApps.find(m => m === a));
             }
 
             // Sync any change.
-            if(userPrefs.bookmarks.length !== originalPrefs.bookmarks.length
+            if ((userPrefs.bookmarks || []).length !== (originalPrefs.bookmarks || []).length
                 || 
-               userPrefs.applications.length !== originalPrefs.applications.length
+                (userPrefs.applications || []).length !== (originalPrefs.applications || []).length
             ) {
                 await http.put('/userbook/preference/apps', userPrefs);
             }
@@ -147,7 +147,9 @@ export class AppsService {
     }
 
     pushToMyApps(app: App) {
-        if (model.me.myApps.applications.indexOf(app.name) == -1) {
+        if (!model.me.myApps.applications) {
+            model.me.myApps.applications = [app.name];
+        } else if (model.me.myApps.applications.indexOf(app.name) == -1) {
             model.me.myApps.applications.push(app.name);
         }
     }
