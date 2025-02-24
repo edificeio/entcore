@@ -373,7 +373,7 @@ public class DefaultUserPositionService implements UserPositionService {
 		if (adminInfos.isADMC()) {
 			query.append("MATCH (s:Structure) RETURN COLLECT(distinct s.id) as ids");
 		} else if (adminInfos.isADML()) {
-			query.append("MATCH (:User {id:{adminId}})-[rf:HAS_FUNCTION]->(:Function {externalId:\"ADMIN_LOCAL\"}) RETURN COALESCE(rf.scope,[]) as ids");
+			query.append("MATCH (:User {id:{adminId}})-[rf:HAS_FUNCTION]->(:Function {externalId:\"ADMIN_LOCAL\"}) WITH DISTINCT rf.scope AS scope RETURN COALESCE(scope,[]) as ids");
 			params.put("adminId", adminInfos.getUserId());
 		} else {
 			promise.complete(new HashSet<>());

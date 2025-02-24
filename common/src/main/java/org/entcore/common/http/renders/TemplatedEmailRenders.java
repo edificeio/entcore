@@ -41,6 +41,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.entcore.common.utils.I18nUtils;
+
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
@@ -63,24 +65,31 @@ public abstract class TemplatedEmailRenders extends Renders {
         boolean reader, 
         final Handler<String> handler
         ) {
-        // From now until the end of the template processing, code execution cannot be async.
-        // So initialize requestedThemeKV here and now.
-        loadThemeKVs(request)
-        .onSuccess( themeKV -> {
-            this.requestThemeKV = themeKV;
-            if(reader){
-                final StringReader templateReader = new StringReader(template);
-                processTemplate(request, parameters, "", templateReader, new Handler<Writer>() {
-                    public void handle(Writer writer) {
-                        handler.handle(writer.toString());
-                    }
-                });
-    
-            } else {
-                processTemplate(request, template, parameters, handler);
-            }
-        });
+		processEmailTemplate(request, parameters, template, reader).onSuccess(handler);
     }
+
+	protected Future<String> processEmailTemplate(
+			final HttpServerRequest request,
+			JsonObject parameters,
+			String template,
+			boolean reader
+	) {
+		Promise<String> promise = Promise.promise();
+		// From now until the end of the template processing, code execution cannot be async.
+		// So initialize requestedThemeKV here and now.
+		loadThemeKVs(request)
+				.onSuccess( themeKV -> {
+					this.requestThemeKV = themeKV;
+					if(reader){
+						final StringReader templateReader = new StringReader(template);
+						processTemplate(request, parameters, "", templateReader, writer -> promise.complete(writer.toString()));
+
+					} else {
+						processTemplate(request, template, parameters, promise::complete);
+					}
+				}).onFailure(promise::fail);
+		return promise.future();
+	}
 
 	/** Find the theme associated to the request. */
 	protected Future<String> getThemePath(HttpServerRequest request) {
@@ -144,10 +153,10 @@ public abstract class TemplatedEmailRenders extends Renders {
 	}
 
 	/** Load Timeline i18n to retrieve PF/Project name and add it to custom email subject. */
-	protected String getProjectNameFromTimelineI18n(final HttpServerRequest request) {
-		final JsonObject timelineI18n = (requestThemeKV == null ? getThemeDefaults() : requestThemeKV)
-				.getOrDefault(I18n.acceptLanguage(request).split(",")[0].split("-")[0], new JsonObject());
-		return timelineI18n.getString("timeline.immediate.mail.subject.header", "");
+	protected Future<String> getProjectNameFromTimelineI18n(final HttpServerRequest request) {
+		final String[] keys = {"timeline.mail.projectName"};
+		return I18nUtils.getI18nOfModule(vertx, request, "timeline", keys, null)
+			.map(i18n->i18n.getString(keys[0]));
 	}
 
 	/** Load and parse i18n files. */
@@ -221,5 +230,19 @@ public abstract class TemplatedEmailRenders extends Renders {
 		});
 
 		this.templateProcessor.setLambda("host", hostLambda);
+	}
+
+	/**
+	 * Generate email subject by loading Timeline i18n to retrieve PF/Project name and add it to custom email subject.
+	 * @param request to get host, language, ...
+	 * @param i18nKey key for email subject
+	 * @return subject
+	 */
+	protected Future<String> formatEmailSubject(HttpServerRequest request, String i18nKey, JsonObject parameters) {
+		return getProjectNameFromTimelineI18n(request).compose( projectName -> {
+			parameters.put("projectName", projectName);
+			final String initialValue = I18n.getInstance().translate(i18nKey, getHost(request), I18n.acceptLanguage(request));
+			return processEmailTemplate(request, parameters, initialValue, true);
+		});
 	}
 }

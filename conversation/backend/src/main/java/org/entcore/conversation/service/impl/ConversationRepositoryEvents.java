@@ -388,16 +388,16 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 			if (!(o instanceof JsonObject)) continue;
 			JsonObject group = (JsonObject) o;
 
-			JsonArray params = new JsonArray();
+			JsonArray params = new fr.wseduc.webutils.collections.JsonArray();
 
 			params.add(group.getString("group", ""));
-			params.add(new JsonArray().add(group.getString("groupName", "")).toString());
+			params.add(new fr.wseduc.webutils.collections.JsonArray().add(group.getString("groupName", "")).toString());
 			params.add(group.getString("group", ""));
 			params.add(group.getString("groupName", ""));
 			params.add(group.getString("group", ""));
 			params.add(group.getString("groupName", ""));
 			params.add(group.getString("groupName", ""));
-			params.add(new JsonArray().add(group.getString("group", "")).toString());
+			params.add(new fr.wseduc.webutils.collections.JsonArray().add(group.getString("group", "")).toString());
 
 			builder.prepared(setTO, params);
 			builder.prepared(setCC, params);
@@ -413,7 +413,7 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 
 	@Override
 	public void deleteUsers(JsonArray users) {
-		JsonArray userIds = new JsonArray();
+		JsonArray userIds = new fr.wseduc.webutils.collections.JsonArray();
 
 		if(users == null)
 			return;
@@ -471,14 +471,14 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 		for (Object o : users) {
 			if (!(o instanceof JsonObject)) continue;
 			JsonObject user = (JsonObject) o;
-			JsonArray paramsToCc = new JsonArray();
-			JsonArray paramsFrom = new JsonArray();
+			JsonArray paramsToCc = new fr.wseduc.webutils.collections.JsonArray();
+			JsonArray paramsFrom = new fr.wseduc.webutils.collections.JsonArray();
 
 			paramsToCc.add(user.getString("id", ""));
-			paramsToCc.add(new JsonArray().add(user.getString("displayName", "")).toString());
+			paramsToCc.add(new fr.wseduc.webutils.collections.JsonArray().add(user.getString("displayName", "")).toString());
 			paramsToCc.add(user.getString("id", ""));
 			paramsToCc.add(user.getString("displayName", ""));
-			paramsToCc.add(new JsonArray().add(user.getString("id", "")).toString());
+			paramsToCc.add(new fr.wseduc.webutils.collections.JsonArray().add(user.getString("id", "")).toString());
 
 			paramsFrom.add(user.getString("displayName", ""));
 			paramsFrom.add(user.getString("id", ""));

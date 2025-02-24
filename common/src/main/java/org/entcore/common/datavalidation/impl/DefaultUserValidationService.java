@@ -137,23 +137,27 @@ public class DefaultUserValidationService implements UserValidationService {
 
         @Override
         public Future<String> sendValidationMessage( final HttpServerRequest request, String email, JsonObject templateParams, final String module) {
-            Promise<String> promise = Promise.promise();
+            Future<String> future;
             if (templateParams == null || StringUtils.isEmpty(templateParams.getString("code"))) {
-                promise.fail("Invalid parameters.");
+                future = Future.failedFuture("Invalid parameters.");
+            } else {
+                future = formatEmailSubject(request,"email.validation.subject", templateParams)
+                        .compose(subject -> sendEmail(request, email, subject, "email/emailValidationCode.html", templateParams)
+                        );
             }
-
-            final String subject = formatEmailSubject(request,"email.validation.subject");
-            return sendEmail(request, email, subject, "email/emailValidationCode.html", templateParams);
+            return future;
         }
 
         @Override
         public Future<String> sendWarningMessage(HttpServerRequest request, Map<String, String> targets, JsonObject templateParams) {
-            Promise<String> promise = Promise.promise();
-            if (!StringUtils.isEmpty(targets.get("email"))) {
-                final String subject = formatEmailSubject(request, "email.update.warning.subject");
-                return sendEmail(request, targets.get("email"), subject, "email/emailUpdateWarning.html", templateParams);
+            Future<String> future;
+            if (StringUtils.isEmpty(targets.get("email"))){
+                future = Future.failedFuture("Email not provided.");
+            } else {
+                future = formatEmailSubject(request, "email.update.warning.subject", templateParams)
+                        .compose(subject -> sendEmail(request, targets.get("email"), subject, "email/emailUpdateWarning.html", templateParams));
             }
-            return promise.future();
+            return future;
         }
 
         private Future<String> sendEmail(HttpServerRequest request, String to, String subject, String templateName, JsonObject templateParams) {
@@ -189,21 +193,6 @@ public class DefaultUserValidationService implements UserValidationService {
                 });
             }
             return promise.future();
-        }
-
-        /**
-         * Generate email subject by loading Timeline i18n to retrieve PF/Project name and add it to custom email subject.
-         * @param request to get host, language, ...
-         * @param i18nKey key for email subject
-         * @return subject
-         */
-        private String formatEmailSubject(HttpServerRequest request, String i18nKey) {
-            final JsonObject timelineI18n = (requestThemeKV == null ? getThemeDefaults() : requestThemeKV).getOrDefault(
-                    I18n.acceptLanguage(request).split(",")[0].split("-")[0],
-                    new JsonObject()
-            );
-            return timelineI18n.getString("timeline.immediate.mail.subject.header", "") +
-                    I18n.getInstance().translate(i18nKey, getHost(request), I18n.acceptLanguage(request));
         }
 
     }
