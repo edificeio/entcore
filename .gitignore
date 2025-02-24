@@ -91,3 +91,4 @@ admin/src/main/ts/.proxyRemoteConfig.js
 .env
 dependency-reduced-pom.xml
 .flattened-pom.xml
+.version.properties
