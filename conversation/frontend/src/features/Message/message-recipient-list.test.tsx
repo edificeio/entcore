@@ -27,11 +27,14 @@ describe('Message recipient list', () => {
     vi.clearAllMocks();
   });
 
-  it('should render a label successfully', async () => {
-    const label = "To :"
-    const { baseElement } = render(<MessageRecipientList label={label} recipients={mockRecipients} />);
+  it('should render successfully', async () => {
+    const { baseElement } = render(<MessageRecipientList label={"To :"} recipients={mockRecipients} />);
     expect(baseElement).toBeTruthy();
+  });
 
+  it('should render a label ', async () => {
+    const label = "To :"
+    render(<MessageRecipientList label={label} recipients={mockRecipients} />);
     const recipientsLabel = await screen.findByText(label);
     expect(recipientsLabel).toBeInTheDocument();
   });
@@ -43,12 +46,25 @@ describe('Message recipient list', () => {
   });
 
   it('should open the userbook in a new tab when clicking on a user', async () => {
-    const displayName = "GUEDON Aliénor"
     render(<MessageRecipientList label={"To"} recipients={mockRecipients} />);
-    const link = screen.getByRole("link", { name: displayName });
-    expect(link).toHaveAttribute("target", "_blank");
 
-    // TODO check the link is the userbook url
+    const displayNameUser = "GUEDON Aliénor"
+    const linkUser = screen.getByRole("link", { name: displayNameUser });
+    const linkUserUrl = linkUser.getAttribute("href");
+
+    expect(linkUserUrl).toContain("/userbook/annuaire");
+    expect(linkUser).toHaveAttribute("target", "_blank");
+  });
+
+  it('should open the userbook in a new tab when clicking on a group', async () => {
+    render(<MessageRecipientList label={"To"} recipients={mockRecipients} />);
+
+    const displayNameGroup = "Enseignants du groupe scolaire."
+    const linkGroup = screen.getByRole("link", { name: displayNameGroup });
+    const linkGroupUrl = linkGroup.getAttribute("href");
+
+    expect(linkGroupUrl).toContain("/userbook/annuaire#/group-view");
+    expect(linkGroup).toHaveAttribute("target", "_blank");
   });
 
 
