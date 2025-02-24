@@ -20,7 +20,7 @@ export function MessageRecipientList({
 
   return (
     <div className="text-gray-700 text-truncate">
-      <strong className='text-uppercase'>{label}</strong>
+      <strong className='text-uppercase me-4'>{label}</strong>
       {recipientArray.map((recipient, index) => {
 
         const url = getUserbookURL(recipient.id, 'size' in recipient ? 'group' : 'user')
