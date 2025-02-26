@@ -22,8 +22,8 @@ export function MessageRecipientList({
     <div className="text-gray-700 text-truncate">
       <strong className='text-uppercase me-4'>{label}</strong>
       {recipientArray.map((recipient, index) => {
-
-        const url = getUserbookURL(recipient.id, 'size' in recipient ? 'group' : 'user')
+        const type = index < recipients.users.length ? 'user' : 'group';
+        const url = getUserbookURL(recipient.id, type)
 
         const link = <a
           href={url}

@@ -3,10 +3,7 @@ import { render, screen } from '~/mocks/setup';
 import { MessageRecipientList } from './message-recipient-list';
 
 const mockRecipients = mockFullMessage.to;
-
-vi.mock("@edifice.io/react", () => ({
-  useEdificeClient: vi.fn(),
-}));
+const RecipientListlabel = "To :"
 
 vi.mock('@edifice.io/react', async () => {
   const actual =
@@ -23,30 +20,27 @@ vi.mock('@edifice.io/react', async () => {
 
 
 describe('Message recipient list', () => {
+
+  beforeEach(() => {
+    render(<MessageRecipientList label={RecipientListlabel} recipients={mockRecipients} />);
+  });
+
   afterEach(() => {
     vi.clearAllMocks();
   });
 
-  it('should render successfully', async () => {
-    const { baseElement } = render(<MessageRecipientList label={"To :"} recipients={mockRecipients} />);
-    expect(baseElement).toBeTruthy();
-  });
-
   it('should render a label ', async () => {
-    const label = "To :"
-    render(<MessageRecipientList label={label} recipients={mockRecipients} />);
-    const recipientsLabel = await screen.findByText(label);
+
+    const recipientsLabel = await screen.findByText(RecipientListlabel);
     expect(recipientsLabel).toBeInTheDocument();
   });
 
   it('should display "Me" instead of the first name when the user is the logged-in user', async () => {
-    render(<MessageRecipientList label={"To"} recipients={mockRecipients} />);
     const currentUserLabel = await screen.findAllByText("me");
     expect(currentUserLabel.length).equal(1);
   });
 
   it('should open the userbook in a new tab when clicking on a user', async () => {
-    render(<MessageRecipientList label={"To"} recipients={mockRecipients} />);
 
     const displayNameUser = "GUEDON Aliénor"
     const linkUser = screen.getByRole("link", { name: displayNameUser });
@@ -57,7 +51,6 @@ describe('Message recipient list', () => {
   });
 
   it('should open the userbook in a new tab when clicking on a group', async () => {
-    render(<MessageRecipientList label={"To"} recipients={mockRecipients} />);
 
     const displayNameGroup = "Enseignants du groupe scolaire."
     const linkGroup = screen.getByRole("link", { name: displayNameGroup });
