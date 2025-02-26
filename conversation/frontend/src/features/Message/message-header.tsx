@@ -21,7 +21,7 @@ export function MessageHeader({ message }: MessageHeaderProps) {
       {message && (
         <>
           <h4>{subject}</h4>
-          <div className="d-flex align-items-center mt-16 gap-12">
+          <div className="d-flex align-items-center mt-16 gap-12 small">
             <Avatar
               alt={t('author.avatar')}
               size="sm"
