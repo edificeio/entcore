@@ -57,6 +57,7 @@
   "trash.empty.text": "Aucun message dans votre corbeille pour le moment.",
   "noContent.empty.title": "Ce dossier est vide pour le moment.",
   "noContent.empty.text": "Vous pouvez organiser votre messagerie en déplacant des messages dedans, dès maintenant !",
+  "print": "Imprimer",
   "search.empty.title": "Pas de résultats pour votre recherche",
   "search.empty.text": "Désolé, il n’y a rien sous ce nom-là... Aucun message ne correspond à votre recherche. Modifiez les critères et tentez à nouveau !",
   "folder.new.title": "Créer un dossier",
