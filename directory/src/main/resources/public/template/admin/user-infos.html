@@ -101,7 +101,9 @@
 				<label ng-if="!showMobileInput" class="six cell">[[selectedUser.mobile]]</label>
 				<input type="tel" class="eight cell inline-editing" name="mobile"
 					   ng-if="showMobileInput"
-					   ng-model="temp.mobile" />
+					   data-intl-phone-input
+					   intl-format-number="temp.intlFormatNumber"
+					   ng-model="selectedUser.mobile" />
 
 				<label ng-if="!showMobileInput && !isForbidden()"><a ng-click="openMobileInput()" href="#"><i18n>directory.modify</i18n></a></label>
 				<label ng-if="showMobileInput && !isMobileWellFormatted()"><i18n>classAdmin.save</i18n></label>
