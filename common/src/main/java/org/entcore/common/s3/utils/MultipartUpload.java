@@ -235,25 +235,29 @@ public class MultipartUpload {
                 else {
                     chunk.incrementRetryIndex();
 
-                    log.debug("MultiPart upload failed: " + response.statusCode() + " - " + chunk.getChunkNumber());
+                    log.warn("MultiPart upload failed: " + response.statusCode() + " - " + chunk.getChunkNumber());
                     if (response.headers() != null) {
                         response.headers().forEach(header -> {
-                            log.debug("MultiPart upload failed: " + header.getKey() + " - " + header.getValue());
+                            log.warn("MultiPart upload failed: " + header.getKey() + " - " + header.getValue());
                         });
                     }
                     response.bodyHandler(body -> {
-                        log.debug(body.toString());
+                        if(log.isDebugEnabled()) {
+                            log.debug(body.toString());
+                        }
                     });
 
                     if (chunk.getRetryIndex() < 6) {
                         uploadPart(id, uploadId, chunk, handler);
                     }
                     else {
+                        log.warn("The upload of file=" + id + " with uploadId=" + uploadId + " was retried too many times (" + chunk.getRetryIndex() + ")");
                         handler.handle(null);
                     }
                 }
             })
             .onFailure(exception -> {
+                log.warn("An exception occurred while uploading file=" + id + " with uploadId=" + uploadId, exception);
                 handler.handle(null);
             });
     }
