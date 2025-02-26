@@ -6,6 +6,7 @@ import {
 import { QueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { LoaderFunctionArgs, useParams } from 'react-router-dom';
+import { DisplayActionDropDown } from '~/components/DisplayActionDropDown';
 import { MessageAttachments } from '~/features/Message/message-attachments';
 import { MessageHeader } from '~/features/Message/message-header';
 
@@ -34,6 +35,7 @@ export function Component() {
     // Scroll to the top of the page
     window.scrollTo(0, 0);
   }, []);
+  
 
   return (
     <>
@@ -53,6 +55,9 @@ export function Component() {
                 messageId={message.id}
               />
             )}
+          </div>
+          <div className="d-flex justify-content-end gap-12">
+            <DisplayActionDropDown message={message} />
           </div>
         </div>
       )}
