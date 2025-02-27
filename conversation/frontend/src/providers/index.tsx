@@ -7,6 +7,7 @@ import {
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { ERROR_CODE } from 'edifice-ts-client';
 import { ReactNode } from 'react';
+import ConfirmModalWrapper from '~/components/ConfirmModal/ConfirmModalWrapper';
 
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({
@@ -35,6 +36,7 @@ export const Providers = ({ children }: { children: ReactNode }) => {
         }}
       >
         {children}
+        <ConfirmModalWrapper />
       </EdificeClientProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
