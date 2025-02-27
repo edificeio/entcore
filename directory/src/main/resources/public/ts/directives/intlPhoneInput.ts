@@ -23,7 +23,7 @@ export const intlPhoneInputDirective = ng.directive("intlPhoneInput", [
         intlFormatNumber: "=",
       },
       require: "ngModel",
-      link: async (
+      link: (
         scope: IntlPhoneInputScope,
         elem: JQLite,
         attrs: IAttributes, 
@@ -33,26 +33,27 @@ export const intlPhoneInputDirective = ng.directive("intlPhoneInput", [
         // Load intl-phone-input configuration
         if (!window.intlTelInputConfig) {
           let defaultConf = {
-            onlyCountries: ["fr"],
+            initialCountry: "fr",
+            preferredCountries: ["fr", "mx", "es", "co", "gf", "pf", "gp", "yt", "nc", "pm", "wf", "gy", "mq", "mm", "ph"]
           };
 
           try {
             // intl-phone-input configuration undefined, keep using default values.
-            const publicConf = await httpPromisy<any>().get(`/auth/conf/public`);
-            if (publicConf && typeof publicConf["intl-phone-input"] === "object") {
-              window.intlTelInputConfig = publicConf["intl-phone-input"];
-            } else {
-              window.intlTelInputConfig = defaultConf;
-            }
+            httpPromisy<any>().get(`/auth/conf/public`).then(
+              (publicConf) => {
+                if (publicConf && typeof publicConf["intl-phone-input"] === "object") {
+                  window.intlTelInputConfig =  publicConf["intl-phone-input"];
+                }
+                window.intlTelInputConfig = defaultConf;
+              }
+            );
           } catch (e) {
             window.intlTelInputConfig = defaultConf;
           }
         }
         
         scope.$watch(attrs.ngModel, function() { 
-          // if (intlPhoneInput && intlPhoneInput.getNumber() !== ngModelController.$modelValue) {
-            intlPhoneInput.setNumber(ngModelController.$modelValue);
-          // }
+          intlPhoneInput.setNumber(ngModelController.$modelValue);
         });
 
         // Init intl-phone-input field after both CSS and JS are loaded
