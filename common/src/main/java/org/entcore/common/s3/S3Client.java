@@ -358,11 +358,7 @@ public class S3Client {
 
 				if (response.statusCode() == 200) {
 					resp.setChunked(true);
-
-					response.handler(resp::write);
-
-					response.endHandler(aVoid -> {
-						resp.end();
+					response.pipeTo(resp).onComplete(aVoid -> {
 						if (resultHandler != null) {
 							resultHandler.handle(new DefaultAsyncResult<>((Void) null));
 						}
