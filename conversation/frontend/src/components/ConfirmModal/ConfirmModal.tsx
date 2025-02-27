@@ -1,4 +1,5 @@
 import { Button, Modal } from '@edifice.io/react';
+import { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
 const Variant = {
@@ -12,8 +13,8 @@ interface ConfirmModalProps {
   variant?: ConfirmModalVariant;
   id: string;
   isOpen: boolean;
-  header: JSX.Element;
-  body: JSX.Element;
+  header: ReactNode;
+  body: ReactNode;
   okText?: string;
   koText?: string;
   onSuccess?: () => void;
