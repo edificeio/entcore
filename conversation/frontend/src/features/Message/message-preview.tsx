@@ -2,7 +2,7 @@ import { Avatar, useDate, useDirectory } from '@edifice.io/react';
 import { IconPaperclip, IconUndo } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
-import { MessageMetadata } from '~/models';
+import { MessageMetadata, Recipients } from '~/models';
 import { MessageRecipientList } from './message-recipient-list';
 
 export interface MessagePreviewProps {
@@ -22,16 +22,21 @@ export function MessagePreview({ message }: MessagePreviewProps) {
       {(message.response || message.forwarded) && (
         <IconUndo className="gray-800" title="message-response" />
       )}
-      <Avatar
-        alt={t('author.avatar')}
-        size="sm"
-        src={getAvatarURL(message.from.id, 'user')}
-        variant="circle"
-      />
+
+      {'outbox' === folderId ? (
+        <RecipientAvatar recipients={message.to} />
+      ) : (
+        <Avatar
+          alt={t('author.avatar')}
+          size="sm"
+          src={getAvatarURL(message.from.id, 'user')}
+          variant="circle"
+        />
+      )}
       <div className="d-flex flex-fill flex-column overflow-hidden">
         <div className="d-flex flex-fill justify-content-between overflow-hidden">
           <div className="text-truncate flex-fill">
-            {['daft', 'outbox'].includes(folderId!) ? (
+            {'outbox' === folderId ? (
               <MessageRecipientList head={t("at")} recipients={message.to} color='text-gray-800' />
             ) : message.from.displayName}
 
@@ -60,4 +65,21 @@ export function MessagePreview({ message }: MessagePreviewProps) {
       </div>
     </div>
   );
+}
+
+const RecipientAvatar = ({ recipients }: { recipients: Recipients }) => {
+  const { t } = useTranslation('conversation');
+  const { getAvatarURL } = useDirectory();
+  const firstRecipient = recipients.users[0] || recipients.groups[0];
+  const firstRecipientType = recipients.users.length > 0 ? 'user' : 'group';
+  const url = getAvatarURL(firstRecipient.id, firstRecipientType)
+
+  return (
+    <Avatar
+      alt={t('recipient.avatar')}
+      size="sm"
+      src={url}
+      variant="circle"
+    />
+  )
 }

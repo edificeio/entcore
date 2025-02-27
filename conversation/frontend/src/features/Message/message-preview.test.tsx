@@ -119,4 +119,13 @@ describe('Message preview header component', () => {
     const senderName = screen.getByText("Enseignants du groupe scolaire.");
     expect(senderName).toBeInTheDocument();
   })
+
+  it.only('should display recipient avatar when is in outbox', async () => {
+    mocks.useParams.mockReturnValue({ folderId: 'outbox' as MessageFolderId });
+
+    render(<MessagePreview message={message} />);
+
+    const recipientAvatar = screen.getByAltText('recipient.avatar');
+    expect(recipientAvatar).toBeInTheDocument();
+  })
 });
