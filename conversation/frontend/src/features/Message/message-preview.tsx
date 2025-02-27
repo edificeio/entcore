@@ -44,7 +44,7 @@ export function MessagePreview({ message }: MessagePreviewProps) {
           {message.subject ? (
             <div className="text-truncate flex-fill">{message.subject}</div>
           ) : (
-            <div className="text-truncate flex-fill gray-800">
+            <div className="text-truncate flex-fill text-gray-700">
               {t('nosubject')}
             </div>
           )}
