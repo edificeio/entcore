@@ -1,15 +1,19 @@
 import { Avatar, useDate, useDirectory } from '@edifice.io/react';
 import { IconPaperclip, IconUndo } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
+import { useParams } from 'react-router-dom';
 import { MessageMetadata } from '~/models';
+import { MessageRecipientList } from './message-recipient-list';
 
 export interface MessagePreviewProps {
   message: MessageMetadata;
 }
 
+export type MessageFolderId = 'draft' | 'inbox' | 'outbox' | 'trash';
+
 export function MessagePreview({ message }: MessagePreviewProps) {
   const { t } = useTranslation('conversation');
-
+  const { folderId } = useParams<{ folderId: MessageFolderId }>();
   const { getAvatarURL } = useDirectory();
   const { fromNow } = useDate();
 
@@ -27,7 +31,10 @@ export function MessagePreview({ message }: MessagePreviewProps) {
       <div className="d-flex flex-fill flex-column overflow-hidden">
         <div className="d-flex flex-fill justify-content-between overflow-hidden">
           <div className="text-truncate flex-fill">
-            {message.from.displayName}
+            {['daft', 'outbox'].includes(folderId!) ? (
+              <MessageRecipientList head={t("at")} recipients={message.to} color='text-gray-800' />
+            ) : message.from.displayName}
+
           </div>
           <div className="fw-bold text-nowrap fs-12 gray-800">
             {fromNow(message.date)}
