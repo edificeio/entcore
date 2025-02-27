@@ -103,7 +103,7 @@
 					   ng-if="showMobileInput"
 					   data-intl-phone-input
 					   intl-format-number="temp.intlFormatNumber"
-					   ng-model="selectedUser.mobile" />
+					   ng-model="temp.mobile" />
 
 				<label ng-if="!showMobileInput && !isForbidden()"><a ng-click="openMobileInput()" href="#"><i18n>directory.modify</i18n></a></label>
 				<label ng-if="showMobileInput && !isMobileWellFormatted()"><i18n>classAdmin.save</i18n></label>
