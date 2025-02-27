@@ -26,19 +26,19 @@ describe('Message recipient list', () => {
   });
 
   it('should render a label ', async () => {
-    render(<MessageRecipientList label={RecipientListlabel} recipients={mockRecipients} />);
+    render(<MessageRecipientList head={RecipientListlabel} recipients={mockRecipients} />);
     const recipientsLabel = await screen.findByText(RecipientListlabel);
     expect(recipientsLabel).toBeInTheDocument();
   });
 
   it('should display "Me" instead of the first name when the user is the logged-in user', async () => {
-    render(<MessageRecipientList label={RecipientListlabel} recipients={mockRecipients} />);
+    render(<MessageRecipientList head={RecipientListlabel} recipients={mockRecipients} />);
     const currentUserLabel = await screen.findAllByText("me");
     expect(currentUserLabel.length).equal(1);
   });
 
   it('should open the userbook in a new tab when clicking on a user', async () => {
-    render(<MessageRecipientList label={RecipientListlabel} recipients={mockRecipients} />);
+    render(<MessageRecipientList head={RecipientListlabel} recipients={mockRecipients} />);
     const displayNameUser = "GUEDON Aliénor"
     const linkUser = screen.getByRole("link", { name: displayNameUser });
     const linkUserUrl = linkUser.getAttribute("href");
@@ -48,7 +48,7 @@ describe('Message recipient list', () => {
   });
 
   it('should open the userbook in a new tab when clicking on a group', async () => {
-    render(<MessageRecipientList label={RecipientListlabel} recipients={mockRecipients} />);
+    render(<MessageRecipientList head={RecipientListlabel} recipients={mockRecipients} />);
     const displayNameGroup = "Enseignants du groupe scolaire."
     const linkGroup = screen.getByRole("link", { name: displayNameGroup });
     const linkGroupUrl = linkGroup.getAttribute("href");

@@ -39,12 +39,12 @@ export function MessageHeader({ message }: MessageHeaderProps) {
                 </a>
                 <em className="text-gray-700">{fromNow(date)}</em>
               </div>
-              <MessageRecipientList label={t("at")} recipients={to} />
+              <MessageRecipientList head={<b>{t("at")}</b>} recipients={to} />
               {hasCC && (
-                <MessageRecipientList label={t("cc")} recipients={cc} />
+                <MessageRecipientList head={<b>{t("cc")}</b>} recipients={cc} />
               )}
               {hasCCI && (
-                <MessageRecipientList label={t("cci")} recipients={cci} />
+                <MessageRecipientList head={<b>{t("cci")}</b>} recipients={cci} />
               )}
             </div>
           </div>

@@ -1,11 +1,31 @@
 import { mockMessagesOfInbox } from '~/mocks';
 import { render, screen } from '~/mocks/setup';
 import { MessageMetadata } from '~/models';
-import { MessagePreview } from './message-preview';
+import { MessagePreview, MessageFolderId } from './message-preview';
 
 const message = mockMessagesOfInbox[0];
 
+const mocks = vi.hoisted(() => ({
+  useParams: vi.fn(),
+}));
+
+vi.mock('react-router-dom', async () => {
+  const actual =
+    await vi.importActual<typeof import('react-router-dom')>(
+      'react-router-dom',
+    );
+  return {
+    ...actual,
+    useParams: mocks.useParams,
+  };
+});
+
 describe('Message preview header component', () => {
+
+  beforeEach(() => {
+    mocks.useParams.mockReturnValue({ folderId: 'inbox' as MessageFolderId });
+  });
+
   afterEach(() => {
     vi.clearAllMocks();
   });
@@ -87,4 +107,16 @@ describe('Message preview header component', () => {
     expect(messageResponse).toBeInTheDocument();
     expect(messageHasAttachements).not.toBeInTheDocument();
   });
+
+  it('should display "to" label and recipient name when is in outbox', async () => {
+    mocks.useParams.mockReturnValue({ folderId: 'outbox' as MessageFolderId });
+
+    render(<MessagePreview message={message} />);
+
+    const toLabel = screen.getByText('at');
+    expect(toLabel).toBeInTheDocument();
+
+    const senderName = screen.getByText("Enseignants du groupe scolaire.");
+    expect(senderName).toBeInTheDocument();
+  })
 });

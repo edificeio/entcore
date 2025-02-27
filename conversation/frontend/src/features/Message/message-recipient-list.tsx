@@ -1,16 +1,20 @@
 import { useDirectory, useEdificeClient } from '@edifice.io/react';
+import clsx from 'clsx';
+import { ReactElement } from 'react';
 import { Fragment } from 'react/jsx-runtime';
 import { useI18n } from '~/hooks';
 import { Recipients } from '~/models';
 
 export interface RecipientListProps {
   recipients: Recipients
-  label: string
+  head: ReactElement | string
+  color?: "text-gray-800" | "text-gray-700"
 }
 
 export function MessageRecipientList({
   recipients,
-  label
+  head,
+  color = "text-gray-700",
 }: RecipientListProps) {
   const recipientArray = [...recipients.users, ...recipients.groups]
   const { getUserbookURL } = useDirectory();
@@ -19,15 +23,15 @@ export function MessageRecipientList({
 
 
   return (
-    <div className="text-gray-700 text-truncate">
-      <strong className='text-uppercase me-4'>{label}</strong>
+    <div className={clsx("text-truncate", color)}>
+      <span className='text-uppercase me-4'>{head}</span>
       {recipientArray.map((recipient, index) => {
         const type = index < recipients.users.length ? 'user' : 'group';
         const url = getUserbookURL(recipient.id, type)
 
         const link = <a
           href={url}
-          className="text-gray-700"
+          className={color}
           target='_blank'
           rel="noopener noreferrer nofollow"
         >
