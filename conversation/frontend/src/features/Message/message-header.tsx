@@ -12,9 +12,8 @@ export function MessageHeader({ message }: MessageHeaderProps) {
   const { fromNow } = useDate();
   const { getAvatarURL, getUserbookURL } = useDirectory();
 
-  const { subject, from, date, to, cc, cci } = message;
+  const { subject, from, date, to, cc } = message;
   const hasCC = cc.users.length > 0 || cc.groups.length > 0;
-  const hasCCI = cci && (cci.users.length > 0 || cci.groups.length > 0);
 
   return (
     <>
@@ -39,12 +38,6 @@ export function MessageHeader({ message }: MessageHeaderProps) {
               <MessageRecipientList head={<b>{t('at')}</b>} recipients={to} />
               {hasCC && (
                 <MessageRecipientList head={<b>{t('cc')}</b>} recipients={cc} />
-              )}
-              {hasCCI && (
-                <MessageRecipientList
-                  head={<b>{t('cci')}</b>}
-                  recipients={cci}
-                />
               )}
             </div>
           </div>
