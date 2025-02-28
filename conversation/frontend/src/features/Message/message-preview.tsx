@@ -40,6 +40,7 @@ export function MessagePreview({ message }: MessagePreviewProps) {
                 recipients={message.to}
                 color="text-gray-800"
                 truncate
+                linkDisabled
               />
             ) : (
               message.from.displayName
