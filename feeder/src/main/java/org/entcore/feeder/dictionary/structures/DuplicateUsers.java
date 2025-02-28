@@ -63,17 +63,18 @@ public class DuplicateUsers {
 			"MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}}), " +
 					"(u1)-[:RELATED]->()-[rp:DUPLICATE]-()<-[:RELATED]-(u2) " +
 					"SET rp.score = rp.score + 1 ";
+	private static final String ADML_SCOPES_MERGE_QUERY =
+			"MATCH (u1:User {id: {userId1}}), (u2:User {id: {userId2}}), (adml:Function {externalId:'ADMIN_LOCAL'}) " +
+			"OPTIONAL MATCH (u1)-[hf1:HAS_FUNCTION]->(adml) " +
+			"OPTIONAL MATCH (u2)-[hf2:HAS_FUNCTION]->(adml) " +
+			"UNWIND COALESCE(hf1.scope, []) + COALESCE(hf2.scope, []) as scopes " +
+			"WITH u1, u2, adml, COLLECT(DISTINCT scopes) as unionScope " +
+			"WHERE size(unionScope) > 0 " +
+			"MERGE (u1)-[hf:HAS_FUNCTION]->(adml) " +
+			"ON CREATE SET hf.scope = unionScope " +
+			"ON MATCH SET hf.scope = unionScope ";
 	private static final String SIMPLE_MERGE_QUERY =
-					"MATCH (u1:User {id: {userId1}}), (u2:User {id: {userId2}}), (adml:Function {externalId:'ADMIN_LOCAL'}) " +
-					"OPTIONAL MATCH (u1)-[hf1:HAS_FUNCTION]->(adml), (u2)-[hf2:HAS_FUNCTION]->(adml) " +
-					"UNWIND COALESCE(hf1.scope, []) + COALESCE(hf2.scope, []) as scopes " +
-					"WITH u1, u2, adml, COLLECT(DISTINCT scopes) as unionScope " +
-					"WHERE size(unionScope) > 0 " +
-					"MERGE (u1)-[hf:HAS_FUNCTION]->(adml) " +
-					"ON CREATE SET hf.scope = unionScope " +
-					"ON MATCH SET hf.scope = unionScope " +
-					"WITH u1, u2 " +
-					"MATCH (u1)-[r:DUPLICATE]-(u2)-[r2]-() " +
+					"MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}})-[r2]-() " +
 					"OPTIONAL MATCH (u2)-[ain:IN]->(afg: FunctionGroup) " +
 					"WHERE afg.name ENDS WITH 'AdminLocal' " +
 					"SET u1.ignoreDuplicates = FILTER(uId IN u1.ignoreDuplicates WHERE uId <> {userId2}) " +
@@ -87,16 +88,7 @@ public class DuplicateUsers {
 					"SET u1.IDPN = IDPN " +
 					"RETURN DISTINCT oldId, u1.id as id, HEAD(u1.profiles) as profile ";
 	private static final String SWITCH_MERGE_QUERY =
-					"MATCH (u1:User {id: {userId1}}), (u2:User {id: {userId2}}), (adml:Function {externalId:'ADMIN_LOCAL'}) " +
-					"OPTIONAL MATCH (u1)-[hf1:HAS_FUNCTION]->(adml), (u2)-[hf2:HAS_FUNCTION]->(adml) " +
-					"UNWIND COALESCE(hf1.scope, []) + COALESCE(hf2.scope, []) as scopes " +
-					"WITH u1, u2, adml, COLLECT(DISTINCT scopes) as unionScope " +
-					"WHERE size(unionScope) > 0 " +
-					"MERGE (u1)-[:HAS_FUNCTION]->(adml) " +
-					"ON CREATE SET hf.scope = unionScope " +
-					"ON MATCH SET hf.scope = unionScope " +
-					"WITH u1, u2 " +
-					"MATCH (u1)-[r:DUPLICATE]-(u2)-[r2]-() " +
+					"MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}})-[r2]-() " +
 					"OPTIONAL MATCH (u2)-[ain:IN]->(afg: FunctionGroup) " +
 					"WHERE afg.name ENDS WITH 'AdminLocal' " +
 					"WITH u1, u2, r, r2, u2.source as source, u2.externalId as externalId, u2.IDPN as IDPN, u2.id as oldId, ain.source AS ainSource, afg " +
@@ -453,6 +445,7 @@ public class DuplicateUsers {
 
 		if (tx != null) {
 			tx.add(INCREMENT_RELATIVE_SCORE, params);
+			tx.add(ADML_SCOPES_MERGE_QUERY, params);
 			tx.add(query, params, duplicatesChecker);
 			addDisappearingUserRelationship(relationshipsToKeepPerUser, userIdThatWillStay, userIdThatWillDisappear, tx);
 			sendMergedEvent(params.getString("userId1"), params.getString("userId2"));
@@ -461,6 +454,7 @@ public class DuplicateUsers {
 			try {
 				TransactionHelper txl = TransactionManager.getTransaction();
 				txl.add(INCREMENT_RELATIVE_SCORE, params);
+				txl.add(ADML_SCOPES_MERGE_QUERY, params);
 				txl.add(query, params, duplicatesChecker);
 				addDisappearingUserRelationship(relationshipsToKeepPerUser, userIdThatWillStay, userIdThatWillDisappear, txl);
 				txl.commit(new Handler<Message<JsonObject>>() {
