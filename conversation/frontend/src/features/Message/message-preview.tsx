@@ -9,11 +9,9 @@ export interface MessagePreviewProps {
   message: MessageMetadata;
 }
 
-export type MessageFolderId = 'draft' | 'inbox' | 'outbox' | 'trash';
-
 export function MessagePreview({ message }: MessagePreviewProps) {
   const { t } = useTranslation('conversation');
-  const { folderId } = useParams<{ folderId: MessageFolderId }>();
+  const { folderId } = useParams<{ folderId: string }>();
   const { getAvatarURL } = useDirectory();
   const { fromNow } = useDate();
 

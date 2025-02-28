@@ -1,7 +1,7 @@
 import { mockMessagesOfInbox } from '~/mocks';
 import { render, screen } from '~/mocks/setup';
 import { MessageMetadata } from '~/models';
-import { MessagePreview, MessageFolderId } from './message-preview';
+import { MessagePreview } from './message-preview';
 
 const message = mockMessagesOfInbox[0];
 
@@ -23,7 +23,7 @@ vi.mock('react-router-dom', async () => {
 describe('Message preview header component', () => {
 
   beforeEach(() => {
-    mocks.useParams.mockReturnValue({ folderId: 'inbox' as MessageFolderId });
+    mocks.useParams.mockReturnValue({ folderId: 'inbox' });
   });
 
   afterEach(() => {
@@ -109,7 +109,7 @@ describe('Message preview header component', () => {
   });
 
   it('should display "to" label and recipient name when is in outbox', async () => {
-    mocks.useParams.mockReturnValue({ folderId: 'outbox' as MessageFolderId });
+    mocks.useParams.mockReturnValue({ folderId: 'outbox' });
 
     render(<MessagePreview message={message} />);
 
@@ -121,7 +121,7 @@ describe('Message preview header component', () => {
   })
 
   it('should display recipient avatar when is in outbox', async () => {
-    mocks.useParams.mockReturnValue({ folderId: 'outbox' as MessageFolderId });
+    mocks.useParams.mockReturnValue({ folderId: 'outbox' });
 
     render(<MessagePreview message={message} />);
 
