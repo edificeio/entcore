@@ -219,13 +219,7 @@ export const mockFullMessage: Message = {
     groups: [],
   },
   cci: {
-    users: [
-      {
-        displayName: "Alban Kerloc'h",
-        id: '412d7ea2-1478-436a-ac33-2b088cb58bfe',
-        profile: 'Personnel',
-      },
-    ],
+    users: [],
     groups: [],
   },
   body: 'Bonjour, à propos du prochain voyage...',

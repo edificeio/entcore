@@ -52,7 +52,7 @@ describe('Message recipient list', () => {
         recipients={mockRecipients}
       />,
     );
-    const displayNameUser = 'GUEDON Aliénor';
+    const displayNameUser = 'ISABELLE POLONIO (prof arts plastiques)';
     const linkUser = screen.getByRole('link', { name: displayNameUser });
     const linkUserUrl = linkUser.getAttribute('href');
 
