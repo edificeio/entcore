@@ -120,7 +120,7 @@ describe('Message preview header component', () => {
     expect(senderName).toBeInTheDocument();
   })
 
-  it.only('should display recipient avatar when is in outbox', async () => {
+  it('should display recipient avatar when is in outbox', async () => {
     mocks.useParams.mockReturnValue({ folderId: 'outbox' as MessageFolderId });
 
     render(<MessagePreview message={message} />);
@@ -128,4 +128,5 @@ describe('Message preview header component', () => {
     const recipientAvatar = screen.getByAltText('recipient.avatar');
     expect(recipientAvatar).toBeInTheDocument();
   })
+
 });
