@@ -10,6 +10,7 @@ export interface RecipientListProps {
   head: ReactNode;
   color?: 'text-gray-800' | 'text-gray-700';
   truncate?: boolean;
+  linkDisabled?: boolean;
 }
 
 export function MessageRecipientList({
@@ -17,6 +18,7 @@ export function MessageRecipientList({
   head,
   color = 'text-gray-700',
   truncate = false,
+  linkDisabled = false,
 }: RecipientListProps) {
   const recipientArray = [...recipients.users, ...recipients.groups];
   const { getUserbookURL } = useDirectory();
@@ -27,24 +29,31 @@ export function MessageRecipientList({
     <div className={clsx({ 'text-truncate': truncate }, color)}>
       <span className="text-uppercase me-4">{head}</span>
       {recipientArray.map((recipient, index) => {
-        const type = index < recipients.users.length ? 'user' : 'group';
-        const url = getUserbookURL(recipient.id, type);
+        const recipientText =
+          user?.userId === recipient.id ? t('me') : recipient.displayName;
+        let recipientElement;
 
-        const link = (
-          <a
-            href={url}
-            className={color}
-            target="_blank"
-            rel="noopener noreferrer nofollow"
-          >
-            {user?.userId === recipient.id ? t('me') : recipient.displayName}
-          </a>
-        );
+        if (!linkDisabled) {
+          const type = index < recipients.users.length ? 'user' : 'group';
+          const url = getUserbookURL(recipient.id, type);
+          recipientElement = (
+            <a
+              href={url}
+              className={color}
+              target="_blank"
+              rel="noopener noreferrer nofollow"
+            >
+              {recipientText}
+            </a>
+          );
+        } else {
+          recipientElement = <span>{recipientText}</span>;
+        }
 
         const isLast = index === recipientArray.length - 1;
         return (
           <Fragment key={recipient.id}>
-            {link}
+            {recipientElement}
             {!isLast && ', '}
           </Fragment>
         );

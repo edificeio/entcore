@@ -131,9 +131,9 @@ export const mockFullMessage: Message = {
   id: 'f43d3783',
   subject: 'Prêt des manuels scolaires',
   from: {
-    id: '91c22b66',
-    displayName: 'ISABELLE POLONIO (prof arts plastiques)',
-    profile: 'Teacher',
+    displayName: 'GUEDON Aliénor',
+    id: '8f82fb3c-2150-4a1f-a869-33e98b8b836f',
+    profile: 'Student',
   },
   state: 'SENT',
   date: 1503571892555,
@@ -167,9 +167,9 @@ export const mockFullMessage: Message = {
         profile: 'Teacher',
       },
       {
-        displayName: 'GUEDON Aliénor',
-        id: '8f82fb3c-2150-4a1f-a869-33e98b8b836f',
-        profile: 'Student',
+        id: '91c22b66',
+        displayName: 'ISABELLE POLONIO (prof arts plastiques)',
+        profile: 'Teacher',
       },
       {
         displayName: 'GUEDON Céline',
