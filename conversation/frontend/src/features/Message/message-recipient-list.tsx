@@ -1,13 +1,13 @@
 import { useDirectory, useEdificeClient } from '@edifice.io/react';
 import clsx from 'clsx';
-import { ReactElement } from 'react';
+import { ReactNode } from 'react';
 import { Fragment } from 'react/jsx-runtime';
 import { useI18n } from '~/hooks';
 import { Recipients } from '~/models';
 
 export interface RecipientListProps {
   recipients: Recipients
-  head: ReactElement | string
+  head: ReactNode
   color?: "text-gray-800" | "text-gray-700"
   truncate?: boolean
 }
