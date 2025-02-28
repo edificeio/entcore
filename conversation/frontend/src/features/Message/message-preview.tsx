@@ -37,7 +37,7 @@ export function MessagePreview({ message }: MessagePreviewProps) {
         <div className="d-flex flex-fill justify-content-between overflow-hidden">
           <div className="text-truncate flex-fill">
             {'outbox' === folderId ? (
-              <MessageRecipientList head={t("at")} recipients={message.to} color='text-gray-800' />
+              <MessageRecipientList head={t("at")} recipients={message.to} color='text-gray-800' truncate />
             ) : message.from.displayName}
 
           </div>

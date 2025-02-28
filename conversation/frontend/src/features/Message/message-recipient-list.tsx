@@ -9,12 +9,14 @@ export interface RecipientListProps {
   recipients: Recipients
   head: ReactElement | string
   color?: "text-gray-800" | "text-gray-700"
+  truncate?: boolean
 }
 
 export function MessageRecipientList({
   recipients,
   head,
   color = "text-gray-700",
+  truncate = false,
 }: RecipientListProps) {
   const recipientArray = [...recipients.users, ...recipients.groups]
   const { getUserbookURL } = useDirectory();
@@ -23,7 +25,7 @@ export function MessageRecipientList({
 
 
   return (
-    <div className={clsx("text-truncate", color)}>
+    <div className={clsx({ "text-truncate": truncate }, color)}>
       <span className='text-uppercase me-4'>{head}</span>
       {recipientArray.map((recipient, index) => {
         const type = index < recipients.users.length ? 'user' : 'group';
