@@ -21,7 +21,6 @@ vi.mock('react-router-dom', async () => {
 });
 
 describe('Message preview header component', () => {
-
   beforeEach(() => {
     mocks.useParams.mockReturnValue({ folderId: 'inbox' });
   });
@@ -116,9 +115,9 @@ describe('Message preview header component', () => {
     const toLabel = screen.getByText('at');
     expect(toLabel).toBeInTheDocument();
 
-    const senderName = screen.getByText("Enseignants du groupe scolaire.");
+    const senderName = screen.getByText('Enseignants du groupe scolaire.');
     expect(senderName).toBeInTheDocument();
-  })
+  });
 
   it('should display recipient avatar when is in outbox', async () => {
     mocks.useParams.mockReturnValue({ folderId: 'outbox' });
@@ -127,6 +126,5 @@ describe('Message preview header component', () => {
 
     const recipientAvatar = screen.getByAltText('recipient.avatar');
     expect(recipientAvatar).toBeInTheDocument();
-  })
-
+  });
 });

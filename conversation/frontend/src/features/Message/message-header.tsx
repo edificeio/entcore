@@ -27,24 +27,24 @@ export function MessageHeader({ message }: MessageHeaderProps) {
               size="sm"
               src={getAvatarURL(from.id, 'user')}
               variant="circle"
-              className='align-self-start mt-4'
+              className="align-self-start mt-4"
             />
             <div className="d-flex flex-fill flex-column overflow-hidden">
               <div className="d-flex flex-wrap column-gap-8">
-                <a
-                  href={getUserbookURL(from.id, 'user')}
-                  className="fw-600"
-                >
+                <a href={getUserbookURL(from.id, 'user')} className="fw-600">
                   {from.displayName}
                 </a>
                 <em className="text-gray-700">{fromNow(date)}</em>
               </div>
-              <MessageRecipientList head={<b>{t("at")}</b>} recipients={to} />
+              <MessageRecipientList head={<b>{t('at')}</b>} recipients={to} />
               {hasCC && (
-                <MessageRecipientList head={<b>{t("cc")}</b>} recipients={cc} />
+                <MessageRecipientList head={<b>{t('cc')}</b>} recipients={cc} />
               )}
               {hasCCI && (
-                <MessageRecipientList head={<b>{t("cci")}</b>} recipients={cci} />
+                <MessageRecipientList
+                  head={<b>{t('cci')}</b>}
+                  recipients={cci}
+                />
               )}
             </div>
           </div>

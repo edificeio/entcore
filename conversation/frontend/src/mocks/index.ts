@@ -162,20 +162,20 @@ export const mockFullMessage: Message = {
   to: {
     users: [
       {
-        displayName: "LOISON Stéphane",
-        id: "b92e3d37-16b0-4ed9-b4c3-992091687132",
-        profile: "Teacher"
+        displayName: 'LOISON Stéphane',
+        id: 'b92e3d37-16b0-4ed9-b4c3-992091687132',
+        profile: 'Teacher',
       },
       {
-        displayName: "GUEDON Aliénor",
-        id: "8f82fb3c-2150-4a1f-a869-33e98b8b836f",
-        profile: "Student"
+        displayName: 'GUEDON Aliénor',
+        id: '8f82fb3c-2150-4a1f-a869-33e98b8b836f',
+        profile: 'Student',
       },
       {
-        displayName: "GUEDON Céline",
-        id: "c0824335-ab0e-41fb-9ed3-d5c28a93087d",
-        profile: "Relative"
-      }
+        displayName: 'GUEDON Céline',
+        id: 'c0824335-ab0e-41fb-9ed3-d5c28a93087d',
+        profile: 'Relative',
+      },
     ],
     groups: [
       {
@@ -209,19 +209,23 @@ export const mockFullMessage: Message = {
     ],
   },
   cc: {
-    users: [{
-      displayName: "CARPENTIER Béatrice",
-      id: "c0824335-ab0e-41fb-9ed3-d5c28a93087d",
-      profile: "Relative"
-    }],
+    users: [
+      {
+        displayName: 'CARPENTIER Béatrice',
+        id: 'c0824335-ab0e-41fb-9ed3-d5c28a93087d',
+        profile: 'Relative',
+      },
+    ],
     groups: [],
   },
   cci: {
-    users: [{
-      displayName: "Alban Kerloc'h",
-      id: "412d7ea2-1478-436a-ac33-2b088cb58bfe",
-      profile: "Personnel"
-    }],
+    users: [
+      {
+        displayName: "Alban Kerloc'h",
+        id: '412d7ea2-1478-436a-ac33-2b088cb58bfe',
+        profile: 'Personnel',
+      },
+    ],
     groups: [],
   },
   body: 'Bonjour, à propos du prochain voyage...',

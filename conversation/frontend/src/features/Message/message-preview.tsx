@@ -35,9 +35,15 @@ export function MessagePreview({ message }: MessagePreviewProps) {
         <div className="d-flex flex-fill justify-content-between overflow-hidden">
           <div className="text-truncate flex-fill">
             {'outbox' === folderId ? (
-              <MessageRecipientList head={t("at")} recipients={message.to} color='text-gray-800' truncate />
-            ) : message.from.displayName}
-
+              <MessageRecipientList
+                head={t('at')}
+                recipients={message.to}
+                color="text-gray-800"
+                truncate
+              />
+            ) : (
+              message.from.displayName
+            )}
           </div>
           <div className="fw-bold text-nowrap fs-12 gray-800">
             {fromNow(message.date)}
@@ -70,14 +76,9 @@ const RecipientAvatar = ({ recipients }: { recipients: Recipients }) => {
   const { getAvatarURL } = useDirectory();
   const firstRecipient = recipients.users[0] || recipients.groups[0];
   const firstRecipientType = recipients.users.length > 0 ? 'user' : 'group';
-  const url = getAvatarURL(firstRecipient.id, firstRecipientType)
+  const url = getAvatarURL(firstRecipient.id, firstRecipientType);
 
   return (
-    <Avatar
-      alt={t('recipient.avatar')}
-      size="sm"
-      src={url}
-      variant="circle"
-    />
-  )
-}
+    <Avatar alt={t('recipient.avatar')} size="sm" src={url} variant="circle" />
+  );
+};
