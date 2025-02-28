@@ -15,6 +15,7 @@ import { KeyboardEvent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { MessagePreview } from '~/features/Message/message-preview';
+import { useConfirmModalStore } from '~/hooks/useConfirmModalStore';
 import { MessageMetadata } from '~/models';
 import {
   useFolderMessages,
@@ -44,6 +45,8 @@ export function MessageList() {
   const restoreQuery = useRestoreMessage();
   const deleteMessage = useDeleteMessage();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
+
+  const openModal = useConfirmModalStore((state) => state.openModal);
 
   const {
     messages,
@@ -136,8 +139,16 @@ export function MessageList() {
   };
 
   const handleDelete = () => {
-    deleteMessage.mutate({ id: selectedIds });
-    setCurrent((prev) => prev + 1);
+    openModal({
+      id: "delete-modal",
+      header: <>{t('delete.definitely')}</>,
+      body: <p>{t('delete.definitely.confirm')}</p>,
+      variant: "ok/cancel",
+      onSuccess: () => {
+        deleteMessage.mutate({ id: selectedIds });
+        setCurrent((prev) => prev + 1);
+      },
+    });
   }
 
   const toolbar: ToolbarItem[] = [
