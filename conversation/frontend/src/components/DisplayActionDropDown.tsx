@@ -2,10 +2,30 @@ import { Dropdown, IconButton, IconButtonProps, Button } from "@edifice.io/react
 import { IconDelete, IconOptions, IconPrint, IconRedo, IconRestore, IconSend, IconUndo, IconUndoAll } from "@edifice.io/react/icons";
 import { RefAttributes } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
+import { useConfirmModalStore } from "~/hooks/useConfirmModalStore";
 import { Message } from "~/models";
+import { useDeleteMessage } from "~/services";
 
 export function DisplayActionDropDown({message}: {message: Message}) {
     const { t } = useTranslation('conversation');
+    const navigate = useNavigate();
+    const openModal = useConfirmModalStore((state) => state.openModal);
+    const deleteMessage = useDeleteMessage();
+
+    const handleDelete = () => {
+      openModal({
+        id: "delete-modal",
+        header: <>{t('delete.definitely')}</>,
+        body: <p>{t('delete.definitely.confirm')}</p>,
+        okText: t('confirm'),
+        koText: t('cancel'),
+        onSuccess: () => {
+          deleteMessage.mutate({ id: message.id });
+          navigate('/trash');
+        },
+      });
+    }
 
     const buttonAction = [
       {
@@ -62,9 +82,7 @@ export function DisplayActionDropDown({message}: {message: Message}) {
         {
           label: t("delete"),
           icon: <IconDelete />,
-          action: () => {
-            alert('delete');
-          },
+          action: handleDelete,
           hidden: !message.trashed
         },
         {

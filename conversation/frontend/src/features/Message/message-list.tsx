@@ -143,7 +143,8 @@ export function MessageList() {
       id: "delete-modal",
       header: <>{t('delete.definitely')}</>,
       body: <p>{t('delete.definitely.confirm')}</p>,
-      variant: "ok/cancel",
+      okText: t('confirm'),
+      koText: t('cancel'),
       onSuccess: () => {
         deleteMessage.mutate({ id: selectedIds });
         setCurrent((prev) => prev + 1);
