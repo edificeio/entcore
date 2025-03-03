@@ -126,6 +126,7 @@
   "put.trash": "Suppression du dossier",
   "recipient": "Destinataire",
   "recipient.avatar": "Avatar du destinataire",
+  "recipient.avatar.group": "Plusieurs destinataires",
   "remove.attachment": "Supprimer la pièce jointe",
   "remove.from.folder": "Retirer du dossier",
   "remove.link": "Supprimer",

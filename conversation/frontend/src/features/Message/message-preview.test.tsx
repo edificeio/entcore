@@ -119,12 +119,25 @@ describe('Message preview header component', () => {
     expect(senderName).toBeInTheDocument();
   });
 
-  it('should display recipient avatar when is in outbox', async () => {
+  it('should display the recipient avatar when is in outbox', async () => {
     mocks.useParams.mockReturnValue({ folderId: 'outbox' });
 
-    render(<MessagePreview message={message} />);
+    const messageWithOneRecipient = mockMessagesOfInbox[1];
+    render(<MessagePreview message={messageWithOneRecipient} />);
+
+    expect(messageWithOneRecipient.to.groups.length).equal(1);
 
     const recipientAvatar = screen.getByAltText('recipient.avatar');
+    expect(recipientAvatar).toBeInTheDocument();
+  });
+
+  it.only('should display group avatar icon when more than one recipient in outbox', async () => {
+    mocks.useParams.mockReturnValue({ folderId: 'outbox' });
+    render(<MessagePreview message={message} />);
+
+    expect(message.to.groups.length).toBeGreaterThan(1);
+
+    const recipientAvatar = screen.getByLabelText('recipient.avatar.group');
     expect(recipientAvatar).toBeInTheDocument();
   });
 });
