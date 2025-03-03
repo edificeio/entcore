@@ -26,7 +26,7 @@
   "date": "Date",
   "delete": "Supprimer",
   "delete.definitely": "Supprimer définitivement",
-  "delete.definitely.confirm": "Le ou les message(s) que vous avez sélectionné vont être définitivement supprimés.",
+  "delete.definitely.confirm": "delete.definitely.confirm": "Le ou les messages que vous avez sélectionnés vont être définitivement supprimés.",
   "destination.folder": "Dossier de destination",
   "download.all.attachment": "Télécharger toutes les pièces jointes",
   "download.attachment": "Télécharger la pièce jointe",
