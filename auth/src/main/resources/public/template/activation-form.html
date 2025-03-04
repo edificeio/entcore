@@ -52,7 +52,13 @@
 				</p>
 				<p>
 					<label translate content="auth.phone"></label>
-					<input type="tel" ng-pattern="phonePattern" name="phone" ng-model="user.phone" ng-required="mandatory.phone" tabindex="4"/>
+					<input type="tel" 
+						data-intl-phone-input
+						intl-format-number="temp.intlFormatNumber"
+						name="phone" 
+						ng-model="user.phone" 
+						ng-required="mandatory.phone" 
+						tabindex="4"/>
 					<span class="input-errors" ng-if="activationForm.phone.$invalid && activationForm.phone.$dirty">
 						<span ng-repeat="(key, value) in activationForm.phone.$error">
 							<label ng-if="value">[[lang.translate(key)]]</label>
