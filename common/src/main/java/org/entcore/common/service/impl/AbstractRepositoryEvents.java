@@ -84,7 +84,7 @@ public abstract class AbstractRepositoryEvents implements RepositoryEvents {
 			String res = prevResults.encode();
 			JsonArray documentsIds = new JsonArray(ResourceUtils.extractIds(res));
 			if (!documentsIds.isEmpty()) {
-				Bson findDocsbyId = Filters.eq("_id", documentsIds);
+				Bson findDocsbyId = Filters.in("_id", documentsIds);
 				JsonObject query = MongoQueryBuilder.build(findDocsbyId);
 				mongo.find("documents", query, new Handler<Message<JsonObject>>() {
 					@Override
