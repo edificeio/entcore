@@ -80,7 +80,9 @@ public abstract class GenericShareService implements ShareService {
 		this.groupedActions = groupedActions;
 		final String main = vertx.getOrCreateContext().config().getString("main");
 		final String module = isNotEmpty(main) ? main.substring(main.lastIndexOf(".") + 1) : "unknown_module";
-		this.eventStore = EventStoreFactory.getFactory().getEventStore(module);
+		final EventStoreFactory factory = EventStoreFactory.getFactory();
+		factory.setVertx(vertx);
+		this.eventStore = factory.getEventStore(module);
 	}
 
 	protected Future<Set<String>> userIdsForGroupIds(Set<String> groupsIds, String currentUserId) {
