@@ -32,14 +32,19 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.communication.filters.CommunicationDiscoverVisibleFilter;
 import org.entcore.communication.services.CommunicationService;
@@ -47,8 +52,11 @@ import org.entcore.communication.services.impl.DefaultCommunicationService;
 
 import java.util.List;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
+import static org.entcore.common.neo4j.Neo4jResult.fullNodeMergeHandler;
+import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 
 public class CommunicationController extends BaseController {
 
@@ -269,7 +277,7 @@ public class CommunicationController extends BaseController {
 						"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
 						"HEAD(visibles.profiles) as profile, subjects" + nbUsers + groupTypes;
 				communicationService.visibleUsers(user.getUserId(), null, expectedTypes, true, true, false,
-						preFilter, customReturn, params, user.getType(), visibles -> {
+						preFilter, customReturn, params, user.getType(), false, visibles -> {
 							if (visibles.isRight()) {
 								renderJson(request,
 										UserUtils.translateAndGroupVisible(visibles.right().getValue(),
@@ -875,4 +883,22 @@ public class CommunicationController extends BaseController {
 		});
 	}
 
+	/**
+	 * Search entities (users, groups) visible by the requester.
+	 * This endpoint can serve 2 different types of results based on the configuration :
+	 * - the old format that used to be served by the module conversation
+	 * - the new format which returns more data
+	 * @param request Caller's HTTP request
+	 */
+	@Get("/visible/search")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void searchVisibleContacts(HttpServerRequest request) {
+		UserUtils.getAuthenticatedUserInfos(eb, request)
+		.onSuccess(userInfos -> {
+			final String query = request.params().get("query");
+			communicationService.searchVisibles(userInfos, query, I18n.acceptLanguage(request))
+				.onSuccess(visibles -> renderJson(request, visibles))
+				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
+		});
+	}
 }
