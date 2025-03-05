@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { ReactNode } from "react";
-import { ConfirmModalVariant } from "~/components/ConfirmModal/ConfirmModal";
+
+type ConfirmModalVariant = 'yes/no' | 'ok/cancel';
 
 type ConfirmModalState = {
   isOpen: boolean;
