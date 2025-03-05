@@ -358,6 +358,7 @@ public class S3Client {
 				if (response.statusCode() == 200 || response.statusCode() == 304) {
 					resp.putHeader("ETag", ((eTag != null) ? eTag : response.headers().get("ETag")));
 					resp.putHeader("Content-Type", response.headers().get("Content-Type"));
+					resp.putHeader("Content-Length", response.headers().get("Content-Length"));
 				}
 
 				if (response.statusCode() == 200) {
