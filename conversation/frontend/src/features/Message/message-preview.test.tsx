@@ -5,7 +5,26 @@ import { MessagePreview } from './message-preview';
 
 const message = mockMessagesOfInbox[0];
 
+const mocks = vi.hoisted(() => ({
+  useParams: vi.fn(),
+}));
+
+vi.mock('react-router-dom', async () => {
+  const actual =
+    await vi.importActual<typeof import('react-router-dom')>(
+      'react-router-dom',
+    );
+  return {
+    ...actual,
+    useParams: mocks.useParams,
+  };
+});
+
 describe('Message preview header component', () => {
+  beforeEach(() => {
+    mocks.useParams.mockReturnValue({ folderId: 'inbox' });
+  });
+
   afterEach(() => {
     vi.clearAllMocks();
   });
@@ -86,5 +105,39 @@ describe('Message preview header component', () => {
     expect(messageSubject).toBeInTheDocument();
     expect(messageResponse).toBeInTheDocument();
     expect(messageHasAttachements).not.toBeInTheDocument();
+  });
+
+  it('should display "to" label and recipient name when is in outbox', async () => {
+    mocks.useParams.mockReturnValue({ folderId: 'outbox' });
+
+    render(<MessagePreview message={message} />);
+
+    const toLabel = screen.getByText('at');
+    expect(toLabel).toBeInTheDocument();
+
+    const senderName = screen.getByText('Enseignants du groupe scolaire.');
+    expect(senderName).toBeInTheDocument();
+  });
+
+  it('should display the recipient avatar when is in outbox', async () => {
+    mocks.useParams.mockReturnValue({ folderId: 'outbox' });
+
+    const messageWithOneRecipient = mockMessagesOfInbox[1];
+    render(<MessagePreview message={messageWithOneRecipient} />);
+
+    expect(messageWithOneRecipient.to.groups.length).equal(1);
+
+    const recipientAvatar = screen.getByAltText('recipient.avatar');
+    expect(recipientAvatar).toBeInTheDocument();
+  });
+
+  it.only('should display group avatar icon when more than one recipient in outbox', async () => {
+    mocks.useParams.mockReturnValue({ folderId: 'outbox' });
+    render(<MessagePreview message={message} />);
+
+    expect(message.to.groups.length).toBeGreaterThan(1);
+
+    const recipientAvatar = screen.getByLabelText('recipient.avatar.group');
+    expect(recipientAvatar).toBeInTheDocument();
   });
 });
