@@ -1,4 +1,4 @@
-import { EdificeClientProvider } from '@edifice.io/react';
+import { ConfirmModal, EdificeClientProvider } from '@edifice.io/react';
 import {
   QueryCache,
   QueryClient,
@@ -7,7 +7,6 @@ import {
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { ERROR_CODE } from 'edifice-ts-client';
 import { ReactNode } from 'react';
-import ConfirmModal from '~/components/ConfirmModal/ConfirmModal';
 import { useConfirmModalStore } from '~/hooks/useConfirmModalStore';
 
 export const queryClient = new QueryClient({
