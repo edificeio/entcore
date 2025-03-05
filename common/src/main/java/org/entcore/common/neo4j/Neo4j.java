@@ -162,6 +162,7 @@ public class Neo4j {
 
 			@Override
 			public void handle(JsonObject res) {
+
 				if (res.getString("message") != null) {
 					log.error(res.getString("exception") + " : " + res.getString("message"));
 					res.put("status", "error");

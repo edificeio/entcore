@@ -19,38 +19,41 @@
 
 package org.entcore.common.share.impl;
 
-import static fr.wseduc.webutils.Utils.getOrElse;
-import static fr.wseduc.webutils.Utils.isEmpty;
-import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
-import static org.entcore.common.user.UserUtils.findVisibleProfilsGroups;
-import static org.entcore.common.user.UserUtils.findVisibleUsers;
-import static org.entcore.common.validation.StringValidation.cleanId;
-
-import java.util.*;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-
-import io.vertx.core.Promise;
-import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.neo4j.Neo4jResult;
-import org.entcore.common.neo4j.StatementsBuilder;
-import org.entcore.common.share.ShareInfosQuery;
-import org.entcore.common.share.ShareService;
-import org.entcore.common.user.UserUtils;
-import org.entcore.common.validation.StringValidation;
-
+import com.google.common.collect.Lists;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.security.ActionType;
 import fr.wseduc.webutils.security.SecuredAction;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.shareddata.LocalMap;
+
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.Neo4jResult;
+import org.entcore.common.neo4j.StatementsBuilder;
+import org.entcore.common.share.ShareInfosQuery;
+import org.entcore.common.share.ShareModel;
+import org.entcore.common.share.ShareService;
+import org.entcore.common.user.UserUtils;
+import org.entcore.common.validation.StringValidation;
+
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
+import static fr.wseduc.webutils.Utils.getOrElse;
+import static fr.wseduc.webutils.Utils.isEmpty;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
+import static org.entcore.common.user.UserUtils.findVisibleProfilsGroups;
+import static org.entcore.common.user.UserUtils.findVisibleUsers;
+import static org.entcore.common.validation.StringValidation.cleanId;
 
 public abstract class GenericShareService implements ShareService {
 
@@ -66,18 +69,24 @@ public abstract class GenericShareService implements ShareService {
 	protected final Map<String, List<String>> groupedActions;
 	protected static final I18n i18n = I18n.getInstance();
 	private JsonArray resourceActions;
+	private final Vertx vertx = Vertx.currentContext().owner();
+	private final int DEFAULT_SHARES_PARTITION_SIZE = 50;
+	private final EventStore eventStore;
 
 	public GenericShareService(EventBus eb, Map<String, SecuredAction> securedActions,
 			Map<String, List<String>> groupedActions) {
 		this.eb = eb;
 		this.securedActions = securedActions;
 		this.groupedActions = groupedActions;
+		final String main = vertx.getOrCreateContext().config().getString("main");
+		final String module = isNotEmpty(main) ? main.substring(main.lastIndexOf(".") + 1) : "unknown_module";
+		this.eventStore = EventStoreFactory.getFactory().getEventStore(module);
 	}
 
 	protected Future<Set<String>> userIdsForGroupIds(Set<String> groupsIds, String currentUserId) {
 		@SuppressWarnings("rawtypes")
 		List<Future> futures = groupsIds.stream().map(groupId -> {
-			Future<Set<String>> future = Future.future();
+			Promise<Set<String>> future = Promise.promise();
 			UserUtils.findUsersInProfilsGroups(groupId, eb, currentUserId, false, ev -> {
 				Set<String> ids = new HashSet<>();
 				if (ev != null) {
@@ -91,11 +100,11 @@ public abstract class GenericShareService implements ShareService {
 				}
 				future.complete(ids);
 			});
-			return future;
+			return future.future();
 		}).collect(Collectors.toList());
 		return CompositeFuture.all(futures).map(result -> {
 			List<Set<String>> all = result.list();
-			return all.stream().reduce(new HashSet<String>(), (a1, a2) -> {
+			return all.stream().reduce(new HashSet<>(), (a1, a2) -> {
 				a1.addAll(a2);
 				return a1;
 			});
@@ -113,7 +122,7 @@ public abstract class GenericShareService implements ShareService {
 				if (a == null) {
 					a = new JsonObject()
 							.put("name",
-									new fr.wseduc.webutils.collections.JsonArray()
+									new JsonArray()
 											.add(action.getName().replaceAll("\\.", "-")))
 							.put("displayName", action.getDisplayName()).put("type", action.getType());
 					resourceActions.put(action.getDisplayName(), a);
@@ -122,7 +131,7 @@ public abstract class GenericShareService implements ShareService {
 				}
 			}
 		}
-		this.resourceActions = new fr.wseduc.webutils.collections.JsonArray(
+		this.resourceActions = new JsonArray(
 				new ArrayList<>(resourceActions.getMap().values()));
 		return this.resourceActions;
 	}
@@ -153,7 +162,7 @@ public abstract class GenericShareService implements ShareService {
 							JsonObject checked = users.getJsonObject("checked");
 							JsonObject checkedInherited = users.put("checkedInherited", new JsonObject())
 									.getJsonObject("checkedInherited");
-							Set<String> fieldNames = new HashSet<String>(checked.fieldNames());
+							Set<String> fieldNames = new HashSet<>(checked.fieldNames());
 							for (String cUserId : fieldNames) {
 								if (userCheckedActions.containsKey(cUserId)) {
 									// if it is in both inherit and not inhertid keep both and has not same actions
@@ -175,7 +184,7 @@ public abstract class GenericShareService implements ShareService {
 							JsonObject checked = groups.getJsonObject("checked");
 							JsonObject checkedInherited = groups.put("checkedInherited", new JsonObject())
 									.getJsonObject("checkedInherited");
-							Set<String> fieldNames = new HashSet<String>(checked.fieldNames());
+							Set<String> fieldNames = new HashSet<>(checked.fieldNames());
 							for (String cGroupId : fieldNames) {
 								// if it is in both inherit and not inhertid keep both
 								if (groupCheckedActions.containsKey(cGroupId)) {
@@ -203,9 +212,9 @@ public abstract class GenericShareService implements ShareService {
 			final JsonObject userCheckedActions, final String acceptLanguage, ShareInfosQuery query,
 			final Handler<JsonObject> handler) {
 		final JsonObject groupParams = new JsonObject().put("groupIds",
-				new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(groupCheckedActions.fieldNames())));
+				new JsonArray(new ArrayList<>(groupCheckedActions.fieldNames())));
 		final JsonObject userParams = new JsonObject().put("userIds",
-				new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(userCheckedActions.fieldNames())));
+				new JsonArray(new ArrayList<>(userCheckedActions.fieldNames())));
 		final String search = query.getSearch();
 		if (search != null && search.trim().isEmpty()) {
 			final Neo4j neo4j = Neo4j.getInstance();
@@ -214,7 +223,7 @@ public abstract class GenericShareService implements ShareService {
 				if (sg.isRight()) {
 					visibleGroups = sg.right().getValue();
 				} else {
-					visibleGroups = new fr.wseduc.webutils.collections.JsonArray();
+					visibleGroups = new JsonArray();
 				}
 				final JsonObject groups = new JsonObject();
 				groups.put("visibles", visibleGroups);
@@ -230,7 +239,7 @@ public abstract class GenericShareService implements ShareService {
 					if (event.isRight()) {
 						visibleUsers = event.right().getValue();
 					} else {
-						visibleUsers = new fr.wseduc.webutils.collections.JsonArray();
+						visibleUsers = new JsonArray();
 					}
 					JsonObject users = new JsonObject();
 					users.put("visibles", visibleUsers);
@@ -457,79 +466,106 @@ public abstract class GenericShareService implements ShareService {
 	 *   the visible users and groups of the user</li>
 	 * </ul>
 	 * @param userId Id of the user who wants to perform the update
+	 * @param resourceId Id of the resource being shared
 	 * @param originalShares Actual shares of the user
 	 * @param shareUpdates Shares that the user wants to apply
-	 * @return A {@code Future} that completes with {@code true} iff all the detailed conditions
-	 * above were met and {@code false} otherwise.
+	 * @return A {@code Future} that completes with a set of the visible shares id (original and updated) iff all
+	 * the detailed conditions above were met, and an empty set otherwise.
 	 */
-	private Future<Boolean> checkCanApplyShares(
+	private Future<Set<String>> getVisibleShares(
 		final String userId,
 		final String resourceId,
 		final JsonArray originalShares,
 		final Map<String, Set<String>> shareUpdates) {
-		final Promise<Boolean> promise = Promise.promise();
+		final Promise<Set<String>> promise = Promise.promise();
 		final String customReturn = "RETURN DISTINCT visibles.id as id, has(visibles.login) as isUser";
-		UserUtils.findVisibles(eb, userId, customReturn, null, true, true, false, "fr", visibleResponse -> {
-			final Set<String> visibleUsersAndGroups = visibleResponse.stream()
-				.map(entry -> ((JsonObject) entry).getString("id"))
-				.collect(Collectors.toSet());
-			// Check that original shares are untouched or that the ones that are modified are modified accordingly to
-			// users/groups visibility
-			boolean ok = true;
-			final Set<String> originalUsersAndGroups = new HashSet<>();
-			for (Object originalShare : originalShares) {
-				final JsonObject share = (JsonObject) originalShare;
-				final String idOfShare = getUserOrGroupIdOfShare(share);
-				originalUsersAndGroups.add(idOfShare);
-				if(visibleUsersAndGroups.contains(idOfShare)) {
-					log.debug(idOfShare + " is visible so it can be changed");
-				} else {
-					final Set<String> originalRights = share.stream()
-						.filter(e -> !e.getKey().equals("userId") && !e.getKey().equals("groupId") && (Boolean) e.getValue())
-						.map(Map.Entry::getKey)
-						.collect(Collectors.toSet());
-					final Set<String> desiredRights = shareUpdates.getOrDefault(idOfShare, Collections.emptySet());
-					if(desiredRights.isEmpty()) {
-						log.debug("OK - manager can remove shares");
-					} else if(desiredRights.equals(originalRights)) {
-						log.debug("OK - desired rights and original rights are the same for " + idOfShare);
-					} else {
-						log.warn("KO - desired rights and original rights differ for " + idOfShare + " but the user has no visibility on it");
-						ok = false;
-						break;
-					}
-				}
-			}
-			if(ok) {
-				// Check that added groups or users do not concern users or groups that the user does not have access to
-				final Set<String> unmatchedUserIds = shareUpdates.keySet().stream()
-					.filter(id -> !originalUsersAndGroups.contains(id)) // Added users and groups
-					.filter(id -> !visibleUsersAndGroups.contains(id))
-					.collect(Collectors.toSet());
-				if(unmatchedUserIds.isEmpty()) {
-					promise.complete(true);
-				} else if(unmatchedUserIds.size() > 1) {
-					// If there is more than 2 invisible users, we know that at least one of them is not visible at all so we cannot
-					// share the resource
-					log.warn("KO - tried to add rights to a user/group " + unmatchedUserIds + " not visible to user");
-					promise.complete(false);
-				} else {
-					//
-					getResourceOwnerUserId(resourceId).onSuccess(creatorId -> {
-						if(unmatchedUserIds.contains(creatorId)) {
-							promise.complete(true);
-						} else {
-							// For workspace, check if we want to add the owner of the resource
-							log.warn("KO - tried to add rights to a user/group " + unmatchedUserIds + " not visible to user");
-							promise.complete(false);
-						}
-					}).onFailure(promise::fail);
-				}
-			} else {
-				promise.complete(ok);
-			}
+
+		// Parallelizing the process of fetching the visibles
+		final int partitionSize;
+		LocalMap<Object, Object> serverConfig = vertx.sharedData().getLocalMap("server");
+		if (serverConfig != null) {
+			partitionSize = (int) serverConfig.getOrDefault("sharesPartitionSize", DEFAULT_SHARES_PARTITION_SIZE);
+		} else {
+			partitionSize = DEFAULT_SHARES_PARTITION_SIZE;
+		}
+		final List<List<String>> idsOfShareChunks = Lists.partition(getIdOfGroupsAndUsersConcernedByShares(originalShares, shareUpdates), partitionSize);
+		final List<Future<JsonArray>> visibleFutures = new ArrayList<>();
+		idsOfShareChunks.forEach(idsOfShareChunk -> {
+			final Promise<JsonArray> visiblePromise = Promise.promise();
+			final JsonArray idsOfShare = new JsonArray();
+			idsOfShareChunk.forEach(idsOfShare::add);
+			final JsonObject extraParams = new JsonObject()
+					.put("expectedIdsOfUsersAndGroups", idsOfShare);
+			UserUtils.findVisibles(eb, userId, customReturn,
+					extraParams,
+					true, true, false,
+					"fr", "AND (m.id IN {expectedIdsOfUsersAndGroups}) ",
+					visiblePromise::complete);
+			visibleFutures.add(visiblePromise.future());
 		});
+		Future.all(visibleFutures)
+				.map(futures -> futures.list().stream()
+						.map(result -> (JsonArray) result)
+						.collect(Collectors.toList()))
+				.onSuccess(visibleChunks -> {
+					final JsonArray visibleArray = new JsonArray();
+					visibleChunks.forEach(visibleArray::addAll);
+					final Set<String> visibleSharedUsersAndGroups = visibleArray.stream()
+							.map(entry -> ((JsonObject) entry).getString("id"))
+							.collect(Collectors.toSet());
+					// Check that original shares are untouched or that the ones that are modified, are modified accordingly to
+					// users/groups visibility
+					boolean sharesAreValid = true;
+					final Set<String> originalUsersAndGroups = new HashSet<>();
+					for (Object originalShare : originalShares) {
+						final JsonObject share = (JsonObject) originalShare;
+						final String idOfShare = getUserOrGroupIdOfShare(share);
+						originalUsersAndGroups.add(idOfShare);
+						if(visibleSharedUsersAndGroups.contains(idOfShare)) {
+							log.debug(idOfShare + " is visible so it can be changed");
+						} else {
+							final Set<String> originalRights = share.stream()
+									.filter(e -> !e.getKey().equals("userId") && !e.getKey().equals("groupId") && (Boolean) e.getValue())
+									.map(Map.Entry::getKey)
+									.collect(Collectors.toSet());
+							final Set<String> desiredRights = shareUpdates.getOrDefault(idOfShare, Collections.emptySet());
+							if(desiredRights.isEmpty()) {
+								log.debug("OK - manager can remove shares");
+							} else if(desiredRights.equals(originalRights)) {
+								log.debug("OK - desired rights and original rights are the same for " + idOfShare);
+							} else {
+								log.warn("KO - desired rights and original rights differ for " + idOfShare + " but the user has no visibility on it");
+								sharesAreValid = false;
+								break;
+							}
+						}
+					}
+					if(sharesAreValid) {
+						final Set<String> unmatchedUserIds = shareUpdates.keySet().stream()
+								.filter(id -> !originalUsersAndGroups.contains(id)) // Added users and groups
+								.filter(id -> !visibleSharedUsersAndGroups.contains(id))
+								.collect(Collectors.toSet());
+						if(!unmatchedUserIds.isEmpty()) {
+							// Warning if added the user does not have access to (can not see) added groups or users
+							log.warn("WARNING - tried to add rights on resource " + resourceId + "to a user/group " + unmatchedUserIds + " not visible to user");
+						}
+						promise.complete(visibleSharedUsersAndGroups);
+					} else {
+						promise.complete(Collections.emptySet());
+					}
+				});
 		return promise.future();
+	}
+
+	private List<String> getIdOfGroupsAndUsersConcernedByShares(final JsonArray originalShares, final Map<String, Set<String>> shareUpdates) {
+		final Set<String> ids = new HashSet<>();
+		for (Object originalShare : originalShares) {
+			final JsonObject share = (JsonObject) originalShare;
+			final String idOfShare = getUserOrGroupIdOfShare(share);
+			ids.add(idOfShare);
+		}
+		ids.addAll(shareUpdates.keySet());
+		return new ArrayList<>(ids);
 	}
 
 	private String getUserOrGroupIdOfShare(final JsonObject share) {
@@ -559,11 +595,13 @@ public abstract class GenericShareService implements ShareService {
 																			final Map<String, Set<String>> membersActions,
 																			final Set<String> shareBookmarkIds) {
 		getOriginalShares(resourceId, userId)
-		.compose(shares -> checkCanApplyShares(userId, resourceId, shares, membersActions))
-		.onSuccess(e -> {
-			if(e) {
+		.compose(shares -> getVisibleShares(userId, resourceId, shares, membersActions))
+		.onSuccess(visibleShares -> {
+			if(!visibleShares.isEmpty()) {
 				//		final String preFilter = "AND m.id IN {members} ";
-				final Set<String> members = membersActions.keySet();
+				final Set<String> members = membersActions.keySet().stream()
+						.filter(visibleShares::contains)
+						.collect(Collectors.toSet());
 				final JsonObject params = new JsonObject().put("members", new JsonArray(new ArrayList<>(members)));
 				//		final String customReturn = "RETURN DISTINCT visibles.id as id, has(visibles.login) as isUser";
 				//		UserUtils.findVisibles(eb, userId, customReturn, params, true, true, false, null, preFilter, res -> {
@@ -674,5 +712,21 @@ public abstract class GenericShareService implements ShareService {
 		}
 		return rmActions;
 	}
+
+	protected void traceShare(String userId, String resourceId, JsonObject shared, JsonArray oldShared) {
+		final List<String> rights = new ShareModel(
+				prepareSharedForModel(shared),
+				securedActions, Optional.empty())
+				.getSerializedRights();
+		if (oldShared != null && !oldShared.isEmpty()) {
+			final List<String> oldRights = removeOldSharedInSerializedModel(rights, oldShared);
+			rights.removeAll(oldRights);
+		}
+		eventStore.createAndStoreShareEvent(userId, resourceId, rights);
+	}
+
+	protected abstract JsonArray prepareSharedForModel(JsonObject shared);
+
+	protected abstract List<String> removeOldSharedInSerializedModel(List<String> rights, JsonArray oldShared);
 
 }

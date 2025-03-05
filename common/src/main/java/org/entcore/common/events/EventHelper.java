@@ -22,6 +22,12 @@ public class EventHelper {
     }
 
     public void onAccess(final HttpServerRequest request) {
+        // #WB2-1957: Skip creating ACCESS EVENT for mobile webview
+        final String xApp = request.getParam("xApp");
+        if ("mobile".equals(xApp)) {
+            return;
+        }
+
         try {
             store.createAndStoreEvent(ACCESS_EVENT, request);
         } catch (Exception e) {

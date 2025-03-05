@@ -32,11 +32,11 @@ import java.util.List;
 
 public interface UserService {
 
-	void createInStructure(String structureId, JsonObject user, Handler<Either<String, JsonObject>> result);
+	void createInStructure(String structureId, JsonObject user, final UserInfos caller, Handler<Either<String, JsonObject>> result);
 
-	void createInClass(String classId, JsonObject user, Handler<Either<String, JsonObject>> result);
+	void createInClass(String classId, JsonObject user, final UserInfos caller, Handler<Either<String, JsonObject>> result);
 
-	void update(String id, JsonObject user, Handler<Either<String, JsonObject>> result);
+	void update(String id, JsonObject user, final UserInfos caller, Handler<Either<String, JsonObject>> result);
 
 	void updateLogin(String id, String newLogin, Handler<Either<String, JsonObject>> result);
 
@@ -73,7 +73,8 @@ public interface UserService {
 	 * 
 	 * @param structureId If defined, return users attached to this structure but with no class.
 	 * @param profile If defined, return users having one of the profiles.
-	 * @param sortOn If defined, sort users by this field (defaults to "displayName")
+	 * @param sortingField If defined, sort users by this field, defaults to (profile DESC, displayName ASC).
+	 * @param sortingOrder Sort order ASC or DESC (defaults to "ASC").
 	 * @param fromIndex If defined, return users by ommitting results before the index.
 	 * @param limitResult If defined, returned resultset will contain users up to this number. 
 	 * @param searchType If defined with searchTerm, filter results on this field.
@@ -82,8 +83,9 @@ public interface UserService {
 	 */
 	void listIsolated(
 		final String structureId, 
-		final List<String> profile, 
-		final String sortOn,
+		final List<String> profile,
+		final String sortingField,
+		final String sortingOrder,
 		final Integer fromIndex,
 		final Integer limitResult,
 		final String searchType,
@@ -164,4 +166,8 @@ public interface UserService {
 	Future<JsonObject> getUsersDisplayNames(JsonArray userIds);
 	
 	public void listUsersByStructure(List<String> structures, Handler<Either<String, JsonArray>> results);
+	void getUserStructuresGroup(String id, Handler<Either<String, JsonObject>> result);
+
+	Future<JsonArray> getAttachmentInfos(JsonArray userIds, JsonArray structuresSources);
+
 }

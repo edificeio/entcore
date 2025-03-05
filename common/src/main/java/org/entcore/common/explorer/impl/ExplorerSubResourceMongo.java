@@ -1,6 +1,6 @@
 package org.entcore.common.explorer.impl;
 
-import com.mongodb.QueryBuilder;
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import io.vertx.core.Future;
@@ -8,9 +8,11 @@ import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.BulkOperation;
 import io.vertx.ext.mongo.MongoClient;
+import org.bson.BsonDocument;
+import org.bson.BsonString;
+import org.bson.conversions.Bson;
 import org.entcore.common.explorer.ExplorerStream;
 import org.entcore.common.explorer.IngestJobStateUpdateMessage;
-import org.entcore.common.explorer.to.ExplorerReindexResourcesRequest;
 import org.entcore.common.explorer.to.ExplorerReindexSubResourcesRequest;
 import org.entcore.common.user.UserInfos;
 
@@ -18,11 +20,10 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+
+import static org.entcore.common.utils.DateUtils.formatUtcDateTime;
 
 /**
  * Assuming that {@code TSub} is the name of the class of your plugin and {@code TXXX} the name of the classes depending on
@@ -136,34 +137,29 @@ public abstract class ExplorerSubResourceMongo extends ExplorerSubResource {
 
     @Override
     protected void doFetchForIndex(final ExplorerStream<JsonObject> stream, final ExplorerReindexSubResourcesRequest request) {
-        int i = 1;
-        final QueryBuilder query = QueryBuilder.start();
+        final Set<Bson> indexFilters = new HashSet<>();
         final Date from = request.getFrom();
         final Date to = request.getTo();
         if (from != null) {
-            final LocalDateTime localFrom = Instant.ofEpochMilli(from.getTime())
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime();
-            query.and(getCreatedAtColumn()).greaterThanEquals(toMongoDate(localFrom));
+            indexFilters.add(new BsonDocument().append(getCreatedAtColumn(),
+              new BsonDocument().append("$gte",
+                new BsonDocument().append("$date", new BsonString(formatUtcDateTime(from))))));
         }
         if (to != null) {
-            final LocalDateTime localTo = Instant.ofEpochMilli(to.getTime())
-                    .atZone(ZoneId.systemDefault())
-                    .toLocalDateTime();
-            query.and(getCreatedAtColumn()).lessThan(toMongoDate(localTo));
+            indexFilters.add(new BsonDocument().append(getCreatedAtColumn(),
+              new BsonDocument().append("$lt",
+                new BsonDocument().append("$date", new BsonString(formatUtcDateTime(to))))));
         }
         if(request.getIds() != null && !request.getIds().isEmpty()) {
-            query.and(getIdColumn()).in(request.getIds());
+            indexFilters.add(Filters.in(getIdColumn(), request.getIds()));
         }
         if(request.getParentIds() != null && !request.getParentIds().isEmpty()) {
-            query.and(getParentColumn()).in(request.getIds());
+            indexFilters.add(Filters.in(getParentColumn(), request.getIds()));
         }
-        final JsonObject queryJson = MongoQueryBuilder.build(query);
+        final JsonObject queryJson = MongoQueryBuilder.build(Filters.and(indexFilters));
         mongoClient.findBatch(getCollectionName(),queryJson).handler(result -> {
             stream.add(Arrays.asList(result));
-        }).endHandler(e->{
-            stream.end();
-        });
+        }).endHandler(e-> stream.end());
     }
 
     protected String getIdColumn() { return "_id"; }

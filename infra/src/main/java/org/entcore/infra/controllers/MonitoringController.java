@@ -26,6 +26,12 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.IgnoreCsrf;
@@ -34,13 +40,6 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.sql.Sql;
 import org.entcore.infra.services.CspReportService;
 import org.entcore.infra.services.impl.MongoDbCspReportService;
-
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import org.vertx.java.core.http.RouteMatcher;
 
 import java.util.Map;
@@ -86,7 +85,7 @@ public class MonitoringController extends BaseController {
 		}
 		Neo4j.getInstance().execute("MATCH (:Structure) RETURN count(*)", (JsonObject) null,
 				getResponseHandler("neo4j", timerId,  result, count, request, closed));
-		MongoDb.getInstance().command("{ dbStats: 1 }",
+		MongoDb.getInstance().command("{ \"dbStats\": 1 }",
 				getResponseHandler("mongodb", timerId,  result, count, request, closed));
 	}
 
@@ -111,7 +110,7 @@ public class MonitoringController extends BaseController {
 	@SecuredAction(value = "",  type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
 	public void checkVersionsAll(final HttpServerRequest request) {
-		final JsonArray versions = new fr.wseduc.webutils.collections.JsonArray();
+		final JsonArray versions = new JsonArray();
 		LocalMap<String, JsonObject> versionMap = vertx.sharedData().getLocalMap("modsInfoMap");
 		for (Map.Entry<String,JsonObject> entry : versionMap.entrySet()) {
 			versions.add(new JsonObject().put(entry.getKey(), entry.getValue()));
@@ -123,7 +122,7 @@ public class MonitoringController extends BaseController {
 	@SecuredAction(value = "",  type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
 	public void checkVersions(final HttpServerRequest request) {
-		final JsonArray versions = new fr.wseduc.webutils.collections.JsonArray();
+		final JsonArray versions = new JsonArray();
 		LocalMap<String, String> versionMap = vertx.sharedData().getLocalMap("versions");
 		for (Map.Entry<String,String> entry : versionMap.entrySet()) {
 			versions.add(new JsonObject().put(entry.getKey(), entry.getValue()));
@@ -135,7 +134,7 @@ public class MonitoringController extends BaseController {
 	@SecuredAction(value = "",  type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
 	public void checkDetailedVersions(final HttpServerRequest request) {
-		final JsonArray versions = new fr.wseduc.webutils.collections.JsonArray();
+		final JsonArray versions = new JsonArray();
 		LocalMap<String, JsonObject> versionMap = vertx.sharedData().getLocalMap("detailedVersions");
 		for (Map.Entry<String,JsonObject> entry : versionMap.entrySet()) {
 			versions.add(new JsonObject().put(entry.getKey(), entry.getValue()));

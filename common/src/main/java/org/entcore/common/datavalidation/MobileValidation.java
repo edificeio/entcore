@@ -65,4 +65,18 @@ public class MobileValidation {
 			pendingMobileState
 		);
 	}
+
+	/**
+	 * Send a warning email & SMS to the user when the mobile phone number has been modified.
+	 * @param userInfos User infos
+	 * @param pendingMobileState with new mobile phone number
+	 * @return mobile ID
+	 */
+	static public Future<String> sendWarning(final HttpServerRequest request, UserInfos userInfos, JsonObject pendingMobileState) {
+		return UserValidationFactory.getInstance().sendUpdateMobileWarning(
+				request,
+				userInfos,
+				pendingMobileState
+		);
+	}
 }

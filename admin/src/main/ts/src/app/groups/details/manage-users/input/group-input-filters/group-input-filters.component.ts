@@ -53,11 +53,11 @@ export class GroupInputFiltersComponent extends OdeComponent implements OnChange
             this.changeDetector.markForCheck();
         });
         this.structure.syncAafFunctions().then(() => {
-            const aafFunctions: Array<Array<string>> = [];
+            const aafFunctions: Array<string> = [];
             this.structure.aafFunctions.forEach(f => {
                 f.forEach(f2 => {
                     if (!includes(aafFunctions, [f2[2], f2[4]])) {
-                        aafFunctions.push([f2[2], f2[4]])
+                        aafFunctions.push(f2[2] + f2[4])
                     }
                 });
             });

@@ -15,6 +15,7 @@ import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.GenericShareService;
 import org.entcore.common.user.UserInfos;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -122,4 +123,23 @@ public class ExplorerShareService extends GenericShareService implements ShareSe
         }
         shared.add(el);
     }
+
+    @Override
+    protected JsonArray prepareSharedForModel(JsonObject shared) {
+        // normalement on ne devrait jamais rentrer là dedans.
+        // Mais obligé de l'implémenter vu d'étrangement cette classe fait
+        // un héritage et un composition de la même classe parente...
+        log.error("Unimplemented method 'prepareSharedForModel' in ExplorerShareService");
+        return new JsonArray();
+    }
+
+    @Override
+    protected List<String> removeOldSharedInSerializedModel(List<String> rights, JsonArray oldShared) {
+        // normalement on ne devrait jamais rentrer là dedans.
+        // Mais obligé de l'implémenter vu d'étrangement cette classe fait
+        // un héritage et un composition de la même classe parente...
+        log.error("Unimplemented method 'removeOldSharedInSerializedModel' in ExplorerShareService");
+        return new ArrayList<>();
+    }
+
 }
