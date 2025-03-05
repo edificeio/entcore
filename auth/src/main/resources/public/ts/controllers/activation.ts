@@ -1,10 +1,9 @@
-import { ng, template, idiom as lang, http, skin } from 'entcore';
+import { http, idiom as lang, ng, skin, template } from 'entcore';
 
 export let activationController = ng.controller('ActivationController', ['$scope', ($scope) =>{
 	$scope.template = template;
 	$scope.lang = lang;
 	$scope.user = { themes: {} };
-	$scope.phonePattern = new RegExp("^(00|\\+)?(?:[0-9] ?-?\\.?){6,14}[0-9]$");
 
 	$scope.welcome = {};
 	template.open('main', 'activation-form');
