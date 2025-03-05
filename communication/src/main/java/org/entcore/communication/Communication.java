@@ -35,7 +35,7 @@ public class Communication extends BaseServer {
     TimelineHelper helper = new TimelineHelper(vertx, vertx.eventBus(), config);
 		CommunicationController communicationController = new CommunicationController();
 
-		communicationController.setCommunicationService(new DefaultCommunicationService(helper, config.getJsonArray("discoverVisibleExpectedProfile", new JsonArray())));
+		communicationController.setCommunicationService(new DefaultCommunicationService(vertx, helper, config));
 
 		addController(communicationController);
 		setDefaultResourceFilter(new CommunicationFilter());
