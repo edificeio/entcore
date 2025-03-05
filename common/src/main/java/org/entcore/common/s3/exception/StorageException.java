@@ -22,4 +22,7 @@ public class StorageException extends Exception {
 		super(message);
 	}
 
+	public StorageException(String message, Throwable cause) {
+		super(message, cause);
+	}
 }

@@ -60,6 +60,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -77,6 +78,8 @@ public class S3Client {
 	private final String secretKey;
 	private final String region;
 	private final String ssec;
+
+	private static final long S3_DOWNLOAD_TIMEOUT_IN_MILLISECONDS = TimeUnit.HOURS.toMillis(1L);
 
 	public S3Client(Vertx vertx, URI uri, String accessKey, String secretKey, String region, String bucket, String ssec) {
 		this(vertx, uri, accessKey, secretKey, region, bucket, ssec, false);
@@ -334,6 +337,7 @@ public class S3Client {
 		RequestOptions requestOptions = new RequestOptions()
 			.setMethod(HttpMethod.GET)
 			.setHost(host)
+			.setTimeout(S3_DOWNLOAD_TIMEOUT_IN_MILLISECONDS)
 			.setURI("/" + bucket + "/" + fileId);
 
 		httpClient.request(requestOptions)
@@ -360,6 +364,9 @@ public class S3Client {
 					resp.setChunked(true);
 					response.pipeTo(resp).onComplete(aVoid -> {
 						if (resultHandler != null) {
+							if(aVoid.failed()) {
+								log.error("An error occurred while piping an s3 file with id=" + id, aVoid.cause());
+							}
 							resultHandler.handle(new DefaultAsyncResult<>((Void) null));
 						}
 					});
@@ -612,9 +619,15 @@ public class S3Client {
 					vertx.fileSystem().open(destination, new OpenOptions(), ar -> {
 						if (ar.succeeded()) {
 							response.pipeTo(ar.result(), aVoid -> {
-								handler.handle(new DefaultAsyncResult<>(destination));
+								if(aVoid.succeeded()) {
+									log.info(id + " file successfully downloaded from S3");
+									handler.handle(new DefaultAsyncResult<>(destination));
+								} else {
+									final String message = "An error occurred while piping " + id + " to " + destination;
+									log.error(message, aVoid.cause());
+									handler.handle(new DefaultAsyncResult<>(new StorageException(message, aVoid.cause())));
+								}
 							});
-							response.resume();
 						} else {
 							handler.handle(new DefaultAsyncResult<>(ar.cause()));
 						}
