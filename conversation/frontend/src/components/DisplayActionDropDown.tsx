@@ -3,14 +3,14 @@ import { IconDelete, IconOptions, IconPrint, IconRedo, IconRestore, IconSend, Ic
 import { RefAttributes } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { useConfirmModalStore } from "~/hooks/useConfirmModalStore";
 import { Message } from "~/models";
 import { useDeleteMessage } from "~/services";
+import { useConfirmModalStore } from "~/store";
 
 export function DisplayActionDropDown({message}: {message: Message}) {
     const { t } = useTranslation('conversation');
     const navigate = useNavigate();
-    const openModal = useConfirmModalStore((state) => state.openModal);
+    const { openModal } = useConfirmModalStore();
     const deleteMessage = useDeleteMessage();
 
     const handleDelete = () => {
