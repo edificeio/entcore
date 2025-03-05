@@ -1,5 +1,5 @@
 import { IAttributes, IController } from "angular";
-import { $, httpPromisy, ng } from "entcore";
+import { $, ng } from "entcore";
 
 declare const window: any;
 
@@ -13,23 +13,23 @@ export interface IntlPhoneInputScope {
  * Directive for initializing and managing an international phone input field using the intl-tel-input library.
  * See https://www.twilio.com/fr/blog/saisie-numeros-telephone-internationaux-html-javascript
  * Libs are imported from a CDN in the HTML file - not webpack.
- * 
+ *
  * @directive
  * @name intlPhoneInput
- * 
+ *
  * @scope
  * @property {string} intlFormatNumber - A function to get the formatted international phone number.
- * 
+ *
  * @requires ngModel
- * 
+ *
  * @description
  * This directive initializes an international phone input field with the intl-tel-input library.
  * It dynamically loads the necessary CSS and JS files if they are not already loaded.
  * The directive also handles configuration loading, setting the phone number, and managing events.
- * 
+ *
  * @example
  * <input type="tel" intl-phone-input ng-model="phoneNumber" />
- * 
+ *
  * @param {IntlPhoneInputScope} scope - The scope of the directive.
  * @param {JQLite} elem - The element to which the directive is applied.
  * @param {IAttributes} attrs - The attributes of the element.
@@ -50,55 +50,25 @@ export const intlPhoneInputDirective = ng.directive("intlPhoneInput", [
         ngModelController?: IController
       ) => {
         let intlPhoneInput: any;
-        let filesToLoad = 2;
-        // Load intl-phone-input configuration
-        if (!window.intlTelInputConfig) {
-          /**
-           * Configuration object for initializing the international phone input.
-           * 
-           * @property {string} initialCountry - The default country code to be used for the phone input.
-           * @property {string[]} preferredCountries - An array of country codes that will be displayed at the top of the country dropdown list.
-           */
-          let defaultConf = {
-            initialCountry: "fr",
-            preferredCountries: ["fr", "mx", "es", "co", "gf", "pf", "gp", "yt", "nc", "pm", "wf", "gy", "mq", "mm", "ph"]
-          };
-
-          filesToLoad++;
-          // intl-phone-input configuration undefined, keep using default values.
-          httpPromisy<any>()
-            .get(`/auth/conf/public`)
-            .then((publicConf) => {
-              if (
-                publicConf &&
-                typeof publicConf["intl-phone-input"] === "object"
-              ) {
-                window.intlTelInputConfig = {
-                  ...defaultConf,
-                  ...publicConf["intl-phone-input"],
-                };
-
-                if (window.intlTelInputConfig.initialCountry === "auto") {
-                  window.intlTelInputConfig.geoIpLookup = (success) => {
-                    fetch("https://ipapi.co/json")
-                      .then((res) => res.json())
-                      .then((data) => success(data.country_code))
-                      .catch(() => {
-                        success("fr");
-                      });
-                  };
-                }
-                importLoadedCallback();
-              } else {
-                window.intlTelInputConfig = defaultConf;
-                importLoadedCallback();
-              }
-            })
-            .catch(() => {
-              window.intlTelInputConfig = defaultConf;
-              importLoadedCallback();
-            });
-        }
+        /**
+         * Configuration object for initializing the international phone input.
+         *
+         * @property {string} initialCountry - The default country code to be used for the phone input.
+         * @property {string[]} preferredCountries - An array of country codes that will be displayed at the top of the country dropdown list.
+         * @property {Function} geoIpLookup - A function to get the country code from the user's IP address.
+         */
+        const defaultConf = {
+          initialCountry: "auto",
+          preferredCountries: ["fr", "mx", "es", "co", "gf", "pf", "gp", "yt", "nc", "pm", "wf", "gy", "mq", "mm", "ph"],
+          geoIpLookup: (success) => {
+            fetch("https://ipapi.co/json")
+              .then((res) => res.json())
+              .then((data) => success(data.country_code))
+              .catch(() => {
+                success("fr");
+              });
+          }
+        };
 
         scope.$watch(attrs.ngModel, function () {
           if (
@@ -113,12 +83,12 @@ export const intlPhoneInputDirective = ng.directive("intlPhoneInput", [
         function importLoadedCallback() {
           filesLoaded++;
 
-          if (filesLoaded === filesToLoad) {
+          if (filesLoaded === 2) {
             intlPhoneInput = window.intlTelInput(elem[0], {
               customContainer: "w-100",
               utilsScript:
                 "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.8/js/utils.js",
-              ...window.intlTelInputConfig,
+              ...defaultConf,
             });
 
             if (intlPhoneInput) {
