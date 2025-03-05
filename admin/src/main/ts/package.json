@@ -1,6 +1,10 @@
 {
   "name": "admin-app",
+<<<<<<< HEAD
   "version": "6.5.8-%branch%.%generateVersion%",
+=======
+  "version": "6.0.0-%branch%.%generateVersion%",
+>>>>>>> 694f5d926 (chore: prepare next development iteration)
   "scripts": {
     "ng": "ng",
     "start": "ng serve --host 0.0.0.0",
