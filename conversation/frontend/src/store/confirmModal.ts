@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 
 type ConfirmModalVariant = 'yes/no' | 'ok/cancel';
 
-type ConfirmModalState = {
+interface ConfirmModalState {
   isOpen: boolean;
   id: string;
   header: ReactNode;
@@ -13,6 +13,9 @@ type ConfirmModalState = {
   koText?: string;
   onSuccess: () => void;
   onCancel: () => void;
+}
+
+interface ConfirmModalActions {
   openModal: (options: {
     id: string;
     header: ReactNode;
@@ -24,9 +27,11 @@ type ConfirmModalState = {
     onCancel?: () => void;
   }) => void;
   closeModal: () => void;
-};
+}
 
-export const useConfirmModalStore = create<ConfirmModalState>((set) => ({
+type ConfirmModalStore = ConfirmModalState & ConfirmModalActions;
+
+export const useConfirmModalStore = create<ConfirmModalStore>((set) => ({
   isOpen: false,
   id: "",
   header: "",
@@ -47,10 +52,13 @@ export const useConfirmModalStore = create<ConfirmModalState>((set) => ({
       okText,
       koText,
       onSuccess: () => {
-        onSuccess();
+        if (onSuccess) onSuccess();
         set({ isOpen: false });
       },
-      onCancel: onCancel || (() => set({ isOpen: false })),
+      onCancel: () => {
+        if (onCancel) onCancel();
+        set({ isOpen: false });
+      },
     }),
 
   closeModal: () => set({ isOpen: false }),

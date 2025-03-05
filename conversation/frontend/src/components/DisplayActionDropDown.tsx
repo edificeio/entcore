@@ -20,15 +20,14 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Message } from '~/models';
 import { useMarkUnread } from '~/services';
-import { useConfirmModalStore } from "~/hooks/useConfirmModalStore";
+import { useConfirmModalStore } from "~/store";
 import { useDeleteMessage } from "~/services";
-
 
 export function DisplayActionDropDown({ message }: { message: Message }) {
   const { t } = useTranslation('conversation');
   const markAsUnreadQuery = useMarkUnread();
   const navigate = useNavigate();
-  const openModal = useConfirmModalStore((state) => state.openModal);
+  const { openModal } = useConfirmModalStore();
   const deleteMessage = useDeleteMessage();
 
   const handleDelete = () => {
@@ -116,7 +115,7 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
     {
       label: t('delete'),
       icon: <IconDelete />,
-      action: () => handleDelete,
+      action: handleDelete,
       hidden: !message.trashed,
     },
     {

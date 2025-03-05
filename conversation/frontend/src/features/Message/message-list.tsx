@@ -15,7 +15,6 @@ import { KeyboardEvent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { MessagePreview } from '~/features/Message/message-preview';
-import { useConfirmModalStore } from '~/hooks/useConfirmModalStore';
 import { MessageMetadata } from '~/models';
 import {
   useFolderMessages,
@@ -26,6 +25,7 @@ import {
   useRestoreMessage,
   useDeleteMessage
 } from '~/services';
+import { useConfirmModalStore } from '~/store';
 import { useAppActions, useSelectedMessageIds } from '~/store/actions';
 
 export function MessageList() {
@@ -46,7 +46,7 @@ export function MessageList() {
   const deleteMessage = useDeleteMessage();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
 
-  const openModal = useConfirmModalStore((state) => state.openModal);
+  const { openModal } = useConfirmModalStore();
 
   const {
     messages,
