@@ -45,37 +45,40 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
     });
   }
 
+  const buttonAction = [
+      {
+        label: t("reply"),
+        id: "reply",
+        icon: <IconUndo />,
+        action: () => {
+          alert('reply');
+        },
+        hidden: message.state === 'DRAFT' || message.trashed
+      },
+      {
+        label: t("submit"),
+        id: "submit",
+        icon: <IconSend />,
+        action: () => {
+          alert('submit');
+        },
+        hidden: message.state !== 'DRAFT' || message.trashed
+      },
+      {
+        label: t("restore"),
+        id: "restore",
+        icon: <IconRestore />,
+        action: () => {
+          alert('restore');
+        },
+        hidden: !message.trashed
+      },
+    ];
+
   const handleMarkAsUnreadClick = () => {
     markAsUnreadQuery.mutate({ id: [message.id] });
     navigate(`../..`, { relative: 'path' });
   };
-
-  const buttonAction = [
-    {
-      label: t('reply'),
-      icon: <IconUndo />,
-      action: () => {
-        alert('reply');
-      },
-      hidden: message.state === 'DRAFT' || message.trashed,
-    },
-    {
-      label: t('submit'),
-      icon: <IconSend />,
-      action: () => {
-        alert('submit');
-      },
-      hidden: message.state !== 'DRAFT' || message.trashed,
-    },
-    {
-      label: t('restore'),
-      icon: <IconRestore />,
-      action: () => {
-        alert('restore');
-      },
-      hidden: !message.trashed,
-    },
-  ];
 
   const options = [
     {
@@ -132,6 +135,7 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
         .filter((o) => !o.hidden)
         .map((option) => (
           <Button
+            key={option.id}
             color="primary"
             variant="outline"
             leftIcon={option.icon}
