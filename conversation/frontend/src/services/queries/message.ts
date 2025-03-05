@@ -6,6 +6,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
+import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Message, MessageMetadata } from '~/models';
 import {
@@ -13,7 +14,6 @@ import {
   messageService,
   useUpdateFolderBadgeCountLocal,
 } from '..';
-import { useTranslation } from 'react-i18next';
 const appCodeName = 'conversation';
 /**
  * Message Query Options Factory.
@@ -40,7 +40,32 @@ export const messageQueryOptions = {
  * @returns Query result for the message.
  */
 export const useMessage = (messageId: string) => {
-  return useQuery(messageQueryOptions.getById(messageId));
+  const result = useQuery(messageQueryOptions.getById(messageId));
+  const queryClient = useQueryClient();
+  const { folderId } = useParams() as { folderId: string };
+  const [searchParams] = useSearchParams();
+  const search = searchParams.get('search');
+  const unreadFilter = searchParams.get('unread');
+
+  if (result.isSuccess) {
+    queryClient.setQueryData(
+      folderQueryOptions.getMessagesQuerykey(folderId, {
+        search: search === '' ? undefined : search || undefined,
+        unread: !unreadFilter ? undefined : true,
+      }),
+      (data: InfiniteData<MessageMetadata>) => {
+        data.pages.forEach((page: any) => {
+          page.forEach((message: MessageMetadata) => {
+            if (result.data.id === message.id) {
+              message.unread = false;
+            }
+          });
+        });
+        return data;
+      },
+    );
+  }
+  return result;
 };
 
 /**
