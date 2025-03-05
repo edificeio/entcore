@@ -1,6 +1,6 @@
 import { IAttributes, IController, IDirective, IScope } from "angular";
-import { ValidateMailController } from "./validate-mail.directive";
 import * as $ from "jquery";
+import { ValidateMailController } from "./validate-mail.directive";
 
 declare const window: any;
 
@@ -16,7 +16,7 @@ class Directive
   implements IDirective<IScope, JQLite, IAttributes, IController[]>
 {
   restrict = "A";
-  require = ["^validateMail"];
+  require = ["^validateMail", "ngModel"];
 
   constructor(private conf: any) {}
 
@@ -57,6 +57,14 @@ class Directive
         scope.$on("$destroy", () => {
           intlPhoneInput.destroy();
           elem.off("open:countrydropdown close:countrydropdown");
+        });
+
+        scope.$watch(attrs.ngModel, function () {
+          if (
+            intlPhoneInput
+          ) {
+            intlPhoneInput.setNumber(controllers[1].$modelValue);
+          }
         });
       }
     }
