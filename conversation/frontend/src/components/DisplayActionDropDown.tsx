@@ -30,6 +30,7 @@ export function DisplayActionDropDown({message}: {message: Message}) {
     const buttonAction = [
       {
         label: t("reply"),
+        id: "reply",
         icon: <IconUndo />,
         action: () => {
           alert('reply');
@@ -38,6 +39,7 @@ export function DisplayActionDropDown({message}: {message: Message}) {
       },
       {
         label: t("submit"),
+        id: "submit",
         icon: <IconSend />,
         action: () => {
           alert('submit');
@@ -46,6 +48,7 @@ export function DisplayActionDropDown({message}: {message: Message}) {
       },
       {
         label: t("restore"),
+        id: "restore",
         icon: <IconRestore />,
         action: () => {
           alert('restore');
@@ -98,6 +101,7 @@ export function DisplayActionDropDown({message}: {message: Message}) {
     return <>
       {buttonAction.filter(o => !o.hidden).map((option) => (
         <Button
+            key={option.id}
             color="primary"
             variant="outline"
             leftIcon={option.icon}
