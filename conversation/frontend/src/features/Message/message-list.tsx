@@ -25,6 +25,7 @@ import {
   useRestoreMessage,
   useDeleteMessage
 } from '~/services';
+import { useConfirmModalStore } from '~/store';
 import { useAppActions, useSelectedMessageIds } from '~/store/actions';
 
 export function MessageList() {
@@ -44,6 +45,8 @@ export function MessageList() {
   const restoreQuery = useRestoreMessage();
   const deleteMessage = useDeleteMessage();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
+
+  const { openModal } = useConfirmModalStore();
 
   const {
     messages,
@@ -136,8 +139,17 @@ export function MessageList() {
   };
 
   const handleDelete = () => {
-    deleteMessage.mutate({ id: selectedIds });
-    setCurrent((prev) => prev + 1);
+    openModal({
+      id: "delete-modal",
+      header: <>{t('delete.definitely')}</>,
+      body: <p>{t('delete.definitely.confirm')}</p>,
+      okText: t('confirm'),
+      koText: t('cancel'),
+      onSuccess: () => {
+        deleteMessage.mutate({ id: selectedIds });
+        setCurrent((prev) => prev + 1);
+      },
+    });
   }
 
   const toolbar: ToolbarItem[] = [
