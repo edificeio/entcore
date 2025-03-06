@@ -1,5 +1,5 @@
 import { render, screen } from '~/mocks/setup';
-import { MessageListEmpty } from './message-list-empty';
+import { MessageListEmpty } from './MessageListEmpty';
 
 /**
  * Mock useParams

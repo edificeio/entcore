@@ -1,7 +1,7 @@
 import { mockMessagesOfInbox } from '~/mocks';
 import { render, screen } from '~/mocks/setup';
 import { MessageMetadata } from '~/models';
-import { MessagePreview } from './message-preview';
+import { MessagePreview } from './MessagePreview';
 
 const message = mockMessagesOfInbox[0];
 

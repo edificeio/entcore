@@ -7,25 +7,25 @@ import {
 import {
   IconDelete,
   IconReadMail,
+  IconRestore,
   IconUnreadMail,
-  IconRestore
 } from '@edifice.io/react/icons';
 import clsx from 'clsx';
 import { KeyboardEvent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { MessagePreview } from '~/features/Message/message-preview';
 import { MessageMetadata } from '~/models';
 import {
+  useDeleteMessage,
   useFolderMessages,
   useMarkRead,
   useMarkUnread,
+  useRestoreMessage,
   useTrashMessage,
   useUpdateFolderBadgeCountLocal,
-  useRestoreMessage,
-  useDeleteMessage
 } from '~/services';
 import { useAppActions, useSelectedMessageIds } from '~/store/actions';
+import { MessagePreview } from './MessagePreview';
 
 export function MessageList() {
   const navigate = useNavigate();
@@ -78,7 +78,9 @@ export function MessageList() {
   const isInTrash = folderId === 'trash';
 
   const selectedMessages = useMemo(() => {
-    return messages?.filter((message) => selectedIds.includes(message.id)) || [];
+    return (
+      messages?.filter((message) => selectedIds.includes(message.id)) || []
+    );
   }, [selectedIds, messages]);
 
   const hasUnreadMessages = useMemo(() => {
@@ -138,7 +140,7 @@ export function MessageList() {
   const handleDelete = () => {
     deleteMessage.mutate({ id: selectedIds });
     setCurrent((prev) => prev + 1);
-  }
+  };
 
   const toolbar: ToolbarItem[] = [
     {
@@ -181,7 +183,7 @@ export function MessageList() {
         ),
         onClick: handleMoveToTrash,
         hidden: !canBeMovetoTrash,
-      }
+      },
     },
     {
       type: 'button',
@@ -194,7 +196,7 @@ export function MessageList() {
           </>
         ),
         onClick: handleRestore,
-        hidden: !isTrashMessage
+        hidden: !isTrashMessage,
       },
     },
     {
@@ -209,7 +211,7 @@ export function MessageList() {
         ),
         onClick: handleDelete,
         hidden: !isTrashMessage,
-      }
+      },
     },
   ];
 

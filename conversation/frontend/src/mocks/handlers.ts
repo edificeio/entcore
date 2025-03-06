@@ -1,6 +1,6 @@
 import { HttpResponse, http } from 'msw';
-import { folderHandlers } from './handlers/folder-handlers';
-import { messageHandlers } from './handlers/message-handlers';
+import { folderHandlers } from './handlers/folderHandlers';
+import { messageHandlers } from './handlers/messageHandlers';
 
 /**
  * DO NOT MODIFY

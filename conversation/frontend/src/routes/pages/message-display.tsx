@@ -7,8 +7,8 @@ import { QueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { LoaderFunctionArgs, useParams } from 'react-router-dom';
 import { DisplayActionDropDown } from '~/components/DisplayActionDropDown';
-import { MessageAttachments } from '~/features/Message/message-attachments';
-import { MessageHeader } from '~/features/Message/message-header';
+import { MessageAttachments } from '~/features/message/MessageAttachments';
+import { MessageHeader } from '~/features/message/MessageHeader';
 
 import { messageQueryOptions, useMessage } from '~/services';
 
@@ -35,7 +35,6 @@ export function Component() {
     // Scroll to the top of the page
     window.scrollTo(0, 0);
   }, []);
-  
 
   return (
     <>
