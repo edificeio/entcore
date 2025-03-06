@@ -773,6 +773,7 @@ public class DefaultUserService implements UserService {
 				"OPTIONAL MATCH u-[:IN]->(:ProfileGroup)-[:DEPENDS]->(class:Class)-[:BELONGS]->(s) " +
 				"OPTIONAL MATCH u-[:RELATED]->(parent: User) " +
 				"OPTIONAL MATCH (child: User)-[:RELATED]->u " +
+				"OPTIONAL MATCH (childClass:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(child) " +
 				"OPTIONAL MATCH u-[rf:HAS_FUNCTION]->(f:Function) " +
 				"OPTIONAL MATCH u-[:TEACHES]->(sub:Subject) " +
 				"RETURN DISTINCT u.id as id, head(u.profiles) as type, u.externalId as externalId, " +
@@ -789,7 +790,7 @@ public class DefaultUserService implements UserService {
 				"collect(distinct {id: class.id, name: class.name}) as allClasses, " +
 				"collect(distinct [f.externalId, rf.scope]) as functions, " +
 				"CASE WHEN parent IS NULL THEN [] ELSE collect(distinct {id: parent.id, firstName: parent.firstName, lastName: parent.lastName}) END as parents, " +
-				"CASE WHEN child IS NULL THEN [] ELSE collect(distinct {id: child.id, firstName: child.firstName, lastName: child.lastName, attachmentId : child.attachmentId, childExternalId : child.externalId, displayName : child.displayName }) END as children, " +
+				"CASE WHEN child IS NULL THEN [] ELSE collect(distinct {id: child.id, firstName: child.firstName, lastName: child.lastName, attachmentId : child.attachmentId, childExternalId : child.externalId, displayName : child.displayName, childClass : coalesce(childClass.name, \"\")}) END as children, " +
 				"HEAD(COLLECT(distinct parent.externalId)) as parent1ExternalId, " + // Hack for GEPI export
 				"HEAD(TAIL(COLLECT(distinct parent.externalId))) as parent2ExternalId, " + // Hack for GEPI export
 				"COUNT(distinct class.id) > 0 as hasClass, " + // Hack for Esidoc export

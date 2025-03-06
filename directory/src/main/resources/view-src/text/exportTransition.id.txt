@@ -1,7 +1,7 @@
 {{#Relative}}
-"externalid";"{{#i18n}}directory.admin.firstname{{/i18n}}*";"{{#i18n}}directory.admin.lastname{{/i18n}}*";"{{#i18n}}directory.admin.email{{/i18n}}";"childexternalid*";"childexternalid";"childexternalid";"childexternalid";"childexternalid";
+"externalid";"{{#i18n}}directory.admin.firstname{{/i18n}}*";"{{#i18n}}directory.admin.lastname{{/i18n}}*";"{{#i18n}}directory.admin.email{{/i18n}}";"childexternalid*";"childFirstName";"childLastName";"childClass";"childexternalid";"childFirstName";"childLastName";"childClass";"childexternalid";"childFirstName";"childLastName";"childClass";"childexternalid";"childFirstName";"childLastName";"childClass";"childexternalid";"childFirstName";"childLastName";"childClass";
 {{#list}}
-{{externalId}};{{firstName}};{{lastName}};{{email}};{{#children}}{{childExternalId}};{{/children}}
+{{externalId}};{{firstName}};{{lastName}};{{email}};{{#children}}{{childExternalId}};{{firstName}};{{lastName}};{{childClass}};{{/children}}
 {{/list}}
 {{/Relative}}
 {{#Student}}
