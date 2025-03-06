@@ -151,7 +151,7 @@ public class Group {
 			final String listAutolinkGroups =
 				"MATCH (g:ManualGroup) " +
 				"WHERE EXISTS(g.autolinkUsersFromGroups) " +
-				"RETURN g.id as id";
+				"RETURN g.id as id, g.autolinkUsersFromGroups as autolinkUsersFromGroups, g.autolinkUsersFromLevels as autolinkUsersFromLevels";
 			tx.add(listAutolinkGroups, new JsonObject());
 
 			tx.commit().compose(groups -> {
@@ -159,7 +159,10 @@ public class Group {
 					return groups.getJsonArray(0).stream().reduce(
 						Future.succeededFuture(new JsonArray()),
 						(previousFuture, group) -> previousFuture.compose(r ->
-								groupLinkRules(((JsonObject) group).getString("id"), tx).commit()),
+								groupLinkRules(((JsonObject) group).getString("id"),
+										((JsonObject) group).getJsonArray("autolinkUsersFromGroups"),
+										((JsonObject) group).getJsonArray("autolinkUsersFromLevels"),
+										tx).commit()),
 						(f1, f2) -> f2 // return last future
 					);
 				} else {
@@ -182,20 +185,34 @@ public class Group {
 		}
 	}
 
-	private static TransactionHelper groupLinkRules(String groupId, TransactionHelper tx) {
+	private static TransactionHelper groupLinkRules(String groupId, JsonArray autolinkUsersFromGroups, JsonArray autolinkUsersFromLevel, TransactionHelper tx) {
 		log.info("tx groupLinkRules with groupId : " + groupId);
-		final String linkQuery =
+		final StringBuilder linkQuery = new StringBuilder(
 			"MATCH (g:ManualGroup {id: {groupId}})-[:DEPENDS]->(:Structure)<-[:HAS_ATTACHMENT*0..]-(struct:Structure) " +
 			"WHERE EXISTS(g.autolinkUsersFromGroups) " +
 			"WITH g, struct " +
 			"MATCH (u:User)-[:IN]->(target:Group)-[:DEPENDS]->(struct) " +
 			"WHERE " +
 			"(g.autolinkTargetAllStructs = true OR struct.id IN g.autolinkTargetStructs) " +
-			"AND target.filter IN g.autolinkUsersFromGroups " +
-			"WITH g, u " +
+			"AND target.filter IN g.autolinkUsersFromGroups" +
+			"WITH g, u " );
+		// Conditional filter on children or students level
+		if (autolinkUsersFromLevel != null && !autolinkUsersFromLevel.isEmpty()) {
+			if (autolinkUsersFromGroups.contains("Relative")) {
+				linkQuery.append(
+					"MATCH (u)<-[:RELATED]-(child:User) " +
+					"WHERE child.level IN g.autolinkUsersFromLevels " +
+					"WITH g, u ");
+			} else if (autolinkUsersFromGroups.contains("Student")) {
+				linkQuery.append(
+					"WHERE u.level IN g.autolinkUsersFromLevels " +
+					"WITH g, u ");
+			}
+		}
+		linkQuery.append(
 			"MERGE (u)-[new:IN]->(g) " +
 			"ON CREATE SET new.source = 'AUTO' " +
-			"SET new.updated = {now} ";
+			"SET new.updated = {now} ");
 
 		final String removeQuery =
 			"MATCH (g:ManualGroup {id: {groupId}})<-[old:IN]-(:User) " +
@@ -206,7 +223,7 @@ public class Group {
 				.put("groupId", groupId)
 				.put("now", System.currentTimeMillis());
 
-		tx.add(linkQuery, params);
+		tx.add(linkQuery.toString(), params);
 		tx.add(removeQuery, params);
 		User.countUsersInGroups(groupId, "ManualGroup", tx);
 		return tx;
