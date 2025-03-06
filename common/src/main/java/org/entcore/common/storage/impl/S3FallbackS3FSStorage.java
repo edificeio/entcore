@@ -49,27 +49,39 @@ public class S3FallbackS3FSStorage implements FallbackStorage {
     private void downloadFile(String file, String destination, AtomicInteger retryIndex, Handler<AsyncResult<String>> handler) {
         String filePath = S3Client.getPath(file);
 
-        Calendar calendar = Calendar.getInstance();
-        if (retryIndex.get() > 0) {
-            calendar.add(Calendar.MONTH, retryIndex.get()*-1);
-        }
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMM");
-
-        String bucketName = bucket + "-" + dateFormat.format(calendar.getTime());
-
-        s3Client.writeToFileSystem(filePath, destination, bucketName, s3ar -> {
-            if (s3ar.succeeded()) {
-                handler.handle(Future.succeededFuture(s3ar.result()));
+        if (bucketMaxAge > 0) {
+            Calendar calendar = Calendar.getInstance();
+            if (retryIndex.get() > 0) {
+                calendar.add(Calendar.MONTH, retryIndex.get()*-1);
             }
-            else {
-                if (retryIndex.incrementAndGet() >= bucketMaxAge) {
-                    handler.handle(Future.failedFuture("Object " + filePath + " not found"));
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMM");
+
+            String bucketName = bucket + "-" + dateFormat.format(calendar.getTime());
+
+            s3Client.writeToFileSystem(filePath, destination, bucketName, s3ar -> {
+                if (s3ar.succeeded()) {
+                    handler.handle(Future.succeededFuture(s3ar.result()));
                 }
                 else {
-                    downloadFile(filePath, destination, retryIndex, handler);
+                    if (retryIndex.incrementAndGet() >= bucketMaxAge) {
+                        handler.handle(Future.failedFuture("Object " + filePath + " not found"));
+                    }
+                    else {
+                        downloadFile(filePath, destination, retryIndex, handler);
+                    }
                 }
-            }
-        });
+            });
+        }
+        else {
+            s3Client.writeToFileSystem(filePath, destination, bucket, s3ar -> {
+                if (s3ar.succeeded()) {
+                    handler.handle(Future.succeededFuture(s3ar.result()));
+                }
+                else {
+                    handler.handle(Future.failedFuture("Object " + filePath + " not found"));
+                }
+            });
+        }
     }
 
     @Override
