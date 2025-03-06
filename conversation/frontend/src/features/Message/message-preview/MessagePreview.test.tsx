@@ -1,7 +1,7 @@
 import { mockMessagesOfInbox } from '~/mocks';
 import { render, screen } from '~/mocks/setup';
 import { MessageMetadata } from '~/models';
-import { MessagePreview } from './message-preview';
+import { MessagePreview } from './MessagePreview';
 
 const message = mockMessagesOfInbox[0];
 
@@ -40,8 +40,8 @@ describe('Message preview header component', () => {
 
     const messagePreview = await screen.findByText(message.from.displayName);
     const messageSubject = await screen.findByText(message.subject);
-    const messageResponse = await screen.queryByTestId('message-response');
-    const messageHasAttachements = await screen.queryByTestId(
+    const messageResponse = screen.queryByTestId('message-response');
+    const messageHasAttachements = screen.queryByTestId(
       'message-has-attachment',
     );
 
@@ -56,8 +56,8 @@ describe('Message preview header component', () => {
 
     const messagePreview = await screen.findByText(message.from.displayName);
     const messageSubject = await screen.findByText(message.subject);
-    const messageResponse = await screen.queryByTitle('message-response');
-    const messageHasAttachements = await screen.queryByTitle(
+    const messageResponse = screen.queryByTitle('message-response');
+    const messageHasAttachements = screen.queryByTitle(
       'message-has-attachment',
     );
 
@@ -76,8 +76,8 @@ describe('Message preview header component', () => {
 
     const messagePreview = await screen.findByText(message.from.displayName);
     const messageSubject = await screen.findByText(message.subject);
-    const messageResponse = await screen.queryByTitle('message-response');
-    const messageHasAttachements = await screen.queryByTitle(
+    const messageResponse = screen.queryByTitle('message-response');
+    const messageHasAttachements = screen.queryByTitle(
       'message-has-attachment',
     );
 
@@ -96,8 +96,8 @@ describe('Message preview header component', () => {
 
     const messagePreview = await screen.findByText(message.from.displayName);
     const messageSubject = await screen.findByText(message.subject);
-    const messageResponse = await screen.queryByTitle('message-response');
-    const messageHasAttachements = await screen.queryByTitle(
+    const messageResponse = screen.queryByTitle('message-response');
+    const messageHasAttachements = screen.queryByTitle(
       'message-has-attachment',
     );
 
