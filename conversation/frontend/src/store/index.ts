@@ -6,3 +6,4 @@
  */
 export * from './rights';
 export * from './actions';
+export * from './confirmModal';
