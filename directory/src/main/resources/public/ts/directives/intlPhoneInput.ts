@@ -13,23 +13,23 @@ export interface IntlPhoneInputScope {
  * Directive for initializing and managing an international phone input field using the intl-tel-input library.
  * See https://www.twilio.com/fr/blog/saisie-numeros-telephone-internationaux-html-javascript
  * Libs are imported from a CDN in the HTML file - not webpack.
- * 
+ *
  * @directive
  * @name intlPhoneInput
- * 
+ *
  * @scope
  * @property {string} intlFormatNumber - A function to get the formatted international phone number.
- * 
+ *
  * @requires ngModel
- * 
+ *
  * @description
  * This directive initializes an international phone input field with the intl-tel-input library.
  * It dynamically loads the necessary CSS and JS files if they are not already loaded.
  * The directive also handles configuration loading, setting the phone number, and managing events.
- * 
+ *
  * @example
  * <input type="tel" intl-phone-input ng-model="phoneNumber" />
- * 
+ *
  * @param {IntlPhoneInputScope} scope - The scope of the directive.
  * @param {JQLite} elem - The element to which the directive is applied.
  * @param {IAttributes} attrs - The attributes of the element.
@@ -55,13 +55,29 @@ export const intlPhoneInputDirective = ng.directive("intlPhoneInput", [
         if (!window.intlTelInputConfig) {
           /**
            * Configuration object for initializing the international phone input.
-           * 
+           *
            * @property {string} initialCountry - The default country code to be used for the phone input.
            * @property {string[]} preferredCountries - An array of country codes that will be displayed at the top of the country dropdown list.
            */
           let defaultConf = {
             initialCountry: "fr",
-            preferredCountries: ["fr", "mx", "es", "co", "gf", "pf", "gp", "yt", "nc", "pm", "wf", "gy", "mq", "mm", "ph"]
+            preferredCountries: [
+              "fr",
+              "mx",
+              "es",
+              "co",
+              "gf",
+              "pf",
+              "gp",
+              "yt",
+              "nc",
+              "pm",
+              "wf",
+              "gy",
+              "mq",
+              "mm",
+              "ph",
+            ],
           };
 
           filesToLoad++;
@@ -101,9 +117,7 @@ export const intlPhoneInputDirective = ng.directive("intlPhoneInput", [
         }
 
         scope.$watch(attrs.ngModel, function () {
-          if (
-            intlPhoneInput
-          ) {
+          if (intlPhoneInput) {
             intlPhoneInput.setNumber(ngModelController.$modelValue);
           }
         });
