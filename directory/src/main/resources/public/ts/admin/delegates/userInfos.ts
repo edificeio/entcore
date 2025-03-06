@@ -59,7 +59,14 @@ export interface UserInfosDelegateScope extends EventDelegateScope {
     selectedUser: User;
     mottoShouldPublish: boolean;
     showLoginInput: boolean;
-    temp: { displayName?: string; email?: string; homePhone?: string; mobile?: string; };
+    temp: {
+        displayName?: string;
+        email?: string;
+        homePhone?: string;
+        mobile?: string;
+        // International phone number
+        intlFormatNumber?: () => string
+    };
     showDisplayNameInput: boolean;
     showEmailInput: boolean;
     showPhoneInput: boolean;
@@ -345,7 +352,11 @@ export async function UserInfosDelegate($scope: UserInfosDelegateScope) {
         try {
             savingMobile = true;
             if ($scope.selectedUser.mobile !== $scope.temp.mobile && $scope.isMobileWellFormatted()) {
-                $scope.selectedUser.mobile = $scope.temp.mobile;
+                if ($scope.temp.intlFormatNumber) {
+                    $scope.selectedUser.mobile = $scope.temp.intlFormatNumber();
+                } else {
+                    $scope.selectedUser.mobile = $scope.temp.mobile;
+                }
                 await directoryService.updateUserMobile($scope.selectedUser);
                 $scope.showMobileInput = false;
                 $scope.safeApply();

@@ -65,6 +65,19 @@
                 </span>
                 <input type="email" ng-model="userCreate.form.email" class="vertical-spacing" ng-required="isUserCreateRequired(fields.Mail)" />
             </div>
+            <div ng-if="isUserCreateMobilePhoneVisible()" class="flex-row f-column seven top-spacing-four">
+                <span class="bold">
+                    <i18n>directory.admin.mobilePhone</i18n>
+                    <span class="warning-color" ng-if="isUserCreateRequired(fields.Mobile)">*</span>
+                </span>
+                <input 
+                    type="tel" 
+                    ng-model="userCreate.form.mobile"
+                    data-intl-phone-input
+                    intl-format-number="userCreate.intlFormatNumber"
+                    class="vertical-spacing" 
+                    ng-required="isUserCreateRequired(fields.Mobile)" />
+            </div>
         </div>
         <div ng-if="isUserCreateSearchVisible()">
             <div class="flex-row f-column twelve top-spacing-four">
