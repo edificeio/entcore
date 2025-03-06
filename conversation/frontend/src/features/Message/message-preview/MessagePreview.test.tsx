@@ -1,4 +1,4 @@
-import { mockMessagesOfInbox } from '~/mocks';
+import { mockMessageOfOutbox, mockMessagesOfInbox } from '~/mocks';
 import { render, screen } from '~/mocks/setup';
 import { MessageMetadata } from '~/models';
 import { MessagePreview } from './MessagePreview';
@@ -131,7 +131,7 @@ describe('Message preview header component', () => {
     expect(recipientAvatar).toBeInTheDocument();
   });
 
-  it.only('should display group avatar icon when more than one recipient in outbox', async () => {
+  it('should display group avatar icon when more than one recipient in outbox', async () => {
     mocks.useParams.mockReturnValue({ folderId: 'outbox' });
     render(<MessagePreview message={message} />);
 
@@ -139,5 +139,15 @@ describe('Message preview header component', () => {
 
     const recipientAvatar = screen.getByLabelText('recipient.avatar.group');
     expect(recipientAvatar).toBeInTheDocument();
+  });
+
+  it.only('should display all recipients in after "to" label in outbox', async () => {
+    mocks.useParams.mockReturnValue({ folderId: 'outbox' });
+    render(<MessagePreview message={mockMessageOfOutbox} />);
+
+    const atElement = screen.getByText('at');
+    const parentContainer = atElement.closest('div');
+    const spanElements = parentContainer?.querySelectorAll('span');
+    expect(spanElements).toHaveLength(6);
   });
 });

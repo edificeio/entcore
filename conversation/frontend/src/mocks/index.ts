@@ -127,6 +127,70 @@ export const mockMessagesOfInbox: MessageMetadata[] = [
   },
 ];
 
+export const mockMessageOfOutbox: MessageMetadata = {
+  id: 'f43d3783',
+  subject: 'Prêt des manuels scolaires',
+  from: {
+    displayName: 'LOISON Stéphane',
+    id: 'b92e3d37-16b0-4ed9-b4c3-992091687132',
+    profile: 'Teacher',
+  },
+  state: 'SENT',
+  date: 1503571892555,
+  unread: true,
+  response: false,
+  trashed: false,
+  forwarded: false,
+  hasAttachment: false,
+  to: {
+    users: [],
+    groups: [
+      {
+        id: '465',
+        displayName: 'Enseignants du groupe scolaire.',
+        size: 42,
+        type: 'ProfileGroup',
+        subType: 'StructureGroup',
+      },
+      {
+        id: '468',
+        displayName: 'Élèves du groupe scolaire.',
+        size: 577,
+        type: 'ProfileGroup',
+        subType: 'StructureGroup',
+      },
+    ],
+  },
+  cc: {
+    users: [
+      {
+        id: '91c22b66',
+        displayName: 'ISABELLE POLONIO (prof arts plastiques)',
+        profile: 'Teacher',
+      },
+    ],
+    groups: [],
+  },
+  cci: {
+    users: [
+      {
+        displayName: 'LOISON Stéphane',
+        id: 'b92e3d37-16b0-4ed9-b4c3-992091687132',
+        profile: 'Teacher',
+      },
+    ],
+    groups: [
+      {
+        id: '467',
+        displayName: 'Parents du groupe scolaire.',
+        size: 1043,
+        type: 'ProfileGroup',
+        subType: 'StructureGroup',
+      },
+    ],
+  },
+};
+
 export const mockFullMessage: Message = {
   id: 'f43d3783',
   subject: 'Prêt des manuels scolaires',

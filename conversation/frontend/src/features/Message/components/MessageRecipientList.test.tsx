@@ -1,6 +1,6 @@
 import { mockFullMessage } from '~/mocks';
 import { render, screen } from '~/mocks/setup';
-import { MessageRecipientList } from './message-recipient-list';
+import { MessageRecipientList } from './MessageRecipientList';
 
 const mockRecipients = mockFullMessage.to;
 const RecipientListlabel = 'To :';
@@ -28,6 +28,7 @@ describe('Message recipient list', () => {
       <MessageRecipientList
         head={RecipientListlabel}
         recipients={mockRecipients}
+        hasLink
       />,
     );
     const recipientsLabel = await screen.findByText(RecipientListlabel);
@@ -39,6 +40,7 @@ describe('Message recipient list', () => {
       <MessageRecipientList
         head={RecipientListlabel}
         recipients={mockRecipients}
+        hasLink
       />,
     );
     const currentUserLabel = await screen.findAllByText('me');
@@ -50,6 +52,7 @@ describe('Message recipient list', () => {
       <MessageRecipientList
         head={RecipientListlabel}
         recipients={mockRecipients}
+        hasLink
       />,
     );
     const displayNameUser = 'ISABELLE POLONIO (prof arts plastiques)';
@@ -65,6 +68,7 @@ describe('Message recipient list', () => {
       <MessageRecipientList
         head={RecipientListlabel}
         recipients={mockRecipients}
+        hasLink
       />,
     );
     const displayNameGroup = 'Enseignants du groupe scolaire.';

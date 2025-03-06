@@ -1,7 +1,7 @@
 import { Avatar, useDate, useDirectory } from '@edifice.io/react';
 import { useI18n } from '~/hooks';
 import { Message } from '~/models';
-import { MessageRecipientList } from './message-recipient-list';
+import { MessageRecipientList } from './components/MessageRecipientList';
 
 export interface MessageHeaderProps {
   message: Message;
@@ -35,9 +35,17 @@ export function MessageHeader({ message }: MessageHeaderProps) {
                 </a>
                 <em className="text-gray-700">{fromNow(date)}</em>
               </div>
-              <MessageRecipientList head={<b>{t('at')}</b>} recipients={to} />
+              <MessageRecipientList
+                head={<b>{t('at')}</b>}
+                recipients={to}
+                hasLink
+              />
               {hasCC && (
-                <MessageRecipientList head={<b>{t('cc')}</b>} recipients={cc} />
+                <MessageRecipientList
+                  head={<b>{t('cc')}</b>}
+                  recipients={cc}
+                  hasLink
+                />
               )}
             </div>
           </div>

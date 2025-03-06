@@ -2,10 +2,12 @@ import { useDate } from '@edifice.io/react';
 import { IconPaperclip, IconUndo } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
-import { MessageMetadata } from '~/models';
-import { MessageRecipientList } from '../message-recipient-list';
+import { MessageMetadata, Recipients } from '~/models';
+import { MessageRecipientList } from '../components/MessageRecipientList';
 import RecipientAvatar from './components/RecipientAvatar';
 import { SenderAvatar } from './components/SenderAvatar';
+import { useMessageUserDisplayName } from './hooks/useUserDisplayName';
+import { RecipientListPreview } from './components/RecipientListPreview';
 
 export interface MessagePreviewProps {
   message: MessageMetadata;
@@ -15,6 +17,7 @@ export function MessagePreview({ message }: MessagePreviewProps) {
   const { t } = useTranslation('conversation');
   const { folderId } = useParams<{ folderId: string }>();
   const { fromNow } = useDate();
+  const senderDisplayName = useMessageUserDisplayName(message.from);
 
   return (
     <div className="d-flex flex-fill gap-12 align-items-center  overflow-hidden fs-6">
@@ -32,15 +35,9 @@ export function MessagePreview({ message }: MessagePreviewProps) {
         <div className="d-flex flex-fill justify-content-between overflow-hidden">
           <div className="text-truncate flex-fill">
             {'outbox' === folderId ? (
-              <MessageRecipientList
-                head={t('at')}
-                recipients={message.to}
-                color="text-gray-800"
-                truncate
-                linkDisabled
-              />
+              <RecipientListPreview message={message} />
             ) : (
-              message.from.displayName
+              senderDisplayName
             )}
           </div>
           <div className="fw-bold text-nowrap fs-12 gray-800">
