@@ -100,7 +100,7 @@ export const intlPhoneInputDirective = ng.directive("intlPhoneInput", [
                       .then((res) => res.json())
                       .then((data) => success(data.country_code))
                       .catch(() => {
-                        success("fr");
+                        success("FR");
                       });
                   };
                 }
@@ -137,7 +137,9 @@ export const intlPhoneInputDirective = ng.directive("intlPhoneInput", [
 
             if (intlPhoneInput) {
               scope.intlFormatNumber = () => intlPhoneInput.getNumber();
-              intlPhoneInput.setNumber(ngModelController.$modelValue);
+              if (ngModelController.$modelValue) {
+                intlPhoneInput.setNumber(ngModelController.$modelValue);
+              }
 
               elem.on("open:countrydropdown", (e) => {
                 if ($("body").hasClass("iti-mobile")) {
