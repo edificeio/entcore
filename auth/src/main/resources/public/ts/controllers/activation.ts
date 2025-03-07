@@ -4,6 +4,7 @@ export let activationController = ng.controller('ActivationController', ['$scope
 	$scope.template = template;
 	$scope.lang = lang;
 	$scope.user = { themes: {} };
+	$scope.intlFormatNumber = undefined;
 
 	$scope.welcome = {};
 	template.open('main', 'activation-form');
@@ -143,6 +144,10 @@ export let activationController = ng.controller('ActivationController', ['$scope
 			return item ? item : ""
 		}
 
+		if ($scope.user.intlFormatNumber) {
+			$scope.user.phone = $scope.user.intlFormatNumber();
+		}
+		
 		http().post('/auth/activation', http().serialize({
 			theme: $scope.user.theme || '',
 			login: $scope.user.login,
