@@ -1,5 +1,5 @@
 import { fireEvent, render, screen } from '~/mocks/setup';
-import { MessageListHeader } from './message-list-header';
+import { MessageListHeader } from './MessageListHeader';
 
 /**
  * Mock window.matchMedia used in useBreakpoint hook

@@ -1,6 +1,6 @@
 import { mockFullMessage } from '~/mocks';
 import { render, screen } from '~/mocks/setup';
-import { MessageAttachments } from './message-attachments';
+import { MessageAttachments } from './MessageAttachments';
 
 const message = mockFullMessage;
 
