@@ -33,6 +33,7 @@ import org.entcore.auth.services.impl.FrEduVecteurService;
 import org.entcore.auth.services.impl.MongoDBIDPAssertionStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.utils.StringUtils;
 import org.joda.time.DateTime;
 import org.opensaml.DefaultBootstrap;
 import org.opensaml.common.SAMLObject;
@@ -194,12 +195,13 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 			case "generate-authn-request":
 				String sp = message.body().getString("SP");
 				String acs = message.body().getString("acs");
+				String accRef = message.body().getString("accRef");
 				boolean sign = message.body().getBoolean("AuthnRequestsSigned", false);
 				boolean includeAcs = message.body().getBoolean("AuthnRequestsIncludeAcs", true);
 				if (message.body().getBoolean("SimpleSPEntityID", false)) {
 					sendOK(message, generateSimpleSPEntityIDRequest(idp, sp));
 				} else {
-					sendOK(message, generateAuthnRequest(idp, sp, acs, sign, includeAcs));
+					sendOK(message, generateAuthnRequest(idp, sp, acs, accRef, sign, includeAcs));
 				}
 				break;
 			case "generate-saml-response":
@@ -797,7 +799,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 				SamlUtils.SIMPLE_RS);
 	}
 
-	private JsonObject generateAuthnRequest(String idp, String sp, String acs, boolean sign, boolean includeAcs)
+	private JsonObject generateAuthnRequest(String idp, String sp, String acs, String accRef, boolean sign, boolean includeAcs)
 			throws NoSuchFieldException, IllegalAccessException, MarshallingException, IOException,
 			NoSuchAlgorithmException, InvalidKeyException, SignatureException {
 		final String id = "ENT_" + UUID.randomUUID().toString();
@@ -815,8 +817,13 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		AuthnContextClassRefBuilder authnContextClassRefBuilder = new AuthnContextClassRefBuilder();
 		AuthnContextClassRef authnContextClassRef = authnContextClassRefBuilder
 				.buildObject("urn:oasis:names:tc:SAML:2.0:assertion", "AuthnContextClassRef", "saml");
-		authnContextClassRef
-				.setAuthnContextClassRef("urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport");
+		if (StringUtils.isEmpty(accRef)) {
+			authnContextClassRef
+					.setAuthnContextClassRef("urn:oasis:names:tc:SAML:2.0:ac:classes:PasswordProtectedTransport");
+		} else {
+			authnContextClassRef
+					.setAuthnContextClassRef(accRef);
+		}
 
 		RequestedAuthnContext requestedAuthnContext = new RequestedAuthnContextBuilder().buildObject();
 		requestedAuthnContext.setComparison(AuthnContextComparisonTypeEnumeration.EXACT);
