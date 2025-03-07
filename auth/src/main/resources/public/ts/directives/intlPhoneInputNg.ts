@@ -42,7 +42,7 @@ export const intlPhoneInputDirective = ng.directive("intlPhoneInput", [
       scope: {
         intlFormatNumber: "=",
       },
-      require: "ngModel",
+      require: "^ngModel",
       link: (
         scope: IntlPhoneInputScope,
         elem: JQLite,
@@ -59,21 +59,35 @@ export const intlPhoneInputDirective = ng.directive("intlPhoneInput", [
          */
         const defaultConf = {
           initialCountry: "auto",
-          preferredCountries: ["fr", "mx", "es", "co", "gf", "pf", "gp", "yt", "nc", "pm", "wf", "gy", "mq", "mm", "ph"],
+          preferredCountries: [
+            "fr",
+            "mx",
+            "es",
+            "co",
+            "gf",
+            "pf",
+            "gp",
+            "yt",
+            "nc",
+            "pm",
+            "wf",
+            "gy",
+            "mq",
+            "mm",
+            "ph",
+          ],
           geoIpLookup: (success) => {
             fetch("https://ipapi.co/json")
               .then((res) => res.json())
               .then((data) => success(data.country_code))
               .catch(() => {
-                success("fr");
+                success("FR");
               });
-          }
+          },
         };
 
         scope.$watch(attrs.ngModel, function () {
-          if (
-            intlPhoneInput
-          ) {
+          if (intlPhoneInput) {
             intlPhoneInput.setNumber(ngModelController.$modelValue);
           }
         });
