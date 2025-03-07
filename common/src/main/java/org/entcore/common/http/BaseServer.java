@@ -33,6 +33,7 @@ import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import fr.wseduc.webutils.validation.JsonSchemaValidator;
 
+import io.vertx.core.Promise;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.cache.CacheFilter;
 import org.entcore.common.cache.CacheService;
@@ -44,6 +45,7 @@ import org.entcore.common.elasticsearch.ElasticSearch;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.explorer.ExplorerPluginFactory;
 import org.entcore.common.http.filter.*;
+import org.entcore.common.http.i18n.I18nHandler;
 import org.entcore.common.http.response.SecurityHookRender;
 import org.entcore.common.http.response.OverrideThemeHookRender;
 import org.entcore.common.neo4j.Neo4j;
@@ -75,6 +77,7 @@ public abstract class BaseServer extends Server {
 	private ResourcesProvider resourceProvider = null;
 	private RepositoryHandler repositoryHandler;
 	private SearchingHandler searchingHandler;
+	private I18nHandler i18nHandler;
 	private String schema;
 	private String contentSecurityPolicy;
 	private AccessLogger accessLogger;
@@ -84,12 +87,12 @@ public abstract class BaseServer extends Server {
 	}
 
 	@Override
-	public void start() throws Exception {
+	public void start(final Promise<Void> startPromise) throws Exception {
 		moduleName = getClass().getSimpleName();
 		if (resourceProvider == null) {
 			setResourceProvider(new ResourceProviderFilter());
 		}
-		super.start();
+		super.start(startPromise);
 
 		accessLogger = new EntAccessLogger(getEventBus(vertx));
 
@@ -106,6 +109,7 @@ public abstract class BaseServer extends Server {
 
 		repositoryHandler = new RepositoryHandler(getEventBus(vertx));
 		searchingHandler = new SearchingHandler(getEventBus(vertx));
+		i18nHandler = new I18nHandler();
 
 		Config.getInstance().setConfig(config);
 
@@ -142,6 +146,7 @@ public abstract class BaseServer extends Server {
 		}
 		vertx.eventBus().localConsumer("user.repository", repositoryHandler);
 		vertx.eventBus().localConsumer("search.searching", this.searchingHandler);
+		vertx.eventBus().localConsumer(moduleName.toLowerCase()+".i18n", this.i18nHandler);
 
 		loadI18nAssetsFiles();
 

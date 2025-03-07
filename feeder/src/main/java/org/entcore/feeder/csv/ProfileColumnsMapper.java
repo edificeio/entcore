@@ -215,6 +215,9 @@ public class ProfileColumnsMapper {
 				.put("fonction", "functions")
 				.put("mef", "module")
 				.put("libellemef", "moduleName")
+				.put("groupes", "groups")
+				.put("regroupement(s)", "groups")
+				.put("regroupement", "groups")
 				.put("professeurprincipal", "headTeacher")
 				.put("discipline", "classCategories")
 				.put("matiereenseignee", "subjectTaught")
@@ -279,7 +282,7 @@ public class ProfileColumnsMapper {
 
 	JsonArray getMappedColumsNames(String profile, String[] declaredColumns, List<String> columns)
 	{
-		JsonArray errors = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray errors = new JsonArray();
 		int nbTrailingIgnoredErrors = 0;
 
 		for (int j = 0; j < declaredColumns.length; j++)
@@ -309,7 +312,7 @@ public class ProfileColumnsMapper {
 			}
 		}
 
-		return errors.size() == nbTrailingIgnoredErrors ? new fr.wseduc.webutils.collections.JsonArray() : errors;
+		return errors.size() == nbTrailingIgnoredErrors ? new JsonArray() : errors;
 	}
 
 	String columnsNameMapping(String profile, String columnName) {
@@ -350,7 +353,7 @@ public class ProfileColumnsMapper {
 	public JsonObject availableFields() {
 		JsonObject j = new JsonObject();
 		for (String profile : profilesNamesMapping.keySet()) {
-			j.put(profile, new fr.wseduc.webutils.collections.JsonArray(
+			j.put(profile, new JsonArray(
 					new ArrayList<>(new HashSet<>(profilesNamesMapping.get(profile).values()))));
 		}
 		return j;

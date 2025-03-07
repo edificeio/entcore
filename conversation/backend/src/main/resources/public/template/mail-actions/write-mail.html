@@ -1,0 +1,212 @@
+<article class="twelve cell solid write-mail" ng-class="{ unstyled: !containsView('main', 'write-mail')}">
+    <div class="row warning" ng-if="state.newItem.loadingAttachments.length > 0"><i18n>wait.attachments.completion</i18n></div>
+    
+    <div class="flex-row f-column">
+        <div>
+            <plus class="right-magnet">
+                <button ng-click="state.newItem.remove(); openFolder()"><i18n>remove</i18n></button>
+            </plus>
+            <button class="right-magnet" ng-click="checkExerciseBeforeSendMail()" ng-disabled="
+            !(state.newItem.to.length || state.newItem.cc.length || state.newItem.cci.length)
+            || (state.newItem.loadingAttachments && state.newItem.loadingAttachments.length > 0)
+            || sending">
+                <i18n>submit</i18n>&nbsp;<i class="loading" ng-if="sending"></i>
+            </button>
+        </div>
+
+        <infotip name="conversation-warn-message-grouped" class="info"
+                 on-change="agreedCommunicationRules($visible)"
+                 ng-if="showWarnAboutCommunicationRules">
+            <i18n>conversation.warn.message.grouped</i18n>
+        </infotip>
+
+        <div>
+			<div class="row">
+				<div class="row receivers">
+					<label class="c-two cell twelve-mobile">
+                        <i18n>to</i18n>
+                        <i class="badge-info" ng-if="!state.newItem.to.length" tooltip="conversation.to.info">?</i>
+                    </label>
+					<div class="c-ten cell twelve-mobile right-magnet">
+						<recipient-list
+							ng-model="state.newItem.to"
+							ng-change="quickSaveDraft() && checkWarnAboutCommunicationRules()"
+                            restriction="isLocalAdmin()"
+							update-found-items="updateFoundUsers(search, model, founds, restriction)">
+						</recipient-list>
+					</div>
+				</div>
+			</div>
+            <div class="row drop-down-block" ng-class="{slided: ccCciShow}" style="margin-bottom:10px;">
+                <div class="drop-down-label" style="margin-bottom:0;border-bottom:none">
+                    <div class="twelve cell" pulsar-highlight="7">
+                        <label ng-click="ccCciShow = !ccCciShow" style="padding: 0">
+                            <i class="arrow"></i>
+                            <i18n class="medium-importance">conversation.show.copy</i18n>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="drop-down-content" slide="ccCciShow">
+			    <div>
+				    <div class="row receivers">
+					    <label class="c-two cell twelve-mobile"><i18n>copy</i18n></label>
+					    <div class="c-ten cell twelve-mobile right-magnet">
+						    <recipient-list
+							    ng-model="state.newItem.cc"
+							    ng-change="quickSaveDraft() && checkWarnAboutCommunicationRules()"
+                                restriction="isLocalAdmin()"
+                                update-found-items="updateFoundUsers(search, model, founds, restriction)">
+						    </recipient-list>
+					    </div>
+				    </div>
+			    </div>
+                <div>
+                    <div class="row receivers">
+                        <label class="c-two cell twelve-mobile">
+                            <i18n>cci</i18n>
+                            <i class="badge-info" tooltip="conversation.cci.info">?</i>
+                        </label>
+                        <div class="c-ten cell twelve-mobile right-magnet">
+                            <recipient-list
+                                ng-model="state.newItem.cci"
+                                ng-change="quickSaveDraft()"
+                                restriction="isLocalAdmin()"
+                                update-found-items="updateFoundUsers(search, model, founds, restriction)">
+                            </recipient-list>
+                        </div>
+                    </div>
+                </div>
+            </div>
+			<div class="row subject">
+				<label class="c-two cell twelve-mobile"><i18n>subject</i18n></label>
+				<input type="text" class="c-ten cell twelve-mobile" ng-model="state.newItem.subject" ng-change="saveDraftAuto()"/>
+			</div>
+		</div>
+	</div>
+
+	<div class="row top-spacing-three">
+        <!-- <div class="row info hollow no-margin"><span>(shadow-element)<span></div> -->
+        <div class="row info fade-in no-margin" ng-if="state.newItem.id && !state.draftError" >
+            <i class="check-circle"></i>
+            <i18n>message.draft.saved</i18n>
+            <span class="fade-in" ng-if = "state.draftSaveDate">
+                <i18n>at</i18n>
+                <span>[[hourIsit()]]<i18n>hour.date</i18n>[[minIsit()]][[secIsit()]]</span>
+            </span>
+        </div>
+        <div class="row warning fade-in no-margin" ng-if="state.draftError"  >
+            <i class="warning"></i>
+            <i18n>message.save.fail</i18n>
+            <i18n>at</i18n>
+            <span>[[hourIsit()]]<i18n>hour.date</i18n>[[minIsit()]]</span>
+        </div>
+		<editor onboardingvideo class="no-margin-all" ng-model="state.newItem.body" ng-change="saveDraftAuto()"></editor>
+        <div class="right-magnet select-file nomargin" drop-files="state.newItem.newAttachments" on-drop="postAttachments()">
+            <div class="hidden-content">
+                <input type="file" multiple files-input-change="postAttachments()" ng-model="state.newItem.newAttachments">
+                <input type="text" data-display-file="">
+            </div>
+            <button class="flat-button file-button" translate="" ng-click="checkExercise()" content="add.attachment"></button>
+        </div>
+        <div class="row">
+            <!-- attachment list header -->
+            <div ng-if="state.newItem.attachments.length">
+              <h2>
+                <i18n>attachments</i18n>
+                <div class="save-attachments right-magnet">
+                  <a data-ng-if="state.newItem.attachments.length > 1" ng-click="copyToWorkspace(state.newItem.attachments)" class="fade-in-hover" tooltip="conversation.copy.all.toworkspace">
+                    <i class="folder-close info-color"></i>
+                  </a>
+                  <a data-ng-if="state.newItem.attachments.length > 1" class="fade-in-hover" ng-href="[['message/'+state.newItem.id+'/allAttachments']]" tooltip="download.all.attachment">
+                    <i class="download-disk valid-color"></i>
+                  </a>
+                </div>
+              </h2>
+              <hr class="line no-margin" />
+            </div>
+    
+            <!-- attachment list while loading -->
+            <div ng-if="state.newItem.loadingAttachments.length > 0">
+                <h2 class="no-margin">
+                    <i18n>attachments.loading</i18n>
+                </h2>
+                <hr class="line no-margin" />
+    
+                <div class="loading-list no-padding vertical-spacing-twice">
+                    <ul>
+                        <li class="no-margin" ng-repeat="attachment in state.newItem.loadingAttachments">
+                            <div class="title">
+                                [[attachment.file.name]]
+                            </div>
+                            <div class="title">
+                                <progress-bar max="attachment.progress.total" filled="attachment.progress.completion" unit="%"></progress-bar>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    
+        <!-- attachment list loaded -->
+        <div class="loading-list no-padding vertical-spacing-twice" ng-init="columnOrder = 'filename'" drop-files="state.newItem.newAttachments" on-drop="postAttachments()" ng-if="state.newItem.attachments.length" style="border: none">
+            <ul>
+                <li class="no-margin removable" ng-repeat="attachment in state.newItem.attachments | orderBy: columnOrder">
+                    <div class="icon">
+                        <i class="[[formatFileType(attachment.contentType)]]"></i>
+                    </div>
+                    <div class="title">
+                        [[attachment.filename]]
+                    </div>
+                    <div class="status-infos">
+                        <span class="small-text reduce-block-four">[[formatSize(attachment.size)]]</span>
+                    </div>
+                    <div class="save-attachments">
+                      <a ng-click="copyToWorkspace(attachment)" class="fade-in-hover">
+                          <i class="folder-close info-color" tooltip="conversation.copy.toworkspace"></i>
+                      </a>
+                      <a ng-href="[['message/'+state.newItem.id+'/attachment/'+attachment.id]]" class="fade-in-hover">
+                        <i class="download-disk valid-color" tooltip="download"></i>
+                      </a>
+                      <i class="close" ng-click="deleteAttachment($event, attachment, state.newItem)" tooltip="remove.attachment"></i>
+                    </div>
+                </li>
+            </ul>
+        </div>
+</div>
+    <div class="row drop-down-block" ng-class="{slided: signatureShow}">
+		<div class="drop-down-label">
+			<div class="twelve cell bottom-spacing" pulsar-highlight="7">
+				<label ng-click="signatureShow = !signatureShow">
+					<i class="arrow"></i>
+					<i18n class="medium-importance">add.signature</i18n>
+				</label>
+
+                <label class="checkbox">
+                    <input
+                        type="checkbox"
+                        ng-change="refreshSignature(conversation.preference.useSignature)"
+                        ng-disabled="!conversation.preference.useSignature && !conversation.preference.signature"
+                        ng-model="conversation.preference.useSignature">
+                    <span></span>
+                </label>
+
+        	</div>
+		</div>
+
+		<div class="drop-down-content" slide="signatureShow">
+			<textarea ng-if="signatureShow" ng-model="conversation.preference.signature" ng-blur="conversation.putPreference()"></textarea>
+		</div>
+	</div>
+
+    <div class="row">
+        <button class="right-magnet" ng-click="checkExerciseBeforeSendMail()" ng-disabled="
+            !(state.newItem.to.length || state.newItem.cc.length || state.newItem.cci.length)
+            || (state.newItem.loadingAttachments && state.newItem.loadingAttachments.length > 0)
+            || sending">
+                <i18n>submit</i18n>&nbsp;<i class="loading" ng-if="sending"></i>
+        </button>
+    </div>
+        
+    <excluded-list excluded="state.newItem.excluded"></excluded-list>
+</article>
