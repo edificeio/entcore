@@ -18,26 +18,26 @@ export default ({ mode }: { mode: string }) => {
   // Proxy variables
   const headers = hasEnvFile
     ? {
-      'set-cookie': [
-        `oneSessionId=${envs.VITE_ONE_SESSION_ID}`,
-        `XSRF-TOKEN=${envs.VITE_XSRF_TOKEN}`,
-      ],
-      'Cache-Control': 'public, max-age=300',
-    }
+        'set-cookie': [
+          `oneSessionId=${envs.VITE_ONE_SESSION_ID}`,
+          `XSRF-TOKEN=${envs.VITE_XSRF_TOKEN}`,
+        ],
+        'Cache-Control': 'public, max-age=300',
+      }
     : {};
 
   const proxyObj = hasEnvFile
     ? {
-      target: envs.VITE_RECETTE,
-      changeOrigin: true,
-      headers: {
-        cookie: `oneSessionId=${envs.VITE_ONE_SESSION_ID};authenticated=true; XSRF-TOKEN=${envs.VITE_XSRF_TOKEN}`,
-      },
-    }
+        target: envs.VITE_RECETTE,
+        changeOrigin: true,
+        headers: {
+          cookie: `oneSessionId=${envs.VITE_ONE_SESSION_ID};authenticated=true; XSRF-TOKEN=${envs.VITE_XSRF_TOKEN}`,
+        },
+      }
     : {
-      target: 'http://localhost:8090',
-      changeOrigin: false,
-    };
+        target: 'http://localhost:8090',
+        changeOrigin: false,
+      };
 
   return defineConfig({
     base: mode === 'production' ? '/conversation' : '',
