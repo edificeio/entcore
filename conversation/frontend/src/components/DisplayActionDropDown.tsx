@@ -19,9 +19,8 @@ import { RefAttributes } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Message } from '~/models';
-import { useMarkUnread } from '~/services';
+import { useMarkUnread, useRestoreMessage, useDeleteMessage } from '~/services';
 import { useConfirmModalStore } from "~/store";
-import { useDeleteMessage } from "~/services";
 
 export function DisplayActionDropDown({ message }: { message: Message }) {
   const { t } = useTranslation('conversation');
@@ -29,6 +28,7 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
   const navigate = useNavigate();
   const { openModal } = useConfirmModalStore();
   const deleteMessage = useDeleteMessage();
+  const restoreQuery = useRestoreMessage();
 
   const handleDelete = () => {
     openModal({
@@ -68,7 +68,8 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
         id: "restore",
         icon: <IconRestore />,
         action: () => {
-          alert('restore');
+          restoreQuery.mutate({ id: message.id });
+          navigate('/trash');
         },
         hidden: !message.trashed
       },
