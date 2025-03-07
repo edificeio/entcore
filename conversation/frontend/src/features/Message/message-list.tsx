@@ -14,7 +14,7 @@ import clsx from 'clsx';
 import { KeyboardEvent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { MessagePreview } from '~/features/Message/message-preview/MessagePreview';
+import { MessagePreview } from '~/features/Message/message-preview';
 import { MessageMetadata } from '~/models';
 import {
   useFolderMessages,

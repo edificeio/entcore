@@ -1,7 +1,7 @@
 import { mockMessageOfOutbox, mockMessagesOfInbox } from '~/mocks';
 import { render, screen } from '~/mocks/setup';
 import { MessageMetadata } from '~/models';
-import { MessagePreview } from './MessagePreview';
+import { MessagePreview } from '.';
 
 const message = mockMessagesOfInbox[0];
 
@@ -141,7 +141,7 @@ describe('Message preview header component', () => {
     expect(recipientAvatar).toBeInTheDocument();
   });
 
-  it.only('should display all recipients in after "to" label in outbox', async () => {
+  it('should display all recipients in after "to" label in outbox', async () => {
     mocks.useParams.mockReturnValue({ folderId: 'outbox' });
     render(<MessagePreview message={mockMessageOfOutbox} />);
 
