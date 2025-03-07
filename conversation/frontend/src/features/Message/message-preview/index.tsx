@@ -2,12 +2,11 @@ import { useDate } from '@edifice.io/react';
 import { IconPaperclip, IconUndo } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
-import { MessageMetadata, Recipients } from '~/models';
-import { MessageRecipientList } from '../components/MessageRecipientList';
+import { MessageMetadata } from '~/models';
 import RecipientAvatar from './components/RecipientAvatar';
+import { RecipientListPreview } from './components/RecipientListPreview';
 import { SenderAvatar } from './components/SenderAvatar';
 import { useMessageUserDisplayName } from './hooks/useUserDisplayName';
-import { RecipientListPreview } from './components/RecipientListPreview';
 
 export interface MessagePreviewProps {
   message: MessageMetadata;
