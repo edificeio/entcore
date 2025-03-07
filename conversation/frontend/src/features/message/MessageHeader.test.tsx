@@ -1,6 +1,6 @@
 import { mockFullMessage } from '~/mocks';
 import { render, screen } from '~/mocks/setup';
-import { MessageHeader } from './message-header';
+import { MessageHeader } from './MessageHeader';
 
 describe('Message recipient list', () => {
   afterEach(() => {

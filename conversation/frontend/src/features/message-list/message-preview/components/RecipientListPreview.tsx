@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
+import { MessageRecipientList } from '~/components/MessageRecipientList';
 import { MessageMetadata } from '~/models';
-import { MessageRecipientList } from '../../components/MessageRecipientList';
 
 export interface RecipientListPreviewProps {
   message: MessageMetadata;
@@ -12,8 +12,8 @@ export function RecipientListPreview({ message }: RecipientListPreviewProps) {
   const cc = message.cc;
   const cci = message.cci ?? { users: [], groups: [] };
   const recipients = {
-    users: [...to.users, ...cc.users, ...cci?.users],
-    groups: [...to.groups, ...cc.groups, ...cci?.groups],
+    users: [...to.users, ...cc.users, ...cci.users],
+    groups: [...to.groups, ...cc.groups, ...cci.groups],
   };
   return (
     <MessageRecipientList
