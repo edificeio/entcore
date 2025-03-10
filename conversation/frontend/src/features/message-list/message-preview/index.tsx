@@ -15,6 +15,7 @@ export interface MessagePreviewProps {
 export function MessagePreview({ message }: MessagePreviewProps) {
   const { t } = useTranslation('conversation');
   const { folderId } = useParams<{ folderId: string }>();
+  console.log('folderId:', folderId);
   const { fromNow } = useDate();
   const senderDisplayName = useMessageUserDisplayName(message.from);
 
@@ -24,7 +25,7 @@ export function MessagePreview({ message }: MessagePreviewProps) {
         <IconUndo className="gray-800" title="message-response" />
       )}
 
-      {'outbox' === folderId ? (
+      {folderId && ['outbox', 'draft'].includes(folderId) ? (
         <RecipientAvatar recipients={message.to} />
       ) : (
         <SenderAvatar authorId={message.from.id} />
@@ -33,12 +34,13 @@ export function MessagePreview({ message }: MessagePreviewProps) {
       <div className="d-flex flex-fill flex-column overflow-hidden">
         <div className="d-flex flex-fill justify-content-between overflow-hidden">
           <div className="text-truncate flex-fill">
-            {'outbox' === folderId ? (
+            {folderId && ['outbox', 'draft'].includes(folderId) ? (
               <RecipientListPreview message={message} />
             ) : (
               senderDisplayName
             )}
           </div>
+
           <div className="fw-bold text-nowrap fs-12 gray-800">
             {fromNow(message.date)}
           </div>

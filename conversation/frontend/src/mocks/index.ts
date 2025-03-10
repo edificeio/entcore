@@ -42,7 +42,7 @@ export const mockMessagesOfInbox: MessageMetadata[] = [
     },
     state: 'SENT',
     date: 1503571892555,
-    unread: true,
+    unread: false,
     response: false,
     trashed: false,
     forwarded: false,
