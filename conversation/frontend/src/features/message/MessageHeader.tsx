@@ -1,7 +1,7 @@
 import { Avatar, useDate, useDirectory } from '@edifice.io/react';
 import { useI18n } from '~/hooks';
 import { Message } from '~/models';
-import { MessageRecipientList } from './components/MessageRecipientList';
+import { MessageRecipientList } from '../../components/MessageRecipientList';
 
 export interface MessageHeaderProps {
   message: Message;
