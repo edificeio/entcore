@@ -131,7 +131,7 @@ describe('Message preview header component', () => {
     expect(recipientAvatar).toBeInTheDocument();
   });
 
-  it('should display group avatar icon when more than one recipient in outbox', async () => {
+  it('should display group avatar icon when more than one recipient when is in outbox', async () => {
     mocks.useParams.mockReturnValue({ folderId: 'outbox' });
     render(<MessagePreview message={message} />);
 
@@ -141,7 +141,7 @@ describe('Message preview header component', () => {
     expect(recipientAvatar).toBeInTheDocument();
   });
 
-  it('should display all recipients in after "to" label in outbox', async () => {
+  it('should display all recipients after "to" label when is in outbox', async () => {
     mocks.useParams.mockReturnValue({ folderId: 'outbox' });
     render(<MessagePreview message={mockMessageOfOutbox} />);
 
@@ -149,5 +149,11 @@ describe('Message preview header component', () => {
     const parentContainer = atElement.closest('div');
     const spanElements = parentContainer?.querySelectorAll('span');
     expect(spanElements).toHaveLength(6);
+  });
+
+  it('should display a "draft" label when is in draft', async () => {
+    mocks.useParams.mockReturnValue({ folderId: 'draft' });
+    render(<MessagePreview message={mockMessageOfOutbox} />);
+    screen.getByText('draft');
   });
 });

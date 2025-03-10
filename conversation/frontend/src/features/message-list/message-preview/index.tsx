@@ -32,7 +32,10 @@ export function MessagePreview({ message }: MessagePreviewProps) {
       )}
 
       <div className="d-flex flex-fill flex-column overflow-hidden">
-        <div className="d-flex flex-fill justify-content-between overflow-hidden">
+        <div className="d-flex flex-fill justify-content-between overflow-hidden gap-4">
+          {folderId === 'draft' && (
+            <strong className="text-danger">{t('draft')}</strong>
+          )}
           <div className="text-truncate flex-fill">
             {folderId && ['outbox', 'draft'].includes(folderId) ? (
               <RecipientListPreview message={message} />
