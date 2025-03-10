@@ -1,4 +1,9 @@
-import { Avatar, useDate, useDirectory } from '@edifice.io/react';
+import {
+  Avatar,
+  useDate,
+  useDirectory,
+  useEdificeClient,
+} from '@edifice.io/react';
 import { useI18n } from '~/hooks';
 import { Message } from '~/models';
 import { MessageRecipientList } from '../../components/MessageRecipientList';
@@ -11,9 +16,12 @@ export function MessageHeader({ message }: MessageHeaderProps) {
   const { t } = useI18n();
   const { fromNow } = useDate();
   const { getAvatarURL, getUserbookURL } = useDirectory();
+  const { user } = useEdificeClient();
 
-  const { subject, from, date, to, cc } = message;
+  const { subject, from, date, to, cc, cci } = message;
   const hasCC = cc.users.length > 0 || cc.groups.length > 0;
+  const isFromCurrentUser = user?.userId === from.id;
+  const hasCCI = cci && (cci.users.length > 0 || cci.groups.length > 0);
 
   return (
     <>
@@ -44,6 +52,13 @@ export function MessageHeader({ message }: MessageHeaderProps) {
                 <MessageRecipientList
                   head={<b>{t('cc')}</b>}
                   recipients={cc}
+                  hasLink
+                />
+              )}
+              {isFromCurrentUser && hasCCI && (
+                <MessageRecipientList
+                  head={<b>{t('cci')}</b>}
+                  recipients={cci}
                   hasLink
                 />
               )}
