@@ -4,9 +4,9 @@ import {
   useParams,
   useSearchParams,
 } from 'react-router-dom';
-import { MessageList } from '~/features/Message/message-list';
-import { MessageListEmpty } from '~/features/Message/message-list-empty';
-import { MessageListHeader } from '~/features/Message/message-list-header';
+import { MessageList } from '~/features/message-list';
+import { MessageListEmpty } from '~/features/message-list/components/MessageListEmpty';
+import { MessageListHeader } from '~/features/message-list/components/MessageListHeader';
 import { folderQueryOptions, useFolderMessages } from '~/services';
 
 export const loader =
