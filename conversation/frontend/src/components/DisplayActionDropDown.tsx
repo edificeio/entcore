@@ -19,7 +19,7 @@ import { RefAttributes } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Message } from '~/models';
-import { useMarkUnread, useRestoreMessage, useDeleteMessage } from '~/services';
+import { useMarkUnread, useRestoreMessage, useDeleteMessage, useTrashMessage } from '~/services';
 import { useConfirmModalStore } from "~/store";
 
 export function DisplayActionDropDown({ message }: { message: Message }) {
@@ -29,6 +29,7 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
   const { openModal } = useConfirmModalStore();
   const deleteMessage = useDeleteMessage();
   const restoreQuery = useRestoreMessage();
+  const moveToTrashQuery = useTrashMessage();
 
   const handleDelete = () => {
     openModal({
@@ -109,7 +110,8 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
       label: t('trash'),
       icon: <IconDelete />,
       action: () => {
-        alert('delete');
+        moveToTrashQuery.mutate({ id: message.id });
+        navigate(`../..`, { relative: 'path' });
       },
       hidden: message.trashed,
     },
