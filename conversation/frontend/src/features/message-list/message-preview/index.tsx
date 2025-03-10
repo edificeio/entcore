@@ -15,7 +15,6 @@ export interface MessagePreviewProps {
 export function MessagePreview({ message }: MessagePreviewProps) {
   const { t } = useTranslation('conversation');
   const { folderId } = useParams<{ folderId: string }>();
-  console.log('folderId:', folderId);
   const { fromNow } = useDate();
   const senderDisplayName = useMessageUserDisplayName(message.from);
 

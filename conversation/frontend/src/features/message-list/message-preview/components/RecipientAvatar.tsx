@@ -12,7 +12,9 @@ export function RecipientAvatar({ recipients }: RecipientAvatarProps) {
   const { t } = useTranslation('conversation');
   const { recipientCount, url } = useRecipientAvatar(recipients);
 
-  if (recipientCount > 1) {
+  if (recipientCount === 0) {
+    return null;
+  } else if (recipientCount > 1) {
     return (
       <div
         className="bg-orange-200 avatar avatar-sm rounded-circle"

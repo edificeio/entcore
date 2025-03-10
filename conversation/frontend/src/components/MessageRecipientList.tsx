@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import { Fragment, ReactNode } from 'react';
 import { Recipients } from '~/models';
 import { MessageRecipientListItem } from './MessageRecipientListItem';
+import { useTranslation } from 'react-i18next';
 
 export interface RecipientListProps {
   recipients: Recipients;
@@ -19,11 +20,14 @@ export function MessageRecipientList({
   hasLink = false,
 }: RecipientListProps) {
   const recipientArray = [...recipients.users, ...recipients.groups];
-
+  const { t } = useTranslation('conversation');
   return (
     <div className={clsx({ 'text-truncate': truncate }, color)}>
       {head && <span className="text-uppercase me-4">{head}</span>}
-      <ul className={'list-unstyled mb-0 d-inline'}>
+      <ul
+        className={'list-unstyled mb-0 d-inline'}
+        aria-label={t('recipient.list')}
+      >
         {recipientArray.map((recipient, index) => {
           const type = index < recipients.users.length ? 'user' : 'group';
           const isLast = index === recipientArray.length - 1;

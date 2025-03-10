@@ -4,8 +4,9 @@ import { Recipients } from '~/models';
 export function useRecipientAvatar(recipients: Recipients) {
   const { getAvatarURL } = useDirectory();
   const recipientCount = recipients.users.length + recipients.groups.length;
-
-  if (recipientCount > 1) {
+  if (recipientCount === 0) {
+    return { recipientCount, url: null };
+  } else if (recipientCount > 1) {
     return { recipientCount, url: null };
   } else {
     const firstRecipient = recipients.users[0] || recipients.groups[0];
