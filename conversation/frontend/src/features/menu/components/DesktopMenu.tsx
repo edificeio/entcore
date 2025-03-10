@@ -1,30 +1,29 @@
 import {
-  IconDelete,
-  IconDepositeInbox,
-  IconPlus,
-  IconSend,
-  IconWrite,
-} from '@edifice.io/react/icons';
-import {
   Button,
   Menu,
   Tree,
   TreeItem,
   useEdificeClient,
 } from '@edifice.io/react';
+import {
+  IconDelete,
+  IconDepositeInbox,
+  IconPlus,
+  IconSend,
+  IconWrite,
+} from '@edifice.io/react/icons';
+import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
-import { useMenuData } from '../hooks/useMenuData';
-import './DesktopMenu.css';
 import {
   FolderActionDropDown,
   ProgressBar,
   ProgressBarProps,
 } from '~/components';
-import { useTranslation } from 'react-i18next';
 import { useUsedSpace } from '~/hooks';
-import { useFolderHandlers } from '../hooks/useFolderHandlers';
-import { useMemo } from 'react';
 import { buildTree, useFoldersTree } from '~/services';
+import { useFolderHandlers } from '../hooks/useFolderHandlers';
+import { useMenuData } from '../hooks/useMenuData';
 
 /** Converts a value in bytes to mega-bytes (rounded) */
 const bytesToMegabytes = (bytes: number) => Math.round(bytes / (1024 * 1024));
@@ -85,7 +84,7 @@ export function DesktopMenu() {
     isChild?: boolean;
   }) {
     return (
-      <div className="user-folder w-100 d-flex justify-content-between align-content-center align-items-center">
+      <div className="my-n8 py-2 w-100 d-flex justify-content-between align-content-center align-items-center">
         <div className="overflow-x-hidden text-no-wrap text-truncate">
           {node.name}
         </div>

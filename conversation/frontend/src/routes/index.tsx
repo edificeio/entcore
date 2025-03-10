@@ -32,7 +32,7 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
                 path: '',
                 async lazy() {
                   const { Component, loader } = await import(
-                    '~/routes/pages/folder-display'
+                    '~/routes/pages/FolderDisplay'
                   );
                   return {
                     loader: loader(_queryClient),
@@ -45,7 +45,7 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
                 path: 'message/:messageId',
                 async lazy() {
                   const { Component, loader } = await import(
-                    '~/routes/pages/message-display'
+                    '~/routes/pages/MessageDisplay'
                   );
                   return {
                     loader: loader(_queryClient),
@@ -63,7 +63,7 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
                 path: '',
                 async lazy() {
                   const { Component, loader } = await import(
-                    '~/routes/pages/folder-display'
+                    '~/routes/pages/FolderDisplay'
                   );
                   return {
                     loader: loader(_queryClient),
@@ -76,7 +76,7 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
                 path: 'message/:messageId',
                 async lazy() {
                   const { Component, loader } = await import(
-                    '~/routes/pages/message-display'
+                    '~/routes/pages/MessageDisplay'
                   );
                   return {
                     loader: loader(_queryClient),
@@ -90,7 +90,7 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
             path: 'draft/create',
             async lazy() {
               const { Component, loader } = await import(
-                '~/routes/pages/message-create'
+                '~/routes/pages/MessageCreate'
               );
               return {
                 loader: loader(_queryClient),

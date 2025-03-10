@@ -7,26 +7,26 @@ import {
 import {
   IconDelete,
   IconReadMail,
-  IconUnreadMail,
   IconRestore,
+  IconUnreadMail,
 } from '@edifice.io/react/icons';
 import clsx from 'clsx';
 import { KeyboardEvent, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { MessagePreview } from '~/features/Message/message-preview';
 import { MessageMetadata } from '~/models';
 import {
+  useDeleteMessage,
   useFolderMessages,
   useMarkRead,
   useMarkUnread,
+  useRestoreMessage,
   useTrashMessage,
   useUpdateFolderBadgeCountLocal,
-  useRestoreMessage,
-  useDeleteMessage,
 } from '~/services';
 import { useConfirmModalStore } from '~/store';
 import { useAppActions, useSelectedMessageIds } from '~/store/actions';
+import { MessagePreview } from './message-preview';
 
 export function MessageList() {
   const navigate = useNavigate();
@@ -142,7 +142,7 @@ export function MessageList() {
 
   const handleDelete = () => {
     openModal({
-      id: "delete-modal",
+      id: 'delete-modal',
       header: <>{t('delete.definitely')}</>,
       body: <p>{t('delete.definitely.confirm')}</p>,
       okText: t('confirm'),
@@ -152,7 +152,7 @@ export function MessageList() {
         setCurrent((prev) => prev + 1);
       },
     });
-  }
+  };
 
   const toolbar: ToolbarItem[] = [
     {

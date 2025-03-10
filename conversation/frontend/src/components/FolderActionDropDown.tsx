@@ -6,8 +6,8 @@ import {
   IconOptions,
 } from '@edifice.io/react/icons';
 import { RefAttributes } from 'react';
-import { useFolderHandlers } from '~/features/Menu/hooks/useFolderHandlers';
 import { useTranslation } from 'react-i18next';
+import { useFolderHandlers } from '~/features/menu/hooks/useFolderHandlers';
 import { Folder } from '~/models';
 
 export function FolderActionDropDown({ folder }: { folder: Folder }) {

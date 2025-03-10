@@ -1,6 +1,6 @@
 import { render, renderHook, screen, waitFor, wrapper } from '~/mocks/setup';
 import { useFolderMessages } from '~/services';
-import { MessageList } from './message-list';
+import { MessageList } from '.';
 
 /**
  * Mock useParams

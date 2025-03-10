@@ -1,6 +1,6 @@
 import { useDirectory } from '@edifice.io/react';
+import { useMessageUserDisplayName } from '~/hooks/useUserDisplayName';
 import { Group, User } from '~/models';
-import { useMessageUserDisplayName } from '../message-preview/hooks/useUserDisplayName';
 
 interface RecipientItemProps {
   recipient: User | Group;
