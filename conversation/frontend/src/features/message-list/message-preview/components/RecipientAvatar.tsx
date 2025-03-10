@@ -2,7 +2,7 @@ import { Avatar } from '@edifice.io/react';
 import { IconGroupAvatar } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
 import { Recipients } from '~/models';
-import { useRecipientAvatar } from '../hooks/useRecipientAvatar';
+import { useRecipientAvatar } from '../../../../hooks/useRecipientAvatar';
 
 interface RecipientAvatarProps {
   recipients: Recipients;

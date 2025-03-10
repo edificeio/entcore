@@ -54,13 +54,15 @@ export const useMessage = (messageId: string) => {
         unread: !unreadFilter ? undefined : true,
       }),
       (data: InfiniteData<MessageMetadata>) => {
-        data.pages.forEach((page: any) => {
-          page.forEach((message: MessageMetadata) => {
-            if (result.data.id === message.id) {
-              message.unread = false;
-            }
+        if (data?.pages) {
+          data.pages.forEach((page: any) => {
+            page.forEach((message: MessageMetadata) => {
+              if (result.data.id === message.id) {
+                message.unread = false;
+              }
+            });
           });
-        });
+        }
         return data;
       },
     );
@@ -235,21 +237,20 @@ export const useRestoreMessage = () => {
   const toast = useToast();
   const { t } = useTranslation(appCodeName);
   return useMutation({
-    mutationFn: async ({ id }: { id: string | string[] }) => 
-      messageService.restore(id)
-    ,
+    mutationFn: async ({ id }: { id: string | string[] }) =>
+      messageService.restore(id),
     onSuccess: (_data, { id }) => {
       const messageIds = typeof id === 'string' ? [id] : id;
 
       queryClient.invalidateQueries({
-        queryKey: ['folder']
+        queryKey: ['folder'],
       });
 
       // Toast
       toast.success(
         t(messageIds.length > 1 ? 'messages.restore' : 'message.restore'),
       );
-    }
+    },
   });
 };
 
