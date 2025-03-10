@@ -37,10 +37,12 @@ export function MessagePreview({ message }: MessagePreviewProps) {
             <strong className="text-danger">{t('draft')}</strong>
           )}
           <div className="text-truncate flex-fill">
-            {folderId && ['outbox', 'draft'].includes(folderId) ? (
-              <RecipientListPreview message={message} />
-            ) : (
-              senderDisplayName
+            {folderId === 'draft' && <RecipientListPreview message={message} />}
+            {folderId === 'outbox' && (
+              <RecipientListPreview message={message} hasPrefix />
+            )}
+            {folderId && ['inbox', 'trash'].includes(folderId) && (
+              <>{senderDisplayName}</>
             )}
           </div>
 

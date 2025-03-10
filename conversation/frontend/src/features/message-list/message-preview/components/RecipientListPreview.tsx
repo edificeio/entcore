@@ -4,9 +4,13 @@ import { MessageMetadata } from '~/models';
 
 export interface RecipientListPreviewProps {
   message: MessageMetadata;
+  hasPrefix?: boolean;
 }
 
-export function RecipientListPreview({ message }: RecipientListPreviewProps) {
+export function RecipientListPreview({
+  message,
+  hasPrefix,
+}: RecipientListPreviewProps) {
   const { t } = useTranslation('conversation');
   const to = message.to;
   const cc = message.cc;
@@ -17,7 +21,7 @@ export function RecipientListPreview({ message }: RecipientListPreviewProps) {
   };
   return (
     <MessageRecipientList
-      head={t('at')}
+      head={hasPrefix ? t('at') : null}
       recipients={recipients}
       color="text-gray-800"
       truncate

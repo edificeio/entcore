@@ -145,15 +145,26 @@ describe('Message preview header component', () => {
     mocks.useParams.mockReturnValue({ folderId: 'outbox' });
     render(<MessagePreview message={mockMessageOfOutbox} />);
 
-    const atElement = screen.getByText('at');
-    const parentContainer = atElement.closest('div');
-    const spanElements = parentContainer?.querySelectorAll('span');
-    expect(spanElements).toHaveLength(6);
+    screen.getByText('at');
+
+    const recipientItems = screen.getAllByRole('listitem');
+    expect(recipientItems).toHaveLength(5);
   });
 
   it('should display a "draft" label when is in draft', async () => {
     mocks.useParams.mockReturnValue({ folderId: 'draft' });
     render(<MessagePreview message={mockMessageOfOutbox} />);
     screen.getByText('draft');
+  });
+
+  it('should display all recipients without "to" label when is in draft', async () => {
+    mocks.useParams.mockReturnValue({ folderId: 'draft' });
+    render(<MessagePreview message={mockMessageOfOutbox} />);
+
+    const atElement = screen.queryByText('at');
+    expect(atElement).toBeNull();
+
+    const recipientItems = screen.getAllByRole('listitem');
+    expect(recipientItems).toHaveLength(5);
   });
 });
