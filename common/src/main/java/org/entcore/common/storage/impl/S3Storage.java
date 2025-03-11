@@ -99,7 +99,7 @@ public class S3Storage implements Storage {
         s3Client.uploadFile(request, maxSize, validator, ar -> {
             handler.handle(ar);
             if (ar.getString("status") == "ok") {
-                scanFile(ar.getString("_id"));
+                scanFile(S3Client.getPath(ar.getString("_id")));
             }
         });
     }
@@ -139,7 +139,7 @@ public class S3Storage implements Storage {
 
             handler.handle(j);
             if (j.getString("status") == "ok") {
-                scanFile(j.getString("_id"));
+                scanFile(S3Client.getPath(j.getString("_id")));
             }
         });
     }
@@ -159,7 +159,7 @@ public class S3Storage implements Storage {
 
                 promise.complete(result);
                 if (result.getString("status") == "ok") {
-                    scanFile(result.getString("_id"));
+                    scanFile(S3Client.getPath(result.getString("_id")));
                 }
             }
             else {
@@ -180,7 +180,7 @@ public class S3Storage implements Storage {
     public void writeFsFile(String id, String filename, Handler<JsonObject> handler) {
         s3Client.writeFromFileSystem(id, filename, bucket, json -> {
             if (json.getString("status") == "ok") {
-                scanFile(json.getString("_id"));
+                scanFile(S3Client.getPath(json.getString("_id")));
             }
             handler.handle(json);
         });
