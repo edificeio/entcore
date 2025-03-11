@@ -6,6 +6,7 @@ import {
 } from '@edifice.io/react';
 import {
   IconDelete,
+  IconFolderMove,
   IconReadMail,
   IconRestore,
   IconUnreadMail,
@@ -79,6 +80,7 @@ export function MessageList() {
   }, [searchParams, folderId]);
 
   const isInTrash = folderId === 'trash';
+  const isInDraft = folderId === 'draft';
 
   const selectedMessages = useMemo(() => {
     return (
@@ -104,6 +106,11 @@ export function MessageList() {
     if (isInTrash) return false;
     return selectedMessages.length > 0;
   }, [isInTrash, selectedMessages]);
+
+  const canBeMovetoFolder = useMemo(() => {
+    if (isInTrash || isInDraft) return false;
+    return selectedMessages.length > 0;
+  }, [isInTrash, isInDraft, selectedMessages]);
 
   const isTrashMessage = useMemo(() => {
     if (!isInTrash) return false;
@@ -156,6 +163,10 @@ export function MessageList() {
         setCurrent((prev) => prev + 1);
       },
     });
+  };
+
+  const handleMoveToFolder = () => {
+    alert('handleMoveToFolder');
   };
 
   const toolbar: ToolbarItem[] = [
@@ -213,6 +224,20 @@ export function MessageList() {
         ),
         onClick: handleRestore,
         hidden: !isTrashMessage,
+      },
+    },
+    {
+      type: 'button',
+      name: 'move',
+      props: {
+        children: (
+          <>
+            <IconFolderMove />
+            <span>{t('move')}</span>
+          </>
+        ),
+        onClick: handleMoveToFolder,
+        hidden: !canBeMovetoFolder,
       },
     },
     {
