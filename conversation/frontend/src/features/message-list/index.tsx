@@ -28,6 +28,7 @@ import {
 import { useConfirmModalStore } from '~/store';
 import { useAppActions, useSelectedMessageIds } from '~/store/actions';
 import { MessagePreview } from './message-preview';
+import { useFolderHandlers } from '../menu/hooks/useFolderHandlers';
 
 export function MessageList() {
   const navigate = useNavigate();
@@ -46,7 +47,7 @@ export function MessageList() {
   const restoreQuery = useRestoreMessage();
   const deleteMessage = useDeleteMessage();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
-
+  const { handleMoveMessage } = useFolderHandlers()
   const { openModal } = useConfirmModalStore();
 
   const {
@@ -166,7 +167,7 @@ export function MessageList() {
   };
 
   const handleMoveToFolder = () => {
-    alert('handleMoveToFolder');
+    handleMoveMessage();
   };
 
   const toolbar: ToolbarItem[] = [
