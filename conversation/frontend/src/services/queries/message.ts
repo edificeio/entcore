@@ -89,14 +89,11 @@ const useToggleUnread = (unread: boolean) => {
         messages.map((m) => m.id),
         unread,
       ),
-    onSuccess: (_data, { messages: message }) => {
-      if (!Array.isArray(message)) {
-        message = [message];
-      }
-      const messageIds = message.map((m) => m.id);
+    onSuccess: (_data, { messages }) => {
+      const messageIds = messages.map((m) => m.id);
 
       if (folderId !== 'draft') {
-        const countMessageUpdated = message.filter(
+        const countMessageUpdated = messages.filter(
           (m) => m.unread !== unread,
         ).length;
         // Update the unread count in the folder except for the draft folder wich count all messages and not only unread
@@ -114,9 +111,9 @@ const useToggleUnread = (unread: boolean) => {
         }),
         (data: InfiniteData<MessageMetadata>) => {
           data.pages.forEach((page: any) => {
-            page.forEach((msg: MessageMetadata) => {
-              if (messageIds.includes(msg.id)) {
-                msg.unread = unread;
+            page.forEach((message: MessageMetadata) => {
+              if (messageIds.includes(message.id)) {
+                message.unread = unread;
               }
             });
           });
