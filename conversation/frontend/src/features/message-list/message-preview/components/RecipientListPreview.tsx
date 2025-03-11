@@ -1,5 +1,4 @@
 import { ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
 import { MessageRecipientList } from '~/components/MessageRecipientList';
 import { MessageMetadata } from '~/models';
 

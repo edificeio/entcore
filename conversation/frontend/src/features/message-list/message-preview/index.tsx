@@ -2,7 +2,7 @@ import { useDate } from '@edifice.io/react';
 import { IconPaperclip, IconUndo } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
 import { useSelectedFolder } from '~/hooks';
-import { MessageMetadata } from '~/models';
+import { MessageMetadata, SYSTEM_FOLDER_ID } from '~/models';
 import { useMessageUserDisplayName } from '../../../hooks/useUserDisplayName';
 import RecipientAvatar from './components/RecipientAvatar';
 import { RecipientListPreview } from './components/RecipientListPreview';
@@ -24,7 +24,8 @@ export function MessagePreview({ message }: MessagePreviewProps) {
         <IconUndo className="gray-800" title="message-response" />
       )}
 
-      {folderId && ['outbox', 'draft'].includes(folderId) ? (
+      {folderId === SYSTEM_FOLDER_ID.OUTBOX ||
+      folderId === SYSTEM_FOLDER_ID.DRAFT ? (
         <RecipientAvatar recipients={message.to} />
       ) : (
         <SenderAvatar authorId={message.from.id} />
@@ -32,15 +33,18 @@ export function MessagePreview({ message }: MessagePreviewProps) {
 
       <div className="d-flex flex-fill flex-column overflow-hidden">
         <div className="d-flex flex-fill justify-content-between overflow-hidden gap-4">
-          {folderId === 'draft' && (
+          {folderId === SYSTEM_FOLDER_ID.DRAFT && (
             <span className="text-danger fw-bold">{t('draft')}</span>
           )}
           <div className="text-truncate flex-fill">
-            {folderId === 'draft' && <RecipientListPreview message={message} />}
-            {folderId === 'outbox' && (
+            {folderId === SYSTEM_FOLDER_ID.DRAFT && (
+              <RecipientListPreview message={message} />
+            )}
+            {folderId === SYSTEM_FOLDER_ID.OUTBOX && (
               <RecipientListPreview message={message} head={t('at')} />
             )}
-            {folderId && ['inbox', 'trash'].includes(folderId) && (
+            {(folderId === SYSTEM_FOLDER_ID.INBOX ||
+              folderId === SYSTEM_FOLDER_ID.TRASH) && (
               <span>{senderDisplayName}</span>
             )}
           </div>
