@@ -521,6 +521,30 @@ export class Mail implements Selectable {
         }
     }
 
+    public async controlContent(content: any) {
+        if (content != null) {
+            try {
+                const response = await http.post("conversation/checkContent", content);
+                return response;
+            } catch (e) {
+                console.error("Failed to check content: ", e);
+                return null;
+            }
+        }
+    }
+
+    public async keywords() {
+        try {
+            const response = await http.get("conversation/keywords");
+            return response.data.keywords;
+        } catch (e) {
+            console.error("Failed to check content: ", e);
+            return null;
+        }
+    }
+
+
+
     public async importDocumentInWorkspace(file: any, name: string): Promise<string> {
         const formData = new FormData();
         formData.append('blob', file, name);
