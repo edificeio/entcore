@@ -1817,4 +1817,42 @@ public class ConversationController extends BaseController {
 		});
 	}
 
+	@Get("conversation/keywords")
+	@SecuredAction(value="", type=ActionType.AUTHENTICATED)
+	public void getPrompt(HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					mailToExercizer.getPrompt("Keywords", res -> {
+						renderJson(request,res.getJsonObject("config"));
+					});
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
+
+	@Post("conversation/checkContent")
+	@SecuredAction(value="", type=ActionType.AUTHENTICATED)
+	public void controlMailToExo(HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			@Override
+			public void handle(final UserInfos user) {
+				if (user != null) {
+					RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
+						public void handle(JsonObject body) {
+							mailToExercizer.callMistralAI(body.getString("message"), body.getString("subject"),
+									res -> renderJson(request, res));
+						}
+					});
+				} else {
+					unauthorized(request);
+				}
+			}
+		});
+	}
+
 }
