@@ -8,7 +8,7 @@ import {
 } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { Message, MessageMetadata } from '~/models';
+import { Message, MessageBase, MessageMetadata } from '~/models';
 import {
   folderQueryOptions,
   messageService,
@@ -84,16 +84,25 @@ const useToggleUnread = (unread: boolean) => {
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
 
   return useMutation({
-    mutationFn: ({ id }: { id: string | string[] }) =>
-      messageService.toggleUnread(id, unread),
-    onSuccess: (_data, { id }) => {
-      const messageIds = typeof id === 'string' ? [id] : id;
+    mutationFn: ({ messages }: { messages: MessageBase[] }) =>
+      messageService.toggleUnread(
+        messages.map((m) => m.id),
+        unread,
+      ),
+    onSuccess: (_data, { messages: message }) => {
+      if (!Array.isArray(message)) {
+        message = [message];
+      }
+      const messageIds = message.map((m) => m.id);
 
       if (folderId !== 'draft') {
+        const countMessageUpdated = message.filter(
+          (m) => m.unread !== unread,
+        ).length;
         // Update the unread count in the folder except for the draft folder wich count all messages and not only unread
         updateFolderBadgeCountLocal(
           folderId,
-          unread ? messageIds.length : -messageIds.length,
+          unread ? countMessageUpdated : -countMessageUpdated,
         );
       }
 
@@ -105,9 +114,9 @@ const useToggleUnread = (unread: boolean) => {
         }),
         (data: InfiniteData<MessageMetadata>) => {
           data.pages.forEach((page: any) => {
-            page.forEach((message: MessageMetadata) => {
-              if (messageIds.includes(message.id)) {
-                message.unread = unread;
+            page.forEach((msg: MessageMetadata) => {
+              if (messageIds.includes(msg.id)) {
+                msg.unread = unread;
               }
             });
           });
