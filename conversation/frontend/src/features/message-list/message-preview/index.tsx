@@ -1,7 +1,7 @@
 import { useDate } from '@edifice.io/react';
 import { IconPaperclip, IconUndo } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom';
+import { useSelectedFolder } from '~/hooks';
 import { MessageMetadata } from '~/models';
 import { useMessageUserDisplayName } from '../../../hooks/useUserDisplayName';
 import RecipientAvatar from './components/RecipientAvatar';
@@ -14,7 +14,7 @@ export interface MessagePreviewProps {
 
 export function MessagePreview({ message }: MessagePreviewProps) {
   const { t } = useTranslation('conversation');
-  const { folderId } = useParams<{ folderId: string }>();
+  const { folderId } = useSelectedFolder();
   const { fromNow } = useDate();
   const senderDisplayName = useMessageUserDisplayName(message.from);
 
@@ -38,7 +38,7 @@ export function MessagePreview({ message }: MessagePreviewProps) {
           <div className="text-truncate flex-fill">
             {folderId === 'draft' && <RecipientListPreview message={message} />}
             {folderId === 'outbox' && (
-              <RecipientListPreview message={message} hasPrefix />
+              <RecipientListPreview message={message} head={t('at')} />
             )}
             {folderId && ['inbox', 'trash'].includes(folderId) && (
               <span>{senderDisplayName}</span>

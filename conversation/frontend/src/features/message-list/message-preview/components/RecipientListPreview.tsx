@@ -1,17 +1,17 @@
+import { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MessageRecipientList } from '~/components/MessageRecipientList';
 import { MessageMetadata } from '~/models';
 
 export interface RecipientListPreviewProps {
   message: MessageMetadata;
-  hasPrefix?: boolean;
+  head?: ReactNode;
 }
 
 export function RecipientListPreview({
   message,
-  hasPrefix,
+  head,
 }: RecipientListPreviewProps) {
-  const { t } = useTranslation('conversation');
   const to = message.to;
   const cc = message.cc;
   const cci = message.cci ?? { users: [], groups: [] };
@@ -21,7 +21,7 @@ export function RecipientListPreview({
   };
   return (
     <MessageRecipientList
-      head={hasPrefix ? t('at') : null}
+      head={head}
       recipients={recipients}
       color="text-gray-800"
       truncate
