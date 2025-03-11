@@ -136,6 +136,7 @@
   "recipient.list": "Liste des destinataires",
   "recipient.avatar": "Avatar du destinataire",
   "recipient.avatar.group": "Plusieurs destinataires",
+  "recipient.avatar.empty": "Aucun destinataire",
   "remove.attachment": "Supprimer la pièce jointe",
   "remove.from.folder": "Retirer du dossier",
   "remove.link": "Supprimer",

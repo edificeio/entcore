@@ -33,7 +33,7 @@ export function MessagePreview({ message }: MessagePreviewProps) {
       <div className="d-flex flex-fill flex-column overflow-hidden">
         <div className="d-flex flex-fill justify-content-between overflow-hidden gap-4">
           {folderId === 'draft' && (
-            <strong className="text-danger">{t('draft')}</strong>
+            <span className="text-danger fw-bold">{t('draft')}</span>
           )}
           <div className="text-truncate flex-fill">
             {folderId === 'draft' && <RecipientListPreview message={message} />}
@@ -41,21 +41,21 @@ export function MessagePreview({ message }: MessagePreviewProps) {
               <RecipientListPreview message={message} hasPrefix />
             )}
             {folderId && ['inbox', 'trash'].includes(folderId) && (
-              <>{senderDisplayName}</>
+              <span>{senderDisplayName}</span>
             )}
           </div>
 
           <div className="fw-bold text-nowrap fs-12 gray-800">
-            {fromNow(message.date)}
+            <span>{fromNow(message.date)}</span>
           </div>
         </div>
         <div className="d-flex flex-fill justify-content-between overflow-hidden">
           {message.subject ? (
-            <div className="text-truncate flex-fill">{message.subject}</div>
+            <span className="text-truncate flex-fill">{message.subject}</span>
           ) : (
-            <div className="text-truncate flex-fill text-gray-700">
+            <span className="text-truncate flex-fill text-gray-700">
               {t('nosubject')}
-            </div>
+            </span>
           )}
           {message.hasAttachment && (
             <IconPaperclip
