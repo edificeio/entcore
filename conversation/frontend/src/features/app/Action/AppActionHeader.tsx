@@ -1,32 +1,36 @@
-import { Fragment, RefAttributes } from 'react';
-import { useEdificeClient } from '@edifice.io/react';
-import { IconOptions, IconPlus, IconPrint } from '@edifice.io/react/icons';
 import {
   Button,
   Dropdown,
   IconButton,
   IconButtonProps,
+  useEdificeClient,
 } from '@edifice.io/react';
+import { IconOptions, IconPlus, IconPrint } from '@edifice.io/react/icons';
+import { Fragment, RefAttributes } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { AppActionMenuOptions } from './AppActionMenuOptions';
 
 export const AppActionHeader = () => {
   const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
   const { t: common_t } = useTranslation('common');
+  const navigate = useNavigate();
 
   const dropdownOptions: AppActionMenuOptions[] = [
     {
       id: 'print',
       label: t('print'),
       icon: <IconPrint />,
-      action: () => {console.log(appCode)},
+      action: () => {
+        console.log(appCode);
+      },
       visibility: true,
     },
   ];
 
   const handleCreateNewClick = () => {
-    alert('Create new');
+    navigate('/draft/create');
   };
 
   return (

@@ -1,0 +1,7 @@
+.message-attachments {
+  justify-self: flex-start;
+}
+.message-attachments-edit {
+  border-style: dashed;
+  border-color: var(--edifice-primary);
+}

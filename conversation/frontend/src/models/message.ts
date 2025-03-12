@@ -4,17 +4,17 @@ import { User } from './user';
 
 export interface MessageBase {
   id: string;
-  date: number;
+  date?: number;
   subject: string;
-  from: User;
+  from?: User;
   to: Recipients;
   cc: Recipients;
   cci?: Recipients;
-  state: 'DRAFT' | 'SENT';
-  unread: boolean;
-  trashed: boolean;
-  response: boolean;
-  forwarded: boolean;
+  state?: 'DRAFT' | 'SENT';
+  unread?: boolean;
+  trashed?: boolean;
+  response?: boolean;
+  forwarded?: boolean;
 }
 
 export interface MessageMetadata extends MessageBase {
@@ -24,8 +24,8 @@ export interface MessageMetadata extends MessageBase {
 export interface Message extends MessageBase {
   attachments: Attachment[];
   body: string;
-  language: string;
-  folder_id: string;
-  parent_id: string;
-  thread_id: string;
+  language?: string;
+  folder_id?: string;
+  parent_id?: string;
+  thread_id?: string;
 }
