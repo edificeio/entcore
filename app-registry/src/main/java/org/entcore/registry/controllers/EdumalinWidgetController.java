@@ -99,6 +99,8 @@ public class EdumalinWidgetController extends BaseController {
                             }
                         });
                     }
+                }).onFailure(err -> {
+                    badRequest(request, err.getMessage());
                 }));
     }
 
@@ -113,7 +115,7 @@ public class EdumalinWidgetController extends BaseController {
         String requestBody = new JsonObject().put("username", usernameEdumalin).put("password", passwordEdumalin).toString();
         httpClient.request(new RequestOptions()
                 .setMethod(HttpMethod.POST)
-                .setAbsoluteURI(referrerEdumalin + "auth/login")
+                .setAbsoluteURI(referrerEdumalin + "/auth/login")
                 .setHeaders(new HeadersMultiMap()
                         .add("Content-Type", "application/json")
                         .add("Content-Length", Integer.toString(requestBody.length()))))
@@ -142,6 +144,9 @@ public class EdumalinWidgetController extends BaseController {
                             }
                         });
                     }
+                }).onFailure(err -> {
+                    edumalinToken = null;
+                    badRequest(request, err.getMessage());
                 });
     }
 }
