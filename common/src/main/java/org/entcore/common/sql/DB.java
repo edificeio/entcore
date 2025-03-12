@@ -99,24 +99,29 @@ public class DB {
 						final String filename = f.substring(f.lastIndexOf(File.separatorChar) + 1);
 						if (!excludeFileNames.contains(filename)) {
 							vertx.fileSystem().readFile(f, bufferAsyncResult -> {
-                if (bufferAsyncResult.succeeded()) {
-                  String script = bufferAsyncResult.result().toString();
-                  script = script.replaceAll("\\-\\-\\s.*(\r|\n|$)", "").replaceAll("(\r|\n|\t)", " ");
-                  s.raw(script);
-                  newFiles.add(new JsonArray().add(filename));
-                } else {
-                  log.error("Error reading file : " + f, bufferAsyncResult.cause());
-                }
-                if (count.decrementAndGet() == 0) {
-                  commit(schema, s, newFiles).onComplete(promise);
-                }
-              });
+								if (bufferAsyncResult.succeeded()) {
+									String script = bufferAsyncResult.result().toString();
+									script = script.replaceAll("\\-\\-\\s.*(\r|\n|$)", "").replaceAll("(\r|\n|\t)", " ");
+									s.raw(script);
+									newFiles.add(new JsonArray().add(filename));
+								} else {
+									log.error("Error reading file : " + f, bufferAsyncResult.cause());
+								}
+								if (count.decrementAndGet() == 0) {
+									commit(schema, s, newFiles).onComplete(promise);
+								}
+							});
 						} else {
 							count.decrementAndGet();
 						}
 					}
-					if (count.get() == 0 && newFiles.size() > 0) {
-						commit(schema, s, newFiles).onComplete(promise);
+					if (count.get() == 0) {
+						if(newFiles.size() > 0) {
+							commit(schema, s, newFiles).onComplete(promise);
+						} else {
+							// No script has been played = success
+							promise.complete();
+						}
 					}
 				} else {
 					log.error("Error reading sql directory : " + path, asyncResult.cause());

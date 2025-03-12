@@ -19,16 +19,17 @@
 
 package org.entcore.directory.services;
 
+import java.util.List;
+
+import org.entcore.common.user.UserInfos;
+import org.entcore.directory.pojo.TransversalSearchQuery;
+
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.entcore.common.user.UserInfos;
-import org.entcore.directory.pojo.TransversalSearchQuery;
-
-import java.util.List;
 
 public interface UserService {
 
@@ -160,6 +161,15 @@ public interface UserService {
 					 Handler<Either<String, JsonArray>> handler);
 
 	void getMainStructure(String userId, JsonArray structuresToExclude, Handler<Either<String, JsonObject>> result);
+
+	/**
+	 * Get some details about the structures that a list of users are attached to.
+	 * @param userIds IDs of users
+	 * @param fields fields of the structure nodes, to be returned in details. Default to ["id"]
+	 * @return an array of JsonObjects, such as 
+	 * 		{ userId: "ID of the user", structures: [{id: "ID of the structure", ... other queried fields...}] }
+	 */
+	void getUsersStructures(JsonArray userIds, JsonArray fields, Handler<Either<String, JsonArray>> handler);
 
 	void getAttachmentSchool(String userId, JsonArray structuresToExclude, Handler<Either<String, JsonObject>> result);
 
