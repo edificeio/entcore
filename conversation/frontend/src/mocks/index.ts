@@ -1,4 +1,10 @@
-import { Folder, Message, MessageMetadata } from '~/models';
+import { Folder, Message, MessageMetadata, User } from '~/models';
+
+const mockCurrentUserPreview: User = {
+  displayName: 'LOISON Stéphane',
+  id: 'b92e3d37-16b0-4ed9-b4c3-992091687132',
+  profile: 'Teacher',
+};
 
 export const mockFolderTree: Array<Folder> = [
   {
@@ -42,13 +48,13 @@ export const mockMessagesOfInbox: MessageMetadata[] = [
     },
     state: 'SENT',
     date: 1503571892555,
-    unread: true,
+    unread: false,
     response: false,
     trashed: false,
     forwarded: false,
     hasAttachment: false,
     to: {
-      users: [],
+      users: [mockCurrentUserPreview],
       groups: [
         {
           id: '465',
@@ -71,6 +77,11 @@ export const mockMessagesOfInbox: MessageMetadata[] = [
           type: 'ProfileGroup',
           subType: 'StructureGroup',
         },
+      ],
+    },
+    cc: {
+      users: [],
+      groups: [
         {
           id: '466',
           displayName: 'Personnels du groupe scolaire.',
@@ -79,10 +90,6 @@ export const mockMessagesOfInbox: MessageMetadata[] = [
           subType: 'StructureGroup',
         },
       ],
-    },
-    cc: {
-      users: [],
-      groups: [],
     },
     cci: {
       users: [],
@@ -130,11 +137,7 @@ export const mockMessagesOfInbox: MessageMetadata[] = [
 export const mockMessageOfOutbox: MessageMetadata = {
   id: 'f43d3783',
   subject: 'Prêt des manuels scolaires',
-  from: {
-    displayName: 'LOISON Stéphane',
-    id: 'b92e3d37-16b0-4ed9-b4c3-992091687132',
-    profile: 'Teacher',
-  },
+  from: mockCurrentUserPreview,
   state: 'SENT',
   date: 1503571892555,
   unread: true,
@@ -172,13 +175,7 @@ export const mockMessageOfOutbox: MessageMetadata = {
     groups: [],
   },
   cci: {
-    users: [
-      {
-        displayName: 'LOISON Stéphane',
-        id: 'b92e3d37-16b0-4ed9-b4c3-992091687132',
-        profile: 'Teacher',
-      },
-    ],
+    users: [mockCurrentUserPreview],
     groups: [
       {
         id: '467',
@@ -190,6 +187,9 @@ export const mockMessageOfOutbox: MessageMetadata = {
     ],
   },
 };
+
+export const mockMessageOfDraft: MessageMetadata[] = [...mockMessagesOfInbox];
+mockMessageOfDraft[0].to = { users: [], groups: [] };
 
 export const mockFullMessage: Message = {
   id: 'f43d3783',
@@ -225,11 +225,7 @@ export const mockFullMessage: Message = {
   ],
   to: {
     users: [
-      {
-        displayName: 'LOISON Stéphane',
-        id: 'b92e3d37-16b0-4ed9-b4c3-992091687132',
-        profile: 'Teacher',
-      },
+      mockCurrentUserPreview,
       {
         id: '91c22b66',
         displayName: 'ISABELLE POLONIO (prof arts plastiques)',
