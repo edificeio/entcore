@@ -41,8 +41,6 @@ export function RecipientAvatar({ recipients }: RecipientAvatarProps) {
         variant="circle"
       />
     );
-  } else {
-    return null;
   }
 }
 
