@@ -1098,7 +1098,7 @@ public class DuplicateUsers {
 						"OPTIONAL MATCH (old)-[r]-() " +
 						"DELETE r, rb, b, old, rUb, ub " +
 						"WITH oldId, oldLogin, oldPassword, oldEmail " +
-						"MATCH (u:User {login: {id}}) " +
+						"MATCH (u:User {id: {id}}) " +
 						"SET u.oldId = u.id, u.id = oldId, u.oldLogin = u.login, u.login = oldLogin, " +
 						"u.activationCode = null, u.password = oldPassword, u.email = oldEmail ";
 		tx.add(query4, params, new Handler<Either<String, JsonArray>>() {
