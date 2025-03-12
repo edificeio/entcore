@@ -389,9 +389,9 @@ public class DuplicateUsers {
 				(!activatedU1 && !activatedU2)) {
 			query = SIMPLE_MERGE_QUERY;
 			if (prioritySource(source1) == prioritySource(source2) && notDeduplicateSource.contains(source1)) {
-				if (!missing1 && activatedU1) {
+				if ((!missing1 && activatedU1) || (!activatedU1 && !activatedU2 && missing2)) {
 					params.put("userId1", userId1).put("userId2", userId2);
-				} else if (!missing2 && activatedU2) {
+				} else if ((!missing2 && activatedU2) || (!activatedU1 && !activatedU2 && missing1)) {
 					params.put("userId1", userId2).put("userId2", userId1);
 				} else {
 					query = SWITCH_MERGE_QUERY;
