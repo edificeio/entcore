@@ -1,5 +1,5 @@
 import { useParams } from 'react-router-dom';
-import { Folder } from '~/models';
+import { Folder, SystemFolder } from '~/models';
 import { searchFolder, useFoldersTree } from '~/services';
 
 /**
@@ -11,7 +11,7 @@ import { searchFolder, useFoldersTree } from '~/services';
  * }
  */
 export function useSelectedFolder(): {
-  folderId?: string;
+  folderId?: SystemFolder;
   userFolder?: Folder;
 } {
   const { folderId } = useParams() as { folderId: string };

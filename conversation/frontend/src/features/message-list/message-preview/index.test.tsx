@@ -1,6 +1,6 @@
 import { mockMessageOfOutbox, mockMessagesOfInbox } from '~/mocks';
 import { render, screen } from '~/mocks/setup';
-import { MessageMetadata, SYSTEM_FOLDER_ID } from '~/models';
+import { MessageMetadata } from '~/models';
 import { MessagePreview } from '.';
 
 const message = mockMessagesOfInbox[0];
@@ -22,7 +22,7 @@ vi.mock('react-router-dom', async () => {
 
 describe('Message preview header component', () => {
   beforeEach(() => {
-    mocks.useParams.mockReturnValue({ folderId: SYSTEM_FOLDER_ID.INBOX });
+    mocks.useParams.mockReturnValue({ folderId: 'inbox' });
   });
 
   afterEach(() => {
@@ -108,7 +108,7 @@ describe('Message preview header component', () => {
   });
 
   it('should display "to" label and recipient name when in outbox', async () => {
-    mocks.useParams.mockReturnValue({ folderId: SYSTEM_FOLDER_ID.OUTBOX });
+    mocks.useParams.mockReturnValue({ folderId: 'outbox' });
 
     render(<MessagePreview message={message} />);
 
@@ -120,7 +120,7 @@ describe('Message preview header component', () => {
   });
 
   it('should display the recipient avatar when in outbox', async () => {
-    mocks.useParams.mockReturnValue({ folderId: SYSTEM_FOLDER_ID.OUTBOX });
+    mocks.useParams.mockReturnValue({ folderId: 'outbox' });
 
     const messageWithOneRecipient = mockMessagesOfInbox[1];
     render(<MessagePreview message={messageWithOneRecipient} />);
@@ -132,7 +132,7 @@ describe('Message preview header component', () => {
   });
 
   it('should display group avatar icon when more than one recipient when in outbox', async () => {
-    mocks.useParams.mockReturnValue({ folderId: SYSTEM_FOLDER_ID.OUTBOX });
+    mocks.useParams.mockReturnValue({ folderId: 'outbox' });
     render(<MessagePreview message={message} />);
 
     expect(message.to.groups.length).toBeGreaterThan(1);
@@ -142,7 +142,7 @@ describe('Message preview header component', () => {
   });
 
   it('should display all recipients after "to" label when in outbox', async () => {
-    mocks.useParams.mockReturnValue({ folderId: SYSTEM_FOLDER_ID.OUTBOX });
+    mocks.useParams.mockReturnValue({ folderId: 'outbox' });
     render(<MessagePreview message={mockMessageOfOutbox} />);
 
     screen.getByText('at');
@@ -152,13 +152,13 @@ describe('Message preview header component', () => {
   });
 
   it('should display a "draft" label when in draft', async () => {
-    mocks.useParams.mockReturnValue({ folderId: SYSTEM_FOLDER_ID.DRAFT });
+    mocks.useParams.mockReturnValue({ folderId: 'draft' });
     render(<MessagePreview message={mockMessageOfOutbox} />);
     screen.getByText('draft');
   });
 
   it('should display all recipients without "to" label when in draft', async () => {
-    mocks.useParams.mockReturnValue({ folderId: SYSTEM_FOLDER_ID.DRAFT });
+    mocks.useParams.mockReturnValue({ folderId: 'draft' });
     render(<MessagePreview message={mockMessageOfOutbox} />);
 
     const atElement = screen.queryByText('at');
@@ -169,7 +169,7 @@ describe('Message preview header component', () => {
   });
 
   it.only('should not display any recipients if there are none when in draft', async () => {
-    mocks.useParams.mockReturnValue({ folderId: SYSTEM_FOLDER_ID.DRAFT });
+    mocks.useParams.mockReturnValue({ folderId: 'draft' });
     const message = { ...mockMessageOfOutbox };
     message.to = { users: [], groups: [] };
     message.cc = { users: [], groups: [] };
