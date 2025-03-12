@@ -860,7 +860,7 @@
   "pager.page": "Lignes :",
   "pager.page.previous": "Précédent",
   "pager.page.next": "Suivant",
-  "notify.connection.federated": "Cet utilisateur se connecte via une identité fédérée. Seuls ses numéros de téléphone et son adresse email sont modifiables ici.",
+  "notify.connection.federated": "Cet utilisateur se connecte via un guichet externe (fédération d’identité). Il n’est donc pas possible de générer un message ou PDF de publipostage, ni générer de code de renouvellement de mot de passe pour ce compte.",
   "notify.error.footer": "Erreur technique : <p>{{error}}</p>",
   "notify.user.update.title": "Modifications effectuées",
   "notify.user.update.content": "Les données de l'utilisateur {{user}} ont bien été mises à jour.",
