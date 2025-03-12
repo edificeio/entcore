@@ -3,6 +3,7 @@ import {
   Dropdown,
   IconButton,
   IconButtonProps,
+  useUser,
 } from '@edifice.io/react';
 import {
   IconDelete,
@@ -15,7 +16,7 @@ import {
   IconUndoAll,
   IconUnreadMail,
 } from '@edifice.io/react/icons';
-import { RefAttributes } from 'react';
+import { RefAttributes, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Message } from '~/models';
@@ -35,6 +36,7 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
   const deleteMessage = useDeleteMessage();
   const restoreQuery = useRestoreMessage();
   const moveToTrashQuery = useTrashMessage();
+  const user = useUser();
 
   const handleDelete = () => {
     openModal({
@@ -86,6 +88,22 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
     navigate(`../..`, { relative: 'path' });
   };
 
+  const canReplyAll = useMemo(() => {
+      const { to, cc, cci } = message;
+
+      // It's message to myself with cci
+      const isMeWithCci = (
+        to.users.length === 1 &&
+        to.users[0].id === user.user?.userId &&
+        (cci?.groups.length || cci?.users.length)
+      );
+
+      // Count number of recipients
+      const hasRecipients = (to.users.length + to.groups.length + cc.users.length + cc.groups.length) > 1;
+
+      return (isMeWithCci || hasRecipients) && message.state !== 'DRAFT' && !message.trashed;
+    }, [message, user]);
+
   const options = [
     {
       label: t('tag.unread'),
@@ -101,7 +119,7 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
       action: () => {
         alert('reply all');
       },
-      hidden: message.state === 'DRAFT' || message.trashed,
+      hidden: !canReplyAll,
     },
     {
       label: t('transfer'),
