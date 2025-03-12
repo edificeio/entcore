@@ -107,7 +107,7 @@ describe('Message preview header component', () => {
     expect(messageHasAttachements).not.toBeInTheDocument();
   });
 
-  it('should display "to" label and recipient name when is in outbox', async () => {
+  it('should display "to" label and recipient name when in outbox', async () => {
     mocks.useParams.mockReturnValue({ folderId: 'outbox' });
 
     render(<MessagePreview message={message} />);
@@ -119,7 +119,7 @@ describe('Message preview header component', () => {
     expect(senderName).toBeInTheDocument();
   });
 
-  it('should display the recipient avatar when is in outbox', async () => {
+  it('should display the recipient avatar when in outbox', async () => {
     mocks.useParams.mockReturnValue({ folderId: 'outbox' });
 
     const messageWithOneRecipient = mockMessagesOfInbox[1];
@@ -131,7 +131,7 @@ describe('Message preview header component', () => {
     expect(recipientAvatar).toBeInTheDocument();
   });
 
-  it('should display group avatar icon when more than one recipient in outbox', async () => {
+  it('should display group avatar icon when more than one recipient when in outbox', async () => {
     mocks.useParams.mockReturnValue({ folderId: 'outbox' });
     render(<MessagePreview message={message} />);
 
@@ -141,13 +141,43 @@ describe('Message preview header component', () => {
     expect(recipientAvatar).toBeInTheDocument();
   });
 
-  it('should display all recipients in after "to" label in outbox', async () => {
+  it('should display all recipients after "to" label when in outbox', async () => {
     mocks.useParams.mockReturnValue({ folderId: 'outbox' });
     render(<MessagePreview message={mockMessageOfOutbox} />);
 
-    const atElement = screen.getByText('at');
-    const parentContainer = atElement.closest('div');
-    const spanElements = parentContainer?.querySelectorAll('span');
-    expect(spanElements).toHaveLength(6);
+    screen.getByText('at');
+
+    const recipientItems = screen.getAllByRole('listitem');
+    expect(recipientItems).toHaveLength(5);
+  });
+
+  it('should display a "draft" label when in draft', async () => {
+    mocks.useParams.mockReturnValue({ folderId: 'draft' });
+    render(<MessagePreview message={mockMessageOfOutbox} />);
+    screen.getByText('draft');
+  });
+
+  it('should display all recipients without "to" label when in draft', async () => {
+    mocks.useParams.mockReturnValue({ folderId: 'draft' });
+    render(<MessagePreview message={mockMessageOfOutbox} />);
+
+    const atElement = screen.queryByText('at');
+    expect(atElement).toBeNull();
+
+    const recipientItems = screen.queryAllByRole('listitem');
+    expect(recipientItems).toHaveLength(5);
+  });
+
+  it.only('should not display any recipients if there are none when in draft', async () => {
+    mocks.useParams.mockReturnValue({ folderId: 'draft' });
+    const message = { ...mockMessageOfOutbox };
+    message.to = { users: [], groups: [] };
+    message.cc = { users: [], groups: [] };
+    message.cci = { users: [], groups: [] };
+
+    render(<MessagePreview message={message} />);
+
+    const recipientItems = screen.queryAllByRole('listitem');
+    expect(recipientItems).toHaveLength(0);
   });
 });
