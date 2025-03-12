@@ -18,8 +18,9 @@ describe('Message recipient list', () => {
   });
 
   it('should display recipient list for To but not Cc and Cci', async () => {
-    mockFullMessage.cc = { users: [], groups: [] };
-    render(<MessageHeader message={mockFullMessage} />);
+    const message = { ...mockFullMessage };
+    message.cc = { users: [], groups: [] };
+    render(<MessageHeader message={message} />);
 
     const toLabel = screen.queryByText('at');
     expect(toLabel).toBeInTheDocument();

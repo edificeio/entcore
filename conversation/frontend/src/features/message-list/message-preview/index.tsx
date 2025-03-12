@@ -1,7 +1,7 @@
 import { useDate } from '@edifice.io/react';
 import { IconPaperclip, IconUndo } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
-import { useParams } from 'react-router-dom';
+import { useSelectedFolder } from '~/hooks';
 import { MessageMetadata } from '~/models';
 import { useMessageUserDisplayName } from '../../../hooks/useUserDisplayName';
 import RecipientAvatar from './components/RecipientAvatar';
@@ -14,7 +14,7 @@ export interface MessagePreviewProps {
 
 export function MessagePreview({ message }: MessagePreviewProps) {
   const { t } = useTranslation('conversation');
-  const { folderId } = useParams<{ folderId: string }>();
+  const { folderId } = useSelectedFolder();
   const { fromNow } = useDate();
   const senderDisplayName = useMessageUserDisplayName(message.from);
 
@@ -24,32 +24,38 @@ export function MessagePreview({ message }: MessagePreviewProps) {
         <IconUndo className="gray-800" title="message-response" />
       )}
 
-      {'outbox' === folderId ? (
+      {folderId === 'outbox' || folderId === 'draft' ? (
         <RecipientAvatar recipients={message.to} />
       ) : (
         <SenderAvatar authorId={message.from.id} />
       )}
 
       <div className="d-flex flex-fill flex-column overflow-hidden">
-        <div className="d-flex flex-fill justify-content-between overflow-hidden">
+        <div className="d-flex flex-fill justify-content-between overflow-hidden gap-4">
+          {folderId === 'draft' && (
+            <span className="text-danger fw-bold">{t('draft')}</span>
+          )}
           <div className="text-truncate flex-fill">
-            {'outbox' === folderId ? (
-              <RecipientListPreview message={message} />
-            ) : (
-              senderDisplayName
+            {folderId === 'draft' && <RecipientListPreview message={message} />}
+            {folderId === 'outbox' && (
+              <RecipientListPreview message={message} head={t('at')} />
+            )}
+            {(folderId === 'inbox' || folderId === 'trash') && (
+              <span>{senderDisplayName}</span>
             )}
           </div>
+
           <div className="fw-bold text-nowrap fs-12 gray-800">
-            {fromNow(message.date)}
+            <span>{fromNow(message.date)}</span>
           </div>
         </div>
         <div className="d-flex flex-fill justify-content-between overflow-hidden">
           {message.subject ? (
-            <div className="text-truncate flex-fill">{message.subject}</div>
+            <span className="text-truncate flex-fill">{message.subject}</span>
           ) : (
-            <div className="text-truncate flex-fill text-gray-700">
+            <span className="text-truncate flex-fill text-gray-700">
               {t('nosubject')}
-            </div>
+            </span>
           )}
           {message.hasAttachment && (
             <IconPaperclip
