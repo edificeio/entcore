@@ -107,11 +107,11 @@ export function MessageList() {
   }, [isInTrash, selectedMessages]);
 
   const handleMarkAsReadClick = () => {
-    markAsReadQuery.mutate({ id: selectedIds });
+    markAsReadQuery.mutate({ messages: selectedMessages });
   };
 
   const handleMarkAsUnreadClick = () => {
-    markAsUnreadQuery.mutate({ id: selectedIds });
+    markAsUnreadQuery.mutate({ messages: selectedMessages });
   };
 
   const handleMessageKeyUp = (
