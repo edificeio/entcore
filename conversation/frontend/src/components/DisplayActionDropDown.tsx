@@ -19,8 +19,13 @@ import { RefAttributes } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Message } from '~/models';
-import { useMarkUnread, useRestoreMessage, useDeleteMessage, useTrashMessage } from '~/services';
-import { useConfirmModalStore } from "~/store";
+import {
+  useDeleteMessage,
+  useMarkUnread,
+  useRestoreMessage,
+  useTrashMessage,
+} from '~/services';
+import { useConfirmModalStore } from '~/store';
 
 export function DisplayActionDropDown({ message }: { message: Message }) {
   const { t } = useTranslation('conversation');
@@ -33,7 +38,7 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
 
   const handleDelete = () => {
     openModal({
-      id: "delete-modal",
+      id: 'delete-modal',
       header: <>{t('delete.definitely')}</>,
       body: <p>{t('delete.definitely.confirm')}</p>,
       okText: t('confirm'),
@@ -43,41 +48,41 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
         navigate('/trash');
       },
     });
-  }
+  };
 
   const buttonAction = [
-      {
-        label: t("reply"),
-        id: "reply",
-        icon: <IconUndo />,
-        action: () => {
-          alert('reply');
-        },
-        hidden: message.state === 'DRAFT' || message.trashed
+    {
+      label: t('reply'),
+      id: 'reply',
+      icon: <IconUndo />,
+      action: () => {
+        alert('reply');
       },
-      {
-        label: t("submit"),
-        id: "submit",
-        icon: <IconSend />,
-        action: () => {
-          alert('submit');
-        },
-        hidden: message.state !== 'DRAFT' || message.trashed
+      hidden: message.state === 'DRAFT' || message.trashed,
+    },
+    {
+      label: t('submit'),
+      id: 'submit',
+      icon: <IconSend />,
+      action: () => {
+        alert('submit');
       },
-      {
-        label: t("restore"),
-        id: "restore",
-        icon: <IconRestore />,
-        action: () => {
-          restoreQuery.mutate({ id: message.id });
-          navigate('/trash');
-        },
-        hidden: !message.trashed
+      hidden: message.state !== 'DRAFT' || message.trashed,
+    },
+    {
+      label: t('restore'),
+      id: 'restore',
+      icon: <IconRestore />,
+      action: () => {
+        restoreQuery.mutate({ id: message.id });
+        navigate('/trash');
       },
-    ];
+      hidden: !message.trashed,
+    },
+  ];
 
   const handleMarkAsUnreadClick = () => {
-    markAsUnreadQuery.mutate({ id: [message.id] });
+    markAsUnreadQuery.mutate({ messages: [message] });
     navigate(`../..`, { relative: 'path' });
   };
 

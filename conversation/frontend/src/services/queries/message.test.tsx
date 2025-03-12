@@ -1,9 +1,16 @@
 import { renderHook, waitFor } from '@testing-library/react';
 
-import { useDeleteMessage, useMarkRead, useMarkUnread, useRestoreMessage, useTrashMessage } from './message';
-import { wrapper } from '~/mocks/setup';
 import { act } from 'react';
+import { wrapper } from '~/mocks/setup';
+import { MessageBase } from '~/models';
 import { messageService } from '../api';
+import {
+  useDeleteMessage,
+  useMarkRead,
+  useMarkUnread,
+  useRestoreMessage,
+  useTrashMessage,
+} from './message';
 
 describe('Message Queries', () => {
   test('use useMarkRead hook to mark as read messages', async () => {
@@ -13,14 +20,19 @@ describe('Message Queries', () => {
 
     const messageServiceSpy = vi.spyOn(messageService, 'toggleUnread');
 
-    const variables = { id: '1234' };
+    const variables = {
+      messages: [{ id: '1234', unread: true }] as MessageBase[],
+    };
 
     act(() => {
       result.current.mutate(variables);
     });
 
     await waitFor(() => {
-      expect(messageServiceSpy).toHaveBeenCalledWith(variables.id, false);
+      expect(messageServiceSpy).toHaveBeenCalledWith(
+        variables.messages.map((m) => m.id),
+        false,
+      );
     });
   });
 
@@ -31,14 +43,22 @@ describe('Message Queries', () => {
 
     const messageServiceSpy = vi.spyOn(messageService, 'toggleUnread');
 
-    const variables = { id: ['1234', '15619'] };
+    const variables = {
+      messages: [
+        { id: '1234', unread: false },
+        { id: '15619', unread: false },
+      ] as MessageBase[],
+    };
 
     act(() => {
       result.current.mutate(variables);
     });
 
     await waitFor(() => {
-      expect(messageServiceSpy).toHaveBeenCalledWith(variables.id, true);
+      expect(messageServiceSpy).toHaveBeenCalledWith(
+        variables.messages.map((m) => m.id),
+        true,
+      );
     });
   });
 
@@ -76,17 +96,17 @@ describe('Message Queries', () => {
 
   test('use useDeleteMessage hook to delete messages', async () => {
     const { result } = renderHook(() => useDeleteMessage(), { wrapper });
-  
+
     const messageServiceSpy = vi.spyOn(messageService, 'delete');
-  
+
     const variables = { id: ['1234', '5678'] };
-  
+
     act(() => {
       result.current.mutate(variables);
     });
-  
+
     await waitFor(() => {
       expect(messageServiceSpy).toHaveBeenCalledWith(variables.id);
     });
-  });  
+  });
 });

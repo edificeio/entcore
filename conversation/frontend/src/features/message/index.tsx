@@ -1,34 +1,21 @@
-import {
-  ConversationHistoryNodeView,
-  ConversationHistoryRenderer,
-  Editor,
-} from '@edifice.io/react/editor';
+import clsx from 'clsx';
 import { DisplayActionDropDown } from '~/components/DisplayActionDropDown';
-import { MessageAttachments } from '~/features/message/MessageAttachments';
 import { MessageHeader } from '~/features/message/MessageHeader';
 import { Message as MessageData } from '~/models';
+import { MessageBody } from './MessageBody';
 
-export function Message({ message }: { message: MessageData }) {
-  const extensions = [ConversationHistoryNodeView(ConversationHistoryRenderer)];
+export interface MessageProps {
+  message: MessageData;
+  editMode?: boolean;
+}
 
+export function Message({ message, editMode = false }: MessageProps) {
+  const className = clsx(editMode ? '' : 'p-16 ps-md-24');
   return (
-    <div className="p-16">
-      <MessageHeader message={message} />
-      <div className="p-md-48">
-        <Editor
-          content={message.body}
-          mode="read"
-          variant="ghost"
-          extensions={extensions}
-        />
-        {!!message.attachments?.length && (
-          <MessageAttachments
-            attachments={message.attachments}
-            messageId={message.id}
-          />
-        )}
-      </div>
-      <div className="d-flex justify-content-end gap-12">
+    <div className={className}>
+      {editMode ? <></> : <MessageHeader message={message} />}
+      <MessageBody message={message} editMode={editMode} />
+      <div className="d-flex justify-content-end gap-12 pt-24 border-top">
         <DisplayActionDropDown message={message} />
       </div>
     </div>
