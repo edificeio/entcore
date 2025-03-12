@@ -1,13 +1,13 @@
-import { useAppActions } from '~/store';
+import { useAppActions, useSelectedMessageIds } from '~/store';
 import {
   Button,
   Modal,
   Tree,
   TreeItem,
 } from '@edifice.io/react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useFolderActions, useI18n } from '~/hooks';
-import { buildTree } from '~/services';
+import { buildTree, useMoveMessage } from '~/services';
 
 export function MoveMessageToFolderModal() {
   const { t, common_t } = useI18n();
@@ -16,16 +16,22 @@ export function MoveMessageToFolderModal() {
   const [subFolderId, setSubfolderId] = useState<string | undefined>(undefined);
   const refInputName = useRef<HTMLInputElement>(null);
   const refDropdownTrigger = useRef<HTMLButtonElement>(null);
+  const selectedIds = useSelectedMessageIds();
+  const moveMesage = useMoveMessage();
 
   useEffect(() => {
     if (isActionPending === false) setOpenFolderModal(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActionPending]);
 
-  const handleMoveToFolderClick = useCallback(() => {
-    console.log(subFolderId);
-    alert('handleMoveToFolderClick');
-  }, [subFolderId]);
+  const handleMoveToFolderClick = () => {
+    if(!subFolderId) return;
+    moveMesage.mutate({
+      folderId: subFolderId,
+      id: selectedIds
+    });
+    handleCloseFolderModal();
+  };
 
   const userFolders = useMemo(() => {
     return foldersTree ? buildTree(foldersTree, 2) : null;
@@ -94,7 +100,7 @@ export function MoveMessageToFolderModal() {
           variant="filled"
           onClick={handleMoveToFolderClick}
           isLoading={isActionPending === true}
-          disabled={isActionPending === true}
+          disabled={isActionPending === true || !subFolderId}
         >
           {t('move')}
         </Button>

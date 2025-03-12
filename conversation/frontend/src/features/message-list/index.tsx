@@ -167,7 +167,7 @@ export function MessageList() {
   };
 
   const handleMoveToFolder = () => {
-    handleMoveMessage();
+    handleMoveMessage(selectedIds);
   };
 
   const toolbar: ToolbarItem[] = [

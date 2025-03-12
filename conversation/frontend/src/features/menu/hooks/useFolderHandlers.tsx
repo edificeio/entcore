@@ -11,7 +11,7 @@ import { useAppActions } from '~/store';
  * - `handleTrash`: Opens the folder trash modal and sets the selected folder.
  */
 export function useFolderHandlers() {
-  const { setOpenFolderModal, setSelectedFolders } = useAppActions();
+  const { setOpenFolderModal, setSelectedFolders, setSelectedMessageIds } = useAppActions();
 
   const handleCreate = () => {
     setOpenFolderModal('create');
@@ -32,7 +32,9 @@ export function useFolderHandlers() {
     setOpenFolderModal('trash');
   };
 
-  const handleMoveMessage = () => {
+  const handleMoveMessage = (ids: string[]) => {
+    //setSelectedMessageIds(ids);
+    console.log(ids)
     setOpenFolderModal('move-message');
   };
 
