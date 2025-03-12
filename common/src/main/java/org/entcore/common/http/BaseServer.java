@@ -35,6 +35,7 @@ import fr.wseduc.webutils.validation.JsonSchemaValidator;
 
 import io.vertx.core.Promise;
 import io.vertx.core.shareddata.LocalMap;
+
 import org.entcore.common.cache.CacheFilter;
 import org.entcore.common.cache.CacheService;
 import org.entcore.common.cache.RedisCacheService;
@@ -62,6 +63,7 @@ import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.Config;
 import org.entcore.common.utils.Mfa;
 import org.entcore.common.utils.Zip;
+
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
@@ -70,6 +72,8 @@ import io.vertx.core.json.JsonObject;
 
 import java.io.File;
 import java.util.*;
+
+import io.vertx.core.Future;
 
 public abstract class BaseServer extends Server {
 	public static final String ONDEPLOY_I18N = "ondeploy.i18n";
@@ -254,8 +258,10 @@ public abstract class BaseServer extends Server {
 				getEventBus(vertx),
 				postgresConfig.getString("sqlAdminAdress", "sql.persistor.admin")
 			);
+			final String initScriptsPath = FileResolver.absolutePath(config.getString("init-scripts", "sql"));
 			DB migration = new DB(vertx, sqlAdmin, schema);
-			migration.loadScripts(FileResolver.absolutePath(config.getString("init-scripts", "sql")));
+			migration.loadScripts(initScriptsPath)
+				.compose(Void -> postSqlScripts());
 		}
 		if (config.getBoolean("elasticsearch", false)) {
 			if (config.getJsonObject("elasticsearchConfig") != null) {
@@ -404,6 +410,15 @@ public abstract class BaseServer extends Server {
 
 	public String getSchema() {
 		return schema;
+	}
+
+	/** 
+	 * An overridable hook allowing additional non-sql tasks to be done
+	 * after all SQL migration scripts have been applied.
+	 * @return a future
+	 */
+	protected Future<Void> postSqlScripts() {
+		return Future.succeededFuture();
 	}
 
 }

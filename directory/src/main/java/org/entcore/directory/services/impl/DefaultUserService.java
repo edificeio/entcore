@@ -1321,6 +1321,30 @@ public class DefaultUserService implements UserService {
 	}
 
 
+	public void getUsersStructures(JsonArray userIds, JsonArray fields, Handler<Either<String, JsonArray>> handler) {
+		if (fields == null || fields.size() == 0) {
+			fields = new JsonArray().add("id");
+		}
+		final StringBuilder query = new StringBuilder(
+				"MATCH (u:User)-[:IN]->(ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+				"WHERE u.id IN {userIds} " +
+				"RETURN u.id as userId, COLLECT(distinct {");
+		for (Object field : fields) {
+			query.append(field).append(": s.").append(field).append(",");
+		}
+		query.deleteCharAt(query.length() - 1).append("}) as structures ");
+
+	    JsonObject params = new JsonObject().put("userIds", userIds);
+	    neo.execute(query.toString(), params, validResultHandler(res->{
+	        if (res.isRight()) {
+	            final JsonArray result = res.right().getValue();
+	            handler.handle(new Either.Right<>(result));
+	        } else {
+	            handler.handle(res);
+	        }
+	    }));
+	}
+
 	public void getAttachmentSchool(String userId, JsonArray structuresToExclude, Handler<Either<String, JsonObject>> handler) {
 		String query =
 				"MATCH (u:User {id : {userId}})-[:ADMINISTRATIVE_ATTACHMENT]->(s:Structure) WHERE NOT s.id IN {structuresIds} " +
