@@ -1,5 +1,5 @@
 import { Avatar } from '@edifice.io/react';
-import { IconGroupAvatar } from '@edifice.io/react/icons';
+import { IconGroupAvatar, IconQuestionMark } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
 import { Recipients } from '~/models';
 import { useRecipientAvatar } from '../../../../hooks/useRecipientAvatar';
@@ -12,7 +12,17 @@ export function RecipientAvatar({ recipients }: RecipientAvatarProps) {
   const { t } = useTranslation('conversation');
   const { recipientCount, url } = useRecipientAvatar(recipients);
 
-  if (recipientCount > 1) {
+  if (recipientCount === 0) {
+    return (
+      <div
+        className="bg-yellow-200 avatar avatar-sm rounded-circle"
+        aria-label={t('recipient.avatar.empty')}
+        role="img"
+      >
+        <IconQuestionMark className="w-16" />
+      </div>
+    );
+  } else if (recipientCount > 1) {
     return (
       <div
         className="bg-orange-200 avatar avatar-sm rounded-circle"
@@ -31,8 +41,6 @@ export function RecipientAvatar({ recipients }: RecipientAvatarProps) {
         variant="circle"
       />
     );
-  } else {
-    return null;
   }
 }
 

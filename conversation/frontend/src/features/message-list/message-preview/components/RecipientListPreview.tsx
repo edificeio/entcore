@@ -1,13 +1,16 @@
-import { useTranslation } from 'react-i18next';
+import { ReactNode } from 'react';
 import { MessageRecipientList } from '~/components/MessageRecipientList';
 import { MessageMetadata } from '~/models';
 
 export interface RecipientListPreviewProps {
   message: MessageMetadata;
+  head?: ReactNode;
 }
 
-export function RecipientListPreview({ message }: RecipientListPreviewProps) {
-  const { t } = useTranslation('conversation');
+export function RecipientListPreview({
+  message,
+  head,
+}: RecipientListPreviewProps) {
   const to = message.to;
   const cc = message.cc;
   const cci = message.cci ?? { users: [], groups: [] };
@@ -17,7 +20,7 @@ export function RecipientListPreview({ message }: RecipientListPreviewProps) {
   };
   return (
     <MessageRecipientList
-      head={t('at')}
+      head={head}
       recipients={recipients}
       color="text-gray-800"
       truncate
