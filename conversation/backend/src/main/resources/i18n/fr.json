@@ -121,6 +121,8 @@
   "messages.delete": "les messages ont bien été supprimés",
   "messages.restore": "Les messages ont bien été restaurés",
   "messages.trash": "Les messages ont bien été mis à la corbeille",
+  "message.replied": "Vous avez répondu à ce message",
+  "message.has.attachment": "Ce message contient des pièces jointes",
   "ml.sent": "Message envoyé",
   "modify": "Modifier",
   "move": "déplacer",
