@@ -18,7 +18,8 @@ export function MessagePreview({ message }: MessagePreviewProps) {
   const { folderId } = useSelectedFolder();
   const { fromNow } = useDate();
   const senderDisplayName = useMessageUserDisplayName(message.from);
-  const isUserFolder = folderId && folderId?.length > 10;
+  const isInUserFolder =
+    folderId && !['draft', 'outbox', 'trash', 'inbox'].includes(folderId);
 
   return (
     <div className="d-flex flex-fill gap-12 align-items-center  overflow-hidden fs-6">
@@ -26,7 +27,7 @@ export function MessagePreview({ message }: MessagePreviewProps) {
         <IconUndo className="gray-800" title="message-response" />
       )}
 
-      {isUserFolder && <UserFolderIcon message={message} />}
+      {isInUserFolder && <UserFolderIcon message={message} />}
 
       {folderId === 'outbox' || folderId === 'draft' ? (
         <RecipientAvatar recipients={message.to} />
