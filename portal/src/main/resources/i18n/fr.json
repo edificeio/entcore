@@ -1049,6 +1049,7 @@
   "comment.remove": "Supprimer",
   "comment.edit": "Modifier",
   "comment.save": "Enregistrer",
+  "comment.reply": "Répondre",
   "comment.more": "Lire plus de commentaires",
   "comment.emptyscreen": "Pas encore de commentaires, soyez le premier à commenter",
   "audience.views.uniqueViewsPerProfile.student": "Elève(s)",
