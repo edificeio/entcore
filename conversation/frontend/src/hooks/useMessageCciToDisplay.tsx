@@ -12,7 +12,7 @@ export default function useMessageCciToDisplay(
   if (!hasCci) return null;
   if (isFromCurrentUser) return cci;
 
-  const currentUserInCci = cci?.users?.find((u) => u.id === user?.userId);
+  const currentUserInCci = cci.users.find((u) => u.id === user?.userId);
   if (!currentUserInCci) return null;
 
   return {

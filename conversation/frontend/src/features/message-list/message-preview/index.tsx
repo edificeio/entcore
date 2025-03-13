@@ -18,7 +18,6 @@ export function MessagePreview({ message }: MessagePreviewProps) {
   const { fromNow } = useDate();
   const senderDisplayName = useMessageUserDisplayName(message.from);
 
-  console.log('message:', message);
   return (
     <div className="d-flex flex-fill gap-12 align-items-center  overflow-hidden fs-6">
       {message.response && (

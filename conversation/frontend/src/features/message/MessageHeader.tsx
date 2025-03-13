@@ -38,7 +38,10 @@ export function MessageHeader({ message }: MessageHeaderProps) {
             />
             <div className="d-flex flex-fill flex-column overflow-hidden">
               <div className="d-flex flex-wrap column-gap-8">
-                <a href={getUserbookURL(from.id, 'user')} className="fw-600">
+                <a
+                  href={getUserbookURL(from.id, 'user')}
+                  className="fw-bold text-blue"
+                >
                   {from.displayName}
                 </a>
                 <em className="text-gray-700">{fromNow(date)}</em>
