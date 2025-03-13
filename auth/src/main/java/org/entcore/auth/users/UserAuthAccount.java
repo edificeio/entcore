@@ -20,8 +20,8 @@
 package org.entcore.auth.users;
 
 import org.entcore.auth.pojo.SendPasswordDestination;
-import fr.wseduc.webutils.Either;
 
+import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -70,7 +70,7 @@ public interface UserAuthAccount {
 
 	void findByMail(String email, Handler<Either<String, JsonObject>> handler);
 
-	void findByMailAndFirstNameAndStructure(final String email, String firstName, String structure, final Handler<Either<String,JsonArray>> handler);
+	void findByMailAndFirstNameAndStructure(final String email, String firstName, String structure, boolean checkFederatedLogin, final Handler<Either<String,JsonArray>> handler);
 
 	void findByLogin(String login, String resetCode,boolean checkFederatedLogin, Handler<Either<String, JsonObject>> handler);
 
