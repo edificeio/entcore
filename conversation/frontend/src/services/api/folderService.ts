@@ -75,6 +75,8 @@ export const createFolderService = (baseURL: string) => ({
   },
 
   trash(folderId: string) {
-    return odeServices.http().put<void>(`${baseURL}/folder/trash/${folderId}`);
+    return odeServices
+      .http()
+      .delete<void>(`${baseURL}/api/folders/${folderId}`);
   },
 });

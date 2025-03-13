@@ -141,6 +141,17 @@ public interface ConversationService {
 	void restoreFolder(String folderId, UserInfos user, Handler<Either<String, JsonObject>> result);
 	void deleteFolder(String folderId, Boolean deleteAll, UserInfos user, Handler<Either<String, JsonArray>> result);
 
+	/**
+	 * Deletes the specified folders (and subfolders, recursively) for a user,
+	 * and put any message they contain into the trash folder.
+	 *
+	 * @param folderIds A list of folder IDs to be deleted.
+	 * @param user The user information.
+	 * @return A Future JsonObject with the following props :
+	 *   `trashedMessageIds`: array of message IDs put into the trash folder.
+	 */
+	Future<JsonObject> deleteFoldersAndTrashMessages(List<String> folderIds, UserInfos user);
+
 	//Attachments
 	void addAttachment(String messageId, UserInfos user, JsonObject uploaded, Handler<Either<String, JsonObject>> result);
 	void getAttachment(String messageId, String attachmentId, UserInfos user, Handler<Either<String, JsonObject>> result);
