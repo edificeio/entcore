@@ -7,6 +7,7 @@ import { useMessageUserDisplayName } from '../../../hooks/useUserDisplayName';
 import RecipientAvatar from './components/RecipientAvatar';
 import { RecipientListPreview } from './components/RecipientListPreview';
 import { SenderAvatar } from './components/SenderAvatar';
+import { UserFolderIcon } from './components/UserFolderIcon';
 
 export interface MessagePreviewProps {
   message: MessageMetadata;
@@ -17,12 +18,15 @@ export function MessagePreview({ message }: MessagePreviewProps) {
   const { folderId } = useSelectedFolder();
   const { fromNow } = useDate();
   const senderDisplayName = useMessageUserDisplayName(message.from);
+  const isUserFolder = folderId && folderId?.length > 10;
 
   return (
     <div className="d-flex flex-fill gap-12 align-items-center  overflow-hidden fs-6">
       {(message.response || message.forwarded) && (
         <IconUndo className="gray-800" title="message-response" />
       )}
+
+      {isUserFolder && <UserFolderIcon message={message} />}
 
       {folderId === 'outbox' || folderId === 'draft' ? (
         <RecipientAvatar recipients={message.to} />
@@ -36,11 +40,11 @@ export function MessagePreview({ message }: MessagePreviewProps) {
             <span className="text-danger fw-bold">{t('draft')}</span>
           )}
           <div className="text-truncate flex-fill">
-            {folderId === 'draft' && <RecipientListPreview message={message} />}
-            {folderId === 'outbox' && (
+            {folderId === 'draft' ? (
+              <RecipientListPreview message={message} />
+            ) : folderId === 'outbox' ? (
               <RecipientListPreview message={message} head={t('at')} />
-            )}
-            {(folderId === 'inbox' || folderId === 'trash') && (
+            ) : (
               <span>{senderDisplayName}</span>
             )}
           </div>
