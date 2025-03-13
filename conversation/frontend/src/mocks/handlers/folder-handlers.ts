@@ -37,4 +37,7 @@ export const folderHandlers = [
   http.put(`${baseUrl}/folder/trash/:folderId`, () => {
     return HttpResponse.json({}, { status: 200 });
   }),
+  http.delete(`${baseUrl}/api/folders/:folderId`, () => {
+    return HttpResponse.json({}, { status: 200 });
+  }),
 ];
