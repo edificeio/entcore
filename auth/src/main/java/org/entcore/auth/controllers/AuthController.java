@@ -2072,4 +2072,30 @@ public class AuthController extends BaseController {
 			}
 		});
 	}
+
+	@Post("/erasePassword")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void erasePassword(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request, new io.vertx.core.Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject data) {
+				final String userId = data.getString("userId");
+
+				if (userId == null || userId.trim().isEmpty()) {
+					badRequest(request);
+					return;
+				}
+
+				userAuthAccount.erasePassword(userId, either -> {
+					if (either.isRight()) {
+						renderJson(request, either.right().getValue());
+					} else {
+						renderError(request);
+					}
+				});
+			}
+		});
+
+	}
 }

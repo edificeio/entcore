@@ -96,4 +96,5 @@ public interface UserAuthAccount {
 	
 	void forceChangePassword(String userId,  Handler<Either<String, JsonObject>> handler);
 
+	void erasePassword(String userId, Handler<Either<String, JsonObject>> handler);
 }
