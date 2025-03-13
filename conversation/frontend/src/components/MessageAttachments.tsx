@@ -19,8 +19,8 @@ export function MessageAttachments({
   const { common_t, t } = useI18n();
 
   const className =
-    'mt-16 bg-gray-300 rounded-2 px-12 py-8 message-attachments' +
-    (editMode ? ' message-attachments-edit mx-16' : '');
+    'mt-16 bg-gray-300 rounded-2 px-12 py-8 message-attachments ' +
+    (editMode ? ' border message-attachments-edit mx-16' : '');
 
   if (!attachments.length && !editMode) return null;
 
@@ -82,7 +82,7 @@ export function MessageAttachments({
         </>
       )}
       {editMode && (
-        <Button color="primary" variant="ghost" leftIcon={<IconPlus />}>
+        <Button color="secondary" variant="ghost" leftIcon={<IconPlus />}>
           {t('add.attachment')}
         </Button>
       )}

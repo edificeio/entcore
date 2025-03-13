@@ -30,15 +30,17 @@ export function MessageHeaderEdit({ message }: MessageHeaderProps) {
               onClick={() => setShowCC((prev) => !prev)}
               variant="ghost"
               size="sm"
+              color="secondary"
             >
-              {t('cc')}
+              {t('button.cc')}
             </Button>
             <Button
               onClick={() => setShowCCI((prev) => !prev)}
               variant="ghost"
               size="sm"
+              color="secondary"
             >
-              {t('cci')}
+              {t('button.cci')}
             </Button>
           </div>
         </div>

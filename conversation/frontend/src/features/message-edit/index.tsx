@@ -1,4 +1,4 @@
-import { FormControl, Input } from '@edifice.io/react';
+import { FormControl, Input, useDate } from '@edifice.io/react';
 import { useEffect, useState } from 'react';
 import { DisplayActionDropDown } from '~/components/DisplayActionDropDown';
 import { MessageBody } from '~/components/MessageBody';
@@ -13,6 +13,7 @@ export interface MessageEditProps {
 export function MessageEdit({ message }: MessageEditProps) {
   const { t } = useI18n();
   const [subject, setSubject] = useState(message.subject);
+  const { fromNow } = useDate();
 
   useEffect(() => {
     message.subject = subject;
@@ -33,7 +34,12 @@ export function MessageEdit({ message }: MessageEditProps) {
       </FormControl>
       <MessageBody message={message} editMode={true} />
       <div className="d-flex justify-content-end gap-12 pt-24 pe-16">
-        <DisplayActionDropDown message={message} />
+        <div className="d-flex align-items-end flex-column gap-16">
+          <DisplayActionDropDown message={message} />
+          {!!message.date && (
+            <div className="caption fst-italic">{fromNow(message.date)}</div>
+          )}
+        </div>
       </div>
     </div>
   );
