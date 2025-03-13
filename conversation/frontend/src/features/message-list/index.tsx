@@ -88,12 +88,16 @@ export function MessageList() {
 
   const hasUnreadMessages = useMemo(() => {
     if (isInTrash) return false;
-    return selectedMessages.some((message) => message.unread);
+    return selectedMessages.some(
+      (message) => message.unread && message.state !== 'DRAFT',
+    );
   }, [isInTrash, selectedMessages]);
 
   const hasReadMessages = useMemo(() => {
     if (isInTrash) return false;
-    return selectedMessages.some((message) => !message.unread);
+    return selectedMessages.some(
+      (message) => !message.unread && message.state !== 'DRAFT',
+    );
   }, [isInTrash, selectedMessages]);
 
   const canBeMovetoTrash = useMemo(() => {
