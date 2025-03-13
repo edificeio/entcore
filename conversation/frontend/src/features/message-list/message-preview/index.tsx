@@ -18,10 +18,18 @@ export function MessagePreview({ message }: MessagePreviewProps) {
   const { fromNow } = useDate();
   const senderDisplayName = useMessageUserDisplayName(message.from);
 
+  console.log('message:', message);
   return (
     <div className="d-flex flex-fill gap-12 align-items-center  overflow-hidden fs-6">
-      {(message.response || message.forwarded) && (
-        <IconUndo className="gray-800" title="message-response" />
+      {message.response && (
+        <IconUndo
+          aria-hidden={false}
+          className="gray-800"
+          height={16}
+          role="img"
+          title={t('message.replied')}
+          width={16}
+        />
       )}
 
       {folderId === 'outbox' || folderId === 'draft' ? (
@@ -59,10 +67,12 @@ export function MessagePreview({ message }: MessagePreviewProps) {
           )}
           {message.hasAttachment && (
             <IconPaperclip
+              aria-hidden={false}
               className="gray-800"
               height={16}
+              role="img"
+              title={t('message.has.attachment')}
               width={16}
-              title="message-has-attachment"
             />
           )}
         </div>
