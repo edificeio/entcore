@@ -53,9 +53,9 @@ export function MessagePreview({ message }: MessagePreviewProps) {
             )}
           </div>
 
-          <div className="fw-bold text-nowrap fs-12 gray-800">
-            <span>{fromNow(message.date)}</span>
-          </div>
+          <span className="text-nowrap caption fw-bold gray-800">
+            {fromNow(message.date)}
+          </span>
         </div>
         <div className="d-flex flex-fill justify-content-between overflow-hidden">
           {message.subject ? (
