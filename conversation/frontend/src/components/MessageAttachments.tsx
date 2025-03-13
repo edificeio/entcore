@@ -1,5 +1,6 @@
 import { Attachment, Button, Grid, IconButton } from '@edifice.io/react';
 import { IconDownload, IconFolderAdd, IconPlus } from '@edifice.io/react/icons';
+import clsx from 'clsx';
 import { useI18n } from '~/hooks';
 import { Attachment as AttachmentMetaData } from '~/models';
 import { baseUrl } from '~/services';
@@ -18,9 +19,10 @@ export function MessageAttachments({
 }: MessageAttachmentsProps) {
   const { common_t, t } = useI18n();
 
-  const className =
-    'mt-16 bg-gray-300 rounded-2 px-12 py-8 message-attachments ' +
-    (editMode ? ' border message-attachments-edit mx-16' : '');
+  const className = clsx(
+    'mt-16 bg-gray-300 rounded-2 px-12 py-8 message-attachments ',
+    editMode && 'border message-attachments-edit mx-16',
+  );
 
   if (!attachments.length && !editMode) return null;
 
