@@ -4,16 +4,13 @@ import {
   IconWrite,
 } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
-import { useMessageOriginFolder } from '~/hooks/useMessageOriginFolder';
-import { MessageMetadata } from '~/models';
 
 type UserFolderIconProps = {
-  message: MessageMetadata;
+  originFolderId: string;
 };
 
-export function UserFolderIcon({ message }: UserFolderIconProps) {
+export function UserFolderIcon({ originFolderId }: UserFolderIconProps) {
   const { t } = useTranslation('conversation');
-  const originFolderId = useMessageOriginFolder(message);
 
   const iconProps = {
     'className': 'gray-800',

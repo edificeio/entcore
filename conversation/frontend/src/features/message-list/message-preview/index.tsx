@@ -1,7 +1,7 @@
 import { useDate } from '@edifice.io/react';
 import { IconPaperclip, IconUndo } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
-import { useSelectedFolder } from '~/hooks';
+import { useMessageFolderId } from '~/hooks/useMessageFolderId';
 import { MessageMetadata } from '~/models';
 import { useMessageUserDisplayName } from '../../../hooks/useUserDisplayName';
 import RecipientAvatar from './components/RecipientAvatar';
@@ -15,11 +15,9 @@ export interface MessagePreviewProps {
 
 export function MessagePreview({ message }: MessagePreviewProps) {
   const { t } = useTranslation('conversation');
-  const { folderId } = useSelectedFolder();
   const { fromNow } = useDate();
   const senderDisplayName = useMessageUserDisplayName(message.from);
-  const isInUserFolder =
-    folderId && !['draft', 'outbox', 'trash', 'inbox'].includes(folderId);
+  const { messageFolderId, isInUserFolder } = useMessageFolderId(message);
 
   return (
     <div className="d-flex flex-fill gap-12 align-items-center  overflow-hidden fs-6">
@@ -27,9 +25,11 @@ export function MessagePreview({ message }: MessagePreviewProps) {
         <IconUndo className="gray-800" title="message-response" />
       )}
 
-      {isInUserFolder && <UserFolderIcon message={message} />}
+      {isInUserFolder && messageFolderId && (
+        <UserFolderIcon originFolderId={messageFolderId} />
+      )}
 
-      {folderId === 'outbox' || folderId === 'draft' ? (
+      {messageFolderId === 'outbox' || messageFolderId === 'draft' ? (
         <RecipientAvatar recipients={message.to} />
       ) : (
         <SenderAvatar authorId={message.from.id} />
@@ -37,13 +37,13 @@ export function MessagePreview({ message }: MessagePreviewProps) {
 
       <div className="d-flex flex-fill flex-column overflow-hidden">
         <div className="d-flex flex-fill justify-content-between overflow-hidden gap-4">
-          {folderId === 'draft' && (
+          {messageFolderId === 'draft' && (
             <span className="text-danger fw-bold">{t('draft')}</span>
           )}
           <div className="text-truncate flex-fill">
-            {folderId === 'draft' ? (
+            {messageFolderId === 'draft' ? (
               <RecipientListPreview message={message} />
-            ) : folderId === 'outbox' ? (
+            ) : messageFolderId === 'outbox' ? (
               <RecipientListPreview message={message} head={t('at')} />
             ) : (
               <span>{senderDisplayName}</span>
