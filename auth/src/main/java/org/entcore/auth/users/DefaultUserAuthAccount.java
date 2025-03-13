@@ -537,7 +537,7 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 					null,
 					null,
 					subject,
-					"email/forgotPassword.html",
+					sendForgotPasswordEmailWithResetCode ? "email/forgotPasswordResetCode.html" : "email/forgotPassword.html",
 					json,
 					true,
 					handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
