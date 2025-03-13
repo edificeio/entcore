@@ -29,8 +29,8 @@ export function MessageAttachments({
           {!!attachments.length && (
             <>
               <div className="d-flex align-items-center justify-content-between mb-8 mt-0 border-bottom">
-                <div className="">{common_t('attachments')}</div>
-                <div className="">
+                <div>{common_t('attachments')}</div>
+                <div>
                   <IconButton
                     aria-label={common_t('conversation.copy.all.toworkspace')}
                     color="tertiary"
