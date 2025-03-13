@@ -22,76 +22,70 @@ export function MessageAttachments({
     'mt-16 bg-gray-300 rounded-2 px-12 py-8 message-attachments' +
     (editMode ? ' message-attachments-edit mx-16' : '');
 
+  if (!attachments.length && !editMode) return null;
+
   return (
-    <>
-      {(!!attachments.length || editMode) && (
-        <div className={className} data-drag-handle>
-          {!!attachments.length && (
-            <>
-              <div className="d-flex align-items-center justify-content-between mb-8 mt-0 border-bottom">
-                <div>{common_t('attachments')}</div>
-                <div>
-                  <IconButton
-                    aria-label={common_t('conversation.copy.all.toworkspace')}
-                    color="tertiary"
-                    type="button"
-                    icon={<IconFolderAdd />}
-                    variant="ghost"
-                  />
-                  <a download>
-                    <IconButton
-                      aria-label={common_t('download.all.attachment')}
-                      color="tertiary"
-                      type="button"
-                      icon={<IconDownload />}
-                      variant="ghost"
-                    />
-                  </a>
-                </div>
-              </div>
-              <Grid>
-                {attachments.map((attachment, index) => (
-                  <Grid.Col sm="6" key={index}>
-                    <Attachment
-                      name={attachment.filename}
-                      options={
-                        <>
-                          <IconButton
-                            aria-label={common_t(
-                              'conversation.copy.toworkspace',
-                            )}
-                            color="tertiary"
-                            type="button"
-                            icon={<IconFolderAdd />}
-                            variant="ghost"
-                          />
-                          <a
-                            href={`${baseUrl}/message/${messageId}/attachement/${attachment.id}`}
-                            download
-                          >
-                            <IconButton
-                              aria-label={common_t('download.attachment')}
-                              color="tertiary"
-                              type="button"
-                              icon={<IconDownload />}
-                              variant="ghost"
-                            />
-                          </a>
-                        </>
-                      }
-                    />
-                  </Grid.Col>
-                ))}
-              </Grid>
-            </>
-          )}
-          {editMode && (
-            <Button color="primary" variant="ghost" leftIcon={<IconPlus />}>
-              {t('add.attachment')}
-            </Button>
-          )}
-        </div>
+    <div className={className} data-drag-handle>
+      {!!attachments.length && (
+        <>
+          <div className="d-flex align-items-center justify-content-between mb-8 mt-0 border-bottom">
+            <div>{common_t('attachments')}</div>
+            <div>
+              <IconButton
+                aria-label={common_t('conversation.copy.all.toworkspace')}
+                color="tertiary"
+                type="button"
+                icon={<IconFolderAdd />}
+                variant="ghost"
+              />
+              <IconButton
+                aria-label={common_t('download.all.attachment')}
+                color="tertiary"
+                type="button"
+                icon={<IconDownload />}
+                variant="ghost"
+              />
+            </div>
+          </div>
+          <Grid>
+            {attachments.map((attachment, index) => (
+              <Grid.Col sm="6" key={index}>
+                <Attachment
+                  name={attachment.filename}
+                  options={
+                    <>
+                      <IconButton
+                        aria-label={common_t('conversation.copy.toworkspace')}
+                        color="tertiary"
+                        type="button"
+                        icon={<IconFolderAdd />}
+                        variant="ghost"
+                      />
+                      <a
+                        href={`${baseUrl}/message/${messageId}/attachement/${attachment.id}`}
+                        download
+                      >
+                        <IconButton
+                          aria-label={common_t('download.attachment')}
+                          color="tertiary"
+                          type="button"
+                          icon={<IconDownload />}
+                          variant="ghost"
+                        />
+                      </a>
+                    </>
+                  }
+                />
+              </Grid.Col>
+            ))}
+          </Grid>
+        </>
       )}
-    </>
+      {editMode && (
+        <Button color="primary" variant="ghost" leftIcon={<IconPlus />}>
+          {t('add.attachment')}
+        </Button>
+      )}
+    </div>
   );
 }

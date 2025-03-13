@@ -19,7 +19,7 @@ export function MessageHeaderEdit({ message }: MessageHeaderProps) {
   return (
     <>
       <div className="d-flex flex-fill flex-column overflow-hidden">
-        <div className="d-flex align-items-center justify-content-between gap-12 border-bottom">
+        <div className="d-flex align-items-center justify-content-between gap-12 border-bottom pe-16">
           <MessageRecipientListEdit
             head={<span>{t('at')} :</span>}
             recipients={to}

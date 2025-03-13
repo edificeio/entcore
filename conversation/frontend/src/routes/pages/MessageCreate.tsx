@@ -39,9 +39,5 @@ export function Component() {
     attachments: [],
   };
 
-  return (
-    <>
-      <MessageEdit message={message} />
-    </>
-  );
+  return <MessageEdit message={message} />;
 }

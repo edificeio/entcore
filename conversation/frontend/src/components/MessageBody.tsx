@@ -15,6 +15,11 @@ export interface MessageBodyProps {
 export function MessageBody({ message, editMode }: MessageBodyProps) {
   const extensions = [ConversationHistoryNodeView(ConversationHistoryRenderer)];
 
+  const handleContentChange = ({ editor }: { editor: any }) => {
+    if (!editMode) return;
+    message.body = editor?.getHTML();
+  };
+
   return (
     <>
       <Editor
@@ -23,6 +28,7 @@ export function MessageBody({ message, editMode }: MessageBodyProps) {
         mode={editMode ? 'edit' : 'read'}
         variant="ghost"
         extensions={extensions}
+        onContentChange={handleContentChange}
       />
       <MessageAttachments
         attachments={message.attachments}

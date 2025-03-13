@@ -68,6 +68,7 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
       icon: <IconSend />,
       action: () => {
         alert('submit');
+        console.log('submit', message);
       },
       hidden: message.state !== 'DRAFT' || message.trashed,
     },
