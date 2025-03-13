@@ -1109,4 +1109,27 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 		}));
 	}
 
+	@Override
+	public void erasePassword(String userId, Handler<Either<String, JsonObject>> handler) {
+		String query = "MATCH (u:User) WHERE u.id = {userId} SET u.password = null return count(*) = 1 as exists;";
+		JsonObject params = new JsonObject().put("userId", userId);
+
+		neo.execute(query, params, res -> {
+			if ("ok".equals(res.body().getString("status"))) {
+				JsonArray result = res.body().getJsonArray("result");
+				if (result != null) {
+					JsonObject resultData = result.getJsonObject(0);
+					if (resultData != null && resultData.containsKey("exists") && resultData.getBoolean("exists")) {
+						handler.handle(new Either.Right<>(new JsonObject().put("status", "OK").put("result", "User's password erased successfully")));
+						return;
+					} else {
+						handler.handle(new Either.Right<>(new JsonObject().put("status", "OK").put("result", "Failed to erase user's password: user not found")));
+						return;
+					}
+				}
+			}
+			handler.handle(new Either.Left<>("Failed to erase user's password"));
+		});
+	}
+
 }
