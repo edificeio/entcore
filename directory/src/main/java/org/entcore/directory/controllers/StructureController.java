@@ -267,14 +267,20 @@ public class StructureController extends BaseController {
 		}
 	}
 
+	/**
+	 * Endpoint to retrieve the levels of the users of a structure,
+	 * and of its sub-structures if query param "inherit" is true.
+	 * @param request the http request
+	 */
 	@Get("/structure/:structureId/levels")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
 	public void getLevels(final HttpServerRequest request) {
+		final boolean inherit = "true".equalsIgnoreCase(request.params().get("inherit"));
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(UserInfos infos) {
-				structureService.getLevels(request.params().get("structureId"), infos, arrayResponseHandler(request));
+				structureService.getLevels(request.params().get("structureId"), inherit, infos, arrayResponseHandler(request));
 			}
 		});
 	}
