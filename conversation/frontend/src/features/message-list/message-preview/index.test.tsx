@@ -1,9 +1,15 @@
-import { mockMessageOfOutbox, mockMessagesOfInbox } from '~/mocks';
+import {
+  mockCurrentUserPreview,
+  mockMessageFromMeToMe,
+  mockMessageOfOutbox,
+  mockMessagesOfInbox,
+} from '~/mocks';
 import { render, screen } from '~/mocks/setup';
 import { MessageMetadata } from '~/models';
 import { MessagePreview } from '.';
 
-const message = mockMessagesOfInbox[0];
+const inboxMessage = mockMessagesOfInbox[0];
+const userFolderId = '23785dbc-dc2e-4f66-95a4-23f587d65008';
 
 const mocks = vi.hoisted(() => ({
   useParams: vi.fn(),
@@ -20,6 +26,19 @@ vi.mock('react-router-dom', async () => {
   };
 });
 
+vi.mock('@edifice.io/react', async () => {
+  const actual =
+    await vi.importActual<typeof import('@edifice.io/react')>(
+      '@edifice.io/react',
+    );
+  return {
+    ...actual,
+    useEdificeClient: () => ({
+      user: { userId: mockCurrentUserPreview.id },
+    }),
+  };
+});
+
 describe('Message preview header component', () => {
   beforeEach(() => {
     mocks.useParams.mockReturnValue({ folderId: 'inbox' });
@@ -30,16 +49,18 @@ describe('Message preview header component', () => {
   });
 
   it('should render successfully', async () => {
-    const { baseElement } = render(<MessagePreview message={message} />);
+    const { baseElement } = render(<MessagePreview message={inboxMessage} />);
 
     expect(baseElement).toBeTruthy();
   });
 
   it('should render successfully', async () => {
-    render(<MessagePreview message={message} />);
+    render(<MessagePreview message={inboxMessage} />);
 
-    const messagePreview = await screen.findByText(message.from.displayName);
-    const messageSubject = await screen.findByText(message.subject);
+    const messagePreview = await screen.findByText(
+      inboxMessage.from.displayName,
+    );
+    const messageSubject = await screen.findByText(inboxMessage.subject);
     const messageResponse = screen.queryByTestId('message-response');
     const messageHasAttachements = screen.queryByTestId(
       'message-has-attachment',
@@ -52,10 +73,12 @@ describe('Message preview header component', () => {
   });
 
   it('should display message informations successfully', async () => {
-    render(<MessagePreview message={message} />);
+    render(<MessagePreview message={inboxMessage} />);
 
-    const messagePreview = await screen.findByText(message.from.displayName);
-    const messageSubject = await screen.findByText(message.subject);
+    const messagePreview = await screen.findByText(
+      inboxMessage.from.displayName,
+    );
+    const messageSubject = await screen.findByText(inboxMessage.subject);
     const messageResponse = screen.queryByTitle('message-response');
     const messageHasAttachements = screen.queryByTitle(
       'message-has-attachment',
@@ -69,13 +92,15 @@ describe('Message preview header component', () => {
 
   it('should display message hasAttachement successfully', async () => {
     const messageWithAttachment: MessageMetadata = {
-      ...message,
+      ...inboxMessage,
       hasAttachment: true,
     };
     render(<MessagePreview message={messageWithAttachment} />);
 
-    const messagePreview = await screen.findByText(message.from.displayName);
-    const messageSubject = await screen.findByText(message.subject);
+    const messagePreview = await screen.findByText(
+      inboxMessage.from.displayName,
+    );
+    const messageSubject = await screen.findByText(inboxMessage.subject);
     const messageResponse = screen.queryByTitle('message-response');
     const messageHasAttachements = screen.queryByTitle(
       'message-has-attachment',
@@ -89,13 +114,15 @@ describe('Message preview header component', () => {
 
   it('should display message hasAttachement successfully', async () => {
     const messageWithResponse: MessageMetadata = {
-      ...message,
+      ...inboxMessage,
       response: true,
     };
     render(<MessagePreview message={messageWithResponse} />);
 
-    const messagePreview = await screen.findByText(message.from.displayName);
-    const messageSubject = await screen.findByText(message.subject);
+    const messagePreview = await screen.findByText(
+      inboxMessage.from.displayName,
+    );
+    const messageSubject = await screen.findByText(inboxMessage.subject);
     const messageResponse = screen.queryByTitle('message-response');
     const messageHasAttachements = screen.queryByTitle(
       'message-has-attachment',
@@ -110,7 +137,7 @@ describe('Message preview header component', () => {
   it('should display "to" label and recipient name when in outbox', async () => {
     mocks.useParams.mockReturnValue({ folderId: 'outbox' });
 
-    render(<MessagePreview message={message} />);
+    render(<MessagePreview message={inboxMessage} />);
 
     const toLabel = screen.getByText('at');
     expect(toLabel).toBeInTheDocument();
@@ -133,9 +160,9 @@ describe('Message preview header component', () => {
 
   it('should display group avatar icon when more than one recipient when in outbox', async () => {
     mocks.useParams.mockReturnValue({ folderId: 'outbox' });
-    render(<MessagePreview message={message} />);
+    render(<MessagePreview message={inboxMessage} />);
 
-    expect(message.to.groups.length).toBeGreaterThan(1);
+    expect(inboxMessage.to.groups.length).toBeGreaterThan(1);
 
     const recipientAvatar = screen.getByLabelText('recipient.avatar.group');
     expect(recipientAvatar).toBeInTheDocument();
@@ -148,7 +175,7 @@ describe('Message preview header component', () => {
     screen.getByText('at');
 
     const recipientItems = screen.getAllByRole('listitem');
-    expect(recipientItems).toHaveLength(5);
+    expect(recipientItems).toHaveLength(4);
   });
 
   it('should display a "draft" label when in draft', async () => {
@@ -165,10 +192,10 @@ describe('Message preview header component', () => {
     expect(atElement).toBeNull();
 
     const recipientItems = screen.queryAllByRole('listitem');
-    expect(recipientItems).toHaveLength(5);
+    expect(recipientItems).toHaveLength(4);
   });
 
-  it.only('should not display any recipients if there are none when in draft', async () => {
+  it('should not display any recipients if there are none when in draft', async () => {
     mocks.useParams.mockReturnValue({ folderId: 'draft' });
     const message = { ...mockMessageOfOutbox };
     message.to = { users: [], groups: [] };
@@ -179,5 +206,31 @@ describe('Message preview header component', () => {
 
     const recipientItems = screen.queryAllByRole('listitem');
     expect(recipientItems).toHaveLength(0);
+  });
+
+  it('should display draft icon when message come from inbox in user folder', async () => {
+    mocks.useParams.mockReturnValue({
+      folderId: userFolderId,
+    });
+    render(<MessagePreview message={inboxMessage} />);
+    await screen.findByTitle('mail-in');
+  });
+
+  it('should display draft icon when message come from inbox in user folder', async () => {
+    mocks.useParams.mockReturnValue({
+      folderId: userFolderId,
+    });
+    render(<MessagePreview message={mockMessageOfOutbox} />);
+    await screen.findByTitle('mail-out');
+  });
+
+  it('should display inbox icon when current user send the message to himself in user forlder', async () => {
+    mocks.useParams.mockReturnValue({
+      folderId: userFolderId,
+    });
+
+    render(<MessagePreview message={mockMessageFromMeToMe} />);
+
+    await screen.findByTitle('mail-in');
   });
 });
