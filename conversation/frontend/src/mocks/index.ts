@@ -189,7 +189,10 @@ export const mockMessageOfOutbox: MessageMetadata = {
 };
 
 export const mockMessageOfDraft: MessageMetadata[] = [...mockMessagesOfInbox];
-mockMessageOfDraft[0].to = { users: [], groups: [] };
+mockMessageOfDraft[0] = {
+  ...mockMessageOfDraft[0],
+  to: { users: [], groups: [] },
+};
 
 export const mockFullMessage: Message = {
   id: 'f43d3783',
