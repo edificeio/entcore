@@ -11,6 +11,7 @@ import {
   IconPrint,
   IconRedo,
   IconRestore,
+  IconSave,
   IconSend,
   IconUndo,
   IconUndoAll,
@@ -21,10 +22,12 @@ import { useNavigate } from 'react-router-dom';
 import { useI18n } from '~/hooks';
 import { Message } from '~/models';
 import {
+  useCreateDraft,
   useDeleteMessage,
   useMarkUnread,
   useRestoreMessage,
   useTrashMessage,
+  useUpdateDraft,
 } from '~/services';
 import { useConfirmModalStore } from '~/store';
 
@@ -36,21 +39,9 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
   const deleteMessage = useDeleteMessage();
   const restoreQuery = useRestoreMessage();
   const moveToTrashQuery = useTrashMessage();
+  const createDraft = useCreateDraft();
+  const updateDraft = useUpdateDraft();
   const user = useUser();
-
-  const handleDelete = () => {
-    openModal({
-      id: 'delete-modal',
-      header: <>{t('delete.definitely')}</>,
-      body: <p>{t('delete.definitely.confirm')}</p>,
-      okText: t('confirm'),
-      koText: t('cancel'),
-      onSuccess: () => {
-        deleteMessage.mutate({ id: message.id });
-        navigate('/trash');
-      },
-    });
-  };
 
   const buttonAction = [
     {
@@ -84,11 +75,6 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
     },
   ];
 
-  const handleMarkAsUnreadClick = () => {
-    markAsUnreadQuery.mutate({ messages: [message] });
-    navigate(`../..`, { relative: 'path' });
-  };
-
   const canReplyAll = useMemo(() => {
     const { to, cc, cci } = message;
 
@@ -109,6 +95,53 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
       !message.trashed
     );
   }, [message, user]);
+
+  const handleDeleteClick = () => {
+    openModal({
+      id: 'delete-modal',
+      header: <>{t('delete.definitely')}</>,
+      body: <p>{t('delete.definitely.confirm')}</p>,
+      okText: t('confirm'),
+      koText: t('cancel'),
+      onSuccess: () => {
+        deleteMessage.mutate({ id: message.id });
+        navigate('/trash');
+      },
+    });
+  };
+
+  const handleDraftSaveClick = () => {
+    const payload = {
+      subject: message.subject,
+      body: message.body,
+      to: [
+        ...message.to.users.map((u) => u.id),
+        ...message.to.groups.map((g) => g.id),
+      ],
+      cc: [
+        ...message.cc.users.map((u) => u.id),
+        ...message.cc.groups.map((g) => g.id),
+      ],
+      cci: [
+        ...(message.cci?.users.map((u) => u.id) ?? []),
+        ...(message.cci?.groups?.map((g) => g.id) ?? []),
+      ],
+    };
+
+    if (message.id) {
+      updateDraft.mutate({
+        draftId: message.id,
+        payload,
+      });
+    } else {
+      createDraft.mutate({ payload });
+    }
+  };
+
+  const handleMarkAsUnreadClick = () => {
+    markAsUnreadQuery.mutate({ messages: [message] });
+    navigate(`../..`, { relative: 'path' });
+  };
 
   const options = [
     {
@@ -136,6 +169,12 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
       hidden: message.state === 'DRAFT' || message.trashed,
     },
     {
+      label: t('draft.save'),
+      icon: <IconSave />,
+      action: handleDraftSaveClick,
+      hidden: message.state !== 'DRAFT' && !message.trashed,
+    },
+    {
       label: t('trash'),
       icon: <IconDelete />,
       action: () => {
@@ -147,7 +186,7 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
     {
       label: t('delete'),
       icon: <IconDelete />,
-      action: handleDelete,
+      action: handleDeleteClick,
       hidden: !message.trashed,
     },
     {
