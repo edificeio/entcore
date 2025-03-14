@@ -342,14 +342,14 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 	}
 
 	@Override
-	public void findByMailAndFirstNameAndStructure(final String email, String firstName, String structure, final Handler<Either<String,JsonArray>> handler) {
+	public void findByMailAndFirstNameAndStructure(final String email, String firstName, String structure, boolean checkFederatedLogin, final Handler<Either<String,JsonArray>> handler) {
 		boolean setFirstname = firstName != null && !firstName.trim().isEmpty();
 		boolean setStructure = structure != null && !structure.trim().isEmpty();
 
 		String query = "MATCH (u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) WHERE u.emailSearchField = {mail} " +
+				(checkFederatedLogin ? "AND (NOT(HAS(u.federated)) OR u.federated = false) " : "") +
 				(setFirstname ? " AND u.firstNameSearchField = {firstName}" : "") +
 				(setStructure ? " AND s.id = {structure}" : "") +
-				//" AND u.activationCode IS NULL RETURN DISTINCT u.login as login, u.mobile as mobile, s.name as structureName, s.id as structureId";
 				" RETURN DISTINCT u.login as login, u.activationCode as activationCode, u.mobile as mobile, s.name as structureName, s.id as structureId";
 		//Feat #20790 match only lowercases values
 		JsonObject params = new JsonObject().put("mail", email.toLowerCase());
