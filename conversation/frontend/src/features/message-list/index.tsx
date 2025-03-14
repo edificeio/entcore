@@ -11,9 +11,16 @@ import {
   IconUnreadMail,
 } from '@edifice.io/react/icons';
 import clsx from 'clsx';
-import { KeyboardEvent, useEffect, useMemo, useState } from 'react';
+import {
+  KeyboardEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSelectedFolder } from '~/hooks';
 import { MessageMetadata } from '~/models';
 import {
   useDeleteMessage,
@@ -31,7 +38,7 @@ import { MessagePreview } from './message-preview';
 export function MessageList() {
   const navigate = useNavigate();
 
-  const { folderId } = useParams();
+  const { folderId } = useSelectedFolder();
   const [searchParams] = useSearchParams();
   const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
@@ -45,6 +52,7 @@ export function MessageList() {
   const restoreQuery = useRestoreMessage();
   const deleteMessage = useDeleteMessage();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
+  const { user } = useEdificeClient();
 
   const { openModal } = useConfirmModalStore();
 
@@ -86,19 +94,36 @@ export function MessageList() {
     );
   }, [selectedIds, messages]);
 
-  const hasUnreadMessages = useMemo(() => {
-    if (isInTrash) return false;
-    return selectedMessages.some(
-      (message) => message.unread && message.state !== 'DRAFT',
-    );
-  }, [isInTrash, selectedMessages]);
+  const canShowMarkActions = useCallback(
+    (unread: boolean) => {
+      return (
+        !['draft', 'outbox', 'trash'].includes(folderId!) &&
+        // Check if the selected messages are not drafts and are unread or read depending on the action
+        selectedMessages.some(
+          (message) => message.unread === unread && message.state !== 'DRAFT',
+        ) &&
+        // Check if the selected messages are not sent by the user
+        !selectedMessages.some(
+          (message) =>
+            message.from.id === user?.userId &&
+            ![
+              ...message.to.users,
+              ...message.cc.users,
+              ...(message.cci?.users ?? []),
+            ].some((u) => u.id === user?.userId),
+        )
+      );
+    },
+    [folderId, selectedMessages, user?.userId],
+  );
 
-  const hasReadMessages = useMemo(() => {
-    if (isInTrash) return false;
-    return selectedMessages.some(
-      (message) => !message.unread && message.state !== 'DRAFT',
-    );
-  }, [isInTrash, selectedMessages]);
+  const canMarkAsReadMessages = useMemo(() => {
+    return canShowMarkActions(true);
+  }, [canShowMarkActions]);
+
+  const canMarkAsUnReadMessages = useMemo(() => {
+    return canShowMarkActions(false);
+  }, [canShowMarkActions]);
 
   const canBeMovetoTrash = useMemo(() => {
     if (isInTrash) return false;
@@ -170,7 +195,7 @@ export function MessageList() {
           </>
         ),
         onClick: handleMarkAsReadClick,
-        hidden: !hasUnreadMessages,
+        hidden: !canMarkAsReadMessages,
       },
     },
     {
@@ -184,7 +209,7 @@ export function MessageList() {
           </>
         ),
         onClick: handleMarkAsUnreadClick,
-        hidden: !hasReadMessages,
+        hidden: !canMarkAsUnReadMessages,
       },
     },
     {
