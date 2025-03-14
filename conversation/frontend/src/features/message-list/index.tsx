@@ -3,7 +3,6 @@ import {
   Loading,
   ToolbarItem,
   useEdificeClient,
-  useUser,
 } from '@edifice.io/react';
 import {
   IconDelete,
@@ -56,7 +55,7 @@ export function MessageList() {
   const deleteMessage = useDeleteMessage();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
   const { handleMoveMessage } = useFolderHandlers();
-  const user = useUser();
+  const { user } = useEdificeClient();
 
   const { openModal } = useConfirmModalStore();
 
@@ -110,17 +109,16 @@ export function MessageList() {
         // Check if the selected messages are not sent by the user
         !selectedMessages.some(
           (message) =>
-            message.from.id === user.user?.userId &&
+            message.from.id === user?.userId &&
             !(
-              message.to.users.some((u) => u.id === user.user?.userId) ||
-              message.cc.users.some((u) => u.id === user.user?.userId) ||
-              (message.cci?.users?.some((u) => u.id === user.user?.userId) ??
-                false)
+              message.to.users.some((u) => u.id === user?.userId) ||
+              message.cc.users.some((u) => u.id === user?.userId) ||
+              (message.cci?.users?.some((u) => u.id === user?.userId) ?? false)
             ),
         )
       );
     },
-    [folderId, selectedMessages, user.user?.userId],
+    [folderId, selectedMessages, user?.userId],
   );
 
   const canMarkAsReadMessages = useMemo(() => {
