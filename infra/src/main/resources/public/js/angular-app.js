@@ -6461,14 +6461,12 @@ module.directive("multiCombo", function () {
     link: function (scope, element, attributes) {
       if (!attributes.comboModel || !attributes.filteredModel) {
         throw "[<multi-combo> directive] Error: combo-model & filtered-model attributes are required.";
-        return;
       }
 
       /* Max n° of elements selected limit */
       scope.maxSelected = parseInt(scope.maxSelected);
       if (!isNaN(scope.maxSelected) && scope.maxSelected < 1) {
         throw "[<multi-combo> directive] Error: max-selected must be an integer greater than 0.";
-        return;
       }
 
       /* Visibility mouse click event */
@@ -7922,17 +7920,55 @@ function Account($scope) {
       });
   };
 
-  $scope.refreshMails = function () {
+  $scope.goToMessagerie = function () {
+    console.log($scope.messagerieLink);
     http()
-      .get("/conversation/count/INBOX", {
-        unread: true,
-      })
-      .done(function (nbMessages) {
-        $scope.nbNewMessages = nbMessages.count;
-        $scope.$apply("nbNewMessages");
+      .get("/userbook/preference/zimbra")
+      .done(function (data) {
+        try {
+          if (
+            data.preference
+              ? JSON.parse(data.preference)["modeExpert"] &&
+                model.me.hasWorkflow(
+                  "fr.openent.zimbra.controllers.ZimbraController|preauth"
+                )
+              : false
+          ) {
+            $scope.messagerieLink = "/zimbra/preauth";
+            window.open($scope.messagerieLink);
+          } else {
+            $scope.messagerieLink = "/zimbra/zimbra";
+            window.location.href =
+              window.location.origin + $scope.messagerieLink;
+          }
+          console.log($scope.messagerieLink);
+        } catch (e) {
+          $scope.messagerieLink = "/zimbra/zimbra";
+        }
       });
   };
 
+  $scope.refreshMails = function () {
+    if (
+      model.me.hasWorkflow(
+        "fr.openent.zimbra.controllers.ZimbraController|view"
+      )
+    ) {
+      http()
+        .get("/zimbra/count/INBOX", { unread: true })
+        .done(function (nbMessages) {
+          $scope.nbNewMessages = nbMessages.count;
+          $scope.$apply("nbNewMessages");
+        });
+    } else {
+      http()
+        .get("/conversation/count/INBOX", { unread: true })
+        .done(function (nbMessages) {
+          $scope.nbNewMessages = nbMessages.count;
+          $scope.$apply("nbNewMessages");
+        });
+    }
+  };
   $scope.openApps = function (event) {
     if ($(window).width() <= 700) {
       event.preventDefault();

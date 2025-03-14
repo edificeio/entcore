@@ -20,13 +20,6 @@
 package org.entcore.feeder.csv;
 
 import com.opencsv.CSVReader;
-import org.entcore.feeder.Feed;
-import org.entcore.feeder.ManualFeeder;
-import org.entcore.feeder.dictionary.structures.DefaultFunctions;
-import org.entcore.feeder.dictionary.structures.DefaultProfiles;
-import org.entcore.feeder.dictionary.structures.Importer;
-import org.entcore.feeder.dictionary.structures.ImporterStructure;
-import org.entcore.feeder.utils.*;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -35,8 +28,17 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.user.position.UserPosition;
+import org.entcore.common.user.position.UserPositionSource;
+import org.entcore.feeder.Feed;
+import org.entcore.feeder.ManualFeeder;
+import org.entcore.feeder.dictionary.structures.DefaultFunctions;
+import org.entcore.feeder.dictionary.structures.Importer;
+import org.entcore.feeder.dictionary.structures.ImporterStructure;
+import org.entcore.feeder.utils.*;
 
-import java.io.*;
+import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -44,9 +46,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
-import static fr.wseduc.webutils.Utils.getOrElse;
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.*;
-import static org.entcore.feeder.dictionary.structures.DefaultProfiles.GUEST_PROFILE;
 import static org.entcore.feeder.utils.CSVUtil.emptyLine;
 import static org.entcore.feeder.utils.CSVUtil.getCsvReader;
 
@@ -215,7 +215,7 @@ public class CsvFeeder implements Feed {
 	private void checkNotModifiableExternalId(List<String> files, final Handler<Message<JsonObject>> handler) {
 		final List<String> columns = new ArrayList<>();
 		final AtomicInteger externalIdIdx = new AtomicInteger(-1);
-		final JsonArray externalIds = new fr.wseduc.webutils.collections.JsonArray();
+		final JsonArray externalIds = new JsonArray();
 		final AtomicInteger count = new AtomicInteger(files.size());
 		for (final String file: files) {
 			CSVUtil.getCharset(vertx, file, new Handler<String>() {
@@ -339,8 +339,8 @@ public class CsvFeeder implements Feed {
 						strings = Arrays.asList(strings).subList(0, nbColumns).toArray(new String[nbColumns]);
 					}
 					JsonObject user = new JsonObject();
-					user.put("structures", new fr.wseduc.webutils.collections.JsonArray().add(structure.getExternalId()));
-					user.put("profiles", new fr.wseduc.webutils.collections.JsonArray().add(profile));
+					user.put("structures", new JsonArray().add(structure.getExternalId()));
+					user.put("profiles", new JsonArray().add(profile));
 					List<String[]> classes = new ArrayList<>();
 					List<String[]> groups = new ArrayList<>();
 
@@ -377,7 +377,7 @@ public class CsvFeeder implements Feed {
 							case "array-string":
 								JsonArray a = user.getJsonArray(c);
 								if (a == null) {
-									a = new fr.wseduc.webutils.collections.JsonArray();
+									a = new JsonArray();
 									user.put(c, a);
 								}
 								if (("classes".equals(c) || "subjectTaught".equals(c) || "functions".equals(c) ||
@@ -403,7 +403,7 @@ public class CsvFeeder implements Feed {
 									if (o instanceof JsonArray) {
 										((JsonArray) o).add(v2);
 									} else {
-										JsonArray array = new fr.wseduc.webutils.collections.JsonArray();
+										JsonArray array = new JsonArray();
 										array.add(o).add(v2);
 										user.put(c, array);
 									}
@@ -452,7 +452,7 @@ public class CsvFeeder implements Feed {
 					if (co != null && co instanceof JsonArray) {
 						classesA = (JsonArray) co;
 					} else if (co instanceof String) {
-						classesA = new fr.wseduc.webutils.collections.JsonArray().add(co);
+						classesA = new JsonArray().add(co);
 					} else {
 						classesA = null;
 					}
@@ -480,12 +480,14 @@ public class CsvFeeder implements Feed {
 					switch (profile) {
 						case "Teacher":
 							createFunctionDisciplineGroup(profile, structure, user, groups);
+							cleanAndCreateUserPositions(structure, user);
 							importer.createOrUpdatePersonnel(user, TEACHER_PROFILE_EXTERNAL_ID,
 									user.getJsonArray("structures"), classes.toArray(new String[classes.size()][2]),
 									groups.toArray(new String[groups.size()][3]), true, true);
 							break;
 						case "Personnel":
 							createFunctionDisciplineGroup(profile, structure, user, groups);
+							cleanAndCreateUserPositions(structure, user);
 							importer.createOrUpdatePersonnel(user, PERSONNEL_PROFILE_EXTERNAL_ID,
 									user.getJsonArray("structures"), classes.toArray(new String[classes.size()][2]),
 									groups.toArray(new String[groups.size()][3]), true, true);
@@ -533,7 +535,7 @@ public class CsvFeeder implements Feed {
 											"Adresse Organisme".equals(strings[2]))) {
 								break csvParserWhile;
 							}
-							JsonArray linkStudents = new fr.wseduc.webutils.collections.JsonArray();
+							JsonArray linkStudents = new JsonArray();
 							for (String attr : user.fieldNames()) {
 								if ("childExternalId".equals(attr)) {
 									Object o = user.getValue(attr);
@@ -686,32 +688,50 @@ public class CsvFeeder implements Feed {
 				String name = null;
 
 				String [] g = ((String) o).split("\\$");
-				if (g.length == 5) {
-					if ("ENS".equals(g[1])) {
-						groupExternalId = structure.getExternalId() + "$" + g[3];
-						name = g[4];
-					} else if (!g[1].isEmpty() && !"-".equals(g[1])) {
-						groupExternalId = structure.getExternalId() + "$" + g[1];
-						name = g[2];
+				// Function Groups are created only for functions matching fully filled aaf format
+				if (g.length != 2 && !g[2].isEmpty()) {
+					if (g.length == 5) {
+						if ("ENS".equals(g[1])) {
+							groupExternalId = structure.getExternalId() + "$" + g[3];
+							name = g[4];
+						} else if (!g[1].isEmpty() && !"-".equals(g[1])) {
+							groupExternalId = structure.getExternalId() + "$" + g[1];
+							name = g[2];
+						}
 					}
-				}
 
-				if (groupExternalId == null) {
-					groupExternalId = ((String) o).replaceFirst("\\${4}", "\\$");
+					if (groupExternalId == null) {
+						groupExternalId = ((String) o).replaceFirst("\\${4}", "\\$");
+					}
+					if (name == null) {
+						name = groupExternalId.substring(structure.getExternalId().length() + 1);
+					}
+					if ("Teacher".equals(profile)) {
+						structure.createFunctionGroupIfAbsent(groupExternalId, name, "Discipline");
+					} else {
+						structure.createFunctionGroupIfAbsent(groupExternalId, name, "Func");
+					}
+					final String[] groupId = new String[3];
+					groupId[0] = structure.getExternalId();
+					groupId[1] = groupExternalId;
+					groups.add(groupId);
 				}
-				if (name == null) {
-					name = groupExternalId.substring(structure.getExternalId().length() + 1);
-				}
-				if ("Teacher".equals(profile)) {
-					structure.createFunctionGroupIfAbsent(groupExternalId, name, "Discipline");
-				} else {
-					structure.createFunctionGroupIfAbsent(groupExternalId, name, "Func");
-				}
-				final String[] groupId = new String[3];
-				groupId[0] = structure.getExternalId();
-				groupId[1] = groupExternalId;
-				groups.add(groupId);
 			}
+		}
+	}
+
+	private void cleanAndCreateUserPositions(ImporterStructure structure, JsonObject user) {
+		String userExternalId = user.getString("externalId");
+		if (userExternalId != null) {
+			structure.detachUserFromItsPositions(userExternalId, null);
+		}
+		JsonArray functions = user.getJsonArray("functions");
+		if (functions != null) {
+			functions.stream()
+					.filter(function -> function instanceof String)
+					.map(function -> (String) function)
+					.forEach(function -> UserPosition.getUserPositionFromEncodedFunction(function, UserPositionSource.CSV)
+							.ifPresent(structure::createPosition));
 		}
 	}
 

@@ -1,6 +1,12 @@
 <div class="panel-header is-display-flex has-space-between">
   <div>
     <div><span>{{ groupsStore.group.name }}</span></div>
+    <div class="update-info" *ngIf="groupsStore.group?.type === 'ManualGroup'">
+      <s5l
+          *ngIf="groupsStore.group.createdAt && groupsStore.group.createdByName"
+          [s5l-params]="{user: groupsStore.group.createdByName, date: groupsStore.group.createdAt | date:'dd/MM/yyyy'}"
+        >group.details.created</s5l>
+    </div>
     <div class="members-count" *ngIf="groupsStore.group?.subType === 'BroadcastGroup'">
         {{ groupsStore.group.nbUsers }}&nbsp;
         {{ 'members' | translate:{count: groupsStore.group.nbUsers} }}

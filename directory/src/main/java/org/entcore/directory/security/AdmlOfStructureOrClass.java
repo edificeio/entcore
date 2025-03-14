@@ -20,7 +20,6 @@
 package org.entcore.directory.security;
 
 import fr.wseduc.webutils.http.Binding;
-import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
@@ -66,7 +65,7 @@ public class AdmlOfStructureOrClass implements ResourcesProvider {
                             "RETURN count(*) > 0 as exists";
             JsonObject params = new JsonObject()
                     .put("classId", classId)
-                    .put("ids", new fr.wseduc.webutils.collections.JsonArray(adminLocal.getScope()));
+                    .put("ids", new JsonArray(adminLocal.getScope()));
             validateQuery(request, handler, query, params);
         } else {
             handler.handle(false);

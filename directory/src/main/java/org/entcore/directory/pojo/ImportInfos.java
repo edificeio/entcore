@@ -175,7 +175,7 @@ public class ImportInfos {
 							for (String p: list.result()) {
 								futures.add(getFileSize(vertx, p));
 							}
-							CompositeFuture.all(futures).setHandler(ar -> {
+							CompositeFuture.all(futures).onComplete(ar -> {
 								if (ar.succeeded()) {
 									if (ar.result().list().stream().allMatch(size -> ((Long) size) < MAX_FILE_SIZE)) {
 										moveFiles(list.result(), fs, handler);
@@ -201,7 +201,7 @@ public class ImportInfos {
 	}
 
 	private Future getFileSize(Vertx vertx, String p) {
-		Future<Long> future = Future.future();
+		Promise<Long> future = Promise.promise();
 		vertx.fileSystem().props(p, ar -> {
 			if (ar.succeeded()) {
 				future.complete(ar.result().size());
@@ -209,7 +209,7 @@ public class ImportInfos {
 				future.fail(ar.cause());
 			}
 		});
-		return future;
+		return future.future();
 	}
 
 	private void moveFiles(final List<String> l, final FileSystem fs, final Handler<AsyncResult<String>> handler) {

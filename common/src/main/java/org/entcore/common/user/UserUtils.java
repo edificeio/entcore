@@ -20,16 +20,10 @@
 package org.entcore.common.user;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
-import static fr.wseduc.webutils.Utils.getOrElse;
-import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
-import static fr.wseduc.webutils.Utils.isEmpty;
-import static fr.wseduc.webutils.Utils.isNotEmpty;
 import fr.wseduc.webutils.http.Renders;
-import static fr.wseduc.webutils.http.Renders.unauthorized;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.JWT;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
@@ -41,6 +35,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
@@ -48,24 +43,36 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import static org.entcore.common.http.filter.AppOAuthResourceProvider.getTokenId;
+
+import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.session.SessionRecreationRequest;
 import org.entcore.common.utils.HostUtils;
 import org.entcore.common.utils.StringUtils;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
+import static fr.wseduc.webutils.Utils.isEmpty;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static fr.wseduc.webutils.http.Renders.unauthorized;
+import static org.entcore.common.http.filter.AppOAuthResourceProvider.getTokenId;
+
 public class UserUtils {
 
+	private static final Vertx vertx = Vertx.currentContext().owner();
+	private static final int DEFAULT_VISIBLES_TIMEOUT = 60000;
 	public static final String FIND_SESSION = "findSession";
 	public static final String MONITORINGEVENTS = "monitoringevents";
 	private static final String USERBOOK_ADDRESS = "userbook.preferences";
@@ -102,7 +109,7 @@ public class UserUtils {
 						  final JsonObject query, final Handler<JsonArray> handler) {
 		if (userId != null && !userId.trim().isEmpty()) {
 			query.put("userId", userId);
-			eb.send(COMMUNICATION_USERS, query, new Handler<AsyncResult<Message<JsonArray>>>() {
+			eb.request(COMMUNICATION_USERS, query, new Handler<AsyncResult<Message<JsonArray>>>() {
 
 				@Override
 				public void handle(AsyncResult<Message<JsonArray>> res) {
@@ -218,17 +225,26 @@ public class UserUtils {
 			m.put("additionnalParams", additionnalParams);
 		}
 		m.put("userId", userId);
-		eb.send(COMMUNICATION_USERS, m, new Handler<AsyncResult<Message<JsonArray>>>() {
+		LocalMap<Object, Object> serverConfig = vertx.sharedData().getLocalMap("server");
+		final int timeout;
+		if (serverConfig != null) {
+			timeout = (int) serverConfig.getOrDefault("findVisiblesTimeout", DEFAULT_VISIBLES_TIMEOUT);
+		} else {
+			timeout = DEFAULT_VISIBLES_TIMEOUT;
+		}
+		eb.request(COMMUNICATION_USERS, m, new DeliveryOptions().setSendTimeout(timeout), new Handler<AsyncResult<Message<JsonArray>>>() {
 
 			@Override
 			public void handle(AsyncResult<Message<JsonArray>> res) {
 				if (res.succeeded()) {
 					JsonArray r = res.result().body();
+					log.info("UserUtils.findVisibles - r.size = " + r.size()); // TODO JBER : exposer métrique
 					if (acceptLanguage != null) {
 						translateGroupsNames(r, acceptLanguage);
 					}
 					handler.handle(r);
 				} else {
+					log.error("An error occurred while fetching visible users for user " + userId, res.cause());
 					handler.handle(new fr.wseduc.webutils.collections.JsonArray());
 				}
 			}
@@ -285,7 +301,11 @@ public class UserUtils {
 		for (Object o: visibles) {
 			if (!(o instanceof JsonObject)) continue;
 			JsonObject j = (JsonObject) o;
+			if(j.containsKey("positionIds")) {
+				formatPositions(j);
+			}
 			if (j.getString("name") != null) {
+				j.remove("positions");
 				j.remove("displayName");
 				j.remove("profile");
 				j.remove("mood");
@@ -318,6 +338,118 @@ public class UserUtils {
 			}
 		}
 		return visible;
+	}
+
+	private static void formatPositions(JsonObject dbResult) {
+		final JsonArray positionIds = (JsonArray) dbResult.remove("positionIds");
+		final JsonArray positionNames = (JsonArray) dbResult.remove("positionNames");
+		final JsonArray positions = new JsonArray();
+		for(int i = 0; i < positionIds.size(); i++) {
+			positions.add(new JsonObject()
+				.put("name", positionNames.getString(i))
+				.put("id", positionIds.getString(i)));
+		}
+		dbResult.put("positions", positions);
+	}
+
+	public static JsonArray mapObjectToContact(final String profile, final JsonArray shareBookmarks, final JsonArray visible, final String acceptLanguage) {
+		final List<String> usedInAll = Arrays.asList("TO", "CC", "CCI");
+		final List<String> usedInCCI = Collections.singletonList("CCI");
+
+		/*
+		final JsonArray sb = new JsonArray();
+		if (shareBookmarks != null) {
+			for (String id: shareBookmarks.fieldNames()) {
+				final JsonArray value = shareBookmarks.getJsonArray(id);
+				if (value == null || value.size() < 2) {
+					continue;
+				}
+				final JsonObject r = new fr.wseduc.webutils.collections.JsonObject();
+				r.put("id", id);
+				r.put("displayName", value.remove(0));
+				r.put("type", "ShareBookmark");
+				sb.add(r);
+			}
+		}
+
+		final JsonArray res = !sb.isEmpty() ? sortShareBookmarksByName(sb) : new JsonArray();
+		 */
+
+		final JsonArray res = new JsonArray();
+		for (Object o: shareBookmarks) {
+			if (!(o instanceof JsonObject)) continue;
+			JsonObject j = (JsonObject) o;
+			j.put("type", "ShareBookmark");
+			j.put("usedIn", usedInAll);
+			res.add(j);
+		}
+
+		for (Object o: visible) {
+			if (!(o instanceof JsonObject)) continue;
+			JsonObject j = (JsonObject) o;
+			if (j.getString("name") != null) {
+				j.remove("profile");
+				j.remove("children");
+				j.remove("classrooms");
+				j.remove("disciplines");
+				j.remove("functions");
+				j.remove("relatives");
+
+				Object gt = j.remove("groupType");
+				Object gp = j.remove("groupProfile");
+				if (gt instanceof Iterable) {
+					for (Object gti: (Iterable) gt) {
+						if (gti != null && !"Group".equals(gti) && gti.toString().endsWith("Group")) {
+							j.put("groupType", gti);
+							if ("ProfileGroup".equals(gti)) {
+								j.put("profile", gp);
+							}
+							break;
+						}
+					}
+				}
+
+				UserUtils.groupDisplayName(j, acceptLanguage);
+				j.put("displayName", j.getString("name"));
+
+				if ("ManualGroup".equals(j.getString("groupType")) && "BroadcastGroup".equals(j.getString("subType")))  {
+					j.put("type", "BroadcastGroup");
+					j.put("usedIn", usedInCCI);
+				} else {
+					j.put("type", "Group");
+					j.put("usedIn", usedInAll);
+				}
+			} else {
+				j.put("type", "User");
+				j.put("usedIn", usedInAll);
+				j.remove("groupProfile");
+				j.remove("groupType");
+				j.remove("nbUsers");
+				if (profile.equals("Student")) {
+					j.remove("relatives");
+				}
+			}
+
+			j.remove("name");
+			j.remove("groupDisplayName");
+			j.remove("sortDisplayName");
+			j.remove("sortWeight");
+			j.remove("subjects");
+			j.remove("subType");
+			j.remove("sorted_children_names");
+			j.remove("sorted_functions");
+			j.remove("sorted_disciplines");
+
+			res.add(j);
+		}
+		return res;
+	}
+
+	private static JsonArray sortShareBookmarksByName(JsonArray sb) {
+		List<JsonObject> list = sb.getList();
+		list.sort(Comparator.comparing(o -> o.getString("displayName")));
+
+		return new JsonArray(list);
 	}
 
 	public static void findUsersCanSeeMe(final EventBus eb, HttpServerRequest request,
@@ -383,7 +515,7 @@ public class UserUtils {
 				.put("userId", groupId)
 				.put("itself", itSelf)
 				.put("excludeUserId", userId);
-		eb.send(DIRECTORY, m, new Handler<AsyncResult<Message<JsonArray>>>() {
+		eb.request(DIRECTORY, m, new Handler<AsyncResult<Message<JsonArray>>>() {
 			@Override
 			public void handle(AsyncResult<Message<JsonArray>> res) {
 				if (res.succeeded()) {
@@ -548,7 +680,7 @@ public class UserUtils {
 	private static void findSession(EventBus eb, final HttpServerRequest request, JsonObject findSession, final boolean paused,
 			final Handler<JsonObject> handler) {
 		final long startSessionTime = System.currentTimeMillis();
-		eb.send(SESSION_ADDRESS, findSession, new Handler<AsyncResult<Message<JsonObject>>>() {
+		eb.request(SESSION_ADDRESS, findSession, new Handler<AsyncResult<Message<JsonObject>>>() {
 
 			@Override
 			public void handle(AsyncResult<Message<JsonObject>> message) {
@@ -639,18 +771,22 @@ public class UserUtils {
 		});
 	}
 
+	/**
+	 * Fetch the user's session information and return an unauthorized response if the user has no session. Therefore,
+	 * <b>there is no need to handle a failure of the returned Future</b>.
+	 * @param eb Event bus to be used to fetch the user's session
+	 * @param request Caller's request
+	 * @return The user's session information
+	 */
 	public static Future<UserInfos> getAuthenticatedUserInfos(EventBus eb, HttpServerRequest request) {
 		final Promise<UserInfos> promise = Promise.promise();
-		getSession(eb, request, new Handler<JsonObject>() {
-			@Override
-			public void handle(JsonObject session) {
-				final UserInfos userInfo = sessionToUserInfos(session);
-				if(userInfo == null) {
-					unauthorized(request);
-					promise.fail("user.not.found");
-				} else {
-					promise.complete(userInfo);
-				}
+		getSession(eb, request, session -> {
+			final UserInfos userInfo = sessionToUserInfos(session);
+			if(userInfo == null) {
+				unauthorized(request);
+				promise.fail("user.not.found");
+			} else {
+				promise.complete(userInfo);
 			}
 		});
 		return promise.future();
@@ -693,7 +829,7 @@ public class UserUtils {
 				if (res.succeeded()) {
 					details.complete( res.result().body() ); // body may be null if no session can be created (for an app)
 				} else {
-					details.fail(String.valueOf(res.result().body()));
+					details.fail(res.cause());
 				}
 			}
 		});
@@ -729,7 +865,7 @@ public class UserUtils {
 		if(desiredSessionId != null && !desiredSessionId.isEmpty()) {
 			json.put("sessionId", desiredSessionId);
 		}
-		eb.send(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
+		eb.request(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
 
 			@Override
 			public void handle(AsyncResult<Message<JsonObject>> res) {
@@ -749,7 +885,7 @@ public class UserUtils {
 		JsonObject json = new JsonObject()
 				.put("action", "drop")
 				.put("sessionId", sessionId);
-		eb.send(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
+		eb.request(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
 
 			@Override
 			public void handle(AsyncResult<Message<JsonObject>> res) {
@@ -766,7 +902,7 @@ public class UserUtils {
 				.put("action", "drop")
 				.put("sessionMetadata", true)
 				.put("sessionId", sessionId);
-		eb.send(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
+		eb.request(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
 
 			@Override
 			public void handle(AsyncResult<Message<JsonObject>> res) {
@@ -794,7 +930,7 @@ public class UserUtils {
 				.put("currentSessionId", currentSessionId)
 				.put("currentTokenId", currentTokenId)
 				.put("immediate", immediate);
-		eb.send(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
+		eb.request(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
 
 			@Override
 			public void handle(AsyncResult<Message<JsonObject>> res) {
@@ -810,7 +946,7 @@ public class UserUtils {
 				.put("action", "dropCacheSession")
 				.put("currentSessionId", currentSessionId)
 				.put("userId", userId);
-		eb.send(SESSION_ADDRESS, json, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+		eb.request(SESSION_ADDRESS, json, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 
 			@Override
 			public void handle(Message<JsonObject> res) {
@@ -869,7 +1005,7 @@ public class UserUtils {
 
 	private static void sendSessionAttribute(EventBus eb, final Handler<Boolean> handler, JsonObject json) {
 		final long startAddAttrSessionTime = System.currentTimeMillis();
-		eb.send(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
+		eb.request(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
 
 			@Override
 			public void handle(AsyncResult<Message<JsonObject>> res) {
@@ -890,7 +1026,7 @@ public class UserUtils {
 				.put("action", "removeAttribute")
 				.put("userId", userId)
 				.put("key", key);
-		eb.send(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
+		eb.request(SESSION_ADDRESS, json, new Handler<AsyncResult<Message<JsonObject>>>() {
 
 			@Override
 			public void handle(AsyncResult<Message<JsonObject>> res) {
@@ -945,36 +1081,32 @@ public class UserUtils {
 	}
 
 	public static void getUserIdsForGroupIds(Set<String> groupsIds, String currentUserId, EventBus eb, Handler<AsyncResult<Set<String>>> h) {
-		List<Future> futures = (List)groupsIds.stream().map((groupId) -> {
-			Future<Set<String>> future = Future.future();
+		final List<Future> futures = groupsIds.stream().map((groupId) -> {
+			Promise<Set<String>> future = Promise.promise();
 			UserUtils.findUsersInProfilsGroups(groupId, eb, currentUserId, false, (ev) -> {
-				Set<String> ids = new HashSet();
+				Set<String> ids = new HashSet<>();
 				if (ev != null) {
-					Iterator var3 = ev.iterator();
 
-					while(var3.hasNext()) {
-						Object o = var3.next();
-						if (o instanceof JsonObject) {
-							JsonObject j = (JsonObject)o;
-							String id = j.getString("id");
-							ids.add(id);
-						}
-					}
+          for (Object o : ev) {
+            if (o instanceof JsonObject) {
+              JsonObject j = (JsonObject) o;
+              String id = j.getString("id");
+              ids.add(id);
+            }
+          }
 				}
 
 				future.complete(ids);
 			});
-			return future;
+			return future.future();
 		}).collect(Collectors.toList());
 		CompositeFuture.all(futures).map((result) -> {
 			List<Set<String>> all = result.list();
-			return (Set)all.stream().reduce(new HashSet(), (a1, a2) -> {
+			return all.stream().reduce(new HashSet<>(), (a1, a2) -> {
 				a1.addAll(a2);
 				return a1;
 			});
-		}).map(e->{
-			return (Set<String>)e;
-		}).setHandler(h);
+		}).onComplete(h);
 	}
 
 	public static boolean isSuperAdmin(UserInfos user) {
@@ -987,7 +1119,7 @@ public class UserUtils {
 
 	public static void getSessionsNumber(EventBus eb, final Handler<AsyncResult<Long>> handler) {
 		final JsonObject json = new JsonObject().put("action", "sessionNumber");
-		eb.send(SESSION_ADDRESS, json, ar -> {
+		eb.request(SESSION_ADDRESS, json, ar -> {
 			if (ar.succeeded()) {
 				handler.handle(Future.succeededFuture(((JsonObject) ar.result().body()).getLong("count")));
 			} else {

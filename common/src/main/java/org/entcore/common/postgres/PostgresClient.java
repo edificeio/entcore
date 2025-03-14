@@ -1,5 +1,6 @@
 package org.entcore.common.postgres;
 
+import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -14,12 +15,7 @@ import io.vertx.pgclient.PgConnection;
 import io.vertx.pgclient.PgPool;
 import io.vertx.pgclient.SslMode;
 import io.vertx.pgclient.pubsub.PgSubscriber;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.Row;
-import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.RowStream;
-import io.vertx.sqlclient.Transaction;
-import io.vertx.sqlclient.Tuple;
+import io.vertx.sqlclient.*;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -28,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 
 public class PostgresClient implements IPostgresClient {
     private final Vertx vertx;
@@ -351,15 +348,27 @@ public class PostgresClient implements IPostgresClient {
     }
 
     @Override
-    public Future<IPostgresTransaction> transaction(){
-        Promise<IPostgresTransaction> promise = Promise.promise();
+    public <T> Future<@Nullable T>  transaction(Function<SqlConnection, Future<@Nullable T>> function){
+        Promise<T> promise = Promise.promise();
         PgConnection.connect(vertx, IPostgresClient.getConnectOption(config), connection -> {
             if(connection.succeeded()){
-                promise.complete(new PostgresTransaction(connection.result().begin(), e->{
-                    connection.result().close();
-                }));
+                final PgConnection sqlConnection = connection.result();
+                sqlConnection.begin()
+                .onSuccess(transaction -> {
+                    function.apply(sqlConnection)
+                        .onSuccess(s -> {
+                            transaction.commit(e -> sqlConnection.close());
+                            promise.complete(s);
+                        })
+                        .onFailure(th -> {
+                            transaction.rollback(e -> sqlConnection.close());
+                            promise.fail(th);
+                        });
+                })
+                .onFailure(promise::fail);
             }else{
                 promise.fail(connection.cause());
+                // TODO vertx4 this will most certainly fail
                 connection.result().close();
             }
         });
@@ -376,56 +385,57 @@ public class PostgresClient implements IPostgresClient {
 
     public static class PostgresTransaction implements IPostgresTransaction {
         private static final Logger log = LoggerFactory.getLogger(PostgresClientPool.class);
-        private final Transaction pgTransaction;
-        private final Handler<AsyncResult<Void>> onFinish;
-        private final List<Future> futures = new ArrayList<>();
+        private final SqlConnection connection;
+        private final Handler<AsyncResult<Object>> onFinish;
+        private final List<Future<?>> futures = new ArrayList<>();
 
-        PostgresTransaction(final Transaction pgTransaction) {
-            this(pgTransaction, e->{});
+        PostgresTransaction(final SqlConnection connection) {
+            this(connection, e->{});
         }
 
-        PostgresTransaction(final Transaction pgTransaction, final Handler<AsyncResult<Void>> onFinish) {
-            this.pgTransaction = pgTransaction;
+        PostgresTransaction(final SqlConnection connection, final Handler<AsyncResult<Object>> onFinish) {
+            this.connection = connection;
             this.onFinish = onFinish;
         }
 
         @Override
         public Future<RowSet<Row>> addPreparedQuery(String query, Tuple tuple) {
-            final Future<RowSet<Row>> future = Future.future();
-            this.pgTransaction.preparedQuery(query).execute(tuple,future.completer());
-            futures.add(future);
-            return future;
+            final Promise<RowSet<Row>> future = Promise.promise();
+            this.connection.preparedQuery(query).execute(tuple,future);
+            futures.add(future.future());
+            return future.future();
         }
 
         @Override
         public Future<Void> notify(final String channel, final String message) {
-            final Future<Void> future = Future.future();
+            final Promise<Void> future = Promise.promise();
             //prepareQuery not works with notify allow only internal safe message
-            this.pgTransaction.query(
+            this.connection.query(
                     "NOTIFY " + channel + ", '" + message + "'").execute(notified -> {
                         future.handle(notified.mapEmpty());
                         if (notified.failed()) {
                             log.error("Could not notify channel: " + channel);
                         }
                     });
-            futures.add(future);
-            return future;
+            futures.add(future.future());
+            return future.future();
         }
+
 
         @Override
         public Future<Void> commit() {
-            return CompositeFuture.all(futures).compose(r -> {
+            return Future.all(futures).compose(r -> {
                 final Promise<Void> future = Promise.promise();
-                this.pgTransaction.commit(future);
+                this.connection.transaction().commit(future);
                 return future.future();
-            }).onComplete(onFinish);
+            }).mapEmpty().onComplete(onFinish).mapEmpty();
         }
 
         @Override
         public Future<Void> rollback() {
             final Promise<Void> future = Promise.promise();
-            this.pgTransaction.rollback(future);
-            return future.future().onComplete(onFinish);
+            this.connection.transaction().rollback(future);
+            return Promise.promise().future().onComplete(onFinish).mapEmpty();
         }
     }
 }

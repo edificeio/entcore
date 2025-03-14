@@ -20,10 +20,12 @@
 package org.entcore.common.http.request;
 
 import fr.wseduc.webutils.http.Renders;
+import io.netty.handler.codec.DecoderResult;
+import io.vertx.codegen.annotations.Nullable;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.http.Cookie;
 import io.vertx.core.http.HttpConnection;
 import io.vertx.core.http.HttpFrame;
@@ -35,13 +37,16 @@ import io.vertx.core.http.HttpVersion;
 import io.vertx.core.http.ServerWebSocket;
 import io.vertx.core.http.StreamPriority;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.HostAndPort;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SocketAddress;
+import org.apache.commons.lang3.NotImplementedException;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
 import javax.security.cert.X509Certificate;
 import java.util.Map;
+import java.util.Set;
 
 public class JsonHttpServerRequest implements HttpServerRequest {
 
@@ -88,11 +93,6 @@ public class JsonHttpServerRequest implements HttpServerRequest {
 	}
 
 	@Override
-	public String rawMethod() {
-		return object.getString("method");
-	}
-
-	@Override
 	public boolean isSSL() {
 		return object.getBoolean("ssl", false);
 	}
@@ -118,6 +118,11 @@ public class JsonHttpServerRequest implements HttpServerRequest {
 	}
 
 	@Override
+	public @Nullable HostAndPort authority() {
+		return null;
+	}
+
+	@Override
 	public String host() {
 		return Renders.getHost(this);
 	}
@@ -129,7 +134,7 @@ public class JsonHttpServerRequest implements HttpServerRequest {
 
 	@Override
 	public MultiMap headers() {
-		MultiMap m = new CaseInsensitiveHeaders();
+		MultiMap m = MultiMap.caseInsensitiveMultiMap();
 		JsonObject h = object.getJsonObject("headers");
 		if (h != null) {
 			for (String attr : h.fieldNames()) {
@@ -150,12 +155,22 @@ public class JsonHttpServerRequest implements HttpServerRequest {
 
 	@Override
 	public String getHeader(CharSequence headerName) {
+		return getHeader(headerName.toString());
+	}
+
+	@Override
+	public HttpServerRequest setParamsCharset(String charset) {
+		return this;
+	}
+
+	@Override
+	public String getParamsCharset() {
 		return null;
 	}
 
 	@Override
 	public MultiMap params() {
-		MultiMap m = new CaseInsensitiveHeaders();
+		MultiMap m = MultiMap.caseInsensitiveMultiMap();
 		JsonObject p = object.getJsonObject("params");
 		if (p != null) {
 			for (String attr : p.fieldNames()) {
@@ -204,13 +219,23 @@ public class JsonHttpServerRequest implements HttpServerRequest {
 	}
 
 	@Override
-	public NetSocket netSocket() {
-		return null;
+	public Future<Buffer> body() {
+		return Future.succeededFuture();
+	}
+
+	@Override
+	public Future<Void> end() {
+		return Future.succeededFuture();
+	}
+
+	@Override
+	public Future<NetSocket> toNetSocket() {
+		return Future.failedFuture(new NotImplementedException("toNetSocket"));
 	}
 
 	@Override
 	public HttpServerRequest setExpectMultipart(boolean b) {
-		return null;
+		return this;
 	}
 
 	@Override
@@ -220,7 +245,7 @@ public class JsonHttpServerRequest implements HttpServerRequest {
 
 	@Override
 	public HttpServerRequest uploadHandler(Handler<HttpServerFileUpload> httpServerFileUploadHandler) {
-		return null;
+		return this;
 	}
 
 	@Override
@@ -234,8 +259,8 @@ public class JsonHttpServerRequest implements HttpServerRequest {
 	}
 
 	@Override
-	public ServerWebSocket upgrade() {
-		return null;
+	public Future<ServerWebSocket> toWebSocket() {
+		return Future.failedFuture(new NotImplementedException("toWebSocket"));
 	}
 
 	@Override
@@ -275,6 +300,11 @@ public class JsonHttpServerRequest implements HttpServerRequest {
 	}
 
 	@Override
+	public DecoderResult decoderResult() {
+		return null;
+	}
+
+	@Override
 	public long bytesRead()
 	{
 		return -1;
@@ -293,6 +323,16 @@ public class JsonHttpServerRequest implements HttpServerRequest {
 	}
 
 	@Override
+	public Set<Cookie> cookies(String name) {
+		return null;
+	}
+
+	@Override
+	public Set<Cookie> cookies() {
+		return null;
+	}
+
+	@Override
 	public int cookieCount()
 	{
 		return -1;
@@ -301,6 +341,11 @@ public class JsonHttpServerRequest implements HttpServerRequest {
 	@Override
 	public Cookie getCookie(String str)
 	{
+		return null;
+	}
+
+	@Override
+	public @Nullable Cookie getCookie(String name, String domain, String path) {
 		return null;
 	}
 }

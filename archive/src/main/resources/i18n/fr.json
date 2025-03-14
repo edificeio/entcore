@@ -25,7 +25,7 @@
     "export.error": "Nous ne sommes pas en mesure de réaliser cet export actuellement. Veuillez réessayer plus tard.",
     "export.hi": "Bonjour,",
     "export.info": "Vous avez demandé un export de vos données.",
-    "export.signature": "L'équipe Open Digital Education",
+    "export.signature": "L'équipe Edifice",
     "exportId.not.found": "L'export demandé n'existe pas.",
     "get.export.path.error": "Erreur lors de la recherche de l'export.",
     "zip.export.error": "Erreur durant la création de l'archive",

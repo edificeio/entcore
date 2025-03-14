@@ -10,6 +10,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.schema.Source;
 import org.entcore.feeder.Feeder;
 import org.entcore.feeder.ManualFeeder;
 import org.entcore.common.neo4j.TransactionHelper;
@@ -64,7 +65,7 @@ public class FeederTest {
     public void testShouldImportAaf(final TestContext context) {
         final Async async = context.async();
         final EventBus eb = test.vertx().eventBus();
-        eb.send(Feeder.FEEDER_ADDRESS, new JsonObject().put("action", "import"), (AsyncResult<Message<JsonObject>> message) -> {
+        eb.request(Feeder.FEEDER_ADDRESS, new JsonObject().put("action", "import"), (AsyncResult<Message<JsonObject>> message) -> {
             context.assertEquals("ok", message.result().body().getString("status"));
             //wait post import
             test.vertx().setTimer(1000, e -> {
@@ -81,14 +82,14 @@ public class FeederTest {
         final JsonObject params = new JsonObject().put("userId", userId).put("classId", "1").put("structureId", "1");
         test.database().executeNeo4j("MERGE (u:User { id : {userId}})-[r:IN]->(cpg:ProfileGroup)-[:DEPENDS]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure {id: {structureId}})  WITH cpg,s, pg MERGE pg-[:HAS_PROFILE]->(p:Profile)<-[:HAS_PROFILE]-(dpg:DefaultProfileGroup) WITH cpg MERGE (cpg)-[:DEPENDS]->(c:Class  {id : {classId}}) RETURN cpg", params).onComplete(context.asyncAssertSuccess(res2 -> {
             //remove user from class (attach user to defaultgroup
-            eb.send(Feeder.FEEDER_ADDRESS, new JsonObject().put("action", "manual-remove-user").put("classId", "1").put("userId", userId), (AsyncResult<Message<JsonObject>> res3) -> {
+            eb.request(Feeder.FEEDER_ADDRESS, new JsonObject().put("action", "manual-remove-user").put("classId", "1").put("userId", userId), (AsyncResult<Message<JsonObject>> res3) -> {
                 context.assertEquals("ok", res3.result().body().getString("status"));
                 context.assertEquals(1, res3.result().body().getJsonArray("results").getJsonArray(0).size());
                 //wait for query
                 test.vertx().setTimer(300, e -> {
                     //recreate the link between u AND cpg (when aaf)
                     test.database().executeNeo4j("MATCH (u:User { id : {userId}}), (cpg:ProfileGroup)-[:DEPENDS]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure {id: {structureId}}) MERGE u-[r:IN]->cpg RETURN ID(u)", params).onComplete(context.asyncAssertSuccess(res20 -> {
-                        final TransactionHelper transaction = new TransactionHelper(Neo4j.getInstance());
+                        final TransactionHelper transaction = new TransactionHelper(Neo4j.getInstance(), Source.UNKNOWN);
                         ManualFeeder.applyRemoveUserFromStructure(userId, null, "1", null, transaction);
                         transaction.commit((Message<JsonObject> message2) -> {
                             context.assertEquals("ok", message2.body().getString("status"));
@@ -122,7 +123,7 @@ public class FeederTest {
         // prepare database
         test.database().executeNeo4j(prepareDatabaseQuery, params).onComplete(context.asyncAssertSuccess(preparedDatabaseResult -> {
             // execute method to be tested
-            test.vertx().eventBus().send(Feeder.FEEDER_ADDRESS, new JsonObject().put("action", "manual-add-user").put("userId", "user-id-1").put("classId", "class-id-1"), (AsyncResult<Message<JsonObject>> feederResponse) -> {
+            test.vertx().eventBus().request(Feeder.FEEDER_ADDRESS, new JsonObject().put("action", "manual-add-user").put("userId", "user-id-1").put("classId", "class-id-1"), (AsyncResult<Message<JsonObject>> feederResponse) -> {
                 context.assertEquals("ok", feederResponse.result().body().getString("status"));
                 context.assertEquals(1, feederResponse.result().body().getJsonArray("results").getJsonArray(0).size());
                 // wait for query to complete
@@ -170,7 +171,7 @@ public class FeederTest {
         // prepare database
         test.database().executeNeo4j(prepareDatabaseQuery, params).onComplete(context.asyncAssertSuccess(preparedDatabaseResult -> {
             // execute method to be tested
-            test.vertx().eventBus().send(Feeder.FEEDER_ADDRESS, new JsonObject()
+            test.vertx().eventBus().request(Feeder.FEEDER_ADDRESS, new JsonObject()
                     .put("action", "manual-add-user-function")
                     .put("userId", "user-id-1")
                     .put("function", "ADMIN_LOCAL")
@@ -229,7 +230,7 @@ public class FeederTest {
         // prepare database
         test.database().executeNeo4j(prepareDatabaseQuery, params).onComplete(context.asyncAssertSuccess(preparedDatabaseResult -> {
             // execute method to be tested
-            test.vertx().eventBus().send(Feeder.FEEDER_ADDRESS, new JsonObject()
+            test.vertx().eventBus().request(Feeder.FEEDER_ADDRESS, new JsonObject()
                     .put("action", "manual-remove-user-function")
                     .put("userId", "user-id-1")
                     .put("function", "ADMIN_LOCAL"), (AsyncResult<Message<JsonObject>> feederResponse) -> {

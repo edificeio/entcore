@@ -58,7 +58,7 @@ public class UDTHandler extends DefaultHandler {
 		if (isNotEmpty(currentEntityType)) {
 			JsonArray a = currentEntity.getJsonArray(currentTag);
 			if (a == null) {
-				a = new fr.wseduc.webutils.collections.JsonArray();
+				a = new JsonArray();
 				currentEntity.put(currentTag, a);
 			}
 			a.add(o);

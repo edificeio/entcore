@@ -353,7 +353,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 		final String applicationName = application.getString("name");
 		final String id = UUID.randomUUID().toString();
 		final String address = application.getString("address");
-		application.put("scope", new fr.wseduc.webutils.collections.JsonArray("[\"" +
+		application.put("scope", new JsonArray("[\"" +
 				application.getString("scope", "").replaceAll("\\s", "\",\"") + "\"]"));
 		application.put("id", id);
 		final String createApplicationQuery =
@@ -483,7 +483,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 				"SET " + nodeSetPropertiesFromJson("n", application) +
 				"RETURN n.id as id, n.structureId";
 		application.put("applicationId", applicationId);
-		application.put("scope", new fr.wseduc.webutils.collections.JsonArray("[\"" +
+		application.put("scope", new JsonArray("[\"" +
 				application.getString("scope", "").replaceAll("\\s", "\",\"") + "\"]"));
 		neo.execute(query, application, validUniqueResultHandler(handler));
 	}
@@ -600,7 +600,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 				for(Object o : results){
 					JsonObject app = (JsonObject) o;
 					String address = app.getString("address", "");
-					JsonArray patterns = app.getJsonArray("patterns", new fr.wseduc.webutils.collections.JsonArray());
+					JsonArray patterns = app.getJsonArray("patterns", new JsonArray());
 					if(patterns.size() == 0 || patterns.size() > 0 && patterns.getString(0).isEmpty()){
 						final URL addressURL = checkCasUrl(address);
 
@@ -729,9 +729,9 @@ public class DefaultAppRegistryService implements AppRegistryService {
 		JsonObject params = new JsonObject();
 		params.put("structureId", structureId);
 		if(profiles != null && profiles.size() > 0) {
-				params.put("profiles", new fr.wseduc.webutils.collections.JsonArray(profiles));
+				params.put("profiles", new JsonArray(profiles));
 		}
-		params.put("roleIds", new fr.wseduc.webutils.collections.JsonArray(rolesId));
+		params.put("roleIds", new JsonArray(rolesId));
 		neo.execute(query, params, validEmptyHandler(handler));
 	}
 
