@@ -110,11 +110,11 @@ export function MessageList() {
         !selectedMessages.some(
           (message) =>
             message.from.id === user?.userId &&
-            !(
-              message.to.users.some((u) => u.id === user?.userId) ||
-              message.cc.users.some((u) => u.id === user?.userId) ||
-              (message.cci?.users?.some((u) => u.id === user?.userId) ?? false)
-            ),
+            ![
+              ...message.to.users,
+              ...message.cc.users,
+              ...(message.cci?.users ?? []),
+            ].some((u) => u.id === user?.userId),
         )
       );
     },
