@@ -224,7 +224,7 @@ describe('Message preview header component', () => {
     await screen.findByTitle('mail-out');
   });
 
-  it('should display inbox icon when current user send the message to himself in user forlder', async () => {
+  it('should display inbox icon when current user send the message to himself in user folder', async () => {
     mocks.useParams.mockReturnValue({
       folderId: userFolderId,
     });
