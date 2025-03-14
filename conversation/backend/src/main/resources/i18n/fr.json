@@ -35,6 +35,7 @@
   "draft": "Brouillon",
   "draft.empty": "Le brouillon est vide",
   "draft.saved": "Brouillon enregistré",
+  "draft.save": "Enregistrer le brouillon",
   "e400": "L'application a rencontré une erreur. Si ce problème se reproduit, veuillez vous adresser au support.",
   "e401": "Vous n'avez pas les droits d'accès pour ce contenu",
   "e401.page": "Vous n'avez pas le droit d'accéder à ce contenu.",
