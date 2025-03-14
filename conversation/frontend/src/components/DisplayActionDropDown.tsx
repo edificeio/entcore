@@ -17,8 +17,8 @@ import {
   IconUnreadMail,
 } from '@edifice.io/react/icons';
 import { RefAttributes, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { useI18n } from '~/hooks';
 import { Message } from '~/models';
 import {
   useDeleteMessage,
@@ -29,7 +29,7 @@ import {
 import { useConfirmModalStore } from '~/store';
 
 export function DisplayActionDropDown({ message }: { message: Message }) {
-  const { t } = useTranslation('conversation');
+  const { t } = useI18n();
   const markAsUnreadQuery = useMarkUnread();
   const navigate = useNavigate();
   const { openModal } = useConfirmModalStore();
@@ -68,6 +68,7 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
       icon: <IconSend />,
       action: () => {
         alert('submit');
+        console.log('submit', message);
       },
       hidden: message.state !== 'DRAFT' || message.trashed,
     },
@@ -89,20 +90,25 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
   };
 
   const canReplyAll = useMemo(() => {
-      const { to, cc, cci } = message;
+    const { to, cc, cci } = message;
 
-      // It's message to myself with cci
-      const isMeWithCci = (
-        to.users.length === 1 &&
-        to.users[0].id === user.user?.userId &&
-        (cci?.groups.length || cci?.users.length)
-      );
+    // It's message to myself with cci
+    const isMeWithCci =
+      to.users.length === 1 &&
+      to.users[0].id === user.user?.userId &&
+      (cci?.groups.length || cci?.users.length);
 
-      // Count number of recipients
-      const hasRecipients = (to.users.length + to.groups.length + cc.users.length + cc.groups.length) > 1;
+    // Count number of recipients
+    const hasRecipients =
+      to.users.length + to.groups.length + cc.users.length + cc.groups.length >
+      1;
 
-      return (isMeWithCci || hasRecipients) && message.state !== 'DRAFT' && !message.trashed;
-    }, [message, user]);
+    return (
+      (isMeWithCci || hasRecipients) &&
+      message.state !== 'DRAFT' &&
+      !message.trashed
+    );
+  }, [message, user]);
 
   const options = [
     {
@@ -155,7 +161,7 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
   ];
 
   return (
-    <>
+    <div className="d-flex align-items-center gap-12">
       {buttonAction
         .filter((o) => !o.hidden)
         .map((option) => (
@@ -201,6 +207,6 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
           </div>
         )}
       </Dropdown>
-    </>
+    </div>
   );
 }
