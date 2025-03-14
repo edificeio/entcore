@@ -7,7 +7,7 @@ import {
 } from '@edifice.io/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useFolderActions, useI18n } from '~/hooks';
-import { buildTree, useMoveMessage } from '~/services';
+import { buildTree, useFolderUtils, useMoveMessage } from '~/services';
 
 export function MoveMessageToFolderModal() {
   const { t, common_t } = useI18n();
@@ -25,10 +25,10 @@ export function MoveMessageToFolderModal() {
   }, [isActionPending]);
 
   const handleMoveToFolderClick = () => {
-    if(!subFolderId) return;
+    if (!subFolderId) return;
     moveMesage.mutate({
       folderId: subFolderId,
-      id: selectedIds
+      id: selectedIds,
     });
     handleCloseFolderModal();
   };

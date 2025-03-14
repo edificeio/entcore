@@ -9,6 +9,7 @@ import {
 import { useSearchParams } from 'react-router-dom';
 import { Folder, MessageMetadata } from '~/models';
 import { folderService, searchFolder } from '..';
+import { useCallback } from 'react';
 
 /**
  * Provides query options for folder-related operations.
@@ -118,6 +119,30 @@ export const folderQueryOptions = {
  */
 export const useFoldersTree = () => {
   return useQuery(folderQueryOptions.getFoldersTree());
+};
+
+/**
+ * Hook providing utility functions for working with folders.
+ *
+ * This hook offers helper functions related to folder operations, such as
+ * retrieving a folder name based on its ID.
+ *
+ * @returns An object containing folder utility methods.
+ */
+export const useFolderUtils = () => {
+  const { data: foldersTree } = useFoldersTree();
+
+  const getFolderNameById = useCallback(
+    (id: string) => {
+      if (!foldersTree) return 'Unknown';
+
+      const result = searchFolder(id, foldersTree);
+      return result?.folder.name || 'Unknown';
+    },
+    [foldersTree],
+  );
+
+  return { getFolderNameById };
 };
 
 /**
