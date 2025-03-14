@@ -19,7 +19,7 @@ import {
 } from '@edifice.io/react/icons';
 import { RefAttributes, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useI18n } from '~/hooks';
+import { useI18n, useSelectedFolder } from '~/hooks';
 import { Message } from '~/models';
 import {
   useCreateDraft,
@@ -41,6 +41,7 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
   const moveToTrashQuery = useTrashMessage();
   const createDraft = useCreateDraft();
   const updateDraft = useUpdateDraft();
+  const { folderId } = useSelectedFolder();
   const user = useUser();
 
   const buttonAction = [
@@ -96,6 +97,17 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
     );
   }, [message, user]);
 
+  const canMarkUnread = useMemo(() => {
+    return (
+      message.state !== 'DRAFT' &&
+      !message.trashed &&
+      !['draft', 'outbox', 'trash'].includes(folderId!) &&
+      (message.to.users.some((u) => u.id === user.user?.userId) ||
+        message.cc.users.some((u) => u.id === user.user?.userId) ||
+        (message.cci?.users?.some((u) => u.id === user.user?.userId) ?? false))
+    );
+  }, [message, folderId, user.user?.userId]);
+
   const handleDeleteClick = () => {
     openModal({
       id: 'delete-modal',
@@ -150,7 +162,7 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
       action: () => {
         handleMarkAsUnreadClick();
       },
-      hidden: message.state === 'DRAFT' || message.trashed,
+      hidden: !canMarkUnread,
     },
     {
       label: t('replyall'),
