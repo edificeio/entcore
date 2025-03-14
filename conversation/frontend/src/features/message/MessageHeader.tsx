@@ -1,6 +1,6 @@
 import { Avatar, useDate, useDirectory } from '@edifice.io/react';
 import { useI18n } from '~/hooks';
-import useMessageCciToDisplay from '~/hooks/useMEssageCciToDisplay';
+import useMessageCciToDisplay from '~/hooks/useMessageCciToDisplay';
 import { Message } from '~/models';
 import { MessageRecipientList } from '../../components/MessageRecipientList';
 

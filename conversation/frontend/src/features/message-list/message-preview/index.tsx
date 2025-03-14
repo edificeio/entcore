@@ -37,7 +37,10 @@ export function MessagePreview({ message }: MessagePreviewProps) {
         <SenderAvatar authorId={message.from.id} />
       )}
 
-      <div className="d-flex flex-fill flex-column overflow-hidden">
+      <div
+        className="d-flex flex-fill flex-column overflow-hidden"
+        tabIndex={0}
+      >
         <div className="d-flex flex-fill justify-content-between overflow-hidden gap-4">
           {folderId === 'draft' && (
             <span className="text-danger fw-bold">{t('draft')}</span>
