@@ -1,12 +1,12 @@
 /// <reference types="vitest/config" />
 import react from '@vitejs/plugin-react';
+import { resolve } from 'node:path';
 import { defineConfig, loadEnv } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import {
   hashEdificeBootstrap,
   queryHashVersion,
 } from './plugins/vite-plugin-edifice';
-import { resolve } from 'node:path';
 
 // https://vitejs.dev/config/
 export default ({ mode }: { mode: string }) => {
@@ -68,7 +68,7 @@ export default ({ mode }: { mode: string }) => {
           proxyObj,
         '^/(?=auth|appregistry|cas|userbook|directory|communication|portal|session|timeline|workspace|infra)':
           proxyObj,
-        '^/conversation/(?=api/|messages/|folders/|folder$|folder/trash|trash$|restore$|delete$|count/|toggleUnread|i18n)':
+        '^/conversation/(?=api/|messages/|folders/|folder$|folder/trash|trash$|restore$|delete$|count/|toggleUnread|i18n|draft)':
           proxyObj,
       },
       port: 4200,
