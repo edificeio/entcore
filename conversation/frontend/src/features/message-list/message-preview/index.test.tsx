@@ -208,7 +208,7 @@ describe('Message preview header component', () => {
     expect(recipientItems).toHaveLength(0);
   });
 
-  it('should display draft icon when message come from inbox in user folder', async () => {
+  it('should display inbox icon when message come from inbox in user folder', async () => {
     mocks.useParams.mockReturnValue({
       folderId: userFolderId,
     });
@@ -216,7 +216,7 @@ describe('Message preview header component', () => {
     await screen.findByTitle('mail-in');
   });
 
-  it('should display draft icon when message come from inbox in user folder', async () => {
+  it('should display outbox icon when message come from inbox in user folder', async () => {
     mocks.useParams.mockReturnValue({
       folderId: userFolderId,
     });
