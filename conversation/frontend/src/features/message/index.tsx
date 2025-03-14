@@ -1,20 +1,19 @@
-import clsx from 'clsx';
 import { DisplayActionDropDown } from '~/components/DisplayActionDropDown';
+import { MessageBody } from '~/components/MessageBody';
 import { MessageHeader } from '~/features/message/MessageHeader';
 import { Message as MessageData } from '~/models';
-import { MessageBody } from './MessageBody';
 
 export interface MessageProps {
   message: MessageData;
-  editMode?: boolean;
 }
 
-export function Message({ message, editMode = false }: MessageProps) {
-  const className = clsx(editMode ? '' : 'p-16 ps-md-24');
+export function Message({ message }: MessageProps) {
   return (
-    <div className={className}>
-      {editMode ? <></> : <MessageHeader message={message} />}
-      <MessageBody message={message} editMode={editMode} />
+    <div className="p-16 ps-md-24">
+      <MessageHeader message={message} />
+      <div className="ps-md-48 my-md-24">
+        <MessageBody message={message} editMode={false} />
+      </div>
       <div className="d-flex justify-content-end gap-12 pt-24 border-top">
         <DisplayActionDropDown message={message} />
       </div>

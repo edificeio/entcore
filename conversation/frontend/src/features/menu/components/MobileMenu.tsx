@@ -1,6 +1,3 @@
-import { useNavigate } from 'react-router-dom';
-import { Folder, SystemFolder } from '~/models';
-import { t } from 'i18next';
 import { Dropdown } from '@edifice.io/react';
 import {
   IconDelete,
@@ -10,10 +7,13 @@ import {
   IconSend,
   IconWrite,
 } from '@edifice.io/react/icons';
-import { useMenuData } from '../hooks/useMenuData';
-import { useFolderHandlers } from '../hooks/useFolderHandlers';
-import { useFoldersTree } from '~/services';
+import { t } from 'i18next';
 import { ReactElement } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Folder, SystemFolder } from '~/models';
+import { useFoldersTree } from '~/services';
+import { useFolderHandlers } from '../hooks/useFolderHandlers';
+import { useMenuData } from '../hooks/useMenuData';
 
 type FolderItem = { name: string; folder: Folder };
 
@@ -142,7 +142,11 @@ export function MobileMenu() {
       <Dropdown.Trigger label={selectedItem?.name || selectedUserFolderId} />
       <Dropdown.Menu>
         {systemFolderItems.map((item) => (
-          <Dropdown.Item onClick={() => item.onClick(item)} icon={item.icon}>
+          <Dropdown.Item
+            onClick={() => item.onClick(item)}
+            key={item.name}
+            icon={item.icon}
+          >
             {renderFolderItem(item)}
           </Dropdown.Item>
         ))}
@@ -150,6 +154,7 @@ export function MobileMenu() {
         <Dropdown.MenuGroup label={t('user.folders')}>
           {menu.menuItems.map((item) => (
             <Dropdown.Item
+              key={item.name}
               onClick={() => handleItemClick(item, true)}
               icon={<IconFolder />}
             >

@@ -1,30 +1,38 @@
-import { Attachment, Grid, IconButton } from '@edifice.io/react';
-import { IconDownload, IconFolderAdd } from '@edifice.io/react/icons';
+import { Attachment, Button, Grid, IconButton } from '@edifice.io/react';
+import { IconDownload, IconFolderAdd, IconPlus } from '@edifice.io/react/icons';
+import clsx from 'clsx';
 import { useI18n } from '~/hooks';
 import { Attachment as AttachmentMetaData } from '~/models';
 import { baseUrl } from '~/services';
+import './MessageAttachments.css';
 
 export interface MessageAttachmentsProps {
   attachments: AttachmentMetaData[];
   messageId: string;
+  editMode?: boolean;
 }
 
 export function MessageAttachments({
   attachments,
   messageId,
+  editMode = false,
 }: MessageAttachmentsProps) {
-  const { common_t } = useI18n();
+  const { common_t, t } = useI18n();
+
+  const className = clsx(
+    'mt-16 bg-gray-300 rounded-2 px-12 py-8 message-attachments ',
+    editMode && 'border message-attachments-edit mx-16',
+  );
+
+  if (!attachments.length && !editMode) return null;
 
   return (
-    <>
+    <div className={className} data-drag-handle>
       {!!attachments.length && (
-        <div
-          className="mt-16 bg-gray-300 rounded-2 px-12 py-8"
-          data-drag-handle
-        >
+        <>
           <div className="d-flex align-items-center justify-content-between mb-8 mt-0 border-bottom">
-            <div className="">{common_t('attachments')}</div>
-            <div className="">
+            <div>{common_t('attachments')}</div>
+            <div>
               <IconButton
                 aria-label={common_t('conversation.copy.all.toworkspace')}
                 color="tertiary"
@@ -32,15 +40,13 @@ export function MessageAttachments({
                 icon={<IconFolderAdd />}
                 variant="ghost"
               />
-              <a download>
-                <IconButton
-                  aria-label={common_t('download.all.attachment')}
-                  color="tertiary"
-                  type="button"
-                  icon={<IconDownload />}
-                  variant="ghost"
-                />
-              </a>
+              <IconButton
+                aria-label={common_t('download.all.attachment')}
+                color="tertiary"
+                type="button"
+                icon={<IconDownload />}
+                variant="ghost"
+              />
             </div>
           </div>
           <Grid>
@@ -75,8 +81,13 @@ export function MessageAttachments({
               </Grid.Col>
             ))}
           </Grid>
-        </div>
+        </>
       )}
-    </>
+      {editMode && (
+        <Button color="secondary" variant="ghost" leftIcon={<IconPlus />}>
+          {t('add.attachment')}
+        </Button>
+      )}
+    </div>
   );
 }

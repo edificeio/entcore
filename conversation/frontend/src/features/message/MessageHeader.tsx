@@ -20,7 +20,7 @@ export function MessageHeader({ message }: MessageHeaderProps) {
 
   const { subject, from, date, to, cc, cci } = message;
   const hasCC = cc.users.length > 0 || cc.groups.length > 0;
-  const isFromCurrentUser = user?.userId === from.id;
+  const isFromCurrentUser = user?.userId === from?.id;
   const hasCCI = cci && (cci.users.length > 0 || cci.groups.length > 0);
 
   return (
@@ -32,16 +32,16 @@ export function MessageHeader({ message }: MessageHeaderProps) {
             <Avatar
               alt={t('author.avatar')}
               size="sm"
-              src={getAvatarURL(from.id, 'user')}
+              src={getAvatarURL(from!.id, 'user')}
               variant="circle"
               className="align-self-start mt-4"
             />
             <div className="d-flex flex-fill flex-column overflow-hidden">
               <div className="d-flex flex-wrap column-gap-8">
-                <a href={getUserbookURL(from.id, 'user')} className="fw-600">
-                  {from.displayName}
+                <a href={getUserbookURL(from!.id, 'user')} className="fw-600">
+                  {from!.displayName}
                 </a>
-                <em className="text-gray-700">{fromNow(date)}</em>
+                <em className="text-gray-700">{fromNow(date!)}</em>
               </div>
               <MessageRecipientList
                 head={<b>{t('at')}</b>}
