@@ -12,12 +12,12 @@ export interface MessageProps {
 export function Message({ message, editMode = false }: MessageProps) {
   const className = clsx(editMode ? '' : 'p-16 ps-md-24');
   return (
-    <div className={className}>
+    <article className={className}>
       {editMode ? <></> : <MessageHeader message={message} />}
       <MessageBody message={message} editMode={editMode} />
-      <div className="d-flex justify-content-end gap-12 pt-24 border-top">
+      <footer className="d-flex justify-content-end gap-12 pt-24 border-top">
         <DisplayActionDropDown message={message} />
-      </div>
-    </div>
+      </footer>
+    </article>
   );
 }

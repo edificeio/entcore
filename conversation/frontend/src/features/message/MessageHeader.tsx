@@ -1,13 +1,8 @@
-import {
-  Avatar,
-  useDate,
-  useDirectory,
-  useEdificeClient,
-} from '@edifice.io/react';
+import { Avatar, useDate, useDirectory } from '@edifice.io/react';
 import { useI18n } from '~/hooks';
+import useMessageCciToDisplay from '~/hooks/useMEssageCciToDisplay';
 import { Message } from '~/models';
 import { MessageRecipientList } from '../../components/MessageRecipientList';
-import useMessageCciToDisplay from '~/hooks/useMEssageCciToDisplay';
 
 export interface MessageHeaderProps {
   message: Message;
@@ -24,7 +19,7 @@ export function MessageHeader({ message }: MessageHeaderProps) {
   const cciToDisplay = useMessageCciToDisplay(message);
 
   return (
-    <>
+    <header>
       {message && (
         <>
           <h4>{subject}</h4>
@@ -44,7 +39,9 @@ export function MessageHeader({ message }: MessageHeaderProps) {
                 >
                   {from.displayName}
                 </a>
-                <em className="text-gray-700">{fromNow(date)}</em>
+                <span className="text-gray-700 fst-italic">
+                  {fromNow(date)}
+                </span>
               </div>
               {hasTo && (
                 <MessageRecipientList
@@ -71,6 +68,6 @@ export function MessageHeader({ message }: MessageHeaderProps) {
           </div>
         </>
       )}
-    </>
+    </header>
   );
 }

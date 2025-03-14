@@ -17,7 +17,7 @@ export function MessageBody({
   const className = !editMode ? 'ps-md-48 my-md-24' : '';
 
   return (
-    <div className={className}>
+    <section className={className}>
       <Editor
         id="messageBody"
         content={message.body}
@@ -29,6 +29,6 @@ export function MessageBody({
         attachments={message.attachments}
         messageId={message.id}
       />
-    </div>
+    </section>
   );
 }
