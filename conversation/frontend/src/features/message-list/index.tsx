@@ -47,7 +47,7 @@ export function MessageList() {
   const restoreQuery = useRestoreMessage();
   const deleteMessage = useDeleteMessage();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
-  const { handleMoveMessage } = useFolderHandlers()
+  const { handleMoveMessage } = useFolderHandlers();
   const { openModal } = useConfirmModalStore();
 
   const {
@@ -167,7 +167,7 @@ export function MessageList() {
   };
 
   const handleMoveToFolder = () => {
-    handleMoveMessage(selectedIds);
+    handleMoveMessage();
   };
 
   const toolbar: ToolbarItem[] = [

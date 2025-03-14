@@ -1,13 +1,9 @@
 import { useAppActions, useSelectedMessageIds } from '~/store';
-import {
-  Button,
-  Modal,
-  Tree,
-  TreeItem,
-} from '@edifice.io/react';
+import { Button, Modal, Tree, TreeItem, useToast } from '@edifice.io/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useFolderActions, useI18n } from '~/hooks';
 import { buildTree, useFolderUtils, useMoveMessage } from '~/services';
+import { useNavigate } from 'react-router-dom';
 
 export function MoveMessageToFolderModal() {
   const { t, common_t } = useI18n();
@@ -18,6 +14,9 @@ export function MoveMessageToFolderModal() {
   const refDropdownTrigger = useRef<HTMLButtonElement>(null);
   const selectedIds = useSelectedMessageIds();
   const moveMesage = useMoveMessage();
+  const { getFolderNameById } = useFolderUtils();
+  const toast = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isActionPending === false) setOpenFolderModal(null);
@@ -26,10 +25,20 @@ export function MoveMessageToFolderModal() {
 
   const handleMoveToFolderClick = () => {
     if (!subFolderId) return;
+    // Mutation
     moveMesage.mutate({
       folderId: subFolderId,
       id: selectedIds,
     });
+    // Toast
+    const folderName = getFolderNameById(subFolderId);
+    const toastMessage =
+      selectedIds.length > 1
+        ? t('messages.move.folder', { count: selectedIds.length, folderName })
+        : t('message.move.folder', { folderName });
+    toast.success(toastMessage);
+    // Redirect to folder
+    navigate(`/folder/${subFolderId}`);
     handleCloseFolderModal();
   };
 

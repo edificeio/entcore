@@ -137,7 +137,7 @@ export const useFolderUtils = () => {
       if (!foldersTree) return 'Unknown';
 
       const result = searchFolder(id, foldersTree);
-      return result?.folder.name || 'Unknown';
+      return result?.folder.name;
     },
     [foldersTree],
   );
