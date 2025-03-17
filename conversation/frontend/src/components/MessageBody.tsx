@@ -21,7 +21,7 @@ export function MessageBody({ message, editMode }: MessageBodyProps) {
   };
 
   return (
-    <>
+    <section>
       <Editor
         id="messageBody"
         content={message.body}
@@ -35,6 +35,6 @@ export function MessageBody({ message, editMode }: MessageBodyProps) {
         messageId={message.id}
         editMode={editMode}
       />
-    </>
+    </section>
   );
 }
