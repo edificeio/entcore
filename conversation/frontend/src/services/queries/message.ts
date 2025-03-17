@@ -305,6 +305,10 @@ export const useMoveMessage = () => {
         queryClient.invalidateQueries({
           queryKey: messageQueryOptions.getById(messageId).queryKey,
         });
+
+        queryClient.invalidateQueries({
+          queryKey: ['folder'],
+        });
       });
     },
   });
