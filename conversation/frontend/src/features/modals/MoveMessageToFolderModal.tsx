@@ -50,7 +50,7 @@ export function MoveMessageToFolderModal() {
     refInputName.current?.focus();
   }, []);
 
-  if (!userFolders) return <></>;
+  if (!userFolders) return null;
 
   // Render a user's folder, to be used in a Tree
   const renderFolderTreeItem = ({

@@ -108,7 +108,7 @@ export function MessageList() {
     return selectedMessages.length > 0;
   }, [isInTrash, selectedMessages]);
 
-  const canBeMovetoFolder = useMemo(() => {
+  const canBeMoveToFolder = useMemo(() => {
     if (isInTrash || isInDraft) return false;
     return selectedMessages.length > 0;
   }, [isInTrash, isInDraft, selectedMessages]);
@@ -238,7 +238,7 @@ export function MessageList() {
           </>
         ),
         onClick: handleMoveToFolder,
-        hidden: !canBeMovetoFolder,
+        hidden: !canBeMoveToFolder,
       },
     },
     {
