@@ -1,7 +1,7 @@
 import { createStore, useStore } from 'zustand';
 import { Folder } from '~/models';
 
-type FolderModal = null | 'create' | 'move' | 'rename' | 'trash';
+type FolderModal = null | 'create' | 'move' | 'rename' | 'trash' | 'move-message';
 
 interface State {
   selectedMessageIds: string[];
