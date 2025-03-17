@@ -32,6 +32,10 @@ export function useFolderHandlers() {
     setOpenFolderModal('trash');
   };
 
+  const handleMoveMessage = () => {
+    setOpenFolderModal('move-message');
+  };
+
   return {
     /** Opens the folder creation modal. */
     handleCreate,
@@ -41,5 +45,7 @@ export function useFolderHandlers() {
     handleRename,
     /** Opens the folder trash modal and sets the selected folder. */
     handleTrash,
+    /** Opens the message to move modal and sets the selected folder. */
+    handleMoveMessage
   };
 }

@@ -16,6 +16,7 @@ import {
   TrashFolderModal,
   CreateFolderModal,
   RenameFolderModal,
+  MoveMessageToFolderModal,
 } from '~/features';
 import { actionsQueryOptions, folderQueryOptions } from '~/services/queries';
 import { useOpenFolderModal } from '~/store';
@@ -74,6 +75,7 @@ export function Component() {
       {folderModal === 'create' && <CreateFolderModal />}
       {folderModal === 'rename' && <RenameFolderModal />}
       {folderModal === 'trash' && <TrashFolderModal />}
+      {folderModal === 'move-message' && <MoveMessageToFolderModal />}
     </Layout>
   );
 }
