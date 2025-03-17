@@ -3,7 +3,7 @@ import {
   Dropdown,
   IconButton,
   IconButtonProps,
-  useUser,
+  useEdificeClient,
 } from '@edifice.io/react';
 import {
   IconDelete,
@@ -22,6 +22,7 @@ import { useNavigate } from 'react-router-dom';
 import { useI18n, useSelectedFolder } from '~/hooks';
 import { Message } from '~/models';
 import {
+  isInRecipient,
   useCreateDraft,
   useDeleteMessage,
   useMarkUnread,
@@ -42,7 +43,7 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
   const createDraft = useCreateDraft();
   const updateDraft = useUpdateDraft();
   const { folderId } = useSelectedFolder();
-  const user = useUser();
+  const { user } = useEdificeClient();
 
   const buttonAction = [
     {
@@ -82,7 +83,7 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
     // It's message to myself with cci
     const isMeWithCci =
       to.users.length === 1 &&
-      to.users[0].id === user.user?.userId &&
+      to.users[0].id === user?.userId &&
       (cci?.groups.length || cci?.users.length);
 
     // Count number of recipients
@@ -102,11 +103,9 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
       message.state !== 'DRAFT' &&
       !message.trashed &&
       !['draft', 'outbox', 'trash'].includes(folderId!) &&
-      (message.to.users.some((u) => u.id === user.user?.userId) ||
-        message.cc.users.some((u) => u.id === user.user?.userId) ||
-        (message.cci?.users?.some((u) => u.id === user.user?.userId) ?? false))
+      isInRecipient(message, user!.userId)
     );
-  }, [message, folderId, user.user?.userId]);
+  }, [message, folderId, user]);
 
   const handleDeleteClick = () => {
     openModal({

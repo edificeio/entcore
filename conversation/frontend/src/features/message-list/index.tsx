@@ -24,6 +24,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSelectedFolder } from '~/hooks';
 import { MessageMetadata } from '~/models';
 import {
+  isInRecipient,
   useDeleteMessage,
   useFolderMessages,
   useMarkRead,
@@ -108,17 +109,11 @@ export function MessageList() {
         ) &&
         // Check if the selected messages are not sent by the user
         !selectedMessages.some(
-          (message) =>
-            message.from.id === user?.userId &&
-            ![
-              ...message.to.users,
-              ...message.cc.users,
-              ...(message.cci?.users ?? []),
-            ].some((u) => u.id === user?.userId),
+          (message) => !isInRecipient(message, user!.userId),
         )
       );
     },
-    [folderId, selectedMessages, user?.userId],
+    [folderId, selectedMessages, user],
   );
 
   const canMarkAsReadMessages = useMemo(() => {
