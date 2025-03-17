@@ -43,6 +43,11 @@ public class AppRegistry extends BaseServer {
 		JsonObject ptitObservatoireConf = config.getJsonObject("ptit-observatoire-widget-config");
 		if (ptitObservatoireConf != null)
 			addController(new PtitObservatoireController());
+
+		JsonObject webGerestEnabled = config.getJsonObject("webGerest-config");
+		if(webGerestEnabled != null) {
+			addController(new WebGerestController());
+		}
 		setDefaultResourceFilter(new AppRegistryFilter());
 		new AppRegistryEventsHandler(vertx, new NopAppRegistryEventService());
 		vertx.eventBus().publish("app-registry.loaded", new JsonObject());
