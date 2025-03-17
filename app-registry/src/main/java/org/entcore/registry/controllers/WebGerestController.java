@@ -25,7 +25,7 @@ public class WebGerestController extends BaseController {
     public void init(Vertx vertx, JsonObject config, RouteMatcher rm, Map securedActions) {
 
         this.webGerestService = new DefaultWebGerestService(
-                vertx.createHttpClient(new HttpClientOptions()));
+                vertx.createHttpClient());
         this.externalCacheService = new DefaultWidgetExternalCacheService(config, vertx.createHttpClient(new HttpClientOptions()));
         this.config = config;
         super.init(vertx, config, rm, securedActions);

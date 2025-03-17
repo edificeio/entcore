@@ -3,10 +3,12 @@ package org.entcore.registry.services.impl;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.RequestOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -42,23 +44,35 @@ public class DefaultWebGerestService implements WebGerestService {
     private Future<String> getStructureWebservice(String uai, String url) {
         log.info("[WebGerest] - Getting WebService for UAI: " + uai);
         String uri = "/url?RNE=" + uai;
+        String apiUrl = url.concat(uri);
         //0770000X
         Promise<String> promise = Promise.promise();
+        httpClient.request(new RequestOptions()
+                        .setMethod(HttpMethod.GET)
+                        .setAbsoluteURI(apiUrl))
+                .compose(HttpClientRequest::send)
+                .compose(response -> response.body().compose(buffer -> {
+                    try {
+                        JsonObject jsonObject = buffer.toJsonObject();
+                        String webServiceUrl = jsonObject.getString("contenu");
 
-        httpClient.request(HttpMethod.GET, 443, url, uri)
-                .compose(req -> req.send())
-                .compose(HttpClientResponse::body)
-                .onSuccess(body -> {
-                    JsonObject resp = body.toJsonObject();
-                    String webServiceUrl = resp.getString("contenu");
-                    if (webServiceUrl != null && !webServiceUrl.isEmpty()) {
-                        log.info("webService response: " + webServiceUrl);
-                        promise.complete(webServiceUrl);
-                    } else {
-                        promise.fail("WebService Url not found");
+                        if (webServiceUrl == null || webServiceUrl.isEmpty()) {
+                            log.error("[WebGerest] - WebService URL not found in response");
+                            return Future.failedFuture("[WebGerest] - WebService URL not found");
+                        }
+
+                        log.info("[WebGerest] - WebService response: {}", webServiceUrl);
+                        return Future.succeededFuture(webServiceUrl);
+                    } catch (Exception e) {
+                        log.error("[WebGerest] - Failed to parse JSON response", e);
+                        return Future.failedFuture("[WebGerest] - Invalid JSON response");
                     }
-                })
-                .onFailure(promise::fail);
+                }))
+                .onSuccess(promise::complete)
+                .onFailure(error -> {
+                    log.error("[WebGerest] - Failed to retrieve WebService URL", error);
+                    promise.fail(error);
+                });
 
         return promise.future();
     }
@@ -66,50 +80,76 @@ public class DefaultWebGerestService implements WebGerestService {
     private Future<String> getAccessToken(String webService, String client_id, String client_secret) {
         log.info("[WebGerest] - fetching access Token for webService: " + webService);
         Promise<String> promise = Promise.promise();
-        String uri = "/auth?client_id=" + client_id + "&client_secret=" + client_secret;
+        String api = webService + "/auth?client_id=" + client_id + "&client_secret=" + client_secret;
 
-        httpClient.request(HttpMethod.GET, 443, webService, uri)
-                .compose(req -> req.send())
-                .compose(HttpClientResponse::body)
-                .onSuccess(body -> {
-                    JsonObject resp = body.toJsonObject();
-                    String accessToken = resp.getString("token");
-                    if (accessToken != null && !accessToken.isEmpty()) {
-                        promise.complete(accessToken);
-                    } else {
-                        promise.fail("[WebGerest] - Access Token not found");
+        httpClient.request(new RequestOptions()
+                        .setMethod(HttpMethod.GET)
+                        .setAbsoluteURI(api))
+                .compose(HttpClientRequest::send)
+                .compose(response -> response.body().compose(buffer -> {
+                    try {
+                        JsonObject jsonObject = buffer.toJsonObject();
+                        String token = jsonObject.getString("token");
+
+                        if (token == null || token.isEmpty()) {
+                            log.error("[WebGerest] - Token not found in response");
+                            return Future.failedFuture("[WebGerest] - Token not found");
+                        }
+
+                        log.info("[WebGerest] - Token retrieved successfully.");
+                        return Future.succeededFuture(token);
+                    } catch (Exception e) {
+                        log.error("[WebGerest] - Failed to parse JSON response", e);
+                        return Future.failedFuture("[WebGerest] - Invalid JSON response");
                     }
-//                }).onFailure(promise::fail);
-                }).onFailure(err -> {
-                    log.error("[WebGerest] - Failed to fetch access token:" + err.getMessage());
-                    promise.complete("mock_access_token");
-                });
+                })).onSuccess(promise::complete)
+                .onFailure(error -> log.error("[WebGerest] - Failed to retrieve access token", error));
+
         return promise.future();
     }
 
     private Future<JsonObject> fetchMenuApi(String accessToken, String webServiceUrl, String uai) {
         Promise<JsonObject> promise = Promise.promise();
-        String uri = "/menus?rne =" + uai + "&date_menu=" + LocalDate.now() + "&service=2";
+        String api = webServiceUrl + "/menus?rne=" + uai + "&date_menu=" + LocalDate.now() + "&service=2";
+        MultiMap headers = MultiMap.caseInsensitiveMultiMap();
+        headers.add("Authorization", accessToken);
+        httpClient.request(new RequestOptions()
+                        .setMethod(HttpMethod.GET)
+                        .setAbsoluteURI(api)
+                        .setHeaders(headers))
+                .compose(HttpClientRequest::send)
+                .compose(response ->
+                        response.body().compose(buffer -> {
+                            try {
+                                JsonObject jsonObject = buffer.toJsonObject();
+                                JsonArray menu = jsonObject.getJsonArray("contenu");
 
-        httpClient.request(HttpMethod.GET, 443, webServiceUrl, uri)
-                .compose(req -> req.putHeader("Authorization", accessToken)
-                        .send())
-                .compose(HttpClientResponse::body)
-                .onSuccess(body -> {
-                    JsonObject menu = body.toJsonObject().getJsonObject("contenu");
-                    if (menu != null && !menu.isEmpty()) {
-                        promise.complete(menu);
-                    } else {
-                        promise.fail("Menu could not be retreived");
-                    }
-                })
-                .onFailure(err -> {
-                    log.error("Failed to fetch menu: " + err.getMessage());
-                    promise.complete(getMockMenu());  // Return mock menu on request failure
+                                if (menu == null || menu.isEmpty()) {
+                                    log.error("[WebGerest] - Menu not found in response");
+                                    return Future.failedFuture("[WebGerest] - Menu not found");
+                                }
+
+                                log.info("[WebGerest] - Menu retrieved successfully.");
+
+                                // Wrap the menu in a JsonObject if needed
+                                JsonObject result = new JsonObject();
+                                result.put("menu", menu);
+
+                                return Future.succeededFuture(result);
+                            } catch (Exception e) {
+                                log.error("[WebGerest] - Failed to parse JSON response", e);
+                                return Future.failedFuture("[WebGerest] - Invalid JSON response");
+                            }
+                        }))
+                .onSuccess(promise::complete)
+                .onFailure(error -> {
+                    log.error("[WebGerest] - Failed to retrieve menu", error);
+                    promise.fail(error); // Ensure promise fails if there's an error
                 });
-        ;
+
         return promise.future();
     }
+
 
     /**
      * Returns a mock JSON menu.
