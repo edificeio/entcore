@@ -5,6 +5,7 @@ import { useI18n } from '~/hooks';
 import { Attachment as AttachmentMetaData } from '~/models';
 import { MessageAttachment } from './MessageAttachment';
 import './index.css';
+import { baseUrl } from '~/services';
 
 export interface MessageAttachmentsProps {
   attachments: AttachmentMetaData[];
@@ -18,6 +19,7 @@ export function MessageAttachments({
   editMode = false,
 }: MessageAttachmentsProps) {
   const { common_t, t } = useI18n();
+  const downloadUrl = `${baseUrl}/message/${messageId}/attachement`;
 
   const className = clsx(
     'mt-16 bg-gray-300 rounded-2 px-12 py-8 message-attachments ',
@@ -40,13 +42,15 @@ export function MessageAttachments({
                 icon={<IconFolderAdd />}
                 variant="ghost"
               />
-              <IconButton
-                title={common_t('download.all.attachment')}
-                color="tertiary"
-                type="button"
-                icon={<IconDownload />}
-                variant="ghost"
-              />
+              <a href={downloadUrl} download>
+                <IconButton
+                  title={common_t('download.all.attachment')}
+                  color="tertiary"
+                  type="button"
+                  icon={<IconDownload />}
+                  variant="ghost"
+                />
+              </a>
             </div>
           </div>
           <Grid>
