@@ -19,46 +19,35 @@
 
 package org.entcore.registry.services.impl;
 
-import com.mongodb.client.model.Filters;
-import io.vertx.core.Handler;
-import io.vertx.core.http.*;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.json.JsonArray;
-
-import org.bson.conversions.Bson;
-import org.entcore.registry.services.WidgetExternalCacheService;
-import org.entcore.common.user.UserInfos;
-import org.entcore.common.mongodb.MongoDbResult;
-
 import fr.wseduc.webutils.Either;
-import fr.wseduc.mongodb.MongoDb;
-import fr.wseduc.mongodb.MongoQueryBuilder;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpClient;
+import io.vertx.core.http.HttpClientRequest;
+import io.vertx.core.http.HttpMethod;
+import io.vertx.core.http.RequestOptions;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.UserInfos;
+import org.entcore.registry.services.WidgetExternalCacheService;
 
-
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 
-public class DefaultWidgetExternalCacheService implements WidgetExternalCacheService
+public class DefaultWidgetExternalCacheService extends DefaultMongoWidgetExternalCacheService implements WidgetExternalCacheService
 {
-    public static String EXTERNAL_CACHE_COLLECTION = "widgetExternalCache";
+    static class WidgetExternalCacheConf {
+        String id;
+        String widgetName;
+        String url;
+        int ttl;
 
-    static class WidgetExternalCacheConf
-    {
-        String  id;
-        String  widgetName;
-        String  url;
-        int     ttl;
-
-        public WidgetExternalCacheConf(String id, String widgetName, String url, int ttl)
-        {
+        public WidgetExternalCacheConf(String id, String widgetName, String url, int ttl) {
             this.id = id;
             this.widgetName = widgetName;
             this.url = url;
             this.ttl = ttl;
         }
     }
-
-    private final MongoDb mongo = MongoDb.getInstance();
     private HttpClient httpClient;
     private Map<String, WidgetExternalCacheConf> cacheEntries = new HashMap<String, WidgetExternalCacheConf>();
 
@@ -87,7 +76,7 @@ public class DefaultWidgetExternalCacheService implements WidgetExternalCacheSer
         else
         {
             for(int i = userinfos.getWidgets().size(); i-- > 0;)
-                if(userinfos.getWidgets().get(i).getName().equals(cache.widgetName) == true)
+                if(userinfos.getWidgets().get(i).getName().equals(cache.widgetName))
                 {
                     this.getCache(cache, handler);
                     return;
@@ -98,24 +87,18 @@ public class DefaultWidgetExternalCacheService implements WidgetExternalCacheSer
 
     private void getCache(WidgetExternalCacheConf cache, Handler<Either<String, JsonObject>> handler)
     {
-        final Bson builder = Filters.eq("_id", cache.id);
-        mongo.findOne(EXTERNAL_CACHE_COLLECTION, MongoQueryBuilder.build(builder), MongoDbResult.validResultHandler(new Handler<Either<String, JsonObject>>()
-        {
-            @Override
-            public void handle(Either<String, JsonObject> res)
+        super.get(cache.id, res -> {
+            if(res.isLeft())
+                handler.handle(res);
+            else
             {
-                if(res.isLeft())
-                    handler.handle(res);
+                JsonObject cacheHit = res.right().getValue();
+                if(cacheHit != null)
+                    handler.handle(new Either.Right<String, JsonObject>(cacheHit));
                 else
-                {
-                    JsonObject cacheHit = res.right().getValue();
-                    if(cacheHit.getString("_id") != null)
-                        handler.handle(new Either.Right<String, JsonObject>(cacheHit));
-                    else
-                        populateCache(cache, handler);
-                }
+                    populateCache(cache, handler);
             }
-        }));
+        });
     }
 
     private void populateCache(WidgetExternalCacheConf cache, Handler<Either<String, JsonObject>> handler)
@@ -128,16 +111,9 @@ public class DefaultWidgetExternalCacheService implements WidgetExternalCacheSer
         .onSuccess(response -> {
             if (response.statusCode() == 200) {
                 response.bodyHandler(bodyBuffer -> {
-                    JsonObject cacheEntry =
-                        new JsonObject()
-                            .put("_id", cache.id)
-                            .put("cache", bodyBuffer.toString())
-                            .put("created", MongoDb.now())
-                            .put("expire", MongoDb.offsetFromNow(cache.ttl));
-
-                    mongo.save(EXTERNAL_CACHE_COLLECTION, cacheEntry);
-
-                    handler.handle(new Either.Right<>(cacheEntry));
+                    final String value = bodyBuffer.toString();
+                    super.put(cache.id, value, cache.ttl);
+                    handler.handle(new Either.Right<>(new JsonObject().put("cache", value)));
                 });
             } else {
                 handler.handle(new Either.Left<>("widget.external.cache.failure"));
