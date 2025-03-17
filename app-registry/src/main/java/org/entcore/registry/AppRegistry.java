@@ -33,6 +33,7 @@ public class AppRegistry extends BaseServer {
 	public void start(final Promise<Void> startPromise) throws Exception {
 		super.start(startPromise);
 		addController(new AppRegistryController());
+		addController(new WebGerestController());
 		addController(new ExternalApplicationController(config.getInteger("massAuthorizeBatchSize", 1000)));
 		addController(new WidgetController());
 		addController(new LibraryController(vertx, config()));
