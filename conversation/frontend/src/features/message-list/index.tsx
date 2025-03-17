@@ -109,7 +109,9 @@ export function MessageList() {
         ) &&
         // Check if the selected messages are not sent by the user
         !selectedMessages.some(
-          (message) => !isInRecipient(message, user!.userId),
+          (message) =>
+            message.from.id === user!.userId &&
+            !isInRecipient(message, user!.userId),
         )
       );
     },
