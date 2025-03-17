@@ -1,6 +1,6 @@
 import { Folder, Message, MessageMetadata, User } from '~/models';
 
-const mockCurrentUserPreview: User = {
+export const mockCurrentUserPreview: User = {
   displayName: 'LOISON Stéphane',
   id: 'b92e3d37-16b0-4ed9-b4c3-992091687132',
   profile: 'Teacher',
@@ -175,7 +175,7 @@ export const mockMessageOfOutbox: MessageMetadata = {
     groups: [],
   },
   cci: {
-    users: [mockCurrentUserPreview],
+    users: [],
     groups: [
       {
         id: '467',
@@ -299,4 +299,29 @@ export const mockSentMessage = {
   undelivered: [],
   inactive: [],
   thread_id: null,
+};
+
+export const mockMessageFromMeToMe: MessageMetadata = {
+  id: 'f45d3784',
+  subject: 'Note à moi même',
+  from: mockCurrentUserPreview,
+  state: 'SENT',
+  date: 1603571892555,
+  unread: true,
+  response: false,
+  hasAttachment: false,
+  to: {
+    users: [mockCurrentUserPreview],
+    groups: [],
+  },
+  cc: {
+    users: [],
+    groups: [],
+  },
+  cci: {
+    users: [],
+    groups: [],
+  },
+  trashed: false,
+  forwarded: false,
 };
