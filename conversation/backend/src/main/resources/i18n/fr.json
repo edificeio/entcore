@@ -121,6 +121,8 @@
   "message.trash": "Le message a bien été mis à la corbeille",
   "messages": "Messages",
   "messages.delete": "les messages ont bien été supprimés",
+  "message.move.folder": "Le message a été correctement déplacé dans le dossier [[folderName]]",
+  "messages.move.folder": "Les [[count]] messages ont été correctement déplacés dans le dossier [[folderName]]",
   "messages.restore": "Les messages ont bien été restaurés",
   "messages.trash": "Les messages ont bien été mis à la corbeille",
   "message.replied": "Vous avez répondu à ce message",
