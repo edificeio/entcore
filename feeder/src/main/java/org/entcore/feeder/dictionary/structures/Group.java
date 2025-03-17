@@ -22,19 +22,19 @@ package org.entcore.feeder.dictionary.structures;
 import java.util.UUID;
 
 import org.entcore.common.neo4j.Neo4jUtils;
+import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.exceptions.ValidationException;
-import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
-import static fr.wseduc.webutils.Utils.isNotEmpty;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class Group {
 
@@ -194,18 +194,18 @@ public class Group {
 			"MATCH (u:User)-[:IN]->(target:Group)-[:DEPENDS]->(struct) " +
 			"WHERE " +
 			"(g.autolinkTargetAllStructs = true OR struct.id IN g.autolinkTargetStructs) " +
-			"AND target.filter IN g.autolinkUsersFromGroups" +
+			"AND target.filter IN g.autolinkUsersFromGroups " +
 			"WITH g, u " );
 		// Conditional filter on children or students level
 		if (autolinkUsersFromLevel != null && !autolinkUsersFromLevel.isEmpty()) {
 			if (autolinkUsersFromGroups.contains("Relative")) {
 				linkQuery.append(
 					"MATCH (u)<-[:RELATED]-(child:User) " +
-					"WHERE child.level IN g.autolinkUsersFromLevels " +
+					"WHERE child.level IN COALESCE(g.autolinkUsersFromLevels,[]) " +
 					"WITH g, u ");
 			} else if (autolinkUsersFromGroups.contains("Student")) {
 				linkQuery.append(
-					"WHERE u.level IN g.autolinkUsersFromLevels " +
+					"WHERE u.level IN COALESCE(g.autolinkUsersFromLevels,[]) " +
 					"WITH g, u ");
 			}
 		}
