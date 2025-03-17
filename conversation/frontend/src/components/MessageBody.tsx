@@ -3,7 +3,7 @@ import {
   ConversationHistoryRenderer,
   Editor,
 } from '@edifice.io/react/editor';
-import { MessageAttachments } from '~/components/MessageAttachments';
+import { MessageAttachments } from '~/components/message-attachments';
 import { Message as MessageData } from '~/models';
 import './MessageBody.css';
 
