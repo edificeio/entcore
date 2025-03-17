@@ -17,8 +17,18 @@ export function useMessageFolderId(message: MessageMetadata) {
   }
 
   const isUserAuthor = message.from.id === user?.userId;
+  const isCurrentUserRecipient = [message.to, message.cc, message.cci].some(
+    (recipients) => recipients?.users?.some((u) => u.id === user?.userId),
+  );
+
   const originFolderId =
-    message.state === 'DRAFT' ? 'draft' : isUserAuthor ? 'outbox' : 'inbox';
+    message.state === 'DRAFT'
+      ? 'draft'
+      : isCurrentUserRecipient
+        ? 'inbox'
+        : isUserAuthor
+          ? 'outbox'
+          : 'inbox';
 
   return {
     messageFolderId: originFolderId,
