@@ -9,14 +9,14 @@ export interface MessageProps {
 
 export function Message({ message }: MessageProps) {
   return (
-    <div className="p-16 ps-md-24">
+    <article className="p-16 ps-md-24">
       <MessageHeader message={message} />
       <div className="ps-md-48 my-md-24">
         <MessageBody message={message} editMode={false} />
       </div>
-      <div className="d-flex justify-content-end gap-12 pt-24 border-top">
+      <footer className="d-flex justify-content-end gap-12 pt-24 border-top">
         <DisplayActionDropDown message={message} />
-      </div>
-    </div>
+      </footer>
+    </article>
   );
 }
