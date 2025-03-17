@@ -21,8 +21,15 @@ export function MessagePreview({ message }: MessagePreviewProps) {
 
   return (
     <div className="d-flex flex-fill gap-12 align-items-center  overflow-hidden fs-6">
-      {(message.response || message.forwarded) && (
-        <IconUndo className="gray-800" title="message-response" />
+      {message.response && (
+        <IconUndo
+          aria-hidden={false}
+          className="gray-800"
+          height={16}
+          role="img"
+          title={t('message.replied')}
+          width={16}
+        />
       )}
 
       {isInUserFolder && messageFolderId && (
@@ -35,7 +42,10 @@ export function MessagePreview({ message }: MessagePreviewProps) {
         <SenderAvatar authorId={message.from.id} />
       )}
 
-      <div className="d-flex flex-fill flex-column overflow-hidden">
+      <div
+        className="d-flex flex-fill flex-column overflow-hidden"
+        tabIndex={0}
+      >
         <div className="d-flex flex-fill justify-content-between overflow-hidden gap-4">
           {messageFolderId === 'draft' && (
             <span className="text-danger fw-bold">{t('draft')}</span>
@@ -50,9 +60,11 @@ export function MessagePreview({ message }: MessagePreviewProps) {
             )}
           </div>
 
-          <div className="fw-bold text-nowrap fs-12 gray-800">
-            <span>{fromNow(message.date!)}</span>
-          </div>
+          {message.date && (
+            <span className="text-nowrap caption fw-bold gray-800">
+              {fromNow(message.date)}
+            </span>
+          )}
         </div>
         <div className="d-flex flex-fill justify-content-between overflow-hidden">
           {message.subject ? (
@@ -64,10 +76,12 @@ export function MessagePreview({ message }: MessagePreviewProps) {
           )}
           {message.hasAttachment && (
             <IconPaperclip
+              aria-hidden={false}
               className="gray-800"
               height={16}
+              role="img"
+              title={t('message.has.attachment')}
               width={16}
-              title="message-has-attachment"
             />
           )}
         </div>
