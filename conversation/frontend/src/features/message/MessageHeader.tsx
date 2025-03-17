@@ -1,10 +1,6 @@
-import {
-  Avatar,
-  useDate,
-  useDirectory,
-  useEdificeClient,
-} from '@edifice.io/react';
+import { Avatar, useDate, useDirectory } from '@edifice.io/react';
 import { useI18n } from '~/hooks';
+import useMessageCciToDisplay from '~/hooks/useMessageCciToDisplay';
 import { Message } from '~/models';
 import { MessageRecipientList } from '../../components/MessageRecipientList';
 
@@ -16,15 +12,14 @@ export function MessageHeader({ message }: MessageHeaderProps) {
   const { t } = useI18n();
   const { fromNow } = useDate();
   const { getAvatarURL, getUserbookURL } = useDirectory();
-  const { user } = useEdificeClient();
 
-  const { subject, from, date, to, cc, cci } = message;
+  const { subject, from, date, to, cc } = message;
+  const hasTo = to.users.length > 0 || to.groups.length > 0;
   const hasCC = cc.users.length > 0 || cc.groups.length > 0;
-  const isFromCurrentUser = user?.userId === from?.id;
-  const hasCCI = cci && (cci.users.length > 0 || cci.groups.length > 0);
+  const cciToDisplay = useMessageCciToDisplay(message);
 
   return (
-    <>
+    <header>
       {message && (
         <>
           <h4>{subject}</h4>
@@ -38,16 +33,25 @@ export function MessageHeader({ message }: MessageHeaderProps) {
             />
             <div className="d-flex flex-fill flex-column overflow-hidden">
               <div className="d-flex flex-wrap column-gap-8">
-                <a href={getUserbookURL(from!.id, 'user')} className="fw-600">
-                  {from!.displayName}
+                <a
+                  href={getUserbookURL(from.id, 'user')}
+                  className="fw-bold text-blue"
+                >
+                  {from.displayName}
                 </a>
-                <em className="text-gray-700">{fromNow(date!)}</em>
+                {date && (
+                  <span className="text-gray-700 fst-italic">
+                    {fromNow(date)}
+                  </span>
+                )}
               </div>
-              <MessageRecipientList
-                head={<b>{t('at')}</b>}
-                recipients={to}
-                hasLink
-              />
+              {hasTo && (
+                <MessageRecipientList
+                  head={<b>{t('at')}</b>}
+                  recipients={to}
+                  hasLink
+                />
+              )}
               {hasCC && (
                 <MessageRecipientList
                   head={<b>{t('cc')}</b>}
@@ -55,10 +59,10 @@ export function MessageHeader({ message }: MessageHeaderProps) {
                   hasLink
                 />
               )}
-              {isFromCurrentUser && hasCCI && (
+              {cciToDisplay && (
                 <MessageRecipientList
                   head={<b>{t('cci')}</b>}
-                  recipients={cci}
+                  recipients={cciToDisplay}
                   hasLink
                 />
               )}
@@ -66,6 +70,6 @@ export function MessageHeader({ message }: MessageHeaderProps) {
           </div>
         </>
       )}
-    </>
+    </header>
   );
 }
