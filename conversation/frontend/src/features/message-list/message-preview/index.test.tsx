@@ -76,9 +76,9 @@ describe('Message preview header component', () => {
 
     const messagePreview = await screen.findByText(message.from.displayName);
     const messageSubject = await screen.findByText(message.subject);
-    const messageResponse = screen.queryByTitle('message-response');
+    const messageResponse = screen.queryByTitle('message.replied');
     const messageHasAttachements = screen.queryByTitle(
-      'message-has-attachment',
+      'message.has.attachment',
     );
 
     expect(messagePreview).toBeInTheDocument();
@@ -96,9 +96,9 @@ describe('Message preview header component', () => {
 
     const messagePreview = await screen.findByText(message.from.displayName);
     const messageSubject = await screen.findByText(message.subject);
-    const messageResponse = screen.queryByTitle('message-response');
+    const messageResponse = screen.queryByTitle('message.replied');
     const messageHasAttachements = screen.queryByTitle(
-      'message-has-attachment',
+      'message.has.attachment',
     );
 
     expect(messagePreview).toBeInTheDocument();
@@ -168,7 +168,7 @@ describe('Message preview header component', () => {
     expect(recipientItems).toHaveLength(5);
   });
 
-  it.only('should not display any recipients if there are none when in draft', async () => {
+  it('should not display any recipients if there are none when in draft', async () => {
     mocks.useParams.mockReturnValue({ folderId: 'draft' });
     const message = { ...mockMessageOfOutbox };
     message.to = { users: [], groups: [] };
