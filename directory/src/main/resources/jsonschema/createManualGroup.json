@@ -30,6 +30,13 @@
       "items": {
         "type": "string"
       }
+    },
+    "autolinkUsersFromLevels":
+    {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     }
   },
   "required": [
