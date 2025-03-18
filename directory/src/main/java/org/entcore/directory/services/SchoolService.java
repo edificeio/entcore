@@ -95,6 +95,6 @@ public interface SchoolService {
 
 	void checkGAR(JsonArray uais, Handler<Either<String, JsonArray>> handler);
 
-	void activateGar(String garId, JsonArray targetUAIs, String groupName, String appName, String roleName, Handler<Either<String, JsonObject>> handler);
+	void activateGar(String garId, JsonArray targetUAIs, String groupName, String appName, String roleName, JsonObject raAssignmentPolicy, Handler<Either<String, JsonObject>> handler);
 
 }
