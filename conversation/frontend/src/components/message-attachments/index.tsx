@@ -1,11 +1,11 @@
-import { Button, Grid, IconButton } from '@edifice.io/react';
+import { Button, IconButton } from '@edifice.io/react';
 import { IconDownload, IconFolderAdd, IconPlus } from '@edifice.io/react/icons';
 import clsx from 'clsx';
 import { useI18n } from '~/hooks';
 import { Attachment as AttachmentMetaData } from '~/models';
+import { baseUrl } from '~/services';
 import { MessageAttachment } from './MessageAttachment';
 import './index.css';
-import { baseUrl } from '~/services';
 
 export interface MessageAttachmentsProps {
   attachments: AttachmentMetaData[];
