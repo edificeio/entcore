@@ -3,7 +3,7 @@ import {
   Dropdown,
   IconButton,
   IconButtonProps,
-  useUser,
+  useEdificeClient,
 } from '@edifice.io/react';
 import {
   IconDelete,
@@ -19,9 +19,10 @@ import {
 } from '@edifice.io/react/icons';
 import { RefAttributes, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useI18n } from '~/hooks';
+import { useI18n, useSelectedFolder } from '~/hooks';
 import { Message } from '~/models';
 import {
+  isInRecipient,
   useCreateDraft,
   useDeleteMessage,
   useMarkUnread,
@@ -41,7 +42,8 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
   const moveToTrashQuery = useTrashMessage();
   const createDraft = useCreateDraft();
   const updateDraft = useUpdateDraft();
-  const user = useUser();
+  const { folderId } = useSelectedFolder();
+  const { user } = useEdificeClient();
 
   const buttonAction = [
     {
@@ -81,7 +83,7 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
     // It's message to myself with cci
     const isMeWithCci =
       to.users.length === 1 &&
-      to.users[0].id === user.user?.userId &&
+      to.users[0].id === user?.userId &&
       (cci?.groups.length || cci?.users.length);
 
     // Count number of recipients
@@ -95,6 +97,15 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
       !message.trashed
     );
   }, [message, user]);
+
+  const canMarkUnread = useMemo(() => {
+    return (
+      message.state !== 'DRAFT' &&
+      !message.trashed &&
+      !['draft', 'outbox', 'trash'].includes(folderId!) &&
+      isInRecipient(message, user!.userId)
+    );
+  }, [message, folderId, user]);
 
   const handleDeleteClick = () => {
     openModal({
@@ -150,7 +161,7 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
       action: () => {
         handleMarkAsUnreadClick();
       },
-      hidden: message.state === 'DRAFT' || message.trashed,
+      hidden: !canMarkUnread,
     },
     {
       label: t('replyall'),
