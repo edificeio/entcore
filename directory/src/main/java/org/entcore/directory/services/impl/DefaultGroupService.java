@@ -101,7 +101,8 @@ public class DefaultGroupService implements GroupService {
 				"RETURN DISTINCT g.id as id, g.name as name, g.displayName as displayName, g.filter as filter, labels(g) as labels, " +
 				"g.createdAt as createdAt, g.createdByName as createdByName, g.modifiedAt as modifiedAt, g.modifiedByName as modifiedByName, " +
 				"g.autolinkTargetAllStructs as autolinkTargetAllStructs, g.autolinkTargetStructs as autolinkTargetStructs," +
-				"g.autolinkUsersFromGroups as autolinkUsersFromGroups, type, g.users as internalCommunicationRule, "+
+				"g.autolinkUsersFromGroups as autolinkUsersFromGroups, g.autolinkUsersFromLevels as autolinkUsersFromLevels," +
+				"type, g.users as internalCommunicationRule, "+
 				"g.lockDelete AS lockDelete, coalesce(g.nbUsers,0) as nbUsers, " +
 				"CASE WHEN any(x in classes where x <> {name: null, id: null}) THEN classes END as classes," +
 				"CASE WHEN any(x in structures where x <> {name: null, id: null}) THEN structures END as structures, " +
@@ -111,6 +112,7 @@ public class DefaultGroupService implements GroupService {
 					" WHEN (g: ManualGroup) AND (" +
 						" g.autolinkTargetAllStructs = true " +
 						" OR size(coalesce(g.autolinkUsersFromGroups, [])) > 0 " +
+						" OR size(coalesce(g.autolinkUsersFromLevels, [])) > 0 " +
 						" OR size(coalesce(g.autolinkTargetStructs, [])) > 0 " +
 				 	") THEN 'BroadcastGroup' " +
 				"END as subType";
@@ -207,6 +209,7 @@ public class DefaultGroupService implements GroupService {
 				" WHEN (g: ManualGroup) AND (" +
 					" g.autolinkTargetAllStructs = true " +
 					" OR size(coalesce(g.autolinkUsersFromGroups, [])) > 0 " +
+					" OR size(coalesce(g.autolinkUsersFromLevels, [])) > 0 " +
 					" OR size(coalesce(g.autolinkTargetStructs, [])) > 0 " +
 				") THEN 'BroadcastGroup' END as subType" : "");
 
