@@ -21,7 +21,7 @@ export function MessageBody({ message, editMode }: MessageBodyProps) {
   };
 
   return (
-    <section>
+    <section className="d-flex flex-column gap-16">
       <Editor
         id="messageBody"
         content={message.body}

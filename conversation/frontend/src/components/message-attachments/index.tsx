@@ -19,10 +19,10 @@ export function MessageAttachments({
   editMode = false,
 }: MessageAttachmentsProps) {
   const { common_t, t } = useI18n();
-  const downloadUrl = `${baseUrl}/message/${messageId}/attachement`;
+  const downloadUrl = `${baseUrl}/message/${messageId}/allAttachments`;
 
   const className = clsx(
-    'mt-16 bg-gray-300 rounded-2 px-12 py-8 message-attachments ',
+    'bg-gray-300 rounded-2 px-12 py-8 message-attachments gap-8 d-flex flex-column',
     editMode && 'border message-attachments-edit mx-16',
   );
 
@@ -32,37 +32,41 @@ export function MessageAttachments({
     <div className={className} data-drag-handle>
       {!!attachments.length && (
         <>
-          <div className="d-flex align-items-center justify-content-between mb-8 mt-0 border-bottom">
-            <span>{common_t('attachments')}</span>
-            <div>
-              <IconButton
-                title={common_t('conversation.copy.all.toworkspace')}
-                color="tertiary"
-                type="button"
-                icon={<IconFolderAdd />}
-                variant="ghost"
-              />
-              <a href={downloadUrl} download>
+          <div className="d-flex align-items-center justify-content-between border-bottom">
+            <span className="caption fw-bold my-8">
+              {common_t('attachments')}
+            </span>
+            {attachments.length > 1 && (
+              <div>
                 <IconButton
-                  title={common_t('download.all.attachment')}
+                  title={common_t('conversation.copy.all.toworkspace')}
                   color="tertiary"
                   type="button"
-                  icon={<IconDownload />}
+                  icon={<IconFolderAdd />}
                   variant="ghost"
                 />
-              </a>
-            </div>
+                <a href={downloadUrl} download>
+                  <IconButton
+                    title={common_t('download.all.attachment')}
+                    color="tertiary"
+                    type="button"
+                    icon={<IconDownload />}
+                    variant="ghost"
+                  />
+                </a>
+              </div>
+            )}
           </div>
-          <Grid>
+          <ul className="d-flex gap-8 flex-wrap list-unstyled m-0 ">
             {attachments.map((attachment, index) => (
-              <Grid.Col sm="6" key={index}>
+              <li>
                 <MessageAttachment
                   attachment={attachment}
                   messageId={messageId}
                 />
-              </Grid.Col>
+              </li>
             ))}
-          </Grid>
+          </ul>
         </>
       )}
       {editMode && (

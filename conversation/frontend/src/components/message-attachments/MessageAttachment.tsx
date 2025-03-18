@@ -15,7 +15,7 @@ export function MessageAttachment({
 }: MessageAttachmentsProps) {
   const { common_t } = useI18n();
 
-  const downloadUrl = `${baseUrl}/message/${messageId}/attachement/${attachment.id}`;
+  const downloadUrl = `${baseUrl}/message/${messageId}/attachment/${attachment.id}`;
 
   return (
     <Attachment
