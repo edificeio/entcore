@@ -13,7 +13,7 @@ export function MessageAttachment({
   attachment,
   messageId,
 }: MessageAttachmentsProps) {
-  const { common_t } = useI18n();
+  const { t } = useI18n();
 
   const downloadUrl = `${baseUrl}/message/${messageId}/attachment/${attachment.id}`;
 
@@ -23,7 +23,7 @@ export function MessageAttachment({
       options={
         <>
           <IconButton
-            title={common_t('conversation.copy.toworkspace')}
+            title={t('conversation.copy.toworkspace')}
             color="tertiary"
             type="button"
             icon={<IconFolderAdd />}
@@ -31,7 +31,7 @@ export function MessageAttachment({
           />
           <a href={downloadUrl} download>
             <IconButton
-              title={common_t('download.attachment')}
+              title={t('download.attachment')}
               color="tertiary"
               type="button"
               icon={<IconDownload />}
