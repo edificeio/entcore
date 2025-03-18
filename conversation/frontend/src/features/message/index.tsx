@@ -18,7 +18,10 @@ export function Message({ message }: MessageProps) {
           <MessageBody message={message} editMode={false} />
         </div>
         <footer className="d-flex justify-content-end gap-12 pt-24 border-top">
-          <DisplayActionDropDown message={message} />
+          <DisplayActionDropDown
+            message={message}
+            actions={['reply', 'reply-all', 'transfer']}
+          />
         </footer>
       </div>
     </article>
