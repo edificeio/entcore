@@ -671,13 +671,13 @@ public class DefaultSchoolService implements SchoolService {
 	}
 
 	@Override
-	public void activateGar(String garId, JsonArray targetUAIs, String groupName, String appName, String roleName, Handler<Either<String, JsonObject>> handler) {
+	public void activateGar(String garId, JsonArray targetUAIs, String groupName, String appName, String roleName, JsonObject raAssignmentPolicy, Handler<Either<String, JsonObject>> handler) {
 		final List<String> list = targetUAIs.getList();
 		final AtomicInteger countDown = new AtomicInteger(list.size());
 		final JsonArray errors = new JsonArray();
 
 		for (String uai : list) {
-			activateGar(garId, uai, groupName, appName, roleName, result -> {
+			activateGar(garId, uai, groupName, appName, roleName, raAssignmentPolicy, result -> {
 				if (result.isLeft()) {
 					final JsonObject error = result.left().getValue();
 					errors.add(error.getString("uai"));
@@ -691,11 +691,11 @@ public class DefaultSchoolService implements SchoolService {
 		}
 	}
 
-	private void activateGar(String garId, String uai, String groupName, String appName, String roleName, Handler<Either<JsonObject, JsonObject>> handler) {
+	private void activateGar(String garId, String uai, String groupName, String appName, String roleName, JsonObject raAssignmentPolicy, Handler<Either<JsonObject, JsonObject>> handler) {
 		final String query = "MATCH (s:Structure {UAI:{uai}}) OPTIONAL MATCH (s)<-[:DEPENDS]-(g:ManualGroup{name:{groupName}}) SET " +
 				"s.exports = CASE WHEN ('GAR-' + {garId}) IN coalesce(s.exports, []) then s.exports " +
 				"WHEN ANY(x IN coalesce(s.exports, []) WHERE x starts WITH 'GAR-') then [x IN s.exports | CASE WHEN x STARTS WITH 'GAR-' THEN 'GAR-' + {garId} ELSE x END] " +
-				"ELSE coalesce(s.exports, []) + ('GAR-' + {garId}) END return s.id as structureId, g.id as groupId";
+				"ELSE coalesce(s.exports, []) + ('GAR-' + {garId}) END return s.id as structureId, s.source as source, g.id as groupId";
 
 		final JsonObject params = new JsonObject().put("uai", uai).put("garId", garId).put("groupName", groupName);
 		neo.execute(query, params, validUniqueResultHandler(either -> {
@@ -708,6 +708,8 @@ public class DefaultSchoolService implements SchoolService {
 				handler.handle(new Either.Left<>(new JsonObject().put("error", "Failed to deploy GAR structure : ").put("uai", uai)));
 				return;
 			}
+			final String source = result.getString("source");
+
 			final JsonObject group = new JsonObject().put("name", groupName).put("groupDisplayName", groupName);
 			group.put("id", result.getValue("groupId"));
 			group.put("lockDelete", true);
@@ -733,9 +735,14 @@ public class DefaultSchoolService implements SchoolService {
 				final JsonObject authorizedParams = new JsonObject().put("appName", appName).put("groupId", groupId);
 				builder.add(authorizedQuery, authorizedParams);
 
-				final String populateQuery = "MATCH (s:Structure {UAI: {uai}})<-[:DEPENDS]-(g:ManualGroup {id: {groupId} }), (s)<-[:DEPENDS]-(pg:ProfileGroup)<-[:IN]-(u:User) " +
-						"WHERE pg.filter IN ['Teacher','Personnel'] AND ANY(function IN u.functions WHERE function CONTAINS '$DIR$' OR function CONTAINS '$DOC$' OR function CONTAINS '$DIRECTION') " +
-						"CREATE UNIQUE u-[:IN {source:'MANUAL'}]->g";
+				String populateQuery = "MATCH (s:Structure {UAI: {uai}})<-[:DEPENDS]-(g:ManualGroup {id: {groupId} }), (s)<-[:DEPENDS]-(pg:ProfileGroup)<-[:IN]-(u:User) ";
+
+				if ("AAF1D".equals(source) && raAssignmentPolicy != null && raAssignmentPolicy.containsKey(garId) && "teacher".equalsIgnoreCase(raAssignmentPolicy.getString(garId))) {
+					populateQuery += "WHERE pg.filter = 'Teacher' ";
+				} else {
+					populateQuery += "WHERE pg.filter IN ['Teacher','Personnel'] AND ANY(function IN u.functions WHERE function CONTAINS '$DIR$' OR function CONTAINS '$DOC$' OR function CONTAINS '$DIRECTION') ";
+				}
+				populateQuery += "CREATE UNIQUE u-[:IN {source:'MANUAL'}]->g";
 				final JsonObject populateParams = new JsonObject().put("uai", uai).put("groupId", groupId);
 				builder.add(populateQuery, populateParams);
 
