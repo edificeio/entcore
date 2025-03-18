@@ -349,22 +349,26 @@ public class DefaultUserBookService implements UserBookService {
 						final List<String> usersList = new ArrayList<>();
 						usersList.add(userId);
 
-						cleanAvatarCache(usersList).onSuccess(cleanResult -> {
+						if (picture.isEmpty()) {
 							result.handle(new Either.Right<>(new JsonObject()));
-							if (cleanResult) {
-								cacheAvatarFromUserBook(userId, pictureId, StringUtils.isEmpty(picture)).onComplete(e -> {
-									if (e.succeeded()) {
-										banAvatarCache(userId);
-										log.info("Thumbnails created");
-									} else {
-										log.warn("Could not create thumbnails", e.cause());
-									}
-								});
-							}
-							else {
-								result.handle(new Either.Left<>(r.body().getString("message", "update.error")));
-							}
-						});
+						}
+						else {
+							cleanAvatarCache(usersList).onSuccess(cleanResult -> {
+								result.handle(new Either.Right<>(new JsonObject()));
+								if (cleanResult) {
+									cacheAvatarFromUserBook(userId, pictureId, StringUtils.isEmpty(picture)).onComplete(e -> {
+										if (e.succeeded()) {
+											banAvatarCache(userId);
+											log.info("Thumbnails created");
+										} else {
+											log.warn("Could not create thumbnails", e.cause());
+										}
+									});
+								} else {
+									result.handle(new Either.Left<>(r.body().getString("message", "update.error")));
+								}
+							});
+						}
 					}
 				} else {
 					result.handle(new Either.Right<>(new JsonObject()));
