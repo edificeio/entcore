@@ -12,8 +12,11 @@ class AutolinkFormModel {
     profile: string;
     teacherSubSectionRadio: string;
     personnelSubSectionCheckbox: boolean;
+    studentSubSectionRadio: string;
+    relativeSubSectionRadio: string;
     selectedDisciplines: Array<string> = [];
     selectedFunctions: Array<string> = [];
+    selectedLevels: Array<string> = [];
 }
 
 type StructureListItem = {
@@ -42,6 +45,9 @@ export class GroupAutolinkComponent extends OdeComponent {
     functionOptions: Array<string>;
 
     @Input()
+    levelOptions: Array<string>;
+
+    @Input()
     showActions: boolean;
 
     public form: AutolinkFormModel;
@@ -51,8 +57,11 @@ export class GroupAutolinkComponent extends OdeComponent {
     public showSubStructuresLightbox: boolean;
     public showTeachersSubSection: boolean;
     public showPersonnelSubSection: boolean;
+    public showStudentsSubSection: boolean;
+    public showRelativesSubSection: boolean;
     public showDisciplinesPicker: boolean;
     public showFunctionsPicker: boolean;
+    public showLevelsPicker: boolean;
     // hack for AOT build (used for this.checked on radio onclick)
     public checked: boolean;
     public structureTreeItems: Array<StructureListItem>;
@@ -77,6 +86,11 @@ export class GroupAutolinkComponent extends OdeComponent {
         this.form = new AutolinkFormModel();
 
         this.form.teacherSubSectionRadio = 'all';
+        this.form.studentSubSectionRadio = 'all';
+        this.form.relativeSubSectionRadio = 'all';
+        this.showStudentsSubSection = false;
+        this.showRelativesSubSection = false;
+        this.showLevelsPicker = false;
 
         if (this.group.autolinkTargetAllStructs) {
             this.form.subStructuresRadio = 'all';
@@ -115,6 +129,22 @@ export class GroupAutolinkComponent extends OdeComponent {
                     this.form.profile = 'Personnel';
                 }
             });
+
+            this.levelOptions.forEach(l => {
+                if (this.group.autolinkUsersFromLevels && this.group.autolinkUsersFromLevels.includes(l)) {
+                    this.form.selectedLevels.push(l);
+                    if(this.form.profile === 'Student') {
+                        this.form.studentSubSectionRadio = 'levels';
+                        this.showStudentsSubSection = true;
+                        this.showLevelsPicker = true;
+                    }
+                    if(this.form.profile === 'Relative') {
+                        this.form.relativeSubSectionRadio = 'levels';
+                        this.showRelativesSubSection = true;
+                        this.showLevelsPicker = true;
+                    }
+                }
+            });
         }
         this.structureTreeItems = this.getSubStructuresTreeItems();
     }
@@ -127,7 +157,8 @@ export class GroupAutolinkComponent extends OdeComponent {
             name: this.group.name,
             autolinkTargetAllStructs: false,
             autolinkTargetStructs: [],
-            autolinkUsersFromGroups: []
+            autolinkUsersFromGroups: [],
+            autolinkUsersFromLevels: []
         };
 
         // populate subStructures information
@@ -160,6 +191,23 @@ export class GroupAutolinkComponent extends OdeComponent {
             }
         } else {
             groupUpdatePayload.autolinkUsersFromGroups.push(this.form.profile);
+        }
+
+        // Populate autolinkUsersFromLevels from profiles selection
+        if (this.form.profile === 'Student') {
+            if (this.form.studentSubSectionRadio === 'levels' && 
+                this.form.selectedLevels && 
+                this.form.selectedLevels.length > 0) {
+                groupUpdatePayload.autolinkUsersFromLevels = groupUpdatePayload.autolinkUsersFromLevels.concat(this.form.selectedLevels);
+            }
+        } else if (this.form.profile === 'Relative') {
+            if (this.form.relativeSubSectionRadio === 'levels' && 
+                this.form.selectedLevels && 
+                this.form.selectedLevels.length > 0) {
+                groupUpdatePayload.autolinkUsersFromLevels = groupUpdatePayload.autolinkUsersFromLevels.concat(this.form.selectedLevels);
+            }
+        } else {
+            delete groupUpdatePayload.autolinkUsersFromLevels;
         }
 
         this.groupsService.
@@ -231,6 +279,12 @@ export class GroupAutolinkComponent extends OdeComponent {
       }
     }
 
+    public unselectLevel(item: string): void {
+        if (this.showActions) {
+          this.form.selectedLevels.splice(this.form.selectedLevels.indexOf(item), 1);
+        }
+      }
+
     public handleFunctionsClick($event): void {
         if ($event.target.checked) {
             this.showFunctionsPicker = true;
@@ -244,7 +298,6 @@ export class GroupAutolinkComponent extends OdeComponent {
         return this.form.profile === 'Teacher' && 
             this.form.teacherSubSectionRadio != 'HeadTeacher' &&
             this.form.teacherSubSectionRadio != 'disciplines';
-
     }
 
     private checkAllChildren(children: Array<StructureListItem>) {
