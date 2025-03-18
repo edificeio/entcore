@@ -32,7 +32,17 @@ import {
 } from '~/services';
 import { useConfirmModalStore } from '~/store';
 
-export function DisplayActionDropDown({ message }: { message: Message }) {
+export interface MessageNavigationProps {
+  message: Message;
+  variant?: 'outline' | 'ghost';
+  actions?: string[];
+}
+
+export function DisplayActionDropDown({
+  message,
+  variant = 'outline',
+  actions,
+}: MessageNavigationProps) {
   const { t } = useI18n();
   const markAsUnreadQuery = useMarkUnread();
   const navigate = useNavigate();
@@ -218,7 +228,7 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
           <Button
             key={option.id}
             color="primary"
-            variant="outline"
+            variant={variant}
             leftIcon={option.icon}
             onClick={option.action}
           >
@@ -238,7 +248,7 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
               size="sm"
               aria-label=""
               color="primary"
-              variant="outline"
+              variant={variant}
               icon={<IconOptions />}
             />
             <Dropdown.Menu>
