@@ -1,5 +1,5 @@
 import { TreeItem } from '@edifice.io/react';
-import { Folder } from '~/models';
+import { Folder, MessageBase } from '~/models';
 
 /** Search for a folder in a tree of Folders */
 export function searchFolder(
@@ -50,4 +50,18 @@ export function buildTree(folders: Folder[], maxDepth?: number) {
       }
       return item;
     });
+}
+
+/**
+ * Check if a user is in recipient list of a message
+ * @param message the message to check
+ * @param userId the user id to check
+ * @returns true if the user is in recipient list of a message
+ */
+export function isInRecipient(message: MessageBase, userId: string) {
+  return [
+    ...message.to.users,
+    ...message.cc.users,
+    ...(message.cci?.users ?? []),
+  ].some((u) => u.id === userId);
 }
