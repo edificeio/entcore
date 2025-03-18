@@ -1,6 +1,6 @@
-import { model, idiom as lang, notify } from "entcore";
 import http from 'axios';
-import { ClassRoom, User, UserTypes, Network, School, SchoolApiResult, Group, EntityType, PersonApiResult, PersonApiResults, PersonApiResultsV2, PersonApiResultV2, removeSpecialChars } from "./model";
+import { idiom as lang, model, notify } from "entcore";
+import { ClassRoom, EntityType, Group, Network, PersonApiResult, PersonApiResults, PersonApiResultV2, removeSpecialChars, School, SchoolApiResult, User, UserTypes } from "./model";
 export type ClassAdminPreferences = { selectedClassId?: string }
 
 let preferences: ClassAdminPreferences = null;
@@ -88,7 +88,7 @@ export const directoryService = {
         return preferences;
     },
     //birthdate is YYYY-MM-DD
-    async saveUserForClass(classId: string, user: { lastName: string, firstName: string, type: UserTypes, birthDate: string, email: string, childrenIds?: string[] }) {
+    async saveUserForClass(classId: string, user: { lastName: string, firstName: string, type: UserTypes, birthDate: string, email: string, childrenIds?: string[], mobile?: string }) {
         const res = await http.post(`/directory/class/${classId}/user`, user);
         const resUser = new User({ ...user, ...res.data });
         return resUser;
