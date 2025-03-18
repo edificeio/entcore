@@ -141,6 +141,8 @@
           (click)="
             showTeachersSubSection = true;
             showPersonnelSubSection = false;
+            showStudentsSubSection = false;
+            showRelativesSubSection = false;
             this.checked = true;
           "
         />
@@ -235,6 +237,8 @@
           (click)="
             showPersonnelSubSection = true;
             showTeachersSubSection = false;
+            showStudentsSubSection = false;
+            showRelativesSubSection = false;
             this.checked = true;
           "
         />
@@ -319,14 +323,77 @@
           value="Student"
           id="autolinkStudents"
           (click)="
+            showStudentsSubSection = this.structure.levels && this.structure.levels.length > 0;
+            form.studentSubSectionRadio = 'all';
+            showLevelsPicker = false;
+            form.selectedLevels = [];
             showPersonnelSubSection = false;
             showTeachersSubSection = false;
+            showRelativesSubSection = false;
             this.checked = true;
           "
         />
         <label for="autolinkStudents" class="has-left-padding-10">
           <s5l>group.details.broadcast.autoLink.profilesSection.include.students</s5l>
         </label>
+      </div>
+
+      <div *ngIf="showStudentsSubSection " class="bordered-section">
+        <!-- All students -->
+        <div class="is-display-flex has-vertical-padding-10">
+          <input
+            type="radio"
+            [(ngModel)]="form.studentSubSectionRadio"
+            name="studentSubSectionRadio"
+            value="all"
+            id="autolinkStudentsAll"
+            [checked]="form.studentSubSectionRadio !== 'levels'"
+            (click)="
+              showLevelsPicker = false;
+              form.selectedLevels = [];
+              this.checked = true;
+            "
+          />
+          <label for="autolinkStudentsAll" class="has-left-padding-10">
+            <s5l>group.details.broadcast.autoLink.profilesSection.include.students.all</s5l>
+          </label>
+        </div>
+        <!-- Filter by levels -->
+        <div class="is-display-flex has-vertical-padding-10">
+          <input
+            type="radio"
+            [(ngModel)]="form.studentSubSectionRadio"
+            name="studentSubSectionRadio"
+            value="levels"
+            id="autolinkLevels"
+            [checked]="form.studentSubSectionRadio === 'levels'"
+            (click)="
+              showLevelsPicker = true;
+              this.checked = true;
+            "
+          />
+          <label for="autolinkLevels" class="has-left-padding-10">
+            <s5l>group.details.broadcast.autoLink.profilesSection.include.students.levels</s5l>
+          </label>
+        </div>
+        <div *ngIf="showLevelsPicker || form.studentSubSectionRadio === 'levels'">
+          <ode-multi-combo
+            [comboModel]="levelOptions"
+            [(outputModel)]="form.selectedLevels"
+            [title]="'levels.multi.combo.title' | translate"
+            *ngIf="showActions"
+          >
+          </ode-multi-combo>
+          <div class="multi-combo-companion">
+            <div
+              *ngFor="let item of form.selectedLevels"
+              (click)="unselectLevel(item)"
+            >
+              <s5l>{{ item }}</s5l>
+              <i class="fa fa-trash is-size-5" *ngIf="showActions"></i>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Relatives -->
@@ -338,8 +405,13 @@
           value="Relative"
           id="autolinkRelatives"
           (click)="
+            showRelativesSubSection = this.structure.levels && this.structure.levels.length > 0;
+            form.relativeSubSectionRadio = 'all';
+            showLevelsPicker = false;
+            form.selectedLevels = [];
             showPersonnelSubSection = false;
             showTeachersSubSection = false;
+            showStudentsSubSection = false;
             this.checked = true;
           "
         />
@@ -348,6 +420,64 @@
         </label>
       </div>
     </section>
+
+    <div *ngIf="showRelativesSubSection " class="bordered-section">
+      <!-- All relatives -->
+      <div class="is-display-flex has-vertical-padding-10">
+        <input
+          type="radio"
+          [(ngModel)]="form.relativeSubSectionRadio"
+          name="relativeSubSectionRadio"
+          value="all"
+          id="autolinkRelativesAll"
+          [checked]="form.relativeSubSectionRadio !== 'levels'"
+          (click)="
+            showLevelsPicker = false;
+            form.selectedLevels = [];
+            this.checked = true;
+          "
+        />
+        <label for="autolinkRelativesAll" class="has-left-padding-10">
+          <s5l>group.details.broadcast.autoLink.profilesSection.include.relatives.all</s5l>
+        </label>
+      </div>
+      <!-- Filter by levels -->
+      <div class="is-display-flex has-vertical-padding-10">
+        <input
+          type="radio"
+          [(ngModel)]="form.relativeSubSectionRadio"
+          name="relativeSubSectionRadio"
+          value="levels"
+          id="autolinkLevels"
+          [checked]="form.relativeSubSectionRadio === 'levels'"
+          (click)="
+            showLevelsPicker = true;
+            this.checked = true;
+          "
+        />
+        <label for="autolinkLevels" class="has-left-padding-10">
+          <s5l>group.details.broadcast.autoLink.profilesSection.include.relatives.levels</s5l>
+        </label>
+      </div>
+      <div *ngIf="showLevelsPicker || form.relativeSubSectionRadio === 'levels'">
+        <ode-multi-combo
+          [comboModel]="levelOptions"
+          [(outputModel)]="form.selectedLevels"
+          [title]="'levels.multi.combo.title' | translate"
+          *ngIf="showActions"
+        >
+        </ode-multi-combo>
+        <div class="multi-combo-companion">
+          <div
+            *ngFor="let item of form.selectedLevels"
+            (click)="unselectLevel(item)"
+          >
+            <s5l>{{ item }}</s5l>
+            <i class="fa fa-trash is-size-5" *ngIf="showActions"></i>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Administrators Selection -->
     <section>

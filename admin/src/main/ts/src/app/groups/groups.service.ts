@@ -12,6 +12,7 @@ export type GroupUpdatePayload = {
   autolinkTargetStructs?: Array<string>;
   autolinkUsersFromGroups?: Array<string>;
   autolinkUsersFromPositions?: Array<string>;
+  autolinkUsersFromLevels?: Array<string>;
 };
 
 @Injectable()
@@ -44,6 +45,7 @@ export class GroupsService {
                     sGroup.autolinkTargetAllStructs = groupUpdatePayload.autolinkTargetAllStructs;
                     sGroup.autolinkTargetStructs = groupUpdatePayload.autolinkTargetStructs;
                     sGroup.autolinkUsersFromGroups = groupUpdatePayload.autolinkUsersFromGroups;
+                    sGroup.autolinkUsersFromLevels = groupUpdatePayload.autolinkUsersFromLevels;
                 }
                 this.groupsStore.group.name = groupUpdatePayload.name;
                 this.groupsStore.group.modifiedAt = group.modifiedAt;
@@ -51,6 +53,7 @@ export class GroupsService {
                 this.groupsStore.group.autolinkTargetAllStructs = groupUpdatePayload.autolinkTargetAllStructs;
                 this.groupsStore.group.autolinkTargetStructs = groupUpdatePayload.autolinkTargetStructs;
                 this.groupsStore.group.autolinkUsersFromGroups = groupUpdatePayload.autolinkUsersFromGroups;
+                this.groupsStore.group.autolinkUsersFromLevels = groupUpdatePayload.autolinkUsersFromLevels;
             })
         );
     }

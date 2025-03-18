@@ -41,6 +41,7 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
     public autolinkFunctionOptions: Array<string> = [];
     public autolinkDisciplineOptions: Array<string> = [];
     public usersPositionsOptions: Array<string> = [];
+    public autolinkLevelOptions: Array<string> = [];
 
     public showActions: boolean;
     
@@ -99,6 +100,8 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
         this.groupNewName = this.groupsStore.group.name;
 
         if (this.groupsStore.group.subType === 'BroadcastGroup') {
+            // remove duplicates and sort levels
+            this.autolinkLevelOptions = Array.from(new Set(this.groupsStore.structure.levels.map(d => d.name))).sort();
             this.spinnerService.perform('portal-content',
                 new Promise<void>((resolve, reject) => {
                     this.groupsService.
