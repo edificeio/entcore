@@ -132,6 +132,70 @@ export const mockMessagesOfInbox: MessageMetadata[] = [
       groups: [],
     },
   },
+  {
+    id: '3245678965',
+    subject: 'Send by current user to group and himself',
+    from: mockCurrentUserPreview,
+    state: 'SENT',
+    date: 1475753026475,
+    unread: true,
+    response: false,
+    hasAttachment: false,
+    trashed: false,
+    forwarded: false,
+    to: {
+      users: [],
+      groups: [
+        {
+          id: '467',
+          displayName: 'Parents du groupe scolaire.',
+          size: 1043,
+          type: 'ProfileGroup',
+          subType: 'StructureGroup',
+        },
+      ],
+    },
+    cc: {
+      users: [],
+      groups: [],
+    },
+    cci: {
+      users: [mockCurrentUserPreview],
+      groups: [],
+    },
+  },
+  {
+    id: '567890',
+    subject: 'Send by Current User and not in recipient',
+    from: mockCurrentUserPreview,
+    state: 'SENT',
+    date: 1475753026475,
+    unread: false,
+    response: false,
+    hasAttachment: false,
+    trashed: false,
+    forwarded: false,
+    to: {
+      users: [],
+      groups: [
+        {
+          id: '467',
+          displayName: 'Parents du groupe scolaire.',
+          size: 1043,
+          type: 'ProfileGroup',
+          subType: 'StructureGroup',
+        },
+      ],
+    },
+    cc: {
+      users: [],
+      groups: [],
+    },
+    cci: {
+      users: [],
+      groups: [],
+    },
+  },
 ];
 
 export const mockMessageOfOutbox: MessageMetadata = {

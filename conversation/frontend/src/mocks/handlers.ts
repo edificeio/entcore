@@ -1,4 +1,5 @@
 import { HttpResponse, http } from 'msw';
+import { mockCurrentUserPreview } from '.';
 import { folderHandlers } from './handlers/folder-handlers';
 import { messageHandlers } from './handlers/message-handlers';
 
@@ -31,7 +32,7 @@ const defaultHandlers = [
       status: 'ok',
       result: [
         {
-          id: 'a1b2c3d4',
+          id: mockCurrentUserPreview.id,
           login: 'fake.user',
           displayName: 'Fake User',
           type: ['Personnel'],
@@ -48,7 +49,7 @@ const defaultHandlers = [
           relatedName: null,
           relatedId: null,
           relatedType: null,
-          userId: 'a1b2c3d4',
+          userId: mockCurrentUserPreview.id,
           motto: 'Always Learning',
           photo: '/userbook/avatar/a1b2c3d4',
           mood: 'happy',
@@ -85,7 +86,7 @@ const defaultHandlers = [
       alertSize: false,
       storage: 12345678,
       type: 'USERBOOK',
-      userid: 'a1b2c3d4',
+      userid: mockCurrentUserPreview.id,
       picture: '/userbook/avatar/a1b2c3d4',
       quota: 104857600,
       motto: 'Always Learning',
@@ -129,7 +130,7 @@ const defaultHandlers = [
       groupsIds: ['group1-1234567890', 'group2-0987654321'],
       federatedIDP: null,
       optionEnabled: [],
-      userId: 'a1b2c3d4',
+      userId: mockCurrentUserPreview.id,
       structures: ['d4c3b2a1'],
       structureNames: ['Fake School'],
       uai: [],
