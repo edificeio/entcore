@@ -11,12 +11,11 @@ class AutolinkFormModel {
     subStructuresIds: Array<string> = [];
     profile: string;
     teacherSubSectionRadio: string;
-    personnelSubSectionRadio: string;
+    personnelSubSectionCheckbox: boolean;
     studentSubSectionRadio: string;
     relativeSubSectionRadio: string;
     selectedDisciplines: Array<string> = [];
     selectedFunctions: Array<string> = [];
-    selectedUsersPositions: Array<string> = [];
     selectedLevels: Array<string> = [];
 }
 
@@ -65,7 +64,6 @@ export class GroupAutolinkComponent extends OdeComponent {
     public showRelativesSubSection: boolean;
     public showDisciplinesPicker: boolean;
     public showFunctionsPicker: boolean;
-    public showUsersPositionsPicker: boolean;
     public showLevelsPicker: boolean;
     // hack for AOT build (used for this.checked on radio onclick)
     public checked: boolean;
@@ -91,11 +89,8 @@ export class GroupAutolinkComponent extends OdeComponent {
         this.form = new AutolinkFormModel();
 
         this.form.teacherSubSectionRadio = 'all';
-        this.form.personnelSubSectionRadio = 'all';
         this.form.studentSubSectionRadio = 'all';
         this.form.relativeSubSectionRadio = 'all';
-        this.showTeachersSubSection = false;
-        this.showPersonnelSubSection = false;
         this.showStudentsSubSection = false;
         this.showRelativesSubSection = false;
         this.showLevelsPicker = false;
@@ -176,7 +171,6 @@ export class GroupAutolinkComponent extends OdeComponent {
             autolinkTargetAllStructs: false,
             autolinkTargetStructs: [],
             autolinkUsersFromGroups: [],
-            autolinkUsersFromPositions: [],
             autolinkUsersFromLevels: []
         };
 
@@ -302,17 +296,11 @@ export class GroupAutolinkComponent extends OdeComponent {
       }
     }
 
-    public unselectUsersPositions(item: string): void {
-      if (this.showActions) {
-        this.form.selectedUsersPositions.splice(this.form.selectedUsersPositions.indexOf(item), 1);
-      } 
-    }
-    
     public unselectLevel(item: string): void {
-      if (this.showActions) {
-        this.form.selectedLevels.splice(this.form.selectedLevels.indexOf(item), 1);
+        if (this.showActions) {
+          this.form.selectedLevels.splice(this.form.selectedLevels.indexOf(item), 1);
+        }
       }
-    }
 
     public handleFunctionsClick($event): void {
         if (this.form.personnelSubSectionRadio === 'functionGroups') {

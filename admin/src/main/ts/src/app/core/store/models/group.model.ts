@@ -11,7 +11,6 @@ export class GroupModel extends Model<GroupModel> {
   autolinkTargetAllStructs: boolean;
   autolinkTargetStructs: string[];
   autolinkUsersFromGroups: string[];
-  autolinkUsersFromPositions: string[];
   autolinkUsersFromLevels: string[];
   readonly nbUsers?: number; // A server-side job computes this value periodically.
   displayName?: string;
