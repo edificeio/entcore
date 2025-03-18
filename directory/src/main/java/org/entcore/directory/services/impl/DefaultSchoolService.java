@@ -252,9 +252,10 @@ public class DefaultSchoolService implements SchoolService {
 	}
 
 	@Override
-	public void getLevels(String structureId, UserInfos userInfos, Handler<Either<String, JsonArray>> results){
-		String filter =
-				"MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User) ";
+	public void getLevels(String structureId, boolean inherit, UserInfos userInfos, Handler<Either<String, JsonArray>> results){
+		String filter = inherit 
+			  ? "MATCH (parent:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User) "
+			  : "MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User) ";
 		String condition =
 				"WHERE has(u.level) ";
 		String filter2 =
