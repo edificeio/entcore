@@ -351,12 +351,11 @@ export async function UserInfosDelegate($scope: UserInfosDelegateScope) {
         if (savingMobile) return;
         try {
             savingMobile = true;
+            if ($scope.temp.intlFormatNumber) {
+                $scope.temp.mobile = $scope.temp.intlFormatNumber();
+            }
             if ($scope.selectedUser.mobile !== $scope.temp.mobile && $scope.isMobileWellFormatted()) {
-                if ($scope.temp.intlFormatNumber) {
-                    $scope.selectedUser.mobile = $scope.temp.intlFormatNumber();
-                } else {
-                    $scope.selectedUser.mobile = $scope.temp.mobile;
-                }
+                $scope.selectedUser.mobile = $scope.temp.mobile;
                 await directoryService.updateUserMobile($scope.selectedUser);
                 $scope.showMobileInput = false;
                 $scope.safeApply();

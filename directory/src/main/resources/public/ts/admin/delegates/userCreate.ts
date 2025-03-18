@@ -152,6 +152,7 @@ export async function UserCreateDelegate($scope: UserCreateDelegateScope) {
       lastName,
       firstName,
       email,
+      mobile,
       childrenIds: relatives && relatives.map((c) => c.id),
       type,
     });
