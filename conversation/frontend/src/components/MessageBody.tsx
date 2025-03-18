@@ -3,7 +3,7 @@ import {
   ConversationHistoryRenderer,
   Editor,
 } from '@edifice.io/react/editor';
-import { MessageAttachments } from '~/components/MessageAttachments';
+import { MessageAttachments } from '~/components/message-attachments';
 import { Message as MessageData } from '~/models';
 import './MessageBody.css';
 
@@ -21,7 +21,7 @@ export function MessageBody({ message, editMode }: MessageBodyProps) {
   };
 
   return (
-    <section>
+    <section className="d-flex flex-column gap-16">
       <Editor
         id="messageBody"
         content={message.body}

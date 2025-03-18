@@ -1,6 +1,6 @@
 import { mockFullMessage } from '~/mocks';
 import { render, screen } from '~/mocks/setup';
-import { MessageAttachments } from './MessageAttachments';
+import { MessageAttachments } from '.';
 
 const message = mockFullMessage;
 
@@ -25,10 +25,10 @@ describe('Message preview header component', () => {
     );
 
     const messageAttachmentsTitle = await screen.findByText('attachments');
-    const messageAttachmentsCopyAll = await screen.findByLabelText(
+    const messageAttachmentsCopyAll = await screen.findByTitle(
       'conversation.copy.all.toworkspace',
     );
-    const messageAttachmentsDownloadAll = await screen.findByLabelText(
+    const messageAttachmentsDownloadAll = await screen.findByTitle(
       'download.all.attachment',
     );
     const messageAttachment1 = await screen.findByText(
@@ -37,10 +37,10 @@ describe('Message preview header component', () => {
     const messageAttachment2 = await screen.findByText(
       message.attachments[1].filename,
     );
-    const messageAttachmentActionMoveTo = await screen.queryAllByLabelText(
+    const messageAttachmentActionMoveTo = await screen.queryAllByTitle(
       'conversation.copy.toworkspace',
     );
-    const messageAttachmentActionDownload = await screen.queryAllByLabelText(
+    const messageAttachmentActionDownload = await screen.queryAllByTitle(
       'download.attachment',
     );
 
