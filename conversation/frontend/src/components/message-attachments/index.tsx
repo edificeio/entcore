@@ -58,7 +58,7 @@ export function MessageAttachments({
             )}
           </div>
           <ul className="d-flex gap-8 flex-wrap list-unstyled m-0 ">
-            {attachments.map((attachment, index) => (
+            {attachments.map((attachment) => (
               <li>
                 <MessageAttachment
                   attachment={attachment}
