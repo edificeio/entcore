@@ -6,6 +6,7 @@ import {
 } from '@edifice.io/react';
 import {
   IconDelete,
+  IconFolderDelete,
   IconFolderMove,
   IconReadMail,
   IconRestore,
@@ -141,6 +142,12 @@ export function MessageList() {
     return selectedMessages.length > 0;
   }, [isInTrash, selectedMessages]);
 
+  const isInFolder = useMemo(() => {
+    if (folderId && ['trash', 'inbox', 'outbox', 'draft'].includes(folderId))
+      return;
+    return selectedMessages.length > 0;
+  }, [folderId, selectedMessages]);
+
   const handleMarkAsReadClick = () => {
     markAsReadQuery.mutate({ messages: selectedMessages });
   };
@@ -192,6 +199,8 @@ export function MessageList() {
   const handleMoveToFolder = () => {
     handleMoveMessage();
   };
+
+  const handleRemoveFromFolder = () => {};
 
   const toolbar: ToolbarItem[] = [
     {
@@ -276,6 +285,20 @@ export function MessageList() {
         ),
         onClick: handleDelete,
         hidden: !isTrashMessage,
+      },
+    },
+    {
+      type: 'button',
+      name: 'remove-from-folder',
+      props: {
+        children: (
+          <>
+            <IconFolderDelete />
+            <span>{t('remove.from.folder')}</span>
+          </>
+        ),
+        onClick: handleRemoveFromFolder,
+        hidden: !isInFolder,
       },
     },
   ];
