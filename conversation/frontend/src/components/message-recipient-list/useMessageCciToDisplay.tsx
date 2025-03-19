@@ -1,8 +1,8 @@
 import { useEdificeClient } from '@edifice.io/react';
-import { Message, Recipients } from '~/models';
+import { MessageBase, Recipients } from '~/models';
 
 export default function useMessageCciToDisplay(
-  message: Message,
+  message: MessageBase,
 ): Recipients | null {
   const { user } = useEdificeClient();
   const cci = message.cci;
