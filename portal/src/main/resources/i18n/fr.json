@@ -1051,6 +1051,7 @@
   "comment.save": "Enregistrer",
   "comment.reply": "Répondre",
   "comment.more": "Lire plus de commentaires",
+  "comment.deleted": "Commentaire supprimé",
   "comment.emptyscreen": "Pas encore de commentaires, soyez le premier à commenter",
   "audience.views.uniqueViewsPerProfile.student": "Elève(s)",
   "audience.views.uniqueViewsPerProfile.relative": "Parent(s)",
