@@ -3,6 +3,7 @@ import {
   Loading,
   ToolbarItem,
   useEdificeClient,
+  useToast,
 } from '@edifice.io/react';
 import {
   IconDelete,
@@ -30,6 +31,7 @@ import {
   useFolderMessages,
   useMarkRead,
   useMarkUnread,
+  useMoveMessage,
   useRestoreMessage,
   useTrashMessage,
   useUpdateFolderBadgeCountLocal,
@@ -48,6 +50,7 @@ export function MessageList() {
   const { t } = useTranslation(appCode);
   const { setSelectedMessageIds } = useAppActions();
   const [current, setCurrent] = useState(0);
+  const { success } = useToast();
 
   const selectedIds = useSelectedMessageIds();
   const markAsReadQuery = useMarkRead();
@@ -55,6 +58,8 @@ export function MessageList() {
   const moveToTrashQuery = useTrashMessage();
   const restoreQuery = useRestoreMessage();
   const deleteMessage = useDeleteMessage();
+  const moveMessage = useMoveMessage();
+
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
   const { handleMoveMessage } = useFolderHandlers();
   const { user } = useEdificeClient();
@@ -200,7 +205,41 @@ export function MessageList() {
     handleMoveMessage();
   };
 
-  const handleRemoveFromFolder = () => {};
+  const handleRemoveFromFolder = () => {
+    openModal({
+      id: 'remove-from-folder-modal',
+      header: <>{t('remove.from.folder')}</>,
+      body: <p>{t('remove.from.folder.confirm')}</p>,
+      okText: t('confirm'),
+      koText: t('cancel'),
+      onSuccess: () => {
+        const confirmMessage =
+          selectedIds.length > 1
+            ? t('messages.remove.from.folder')
+            : t('message.remove.from.folder');
+
+        let completedMutations = 0;
+        const totalMutations = selectedIds.length;
+        selectedIds.forEach((id) => {
+          moveMessage.mutate(
+            {
+              folderId: 'inbox',
+              id,
+            },
+            {
+              onSuccess: () => {
+                completedMutations++;
+                if (completedMutations === totalMutations) {
+                  success(confirmMessage);
+                  setCurrent((prev) => prev + 1);
+                }
+              },
+            },
+          );
+        });
+      },
+    });
+  };
 
   const toolbar: ToolbarItem[] = [
     {
