@@ -3,11 +3,12 @@ import { IconPaperclip, IconUndo } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
 import { useMessageFolderId } from '~/hooks/useMessageFolderId';
 import { MessageMetadata } from '~/models';
-import { useMessageUserDisplayName } from '../../../hooks/useUserDisplayName';
+
 import RecipientAvatar from './components/RecipientAvatar';
 import { RecipientListPreview } from './components/RecipientListPreview';
 import { SenderAvatar } from './components/SenderAvatar';
 import { UserFolderIcon } from './components/UserFolderIcon';
+import { useMessageUserDisplayName } from '~/hooks/useUserDisplayName';
 
 export interface MessagePreviewProps {
   message: MessageMetadata;

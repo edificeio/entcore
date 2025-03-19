@@ -1,6 +1,6 @@
 import { DisplayActionDropDown } from '~/components/DisplayActionDropDown';
 import { MessageBody } from '~/components/MessageBody';
-import { MessageHeader } from '~/features/message/MessageHeader';
+import { MessageHeader } from '~/features/message/message-header';
 import { Message as MessageData } from '~/models';
 import { MessageNavigation } from './MessageNavigation';
 
