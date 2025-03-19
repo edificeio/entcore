@@ -40,17 +40,9 @@ public class AppRegistry extends BaseServer {
 		JsonObject eduMalinConf = config.getJsonObject("edumalin-widget-config");
 		if(eduMalinConf != null)
 			addController(new EdumalinWidgetController());
-
-		JsonObject webGerestEnabled = config.getJsonObject("webGerest-config");
-		if(webGerestEnabled != null) {
-			addController(new WebGerestController());
-		}
-		
 		JsonObject ptitObservatoireConf = config.getJsonObject("ptit-observatoire-widget-config");
-		if (ptitObservatoireConf != null) {
+		if (ptitObservatoireConf != null)
 			addController(new PtitObservatoireController());
-		}
-		
 		setDefaultResourceFilter(new AppRegistryFilter());
 		new AppRegistryEventsHandler(vertx, new NopAppRegistryEventService());
 		vertx.eventBus().publish("app-registry.loaded", new JsonObject());
