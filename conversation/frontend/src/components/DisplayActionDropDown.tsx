@@ -23,14 +23,13 @@ import { useI18n, useSelectedFolder } from '~/hooks';
 import { Message } from '~/models';
 import {
   isInRecipient,
-  useCreateDraft,
+  useCreateOrUpdateDraft,
   useDeleteMessage,
   useMarkUnread,
   useRestoreMessage,
   useTrashMessage,
-  useUpdateDraft,
 } from '~/services';
-import { useConfirmModalStore } from '~/store';
+import { useConfirmModalStore, useMessageUpdated } from '~/store';
 
 export interface DisplayActionDropDownProps {
   message: Message;
@@ -56,10 +55,10 @@ export function DisplayActionDropDown({
   const deleteMessage = useDeleteMessage();
   const restoreQuery = useRestoreMessage();
   const moveToTrashQuery = useTrashMessage();
-  const createDraft = useCreateDraft();
-  const updateDraft = useUpdateDraft();
+  const createOrUpdateDraft = useCreateOrUpdateDraft();
   const { folderId } = useSelectedFolder();
   const { user } = useEdificeClient();
+  const messageUpdated = useMessageUpdated();
 
   const buttonAction = [
     {
@@ -138,31 +137,7 @@ export function DisplayActionDropDown({
   };
 
   const handleDraftSaveClick = () => {
-    const payload = {
-      subject: message.subject,
-      body: message.body,
-      to: [
-        ...message.to.users.map((u) => u.id),
-        ...message.to.groups.map((g) => g.id),
-      ],
-      cc: [
-        ...message.cc.users.map((u) => u.id),
-        ...message.cc.groups.map((g) => g.id),
-      ],
-      cci: [
-        ...(message.cci?.users.map((u) => u.id) ?? []),
-        ...(message.cci?.groups?.map((g) => g.id) ?? []),
-      ],
-    };
-
-    if (message.id) {
-      updateDraft.mutate({
-        draftId: message.id,
-        payload,
-      });
-    } else {
-      createDraft.mutate({ payload });
-    }
+    createOrUpdateDraft();
   };
 
   const handleMarkAsUnreadClick = () => {
@@ -210,7 +185,8 @@ export function DisplayActionDropDown({
       action: handleDraftSaveClick,
       hidden:
         !hasActionsList('save') ||
-        (message.state !== 'DRAFT' && !message.trashed),
+        !messageUpdated ||
+        (messageUpdated.state !== 'DRAFT' && !messageUpdated.trashed),
     },
     {
       label: t('trash'),

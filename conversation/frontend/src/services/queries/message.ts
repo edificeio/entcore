@@ -9,6 +9,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Message, MessageBase, MessageMetadata } from '~/models';
+import { useMessageUpdated } from '~/store';
 import {
   folderQueryOptions,
   messageService,
@@ -312,6 +313,40 @@ export const useMoveMessage = () => {
       });
     },
   });
+};
+export const useCreateOrUpdateDraft = () => {
+  const updateDraft = useUpdateDraft();
+  const createDraft = useCreateDraft();
+  const messageUpdated = useMessageUpdated();
+  return () => {
+    if (!messageUpdated) return;
+
+    const payload = {
+      subject: messageUpdated.subject,
+      body: messageUpdated.body,
+      to: [
+        ...messageUpdated.to.users.map((u) => u.id),
+        ...messageUpdated.to.groups.map((g) => g.id),
+      ],
+      cc: [
+        ...messageUpdated.cc.users.map((u) => u.id),
+        ...messageUpdated.cc.groups.map((g) => g.id),
+      ],
+      cci: [
+        ...(messageUpdated.cci?.users.map((u) => u.id) ?? []),
+        ...(messageUpdated.cci?.groups?.map((g) => g.id) ?? []),
+      ],
+    };
+
+    if (messageUpdated.id) {
+      return updateDraft.mutate({
+        draftId: messageUpdated.id,
+        payload,
+      });
+    } else {
+      return createDraft.mutate({ payload });
+    }
+  };
 };
 
 /**
