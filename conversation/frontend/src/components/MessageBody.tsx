@@ -3,6 +3,7 @@ import {
   ConversationHistoryRenderer,
   Editor,
 } from '@edifice.io/react/editor';
+import { useEffect, useState } from 'react';
 import { MessageAttachments } from '~/components/message-attachments';
 import { Message } from '~/models';
 import './MessageBody.css';
@@ -18,8 +19,9 @@ export function MessageBody({
   editMode,
   onMessageChange,
 }: MessageBodyProps) {
+  const [contentKey, setContentKey] = useState(0);
+  const [content, setContent] = useState('');
   const extensions = [ConversationHistoryNodeView(ConversationHistoryRenderer)];
-  const content = message.body;
 
   const handleContentChange = ({ editor }: { editor: any }) => {
     if (!editMode) return;
@@ -28,8 +30,13 @@ export function MessageBody({
     }
   };
 
+  useEffect(() => {
+    setContent(message.body);
+    setContentKey((contentKey) => contentKey + 1);
+  }, []);
+
   return (
-    <section className="d-flex flex-column gap-16">
+    <section key={contentKey} className="d-flex flex-column gap-16">
       <Editor
         id="messageBody"
         content={content}

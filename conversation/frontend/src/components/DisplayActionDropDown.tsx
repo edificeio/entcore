@@ -29,7 +29,7 @@ import {
   useRestoreMessage,
   useTrashMessage,
 } from '~/services';
-import { useConfirmModalStore, useMessageUpdated } from '~/store';
+import { useConfirmModalStore } from '~/store';
 
 export interface DisplayActionDropDownProps {
   message: Message;
@@ -58,7 +58,6 @@ export function DisplayActionDropDown({
   const createOrUpdateDraft = useCreateOrUpdateDraft();
   const { folderId } = useSelectedFolder();
   const { user } = useEdificeClient();
-  const messageUpdated = useMessageUpdated();
 
   const buttonAction = [
     {
@@ -185,8 +184,7 @@ export function DisplayActionDropDown({
       action: handleDraftSaveClick,
       hidden:
         !hasActionsList('save') ||
-        !messageUpdated ||
-        (messageUpdated.state !== 'DRAFT' && !messageUpdated.trashed),
+        (message.state !== 'DRAFT' && !message.trashed),
     },
     {
       label: t('trash'),

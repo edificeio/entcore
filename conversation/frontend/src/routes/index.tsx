@@ -44,6 +44,17 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
               {
                 path: 'message/:messageId',
                 async lazy() {
+                  const pathname = window.location.pathname;
+                  if (pathname.startsWith('/draft')) {
+                    const { Component, loader } = await import(
+                      '~/routes/pages/MessageEdit'
+                    );
+                    return {
+                      loader: loader(_queryClient),
+                      Component,
+                    };
+                  }
+
                   const { Component, loader } = await import(
                     '~/routes/pages/MessageDisplay'
                   );
@@ -85,7 +96,8 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
                 },
               },
             ],
-          }, // Displays a new blank message in edit mode.
+          },
+          // Displays a new blank message in edit mode.
           {
             path: 'draft/create',
             async lazy() {

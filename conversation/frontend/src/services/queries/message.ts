@@ -9,7 +9,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Message, MessageBase, MessageMetadata } from '~/models';
-import { useMessageUpdated } from '~/store';
+import { useAppActions, useMessageUpdated } from '~/store';
 import {
   folderQueryOptions,
   messageService,
@@ -354,6 +354,11 @@ export const useCreateOrUpdateDraft = () => {
  * @returns Mutation result for creating the draft.
  */
 export const useCreateDraft = () => {
+  const { setMessageUpdated } = useAppActions();
+  const messageUpdated = useMessageUpdated();
+  const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: ({
       payload,
@@ -366,6 +371,19 @@ export const useCreateDraft = () => {
         cci?: string[];
       };
     }) => messageService.createDraft(payload),
+    onSuccess: (_data) => {
+      if (!messageUpdated) return;
+
+      messageUpdated.date = new Date().getTime();
+      messageUpdated.id = _data.id;
+      setMessageUpdated({ ...messageUpdated });
+      updateFolderBadgeCountLocal('draft', 1);
+      // Update the message unread status in the list
+      queryClient.invalidateQueries({
+        queryKey: [...folderQueryOptions.base, 'draft', 'messages'],
+      });
+      window.history.replaceState(null, '', `/draft/message/${_data.id}`);
+    },
   });
 };
 
@@ -374,7 +392,9 @@ export const useCreateDraft = () => {
  * @returns Mutation result for updating the draft.
  */
 export const useUpdateDraft = () => {
+  const { setMessageUpdated } = useAppActions();
   const queryClient = useQueryClient();
+  const messageUpdated = useMessageUpdated();
   return useMutation({
     mutationFn: ({
       draftId,
@@ -390,6 +410,9 @@ export const useUpdateDraft = () => {
       };
     }) => messageService.updateDraft(draftId, payload),
     onSuccess: (_data, { draftId }) => {
+      if (!messageUpdated) return;
+
+      setMessageUpdated({ ...messageUpdated });
       queryClient.invalidateQueries({
         queryKey: messageQueryOptions.getById(draftId).queryKey,
       });

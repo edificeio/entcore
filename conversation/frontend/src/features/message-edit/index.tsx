@@ -6,7 +6,11 @@ import { MessageBody } from '~/components/MessageBody';
 import { useI18n } from '~/hooks';
 import { Message } from '~/models';
 import { useCreateOrUpdateDraft } from '~/services';
-import { useAppActions, useMessageUpdated } from '~/store';
+import {
+  useAppActions,
+  useMessageUpdated,
+  useMessageUpdatedNeedToSave,
+} from '~/store';
 import { MessageHeaderEdit } from './MessageHeaderEdit';
 
 export interface MessageEditProps {
@@ -17,7 +21,8 @@ export function MessageEdit({ message }: MessageEditProps) {
   const { t } = useI18n();
   const [subject, setSubject] = useState(message.subject);
   const messageUpdated = useMessageUpdated();
-  const { setMessageUpdated } = useAppActions();
+  const messageUpdatedNeedSave = useMessageUpdatedNeedToSave();
+  const { setMessageUpdated, setMessageUpdatedNeedToSave } = useAppActions();
   const { fromNow } = useDate();
   const debounceTimeToSave = useRef(5000);
   const createOrUpdateDraft = useCreateOrUpdateDraft();
@@ -30,15 +35,19 @@ export function MessageEdit({ message }: MessageEditProps) {
     if (publicConf && publicConf['debounce-time-to-auto-save']) {
       debounceTimeToSave.current = publicConf['debounce-time-to-auto-save'];
     }
+    setMessageUpdated(message);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSubjectChange = (subject: string) => {
     setSubject(subject);
     setMessageUpdated({ ...message, subject });
+    setMessageUpdatedNeedToSave(true);
   };
 
   const handleMessageChange = (message: Message) => {
     setMessageUpdated({ ...message });
+    setMessageUpdatedNeedToSave(true);
   };
 
   const messageUpdatedDebounced = useDebounce(
@@ -47,15 +56,19 @@ export function MessageEdit({ message }: MessageEditProps) {
   );
 
   useEffect(() => {
-    if (messageUpdatedDebounced && messageUpdatedDebounced !== message) {
+    if (messageUpdatedDebounced && messageUpdatedNeedSave) {
       createOrUpdateDraft();
+      setMessageUpdatedNeedToSave(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messageUpdatedDebounced]);
 
+  if (!messageUpdated) {
+    return null;
+  }
   return (
     <div>
-      <MessageHeaderEdit message={message} />
+      <MessageHeaderEdit message={messageUpdated} />
       <FormControl id="messageSubject" isRequired className="border-bottom">
         <Input
           placeholder={t('subject')}
@@ -67,15 +80,17 @@ export function MessageEdit({ message }: MessageEditProps) {
         />
       </FormControl>
       <MessageBody
-        message={message}
+        message={messageUpdated}
         editMode={true}
         onMessageChange={handleMessageChange}
       />
       <div className="d-flex justify-content-end gap-12 pt-24 pe-16">
         <div className="d-flex align-items-end flex-column gap-16">
-          <DisplayActionDropDown message={message} />
-          {!!message.date && (
-            <div className="caption fst-italic">{fromNow(message.date)}</div>
+          <DisplayActionDropDown message={messageUpdated} />
+          {!!messageUpdated?.date && (
+            <div className="caption fst-italic">
+              {fromNow(messageUpdated.date)}
+            </div>
           )}
         </div>
       </div>
