@@ -19,10 +19,10 @@
 
 package org.entcore.registry;
 
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.Promise;
 import org.entcore.broker.api.utils.AddressParameter;
 import org.entcore.broker.api.utils.BrokerProxyUtils;
+import io.vertx.core.json.JsonObject;
 import org.entcore.common.appregistry.AppRegistryEventsHandler;
 import org.entcore.common.http.BaseServer;
 import org.entcore.registry.controllers.*;
@@ -53,6 +53,12 @@ public class AppRegistry extends BaseServer {
 			addController(new ScreenTimeController());
 		}
 
+		
+		JsonObject ptitObservatoireConf = config.getJsonObject("ptit-observatoire-widget-config");
+		if (ptitObservatoireConf != null) {
+			addController(new PtitObservatoireController());
+		}
+		
 		setDefaultResourceFilter(new AppRegistryFilter());
 		new AppRegistryEventsHandler(vertx, new NopAppRegistryEventService());
 		vertx.eventBus().publish("app-registry.loaded", new JsonObject());
