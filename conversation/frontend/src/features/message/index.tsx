@@ -10,7 +10,7 @@ export interface MessageProps {
 
 export function Message({ message }: MessageProps) {
   return (
-    <article>
+    <article className="d-flex gap-16 flex-column">
       <MessageNavigation message={message} />
       <div className="p-16 ps-md-24 pt-0">
         <MessageHeader message={message} />

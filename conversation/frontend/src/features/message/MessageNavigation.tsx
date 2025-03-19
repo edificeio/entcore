@@ -10,7 +10,7 @@ export function MessageNavigation({ message }: MessageProps) {
     },
   };
   return (
-    <nav className="border-bottom mb-16 px-16 py-4 d-flex">
+    <nav className="border-bottom px-16 py-4 d-flex">
       <div className="ms-auto">
         <DisplayActionDropDown {...actionDropDownProps} />
       </div>
