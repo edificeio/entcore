@@ -10,11 +10,11 @@ export interface MessageProps {
 
 export function Message({ message }: MessageProps) {
   return (
-    <article className="d-flex gap-16 flex-column">
+    <article className="d-flex flex-column gap-16">
       <MessageNavigation message={message} />
-      <div className="p-16 ps-md-24 pt-0">
+      <div className="d-flex flex-column gap-16 p-16 ps-md-24 pt-0">
         <MessageHeader message={message} />
-        <div className="ps-md-48 my-md-24">
+        <div className="ms-md-48">
           <MessageBody message={message} editMode={false} />
         </div>
         <footer className="d-flex justify-content-end gap-12 pt-24 border-top">
