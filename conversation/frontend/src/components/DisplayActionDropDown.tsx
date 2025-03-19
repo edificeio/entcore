@@ -32,7 +32,23 @@ import {
 } from '~/services';
 import { useConfirmModalStore } from '~/store';
 
-export function DisplayActionDropDown({ message }: { message: Message }) {
+export interface DisplayActionDropDownProps {
+  message: Message;
+  appearance?: {
+    variant?: 'outline' | 'ghost';
+    btnColor?: 'tertiary' | 'primary';
+  };
+  actions?: string[];
+}
+
+export function DisplayActionDropDown({
+  message,
+  actions,
+  appearance = {
+    variant: 'outline',
+    btnColor: 'primary',
+  },
+}: DisplayActionDropDownProps) {
   const { t } = useI18n();
   const markAsUnreadQuery = useMarkUnread();
   const navigate = useNavigate();
@@ -154,59 +170,73 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
     navigate(`../..`, { relative: 'path' });
   };
 
+  const hasActionsList = (idAction: string) => {
+    return !actions || actions.includes(idAction);
+  };
+
   const options = [
     {
-      label: t('tag.unread'),
-      icon: <IconUnreadMail />,
-      action: () => {
-        handleMarkAsUnreadClick();
-      },
-      hidden: !canMarkUnread,
-    },
-    {
       label: t('replyall'),
+      id: 'replyall',
       icon: <IconUndoAll />,
       action: () => {
         alert('reply all');
       },
-      hidden: !canReplyAll,
+      hidden: !hasActionsList('replyall') || !canReplyAll,
     },
     {
       label: t('transfer'),
+      id: 'transfer',
       icon: <IconRedo />,
       action: () => {
         alert('transfer');
       },
-      hidden: message.state === 'DRAFT' || message.trashed,
+      hidden:
+        !hasActionsList('transfer') ||
+        message.state === 'DRAFT' ||
+        message.trashed,
+    },
+    {
+      label: t('tag.unread'),
+      id: 'unread',
+      icon: <IconUnreadMail />,
+      action: handleMarkAsUnreadClick,
+      hidden: !hasActionsList('unread') || !canMarkUnread,
     },
     {
       label: t('draft.save'),
+      id: 'save',
       icon: <IconSave />,
       action: handleDraftSaveClick,
-      hidden: message.state !== 'DRAFT' && !message.trashed,
+      hidden:
+        !hasActionsList('save') ||
+        (message.state !== 'DRAFT' && !message.trashed),
     },
     {
       label: t('trash'),
+      id: 'trash',
       icon: <IconDelete />,
       action: () => {
         moveToTrashQuery.mutate({ id: message.id });
         navigate(`../..`, { relative: 'path' });
       },
-      hidden: message.trashed,
+      hidden: !hasActionsList('trash') || message.trashed,
     },
     {
       label: t('delete'),
+      id: 'delete',
       icon: <IconDelete />,
       action: handleDeleteClick,
-      hidden: !message.trashed,
+      hidden: !hasActionsList('delete') || !message.trashed,
     },
     {
       label: t('print'),
+      id: 'print',
       icon: <IconPrint />,
       action: () => {
         alert('print');
       },
-      hidden: message.state === 'DRAFT',
+      hidden: !hasActionsList('print') || message.state === 'DRAFT',
     },
   ];
 
@@ -217,8 +247,8 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
         .map((option) => (
           <Button
             key={option.id}
-            color="primary"
-            variant="outline"
+            color={appearance.btnColor}
+            variant={appearance.variant}
             leftIcon={option.icon}
             onClick={option.action}
           >
@@ -230,32 +260,54 @@ export function DisplayActionDropDown({ message }: { message: Message }) {
           triggerProps: JSX.IntrinsicAttributes &
             Omit<IconButtonProps, 'ref'> &
             RefAttributes<HTMLButtonElement>,
-        ) => (
-          <div data-testid="dropdown">
-            <IconButton
-              {...triggerProps}
-              type="button"
-              size="sm"
-              aria-label=""
-              color="primary"
-              variant="outline"
-              icon={<IconOptions />}
-            />
-            <Dropdown.Menu>
-              {options
-                .filter((o) => !o.hidden)
-                .map((option) => (
-                  <Dropdown.Item
-                    key={option.label}
-                    icon={option.icon}
-                    onClick={() => option.action()}
-                  >
-                    {option.label}
-                  </Dropdown.Item>
-                ))}
-            </Dropdown.Menu>
-          </div>
-        )}
+        ) => {
+          // If no options availables
+          const visibleOptions = options.filter((o) => !o.hidden);
+          if (visibleOptions.length === 0) {
+            return null;
+          }
+
+          return (
+            <div data-testid="dropdown">
+              <IconButton
+                {...triggerProps}
+                type="button"
+                size="sm"
+                color={appearance.btnColor}
+                variant={appearance.variant}
+                icon={<IconOptions />}
+              />
+              <Dropdown.Menu>
+                {visibleOptions.flatMap((option, index, array) => {
+                  const elements = [
+                    <Dropdown.Item
+                      key={option.id}
+                      icon={option.icon}
+                      onClick={option.action}
+                    >
+                      {option.label}
+                    </Dropdown.Item>,
+                  ];
+
+                  // Separator
+                  const separatorAfterIds = ['replyall', 'transfer'];
+                  if (
+                    separatorAfterIds.includes(option.id) &&
+                    array
+                      .slice(index + 1)
+                      .some((o) => !separatorAfterIds.includes(o.id))
+                  ) {
+                    elements.push(
+                      <Dropdown.Separator key={`separator-${option.id}`} />,
+                    );
+                  }
+
+                  return elements;
+                })}
+              </Dropdown.Menu>
+            </div>
+          );
+        }}
       </Dropdown>
     </div>
   );
