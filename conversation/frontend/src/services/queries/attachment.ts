@@ -1,0 +1,31 @@
+import { useToast } from '@edifice.io/react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { attachmentService, messageQueryOptions } from '..';
+import { useI18n } from '~/hooks';
+
+/**
+ * Hook to attach many Files to a draft message.
+ * @returns Mutation result for attaching the Files.
+ */
+export const useAttachFiles = () => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+  const { t } = useI18n();
+
+  return useMutation({
+    mutationFn: ({ draftId, files }: { draftId: string; files: File[] }) =>
+      Promise.all(files.map((file) => attachmentService.attach(draftId, file))),
+    onSuccess(_ids, { draftId }) {
+      queryClient.invalidateQueries({
+        queryKey: messageQueryOptions.getById(draftId).queryKey,
+      });
+      toast.success(t('attachments.loaded'));
+    },
+    onError(error, { draftId }) {
+      queryClient.invalidateQueries({
+        queryKey: messageQueryOptions.getById(draftId).queryKey,
+      });
+      toast.error(error.message);
+    },
+  });
+};
