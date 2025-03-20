@@ -26,20 +26,28 @@ export function MoveMessageToFolderModal() {
   const handleMoveToFolderClick = () => {
     if (!subFolderId) return;
     // Mutation
-    moveMesage.mutate({
-      folderId: subFolderId,
-      id: selectedIds,
-    });
-    // Toast
-    const folderName = getFolderNameById(subFolderId);
-    const toastMessage =
-      selectedIds.length > 1
-        ? t('messages.move.folder', { count: selectedIds.length, folderName })
-        : t('message.move.folder', { folderName });
-    toast.success(toastMessage);
-    // Redirect to folder
-    navigate(`/folder/${subFolderId}`);
-    handleCloseFolderModal();
+    moveMesage.mutate(
+      {
+        folderId: subFolderId,
+        id: selectedIds,
+      },
+      {
+        onSuccess: () => {
+          const folderName = getFolderNameById(subFolderId);
+          const toastMessage =
+            selectedIds.length > 1
+              ? t('messages.move.folder', {
+                  count: selectedIds.length,
+                  folderName,
+                })
+              : t('message.move.folder', { folderName });
+          toast.success(toastMessage);
+          // Redirect to folder
+          navigate(`/folder/${subFolderId}`);
+          handleCloseFolderModal();
+        },
+      },
+    );
   };
 
   const userFolders = useMemo(() => {

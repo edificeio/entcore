@@ -3,9 +3,11 @@ import {
   Loading,
   ToolbarItem,
   useEdificeClient,
+  useToast,
 } from '@edifice.io/react';
 import {
   IconDelete,
+  IconFolderDelete,
   IconFolderMove,
   IconReadMail,
   IconRestore,
@@ -29,6 +31,7 @@ import {
   useFolderMessages,
   useMarkRead,
   useMarkUnread,
+  useMoveMessage,
   useRestoreMessage,
   useTrashMessage,
   useUpdateFolderBadgeCountLocal,
@@ -47,6 +50,7 @@ export function MessageList() {
   const { t } = useTranslation(appCode);
   const { setSelectedMessageIds } = useAppActions();
   const [current, setCurrent] = useState(0);
+  const { success } = useToast();
 
   const selectedIds = useSelectedMessageIds();
   const markAsReadQuery = useMarkRead();
@@ -54,6 +58,8 @@ export function MessageList() {
   const moveToTrashQuery = useTrashMessage();
   const restoreQuery = useRestoreMessage();
   const deleteMessage = useDeleteMessage();
+  const moveMessage = useMoveMessage();
+
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
   const { handleMoveMessage } = useFolderHandlers();
   const { user } = useEdificeClient();
@@ -141,6 +147,12 @@ export function MessageList() {
     return selectedMessages.length > 0;
   }, [isInTrash, selectedMessages]);
 
+  const isInFolder = useMemo(() => {
+    if (folderId && ['trash', 'inbox', 'outbox', 'draft'].includes(folderId))
+      return;
+    return selectedMessages.length > 0;
+  }, [folderId, selectedMessages]);
+
   const handleMarkAsReadClick = () => {
     markAsReadQuery.mutate({ messages: selectedMessages });
   };
@@ -191,6 +203,31 @@ export function MessageList() {
 
   const handleMoveToFolder = () => {
     handleMoveMessage();
+  };
+
+  const handleRemoveFromFolder = () => {
+    openModal({
+      id: 'remove-from-folder-modal',
+      header: <>{t('remove.from.folder')}</>,
+      body: <p>{t('remove.from.folder.confirm')}</p>,
+      okText: t('confirm'),
+      koText: t('cancel'),
+      onSuccess: async () => {
+        const confirmMessage =
+          selectedIds.length > 1
+            ? t('messages.remove.from.folder')
+            : t('message.remove.from.folder');
+
+        await Promise.allSettled(
+          selectedIds.map((id) =>
+            moveMessage.mutateAsync({ folderId: 'inbox', id }),
+          ),
+        );
+
+        success(confirmMessage);
+        setCurrent((prev) => prev + 1);
+      },
+    });
   };
 
   const toolbar: ToolbarItem[] = [
@@ -276,6 +313,20 @@ export function MessageList() {
         ),
         onClick: handleDelete,
         hidden: !isTrashMessage,
+      },
+    },
+    {
+      type: 'button',
+      name: 'remove-from-folder',
+      props: {
+        children: (
+          <>
+            <IconFolderDelete />
+            <span>{t('remove.from.folder')}</span>
+          </>
+        ),
+        onClick: handleRemoveFromFolder,
+        hidden: !isInFolder,
       },
     },
   ];
