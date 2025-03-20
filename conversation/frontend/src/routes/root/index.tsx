@@ -21,6 +21,7 @@ import {
 import { actionsQueryOptions, folderQueryOptions } from '~/services/queries';
 import { useOpenFolderModal } from '~/store';
 import './index.css';
+import { AddAttachmentToFolderModal } from '~/features/modals/AddAttachmentToFolderModal';
 
 export const loader = (queryClient: QueryClient) => async () => {
   const actionsOptions = actionsQueryOptions(existingActions);
@@ -76,6 +77,7 @@ export function Component() {
       {folderModal === 'rename' && <RenameFolderModal />}
       {folderModal === 'trash' && <TrashFolderModal />}
       {folderModal === 'move-message' && <MoveMessageToFolderModal />}
+      {folderModal === 'move-attachment' && <AddAttachmentToFolderModal />}
     </Layout>
   );
 }
