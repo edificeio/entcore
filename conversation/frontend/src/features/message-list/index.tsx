@@ -212,31 +212,20 @@ export function MessageList() {
       body: <p>{t('remove.from.folder.confirm')}</p>,
       okText: t('confirm'),
       koText: t('cancel'),
-      onSuccess: () => {
+      onSuccess: async () => {
         const confirmMessage =
           selectedIds.length > 1
             ? t('messages.remove.from.folder')
             : t('message.remove.from.folder');
 
-        let completedMutations = 0;
-        const totalMutations = selectedIds.length;
-        selectedIds.forEach((id) => {
-          moveMessage.mutate(
-            {
-              folderId: 'inbox',
-              id,
-            },
-            {
-              onSuccess: () => {
-                completedMutations++;
-                if (completedMutations === totalMutations) {
-                  success(confirmMessage);
-                  setCurrent((prev) => prev + 1);
-                }
-              },
-            },
-          );
-        });
+        await Promise.allSettled(
+          selectedIds.map((id) =>
+            moveMessage.mutateAsync({ folderId: 'inbox', id }),
+          ),
+        );
+
+        success(confirmMessage);
+        setCurrent((prev) => prev + 1);
       },
     });
   };
