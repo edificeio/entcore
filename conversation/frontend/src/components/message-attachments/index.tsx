@@ -59,7 +59,7 @@ export function MessageAttachments({
           </div>
           <ul className="d-flex gap-8 flex-wrap list-unstyled m-0">
             {attachments.map((attachment) => (
-              <li>
+              <li key={attachment.id}>
                 <MessageAttachment
                   attachment={attachment}
                   messageId={messageId}
