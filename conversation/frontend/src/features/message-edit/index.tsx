@@ -26,6 +26,7 @@ export function MessageEdit({ message }: MessageEditProps) {
   const { fromNow } = useDate();
   const debounceTimeToSave = useRef(5000);
   const createOrUpdateDraft = useCreateOrUpdateDraft();
+  const [contentKey, setContentKey] = useState(0);
 
   useEffect(() => {
     async function getConf() {
@@ -36,6 +37,7 @@ export function MessageEdit({ message }: MessageEditProps) {
       debounceTimeToSave.current = publicConf['debounce-time-to-auto-save'];
     }
     setMessageUpdated(message);
+    setContentKey((contentKey) => contentKey + 1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -80,6 +82,7 @@ export function MessageEdit({ message }: MessageEditProps) {
         />
       </FormControl>
       <MessageBody
+        key={contentKey}
         message={messageUpdated}
         editMode={true}
         onMessageChange={handleMessageChange}

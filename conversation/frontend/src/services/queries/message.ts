@@ -7,7 +7,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Message, MessageBase, MessageMetadata } from '~/models';
 import { useAppActions, useMessageUpdated } from '~/store';
 import {
@@ -338,7 +338,7 @@ export const useCreateOrUpdateDraft = () => {
       ],
     };
 
-    if (messageUpdated.id) {
+    if (messageUpdated.id && messageUpdated.state === 'DRAFT') {
       return updateDraft.mutate({
         draftId: messageUpdated.id,
         payload,
@@ -358,6 +358,7 @@ export const useCreateDraft = () => {
   const messageUpdated = useMessageUpdated();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   return useMutation({
     mutationFn: ({
@@ -382,7 +383,7 @@ export const useCreateDraft = () => {
       queryClient.invalidateQueries({
         queryKey: [...folderQueryOptions.base, 'draft', 'messages'],
       });
-      window.history.replaceState(null, '', `/draft/message/${_data.id}`);
+      navigate(`/draft/message/${_data.id}`);
     },
   });
 };
@@ -395,6 +396,7 @@ export const useUpdateDraft = () => {
   const { setMessageUpdated } = useAppActions();
   const queryClient = useQueryClient();
   const messageUpdated = useMessageUpdated();
+
   return useMutation({
     mutationFn: ({
       draftId,

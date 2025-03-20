@@ -19,7 +19,6 @@ export function MessageBody({
   editMode,
   onMessageChange,
 }: MessageBodyProps) {
-  const [contentKey, setContentKey] = useState(0);
   const [content, setContent] = useState('');
   const extensions = [ConversationHistoryNodeView(ConversationHistoryRenderer)];
 
@@ -32,11 +31,11 @@ export function MessageBody({
 
   useEffect(() => {
     setContent(message.body);
-    setContentKey((contentKey) => contentKey + 1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
-    <section key={contentKey} className="d-flex flex-column gap-16">
+    <section className="d-flex flex-column gap-16">
       <Editor
         id="messageBody"
         content={content}
