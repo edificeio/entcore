@@ -1,7 +1,7 @@
 import { Avatar } from '@edifice.io/react';
 import { IconGroupAvatar, IconQuestionMark } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
-import { useRecipientAvatar } from '~/features/message-list/components/message-preview/useRecipientAvatar';
+import { useRecipientAvatar } from '~/features/message-list/components/message-preview/hooks/useRecipientAvatar';
 import { Recipients } from '~/models';
 
 interface RecipientAvatarProps {
