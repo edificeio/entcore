@@ -29,13 +29,14 @@ export function MessageEdit({ message }: MessageEditProps) {
   const [contentKey, setContentKey] = useState(0);
 
   useEffect(() => {
-    async function getConf() {
-      return await odeServices.conf().getPublicConf('conversation');
-    }
-    const publicConf: any = getConf();
-    if (publicConf && publicConf['debounce-time-to-auto-save']) {
-      debounceTimeToSave.current = publicConf['debounce-time-to-auto-save'];
-    }
+    odeServices
+      .conf()
+      .getPublicConf('conversation')
+      .then((publicConf: any) => {
+        if (publicConf && publicConf['debounce-time-to-auto-save']) {
+          debounceTimeToSave.current = publicConf['debounce-time-to-auto-save'];
+        }
+      });
     setMessageUpdated(message);
     setContentKey((contentKey) => contentKey + 1);
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -372,18 +372,18 @@ export const useCreateDraft = () => {
         cci?: string[];
       };
     }) => messageService.createDraft(payload),
-    onSuccess: (_data) => {
+    onSuccess: ({ id }) => {
       if (!messageUpdated) return;
 
       messageUpdated.date = new Date().getTime();
-      messageUpdated.id = _data.id;
+      messageUpdated.id = id;
       setMessageUpdated({ ...messageUpdated });
       updateFolderBadgeCountLocal('draft', 1);
       // Update the message unread status in the list
       queryClient.invalidateQueries({
         queryKey: [...folderQueryOptions.base, 'draft', 'messages'],
       });
-      navigate(`/draft/message/${_data.id}`);
+      navigate(`/draft/message/${id}`);
     },
   });
 };

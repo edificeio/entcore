@@ -14,7 +14,7 @@ interface State {
   selectedFolders: Folder[];
   openFolderModal: FolderModal;
   messageUpdated?: Message;
-  messageUpdatedNeedToSave?: boolean;
+  messageUpdatedNeedToSave: boolean;
 }
 
 type Action = {
