@@ -2,19 +2,19 @@ package org.entcore.common.postgres;
 
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.pgclient.pubsub.PgSubscriber;
 import io.vertx.sqlclient.Row;
 import io.vertx.sqlclient.RowSet;
-import io.vertx.sqlclient.Transaction;
 import io.vertx.sqlclient.Tuple;
 
 public class PostgresClientChannel {
     private static final Logger log = LoggerFactory.getLogger(PostgresClientChannel.class);
     private final PgSubscriber pgSubscriber;
-    private Future<Void> onConnect;
+    private Promise<Void> onConnect;
 
     PostgresClientChannel(final PgSubscriber aPgSubscriber, final JsonObject config) {
         this.pgSubscriber = aPgSubscriber;
@@ -38,7 +38,7 @@ public class PostgresClientChannel {
 
     private Future<Void> ensureConnect() {
         if (onConnect == null) {
-            onConnect = Future.future();
+            onConnect = Promise.promise();
             this.pgSubscriber.connect(res -> {
                 if (res.failed()) {
                     log.error("Could not connect to server");
@@ -46,12 +46,12 @@ public class PostgresClientChannel {
                 onConnect.handle(res);
             });
         }
-        return onConnect;
+        return onConnect.future();
     }
 
     public Future<Void> notify(final String channel, final String message) {
         return this.ensureConnect().compose(resConnection -> {
-            final Future<Void> future = Future.future();
+            final Promise<Void> future = Promise.promise();
             this.pgSubscriber.actualConnection().query(
                     "NOTIFY " + channel + ", '" + message + "'").execute(notified -> {
                         if (notified.failed()) {
@@ -59,7 +59,7 @@ public class PostgresClientChannel {
                         }
                         future.handle(notified.mapEmpty());
                     });
-            return future;
+            return future.future();
         });
     }
 
@@ -68,18 +68,14 @@ public class PostgresClientChannel {
     }
 
     public Future<PostgresClient.PostgresTransaction> transaction() {
-        return this.ensureConnect().map(r -> {
-            final Transaction pg = this.pgSubscriber.actualConnection().begin();
-            return new PostgresClient.PostgresTransaction(pg);
-        });
+        return this.ensureConnect()
+            .flatMap(r -> this.pgSubscriber.actualConnection().begin())
+            .map(t -> new PostgresClient.PostgresTransaction(this.pgSubscriber.actualConnection()));
     }
 
     public Future<RowSet<Row>> preparedQuery(String query, Tuple tuple) {
-        return this.ensureConnect().compose(r -> {
-            final Future<RowSet<Row>> future = Future.future();
-            this.pgSubscriber.actualConnection().preparedQuery(query).execute(tuple, future.completer());
-            return future;
-        });
+        return this.ensureConnect()
+            .flatMap(r -> this.pgSubscriber.actualConnection().preparedQuery(query).execute(tuple));
     }
 
     public void close() {

@@ -1,0 +1,7 @@
+.progress {
+    height: 20px;
+}
+.progress .label {
+    line-height: 18px;
+    font-weight: 600;
+}

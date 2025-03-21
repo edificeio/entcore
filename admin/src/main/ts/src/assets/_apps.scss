@@ -105,7 +105,7 @@ i.type.wiki,
 i.wiki {
     @include fonticon;
     &::before {
-      content: '\e813';
+      content: '\e969';
       color: $purple;
     }
 }
@@ -484,5 +484,15 @@ i.visioconf-large {
   &::before {
     content: "\e957";
     color: $purple;
+  }
+}
+
+i.appointments,
+i.appointments-large,
+i.type.appointments {
+  @include fonticon;
+  &::before {
+    content: "\e96a";
+    color: $green;
   }
 }

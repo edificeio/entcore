@@ -19,10 +19,7 @@
 
 package org.entcore.timeline.controllers;
 
-import fr.wseduc.webutils.request.CookieHelper;
-import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import io.vertx.core.*;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import fr.wseduc.bus.BusAddress;
@@ -40,21 +37,23 @@ import fr.wseduc.webutils.collections.TTLSet;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.shareddata.LocalMap;
-import org.apache.commons.lang3.function.FailableDoubleUnaryOperator;
 import org.entcore.common.cache.CacheService;
+import org.entcore.common.events.EventHelper;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.AdmlOfStructures;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
+import org.entcore.common.http.filter.Trace;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.mute.MuteHelper;
-import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.notification.TimelineNotificationsLoader;
 import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import org.entcore.common.utils.StringUtils;
+import org.entcore.timeline.Timeline;
 import org.entcore.timeline.controllers.helper.NotificationHelper;
 import org.entcore.timeline.events.CachedTimelineEventStore;
 import org.entcore.timeline.events.DefaultTimelineEventStore;
@@ -79,13 +78,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.isEmpty;
-import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static java.util.Collections.emptySet;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 
 public class TimelineController extends BaseController {
-    public static Logger log = LoggerFactory.getLogger(TimelineController.class);
+    private static final long IMMEDIATE_NOTIF_DELAY_BY_CHUNK = 30000L;
+
+	public static Logger log = LoggerFactory.getLogger(TimelineController.class);
 
 	private TimelineEventStore store;
 	private TimelineConfigService configService;
@@ -108,6 +108,8 @@ public class TimelineController extends BaseController {
 	private Map<String, String> hostSkin;
 	private JsonObject skinLevels;
 
+	private EventHelper eventHelper;
+
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
@@ -129,9 +131,6 @@ public class TimelineController extends BaseController {
 			final Integer cacheLen = config.getInteger("cache-size", PAGELIMIT);
 			store = new CachedTimelineEventStore(store, cacheService, cacheLen, configService, registeredNotifications);
 		}
-		if(config.getBoolean("isolate-mobile", false)){
-			store = new MobileTimelineEventStore(store);
-		}
 
 		// TEMPORARY to handle both timeline and timeline2 view
 		this.defaultSkin = config.getString("skin", "raw");
@@ -141,6 +140,9 @@ public class TimelineController extends BaseController {
 			this.hostSkin.put(domain, skins.getString(domain));
 		}
 		this.skinLevels = new JsonObject(vertx.sharedData().getLocalMap("skin-levels"));
+
+		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Timeline.class.getSimpleName());
+		this.eventHelper =  new EventHelper(eventStore);
 	}
 
 	/* Override i18n to use additional timeline translations and nested templates */
@@ -202,7 +204,7 @@ public class TimelineController extends BaseController {
 				renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)));
 			}
 		});
-
+		eventHelper.onAccess(request);
 	}
 
 	@Get("/timeline2")
@@ -210,6 +212,7 @@ public class TimelineController extends BaseController {
 	public void view2(HttpServerRequest request) {
 		final boolean cache = config.getBoolean("cache", false);
 		renderView(request, new JsonObject().put("lightMode",isLightmode()).put("cache", cache));
+		eventHelper.onAccess(request);
 	}
 
 	@Get("/preferencesView")
@@ -247,7 +250,7 @@ public class TimelineController extends BaseController {
 	@Get("/registeredNotifications")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void registeredNotifications(HttpServerRequest request) {
-		JsonArray reply = new fr.wseduc.webutils.collections.JsonArray();
+		JsonArray reply = new JsonArray();
 		for (String key : registeredNotifications.keySet()) {
 			JsonObject notif = new JsonObject(registeredNotifications.get(key))
 					.put("key", key);
@@ -300,8 +303,8 @@ public class TimelineController extends BaseController {
 											renderJson(request, res);
 											return;
 										}
-										JsonArray results = res.getJsonArray("results", new fr.wseduc.webutils.collections.JsonArray());
-										final JsonArray compiledResults = new fr.wseduc.webutils.collections.JsonArray();
+										JsonArray results = res.getJsonArray("results", new JsonArray());
+										final JsonArray compiledResults = new JsonArray();
 
 										final AtomicInteger countdown = new AtomicInteger(results.size());
 										final Handler<Void> endHandler = new Handler<Void>() {
@@ -443,7 +446,7 @@ public class TimelineController extends BaseController {
 					return;
 				}
 				JsonArray admcDefaults = event.right().getValue();
-				JsonArray reply = new fr.wseduc.webutils.collections.JsonArray();
+				JsonArray reply = new JsonArray();
 
 				for (String key : registeredNotifications.keySet()) {
 					JsonObject notif = new JsonObject(registeredNotifications.get(key)).put("key", key);
@@ -583,7 +586,7 @@ public class TimelineController extends BaseController {
 								.put("action", "list-adml")
 								.put("structureId", structureId);
 
-							eb.send("directory", message, result -> {
+							eb.request("directory", message, result -> {
 								if (result.succeeded()) {
 									JsonArray users = (JsonArray) result.result().body();
 									for (Object userObj : users) {
@@ -627,7 +630,7 @@ public class TimelineController extends BaseController {
 				}
 
 				final JsonArray results = event.right().getValue();
-				final JsonArray compiledResults = new fr.wseduc.webutils.collections.JsonArray();
+				final JsonArray compiledResults = new JsonArray();
 
 				final AtomicInteger countdown = new AtomicInteger(results.size());
 				final Handler<Void> endHandler = new Handler<Void>() {
@@ -736,6 +739,7 @@ public class TimelineController extends BaseController {
 	}
 
 
+	@Trace(value = "FCM_LIST_TOKENS", retentionDays = 5, body = false)
 	@Get("/pushNotif/fcmTokens")
 	@SecuredAction(value = "timeline.api", type = ActionType.AUTHENTICATED)
 	public void getFcmTokens(final HttpServerRequest request){
@@ -762,6 +766,7 @@ public class TimelineController extends BaseController {
 		});
 	}
 
+	@Trace(value = "FCM_UPDATE_TOKEN", retentionDays = 5, body = false)
 	@Put("/pushNotif/fcmToken")
 	@SecuredAction(value = "timeline.api", type = ActionType.AUTHENTICATED)
 	public void putFcmToken(final HttpServerRequest request){
@@ -793,6 +798,7 @@ public class TimelineController extends BaseController {
 		}
 	}
 
+	@Trace(value = "FCM_DELETE_TOKEN", retentionDays = 5, body = false)
 	@Delete("/pushNotif/fcmToken")
 	@SecuredAction(value = "timeline.api", type = ActionType.AUTHENTICATED)
 	public void deleteFcmToken(final HttpServerRequest request){
@@ -859,7 +865,23 @@ public class TimelineController extends BaseController {
 					final JsonObject notification = notificationResult.succeeded() ? notificationResult.result() : json;
 					store.add(notification, new Handler<JsonObject>() {
 						public void handle(JsonObject result) {
-							notificationHelper.sendImmediateNotifications(new JsonHttpServerRequest(notification.getJsonObject("request")), notification);
+							// IF call only when recipient size > maxRecipientLength (10k by default)
+							// timer for performance (thread block) reasons
+							if (result.containsKey(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS)) {
+								final JsonArray chunkedNotifications = result.getJsonArray(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS);
+								result.remove(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS);
+								for (int i = 0; i < chunkedNotifications.size(); i++) {
+									final JsonObject cn = chunkedNotifications.getJsonObject(i);
+									vertx.setTimer((i* IMMEDIATE_NOTIF_DELAY_BY_CHUNK) + 1000L, t -> {
+										final JsonArray chunkRecipientsIds = cn.getJsonArray("recipientsIds");
+										log.info("Launch chunked immediate notification. Recipients :  " +
+											(chunkRecipientsIds != null ? chunkRecipientsIds.size():0));
+										notificationHelper.sendImmediateNotifications(new JsonHttpServerRequest(cn.getJsonObject("request")), cn);
+									});
+								}
+							} else {
+								notificationHelper.sendImmediateNotifications(new JsonHttpServerRequest(notification.getJsonObject("request")), notification);
+							}
 							handler.handle(result);
 						}
 					});
@@ -953,7 +975,7 @@ public class TimelineController extends BaseController {
 							restriction.equals(TimelineNotificationsLoader.Restrictions.HIDDEN.name())) {
 						String notifType = notif.getString("type");
 						if (!restricted.containsKey(notifType)) {
-							restricted.put(notifType, new fr.wseduc.webutils.collections.JsonArray());
+							restricted.put(notifType, new JsonArray());
 						}
 						restricted.getJsonArray(notifType).add(notif.getString("event-type"));
 					}

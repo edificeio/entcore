@@ -1,7 +1,9 @@
+import http from 'axios';
 import { Component, ElementRef, EventEmitter, Injector, Input, Output, ViewChild } from '@angular/core';
 import { OdeComponent } from 'ngx-ode-core';
 import { removeAccents } from 'ngx-ode-ui';
 import { StructureModel } from '../core/store/models/structure.model';
+import { SessionModel } from '../core/store/models/session.model';
 
 @Component({
     selector: 'ode-navbar',
@@ -27,8 +29,11 @@ export class NavbarComponent extends OdeComponent {
     openside: boolean;
     structureFilter: string = '';
 
+    logoutCallback: string = '/';
+
     constructor(injector: Injector) {
         super(injector);
+        this.getLogoutCallback();
     }
 
     public structureFilterFunction = (v: StructureModel) => {
@@ -47,5 +52,11 @@ export class NavbarComponent extends OdeComponent {
     // TODO keep this??
     public openReports(): void {
         window.open('/timeline/admin-history', '_blank');
+    }
+
+    public getLogoutCallback() {
+        SessionModel.getTheme().then((theme) => {
+            this.logoutCallback = theme.logoutCallback;        
+        })
     }
 }

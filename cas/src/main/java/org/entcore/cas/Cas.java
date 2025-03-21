@@ -20,6 +20,7 @@
 package org.entcore.cas;
 
 import fr.wseduc.cas.endpoint.CredentialResponse;
+import io.vertx.core.Promise;
 import org.entcore.cas.controllers.*;
 import org.entcore.cas.data.EntCoreDataHandlerFactory;
 import org.entcore.cas.http.VertxHttpClientFactory;
@@ -37,8 +38,8 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 public class Cas extends BaseServer {
 
 	@Override
-	public void start() throws Exception {
-		super.start();
+	public void start(final Promise<Void> startPromise) throws Exception {
+		super.start(startPromise);
 		MappingService.getInstance().configure(config());
 		EntCoreDataHandlerFactory dataHandlerFactory = new EntCoreDataHandlerFactory(getEventBus(vertx), config);
 

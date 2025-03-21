@@ -21,6 +21,7 @@ package org.entcore.workspace;
 
 import java.util.HashMap;
 
+import io.vertx.core.Promise;
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.folders.QuotaService;
 import org.entcore.common.http.BaseServer;
@@ -38,6 +39,8 @@ import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.security.WorkspaceResourcesProvider;
 import org.entcore.workspace.service.WorkspaceService;
 import org.entcore.workspace.service.impl.*;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import fr.wseduc.mongodb.MongoDb;
 import io.vertx.core.DeploymentOptions;
@@ -46,12 +49,12 @@ import io.vertx.core.http.HttpServerOptions;
 public class Workspace extends BaseServer {
 
 	public static final String REVISIONS_COLLECTION = "documentsRevisions";
-
+	private static final Logger log = LoggerFactory.getLogger(Workspace.class);
 	@Override
-	public void start() throws Exception {
+	public void start(final Promise<Void> startPromise) throws Exception {
 		WorkspaceResourcesProvider resourceProvider = new WorkspaceResourcesProvider();
 		setResourceProvider(resourceProvider);
-		super.start();
+		super.start(startPromise);
 
 		Storage storage = new StorageFactory(vertx, config,
 				new MongoDBApplicationStorage(DocumentDao.DOCUMENTS_COLLECTION, Workspace.class.getSimpleName())).getStorage();
@@ -92,8 +95,11 @@ public class Workspace extends BaseServer {
 		/**
 		 * SearchEvent
 		 */
-		if (config.getBoolean("searching-event", true)) {
+		final boolean searchingEvent = config.getBoolean("searching-event", true);
+		if (searchingEvent) {
 			setSearchingEvents(new WorkspaceSearchingEvents(folderManagerWithQuota));
+		} else {
+			log.warn("Searching event is disabled for workspace");
 		}
 		/**
 		 * Controllers
@@ -105,6 +111,10 @@ public class Workspace extends BaseServer {
 		final PdfGenerator pdfGenerator = new PdfFactory(vertx, config).getPdfGenerator();
 		workspaceService.setAllowDuplicate(config.getBoolean("allowDuplicate", false));
 		WorkspaceController workspaceController = new WorkspaceController(storage, workspaceService, shareService,pdfGenerator, MongoDb.getInstance(), folderManagerWithQuota);
+		// disable full text search for workspace for performance reasons
+		if(!searchingEvent) {
+			workspaceController.setDisableFullTextSearch(true);
+		}
 		addController(workspaceController);
 		//
 
@@ -114,8 +124,8 @@ public class Workspace extends BaseServer {
 
 		if (config.getInteger("wsPort") != null) {
 			vertx.deployVerticle(AudioRecorderWorker.class, new DeploymentOptions().setConfig(config).setWorker(true));
-			HttpServerOptions options = new HttpServerOptions().setMaxWebsocketFrameSize(1024 * 1024);
-			vertx.createHttpServer(options).websocketHandler(new AudioRecorderHandler(vertx))
+			HttpServerOptions options = new HttpServerOptions().setMaxWebSocketFrameSize(1024 * 1024);
+			vertx.createHttpServer(options).webSocketHandler(new AudioRecorderHandler(vertx))
 					.listen(config.getInteger("wsPort"));
 		}
 

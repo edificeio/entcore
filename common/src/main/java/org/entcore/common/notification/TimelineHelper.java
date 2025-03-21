@@ -141,7 +141,7 @@ public class TimelineHelper {
 								.put("X-Forwarded-Proto", Renders.getScheme(request))
 								.put("Accept-Language", request.headers().get("Accept-Language"))
 				));
-			eb.send(TIMELINE_ADDRESS, event, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+			eb.request(TIMELINE_ADDRESS, event, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 				public void handle(Message<JsonObject> event) {
 					JsonObject result = event.body();
 					if("error".equals(result.getString("status", "error"))){
@@ -196,7 +196,7 @@ public class TimelineHelper {
 			public void handle(String message) {
 				if (message != null) {
 					event.put("message", message);
-					eb.send(TIMELINE_ADDRESS, event);
+					eb.request(TIMELINE_ADDRESS, event);
 				} else {
 					log.error("Unable to send timeline " + eventType + " notification.");
 				}

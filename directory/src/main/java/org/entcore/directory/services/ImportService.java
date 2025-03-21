@@ -20,11 +20,10 @@
 package org.entcore.directory.services;
 
 import fr.wseduc.webutils.Either;
-import org.entcore.common.user.UserInfos;
-import org.entcore.directory.pojo.ImportInfos;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.UserInfos;
+import org.entcore.directory.pojo.ImportInfos;
 
 public interface ImportService {
 

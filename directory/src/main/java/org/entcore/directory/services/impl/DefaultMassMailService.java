@@ -5,10 +5,7 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.data.FileResolver;
 import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.Renders;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
@@ -52,8 +49,9 @@ public class DefaultMassMailService extends Renders implements MassMailService {
     }
 
     public void massMailTypePdf(UserInfos userInfos, final HttpServerRequest request, final String templatePath, final String baseUrl, final String filename, final String type, final JsonArray users) {
-
-        final JsonObject templateProps = new JsonObject().put("hostname", Renders.getHost(request)).put("host",Renders.getScheme(request));
+         // Get the template hostname from the configuration. If not found, use the request hostname.
+        final String templateHostname = config.getString("template-hostname-connection", Renders.getHost(request));
+        final JsonObject templateProps = new JsonObject().put("hostname", templateHostname).put("host",Renders.getScheme(request));
 
         // Try to extend each user data.
         try {
@@ -92,7 +90,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
             badRequest(request);
             return;
         }
-        getTemplateName(userInfos, request, templatePath, templateNamePrefix, "xhtml").setHandler(templateNameRes -> {
+        getTemplateName(userInfos, request, templatePath, templateNamePrefix, "xhtml").onComplete(templateNameRes -> {
             if (templateNameRes.failed()) {
                 badRequest(request, templateNameRes.cause().getMessage());
                 return;
@@ -118,7 +116,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
                             .put("content", processedTemplate.getBytes())
                             .put("baseUrl", baseUrl);
 
-                    eb.send(node + "entcore.pdf.generator", actionObject, new DeliveryOptions()
+                    eb.request(node + "entcore.pdf.generator", actionObject, new DeliveryOptions()
                             .setSendTimeout(600000l), handlerToAsyncHandler(reply -> {
                         JsonObject pdfResponse = reply.body();
                         if (!"ok".equals(pdfResponse.getString("status"))) {
@@ -138,7 +136,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
     }
 
     public void massMailTypeMail(UserInfos userInfos, final HttpServerRequest request, final String templatePath, final JsonArray users) {
-        getTemplateName(userInfos, request, templatePath, "massmail.mail", "txt").setHandler(templateNameRes -> {
+        getTemplateName(userInfos, request, templatePath, "massmail.mail", "txt").onComplete(templateNameRes -> {
             if (templateNameRes.failed()) {
                 badRequest(request, templateNameRes.cause().getMessage());
                 return;
@@ -366,7 +364,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
                 List<String> scope = f.getScope();
                 if (scope != null && !scope.isEmpty()) {
                     condition += "AND s.id IN {scope} ";
-                    params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
+                    params.put("scope", new JsonArray(scope));
                 }
             } else if (userInfos.getFunctions().containsKey(CLASS_ADMIN)) {
                 if (filterObj.getJsonArray("classes").size() < 1) {
@@ -378,7 +376,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
                 List<String> scope = f.getScope();
                 if (scope != null && !scope.isEmpty()) {
                     condition = "AND c.id IN {scope} ";
-                    params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
+                    params.put("scope", new JsonArray(scope));
                 }
             }
         }
@@ -482,7 +480,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
             List<String> scope = f.getScope();
             if (scope != null && !scope.isEmpty()) {
                 condition += "WHERE s.id IN {scope} ";
-                params.put("scope", new fr.wseduc.webutils.collections.JsonArray(scope));
+                params.put("scope", new JsonArray(scope));
             }
         }
 
@@ -517,10 +515,9 @@ public class DefaultMassMailService extends Renders implements MassMailService {
     private Future<String> getTemplateName(UserInfos user, HttpServerRequest request, String basePath, String prefix, String suffix) {
         Future<String> defaultName = getDefaultFileName(prefix, suffix);
         Future<String> i18Name = getI18FileName(user, request, prefix, suffix);
-        return CompositeFuture.all(defaultName, i18Name).compose(all -> {
-            Future<String> fullPath = Future.future();
+        return Future.all(defaultName, i18Name).compose(all -> {
+            Promise<String> fullPath = Promise.promise();
             String i18Path = basePath + i18Name.result();
-            String defaultPath = basePath + defaultName.result();
             vertx.fileSystem().exists(i18Path, exists -> {
                 if (exists.succeeded() && exists.result()) {
                     fullPath.complete(i18Name.result());
@@ -528,7 +525,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
                     fullPath.complete(defaultName.result());
                 }
             });
-            return fullPath;
+            return fullPath.future();
         });
     }
 
@@ -543,10 +540,10 @@ public class DefaultMassMailService extends Renders implements MassMailService {
     }
 
     private Future<String> getLanguage(UserInfos user, HttpServerRequest request) {
-        Future<String> future = Future.future();
+        Promise<String> future = Promise.promise();
         String navLang = getOrElse(I18n.acceptLanguage(request), "fr");
         future.complete(navLang);
-        return future;
+        return future.future();
     }
 
 }

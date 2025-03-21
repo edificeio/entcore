@@ -19,6 +19,7 @@
 package org.entcore.common.notification;
 
 import fr.wseduc.webutils.Either;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import org.entcore.common.neo4j.Neo4j;
@@ -32,17 +33,22 @@ import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 
 public class NotificationUtils {
+
+    private static final long GET_PREFERENCES_TIMEOUT = 5 * 60 * 1000L;
+
     private static final String USERBOOK_ADDRESS = "userbook.preferences";
+
+    private static final int NB_CHARACTERS_IN_TEXT_NOTIFICATION = 150;
 
 
     public static void getUsersPreferences(EventBus eb, JsonArray userIds, String fields, final Handler<JsonArray> handler){
-        eb.send(USERBOOK_ADDRESS, new JsonObject()
+        eb.request(USERBOOK_ADDRESS, new JsonObject()
                 .put("action", "get.userlist")
                 .put("application", "timeline")
                 .put("additionalMatch", ", u-[:IN]->(g:Group)-[:AUTHORIZED]->(r:Role)-[:AUTHORIZE]->(act:WorkflowAction) ")
                 .put("additionalWhere", "AND act.name = \"org.entcore.timeline.controllers.TimelineController|mixinConfig\" ")
                 .put("additionalCollectFields", ", " + fields)
-                .put("userIds", userIds), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+                .put("userIds", userIds), new DeliveryOptions().setSendTimeout(GET_PREFERENCES_TIMEOUT), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
             public void handle(Message<JsonObject> event) {
                 if (!"error".equals(event.body().getString("status"))) {
                     handler.handle(event.body().getJsonArray("results"));
@@ -88,9 +94,21 @@ public class NotificationUtils {
     public static void deleteFcmToken(String userId, String fcmToken, Handler<Either<String, JsonObject>> handler){
         final JsonObject params = new JsonObject().put("userId", userId).put("fcmToken", fcmToken);
 
-        String query = "MATCH (u:User {id: {userId}}) MERGE (u)-[:PREFERS]->(uac:UserAppConf)" +
-                "ON CREATE SET uac.fcmTokens = [{fcmToken}] " +
-                "ON MATCH SET uac.fcmTokens = FILTER(token IN coalesce(uac.fcmTokens, []) WHERE token <> {fcmToken})";
+        final String query =
+                "MATCH (u:User {id: {userId}})-[:PREFERS]->(uac:UserAppConf) " +
+                "SET uac.fcmTokens = FILTER(token IN coalesce(uac.fcmTokens, []) WHERE token <> {fcmToken})";
+
+        Neo4j.getInstance().execute(query, params, validUniqueResultHandler(handler));
+
+    }
+
+    public static void deleteFcmTokens(JsonArray userIds, Handler<Either<String, JsonObject>> handler){
+        final JsonObject params = new JsonObject().put("userIds", userIds);
+
+        final String query =
+                "MATCH (u:User)-[:PREFERS]->(uac:UserAppConf) " +
+                "WHERE u.id IN {userIds} " +
+                "SET uac.fcmTokens = null ";
 
         Neo4j.getInstance().execute(query, params, validUniqueResultHandler(handler));
 
@@ -117,6 +135,10 @@ public class NotificationUtils {
         }));
     }
 
+    /**
+     * Use {@link #jsonContentToPreview(JsonObject)} instead.
+     */
+    @Deprecated
     public static JsonObject htmlContentToPreview(String htmlContent){
         JsonObject preview =  new JsonObject();
         String text = HtmlUtils.extractFormatText(htmlContent, 4, 150);
@@ -126,5 +148,130 @@ public class NotificationUtils {
         preview.put("images", HtmlUtils.getAllImagesSrc(htmlContent)); // retro-compatibility for ode-mobile-framework < 1.2
         preview.put("medias", HtmlUtils.extractMedias(htmlContent));
         return preview;
+    }
+ 
+    /**
+     * @param jsonContent Content whose preview we want
+     * @return An object containing the following fields :
+     * <ul>
+     *   <li>text, the plain text</li>
+     *   <li>images, list of images in this content</li>
+     *   <li>medias, list of all media (image, video, iframe, audio and attachments) in this content</li>
+     * </ul>
+     */
+    public static JsonObject jsonContentToPreview(final JsonObject jsonContent) {
+        return new JsonObject()
+          .put("text", getText(jsonContent, NB_CHARACTERS_IN_TEXT_NOTIFICATION + 1))
+          .put("images", getAllImagesSrc(jsonContent))
+          .put("medias", extractMedias(jsonContent));
+    }
+
+    private static JsonArray extractMedias(JsonObject jsonContent) {
+        final JsonArray medias = new JsonArray();
+        final String type = jsonContent.getString("type");
+        if(type != null) {
+            switch (type) {
+                case "custom-image":
+                case "audio":
+                case "iframe":
+                case "video":
+                    final JsonObject media = camelCaseToKebabCaseKeys(jsonContent.getJsonObject("attrs"));
+                    media.put("type", "custom-image".equals(type) ? "image" : type);
+                    if(media.containsKey("is-captation")) {
+                        media.put("document-is-captation", media.remove("is-captation"));
+                    }
+                    medias.add(media);
+                    break;
+                case "attachments":
+                    final JsonArray links = jsonContent.getJsonObject("attrs").getJsonArray("links");
+                    if (links != null) {
+                        for (Object link : links) {
+                            if(link instanceof JsonObject) {
+                                final JsonObject linkElt = (JsonObject) link;
+                                medias.add(new JsonObject()
+                                  .put("type", "attachment")
+                                  .put("src", linkElt.getString("href"))
+                                  .put("name", linkElt.getString("name")));
+                            }
+                        }
+                    }
+                    break;
+                default:
+                    final JsonArray children = jsonContent.getJsonArray("content");
+                    if (children != null) {
+                        for (Object child : children) {
+                            if(child instanceof JsonObject) {
+                                medias.addAll(extractMedias((JsonObject) child));
+                            }
+                        }
+                    }
+            }
+        }
+        return medias;
+    }
+
+    /**
+     * Creates a copy of the specified object but transform camelCased keys to their kebab cased versions.
+     * @param camelCasedObject Camel cased keys object
+     * @return Copy of the specified object but transform camelCased keys to their kebab cased versions.
+     */
+    public static JsonObject camelCaseToKebabCaseKeys(JsonObject camelCasedObject) {
+        final JsonObject kebabCasedObject;
+        if(camelCasedObject == null) {
+            kebabCasedObject = null;
+        } else {
+            kebabCasedObject = new JsonObject();
+            camelCasedObject.stream().forEach(entry -> {
+                final String originalKey = entry.getKey();
+                String kebabCasedKey = originalKey.replaceAll("([a-z])([A-Z])", "$1-$2");
+                if(!kebabCasedKey.equals(originalKey)) {
+                    kebabCasedKey = kebabCasedKey.toLowerCase();
+                }
+                kebabCasedObject.put(kebabCasedKey, entry.getValue());
+            });
+        }
+        return kebabCasedObject;
+    }
+
+    private static JsonArray getAllImagesSrc(JsonObject jsonContent) {
+        final JsonArray images = new JsonArray();
+        final String type = jsonContent.getString("type");
+        if("custom-image".equals(type)) {
+            images.add(jsonContent.getJsonObject("attrs").getString("src"));
+        } else {
+            final JsonArray children = jsonContent.getJsonArray("content");
+            if(children != null) {
+                for (Object child : children) {
+                    if(child instanceof JsonObject) {
+                        images.addAll(getAllImagesSrc((JsonObject) child));
+                    }
+                }
+            }
+        }
+        return images;
+    }
+
+    private static String getText(final JsonObject jsonContent, final int nbCharsToAdd) {
+        final StringBuilder sbuffer = new StringBuilder();
+        final String type = jsonContent.getString("type");
+        if("text".equals(type)) {
+            sbuffer.append(jsonContent.getString("text"));
+        } else {
+            final JsonArray children = jsonContent.getJsonArray("content");
+            if(children != null) {
+                int remainingChars = nbCharsToAdd;
+                for(int i = 0; i < children.size() && remainingChars > 0; i ++) {
+                    final JsonObject child = children.getJsonObject(i);
+                    final String childPart = getText(child, nbCharsToAdd);
+                    remainingChars -= childPart.length();
+                    sbuffer.append(childPart);
+                }
+            }
+        }
+        if(sbuffer.length() > NB_CHARACTERS_IN_TEXT_NOTIFICATION) {
+            sbuffer.setCharAt(NB_CHARACTERS_IN_TEXT_NOTIFICATION - 1, '…');
+            sbuffer.setLength(NB_CHARACTERS_IN_TEXT_NOTIFICATION);
+        }
+        return sbuffer.toString();
     }
 }

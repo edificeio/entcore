@@ -19,10 +19,12 @@ export interface RenameDelegateScope {
     openRenameView(document: models.Element)
     rename(item: models.Element, newName: string)
     getRenameManagers():Array<{id:string, name:string}>
+    preventForbiddenChars(event: KeyboardEvent): void; 
 }
 
 export function ActionRenameDelegate($scope: RenameDelegateScope) {
     $scope.renameManagers=[];
+    const forbiddenRegex = /[\/\\<>|]/g;
     /**
       * Rename Action
       */
@@ -86,10 +88,20 @@ export function ActionRenameDelegate($scope: RenameDelegateScope) {
         $scope.selectedItems().forEach(folder => {
             folder.selected = false;
         });
+        newName = newName.trim().replace(forbiddenRegex, '');
         await workspaceService.rename(item, newName);
     }
 
     $scope.getRenameManagers = () => {
         return $scope.renameManagers;
     }
+
+    $scope.preventForbiddenChars = function($event) {
+        const regexForbiddenChars = /[\/\\<>|]/;
+        var char = $event.key;
+      
+        if (regexForbiddenChars.test(char)) {
+          $event.preventDefault();
+        }
+      };
 }
