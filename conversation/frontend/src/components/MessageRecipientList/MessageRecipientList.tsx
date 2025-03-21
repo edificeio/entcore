@@ -25,7 +25,7 @@ export function MessageRecipientList({
   const cciToDisplay = useMessageCciToDisplay(message);
 
   const atWording = t('at');
-  const ccWording = theme?.is1d ? t('cc.full') : t('copy');
+  const ccWording = theme?.is1d ? t('cc.full') : t('cc');
   const cciWording = theme?.is1d ? t('cci.full') : t('cci');
 
   return (
