@@ -3,11 +3,12 @@ import { IconPaperclip, IconUndo } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
 import { useMessageFolderId } from '~/hooks/useMessageFolderId';
 import { MessageMetadata } from '~/models';
-import { useMessageUserDisplayName } from '../../../hooks/useUserDisplayName';
+
 import RecipientAvatar from './components/RecipientAvatar';
-import { RecipientListPreview } from './components/RecipientListPreview';
 import { SenderAvatar } from './components/SenderAvatar';
 import { UserFolderIcon } from './components/UserFolderIcon';
+import { useMessageUserDisplayName } from '~/hooks/useUserDisplayName';
+import { MessageRecipientList } from '../../../../components/message-recipient-list';
 
 export interface MessagePreviewProps {
   message: MessageMetadata;
@@ -51,10 +52,10 @@ export function MessagePreview({ message }: MessagePreviewProps) {
             <span className="text-danger fw-bold">{t('draft')}</span>
           )}
           <div className="text-truncate flex-fill">
-            {messageFolderId === 'draft' ? (
-              <RecipientListPreview message={message} />
-            ) : messageFolderId === 'outbox' ? (
-              <RecipientListPreview message={message} head={t('at')} />
+            {messageFolderId === 'draft' || messageFolderId === 'outbox' ? (
+              <div className="text-truncate">
+                <MessageRecipientList message={message} inline />
+              </div>
             ) : (
               <span>{senderDisplayName}</span>
             )}

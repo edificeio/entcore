@@ -1,8 +1,7 @@
 import { Avatar, useDate, useDirectory } from '@edifice.io/react';
+import { MessageRecipientList } from '~/components/message-recipient-list';
 import { useI18n } from '~/hooks';
-import useMessageCciToDisplay from '~/hooks/useMessageCciToDisplay';
 import { Message } from '~/models';
-import { MessageRecipientList } from '../../components/MessageRecipientList';
 
 export interface MessageHeaderProps {
   message: Message;
@@ -13,10 +12,7 @@ export function MessageHeader({ message }: MessageHeaderProps) {
   const { fromNow } = useDate();
   const { getAvatarURL, getUserbookURL } = useDirectory();
 
-  const { subject, from, date, to, cc } = message;
-  const hasTo = to.users.length > 0 || to.groups.length > 0;
-  const hasCC = cc.users.length > 0 || cc.groups.length > 0;
-  const cciToDisplay = useMessageCciToDisplay(message);
+  const { subject, from, date } = message;
 
   return (
     <header>
@@ -45,27 +41,7 @@ export function MessageHeader({ message }: MessageHeaderProps) {
                   </span>
                 )}
               </div>
-              {hasTo && (
-                <MessageRecipientList
-                  head={<b>{t('at')}</b>}
-                  recipients={to}
-                  hasLink
-                />
-              )}
-              {hasCC && (
-                <MessageRecipientList
-                  head={<b>{t('cc')}</b>}
-                  recipients={cc}
-                  hasLink
-                />
-              )}
-              {cciToDisplay && (
-                <MessageRecipientList
-                  head={<b>{t('cci')}</b>}
-                  recipients={cciToDisplay}
-                  hasLink
-                />
-              )}
+              <MessageRecipientList message={message} />
             </div>
           </div>
         </>
