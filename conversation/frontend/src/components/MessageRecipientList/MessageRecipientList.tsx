@@ -1,5 +1,4 @@
 import { useEdificeTheme } from '@edifice.io/react';
-import { c } from 'node_modules/vite/dist/node/types.d-aGj9QkWt';
 import { useTranslation } from 'react-i18next';
 import { MessageRecipientSubList } from '~/components/MessageRecipientList/components/MessageRecipientSubList';
 import useMessageCciToDisplay from '~/components/MessageRecipientList/hooks/useMessageCciToDisplay';
