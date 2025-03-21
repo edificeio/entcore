@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
-import { MessageRecipientSubList } from '~/components/message-recipient-list/MessageRecipientSubList';
-import useMessageCciToDisplay from '~/components/message-recipient-list/useMessageCciToDisplay';
+import { MessageRecipientSubList } from '~/components/MessageRecipientList/components/MessageRecipientSubList';
+import useMessageCciToDisplay from '~/components/MessageRecipientList/hooks/useMessageCciToDisplay';
 import { MessageBase } from '~/models';
 
 export interface MessageRecipientListProps {

@@ -8,7 +8,7 @@ import RecipientAvatar from './components/RecipientAvatar';
 import { SenderAvatar } from './components/SenderAvatar';
 import { UserFolderIcon } from './components/UserFolderIcon';
 import { useMessageUserDisplayName } from '~/hooks/useUserDisplayName';
-import { MessageRecipientList } from '../../../../components/message-recipient-list';
+import { MessageRecipientList } from '../../../../components/MessageRecipientList/MessageRecipientList';
 
 export interface MessagePreviewProps {
   message: MessageMetadata;
