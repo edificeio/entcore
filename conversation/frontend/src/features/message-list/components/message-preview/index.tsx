@@ -18,7 +18,10 @@ export function MessagePreview({ message }: MessagePreviewProps) {
   const { t } = useTranslation('conversation');
   const { fromNow } = useDate();
   const senderDisplayName = useMessageUserDisplayName(message.from);
-  const { messageFolderId, isInUserFolder } = useMessageFolderId(message);
+  const { messageFolderId, isInUserFolderOrTrash } =
+    useMessageFolderId(message);
+
+  if (!messageFolderId) return null;
 
   return (
     <div className="d-flex flex-fill gap-12 align-items-center  overflow-hidden fs-6">
@@ -33,11 +36,11 @@ export function MessagePreview({ message }: MessagePreviewProps) {
         />
       )}
 
-      {isInUserFolder && messageFolderId && (
+      {isInUserFolderOrTrash && messageFolderId && (
         <UserFolderIcon originFolderId={messageFolderId} />
       )}
 
-      {messageFolderId === 'outbox' || messageFolderId === 'draft' ? (
+      {['outbox', 'draft'].includes(messageFolderId) ? (
         <RecipientAvatar recipients={message.to} />
       ) : (
         <SenderAvatar authorId={message.from.id} />
@@ -52,7 +55,7 @@ export function MessagePreview({ message }: MessagePreviewProps) {
             <span className="text-danger fw-bold">{t('draft')}</span>
           )}
           <div className="text-truncate flex-fill">
-            {messageFolderId === 'draft' || messageFolderId === 'outbox' ? (
+            {['outbox', 'draft'].includes(messageFolderId) ? (
               <div className="text-truncate">
                 <MessageRecipientList message={message} inline />
               </div>
