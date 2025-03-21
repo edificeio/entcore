@@ -7,8 +7,9 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Message, MessageBase, MessageMetadata } from '~/models';
+import { useAppActions, useMessageUpdated } from '~/store';
 import {
   folderQueryOptions,
   messageService,
@@ -312,12 +313,56 @@ export const useMoveMessage = () => {
     },
   });
 };
+export const useCreateOrUpdateDraft = () => {
+  const updateDraft = useUpdateDraft();
+  const createDraft = useCreateDraft();
+  const messageUpdated = useMessageUpdated();
+  const navigate = useNavigate();
+
+  return () => {
+    if (!messageUpdated) return;
+
+    const payload = {
+      subject: messageUpdated.subject,
+      body: messageUpdated.body,
+      to: [
+        ...messageUpdated.to.users.map((u) => u.id),
+        ...messageUpdated.to.groups.map((g) => g.id),
+      ],
+      cc: [
+        ...messageUpdated.cc.users.map((u) => u.id),
+        ...messageUpdated.cc.groups.map((g) => g.id),
+      ],
+      cci: [
+        ...(messageUpdated.cci?.users.map((u) => u.id) ?? []),
+        ...(messageUpdated.cci?.groups?.map((g) => g.id) ?? []),
+      ],
+    };
+
+    if (messageUpdated.id && messageUpdated.state === 'DRAFT') {
+      return updateDraft.mutate({
+        draftId: messageUpdated.id,
+        payload,
+      });
+    } else {
+      return createDraft.mutate(
+        { payload },
+        { onSuccess: ({ id }) => navigate(`/draft/message/${id}`) },
+      );
+    }
+  };
+};
 
 /**
  * Hook to create a draft message.
  * @returns Mutation result for creating the draft.
  */
 export const useCreateDraft = () => {
+  const { setMessageUpdated } = useAppActions();
+  const messageUpdated = useMessageUpdated();
+  const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: ({
       payload,
@@ -330,6 +375,18 @@ export const useCreateDraft = () => {
         cci?: string[];
       };
     }) => messageService.createDraft(payload),
+    onSuccess: ({ id }) => {
+      if (!messageUpdated) return;
+
+      messageUpdated.date = new Date().getTime();
+      messageUpdated.id = id;
+      setMessageUpdated({ ...messageUpdated });
+      updateFolderBadgeCountLocal('draft', 1);
+      // Update the message unread status in the list
+      queryClient.invalidateQueries({
+        queryKey: [...folderQueryOptions.base, 'draft', 'messages'],
+      });
+    },
   });
 };
 
@@ -338,7 +395,10 @@ export const useCreateDraft = () => {
  * @returns Mutation result for updating the draft.
  */
 export const useUpdateDraft = () => {
+  const { setMessageUpdated } = useAppActions();
   const queryClient = useQueryClient();
+  const messageUpdated = useMessageUpdated();
+
   return useMutation({
     mutationFn: ({
       draftId,
@@ -354,6 +414,9 @@ export const useUpdateDraft = () => {
       };
     }) => messageService.updateDraft(draftId, payload),
     onSuccess: (_data, { draftId }) => {
+      if (!messageUpdated) return;
+
+      setMessageUpdated({ ...messageUpdated });
       queryClient.invalidateQueries({
         queryKey: messageQueryOptions.getById(draftId).queryKey,
       });
