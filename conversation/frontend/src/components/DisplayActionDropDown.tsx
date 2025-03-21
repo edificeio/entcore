@@ -253,7 +253,7 @@ export function DisplayActionDropDown({
       id: 'remove-from-folder-modal',
       icon: <IconFolderDelete />,
       action: handleRemoveFromFolder,
-      hidden: !isInFolder,
+      hidden: !hasActionsList('remove-from-folder-modal') || !isInFolder,
     },
   ];
 
