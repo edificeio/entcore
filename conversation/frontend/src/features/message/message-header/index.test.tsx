@@ -2,7 +2,26 @@ import { mockFullMessage } from '~/mocks';
 import { render, screen } from '~/mocks/setup';
 import { MessageHeader } from '.';
 
+const mocks = vi.hoisted(() => ({
+  useEdificeTheme: vi.fn(),
+}));
+
+vi.mock('@edifice.io/react', async () => {
+  const actual =
+    await vi.importActual<typeof import('@edifice.io/react')>(
+      '@edifice.io/react',
+    );
+  return {
+    ...actual,
+    useEdificeTheme: mocks.useEdificeTheme,
+  };
+});
+
 describe('Message recipient list', () => {
+  beforeAll(() => {
+    mocks.useEdificeTheme.mockReturnValue({ theme: { is1d: false } });
+  });
+
   afterEach(() => {
     vi.clearAllMocks();
   });

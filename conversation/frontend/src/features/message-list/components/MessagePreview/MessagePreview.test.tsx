@@ -6,13 +6,15 @@ import {
 } from '~/mocks';
 import { render, screen } from '~/mocks/setup';
 import { MessageMetadata } from '~/models';
-import { MessagePreview } from '.';
+import { MessagePreview } from './MessagePreview';
 
 const inboxMessage = mockMessagesOfInbox[0];
 const userFolderId = '23785dbc-dc2e-4f66-95a4-23f587d65008';
 
 const mocks = vi.hoisted(() => ({
   useParams: vi.fn(),
+  useEdificeTheme: vi.fn(),
+  useEdificeClient: vi.fn(),
 }));
 
 vi.mock('react-router-dom', async () => {
@@ -33,18 +35,21 @@ vi.mock('@edifice.io/react', async () => {
     );
   return {
     ...actual,
-    useEdificeClient: () => ({
-      user: { userId: mockCurrentUserPreview.id },
-    }),
+    useEdificeClient: mocks.useEdificeClient,
+    useEdificeTheme: mocks.useEdificeTheme,
   };
 });
 
 describe('Message preview header component', () => {
-  beforeEach(() => {
+  beforeAll(() => {
+    mocks.useEdificeTheme.mockReturnValue({ theme: { is1d: false } });
+    mocks.useEdificeClient.mockReturnValue({
+      user: { userId: mockCurrentUserPreview.id },
+    });
     mocks.useParams.mockReturnValue({ folderId: 'inbox' });
   });
 
-  afterEach(() => {
+  afterAll(() => {
     vi.clearAllMocks();
   });
 

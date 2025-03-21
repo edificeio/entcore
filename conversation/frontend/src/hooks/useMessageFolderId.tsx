@@ -7,13 +7,13 @@ export function useMessageFolderId(message: MessageMetadata) {
   const { folderId } = useSelectedFolder();
   const { user } = useEdificeClient();
 
-  const isInUserFolder =
-    folderId && !['draft', 'outbox', 'trash', 'inbox'].includes(folderId);
+  const isInUserFolderOrTrash =
+    !!folderId && !['draft', 'outbox', 'inbox'].includes(folderId);
 
-  if (!isInUserFolder || !user) {
+  if (!isInUserFolderOrTrash || !user) {
     return {
       messageFolderId: folderId,
-      isInUserFolder,
+      isInUserFolderOrTrash,
     };
   }
 
@@ -31,6 +31,6 @@ export function useMessageFolderId(message: MessageMetadata) {
 
   return {
     messageFolderId: originFolderId,
-    isInUserFolder,
+    isInUserFolderOrTrash,
   };
 }

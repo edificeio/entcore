@@ -39,7 +39,7 @@ import {
 import { useConfirmModalStore } from '~/store';
 import { useAppActions, useSelectedMessageIds } from '~/store/actions';
 import { useFolderHandlers } from '../menu/hooks/useFolderHandlers';
-import { MessagePreview } from './components/message-preview';
+import { MessagePreview } from './components/MessagePreview/MessagePreview';
 
 export function MessageList() {
   const navigate = useNavigate();
