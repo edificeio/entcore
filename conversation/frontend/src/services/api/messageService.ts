@@ -138,6 +138,6 @@ export const createMessageService = (baseURL: string) => ({
       cci?: string[];
     },
   ) {
-    return postThenVoid(`${baseURL}/draft/${draftId}`, payload);
+    return odeServices.http().put(`${baseURL}/draft/${draftId}`, payload);
   },
 });
