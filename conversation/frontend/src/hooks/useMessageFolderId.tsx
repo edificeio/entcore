@@ -1,6 +1,7 @@
 import { useEdificeClient } from '@edifice.io/react';
 import { MessageMetadata } from '~/models';
 import { useSelectedFolder } from './useSelectedFolder';
+import { isInRecipient } from '~/services';
 
 export function useMessageFolderId(message: MessageMetadata) {
   const { folderId } = useSelectedFolder();
@@ -9,22 +10,20 @@ export function useMessageFolderId(message: MessageMetadata) {
   const isInUserFolder =
     folderId && !['draft', 'outbox', 'trash', 'inbox'].includes(folderId);
 
-  if (!isInUserFolder) {
+  if (!isInUserFolder || !user) {
     return {
       messageFolderId: folderId,
       isInUserFolder,
     };
   }
 
-  const isUserAuthor = message.from.id === user?.userId;
-  const isCurrentUserRecipient = [message.to, message.cc, message.cci].some(
-    (recipients) => recipients?.users?.some((u) => u.id === user?.userId),
-  );
+  const isUserAuthor = message.from.id === user.userId;
+  const isCurrentUserInRecipient = isInRecipient(message, user.userId);
 
   const originFolderId =
     message.state === 'DRAFT'
       ? 'draft'
-      : isCurrentUserRecipient
+      : isCurrentUserInRecipient
         ? 'inbox'
         : isUserAuthor
           ? 'outbox'
