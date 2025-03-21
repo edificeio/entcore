@@ -318,6 +318,8 @@ export const useCreateOrUpdateDraft = () => {
   const updateDraft = useUpdateDraft();
   const createDraft = useCreateDraft();
   const messageUpdated = useMessageUpdated();
+  const navigate = useNavigate();
+
   return () => {
     if (!messageUpdated) return;
 
@@ -344,7 +346,10 @@ export const useCreateOrUpdateDraft = () => {
         payload,
       });
     } else {
-      return createDraft.mutate({ payload });
+      return createDraft.mutate(
+        { payload },
+        { onSuccess: ({ id }) => navigate(`/draft/message/${id}`) },
+      );
     }
   };
 };
@@ -358,7 +363,6 @@ export const useCreateDraft = () => {
   const messageUpdated = useMessageUpdated();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
 
   return useMutation({
     mutationFn: ({
@@ -383,7 +387,6 @@ export const useCreateDraft = () => {
       queryClient.invalidateQueries({
         queryKey: [...folderQueryOptions.base, 'draft', 'messages'],
       });
-      navigate(`/draft/message/${id}`);
     },
   });
 };
