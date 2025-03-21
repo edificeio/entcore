@@ -1,6 +1,6 @@
 import { mockFullMessage } from '~/mocks';
 import { render, screen } from '~/mocks/setup';
-import { MessageRecipientList } from './MessageRecipientList';
+import { MessageRecipientSubList } from './MessageRecipientSubList';
 
 const mockRecipients = mockFullMessage.to;
 const RecipientListlabel = 'To :';
@@ -25,10 +25,9 @@ describe('Message recipient list', () => {
 
   it('should render a label ', async () => {
     render(
-      <MessageRecipientList
+      <MessageRecipientSubList
         head={RecipientListlabel}
         recipients={mockRecipients}
-        hasLink
       />,
     );
     const recipientsLabel = await screen.findByText(RecipientListlabel);
@@ -37,10 +36,9 @@ describe('Message recipient list', () => {
 
   it('should display "Me" instead of the first name when the user is the logged-in user', async () => {
     render(
-      <MessageRecipientList
+      <MessageRecipientSubList
         head={RecipientListlabel}
         recipients={mockRecipients}
-        hasLink
       />,
     );
     const currentUserLabel = await screen.findAllByText('me');
@@ -49,10 +47,9 @@ describe('Message recipient list', () => {
 
   it('should open the userbook in a new tab when clicking on a user', async () => {
     render(
-      <MessageRecipientList
+      <MessageRecipientSubList
         head={RecipientListlabel}
         recipients={mockRecipients}
-        hasLink
       />,
     );
     const displayNameUser = 'ISABELLE POLONIO (prof arts plastiques)';
@@ -65,10 +62,9 @@ describe('Message recipient list', () => {
 
   it('should open the userbook in a new tab when clicking on a group', async () => {
     render(
-      <MessageRecipientList
+      <MessageRecipientSubList
         head={RecipientListlabel}
         recipients={mockRecipients}
-        hasLink
       />,
     );
     const displayNameGroup = 'Enseignants du groupe scolaire.';
