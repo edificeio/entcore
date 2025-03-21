@@ -29,3 +29,33 @@ export const useAttachFiles = () => {
     },
   });
 };
+
+/**
+ * Hook to remove a File from a draft message.
+ * @returns Mutation result for removing the File.
+ */
+export const useRemoveFile = () => {
+  const queryClient = useQueryClient();
+  const toast = useToast();
+
+  return useMutation({
+    mutationFn: ({
+      draftId,
+      attachmentId,
+    }: {
+      draftId: string;
+      attachmentId: string;
+    }) => attachmentService.detach(draftId, attachmentId),
+    onSuccess(_ids, { draftId }) {
+      queryClient.invalidateQueries({
+        queryKey: messageQueryOptions.getById(draftId).queryKey,
+      });
+    },
+    onError(error, { draftId }) {
+      queryClient.invalidateQueries({
+        queryKey: messageQueryOptions.getById(draftId).queryKey,
+      });
+      toast.error(error.message);
+    },
+  });
+};

@@ -314,6 +314,11 @@ export const useMoveMessage = () => {
   });
 };
 
+/**
+ * Hook that generates a function to create a new, or update an existing, draft message.
+ * When the draft message is created, the function will return its id.
+ * @returns
+ */
 export const useCreateOrUpdateDraft = () => {
   const updateDraft = useUpdateDraft();
   const createDraft = useCreateDraft();
@@ -340,18 +345,12 @@ export const useCreateOrUpdateDraft = () => {
     };
 
     if (messageUpdated.id && messageUpdated.state === 'DRAFT') {
-      return updateDraft.mutate({
+      updateDraft.mutateAsync({
         draftId: messageUpdated.id,
         payload,
       });
     } else {
-      return createDraft.mutate(
-        { payload },
-        {
-          onSuccess: ({ id }) =>
-            window.history.replaceState(null, '', `/draft/message/${id}`),
-        },
-      );
+      return createDraft.mutateAsync({ payload });
     }
   };
 };

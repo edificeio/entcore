@@ -12,6 +12,7 @@ import {
   useMessageUpdatedNeedToSave,
 } from '~/store';
 import { MessageHeaderEdit } from './MessageHeaderEdit';
+import { useNavigate } from 'react-router-dom';
 
 export interface MessageEditProps {
   message: Message;
@@ -27,6 +28,7 @@ export function MessageEdit({ message }: MessageEditProps) {
   const debounceTimeToSave = useRef(5000);
   const createOrUpdateDraft = useCreateOrUpdateDraft();
   const [contentKey, setContentKey] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     odeServices
@@ -60,7 +62,9 @@ export function MessageEdit({ message }: MessageEditProps) {
 
   useEffect(() => {
     if (messageUpdatedDebounced && messageUpdatedNeedSave) {
-      createOrUpdateDraft();
+      createOrUpdateDraft()?.then(({ id }) => {
+        if (id) navigate(`/draft/message/${id}`);
+      });
       setMessageUpdatedNeedToSave(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

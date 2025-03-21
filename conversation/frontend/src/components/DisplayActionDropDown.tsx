@@ -124,8 +124,9 @@ export function DisplayActionDropDown({
     });
   };
 
-  const handleDraftSaveClick = () => {
-    createOrUpdateDraft();
+  const handleDraftSaveClick = async () => {
+    const promise = createOrUpdateDraft();
+    if (promise) navigate(`/draft/message/${(await promise).id}`);
   };
 
   const handleMarkAsUnreadClick = () => {
