@@ -9,6 +9,7 @@ import {
 import {
   IconDelete,
   IconFolderDelete,
+  IconFolderMove,
   IconOptions,
   IconPrint,
   IconRedo,
@@ -21,6 +22,7 @@ import {
 } from '@edifice.io/react/icons';
 import { RefAttributes, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useFolderHandlers } from '~/features/menu/hooks/useFolderHandlers';
 import { useI18n, useSelectedFolder } from '~/hooks';
 import { Message } from '~/models';
 import {
@@ -32,7 +34,7 @@ import {
   useRestoreMessage,
   useTrashMessage,
 } from '~/services';
-import { useConfirmModalStore } from '~/store';
+import { useAppActions, useConfirmModalStore } from '~/store';
 
 export interface DisplayActionDropDownProps {
   message: Message;
@@ -60,48 +62,18 @@ export function DisplayActionDropDown({
   const moveToTrashQuery = useTrashMessage();
   const createOrUpdateDraft = useCreateOrUpdateDraft();
   const moveMessage = useMoveMessage();
+  const { handleMoveMessage } = useFolderHandlers();
+  const { setSelectedMessageIds } = useAppActions();
 
   const { folderId } = useSelectedFolder();
   const { user } = useEdificeClient();
   const { success } = useToast();
 
+  // Hidden condition's
   const isInFolder = useMemo(() => {
-    if (folderId && ['trash', 'inbox', 'outbox', 'draft'].includes(folderId))
-      return;
+    if (folderId && ['trash', 'inbox', 'outbox'].includes(folderId)) return;
     return true;
   }, [folderId]);
-
-  const buttonAction = [
-    {
-      label: t('reply'),
-      id: 'reply',
-      icon: <IconUndo />,
-      action: () => {
-        alert('reply');
-      },
-      hidden: message.state === 'DRAFT' || message.trashed,
-    },
-    {
-      label: t('submit'),
-      id: 'submit',
-      icon: <IconSend />,
-      action: () => {
-        alert('submit');
-        console.log('submit', message);
-      },
-      hidden: message.state !== 'DRAFT' || message.trashed,
-    },
-    {
-      label: t('restore'),
-      id: 'restore',
-      icon: <IconRestore />,
-      action: () => {
-        restoreQuery.mutate({ id: message.id });
-        navigate('/trash');
-      },
-      hidden: !message.trashed,
-    },
-  ];
 
   const canReplyAll = useMemo(() => {
     const { to, cc, cci } = message;
@@ -133,6 +105,11 @@ export function DisplayActionDropDown({
     );
   }, [message, folderId, user]);
 
+  const hasActionsList = (idAction: string) => {
+    return !actions || actions.includes(idAction);
+  };
+
+  // Handlers
   const handleDeleteClick = () => {
     openModal({
       id: 'delete-modal',
@@ -154,10 +131,6 @@ export function DisplayActionDropDown({
   const handleMarkAsUnreadClick = () => {
     markAsUnreadQuery.mutate({ messages: [message] });
     navigate(`../..`, { relative: 'path' });
-  };
-
-  const hasActionsList = (idAction: string) => {
-    return !actions || actions.includes(idAction);
   };
 
   const handleRemoveFromFolder = () => {
@@ -183,6 +156,39 @@ export function DisplayActionDropDown({
       },
     });
   };
+
+  // Buttons
+  const buttonAction = [
+    {
+      label: t('reply'),
+      id: 'reply',
+      icon: <IconUndo />,
+      action: () => {
+        alert('reply');
+      },
+      hidden: message.state === 'DRAFT' || message.trashed,
+    },
+    {
+      label: t('submit'),
+      id: 'submit',
+      icon: <IconSend />,
+      action: () => {
+        alert('submit');
+        console.log('submit', message);
+      },
+      hidden: message.state !== 'DRAFT' || message.trashed,
+    },
+    {
+      label: t('restore'),
+      id: 'restore',
+      icon: <IconRestore />,
+      action: () => {
+        restoreQuery.mutate({ id: message.id });
+        navigate('/trash');
+      },
+      hidden: !message.trashed,
+    },
+  ];
 
   const options = [
     {
@@ -249,11 +255,25 @@ export function DisplayActionDropDown({
       hidden: !hasActionsList('print') || message.state === 'DRAFT',
     },
     {
+      label: t('move'),
+      id: 'move',
+      icon: <IconFolderMove />,
+      action: () => {
+        setSelectedMessageIds([message.id]);
+        handleMoveMessage();
+      },
+      hidden:
+        !hasActionsList('move') || message.state === 'DRAFT' || message.trashed,
+    },
+    {
       label: t('remove.from.folder'),
       id: 'remove-from-folder-modal',
       icon: <IconFolderDelete />,
       action: handleRemoveFromFolder,
-      hidden: !hasActionsList('remove-from-folder-modal') || !isInFolder,
+      hidden:
+        !hasActionsList('remove-from-folder-modal') ||
+        !isInFolder ||
+        message.state === 'DRAFT',
     },
   ];
 
