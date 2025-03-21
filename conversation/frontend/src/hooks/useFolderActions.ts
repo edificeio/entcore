@@ -9,12 +9,16 @@ import {
   useRenameFolder,
 } from '~/services';
 import { useCallback, useState } from 'react';
+import { useSelectedFolder } from './useSelectedFolder';
+import { useNavigate } from 'react-router-dom';
 
 const MAX_LENGTH = 50;
 
 export function useFolderActions() {
   const { t } = useI18n();
   const { success, error } = useToast();
+  const navigate = useNavigate();
+  const currentFolder = useSelectedFolder();
   const foldersTreeQuery = useFoldersTree();
   const selectedFolders = useSelectedFolders();
   const createMutation = useCreateFolder();
@@ -66,7 +70,15 @@ export function useFolderActions() {
       trashMutation.mutate(
         { id },
         {
-          onSuccess: () => success(t('conversation.success.trash.folder')),
+          onSuccess: () => {
+            success(t('conversation.success.trash.folder'));
+            if (
+              id === currentFolder.folderId ||
+              id === currentFolder.userFolder?.id
+            ) {
+              navigate('/inbox');
+            }
+          },
           onError: () => error(t('conversation.error.trash.folder')),
           onSettled: () => setIsPending(false),
         },
@@ -75,7 +87,16 @@ export function useFolderActions() {
     } else {
       return false;
     }
-  }, [error, selectedFolders, success, t, trashMutation]);
+  }, [
+    currentFolder.folderId,
+    currentFolder.userFolder?.id,
+    error,
+    navigate,
+    selectedFolders,
+    success,
+    t,
+    trashMutation,
+  ]);
 
   const renameFolder = useCallback(
     (name: string) => {
