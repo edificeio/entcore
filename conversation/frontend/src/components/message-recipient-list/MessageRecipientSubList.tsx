@@ -4,26 +4,30 @@ import { useTranslation } from 'react-i18next';
 import { Recipients } from '~/models';
 import { MessageRecipientListItem } from './MessageRecipientListItem';
 
-export interface RecipientListProps {
+export interface MessageRecipientSubListProps {
   recipients: Recipients;
-  head?: ReactNode;
-  color?: 'text-gray-800' | 'text-gray-700';
+  head: ReactNode;
   truncate?: boolean;
-  hasLink?: boolean;
+  inline?: boolean;
 }
 
-export function MessageRecipientList({
+export function MessageRecipientSubList({
   recipients,
   head,
-  color = 'text-gray-700',
-  truncate = false,
-  hasLink = false,
-}: RecipientListProps) {
+  inline = false,
+}: MessageRecipientSubListProps) {
   const recipientArray = [...recipients.users, ...recipients.groups];
   const { t } = useTranslation('conversation');
+
+  const hasLink = !inline;
+  const color = inline ? 'text-gray-800' : 'text-gray-700';
+  const headIsBold = !inline;
+
   return (
-    <div className={clsx({ 'text-truncate': truncate }, color)}>
-      {head && <span className="text-uppercase me-4">{head}</span>}
+    <div className={clsx({ 'd-inline pe-4': inline }, color)}>
+      <span className={clsx('text-uppercase me-4', { 'fw-bold': headIsBold })}>
+        {head}
+      </span>
       <ul
         className={'list-unstyled mb-0 d-inline'}
         aria-label={t('recipient.list')}
