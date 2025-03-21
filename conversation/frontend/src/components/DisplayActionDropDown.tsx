@@ -4,9 +4,11 @@ import {
   IconButton,
   IconButtonProps,
   useEdificeClient,
+  useToast,
 } from '@edifice.io/react';
 import {
   IconDelete,
+  IconFolderDelete,
   IconOptions,
   IconPrint,
   IconRedo,
@@ -26,6 +28,7 @@ import {
   useCreateOrUpdateDraft,
   useDeleteMessage,
   useMarkUnread,
+  useMoveMessage,
   useRestoreMessage,
   useTrashMessage,
 } from '~/services';
@@ -56,8 +59,17 @@ export function DisplayActionDropDown({
   const restoreQuery = useRestoreMessage();
   const moveToTrashQuery = useTrashMessage();
   const createOrUpdateDraft = useCreateOrUpdateDraft();
+  const moveMessage = useMoveMessage();
+
   const { folderId } = useSelectedFolder();
   const { user } = useEdificeClient();
+  const { success } = useToast();
+
+  const isInFolder = useMemo(() => {
+    if (folderId && ['trash', 'inbox', 'outbox', 'draft'].includes(folderId))
+      return;
+    return true;
+  }, [folderId]);
 
   const buttonAction = [
     {
@@ -148,6 +160,30 @@ export function DisplayActionDropDown({
     return !actions || actions.includes(idAction);
   };
 
+  const handleRemoveFromFolder = () => {
+    openModal({
+      id: 'remove-from-folder-modal',
+      header: <>{t('remove.from.folder')}</>,
+      body: <p>{t('remove.from.folder.confirm')}</p>,
+      okText: t('confirm'),
+      koText: t('cancel'),
+      onSuccess: async () => {
+        moveMessage.mutate(
+          {
+            folderId: 'inbox',
+            id: message.id,
+          },
+          {
+            onSuccess: () => {
+              navigate(`/folder/${folderId}`);
+              success(t('message.remove.from.folder'));
+            },
+          },
+        );
+      },
+    });
+  };
+
   const options = [
     {
       label: t('replyall'),
@@ -211,6 +247,13 @@ export function DisplayActionDropDown({
         alert('print');
       },
       hidden: !hasActionsList('print') || message.state === 'DRAFT',
+    },
+    {
+      label: t('remove.from.folder'),
+      id: 'remove-from-folder-modal',
+      icon: <IconFolderDelete />,
+      action: handleRemoveFromFolder,
+      hidden: !isInFolder,
     },
   ];
 
