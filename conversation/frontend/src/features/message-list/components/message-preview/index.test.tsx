@@ -172,9 +172,14 @@ describe('Message preview header component', () => {
     mocks.useParams.mockReturnValue({ folderId: 'outbox' });
     render(<MessagePreview message={mockMessageOfOutbox} />);
 
-    screen.getByText('at');
-
+    const atLabel = await screen.findByText('at');
+    const cciLabel = await screen.findByText('cci');
+    const ccLabel = await screen.findByText('cc');
     const recipientItems = screen.getAllByRole('listitem');
+
+    expect(atLabel).toBeInTheDocument();
+    expect(ccLabel).toBeInTheDocument();
+    expect(cciLabel).toBeInTheDocument();
     expect(recipientItems).toHaveLength(4);
   });
 
@@ -182,17 +187,6 @@ describe('Message preview header component', () => {
     mocks.useParams.mockReturnValue({ folderId: 'draft' });
     render(<MessagePreview message={mockMessageOfOutbox} />);
     screen.getByText('draft');
-  });
-
-  it('should display all recipients without "to" label when in draft', async () => {
-    mocks.useParams.mockReturnValue({ folderId: 'draft' });
-    render(<MessagePreview message={mockMessageOfOutbox} />);
-
-    const atElement = screen.queryByText('at');
-    expect(atElement).toBeNull();
-
-    const recipientItems = screen.queryAllByRole('listitem');
-    expect(recipientItems).toHaveLength(4);
   });
 
   it('should not display any recipients if there are none when in draft', async () => {
