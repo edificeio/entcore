@@ -349,7 +349,7 @@ public class DefaultUserBookService implements UserBookService {
 						final List<String> usersList = new ArrayList<>();
 						usersList.add(userId);
 
-						if (userBookData.getString("picture", "").isEmpty()) {
+						if (!userBookData.containsKey("picture")) {
 							result.handle(new Either.Right<>(new JsonObject()));
 						}
 						else {
