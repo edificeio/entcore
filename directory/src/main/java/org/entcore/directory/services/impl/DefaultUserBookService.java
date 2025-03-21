@@ -349,7 +349,7 @@ public class DefaultUserBookService implements UserBookService {
 						final List<String> usersList = new ArrayList<>();
 						usersList.add(userId);
 
-						if (picture.isEmpty()) {
+						if (userBookData.getString("picture", "").isEmpty()) {
 							result.handle(new Either.Right<>(new JsonObject()));
 						}
 						else {
