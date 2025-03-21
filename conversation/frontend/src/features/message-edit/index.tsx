@@ -84,7 +84,7 @@ export function MessageEdit({ message }: MessageEditProps) {
       </FormControl>
       <MessageBody
         key={contentKey}
-        message={messageUpdated}
+        message={message}
         editMode={true}
         onMessageChange={handleMessageChange}
       />

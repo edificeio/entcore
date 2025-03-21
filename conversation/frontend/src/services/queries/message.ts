@@ -7,7 +7,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { Message, MessageBase, MessageMetadata } from '~/models';
 import { useAppActions, useMessageUpdated } from '~/store';
 import {
@@ -317,7 +317,6 @@ export const useCreateOrUpdateDraft = () => {
   const updateDraft = useUpdateDraft();
   const createDraft = useCreateDraft();
   const messageUpdated = useMessageUpdated();
-  const navigate = useNavigate();
 
   return () => {
     if (!messageUpdated) return;
@@ -347,7 +346,10 @@ export const useCreateOrUpdateDraft = () => {
     } else {
       return createDraft.mutate(
         { payload },
-        { onSuccess: ({ id }) => navigate(`/draft/message/${id}`) },
+        {
+          onSuccess: ({ id }) =>
+            window.history.replaceState(null, '', `/draft/message/${id}`),
+        },
       );
     }
   };
