@@ -44,11 +44,7 @@ export function MessageBody({
         extensions={extensions}
         onContentChange={handleContentChange}
       />
-      <MessageAttachments
-        attachments={message.attachments}
-        messageId={message.id}
-        editMode={editMode}
-      />
+      <MessageAttachments message={message} editMode={editMode} />
     </section>
   );
 }

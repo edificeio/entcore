@@ -2,35 +2,40 @@ import { Button, IconButton } from '@edifice.io/react';
 import { IconDownload, IconFolderAdd, IconPlus } from '@edifice.io/react/icons';
 import clsx from 'clsx';
 import { useI18n } from '~/hooks';
-import { Attachment as AttachmentMetaData } from '~/models';
+import { Message } from '~/models';
 import { MessageAttachment } from './MessageAttachment';
 import './index.css';
-import { ChangeEvent, useRef } from 'react';
+import { ChangeEvent, useMemo, useRef } from 'react';
 import { useMessageAttachments } from '~/hooks/useMessageAttachments';
 
 export interface MessageAttachmentsProps {
-  attachments: AttachmentMetaData[];
-  messageId: string;
+  message: Message;
   editMode?: boolean;
 }
 
 export function MessageAttachments({
-  attachments,
-  messageId,
+  message,
   editMode = false,
 }: MessageAttachmentsProps) {
   const { common_t, t } = useI18n();
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const { downloadAllUrl, attachFiles } = useMessageAttachments({
-    messageId,
-    attachments,
-    editMode,
-  });
+  const { downloadAllUrl, attachFiles } = useMessageAttachments(message);
+
+  // This memo is required because `message` is intended to change sometimes
+  const { attachments } = useMemo(
+    () => ({
+      attachments: message.attachments,
+    }),
+    [message],
+  );
 
   if (!attachments.length && !editMode) return null;
 
-  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) =>
+  const handleAttachClick = () => inputRef?.current?.click();
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     attachFiles(event.target.files);
+  };
 
   const className = clsx(
     'bg-gray-300 rounded-2 px-12 py-8 message-attachments gap-8 d-flex flex-column',
@@ -71,7 +76,8 @@ export function MessageAttachments({
               <li key={attachment.id}>
                 <MessageAttachment
                   attachment={attachment}
-                  messageId={messageId}
+                  message={message}
+                  editMode={editMode}
                 />
               </li>
             ))}
@@ -84,7 +90,7 @@ export function MessageAttachments({
             color="secondary"
             variant="ghost"
             leftIcon={<IconPlus />}
-            onClick={() => inputRef?.current?.click()}
+            onClick={handleAttachClick}
           >
             {t('add.attachment')}
           </Button>
