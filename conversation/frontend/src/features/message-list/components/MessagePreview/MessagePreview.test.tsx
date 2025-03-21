@@ -6,7 +6,7 @@ import {
 } from '~/mocks';
 import { render, screen } from '~/mocks/setup';
 import { MessageMetadata } from '~/models';
-import { MessagePreview } from '.';
+import { MessagePreview } from './MessagePreview';
 
 const inboxMessage = mockMessagesOfInbox[0];
 const userFolderId = '23785dbc-dc2e-4f66-95a4-23f587d65008';

@@ -20,7 +20,6 @@ export function MessagePreview({ message }: MessagePreviewProps) {
   const senderDisplayName = useMessageUserDisplayName(message.from);
   const { messageFolderId, isInUserFolderOrTrash } =
     useMessageFolderId(message);
-
   if (!messageFolderId) return null;
 
   return (
