@@ -25,9 +25,7 @@ export function MessageRecipientSubList({
 
   return (
     <div className={clsx({ 'd-inline pe-4': inline }, color)}>
-      <span className={clsx('text-uppercase me-4', { 'fw-bold': headIsBold })}>
-        {head}
-      </span>
+      <span className={clsx('me-4', { 'fw-bold': headIsBold })}>{head}</span>
       <ul
         className={'list-unstyled mb-0 d-inline'}
         aria-label={t('recipient.list')}
