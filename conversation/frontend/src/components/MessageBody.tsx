@@ -3,28 +3,42 @@ import {
   ConversationHistoryRenderer,
   Editor,
 } from '@edifice.io/react/editor';
+import { useEffect, useState } from 'react';
 import { MessageAttachments } from '~/components/message-attachments';
-import { Message as MessageData } from '~/models';
+import { Message } from '~/models';
 import './MessageBody.css';
 
 export interface MessageBodyProps {
-  message: MessageData;
+  message: Message;
   editMode?: boolean;
+  onMessageChange?: (message: Message) => void;
 }
 
-export function MessageBody({ message, editMode }: MessageBodyProps) {
+export function MessageBody({
+  message,
+  editMode,
+  onMessageChange,
+}: MessageBodyProps) {
+  const [content, setContent] = useState('');
   const extensions = [ConversationHistoryNodeView(ConversationHistoryRenderer)];
 
   const handleContentChange = ({ editor }: { editor: any }) => {
     if (!editMode) return;
-    message.body = editor?.getHTML();
+    if (onMessageChange) {
+      onMessageChange({ ...message, body: editor?.getHTML() });
+    }
   };
+
+  useEffect(() => {
+    setContent(message.body);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <section className="d-flex flex-column gap-16">
       <Editor
         id="messageBody"
-        content={message.body}
+        content={content}
         mode={editMode ? 'edit' : 'read'}
         variant="ghost"
         extensions={extensions}

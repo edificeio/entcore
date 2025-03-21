@@ -55,7 +55,7 @@ export const messageHandlers = [
   http.post(`${baseUrl}/draft`, () => {
     return HttpResponse.json({ id: 'message_draft' }, { status: 201 });
   }),
-  http.post(`${baseUrl}/draft/:draftId`, () => {
+  http.put(`${baseUrl}/draft/:draftId`, () => {
     return HttpResponse.text('', { status: 200 });
   }),
   http.post(`${baseUrl}/send`, async ({ request }) => {
