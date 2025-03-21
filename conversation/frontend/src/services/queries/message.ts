@@ -318,7 +318,7 @@ export const useCreateOrUpdateDraft = () => {
   const updateDraft = useUpdateDraft();
   const createDraft = useCreateDraft();
   const messageUpdated = useMessageUpdated();
-  return () => {
+  return async () => {
     if (!messageUpdated) return;
 
     const payload = {
@@ -339,12 +339,12 @@ export const useCreateOrUpdateDraft = () => {
     };
 
     if (messageUpdated.id && messageUpdated.state === 'DRAFT') {
-      return updateDraft.mutate({
+      return await updateDraft.mutateAsync({
         draftId: messageUpdated.id,
         payload,
       });
     } else {
-      return createDraft.mutate({ payload });
+      return await createDraft.mutateAsync({ payload });
     }
   };
 };

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { DisplayActionDropDown } from '~/components/DisplayActionDropDown';
 import { MessageBody } from '~/components/MessageBody';
 import { useI18n } from '~/hooks';
+import { useCancelMessageUpdate } from '~/hooks/useCancelMessageUpdate';
 import { Message } from '~/models';
 import { useCreateOrUpdateDraft } from '~/services';
 import {
@@ -27,20 +28,10 @@ export function MessageEdit({ message }: MessageEditProps) {
   const debounceTimeToSave = useRef(5000);
   const createOrUpdateDraft = useCreateOrUpdateDraft();
   const [contentKey, setContentKey] = useState(0);
-
-  useEffect(() => {
-    odeServices
-      .conf()
-      .getPublicConf('conversation')
-      .then((publicConf: any) => {
-        if (publicConf && publicConf['debounce-time-to-auto-save']) {
-          debounceTimeToSave.current = publicConf['debounce-time-to-auto-save'];
-        }
-      });
-    setMessageUpdated(message);
-    setContentKey((contentKey) => contentKey + 1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { isBlocked } = useCancelMessageUpdate(
+    messageUpdatedNeedSave,
+    createOrUpdateDraft,
+  );
 
   const handleSubjectChange = (subject: string) => {
     setSubject(subject);
@@ -57,6 +48,29 @@ export function MessageEdit({ message }: MessageEditProps) {
     messageUpdated,
     debounceTimeToSave.current,
   );
+
+  useEffect(() => {
+    odeServices
+      .conf()
+      .getPublicConf('conversation')
+      .then((publicConf: any) => {
+        if (publicConf && publicConf['debounce-time-to-auto-save']) {
+          debounceTimeToSave.current = publicConf['debounce-time-to-auto-save'];
+        }
+      });
+    setMessageUpdated(message);
+    setContentKey((contentKey) => contentKey + 1);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (isBlocked) {
+      createOrUpdateDraft();
+      setMessageUpdatedNeedToSave(false);
+      window.close();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isBlocked]);
 
   useEffect(() => {
     if (messageUpdatedDebounced && messageUpdatedNeedSave) {
