@@ -176,7 +176,7 @@ export function MessageList() {
   };
 
   const handleMessageClick = (message: MessageMetadata) => {
-    if (message.unread) {
+    if (message.unread && !isInDraft) {
       updateFolderBadgeCountLocal(folderId!, -1);
     }
     navigate(`message/${message.id}`);
