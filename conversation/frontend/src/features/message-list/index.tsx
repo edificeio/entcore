@@ -28,6 +28,7 @@ import { MessageMetadata } from '~/models';
 import {
   isInRecipient,
   useDeleteMessage,
+  useEmptyTrash,
   useFolderMessages,
   useMarkRead,
   useMarkUnread,
@@ -58,6 +59,7 @@ export function MessageList() {
   const moveToTrashQuery = useTrashMessage();
   const restoreQuery = useRestoreMessage();
   const deleteMessage = useDeleteMessage();
+  const emptyTrashQuery = useEmptyTrash();
   const moveMessage = useMoveMessage();
 
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
@@ -153,6 +155,11 @@ export function MessageList() {
     return selectedMessages.length > 0;
   }, [folderId, selectedMessages]);
 
+  const canEmptyTrash = useMemo(() => {
+    if (!isInTrash) return false;
+    return messages.length > 0;
+  }, [folderId, messages]);
+
   const handleMarkAsReadClick = () => {
     markAsReadQuery.mutate({ messages: selectedMessages });
   };
@@ -226,6 +233,25 @@ export function MessageList() {
 
         success(confirmMessage);
         setCurrent((prev) => prev + 1);
+      },
+    });
+  };
+
+  const handleEmptyTrash = () => {
+    openModal({
+      id: 'empty-trash-modal',
+      header: <>{t('empty.trash')}</>,
+      body: (
+        <p>
+          {t('empty.trash.confirm', {
+            count: messages.length,
+          })}
+        </p>
+      ),
+      okText: t('confirm'),
+      koText: t('cancel'),
+      onSuccess: () => {
+        emptyTrashQuery.mutate();
       },
     });
   };
@@ -327,6 +353,20 @@ export function MessageList() {
         ),
         onClick: handleRemoveFromFolder,
         hidden: !isInFolder,
+      },
+    },
+    {
+      type: 'button',
+      name: 'empty-trash',
+      props: {
+        children: (
+          <>
+            <IconDelete />
+            <span>{t('empty.trash')}</span>
+          </>
+        ),
+        onClick: handleEmptyTrash,
+        hidden: !canEmptyTrash,
       },
     },
   ];
