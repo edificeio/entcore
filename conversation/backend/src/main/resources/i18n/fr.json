@@ -148,6 +148,7 @@
   "recipient.avatar.group": "Plusieurs destinataires",
   "recipient.avatar.empty": "Aucun destinataire",
   "remove.attachment": "Supprimer la pièce jointe",
+  "remove.all.attachment": "Supprimer toutes les pièces jointes",
   "remove.from.folder": "Retirer du dossier",
   "remove.from.folder.confirm": "Le ou les messages que vous avez sélectionné vont être retirés du dossier et placés dans dans leur emplacement d’origine.",
   "remove.link": "Supprimer",

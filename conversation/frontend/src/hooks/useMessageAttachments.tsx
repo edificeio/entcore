@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Message } from '~/models';
+import { Attachment, Message } from '~/models';
 import { baseUrl, useCreateOrUpdateDraft } from '~/services';
 import { useAttachFiles, useRemoveFile } from '~/services/queries/attachment';
 
@@ -36,11 +36,17 @@ export function useMessageAttachments({ id, attachments }: Message) {
     });
   }
 
-  async function detachFile(attachmentId: string) {
+  function detachFile(attachmentId: string) {
     return detachFileMutation.mutateAsync({
       draftId: id,
       attachmentId,
     });
+  }
+
+  function detachFiles(attachments: Attachment[]) {
+    return Promise.all(
+      attachments.map((attachment) => detachFile(attachment.id)),
+    );
   }
 
   return {
@@ -48,6 +54,7 @@ export function useMessageAttachments({ id, attachments }: Message) {
     downloadAllUrl,
     attachFiles,
     detachFile,
+    detachFiles,
     isMutating: attachFileMutation.isPending || detachFileMutation.isPending,
   };
 }

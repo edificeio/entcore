@@ -1,5 +1,6 @@
 import { Button, IconButton } from '@edifice.io/react';
 import {
+  IconDelete,
   IconDownload,
   IconFolderAdd,
   IconLoader,
@@ -24,7 +25,7 @@ export function MessageAttachments({
 }: MessageAttachmentsProps) {
   const { common_t, t } = useI18n();
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const { attachments, downloadAllUrl, attachFiles, isMutating } =
+  const { attachments, downloadAllUrl, attachFiles, detachFiles, isMutating } =
     useMessageAttachments(message);
 
   if (!attachments.length && !editMode) return null;
@@ -34,6 +35,8 @@ export function MessageAttachments({
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
     attachFiles(event.target.files);
   };
+
+  const handleDetachAllClick = () => detachFiles(attachments);
 
   const className = clsx(
     'bg-gray-300 rounded-2 px-12 py-8 message-attachments gap-8 d-flex flex-column',
@@ -66,6 +69,17 @@ export function MessageAttachments({
                     variant="ghost"
                   />
                 </a>
+                {editMode && (
+                  <IconButton
+                    title={t('remove.all.attachment')}
+                    color="danger"
+                    type="button"
+                    icon={<IconDelete />}
+                    variant="ghost"
+                    onClick={handleDetachAllClick}
+                    disabled={isMutating}
+                  />
+                )}
               </div>
             )}
           </div>
