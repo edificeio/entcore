@@ -48,5 +48,6 @@ export function useMessageAttachments({ id, attachments }: Message) {
     downloadAllUrl,
     attachFiles,
     detachFile,
+    isMutating: attachFileMutation.isPending || detachFileMutation.isPending,
   };
 }

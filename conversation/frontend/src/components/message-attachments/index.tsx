@@ -1,5 +1,10 @@
 import { Button, IconButton } from '@edifice.io/react';
-import { IconDownload, IconFolderAdd, IconPlus } from '@edifice.io/react/icons';
+import {
+  IconDownload,
+  IconFolderAdd,
+  IconLoader,
+  IconPlus,
+} from '@edifice.io/react/icons';
 import clsx from 'clsx';
 import { useI18n } from '~/hooks';
 import { Message } from '~/models';
@@ -19,7 +24,7 @@ export function MessageAttachments({
 }: MessageAttachmentsProps) {
   const { common_t, t } = useI18n();
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const { attachments, downloadAllUrl, attachFiles } =
+  const { attachments, downloadAllUrl, attachFiles, isMutating } =
     useMessageAttachments(message);
 
   if (!attachments.length && !editMode) return null;
@@ -82,8 +87,9 @@ export function MessageAttachments({
           <Button
             color="secondary"
             variant="ghost"
-            leftIcon={<IconPlus />}
+            leftIcon={isMutating ? <IconLoader /> : <IconPlus />}
             onClick={handleAttachClick}
+            disabled={isMutating}
           >
             {t('add.attachment')}
           </Button>
