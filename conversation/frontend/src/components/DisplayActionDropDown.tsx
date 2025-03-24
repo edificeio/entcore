@@ -126,7 +126,10 @@ export function DisplayActionDropDown({
 
   const handleDraftSaveClick = async () => {
     const promise = createOrUpdateDraft();
-    if (promise) navigate(`/draft/message/${(await promise).id}`);
+    if (promise) {
+      const { id } = await promise;
+      if (id) navigate(`/draft/message/${id}`);
+    }
   };
 
   const handleMarkAsUnreadClick = () => {
