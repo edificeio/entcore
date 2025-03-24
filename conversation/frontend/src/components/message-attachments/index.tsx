@@ -5,7 +5,7 @@ import { useI18n } from '~/hooks';
 import { Message } from '~/models';
 import { MessageAttachment } from './MessageAttachment';
 import './index.css';
-import { ChangeEvent, useMemo, useRef } from 'react';
+import { ChangeEvent, useRef } from 'react';
 import { useMessageAttachments } from '~/hooks/useMessageAttachments';
 
 export interface MessageAttachmentsProps {
@@ -19,15 +19,8 @@ export function MessageAttachments({
 }: MessageAttachmentsProps) {
   const { common_t, t } = useI18n();
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const { downloadAllUrl, attachFiles } = useMessageAttachments(message);
-
-  // This memo is required because `message` is intended to change sometimes
-  const { attachments } = useMemo(
-    () => ({
-      attachments: message.attachments,
-    }),
-    [message],
-  );
+  const { attachments, downloadAllUrl, attachFiles } =
+    useMessageAttachments(message);
 
   if (!attachments.length && !editMode) return null;
 
