@@ -452,6 +452,15 @@ i.mediacentre-large {
   }
 }
 
+i.nabook,
+i.nabook-large {
+  @include fonticon;
+  &::before {
+    content:'\e96b';
+    color:#00FFCC;
+  }
+}
+
 i.system {
   @include fonticon;
   &::before {content: "\e854"}
