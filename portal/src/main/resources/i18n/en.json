@@ -252,5 +252,6 @@
   "tiptap.toolbar.cantoo.text2speech": "Read text",
   "tiptap.toolbar.cantoo.formatText": "Text formatting",
   "tiptap.cantoo.formatText": "Text formatting",
-  "tiptap.cantoo.close": "Close"
+  "tiptap.cantoo.close": "Close",
+  "nabook": "Nabook"
 }

@@ -1076,5 +1076,6 @@
   "audience.reaction.interesting": "Instructif",
   "audience.reaction.default": "Réagir",
   "card.open.menu": "Ouvrir le menu",
-  "card.open.resource": "Ouvrir la resource"
+  "card.open.resource": "Ouvrir la resource",
+  "nabook": "Nabook"
 }
