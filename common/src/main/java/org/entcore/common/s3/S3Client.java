@@ -573,7 +573,7 @@ public class S3Client {
 					log.error("S3Client copyFile, signature failed", e);
 					return Future.failedFuture("S3Client copyFile, signature failed");
 				}
-				req.putHeader("X-Copy-From", "/" + bucket + "/" + getPath(from));
+				req.putHeader("x-amz-copy-source", "/" + bucket + "/" + getPath(from));
 
 				return req.send();
 			})
