@@ -838,3 +838,16 @@ i.mediacentre::before {
   content:'\e968';
   color:#2029b6;
 }
+
+i.nabook-large,
+i.type.nabook,
+i.nabook {
+  @include fonticon;
+}
+
+i.nabook-large::before,
+i.type.nabook::before,
+i.nabook::before {
+  content:'\e96b';
+  color:#00FFCC;
+}
