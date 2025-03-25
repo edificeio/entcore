@@ -12,36 +12,23 @@ import {
   IconRestore,
   IconUnreadMail,
 } from '@edifice.io/react/icons';
-import clsx from 'clsx';
-import {
-  KeyboardEvent,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useSelectedFolder } from '~/hooks';
-import { MessageMetadata } from '~/models';
-import {
-  isInRecipient,
-  useFolderMessages,
-  useUpdateFolderBadgeCountLocal,
-} from '~/services';
+import { isInRecipient, useFolderMessages } from '~/services';
 import { useAppActions } from '~/store/actions';
-import { MessagePreview } from './components/MessagePreview/MessagePreview';
+import { MessageItem } from './components/MessageItem';
 import useSelectedMessages from './hooks/useSelectedMessages';
 import useToolbarActions from './hooks/useToolbarActions';
 
 export function MessageList() {
-  const navigate = useNavigate();
   const { folderId } = useSelectedFolder();
   const [searchParams] = useSearchParams();
   const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
   const { setSelectedMessageIds } = useAppActions();
-  const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
+
   const { user } = useEdificeClient();
   const {
     messages,
@@ -80,15 +67,14 @@ export function MessageList() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isLoadingMessage, isLoadingNextPage, fetchNextPage, hasNextPage]);
+  const selectedMessages = useSelectedMessages(messages);
 
   useEffect(() => {
     setKeyList((prev) => prev + 1);
-  }, [searchParams, folderId, messages?.length]);
+  }, [searchParams, folderId]);
 
   const isInTrash = folderId === 'trash';
   const isInDraft = folderId === 'draft';
-
-  const selectedMessages = useSelectedMessages(messages);
 
   const canShowMarkActions = useCallback(
     (unread: boolean) => {
@@ -142,22 +128,6 @@ export function MessageList() {
     if (!isInTrash) return false;
     return messages.length > 0;
   }, [folderId, messages]);
-
-  const handleMessageKeyUp = (
-    event: KeyboardEvent,
-    message: MessageMetadata,
-  ) => {
-    if (event.key === 'Enter') {
-      handleMessageClick(message);
-    }
-  };
-
-  const handleMessageClick = (message: MessageMetadata) => {
-    if (message.unread && !isInDraft) {
-      updateFolderBadgeCountLocal(folderId!, -1);
-    }
-    navigate(`message/${message.id}`);
-  };
 
   const toolbar: ToolbarItem[] = [
     {
@@ -285,23 +255,11 @@ export function MessageList() {
         className="ps-16 ps-md-24"
         key={keyList}
         renderNode={(message, checkbox, checked) => (
-          <div
-            className={clsx('d-flex gap-24 px-16 py-12 mb-2 overflow-hidden', {
-              'bg-secondary-200': checked,
-              'fw-bold bg-primary-200 gray-800': message.unread,
-            })}
-            onClick={() => handleMessageClick(message)}
-            onKeyUp={(event) => handleMessageKeyUp(event, message)}
-            tabIndex={0}
-            role="button"
-            key={message.id}
-            data-testid="message-item"
-          >
-            <div className="d-flex align-items-center gap-12 g-col-3 flex-fill overflow-hidden">
-              <div className="ps-md-8">{checkbox}</div>
-              <MessagePreview message={message} />
-            </div>
-          </div>
+          <MessageItem
+            message={message}
+            checked={!!checked}
+            checkbox={checkbox}
+          />
         )}
       />
       {isLoadingMessage && (
