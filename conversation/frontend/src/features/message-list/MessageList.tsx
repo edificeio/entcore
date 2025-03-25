@@ -70,8 +70,10 @@ export function MessageList() {
   const selectedMessages = useSelectedMessages(messages);
 
   useEffect(() => {
-    setKeyList((prev) => prev + 1);
-  }, [searchParams, folderId]);
+    if (selectedMessages.length === 0) {
+      setKeyList((prev) => prev + 1);
+    }
+  }, [searchParams, folderId, selectedMessages.length]);
 
   const isInTrash = folderId === 'trash';
   const isInDraft = folderId === 'draft';
