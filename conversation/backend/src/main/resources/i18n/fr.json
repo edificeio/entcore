@@ -220,5 +220,10 @@
   "conversation.warn.message.grouped": "Vous créez votre premier message groupé ! Attention, les destinataires pourront répondre aux autres destinataires. Si vous ne souhaitez pas ouvrir une conversation de groupe, ajoutez les utilisateurs en copie cachée.",
   "Manual": "",
   "aria.message.content": "Contenu du message",
-  "conversation.notfound.or.unauthorized": "Le message demandé n'existe pas, a été supprimé, ou vous n'avez pas la possibilité d'y accéder."
+  "conversation.notfound.or.unauthorized": "Le message demandé n'existe pas, a été supprimé, ou vous n'avez pas la possibilité d'y accéder.",
+  "conversation.recall.mail": "Les destinataires ne pourront plus voir le contenu du message, mais ils verront que vous l'avez rappelé.<br>Êtes-vous sûr de vouloir rappeler ce message ?",
+  "conversation.recalled.mail.subject": "Message rappelé",
+  "conversation.recalled.mail.content": "L’expéditeur a rappelé ce message, son contenu n’est donc plus visible.",
+  "conversation.success.recall.mail": "Message rappelé avec succès.",
+  "conversation.error.recall.mail": "Le message n'a pas pu être rappelé."
 }
