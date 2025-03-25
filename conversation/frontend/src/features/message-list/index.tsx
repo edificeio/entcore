@@ -50,7 +50,7 @@ export function MessageList() {
   const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
   const { setSelectedMessageIds } = useAppActions();
-  const [current, setCurrent] = useState(0);
+  const [listKey, setListKey] = useState(0);
   const { success } = useToast();
 
   const selectedIds = useSelectedMessageIds();
@@ -95,8 +95,8 @@ export function MessageList() {
   }, [isLoadingMessage, isLoadingNextPage, fetchNextPage, hasNextPage]);
 
   useEffect(() => {
-    setCurrent((prev) => prev + 1);
-  }, [searchParams, folderId]);
+    setListKey((prev) => prev + 1);
+  }, [searchParams, folderId, messages.length]);
 
   const isInTrash = folderId === 'trash';
   const isInDraft = folderId === 'draft';
@@ -179,7 +179,8 @@ export function MessageList() {
 
   const handleMoveToTrash = () => {
     moveToTrashQuery.mutate({ id: selectedIds });
-    setCurrent((prev) => prev + 1);
+    console.log('trash');
+    setSelectedMessageIds([]);
   };
 
   const handleMessageClick = (message: MessageMetadata) => {
@@ -191,7 +192,6 @@ export function MessageList() {
 
   const handleRestore = () => {
     restoreQuery.mutate({ id: selectedIds });
-    setCurrent((prev) => prev + 1);
   };
 
   const handleDelete = () => {
@@ -203,7 +203,6 @@ export function MessageList() {
       koText: t('cancel'),
       onSuccess: () => {
         deleteMessage.mutate({ id: selectedIds });
-        setCurrent((prev) => prev + 1);
       },
     });
   };
@@ -232,7 +231,6 @@ export function MessageList() {
         );
 
         success(confirmMessage);
-        setCurrent((prev) => prev + 1);
       },
     });
   };
@@ -371,43 +369,39 @@ export function MessageList() {
     },
   ];
 
+  if (!messages?.length) return null;
   return (
     <>
-      {!!messages?.length && (
-        <List
-          data={messages.map((message) => ({ ...message, _id: message.id }))}
-          items={toolbar}
-          isCheckable={true}
-          onSelectedItems={setSelectedMessageIds}
-          className="ps-16 ps-md-24"
-          key={current}
-          renderNode={(message, checkbox, checked) => (
-            <div
-              className={clsx(
-                'd-flex gap-24 px-16 py-12 mb-2 overflow-hidden',
-                {
-                  'bg-secondary-200': checked,
-                  'fw-bold bg-primary-200 gray-800': message.unread,
-                },
-              )}
-              onClick={() => handleMessageClick(message)}
-              onKeyUp={(event) => handleMessageKeyUp(event, message)}
-              tabIndex={0}
-              role="button"
-              key={message.id}
-              data-testid="message-item"
-            >
-              <div className="d-flex align-items-center gap-12 g-col-3 flex-fill overflow-hidden">
-                <div className="ps-md-8">{checkbox}</div>
-                <MessagePreview message={message} />
-              </div>
-            </div>
-          )}
-        />
-      )}
       {isLoadingMessage && (
         <Loading isLoading={true} className="justify-content-center my-12" />
       )}
+      <List
+        data={messages.map((message) => ({ ...message, _id: message.id }))}
+        items={toolbar}
+        isCheckable={true}
+        onSelectedItems={setSelectedMessageIds}
+        className="ps-16 ps-md-24"
+        key={listKey}
+        renderNode={(message, checkbox, checked) => (
+          <div
+            className={clsx('d-flex gap-24 px-16 py-12 mb-2 overflow-hidden', {
+              'bg-secondary-200': checked,
+              'fw-bold bg-primary-200 gray-800': message.unread,
+            })}
+            onClick={() => handleMessageClick(message)}
+            onKeyUp={(event) => handleMessageKeyUp(event, message)}
+            tabIndex={0}
+            role="button"
+            key={message.id}
+            data-testid="message-item"
+          >
+            <div className="d-flex align-items-center gap-12 g-col-3 flex-fill overflow-hidden">
+              <div className="ps-md-8">{checkbox}</div>
+              <MessagePreview message={message} />
+            </div>
+          </div>
+        )}
+      />
     </>
   );
 }
