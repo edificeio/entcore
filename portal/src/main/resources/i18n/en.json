@@ -246,5 +246,6 @@
   "explorer.tree.trash": "Trash",
   "explorer.create.folder": "Create folder",
   "explorer.create.folder.name": "Folder's name",
-  "explorer.rename.folder": "Rename folder"
+  "explorer.rename.folder": "Rename folder",
+  "nabook": "Nabook"
 }
