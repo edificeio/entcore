@@ -3,7 +3,6 @@ import {
   Loading,
   ToolbarItem,
   useEdificeClient,
-  useToast,
 } from '@edifice.io/react';
 import {
   IconDelete,
@@ -27,47 +26,23 @@ import { useSelectedFolder } from '~/hooks';
 import { MessageMetadata } from '~/models';
 import {
   isInRecipient,
-  useDeleteMessage,
-  useEmptyTrash,
   useFolderMessages,
-  useMarkRead,
-  useMarkUnread,
-  useMoveMessage,
-  useRestoreMessage,
-  useTrashMessage,
   useUpdateFolderBadgeCountLocal,
 } from '~/services';
-import { useConfirmModalStore } from '~/store';
-import { useAppActions, useSelectedMessageIds } from '~/store/actions';
-import { useFolderHandlers } from '../menu/hooks/useFolderHandlers';
+import { useAppActions } from '~/store/actions';
 import { MessagePreview } from './components/MessagePreview/MessagePreview';
+import useSelectedMessages from './hooks/useSelectedMessages';
+import useToolbarActions from './hooks/useToolbarActions';
 
 export function MessageList() {
   const navigate = useNavigate();
-
   const { folderId } = useSelectedFolder();
   const [searchParams] = useSearchParams();
   const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
   const { setSelectedMessageIds } = useAppActions();
-  const [listKey, setListKey] = useState(0);
-  const { success } = useToast();
-
-  const selectedIds = useSelectedMessageIds();
-  const markAsReadQuery = useMarkRead();
-  const markAsUnreadQuery = useMarkUnread();
-  const moveToTrashQuery = useTrashMessage();
-  const restoreQuery = useRestoreMessage();
-  const deleteMessage = useDeleteMessage();
-  const emptyTrashQuery = useEmptyTrash();
-  const moveMessage = useMoveMessage();
-
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
-  const { handleMoveMessage } = useFolderHandlers();
   const { user } = useEdificeClient();
-
-  const { openModal } = useConfirmModalStore();
-
   const {
     messages,
     isPending: isLoadingMessage,
@@ -75,6 +50,18 @@ export function MessageList() {
     hasNextPage,
     fetchNextPage,
   } = useFolderMessages(folderId!);
+  const {
+    handleDelete,
+    handleEmptyTrash,
+    handleMarkAsReadClick,
+    handleMarkAsUnreadClick,
+    handleMoveToFolder,
+    handleMoveToTrash,
+    handleRemoveFromFolder,
+    handleRestore,
+  } = useToolbarActions(messages);
+
+  const [keyList, setKeyList] = useState(0);
 
   // Handle infinite scroll
   useEffect(() => {
@@ -95,17 +82,13 @@ export function MessageList() {
   }, [isLoadingMessage, isLoadingNextPage, fetchNextPage, hasNextPage]);
 
   useEffect(() => {
-    setListKey((prev) => prev + 1);
-  }, [searchParams, folderId, messages.length]);
+    setKeyList((prev) => prev + 1);
+  }, [searchParams, folderId, messages?.length]);
 
   const isInTrash = folderId === 'trash';
   const isInDraft = folderId === 'draft';
 
-  const selectedMessages = useMemo(() => {
-    return (
-      messages?.filter((message) => selectedIds.includes(message.id)) || []
-    );
-  }, [selectedIds, messages]);
+  const selectedMessages = useSelectedMessages(messages);
 
   const canShowMarkActions = useCallback(
     (unread: boolean) => {
@@ -160,27 +143,13 @@ export function MessageList() {
     return messages.length > 0;
   }, [folderId, messages]);
 
-  const handleMarkAsReadClick = () => {
-    markAsReadQuery.mutate({ messages: selectedMessages });
-  };
-
-  const handleMarkAsUnreadClick = () => {
-    markAsUnreadQuery.mutate({ messages: selectedMessages });
-  };
-
   const handleMessageKeyUp = (
     event: KeyboardEvent,
     message: MessageMetadata,
   ) => {
-    if (event.key === ' ' || event.key === 'Enter') {
+    if (event.key === 'Enter') {
       handleMessageClick(message);
     }
-  };
-
-  const handleMoveToTrash = () => {
-    moveToTrashQuery.mutate({ id: selectedIds });
-    console.log('trash');
-    setSelectedMessageIds([]);
   };
 
   const handleMessageClick = (message: MessageMetadata) => {
@@ -188,70 +157,6 @@ export function MessageList() {
       updateFolderBadgeCountLocal(folderId!, -1);
     }
     navigate(`message/${message.id}`);
-  };
-
-  const handleRestore = () => {
-    restoreQuery.mutate({ id: selectedIds });
-  };
-
-  const handleDelete = () => {
-    openModal({
-      id: 'delete-modal',
-      header: <>{t('delete.definitely')}</>,
-      body: <p>{t('delete.definitely.confirm')}</p>,
-      okText: t('confirm'),
-      koText: t('cancel'),
-      onSuccess: () => {
-        deleteMessage.mutate({ id: selectedIds });
-      },
-    });
-  };
-
-  const handleMoveToFolder = () => {
-    handleMoveMessage();
-  };
-
-  const handleRemoveFromFolder = () => {
-    openModal({
-      id: 'remove-from-folder-modal',
-      header: <>{t('remove.from.folder')}</>,
-      body: <p>{t('remove.from.folder.confirm')}</p>,
-      okText: t('confirm'),
-      koText: t('cancel'),
-      onSuccess: async () => {
-        const confirmMessage =
-          selectedIds.length > 1
-            ? t('messages.remove.from.folder')
-            : t('message.remove.from.folder');
-
-        await Promise.allSettled(
-          selectedIds.map((id) =>
-            moveMessage.mutateAsync({ folderId: 'inbox', id }),
-          ),
-        );
-
-        success(confirmMessage);
-      },
-    });
-  };
-
-  const handleEmptyTrash = () => {
-    openModal({
-      id: 'empty-trash-modal',
-      header: <>{t('empty.trash')}</>,
-      body: (
-        <p>
-          {t('empty.trash.confirm', {
-            count: messages.length,
-          })}
-        </p>
-      ),
-      okText: t('confirm'),
-      koText: t('cancel'),
-      onSuccess: () => {
-        emptyTrashQuery.mutate();
-      },
-    });
   };
 
   const toolbar: ToolbarItem[] = [
@@ -372,16 +277,13 @@ export function MessageList() {
   if (!messages?.length) return null;
   return (
     <>
-      {isLoadingMessage && (
-        <Loading isLoading={true} className="justify-content-center my-12" />
-      )}
       <List
         data={messages.map((message) => ({ ...message, _id: message.id }))}
         items={toolbar}
         isCheckable={true}
         onSelectedItems={setSelectedMessageIds}
         className="ps-16 ps-md-24"
-        key={listKey}
+        key={keyList}
         renderNode={(message, checkbox, checked) => (
           <div
             className={clsx('d-flex gap-24 px-16 py-12 mb-2 overflow-hidden', {
@@ -402,6 +304,9 @@ export function MessageList() {
           </div>
         )}
       />
+      {isLoadingMessage && (
+        <Loading isLoading={true} className="justify-content-center my-12" />
+      )}
     </>
   );
 }
