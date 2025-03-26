@@ -7,7 +7,12 @@ import { odeServices } from 'edifice-ts-client';
  * @returns A service to interact with folders.
  */
 export const createAttachmentService = (baseURL: string) => ({
-  attach(messageId: string, payload: File | Blob) {
+  attach(
+    messageId: string,
+    payload: File | Blob,
+  ): Promise<{
+    id: string;
+  }> {
     const formData = new FormData();
     formData.append('file', payload);
     return odeServices.http().postFile<{
@@ -15,7 +20,13 @@ export const createAttachmentService = (baseURL: string) => ({
     }>(`${baseURL}/message/${messageId}/attachment`, formData);
   },
 
-  detach(messageId: string, attachmentId: string) {
+  detach(
+    messageId: string,
+    attachmentId: string,
+  ): Promise<{
+    fileId: string;
+    fileSize: number;
+  }> {
     return odeServices.http().delete<{
       fileId: string;
       fileSize: number;

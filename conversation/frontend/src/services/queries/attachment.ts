@@ -31,10 +31,10 @@ export const useAttachFiles = () => {
 };
 
 /**
- * Hook to remove a File from a draft message.
+ * Hook to remove an attachment from a draft message.
  * @returns Mutation result for removing the File.
  */
-export const useRemoveFile = () => {
+export const useDetachFile = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
 

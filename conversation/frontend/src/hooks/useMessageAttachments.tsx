@@ -1,15 +1,13 @@
-import { useNavigate } from 'react-router-dom';
 import { Attachment, Message } from '~/models';
 import { baseUrl, useCreateOrUpdateDraft } from '~/services';
-import { useAttachFiles, useRemoveFile } from '~/services/queries/attachment';
+import { useAttachFiles, useDetachFile } from '~/services/queries/attachment';
 
 export function useMessageAttachments({ id, attachments }: Message) {
   const attachFileMutation = useAttachFiles();
-  const detachFileMutation = useRemoveFile();
+  const detachFileMutation = useDetachFile();
 
-  // These hooks are required when attaching files to a new draft without any id.
+  // These hooks is required when attaching files to a blank new draft, without id.
   const createOrUpdateDraft = useCreateOrUpdateDraft();
-  const navigate = useNavigate();
 
   const downloadAllUrl = `${baseUrl}/message/${id}/allAttachments`;
 
@@ -27,13 +25,7 @@ export function useMessageAttachments({ id, attachments }: Message) {
       const file = files.item(i);
       if (file) mutateVars.files.push(file);
     }
-    attachFileMutation.mutateAsync(mutateVars, {
-      onSuccess() {
-        if (id) {
-          navigate(`/draft/message/${id}`);
-        }
-      },
-    });
+    attachFileMutation.mutateAsync(mutateVars);
   }
 
   function detachFile(attachmentId: string) {
@@ -44,9 +36,7 @@ export function useMessageAttachments({ id, attachments }: Message) {
   }
 
   function detachFiles(attachments: Attachment[]) {
-    return Promise.all(
-      attachments.map((attachment) => detachFile(attachment.id)),
-    );
+    return Promise.all(attachments.map(({ id }) => detachFile(id)));
   }
 
   return {
