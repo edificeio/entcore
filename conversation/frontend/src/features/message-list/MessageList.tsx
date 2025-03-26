@@ -12,9 +12,8 @@ import {
   IconRestore,
   IconUnreadMail,
 } from '@edifice.io/react/icons';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
 import { useSelectedFolder } from '~/hooks';
 import { isInRecipient, useFolderMessages } from '~/services';
 import { useAppActions } from '~/store/actions';
@@ -24,7 +23,6 @@ import useToolbarActions from './hooks/useToolbarActions';
 
 export function MessageList() {
   const { folderId } = useSelectedFolder();
-  const [searchParams] = useSearchParams();
   const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
   const { setSelectedMessageIds } = useAppActions();
@@ -48,8 +46,6 @@ export function MessageList() {
     handleRestore,
   } = useToolbarActions(messages);
 
-  const [keyList, setKeyList] = useState(0);
-
   // Handle infinite scroll
   useEffect(() => {
     const handleScroll = () => {
@@ -68,12 +64,6 @@ export function MessageList() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isLoadingMessage, isLoadingNextPage, fetchNextPage, hasNextPage]);
   const selectedMessages = useSelectedMessages(messages);
-
-  useEffect(() => {
-    if (selectedMessages.length === 0) {
-      setKeyList((prev) => prev + 1);
-    }
-  }, [searchParams, folderId, selectedMessages.length]);
 
   const isInTrash = folderId === 'trash';
   const isInDraft = folderId === 'draft';
@@ -255,7 +245,6 @@ export function MessageList() {
         isCheckable={true}
         onSelectedItems={setSelectedMessageIds}
         className="ps-16 ps-md-24"
-        key={keyList}
         renderNode={(message, checkbox, checked) => (
           <MessageItem
             message={message}
