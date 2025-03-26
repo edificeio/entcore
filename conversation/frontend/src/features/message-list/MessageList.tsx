@@ -12,14 +12,14 @@ import {
   IconRestore,
   IconUnreadMail,
 } from '@edifice.io/react/icons';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelectedFolder } from '~/hooks';
-import { isInRecipient, useFolderMessages } from '~/services';
+import { useFolderMessages } from '~/services';
 import { useAppActions } from '~/store/actions';
 import { MessageItem } from './components/MessageItem';
-import useSelectedMessages from './hooks/useSelectedMessages';
 import useToolbarActions from './hooks/useToolbarActions';
+import useToolbarVisibility from './hooks/useToolbarVisibility';
 
 export function MessageList() {
   const { folderId } = useSelectedFolder();
@@ -27,7 +27,6 @@ export function MessageList() {
   const { t } = useTranslation(appCode);
   const { setSelectedMessageIds } = useAppActions();
 
-  const { user } = useEdificeClient();
   const {
     messages,
     isPending: isLoadingMessage,
@@ -46,6 +45,16 @@ export function MessageList() {
     handleRestore,
   } = useToolbarActions(messages);
 
+  const {
+    canBeMoveToFolder,
+    canBeMovetoTrash,
+    canEmptyTrash,
+    canMarkAsReadMessages,
+    canMarkAsUnReadMessages,
+    isInFolder,
+    isTrashMessage,
+  } = useToolbarVisibility(messages);
+
   // Handle infinite scroll
   useEffect(() => {
     const handleScroll = () => {
@@ -63,63 +72,6 @@ export function MessageList() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isLoadingMessage, isLoadingNextPage, fetchNextPage, hasNextPage]);
-  const selectedMessages = useSelectedMessages(messages);
-
-  const isInTrash = folderId === 'trash';
-  const isInDraft = folderId === 'draft';
-
-  const canShowMarkActions = useCallback(
-    (unread: boolean) => {
-      return (
-        !['draft', 'outbox', 'trash'].includes(folderId!) &&
-        // Check if the selected messages are not drafts and are unread or read depending on the action
-        selectedMessages.some(
-          (message) => message.unread === unread && message.state !== 'DRAFT',
-        ) &&
-        // Check if the selected messages are not sent by the user
-        !selectedMessages.some(
-          (message) =>
-            message.from.id === user?.userId &&
-            !isInRecipient(message, user.userId),
-        )
-      );
-    },
-    [folderId, selectedMessages, user],
-  );
-
-  const canMarkAsReadMessages = useMemo(() => {
-    return canShowMarkActions(true);
-  }, [canShowMarkActions]);
-
-  const canMarkAsUnReadMessages = useMemo(() => {
-    return canShowMarkActions(false);
-  }, [canShowMarkActions]);
-
-  const canBeMovetoTrash = useMemo(() => {
-    if (isInTrash) return false;
-    return selectedMessages.length > 0;
-  }, [isInTrash, selectedMessages]);
-
-  const canBeMoveToFolder = useMemo(() => {
-    if (isInTrash || isInDraft) return false;
-    return selectedMessages.length > 0;
-  }, [isInTrash, isInDraft, selectedMessages]);
-
-  const isTrashMessage = useMemo(() => {
-    if (!isInTrash) return false;
-    return selectedMessages.length > 0;
-  }, [isInTrash, selectedMessages]);
-
-  const isInFolder = useMemo(() => {
-    if (folderId && ['trash', 'inbox', 'outbox', 'draft'].includes(folderId))
-      return;
-    return selectedMessages.length > 0;
-  }, [folderId, selectedMessages]);
-
-  const canEmptyTrash = useMemo(() => {
-    if (!isInTrash) return false;
-    return messages.length > 0;
-  }, [folderId, messages]);
 
   const toolbar: ToolbarItem[] = [
     {
