@@ -12,7 +12,7 @@ import {
   IconRestore,
   IconUnreadMail,
 } from '@edifice.io/react/icons';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSelectedFolder } from '~/hooks';
 import { useFolderMessages } from '~/services';
@@ -20,9 +20,12 @@ import { useAppActions } from '~/store/actions';
 import { MessageItem } from './components/MessageItem';
 import useToolbarActions from './hooks/useToolbarActions';
 import useToolbarVisibility from './hooks/useToolbarVisibility';
+import { useSearchParams } from 'react-router-dom';
 
 export function MessageList() {
   const { folderId } = useSelectedFolder();
+  const [searchParams] = useSearchParams();
+
   const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
   const { setSelectedMessageIds } = useAppActions();
@@ -54,6 +57,13 @@ export function MessageList() {
     isInFolder,
     isTrashMessage,
   } = useToolbarVisibility(messages);
+
+  const [keyList, setKeyList] = useState(0);
+
+  //handle reload list when search params change
+  useEffect(() => {
+    setKeyList((prev) => prev + 1);
+  }, [searchParams]);
 
   // Handle infinite scroll
   useEffect(() => {
@@ -197,6 +207,7 @@ export function MessageList() {
         isCheckable={true}
         onSelectedItems={setSelectedMessageIds}
         className="ps-16 ps-md-24"
+        key={keyList}
         renderNode={(message, checkbox, checked) => (
           <MessageItem
             message={message}
