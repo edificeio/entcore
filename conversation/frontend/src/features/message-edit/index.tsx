@@ -44,12 +44,12 @@ export function MessageEdit({ message }: MessageEditProps) {
 
   const handleSubjectChange = (subject: string) => {
     setSubject(subject);
-    setMessageUpdated({ ...message, subject });
+    setMessageUpdated({ ...(messageUpdated || message), subject });
     setMessageUpdatedNeedToSave(true);
   };
 
   const handleMessageChange = (message: Message) => {
-    setMessageUpdated({ ...message });
+    setMessageUpdated({ ...(messageUpdated || message), body: message.body });
     setMessageUpdatedNeedToSave(true);
   };
 
