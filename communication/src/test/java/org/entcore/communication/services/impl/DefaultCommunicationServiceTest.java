@@ -1,5 +1,9 @@
 package org.entcore.communication.services.impl;
 
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.communication.services.CommunicationService;
 import org.entcore.communication.services.CommunicationService.Direction;
@@ -9,14 +13,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import fr.wseduc.webutils.collections.JsonObject;
-import io.vertx.core.Future;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 import java.util.HashMap;
-import java.util.Map;
 
 @RunWith(VertxUnitRunner.class)
 public class DefaultCommunicationServiceTest {
@@ -41,7 +42,7 @@ public class DefaultCommunicationServiceTest {
 
     @Before
     public void prepare() {
-        this.service = new DefaultCommunicationService();
+        this.service = new DefaultCommunicationService(Vertx.vertx(), new TimelineHelper(Vertx.vertx(), Vertx.vertx().eventBus(), new JsonObject()), new JsonObject());
         this.userNoAdmin = test.directory().generateUser("notused");
         this.userNoAdmin.setFunctions(new HashMap<String, UserInfos.Function>(0));
     }

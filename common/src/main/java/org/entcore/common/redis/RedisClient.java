@@ -7,6 +7,8 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.redis.client.*;
 import org.entcore.common.utils.StringUtils;
 
+import java.security.InvalidParameterException;
+
 public class RedisClient implements IRedisClient {
     public static final String ID_STREAM = "$id_stream";
     public static final String NAME_STREAM = "$name_stream";
@@ -24,7 +26,14 @@ public class RedisClient implements IRedisClient {
         this.redisOptions = redisOptions;
     }
 
-    public static RedisClient create(final Vertx vertx, final JsonObject config) throws Exception{
+
+    /**
+     * Creates a Redis client object from the supplied configuration or from the shared configuration.
+     * @param vertx Vertx instance
+     * @param config An object <b><u>containing a field redisConfig</u></b> which holds redis configuration
+     * @return A client to call Redis
+     */
+    public static RedisClient create(final Vertx vertx, final JsonObject config) {
         if (config.getJsonObject("redisConfig") != null) {
             final JsonObject redisConfig = config.getJsonObject("redisConfig");
             final RedisClient redisClient = new RedisClient(vertx, redisConfig);
@@ -35,7 +44,7 @@ public class RedisClient implements IRedisClient {
                 final RedisClient redisClient = new RedisClient(vertx, new JsonObject(redisConfig));
                 return redisClient;
             }else{
-                throw new Exception("Missing redisConfig config");
+                throw new InvalidParameterException("Missing redisConfig config");
             }
         }
     }

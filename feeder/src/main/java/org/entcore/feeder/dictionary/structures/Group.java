@@ -22,22 +22,24 @@ package org.entcore.feeder.dictionary.structures;
 import java.util.UUID;
 
 import org.entcore.common.neo4j.Neo4jUtils;
+import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.exceptions.ValidationException;
-import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
-import io.vertx.core.Handler;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
+import io.vertx.core.Future;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class Group {
+
+	private static final Logger log = LoggerFactory.getLogger(Group.class);
+	private static final String TX_RUN_LINK_RULES = "TX_RUN_LINK_RULES";
 
 	public static void manualCreateOrUpdate(JsonObject object, String structureId, String classId,
 			TransactionHelper transactionHelper) throws ValidationException {
@@ -46,6 +48,7 @@ public class Group {
 		} else {
 			final boolean create = (object.getString("id") == null || object.getString("id").trim().isEmpty());
 			final String id = create ? UUID.randomUUID().toString() : object.getString("id");
+			object.put("create", create);
 			if (create) {
 				object.put("id", id);
 			}
@@ -54,10 +57,10 @@ public class Group {
 			}
 			String query =
 					"MERGE (t:Group:ManualGroup:Visible { id : {id}}) " +
-					"SET " + Neo4jUtils.nodeSetPropertiesFromJson("t", object, "id", "name", "displayNameSearchField") +
-					", t.name = CASE WHEN EXISTS(t.lockDelete) AND t.lockDelete = true THEN t.name ELSE {name} END " +
-					", t.displayNameSearchField = CASE WHEN EXISTS(t.lockDelete) AND t.lockDelete = true THEN t.displayNameSearchField ELSE {displayNameSearchField} END " +
-					"RETURN t.id as id ";
+					"SET " + Neo4jUtils.nodeSetPropertiesFromJson("t", object, "id", "name", "displayNameSearchField", "create") +
+					", t.name = CASE WHEN EXISTS(t.lockDelete) AND t.lockDelete = true AND {create} = false THEN t.name ELSE {name} END " +
+					", t.displayNameSearchField = CASE WHEN EXISTS(t.lockDelete) AND t.lockDelete = true AND {create} = false THEN t.displayNameSearchField ELSE {displayNameSearchField} END " +
+					"RETURN t.id as id, t.createdAt as createdAt, t.createdByName as createdByName, t.modifiedAt as modifiedAt, t.modifiedByName as modifiedByName ";
 			transactionHelper.add(query, object);
 			if (create) {
 				if (structureId != null && !structureId.trim().isEmpty()) {
@@ -142,46 +145,88 @@ public class Group {
 		}
 	}
 
-	public static void runLinkRules()
-	{
-		TransactionHelper tx;
-		Logger log = LoggerFactory.getLogger(Group.class);
-		try
-		{
-			tx = TransactionManager.getInstance().begin();
-
-			final String linkQuery =
-				"MATCH (g:ManualGroup)-[:DEPENDS]->(:Structure)<-[:HAS_ATTACHMENT*0..]-(struct:Structure) " +
+	public static void runLinkRules() {
+		try {
+			final TransactionHelper tx = TransactionManager.getInstance().begin(TX_RUN_LINK_RULES);
+			final String listAutolinkGroups =
+				"MATCH (g:ManualGroup) " +
 				"WHERE EXISTS(g.autolinkUsersFromGroups) " +
-				"WITH g, struct " +
-				"MATCH (u:User)-[:IN]->(target:Group)-[:DEPENDS]->(struct) " +
-				"WHERE " +
-				"(g.autolinkTargetAllStructs = true OR struct.id IN g.autolinkTargetStructs) " +
-				"AND target.filter IN g.autolinkUsersFromGroups " +
-				"WITH g, u " +
-				"MERGE (u)-[new:IN]->(g) " +
-				"SET new.updated = {now} ";
+				"RETURN g.id as id, g.autolinkUsersFromGroups as autolinkUsersFromGroups, g.autolinkUsersFromLevels as autolinkUsersFromLevels";
+			tx.add(listAutolinkGroups, new JsonObject());
 
-			final String removeQuery =
-				"MATCH (g:ManualGroup)<-[old:IN]-(:User) " +
-				"WHERE (NOT EXISTS(old.source) OR old.source <> 'MANUAL') AND (NOT EXISTS(old.updated) OR old.updated <> {now}) " +
-				"DELETE old ";
-
-			final JsonObject params = new JsonObject().put("now", System.currentTimeMillis());
-
-			tx.add(linkQuery, params);
-			tx.add(removeQuery, params);
-			User.countUsersInGroups(null, "ManualGroup", tx);
-
-			tx.commit(null);
+			tx.commit().compose(groups -> {
+				if (groups != null && groups.size() == 1 && groups.getJsonArray(0) != null) {
+					return groups.getJsonArray(0).stream().reduce(
+						Future.succeededFuture(new JsonArray()),
+						(previousFuture, group) -> previousFuture.compose(r ->
+								groupLinkRules(((JsonObject) group).getString("id"),
+										((JsonObject) group).getJsonArray("autolinkUsersFromGroups"),
+										((JsonObject) group).getJsonArray("autolinkUsersFromLevels"),
+										tx).commit()),
+						(f1, f2) -> f2 // return last future
+					);
+				} else {
+					return Future.succeededFuture(new JsonArray());
+				}
+			}).onComplete(ar -> {
+				TransactionManager.getInstance().rollback(TX_RUN_LINK_RULES);
+				if (ar.succeeded()) {
+					log.info("PostImport | SUCCEED to manualGroupLinkUsersAuto");
+				} else {
+					log.error("PostImport | Failed to manualGroupLinkUsersAuto", ar.cause());
+				}
+			});
 		}
-		catch(TransactionException e)
-		{
+		catch(TransactionException e) {
 			log.error("Error opening or running transaction in group link rules", e);
 		}
-		catch(Exception e)
-		{
+		catch(Exception e) {
 			log.error("Unknown error in group link rules", e);
 		}
 	}
+
+	private static TransactionHelper groupLinkRules(String groupId, JsonArray autolinkUsersFromGroups, JsonArray autolinkUsersFromLevel, TransactionHelper tx) {
+		log.info("tx groupLinkRules with groupId : " + groupId);
+		final StringBuilder linkQuery = new StringBuilder(
+			"MATCH (g:ManualGroup {id: {groupId}})-[:DEPENDS]->(:Structure)<-[:HAS_ATTACHMENT*0..]-(struct:Structure) " +
+			"WHERE EXISTS(g.autolinkUsersFromGroups) " +
+			"WITH g, struct " +
+			"MATCH (u:User)-[:IN]->(target:Group)-[:DEPENDS]->(struct) " +
+			"WHERE " +
+			"(g.autolinkTargetAllStructs = true OR struct.id IN g.autolinkTargetStructs) " +
+			"AND target.filter IN g.autolinkUsersFromGroups " +
+			"WITH g, u " );
+		// Conditional filter on children or students level
+		if (autolinkUsersFromLevel != null && !autolinkUsersFromLevel.isEmpty()) {
+			if (autolinkUsersFromGroups.contains("Relative")) {
+				linkQuery.append(
+					"MATCH (u)<-[:RELATED]-(child:User) " +
+					"WHERE child.level IN COALESCE(g.autolinkUsersFromLevels,[]) " +
+					"WITH g, u ");
+			} else if (autolinkUsersFromGroups.contains("Student")) {
+				linkQuery.append(
+					"WHERE u.level IN COALESCE(g.autolinkUsersFromLevels,[]) " +
+					"WITH g, u ");
+			}
+		}
+		linkQuery.append(
+			"MERGE (u)-[new:IN]->(g) " +
+			"ON CREATE SET new.source = 'AUTO' " +
+			"SET new.updated = {now} ");
+
+		final String removeQuery =
+			"MATCH (g:ManualGroup {id: {groupId}})<-[old:IN]-(:User) " +
+			"WHERE EXISTS(g.autolinkUsersFromGroups) AND old.source = 'AUTO' AND (NOT EXISTS(old.updated) OR old.updated <> {now}) " +
+			"DELETE old ";
+
+		final JsonObject params = new JsonObject()
+				.put("groupId", groupId)
+				.put("now", System.currentTimeMillis());
+
+		tx.add(linkQuery.toString(), params);
+		tx.add(removeQuery, params);
+		User.countUsersInGroups(groupId, "ManualGroup", tx);
+		return tx;
+	}
+
 }

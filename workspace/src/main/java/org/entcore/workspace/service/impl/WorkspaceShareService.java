@@ -1,6 +1,6 @@
 package org.entcore.workspace.service.impl;
 
-import com.mongodb.QueryBuilder;
+import com.mongodb.client.model.Filters;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.security.SecuredAction;
@@ -8,6 +8,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
+import org.bson.conversions.Bson;
 import org.entcore.common.share.impl.MongoDbShareService;
 import org.entcore.workspace.dao.DocumentDao;
 
@@ -23,7 +24,7 @@ public class WorkspaceShareService extends MongoDbShareService {
   }
   @Override
   public Future<String> getResourceOwnerUserId(String resourceId) {
-    final QueryBuilder query = QueryBuilder.start("_id").is(resourceId);
+    final Bson query = Filters.eq("_id", resourceId);
     final JsonObject keys = new JsonObject().put("owner", 1);
     final Promise<String> promise = Promise.promise();
     mongo.findOne(DocumentDao.DOCUMENTS_COLLECTION, MongoQueryBuilder.build(query), keys, mongoEvent -> {

@@ -33,7 +33,7 @@ import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 
 import fr.wseduc.webutils.request.RequestUtils;
-import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.file.FileSystem;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.appregistry.ApplicationUtils;
@@ -41,6 +41,7 @@ import org.entcore.common.http.filter.AdmlOfStructure;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
+import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -68,6 +69,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -124,15 +126,15 @@ public class StructureController extends BaseController {
 			@Override
 			public void handle(Either<String, JsonObject> r) {
 				if (r.isRight()) {
-					if (r.right().getValue() != null && r.right().getValue().size() > 0) {
-						JsonArray a = new fr.wseduc.webutils.collections.JsonArray().add(userId);
+					if (r.right().getValue() != null) {
+						JsonArray a = new JsonArray().add(userId);
 						ApplicationUtils.sendModifiedUserGroup(eb, a, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(Message<JsonObject> message) {
 								JsonObject j = new JsonObject()
 										.put("action", "setDefaultCommunicationRules")
 										.put("schoolId", structureId);
-								eb.send("wse.communication", j);
+								eb.request("wse.communication", j);
 							}
 						}));
 						renderJson(request, r.right().getValue(), 200);
@@ -152,7 +154,7 @@ public class StructureController extends BaseController {
 	public void unlinkUser(final HttpServerRequest request) {
 		final String userId = request.params().get("userId");
 		final String structureId = request.params().get("structureId");
-		structureService.unlink(structureId, userId, notEmptyResponseHandler(request));
+		structureService.unlink(structureId, userId, defaultResponseHandler(request));
 	}
 
 	@Get("/structure/admin/list")
@@ -217,7 +219,7 @@ public class StructureController extends BaseController {
 	@SecuredAction("structure.list.all")
 	public void listStructures(final HttpServerRequest request) {
 		String format = request.params().get("format");
-		JsonArray fields = new fr.wseduc.webutils.collections.JsonArray().add("id").add("externalId").add("name").add("UAI")
+		JsonArray fields = new JsonArray().add("id").add("externalId").add("name").add("UAI")
 				.add("address").add("zipCode").add("city").add("phone").add("academy");
 		if ("XML".equalsIgnoreCase(format)) {
 			structureService.list(fields, new Handler<Either<String, JsonArray>>() {
@@ -265,14 +267,20 @@ public class StructureController extends BaseController {
 		}
 	}
 
+	/**
+	 * Endpoint to retrieve the levels of the users of a structure,
+	 * and of its sub-structures if query param "inherit" is true.
+	 * @param request the http request
+	 */
 	@Get("/structure/:structureId/levels")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
 	public void getLevels(final HttpServerRequest request) {
+		final boolean inherit = "true".equalsIgnoreCase(request.params().get("inherit"));
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(UserInfos infos) {
-				structureService.getLevels(request.params().get("structureId"), infos, arrayResponseHandler(request));
+				structureService.getLevels(request.params().get("structureId"), inherit, infos, arrayResponseHandler(request));
 			}
 		});
 	}
@@ -327,10 +335,10 @@ public class StructureController extends BaseController {
 						null;
 
 				filter
-					.put("profiles", new fr.wseduc.webutils.collections.JsonArray(request.params().getAll("p")))
-					.put("levels", new fr.wseduc.webutils.collections.JsonArray(request.params().getAll("l")))
-					.put("classes", new fr.wseduc.webutils.collections.JsonArray(request.params().getAll("c")))
-					.put("sort", new fr.wseduc.webutils.collections.JsonArray(sorts));
+					.put("profiles", new JsonArray(request.params().getAll("p")))
+					.put("levels", new JsonArray(request.params().getAll("l")))
+					.put("classes", new JsonArray(request.params().getAll("c")))
+					.put("sort", new JsonArray(sorts));
 
 				if(request.params().contains("a")){
 					filter.put("activated", request.params().get("a"));
@@ -357,6 +365,47 @@ public class StructureController extends BaseController {
 
 				massMailService.massMailAllUsersByStructure(structureId, infos, arrayResponseHandler(request));
 			}
+		});
+	}
+
+	@Get("/structure/massmessaging/template")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
+	public void getMassMessageTemplate(final HttpServerRequest request) {
+		FileSystem fs = vertx.fileSystem();
+
+		this.assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath");
+		this.skins = vertx.sharedData().getLocalMap("skins");
+
+		getSkin(request, res -> {
+
+			final String skin;
+			if (res.isLeft() || res.right().getValue() == null) {
+				skin = this.skins.get(Renders.getHost(request));
+			} else {
+				skin = res.right().getValue();
+			}
+
+			final String assetsPath = this.assetsPath + "/assets/themes/" + skin;
+			final String templatePath = assetsPath + "/template/directory/massmessage_asm_default.html";
+
+			fs.readFile(templatePath, result -> {
+
+				if (result.succeeded()) {
+					String html = result.result().toString(StandardCharsets.UTF_8);
+
+					request.response()
+							.setStatusCode(200)
+							.putHeader("content-type", "text/html; charset=utf-8")
+							.end(html);
+				} else {
+					request.response()
+							.setStatusCode(500)
+							.putHeader("content-type", "text/plain; charset=utf-8")
+							.end("Failed to load template");
+				}
+
+			});
 		});
 	}
 
@@ -444,10 +493,10 @@ public class StructureController extends BaseController {
 				null;
 
 		filter
-			.put("profiles", new fr.wseduc.webutils.collections.JsonArray(request.params().getAll("p")))
-			.put("levels", new fr.wseduc.webutils.collections.JsonArray(request.params().getAll("l")))
-			.put("classes", new fr.wseduc.webutils.collections.JsonArray(request.params().getAll("c")))
-			.put("sort", new fr.wseduc.webutils.collections.JsonArray(request.params().getAll("s")));
+			.put("profiles", new JsonArray(request.params().getAll("p")))
+			.put("levels", new JsonArray(request.params().getAll("l")))
+			.put("classes", new JsonArray(request.params().getAll("c")))
+			.put("sort", new JsonArray(request.params().getAll("s")));
 
 		if(request.params().contains("a")){
 			filter.put("activated", request.params().get("a"));
@@ -704,6 +753,13 @@ public class StructureController extends BaseController {
 
 									JsonArray usersId = r.getJsonArray("result").getJsonObject(0).getJsonArray("usersId");
 									eb.publish("auth.store.lock.event", new JsonObject().put("ids", usersId).put("block", block));
+									if (block) {
+										NotificationUtils.deleteFcmTokens(usersId, ar -> {
+											if (ar.isLeft()) {
+												log.error("Failed to delete FCM tokens when block structure : " + structureId, ar.left().getValue());
+											}
+										});
+									}
 									for (Object userId : usersId) {
 										UserUtils.deletePermanentSession(eb, (String) userId, null, null, false, new Handler<Boolean>() {
 											@Override
@@ -758,7 +814,7 @@ public class StructureController extends BaseController {
 	}
 
 	private void getSkin(HttpServerRequest request, Handler<Either<String,String>> handler) {
-		eb.send("userbook.preferences", new JsonObject().put("action", "get.currentuser")
+		eb.request("userbook.preferences", new JsonObject().put("action", "get.currentuser")
 				.put("request", new JsonObject().put("headers", new JsonObject().put("Cookie", request.getHeader("Cookie"))))
 				.put("application", "theme"), result -> {
 			if (result.succeeded()) {
@@ -844,6 +900,48 @@ public class StructureController extends BaseController {
 							}));
 				});
 			});
+		});
+	}
+
+	@Put("/structure/check/gar")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
+	public void checkGAR(final HttpServerRequest request) {
+		bodyToJson(request, body -> {
+			JsonArray uais = body.getJsonArray("uais");
+			structureService.checkGAR(uais, handler -> {
+				if (handler.isLeft()) {
+					renderError(request, new JsonObject().put("error", handler.left().getValue()));
+				} else {
+					renderJson(request, handler.right().getValue());
+				}
+			});
+		});
+	}
+
+	@Put("/structure/gar/activate")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
+	public void activateGar(final HttpServerRequest request) {
+		bodyToJson(request, body -> {
+			JsonArray targetUAIs = body.getJsonArray("uais", new JsonArray());
+			String garId = body.getString("garId");
+
+			if (StringUtils.isEmpty(garId) || targetUAIs.isEmpty()) {
+				badRequest(request);
+				return;
+			}
+
+			this.structureService.activateGar(garId, targetUAIs, config.getString("gar-group-name", "RESP-AFFECT-GAR"),
+				config.getString("gar-app-name", "GAR_AFFECTATION_IHM_CONNECTEUR"), config.getString("gar-role-name", "Mediacentre - Accès"), result -> {
+					if (result.isRight()) {
+						renderJson(request, result.right().getValue());
+					} else {
+						renderError(request);
+					}
+				});
 		});
 	}
 }

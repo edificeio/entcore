@@ -1,18 +1,16 @@
 package org.entcore.test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.http.HttpMethod;
 import fr.wseduc.webutils.security.ActionType;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import fr.wseduc.webutils.validation.JsonSchemaValidator;
-import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.http.request.JsonHttpServerRequest;
@@ -223,39 +221,39 @@ public class HttpTestHelper {
         }
 
         @Override
-        public HttpServerResponse write(Buffer buffer) {
+        public Future<Void> write(Buffer buffer) {
             bodyHandler.handle(buffer);
-            return this;
+            return Future.succeededFuture();
         }
 
         @Override
-        public HttpServerResponse write(String s, String s2) {
+        public Future<Void> write(String s, String s2) {
             bodyHandler.handle(s);
-            return this;
+            return Future.succeededFuture();
         }
 
         @Override
-        public HttpServerResponse write(String s) {
+        public Future<Void> write(String s) {
             bodyHandler.handle(s);
-            return this;
+            return Future.succeededFuture();
         }
 
         @Override
-        public void end(String s) {
+        public Future<Void> end(String s) {
             bodyHandler.handle(s);
-            super.end(s);
+            return super.end(s);
         }
 
         @Override
-        public void end(String s, String s2) {
+        public Future<Void> end(String s, String s2) {
             bodyHandler.handle(s);
-            super.end(s, s2);
+            return super.end(s, s2);
         }
 
         @Override
-        public void end(Buffer buffer) {
+        public Future<Void> end(Buffer buffer) {
             bodyHandler.handle(buffer);
-            super.end(buffer);
+            return super.end(buffer);
         }
 
     }

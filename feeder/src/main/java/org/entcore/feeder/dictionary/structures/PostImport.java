@@ -36,8 +36,6 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -122,28 +120,36 @@ public class PostImport {
 			public void handle(Void v) {
 				if (config.getJsonArray("active-user-from-old-platform") != null &&
 						config.getJsonArray("active-user-from-old-platform").contains(source)) {
+					logger.info(e-> "Start activeUserFromOldPlatform", true);
 					User.searchUserFromOldPlatform(vertx);
 				}
 				if (config.getBoolean("notify-apps-after-import", true)) {
+					logger.info(e-> "Start notifyAppsAfterImport", true);
 					ApplicationUtils.afterImport(eb);
+					logger.info(e-> "SUCCEED to notifyAppsAfterImport", true);
 				}
 				if (config.getJsonObject("ws-call-after-import") != null) {
+					logger.info(e-> "Start wsCallAfterImport", true);
 					wsCall(config.getJsonObject("ws-call-after-import"));
 				}
 				if (config.getJsonArray("publish-classes-update") != null &&
 						config.getJsonArray("publish-classes-update").contains(source)) {
+					logger.info(e-> "Start publishClassesUpdate", true);
 					publishClassesUpdate();
 				}
 				if (Boolean.TRUE.equals(config.getBoolean("tenant-link-structure", true)) &&
 					tenantLinkStructureSources.contains(source)) {
+					logger.info(e-> "Start tenantLinkStructure", true);
 					Tenant.linkStructures(eb);
 				}
 				if(Boolean.TRUE.equals(config.getBoolean("manual-group-link-users-auto", true)) &&
 						manualGroupLinkUsersAutoSources.contains(source)) {
+					logger.info(e-> "Start manualGroupLinkUsersAuto", true);
 					Group.runLinkRules();
 				}
 				if(Boolean.TRUE.equals(config.getBoolean("fix-incorrect-storages", true)) &&
 						fixIncorrectStoragesSources.contains(source)) {
+					logger.info(e-> "Start fixIncorrectStorages", true);
 					fixIncorrectStorages();
 				}
 			}
@@ -173,6 +179,7 @@ public class PostImport {
 								.put("action", "users-classes-update")
 								.put("users-classes-update", r.getJsonArray(0)));
 					}
+					logger.info(e-> "SUCCEED to publishClassesUpdate", true);
 				} else {
 					logger.error(t -> "Error in publish classes update transaction : " + res.body().getString("message"));
 				}
@@ -201,6 +208,7 @@ public class PostImport {
 					@Override
 					public void handle(Void v) {
 						client.close();
+						logger.info(e-> "SUCCEED to wsCallAfterImport", true);
 					}
 				};
 				for (int i = endpoints.size() - 1; i >= 0; i--) {
@@ -210,27 +218,29 @@ public class PostImport {
 						public void handle(Void v) {
 							final JsonObject j = endpoints.getJsonObject(ji);
 							logger.info(t -> "endpoint : " + j.encode(), true);
-							final HttpClientRequest req = client.request(HttpMethod.valueOf(j.getString("method")), j.getString("uri"), new Handler<HttpClientResponse>() {
-								@Override
-								public void handle(HttpClientResponse resp) {
-									if (resp.statusCode() >= 300) {
-										logger.warn(t -> "Endpoint " + j.encode() + " error : " + resp.statusCode() + " " + resp.statusMessage());
+							client.request(HttpMethod.valueOf(j.getString("method")), j.getString("uri"))
+							.map(req -> {
+								JsonObject headers = j.getJsonObject("headers");
+								if (headers != null && !headers.isEmpty()) {
+									for (String h : headers.fieldNames()) {
+										req.putHeader(h, headers.getString(h));
 									}
-									handlers[ji + 1].handle(null);
 								}
-							});
-							JsonObject headers = j.getJsonObject("headers");
-							if (headers != null && headers.size() > 0) {
-								for (String h : headers.fieldNames()) {
-									req.putHeader(h, headers.getString(h));
+								return req;
+							})
+							.flatMap(req -> {
+								if (j.getString("body") != null) {
+									return req.send(j.getString("body"));
+								} else {
+									return req.send();
 								}
-							}
-							req.exceptionHandler(e -> logger.error(t ->"Error in ws call post import : " + j.encode(), e));
-							if (j.getString("body") != null) {
-								req.end(j.getString("body"));
-							} else {
-								req.end();
-							}
+							}).onSuccess(resp -> {
+								if (resp.statusCode() >= 300) {
+									logger.warn(t -> "Endpoint " + j.encode() + " error : " + resp.statusCode() + " " + resp.statusMessage());
+								}
+								handlers[ji + 1].handle(null);
+							})
+							.onFailure(e -> logger.error(t ->"Error in ws call post import : " + j.encode(), e));
 						}
 					};
 				}
@@ -271,16 +281,16 @@ public class PostImport {
 			neo4j.execute(q, new JsonObject().put("externalIds", eIds), new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> message) {
-					JsonArray ids = message.body().getJsonArray("result", new fr.wseduc.webutils.collections.JsonArray());
+					JsonArray ids = message.body().getJsonArray("result", new JsonArray());
 					if ("ok".equals(message.body().getString("status")) && ids != null &&
 							ids.size() == 1) {
 						logger.info(e-> "SUCCEED get ids for applyComRules " + ids.getJsonObject(0).getJsonArray("ids"));
 						JsonObject j = new JsonObject()
 								.put("action", "initAndApplyDefaultCommunicationRules")
 								.put("schoolIds", (ids.getJsonObject(0))
-										.getJsonArray("ids", new fr.wseduc.webutils.collections.JsonArray()));
+										.getJsonArray("ids", new JsonArray()));
 						logger.info(e-> "START apply applyComRules");
-						eb.send("wse.communication", j, new DeliveryOptions().setSendTimeout(3600 * 1000l),
+						eb.request("wse.communication", j, new DeliveryOptions().setSendTimeout(3600 * 1000l),
 								handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 							@Override
 							public void handle(Message<JsonObject> event) {
@@ -323,6 +333,7 @@ public class PostImport {
 				} else {
 					logger.error(t -> "Error in fixing incorrect storages transaction : " + res.body().getString("message"));
 				}
+				logger.info(e-> "SUCCEED to fixIncorrectStorages", true);
 			});
 		} catch (TransactionException e) {
 			logger.error(t -> "Error in fixing incorrect storages transaction.", e);

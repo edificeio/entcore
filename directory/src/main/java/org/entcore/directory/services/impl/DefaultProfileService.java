@@ -30,6 +30,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
+import static java.lang.Boolean.TRUE;
 import static org.entcore.common.neo4j.Neo4jResult.validEmptyHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
@@ -49,7 +50,7 @@ public class DefaultProfileService implements ProfileService {
 				.put("action", "manual-create-function")
 				.put("profile", profile)
 				.put("data", function);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, handler)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, handler)));
 	}
 
 	@Override
@@ -57,7 +58,7 @@ public class DefaultProfileService implements ProfileService {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-delete-function")
 				.put("functionCode", functionCode);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(handler)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(handler)));
 	}
 
 	@Override
@@ -65,7 +66,7 @@ public class DefaultProfileService implements ProfileService {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-delete-function-group")
 				.put("groupId", functionGroupId);
-		eb.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
@@ -90,7 +91,7 @@ public class DefaultProfileService implements ProfileService {
 		final StatementsBuilder sb =  new StatementsBuilder();
 		for (String profile : profiles.fieldNames()) {
 			sb.add(query, new JsonObject().put("name", profile)
-					.put("blocked", (profiles.getBoolean(profile, false) ? true : null)));
+					.put("blocked", (TRUE.equals(profiles.getBoolean(profile, false)) ? true : null)));
 		}
 		neo4j.executeTransaction(sb.build(), null, true, validEmptyHandler(handler));
 	}

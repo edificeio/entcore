@@ -95,7 +95,7 @@ public class SSOEduConnect extends AbstractSSOProvider {
 		put("32","GUADELOUPE");
 		put("33","GUYANE");
 		put("40","NOUVELLE_CALEDONIE");
-		put("41","POLYNESIE_FRANCAISE");
+		put("41","POLYNESIE");
 		put("42","WALLIS_ET_FUTUNA");
 		put("43","MAYOTTE");
 		put("44","ST_PIERRE_ET_MIQUELON");
@@ -122,8 +122,8 @@ public class SSOEduConnect extends AbstractSSOProvider {
 			return;
 		}
 
-		if (vectors.size() > 1) {
-			JsonArray joinKeys = new fr.wseduc.webutils.collections.JsonArray();
+		if (vectors.size() > 1 || (!noPrefix && privateEtabsPrefix)) {
+			JsonArray joinKeys = new JsonArray();
 			for (String vector : vectors) {
 				final String joinKey = getJoinKey(vector);
 				if (isNotEmpty(joinKey)) {
@@ -147,17 +147,10 @@ public class SSOEduConnect extends AbstractSSOProvider {
 		} else {
 			final String joinKey = getJoinKey(vectors.get(0));
 			if (isNotEmpty(joinKey)) {
-				final String querySingle;
 				final JsonObject params = new JsonObject();
-				if (!noPrefix && privateEtabsPrefix) {
-					querySingle =
-							"MATCH (u:User) " +
-							"WHERE u.externalId IN {joinKeys} ";
-					params.put("joinKeys", new JsonArray().add(joinKey).add("P"+joinKey));
-				} else {
-					querySingle = "MATCH (u:User {externalId:{joinKey}}) ";
-					params.put("joinKey", joinKey);
-				}
+				final String querySingle = "MATCH (u:User {externalId:{joinKey}}) ";
+				params.put("joinKey", joinKey);
+
 				executeQuery(querySingle, params, assertion, handler);
 			} else {
 				handler.handle(new Either.Left<>("invalid.joinKey"));

@@ -19,24 +19,25 @@
 
 package org.entcore.directory.services;
 
+import java.util.List;
+
+import org.entcore.common.user.UserInfos;
+import org.entcore.directory.pojo.TransversalSearchQuery;
+
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.entcore.common.user.UserInfos;
-import org.entcore.directory.pojo.TransversalSearchQuery;
-
-import java.util.List;
 
 public interface UserService {
 
-	void createInStructure(String structureId, JsonObject user, Handler<Either<String, JsonObject>> result);
+	void createInStructure(String structureId, JsonObject user, final UserInfos caller, Handler<Either<String, JsonObject>> result);
 
-	void createInClass(String classId, JsonObject user, Handler<Either<String, JsonObject>> result);
+	void createInClass(String classId, JsonObject user, final UserInfos caller, Handler<Either<String, JsonObject>> result);
 
-	void update(String id, JsonObject user, Handler<Either<String, JsonObject>> result);
+	void update(String id, JsonObject user, final UserInfos caller, Handler<Either<String, JsonObject>> result);
 
 	void updateLogin(String id, String newLogin, Handler<Either<String, JsonObject>> result);
 
@@ -73,7 +74,8 @@ public interface UserService {
 	 * 
 	 * @param structureId If defined, return users attached to this structure but with no class.
 	 * @param profile If defined, return users having one of the profiles.
-	 * @param sortOn If defined, sort users by this field (defaults to "displayName")
+	 * @param sortingField If defined, sort users by this field, defaults to (profile DESC, displayName ASC).
+	 * @param sortingOrder Sort order ASC or DESC (defaults to "ASC").
 	 * @param fromIndex If defined, return users by ommitting results before the index.
 	 * @param limitResult If defined, returned resultset will contain users up to this number. 
 	 * @param searchType If defined with searchTerm, filter results on this field.
@@ -82,8 +84,9 @@ public interface UserService {
 	 */
 	void listIsolated(
 		final String structureId, 
-		final List<String> profile, 
-		final String sortOn,
+		final List<String> profile,
+		final String sortingField,
+		final String sortingOrder,
 		final Integer fromIndex,
 		final Integer limitResult,
 		final String searchType,
@@ -159,9 +162,22 @@ public interface UserService {
 
 	void getMainStructure(String userId, JsonArray structuresToExclude, Handler<Either<String, JsonObject>> result);
 
+	/**
+	 * Get some details about the structures that a list of users are attached to.
+	 * @param userIds IDs of users
+	 * @param fields fields of the structure nodes, to be returned in details. Default to ["id"]
+	 * @return an array of JsonObjects, such as 
+	 * 		{ userId: "ID of the user", structures: [{id: "ID of the structure", ... other queried fields...}] }
+	 */
+	void getUsersStructures(JsonArray userIds, JsonArray fields, Handler<Either<String, JsonArray>> handler);
+
 	void getAttachmentSchool(String userId, JsonArray structuresToExclude, Handler<Either<String, JsonObject>> result);
 
 	Future<JsonObject> getUsersDisplayNames(JsonArray userIds);
 	
 	public void listUsersByStructure(List<String> structures, Handler<Either<String, JsonArray>> results);
+	void getUserStructuresGroup(String id, Handler<Either<String, JsonObject>> result);
+
+	Future<JsonArray> getAttachmentInfos(JsonArray userIds, JsonArray structuresSources);
+
 }

@@ -25,10 +25,7 @@ import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.MultiMap;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -69,7 +66,7 @@ public class LibraryController extends BaseController {
             MultiMap attributes = res.resultAt(1);
             UserInfos user = res.resultAt(2);
             return service.publish(user, I18n.acceptLanguage(request), attributes, coverAndAvatarBufferList.get(0), coverAndAvatarBufferList.get(1));
-        }).setHandler(res -> {
+        }).onComplete(res -> {
             if (res.succeeded()) {
                 final JsonObject json = res.result();
                 if (json.getBoolean("success", false)) {
@@ -79,14 +76,21 @@ public class LibraryController extends BaseController {
                     renderError(request, res.result());
                 }
             } else {
-                final JsonObject body = new JsonObject().put("success", false).put("reason", "unknown").put("message", res.cause().getMessage());
-                renderError(request, body);
+                final JsonObject resultJson = res.result();
+                final String message = resultJson.getString("message", "");
+                if (message.equals(DefaultLibraryService.MESSAGE.CONTENT_TOO_LARGE.name())) {
+                    renderError(request, resultJson, 413, message);
+                } else {
+                    final JsonObject body = new JsonObject().put("success", false).put("reason", "unknown").put("message", res.cause().getMessage());
+                    renderError(request, body);
+                    log.error("An unknown error occurred while calling the library publish service : \nResponse : " + res.result().encode(), res.cause());
+                }
             }
         });
     }
 
     private Future<List<Buffer>> getCoverAndTeacherAvatar(HttpServerRequest request) {
-        Future<List<Buffer>> bufferListFuture = Future.future();
+        Promise<List<Buffer>> bufferListFuture = Promise.promise();
         List<Buffer> bufferList = new ArrayList<Buffer>();
         request.uploadHandler(upload -> {
             final Buffer buffer = Buffer.buffer();
@@ -101,11 +105,11 @@ public class LibraryController extends BaseController {
             });
             upload.exceptionHandler(v -> bufferListFuture.fail(v));
         });
-        return bufferListFuture;
+        return bufferListFuture.future();
     }
 
     private Future<UserInfos> getUser(HttpServerRequest request) {
-        Future<UserInfos> futureUser = Future.future();
+        Promise<UserInfos> futureUser = Promise.promise();
         UserUtils.getUserInfos(eb, request, res -> {
             if (res == null) {
                 futureUser.fail("Could not found user info");
@@ -113,16 +117,16 @@ public class LibraryController extends BaseController {
                 futureUser.complete(res);
             }
         });
-        return futureUser;
+        return futureUser.future();
     }
 
     private Future<MultiMap> getAttributes(HttpServerRequest request, Future<UserInfos> futureUser) {
         MultiMap form = request.formAttributes();
         form.add("platformURL", Renders.getHost(request));
 
-        Future<MultiMap> future = Future.future();
+        Promise<MultiMap> future = Promise.promise();
         request.endHandler(res -> {
-            futureUser.setHandler(resuser -> {
+            futureUser.onComplete(resuser -> {
                 if (resuser.succeeded()) {
                     final UserInfos user = resuser.result();
                     form.add("teacherFullName", user.getFirstName() + ' ' + user.getLastName())
@@ -133,6 +137,6 @@ public class LibraryController extends BaseController {
                 }
             });
         });
-        return future;
+        return future.future();
     }
 }

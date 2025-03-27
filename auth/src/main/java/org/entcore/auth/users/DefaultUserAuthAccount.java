@@ -43,24 +43,32 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.entcore.auth.pojo.SendPasswordDestination;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStore;
+import org.entcore.common.http.renders.TemplatedEmailRenders;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
+import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.sms.SmsSender;
 import org.entcore.common.sms.SmsSenderFactory;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 import org.joda.time.DateTime;
 
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static fr.wseduc.webutils.Utils.*;
 import static java.util.Collections.emptyList;
 import static org.entcore.common.user.SessionAttributes.NEED_REVALIDATE_TERMS;
 
-public class DefaultUserAuthAccount implements UserAuthAccount {
+public class DefaultUserAuthAccount extends TemplatedEmailRenders implements UserAuthAccount {
 
 	private static final Logger log = LoggerFactory.getLogger(DefaultUserAuthAccount.class);
 	private static final long SEND_EMAIL_ACK_DELAY = 10000L;
@@ -84,7 +92,10 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	private final boolean ignoreSendResetPasswordSmsError;
 	private final int passwordHistoryLength;
 
+	private final boolean sendForgotPasswordEmailWithResetCode;
+
 	public DefaultUserAuthAccount(Vertx vertx, JsonObject config, EventStore eventStore) {
+		super(vertx, config);
 		this.eb = Server.getEventBus(vertx);
 		this.neo = new Neo(vertx, eb, null);
 		this.vertx = vertx;
@@ -111,6 +122,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		SmsSenderFactory.getInstance().init(vertx, config);
 		this.smsSender = SmsSenderFactory.getInstance().newInstance(eventStore);
 		this.passwordHistoryLength = config.getInteger("password-history-length", 10);
+		this.sendForgotPasswordEmailWithResetCode = config.getBoolean("send-forgot-password-email-with-reset-code", false);
 	}
 
 	@Override
@@ -180,7 +192,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 						jo.put("theme", theme);
 					}
 					Server.getEventBus(vertx).publish("activation.ack", jo);
-					vertx.eventBus().send("entcore.feeder", jo.put("action", "check-duplicates"), handlerToAsyncHandler(new Handler<Message<JsonObject>>()
+					vertx.eventBus().request("entcore.feeder", jo.put("action", "check-duplicates"), handlerToAsyncHandler(new Handler<Message<JsonObject>>()
 					{
 						@Override
 						public void handle(Message<JsonObject> message)
@@ -250,85 +262,74 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 	@Override
 	@SuppressWarnings("deprecation")
 	public void revalidateCgu(String userId, Handler<Boolean> handler) {
-		String query = "MATCH(u:User{id:{userId}}) SET u.needRevalidateTerms=false RETURN u";
-		JsonObject params = new JsonObject().put("userId", userId);
-		neo.execute(query, params, Neo4jResult.validUniqueResultHandler(res-> {
-			if(res.isRight()) {
-				UserUtils.addSessionAttribute(eb, userId, NEED_REVALIDATE_TERMS, "false", addSessionAttributeRes -> {
-					handler.handle(addSessionAttributeRes);
-				});
-			} else {
-				handler.handle(false);
-			}
-		}));
+		validationFlag(false, userId, handler);
+	}
+
+	@Override
+	public void needToValidateCgu(String userId, Handler<Boolean> handler) {
+		validationFlag(true, userId, handler);
 	}
 	
 	@Override
 	public void matchActivationCode(final String login, String potentialActivationCode,
-			final Handler<Boolean> handler) {
+			final Handler<Either<String, JsonObject>> handler) {
 		matchActivationCode("login", login, potentialActivationCode, handler);
 	}
 
 	@Override
 	public void matchActivationCodeByLoginAlias(final String login, String potentialActivationCode,
-			final Handler<Boolean> handler) {
+			final Handler<Either<String, JsonObject>> handler) {
 		matchActivationCode("loginAlias", login, potentialActivationCode, handler);
 	}
 
 	private void matchActivationCode(final String loginFieldName, final String login, String potentialActivationCode,
-		 final Handler<Boolean> handler) {
+		 final Handler<Either<String, JsonObject>> handler) {
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n." + loginFieldName + "={login} AND n.activationCode = {activationCode} AND n.password IS NULL " +
 				"AND (NOT EXISTS(n.blocked) OR n.blocked = false) " +
-				"RETURN true as exists";
+				"RETURN true as exists, n.displayName as displayName, n.email as email, n.mobile as mobile";
 
 		JsonObject params = new JsonObject()
 			.put("login", login)
 			.put("activationCode", potentialActivationCode);
-		neo.execute(query, params, Neo4jResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
-			@Override
-			public void handle(Either<String, JsonObject> event) {
-				if(event.isLeft() || !event.right().getValue().getBoolean("exists", false))
-					handler.handle(false);
-				else
-					handler.handle(true);
-			}
+		neo.execute(query, params, Neo4jResult.validUniqueResultHandler( event -> {
+			if(event.isLeft() || !event.right().getValue().getBoolean("exists", false))
+				handler.handle(new Either.Left<String, JsonObject>("not.found"));
+			else
+				handler.handle(event);
 		}));
 	}
 
 	@Override
 	public void matchResetCode(final String login, String potentialResetCode,
-			final Handler<Boolean> handler) {
+			final Handler<Either<String, JsonObject>> handler) {
 		matchResetCode("login", login, potentialResetCode, handler);
 	}
 
 	@Override
 	public void matchResetCodeByLoginAlias(final String login, String potentialResetCode,
-		   final Handler<Boolean> handler) {
+		   final Handler<Either<String, JsonObject>> handler) {
 		matchResetCode("loginAlias", login, potentialResetCode, handler);
 	}
 
 	private void matchResetCode(final String loginFieldName, final String login, String potentialResetCode,
-		final Handler<Boolean> handler) {
+		final Handler<Either<String, JsonObject>> handler) {
 		String query =
 				"MATCH (n:User) " +
 				"WHERE n." + loginFieldName + "={login} AND has(n.resetDate) " +
 				"AND n.resetDate > {nowMinusDelay} AND n.resetCode = {resetCode} " +
-				"RETURN true as exists";
+				"RETURN true as exists, n.displayName as displayName, n.email as email, n.mobile as mobile";
 
 		JsonObject params = new JsonObject()
 			.put("login", login)
 			.put("resetCode", potentialResetCode)
 			.put("nowMinusDelay", (System.currentTimeMillis() - resetCodeExpireDelay));
-		neo.execute(query, params, Neo4jResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
-			@Override
-			public void handle(Either<String, JsonObject> event) {
+			neo.execute(query, params, Neo4jResult.validUniqueResultHandler( event -> {
 				if(event.isLeft() || !event.right().getValue().getBoolean("exists", false))
-					handler.handle(false);
+					handler.handle(new Either.Left<String, JsonObject>("not.found"));
 				else
-					handler.handle(true);
-			}
+					handler.handle(event);
 		}));
 	}
 
@@ -425,85 +426,92 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		}
 	}
 
-	private void sendChangedPasswordMail(HttpServerRequest request, String email, String displayName,
-			String login, String profile, JsonArray functions) {
-		if (email == null || email.trim().isEmpty()) {
+	private void sendPasswordModificationMail(final HttpServerRequest request, String email, String firstName,
+										 String login, String profile, JsonArray functions, final boolean reset) {
+		if (StringUtils.isEmpty(email)) {
+			log.error("Fail to send password change email, user email is undefined");
 			return;
 		}
 
 		JsonObject sendMailFilter = config.getJsonObject("change-password-mail-filter");
-		if(sendMailFilter != null)
-		{
+		if (sendMailFilter != null) {
 			boolean userAllowed = false;
 			JsonArray allowedProfiles = sendMailFilter.getJsonArray("profiles");
 			JsonArray allowedFunctions = sendMailFilter.getJsonArray("functions");
 
-			if(allowedProfiles != null)
-				if(allowedProfiles.contains(profile) == true)
+			if (allowedProfiles != null)
+				if (allowedProfiles.contains(profile))
 					userAllowed = true;
 
-			if(allowedFunctions != null)
-			{
-				if(functions == null)
+			if (allowedFunctions != null) {
+				if (functions == null)
 					functions = new JsonArray();
 
 				boolean hasAllowedFunction = false;
-				for(int i = allowedFunctions.size(); i-- > 0;)
-				{
-					for(int j = functions.size(); j-- > 0;)
-					{
-						if(functions.getString(j).equals(allowedFunctions.getString(i)) == true)
-						{
+				for (int i = allowedFunctions.size(); i-- > 0; ) {
+					for (int j = functions.size(); j-- > 0; ) {
+						if (functions.getString(j).equals(allowedFunctions.getString(i))) {
 							hasAllowedFunction = true;
 							break;
 						}
 					}
-					if(hasAllowedFunction == true)
+					if (hasAllowedFunction)
 						break;
 				}
-
 				userAllowed |= hasAllowedFunction;
 			}
 
-			if(userAllowed == false) {
+			if (!userAllowed) {
 				return;
 			}
 		}
 
-		log.info("Sending changedPassword by email: "+login+"/"+email);
-		JsonObject json = new JsonObject()
-				.put("host", notification.getHost(request))
-				.put("displayName", displayName);
+		log.info("Sending changedPassword by email: " + login + "/" + email);
 
 		final AtomicBoolean sendEmailAck = new AtomicBoolean(false);
 		if (Boolean.TRUE.equals(config.getBoolean("log-send-email-ack", false))) {
 			vertx.setTimer(SEND_EMAIL_ACK_DELAY, res -> {
 				if (!sendEmailAck.get()) {
-					log.error("No ack after 10s of sending changedPassword by email: "+login+"/"+email);
+					log.error("No ack after 10s of sending changedPassword by email: " + login + "/" + email);
 				}
 			});
 		}
 
-		notification.sendEmail(
-				request,
-				email,
-				config.getString("email", "noreply@one1d.fr"),
-				null,
-				null,
-				"mail.change.pw.subject",
-				"email/changedPassword.html",
-				json,
-				true,
-				res -> {
-					sendEmailAck.set(true);
-					if (res.succeeded()) {
-						if (log.isDebugEnabled()) {
-							log.debug("Success sending changedPassword by email: "+login+"/"+email);
+		JsonObject templateParams = new JsonObject()
+				.put("displayName", firstName)
+				.put("date", LocalDateTime.now().toEpochSecond(ZoneOffset.UTC) * 1000);
+
+		final String emailTemplate = reset ? "email/resetPassword.html" : "email/changedPassword.html";
+		final String i18nKey = reset ? "email.password.reset.subject" : "email.password.change.subject";
+
+		formatEmailSubject(request, i18nKey, templateParams).compose(subject -> {
+			Promise<String> promise = Promise.promise();
+			processEmailTemplate(request, templateParams, emailTemplate, false, processedTemplate -> {
+				notification.sendEmail(
+					request,
+					email,
+					null,
+					null,
+					subject,
+					processedTemplate,
+					null,
+					false,
+					ar2 -> {
+						sendEmailAck.set(true);
+						if (ar2.succeeded()) {
+							if (log.isDebugEnabled()) {
+								log.debug("Success sending changedPassword by email: " + login + "/" + email);
+								promise.complete("");
+							}
+						} else {
+							log.error("Error sending changedPassword by email: " + login + "/" + email, ar2.cause());
+							promise.fail("Error sending changedPassword by email: " + login + "/" + email);
 						}
-					 } else {
-						log.error("Error sending changedPassword by email: "+login+"/"+email, res.cause());
-					 }
-				});
+					}
+				);
+			});
+			return promise.future();
+		});
 	}
 
 	@Override
@@ -517,34 +525,37 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 		JsonObject json = new JsonObject()
 				.put("host", notification.getHost(request))
 				.put("resetUri", notification.getHost(request) + "/auth/reset/" + resetCode)
+				.put("resetCode", resetCode)
 				.put("displayName", displayName);
 
-
-
-		notification.sendEmail(
-				request,
-				email,
-				config.getString("email", "noreply@one1d.fr"),
-				null,
-				null,
-				"mail.reset.pw.subject",
-				"email/forgotPassword.html",
-				json,
-				true,
-				handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
-					public void handle(Message<JsonObject> event) {
-						if(!ignoreSendResetPasswordMailError) {
-							if ("error".equals(event.body().getString("status"))) {
-								handler.handle(new Either.Left<String, JsonObject>(event.body().getString("message", "")));
-							} else {
-								handler.handle(new Either.Right<String, JsonObject>(event.body()));
+		formatEmailSubject(request, "email.password.reset.subject", new JsonObject()).compose(subject -> {
+			Promise<String> promise = Promise.promise();
+			notification.sendEmail(
+					request,
+					email,
+					config.getString("email", "noreply@one1d.fr"),
+					null,
+					null,
+					subject,
+					sendForgotPasswordEmailWithResetCode ? "email/forgotPasswordResetCode.html" : "email/forgotPassword.html",
+					json,
+					true,
+					handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+						public void handle(Message<JsonObject> event) {
+							if(!ignoreSendResetPasswordMailError) {
+								if ("error".equals(event.body().getString("status"))) {
+									handler.handle(new Either.Left<String, JsonObject>(event.body().getString("message", "")));
+								} else {
+									handler.handle(new Either.Right<String, JsonObject>(event.body()));
+								}
 							}
 						}
-					}
-				}));
-		if(ignoreSendResetPasswordMailError) {
-			handler.handle(new Either.Right<>(new ResultMessage().body()));
-		}
+					}));
+			if(ignoreSendResetPasswordMailError) {
+				handler.handle(new Either.Right<>(new ResultMessage().body()));
+			}
+			return promise.future();
+		});
 	}
 
 	@Override
@@ -641,7 +652,7 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 					"    n.oldPasswords = {oldPasswords} " +
 					"RETURN n.password as pw, head(n.profiles) as profile, n.id as id, " +
 					"COLLECT(func.name) + COLLECT(f.filter) as functions, " +
-					"n.login as login, n.loginAlias as loginAlias, n.email AS email, n.displayName AS displayName";
+					"n.login as login, n.loginAlias as loginAlias, n.email AS email, n.firstName AS firstName";
 			Map<String, Object> params = new HashMap<>();
 			params.put("login", login);
 			params.put("resetCode", resetCode);
@@ -650,11 +661,11 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
         if(request != null && user != null)
         {
           String email = user.getString("email");
-          String dName = user.getString("displayName");
+          String firstName = user.getString("firstName");
           String userLogin = user.getString("login");
           String profile = user.getString("profile");
           JsonArray functions = user.getJsonArray("functions");
-          sendChangedPasswordMail(request, email, dName, userLogin, profile, functions);
+		  sendPasswordModificationMail(request, email, firstName, userLogin, profile, functions, true);
           handler.handle(user.getString("id")); // Ignore email failures: email is optional
         }
         else
@@ -718,24 +729,22 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 				"SET n.password = {password}, n.changePw = null, n.oldPasswords = {oldPasswords} " +
 				"RETURN n.password as pw, head(n.profiles) as profile, n.id as id, " +
 				"COLLECT(func.name) + COLLECT(f.filter) as functions, " +
-				"n.login as login, n.loginAlias as loginAlias, n.email AS email, n.displayName as displayName";
+				"n.login as login, n.loginAlias as loginAlias, n.email AS email, n.firstName as firstName";
 		Map<String, Object> params = new HashMap<>();
 		params.put("login", login);
 		updatePassword(user -> {
-      if(request != null && user != null)
-      {
-        String email = user.getString("email");
-        String dName = user.getString("displayName");
-        String login1 = user.getString("login");
-        String profile = user.getString("profile");
-        JsonArray functions = user.getJsonArray("functions");
+			if (request != null && user != null) {
+				String email = user.getString("email");
+				String firstName = user.getString("firstName");
+				String login1 = user.getString("login");
+				String profile = user.getString("profile");
+				JsonArray functions = user.getJsonArray("functions");
 
-        sendChangedPasswordMail(request, email, dName, login1, profile, functions);
-        handler.handle(user.getString("id")); // Ignore email failures: email is optional
-      }
-      else
-        handler.handle(user != null ? user.getString("id") : null);
-    }, query, password, login, params);
+				sendPasswordModificationMail(request, email, firstName, login1, profile, functions, false);
+				handler.handle(user.getString("id")); // Ignore email failures: email is optional
+			} else
+				handler.handle(user != null ? user.getString("id") : null);
+		}, query, password, login, params);
 	}
 
 	private void setResetCode(final String login, boolean checkFederatedLogin, final Handler<Either<String, JsonObject>> handler) {
@@ -854,6 +863,11 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			@Override
 			public void handle(Message<JsonObject> r) {
 				storeLockEvent(new JsonArray().add(id), block);
+				NotificationUtils.deleteFcmTokens(new JsonArray().add(id), ar -> {
+					if (ar.isLeft()) {
+						log.error("Failed to delete FCM tokens when block user : " + id, ar.left().getValue());
+					}
+				});
 				handler.handle("ok".equals(r.body().getString("status")) &&
 						r.body().getJsonArray("result") != null && r.body().getJsonArray("result").getValue(0) != null &&
 						(r.body().getJsonArray("result").getJsonObject(0)).getBoolean("exists", false));
@@ -869,6 +883,11 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			@Override
 			public void handle(Message<JsonObject> r) {
 				storeLockEvent(ids, block);
+				NotificationUtils.deleteFcmTokens(ids, ar -> {
+					if (ar.isLeft()) {
+						log.error("Failed to delete FCM tokens when block users.", ar.left().getValue());
+					}
+				});
 				handler.handle("ok".equals(r.body().getString("status")) &&
 						r.body().getJsonArray("result") != null && r.body().getJsonArray("result").getValue(0) != null &&
 						(r.body().getJsonArray("result").getJsonObject(0)).getBoolean("exists", false));
@@ -1076,4 +1095,41 @@ public class DefaultUserAuthAccount implements UserAuthAccount {
 			handler.handle(new Either.Left<>("Failed to force change password"));
 		});
 	}
+	private void validationFlag(Boolean flag,String userId, Handler<Boolean> handler) {
+		String query = "MATCH(u:User{id:{userId}}) SET u.needRevalidateTerms= "+ flag +" RETURN u";
+		JsonObject params = new JsonObject().put("userId", userId);
+		neo.execute(query, params, Neo4jResult.validUniqueResultHandler(res-> {
+			if(res.isRight()) {
+				UserUtils.addSessionAttribute(eb, userId, NEED_REVALIDATE_TERMS, flag.toString(), addSessionAttributeRes -> {
+					handler.handle(addSessionAttributeRes);
+				});
+			} else {
+				handler.handle(false);
+			}
+		}));
+	}
+
+	@Override
+	public void erasePassword(String userId, Handler<Either<String, JsonObject>> handler) {
+		String query = "MATCH (u:User) WHERE u.id = {userId} SET u.password = null return count(*) = 1 as exists;";
+		JsonObject params = new JsonObject().put("userId", userId);
+
+		neo.execute(query, params, res -> {
+			if ("ok".equals(res.body().getString("status"))) {
+				JsonArray result = res.body().getJsonArray("result");
+				if (result != null) {
+					JsonObject resultData = result.getJsonObject(0);
+					if (resultData != null && resultData.containsKey("exists") && resultData.getBoolean("exists")) {
+						handler.handle(new Either.Right<>(new JsonObject().put("status", "OK").put("result", "User's password erased successfully")));
+						return;
+					} else {
+						handler.handle(new Either.Right<>(new JsonObject().put("status", "OK").put("result", "Failed to erase user's password: user not found")));
+						return;
+					}
+				}
+			}
+			handler.handle(new Either.Left<>("Failed to erase user's password"));
+		});
+	}
+
 }

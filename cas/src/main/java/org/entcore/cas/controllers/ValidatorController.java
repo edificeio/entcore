@@ -31,6 +31,7 @@ public class ValidatorController extends BaseController {
 
 	@Get("/serviceValidate")
 	public void serviceValidate(HttpServerRequest request) {
+		log.info(getIp(request) + " - Initialisation de connexion cas - Service " + request.getParam("service")) ;
 		validator.serviceValidate(new WrappedRequest(request));
 	}
 

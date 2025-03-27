@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.entcore</groupId>
+        <artifactId>ent-core</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <artifactId>auth</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.entcore</groupId>
+            <artifactId>common</artifactId>
+            <version>${revision}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.wseduc</groupId>
+            <artifactId>vertx-cron-timer</artifactId>
+            <version>${vertxCronTimerVersion}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>jp.eisbahn</groupId>
+            <artifactId>oauth2-server</artifactId>
+            <version>1.5.1</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.opensaml</groupId>
+            <artifactId>opensaml</artifactId>
+            <version>2.6.4</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.12</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>fr.wseduc</groupId>
+            <artifactId>cas-server-async</artifactId>
+            <version>${casVersion}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.entcore</groupId>
+            <artifactId>test</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>${commonsLangVersion}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

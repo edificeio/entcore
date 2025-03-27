@@ -25,11 +25,13 @@ export class StructureResolver implements Resolve<StructureModel> {
 }
 
 export function sync(structure: StructureModel, force?: boolean): Promise<StructureModel> {
-    const classesPromise = structure.syncClasses(force);
-    const groupsPromise = structure.syncGroups(force);
-    const sourcesPromise = structure.syncSources(force);
-    const aafFunctionsPromise = structure.syncAafFunctions(force);
-    const profilesPromise = ProfilesService.getProfiles().then(p => structure.profiles = p);
-    return Promise.all<any>([classesPromise, groupsPromise, sourcesPromise, aafFunctionsPromise, profilesPromise])
-        .then(() => Promise.resolve(structure));
+    return Promise.all<any>([
+        structure.syncClasses(force), 
+        structure.syncGroups(force), 
+        structure.syncSources(force), 
+        structure.syncAafFunctions(force), 
+        ProfilesService.getProfiles().then(p => structure.profiles = p), 
+        structure.syncPositions(force), 
+        structure.syncLevels(force),
+    ]).then(() => Promise.resolve(structure));
 }

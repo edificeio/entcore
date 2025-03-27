@@ -1,18 +1,18 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, Injector, OnDestroy, OnInit } from '@angular/core';
 import { OdeComponent } from 'ngx-ode-core';
-import { trim, SpinnerService } from 'ngx-ode-ui';
-import { merge, Observable, Subject } from 'rxjs';
+import { SpinnerService, trim } from 'ngx-ode-ui';
+import { Observable, Subject, merge } from 'rxjs';
 import { filter, first, map, mergeMap, switchMap, tap } from 'rxjs/operators';
 import { GroupNameService } from 'src/app/core/services/group-name.service';
 import { NotifyService } from 'src/app/core/services/notify.service';
+import { Session } from "src/app/core/store/mappings/session";
 import { GroupModel, InternalCommunicationRule } from 'src/app/core/store/models/group.model';
+import { SessionModel } from "src/app/core/store/models/session.model";
 import { CommunicationRulesService } from '../../../communication/communication-rules.service';
 import { GroupsService } from '../../groups.service';
 import { GroupsStore } from '../../groups.store';
 import { GroupIdAndInternalCommunicationRule } from '../group-internal-communication-rule.resolver';
-import { Session } from "src/app/core/store/mappings/session";
-import { SessionModel } from "src/app/core/store/models/session.model";
 
 @Component({
     selector: 'ode-group-detail',
@@ -39,6 +39,7 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
 
     public autolinkFunctionOptions: Array<string> = [];
     public autolinkDisciplineOptions: Array<string> = [];
+    public autolinkLevelOptions: Array<string> = [];
 
     public showActions: boolean;
     
@@ -96,6 +97,8 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
         this.groupNewName = this.groupsStore.group.name;
 
         if (this.groupsStore.group.subType === 'BroadcastGroup') {
+            // remove duplicates and sort levels
+            this.autolinkLevelOptions = Array.from(new Set(this.groupsStore.structure.levels.map(d => d.name))).sort();
             this.spinnerService.perform('portal-content',
                 new Promise<void>((resolve, reject) => {
                     this.groupsService.
@@ -197,7 +200,7 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
         this.router.navigate([group.id, 'communication'], {relativeTo: this.route.parent});
     }
 
-    public renameGroup(): Observable<void> {
+    public renameGroup(): Observable<GroupModel> {
         this.renameLightboxDisplayed = true;
         return this.renameConfirmationClicked.asObservable()
         .pipe(
