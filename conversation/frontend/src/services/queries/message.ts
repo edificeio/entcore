@@ -11,10 +11,11 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import { Message, MessageBase, MessageMetadata } from '~/models';
 import { useAppActions, useMessageUpdated } from '~/store';
 import {
+  baseUrl,
   folderQueryOptions,
   messageService,
   useUpdateFolderBadgeCountLocal,
-} from '..';
+} from '~/services';
 const appCodeName = 'conversation';
 /**
  * Message Query Options Factory.
@@ -326,6 +327,11 @@ export const useMoveMessage = () => {
   });
 };
 
+/**
+ * Hook that generates a function to create a new, or update an existing, draft message.
+ * When the draft message is created, the function will return a Promise of its id.
+ * @returns undefined, or a Promise of the id af a newly created draft
+ */
 export const useCreateOrUpdateDraft = () => {
   const updateDraft = useUpdateDraft();
   const createDraft = useCreateDraft();
@@ -352,16 +358,20 @@ export const useCreateOrUpdateDraft = () => {
     };
 
     if (messageUpdated.id && messageUpdated.state === 'DRAFT') {
-      return updateDraft.mutate({
+      updateDraft.mutateAsync({
         draftId: messageUpdated.id,
         payload,
       });
     } else {
-      return createDraft.mutate(
+      return createDraft.mutateAsync(
         { payload },
         {
           onSuccess: ({ id }) =>
-            window.history.replaceState(null, '', `/draft/message/${id}`),
+            window.history.replaceState(
+              null,
+              '',
+              `${baseUrl}/draft/message/${id}`,
+            ),
         },
       );
     }
