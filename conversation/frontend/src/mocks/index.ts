@@ -1,5 +1,13 @@
 import { Folder, Message, MessageMetadata, User } from '~/models';
 
+export const mockConfiguration: {
+  'max-depth': number;
+  'recall-delay-minutes': number;
+} = {
+  'max-depth': 2,
+  'recall-delay-minutes': 60,
+};
+
 export const mockCurrentUserPreview: User = {
   displayName: 'LOISON Stéphane',
   id: 'b92e3d37-16b0-4ed9-b4c3-992091687132',

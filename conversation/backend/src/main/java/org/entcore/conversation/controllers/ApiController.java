@@ -124,9 +124,9 @@ public class ApiController extends BaseController {
 		final String id = request.params().get("id");
 
 		getAuthenticatedUserInfos(eb, request)
-		.compose( user -> conversationService.recallMessage(id, user, request) )
-		.onSuccess( message -> {
-			renderJson(request, message);
+		.compose( user -> conversationService.recallMessage(id, user) )
+		.onSuccess( Void -> {
+			noContent(request);
 		})
 		.onFailure( throwable -> {
 			log.error("Unable to get and format message id="+id, throwable);
