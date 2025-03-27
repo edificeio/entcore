@@ -42,6 +42,10 @@ export function MessageEdit({ message }: MessageEditProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    setMessageUpdated(message);
+  }, [message, setMessageUpdated]);
+
   const handleSubjectChange = (subject: string) => {
     setSubject(subject);
     setMessageUpdated({ ...(messageUpdated || message), subject });
