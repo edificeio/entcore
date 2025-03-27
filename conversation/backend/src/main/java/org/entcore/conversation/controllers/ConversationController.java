@@ -139,7 +139,7 @@ public class ConversationController extends BaseController {
 		eventHelper.onAccess(request);
 	}
 
-	@Get(value = "(?:[/]?(?:conversation|inbox|outbox|draft|trash))?", regex = true)
+	@Get(value = "(?:[/]?(?:conversation|inbox|outbox|draft(?:/create)|trash)(?:/message/:messageId)?)?", regex = true)
 	@SecuredAction("conversation.view")
 	@Cache(value = "/conversation/count/INBOX", useQueryParams = true, scope = CacheScope.USER, operation = CacheOperation.INVALIDATE)
 	public void view(HttpServerRequest request) {
