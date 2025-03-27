@@ -6,23 +6,13 @@ const message = mockFullMessage;
 
 describe('Message preview header component', () => {
   it('should render successfully', async () => {
-    const { baseElement } = render(
-      <MessageAttachments
-        messageId={message.id}
-        attachments={message.attachments}
-      />,
-    );
+    const { baseElement } = render(<MessageAttachments message={message} />);
 
     expect(baseElement).toBeTruthy();
   });
 
   it('should render multiple attachements successfully', async () => {
-    render(
-      <MessageAttachments
-        messageId={message.id}
-        attachments={message.attachments}
-      />,
-    );
+    render(<MessageAttachments message={message} editMode={true} />);
 
     const messageAttachmentsTitle = await screen.findByText('attachments');
     const messageAttachmentsCopyAll = await screen.findByTitle(
@@ -30,6 +20,9 @@ describe('Message preview header component', () => {
     );
     const messageAttachmentsDownloadAll = await screen.findByTitle(
       'download.all.attachment',
+    );
+    const messageAttachmentsRemoveAll = await screen.findByTitle(
+      'remove.all.attachment',
     );
     const messageAttachment1 = await screen.findByText(
       message.attachments[0].filename,
@@ -43,18 +36,23 @@ describe('Message preview header component', () => {
     const messageAttachmentActionDownload = await screen.queryAllByTitle(
       'download.attachment',
     );
+    const messageAttachmentActionRemove =
+      await screen.queryAllByTitle('remove.attachment');
 
     expect(messageAttachmentsTitle).toBeInTheDocument();
     expect(messageAttachmentsCopyAll).toBeInTheDocument();
     expect(messageAttachmentsDownloadAll).toBeInTheDocument();
+    expect(messageAttachmentsRemoveAll).toBeInTheDocument();
     expect(messageAttachment1).toBeInTheDocument();
     expect(messageAttachment2).toBeInTheDocument();
     expect(messageAttachmentActionMoveTo).toHaveLength(2);
     expect(messageAttachmentActionDownload).toHaveLength(2);
+    expect(messageAttachmentActionRemove).toHaveLength(2);
   });
 
   it('should not render attachements', async () => {
-    render(<MessageAttachments messageId={message.id} attachments={[]} />);
+    const messageWoAttachments = { ...message, attachments: [] };
+    render(<MessageAttachments message={messageWoAttachments} />);
 
     const messageAttachmentsTitle = await screen.queryByText('attachments');
     const messageAttachmentsCopyAll = await screen.queryByLabelText(
