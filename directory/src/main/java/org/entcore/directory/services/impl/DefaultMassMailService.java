@@ -274,7 +274,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         String filter =
                 " MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User), " +
                         "(g)-[:HAS_PROFILE]-(p: Profile) ";
-        String condition = "";
+        String condition = "WHERE (NOT(HAS(u.federated)) OR u.federated = false) ";
         String optional =
                 " OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) " +
                         "OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) ";
@@ -285,14 +285,14 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         if (filterObj.containsKey("activated")) {
             String activated = filterObj.getString("activated", "false");
             if ("false".equals(activated.toLowerCase())) {
-                condition = "WHERE NOT(u.activationCode IS NULL) ";
+                condition = "AND NOT(u.activationCode IS NULL) ";
             } else if ("true".equals(activated.toLowerCase())) {
-                condition = "WHERE (u.activationCode IS NULL) ";
+                condition = "AND (u.activationCode IS NULL) ";
             } else {
-                condition = "WHERE 1 = 1 ";
+                // third case => empty condition
             }
         } else {
-            condition = "WHERE NOT(u.activationCode IS NULL) ";
+            condition = "AND NOT(u.activationCode IS NULL) ";
         }
 
         //Profiles
@@ -424,9 +424,9 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         String filter =
                 "MATCH (s:Structure)<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User {id: {userId}}), " +
                         "(g)-[:HAS_PROFILE]-(p: Profile) ";
-        String condition = "";
+        String condition = "WHERE (NOT(HAS(u.federated)) OR u.federated = false) ";
         if (!userInfos.getFunctions().containsKey(SUPER_ADMIN)) {
-            condition = "WHERE " + DefaultSchoolService.EXCLUDE_ADMC_QUERY_FILTER;
+            condition = "AND " + DefaultSchoolService.EXCLUDE_ADMC_QUERY_FILTER;
         }
 
         String optional =
@@ -462,7 +462,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         String filter =
                 "MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User), " +
                         "(g)-[:HAS_PROFILE]-(p: Profile) ";
-        String condition = "";
+        String condition = "WHERE (NOT(HAS(u.federated)) OR u.federated = false) ";
         String optional =
                 "OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) " +
                         "OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) " +
@@ -479,13 +479,13 @@ public class DefaultMassMailService extends Renders implements MassMailService {
             UserInfos.Function f = userInfos.getFunctions().get(ADMIN_LOCAL);
             List<String> scope = f.getScope();
             if (scope != null && !scope.isEmpty()) {
-                condition += "WHERE s.id IN {scope} ";
+                condition += "AND s.id IN {scope} ";
                 params.put("scope", new JsonArray(scope));
             }
         }
 
         if (!userInfos.getFunctions().containsKey(SUPER_ADMIN)) {
-            condition += (condition.isEmpty() ? "WHERE " : "AND ") + DefaultSchoolService.EXCLUDE_ADMC_QUERY_FILTER;
+            condition += "AND "+ DefaultSchoolService.EXCLUDE_ADMC_QUERY_FILTER;
         }
 
         //With clause
