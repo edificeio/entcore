@@ -1,21 +1,29 @@
 import { Attachment, IconButton } from '@edifice.io/react';
-import { IconDownload, IconFolderAdd } from '@edifice.io/react/icons';
+import {
+  IconDelete,
+  IconDownload,
+  IconFolderAdd,
+} from '@edifice.io/react/icons';
 import { useI18n } from '~/hooks';
-import { Attachment as AttachmentMetaData } from '~/models';
+import { useMessageAttachments } from '~/hooks/useMessageAttachments';
+import { Attachment as AttachmentMetaData, Message } from '~/models';
 import { baseUrl } from '~/services';
 
 export interface MessageAttachmentsProps {
   attachment: AttachmentMetaData;
-  messageId: string;
+  message: Message;
+  editMode?: boolean;
 }
 
 export function MessageAttachment({
   attachment,
-  messageId,
+  message,
+  editMode,
 }: MessageAttachmentsProps) {
   const { t } = useI18n();
+  const { detachFile } = useMessageAttachments(message);
 
-  const downloadUrl = `${baseUrl}/message/${messageId}/attachment/${attachment.id}`;
+  const downloadUrl = `${baseUrl}/message/${message.id}/attachment/${attachment.id}`;
 
   return (
     <Attachment
@@ -38,6 +46,16 @@ export function MessageAttachment({
               variant="ghost"
             />
           </a>
+          {editMode && (
+            <IconButton
+              title={t('remove.attachment')}
+              color="danger"
+              type="button"
+              icon={<IconDelete />}
+              variant="ghost"
+              onClick={() => detachFile(attachment.id)}
+            />
+          )}
         </>
       }
     />

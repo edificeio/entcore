@@ -1,32 +1,47 @@
 import { Button, IconButton } from '@edifice.io/react';
-import { IconDownload, IconFolderAdd, IconPlus } from '@edifice.io/react/icons';
+import {
+  IconDelete,
+  IconDownload,
+  IconFolderAdd,
+  IconLoader,
+  IconPlus,
+} from '@edifice.io/react/icons';
 import clsx from 'clsx';
 import { useI18n } from '~/hooks';
-import { Attachment as AttachmentMetaData } from '~/models';
-import { baseUrl } from '~/services';
+import { Message } from '~/models';
 import { MessageAttachment } from './MessageAttachment';
 import './index.css';
+import { ChangeEvent, useRef } from 'react';
+import { useMessageAttachments } from '~/hooks/useMessageAttachments';
 
 export interface MessageAttachmentsProps {
-  attachments: AttachmentMetaData[];
-  messageId: string;
+  message: Message;
   editMode?: boolean;
 }
 
 export function MessageAttachments({
-  attachments,
-  messageId,
+  message,
   editMode = false,
 }: MessageAttachmentsProps) {
   const { common_t, t } = useI18n();
-  const downloadUrl = `${baseUrl}/message/${messageId}/allAttachments`;
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const { attachments, downloadAllUrl, attachFiles, detachFiles, isMutating } =
+    useMessageAttachments(message);
+
+  if (!attachments.length && !editMode) return null;
+
+  const handleAttachClick = () => inputRef?.current?.click();
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    attachFiles(event.target.files);
+  };
+
+  const handleDetachAllClick = () => detachFiles(attachments);
 
   const className = clsx(
     'bg-gray-300 rounded-2 px-12 py-8 message-attachments gap-8 d-flex flex-column',
     editMode && 'border message-attachments-edit mx-16',
   );
-
-  if (!attachments.length && !editMode) return null;
 
   return (
     <div className={className} data-drag-handle>
@@ -45,7 +60,7 @@ export function MessageAttachments({
                   icon={<IconFolderAdd />}
                   variant="ghost"
                 />
-                <a href={downloadUrl} download>
+                <a href={downloadAllUrl} download>
                   <IconButton
                     title={common_t('download.all.attachment')}
                     color="tertiary"
@@ -54,6 +69,17 @@ export function MessageAttachments({
                     variant="ghost"
                   />
                 </a>
+                {editMode && (
+                  <IconButton
+                    title={t('remove.all.attachment')}
+                    color="danger"
+                    type="button"
+                    icon={<IconDelete />}
+                    variant="ghost"
+                    onClick={handleDetachAllClick}
+                    disabled={isMutating}
+                  />
+                )}
               </div>
             )}
           </div>
@@ -62,7 +88,8 @@ export function MessageAttachments({
               <li key={attachment.id}>
                 <MessageAttachment
                   attachment={attachment}
-                  messageId={messageId}
+                  message={message}
+                  editMode={editMode}
                 />
               </li>
             ))}
@@ -70,9 +97,26 @@ export function MessageAttachments({
         </>
       )}
       {editMode && (
-        <Button color="secondary" variant="ghost" leftIcon={<IconPlus />}>
-          {t('add.attachment')}
-        </Button>
+        <>
+          <Button
+            color="secondary"
+            variant="ghost"
+            leftIcon={isMutating ? <IconLoader /> : <IconPlus />}
+            onClick={handleAttachClick}
+            disabled={isMutating}
+          >
+            {t('add.attachment')}
+          </Button>
+          <input
+            ref={inputRef}
+            multiple={true}
+            type="file"
+            name="attachment-input"
+            id="attachment-input"
+            onChange={handleFileChange}
+            hidden
+          />
+        </>
       )}
     </div>
   );
