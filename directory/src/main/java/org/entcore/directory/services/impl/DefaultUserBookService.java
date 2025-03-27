@@ -398,7 +398,6 @@ public class DefaultUserBookService implements UserBookService {
 					Renders.notModified(request);
 					future.complete(true);
 				}
-				this.avatarStorage.sendFile(fileId, fileId, request, true, meta);
 				future.complete(true);
 			} else {
 				future.complete(false);
