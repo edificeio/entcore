@@ -50,7 +50,7 @@ describe('Conversation Message Mutation Methods', () => {
       body: 'New content',
     });
 
-    expect(response).toBe('');
+    expect(response).toBeUndefined();
   });
 
   test('makes a POST request to send a draft message', async () => {
