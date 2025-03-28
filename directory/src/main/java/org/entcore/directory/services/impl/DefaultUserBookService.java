@@ -383,8 +383,14 @@ public class DefaultUserBookService implements UserBookService {
 		Promise<Boolean> future = Promise.promise();
 		// file storage doesnt keep extension
 		JsonObject meta = new JsonObject().put("content-type", "image/*");
-		this.avatarStorage.sendFile(fileId, fileId, request, true, meta);
-		future.complete(true);
+		this.avatarStorage.fileStats(fileId, stats -> {
+			if (stats.succeeded()) {
+				this.avatarStorage.sendFile(fileId, fileId, request, true, meta);
+				future.complete(true);
+			} else {
+				future.complete(false);
+			}
+		});
 		return future.future();
 	}
 
