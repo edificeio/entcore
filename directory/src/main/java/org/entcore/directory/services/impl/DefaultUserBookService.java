@@ -383,26 +383,8 @@ public class DefaultUserBookService implements UserBookService {
 		Promise<Boolean> future = Promise.promise();
 		// file storage doesnt keep extension
 		JsonObject meta = new JsonObject().put("content-type", "image/*");
-		this.avatarStorage.fileStats(fileId, stats -> {
-			if (stats.succeeded()) {
-				Date modified = stats.result().getLastModified();
-				boolean hasBeenModified = HttpHeaderUtils.checkIfModifiedSince(request.headers(), modified);
-				boolean hasChangedEtag = !ETag.check(request, fileId);
-				HttpHeaderUtils.addHeaderLastModified(request.response().headers(), modified);
-				// check if file is modified or fileid has changed
-				if (hasBeenModified || hasChangedEtag) {
-					// TODO send file renvoie tout le chemin de fichier dans l ETAG?
-					this.avatarStorage.sendFile(fileId, fileId, request, true, meta);
-					future.complete(true);
-				} else {
-					Renders.notModified(request);
-					future.complete(true);
-				}
-				future.complete(true);
-			} else {
-				future.complete(false);
-			}
-		});
+		this.avatarStorage.sendFile(fileId, fileId, request, true, meta);
+		future.complete(true);
 		return future.future();
 	}
 
