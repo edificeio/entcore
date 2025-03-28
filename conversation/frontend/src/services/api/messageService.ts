@@ -123,6 +123,12 @@ export const createMessageService = (baseURL: string) => ({
     }>(`${baseURL}/send?id=${draftId}`, payload);
   },
 
+  recall(messageId: string) {
+    return odeServices
+      .http()
+      .post<void>(`${baseURL}/api/messages/${messageId}/recall`);
+  },
+
   createDraft(payload: {
     subject?: string;
     body?: string;
