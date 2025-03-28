@@ -262,6 +262,18 @@ export const useRestoreMessage = () => {
   });
 };
 
+export const useEmptyTrash = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => messageService.emptyTrash(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['folder', 'trash'],
+      });
+    },
+  });
+};
+
 /**
  * Hook to delete a message.
  * @returns Mutation result for deleting the message.

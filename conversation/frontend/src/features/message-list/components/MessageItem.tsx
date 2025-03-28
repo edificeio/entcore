@@ -1,0 +1,54 @@
+import clsx from 'clsx';
+import React from 'react';
+import { MessageMetadata } from '~/models';
+import { MessagePreview } from './MessagePreview/MessagePreview';
+import { useUpdateFolderBadgeCountLocal } from '~/services';
+import { useNavigate } from 'react-router-dom';
+import { useSelectedFolder } from '~/hooks';
+
+interface MessageItemProps {
+  message: MessageMetadata;
+  checked: boolean;
+  checkbox: JSX.Element | undefined;
+}
+export function MessageItem({ message, checked, checkbox }: MessageItemProps) {
+  const navigate = useNavigate();
+  const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
+  const { folderId } = useSelectedFolder();
+
+  const handleMessageKeyUp = (
+    event: React.KeyboardEvent<HTMLDivElement>,
+    message: MessageMetadata,
+  ) => {
+    if (event.key === 'Enter') {
+      handleMessageClick(message);
+    }
+  };
+
+  const handleMessageClick = (message: MessageMetadata) => {
+    if (message.unread && folderId !== 'draft') {
+      updateFolderBadgeCountLocal(folderId!, -1);
+    }
+    navigate(`message/${message.id}`);
+  };
+
+  return (
+    <div
+      className={clsx('d-flex gap-24 px-16 py-12 mb-2 overflow-hidden', {
+        'bg-secondary-200': checked,
+        'fw-bold bg-primary-200 gray-800': message.unread,
+      })}
+      onClick={() => handleMessageClick(message)}
+      onKeyUp={(event) => handleMessageKeyUp(event, message)}
+      tabIndex={0}
+      role="button"
+      key={message.id}
+      data-testid="message-item"
+    >
+      <div className="d-flex align-items-center gap-12 g-col-3 flex-fill overflow-hidden">
+        <div className="ps-md-8">{checkbox}</div>
+        <MessagePreview message={message} />
+      </div>
+    </div>
+  );
+}

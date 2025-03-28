@@ -1,9 +1,9 @@
-import { useAppActions, useSelectedMessageIds } from '~/store';
 import { Button, Modal, Tree, TreeItem, useToast } from '@edifice.io/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useFolderActions, useI18n } from '~/hooks';
 import { buildTree, useFolderUtils, useMoveMessage } from '~/services';
-import { useNavigate } from 'react-router-dom';
+import { useAppActions, useSelectedMessageIds } from '~/store';
 
 export function MoveMessageToFolderModal() {
   const { t, common_t } = useI18n();
@@ -84,7 +84,7 @@ export function MoveMessageToFolderModal() {
       onModalClose={handleCloseFolderModal}
     >
       <Modal.Header onModalClose={handleCloseFolderModal}>
-        {t('move')}
+        {t('move.first.caps')}
       </Modal.Header>
 
       <Modal.Body>

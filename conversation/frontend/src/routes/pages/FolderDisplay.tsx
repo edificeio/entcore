@@ -4,7 +4,7 @@ import {
   useParams,
   useSearchParams,
 } from 'react-router-dom';
-import { MessageList } from '~/features/message-list';
+import { MessageList } from '~/features/message-list/MessageList';
 import { MessageListEmpty } from '~/features/message-list/components/MessageListEmpty';
 import { MessageListHeader } from '~/features/message-list/components/MessageListHeader';
 import { folderQueryOptions, useFolderMessages } from '~/services';
