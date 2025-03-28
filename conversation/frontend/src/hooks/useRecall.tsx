@@ -35,7 +35,7 @@ export function useRecall() {
       onSuccess: async () => {
         recallMessage.mutate(
           {
-            messageId: 'inbox',
+            messageId: message.id,
           },
           {
             onSuccess() {
