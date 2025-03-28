@@ -11,13 +11,19 @@ export const configQueryOptions = {
   base: ['config'] as const,
 
   /**
-   * Retrieves the gloab configuration.
+   * Retrieves the global configuration.
    * @returns A configuration object.
    */
   getGlobalConfig() {
     return queryOptions({
       queryKey: [...configQueryOptions.base, 'global'] as const,
-      queryFn: () => configService.getGlobalConfig(),
+      queryFn: async () => {
+        const data = await configService.getGlobalConfig();
+        return {
+          maxDepth: data['max-depth'],
+          recallDelayMinutes: data['recall-delay-minutes'],
+        };
+      },
       staleTime: Infinity,
     });
   },
