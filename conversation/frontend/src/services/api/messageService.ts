@@ -61,6 +61,11 @@ export const createMessageService = (baseURL: string) => ({
     });
   },
 
+  /** Empty the trash bin. */
+  emptyTrash() {
+    return odeServices.http().delete(`${baseURL}/emptyTrash`);
+  },
+
   /**
    * Move one or more messages into a user-created folder, or "inbox", or "trash".
    * @param targetFolderId ID of a user-created folder, or "inbox" or "trash".
