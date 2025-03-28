@@ -703,8 +703,10 @@ public class SqlConversationService implements ConversationService{
 				"m.from as \"from\", m.\"fromName\" as \"fromName\",  m.\"to\" as \"to\", m.\"toName\" as \"toName\", " +
 				"m.cc, m.\"ccName\" as \"ccName\", m.cci, m.\"cciName\" as \"cciName\", " +
 				"m.\"displayNames\" as \"displayNames\", m.state, m.date, m.language, m.thread_id, " + 
-				(apiVersion>0 ? "um.folder_id as folder_id, um.trashed as trashed, um.unread as unread, " +
-								"CASE WHEN count(distinct om.message_id) = 0 THEN false ELSE true END AS original_format_exists, " : "") +
+				(apiVersion>0 
+					? "m.content_version, um.folder_id as folder_id, um.trashed as trashed, um.unread as unread, " +
+					  "CASE WHEN count(distinct om.message_id) = 0 THEN false ELSE true END AS original_format_exists, " 
+					: "") +
 				"CASE WHEN COUNT(distinct att) = 0 THEN '[]' ELSE json_agg(distinct att.*) END AS attachments " +
 			"FROM " + messageTable + " m " +
 			"JOIN " + userMessageTable + " um " +
