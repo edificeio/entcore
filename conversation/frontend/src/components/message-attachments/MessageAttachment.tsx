@@ -4,6 +4,7 @@ import {
   IconDownload,
   IconFolderAdd,
 } from '@edifice.io/react/icons';
+import { useFolderHandlers } from '~/features/menu/hooks/useFolderHandlers';
 import { useI18n } from '~/hooks';
 import { useMessageAttachments } from '~/hooks/useMessageAttachments';
 import { Attachment as AttachmentMetaData, Message } from '~/models';
@@ -21,9 +22,14 @@ export function MessageAttachment({
   editMode,
 }: MessageAttachmentsProps) {
   const { t } = useI18n();
+  const { handleAddAttachmentToWorkspace } = useFolderHandlers();
   const { detachFile } = useMessageAttachments(message);
 
   const downloadUrl = `${baseUrl}/message/${message.id}/attachment/${attachment.id}`;
+
+  const handleAddToWorkspace = () => {
+    handleAddAttachmentToWorkspace();
+  };
 
   return (
     <Attachment
@@ -36,6 +42,7 @@ export function MessageAttachment({
             type="button"
             icon={<IconFolderAdd />}
             variant="ghost"
+            onClick={handleAddToWorkspace}
           />
           <a href={downloadUrl} download>
             <IconButton
