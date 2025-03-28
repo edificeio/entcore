@@ -7,7 +7,8 @@ type FolderModal =
   | 'move'
   | 'rename'
   | 'trash'
-  | 'move-message';
+  | 'move-message'
+  | 'add-attachment-to-workspace';
 
 interface State {
   selectedMessageIds: string[];
