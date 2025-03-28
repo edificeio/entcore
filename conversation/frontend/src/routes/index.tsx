@@ -13,6 +13,7 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
     children: [
       /* Main route */
       {
+        id: 'root',
         path: '/',
         async lazy() {
           const { loader, Component } = await import('~/routes/root');

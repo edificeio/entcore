@@ -18,37 +18,54 @@ import {
   RenameFolderModal,
   MoveMessageToFolderModal,
 } from '~/features';
-import { actionsQueryOptions, folderQueryOptions } from '~/services/queries';
+import {
+  actionsQueryOptions,
+  configQueryOptions,
+  folderQueryOptions,
+} from '~/services/queries';
 import { useOpenFolderModal } from '~/store';
 import './index.css';
 
-export const loader = (queryClient: QueryClient) => async () => {
-  const actionsOptions = actionsQueryOptions(existingActions);
+// Typing for the root route loader, reused in `useRights` hook.
+export interface RootLoaderData {
+  actions?: Record<string, boolean>;
+  config?: {
+    maxDepth: number;
+    recallDelayMinutes: number;
+  };
+}
 
-  // Non-blocking: display a skeleton in the meantime
-  queryClient.ensureQueryData(folderQueryOptions.getFoldersTree());
+export function loader(queryClient: QueryClient) {
+  return async () => {
+    // Non-blocking: display a skeleton in the meantime
+    queryClient.ensureQueryData(folderQueryOptions.getFoldersTree());
 
-  try {
-    const actions = await queryClient.ensureQueryData(actionsOptions);
-    return { actions };
-  } catch {
-    return { actions: {} as Record<string, boolean> };
-  }
-};
+    try {
+      const [actions, config] = await Promise.all([
+        queryClient.ensureQueryData(actionsQueryOptions(existingActions)),
+        queryClient.ensureQueryData(configQueryOptions.getGlobalConfig()),
+      ]);
+      return {
+        actions,
+        config,
+      } as RootLoaderData;
+    } catch {
+      return {} as RootLoaderData;
+    }
+  };
+}
 
 export function Component() {
   const { init, currentApp } = useEdificeClient();
 
-  const { actions } = useLoaderData() as {
-    actions: Record<string, boolean>;
-  };
+  const { actions, config } = useLoaderData() as RootLoaderData;
 
   const { md } = useBreakpoint();
   const folderModal = useOpenFolderModal();
 
   if (!init || !currentApp) return <LoadingScreen position={false} />;
 
-  if (!actions) {
+  if (!actions || !config) {
     throw 'Unexpected error';
   }
 
