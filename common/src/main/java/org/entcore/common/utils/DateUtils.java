@@ -53,6 +53,18 @@ public final class DateUtils {
 
     public static final ZoneId UTC_ZONE = ZoneId.of("UTC");
 
+    /** The date format used for ISO 8601 dates with milliseconds. */
+    private static final SimpleDateFormat ISO_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+
+    /** 
+     * Date format with milliseconds and dots as separators (yyyy-MM-dd HH:mm.ss.SSS)
+     */
+    private static final SimpleDateFormat DOT_SEPARATED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm.ss.SSS");
+
+    static {
+        ISO_DATE_FORMAT.setTimeZone(TimeZone.getTimeZone("UTC"));
+    }
+
     private DateUtils()  {}
 
     public static Date create(int year, int month, int day, int hours, int minutes,
@@ -265,6 +277,69 @@ public final class DateUtils {
                     reformatDateForMongoDB((JsonObject) value);
                 }
             }
+        }
+    }
+
+    /**
+     * Parse an ISO 8601 date string with milliseconds into a Java Date object.
+     *
+     * @param dateString Date string in ISO 8601 format (e.g., "2023-10-01T12:34:56.789Z")
+     * @return Date object representing the parsed date, or the current date if parsing fails
+     */
+    public static Date parseIsoDateWithMillis(String dateString) {
+        if (dateString == null || dateString.isEmpty()) {
+            return new Date();
+        }
+        
+        try {
+            return ISO_DATE_FORMAT.parse(dateString);
+        } catch (ParseException e) {
+            log.warn("Failed to parse ISO date with milliseconds: {}", dateString);
+            return new Date();
+        }
+    }
+
+    /**
+     * Parse various date formats into a Java Date object.
+     * Supports Long, String, and MongoDB date format ($date JSON object).
+     * 
+     * @param date Object representing a date (Long, String, or JsonObject with $date)
+     * @return Java Date object, or null if the input format is not supported
+     */
+    public static Date parseDate(Object date) {
+        if (date == null) {
+            return null;
+        }
+        if (date instanceof Long) {
+            return new Date((Long) date);
+        }
+        if (date instanceof String) {
+            return parseDateTime((String) date);
+        }
+        if (date instanceof JsonObject) {
+            Object dateValue = ((JsonObject) date).getValue("$date");
+            if (dateValue != null) {
+                return parseDateTime(dateValue.toString());
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Parse date from dot-separated format with milliseconds (yyyy-MM-dd HH:mm.ss.SSS)
+     * @param dateStr Date string in format "yyyy-MM-dd HH:mm.ss.SSS"
+     * @return Parsed Date or current date if parsing fails
+     */
+    public static Date parseDotSeparatedDate(String dateStr) {
+        if (dateStr == null || dateStr.isEmpty()) {
+            return new Date();
+        }
+        
+        try {
+            return DOT_SEPARATED_DATE_FORMAT.parse(dateStr);
+        } catch (ParseException e) {
+            log.warn("Failed to parse date with dot separators: {}", dateStr);
+            return new Date();
         }
     }
 }
