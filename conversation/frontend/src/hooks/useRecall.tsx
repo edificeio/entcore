@@ -39,7 +39,7 @@ export function useRecall() {
           },
           {
             onSuccess() {
-              success(t('conversation.recalled.mail.subject'));
+              success(t('conversation.success.recall.mail'));
             },
           },
         );
