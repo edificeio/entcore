@@ -52,6 +52,7 @@
         <module>test</module>
         <module>timeline</module>
         <module>workspace</module>
+        <module>broker</module>
         <module>tests</module>
     </modules>
 
