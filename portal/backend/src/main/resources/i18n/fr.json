@@ -106,6 +106,7 @@
   "bbm.linker.int.empty": "Sélectionnez, en haut à gauche, l’application dans laquelle se trouve la ressource que vous voulez ajouter !",
   "bbm.linker.int.notfound": "Aucune ressource trouvée pour votre recherche.",
   "bbm.linker.open.tab": "Ouvrir le lien dans un nouvel onglet",
+  "bbm.studio.modal.title": "Le Studio",
   "bbm.video": "Caméra",
   "bbm.video.caption": "Souriez, vous êtes filmé(e) ! Vous pouvez enregistrer jusqu’à 3 minutes de vidéo.",
   "bbm.video.modal.title": "Ajouter une vidéo",

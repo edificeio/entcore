@@ -5,9 +5,8 @@ import fr.wseduc.webutils.security.SecuredAction;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public enum ShareRoles {
     Read("read"),
@@ -113,5 +112,25 @@ public enum ShareRoles {
             }
         }
         return newRights;
+    }
+
+    public static List<String> getSecuredActionNameByRole(final ShareRoles role, final Map<String, SecuredAction> securedActions) {
+        final List<String> actionNames = new ArrayList<>();
+        
+        for (SecuredAction action: securedActions.values()) {
+            if (isRoleBasedAction(action)) {
+                final String actionRole = action.getDisplayName().substring(action.getDisplayName().lastIndexOf('.') + 1);
+                if (role.key.equalsIgnoreCase(actionRole)) {
+                    actionNames.add(action.getName().replaceAll("\\.", "-"));
+                }
+            }
+        }
+        
+        return actionNames;
+    }
+
+    public static List<String> getSecuredActionNameByRole(final String roleName, final Map<String, SecuredAction> securedActions) {
+        final Optional<ShareRoles> role = getRoleByName(roleName);
+        return role.map(shareRoles -> getSecuredActionNameByRole(shareRoles, securedActions)).orElseGet(ArrayList::new);
     }
 }

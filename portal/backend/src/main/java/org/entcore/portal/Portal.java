@@ -20,14 +20,24 @@
 package org.entcore.portal;
 
 import io.vertx.core.Promise;
+import org.entcore.broker.api.utils.AddressParameter;
+import org.entcore.broker.api.utils.BrokerProxyUtils;
+import org.entcore.common.cache.CacheService;
 import org.entcore.common.http.BaseServer;
 import org.entcore.portal.controllers.PortalController;
+import org.entcore.portal.listeners.I18nBrokerListenerImpl;
+import org.entcore.common.events.EventBrokerListenerImpl;
 
 public class Portal extends BaseServer {
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
 		super.start(startPromise);
+		final String assetPath = config.getString("assets-path", "../..");
+		final AddressParameter parameter = new AddressParameter("application", "portal");
+		final CacheService cacheService = CacheService.create(vertx);
+		BrokerProxyUtils.addBrokerProxy(new I18nBrokerListenerImpl(vertx, assetPath, cacheService), vertx, parameter);
+		BrokerProxyUtils.addBrokerProxy(new EventBrokerListenerImpl(), vertx);
 		addController(new PortalController());
 	}
 

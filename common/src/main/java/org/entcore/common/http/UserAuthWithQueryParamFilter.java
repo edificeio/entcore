@@ -1,6 +1,5 @@
 package org.entcore.common.http;
 
-import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.filter.AbstractBasicFilter;
 import fr.wseduc.webutils.request.filter.AbstractQueryParamTokenFilter;
@@ -10,24 +9,28 @@ import fr.wseduc.webutils.security.oauth.OAuthResourceProvider;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 
 import java.util.UUID;
 
 public class UserAuthWithQueryParamFilter extends UserAuthFilter {
-    private final Server server;
+    private final JsonObject config;
 
     public UserAuthWithQueryParamFilter(
 			OAuthResourceProvider oauth, 
             AbstractBasicFilter basicFilter, 
-            AbstractQueryParamTokenFilter paramFilter, 
-            Server server ) {
+            AbstractQueryParamTokenFilter paramFilter,
+            Vertx vertx,
+            JsonObject config ) {
 		super(oauth, basicFilter, paramFilter);
-        this.server = server;
-        this.setVertx( server.getVertx() );
+        this.config = config;
+        this.setVertx( vertx );
 	}
 
+    @Override
     protected void checkRecreateSession( final SecureHttpServerRequest request, String oneSessionId,
 			String userId, final Handler<Boolean> handler) {
         boolean shouldRecreate = true;
@@ -62,14 +65,14 @@ public class UserAuthWithQueryParamFilter extends UserAuthFilter {
                 }
             })
             .onSuccess( newSessionId -> {
-                long timeout = server.config.getLong("cookie_timeout", Long.MIN_VALUE);
+                long timeout = config.getLong("cookie_timeout", Long.MIN_VALUE);
                 CookieHelper.getInstance().setSigned("oneSessionId", newSessionId, timeout, request);
                 CookieHelper.set("authenticated", "true", timeout, request);
                 //create xsrf token on create session to avoid cache issue
-                if(server.config.getBoolean("xsrfOnAuth", true)){
+                if(config.getBoolean("xsrfOnAuth", true)){
                     CookieHelper.set("XSRF-TOKEN", UUID.randomUUID().toString(), timeout, request);
                 }
-                UserUtils.getSession(server.getEventBus(vertx), newSessionId, session -> {
+                UserUtils.getSession(vertx.eventBus(), newSessionId, session -> {
                     if( session != null ) {
                         request.setSession( session );
                     }
@@ -85,7 +88,7 @@ public class UserAuthWithQueryParamFilter extends UserAuthFilter {
 
 	private Future<Boolean> dropSession(String sessionId) {
 		Promise<Boolean> promise = Promise.promise();
-        UserUtils.deleteSession(server.getEventBus(vertx), sessionId, res -> {
+        UserUtils.deleteSession(vertx.eventBus(), sessionId, res -> {
             promise.complete( res );
         });
 		return promise.future();
@@ -93,7 +96,7 @@ public class UserAuthWithQueryParamFilter extends UserAuthFilter {
 
 	private Future<String> createUserSession(String userId, boolean secureLocation) {
 		Promise<String> promise = Promise.promise();
-        UserUtils.createSession(server.getEventBus(vertx), userId, secureLocation, res -> {
+        UserUtils.createSession(vertx.eventBus(), userId, secureLocation, res -> {
             promise.complete( res );
         });
 		return promise.future();

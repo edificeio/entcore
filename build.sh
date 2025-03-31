@@ -5,25 +5,25 @@ then
   mkdir node_modules
 fi
 
-# user options
-if [[ "$*" == *"--no-user"* ]]
+# Set CI_OPTION to " -T " if running in CI environment
+CI_OPTION=""
+if [ ! -z "$CI" ] && [ "$CI" = "true" ]
 then
-  USER_OPTION=""
-else
-  case `uname -s` in
-    MINGW* | Darwin*)
-      USER_UID=1000
-      GROUP_UID=1000
-      ;;
-    *)
-      if [ -z ${USER_UID:+x} ]
-      then
-        USER_UID=`id -u`
-        GROUP_GID=`id -g`
-      fi
-  esac
-  USER_OPTION="-u $USER_UID:$GROUP_GID"
+  CI_OPTION=" -T "
 fi
+
+case `uname -s` in
+  MINGW* | Darwin*)
+    USER_UID=1000
+    GROUP_UID=1000
+    ;;
+  *)
+    if [ -z ${USER_UID:+x} ]
+    then
+      USER_UID=`id -u`
+      GROUP_GID=`id -g`
+    fi
+esac
 
 # build options
 NO_DOCKER=""
@@ -121,20 +121,20 @@ buildFrontend () {
         echo "[buildNode] Use entcore version from package.json ($BRANCH_NAME)"
         case `uname -s` in
           MINGW*)
-            docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links --legacy-peer-deps && npm update --legacy-peer-deps entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
+            docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm install --no-bin-links --legacy-peer-deps && npm update --legacy-peer-deps entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
             ;;
           *)
-            docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --legacy-peer-deps && npm update --legacy-peer-deps entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
+            docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm install --legacy-peer-deps && npm update --legacy-peer-deps entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
         esac
     else
         echo "[buildNode] Use entcore tag $BRANCH_NAME"
-        docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm rm --no-save entcore ode-ts-client ode-ngjs-front && npm install --no-save entcore@$BRANCH_NAME ode-ts-client@$BRANCH_NAME ode-ngjs-front@$BRANCH_NAME"
+        docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm rm --no-save entcore ode-ts-client ode-ngjs-front && npm install --no-save entcore@$BRANCH_NAME ode-ts-client@$BRANCH_NAME ode-ngjs-front@$BRANCH_NAME"
         case `uname -s` in
           MINGW*)
-            docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links --legacy-peer-deps && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
+            docker compose run --rm -T -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm install --no-bin-links --legacy-peer-deps && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
             ;;
           *)
-            docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --legacy-peer-deps && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
+            docker compose run --rm -T -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm install --legacy-peer-deps && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
         esac
     fi
   fi
@@ -180,10 +180,10 @@ buildFrontend () {
   if [ "$MODULE" = "" ] || [ "$MODULE" = "admin" ]; then
     case `uname -s` in
       MINGW*)
-        docker compose run --rm $USER_OPTION node16 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
+        docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node16 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
         ;;
       *)
-        docker compose run --rm $USER_OPTION node16 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
+        docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node16 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
     esac
   fi
 }
@@ -194,6 +194,13 @@ buildBackend () {
   else
     docker compose run --rm $USER_OPTION maven mvn $MVN_OPTS install -DskipTests
   fi
+}
+
+install () {
+  docker compose run $CI_OPTION --rm maven mvn $MVN_OPTS clean install -DskipTests
+  cd broker-parent/broker-client/quarkus
+  ./build.sh install
+  cd -
 }
 
 test () {
@@ -212,16 +219,15 @@ localDep () {
       mkdir $dep.tar && mkdir $dep.tar/dist \
         && cp -R $PWD/../$dep/dist $PWD/../$dep/package.json $dep.tar
       tar cfzh $dep.tar.gz $dep.tar
-      docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-save $dep.tar.gz"
+      docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm install --no-save $dep.tar.gz"
       rm -rf $dep.tar $dep.tar.gz
     fi
   done
 }
 
 watch () {
-  docker compose run --rm maven sh -c "mvn $MVN_OPTS help:evaluate -Dexpression=project.groupId -q -DforceStdout -pl $MODULE && echo -n '~$MODULE~' &&  mvn $MVN_OPTS help:evaluate -Dexpression=project.version -pl $MODULE -q -DforceStdout" > .version.properties
   docker compose run --rm \
-    $USER_OPTION \
+    -u "$USER_UID:$GROUP_GID" $CI_OPTION \
     -v $PWD/../$SPRINGBOARD:/home/node/$SPRINGBOARD \
     node sh -c "npx gulp watch-$MODULE $NODE_OPTION --springboard=../$SPRINGBOARD 2>/dev/null"
   rm -f .version.properties
@@ -230,11 +236,11 @@ watch () {
 # ex: ./build.sh -m=workspace -s=paris watch
 
 ngWatch () {
-  docker compose run --rm $USER_OPTION --publish 4200:4200 node16 sh -c "npm run start"
+  docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION --publish 4200:4200 node16 sh -c "npm run start"
 }
 
 infra () {
-  docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install /home/node/infra-front"
+  docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm install /home/node/infra-front"
 }
 
 publish() {
@@ -245,7 +251,43 @@ publish() {
     *)         export nexusRepository='releases' ;;
   esac
 
-  docker compose run --rm $USER_OPTION maven mvn -DrepositoryId=ode-$nexusRepository -DskipTests --settings /var/maven/.m2/settings.xml deploy
+  docker compose run --rm  maven mvn -DrepositoryId=ode-$nexusRepository -DskipTests --settings /var/maven/.m2/settings.xml deploy
+  cd broker-parent/broker-client/quarkus
+  ./build.sh publish
+  cd -
+  publishBrokerNpmLib
+}
+
+publishBrokerNpmLib() {
+  # Set GIT_BRANCH to the current branch if not set
+  if [ -z "$GIT_BRANCH" ]; then
+    GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+  fi
+  echo "[publish] Publish packages..."
+  # Récupération de la branche locale
+  LOCAL_BRANCH=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
+  # Récupération de la date et du timestamp
+  # Récupération du dernier tag stable
+  LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "1.0.0")
+  LATEST_TAG=${LATEST_TAG#v}
+
+  # Définition du tag de la branche
+  if [ "$LOCAL_BRANCH" = "main" ]; then
+    TAG_BRANCH="latest"
+  else
+    TAG_BRANCH=$LOCAL_BRANCH
+  fi
+
+  # Publier avec le tag de la branche
+  echo "[publish] Publish with the branch tag"
+  # Default to dry run if not specified
+  DRY_RUN=${DRY_RUN:-true}
+
+  if [ "$DRY_RUN" = "true" ]; then
+    docker compose run -e NPM_TOKEN=$NPM_TOKEN --rm -u "$USER_UID:$GROUP_GID" node22 sh -c "pnpm publish -r --no-git-checks --tag $TAG_BRANCH --dry-run"
+  else
+    docker compose run -e NPM_TOKEN=$NPM_TOKEN --rm -u "$USER_UID:$GROUP_GID" node22 sh -c "pnpm publish -r --no-git-checks --tag $TAG_BRANCH"
+  fi
 }
 
 check_prefix_sh_file() {
@@ -317,10 +359,8 @@ itTests() {
   exit $exit_code
 }
 
-if [ "$#" -lt 1 ]; then
-  echo "Usage: $0 <clean|buildFrontend|buildBackend|install|watch>"
-  echo "Example: $0 clean install"
-  exit 1
+if [ ! -e .env ]; then
+  init
 fi
 
 for param in "$@"
@@ -341,7 +381,10 @@ do
       buildBackend
       ;;
     install)
-      buildFrontend && buildBackend
+      buildFrontend && buildBackend && install
+      ;;
+    buildBack)
+      install
       ;;
     localDep)
       localDep

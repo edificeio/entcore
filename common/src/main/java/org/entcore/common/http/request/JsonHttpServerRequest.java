@@ -41,6 +41,7 @@ import io.vertx.core.net.HostAndPort;
 import io.vertx.core.net.NetSocket;
 import io.vertx.core.net.SocketAddress;
 import org.apache.commons.lang3.NotImplementedException;
+import org.entcore.common.http.response.JsonHttpResponse;
 
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLSession;
@@ -50,11 +51,12 @@ import java.util.Set;
 
 public class JsonHttpServerRequest implements HttpServerRequest {
 
-	private JsonObject object;
-	private HttpServerResponse response;
+	private final JsonObject object;
+	private final HttpServerResponse response;
 
 	public JsonHttpServerRequest(JsonObject object) {
 		this.object = object;
+		this.response = new JsonHttpResponse();
 	}
 
 	public JsonHttpServerRequest(JsonObject object, MultiMap headers) {
@@ -65,6 +67,7 @@ public class JsonHttpServerRequest implements HttpServerRequest {
 			});
 		}
 		this.object = object.put("headers", h);
+		this.response = new JsonHttpResponse();
 	}
 
 	public JsonHttpServerRequest(JsonObject object, HttpServerResponse response) {
@@ -185,7 +188,7 @@ public class JsonHttpServerRequest implements HttpServerRequest {
 
 	@Override
 	public String getParam(String paramName) {
-		return null;
+		return params().get(paramName);
 	}
 
 	@Override

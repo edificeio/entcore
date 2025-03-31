@@ -33,6 +33,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import org.apache.commons.lang3.tuple.Pair;
+import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.cache.CacheService;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.redis.Redis;
@@ -63,6 +64,8 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 
 	public void start() {
 		super.start();
+		BrokerProxyUtils.addBrokerProxy(new SessionBrokerListenerImpl(this), vertx);
+
 		LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
 
 		String neo4jConfig = (String) server.get("neo4jConfig");
@@ -439,10 +442,18 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			sendError(message, "Invalid sessionId.");
 			return;
 		}
+		findBySessionId(sessionId).onSuccess(session -> {
+			sendOK(message, new JsonObject().put("status", "ok").put("session", session));
+		}).onFailure(error -> {
+			sendError(message, error.getMessage());
+		});
+	}
 
+	public Future<JsonObject> findBySessionId(final String sessionId) {
+		final Promise<JsonObject> promise = Promise.promise();
 		sessionStore.getSession(sessionId, ar -> {
 			if (ar.succeeded()) {
-				sendOK(message, new JsonObject().put("status", "ok").put("session", ar.result()));
+				promise.complete(ar.result());
 			} else if (!sessionStore.inactivityEnabled()) {
 				final JsonObject query = new JsonObject().put("_id", sessionId);
 				mongo.findOne(SESSIONS_COLLECTION, query, event -> {
@@ -459,36 +470,34 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 											if (ar2.succeeded()) {
 												JsonObject s = ar2.result();
 												if (s != null) {
-													JsonObject sessionResponse = new JsonObject().put("status", "ok")
-															.put("session", s);
-													sendOK(message, sessionResponse);
+													promise.complete(s);
 												} else {
-													sendError(message, "Session not found. 1");
+													promise.fail("Session not found. 1");
 												}
 											} else {
 												generateSessionInfos(uId, event1 -> {
 													if (event1 != null) {
 														logger.info("Session with store problem : " + event1.encode());
-														sendOK(message, new JsonObject().put("status", "ok")
-																.put("session", event1));
+														promise.complete(event1);
 													} else {
-														sendError(message, "Session not found. 2");
+														promise.fail("Session not found. 2");
 													}
 												});
 											}
 										});
 									} else {
-										sendError(message, "Session not found. 3");
+										promise.fail("Session not found. 3");
 									}
 								});
 					} else {
-						message.reply(new JsonObject().put("status", "error").put("message", "Session not found. 4"));
+						promise.fail("Session not found. 4");
 					}
 				});
 			} else {
-				message.reply(new JsonObject().put("status", "error").put("message", "Session not found. 5 (with inactivity enabled)"));
+				promise.fail("Session not found. 5 (with inactivity enabled)");
 			}
 		});
+		return promise.future();
 	}
 
 	/**
