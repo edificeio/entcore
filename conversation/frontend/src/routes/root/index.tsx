@@ -37,14 +37,15 @@ export interface RootLoaderData {
 
 export function loader(queryClient: QueryClient) {
   return async () => {
-    // Non-blocking: display a skeleton in the meantime
-    queryClient.ensureQueryData(folderQueryOptions.getFoldersTree());
-
     try {
       const [actions, config] = await Promise.all([
         queryClient.ensureQueryData(actionsQueryOptions(existingActions)),
         queryClient.ensureQueryData(configQueryOptions.getGlobalConfig()),
       ]);
+      // Non-blocking: display a skeleton in the meantime
+      queryClient.ensureQueryData(
+        folderQueryOptions.getFoldersTree(config.maxDepth),
+      );
       return {
         actions,
         config,
