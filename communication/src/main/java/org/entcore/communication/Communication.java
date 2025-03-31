@@ -21,10 +21,13 @@ package org.entcore.communication;
 
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
+import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.communication.controllers.CommunicationController;
 import org.entcore.communication.filters.CommunicationFilter;
+import org.entcore.communication.listeners.CommunicationBrokerListenerImpl;
+import org.entcore.communication.services.CommunicationService;
 import org.entcore.communication.services.impl.DefaultCommunicationService;
 
 public class Communication extends BaseServer {
@@ -34,11 +37,13 @@ public class Communication extends BaseServer {
 		super.start(startPromise);
     TimelineHelper helper = new TimelineHelper(vertx, vertx.eventBus(), config);
 		CommunicationController communicationController = new CommunicationController();
-
-		communicationController.setCommunicationService(new DefaultCommunicationService(helper, config.getJsonArray("discoverVisibleExpectedProfile", new JsonArray())));
+		final CommunicationService service = new DefaultCommunicationService(helper, config.getJsonArray("discoverVisibleExpectedProfile", new JsonArray()));
+		communicationController.setCommunicationService(service);
 
 		addController(communicationController);
 		setDefaultResourceFilter(new CommunicationFilter());
+
+		BrokerProxyUtils.addBrokerProxy(new CommunicationBrokerListenerImpl(service), vertx);
 	}
 
 }

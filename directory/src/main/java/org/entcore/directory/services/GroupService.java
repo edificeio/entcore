@@ -24,6 +24,7 @@ import fr.wseduc.webutils.Either;
 import java.util.Arrays;
 import java.util.List;
 
+import io.vertx.core.Future;
 import org.entcore.common.user.UserInfos;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
@@ -54,4 +55,15 @@ public interface GroupService {
 	void getFuncAndDisciplinesGroups(String structureId, Boolean recursive, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
 
 	void getCommunityGroup(String structureId, Handler<Either<String, JsonArray>> results);
+
+	Future<JsonObject> getGroupByExternalId(String externalId);
+
+	/**
+	 * Add a label to a Group node identified by its ID
+	 * 
+	 * @param groupId The ID of the group to modify
+	 * @param label The label to add to the group
+	 * @return Future with the modified group information or failure
+	 */
+	Future<JsonObject> addLabelToGroup(String groupId, String label);
 }

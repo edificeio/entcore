@@ -46,6 +46,7 @@ import org.entcore.communication.services.CommunicationService;
 import org.entcore.communication.services.impl.DefaultCommunicationService;
 
 import java.util.List;
+import java.util.Map;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
@@ -468,6 +469,52 @@ public class CommunicationController extends BaseController {
 			case "setCommunicationRules" :
 				communicationService.applyRules(
 						message.body().getString("groupId"), responseHandler);
+				break;
+			case "addLink" :
+				// Create communication link between two groups
+				if (message.body().containsKey("startGroupId") && message.body().containsKey("endGroupId")) {
+					String startGroupId = message.body().getString("startGroupId");
+					String endGroupId = message.body().getString("endGroupId");
+					
+					communicationService.addLink(startGroupId, endGroupId, responseHandler);
+				} else {
+					message.reply(new JsonObject().put("status", "error")
+							.put("message", "missing.parameters"));
+				}
+				break;
+			case "addLinkWithUsers" :
+				if (message.body().containsKey("groupId") && message.body().containsKey("direction")) {
+					String groupId = message.body().getString("groupId");
+					String direction = message.body().getString("direction", "BOTH");
+					CommunicationService.Direction directionEnum;
+					try {
+						directionEnum = CommunicationService.Direction.valueOf(direction.toUpperCase());
+					} catch (IllegalArgumentException | NullPointerException e) {
+						directionEnum = CommunicationService.Direction.BOTH;
+					}
+					
+					communicationService.addLinkWithUsers(groupId, directionEnum, responseHandler);
+				}else {
+					message.reply(new JsonObject().put("status", "error")
+							.put("message", "missing.parameters"));
+				}
+				break;
+			case "removeLinkWithUsers" :
+				if (message.body().containsKey("groupId") && message.body().containsKey("direction")) {
+					String groupId = message.body().getString("groupId");
+					String direction = message.body().getString("direction", "BOTH");
+					CommunicationService.Direction directionEnum;
+					try {
+						directionEnum = CommunicationService.Direction.valueOf(direction.toUpperCase());
+					} catch (IllegalArgumentException | NullPointerException e) {
+						directionEnum = CommunicationService.Direction.BOTH;
+					}
+					
+					communicationService.removeLinkWithUsers(groupId, directionEnum, responseHandler);
+				} else {
+					message.reply(new JsonObject().put("status", "error")
+							.put("message", "missing.parameters"));
+				}
 				break;
 			default:
 				message.reply(new JsonObject().put("status", "error")
