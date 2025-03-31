@@ -10,7 +10,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Folder, MessageMetadata } from '~/models';
 import { folderService, searchFolder } from '..';
 import { useCallback } from 'react';
-import { useConfig } from '~/hooks';
+import { useConfig } from '~/store';
 
 /**
  * Provides query options for folder-related operations.

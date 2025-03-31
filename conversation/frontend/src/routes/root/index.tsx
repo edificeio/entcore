@@ -8,7 +8,7 @@ import {
 } from '@edifice.io/react';
 import { QueryClient } from '@tanstack/react-query';
 import { Outlet, useLoaderData } from 'react-router-dom';
-import { existingActions } from '~/config';
+import { Config, existingActions } from '~/config';
 import { AppActionHeader } from '~/features/app/Action/AppActionHeader';
 import {
   DesktopMenu,
@@ -23,16 +23,13 @@ import {
   configQueryOptions,
   folderQueryOptions,
 } from '~/services/queries';
-import { useOpenFolderModal } from '~/store';
+import { setConfig, setWorkflows, useOpenFolderModal } from '~/store';
 import './index.css';
 
-// Typing for the root route loader, reused in `useRights` hook.
+// Typing for the root route loader.
 export interface RootLoaderData {
   actions?: Record<string, boolean>;
-  config?: {
-    maxDepth: number;
-    recallDelayMinutes: number;
-  };
+  config?: Config;
 }
 
 export function loader(queryClient: QueryClient) {
@@ -42,7 +39,12 @@ export function loader(queryClient: QueryClient) {
         queryClient.ensureQueryData(actionsQueryOptions(existingActions)),
         queryClient.ensureQueryData(configQueryOptions.getGlobalConfig()),
       ]);
-      // Non-blocking: display a skeleton in the meantime
+
+      // Store those constant values.
+      if (actions) setWorkflows(actions);
+      if (config) setConfig(config);
+
+      // Ensure folders tree loads
       queryClient.ensureQueryData(
         folderQueryOptions.getFoldersTree(config.maxDepth),
       );

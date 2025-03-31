@@ -1,4 +1,3 @@
-export * from './useConfig';
 export * from './useFolderActions';
 export * from './useI18n';
 export * from './useSelectedFolder';

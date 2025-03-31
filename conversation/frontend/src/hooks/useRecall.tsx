@@ -1,9 +1,8 @@
 import { useEdificeClient, useToast } from '@edifice.io/react';
 import { MessageBase } from '~/models';
-import { useConfirmModalStore } from '~/store';
+import { useConfig, useConfirmModalStore } from '~/store';
 import { useI18n } from './useI18n';
 import { useRights } from './useRights';
-import { useConfig } from './useConfig';
 import { useRecallMessage } from '~/services';
 
 export function useRecall() {
