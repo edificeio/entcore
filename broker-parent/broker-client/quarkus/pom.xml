@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.entcore</groupId>
+    <artifactId>edifice-ent-client</artifactId>
+    <version>6.6-develop-community-SNAPSHOT</version>
+
+    <parent>
+        <groupId>io.edifice</groupId>
+        <artifactId>quarkus-parent</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <properties>
+        <jnats.version>2.20.5</jnats.version>
+        <jandex.version>3.2.1</jandex.version>
+    </properties>
+
+
+    <repositories>
+        <repository>
+            <id>vertx</id>
+            <name>sonatype-vertx-repository</name>
+            <url>https://oss.sonatype.org/content/repositories/iovertx-3720/</url>
+        </repository>
+        <repository>
+            <id>snapshots</id>
+            <name>sonatype-snapshots-repository</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
+        <repository>
+            <id>ode</id>
+            <name>ODE Repository</name>
+            <url>https://maven.opendigitaleducation.com/nexus/content/groups/public</url>
+        </repository>
+    </repositories>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ode-snapshots</id>
+            <name>ODE Snapshots</name>
+            <url>https://maven.opendigitaleducation.com/nexus/content/repositories/snapshots/</url>
+        </snapshotRepository>
+        <repository>
+            <id>ode-releases</id>
+            <name>ODE Releases</name>
+            <url>https://maven.opendigitaleducation.com/nexus/content/repositories/releases/</url>
+        </repository>
+    </distributionManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>broker-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.nats</groupId>
+            <artifactId>jnats</artifactId>
+            <version>${jnats.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>io.smallrye</groupId>
+                <artifactId>jandex-maven-plugin</artifactId>
+                <version>${jandex.version}</version>
+                <executions>
+                    <execution>
+                        <id>make-index</id>
+                        <goals>
+                            <goal>jandex</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <fileSets>
+                        <fileSet>
+                            <directory>${project.build.directory}/classes</directory>
+                            <excludes>
+                                <exclude>**/Dummy*.class</exclude>
+                            </excludes>
+                        </fileSet>
+                    </fileSets>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
