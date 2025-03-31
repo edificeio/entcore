@@ -385,6 +385,9 @@ do
     buildBack)
       install
       ;;
+    buildBack)
+      install
+      ;;
     localDep)
       localDep
       ;;
