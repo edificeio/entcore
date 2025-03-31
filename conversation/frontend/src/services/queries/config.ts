@@ -20,8 +20,8 @@ export const configQueryOptions = {
       queryFn: async () => {
         const data = await configService.getGlobalConfig();
         return {
-          maxDepth: data['max-depth'],
-          recallDelayMinutes: data['recall-delay-minutes'],
+          maxDepth: data['max-depth'] ?? 2,
+          recallDelayMinutes: data['recall-delay-minutes'] ?? 60,
         };
       },
       staleTime: Infinity,
