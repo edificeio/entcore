@@ -97,7 +97,7 @@ public class ConversationController extends BaseController {
 
 	private final static String QUOTA_BUS_ADDRESS = "org.entcore.workspace.quota";
 
-	private Storage storage;
+	private final Storage storage;
 	private int threshold;
 
 	private ConversationService conversationService;
@@ -139,13 +139,29 @@ public class ConversationController extends BaseController {
 		eventHelper.onAccess(request);
 	}
 
-	@Get(value = "(?:[/]?(?:conversation|inbox|outbox|draft|trash))?", regex = true)
+	/**
+	 * Main frontend rendering endpoint.
+	 * Secured by a dedicated access right named `org.entcore.conversation.controllers.ConversationController|view`
+	 * 
+	 * Example of valid URLs that should render the frontend HTML :
+	 * 	/conversation  (does not seem supported by the framework)
+	 *  /conversation/
+	 *  /conversation/inbox  (or outbox, draft or trash)
+	 *  /conversation/outbox/message/:messageId   (or inbox, draft or trash)
+	 *  /conversation/draft/create
+	 * @param request
+	 */
+	@Get(value = "(?:/?(?:conversation|(?:inbox|outbox|draft|trash){1}(?:/message/[^/\\\\s]+$)?)|draft/create$)?", regex = true)
 	@SecuredAction("conversation.view")
 	@Cache(value = "/conversation/count/INBOX", useQueryParams = true, scope = CacheScope.USER, operation = CacheOperation.INVALIDATE)
 	public void view(HttpServerRequest request) {
 		renderViewWeb(request);
 	}
 
+	/**
+	 * Another frontend rendering endpoint.
+	 * Secured by a dedicated resource filter.
+	 */
 	@Get("folder/:folderId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SystemOrUserFolderFilter.class)
@@ -153,6 +169,10 @@ public class ConversationController extends BaseController {
 		renderViewWeb(request);
 	}
 
+	/**
+	 * Another frontend rendering endpoint.
+	 * Secured by a dedicated resource filter.
+	 */
 	@Get("folder/:folderId/message/:messageId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SystemOrUserFolderFilter.class)
