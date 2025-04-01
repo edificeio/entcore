@@ -1,4 +1,4 @@
-package org.entcore.broker.nats;
+package org.entcore.broker.api;
 
 
 import java.lang.annotation.ElementType;
@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface NATSListener {
+public @interface BrokerListener {
   /**
    * The NATS subject to subscribe to.
    * @return NATS subject
@@ -31,4 +31,6 @@ public @interface NATSListener {
    * @return endpoint description
    */
   String description() default "";
+
+  boolean proxy() default false;
 }
