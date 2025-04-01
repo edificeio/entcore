@@ -1,0 +1,13 @@
+{
+	"main":"org.entcore.broker.Broker",
+	"port": 8778,
+	"mode": "dev",
+	"auto-redeploy": false,
+    "host" : "http://localhost:8778",
+    "app-name" : "Admin",
+    "app-address" : "http://localhost:8778/broker",
+	"sql": false,
+	"publicConf": {
+	}
+
+}
