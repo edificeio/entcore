@@ -4,6 +4,7 @@ import { useConfig, useConfirmModalStore } from '~/store';
 import { useI18n } from './useI18n';
 import { useRights } from './useRights';
 import { useRecallMessage } from '~/services';
+import React, { Fragment } from 'react';
 
 export function useRecall() {
   const { t } = useI18n();
@@ -27,8 +28,8 @@ export function useRecall() {
   const handleRecall = (message: MessageBase) => {
     openModal({
       id: 'recall-message-modal',
-      header: <>{t('recall')}</>,
-      body: <p>{t('conversation.recall.mail')}</p>,
+      header: t('recall'),
+      body: React.createElement('p', {}, t('conversation.recall.mail')),
       okText: t('conversation.recall.ok'),
       koText: t('cancel'),
       onSuccess: async () => {
