@@ -1,0 +1,135 @@
+package org.entcore.broker.nats;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import org.entcore.broker.nats.model.NATSContract;
+import org.entcore.broker.nats.model.NATSEndpoint;
+import org.entcore.broker.nats.utils.SchemaGeneratorUtil;
+
+import javax.annotation.processing.*;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
+import javax.tools.Diagnostic;
+import javax.tools.FileObject;
+import javax.tools.StandardLocation;
+import java.io.IOException;
+import java.io.Writer;
+import java.util.List;
+import java.util.Set;
+
+@SupportedAnnotationTypes("org.entcore.broker.nats.NATSListener")
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
+public class NATSListenerProcessor extends AbstractProcessor {
+
+  private SchemaGeneratorUtil schemaGeneratorUtil;
+  private Filer filer;
+  private Messager messager;
+  private ObjectMapper objectMapper;
+
+  @Override
+  public synchronized void init(ProcessingEnvironment processingEnv) {
+    super.init(processingEnv);
+    this.schemaGeneratorUtil = new SchemaGeneratorUtil(processingEnv.getTypeUtils());
+    this.filer = processingEnv.getFiler();
+    this.messager = processingEnv.getMessager();
+
+    // Initialize JSON utils
+    this.objectMapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
+  }
+
+  @Override
+  public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
+    System.out.println("########## Processing");
+    if (roundEnv.processingOver()) {
+      return false;
+    }
+
+    NATSContract contract = new NATSContract();
+    contract.setServiceName(getServiceName());
+    contract.setVersion("1.0.0"); // Could be read from a project property
+
+    // Process all methods annotated with @NATSListener
+    for (Element element : roundEnv.getElementsAnnotatedWith(NATSListener.class)) {
+      if (element instanceof ExecutableElement) {
+        ExecutableElement method = (ExecutableElement) element;
+        NATSListener annotation = method.getAnnotation(NATSListener.class);
+
+        // Create an endpoint for this method
+        NATSEndpoint endpoint = processMethod(method, annotation);
+        contract.getEndpoints().add(endpoint);
+      }
+    }
+
+    // Generate and write the nats.json file
+    try {
+      writeContractFile(contract);
+    } catch (IOException e) {
+      e.printStackTrace();
+      messager.printMessage(Diagnostic.Kind.ERROR,
+        "Error writing nats.json: " + e.getMessage());
+    }
+
+    return true;
+  }
+
+  private NATSEndpoint processMethod(ExecutableElement method, NATSListener annotation) {
+    NATSEndpoint endpoint = new NATSEndpoint();
+
+    endpoint.setSubject(annotation.subject());
+    endpoint.setDescription(annotation.description());
+    endpoint.setQueue(annotation.queue());
+
+    // Get method information
+    endpoint.setMethodName(method.getSimpleName().toString());
+    endpoint.setClassName(((TypeElement) method.getEnclosingElement()).getQualifiedName().toString());
+
+    final List<? extends VariableElement> parameters = method.getParameters();
+    // Get request type information (first parameter)
+    if (parameters.size() == 1) {
+      TypeMirror requestType = method.getParameters().get(0).asType();
+      endpoint.setRequestType(requestType.toString());
+      try {
+        endpoint.setRequestSchema(schemaGeneratorUtil.generateJsonSchemaFromTypeMirror(requestType));
+      } catch (Exception e) {
+        e.printStackTrace();
+        messager.printMessage(Diagnostic.Kind.WARNING,
+          "Could not generate schema for request type: " + e.getMessage(), method);
+      }
+    } else {
+      messager
+        .printMessage(Diagnostic.Kind.ERROR, "Could not generate schema for request type: method " +  method + " should have 1 and only 1 parameter");
+      throw new RuntimeException("Should have only 1 parameter but got " + parameters.size() + " : " + parameters);
+    }
+
+    // Get response type information
+    TypeMirror responseType = method.getReturnType();
+    endpoint.setResponseType(responseType.toString());
+    try {
+      endpoint.setResponseSchema(schemaGeneratorUtil.generateJsonSchemaFromTypeMirror(responseType));
+    } catch (Exception e) {
+      messager.printMessage(Diagnostic.Kind.WARNING,
+        "Could not generate schema for response type: " + e.getMessage(), method);
+    }
+
+    return endpoint;
+  }
+
+
+  private void writeContractFile(NATSContract contract) throws IOException {
+    FileObject file = filer.createResource(
+      StandardLocation.CLASS_OUTPUT, "", "META-INF/nats.json");
+
+    try (Writer writer = file.openWriter()) {
+      objectMapper.writeValue(writer, contract);
+    }
+  }
+
+  private String getServiceName() {
+    // Could be read from a project property or configuration
+    return "quarkus-nats-service";
+  }
+}
