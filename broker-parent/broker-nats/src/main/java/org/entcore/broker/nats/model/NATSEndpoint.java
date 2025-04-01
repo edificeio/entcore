@@ -14,7 +14,6 @@ public class NATSEndpoint {
   private String methodName;
   private String className;
 
-  // Getters and setters
   public String getSubject() {
     return subject;
   }
@@ -47,8 +46,11 @@ public class NATSEndpoint {
     this.requestType = requestType;
   }
 
+  public Object getRequestSchema() {
+    return requestSchema;
+  }
 
-  public void setRequestSchema(String requestSchema) {
+  public void setRequestSchema(Object requestSchema) {
     this.requestSchema = requestSchema;
   }
 
@@ -60,7 +62,11 @@ public class NATSEndpoint {
     this.responseType = responseType;
   }
 
-  public void setResponseSchema(String responseSchema) {
+  public Object getResponseSchema() {
+    return responseSchema;
+  }
+
+  public void setResponseSchema(Object responseSchema) {
     this.responseSchema = responseSchema;
   }
 
@@ -78,22 +84,6 @@ public class NATSEndpoint {
 
   public void setClassName(String className) {
     this.className = className;
-  }
-
-  public Object getRequestSchema() {
-    return requestSchema;
-  }
-
-  public void setRequestSchema(Object requestSchema) {
-    this.requestSchema = requestSchema;
-  }
-
-  public Object getResponseSchema() {
-    return responseSchema;
-  }
-
-  public void setResponseSchema(Object responseSchema) {
-    this.responseSchema = responseSchema;
   }
 
   @Override
