@@ -19,7 +19,8 @@
 
     <modules>
         <module>broker-api</module>
-        <module>broker</module>
         <module>broker-nats</module>
+        <module>broker-proxy</module>
+        <module>broker</module>
     </modules>
 </project>

@@ -1,4 +1,4 @@
-package org.entcore.broker.api;
+package org.entcore.broker.api.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
