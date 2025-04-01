@@ -5,6 +5,7 @@ import {
   LoadingScreen,
   useBreakpoint,
   useEdificeClient,
+  AddAttachmentToWorkspaceModal,
 } from '@edifice.io/react';
 import { QueryClient } from '@tanstack/react-query';
 import { Outlet, useLoaderData } from 'react-router-dom';
@@ -25,7 +26,6 @@ import {
 } from '~/services/queries';
 import { setConfig, setWorkflows, useOpenFolderModal } from '~/store';
 import './index.css';
-import { AddAttachmentToWorkspaceModal } from '~/features/modals/AddAttachmentToWorkspaceModal';
 
 // Typing for the root route loader.
 export interface RootLoaderData {
@@ -97,9 +97,10 @@ export function Component() {
       {folderModal === 'rename' && <RenameFolderModal />}
       {folderModal === 'trash' && <TrashFolderModal />}
       {folderModal === 'move-message' && <MoveMessageToFolderModal />}
-      {folderModal === 'add-attachment-to-workspace' && (
+      {/* {folderModal === 'add-attachment-to-workspace' && (
         <AddAttachmentToWorkspaceModal />
-      )}
+      )} */}
+      <AddAttachmentToWorkspaceModal isOpen />
     </Layout>
   );
 }
