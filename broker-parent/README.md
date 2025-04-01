@@ -32,5 +32,11 @@ To add a listener :
 2. Add the @NATSListener annotation to the methods that should handle NATS events
 3. Add the request type and response POJO to the `broker-api` module
 
+#### Installation
+
+```shell
+./build.sh init
+```
+
 
 

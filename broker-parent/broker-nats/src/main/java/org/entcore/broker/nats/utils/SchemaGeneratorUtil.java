@@ -6,16 +6,13 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.Types;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class SchemaGeneratorUtil {
 
-  private final Types typeUtils;
+  public SchemaGeneratorUtil() {
 
-  public SchemaGeneratorUtil(Types typeUtils) {
-    this.typeUtils = typeUtils;
   }
 
 
