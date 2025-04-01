@@ -7,6 +7,7 @@ This module is a multimodule project that provides a broker for the ENT outside 
 ## Modules
 
 ### broker-api
+
 This module contains the DTOs used by the broker's listeners.
 Every object that is handled by one of the listeners must be typed and 
 this type should be in this module.
@@ -23,13 +24,13 @@ NB : @NATSListener an NATSListenerProcessor are duplicates (yet slightly differe
 [contracts-parent](https://github.com/edificeio/edifice-quarkus-contracts-parent). They had to be duplicated to be able
 to be used by ENT's Java 8 code.
 
-### broker-service
+### broker
 
 This module actually starts the broker (in the case of NATS it will connect to the cluster) and registers the listeners.
 
 To add a listener :
 1. Add it to the package `org.entcore.broker.listener` (or in a subpackage)
-2. Add the @NATSListener annotation to the methods that should handle NATS events
+2. Add the `@NATSListener` annotation to the methods that should handle NATS events
 3. Add the request type and response POJO to the `broker-api` module
 
 #### Installation

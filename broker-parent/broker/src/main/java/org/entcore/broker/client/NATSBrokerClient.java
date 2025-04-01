@@ -1,14 +1,17 @@
 package org.entcore.broker.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.nats.client.Message;
 import io.nats.vertx.NatsClient;
 import io.nats.vertx.NatsOptions;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.NotImplementedException;
 import org.entcore.broker.listener.BrokerListener;
 import org.entcore.broker.nats.model.NATSContract;
 import org.entcore.broker.nats.model.NATSEndpoint;
@@ -52,12 +55,56 @@ public class NATSBrokerClient implements BrokerClient {
   public Future<Void> start() {
     assertNatsClient("cannot.start.null.client");
     return natsClient.connect()
-      .compose(e -> {
-        log.info("NATS client connected on " + natsClient.getConnection().getConnectedUrl());
-        return loadListeners();
-      })
+      .onSuccess(e -> log.info("NATS client connected on " + natsClient.getConnection().getConnectedUrl()))
+      .compose(e -> loadListeners("META-INF/nats.json"))
       .onSuccess(this::registerListeners)
+      .compose(e -> this.loadListeners("META-INF/broker-proxy.nats.json"))
+      .onSuccess(this::registerProxies)
       .mapEmpty();
+  }
+
+  private void registerProxies(NATSContract contract) {
+    final EventBus eb = this.vertx.eventBus();
+    for (NATSEndpoint endpoint : contract.getEndpoints()) {
+      if(!endpoint.isProxy()) {
+        continue;
+      }
+      try {
+        this.natsClient.subscribe(endpoint.getSubject(), msg -> {
+          final Promise<Object> promise = Promise.promise();
+            eb.request(endpoint.getSubject(), msg.getData())
+              .onSuccess(response -> {
+                try {
+                  promise.tryComplete(response.body());
+                } catch (Exception e) {
+                  log.error("Error serializing response to JSON", e);
+                  promise.tryFail(e);
+                }
+              })
+              .onFailure(th -> {
+                log.error("Error calling subject " + endpoint.getSubject());
+                promise.tryFail(th);
+              });
+            promise.future().onSuccess(response -> {
+              try {
+                final byte[] payload = mapper.writeValueAsString(response).getBytes(charset);
+                natsClient.publish(msg.getReplyTo(), payload);
+              } catch (Exception e) {
+                sendError(msg, e);
+              }
+            }).onFailure(th -> {
+              sendError(msg, th);
+            });
+          }).onSuccess(e -> log.info("Registered proxy for subject: " + endpoint.getSubject()))
+          .onFailure(th -> log.error("Error while registering proxy for subject: " + endpoint.getSubject(), th));
+      } catch (Exception e) {
+        throw new RuntimeException("Error while registering listener for subject: " + endpoint, e);
+      }
+    }
+  }
+
+  private void sendError(Message msg, Throwable e) {
+    natsClient.publish(msg.getReplyTo(), e.getMessage().getBytes());
   }
 
   private void registerListeners(NATSContract contracts) {
@@ -84,7 +131,11 @@ public class NATSBrokerClient implements BrokerClient {
           public Future<?> onMessage(Object request, String subject) {
             try {
               Object response = handler.invoke(listener, request);
-              return Future.succeededFuture(response);
+              if(response instanceof Future) {
+                return (Future<?>) response;
+              } else {
+                return Future.succeededFuture(response);
+              }
             } catch (Exception e) {
               log.error("Error invoking method", e);
               return Future.failedFuture(e);
@@ -251,11 +302,11 @@ public class NATSBrokerClient implements BrokerClient {
       .onFailure(e -> log.error("Error while unsubscribing from subject: " + subject, e));
   }
 
-  private Future<NATSContract> loadListeners() {
-    final InputStream is = this.getClass().getClassLoader().getResourceAsStream("META-INF/nats.json");
+  private Future<NATSContract> loadListeners(final String natsJsonPath) {
+    final InputStream is = this.getClass().getClassLoader().getResourceAsStream(natsJsonPath);
     if (is == null) {
-      log.error("Cannot find nats.json file in classpath");
-      return Future.failedFuture(new FileNotFoundException("Cannot find nats.json file in classpath"));
+      log.error("Cannot find " + natsJsonPath + " file in classpath");
+      return Future.failedFuture(new FileNotFoundException("Cannot find " + natsJsonPath + " file in classpath"));
     } else {
       try {
         final NATSContract contracts = this.mapper.readValue(is, NATSContract.class);

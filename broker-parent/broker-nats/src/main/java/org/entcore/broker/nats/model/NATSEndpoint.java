@@ -13,6 +13,7 @@ public class NATSEndpoint {
   private Object responseSchema; // JSON Schema representation
   private String methodName;
   private String className;
+  private boolean proxy;
 
   public String getSubject() {
     return subject;
@@ -86,6 +87,14 @@ public class NATSEndpoint {
     this.className = className;
   }
 
+  public boolean isProxy() {
+    return proxy;
+  }
+
+  public void setProxy(boolean proxy) {
+    this.proxy = proxy;
+  }
+
   @Override
   public String toString() {
     return "NATSEndpoint{" +
@@ -98,6 +107,7 @@ public class NATSEndpoint {
       ", responseSchema=" + responseSchema +
       ", methodName='" + methodName + '\'' +
       ", className='" + className + '\'' +
+      ", proxy=" + proxy +
       '}';
   }
 }

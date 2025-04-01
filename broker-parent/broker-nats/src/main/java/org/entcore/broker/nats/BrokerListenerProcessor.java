@@ -2,6 +2,7 @@ package org.entcore.broker.nats;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import org.entcore.broker.api.BrokerListener;
 import org.entcore.broker.nats.model.NATSContract;
 import org.entcore.broker.nats.model.NATSEndpoint;
 import org.entcore.broker.nats.utils.SchemaGeneratorUtil;
@@ -21,9 +22,9 @@ import java.io.Writer;
 import java.util.List;
 import java.util.Set;
 
-@SupportedAnnotationTypes("org.entcore.broker.nats.NATSListener")
+@SupportedAnnotationTypes("org.entcore.broker.api.BrokerListener")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
-public class NATSListenerProcessor extends AbstractProcessor {
+public class BrokerListenerProcessor extends AbstractProcessor {
 
   private SchemaGeneratorUtil schemaGeneratorUtil;
   private Filer filer;
@@ -52,11 +53,11 @@ public class NATSListenerProcessor extends AbstractProcessor {
     contract.setServiceName(getServiceName());
     contract.setVersion("1.0.0"); // Could be read from a project property
 
-    // Process all methods annotated with @NATSListener
-    for (Element element : roundEnv.getElementsAnnotatedWith(NATSListener.class)) {
+    // Process all methods annotated with @BrokerListener
+    for (Element element : roundEnv.getElementsAnnotatedWith(BrokerListener.class)) {
       if (element instanceof ExecutableElement) {
         ExecutableElement method = (ExecutableElement) element;
-        NATSListener annotation = method.getAnnotation(NATSListener.class);
+        BrokerListener annotation = method.getAnnotation(BrokerListener.class);
 
         // Create an endpoint for this method
         NATSEndpoint endpoint = processMethod(method, annotation);
@@ -76,12 +77,13 @@ public class NATSListenerProcessor extends AbstractProcessor {
     return true;
   }
 
-  private NATSEndpoint processMethod(ExecutableElement method, NATSListener annotation) {
+  private NATSEndpoint processMethod(ExecutableElement method, BrokerListener annotation) {
     NATSEndpoint endpoint = new NATSEndpoint();
 
     endpoint.setSubject(annotation.subject());
     endpoint.setDescription(annotation.description());
     endpoint.setQueue(annotation.queue());
+    endpoint.setProxy(annotation.proxy());
 
     // Get method information
     endpoint.setMethodName(method.getSimpleName().toString());
