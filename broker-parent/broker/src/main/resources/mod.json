@@ -7,6 +7,10 @@
     "app-name" : "Admin",
     "app-address" : "http://localhost:8778/broker",
 	"sql": false,
+	"broker-type": "nats",
+	"nats": {
+		"url": "nats://172.17.0.1:4222"
+	},
 	"publicConf": {
 	}
 
