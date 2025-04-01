@@ -7,18 +7,17 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.entcore.broker.listener.BrokerListener;
 import org.entcore.broker.nats.model.NATSContract;
 import org.entcore.broker.nats.model.NATSEndpoint;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -35,7 +34,7 @@ public class NATSBrokerClient implements BrokerClient {
   private final Vertx vertx;
   private final String serverId = UUID.randomUUID().toString();
   private final Set<String> subscriptions = new HashSet<>();
-  private NATSContract contract;
+  private final Map<String, Object> listeners = new HashMap<>();
 
   public NATSBrokerClient(final Vertx vertx) {
     this.vertx = vertx;
@@ -64,10 +63,11 @@ public class NATSBrokerClient implements BrokerClient {
   private void registerListeners(NATSContract contracts) {
     for (NATSEndpoint endpoint : contracts.getEndpoints()) {
       try {
-        final Class<?> listener = Class.forName(endpoint.getClassName());
+        final Class<?> listenerClass = Class.forName(endpoint.getClassName());
+        final Object listener = getListener(listenerClass);
         final Class<?> requestType = Class.forName(endpoint.getRequestType());
         final Class<?> responseType = isBlank(endpoint.getResponseType()) ? Void.class : Class.forName(endpoint.getRequestType());
-        final Method handler = listener.getMethod(endpoint.getMethodName(), requestType);
+        final Method handler = listenerClass.getMethod(endpoint.getMethodName(), requestType);
         //noinspection unchecked
         this.subscribe(endpoint.getSubject(), new BrokerListener() {
           @Override
@@ -83,7 +83,7 @@ public class NATSBrokerClient implements BrokerClient {
           @Override
           public Future<?> onMessage(Object request, String subject) {
             try {
-              Object response = handler.invoke(this, request);
+              Object response = handler.invoke(listener, request);
               return Future.succeededFuture(response);
             } catch (Exception e) {
               log.error("Error invoking method", e);
@@ -99,6 +99,16 @@ public class NATSBrokerClient implements BrokerClient {
         throw new RuntimeException("Error while registering listener for subject: " + endpoint, e);
       }
     }
+  }
+
+  private Object getListener(Class<?> listenerClass) {
+    return listeners.computeIfAbsent(listenerClass.getCanonicalName(), k -> {
+      try {
+        return listenerClass.getConstructor(Vertx.class).newInstance(vertx);
+      } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+        throw new IllegalStateException("Could not create listener of type " + listenerClass, e);
+      }
+    });
   }
 
   @Override
@@ -200,7 +210,9 @@ public class NATSBrokerClient implements BrokerClient {
       } catch (Exception e) {
         log.error("Error deserializing request : " + msg, e);
       }
-    });
+    })
+    .onSuccess(e -> log.info("Listening on subject: " + subject))
+    .onFailure(th -> log.error("Failed to subscribe to subject: " + subject, th));
   }
 
   @Override
@@ -235,6 +247,7 @@ public class NATSBrokerClient implements BrokerClient {
   public Future<Void> unsubscribe(String subject) {
     assertNatsClient("cannot.unsubscribe.null.client");
     return natsClient.unsubscribe(subject)
+      .onSuccess(e -> log.info("Successfully unsubscribed from subject: " + subject))
       .onFailure(e -> log.error("Error while unsubscribing from subject: " + subject, e));
   }
 
