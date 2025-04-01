@@ -97,10 +97,9 @@ export function Component() {
       {folderModal === 'rename' && <RenameFolderModal />}
       {folderModal === 'trash' && <TrashFolderModal />}
       {folderModal === 'move-message' && <MoveMessageToFolderModal />}
-      {/* {folderModal === 'add-attachment-to-workspace' && (
-        <AddAttachmentToWorkspaceModal />
-      )} */}
-      <AddAttachmentToWorkspaceModal isOpen />
+      {folderModal === 'add-attachment-to-workspace' && (
+        <AddAttachmentToWorkspaceModal isOpen onSuccess={() => alert('ok')} />
+      )}
     </Layout>
   );
 }
