@@ -33,7 +33,7 @@ public class NATSListenerProcessor extends AbstractProcessor {
   @Override
   public synchronized void init(ProcessingEnvironment processingEnv) {
     super.init(processingEnv);
-    this.schemaGeneratorUtil = new SchemaGeneratorUtil(processingEnv.getTypeUtils());
+    this.schemaGeneratorUtil = new SchemaGeneratorUtil();
     this.filer = processingEnv.getFiler();
     this.messager = processingEnv.getMessager();
 
@@ -107,12 +107,15 @@ public class NATSListenerProcessor extends AbstractProcessor {
 
     // Get response type information
     TypeMirror responseType = method.getReturnType();
-    endpoint.setResponseType(responseType.toString());
-    try {
-      endpoint.setResponseSchema(schemaGeneratorUtil.generateJsonSchemaFromTypeMirror(responseType));
-    } catch (Exception e) {
-      messager.printMessage(Diagnostic.Kind.WARNING,
-        "Could not generate schema for response type: " + e.getMessage(), method);
+    final String responseTypeClass = responseType.toString();
+    if(! "void".equalsIgnoreCase(responseTypeClass)) {
+      endpoint.setResponseType(responseType.toString());
+      try {
+        endpoint.setResponseSchema(schemaGeneratorUtil.generateJsonSchemaFromTypeMirror(responseType));
+      } catch (Exception e) {
+        messager.printMessage(Diagnostic.Kind.WARNING,
+          "Could not generate schema for response type: " + e.getMessage(), method);
+      }
     }
 
     return endpoint;
