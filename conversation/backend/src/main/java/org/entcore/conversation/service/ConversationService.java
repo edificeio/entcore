@@ -50,7 +50,7 @@ public interface ConversationService {
 	 */
 	public static final int MAX_FOLDERS_LEVEL = 3;
 
-	enum State { DRAFT, SENT }
+	enum State { DRAFT, SENT, RECALL }
 
 	static final String[] SYSTEM_FOLDER_NAMES = {"INBOX", "OUTBOX", "DRAFT", "TRASH"};
 	static public boolean isSystemFolder(final String folder) {
@@ -77,6 +77,14 @@ public interface ConversationService {
 	 */
 	void send(String parentMessageId, String draftId, JsonObject message, UserInfos user,
 		Handler<Either<String, JsonObject>> result);
+
+	/** 
+	 * Recall a message by id iif 
+	 * its state=SENT, 
+	 * and its sender is the current user, 
+	 * and it is not older than `recallDelayInMinutes`
+	 */
+	Future<Void> recallMessage(String id, UserInfos user);
 
 	/**
 	 * List messages from any folder 

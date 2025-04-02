@@ -8,7 +8,7 @@ import {
 } from '@edifice.io/react';
 import { QueryClient } from '@tanstack/react-query';
 import { Outlet, useLoaderData } from 'react-router-dom';
-import { existingActions } from '~/config';
+import { Config, existingActions } from '~/config';
 import { AppActionHeader } from '~/features/app/Action/AppActionHeader';
 import {
   DesktopMenu,
@@ -18,37 +18,57 @@ import {
   RenameFolderModal,
   MoveMessageToFolderModal,
 } from '~/features';
-import { actionsQueryOptions, folderQueryOptions } from '~/services/queries';
-import { useOpenFolderModal } from '~/store';
+import {
+  actionsQueryOptions,
+  configQueryOptions,
+  folderQueryOptions,
+} from '~/services/queries';
+import { setConfig, setWorkflows, useOpenFolderModal } from '~/store';
 import './index.css';
 
-export const loader = (queryClient: QueryClient) => async () => {
-  const actionsOptions = actionsQueryOptions(existingActions);
+// Typing for the root route loader.
+export interface RootLoaderData {
+  actions?: Record<string, boolean>;
+  config?: Config;
+}
 
-  // Non-blocking: display a skeleton in the meantime
-  queryClient.ensureQueryData(folderQueryOptions.getFoldersTree());
+export function loader(queryClient: QueryClient) {
+  return async () => {
+    try {
+      const [actions, config] = await Promise.all([
+        queryClient.ensureQueryData(actionsQueryOptions(existingActions)),
+        queryClient.ensureQueryData(configQueryOptions.getGlobalConfig()),
+      ]);
 
-  try {
-    const actions = await queryClient.ensureQueryData(actionsOptions);
-    return { actions };
-  } catch {
-    return { actions: {} as Record<string, boolean> };
-  }
-};
+      // Store those constant values.
+      if (actions) setWorkflows(actions);
+      if (config) setConfig(config);
+
+      // Ensure folders tree loads
+      queryClient.ensureQueryData(
+        folderQueryOptions.getFoldersTree(config.maxDepth),
+      );
+      return {
+        actions,
+        config,
+      } as RootLoaderData;
+    } catch {
+      return {} as RootLoaderData;
+    }
+  };
+}
 
 export function Component() {
   const { init, currentApp } = useEdificeClient();
 
-  const { actions } = useLoaderData() as {
-    actions: Record<string, boolean>;
-  };
+  const { actions, config } = useLoaderData() as RootLoaderData;
 
   const { md } = useBreakpoint();
   const folderModal = useOpenFolderModal();
 
   if (!init || !currentApp) return <LoadingScreen position={false} />;
 
-  if (!actions) {
+  if (!actions || !config) {
     throw 'Unexpected error';
   }
 
