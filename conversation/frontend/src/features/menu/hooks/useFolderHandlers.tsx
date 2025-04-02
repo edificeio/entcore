@@ -36,6 +36,10 @@ export function useFolderHandlers() {
     setOpenFolderModal('move-message');
   };
 
+  const handleAddAttachmentToWorkspace = () => {
+    setOpenFolderModal('add-attachment-to-workspace');
+  };
+
   return {
     /** Opens the folder creation modal. */
     handleCreate,
@@ -46,6 +50,8 @@ export function useFolderHandlers() {
     /** Opens the folder trash modal and sets the selected folder. */
     handleTrash,
     /** Opens the message to move modal and sets the selected folder. */
-    handleMoveMessage
+    handleMoveMessage,
+    /** Opens the modal to add an message attachment to a the selected folder in doc space. */
+    handleAddAttachmentToWorkspace,
   };
 }
