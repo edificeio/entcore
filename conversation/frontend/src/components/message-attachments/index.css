@@ -1,6 +1,5 @@
 .message-attachments {
   justify-self: flex-start;
-  width: fit-content;
 }
 .message-attachments-edit {
   border-style: dashed !important;
