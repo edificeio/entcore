@@ -73,6 +73,7 @@ public class SchemaGeneratorUtil {
   public Map<String, Object> generateJsonSchemaFromTypeMirror(TypeMirror typeMirror) {
     System.out.println("Generating schema for " + typeMirror.toString() + " : " + typeMirror.getKind());
     Map<String, Object> schema = new LinkedHashMap<>(); // Use LinkedHashMap here just to keep the order of the fields
+    final String typeMirrorAsString = typeMirror.toString();
     switch (typeMirror.getKind()) {
       case BOOLEAN:
         schema.put("type", "boolean");
@@ -96,9 +97,9 @@ public class SchemaGeneratorUtil {
         schema.put("items", generateJsonSchemaFromTypeMirror(arrayType.getComponentType()));
         break;
       case DECLARED:
-        if ("java.lang.String".equals(typeMirror.toString())) {
+        if ("java.lang.String".equals(typeMirrorAsString)) {
           schema.put("type", "string");
-        } else if ("java.lang.Object".equals(typeMirror.toString())) {
+        } else if ("java.lang.Object".equals(typeMirrorAsString)) {
           schema.put("type", "object");
         } else if (isArrayLike(typeMirror)) {
           schema.put("type", "array");
@@ -108,9 +109,11 @@ public class SchemaGeneratorUtil {
           final Map<String, Object> addProps = new LinkedHashMap<>(); // Use LinkedHashMap here just to keep the order of the fields
           addProps.put("type", getElementTypeOfMap(typeMirror));
           schema.put("additionalProperties", addProps);
+        } else if(typeMirrorAsString.startsWith("io.vertx.core.Future<"))  {
+          schema.putAll(getElementTypeOfFuture(typeMirror));
         } else {
           // Handle declared types (records or classes)
-          final String customType = typeMirror.toString();
+          final String customType = typeMirrorAsString;
           schema.put("$id", customType);
           schema.put("type", "object");
           schema.put("title", customType);
@@ -150,6 +153,15 @@ public class SchemaGeneratorUtil {
   }
 
   private Object getElementTypeOfArrayLike(TypeMirror typeMirror) {
+    final List<? extends TypeMirror> typeArguments = ((DeclaredType) typeMirror).getTypeArguments();
+    if (typeArguments == null || typeArguments.isEmpty()) {
+      return of("type", "object");
+    } else {
+      return generateJsonSchemaFromTypeMirror(typeArguments.get(0));
+    }
+  }
+
+  private Map<String, Object> getElementTypeOfFuture(TypeMirror typeMirror) {
     final List<? extends TypeMirror> typeArguments = ((DeclaredType) typeMirror).getTypeArguments();
     if (typeArguments == null || typeArguments.isEmpty()) {
       return of("type", "object");

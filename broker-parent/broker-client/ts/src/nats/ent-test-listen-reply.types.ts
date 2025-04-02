@@ -4,7 +4,7 @@ export interface ListenAndAnswerDTO {
 }
 
 
-export interface DummyResponse {
+export interface DummyResponseDTO {
   userId?: string;
   jobId?: string;
   success?: boolean;

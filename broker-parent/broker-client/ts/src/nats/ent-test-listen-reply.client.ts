@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { ListenAndAnswerDTO, DummyResponse } from './ent-test-listen-reply.types';
+import { ListenAndAnswerDTO, DummyResponseDTO } from './ent-test-listen-reply.types';
 
 @Injectable()
 export class EntTestListenReplyClient {
@@ -14,10 +14,10 @@ export class EntTestListenReplyClient {
 
   
     
-  async request(event: ListenAndAnswerDTO): Promise<DummyResponse> {
+  async request(event: ListenAndAnswerDTO): Promise<DummyResponseDTO> {
     const eventAddress = this.getSubject('ent.test.listen.reply');
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, event));
-    return reply as DummyResponse;
+    return reply as DummyResponseDTO;
   }
         
 
