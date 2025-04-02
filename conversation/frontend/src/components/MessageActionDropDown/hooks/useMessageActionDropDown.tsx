@@ -1,16 +1,9 @@
-import {
-  Button,
-  Dropdown,
-  IconButton,
-  IconButtonProps,
-  useEdificeClient,
-  useToast,
-} from '@edifice.io/react';
+import { useEdificeClient, useToast } from '@edifice.io/react';
 import {
   IconDelete,
   IconFolderDelete,
   IconFolderMove,
-  IconOptions,
+  IconMailRecall,
   IconPrint,
   IconRedo,
   IconRestore,
@@ -20,10 +13,10 @@ import {
   IconUndoAll,
   IconUnreadMail,
 } from '@edifice.io/react/icons';
-import { RefAttributes, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFolderHandlers } from '~/features/menu/hooks/useFolderHandlers';
-import { useI18n, useSelectedFolder } from '~/hooks';
+import { useRecall, useI18n, useSelectedFolder } from '~/hooks';
 import { Message } from '~/models';
 import {
   isInRecipient,
@@ -36,29 +29,14 @@ import {
 } from '~/services';
 import { useAppActions, useConfirmModalStore } from '~/store';
 
-export interface DisplayActionDropDownProps {
-  message: Message;
-  appearance?: {
-    variant?: 'outline' | 'ghost';
-    btnColor?: 'tertiary' | 'primary';
-  };
-  actions?: string[];
-}
-
-export function DisplayActionDropDown({
-  message,
-  actions,
-  appearance = {
-    variant: 'outline',
-    btnColor: 'primary',
-  },
-}: DisplayActionDropDownProps) {
+export function useMessageActionDropDown(message: Message, actions?: string[]) {
   const { t } = useI18n();
   const markAsUnreadQuery = useMarkUnread();
   const navigate = useNavigate();
   const { openModal } = useConfirmModalStore();
   const deleteMessage = useDeleteMessage();
   const restoreQuery = useRestoreMessage();
+  const { canRecall, handleRecall } = useRecall();
   const moveToTrashQuery = useTrashMessage();
   const createOrUpdateDraft = useCreateOrUpdateDraft();
   const moveMessage = useMoveMessage();
@@ -162,7 +140,7 @@ export function DisplayActionDropDown({
   };
 
   // Buttons
-  const buttonAction = [
+  const actionButtons = [
     {
       label: t('reply'),
       id: 'reply',
@@ -194,7 +172,7 @@ export function DisplayActionDropDown({
     },
   ];
 
-  const options = [
+  const dropdownOptions = [
     {
       label: t('replyall'),
       id: 'replyall',
@@ -215,6 +193,13 @@ export function DisplayActionDropDown({
         !hasActionsList('transfer') ||
         message.state === 'DRAFT' ||
         message.trashed,
+    },
+    {
+      label: t('recall'),
+      id: 'recall',
+      icon: <IconMailRecall />,
+      action: () => handleRecall(message),
+      hidden: !canRecall(message),
     },
     {
       label: t('tag.unread'),
@@ -281,75 +266,11 @@ export function DisplayActionDropDown({
     },
   ];
 
-  return (
-    <div className="d-flex align-items-center gap-12">
-      {buttonAction
-        .filter((o) => !o.hidden)
-        .map((option) => (
-          <Button
-            key={option.id}
-            color={appearance.btnColor}
-            variant={appearance.variant}
-            leftIcon={option.icon}
-            onClick={option.action}
-          >
-            {option.label}
-          </Button>
-        ))}
-      <Dropdown>
-        {(
-          triggerProps: JSX.IntrinsicAttributes &
-            Omit<IconButtonProps, 'ref'> &
-            RefAttributes<HTMLButtonElement>,
-        ) => {
-          // If no options availables
-          const visibleOptions = options.filter((o) => !o.hidden);
-          if (visibleOptions.length === 0) {
-            return null;
-          }
-
-          return (
-            <div data-testid="dropdown">
-              <IconButton
-                {...triggerProps}
-                type="button"
-                size="sm"
-                color={appearance.btnColor}
-                variant={appearance.variant}
-                icon={<IconOptions />}
-              />
-              <Dropdown.Menu>
-                {visibleOptions.flatMap((option, index, array) => {
-                  const elements = [
-                    <Dropdown.Item
-                      key={option.id}
-                      icon={option.icon}
-                      onClick={option.action}
-                    >
-                      {option.label}
-                    </Dropdown.Item>,
-                  ];
-
-                  // Separator
-                  const separatorAfterIds = ['replyall', 'transfer'];
-                  if (
-                    separatorAfterIds.includes(option.id) &&
-                    array
-                      .slice(index + 1)
-                      .some((o) => !separatorAfterIds.includes(o.id))
-                  ) {
-                    elements.push(
-                      <Dropdown.Separator key={`separator-${option.id}`} />,
-                    );
-                  }
-
-                  return elements;
-                })}
-              </Dropdown.Menu>
-            </div>
-          );
-        }}
-      </Dropdown>
-    </div>
-  );
+  return {
+    isInFolder,
+    canReplyAll,
+    canMarkUnread,
+    actionButtons,
+    dropdownOptions,
+  };
 }

@@ -1,7 +1,7 @@
 import { odeServices } from '@edifice.io/client';
 import { FormControl, Input, useDate, useDebounce } from '@edifice.io/react';
 import { useEffect, useRef, useState } from 'react';
-import { DisplayActionDropDown } from '~/components/DisplayActionDropDown';
+import { MessageActionDropDown } from '~/components/MessageActionDropDown/MessageActionDropDown';
 import { MessageBody } from '~/components/MessageBody';
 import { useI18n } from '~/hooks';
 import { Message } from '~/models';
@@ -94,7 +94,7 @@ export function MessageEdit({ message }: MessageEditProps) {
       />
       <div className="d-flex justify-content-end gap-12 pt-24 pe-16">
         <div className="d-flex align-items-end flex-column gap-16">
-          <DisplayActionDropDown message={messageUpdated} />
+          <MessageActionDropDown message={messageUpdated} />
           {!!messageUpdated?.date && (
             <div className="caption fst-italic">
               {fromNow(messageUpdated.date)}

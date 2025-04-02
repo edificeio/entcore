@@ -19,11 +19,9 @@
 
 package org.entcore.conversation;
 
-import fr.wseduc.cron.CronTrigger;
-import fr.wseduc.transformer.ContentTransformerFactoryProvider;
-import fr.wseduc.transformer.IContentTransformerClient;
-import io.vertx.core.Promise;
-import io.vertx.core.json.JsonObject;
+import java.text.ParseException;
+
+import static org.entcore.common.editor.ContentTransformerConfig.getContentTransformerConfig;
 import org.entcore.common.editor.ContentTransformerEventRecorderFactory;
 import org.entcore.common.editor.IContentTransformerEventRecorder;
 import org.entcore.common.http.BaseServer;
@@ -32,16 +30,24 @@ import org.entcore.common.storage.StorageFactory;
 import org.entcore.conversation.controllers.ApiController;
 import org.entcore.conversation.controllers.ConversationController;
 import org.entcore.conversation.service.ConversationService;
-import org.entcore.conversation.service.impl.*;
+import org.entcore.conversation.service.impl.ConversationRepositoryEvents;
+import org.entcore.conversation.service.impl.ConversationStorage;
+import org.entcore.conversation.service.impl.DeleteOrphan;
+import org.entcore.conversation.service.impl.Neo4jConversationService;
+import org.entcore.conversation.service.impl.SqlConversationService;
 
-import java.text.ParseException;
-
+import fr.wseduc.cron.CronTrigger;
+import fr.wseduc.transformer.ContentTransformerFactoryProvider;
+import fr.wseduc.transformer.IContentTransformerClient;
 import static fr.wseduc.webutils.Utils.getOrElse;
-import static org.entcore.common.editor.ContentTransformerConfig.getContentTransformerConfig;
+import io.vertx.core.Promise;
+import io.vertx.core.json.JsonObject;
 
 public class Conversation extends BaseServer {
 
 	public final static int DEFAULT_FOLDER_DEPTH = 3;
+	/** Default delay in minutes after which a message can not be recalled. */
+	public final static int DEFAULT_RECALL_DELAY = 60;
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {

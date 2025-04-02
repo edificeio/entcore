@@ -10,7 +10,7 @@ export interface MessageBase {
   to: Recipients;
   cc: Recipients;
   cci?: Recipients;
-  state?: 'DRAFT' | 'SENT';
+  state?: 'DRAFT' | 'SENT' | 'RECALL';
   unread?: boolean;
   trashed?: boolean;
   response?: boolean;

@@ -1,5 +1,9 @@
 import { useDate } from '@edifice.io/react';
-import { IconPaperclip, IconUndo } from '@edifice.io/react/icons';
+import {
+  IconMailRecall,
+  IconPaperclip,
+  IconUndo,
+} from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
 import { useMessageFolderId } from '~/hooks/useMessageFolderId';
 import { MessageMetadata } from '~/models';
@@ -24,6 +28,17 @@ export function MessagePreview({ message }: MessagePreviewProps) {
 
   return (
     <div className="d-flex flex-fill gap-12 align-items-center  overflow-hidden fs-6">
+      {message.state === 'RECALL' && (
+        <IconMailRecall
+          aria-hidden={false}
+          className="gray-800"
+          height={16}
+          role="img"
+          title={t('conversation.recall.mail.subject')}
+          width={16}
+        />
+      )}
+
       {message.response && (
         <IconUndo
           aria-hidden={false}
@@ -70,7 +85,11 @@ export function MessagePreview({ message }: MessagePreviewProps) {
           )}
         </div>
         <div className="d-flex flex-fill justify-content-between overflow-hidden">
-          {message.subject ? (
+          {message.state === 'RECALL' ? (
+            <span className="text-truncate flex-fill">
+              {t('conversation.recall.mail.subject')}
+            </span>
+          ) : message.subject ? (
             <span className="text-truncate flex-fill">{message.subject}</span>
           ) : (
             <span className="text-truncate flex-fill text-gray-700">

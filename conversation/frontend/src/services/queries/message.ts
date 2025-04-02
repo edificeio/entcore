@@ -477,3 +477,21 @@ export const useSendDraft = () => {
     },
   });
 };
+
+/**
+ * Hook to recall a sent message.
+ * @returns void
+ */
+export const useRecallMessage = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ messageId }: { messageId: string }) =>
+      messageService.recall(messageId),
+    onSuccess: (_data, { messageId }) => {
+      // TODO optimistic update ?
+      queryClient.invalidateQueries({
+        queryKey: messageQueryOptions.getById(messageId).queryKey,
+      });
+    },
+  });
+};

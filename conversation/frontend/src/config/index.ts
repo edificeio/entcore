@@ -7,3 +7,4 @@
  */
 
 export * from './Actions';
+export * from './Config';

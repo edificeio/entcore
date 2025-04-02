@@ -1174,7 +1174,10 @@ public class ConversationController extends BaseController {
 	@Get("max-depth")
 	@SecuredAction(value="conversation.max.depth", type=ActionType.AUTHENTICATED)
 	public void getMaxDepth(final HttpServerRequest request){
-		renderJson(request, new JsonObject().put("max-depth", Config.getConf().getInteger("max-folder-depth", Conversation.DEFAULT_FOLDER_DEPTH)));
+		renderJson(request, new JsonObject()
+			.put("max-depth", Config.getConf().getInteger("max-folder-depth", Conversation.DEFAULT_FOLDER_DEPTH))
+			.put("recall-delay-minutes", Config.getConf().getInteger("recall-delay-minutes", Conversation.DEFAULT_RECALL_DELAY))
+		);
 	}
 
 	//List folders at a given depth, or trashed folders at depth 1 only.

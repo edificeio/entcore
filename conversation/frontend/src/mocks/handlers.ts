@@ -2,6 +2,7 @@ import { HttpResponse, http } from 'msw';
 import { mockCurrentUserPreview } from '.';
 import { folderHandlers } from './handlers/folder-handlers';
 import { messageHandlers } from './handlers/message-handlers';
+import { configHandlers } from './handlers/config-handlers';
 
 /**
  * DO NOT MODIFY
@@ -244,6 +245,7 @@ const defaultHandlers = [
  */
 export const handlers = [
   ...defaultHandlers,
+  ...configHandlers,
   ...folderHandlers,
   ...messageHandlers,
 ];

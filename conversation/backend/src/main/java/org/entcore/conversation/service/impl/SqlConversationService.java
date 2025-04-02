@@ -75,6 +75,7 @@ public class SqlConversationService implements ConversationService{
 	private final Sql sql;
 
 	private final int maxFolderDepth;
+	private final int recallDelayInMinutes;
 
 	private final String messageTable;
 	private final String folderTable;
@@ -93,6 +94,7 @@ public class SqlConversationService implements ConversationService{
 		this.eb = Server.getEventBus(vertx);
 		this.sql = Sql.getInstance();
 		this.maxFolderDepth = Config.getConf().getInteger("max-folder-depth", Conversation.DEFAULT_FOLDER_DEPTH);
+		this.recallDelayInMinutes = Config.getConf().getInteger("recall-delay-minutes", Conversation.DEFAULT_RECALL_DELAY);
 		messageTable = schema + ".messages";
 		folderTable = schema + ".folders";
 		attachmentTable = schema + ".attachments";
@@ -195,7 +197,7 @@ public class SqlConversationService implements ConversationService{
 					"UPDATE " + messageTable +
 							" SET " + sb.toString() + " " +
 							"WHERE id = ? AND state = ?";
-			values.add(messageId).add("DRAFT");
+			values.add(messageId).add(State.DRAFT.name());
 
 			sql.prepared(query, values, SqlResult.validUniqueResultHandler(result));
 		}).onFailure(th -> {
@@ -284,7 +286,7 @@ public class SqlConversationService implements ConversationService{
 				String updateUnread = "UPDATE " + userMessageTable + " " +
 						"SET unread = " + unread +
 						" WHERE user_id = ? AND message_id = ? ";
-				builder.prepared(updateMessage, new fr.wseduc.webutils.collections.JsonArray().add("SENT").add(draftId));
+				builder.prepared(updateMessage, new fr.wseduc.webutils.collections.JsonArray().add(State.SENT.name()).add(draftId));
 				builder.prepared(updateUnread, new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).add(draftId));
 
 				final String insertThread =
@@ -334,6 +336,36 @@ public class SqlConversationService implements ConversationService{
 	}
 
 	@Override
+	public Future<Void> recallMessage(String id, UserInfos user) {
+		final Promise<Void> promise = Promise.promise();
+		String query =
+				"UPDATE " + messageTable + " SET \"state\" = ? " +
+				"WHERE id = ? AND \"state\" = ? AND \"date\" >= ? AND \"from\" = ? "+
+				"RETURNING id";
+
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
+			.add(State.RECALL.name())
+			.add(id)
+			.add(State.SENT.name())
+			.add(System.currentTimeMillis() - (recallDelayInMinutes * 60 * 1000))
+			.add(user.getUserId());
+
+		sql.prepared(query, values, SqlResult.validUniqueResultHandler(either -> {
+			if (either.isRight()) {
+				final JsonObject message = either.right().getValue();
+				if(message!=null && message.getString("id")!=null) {
+					promise.complete();
+				} else {
+					promise.fail("conversation.error.recall.mail");
+				}
+			} else {
+				promise.fail(either.left().getValue());
+			}
+		}));
+		return promise.future();
+	}
+
+	@Override
 	public void list(String folder, Boolean unread, UserInfos user, int page, int pageSize, final String searchText, Handler<Either<String, JsonArray>> results) {
 		list(folder,
 			ConversationService.isSystemFolder(folder) ? null : "", // `restrain` can only applies to user's folders.
@@ -360,7 +392,7 @@ public class SqlConversationService implements ConversationService{
 		String messageConditionUnread = addMessageConditionUnread(folder, values, unread, user);
 		String messagesFields = "m.id, m.subject, m.from, m.state, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.cci, m.\"cciName\", m.\"displayNames\", m.date ";
 
-		values.add("SENT").add(user.getUserId());
+		values.add(State.SENT.name()).add(user.getUserId());
 		String additionalWhere = addCompleteFolderCondition(values, restrain, unread, folder, user);
 
 		if(searchText != null){
@@ -481,7 +513,9 @@ public class SqlConversationService implements ConversationService{
 	@Override
 	public void listThreadMessages(String threadId, int page, UserInfos user, Handler<Either<String, JsonArray>> results) {
 		int skip = page * LIST_LIMIT;
-		String messagesFields = "m.id, m.parent_id, m.subject, m.body, m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\",  m.cci, m.\"cciName\", m.\"displayNames\", m.date, m.thread_id ";
+		String messagesFields = 
+			"m.id, m.parent_id, m.subject, CASE WHEN m.state='"+State.RECALL.name()+"' THEN '' ELSE m.body END as body, " +
+			"m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\",  m.cci, m.\"cciName\", m.\"displayNames\", m.date, m.thread_id ";
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 
 		values.add(user.getUserId());
@@ -506,7 +540,9 @@ public class SqlConversationService implements ConversationService{
 	@Override
 	public void listThreadMessagesNavigation(String messageId, boolean previous, UserInfos user, Handler<Either<String, JsonArray>> results) {
 		int maxMessageInThread = 15;
-		String messagesFields = "m.id, m.parent_id, m.subject, m.body, m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.cci, m.\"cciName\", m.\"displayNames\", m.date, m.thread_id ";
+		String messagesFields = 
+			"m.id, m.parent_id, m.subject, CASE WHEN m.state='"+State.RECALL.name()+"' THEN '' ELSE m.body END as body, " +
+			"m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.cci, m.\"cciName\", m.\"displayNames\", m.date, m.thread_id ";
 		String condition, limit;
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 
@@ -662,9 +698,15 @@ public class SqlConversationService implements ConversationService{
 
 		String selectQuery =
 			"SELECT " +
-				"m.*, " +
-				(apiVersion>0 ? "um.folder_id as folder_id, um.trashed as trashed, um.unread as unread, " +
-								"CASE WHEN count(distinct om.message_id) = 0 THEN false ELSE true END AS original_format_exists, " : "") +
+				"m.id, m.parent_id, m.subject, " +
+				"CASE WHEN m.state='"+State.RECALL.name()+"' THEN '' ELSE m.body END as body, " +
+				"m.from as \"from\", m.\"fromName\" as \"fromName\",  m.\"to\" as \"to\", m.\"toName\" as \"toName\", " +
+				"m.cc, m.\"ccName\" as \"ccName\", m.cci, m.\"cciName\" as \"cciName\", " +
+				"m.\"displayNames\" as \"displayNames\", m.state, m.date, m.language, m.thread_id, " + 
+				(apiVersion>0 
+					? "m.content_version, um.folder_id as folder_id, um.trashed as trashed, um.unread as unread, " +
+					  "CASE WHEN count(distinct om.message_id) = 0 THEN false ELSE true END AS original_format_exists, " 
+					: "") +
 				"CASE WHEN COUNT(distinct att) = 0 THEN '[]' ELSE json_agg(distinct att.*) END AS attachments " +
 			"FROM " + messageTable + " m " +
 			"JOIN " + userMessageTable + " um " +
@@ -747,8 +789,12 @@ public class SqlConversationService implements ConversationService{
 	 */
 	private Future<Void> formatMessageContent(String messageId, boolean originalFormat, HttpServerRequest request, JsonObject message) {
 		Promise<Void> updatedMessagePromise= Promise.promise();
+		// No-op if message has been recalled
+		if (State.RECALL.name().equals(message.getString("state"))) {
+			updatedMessagePromise.complete();
+		}
 		// replace message body with original content if requested
-		if (originalFormat) {
+		else if (originalFormat) {
 			Future<String> originalContentFuture = this.getOriginalMessageContent(messageId);
 			originalContentFuture
 					.onSuccess(originalContent -> {
@@ -806,8 +852,9 @@ public class SqlConversationService implements ConversationService{
 	public Future<String> getOriginalMessageContent(String messageId) {
 		Promise<String> originalMessagePromise = Promise.promise();
 		String query = "" +
-				"SELECT body " +
-				"FROM " + originalMessageTable + " om " +
+				"SELECT CASE WHEN m.state='"+State.RECALL.name()+"' THEN '' ELSE m.body END as body " +
+				"FROM " + originalMessageTable + " om " + 
+				"INNER JOIN " + messageTable + " m ON m.id = om.message_id " +
 				"WHERE om.message_id = ?";
 		JsonArray values = new JsonArray().add(messageId);
 
@@ -863,10 +910,7 @@ public class SqlConversationService implements ConversationService{
 	@Override
 	public Future<Void> updateMessageContent(String messageId, String body, int contentVersion) {
 		Promise<Void> updatedPromise = Promise.promise();
-		String updateQuery = "" +
-				"UPDATE " + messageTable + " m " +
-				"SET body = ? , content_version = ? " +
-				"WHERE m.id = ? ";
+		String updateQuery = "UPDATE " + messageTable + " SET body = ? , content_version = ? WHERE id = ? ";
 		JsonArray values = new JsonArray()
 				.add(body)
 				.add(contentVersion)
@@ -936,6 +980,7 @@ public class SqlConversationService implements ConversationService{
 		}
 
 		if (parentMessageId != null && !parentMessageId.trim().isEmpty()) {
+			//FIXME This query has a bug => it always fail ! Dead code ?
 			String getMessageQuery = "SELECT m.* FROM " + messageTable +
 				" WHERE id = ?";
 			sql.prepared(getMessageQuery, new fr.wseduc.webutils.collections.JsonArray().add(parentMessageId),
@@ -1770,19 +1815,19 @@ public class SqlConversationService implements ConversationService{
 				values.add(userId);
 				values.add(new fr.wseduc.webutils.collections.JsonArray().add(userId).toString());
 				values.add(new fr.wseduc.webutils.collections.JsonArray().add(userId).toString());
-				values.add("SENT");
+				values.add(State.SENT.name());
 				break;
 			case "OUTBOX":
 				additionalWhere = "AND m.from = ? AND m.state = ? AND um.trashed = false";
 				additionalWhere += " AND um.folder_id IS NULL";
 				values.add(userId);
-				values.add("SENT");
+				values.add(State.SENT.name());
 				break;
 			case "DRAFT":
 				additionalWhere = "AND m.from = ? AND m.state = ? AND um.trashed = false";
 				additionalWhere += " AND um.folder_id IS NULL";
 				values.add(userId);
-				values.add("DRAFT");
+				values.add(State.DRAFT.name());
 				break;
 			case "TRASH":
 				additionalWhere = "AND um.trashed = true";
@@ -1816,7 +1861,7 @@ public class SqlConversationService implements ConversationService{
 			// Only for user folders and trash
 			if (!upFolder.equals("INBOX") && !upFolder.equals("OUTBOX") && !upFolder.equals("DRAFT")) {
 				messageConditionUnread = " AND m.state = ?";
-				values.add("SENT");
+				values.add(State.SENT.name());
 			}
 		}
 
