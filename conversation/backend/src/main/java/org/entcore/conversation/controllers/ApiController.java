@@ -33,6 +33,7 @@ import org.entcore.conversation.service.ConversationService;
 
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
+import fr.wseduc.rs.Post;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.I18n;
@@ -109,6 +110,23 @@ public class ApiController extends BaseController {
 		.compose( user -> conversationService.getAndFormat(id, user, acceptedLanguage, originalFormat, request) )
 		.onSuccess( message -> {
 			renderJson(request, message);
+		})
+		.onFailure( throwable -> {
+			log.error("Unable to get and format message id="+id, throwable);
+			JsonObject error = new JsonObject().put("error", throwable.getMessage());
+			renderJson(request, error, 400);
+		});
+	}
+
+	@Post("api/messages/:id/recall")
+	@SecuredAction("conversation.recall")
+	public void recallMessage(final HttpServerRequest request) {
+		final String id = request.params().get("id");
+
+		getAuthenticatedUserInfos(eb, request)
+		.compose( user -> conversationService.recallMessage(id, user) )
+		.onSuccess( Void -> {
+			noContent(request);
 		})
 		.onFailure( throwable -> {
 			log.error("Unable to get and format message id="+id, throwable);
