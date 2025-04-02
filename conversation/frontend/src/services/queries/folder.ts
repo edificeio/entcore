@@ -10,6 +10,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Folder, MessageMetadata } from '~/models';
 import { folderService, searchFolder } from '..';
 import { useCallback } from 'react';
+import { useConfig } from '~/store';
 
 /**
  * Provides query options for folder-related operations.
@@ -29,11 +30,13 @@ export const folderQueryOptions = {
 
   /**
    * Retrieves the folder tree with a predefined depth.
+   * Limit specified depth to 5, whatever.
    *
    * @returns Query options for fetching the folder tree.
    */
-  getFoldersTree() {
-    const TREE_DEPTH = 3;
+  getFoldersTree(maxDepth?: number) {
+    const TREE_DEPTH =
+      typeof maxDepth === 'number' ? Math.min(5, Math.round(maxDepth)) : 3;
     return queryOptions({
       queryKey: [...folderQueryOptions.base, 'tree'] as const,
       queryFn: () => folderService.getTree(TREE_DEPTH),
@@ -118,7 +121,8 @@ export const folderQueryOptions = {
  * @returns Query result for fetching the folder tree.
  */
 export const useFoldersTree = () => {
-  return useQuery(folderQueryOptions.getFoldersTree());
+  const { maxDepth } = useConfig();
+  return useQuery(folderQueryOptions.getFoldersTree(maxDepth));
 };
 
 /**
