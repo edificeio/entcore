@@ -265,7 +265,7 @@ public class S3Storage implements Storage {
     @Override
     public void sendFile(String id, String downloadName, HttpServerRequest request, boolean inline, JsonObject metadata, Handler<AsyncResult<Void>> resultHandler) {
         getReadPath(id, ar -> {
-            s3Client.downloadFile(ar.result(), request, inline, downloadName, metadata, id, resultHandler);
+            s3Client.downloadFile(ar.result(), request, inline, downloadName, metadata, null, resultHandler);
         });
     }
 
