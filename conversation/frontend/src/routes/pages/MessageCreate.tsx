@@ -42,6 +42,7 @@ export function Component() {
     forwarded: false,
     state: 'DRAFT',
     attachments: [],
+    original_format_exists: false,
   };
 
   return <MessageEdit message={message} />;
