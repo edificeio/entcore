@@ -1,9 +1,14 @@
-import { ACTION, IAction } from 'edifice-ts-client';
+import { ACTION, ActionType, IAction } from 'edifice-ts-client';
 
 export const existingActions: IAction[] = [
   {
     id: ACTION.CREATE,
     workflow:
       'org.entcore.conversation.controllers.ConversationController|createDraft',
+  },
+  {
+    id: 'recall' as ActionType,
+    workflow:
+      'org.entcore.conversation.controllers.ApiController|recallMessage',
   },
 ];
