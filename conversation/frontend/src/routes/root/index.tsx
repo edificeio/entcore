@@ -25,6 +25,7 @@ import {
 } from '~/services/queries';
 import { setConfig, setWorkflows, useOpenFolderModal } from '~/store';
 import './index.css';
+import { AddMessageAttachmentToWorkspaceModal } from '~/features/modals/AddMessageAttachmentToWorkspaceModal';
 
 // Typing for the root route loader.
 export interface RootLoaderData {
@@ -96,6 +97,9 @@ export function Component() {
       {folderModal === 'rename' && <RenameFolderModal />}
       {folderModal === 'trash' && <TrashFolderModal />}
       {folderModal === 'move-message' && <MoveMessageToFolderModal />}
+      {folderModal === 'add-attachment-to-workspace' && (
+        <AddMessageAttachmentToWorkspaceModal />
+      )}
     </Layout>
   );
 }
