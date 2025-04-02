@@ -140,7 +140,7 @@ public class ConversationController extends BaseController {
 	}
 
 	/**
-	 * Main frontend rendering endpoint.
+	 * Main HTML rendering endpoint.
 	 * Secured by a dedicated access right named `org.entcore.conversation.controllers.ConversationController|view`
 	 * 
 	 * Example of valid URLs that should render the frontend HTML :
@@ -159,7 +159,7 @@ public class ConversationController extends BaseController {
 	}
 
 	/**
-	 * Another frontend rendering endpoint.
+	 * Another HTML rendering endpoint.
 	 * Secured by a dedicated resource filter.
 	 */
 	@Get("folder/:folderId")
@@ -170,13 +170,24 @@ public class ConversationController extends BaseController {
 	}
 
 	/**
-	 * Another frontend rendering endpoint.
+	 * Another HTML rendering endpoint.
 	 * Secured by a dedicated resource filter.
 	 */
 	@Get("folder/:folderId/message/:messageId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SystemOrUserFolderFilter.class)
 	public void viewMessage(HttpServerRequest request) {
+		renderViewWeb(request);
+	}
+
+	/**
+	 * HTML rendering endpoint for messages in old format.
+	 * Secured by a dedicated resource filter.
+	 */
+	@Get("oldformat/:id")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(MessageUserFilter.class)
+	public void oldformat(final HttpServerRequest request){
 		renderViewWeb(request);
 	}
 
