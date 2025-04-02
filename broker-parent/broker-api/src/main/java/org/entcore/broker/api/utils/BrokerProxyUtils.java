@@ -13,8 +13,10 @@ import org.entcore.broker.api.BrokerListener;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.Callable;
 
 public class BrokerProxyUtils {
@@ -24,18 +26,20 @@ public class BrokerProxyUtils {
   private static final ObjectMapper mapper = new ObjectMapper();
 
   /**
-   * Starts listening on the event bus for every request specified by the annotation @BrokerListener
+   * Starts listening on the event bus for every request specified by the
+   * annotation @BrokerListener
    * on the proxified class.
+   * 
    * @param proxyImpl Instance of events listener.
-   * @param vertx Current vertx instance.
+   * @param vertx     Current vertx instance.
    * @return A function to call to stop listening.
    */
   public static Callable<Void> addBrokerProxy(Object proxyImpl, final Vertx vertx) {
-    final List<Method> methods = getListeners(proxyImpl);
+    final List<Listener> listeners = getListeners(proxyImpl);
     final EventBus eb = vertx.eventBus();
     final List<MessageConsumer<?>> consumers = new ArrayList<>();
-    for (Method method : methods) {
-      consumers.add(startListening(method, proxyImpl, eb));
+    for (Listener listener : listeners) {
+      consumers.add(startListening(listener, proxyImpl, eb));
     }
     return () -> {
       for (MessageConsumer<?> consumer : consumers) {
@@ -46,8 +50,9 @@ public class BrokerProxyUtils {
     };
   }
 
-  private static MessageConsumer<?> startListening(Method method, Object proxyImpl, EventBus eb) {
-    final BrokerListener annotation = method.getAnnotation(BrokerListener.class);
+  private static MessageConsumer<?> startListening(Listener listener, Object proxyImpl, EventBus eb) {
+    final BrokerListener annotation = listener.annotation;
+    final Method method = listener.method;
     final String address = annotation.subject();
     final Class<?> requestType = method.getParameterTypes()[0];
     log.info("Start listening on address " + address);
@@ -61,7 +66,7 @@ public class BrokerProxyUtils {
           request = mapper.readValue(rawRequest, requestType);
         } catch (IOException e) {
         }
-        if(request == null) {
+        if (request == null) {
           log.error("Error while deserializing request: " + rawRequest);
           response = new IllegalArgumentException("Invalid request: " + rawRequest);
         } else {
@@ -82,10 +87,10 @@ public class BrokerProxyUtils {
   }
 
   private static void sendResponse(Object response, Message<byte[]> message, String address) {
-    if(response instanceof Exception) {
+    if (response instanceof Exception) {
       log.error("Error while processing message on address " + address, (Exception) response);
-      message.fail(getErrorCodeForException((Exception)response), ((Exception) response).getMessage());
-    } else if(response instanceof Future) {
+      message.fail(getErrorCodeForException((Exception) response), ((Exception) response).getMessage());
+    } else if (response instanceof Future) {
       log.debug("Waiting for async treatment...");
       ((Future<?>) response).onSuccess(finalResponse -> {
         sendSuccess(finalResponse, message);
@@ -99,7 +104,7 @@ public class BrokerProxyUtils {
   }
 
   private static int getErrorCodeForException(Exception response) {
-    if(response instanceof IllegalArgumentException) {
+    if (response instanceof IllegalArgumentException) {
       return 400;
     }
     return 500;
@@ -114,19 +119,53 @@ public class BrokerProxyUtils {
     }
   }
 
-  private static List<Method> getListeners(Object proxyImpl) {
-    final List<Method> methods = new ArrayList<>();
+  public static List<Listener> getListeners(Object proxyImpl) {
+    final List<Listener> methods = new ArrayList<>();
     for (Method method : proxyImpl.getClass().getMethods()) {
-      if (method.isAccessible() && method.isAnnotationPresent(BrokerListener.class)) {
-        final BrokerListener annotation = method.getAnnotation(BrokerListener.class);
-        if (annotation.proxy()) {
-          log.debug("Adding method " + method.getName() + " as a listener for subject " + annotation.subject());
-          methods.add(method);
-        } else {
-          log.debug("Skipping method " + method.getName() + " as a listener for subject " + annotation.subject() + " because it is not a proxy");
-        }
+      if (Modifier.isPublic(method.getModifiers())) {
+        final Optional<BrokerListener> maybeAnnotation = getBrokerListenerAnnotation(proxyImpl, method);
+        maybeAnnotation.ifPresent(annotation -> {
+          if (annotation.proxy()) {
+            log.debug("Adding method " + method.getName() + " as a listener for subject " + annotation.subject());
+            methods.add(new Listener(method, annotation));
+          } else {
+            log.debug("Skipping method " + method.getName() + " as a listener for subject " + annotation.subject()
+              + " because it is not a proxy");
+          }
+        });
       }
     }
     return methods;
+  }
+
+  public static Optional<BrokerListener> getBrokerListenerAnnotation(final Object proxyImpl, final Method method) {
+    BrokerListener annotation = method.getAnnotation(BrokerListener.class);
+    if (annotation == null) {
+      // Check if the annotation is present on the interface method
+      for (Class<?> iface : proxyImpl.getClass().getInterfaces()) {
+        try {
+          Method interfaceMethod = iface.getMethod(method.getName(), method.getParameterTypes());
+          if (interfaceMethod != null) {
+            annotation = interfaceMethod.getAnnotation(BrokerListener.class);
+            if (annotation != null) {
+              break;
+            }
+          }
+        } catch (NoSuchMethodException e) {
+          // Method not found in this interface, continue with next interface
+        }
+      }
+    }
+    return Optional.ofNullable(annotation);
+  }
+
+  public static class Listener {
+    private final Method method;
+    private final BrokerListener annotation;
+
+    public Listener(Method method, BrokerListener annotation) {
+      this.method = method;
+      this.annotation = annotation;
+    }
   }
 }
