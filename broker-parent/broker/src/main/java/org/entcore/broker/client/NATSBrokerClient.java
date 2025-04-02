@@ -11,13 +11,13 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.apache.commons.lang3.NotImplementedException;
 import org.entcore.broker.listener.BrokerListener;
 import org.entcore.broker.nats.model.NATSContract;
 import org.entcore.broker.nats.model.NATSEndpoint;
 
-import java.io.*;
-import java.lang.reflect.Constructor;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -177,22 +177,21 @@ public class NATSBrokerClient implements BrokerClient {
   }
 
   @Override
-  public <K, V> Future<V> request(String subject, K message, String replyTo) {
-    return this.request(subject, message, replyTo, defaultTimeout);
+  public <K, V> Future<V> request(String subject, K message) {
+    return this.request(subject, message, defaultTimeout);
   }
 
   @Override
-  public <K, V> Future<V> request(String subject, K message, String replyTo, long timeout) {
+  public <K, V> Future<V> request(String subject, K message, long timeout) {
     assertNatsClient("cannot.request.message.null.client");
     try {
       final byte[] payload = mapper.writeValueAsString(message).getBytes(charset);
 
       Promise<V> future = Promise.promise();
-      final String replyToFinalAddress = replyTo != null ? replyTo
-        : subject + ".reply." + serverId + "." + UUID.randomUUID().toString();
+      final String replyTo = subject + ".reply." + serverId + "." + UUID.randomUUID();
       final AtomicLong timer = new AtomicLong(System.currentTimeMillis()); // This will be used to actually time out the request
       // Start by creating a subscription for the reply which will be where the response will be sent
-      natsClient.subscribe(replyToFinalAddress, msg -> {
+      natsClient.subscribe(replyTo, msg -> {
         try {
           @SuppressWarnings("unchecked")
           V response = mapper.readValue(new String(msg.getData(), charset), (Class<V>) Object.class);
@@ -203,7 +202,7 @@ public class NATSBrokerClient implements BrokerClient {
         } finally {
           vertx.cancelTimer(timer.get());
           // Unsubscribe from the reply subject which was temporarily created
-          this.unsubscribe(replyToFinalAddress);
+          this.unsubscribe(replyTo);
         }
       }).onFailure(th -> {
         log.error("Failed to subscribe to reply subject", th);
@@ -211,21 +210,21 @@ public class NATSBrokerClient implements BrokerClient {
       }).onSuccess(subscription -> {
         // Now that we're listening for the reply, we can send the request with our 
         // temporary reply subject
-        natsClient.publish(subject, replyToFinalAddress, payload)
+        natsClient.publish(subject, replyTo, payload)
           .onSuccess(e -> {
             log.debug("Message sent to subject: " + subject);
             // Set a timeout for the request
             long handle = vertx.setTimer(timeout, id -> {
               log.error("Request timed out for subject: " + subject);
               future.fail(new RuntimeException("Request timed out"));
-              this.unsubscribe(replyToFinalAddress);
+              this.unsubscribe(replyTo);
             });
             timer.set(handle);
           })
           .onFailure(e -> {
             log.error("Error while sending message to NATS", e);
             future.fail(e);
-            this.unsubscribe(replyToFinalAddress);
+            this.unsubscribe(replyTo);
           });
       });
       return future.future();
