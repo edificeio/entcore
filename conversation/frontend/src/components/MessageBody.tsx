@@ -7,7 +7,7 @@ import { MessageAttachments } from '~/components/message-attachments';
 import { Message } from '~/models';
 import './MessageBody.css';
 
-import illuRecall from '~/assets/illu-noContentInFolder 6.svg';
+import illuRecall from '~/assets/illu-messageRecalled.svg';
 import { useI18n } from '~/hooks';
 import { EmptyScreen } from '@edifice.io/react';
 
