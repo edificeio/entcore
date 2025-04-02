@@ -1543,6 +1543,8 @@
   "conversation.stimulation.exercise" : "Messagerie : suggestion de création d'exercice",
   "conversation.send": "Messagerie : envoyer un message",
   "conversation.view": "Messagerie : accéder à la messagerie",
+  "conversation.print": "Messagerie : imprimer un message",
+  "conversation.recall": "Messagerie : rappeler un message",
   "forum.create": "Forum : créer des catégories",
   "forum.list": "Forum : lister des catégories",
   "forum.view": "Forum : accéder au service",
