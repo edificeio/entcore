@@ -36,9 +36,8 @@ import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.Future;
 import io.vertx.core.Vertx;
-import org.apache.commons.lang3.NotImplementedException;
+import org.checkerframework.checker.units.qual.A;
 import org.entcore.broker.api.appregistry.AppRegistrationRequestDTO;
 import org.entcore.broker.api.appregistry.AppRegistrationResponseDTO;
 import org.entcore.broker.proxy.AppRegistryProxy;
@@ -775,11 +774,6 @@ public class AppRegistryController extends BaseController implements AppRegistry
 		final Promise<AppRegistrationResponseDTO> promise = Promise.promise();
 		final JsonObject jsonRequest = mapFrom(request);
 		try {
-			JsonObject application = jsonRequest.getJsonObject("application");
-			Object customProps = application.remove("customProperties");
-			if(customProps != null) {
-				application.mergeIn(((JsonObject)customProps));
-			}
 			appRegistryService.createApplication(null, jsonRequest.getJsonObject("application"), jsonRequest.getJsonArray("actions"), e -> {
 				final AppRegistrationResponseDTO response;
 				if (e.isLeft()) {
@@ -794,5 +788,4 @@ public class AppRegistryController extends BaseController implements AppRegistry
 		}
 		return promise.future();
 	}
-
 }

@@ -21,10 +21,15 @@
         </dependency>
         <dependency>
             <groupId>org.entcore</groupId>
-            <artifactId>session</artifactId>
-            <version>${entCoreLibsVersion}</version>
-            <scope>runtime</scope>
-            <classifier>fat</classifier>
+            <artifactId>broker-api</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.entcore</groupId>
+            <artifactId>broker-proxy</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>org.entcore</groupId>

@@ -104,7 +104,7 @@ public class NATSBrokerClient implements BrokerClient {
   }
 
   private void sendError(Message msg, Throwable e) {
-    natsClient.publish(msg.getReplyTo(), e.getMessage().getBytes());
+    natsClient.publish(msg.getReplyTo(), e.getMessage() == null ? String.valueOf(e).getBytes() : e.getMessage().getBytes());
   }
 
   private void registerListeners(NATSContract contracts) {

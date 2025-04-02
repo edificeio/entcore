@@ -22,7 +22,6 @@ package org.entcore.registry;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.Promise;
-import org.entcore.broker.api.utils.AddressParameter;
 import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.appregistry.AppRegistryEventsHandler;
 import org.entcore.common.http.BaseServer;
@@ -37,24 +36,13 @@ public class AppRegistry extends BaseServer {
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
-		final Promise<Void> promise = Promise.promise();
-		super.start(promise);
-		promise.future().compose(init -> initAppRegistry()).onComplete(startPromise);
-	}
-
-	public Future<Void> initAppRegistry() {
-    final List<Future<?>> futures = new ArrayList<>();
-    final AppRegistryController appRegistryController = new AppRegistryController();
-    futures.add(addController(appRegistryController));
-
-    futures.add(addController(new ExternalApplicationController(config.getInteger("massAuthorizeBatchSize", 1000))));
-    futures.add(addController(new WidgetController()));
-		try {
-      futures.add(addController(new LibraryController(vertx, config())));
-		} catch (Exception e) {
-			return Future.failedFuture(e);
-		}
-		BrokerProxyUtils.addBrokerProxy(appRegistryController, vertx, new AddressParameter("application", "appregistry"));
+		super.start(startPromise);
+		final AppRegistryController appRegistryController = new AppRegistryController();
+		addController(appRegistryController);
+		addController(new ExternalApplicationController(config.getInteger("massAuthorizeBatchSize", 1000)));
+		addController(new WidgetController());
+		addController(new LibraryController(vertx, config()));
+		BrokerProxyUtils.addBrokerProxy(appRegistryController, vertx);
 		JsonObject eduMalinConf = config.getJsonObject("edumalin-widget-config");
 		if(eduMalinConf != null)
       futures.add(addController(new EdumalinWidgetController()));
