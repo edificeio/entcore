@@ -2,7 +2,7 @@
 
 ## Presentation
 
-This module is a multimodule project that provides a broker for the ENT outside of Vert.x's event bus.
+This module is a multimodule project that provides a broker client for the ENT outside of Vert.x's event bus.
 
 ## Modules
 
