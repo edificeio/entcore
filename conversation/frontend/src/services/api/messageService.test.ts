@@ -10,6 +10,13 @@ describe('Conversation Message GET Methods', () => {
     expect(response).toBeDefined();
     expect(response).toStrictEqual(mockFullMessage);
   });
+
+  test('makes a GET request to get a full message in original format', async () => {
+    const response = await messageService.getOriginalFormat('f43d3783');
+
+    expect(response).toBeDefined();
+    expect(response).toStrictEqual(mockFullMessage);
+  });
 });
 
 describe('Conversation Message Mutation Methods', () => {

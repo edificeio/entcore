@@ -31,7 +31,23 @@ export const messageQueryOptions = {
     return queryOptions({
       queryKey: [...messageQueryOptions.base, messageId] as const,
       queryFn: () => messageService.getById(messageId),
-      staleTime: 5000,
+      staleTime: Infinity, // The message must be invalidated by mutations, no need to reload it twice in between.
+    });
+  },
+  /**
+   * Generates query options for fetching a message by its ID.
+   * @param messageId - The ID of the message to fetch.
+   * @returns Query options for fetching the message.
+   */
+  getOriginalFormat(messageId: string) {
+    return queryOptions({
+      queryKey: [
+        ...messageQueryOptions.base,
+        messageId,
+        'originalFormat',
+      ] as const,
+      queryFn: () => messageService.getOriginalFormat(messageId),
+      staleTime: Infinity,
     });
   },
 };
@@ -70,6 +86,10 @@ export const useMessage = (messageId: string) => {
     );
   }
   return result;
+};
+
+export const useOriginalMessage = (messageId: string) => {
+  return useQuery(messageQueryOptions.getOriginalFormat(messageId));
 };
 
 /**

@@ -364,6 +364,7 @@ export const mockFullMessage: Message = {
   thread_id: '',
   trashed: false,
   forwarded: false,
+  original_format_exists: true,
 };
 
 export const mockSentMessage = {

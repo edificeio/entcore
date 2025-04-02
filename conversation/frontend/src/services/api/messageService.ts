@@ -33,10 +33,18 @@ function postThenVoid(endpoint: string, payload?: any) {
 export const createMessageService = (baseURL: string) => ({
   /**
    * Fully load a message.
-   * @returns
    */
   getById(id: string) {
     return odeServices.http().get<Message>(`${baseURL}/api/messages/${id}`);
+  },
+
+  /**
+   * Fully load a message by ID, in original format.
+   */
+  getOriginalFormat(id: string) {
+    return odeServices
+      .http()
+      .get<Message>(`${baseURL}/api/messages/${id}?originalFormat=true`);
   },
 
   /** Toggle one or more messages as `read` or `unread`. */

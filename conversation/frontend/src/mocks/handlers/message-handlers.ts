@@ -11,6 +11,9 @@ export const messageHandlers = [
   http.get(`${baseUrl}/api/messages/:messageId`, () => {
     return HttpResponse.json(mockFullMessage, { status: 200 });
   }),
+  http.get(`${baseUrl}/api/messages/:messageId?originalFormat=true`, () => {
+    return HttpResponse.json(mockFullMessage, { status: 200 });
+  }),
   http.post<
     object,
     {

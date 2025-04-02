@@ -28,4 +28,5 @@ export interface Message extends MessageBase {
   folder_id?: string;
   parent_id?: string;
   thread_id?: string;
+  original_format_exists: boolean;
 }
