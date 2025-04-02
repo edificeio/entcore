@@ -20,12 +20,12 @@ public class RESTBrokerClient implements BrokerClient {
   }
 
   @Override
-  public <K, V> Future<V> request(String subject, K message, String replyTo) {
+  public <K, V> Future<V> request(String subject, K message) {
     throw new NotImplementedException();
   }
 
   @Override
-  public <K, V> Future<V> request(String subject, K message, String replyTo, long timeout) {
+  public <K, V> Future<V> request(String subject, K message, long timeout) {
     throw new NotImplementedException();
   }
 
