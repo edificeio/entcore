@@ -13,6 +13,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import javax.tools.FileObject;
@@ -108,7 +109,7 @@ public class BrokerListenerProcessor extends AbstractProcessor {
     }
 
     // Get response type information
-    TypeMirror responseType = method.getReturnType();
+    TypeMirror responseType = getTargetType(method.getReturnType());
     final String responseTypeClass = responseType.toString();
     if(! "void".equalsIgnoreCase(responseTypeClass)) {
       endpoint.setResponseType(responseType.toString());
@@ -121,6 +122,19 @@ public class BrokerListenerProcessor extends AbstractProcessor {
     }
 
     return endpoint;
+  }
+
+  private TypeMirror getTargetType(TypeMirror returnType) {
+    final String typeMirrorString = returnType.toString();
+    if(returnType instanceof DeclaredType && typeMirrorString.startsWith("io.vertx.core.Future")) {
+      List<? extends TypeMirror> typeArguments = ((DeclaredType) returnType).getTypeArguments();
+      if (typeArguments != null && !typeArguments.isEmpty()) {
+        return typeArguments.get(0);
+      }
+      return returnType;
+    } else {
+      return returnType;
+    }
   }
 
 

@@ -1,8 +1,11 @@
 // Generated NATS clients for quarkus-nats-service v1.0.0
 
-export { EntTestListenClient } from './ent-test-listen.client';
-export type { ListenOnlyDTO } from './ent-test-listen.types';
+export { DirectorySharesCreateClient } from './directory-shares-create.client';
+export type { CreateSharesRequestDTO, CreateSharesResponseDTO } from './directory-shares-create.types';
 
-export { EntTestListenReplyClient } from './ent-test-listen-reply.client';
-export type { ListenAndAnswerDTO, DummyResponse } from './ent-test-listen-reply.types';
+export { DirectorySharesDeleteClient } from './directory-shares-delete.client';
+export type { DeleteSharesRequestDTO, DeleteSharesResponseDTO } from './directory-shares-delete.types';
+
+export { EntAppregistryAppRegisterClient } from './ent-appregistry-app-register.client';
+export type { AppRegistrationRequestDTO, AppRegistrationResponseDTO } from './ent-appregistry-app-register.types';
 

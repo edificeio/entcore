@@ -33,7 +33,13 @@ import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.BaseController;
 
 import fr.wseduc.webutils.http.Renders;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import org.checkerframework.checker.units.qual.A;
+import org.entcore.broker.api.appregistry.AppRegistrationRequestDTO;
+import org.entcore.broker.api.appregistry.AppRegistrationResponseDTO;
+import org.entcore.broker.proxy.AppRegistryProxy;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.AdmlOfStructure;
 import org.entcore.common.http.filter.ResourceFilter;
@@ -55,6 +61,7 @@ import org.vertx.java.core.http.RouteMatcher;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
+import static io.vertx.core.json.JsonObject.mapFrom;
 import static org.entcore.common.appregistry.AppRegistryEvents.APP_REGISTRY_PUBLISH_ADDRESS;
 import static org.entcore.common.appregistry.AppRegistryEvents.PROFILE_GROUP_ACTIONS_UPDATED;
 import static org.entcore.common.bus.BusResponseHandler.busArrayHandler;
@@ -65,7 +72,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
-public class AppRegistryController extends BaseController {
+public class AppRegistryController extends BaseController implements AppRegistryProxy {
 
 	private final AppRegistryService appRegistryService = new DefaultAppRegistryService();
 	private JsonObject skinLevels;
@@ -714,4 +721,23 @@ public class AppRegistryController extends BaseController {
 		eb.publish(APP_REGISTRY_PUBLISH_ADDRESS, message);
 	}
 
+	@Override
+	public Future<AppRegistrationResponseDTO> registerApp(AppRegistrationRequestDTO request) {
+		final Promise<AppRegistrationResponseDTO> promise = Promise.promise();
+		final JsonObject jsonRequest = mapFrom(request);
+		try {
+			appRegistryService.createApplication(null, jsonRequest.getJsonObject("application"), jsonRequest.getJsonArray("actions"), e -> {
+				final AppRegistrationResponseDTO response;
+				if (e.isLeft()) {
+					response = new AppRegistrationResponseDTO(false, e.left().getValue());
+				} else {
+					response = new AppRegistrationResponseDTO(true, null);
+				}
+				promise.tryComplete(response);
+			});
+		} catch (Exception e) {
+			promise.tryFail(e);
+		}
+		return promise.future();
+	}
 }
