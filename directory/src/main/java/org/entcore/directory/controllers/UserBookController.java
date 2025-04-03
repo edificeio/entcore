@@ -564,7 +564,6 @@ public class UserBookController extends BaseController {
 	}
 
 	@Get("/avatar/:id")
-	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void getAvatar(final HttpServerRequest request) {
 		String id = request.params().get("id");
 		// Ugly fix for query string parameters starting by '&' and not '?' from mobile app
