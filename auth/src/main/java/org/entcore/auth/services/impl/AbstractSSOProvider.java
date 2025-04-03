@@ -129,7 +129,7 @@ public abstract class AbstractSSOProvider implements SamlServiceProvider {
 							handler.handle(new Either.Left<String, Object>("blocked.user"));
 						} else if (setFederated &&  event.isRight() && event.right().getValue().getBoolean("federated") == null &&
 								event.right().getValue().getString("id") != null) {
-							String query = "MATCH (u:User {id: {id}}) SET u.federated = true ";
+							String query = "MATCH (u:User {id: {id}}) SET u.federated = true, u.changePw=null ";
 							JsonObject params = new JsonObject().put("id", event.right().getValue().getString("id"));
 							if (assertion != null && assertion.getIssuer() != null &&
 									assertion.getIssuer().getValue() != null && !assertion.getIssuer().getValue().trim().isEmpty()) {
@@ -158,7 +158,7 @@ public abstract class AbstractSSOProvider implements SamlServiceProvider {
 			@Override
 			public void handle(final Either<String, JsonArray> event) {
 				if (event.isRight()) {
-					JsonArray ids = new fr.wseduc.webutils.collections.JsonArray();
+					JsonArray ids = new JsonArray();
 					final Set<String> userIds = new HashSet<>();
 					final JsonArray usersIter = event.right().getValue();
 					final JsonArray users = new JsonArray();
@@ -182,7 +182,7 @@ public abstract class AbstractSSOProvider implements SamlServiceProvider {
 						return;
 					}
 					if (ids.size() > 0) {
-						String query = "MATCH (u:User) WHERE u.id IN {ids} SET u.federated = true ";
+						String query = "MATCH (u:User) WHERE u.id IN {ids} SET u.federated = true, u.changePw=null ";
 						JsonObject params = new JsonObject().put("ids", ids);
 						if (assertion != null && assertion.getIssuer() != null &&
 								assertion.getIssuer().getValue() != null && !assertion.getIssuer().getValue().trim().isEmpty()) {

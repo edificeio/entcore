@@ -21,59 +21,55 @@ package org.entcore.common.storage.impl;
 
 import fr.wseduc.webutils.DefaultAsyncResult;
 import io.vertx.core.AsyncResult;
-import io.vertx.core.http.HttpClientOptions;
+import io.vertx.core.http.*;
 import org.entcore.common.storage.AntivirusClient;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 public class HttpAntivirusClient implements AntivirusClient {
 
-	private static final Logger log = LoggerFactory.getLogger(HttpAntivirusClient.class);
-	private HttpClient httpClient;
-	private String credential;
+  private static final Logger log = LoggerFactory.getLogger(HttpAntivirusClient.class);
+  private HttpClient httpClient;
+  private String credential;
 
-	public HttpAntivirusClient(Vertx vertx, String host, String cretential) {
-		HttpClientOptions options = new HttpClientOptions()
-				.setDefaultHost(host)
-				.setDefaultPort(8001)
-				.setMaxPoolSize(16)
-				.setConnectTimeout(10000)
-				.setKeepAlive(true);
-		this.httpClient = vertx.createHttpClient(options);
-		this.credential = cretential;
-	}
+  public HttpAntivirusClient(Vertx vertx, String host, String cretential) {
+    HttpClientOptions options = new HttpClientOptions()
+        .setDefaultHost(host)
+        .setDefaultPort(8001)
+        .setMaxPoolSize(16)
+        .setConnectTimeout(10000)
+        .setKeepAlive(true);
+    this.httpClient = vertx.createHttpClient(options);
+    this.credential = cretential;
+  }
 
-	@Override
-	public void scan(final String path) {
-		this.scan(path, e -> {});
-	}
+  @Override
+  public void scan(final String path) {
+    this.scan(path, e -> {
+    });
+  }
 
-	@Override
-	public void scan(String path, Handler<AsyncResult<Void>> handler){
-		HttpClientRequest req = httpClient.post("/infra/antivirus/scan", new Handler<HttpClientResponse>() {
-			@Override
-			public void handle(HttpClientResponse resp) {
-				if (resp.statusCode() != 200) {
-					log.error("Error when call scan file : " + path);
-					final Exception exc = new Exception("Error when call scan file ("+resp.statusCode() +"): " + path);
-					handler.handle(new DefaultAsyncResult<>(exc));
-				} else {
-					handler.handle(new DefaultAsyncResult<>((Void)null));
-				}
-			}
-		});
-		req.putHeader("Content-Type", "application/json");
-		req.putHeader("Authorization", "Basic " + credential);
-		req.exceptionHandler(e -> {
-			log.error("Exception when call scan file : " + path, e);
-			handler.handle(new DefaultAsyncResult<>(e));
-		});
-		req.end(new JsonObject().put("file", path).encode());
-	}
+  @Override
+  public void scan(String path, Handler<AsyncResult<Void>> handler) {
+    httpClient.request(HttpMethod.POST, "/infra/antivirus/scan")
+        .map(req -> req.putHeader("Content-Type", "application/json")
+            .putHeader("Authorization", "Basic " + credential)
+            .exceptionHandler(e -> {
+              log.error("Exception when call scan file : " + path, e);
+              handler.handle(new DefaultAsyncResult<>(e));
+            }))
+        .flatMap(req -> req.send(new JsonObject().put("file", path).encode()))
+        .onSuccess(resp -> {
+          if (resp.statusCode() != 200) {
+            log.error("Error when call scan file : " + path);
+            final Exception exc = new Exception("Error when call scan file (" + resp.statusCode() + "): " + path);
+            handler.handle(new DefaultAsyncResult<>(exc));
+          } else {
+            handler.handle(new DefaultAsyncResult<>((Void) null));
+          }
+        });
+  }
 }

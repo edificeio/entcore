@@ -19,6 +19,7 @@
 
 package org.entcore.directory.security;
 
+import com.google.common.collect.Sets;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.request.RequestUtils;
 
@@ -37,6 +38,7 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.*;
 
+import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static io.vertx.core.http.HttpMethod.*;
 import static org.entcore.common.user.DefaultFunctions.*;
 
@@ -44,6 +46,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 
 	private final Neo4j neo = Neo4j.getInstance();
 	private AdminUpdateFilter adminUpdateFilter = new AdminUpdateFilter();
+	private final Set<String> fieldsUpdatableByADMLOnOtherADML = Sets.newHashSet("positionIds");
 
 	private static class HandlerWrapper{
 		final Handler<Boolean> originalHandler;
@@ -141,6 +144,9 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				case "performMassmail" :
 					isAdmin(user, false, handler);
 					break;
+				case "getMassMessageTemplate" :
+					isAdmin(user, false, handler);
+					break;
 				case "unlinkUser" :
 				case "linkUser" :
 					adminUpdateFilter.checkADMCUpdate(request, user, false, true, hr -> {
@@ -195,7 +201,15 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					break;
 				default: handler.handle(false);
 			}
-		}else {
+		} else if (serviceMethod != null && serviceMethod.startsWith(MassMessagingController.class.getName())) {
+			String method = serviceMethod
+					.substring(MassMessagingController.class.getName().length() + 1);
+			switch (method) {
+				case "massMessaging" :
+					isAdmin(user, false, handler);
+					break;
+			}
+		} else {
 			handler.handle(false);
 		}
 	}
@@ -236,7 +250,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 		JsonObject params = new JsonObject()
 				.put("id", request.params().get("groupId"))
 				.put("userId", request.params().get("userId"))
-				.put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
+				.put("ids", new JsonArray(new ArrayList<>(ids)));
 		validateQuery(request, handler, query, params);
 	}
 
@@ -249,7 +263,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				"RETURN count(*) > 0 as exists";
 		JsonObject params = new JsonObject()
 				.put("id", request.params().get("groupId"))
-				.put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
+				.put("ids", new JsonArray(new ArrayList<>(ids)));
 		validateQuery(request, handler, query, params);
 	}
 
@@ -332,7 +346,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					"RETURN count(*) > 0 as exists";
 			JsonObject params = new JsonObject()
 					.put("classId", classId)
-					.put("ids", new fr.wseduc.webutils.collections.JsonArray(adminLocal.getScope()));
+					.put("ids", new JsonArray(adminLocal.getScope()));
 			validateQuery(request, handler, query, params);
 		} else {
 			handler.handle(false);
@@ -372,7 +386,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 									"RETURN count(*) > 0 as exists";
 					JsonObject params = new JsonObject()
 							.put("classId", classId)
-							.put("ids", new fr.wseduc.webutils.collections.JsonArray(adminLocal.getScope()));
+							.put("ids", new JsonArray(adminLocal.getScope()));
 					validateQuery(request, handler, query, params);
 				} else {
 					handler.handle(false);
@@ -411,7 +425,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 					"RETURN count(*) > 0 as exists";
 			JsonObject params = new JsonObject()
 					.put("classId", classId)
-					.put("ids", new fr.wseduc.webutils.collections.JsonArray(adminLocal.getScope()));
+					.put("ids", new JsonArray(adminLocal.getScope()));
 			validateQuery(request, handler, query, params);
 		} else {
 			handler.handle(false);
@@ -438,12 +452,29 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			handler.handle(true);
 			return;
 		}
-		adminOrTeacher(request, user, false, handler);
+		final HttpMethod requestMethod = request.method();
+		if (requestMethod.equals(POST) || requestMethod.equals(PUT) || requestMethod.equals(PATCH)) {
+			bodyToJson(request, body -> {
+						// If the requester is an ADML and the target user is also an ADML, allow the update to proceed iff the requester
+						// wants to update the allowed fields specified in fieldsUpdatableByADMLOnOtherADML
+						final boolean admlCanUpdateADML =
+								body != null &&
+										fieldsUpdatableByADMLOnOtherADML.containsAll(body.fieldNames());
+						adminOrTeacher(request, user, admlCanUpdateADML, handler);
+					}
+			);
+		} else {
+			adminOrTeacher(request, user, true, handler);
+		}
 	}
 
 	private void adminOrTeacher(final HttpServerRequest request, final UserInfos user, boolean admlCanUpdateADML, final Handler<Boolean> handler) {
 		adminUpdateFilter.checkADMCUpdate(request, user, false, admlCanUpdateADML, hr -> {
 			if (Boolean.FALSE.equals(hr)) {
+				handler.handle(false);
+				return;
+			}
+			if (TeacherOfClass.userNotHasClassParam(user)) {
 				handler.handle(false);
 				return;
 			}
@@ -456,7 +487,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			JsonObject params = new JsonObject()
 					.put("id", request.params().get("groupId"))
 					.put("userId", request.params().get("userId"))
-					.put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
+					.put("ids", new JsonArray(new ArrayList<>(ids)));
 			neo.execute(query, params, new Handler<Message<JsonObject>>() {
 				@Override
 				public void handle(Message<JsonObject> r) {
@@ -486,7 +517,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 				"WHERE u.id IN {userIds} " +
 				"RETURN count(distinct u) = {size} as exists ";
 		JsonObject params = new JsonObject()
-				.put("userIds", new fr.wseduc.webutils.collections.JsonArray(userIds))
+				.put("userIds", new JsonArray(userIds))
 				.put("teacherId", user.getUserId())
 				.put("size", userIds.size());
 		validateQuery(request, handler, query, params);
@@ -495,7 +526,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 	private void isClassTeacher(final HttpServerRequest request, final UserInfos user,
 								final Handler<Boolean> handler) {
 		final String classId = request.params().get("classId");
-		if (classId == null || classId.trim().isEmpty()) {
+		if (classId == null || classId.trim().isEmpty() || TeacherOfClass.userNotHasClassParam(user)) {
 			handler.handle(false);
 			return;
 		}
@@ -507,7 +538,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 		JsonObject params = new JsonObject()
 				.put("classId", classId)
 				.put("userId", request.params().get("userId"))
-				.put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
+				.put("ids", new JsonArray(new ArrayList<>(ids)));
 		neo.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> r) {
@@ -538,7 +569,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			return;
 		}
 		String userId = request.params().get("userId");
-		if (userId == null || userId.trim().isEmpty()) {
+		if (userId == null || userId.trim().isEmpty() || TeacherOfClass.userNotHasClassParam(user)) {
 			handler.handle(false);
 			return;
 		}
@@ -572,7 +603,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 			@Override
 			public void handle(JsonObject json) {
 				JsonArray userIds = json.getJsonArray("ids");
-				if (userIds == null || userIds.isEmpty()) {
+				if (userIds == null || userIds.isEmpty() || TeacherOfClass.userNotHasClassParam(user)) {
 					handler.handle(false);
 					return;
 				}
@@ -612,7 +643,7 @@ public class DirectoryResourcesProvider implements ResourcesProvider {
 		JsonObject params = new JsonObject()
 				.put("classId", classId)
 				.put("userId", request.params().get("userId"))
-				.put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
+				.put("ids", new JsonArray(new ArrayList<>(ids)));
 		neo.execute(query, params, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> r) {

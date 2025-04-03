@@ -26,7 +26,6 @@ mods
 **/dist
 **/ts/entcore
 **/template/entcore
-data
 developer.id
 *.mod.json
 .jshintrc
@@ -38,11 +37,6 @@ node_modules
 auth/src/main/resources/view/*
 auth/src/main/resources/public/js
 auth/src/main/resources/public/temp
-conversation/src/main/resources/view/*
-conversation/src/main/resources/public/js
-conversation/src/main/resources/public/ts/entcore
-conversation/src/main/resources/public/temp
-conversation/src/main/resources/public/template/entcore
 workspace/src/main/resources/view/*
 workspace/src/main/resources/public/js
 workspace/src/main/resources/public/temp
@@ -84,3 +78,17 @@ infra/src/main/resources/public/js/pixi.min.js
 **/.vertx
 admin/src/main/ts/.angular
 *.lock
+**/pnpm-lock.yaml
+tests/src/test/resources/data/thumbnails/image.jpg
+admin/src/main/ts/.proxyRemoteConfig.js
+# Ignore some JS and HTML files in "backend/resources" folder
+**/backend/**/resources/public/*.js
+**/backend/**/resources/public/*.css
+**/backend/**/resources/view/*.html
+# Ignore package.json in "frontend" folder (where a template exists)
+**/frontend/package.json
+
+.env
+dependency-reduced-pom.xml
+.flattened-pom.xml
+.version.properties

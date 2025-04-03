@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import org.entcore.common.folders.impl.DocumentHelper;
 import org.entcore.common.storage.Storage;
@@ -102,19 +103,21 @@ public class FolderExporter {
 			}
 		}
 		//
-		Future<Void> futureRoot = Future.future();
-		fs.mkdirs(context.basePath, futureRoot.completer());
-		return futureRoot.compose(resRoot -> {
+		return fs.mkdirs(context.basePath).compose(resRoot -> {
 			log.debug("Folder Root creation succeed: " + "/" + context.basePath);
 			@SuppressWarnings("rawtypes")
 			List<Future> futures = new ArrayList<>();
 			for (String path : uniqFolders) {
-				Future<Void> future = Future.future();
+				Promise<Void> future = Promise.promise();
 				fs.mkdirs(path, res -> {
 					log.debug("Folder creation result: " + "/" + res.succeeded() + "/" + path);
-					future.completer().handle(res);
+					if(res.succeeded()) {
+						future.complete();
+					} else {
+						future.fail(res.cause());
+					}
 				});
-				futures.add(future);
+				futures.add(future.future());
 			}
 			return CompositeFuture.all(futures).map(res -> null);
 		});
@@ -129,8 +132,8 @@ public class FolderExporter {
 		@SuppressWarnings("rawtypes")
 		List<Future> futures = new ArrayList<>();
 		for (String folderPath : context.docByFolders.keySet()) {
-			Future<JsonObject> future = Future.future();
-			futures.add(future);
+			Promise<JsonObject> future = Promise.promise();
+			futures.add(future.future());
 			List<JsonObject> docs = context.docByFolders.get(folderPath);
 			//
 			JsonObject nameByFileId = new JsonObject();
@@ -162,7 +165,7 @@ public class FolderExporter {
 					context.errors.addAll(res.getJsonArray("errors"));
 					future.complete();
 					log.error("Failed to export file : " + folderPath + " - " + nameByFileId + "- "
-							+ new fr.wseduc.webutils.collections.JsonArray(Arrays.asList(ids)).encode() + " - "
+							+ new JsonArray(Arrays.asList(ids)).encode() + " - "
 							+ res.encode());
 				}
 			});

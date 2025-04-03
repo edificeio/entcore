@@ -58,7 +58,7 @@ public interface SchoolService {
 
 	void update(String structureId, JsonObject body, Handler<Either<String,JsonObject>> eitherHandler);
 
-	void getLevels(String structureId, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
+	void getLevels(String structureId, boolean inherit, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
 
 	void setLevelsOfEducation(String structureId, List<Integer> levelsOfEducations, Handler<Either<String, JsonObject>> handler);
 
@@ -92,5 +92,9 @@ public interface SchoolService {
 
 	void duplicateStructureSettings(String structureId, JsonArray targetUAIs, JsonObject options,
 									Handler<Either<String, JsonObject>> handler);
+
+	void checkGAR(JsonArray uais, Handler<Either<String, JsonArray>> handler);
+
+	void activateGar(String garId, JsonArray targetUAIs, String groupName, String appName, String roleName, Handler<Either<String, JsonObject>> handler);
 
 }

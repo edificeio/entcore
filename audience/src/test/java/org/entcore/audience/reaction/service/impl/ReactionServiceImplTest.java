@@ -37,7 +37,6 @@ public class ReactionServiceImplTest {
 
   @ClassRule
   public static PostgreSQLContainer<?> pgContainer = test.database().createPostgreSQLContainer()
-      .withInitScript("initAudience.sql")
       .withReuse(true);
   private static final String schema = "audience";
 

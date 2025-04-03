@@ -1,10 +1,10 @@
-import { ng, template, idiom as lang, http, skin } from 'entcore';
+import { http, idiom as lang, ng, skin, template } from 'entcore';
 
 export let activationController = ng.controller('ActivationController', ['$scope', ($scope) =>{
 	$scope.template = template;
 	$scope.lang = lang;
 	$scope.user = { themes: {} };
-	$scope.phonePattern = new RegExp("^(00|\\+)?(?:[0-9] ?-?\\.?){6,14}[0-9]$");
+	$scope.intlFormatNumber = undefined;
 
 	$scope.welcome = {};
 	template.open('main', 'activation-form');
@@ -144,6 +144,10 @@ export let activationController = ng.controller('ActivationController', ['$scope
 			return item ? item : ""
 		}
 
+		if ($scope.user.intlFormatNumber) {
+			$scope.user.phone = $scope.user.intlFormatNumber();
+		}
+		
 		http().post('/auth/activation', http().serialize({
 			theme: $scope.user.theme || '',
 			login: $scope.user.login,

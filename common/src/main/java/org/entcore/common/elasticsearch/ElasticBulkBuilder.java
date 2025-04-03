@@ -1,6 +1,7 @@
 package org.entcore.common.elasticsearch;
 
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpClientRequest;
 import io.vertx.core.json.JsonArray;
@@ -11,13 +12,11 @@ import java.util.List;
 import java.util.Optional;
 
 public class ElasticBulkBuilder {
-    final Future<Buffer> body;
     final List<String> actions = new ArrayList<>();
     private final HttpClientRequest request;
 
-    public ElasticBulkBuilder(final HttpClientRequest aReq, final Future<Buffer> body) {
+    public ElasticBulkBuilder(final HttpClientRequest aReq) {
         this.request = aReq;
-        this.body = body;
     }
 
     private void doWrite(final Optional<JsonObject> documentOpt, final JsonObject metadata, final String action) {
@@ -208,9 +207,18 @@ public class ElasticBulkBuilder {
         actions.add("delete");
     }
 
-    public Future<List<ElasticBulkRequestResult>> end() {
-        this.request.end();
-        return this.body.map(buffer -> {
+    public Future<List<ElasticBulkRequestResult>> end() {;
+        return this.request.send().flatMap(response -> {
+            final Promise<Buffer> promise = Promise.promise();
+            response.bodyHandler(resBody -> {
+                if (response.statusCode() == 200 || response.statusCode() == 201) {
+                    promise.complete(resBody);
+                } else {
+                    promise.fail(response.statusCode() + ":" + response.statusMessage() + ". " + resBody);
+                }
+            }).exceptionHandler(promise::fail);
+            return promise.future();
+        }).map(buffer -> {
             final JsonObject response = new JsonObject(buffer.toString());
             final JsonArray items = response.getJsonArray("items");
             final List<ElasticBulkRequestResult> results = new ArrayList<>();

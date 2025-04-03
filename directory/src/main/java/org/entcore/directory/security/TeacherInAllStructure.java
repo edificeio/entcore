@@ -24,7 +24,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.user.UserInfos;
-import org.entcore.common.utils.StringUtils;
 
 import java.util.List;
 
@@ -36,6 +35,8 @@ public class TeacherInAllStructure implements ResourcesProvider {
         final List<String> structureIds = resourceRequest.params().getAll("structureId");
         final String type = user.getType();
         if (!"Teacher".equals(type) && !"Personnel".equals(type)) {
+            handler.handle(false);
+        } else if (TeacherOfClass.userNotHasClassParam(user)) {
             handler.handle(false);
         } else if (structureIds.isEmpty()) {
             handler.handle(false);
