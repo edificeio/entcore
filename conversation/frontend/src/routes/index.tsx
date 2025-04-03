@@ -25,18 +25,6 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
         /* Pages */
         children: [
           {
-            path: 'oldformat/:messageId',
-            async lazy() {
-              const { Component, loader } = await import(
-                '~/routes/pages/OldFormat'
-              );
-              return {
-                loader: loader(_queryClient),
-                Component,
-              };
-            },
-          },
-          {
             path: 'draft/message/:messageId',
             async lazy() {
               const { Component, loader } = await import(
@@ -124,6 +112,18 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
             },
           },
         ],
+      },
+      {
+        path: 'oldformat/:messageId',
+        async lazy() {
+          const { Component, loader } = await import(
+            '~/routes/pages/OldFormat'
+          );
+          return {
+            loader: loader(_queryClient),
+            Component,
+          };
+        },
       },
       /* 404 Page */
       {
