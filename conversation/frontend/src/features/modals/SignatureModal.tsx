@@ -1,19 +1,30 @@
-import { Button, Modal } from '@edifice.io/react';
-import { useEffect } from 'react';
+import { Button, Loading, Modal } from '@edifice.io/react';
 import { useI18n } from '~/hooks';
 import { useSignatureHandlers } from './hooks/useSignatureHandlers';
+import { Editor, EditorRef } from '@edifice.io/react/editor';
+import { Suspense, useRef } from 'react';
+import { useSignaturePreferences } from '~/services';
 
 export function SignatureModal() {
   const { t, common_t } = useI18n();
-  const { closeModal: handleCloseModal, save: handleSaveClick } =
-    useSignatureHandlers();
+  const preferencesQuery = useSignaturePreferences();
+  const {
+    isSaving,
+    closeModal: handleCloseModal,
+    save,
+  } = useSignatureHandlers();
 
-  const isActionPending = false;
+  const editor = useRef<EditorRef>(null);
 
-  useEffect(() => {
-    if (isActionPending === false) handleCloseModal();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isActionPending]);
+  const isLocked = preferencesQuery.isPending || isSaving;
+
+  const handleSaveClick = async () => {
+    await save({
+      useSignature: true,
+      signature: editor?.current?.getContent('html') as string,
+    });
+    handleCloseModal();
+  };
 
   return (
     <Modal
@@ -27,7 +38,15 @@ export function SignatureModal() {
       </Modal.Header>
 
       <Modal.Body>
-        <></>
+        <Suspense fallback={<Loading isLoading={preferencesQuery.isPending} />}>
+          <Editor
+            ref={editor}
+            id="signatureBody"
+            content={preferencesQuery.data?.signature ?? ''}
+            mode={isLocked ? 'read' : 'edit'}
+            variant="ghost"
+          />
+        </Suspense>
       </Modal.Body>
 
       <Modal.Footer>
@@ -44,8 +63,8 @@ export function SignatureModal() {
           color="primary"
           variant="filled"
           onClick={handleSaveClick}
-          isLoading={isActionPending}
-          disabled={isActionPending}
+          isLoading={isSaving}
+          disabled={isLocked}
         >
           {common_t('save')}
         </Button>
