@@ -1,18 +1,22 @@
+import { SignaturePreferences } from '~/models/signature';
+import { useSetSignaturePreferences } from '~/services';
 import { useAppActions } from '~/store';
 
 /**
- * Custom hook that provides handlers for signature-related actions.
+ * Custom hook that provides logic for signature-related actions.
  */
 export function useSignatureHandlers() {
-  const { setOpenedModal /*setSelectedFolders*/ } = useAppActions();
+  const { setOpenedModal } = useAppActions();
+  const mutation = useSetSignaturePreferences();
 
   const closeModal = () => setOpenedModal(undefined);
 
-  const save = () => {
-    alert('todo');
+  const save = (preferences: SignaturePreferences) => {
+    return mutation.mutateAsync(preferences);
   };
 
   return {
+    isSaving: mutation.isPending,
     /** Close the signature modal. */
     closeModal,
     /** Save the signature. */

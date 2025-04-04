@@ -1,10 +1,6 @@
 import { APP } from '@edifice.io/client';
 import { odeServices } from 'edifice-ts-client';
-
-type SignaturePreferences = {
-  useSignature?: boolean;
-  signature?: string;
-};
+import { SignaturePreferences } from '~/models/signature';
 
 /**
  * Creates a configuration service with the specified base URL.
@@ -36,9 +32,7 @@ export const createConfigService = (baseURL: string) => ({
   /**
    * Set signature preferences.
    */
-  setSignaturePreferences(value: SignaturePreferences) {
-    return odeServices
-      .conf()
-      .savePreference(APP.CONVERSATION, JSON.stringify(value));
+  setSignaturePreferences(preferences: SignaturePreferences) {
+    return odeServices.conf().savePreference(APP.CONVERSATION, preferences);
   },
 });

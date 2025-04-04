@@ -400,6 +400,6 @@ export const mockMessageFromMeToMe: MessageMetadata = {
 };
 
 export const signaturePreferences = {
-  preference:
-    '{"useSignature":true,"signature":"<p><i>Bien à vous,<br>Jean-Christophe</i></p>"}',
+  useSignature: true,
+  signature: '<p><i>Bien à vous,<br>Jean-Christophe</i></p>',
 };
