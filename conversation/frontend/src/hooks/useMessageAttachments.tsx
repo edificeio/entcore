@@ -39,12 +39,18 @@ export function useMessageAttachments({ id, attachments }: Message) {
     return Promise.all(attachments.map(({ id }) => detachFile(id)));
   }
 
+  function copyToWorkspace() {
+    //download attachment
+    //upload to workspace
+  }
+
   return {
-    attachments,
-    downloadAllUrl,
     attachFiles,
+    attachments,
+    copyToWorkspace,
     detachFile,
     detachFiles,
+    downloadAllUrl,
     isMutating: attachFileMutation.isPending || detachFileMutation.isPending,
   };
 }

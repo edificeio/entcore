@@ -1,17 +1,31 @@
-import { Button, Modal, WorkspaceFolders } from '@edifice.io/react';
-import { useI18n } from '~/hooks';
+import { Button, Modal } from '@edifice.io/react';
+import { WorkspaceFolders } from '@edifice.io/react/multimedia';
 import { useEffect, useState } from 'react';
-import { useAppActions } from '~/store';
+import { createPortal } from 'react-dom';
+import { useI18n } from '~/hooks';
+import { Message } from '~/models';
 
-export function AddMessageAttachmentToWorkspaceModal() {
-  const { setOpenFolderModal } = useAppActions();
+interface AddMessageAttachmentToWorkspaceModalProps {
+  message: Message;
+  attachmentId: string;
+  onModalClose: () => void;
+  isOpen?: boolean;
+}
+
+export function AddMessageAttachmentToWorkspaceModal({
+  message,
+  attachmentId,
+  isOpen = false,
+  onModalClose,
+}: AddMessageAttachmentToWorkspaceModalProps) {
+  console.log('message:', message);
 
   const { t } = useI18n();
   const [selectedFolderId, setSelectedFolderId] = useState<
     string | undefined
   >();
   const [disabled, setDisabled] = useState(false);
-  const handleCloseModal = () => setOpenFolderModal(null);
+  console.log('attachmentId:', attachmentId);
 
   const handleFolderSelected = (folderId: string) => {
     setSelectedFolderId(folderId);
@@ -19,6 +33,7 @@ export function AddMessageAttachmentToWorkspaceModal() {
 
   const handleAddAttachmentToWorkspace = () => {
     alert('add attachment to workspace');
+    onModalClose();
   };
 
   // Make the button accessible when is disabled change to false
@@ -26,14 +41,14 @@ export function AddMessageAttachmentToWorkspaceModal() {
     setDisabled(!selectedFolderId);
   }, [selectedFolderId]);
 
-  return (
+  return createPortal(
     <Modal
-      isOpen={true}
-      onModalClose={handleCloseModal}
+      isOpen={isOpen}
+      onModalClose={onModalClose}
       id={'add-attachment-to-workspace-modal'}
       size="md"
     >
-      <Modal.Header onModalClose={handleCloseModal}>
+      <Modal.Header onModalClose={onModalClose}>
         {t('attachments.add.to.folder.modal')}
       </Modal.Header>
       <Modal.Body>
@@ -44,7 +59,7 @@ export function AddMessageAttachmentToWorkspaceModal() {
           type="button"
           color="tertiary"
           variant="ghost"
-          onClick={handleCloseModal}
+          onClick={onModalClose}
         >
           {t('cancel')}
         </Button>
@@ -58,6 +73,7 @@ export function AddMessageAttachmentToWorkspaceModal() {
           {t('add')}
         </Button>
       </Modal.Footer>
-    </Modal>
+    </Modal>,
+    document.getElementById('portal') as HTMLElement,
   );
 }
