@@ -11,7 +11,7 @@ import {
   useMessageUpdated,
   useMessageUpdatedNeedToSave,
 } from '~/store';
-import { MessageHeaderEdit } from './MessageHeaderEdit';
+import { MessageEditHeader } from './components/MessageEditHeader';
 
 export interface MessageEditProps {
   message: Message;
@@ -70,38 +70,39 @@ export function MessageEdit({ message }: MessageEditProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messageUpdatedDebounced]);
 
-  if (!messageUpdated) {
-    return null;
-  }
   return (
-    <div>
-      <MessageHeaderEdit message={messageUpdated} />
-      <FormControl id="messageSubject" isRequired className="border-bottom">
-        <Input
-          placeholder={t('subject')}
-          value={subject}
-          size="lg"
-          className="border-0"
-          type="text"
-          onChange={(e) => handleSubjectChange(e.target.value)}
-        />
-      </FormControl>
-      <MessageBody
-        key={contentKey}
-        message={message}
-        editMode={true}
-        onMessageChange={handleMessageChange}
-      />
-      <div className="d-flex justify-content-end gap-12 pt-24 pe-16">
-        <div className="d-flex align-items-end flex-column gap-16">
-          <MessageActionDropDown message={messageUpdated} />
-          {!!messageUpdated?.date && (
-            <div className="caption fst-italic">
-              {fromNow(messageUpdated.date)}
+    <>
+      {messageUpdated && (
+        <div>
+          <MessageEditHeader message={message} />
+          <FormControl id="messageSubject" isRequired className="border-bottom">
+            <Input
+              placeholder={t('subject')}
+              value={subject}
+              size="lg"
+              className="border-0"
+              type="text"
+              onChange={(e) => handleSubjectChange(e.target.value)}
+            />
+          </FormControl>
+          <MessageBody
+            key={contentKey}
+            message={message}
+            editMode={true}
+            onMessageChange={handleMessageChange}
+          />
+          <div className="d-flex justify-content-end gap-12 pt-24 pe-16">
+            <div className="d-flex align-items-end flex-column gap-16">
+              <MessageActionDropDown message={messageUpdated} />
+              {!!messageUpdated?.date && (
+                <div className="caption fst-italic">
+                  {fromNow(messageUpdated.date)}
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }

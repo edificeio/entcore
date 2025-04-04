@@ -16,7 +16,7 @@ import {
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFolderHandlers } from '~/features/menu/hooks/useFolderHandlers';
-import { useRecall, useI18n, useSelectedFolder } from '~/hooks';
+import { useI18n, useRecall, useSelectedFolder } from '~/hooks';
 import { Message } from '~/models';
 import {
   isInRecipient,
@@ -103,10 +103,9 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
   };
 
   const handleDraftSaveClick = async () => {
-    const promise = createOrUpdateDraft();
+    const promise = await createOrUpdateDraft();
     if (promise) {
-      const { id } = await promise;
-      if (id) navigate(`/draft/message/${id}`);
+      if (promise && promise.id) navigate(`/draft/message/${promise.id}`);
     }
   };
 

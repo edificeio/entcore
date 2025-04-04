@@ -1,13 +1,16 @@
 {
   "add.attachment": "Pièce jointe",
   "add.signature": "Ajouter une signature",
-  "at": "à :",
+  "at": "À :",
   "attachments": "Pièces jointes",
   "attachments.loading": "En cours de chargement",
   "attachments.loaded": "Chargement effectué",
   "author.avatar": "Avatar de l'auteur",
   "cancel": "Annuler",
   "cc": "Cc :",
+  "cc.full": "Copie :",
+  "cci": "Cci :",
+  "cci.full": "Copie cachée :",
   "button.cc": "Cc",
   "button.cci": "Cci",
   "conversation.to.info": "Vous devez saisir au moins un destinataire",
@@ -149,6 +152,7 @@
   "recipient": "Destinataire",
   "recipient.list": "Liste des destinataires",
   "recipient.avatar": "Avatar du destinataire",
+  "recipient.avatar.bookmark": "Favorite de partage",
   "recipient.avatar.group": "Plusieurs destinataires",
   "recipient.avatar.empty": "Aucun destinataire",
   "remove.attachment": "Supprimer la pièce jointe",
@@ -231,5 +235,10 @@
   "conversation.recall.mail.subject": "Message rappelé",
   "conversation.recall.mail.content": "L’expéditeur a rappelé ce message, son contenu n’est donc plus visible.",
   "conversation.success.recall.mail": "Message rappelé avec succès.",
-  "conversation.error.recall.mail": "Le message n'a pas pu être rappelé."
+  "conversation.error.recall.mail": "Le message n'a pas pu être rappelé.",
+  "conversation.users.search.placeholder": "Rechercher des destinataires",
+  "members_one": "{{count}} membre",
+  "members_other": "{{count}} membres",
+  "visible.relatives": "Parents: ",
+  "visible.childrens": "Enfants: "
 }
