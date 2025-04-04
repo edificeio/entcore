@@ -3,6 +3,7 @@ import { WorkspaceFolders } from '@edifice.io/react/multimedia';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useI18n } from '~/hooks';
+import { useMessageAttachments } from '~/hooks/useMessageAttachments';
 import { Message } from '~/models';
 
 interface AddMessageAttachmentToWorkspaceModalProps {
@@ -18,22 +19,21 @@ export function AddMessageAttachmentToWorkspaceModal({
   isOpen = false,
   onModalClose,
 }: AddMessageAttachmentToWorkspaceModalProps) {
-  console.log('message:', message);
-
   const { t } = useI18n();
+  const { copyToWorkspace } = useMessageAttachments(message);
   const [selectedFolderId, setSelectedFolderId] = useState<
     string | undefined
   >();
   const [disabled, setDisabled] = useState(false);
-  console.log('attachmentId:', attachmentId);
 
   const handleFolderSelected = (folderId: string) => {
     setSelectedFolderId(folderId);
   };
 
   const handleAddAttachmentToWorkspace = () => {
-    alert('add attachment to workspace');
-    onModalClose();
+    if (!selectedFolderId) return;
+    copyToWorkspace(attachmentId, selectedFolderId);
+    // onModalClose();
   };
 
   // Make the button accessible when is disabled change to false

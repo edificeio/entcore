@@ -1,15 +1,23 @@
 import { Attachment, Message } from '~/models';
 import { baseUrl, useCreateOrUpdateDraft } from '~/services';
-import { useAttachFiles, useDetachFile } from '~/services/queries/attachment';
+import {
+  useAttachFiles,
+  useDetachFile,
+  useDownloadAttachment,
+} from '~/services/queries/attachment';
 
 export function useMessageAttachments({ id, attachments }: Message) {
   const attachFileMutation = useAttachFiles();
   const detachFileMutation = useDetachFile();
+  const downloadAttachmentMutation = useDownloadAttachment();
 
   // These hooks is required when attaching files to a blank new draft, without id.
   const createOrUpdateDraft = useCreateOrUpdateDraft();
 
   const downloadAllUrl = `${baseUrl}/message/${id}/allAttachments`;
+
+  const getDownloadUrl = (attachementId: string) =>
+    `${baseUrl}/message/${id}/attachment/${attachementId}`;
 
   async function attachFiles(files: FileList | null) {
     if (!id) {
@@ -39,9 +47,18 @@ export function useMessageAttachments({ id, attachments }: Message) {
     return Promise.all(attachments.map(({ id }) => detachFile(id)));
   }
 
-  function copyToWorkspace() {
-    //download attachment
-    //upload to workspace
+  async function copyToWorkspace(
+    attachementId: string,
+    selectedFolderId: string,
+  ) {
+    const attachmentBlob = await downloadAttachmentMutation.mutateAsync({
+      messageId: id,
+      attachmentId: attachementId,
+    });
+
+    console.log('attachmentBlob:', attachmentBlob);
+    console.log('selectedFolderId:', selectedFolderId);
+    console.log('attachementId:', attachementId);
   }
 
   return {
@@ -51,6 +68,7 @@ export function useMessageAttachments({ id, attachments }: Message) {
     detachFile,
     detachFiles,
     downloadAllUrl,
+    getDownloadUrl,
     isMutating: attachFileMutation.isPending || detachFileMutation.isPending,
   };
 }

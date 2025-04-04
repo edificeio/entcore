@@ -5,11 +5,10 @@ import {
   IconFolderAdd,
 } from '@edifice.io/react/icons';
 import { useState } from 'react';
-import { AddMessageAttachmentToWorkspaceModal } from '~/features/modals/AddMessageAttachmentToWorkspaceModal';
+import { AddMessageAttachmentToWorkspaceModal } from '~/components/message-attachments/components/AddMessageAttachmentToWorkspaceModal';
 import { useI18n } from '~/hooks';
 import { useMessageAttachments } from '~/hooks/useMessageAttachments';
 import { Attachment as AttachmentMetaData, Message } from '~/models';
-import { baseUrl } from '~/services';
 
 export interface MessageAttachmentsProps {
   attachment: AttachmentMetaData;
@@ -23,10 +22,10 @@ export function MessageAttachment({
   editMode,
 }: MessageAttachmentsProps) {
   const { t } = useI18n();
-  const [showAddToWorkspaceModal, setShowAddToWorkspaceModal] = useState(false);
-  const { detachFile } = useMessageAttachments(message);
+  const [showAddToWorkspaceModal, setShowAddToWorkspaceModal] = useState(true);
+  const { detachFile, getDownloadUrl } = useMessageAttachments(message);
 
-  const downloadUrl = `${baseUrl}/message/${message.id}/attachment/${attachment.id}`;
+  const downloadUrl = getDownloadUrl(attachment.id);
 
   return (
     <>
