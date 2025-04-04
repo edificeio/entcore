@@ -9,13 +9,13 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Message, MessageBase, MessageMetadata } from '~/models';
-import { useAppActions, useMessageUpdated } from '~/store';
 import {
   baseUrl,
   folderQueryOptions,
   messageService,
   useUpdateFolderBadgeCountLocal,
 } from '~/services';
+import { useAppActions, useMessageUpdated } from '~/store';
 const appCodeName = 'conversation';
 /**
  * Message Query Options Factory.
@@ -378,7 +378,7 @@ export const useCreateOrUpdateDraft = () => {
     };
 
     if (messageUpdated.id && messageUpdated.state === 'DRAFT') {
-      updateDraft.mutateAsync({
+      return updateDraft.mutateAsync({
         draftId: messageUpdated.id,
         payload,
       });
