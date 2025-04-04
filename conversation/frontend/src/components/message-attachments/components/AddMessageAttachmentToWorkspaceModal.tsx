@@ -24,16 +24,21 @@ export function AddMessageAttachmentToWorkspaceModal({
   const [selectedFolderId, setSelectedFolderId] = useState<
     string | undefined
   >();
+  const [isLoading, setIsLoading] = useState(false);
   const [disabled, setDisabled] = useState(false);
 
   const handleFolderSelected = (folderId: string) => {
     setSelectedFolderId(folderId);
   };
 
-  const handleAddAttachmentToWorkspace = () => {
+  const handleAddAttachmentToWorkspace = async () => {
     if (!selectedFolderId) return;
-    copyToWorkspace(attachmentId, selectedFolderId);
-    // onModalClose();
+    setIsLoading(true);
+    const isSuccess = await copyToWorkspace(attachmentId, selectedFolderId);
+    if (isSuccess) {
+      onModalClose();
+    }
+    setIsLoading(false);
   };
 
   // Make the button accessible when is disabled change to false
@@ -68,7 +73,8 @@ export function AddMessageAttachmentToWorkspaceModal({
           color="primary"
           variant="filled"
           onClick={handleAddAttachmentToWorkspace}
-          disabled={disabled}
+          disabled={isLoading || disabled}
+          isLoading={isLoading}
         >
           {t('add')}
         </Button>

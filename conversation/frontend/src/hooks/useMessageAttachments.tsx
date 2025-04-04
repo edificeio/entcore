@@ -1,3 +1,5 @@
+import { useToast, useWorkspaceFile } from '@edifice.io/react';
+import { t } from 'i18next';
 import { Attachment, Message } from '~/models';
 import { baseUrl, useCreateOrUpdateDraft } from '~/services';
 import {
@@ -10,6 +12,8 @@ export function useMessageAttachments({ id, attachments }: Message) {
   const attachFileMutation = useAttachFiles();
   const detachFileMutation = useDetachFile();
   const downloadAttachmentMutation = useDownloadAttachment();
+  const { createOrUpdate: saveAttachmentToWorkspace } = useWorkspaceFile();
+  const toast = useToast();
 
   // These hooks is required when attaching files to a blank new draft, without id.
   const createOrUpdateDraft = useCreateOrUpdateDraft();
@@ -51,14 +55,25 @@ export function useMessageAttachments({ id, attachments }: Message) {
     attachementId: string,
     selectedFolderId: string,
   ) {
-    const attachmentBlob = await downloadAttachmentMutation.mutateAsync({
-      messageId: id,
-      attachmentId: attachementId,
-    });
+    try {
+      const attachmentBlob = await downloadAttachmentMutation.mutateAsync({
+        messageId: id,
+        attachmentId: attachementId,
+      });
 
-    console.log('attachmentBlob:', attachmentBlob);
-    console.log('selectedFolderId:', selectedFolderId);
-    console.log('attachementId:', attachementId);
+      if (!attachmentBlob) return;
+
+      await saveAttachmentToWorkspace({
+        blob: attachmentBlob,
+        parentId: selectedFolderId,
+      });
+    } catch (error) {
+      toast.error(t('conversation.error.copyToWorkspace'));
+      return false;
+    }
+    toast.success(t('conversation.notify.copyToWorkspace'));
+
+    return true;
   }
 
   return {
