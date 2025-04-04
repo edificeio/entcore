@@ -1,7 +1,7 @@
 import { QueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { LoaderFunctionArgs, useParams } from 'react-router-dom';
-import { MessageEdit } from '~/features/message-edit';
+import { MessageEdit } from '~/features/message-edit/MessageEdit';
 import { messageQueryOptions, useMessage } from '~/services';
 
 export const loader =
