@@ -7,7 +7,7 @@ import { useAppActions, useSelectedMessageIds } from '~/store';
 
 export function MoveMessageToFolderModal() {
   const { t, common_t } = useI18n();
-  const { setOpenFolderModal } = useAppActions();
+  const { setOpenedModal } = useAppActions();
   const { isActionPending, foldersTree } = useFolderActions();
   const [subFolderId, setSubfolderId] = useState<string | undefined>(undefined);
   const refInputName = useRef<HTMLInputElement>(null);
@@ -19,7 +19,7 @@ export function MoveMessageToFolderModal() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isActionPending === false) setOpenFolderModal(null);
+    if (isActionPending === false) setOpenedModal(undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActionPending]);
 
@@ -69,7 +69,7 @@ export function MoveMessageToFolderModal() {
     isChild?: boolean;
   }) => <span>{node.name}</span>;
 
-  const handleCloseFolderModal = () => setOpenFolderModal(null);
+  const handleCloseFolderModal = () => setOpenedModal(undefined);
   const handleTreeItemClick = (folderId: string) => {
     setSubfolderId(folderId);
     // Close dropdown

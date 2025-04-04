@@ -10,10 +10,12 @@ import { Fragment, RefAttributes } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useI18n } from '~/hooks';
 import { AppActionMenuOptions } from './AppActionMenuOptions';
+import { useAppActions } from '~/store';
 
 export const AppActionHeader = () => {
   const { appCode } = useEdificeClient();
   const { t, common_t } = useI18n();
+  const { setOpenedModal } = useAppActions();
   const navigate = useNavigate();
   const location = useLocation();
   const draftRoute = '/draft/create';
@@ -21,6 +23,13 @@ export const AppActionHeader = () => {
   const isDraft = location.pathname === draftRoute;
 
   const dropdownOptions: AppActionMenuOptions[] = [
+    {
+      id: 'signature',
+      label: t('signature.menu.label'),
+      icon: <IconPrint />,
+      action: () => setOpenedModal('signature'),
+      visibility: true,
+    },
     {
       id: 'print',
       label: t('print'),
