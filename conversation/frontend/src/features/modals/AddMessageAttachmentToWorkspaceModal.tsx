@@ -2,9 +2,9 @@ import { AddAttachmentToWorkspaceModal } from '@edifice.io/react';
 import { useAppActions } from '~/store';
 
 export function AddMessageAttachmentToWorkspaceModal() {
-  const { setOpenFolderModal } = useAppActions();
+  const { setOpenedModal } = useAppActions();
 
-  const handleCloseModal = () => setOpenFolderModal(null);
+  const handleCloseModal = () => setOpenedModal(undefined);
 
   return (
     <AddAttachmentToWorkspaceModal

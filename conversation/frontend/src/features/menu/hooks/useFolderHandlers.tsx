@@ -11,33 +11,33 @@ import { useAppActions } from '~/store';
  * - `handleTrash`: Opens the folder trash modal and sets the selected folder.
  */
 export function useFolderHandlers() {
-  const { setOpenFolderModal, setSelectedFolders } = useAppActions();
+  const { setOpenedModal, setSelectedFolders } = useAppActions();
 
   const handleCreate = () => {
-    setOpenFolderModal('create');
+    setOpenedModal('create');
   };
 
   const handleMove = (folder: Folder) => {
     setSelectedFolders([folder]);
-    setOpenFolderModal('move');
+    setOpenedModal('move');
   };
 
   const handleRename = (folder: Folder) => {
     setSelectedFolders([folder]);
-    setOpenFolderModal('rename');
+    setOpenedModal('rename');
   };
 
   const handleTrash = (folder: Folder) => {
     setSelectedFolders([folder]);
-    setOpenFolderModal('trash');
+    setOpenedModal('trash');
   };
 
   const handleMoveMessage = () => {
-    setOpenFolderModal('move-message');
+    setOpenedModal('move-message');
   };
 
   const handleAddAttachmentToWorkspace = () => {
-    setOpenFolderModal('add-attachment-to-workspace');
+    setOpenedModal('add-attachment-to-workspace');
   };
 
   return {

@@ -398,3 +398,8 @@ export const mockMessageFromMeToMe: MessageMetadata = {
   trashed: false,
   forwarded: false,
 };
+
+export const signaturePreferences = {
+  preference:
+    '{"useSignature":true,"signature":"<p><i>Bien à vous,<br>Jean-Christophe</i></p>"}',
+};

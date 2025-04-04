@@ -6,7 +6,7 @@ import { searchFolder } from '~/services';
 
 export function RenameFolderModal() {
   const { t, common_t } = useI18n();
-  const { setOpenFolderModal } = useAppActions();
+  const { setOpenedModal } = useAppActions();
   const selectedFolders = useSelectedFolders();
   const { renameFolder, isActionPending, foldersTree } = useFolderActions();
   const refInputName = useRef<HTMLInputElement>(null);
@@ -27,7 +27,7 @@ export function RenameFolderModal() {
   }, [renameFolder]);
 
   useEffect(() => {
-    if (isActionPending === false) setOpenFolderModal(null);
+    if (isActionPending === false) setOpenedModal(undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActionPending]);
 
@@ -41,7 +41,7 @@ export function RenameFolderModal() {
 
   if (!foldersTree) return <></>;
 
-  const handleCloseFolderModal = () => setOpenFolderModal(null);
+  const handleCloseFolderModal = () => setOpenedModal(undefined);
 
   return (
     <Modal

@@ -16,7 +16,7 @@ import { buildTree, searchFolder } from '~/services';
 
 export function CreateFolderModal() {
   const { t, common_t } = useI18n();
-  const { setOpenFolderModal } = useAppActions();
+  const { setOpenedModal } = useAppActions();
   const { createFolder, isActionPending, foldersTree } = useFolderActions();
   const [checked, setChecked] = useState(false);
   const [subFolderId, setSubfolderId] = useState<string | undefined>(undefined);
@@ -24,7 +24,7 @@ export function CreateFolderModal() {
   const refDropdownTrigger = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    if (isActionPending === false) setOpenFolderModal(null);
+    if (isActionPending === false) setOpenedModal(undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActionPending]);
 
@@ -70,7 +70,7 @@ export function CreateFolderModal() {
     isChild?: boolean;
   }) => <span>{node.name}</span>;
 
-  const handleCloseFolderModal = () => setOpenFolderModal(null);
+  const handleCloseFolderModal = () => setOpenedModal(undefined);
   const handleTreeItemClick = (folderId: string) => {
     setSubfolderId(folderId);
     // Close dropdown
