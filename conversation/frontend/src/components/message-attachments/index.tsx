@@ -9,7 +9,7 @@ import {
 import clsx from 'clsx';
 import { useI18n } from '~/hooks';
 import { Message } from '~/models';
-import { MessageAttachment } from './MessageAttachment';
+import { MessageAttachment } from './components/MessageAttachment';
 import './index.css';
 import { ChangeEvent, useRef } from 'react';
 import { useMessageAttachments } from '~/hooks/useMessageAttachments';

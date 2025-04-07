@@ -59,3 +59,15 @@ export const useDetachFile = () => {
     },
   });
 };
+
+export const useDownloadAttachment = () => {
+  return useMutation({
+    mutationFn: ({
+      messageId,
+      attachmentId,
+    }: {
+      messageId: string;
+      attachmentId: string;
+    }) => attachmentService.downloadBlob(messageId, attachmentId),
+  });
+};
