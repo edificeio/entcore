@@ -1,8 +1,9 @@
 import { ChangeEvent, useEffect, useReducer } from 'react';
 
 import { OptionListItemType, useDebounce } from '@edifice.io/react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Visible } from '~/models/visible';
-import { userService } from '~/services';
+import { useDefaultBookmark, userQueryOptions } from '~/services/queries/user';
 
 type State = {
   searchInputValue: string;
@@ -61,6 +62,8 @@ export const useSearchRecipients = ({
     state.searchInputValue,
     500,
   );
+  const queryClient = useQueryClient();
+  const { data: defaultBookmarks } = useDefaultBookmark();
 
   useEffect(() => {
     search(debouncedSearchInputValue);
@@ -80,18 +83,24 @@ export const useSearchRecipients = ({
       type: 'isSearching',
       payload: true,
     });
-    // start search from 1 caracter length for non Adml but start from 3 for Adml
-    if (debouncedSearchInputValue.length >= searchMinLength) {
-      const resSearchVisibles = await userService.searchVisible(
-        debouncedSearchInputValue,
-      );
+    if (
+      defaultBookmarks ||
+      debouncedSearchInputValue.length >= searchMinLength
+    ) {
+      let searchVisibles = defaultBookmarks || [];
+      // start search from 1 caracter length for non Adml but start from 3 for Adml
+      if (debouncedSearchInputValue.length >= searchMinLength) {
+        searchVisibles = await queryClient.ensureQueryData(
+          userQueryOptions.searchVisible(debouncedSearchInputValue),
+        );
+      }
 
       dispatch({
         type: 'addApiResult',
-        payload: resSearchVisibles,
+        payload: searchVisibles,
       });
 
-      const adaptedResults: OptionListItemType[] = resSearchVisibles
+      const adaptedResults: OptionListItemType[] = searchVisibles
         .filter((visible) => {
           return visible.usedIn
             .map((ui) => ui.toLowerCase())
@@ -142,6 +151,7 @@ export const useSearchRecipients = ({
 
   return {
     state,
+    defoultBookmarks: defaultBookmarks,
     searchMinLength,
     showSearchLoading,
     showSearchNoResults,

@@ -1,4 +1,4 @@
-import { Combobox } from '@edifice.io/react';
+import { Combobox, Dropdown, OptionListItemType } from '@edifice.io/react';
 import { Fragment, ReactNode, useEffect, useState } from 'react';
 import { useSearchRecipients } from '~/features/message-edit/hooks/useSearchRecipients';
 import { useI18n } from '~/hooks';
@@ -33,7 +33,7 @@ export function MessageRecipientListEdit({
       recipientToAdd = {
         id: recipient.id,
         displayName: recipient.displayName,
-        profile: recipient.profile,
+        profile: recipient.profile || '',
       };
       recipients.users.push(recipientToAdd);
     } else {
@@ -89,6 +89,28 @@ export function MessageRecipientListEdit({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const renderListRecipients = (recipients: OptionListItemType[]) => {
+    return recipients.map((recipient, index) => {
+      const visible = searchAPIResults.find(
+        (visible) => visible.id === recipient.value,
+      );
+      if (!visible) {
+        return null;
+      }
+      return (
+        <Fragment key={index}>
+          <RecipientListItem
+            onRecipientClick={handleSearchResultsChange}
+            visible={visible}
+            disabled={recipientArray.some(
+              (recipient) => recipient.id === visible.id,
+            )}
+          />
+        </Fragment>
+      );
+    });
+  };
+
   return (
     <div className="d-flex align-items-center flex-fill ps-8 pe-16 py-8">
       <Combobox
@@ -101,6 +123,16 @@ export function MessageRecipientListEdit({
         onSearchInputChange={handleSearchInputChange}
         onSearchResultsChange={() => {}}
         variant="ghost"
+        renderNoResult={
+          <div>
+            <h3>
+              {t('conversation.users.search.noResult.header', {
+                search: searchInputValue,
+              })}
+            </h3>
+            <div>{t('conversation.users.search.noResult.text')}</div>
+          </div>
+        }
         renderInputGroup={head}
         renderSelectedItems={recipientArray.map((recipient, index) => {
           const type = 'profile' in recipient ? 'user' : 'group';
@@ -118,25 +150,15 @@ export function MessageRecipientListEdit({
         })}
         renderList={(recipients) => (
           <>
-            {recipients.map((recipient, index) => {
-              const visible = searchAPIResults.find(
-                (visible) => visible.id === recipient.value,
-              );
-              if (!visible) {
-                return null;
-              }
-              return (
-                <Fragment key={index}>
-                  <RecipientListItem
-                    onRecipientClick={handleSearchResultsChange}
-                    visible={visible}
-                    disabled={recipientArray.some(
-                      (recipient) => recipient.id === visible.id,
-                    )}
-                  />
-                </Fragment>
-              );
-            })}
+            {searchInputValue.length === 0 ? (
+              <Dropdown.MenuGroup
+                label={t('conversation.users.search.favorites')}
+              >
+                {renderListRecipients(recipients)}
+              </Dropdown.MenuGroup>
+            ) : (
+              renderListRecipients(recipients)
+            )}
           </>
         )}
       />

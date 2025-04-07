@@ -1,11 +1,10 @@
-import { odeServices } from '@edifice.io/client';
 import { FormControl, Input, useDate, useDebounce } from '@edifice.io/react';
 import { useEffect, useRef, useState } from 'react';
 import { MessageActionDropDown } from '~/components/MessageActionDropDown/MessageActionDropDown';
 import { MessageBody } from '~/components/MessageBody';
 import { useI18n } from '~/hooks';
 import { Message } from '~/models';
-import { useCreateOrUpdateDraft } from '~/services';
+import { useConversationConfig, useCreateOrUpdateDraft } from '~/services';
 import {
   useAppActions,
   useMessageUpdated,
@@ -27,20 +26,19 @@ export function MessageEdit({ message }: MessageEditProps) {
   const debounceTimeToSave = useRef(5000);
   const createOrUpdateDraft = useCreateOrUpdateDraft();
   const [contentKey, setContentKey] = useState(0);
+  const { data: publicConfig } = useConversationConfig();
 
   useEffect(() => {
-    odeServices
-      .conf()
-      .getPublicConf('conversation')
-      .then((publicConf: any) => {
-        if (publicConf && publicConf['debounce-time-to-auto-save']) {
-          debounceTimeToSave.current = publicConf['debounce-time-to-auto-save'];
-        }
-      });
     setMessageUpdated(message);
     setContentKey((contentKey) => contentKey + 1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (publicConfig && publicConfig['debounce-time-to-auto-save']) {
+      debounceTimeToSave.current = publicConfig['debounce-time-to-auto-save'];
+    }
+  }, [publicConfig]);
 
   useEffect(() => {
     setMessageUpdated(message);

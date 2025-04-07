@@ -237,8 +237,11 @@
   "conversation.success.recall.mail": "Message rappelé avec succès.",
   "conversation.error.recall.mail": "Le message n'a pas pu être rappelé.",
   "conversation.users.search.placeholder": "Rechercher des destinataires",
-  "members_one": "{{count}} membre",
-  "members_other": "{{count}} membres",
+  "conversation.users.search.favorites": "Mes favoris",
+  "conversation.users.search.noResult.header": "Aucun résultat pour \"[[search]]\"",
+  "conversation.users.search.noResult.text": "Essayez de rechercher avec d’autres mots clés, orthographe ou ensemble de caractères.",
+  "members_one": "[[count]] membre",
+  "members_other": "[[count]] membres",
   "visible.relatives": "Parents: ",
   "visible.childrens": "Enfants: "
 }

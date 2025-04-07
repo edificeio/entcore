@@ -32,11 +32,11 @@ export function RecipientListItem({
     'text-green-500': visible.profile === 'Personnel' && !disabled,
     'text-red-300':
       !['Student', 'Relative', 'Teacher', 'Personnel'].includes(
-        visible.profile,
+        visible.profile || '',
       ) && disabled,
     'text-red-500':
       !['Student', 'Relative', 'Teacher', 'Personnel'].includes(
-        visible.profile,
+        visible.profile || '',
       ) && !disabled,
   });
 
@@ -88,10 +88,10 @@ export function RecipientListItem({
               {recipientName}
               {' - '}
               <span className={classNameProfile}>
-                {common_t(visible.profile)}
+                {common_t(visible.profile || '')}
               </span>
             </strong>
-            {['Student', 'Relative'].includes(visible.profile) &&
+            {['Student', 'Relative'].includes(visible.profile || '') &&
               !!visible.relatives?.length && (
                 <span className={'text-gray-700' + +classNameTextDisabled}>
                   {visible.profile === 'Student'

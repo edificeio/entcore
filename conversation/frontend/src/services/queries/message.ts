@@ -1,3 +1,4 @@
+import { odeServices } from '@edifice.io/client';
 import { useToast } from '@edifice.io/react';
 import {
   InfiniteData,
@@ -22,6 +23,18 @@ const appCodeName = 'conversation';
  */
 export const messageQueryOptions = {
   base: ['message'] as const,
+  /**
+   * Generates query options for fetching message application configuration.
+   * @returns Query options for fetching the configuration.
+   */
+  getConfig() {
+    return queryOptions({
+      queryKey: [messageQueryOptions.base, 'config'] as const,
+      queryFn: (): Promise<{ 'debounce-time-to-auto-save'?: number }> =>
+        odeServices.conf().getPublicConf('conversation'),
+      staleTime: Infinity,
+    });
+  },
   /**
    * Generates query options for fetching a message by its ID.
    * @param messageId - The ID of the message to fetch.
@@ -50,6 +63,14 @@ export const messageQueryOptions = {
       staleTime: Infinity,
     });
   },
+};
+
+/**
+ * Hook to fetch the message application configuration.
+ * @returns Query result for the message application configuration.
+ */
+export const useConversationConfig = () => {
+  return useQuery(messageQueryOptions.getConfig());
 };
 
 /**
