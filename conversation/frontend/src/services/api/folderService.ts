@@ -54,7 +54,7 @@ export const createFolderService = (baseURL: string) => ({
       /** (optional) Load un/read message only ? */
       unread?: boolean;
     },
-  ) {
+  ): Promise<MessageMetadata[]> {
     return odeServices
       .http()
       .get<

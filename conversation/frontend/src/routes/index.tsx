@@ -25,18 +25,6 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
         /* Pages */
         children: [
           {
-            path: 'draft/message/:messageId',
-            async lazy() {
-              const { Component, loader } = await import(
-                '~/routes/pages/MessageEdit'
-              );
-              return {
-                loader: loader(_queryClient),
-                Component,
-              };
-            },
-          },
-          {
             // Display messages from /inbox, /outbox, /trash, /draft
             path: ':folderId',
             children: [
@@ -57,7 +45,7 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
                 path: 'message/:messageId',
                 async lazy() {
                   const { Component, loader } = await import(
-                    '~/routes/pages/MessageDisplay'
+                    '~/routes/pages/Message'
                   );
                   return {
                     loader: loader(_queryClient),
@@ -88,7 +76,7 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
                 path: 'message/:messageId',
                 async lazy() {
                   const { Component, loader } = await import(
-                    '~/routes/pages/MessageDisplay'
+                    '~/routes/pages/Message'
                   );
                   return {
                     loader: loader(_queryClient),
