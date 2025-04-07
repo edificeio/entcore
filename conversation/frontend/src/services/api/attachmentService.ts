@@ -32,4 +32,12 @@ export const createAttachmentService = (baseURL: string) => ({
       fileSize: number;
     }>(`${baseURL}/message/${messageId}/attachment/${attachmentId}`);
   },
+
+  async downloadBlob(messageId: string, attachmentId: string): Promise<Blob> {
+    const downloadUrl = `${baseURL}/message/${messageId}/attachment/${attachmentId}`;
+    const result = await odeServices.http().get(downloadUrl, {
+      responseType: 'blob',
+    });
+    return result;
+  },
 });
