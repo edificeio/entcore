@@ -1,5 +1,5 @@
 const fs = require('fs');
-const { chromium } = require('playwright');
+const puppeteer = require('puppeteer');
 const inquirer = require('inquirer');
 const configPath = `${__dirname}/config.json`;
 
@@ -7,14 +7,15 @@ const isAutoMode = process.argv.includes('--auto');
 let browser;
 
 process.on('SIGINT', async () => {
-  console.log('🚨 Signal SIGINT détecté. Fermeture de Playwright...');
+  console.log('🚨 Signal SIGINT détecté. Fermeture de Puppeteer...');
   if (browser) {
     await browser.close();
-    console.log('✅ Playwright fermé.');
+    console.log('✅ Puppeteer fermé.');
   }
   process.exit(0);
 });
 
+// Create config.json if needed
 if (!fs.existsSync(configPath)) {
   console.log('⚠️  Aucun fichier config.json trouvé. Création en cours...');
   fs.writeFileSync(
@@ -59,7 +60,7 @@ async function choisirProfil() {
       ]);
       return newProfil;
     }
-    return config.profils[0];
+    return config.profils[0]; // Auto-mode
   }
 
   const profiles = config.profils.map((profil, index) => ({
@@ -117,23 +118,16 @@ async function choisirProfil() {
       `🌍 Connexion en tant que ${selectedProfil.login} sur ${selectedRecette}`,
     );
 
-    browser = await chromium.launch({ headless: true });
-    const context = await browser.newContext();
-    const page = await context.newPage();
+    browser = await puppeteer.launch({ headless: true });
+    const page = await browser.newPage();
 
-    await page.goto(selectedRecette, { waitUntil: 'networkidle' });
-
-    await page.fill('#email', selectedProfil.login);
-    await page.fill('#password', selectedProfil.password);
+    await page.goto(selectedRecette, { waitUntil: 'networkidle2' });
+    await page.type('#email', selectedProfil.login);
+    await page.type('#password', selectedProfil.password);
     await page.click('button.flex-magnet-bottom-right');
+    await page.waitForNavigation().catch(() => {});
 
-    try {
-      await page.waitForSelector('.avatar', { timeout: 10000 });
-    } catch (e) {
-      console.log('⏳ Temps de navigation dépassé, on continue...');
-    }
-
-    const cookies = await context.cookies();
+    const cookies = await page.cookies();
     const xsrfToken = cookies.find((c) => c.name === 'XSRF-TOKEN')?.value || '';
     const sessionId =
       cookies.find((c) => c.name === 'oneSessionId')?.value || '';
@@ -166,7 +160,7 @@ async function choisirProfil() {
   } finally {
     if (browser) {
       await browser.close();
-      console.log('✅ Navigateur Playwright fermé.');
+      console.log('✅ Navigateur Puppeteer fermé.');
     }
     process.exit(0);
   }

@@ -18,18 +18,30 @@
     "clean": "rm pnpm-lock.yaml && rm -rf node_modules && pnpm i",
     "dev:fast": "pnpm get-tokens --auto && vite",
     "dev": "vite",
-    "format": "prettier --write \"**/*.{ts,tsx,css}\"",
+    "format": "prettier --write .",
     "get-tokens": "node scripts/get-tokens/index.cjs",
     "lint": "eslint .",
-    "pre-commit": "pnpm run format",
-    "pre-push": "pnpm run typecheck && pnpm run test",
+    "pre-commit": "lint-staged",
     "predev": "pnpm get-tokens",
+    "prepare": "cd .. && husky frontend/.husky || true",
     "preview": "vite preview",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "test:watch": "vitest --watch",
     "test": "vitest",
-    "typecheck": "tsc -b --noEmit --pretty"
+    "typecheck": "tsc -b --noEmit"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged",
+      "pre-push": "pnpm test"
+    }
+  },
+  "lint-staged": {
+    "**/*.{ts,tsx}": [
+      "pnpm run format",
+      "pnpm run lint"
+    ]
   },
   "dependencies": {
     "@edifice.io/react": "%packageVersion%",
@@ -74,7 +86,7 @@
     "msw": "^2.4.11",
     "nx": "19.6.0",
     "prettier": "^3.3.3",
-    "playwright": "^1.51.1",
+    "puppeteer": "^24.4.0",
     "typescript": "^5.6.3",
     "typescript-eslint": "^8.8.1",
     "vite": "5.4.1",
