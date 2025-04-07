@@ -8,8 +8,7 @@ type FolderModal =
   | 'move'
   | 'rename'
   | 'trash'
-  | 'move-message'
-  | 'add-attachment-to-workspace';
+  | 'move-message';
 
 interface State {
   workflows: Record<string, boolean>;
