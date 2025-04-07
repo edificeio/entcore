@@ -1,0 +1,11 @@
+{
+  "recettes": [
+    "https://recette-ode1.opendigitaleducation.com/"
+  ],
+  "profils": [
+    {
+      "login": "stephane.loison",
+      "password": "EasyDemo2011"
+    }
+  ]
+}
