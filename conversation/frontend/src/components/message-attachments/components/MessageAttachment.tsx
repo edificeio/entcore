@@ -22,7 +22,7 @@ export function MessageAttachment({
   editMode,
 }: MessageAttachmentsProps) {
   const { t } = useI18n();
-  const [showAddToWorkspaceModal, setShowAddToWorkspaceModal] = useState(true);
+  const [showAddToWorkspaceModal, setShowAddToWorkspaceModal] = useState(false);
   const { detachFile, getDownloadUrl } = useMessageAttachments(message);
 
   const downloadUrl = getDownloadUrl(attachment.id);
