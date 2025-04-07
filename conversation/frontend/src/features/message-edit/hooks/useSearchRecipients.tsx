@@ -49,12 +49,10 @@ function reducer(state: State, action: Action) {
 
 export interface useSearchRecipientsProps {
   recipientType: 'to' | 'cc' | 'cci';
-  onRecipientSelected: (recipient: Visible) => void;
 }
 
 export const useSearchRecipients = ({
   recipientType,
-  onRecipientSelected,
 }: useSearchRecipientsProps) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
@@ -131,31 +129,19 @@ export const useSearchRecipients = ({
     });
   };
 
-  const handleSearchResultsChange = (visible: Visible) => {
-    onRecipientSelected(visible);
-  };
+  const searchMinLength = 1;
 
-  const showSearchNoResults = (): boolean => {
-    return (
-      !state.isSearching &&
-      debouncedSearchInputValue.length > searchMinLength &&
-      state.searchResults.length === 0
-    );
-  };
-
-  const showSearchLoading = (): boolean => {
-    return state.isSearching;
-  };
-
-  const searchMinLength = 3;
+  const hasSearchNoResults =
+    !state.isSearching &&
+    debouncedSearchInputValue.length > searchMinLength &&
+    state.searchResults.length === 0;
 
   return {
     state,
     defoultBookmarks: defaultBookmarks,
     searchMinLength,
-    showSearchLoading,
-    showSearchNoResults,
+    isSearchLoading: state.isSearching,
+    hasSearchNoResults,
     handleSearchInputChange,
-    handleSearchResultsChange,
   };
 };

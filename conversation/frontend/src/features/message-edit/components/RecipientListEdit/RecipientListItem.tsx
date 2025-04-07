@@ -61,21 +61,15 @@ export function RecipientListItem({
           id={visible.id}
           nbUsers={visible.type === 'User' ? 1 : visible.nbUsers}
         />
-        {visible.type === 'Group' && (
-          <>
-            {visible.nbUsers && visible.nbUsers > 1 && (
-              <div className="d-flex flex-column small">
-                <strong className={classNameTextDisabled}>
-                  {recipientName}
-                </strong>
-                <span className={'text-gray-700' + classNameTextDisabled}>
-                  {t('members', {
-                    count: visible.nbUsers,
-                  })}
-                </span>
-              </div>
-            )}
-          </>
+        {visible.type === 'Group' && visible.nbUsers && visible.nbUsers > 1 && (
+          <div className="d-flex flex-column small">
+            <strong className={classNameTextDisabled}>{recipientName}</strong>
+            <span className={'text-gray-700' + classNameTextDisabled}>
+              {t('members', {
+                count: visible.nbUsers,
+              })}
+            </span>
+          </div>
         )}
         {visible.type === 'ShareBookmark' && (
           <div className="d-flex flex-column small flex-fill">

@@ -6,7 +6,7 @@ import { Group, Recipients, User } from '~/models';
 import { Visible } from '~/models/visible';
 import { useAppActions, useMessageUpdated } from '~/store';
 import { RecipientListItem } from './RecipientListItem';
-import { MessageRecipientListSelectedItem } from './RecipientListSelectedItem';
+import { RecipientListSelectedItem } from './RecipientListSelectedItem';
 
 export interface RecipientListProps {
   recipients: Recipients;
@@ -15,7 +15,7 @@ export interface RecipientListProps {
   onRecipientUpdate?: (recipients: Recipients) => void;
 }
 
-export function MessageRecipientListEdit({
+export function RecipientListEdit({
   recipients,
   head,
   recipientType,
@@ -27,7 +27,7 @@ export function MessageRecipientListEdit({
   const messageUpdated = useMessageUpdated();
   const { setMessageUpdated, setMessageUpdatedNeedToSave } = useAppActions();
 
-  const onRecipientSelected = (recipient: Visible) => {
+  const handleRecipientClick = (recipient: Visible) => {
     let recipientToAdd: User | Group;
     if (recipient.type === 'User') {
       recipientToAdd = {
@@ -67,16 +67,19 @@ export function MessageRecipientListEdit({
 
   const {
     state: { searchResults, searchInputValue, searchAPIResults },
-    showSearchLoading,
-    showSearchNoResults,
+    isSearchLoading,
+    hasSearchNoResults,
     searchMinLength,
     handleSearchInputChange,
-    handleSearchResultsChange,
-  } = useSearchRecipients({ recipientType, onRecipientSelected });
+  } = useSearchRecipients({
+    recipientType,
+  });
 
   useEffect(() => {
     onRecipientUpdate?.({
-      users: recipientArray.filter((recipient) => 'profile' in recipient),
+      users: recipientArray.filter(
+        (recipient) => 'profile' in recipient && !('size' in recipient),
+      ) as User[],
       groups: recipientArray.filter((recipient) => 'size' in recipient),
     });
   }, [onRecipientUpdate, recipientArray]);
@@ -100,7 +103,7 @@ export function MessageRecipientListEdit({
       return (
         <Fragment key={index}>
           <RecipientListItem
-            onRecipientClick={handleSearchResultsChange}
+            onRecipientClick={handleRecipientClick}
             visible={visible}
             disabled={recipientArray.some(
               (recipient) => recipient.id === visible.id,
@@ -116,12 +119,11 @@ export function MessageRecipientListEdit({
       <Combobox
         value={searchInputValue}
         placeholder={t('conversation.users.search.placeholder')}
-        isLoading={showSearchLoading()}
-        noResult={showSearchNoResults()}
+        isLoading={isSearchLoading}
+        noResult={hasSearchNoResults}
         options={searchResults}
         searchMinLength={searchMinLength}
         onSearchInputChange={handleSearchInputChange}
-        onSearchResultsChange={() => {}}
         variant="ghost"
         renderNoResult={
           <div>
@@ -134,23 +136,21 @@ export function MessageRecipientListEdit({
           </div>
         }
         renderInputGroup={head}
-        renderSelectedItems={recipientArray.map((recipient, index) => {
-          const type = 'profile' in recipient ? 'user' : 'group';
-          const isLast = index === recipientArray.length - 1;
+        renderSelectedItems={recipientArray.map((recipient) => {
+          const type = 'size' in recipient ? 'group' : 'user';
           return (
             <Fragment key={recipient.id}>
-              <MessageRecipientListSelectedItem
+              <RecipientListSelectedItem
                 recipient={recipient}
                 type={type}
                 onRemoveClick={handleRemoveRecipient}
               />
-              {!isLast && ', '}
             </Fragment>
           );
         })}
         renderList={(recipients) => (
           <>
-            {searchInputValue.length === 0 ? (
+            {searchInputValue.length === 0 && !!recipients.length ? (
               <Dropdown.MenuGroup
                 label={t('conversation.users.search.favorites')}
               >

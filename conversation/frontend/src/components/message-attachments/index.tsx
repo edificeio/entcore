@@ -45,7 +45,11 @@ export function MessageAttachments({
 
   return (
     message.state !== 'RECALL' && (
-      <div className={className} data-drag-handle>
+      <div
+        className={className}
+        style={{ maxWidth: '-webkit-fill-available' }}
+        data-drag-handle
+      >
         {!!attachments.length && (
           <>
             <div className="d-flex align-items-center justify-content-between border-bottom">

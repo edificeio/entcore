@@ -2,7 +2,7 @@ import { Button } from '@edifice.io/react';
 import { useState } from 'react';
 import { useI18n } from '~/hooks';
 import { Message } from '~/models';
-import { MessageRecipientListEdit } from './RecipientListEdit/RecipientListEdit';
+import { RecipientListEdit } from './RecipientListEdit/RecipientListEdit';
 
 export interface MessageHeaderProps {
   message: Message;
@@ -14,14 +14,14 @@ export function MessageEditHeader({ message }: MessageHeaderProps) {
   const [showCC, setShowCC] = useState(false);
   const [showCCI, setShowCCI] = useState(false);
 
-  const { to, cc, cci } = { ...message };
+  const { to, cc, cci } = message;
 
   return (
     <>
       <div className="d-flex flex-fill flex-column overflow-hidden">
         <div className="d-flex align-items-center justify-content-between gap-12 border-bottom pe-16">
-          <MessageRecipientListEdit
-            head={<span className="text-capitalize me-4">{t('at')} :</span>}
+          <RecipientListEdit
+            head={<span className="me-4">{t('at')} :</span>}
             recipients={to}
             recipientType="to"
           />
@@ -46,8 +46,8 @@ export function MessageEditHeader({ message }: MessageHeaderProps) {
         </div>
         {showCC && (
           <div className="border-bottom">
-            <MessageRecipientListEdit
-              head={<span className="text-capitalize me-4">{t('cc')} :</span>}
+            <RecipientListEdit
+              head={<span className="me-4">{t('cc')} :</span>}
               recipients={cc}
               recipientType="cc"
             />
@@ -55,8 +55,8 @@ export function MessageEditHeader({ message }: MessageHeaderProps) {
         )}
         {showCCI && (
           <div className="border-bottom">
-            <MessageRecipientListEdit
-              head={<span className="text-capitalize me-4">{t('cci')} :</span>}
+            <RecipientListEdit
+              head={<span className="me-4">{t('cci')} :</span>}
               recipients={cci || { groups: [], users: [] }}
               recipientType="cci"
             />

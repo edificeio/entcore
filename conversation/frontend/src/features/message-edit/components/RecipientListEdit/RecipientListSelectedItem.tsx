@@ -6,17 +6,17 @@ import { useMessageUserDisplayName } from '~/hooks/useUserDisplayName';
 import { Group, User } from '~/models';
 import RecipientAvatar from './RecipientAvatar';
 
-interface MessageRecipientListSelectedItemProps {
+interface RecipientListSelectedItemProps {
   recipient: User | Group;
   type: 'user' | 'group';
   onRemoveClick: (recipient: User | Group) => void;
 }
 
-export function MessageRecipientListSelectedItem({
+export function RecipientListSelectedItem({
   recipient,
   type,
   onRemoveClick,
-}: MessageRecipientListSelectedItemProps) {
+}: RecipientListSelectedItemProps) {
   const { common_t } = useI18n();
   const recipientName = useMessageUserDisplayName(recipient);
   const { getUserbookURL } = useDirectory();
@@ -39,10 +39,10 @@ export function MessageRecipientListSelectedItem({
       : '';
 
   return (
-    <div className="badge rounded-pill d-flex align-items-center gap-8 small fw-bold p-4">
+    <div className="badge rounded-pill d-flex align-items-center gap-8 small fw-bold p-4 me-8 mt-4">
       <RecipientAvatar
         id={recipient.id}
-        nbUsers={type === 'user' ? 1 : (recipient as Group).size}
+        nbUsers={(recipient as Group).size ?? 1}
         size="xs"
       />
       {!url ? (
@@ -72,6 +72,11 @@ export function MessageRecipientListSelectedItem({
         className="rounded-pill p-4"
         onClick={() => {
           onRemoveClick(recipient);
+        }}
+        onKeyUp={(e) => {
+          if (e.key === 'Enter' || e.key === '') {
+            onRemoveClick(recipient);
+          }
         }}
       ></IconButton>
     </div>

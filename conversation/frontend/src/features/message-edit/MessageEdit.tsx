@@ -92,7 +92,7 @@ export function MessageEdit({ message }: MessageEditProps) {
           <div className="d-flex justify-content-end gap-12 pt-24 pe-16">
             <div className="d-flex align-items-end flex-column gap-16">
               <MessageActionDropDown message={messageUpdated} />
-              {!!messageUpdated?.date && (
+              {messageUpdated?.date && (
                 <div className="caption fst-italic">
                   {fromNow(messageUpdated.date)}
                 </div>
