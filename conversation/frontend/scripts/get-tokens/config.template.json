@@ -1,0 +1,16 @@
+{
+    "recettes": [
+      "https://recette-url1.com/",
+      "https://recette-url2.com/"
+    ],
+    "profils": [
+      {
+        "login": "login.1",
+        "password": "password.1"
+      },
+      {
+        "login": "login.2",
+        "password": "password.2"
+      }
+    ]
+  }
