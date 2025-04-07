@@ -175,6 +175,7 @@
   "signature.modal.title": "Paramétrage",
   "signature.modal.toggle.label": "Activer la signature",
   "signature.modal.toggle.hint": "Une fois activée, la signature sera automatiquement ajoutée à vos nouveaux messages, ainsi qu’à vos réponses.",
+  "signature.modal.editor.placeholder": "Saisissez votre texte ici",
   "signature.notify.activated": "Signature activée",
   "signature.notify.deactivated": "Signature désactivée",
   "size": "Taille",

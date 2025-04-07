@@ -1,4 +1,4 @@
-import { Button, Loading, Modal } from '@edifice.io/react';
+import { Button, Checkbox, Loading, Modal } from '@edifice.io/react';
 import { useI18n } from '~/hooks';
 import { useSignatureHandlers } from './hooks/useSignatureHandlers';
 import { Editor, EditorRef } from '@edifice.io/react/editor';
@@ -16,7 +16,12 @@ export function SignatureModal() {
 
   const editor = useRef<EditorRef>(null);
 
-  const isLocked = preferencesQuery.isPending || isSaving;
+  const isLocked =
+    preferencesQuery.data?.useSignature === false ||
+    preferencesQuery.isPending ||
+    isSaving;
+
+  const handleToggleChange = () => {};
 
   const handleSaveClick = async () => {
     await save({
@@ -39,12 +44,23 @@ export function SignatureModal() {
 
       <Modal.Body>
         <Suspense fallback={<Loading isLoading={preferencesQuery.isPending} />}>
+          <Checkbox
+            label={t('signature.modal.toggle.label')}
+            checked={preferencesQuery.data?.useSignature === true}
+            onChange={handleToggleChange}
+          />
+          <p>
+            <em>
+              <small>{t('signature.modal.toggle.hint')}</small>
+            </em>
+          </p>
           <Editor
             ref={editor}
             id="signatureBody"
             content={preferencesQuery.data?.signature ?? ''}
             mode={isLocked ? 'read' : 'edit'}
             variant="ghost"
+            placeholder={t('signature.modal.editor.placeholder')}
           />
         </Suspense>
       </Modal.Body>
