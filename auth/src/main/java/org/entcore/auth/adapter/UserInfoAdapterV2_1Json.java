@@ -25,9 +25,10 @@ public class UserInfoAdapterV2_1Json implements UserInfoAdapter {
 
 	@Override
 	public JsonObject getInfo(JsonObject info, String clientId) {
-		info.remove("manualGroups");
-		info.remove("structureNodes");
-		return info.copy();
+		JsonObject s = info.copy();
+		s.remove("manualGroups");
+		s.remove("structureNodes");
+		return s;
 	}
 
 }

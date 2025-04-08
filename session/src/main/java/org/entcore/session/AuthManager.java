@@ -871,7 +871,6 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"OPTIONAL MATCH gp-[:DEPENDS]->(c:Class) " +
 				"OPTIONAL MATCH n-[rf:HAS_FUNCTION]->(f:Function) " +
 				"OPTIONAL MATCH n<-[:RELATED]-(child:User) " +
-				"WITH n, s, f, rf, c, child, mgroup, COLLECT(distinct {id: mgroup.id, name: mgroup.name, structureId: mStruct.id, structureUai: mStruct.UAI}) as manualGroups " +
 				"RETURN distinct " +
 				"n.classes as classNames, n.level as level, n.email as email, n.mobile as mobile, n.login as login, COLLECT(distinct [c.id, c.name]) as classes, " +
 				"n.lastName as lastName, n.firstName as firstName, n.externalId as externalId, n.federated as federated, " +
@@ -879,7 +878,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"n.displayName as username, HEAD(n.profiles) as type, " +
 				"COLLECT(distinct [child.id, child.lastName, child.firstName]) as childrenInfo, has(n.password) as hasPw, " +
 				"COLLECT(distinct [s.id, s.name, s.UAI, s.hasApp, s.ignoreMFA]) as structures, COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
-				"COLLECT(distinct s) as structureNodes, manualGroups, n.federatedIDP as federatedIDP, n.functions as aafFunctions, " +
+				"COLLECT(distinct gp.id) as groupsIds, COLLECT(distinct s) as structureNodes,  COLLECT(distinct {id: mgroup.id, name: mgroup.name, structureId: mStruct.id, structureUai: mStruct.UAI}) as manualGroups, n.federatedIDP as federatedIDP, n.functions as aafFunctions, " +
 				"REDUCE(acc=[], pRed IN COLLECT(COALESCE(s.optionEnabled, [])) | pRed+acc ) as optionEnabled";
 		final String query2 =
 				"MATCH (n:User {id : {id}})-[:IN]->()-[:AUTHORIZED]->(:Role)-[:AUTHORIZE]->(a:Action)" +
