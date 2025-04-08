@@ -1,5 +1,5 @@
 import { odeServices } from '@edifice.io/client';
-import { useToast } from '@edifice.io/react';
+import { useEdificeClient, useToast } from '@edifice.io/react';
 import {
   InfiniteData,
   queryOptions,
@@ -496,6 +496,8 @@ export const useUpdateDraft = () => {
  */
 export const useSendDraft = () => {
   const queryClient = useQueryClient();
+  const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
+  const { user } = useEdificeClient();
   return useMutation({
     mutationFn: ({
       draftId,
@@ -510,11 +512,19 @@ export const useSendDraft = () => {
         cci?: string[];
       };
     }) => messageService.send(draftId, payload),
-    onSuccess: () => {
-      // TODO optimistic update ?
-      queryClient.invalidateQueries({
-        queryKey: folderQueryOptions.getFoldersTree().queryKey,
-      });
+    onSuccess: (_result, { payload }) => {
+      updateFolderBadgeCountLocal('draft', -1);
+      if (
+        payload &&
+        user &&
+        [
+          ...(payload.cc || []),
+          ...(payload.to || []),
+          ...(payload.cci || []),
+        ].includes(user.userId)
+      ) {
+        updateFolderBadgeCountLocal('inbox', +1);
+      }
     },
   });
 };

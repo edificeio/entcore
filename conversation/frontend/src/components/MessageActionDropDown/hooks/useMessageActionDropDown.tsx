@@ -17,7 +17,7 @@ import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFolderHandlers } from '~/features/menu/hooks/useFolderHandlers';
 import { useI18n, useRecall, useSelectedFolder } from '~/hooks';
-import { Message } from '~/models';
+import { Message, Recipients } from '~/models';
 import {
   isInRecipient,
   useCreateOrUpdateDraft,
@@ -25,6 +25,7 @@ import {
   useMarkUnread,
   useMoveMessage,
   useRestoreMessage,
+  useSendDraft,
   useTrashMessage,
 } from '~/services';
 import { useAppActions, useConfirmModalStore } from '~/store';
@@ -42,6 +43,7 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
   const moveMessage = useMoveMessage();
   const { handleMoveMessage } = useFolderHandlers();
   const { setSelectedMessageIds } = useAppActions();
+  const sendDraftQuery = useSendDraft();
 
   const { folderId } = useSelectedFolder();
   const { user } = useEdificeClient();
@@ -128,6 +130,29 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
     navigate(`../..`, { relative: 'path' });
   };
 
+  const recipientToIds = (recipients: Recipients): string[] => {
+    return [
+      ...new Set([
+        ...(recipients.users || []).map((user) => user.id),
+        ...(recipients.groups || []).map((group) => group.id),
+      ]),
+    ];
+  };
+
+  const handleSendClick = () => {
+    sendDraftQuery.mutate({
+      draftId: message.id,
+      payload: {
+        subject: message.subject,
+        body: message.body,
+        to: recipientToIds(message.to),
+        cc: recipientToIds(message.cc),
+        cci: message.cci ? recipientToIds(message.cci) : undefined,
+      },
+    });
+    navigate(`inbox`);
+  };
+
   const handleRemoveFromFolder = () => {
     openModal({
       id: 'remove-from-folder-modal',
@@ -167,10 +192,7 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
       label: t('submit'),
       id: 'submit',
       icon: <IconSend />,
-      action: () => {
-        alert('submit');
-        console.log('submit', message);
-      },
+      action: handleSendClick,
       hidden: message.state !== 'DRAFT' || message.trashed,
       disabled: !isMessageValid,
     },
