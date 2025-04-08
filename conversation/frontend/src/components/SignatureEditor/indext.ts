@@ -1,1 +1,1 @@
-export * from './SignatureEditor';
+export * from './components/SignatureEditor';

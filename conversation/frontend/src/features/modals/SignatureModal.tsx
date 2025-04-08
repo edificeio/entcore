@@ -1,9 +1,12 @@
 import { Button, Checkbox, Loading, Modal } from '@edifice.io/react';
 import { useI18n } from '~/hooks';
 import { useSignatureHandlers } from './hooks/useSignatureHandlers';
-import { Editor, EditorRef } from '@edifice.io/react/editor';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useSignaturePreferences } from '~/services';
+import {
+  SignatureEditor,
+  SignatureEditorRef,
+} from '~/components/SignatureEditor/components/SignatureEditor';
 
 export function SignatureModal() {
   const { t, common_t } = useI18n();
@@ -14,7 +17,7 @@ export function SignatureModal() {
     save,
   } = useSignatureHandlers();
 
-  const editor = useRef<EditorRef>(null);
+  const editor = useRef<SignatureEditorRef>(null);
 
   const [useSignature, setUseSignature] = useState(
     preferencesQuery.data?.useSignature ?? false,
@@ -36,7 +39,7 @@ export function SignatureModal() {
     async function handleSave() {
       await save({
         useSignature,
-        signature: editor?.current?.getContent('html') as string,
+        signature: editor?.current?.getHtmlContent() as string,
       });
       handleCloseModal();
     }
@@ -66,12 +69,10 @@ export function SignatureModal() {
               <small>{t('signature.modal.toggle.hint')}</small>
             </em>
           </p>
-          <Editor
+          <SignatureEditor
             ref={editor}
-            id="signatureBody"
             content={preferencesQuery.data?.signature ?? ''}
             mode={lockEditor ? 'read' : 'edit'}
-            variant="outline"
             placeholder={t('signature.modal.editor.placeholder')}
           />
         </Suspense>
