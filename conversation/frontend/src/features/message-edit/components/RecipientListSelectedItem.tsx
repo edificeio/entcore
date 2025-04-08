@@ -38,6 +38,12 @@ export function RecipientListSelectedItem({
         })
       : '';
 
+  const handleRemoveKeyUp = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      onRemoveClick(recipient);
+    }
+  };
+
   return (
     <div className="badge rounded-pill d-flex align-items-center gap-8 small fw-bold py-4 px-2 me-8 mt-4">
       <RecipientAvatar
@@ -73,11 +79,7 @@ export function RecipientListSelectedItem({
         onClick={() => {
           onRemoveClick(recipient);
         }}
-        onKeyUp={(e) => {
-          if (e.key === 'Enter' || e.key === '') {
-            onRemoveClick(recipient);
-          }
-        }}
+        onKeyUp={handleRemoveKeyUp}
       ></IconButton>
     </div>
   );

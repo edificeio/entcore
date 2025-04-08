@@ -83,6 +83,20 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
     );
   }, [message, folderId, user]);
 
+  const isMessageValid = useMemo(() => {
+    return (
+      !message.trashed &&
+      !['draft', 'outbox', 'trash'].includes(folderId!) &&
+      message.subject.length > 0 &&
+      (message.to.users.length > 0 ||
+        message.to.groups.length > 0 ||
+        message.cc.users.length > 0 ||
+        message.cc.groups.length > 0 ||
+        (message.cci &&
+          (message.cci.users.length > 0 || message.cci.groups.length > 0)))
+    );
+  }, [message, folderId]);
+
   const hasActionsList = (idAction: string) => {
     return !actions || actions.includes(idAction);
   };
@@ -158,6 +172,7 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
         console.log('submit', message);
       },
       hidden: message.state !== 'DRAFT' || message.trashed,
+      disabled: !isMessageValid,
     },
     {
       label: t('restore'),

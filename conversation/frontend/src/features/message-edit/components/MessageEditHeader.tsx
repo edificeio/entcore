@@ -2,7 +2,7 @@ import { Button } from '@edifice.io/react';
 import { useState } from 'react';
 import { useI18n } from '~/hooks';
 import { Message } from '~/models';
-import { RecipientListEdit } from './RecipientListEdit/RecipientListEdit';
+import { RecipientListEdit } from './RecipientListEdit';
 
 export interface MessageHeaderProps {
   message: Message;
