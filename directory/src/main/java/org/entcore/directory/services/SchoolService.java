@@ -22,6 +22,8 @@ package org.entcore.directory.services;
 import fr.wseduc.webutils.Either;
 
 import org.entcore.common.user.UserInfos;
+
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -96,5 +98,7 @@ public interface SchoolService {
 	void checkGAR(JsonArray uais, Handler<Either<String, JsonArray>> handler);
 
 	void activateGar(String garId, JsonArray targetUAIs, String groupName, String appName, String roleName, Handler<Either<String, JsonObject>> handler);
+
+    Future<JsonArray> listContacts(String structureId);
 
 }

@@ -938,5 +938,22 @@ public class StructureController extends BaseController {
 				});
 		});
 	}
+
+	@Get("/structure/:id/contacts")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
+	public void listStructureContacts(HttpServerRequest request) {
+		final String structureId = request.params().get("id");
+		structureService.listContacts(structureId).onComplete(res->{
+			if (res.succeeded()) {
+				Renders.renderJson(request, res.result());
+			} else {
+				Renders.renderError(request, new JsonObject().put("error", "list.structure.contacts.cantload"));
+				log.error("Failed to load contacts of structure : " + structureId, res.cause());
+			}
+		});
+	}
+
 }
 
