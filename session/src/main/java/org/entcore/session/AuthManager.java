@@ -867,6 +867,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"WHERE HAS(n.login) " +
 				"OPTIONAL MATCH n-[:IN]->(gp:Group) " +
 				"OPTIONAL MATCH (gp:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+				"OPTIONAL MATCH n-[:IN]->(mgroup: ManualGroup)-[:DEPENDS]->(mStruct:Structure) " +
 				"OPTIONAL MATCH gp-[:DEPENDS]->(c:Class) " +
 				"OPTIONAL MATCH n-[rf:HAS_FUNCTION]->(f:Function) " +
 				"OPTIONAL MATCH n<-[:RELATED]-(child:User) " +
@@ -877,7 +878,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"n.displayName as username, HEAD(n.profiles) as type, " +
 				"COLLECT(distinct [child.id, child.lastName, child.firstName]) as childrenInfo, has(n.password) as hasPw, " +
 				"COLLECT(distinct [s.id, s.name, s.UAI, s.hasApp, s.ignoreMFA]) as structures, COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
-				"COLLECT(distinct gp.id) as groupsIds, n.federatedIDP as federatedIDP, n.functions as aafFunctions, " +
+				"COLLECT(distinct gp.id) as groupsIds, COLLECT(distinct s) as structureNodes, n.structures as structureExternalId, COLLECT(distinct {id: mgroup.id, name: mgroup.name, structureId: mStruct.id, structureUai: mStruct.UAI}) as manualGroups, n.federatedIDP as federatedIDP, n.functions as aafFunctions, " +
 				"REDUCE(acc=[], pRed IN COLLECT(COALESCE(s.optionEnabled, [])) | pRed+acc ) as optionEnabled";
 		final String query2 =
 				"MATCH (n:User {id : {id}})-[:IN]->()-[:AUTHORIZED]->(:Role)-[:AUTHORIZE]->(a:Action)" +
