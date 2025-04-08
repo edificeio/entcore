@@ -56,13 +56,13 @@
     </modules>
 
     <properties>
-        <revision>6.5-develop-pedago-SNAPSHOT</revision>
+        <revision>6.5-SNAPSHOT</revision>
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
         <modPostgresVersion>2.0-SNAPSHOT</modPostgresVersion>
-        <modMongoVersion>4.0-develop-pedago-SNAPSHOT</modMongoVersion>
+        <modMongoVersion>4.0-SNAPSHOT</modMongoVersion>
         <webUtilsVersion>3.1-SNAPSHOT</webUtilsVersion>
-        <mongodbHelperVersion>3.0-develop-pedago-SNAPSHOT</mongodbHelperVersion>
+        <mongodbHelperVersion>3.0-SNAPSHOT</mongodbHelperVersion>
         <jodaTimeVersion>2.9.4</jodaTimeVersion>
         <scramVersion>2.1</scramVersion>
         <micrometerPrometheusVersion>1.11.4</micrometerPrometheusVersion>
