@@ -80,7 +80,7 @@ export function RecipientListItem({
                     count: visible.nbUsers,
                   })}
                 {!canBeUsedAsRecipient &&
-                  t('visible.unseIn.errorExplanation', {
+                  t('visible.usedIn.errorExplanation', {
                     recipientTypes: visible.usedIn.join(', '),
                   })}
               </span>
