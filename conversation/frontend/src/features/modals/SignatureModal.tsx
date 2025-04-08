@@ -2,7 +2,7 @@ import { Button, Checkbox, Loading, Modal } from '@edifice.io/react';
 import { useI18n } from '~/hooks';
 import { useSignatureHandlers } from './hooks/useSignatureHandlers';
 import { Editor, EditorRef } from '@edifice.io/react/editor';
-import { Suspense, useRef } from 'react';
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useSignaturePreferences } from '~/services';
 
 export function SignatureModal() {
@@ -16,20 +16,32 @@ export function SignatureModal() {
 
   const editor = useRef<EditorRef>(null);
 
-  const isLocked =
-    preferencesQuery.data?.useSignature === false ||
-    preferencesQuery.isPending ||
-    isSaving;
+  const [useSignature, setUseSignature] = useState(
+    preferencesQuery.data?.useSignature ?? false,
+  );
 
-  const handleToggleChange = () => {};
+  useEffect(() => {
+    if (typeof preferencesQuery.data?.useSignature !== 'undefined')
+      setUseSignature(preferencesQuery.data.useSignature);
+  }, [preferencesQuery.data]);
 
-  const handleSaveClick = async () => {
-    await save({
-      useSignature: true,
-      signature: editor?.current?.getContent('html') as string,
-    });
-    handleCloseModal();
-  };
+  const lockSaveButton = preferencesQuery.isPending || isSaving;
+  const lockEditor = lockSaveButton || !useSignature;
+
+  function handleToggleChange() {
+    setUseSignature((previousState) => !previousState);
+  }
+
+  const handleSaveClick = useCallback(() => {
+    async function handleSave() {
+      await save({
+        useSignature,
+        signature: editor?.current?.getContent('html') as string,
+      });
+      handleCloseModal();
+    }
+    handleSave();
+  }, [handleCloseModal, save, useSignature]);
 
   return (
     <Modal
@@ -46,10 +58,10 @@ export function SignatureModal() {
         <Suspense fallback={<Loading isLoading={preferencesQuery.isPending} />}>
           <Checkbox
             label={t('signature.modal.toggle.label')}
-            checked={preferencesQuery.data?.useSignature === true}
+            checked={useSignature}
             onChange={handleToggleChange}
           />
-          <p>
+          <p className="my-8 py-4">
             <em>
               <small>{t('signature.modal.toggle.hint')}</small>
             </em>
@@ -58,8 +70,8 @@ export function SignatureModal() {
             ref={editor}
             id="signatureBody"
             content={preferencesQuery.data?.signature ?? ''}
-            mode={isLocked ? 'read' : 'edit'}
-            variant="ghost"
+            mode={lockEditor ? 'read' : 'edit'}
+            variant="outline"
             placeholder={t('signature.modal.editor.placeholder')}
           />
         </Suspense>
@@ -80,7 +92,7 @@ export function SignatureModal() {
           variant="filled"
           onClick={handleSaveClick}
           isLoading={isSaving}
-          disabled={isLocked}
+          disabled={lockSaveButton}
         >
           {common_t('save')}
         </Button>
