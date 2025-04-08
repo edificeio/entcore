@@ -44,6 +44,7 @@ export function MessageActionDropDown({
             variant={appearance.variant}
             leftIcon={option.icon}
             onClick={option.action}
+            disabled={option.disabled}
           >
             {option.label}
           </Button>
