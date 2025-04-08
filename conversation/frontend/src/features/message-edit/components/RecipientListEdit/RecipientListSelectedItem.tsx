@@ -39,7 +39,7 @@ export function RecipientListSelectedItem({
       : '';
 
   return (
-    <div className="badge rounded-pill d-flex align-items-center gap-8 small fw-bold p-4 me-8 mt-4">
+    <div className="badge rounded-pill d-flex align-items-center gap-8 small fw-bold py-4 px-2 me-8 mt-4">
       <RecipientAvatar
         id={recipient.id}
         nbUsers={(recipient as Group).size ?? 1}
