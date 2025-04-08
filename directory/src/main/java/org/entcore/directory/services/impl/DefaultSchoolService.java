@@ -21,7 +21,9 @@ package org.entcore.directory.services.impl;
 
 import fr.wseduc.webutils.Either;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -761,4 +763,25 @@ public class DefaultSchoolService implements SchoolService {
 			});
 		}));
 	}
+
+	@Override
+	public Future<JsonArray> listContacts(String structureId) {
+		final Promise<JsonArray> promise = Promise.promise();
+		final String query =
+				"MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-(g:Group)<-[:IN]-(u:User) " +
+				"WHERE has(u.email) AND ((g:ProfileGroup AND g.filter IN ['Personnel', 'Teacher']) " +
+				"OR (g:FunctionGroup AND g.filter = 'AdminLocal')) " +
+				"RETURN DISTINCT u.id AS userId, u.email AS email, head(u.profiles) AS profile";
+		final JsonObject params = new JsonObject().put("structureId", structureId);
+
+		neo.execute(query, params, validResultHandler(results -> {
+			if (results.isRight()) {
+				promise.complete(results.right().getValue());
+			} else {
+				promise.fail(results.left().getValue());
+			}
+		}));
+		return promise.future();
+	}
+
 }
