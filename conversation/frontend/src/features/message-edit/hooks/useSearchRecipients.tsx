@@ -68,6 +68,37 @@ export const useSearchRecipients = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearchInputValue]);
 
+  useEffect(() => {
+    if (defaultBookmarks) {
+      updateVisiblesFound(defaultBookmarks);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [defaultBookmarks]);
+
+  const updateVisiblesFound = (visibles: Visible[]) => {
+    dispatch({
+      type: 'addApiResult',
+      payload: visibles,
+    });
+
+    const adaptedResults: OptionListItemType[] = visibles.map(
+      (searchResult: Visible) => {
+        return {
+          value: searchResult.id,
+          label: searchResult.displayName,
+          disabled: !searchResult.usedIn
+            .map((ui) => ui.toLowerCase())
+            .includes(recipientType),
+        };
+      },
+    );
+
+    dispatch({
+      type: 'addResult',
+      payload: adaptedResults,
+    });
+  };
+
   const handleSearchInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     dispatch({
@@ -92,28 +123,7 @@ export const useSearchRecipients = ({
           userQueryOptions.searchVisible(debouncedSearchInputValue),
         );
       }
-
-      dispatch({
-        type: 'addApiResult',
-        payload: searchVisibles,
-      });
-
-      const adaptedResults: OptionListItemType[] = searchVisibles.map(
-        (searchResult: Visible) => {
-          return {
-            value: searchResult.id,
-            label: searchResult.displayName,
-            disabled: !searchResult.usedIn
-              .map((ui) => ui.toLowerCase())
-              .includes(recipientType),
-          };
-        },
-      );
-
-      dispatch({
-        type: 'addResult',
-        payload: adaptedResults,
-      });
+      updateVisiblesFound(searchVisibles);
     } else {
       dispatch({
         type: 'emptyResult',

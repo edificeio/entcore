@@ -16,6 +16,13 @@ export const userQueryOptions = {
       queryFn: () => userService.getBookmarks(),
     });
   },
+
+  getBookMarkById(id: string) {
+    return queryOptions({
+      queryKey: [...userQueryOptions.base, 'bookmark', id] as const,
+      queryFn: () => userService.getBookMarkById(id),
+    });
+  },
 };
 
 export const useSearchVisible = (search: string) => {
@@ -24,4 +31,8 @@ export const useSearchVisible = (search: string) => {
 
 export const useDefaultBookmark = () => {
   return useQuery(userQueryOptions.getBookmarks());
+};
+
+export const useBookmarkById = (id: string) => {
+  return { getBookmarkById: useQuery(userQueryOptions.getBookMarkById(id)) };
 };
