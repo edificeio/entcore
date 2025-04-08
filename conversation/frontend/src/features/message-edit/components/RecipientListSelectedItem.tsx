@@ -44,13 +44,16 @@ export function RecipientListSelectedItem({
     }
   };
 
+  const visibleType =
+    'size' in recipient
+      ? recipient.subType === 'BroadcastGroup'
+        ? 'BroadcastGroup'
+        : 'Group'
+      : 'User';
+
   return (
     <div className="badge rounded-pill d-flex align-items-center gap-8 small fw-bold py-4 px-2 me-8 mt-4">
-      <RecipientAvatar
-        id={recipient.id}
-        nbUsers={(recipient as Group).size ?? 1}
-        size="xs"
-      />
+      <RecipientAvatar id={recipient.id} type={visibleType} size="xs" />
       {!url ? (
         <span>{recipientName}</span>
       ) : (

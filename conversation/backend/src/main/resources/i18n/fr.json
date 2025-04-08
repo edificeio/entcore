@@ -243,5 +243,6 @@
   "members_one": "[[count]] membre",
   "members_other": "[[count]] membres",
   "visible.relatives": "Parents: ",
-  "visible.childrens": "Enfants: "
+  "visible.childrens": "Enfants: ",
+  "visible.useIn.errorExplanation": "Ne peut être utilisé que en [[recipientTypes]]"
 }
