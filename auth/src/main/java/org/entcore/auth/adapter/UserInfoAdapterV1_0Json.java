@@ -59,6 +59,8 @@ public class UserInfoAdapterV1_0Json implements UserInfoAdapter {
 		String type = Utils.getOrElse(types.get(info.getString("type", "")), "");
 		filteredInfos.put("type", type);
 		filteredInfos.remove("cache");
+		filteredInfos.remove("manualGroups");
+		filteredInfos.remove("structureNodes");
 		if (filteredInfos.getString("level") == null) {
 			filteredInfos.put("level", "");
 		} else if (filteredInfos.getString("level").contains("$")) {
