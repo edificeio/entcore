@@ -34,7 +34,7 @@ export default function useToolbarVisibility(messages: MessageMetadata[]) {
 
   const canEmptyTrash = useMemo(() => {
     if (!isInTrash) return false;
-    return messages.length > 0;
+    return messages.length > 0 && selectedMessages.length === 0;
   }, [folderId, messages]);
 
   const isInFolder = useMemo(() => {

@@ -1,7 +1,7 @@
 import {
   List,
   Loading,
-  ToolbarItem,
+  ToolbarButtonItem,
   useEdificeClient,
 } from '@edifice.io/react';
 import {
@@ -14,13 +14,13 @@ import {
 } from '@edifice.io/react/icons';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { useSelectedFolder } from '~/hooks';
 import { useFolderMessages } from '~/services';
 import { useAppActions } from '~/store/actions';
 import { MessageItem } from './components/MessageItem';
 import useToolbarActions from './hooks/useToolbarActions';
 import useToolbarVisibility from './hooks/useToolbarVisibility';
-import { useSearchParams } from 'react-router-dom';
 
 export function MessageList() {
   const { folderId } = useSelectedFolder();
@@ -83,7 +83,7 @@ export function MessageList() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isLoadingMessage, isLoadingNextPage, fetchNextPage, hasNextPage]);
 
-  const toolbar: ToolbarItem[] = [
+  const toolbar: ToolbarButtonItem[] = [
     {
       type: 'button',
       name: 'read',
@@ -203,7 +203,7 @@ export function MessageList() {
     <>
       <List
         data={messages.map((message) => ({ ...message, _id: message.id }))}
-        items={toolbar}
+        items={toolbar.filter((item) => !item?.props?.hidden)}
         isCheckable={true}
         onSelectedItems={setSelectedMessageIds}
         className="ps-16 ps-md-24"
