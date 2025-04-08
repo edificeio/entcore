@@ -1,3 +1,4 @@
+import { odeServices } from '@edifice.io/client';
 import { useToast } from '@edifice.io/react';
 import {
   InfiniteData,
@@ -9,19 +10,31 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { Message, MessageBase, MessageMetadata } from '~/models';
-import { useAppActions, useMessageUpdated } from '~/store';
 import {
   baseUrl,
   folderQueryOptions,
   messageService,
   useUpdateFolderBadgeCountLocal,
 } from '~/services';
+import { useAppActions, useMessageUpdated } from '~/store';
 const appCodeName = 'conversation';
 /**
  * Message Query Options Factory.
  */
 export const messageQueryOptions = {
   base: ['message'] as const,
+  /**
+   * Generates query options for fetching message application configuration.
+   * @returns Query options for fetching the configuration.
+   */
+  getConfig() {
+    return queryOptions({
+      queryKey: [messageQueryOptions.base, 'config'] as const,
+      queryFn: (): Promise<{ 'debounce-time-to-auto-save'?: number }> =>
+        odeServices.conf().getPublicConf('conversation'),
+      staleTime: Infinity,
+    });
+  },
   /**
    * Generates query options for fetching a message by its ID.
    * @param messageId - The ID of the message to fetch.
@@ -50,6 +63,14 @@ export const messageQueryOptions = {
       staleTime: Infinity,
     });
   },
+};
+
+/**
+ * Hook to fetch the message application configuration.
+ * @returns Query result for the message application configuration.
+ */
+export const useConversationConfig = () => {
+  return useQuery(messageQueryOptions.getConfig());
 };
 
 /**
@@ -378,7 +399,7 @@ export const useCreateOrUpdateDraft = () => {
     };
 
     if (messageUpdated.id && messageUpdated.state === 'DRAFT') {
-      updateDraft.mutateAsync({
+      return updateDraft.mutateAsync({
         draftId: messageUpdated.id,
         payload,
       });

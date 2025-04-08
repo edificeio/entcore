@@ -7,12 +7,12 @@ import {
   IconPlus,
 } from '@edifice.io/react/icons';
 import clsx from 'clsx';
+import { ChangeEvent, useRef } from 'react';
 import { useI18n } from '~/hooks';
+import { useMessageAttachments } from '~/hooks/useMessageAttachments';
 import { Message } from '~/models';
 import { MessageAttachment } from './components/MessageAttachment';
 import './index.css';
-import { ChangeEvent, useRef } from 'react';
-import { useMessageAttachments } from '~/hooks/useMessageAttachments';
 
 export interface MessageAttachmentsProps {
   message: Message;
@@ -39,13 +39,17 @@ export function MessageAttachments({
   const handleDetachAllClick = () => detachFiles(attachments);
 
   const className = clsx(
-    'bg-gray-300 rounded-2 px-12 py-8 message-attachments gap-8 d-flex flex-column',
+    'bg-gray-300 rounded-2 px-12 py-8 message-attachments align-self-start gap-8 d-flex flex-column',
     editMode && 'border message-attachments-edit mx-16',
   );
 
   return (
     message.state !== 'RECALL' && (
-      <div className={className} data-drag-handle>
+      <div
+        className={className}
+        style={{ maxWidth: '-webkit-fill-available' }}
+        data-drag-handle
+      >
         {!!attachments.length && (
           <>
             <div className="d-flex align-items-center justify-content-between border-bottom">

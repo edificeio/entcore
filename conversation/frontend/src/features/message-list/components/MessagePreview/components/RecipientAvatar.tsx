@@ -25,7 +25,7 @@ export function RecipientAvatar({ recipients }: RecipientAvatarProps) {
   } else if (recipientCount > 1) {
     return (
       <div
-        className="bg-orange-200 avatar avatar-sm rounded-circle"
+        className="bg-secondary-200 avatar avatar-sm rounded-circle"
         aria-label={t('recipient.avatar.group')}
         role="img"
       >

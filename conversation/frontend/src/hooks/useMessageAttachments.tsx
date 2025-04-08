@@ -26,8 +26,8 @@ export function useMessageAttachments({ id, attachments }: Message) {
   async function attachFiles(files: FileList | null) {
     if (!id) {
       // Save this new draft to get its id
-      const promise = createOrUpdateDraft();
-      if (promise) id = (await promise).id;
+      const promise = await createOrUpdateDraft();
+      if (promise) id = promise.id;
     }
     const mutateVars: { draftId: string; files: File[] } = {
       draftId: id,

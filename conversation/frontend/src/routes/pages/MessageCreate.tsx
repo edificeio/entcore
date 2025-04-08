@@ -1,7 +1,7 @@
 import { useEdificeClient } from '@edifice.io/react';
 import { QueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
-import { MessageEdit } from '~/features/message-edit';
+import { MessageEdit } from '~/features/message-edit/MessageEdit';
 import { Message as MessageModel } from '~/models';
 
 export const loader = (_queryClient: QueryClient) => async () => {
