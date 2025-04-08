@@ -11,10 +11,14 @@ export interface MessageHeaderProps {
 export function MessageEditHeader({ message }: MessageHeaderProps) {
   const { t } = useI18n();
 
-  const [showCC, setShowCC] = useState(false);
-  const [showCCI, setShowCCI] = useState(false);
-
   const { to, cc, cci } = message;
+
+  const [showCC, setShowCC] = useState(
+    cc.groups.length > 0 || cc.users.length > 0,
+  );
+  const [showCCI, setShowCCI] = useState(
+    cci && (cci.groups.length > 0 || cci.users.length > 0),
+  );
 
   return (
     <>
@@ -31,6 +35,7 @@ export function MessageEditHeader({ message }: MessageHeaderProps) {
               variant="ghost"
               size="sm"
               color="secondary"
+              hidden={showCC}
             >
               {t('button.cc')}
             </Button>
@@ -39,6 +44,7 @@ export function MessageEditHeader({ message }: MessageHeaderProps) {
               variant="ghost"
               size="sm"
               color="secondary"
+              hidden={showCCI}
             >
               {t('button.cci')}
             </Button>
