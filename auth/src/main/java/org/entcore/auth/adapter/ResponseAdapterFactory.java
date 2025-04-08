@@ -45,6 +45,9 @@ public class ResponseAdapterFactory {
 			case "2.1":
 			case "v2.1":
 				return new UserInfoAdapterV2_1Json();
+			case "3.0" :
+			case "v3.0" :
+				return new UserInfoAdapterV3_0Json();
 
 			case "oidc1.0":
 				return new UserInfoAdapterOpenIdConnectV1_0();
