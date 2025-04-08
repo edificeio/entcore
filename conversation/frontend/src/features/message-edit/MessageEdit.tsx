@@ -1,17 +1,16 @@
-import { odeServices } from '@edifice.io/client';
 import { FormControl, Input, useDate, useDebounce } from '@edifice.io/react';
 import { useEffect, useRef, useState } from 'react';
 import { MessageActionDropDown } from '~/components/MessageActionDropDown/MessageActionDropDown';
 import { MessageBody } from '~/components/MessageBody';
 import { useI18n } from '~/hooks';
 import { Message } from '~/models';
-import { useCreateOrUpdateDraft } from '~/services';
+import { useConversationConfig, useCreateOrUpdateDraft } from '~/services';
 import {
   useAppActions,
   useMessageUpdated,
   useMessageUpdatedNeedToSave,
 } from '~/store';
-import { MessageHeaderEdit } from './MessageHeaderEdit';
+import { MessageEditHeader } from './components/MessageEditHeader';
 
 export interface MessageEditProps {
   message: Message;
@@ -27,20 +26,19 @@ export function MessageEdit({ message }: MessageEditProps) {
   const debounceTimeToSave = useRef(5000);
   const createOrUpdateDraft = useCreateOrUpdateDraft();
   const [contentKey, setContentKey] = useState(0);
+  const { data: publicConfig } = useConversationConfig();
 
   useEffect(() => {
-    odeServices
-      .conf()
-      .getPublicConf('conversation')
-      .then((publicConf: any) => {
-        if (publicConf && publicConf['debounce-time-to-auto-save']) {
-          debounceTimeToSave.current = publicConf['debounce-time-to-auto-save'];
-        }
-      });
     setMessageUpdated(message);
     setContentKey((contentKey) => contentKey + 1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (publicConfig && publicConfig['debounce-time-to-auto-save']) {
+      debounceTimeToSave.current = publicConfig['debounce-time-to-auto-save'];
+    }
+  }, [publicConfig]);
 
   useEffect(() => {
     setMessageUpdated(message);
@@ -70,38 +68,39 @@ export function MessageEdit({ message }: MessageEditProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messageUpdatedDebounced]);
 
-  if (!messageUpdated) {
-    return null;
-  }
   return (
-    <div>
-      <MessageHeaderEdit message={messageUpdated} />
-      <FormControl id="messageSubject" isRequired className="border-bottom">
-        <Input
-          placeholder={t('subject')}
-          value={subject}
-          size="lg"
-          className="border-0"
-          type="text"
-          onChange={(e) => handleSubjectChange(e.target.value)}
-        />
-      </FormControl>
-      <MessageBody
-        key={contentKey}
-        message={message}
-        editMode={true}
-        onMessageChange={handleMessageChange}
-      />
-      <div className="d-flex justify-content-end gap-12 pt-24 pe-16">
-        <div className="d-flex align-items-end flex-column gap-16">
-          <MessageActionDropDown message={messageUpdated} />
-          {!!messageUpdated?.date && (
-            <div className="caption fst-italic">
-              {fromNow(messageUpdated.date)}
+    <>
+      {messageUpdated && (
+        <div>
+          <MessageEditHeader message={message} />
+          <FormControl id="messageSubject" isRequired className="border-bottom">
+            <Input
+              placeholder={t('subject')}
+              value={subject}
+              size="lg"
+              className="border-0"
+              type="text"
+              onChange={(e) => handleSubjectChange(e.target.value)}
+            />
+          </FormControl>
+          <MessageBody
+            key={contentKey}
+            message={message}
+            editMode={true}
+            onMessageChange={handleMessageChange}
+          />
+          <div className="d-flex justify-content-end gap-12 pt-24 pe-16">
+            <div className="d-flex align-items-end flex-column gap-16">
+              <MessageActionDropDown message={messageUpdated} />
+              {messageUpdated?.date && (
+                <div className="caption fst-italic">
+                  {fromNow(messageUpdated.date)}
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
