@@ -45,8 +45,8 @@ export function RecipientListSelectedItem({
   };
 
   const visibleType =
-    'size' in recipient
-      ? recipient.subType === 'BroadcastGroup'
+    type === 'group'
+      ? (recipient as Group).subType === 'BroadcastGroup'
         ? 'BroadcastGroup'
         : 'Group'
       : 'User';
