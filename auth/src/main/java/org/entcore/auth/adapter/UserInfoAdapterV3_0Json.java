@@ -19,18 +19,21 @@
 
 package org.entcore.auth.adapter;
 
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-public class UserInfoAdapterV2_0Json implements UserInfoAdapter {
+public class UserInfoAdapterV3_0Json extends UserInfoAdapterV1_0Json implements UserInfoAdapter {
 
-	@Override
-	public JsonObject getInfo(JsonObject info, String clientId) {
-		JsonObject s = info.copy();
-		s.remove("cache");
-		s.remove("manualGroups");
-		s.remove("structureNodes");
-		s.remove("structureExternalId");
-		return s;
-	}
+    @Override
+    public JsonObject getInfo(JsonObject info, String clientId) {
+        JsonObject s = info.copy();
 
+        final JsonObject filteredInfos = super.getCommonFilteredInfos(s, clientId);
+        filteredInfos.put("manualGroups", info.getJsonArray("manualGroups"));
+        filteredInfos.put("structureNodes", info.getJsonArray("structureNodes"));
+        filteredInfos.put("structures", info.getJsonArray("structureExternalId"));
+        filteredInfos.put("functions", info.getJsonObject("functions"));
+        return filteredInfos;
+
+    }
 }
