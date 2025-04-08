@@ -98,18 +98,17 @@ export const useSearchRecipients = ({
         payload: searchVisibles,
       });
 
-      const adaptedResults: OptionListItemType[] = searchVisibles
-        .filter((visible) => {
-          return visible.usedIn
-            .map((ui) => ui.toLowerCase())
-            .includes(recipientType);
-        })
-        .map((searchResult: Visible) => {
+      const adaptedResults: OptionListItemType[] = searchVisibles.map(
+        (searchResult: Visible) => {
           return {
             value: searchResult.id,
             label: searchResult.displayName,
+            disabled: !searchResult.usedIn
+              .map((ui) => ui.toLowerCase())
+              .includes(recipientType),
           };
-        });
+        },
+      );
 
       dispatch({
         type: 'addResult',
@@ -138,7 +137,7 @@ export const useSearchRecipients = ({
 
   return {
     state,
-    defoultBookmarks: defaultBookmarks,
+    defaultBookmarks,
     searchMinLength,
     isSearchLoading: state.isSearching,
     hasSearchNoResults,
