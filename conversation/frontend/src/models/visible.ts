@@ -1,4 +1,4 @@
-export type VisibleType = 'User' | 'Group' | 'ShareBookmark';
+export type VisibleType = 'User' | 'Group' | 'ShareBookmark' | 'BroadcastGroup';
 
 export type Visible = {
   id: string;

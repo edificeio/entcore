@@ -5,18 +5,23 @@ import { useI18n } from '~/hooks';
 import { useMessageUserDisplayName } from '~/hooks/useUserDisplayName';
 import { Visible } from '~/models/visible';
 import RecipientAvatar from './RecipientAvatar';
+import { RecipientType } from './RecipientListEdit';
 import './RecipientListItem.css';
 
 interface MessageRecipientListItemProps {
   visible: Visible;
   onRecipientClick: (visible: Visible) => void;
+  recipientType: RecipientType;
   disabled?: boolean;
+  isSelected?: boolean;
 }
 
 export function RecipientListItem({
   visible,
   onRecipientClick,
+  recipientType,
   disabled = false,
+  isSelected: isSelectedList = false,
 }: MessageRecipientListItemProps) {
   const { t, common_t } = useI18n();
   const recipientName = useMessageUserDisplayName(visible);
@@ -50,6 +55,10 @@ export function RecipientListItem({
     'text-gray-600': disabled,
   });
 
+  const canBeUsedAsRecipient = visible.usedIn
+    .map((ui) => ui.toLocaleLowerCase())
+    .includes(recipientType);
+
   return (
     <Dropdown.Item
       type="select"
@@ -57,23 +66,25 @@ export function RecipientListItem({
       disabled={disabled}
     >
       <div className={className}>
-        <RecipientAvatar
-          id={visible.id}
-          nbUsers={visible.type === 'User' ? 1 : visible.nbUsers}
-        />
-        {visible.type === 'Group' && visible.nbUsers && visible.nbUsers > 1 && (
-          <div className="d-flex flex-column small">
-            <strong className={classNameTextDisabled}>{recipientName}</strong>
-            <span className={'text-gray-700' + classNameTextDisabled}>
-              {t('members', {
-                count: visible.nbUsers,
-              })}
-            </span>
-          </div>
-        )}
-        {visible.type === 'ShareBookmark' && (
+        <RecipientAvatar id={visible.id} type={visible.type} />
+        {(visible.type === 'Group' ||
+          visible.type === 'ShareBookmark' ||
+          visible.type === 'BroadcastGroup') && (
           <div className="d-flex flex-column small flex-fill">
             <strong className={classNameTextDisabled}>{recipientName}</strong>
+            {(visible.nbUsers || !canBeUsedAsRecipient) && (
+              <span className={'text-gray-700' + classNameTextDisabled}>
+                {visible.nbUsers &&
+                  canBeUsedAsRecipient &&
+                  t('members', {
+                    count: visible.nbUsers,
+                  })}
+                {!canBeUsedAsRecipient &&
+                  t('visible.usedIn.errorExplanation', {
+                    recipientTypes: visible.usedIn.join(', '),
+                  })}
+              </span>
+            )}
           </div>
         )}
         {visible.type === 'User' && (
@@ -85,20 +96,25 @@ export function RecipientListItem({
                 {common_t(visible.profile || '')}
               </span>
             </strong>
-            {['Student', 'Relative'].includes(visible.profile || '') &&
-              !!visible.relatives?.length && (
-                <span className={'text-gray-700' + +classNameTextDisabled}>
-                  {visible.profile === 'Student'
-                    ? t('visible.relatives')
-                    : t('visible.childrens')}
-                  {visible.relatives
-                    .map((relative) => relative.displayName)
-                    .join(', ')}
-                </span>
-              )}
+            {visible.profile === 'Student' && !!visible.relatives?.length && (
+              <span className={'text-gray-700' + +classNameTextDisabled}>
+                {t('visible.relatives')}
+                {visible.relatives
+                  .map((relative) => relative.displayName)
+                  .join(', ')}
+              </span>
+            )}
+            {visible.profile === 'Relative' && !!visible.children?.length && (
+              <span className={'text-gray-700' + +classNameTextDisabled}>
+                {t('visible.childrens')}
+                {visible.children
+                  .map((relative) => relative.displayName)
+                  .join(', ')}
+              </span>
+            )}
           </div>
         )}
-        {disabled && <IconSuccessOutline className="text-gray-700" />}
+        {isSelectedList && <IconSuccessOutline className="text-gray-700" />}
       </div>
     </Dropdown.Item>
   );

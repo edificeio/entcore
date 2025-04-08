@@ -8,10 +8,11 @@ import { useAppActions, useMessageUpdated } from '~/store';
 import { RecipientListItem } from './RecipientListItem';
 import { RecipientListSelectedItem } from './RecipientListSelectedItem';
 
+export type RecipientType = 'to' | 'cc' | 'cci';
 export interface RecipientListProps {
   recipients: Recipients;
   head: ReactNode;
-  recipientType: 'to' | 'cc' | 'cci';
+  recipientType: RecipientType;
   onRecipientUpdate?: (recipients: Recipients) => void;
 }
 
@@ -41,7 +42,7 @@ export function RecipientListEdit({
         id: recipient.id,
         displayName: recipient.displayName,
         size: recipient.nbUsers || 0,
-        subType: recipient.groupType,
+        subType: recipient.type,
       };
       recipients.groups.push(recipientToAdd);
     }
@@ -100,14 +101,17 @@ export function RecipientListEdit({
       if (!visible) {
         return null;
       }
+      const isSelected = recipientArray.some(
+        (recipient) => recipient.id === visible.id,
+      );
       return (
         <Fragment key={index}>
           <RecipientListItem
             onRecipientClick={handleRecipientClick}
             visible={visible}
-            disabled={recipientArray.some(
-              (recipient) => recipient.id === visible.id,
-            )}
+            recipientType={recipientType}
+            disabled={isSelected || recipient.disabled}
+            isSelected={isSelected}
           />
         </Fragment>
       );

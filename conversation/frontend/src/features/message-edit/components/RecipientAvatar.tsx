@@ -1,56 +1,57 @@
 import { Avatar, AvatarSizes, useDirectory } from '@edifice.io/react';
-import { IconBookmark, IconGroupAvatar } from '@edifice.io/react/icons';
+import {
+  IconBookmark,
+  IconGlobe2,
+  IconGroupAvatar,
+} from '@edifice.io/react/icons';
 import clsx from 'clsx';
 import { useI18n } from '~/hooks';
+import { VisibleType } from '~/models/visible';
 
 interface RecipientAvatarProps {
   id: string;
-  nbUsers?: number;
+  type: VisibleType;
   className?: string;
   size?: AvatarSizes;
 }
 
 export function RecipientAvatar({
   id,
-  nbUsers,
+  type,
   className,
   size = 'sm',
 }: RecipientAvatarProps) {
   const { t } = useI18n();
   const { getAvatarURL } = useDirectory();
 
-  if (!nbUsers) {
-    className = clsx(
-      'bg-yellow-200 avatar rounded-circle',
-      className,
-      `avatar-${size}`,
-    );
+  const classNameGroup = clsx(
+    'avatar rounded-circle',
+    className,
+    `avatar-${size}`,
+    {
+      'bg-secondary-200': type === 'Group' || type === 'BroadcastGroup',
+      'bg-yellow-200': type === 'ShareBookmark',
+    },
+  );
+
+  if (['ShareBookmark', 'BroadcastGroup', 'Group'].includes(type)) {
     return (
       <div
-        className={className}
+        className={classNameGroup}
         aria-label={t('recipient.avatar.group')}
         role="img"
       >
-        <IconBookmark className="w-16" />
+        {type === 'ShareBookmark' ? (
+          <IconBookmark className="w-16" />
+        ) : type === 'BroadcastGroup' ? (
+          <IconGlobe2 className="w-16" />
+        ) : (
+          <IconGroupAvatar className="w-16" />
+        )}
       </div>
     );
   }
-  if (nbUsers > 1) {
-    className = clsx(
-      'bg-secondary-200 avatar rounded-circle',
-      className,
-      `avatar-${size}`,
-    );
-    return (
-      <div
-        className={className}
-        aria-label={t('recipient.avatar.group')}
-        role="img"
-      >
-        <IconGroupAvatar className="w-16" />
-      </div>
-    );
-  }
+
   const avatarUrl = getAvatarURL(id, 'user');
 
   return (
