@@ -5,7 +5,12 @@ import {
   IconButtonProps,
   useEdificeClient,
 } from '@edifice.io/react';
-import { IconOptions, IconPlus, IconPrint } from '@edifice.io/react/icons';
+import {
+  IconOptions,
+  IconPlus,
+  IconPrint,
+  IconSignature,
+} from '@edifice.io/react/icons';
 import { Fragment, RefAttributes } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useI18n } from '~/hooks';
@@ -26,7 +31,7 @@ export const AppActionHeader = () => {
     {
       id: 'signature',
       label: t('signature.menu.label'),
-      icon: <IconPrint />,
+      icon: <IconSignature />,
       action: () => setOpenedModal('signature'),
       visibility: true,
     },
