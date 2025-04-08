@@ -13,6 +13,8 @@ interface AddMessageAttachmentToWorkspaceModalProps {
   isOpen?: boolean;
 }
 
+export const WORKSPACE_OWNER_FOLDER_ID = 'workspace-owner-folder-id';
+
 export function AddMessageAttachmentToWorkspaceModal({
   message,
   attachmentId,
@@ -21,20 +23,22 @@ export function AddMessageAttachmentToWorkspaceModal({
 }: AddMessageAttachmentToWorkspaceModalProps) {
   const { t } = useI18n();
   const { copyToWorkspace } = useMessageAttachments(message);
-  const [selectedFolderId, setSelectedFolderId] = useState<
-    string | undefined
-  >();
+  const [selectedFolderId, setSelectedFolderId] = useState<string | undefined>(
+    undefined,
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [disabled, setDisabled] = useState(false);
 
-  const handleFolderSelected = (folderId: string) => {
+  const handleFolderSelected = (folderId: string | undefined) => {
     setSelectedFolderId(folderId);
   };
 
   const handleAddAttachmentToWorkspace = async () => {
     if (!selectedFolderId) return;
     setIsLoading(true);
-    const isSuccess = await copyToWorkspace(attachmentId, selectedFolderId);
+    const targetFolderId =
+      selectedFolderId === WORKSPACE_OWNER_FOLDER_ID ? '' : selectedFolderId;
+    const isSuccess = await copyToWorkspace(attachmentId, targetFolderId);
     if (isSuccess) {
       onModalClose();
     }
