@@ -10,7 +10,7 @@ import { IconTextSize } from '@edifice.io/react/icons';
 import { useI18n } from '~/hooks';
 import { useToolbarOptions } from '../../hooks';
 
-interface Props {
+interface SignatureEditorToolbarTextSizeProps {
   editor: Editor;
   /**
    * Props for the trigger
@@ -23,7 +23,7 @@ interface Props {
 export const SignatureEditorToolbarTextSize = ({
   editor,
   triggerProps,
-}: Props) => {
+}: SignatureEditorToolbarTextSizeProps) => {
   const { common_t } = useI18n();
   const { textOptions } = useToolbarOptions(editor);
 

@@ -18,14 +18,17 @@ export interface SignatureEditorRef {
   getHtmlContent: () => undefined | string;
 }
 
-export interface EditorProps {
+export interface SignatureEditorProps {
   content: Content;
   mode: 'edit' | 'read';
   placeholder: string;
 }
 
 export const SignatureEditor = forwardRef(
-  ({ content, mode = 'read' }: EditorProps, ref: Ref<SignatureEditorRef>) => {
+  (
+    { content, mode = 'read' }: SignatureEditorProps,
+    ref: Ref<SignatureEditorRef>,
+  ) => {
     const id = useId();
     const editor = useEditor({
       extensions: [

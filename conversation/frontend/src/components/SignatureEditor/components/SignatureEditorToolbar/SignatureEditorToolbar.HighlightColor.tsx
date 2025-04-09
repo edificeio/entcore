@@ -19,7 +19,7 @@ import {
 import { useI18n } from '~/hooks';
 import { IconTextHighlight } from '@edifice.io/react/icons';
 
-interface Props {
+interface SignatureEditorToolbarHighlightColorProps {
   editor: Editor;
   /**
    * Props for the trigger
@@ -37,7 +37,7 @@ export const SignatureEditorToolbarHighlightColor = ({
   editor,
   triggerProps,
   itemRefs,
-}: Props) => {
+}: SignatureEditorToolbarHighlightColorProps) => {
   const { common_t } = useI18n();
 
   // Manage text and background colors.

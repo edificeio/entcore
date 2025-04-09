@@ -7,7 +7,7 @@ import {
 } from '@edifice.io/react';
 import { Fragment, ReactNode, RefAttributes } from 'react';
 
-interface Props {
+interface SignatureEditorToolbarDropdownMenuProps {
   /**
    * Props for the trigger
    */
@@ -33,7 +33,7 @@ export const SignatureEditorToolbarDropdownMenu = ({
   icon,
   ariaLabel,
   options,
-}: Props) => {
+}: SignatureEditorToolbarDropdownMenuProps) => {
   return (
     <>
       <Tooltip message={ariaLabel} placement="top">
