@@ -2,20 +2,21 @@ import { createStore, useStore } from 'zustand';
 import { Config } from '~/config';
 import { Folder, Message } from '~/models';
 
-type FolderModal =
-  | null
+type OpenedModal =
+  | undefined
   | 'create'
   | 'move'
   | 'rename'
   | 'trash'
-  | 'move-message';
+  | 'move-message'
+  | 'signature';
 
 interface State {
   workflows: Record<string, boolean>;
   config: Config;
   selectedMessageIds: string[];
   selectedFolders: Folder[];
-  openFolderModal: FolderModal;
+  openedModal: OpenedModal;
   messageUpdated?: Message;
   messageUpdatedNeedToSave: boolean;
 }
@@ -26,7 +27,7 @@ type Action = {
     setConfig: (config: Config) => void;
     setSelectedMessageIds: (value: string[]) => void;
     setSelectedFolders: (value: Folder[]) => void;
-    setOpenFolderModal: (value: FolderModal) => void;
+    setOpenedModal: (value: OpenedModal) => void;
     setMessageUpdated: (value: Message) => void;
     setMessageUpdatedNeedToSave: (value: boolean) => void;
   };
@@ -40,7 +41,7 @@ type ExtractState<S> = S extends {
 
 type Params<U> = Parameters<typeof useStore<typeof store, U>>;
 
-const initialState = {
+const initialState: State = {
   workflows: {
     'org.entcore.conversation.controllers.ConversationController|createDraft':
       false,
@@ -49,7 +50,7 @@ const initialState = {
   config: { maxDepth: 3, recallDelayMinutes: 60 } as Config,
   selectedMessageIds: [],
   selectedFolders: [],
-  openFolderModal: null,
+  openedModal: undefined,
   messageUpdated: undefined,
   messageUpdatedNeedToSave: false,
 };
@@ -62,8 +63,8 @@ const store = createStore<State & Action>()((set) => ({
     setSelectedMessageIds: (selectedMessageIds: string[]) =>
       set({ selectedMessageIds }),
     setSelectedFolders: (selectedFolders: Folder[]) => set({ selectedFolders }),
-    setOpenFolderModal: (openFolderModal: FolderModal) =>
-      set({ openFolderModal }),
+    setOpenedModal: (openedModal: OpenedModal) =>
+      set({ openedModal: openedModal }),
     setMessageUpdated: (message: Message) => set({ messageUpdated: message }),
     setMessageUpdatedNeedToSave: (messageUpdatedNeedToSave: boolean) =>
       set({ messageUpdatedNeedToSave }),
@@ -77,8 +78,7 @@ const selectedMessageIds = (state: ExtractState<typeof store>) =>
   state.selectedMessageIds;
 const selectedFolders = (state: ExtractState<typeof store>) =>
   state.selectedFolders;
-const setOpenFolderModal = (state: ExtractState<typeof store>) =>
-  state.openFolderModal;
+const setOpenedModal = (state: ExtractState<typeof store>) => state.openedModal;
 const setMessageUpdated = (state: ExtractState<typeof store>) =>
   state.messageUpdated;
 const setMessageUpdatedNeedToSave = (state: ExtractState<typeof store>) =>
@@ -90,7 +90,7 @@ export const getWorkflows = () => workflows(store.getState());
 export const getConfig = () => config(store.getState());
 export const getSelectedMessageIds = () => selectedMessageIds(store.getState());
 export const getSelectedFolders = () => selectedFolders(store.getState());
-export const getOpenFolderModal = () => setOpenFolderModal(store.getState());
+export const getOpenedModal = () => setOpenedModal(store.getState());
 export const getMessageUpdated = () => setMessageUpdated(store.getState());
 export const getMessageUpdatedNeedToSave = () =>
   setMessageUpdatedNeedToSave(store.getState());
@@ -109,7 +109,7 @@ export const useWorkflows = () => useAppStore(workflows);
 export const useConfig = () => useAppStore(config);
 export const useSelectedMessageIds = () => useAppStore(selectedMessageIds);
 export const useSelectedFolders = () => useAppStore(selectedFolders);
-export const useOpenFolderModal = () => useAppStore(setOpenFolderModal);
+export const useOpenedModal = () => useAppStore(setOpenedModal);
 export const useMessageUpdated = () => useAppStore(setMessageUpdated);
 export const useMessageUpdatedNeedToSave = () =>
   useAppStore(setMessageUpdatedNeedToSave);
