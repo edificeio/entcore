@@ -77,45 +77,44 @@ describe('Message list component', () => {
       checkboxList[3].click();
     });
 
-    expect(screen.getByText('tag.read')).toBeVisible();
-    expect(screen.getByText('tag.unread')).toBeVisible();
+    expect(screen.queryByLabelText('tag.read')).toBeVisible();
+    expect(screen.queryByLabelText('tag.unread')).toBeVisible();
   });
 
-  //   it('should not render mark as read / unread action when selected message is from current user without being a recipient', async () => {
-  //     const { result } = renderHook(() => useFolderMessages('inbox'), {
-  //       wrapper: ({ children }: { children: React.ReactNode }) =>
-  //         wrapper({
-  //           initialEntries: ['/inbox'],
-  //           children,
-  //         }),
-  //     });
+  it('should not render mark as read / unread action when selected message is from current user without being a recipient', async () => {
+    const { result } = renderHook(() => useFolderMessages('inbox'), {
+      wrapper: ({ children }: { children: React.ReactNode }) =>
+        wrapper({
+          initialEntries: ['/inbox'],
+          children,
+        }),
+    });
 
-  //     console.log('>>>>result:', result.current?.data?.pages);
-  //     await waitFor(() => {
-  //       expect(result.current.isSuccess).toBe(true);
-  //     });
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
 
-  //     render(<MessageList />, { path: '/inbox' });
+    render(<MessageList />, { path: '/inbox' });
 
-  //     const checkboxList = screen.getAllByRole('checkbox');
-  //     act(() => {
-  //       checkboxList[2].click(); // unread: true
-  //       checkboxList[1].click(); // unread: true
-  //       checkboxList[3].click(); // unread: true
-  //       checkboxList[4].click(); // unread: false
-  //     });
+    const checkboxList = screen.getAllByRole('checkbox');
+    act(() => {
+      checkboxList[2].click();
+      checkboxList[1].click();
+      checkboxList[3].click();
+      checkboxList[4].click();
+    });
 
-  //     expect(screen.getByText('tag.read')).not.toBeVisible();
-  //     expect(screen.getByText('tag.unread')).not.toBeVisible();
-  //     act(() => {
-  //       checkboxList[4].click();
-  //     });
-  //     expect(screen.getByText('tag.read')).toBeVisible();
-  //     expect(screen.getByText('tag.unread')).toBeVisible();
-  //     act(() => {
-  //       checkboxList[0].click();
-  //     });
-  //     expect(screen.getByText('tag.read')).not.toBeVisible();
-  //     expect(screen.getByText('tag.unread')).not.toBeVisible();
-  //   });
+    expect(screen.queryByLabelText('tag.read')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('tag.unread')).not.toBeInTheDocument();
+    act(() => {
+      checkboxList[4].click();
+    });
+    expect(screen.queryByLabelText('tag.read')).toBeInTheDocument();
+    expect(screen.queryByLabelText('tag.unread')).toBeInTheDocument();
+    act(() => {
+      checkboxList[0].click();
+    });
+    expect(screen.queryByLabelText('tag.read')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('tag.unread')).not.toBeInTheDocument();
+  });
 });

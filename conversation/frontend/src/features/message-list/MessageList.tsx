@@ -2,6 +2,7 @@ import {
   List,
   Loading,
   ToolbarItem,
+  useBreakpoint,
   useEdificeClient,
 } from '@edifice.io/react';
 import {
@@ -59,6 +60,7 @@ export function MessageList() {
   } = useToolbarVisibility(messages);
 
   const [keyList, setKeyList] = useState(0);
+  const { md } = useBreakpoint();
 
   //handle reload list when search params change
   useEffect(() => {
@@ -83,120 +85,83 @@ export function MessageList() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isLoadingMessage, isLoadingNextPage, fetchNextPage, hasNextPage]);
 
-  const toolbar: ToolbarItem[] = [
+  const toolbarItemsData = [
     {
-      type: 'button',
       name: 'read',
       visibility: showMarkAsReadMessages,
-      props: {
-        children: (
-          <>
-            <IconReadMail />
-            <span>{t('tag.read')}</span>
-          </>
-        ),
-        onClick: handleMarkAsReadClick,
-      },
+      label: t('tag.read'),
+      icon: <IconReadMail />,
+      onClick: handleMarkAsReadClick,
     },
     {
-      type: 'button',
       name: 'unread',
       visibility: showMarkAsUnReadMessages,
-      props: {
-        children: (
-          <>
-            <IconUnreadMail />
-            <span>{t('tag.unread')}</span>
-          </>
-        ),
-        onClick: handleMarkAsUnreadClick,
-      },
+      label: t('tag.unread'),
+      icon: <IconUnreadMail />,
+      onClick: handleMarkAsUnreadClick,
     },
     {
-      type: 'button',
       name: 'delete',
       visibility: showMoveToTrash,
-      props: {
-        children: (
-          <>
-            <IconDelete />
-            <span>{t('delete')}</span>
-          </>
-        ),
-        onClick: handleMoveToTrash,
-      },
+      label: t('delete'),
+      icon: <IconDelete />,
+      onClick: handleMoveToTrash,
     },
     {
-      type: 'button',
       name: 'restore',
       visibility: showTrashActions,
-      props: {
-        children: (
-          <>
-            <IconRestore />
-            <span>{t('restore')}</span>
-          </>
-        ),
-        onClick: handleRestore,
-      },
+      label: t('restore'),
+      icon: <IconRestore />,
+      onClick: handleRestore,
     },
     {
-      type: 'button',
       name: 'move',
       visibility: showMoveToFolder,
-      props: {
-        children: (
-          <>
-            <IconFolderMove />
-            <span>{t('move')}</span>
-          </>
-        ),
-        onClick: handleMoveToFolder,
-      },
+      label: t('move'),
+      icon: <IconFolderMove />,
+      onClick: handleMoveToFolder,
     },
     {
-      type: 'button',
       name: 'delete-definitely',
       visibility: showTrashActions,
-      props: {
-        children: (
-          <>
-            <IconDelete />
-            <span>{t('delete.definitely')}</span>
-          </>
-        ),
-        onClick: handleDelete,
-      },
+      label: t('delete.definitely'),
+      icon: <IconDelete />,
+      onClick: handleDelete,
     },
     {
-      type: 'button',
       name: 'remove-from-folder',
       visibility: showFolderActions,
-      props: {
-        children: (
-          <>
-            <IconFolderDelete />
-            <span>{t('remove.from.folder')}</span>
-          </>
-        ),
-        onClick: handleRemoveFromFolder,
-      },
+      label: t('remove.from.folder'),
+      icon: <IconFolderDelete />,
+      onClick: handleRemoveFromFolder,
     },
     {
-      type: 'button',
       name: 'empty-trash',
       visibility: showEmptyTrash,
-      props: {
-        children: (
-          <>
-            <IconDelete />
-            <span>{t('empty.trash')}</span>
-          </>
-        ),
-        onClick: handleEmptyTrash,
-      },
+      label: t('empty.trash'),
+      icon: <IconDelete />,
+      onClick: handleEmptyTrash,
     },
   ];
+
+  const toolbar: ToolbarItem[] = toolbarItemsData.map(
+    ({ name, label, visibility, icon, onClick }) => ({
+      type: 'button',
+      name,
+      visibility,
+      tooltip: md ? undefined : label,
+      props: {
+        'children': (
+          <>
+            {icon}
+            {md && <span>{label}</span>}
+          </>
+        ),
+        'aria-label': label,
+        onClick,
+      },
+    }),
+  );
 
   if (!messages?.length) return null;
   return (
