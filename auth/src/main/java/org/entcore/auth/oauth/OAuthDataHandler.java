@@ -39,6 +39,7 @@ import jp.eisbahn.oauth2.server.models.AccessToken;
 import jp.eisbahn.oauth2.server.models.AuthInfo;
 import jp.eisbahn.oauth2.server.models.Request;
 import jp.eisbahn.oauth2.server.models.UserData;
+import org.entcore.auth.security.CustomTokenHelper;
 import org.entcore.auth.security.SamlHelper;
 import org.entcore.auth.services.OpenIdConnectService;
 import org.entcore.auth.services.OpenIdDataHandler;
@@ -756,11 +757,7 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 
 	@Override
 	public void getUserIdByCustomToken(String customToken, Handler<Try<AccessDenied, UserData>> handler) {
-		if (samlHelper != null) {
-			samlHelper.processCustomToken(customToken, handler);
-		} else {
-			handler.handle(new Try<AccessDenied, UserData>(new AccessDenied(AUTH_ERROR_AUTHENTICATION_FAILED)));
-		}
+		CustomTokenHelper.processCustomToken(customToken, handler);
 	}
 
 	public void getClientsByGrantType(Vertx vertx, JwtVerifier jwtVerifier) {
