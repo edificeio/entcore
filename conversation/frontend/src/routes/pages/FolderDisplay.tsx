@@ -32,7 +32,7 @@ export function Component() {
   );
   return (
     <>
-      {(!!messages.length ||
+      {(!!messages?.length ||
         searchParams.get('search') ||
         searchParams.get('unread')) && <MessageListHeader />}
       <MessageList />

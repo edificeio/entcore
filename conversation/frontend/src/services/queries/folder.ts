@@ -22,10 +22,15 @@ export const folderQueryOptions = {
   base: ['folder'] as const,
 
   getMessagesQuerykey(
-    folderId: string,
+    folderId: string | null | undefined,
     options?: { search?: string; unread?: boolean },
   ) {
-    return [...folderQueryOptions.base, folderId, 'messages', options] as const;
+    return [
+      ...folderQueryOptions.base,
+      folderId ?? 'undefined',
+      'messages',
+      options,
+    ] as const;
   },
 
   /**
@@ -81,7 +86,7 @@ export const folderQueryOptions = {
    * @returns Query options for fetching messages with pagination.
    */
   getMessages(
-    folderId: string,
+    folderId: string | null | undefined,
     options?: {
       /** (optional) Search string */
       search?: string;
@@ -94,11 +99,13 @@ export const folderQueryOptions = {
     return infiniteQueryOptions({
       queryKey: this.getMessagesQuerykey(folderId, options),
       queryFn: ({ pageParam = 0 }) => {
-        return folderService.getMessages(folderId, {
-          ...options,
-          page: pageParam,
-          pageSize,
-        });
+        return folderId
+          ? folderService.getMessages(folderId, {
+              ...options,
+              page: pageParam,
+              pageSize,
+            })
+          : Promise.resolve([] as MessageMetadata[]);
       },
       staleTime: 5 * 60 * 1000, // 5 minutes
       initialPageParam: 0,

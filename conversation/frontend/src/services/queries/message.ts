@@ -8,7 +8,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { Message, MessageBase, MessageMetadata } from '~/models';
 import {
   baseUrl,
@@ -17,6 +17,7 @@ import {
   useUpdateFolderBadgeCountLocal,
 } from '~/services';
 import { useAppActions, useMessageUpdated } from '~/store';
+import { useSelectedFolder } from '~/hooks';
 const appCodeName = 'conversation';
 /**
  * Message Query Options Factory.
@@ -81,12 +82,12 @@ export const useConversationConfig = () => {
 export const useMessage = (messageId: string) => {
   const result = useQuery(messageQueryOptions.getById(messageId));
   const queryClient = useQueryClient();
-  const { folderId } = useParams() as { folderId: string };
+  const { folderId } = useSelectedFolder();
   const [searchParams] = useSearchParams();
   const search = searchParams.get('search');
   const unreadFilter = searchParams.get('unread');
 
-  if (result.isSuccess) {
+  if (result.isSuccess && folderId) {
     queryClient.setQueryData(
       folderQueryOptions.getMessagesQuerykey(folderId, {
         search: search === '' ? undefined : search || undefined,
@@ -119,7 +120,7 @@ export const useOriginalMessage = (messageId: string) => {
  * @returns Mutation result for toggling the unread status.
  */
 const useToggleUnread = (unread: boolean) => {
-  const { folderId } = useParams() as { folderId: string };
+  const { folderId } = useSelectedFolder();
   const [searchParams] = useSearchParams();
   const search = searchParams.get('search');
   const unreadFilter = searchParams.get('unread');
@@ -135,34 +136,36 @@ const useToggleUnread = (unread: boolean) => {
     onSuccess: (_data, { messages }) => {
       const messageIds = messages.map((m) => m.id);
 
-      if (folderId !== 'draft') {
-        const countMessageUpdated = messages.filter(
-          (m) => m.unread !== unread,
-        ).length;
-        // Update the unread count in the folder except for the draft folder wich count all messages and not only unread
-        updateFolderBadgeCountLocal(
-          folderId,
-          unread ? countMessageUpdated : -countMessageUpdated,
+      if (folderId) {
+        if (folderId !== 'draft') {
+          const countMessageUpdated = messages.filter(
+            (m) => m.unread !== unread,
+          ).length;
+          // Update the unread count in the folder except for the draft folder wich count all messages and not only unread
+          updateFolderBadgeCountLocal(
+            folderId,
+            unread ? countMessageUpdated : -countMessageUpdated,
+          );
+        }
+
+        // Update the message unread status in the list
+        queryClient.setQueryData(
+          folderQueryOptions.getMessagesQuerykey(folderId, {
+            search: search === '' ? undefined : search || undefined,
+            unread: !unreadFilter ? undefined : true,
+          }),
+          (data: InfiniteData<MessageMetadata>) => {
+            data.pages.forEach((page: any) => {
+              page.forEach((message: MessageMetadata) => {
+                if (messageIds.includes(message.id)) {
+                  message.unread = unread;
+                }
+              });
+            });
+            return data;
+          },
         );
       }
-
-      // Update the message unread status in the list
-      queryClient.setQueryData(
-        folderQueryOptions.getMessagesQuerykey(folderId, {
-          search: search === '' ? undefined : search || undefined,
-          unread: !unreadFilter ? undefined : true,
-        }),
-        (data: InfiniteData<MessageMetadata>) => {
-          data.pages.forEach((page: any) => {
-            page.forEach((message: MessageMetadata) => {
-              if (messageIds.includes(message.id)) {
-                message.unread = unread;
-              }
-            });
-          });
-          return data;
-        },
-      );
 
       // Update the message unread status in the message details
       messageIds.map((messageId) => {
@@ -198,7 +201,7 @@ export const useMarkUnread = () => {
  * @returns Mutation result for moving the message to the trash.
  */
 export const useTrashMessage = () => {
-  const { folderId } = useParams() as { folderId: string };
+  const { folderId } = useSelectedFolder();
   const [searchParams] = useSearchParams();
   const search = searchParams.get('search');
   const unreadFilter = searchParams.get('unread');
@@ -222,46 +225,47 @@ export const useTrashMessage = () => {
       queryClient.invalidateQueries({
         queryKey: ['folder', 'trash'],
       });
+      if (folderId) {
+        let unreadTrashedCount = 0;
+        // Update list message
+        queryClient.setQueryData(
+          folderQueryOptions.getMessagesQuerykey(folderId, {
+            search: search === '' ? undefined : search || undefined,
+            unread: !unreadFilter ? undefined : true,
+          }),
+          // Remove deleted message from pages
+          (data: InfiniteData<Message[]>) => {
+            if (!['trash', 'draft', 'outbox'].includes(folderId)) {
+              unreadTrashedCount = data.pages.reduce((count, page) => {
+                return (
+                  count +
+                  page.filter(
+                    (message) =>
+                      message.unread && messageIds.includes(message.id),
+                  ).length
+                );
+              }, 0);
+            }
 
-      let unreadTrashedCount = 0;
-      // Update list message
-      queryClient.setQueryData(
-        folderQueryOptions.getMessagesQuerykey(folderId, {
-          search: search === '' ? undefined : search || undefined,
-          unread: !unreadFilter ? undefined : true,
-        }),
-        // Remove deleted message from pages
-        (data: InfiniteData<Message[]>) => {
-          if (!['trash', 'draft', 'outbox'].includes(folderId)) {
-            unreadTrashedCount = data.pages.reduce((count, page) => {
-              return (
-                count +
+            return {
+              ...data,
+              pages: data.pages.map((page: Message[]) =>
                 page.filter(
-                  (message) =>
-                    message.unread && messageIds.includes(message.id),
-                ).length
-              );
-            }, 0);
-          }
-
-          return {
-            ...data,
-            pages: data.pages.map((page: Message[]) =>
-              page.filter(
-                (message: Message) => !messageIds.includes(message.id),
+                  (message: Message) => !messageIds.includes(message.id),
+                ),
               ),
-            ),
-          };
-        },
-      );
+            };
+          },
+        );
 
-      // Update unread inbox count
-      // Update custom folder count
-      if (
-        !['trash', 'draft', 'outbox'].includes(folderId) &&
-        unreadTrashedCount
-      ) {
-        updateFolderBadgeCountLocal(folderId, -unreadTrashedCount);
+        // Update unread inbox count
+        // Update custom folder count
+        if (
+          !['trash', 'draft', 'outbox'].includes(folderId) &&
+          unreadTrashedCount
+        ) {
+          updateFolderBadgeCountLocal(folderId, -unreadTrashedCount);
+        }
       }
 
       // Update draft count if It's a draft message
