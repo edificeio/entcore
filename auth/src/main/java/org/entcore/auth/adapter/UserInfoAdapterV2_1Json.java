@@ -28,6 +28,7 @@ public class UserInfoAdapterV2_1Json implements UserInfoAdapter {
 		JsonObject s = info.copy();
 		s.remove("manualGroups");
 		s.remove("structureNodes");
+		s.remove("structureExternalId");
 		return s;
 	}
 

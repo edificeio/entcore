@@ -24,15 +24,16 @@ import io.vertx.core.json.JsonObject;
 
 public class UserInfoAdapterV3_0Json extends UserInfoAdapterV1_0Json implements UserInfoAdapter {
 
-	@Override
-	public JsonObject getInfo(JsonObject info, String clientId) {
-		JsonObject s = info.copy();
-		final JsonArray manualGroups = s.getJsonArray("manualGroups");
-		final JsonArray structureNodes = s.getJsonArray("structureNodes");
-		final JsonObject filteredInfos = super.getCommonFilteredInfos(s, clientId);
-		filteredInfos.put("manualGroups", manualGroups);
-		filteredInfos.put("structureNodes", structureNodes);
-		return filteredInfos;
+    @Override
+    public JsonObject getInfo(JsonObject info, String clientId) {
+        JsonObject s = info.copy();
 
-	}
+        final JsonObject filteredInfos = super.getCommonFilteredInfos(s, clientId);
+        filteredInfos.put("manualGroups", info.getJsonArray("manualGroups"));
+        filteredInfos.put("structureNodes", info.getJsonArray("structureNodes"));
+        filteredInfos.put("structures", info.getJsonArray("structureExternalId"));
+        filteredInfos.put("functions", info.getJsonObject("functions"));
+        return filteredInfos;
+
+    }
 }

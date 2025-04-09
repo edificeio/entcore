@@ -29,6 +29,7 @@ public class UserInfoAdapterV2_0Json implements UserInfoAdapter {
 		s.remove("cache");
 		s.remove("manualGroups");
 		s.remove("structureNodes");
+		s.remove("structureExternalId");
 		return s;
 	}
 
