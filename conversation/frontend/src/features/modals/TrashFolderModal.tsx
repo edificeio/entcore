@@ -5,15 +5,15 @@ import { useFolderActions, useI18n } from '~/hooks';
 
 export function TrashFolderModal() {
   const { t, common_t } = useI18n();
-  const { setOpenFolderModal } = useAppActions();
+  const { setOpenedModal } = useAppActions();
   const { trashFolder: handleTrashClick, isActionPending } = useFolderActions();
 
   useEffect(() => {
-    if (isActionPending === false) setOpenFolderModal(null);
+    if (isActionPending === false) setOpenedModal(undefined);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActionPending]);
 
-  const handleClose = () => setOpenFolderModal(null);
+  const handleClose = () => setOpenedModal(undefined);
 
   return (
     <Modal

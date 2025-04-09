@@ -17,13 +17,14 @@ import {
   CreateFolderModal,
   RenameFolderModal,
   MoveMessageToFolderModal,
+  SignatureModal,
 } from '~/features';
 import {
   actionsQueryOptions,
   configQueryOptions,
   folderQueryOptions,
 } from '~/services/queries';
-import { setConfig, setWorkflows, useOpenFolderModal } from '~/store';
+import { setConfig, setWorkflows, useOpenedModal } from '~/store';
 import './index.css';
 
 // Typing for the root route loader.
@@ -64,7 +65,7 @@ export function Component() {
   const { actions, config } = useLoaderData() as RootLoaderData;
 
   const { md } = useBreakpoint();
-  const folderModal = useOpenFolderModal();
+  const openedModal = useOpenedModal();
 
   if (!init || !currentApp) return <LoadingScreen position={false} />;
 
@@ -92,10 +93,11 @@ export function Component() {
         </div>
       </div>
 
-      {folderModal === 'create' && <CreateFolderModal />}
-      {folderModal === 'rename' && <RenameFolderModal />}
-      {folderModal === 'trash' && <TrashFolderModal />}
-      {folderModal === 'move-message' && <MoveMessageToFolderModal />}
+      {openedModal === 'create' && <CreateFolderModal />}
+      {openedModal === 'rename' && <RenameFolderModal />}
+      {openedModal === 'trash' && <TrashFolderModal />}
+      {openedModal === 'move-message' && <MoveMessageToFolderModal />}
+      {openedModal === 'signature' && <SignatureModal />}
     </Layout>
   );
 }

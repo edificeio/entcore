@@ -495,7 +495,6 @@ export const useUpdateDraft = () => {
  * @returns Mutation result for sending the draft.
  */
 export const useSendDraft = () => {
-  const queryClient = useQueryClient();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
   const { user } = useEdificeClient();
   return useMutation({
