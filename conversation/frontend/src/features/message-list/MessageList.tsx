@@ -1,7 +1,7 @@
 import {
   List,
   Loading,
-  ToolbarButtonItem,
+  ToolbarItem,
   useEdificeClient,
 } from '@edifice.io/react';
 import {
@@ -83,7 +83,7 @@ export function MessageList() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isLoadingMessage, isLoadingNextPage, fetchNextPage, hasNextPage]);
 
-  const toolbar: ToolbarButtonItem[] = [
+  const toolbar: ToolbarItem[] = [
     {
       type: 'button',
       name: 'read',
@@ -203,7 +203,7 @@ export function MessageList() {
     <>
       <List
         data={messages.map((message) => ({ ...message, _id: message.id }))}
-        items={toolbar.filter((item) => !item?.props?.hidden)}
+        items={toolbar}
         isCheckable={true}
         onSelectedItems={setSelectedMessageIds}
         className="ps-16 ps-md-24"
