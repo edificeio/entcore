@@ -1,7 +1,7 @@
 export type Group = {
   id: string;
   displayName: string;
-  size: number;
+  size?: number;
   type?: string;
   subType?: string;
 };
