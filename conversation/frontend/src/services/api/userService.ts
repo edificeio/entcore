@@ -1,3 +1,4 @@
+import { BookmarkWithDetails } from '@edifice.io/client';
 import { odeServices } from 'edifice-ts-client';
 import { Visible } from '~/models/visible';
 
@@ -47,5 +48,9 @@ export const createUserService = () => ({
           }),
         );
       });
+  },
+
+  getBookMarkById(id: string): Promise<BookmarkWithDetails> {
+    return odeServices.directory().getBookMarkById(id);
   },
 });
