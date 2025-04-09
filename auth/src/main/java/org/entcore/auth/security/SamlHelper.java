@@ -1,16 +1,8 @@
 package org.entcore.auth.security;
 
-import org.entcore.auth.oauth.OAuthDataHandler;
-import org.entcore.auth.services.SamlServiceProvider;
-import org.entcore.auth.services.SamlServiceProviderFactory;
-import org.opensaml.saml2.core.Assertion;
-import org.opensaml.saml2.core.Response;
-
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.exception.AsyncResultException;
-import fr.wseduc.webutils.security.Blowfish;
 import fr.wseduc.webutils.security.HmacSha1;
-import fr.wseduc.webutils.security.HmacSha256;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -20,10 +12,15 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import jp.eisbahn.oauth2.server.exceptions.OAuthError;
-import jp.eisbahn.oauth2.server.exceptions.Try;
 import jp.eisbahn.oauth2.server.exceptions.OAuthError.AccessDenied;
 import jp.eisbahn.oauth2.server.exceptions.OAuthError.MultipleVectorChoice;
+import jp.eisbahn.oauth2.server.exceptions.Try;
 import jp.eisbahn.oauth2.server.models.UserData;
+import org.entcore.auth.oauth.OAuthDataHandler;
+import org.entcore.auth.services.SamlServiceProvider;
+import org.entcore.auth.services.SamlServiceProviderFactory;
+import org.opensaml.saml2.core.Assertion;
+import org.opensaml.saml2.core.Response;
 
 import java.io.UnsupportedEncodingException;
 import java.security.GeneralSecurityException;
@@ -36,18 +33,15 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 public class SamlHelper {
 
     private static final Logger log = LoggerFactory.getLogger(SamlHelper.class);
-    private static final long CUSTOM_TOKEN_LIFETIME = 300000L;
 
     private final Vertx vertx;
     private final SamlServiceProviderFactory spFactory;
     private final String signKey;
-    private final String encryptKey;
 
-    public SamlHelper(Vertx vertx, SamlServiceProviderFactory spFactory, String signKey, String encryptKey) {
+    public SamlHelper(Vertx vertx, SamlServiceProviderFactory spFactory, String signKey) {
         this.vertx = vertx;
         this.spFactory = spFactory;
         this.signKey = signKey;
-        this.encryptKey = encryptKey;
     }
 
     public void validateSamlResponseAndGetAssertion(String samlResponse, Handler<AsyncResult<Assertion>> handler) {
@@ -186,50 +180,10 @@ public class SamlHelper {
 
     public JsonObject getUsersWithSignaturesAndEncryption(JsonArray array, String sessionIndex, String nameId)
             throws UnsupportedEncodingException, IllegalStateException, GeneralSecurityException {
-        final JsonArray users = new JsonArray();
-		for (Object o : array) {
-			if (!(o instanceof JsonObject)) continue;
-            JsonObject j = (JsonObject) o;
-            j.put("iat", System.currentTimeMillis());
-            j.put("key", HmacSha256.sign(sessionIndex + nameId + j.getString("login") + j.getString("id") + j.getLong("iat"), signKey));
-            if (isNotEmpty(nameId)) {
-                j.put("nameId", nameId);
-            }
-            if (isNotEmpty(sessionIndex)) {
-                j.put("sessionIndex", sessionIndex);
-            }
-            final JsonObject user = new JsonObject()
-                .put("structureName", j.getString("structureName"))
-                .put("key", Blowfish.encrypt(j.encode(), encryptKey));
-            users.add(user);
-		}
-		return new JsonObject().put("users", users);
+        return CustomTokenHelper.getUsersWithSignaturesAndEncryption(array, sessionIndex, nameId);
     }
 
-	public void processCustomToken(String customToken, jp.eisbahn.oauth2.server.async.Handler<Try<AccessDenied, UserData>> handler) {
-        if (isNotEmpty(customToken)) {
-            try {
-                final String encodedJson = Blowfish.decrypt(customToken, encryptKey);
-                final JsonObject j = new JsonObject(encodedJson);
-                final String signature = HmacSha256.sign((j.getString("sessionIndex", "") +
-                        j.getString("nameId", "") + j.getString("login") + j.getString("id") + j.getLong("iat")), signKey);
-                if (j.size() > 0 && isNotEmpty(signature) &&
-                        signature.equals(j.getString("key", "")) &&
-                        (j.getLong("iat") + CUSTOM_TOKEN_LIFETIME) > System.currentTimeMillis()) {
-                    handler.handle(new Try<AccessDenied, UserData>(json2UserData(j)));
-                } else {
-                    handler.handle(new Try<AccessDenied, UserData>(new AccessDenied(OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED)));
-                }
-            } catch (GeneralSecurityException | UnsupportedEncodingException e) {
-                log.error("Error decrypting custom token or validating signature", e);
-                handler.handle(new Try<AccessDenied, UserData>(new AccessDenied(OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED)));
-            }
-        } else {
-            handler.handle(new Try<AccessDenied, UserData>(new AccessDenied(OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED)));
-        }
-	}
-
-    private UserData json2UserData(JsonObject j) {
+    public static UserData json2UserData(JsonObject j) {
         if (j == null) {
             return null;
         } else if (isNotEmpty(j.getString("activationCode"))) {

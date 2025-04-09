@@ -24,8 +24,14 @@ import fr.wseduc.rs.Post;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.oauth.OpenIdConnectClient;
 import fr.wseduc.webutils.request.CookieHelper;
-import fr.wseduc.webutils.request.RequestUtils;
 import fr.wseduc.webutils.security.HmacSha1;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
+import jp.eisbahn.oauth2.server.exceptions.OAuthError;
+import org.entcore.auth.oauth.OAuthDataHandler;
+import org.entcore.auth.security.CustomTokenHelper;
 import org.entcore.auth.services.OpenIdConnectServiceProvider;
 import org.entcore.auth.services.OpenIdServiceProviderFactory;
 import org.entcore.auth.services.impl.OpenIdSloServiceImpl;
@@ -33,15 +39,11 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.http.RouteMatcher;
 
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.security.GeneralSecurityException;
 import java.util.Map;
 import java.util.UUID;
 
@@ -150,6 +152,7 @@ public class OpenIdConnectController extends AbstractFederateController {
 				request.params().set("callbackFromState", stateAndCallbackArray[1]);
 			}
 		}
+		final String userAgent = request.getHeader("User-Agent");
 		oic.authorizationCodeToken(request, state, nonce, new Handler<JsonObject>() {
 			@Override
 			public void handle(final JsonObject payload) {
@@ -159,7 +162,20 @@ public class OpenIdConnectController extends AbstractFederateController {
 						@Override
 						public void handle(Either<String, Object> res) {
 							if (res.isRight() && res.right().getValue() instanceof JsonObject) {
-								authenticate((JsonObject) res.right().getValue(), "_", payload.getString("id_token_hint"), activationThemes, request);
+								if (userAgent != null && userAgent.startsWith("X-APP=mobile")) {
+									try {
+										final JsonObject params = new JsonObject();
+										params.put("type", "OIDC");
+										params.put("token", CustomTokenHelper.getUserWithSignaturesAndEncryption((JsonObject) res.right().getValue(), "", ""));
+										renderView(request, params, "mobile-message.html", null);
+									} catch (UnsupportedEncodingException | GeneralSecurityException
+											 | IllegalStateException | OAuthError.UnsupportedResponseType e) {
+										log.error("Error OIDC CustomToken for mobile", e);
+										unauthorized(request, OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED);
+									}
+								} else {
+									authenticate((JsonObject) res.right().getValue(), "_", payload.getString("id_token_hint"), activationThemes, request);
+								}
 							} else if (subMapping && res.isLeft() && OpenIdConnectServiceProvider.UNRECOGNIZED_USER_IDENTITY
 									.equals(res.left().getValue())) {
 								final String p = payload.encode();
@@ -191,6 +207,7 @@ public class OpenIdConnectController extends AbstractFederateController {
 			forbidden(request, "unauthorized.sub.mapping");
 			return;
 		}
+		final String userAgent = request.getHeader("User-Agent");
 		request.setExpectMultipart(true);
 		request.endHandler(new Handler<Void>() {
 			@Override
@@ -211,7 +228,20 @@ public class OpenIdConnectController extends AbstractFederateController {
 						@Override
 						public void handle(Either<String, Object> event) {
 							if (event.isRight()) {
-								authenticate((JsonObject) event.right().getValue(), "_", p.getString("id_token_hint"), activationThemes, request);
+								if (userAgent != null && userAgent.startsWith("X-APP=mobile")) {
+									try {
+										final JsonObject params = new JsonObject();
+										params.put("type", "OIDC");
+										params.put("token", CustomTokenHelper.getUserWithSignaturesAndEncryption((JsonObject) event.right().getValue(), "", ""));
+										renderView(request, params, "mobile-message.html", null);
+									} catch (UnsupportedEncodingException | GeneralSecurityException
+											 | IllegalStateException | OAuthError.UnsupportedResponseType e) {
+										log.error("Error OIDC CustomToken for mobile", e);
+										unauthorized(request, OAuthDataHandler.AUTH_ERROR_AUTHENTICATION_FAILED);
+									}
+								} else {
+									authenticate((JsonObject) event.right().getValue(), "_", p.getString("id_token_hint"), activationThemes, request);
+								}
 							} else {
 								forbidden(request, "invalid.sub.mapping");
 							}
@@ -293,8 +323,7 @@ public class OpenIdConnectController extends AbstractFederateController {
 		try {
 			input = URLDecoder.decode(input, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
-			log.info("Error due to url encoding  : ", e);
+			log.error("Error due to url encoding  : ", e);
 		}
 		if (input != null && !input.isEmpty() && input.contains(separator)) {
 			return input.split(separator, 2);
