@@ -37,6 +37,7 @@ import org.entcore.auth.oauth.HttpServerRequestAdapter;
 import org.entcore.auth.oauth.OAuthDataHandler;
 import org.entcore.auth.oauth.OAuthDataHandlerFactory;
 import org.entcore.auth.security.AuthResourcesProvider;
+import org.entcore.auth.security.CustomTokenHelper;
 import org.entcore.auth.security.SamlHelper;
 import org.entcore.auth.security.SamlValidator;
 import org.entcore.auth.services.MfaService;
@@ -109,6 +110,13 @@ public class Auth extends BaseServer {
 		} else {
 			jwtVerifier = null;
 		}
+
+		final String customTokenEncryptKey = config.getString("custom-token-encrypt-key", UUID.randomUUID().toString());
+		final String signKey = (String) vertx.sharedData().getLocalMap("server").get("signKey");
+
+		CustomTokenHelper.setEncryptKey(customTokenEncryptKey);
+		CustomTokenHelper.setSignKey(signKey);
+
 		final String samlMetadataFolder = config.getString("saml-metadata-folder");
 		if (samlMetadataFolder != null && !samlMetadataFolder.trim().isEmpty()) {
 			vertx.fileSystem().readDir(samlMetadataFolder, new Handler<AsyncResult<List<String>>>() {
@@ -116,11 +124,9 @@ public class Auth extends BaseServer {
 				public void handle(AsyncResult<List<String>> event) {
 					if (event.succeeded() && event.result().size() > 0) {
 						try {
-							final String signKey = (String) vertx.sharedData().getLocalMap("server").get("signKey");
 							final SamlHelper samlHelper = new SamlHelper(vertx,
 									new DefaultServiceProviderFactory(config.getJsonObject("saml-services-providers")),
-									signKey,
-									config.getString("custom-token-encrypt-key", UUID.randomUUID().toString())
+									signKey
 							);
 							oauthDataFactory.setSamlHelper(samlHelper);
 
@@ -181,7 +187,7 @@ public class Auth extends BaseServer {
 		if (openidFederate != null) {
 			openIdConnectController.setEventStore(eventStore);
 			openIdConnectController.setUserAuthAccount(userAuthAccount);
-			openIdConnectController.setSignKey((String) vertx.sharedData().getLocalMap("server").get("signKey"));
+			openIdConnectController.setSignKey(signKey);
 			openIdConnectController.setOpenIdConnectServiceProviderFactory(
 					new DefaultOpenIdServiceProviderFactory(vertx, openidFederate.getJsonObject("domains")));
 			openIdConnectController.setSubMapping(openidFederate.getBoolean("authorizeSubMapping", false));
