@@ -1,10 +1,10 @@
 import clsx from 'clsx';
 import React from 'react';
-import { MessageMetadata } from '~/models';
-import { MessagePreview } from './MessagePreview/MessagePreview';
-import { useUpdateFolderBadgeCountLocal } from '~/services';
 import { useNavigate } from 'react-router-dom';
 import { useSelectedFolder } from '~/hooks';
+import { MessageMetadata } from '~/models';
+import { useUpdateFolderBadgeCountLocal } from '~/services';
+import { MessagePreview } from './MessagePreview/MessagePreview';
 
 interface MessageItemProps {
   message: MessageMetadata;
@@ -36,7 +36,8 @@ export function MessageItem({ message, checked, checkbox }: MessageItemProps) {
     <div
       className={clsx('d-flex gap-24 px-16 py-12 mb-2 overflow-hidden', {
         'bg-secondary-200': checked,
-        'fw-bold bg-primary-200 gray-800': message.unread,
+        'fw-bold bg-primary-200 gray-800':
+          message.state !== 'DRAFT' && message.unread,
       })}
       onClick={() => handleMessageClick(message)}
       onKeyUp={(event) => handleMessageKeyUp(event, message)}
