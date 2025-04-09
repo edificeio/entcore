@@ -15,13 +15,13 @@ import { useEdificeClient } from '@edifice.io/react';
 export function useUsedSpace() {
   const { init, sessionQuery } = useEdificeClient();
 
-  if (!init) {
+  if (!init || !sessionQuery?.data) {
     return {
       usage: 0,
       quota: 0,
     };
   }
-  const quotaAndUsage = sessionQuery?.data.quotaAndUsage as IQuotaAndUsage;
+  const quotaAndUsage = sessionQuery.data.quotaAndUsage as IQuotaAndUsage;
   return {
     usage: quotaAndUsage.storage,
     quota: quotaAndUsage.quota,
