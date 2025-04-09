@@ -150,7 +150,7 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
         cci: message.cci ? recipientToIds(message.cci) : undefined,
       },
     });
-    navigate(`inbox`);
+    navigate(`/inbox`);
   };
 
   const handleRemoveFromFolder = () => {
