@@ -4,6 +4,7 @@ import { useSearchRecipients } from '~/features/message-edit/hooks/useSearchReci
 import { useI18n } from '~/hooks';
 import { Group, Recipients, User } from '~/models';
 import { Visible } from '~/models/visible';
+import { useBookmarkById } from '~/services/queries/user';
 import { useAppActions, useMessageUpdated } from '~/store';
 import { RecipientListItem } from './RecipientListItem';
 import { RecipientListSelectedItem } from './RecipientListSelectedItem';
@@ -25,10 +26,11 @@ export function RecipientListEdit({
   const { t } = useI18n();
   const [recipientArray, setRecipientArray] = useState<(User | Group)[]>([]);
 
+  const { getBookmarkById } = useBookmarkById();
   const messageUpdated = useMessageUpdated();
   const { setMessageUpdated, setMessageUpdatedNeedToSave } = useAppActions();
 
-  const handleRecipientClick = (recipient: Visible) => {
+  const handleRecipientClick = async (recipient: Visible) => {
     let recipientToAdd: User | Group;
     if (recipient.type === 'User') {
       recipientToAdd = {
@@ -37,7 +39,8 @@ export function RecipientListEdit({
         profile: recipient.profile || '',
       };
       recipients.users.push(recipientToAdd);
-    } else {
+      setRecipientArray((prev) => [...prev, recipientToAdd]);
+    } else if (recipient.type !== 'ShareBookmark') {
       recipientToAdd = {
         id: recipient.id,
         displayName: recipient.displayName,
@@ -45,8 +48,31 @@ export function RecipientListEdit({
         subType: recipient.type,
       };
       recipients.groups.push(recipientToAdd);
+      setRecipientArray((prev) => [...prev, recipientToAdd]);
+    } else {
+      const shareBookmark = await getBookmarkById(recipient.id);
+
+      if (shareBookmark) {
+        setRecipientArray((prev) => [
+          ...prev,
+          ...shareBookmark.users,
+          ...shareBookmark.groups,
+        ]);
+        recipients.users.push(
+          ...shareBookmark.users.map((user) => ({
+            id: user.id,
+            displayName: user.displayName,
+            profile: user.profile || '',
+          })),
+        );
+        recipients.groups.push(
+          ...shareBookmark.groups.map((group) => ({
+            id: group.id,
+            displayName: group.displayName,
+          })),
+        );
+      }
     }
-    setRecipientArray((prev) => [...prev, recipientToAdd]);
     updateMessage();
   };
 

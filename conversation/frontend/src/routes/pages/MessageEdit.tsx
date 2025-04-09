@@ -1,6 +1,7 @@
 import { QueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { LoaderFunctionArgs, useParams } from 'react-router-dom';
+import { Message } from '~/features/message';
 import { MessageEdit } from '~/features/message-edit/MessageEdit';
 import { messageQueryOptions, useMessage } from '~/services';
 
@@ -26,5 +27,16 @@ export function Component() {
     window.scrollTo(0, 0);
   }, []);
 
-  return <>{message && <MessageEdit message={message} />}</>;
+  if (!message) {
+    return null;
+  }
+  return (
+    <>
+      {message.state === 'DRAFT' ? (
+        <MessageEdit message={message} />
+      ) : (
+        <Message message={message} />
+      )}
+    </>
+  );
 }
