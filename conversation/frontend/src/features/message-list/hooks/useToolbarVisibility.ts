@@ -1,11 +1,13 @@
+import { useEdificeClient } from '@edifice.io/react';
 import { useCallback, useMemo } from 'react';
 import { useSelectedFolder } from '~/hooks';
 import { MessageMetadata } from '~/models';
-import useSelectedMessages from './useSelectedMessages';
 import { isInRecipient } from '~/services';
-import { useEdificeClient } from '@edifice.io/react';
+import useSelectedMessages from './useSelectedMessages';
 
-export default function useToolbarVisibility(messages: MessageMetadata[]) {
+export default function useToolbarVisibility(
+  messages: MessageMetadata[],
+): Record<string, 'show' | 'hide'> {
   const { folderId } = useSelectedFolder();
   const selectedMessages = useSelectedMessages(messages);
   const { user } = useEdificeClient();
@@ -67,12 +69,12 @@ export default function useToolbarVisibility(messages: MessageMetadata[]) {
   }, [isInTrash, selectedMessages]);
 
   return {
-    canBeMoveToFolder,
-    canBeMovetoTrash,
-    canEmptyTrash,
-    canMarkAsReadMessages,
-    canMarkAsUnReadMessages,
-    isInFolder,
-    isTrashMessage,
+    showEmptyTrash: canEmptyTrash ? 'show' : 'hide',
+    showFolderActions: isInFolder ? 'show' : 'hide',
+    showMarkAsReadMessages: canMarkAsReadMessages ? 'show' : 'hide',
+    showMarkAsUnReadMessages: canMarkAsUnReadMessages ? 'show' : 'hide',
+    showMoveToFolder: canBeMoveToFolder ? 'show' : 'hide',
+    showMoveToTrash: canBeMovetoTrash ? 'show' : 'hide',
+    showTrashActions: isTrashMessage ? 'show' : 'hide',
   };
 }

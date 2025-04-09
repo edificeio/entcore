@@ -49,13 +49,13 @@ export function MessageList() {
   } = useToolbarActions(messages);
 
   const {
-    canBeMoveToFolder,
-    canBeMovetoTrash,
-    canEmptyTrash,
-    canMarkAsReadMessages,
-    canMarkAsUnReadMessages,
-    isInFolder,
-    isTrashMessage,
+    showEmptyTrash,
+    showFolderActions,
+    showMarkAsReadMessages,
+    showMarkAsUnReadMessages,
+    showMoveToFolder,
+    showMoveToTrash,
+    showTrashActions,
   } = useToolbarVisibility(messages);
 
   const [keyList, setKeyList] = useState(0);
@@ -87,6 +87,7 @@ export function MessageList() {
     {
       type: 'button',
       name: 'read',
+      visibility: showMarkAsReadMessages,
       props: {
         children: (
           <>
@@ -95,12 +96,12 @@ export function MessageList() {
           </>
         ),
         onClick: handleMarkAsReadClick,
-        hidden: !canMarkAsReadMessages,
       },
     },
     {
       type: 'button',
       name: 'unread',
+      visibility: showMarkAsUnReadMessages,
       props: {
         children: (
           <>
@@ -109,12 +110,12 @@ export function MessageList() {
           </>
         ),
         onClick: handleMarkAsUnreadClick,
-        hidden: !canMarkAsUnReadMessages,
       },
     },
     {
       type: 'button',
       name: 'delete',
+      visibility: showMoveToTrash,
       props: {
         children: (
           <>
@@ -123,12 +124,12 @@ export function MessageList() {
           </>
         ),
         onClick: handleMoveToTrash,
-        hidden: !canBeMovetoTrash,
       },
     },
     {
       type: 'button',
       name: 'restore',
+      visibility: showTrashActions,
       props: {
         children: (
           <>
@@ -137,12 +138,12 @@ export function MessageList() {
           </>
         ),
         onClick: handleRestore,
-        hidden: !isTrashMessage,
       },
     },
     {
       type: 'button',
       name: 'move',
+      visibility: showMoveToFolder,
       props: {
         children: (
           <>
@@ -151,12 +152,12 @@ export function MessageList() {
           </>
         ),
         onClick: handleMoveToFolder,
-        hidden: !canBeMoveToFolder,
       },
     },
     {
       type: 'button',
       name: 'delete-definitely',
+      visibility: showTrashActions,
       props: {
         children: (
           <>
@@ -165,12 +166,12 @@ export function MessageList() {
           </>
         ),
         onClick: handleDelete,
-        hidden: !isTrashMessage,
       },
     },
     {
       type: 'button',
       name: 'remove-from-folder',
+      visibility: showFolderActions,
       props: {
         children: (
           <>
@@ -179,12 +180,12 @@ export function MessageList() {
           </>
         ),
         onClick: handleRemoveFromFolder,
-        hidden: !isInFolder,
       },
     },
     {
       type: 'button',
       name: 'empty-trash',
+      visibility: showEmptyTrash,
       props: {
         children: (
           <>
@@ -193,7 +194,6 @@ export function MessageList() {
           </>
         ),
         onClick: handleEmptyTrash,
-        hidden: !canEmptyTrash,
       },
     },
   ];
