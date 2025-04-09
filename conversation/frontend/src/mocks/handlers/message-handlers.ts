@@ -9,9 +9,7 @@ import { mockFullMessage, mockSentMessage } from '..';
 export const messageHandlers = [
   // Message service
   http.get(`${baseUrl}/api/messages/:messageId`, () => {
-    return HttpResponse.json(mockFullMessage, { status: 200 });
-  }),
-  http.get(`${baseUrl}/api/messages/:messageId?originalFormat=true`, () => {
+    // This also covers the ?originalFormat=true query parameter
     return HttpResponse.json(mockFullMessage, { status: 200 });
   }),
   http.post<
