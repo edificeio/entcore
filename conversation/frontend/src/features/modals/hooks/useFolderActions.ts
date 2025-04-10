@@ -1,5 +1,4 @@
 import { useSelectedFolders } from '~/store';
-import { useI18n } from './useI18n';
 import { useToast } from '@edifice.io/react';
 import {
   searchFolder,
@@ -9,8 +8,8 @@ import {
   useRenameFolder,
 } from '~/services';
 import { useCallback, useState } from 'react';
-import { useSelectedFolder } from './useSelectedFolder';
 import { useNavigate } from 'react-router-dom';
+import { useI18n, useSelectedFolder } from '~/hooks';
 
 const MAX_LENGTH = 50;
 

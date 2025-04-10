@@ -1,7 +1,8 @@
 import { useAppActions } from '~/store';
 import { Button, Modal } from '@edifice.io/react';
 import { useEffect } from 'react';
-import { useFolderActions, useI18n } from '~/hooks';
+import { useI18n } from '~/hooks';
+import { useFolderActions } from './hooks';
 
 export function TrashFolderModal() {
   const { t, common_t } = useI18n();

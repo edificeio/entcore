@@ -6,12 +6,12 @@ import {
   IconOptions,
 } from '@edifice.io/react/icons';
 import { RefAttributes } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useFolderHandlers } from '~/features/menu/hooks/useFolderHandlers';
+import { useI18n } from '~/hooks';
 import { Folder } from '~/models';
 
 export function FolderActionDropDown({ folder }: { folder: Folder }) {
-  const { t: common_t } = useTranslation('common');
+  const { common_t } = useI18n();
   const { handleMove, handleRename, handleTrash } = useFolderHandlers();
 
   const options = [
