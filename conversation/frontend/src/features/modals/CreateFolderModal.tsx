@@ -11,8 +11,9 @@ import {
   TreeItem,
 } from '@edifice.io/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useFolderActions, useI18n } from '~/hooks';
+import { useI18n } from '~/hooks';
 import { buildTree, searchFolder } from '~/services';
+import { useFolderActions } from './hooks';
 
 export function CreateFolderModal() {
   const { t, common_t } = useI18n();
