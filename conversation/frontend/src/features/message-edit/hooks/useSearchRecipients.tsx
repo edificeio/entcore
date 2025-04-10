@@ -1,6 +1,6 @@
 import { ChangeEvent, useEffect, useReducer } from 'react';
 
-import { OptionListItemType, useDebounce } from '@edifice.io/react';
+import { OptionListItemType, useDebounce, useIsAdml } from '@edifice.io/react';
 import { Visible } from '~/models/visible';
 import { useDefaultBookmark, useSearchVisible } from '~/services/queries/user';
 
@@ -61,6 +61,7 @@ export const useSearchRecipients = ({
   );
   const { data: defaultBookmarks } = useDefaultBookmark();
   const { searchVisible } = useSearchVisible();
+  const { isAdml } = useIsAdml();
 
   useEffect(() => {
     search(debouncedSearchInputValue);
@@ -135,7 +136,7 @@ export const useSearchRecipients = ({
     });
   };
 
-  const searchMinLength = 1;
+  const searchMinLength = isAdml ? 3 : 1;
 
   const hasSearchNoResults =
     !state.isSearching &&
