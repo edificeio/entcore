@@ -36,7 +36,6 @@ import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import org.checkerframework.checker.units.qual.A;
 import org.entcore.broker.api.appregistry.AppRegistrationRequestDTO;
 import org.entcore.broker.api.appregistry.AppRegistrationResponseDTO;
 import org.entcore.broker.proxy.AppRegistryProxy;

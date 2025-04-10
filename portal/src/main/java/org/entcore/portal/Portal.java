@@ -20,14 +20,18 @@
 package org.entcore.portal;
 
 import io.vertx.core.Promise;
+import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.http.BaseServer;
 import org.entcore.portal.controllers.PortalController;
+import org.entcore.portal.listeners.I18nBrokerListenerImpl;
 
 public class Portal extends BaseServer {
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
 		super.start(startPromise);
+		BrokerProxyUtils.addBrokerProxy(new I18nBrokerListenerImpl(), vertx);
+		
 		addController(new PortalController());
 	}
 

@@ -27,6 +27,7 @@ import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.BaseServer;
@@ -43,6 +44,7 @@ import org.entcore.common.user.RepositoryHandler;
 import org.entcore.common.user.position.UserPositionService;
 import org.entcore.common.user.position.impl.DefaultUserPositionService;
 import org.entcore.directory.controllers.*;
+import org.entcore.directory.listeners.DirectoryBrokerListenerImpl;
 import org.entcore.directory.security.DirectoryResourcesProvider;
 import org.entcore.directory.security.UserbookCsrfFilter;
 import org.entcore.directory.services.*;
@@ -206,6 +208,8 @@ public class Directory extends BaseServer {
 			remoteUserController.setRemoteUserService(remoteUserService);
 			addController(remoteUserController);
 		}
+		// add the directory broker listener
+		BrokerProxyUtils.addBrokerProxy(new DirectoryBrokerListenerImpl(vertx), vertx);
 
 	}
 
