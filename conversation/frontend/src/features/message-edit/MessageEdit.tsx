@@ -26,6 +26,7 @@ export function MessageEdit({ message }: MessageEditProps) {
   const debounceTimeToSave = useRef(5000);
   const createOrUpdateDraft = useCreateOrUpdateDraft();
   const [contentKey, setContentKey] = useState(0);
+  const [dateKey, setDateKey] = useState(0);
   const { data: publicConfig } = useConversationConfig();
 
   useEffect(() => {
@@ -68,6 +69,12 @@ export function MessageEdit({ message }: MessageEditProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messageUpdatedDebounced]);
 
+  useEffect(() => {
+    const interval = setInterval(() => setDateKey((prev) => ++prev), 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <>
       {messageUpdated && (
@@ -93,7 +100,7 @@ export function MessageEdit({ message }: MessageEditProps) {
             <div className="d-flex align-items-end flex-column gap-16">
               <MessageActionDropDown message={messageUpdated} />
               {messageUpdated?.date && (
-                <div className="caption fst-italic">
+                <div className="caption fst-italic" key={dateKey}>
                   {fromNow(messageUpdated.date)}
                 </div>
               )}
