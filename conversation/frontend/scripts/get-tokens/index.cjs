@@ -118,7 +118,14 @@ async function choisirProfil() {
       `🌍 Connexion en tant que ${selectedProfil.login} sur ${selectedRecette}`,
     );
 
-    browser = await puppeteer.launch({ headless: true });
+    try {
+      browser = await puppeteer.launch({ headless: true });
+    } catch (_error) {
+      browser = await puppeteer.launch({
+        executablePath: '/usr/bin/chromium-browser',
+        headless: true,
+      });
+    }
     const page = await browser.newPage();
 
     await page.goto(selectedRecette, { waitUntil: 'networkidle2' });
