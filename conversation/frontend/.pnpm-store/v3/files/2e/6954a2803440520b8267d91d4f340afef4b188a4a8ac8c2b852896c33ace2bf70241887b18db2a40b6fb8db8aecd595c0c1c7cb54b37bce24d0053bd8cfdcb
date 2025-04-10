@@ -1,0 +1,22 @@
+import { jsx } from "react/jsx-runtime";
+import { useEdificeClient } from "../../../providers/EdificeClientProvider/EdificeClientProvider.hook.js";
+import { useCommentsContext } from "../hooks/useCommentsContext.js";
+import { Comment } from "./Comment.js";
+function CommentList() {
+  const {
+    user
+  } = useEdificeClient(), {
+    comments,
+    profiles
+  } = useCommentsContext();
+  return comments == null ? void 0 : comments.map((comment) => {
+    var _a;
+    const {
+      authorId
+    } = comment, profile = ((_a = profiles == null ? void 0 : profiles.find((user2) => (user2 == null ? void 0 : user2.userId) === authorId)) == null ? void 0 : _a.profile) ?? "Guest";
+    return /* @__PURE__ */ jsx(Comment, { comment, profile, userId: user == null ? void 0 : user.userId }, comment.id);
+  });
+}
+export {
+  CommentList
+};

@@ -1,0 +1,28 @@
+import * as PIXI from "pixi.js";
+export type CornerType = "TOP_LEFT" | "TOP_RIGHT" | "BOTTOM_LEFT" | "BOTTOM_RIGHT";
+/**
+ * This function draw all graphics controls used to crop an image:
+ * - 4 corners to select the cropped area
+ * - A background with an transparent backdrop effect
+ * - A mask applied to the original image
+ *
+ * @param application The PIXI.Application context
+ * @param {spriteName:string} {spriteName} The sprite name identifying the original image
+ */
+export declare function start(application: PIXI.Application, { spriteName }: {
+    spriteName: string;
+}): void;
+/**
+ * This function remove all graphics controls if exists. And it also remove any mouse event on this stage
+ *
+ * @param application The PIXI.Application context
+ */
+export declare function stop(application: PIXI.Application): void;
+/**
+ * This function apply a crop to the imageSrc and return the result as a PIXI.Sprite object
+ *
+ * @param application
+ * @param imageSrc a string URI of the image to crop
+ * @returns a PIXI.Sprite with a imageSrc cropped or undefined if the image has not been cropped
+ */
+export declare function save(application: PIXI.Application): PIXI.Sprite | undefined;

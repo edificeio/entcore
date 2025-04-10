@@ -1,0 +1,34 @@
+import { jsx, jsxs } from "react/jsx-runtime";
+import { useId } from "react";
+import clsx from "clsx";
+import { useDropdownContext } from "./DropdownContext.js";
+import Checkbox from "../Checkbox/Checkbox.js";
+const DropdownCheckboxItem = ({
+  children,
+  value,
+  model,
+  onChange
+}) => {
+  const {
+    itemProps,
+    itemRefs,
+    isFocused
+  } = useDropdownContext(), {
+    onMenuItemKeyDown,
+    onMenuItemMouseEnter
+  } = itemProps, id = useId(), checked = model.includes(value), checkboxProps = {
+    value,
+    model,
+    checked,
+    readOnly: !0
+  }, dropdownCheckboxItem = clsx("dropdown-item c-pointer", {
+    focus: isFocused === id
+  });
+  return /* @__PURE__ */ jsx("div", { id, ref: (el) => itemRefs.current[id] = el, role: "menuitemcheckbox", "aria-checked": checked, onMouseUp: () => onChange(value), onKeyDown: (event) => onMenuItemKeyDown(event, () => onChange(value)), onMouseEnter: onMenuItemMouseEnter, tabIndex: checked ? 0 : -1, className: dropdownCheckboxItem, children: /* @__PURE__ */ jsxs("div", { className: "d-flex gap-8 align-items-center justify-content-between position-relative", children: [
+    children,
+    /* @__PURE__ */ jsx(Checkbox, { ...checkboxProps })
+  ] }) });
+};
+export {
+  DropdownCheckboxItem as default
+};

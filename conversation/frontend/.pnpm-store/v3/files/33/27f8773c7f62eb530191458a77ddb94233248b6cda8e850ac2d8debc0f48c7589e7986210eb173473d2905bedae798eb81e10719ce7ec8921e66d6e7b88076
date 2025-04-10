@@ -1,0 +1,7 @@
+/// <reference types="react" />
+export declare const useOnboardingModal: (id: string) => {
+    isOpen: boolean;
+    setIsOpen: import("react").Dispatch<import("react").SetStateAction<boolean>>;
+    isOnboarding: boolean;
+    handleSavePreference: () => Promise<void>;
+};

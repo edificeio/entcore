@@ -1,0 +1,46 @@
+import { TooltipProps } from "../Tooltip";
+export interface ColorPaletteItem {
+    /**
+     * CSS Color Value, in the form #AABBCC
+     */
+    value: string;
+    /**
+     * i18n key describing the color.
+     */
+    description: string;
+    /**
+     * Is it a dark or light color ?
+     * When undefined, will be considered Dark.
+     */
+    hue?: "dark" | "light";
+    /**
+     * Is it intended to be a reset color ?
+     */
+    isReset?: boolean;
+}
+/** Variations of one color. */
+export type ColorPaletteHues = Array<ColorPaletteItem>;
+export interface ColorPalette {
+    /**
+     * Description of the color palette.
+     */
+    label: string;
+    /**
+     * [Optional] informative tooltip.
+     */
+    tooltip?: Partial<TooltipProps>;
+    /**
+     * Array of colors * variations.
+     */
+    colors: ColorPaletteHues[];
+    /**
+     * Reset option
+     */
+    reset?: ColorPaletteItem;
+    /**
+     * Optional class for styling purpose
+     */
+    className?: string;
+}
+export declare const DefaultPalette: ColorPalette;
+export declare const AccessiblePalette: ColorPalette;

@@ -1,0 +1,5 @@
+import { createContext } from "react";
+const EdificeThemeContext = /* @__PURE__ */ createContext(null);
+export {
+  EdificeThemeContext
+};

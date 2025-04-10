@@ -1,0 +1,33 @@
+import { ReactNode } from 'react';
+export interface PopoverProps {
+    /**
+     * Popover id for a11y
+     */
+    id?: string;
+    /**
+     * When Popover is visible
+     */
+    isVisible?: boolean;
+    /**
+     * React Node
+     */
+    children: ReactNode;
+    /**
+     * Optional class for styling purpose
+     */
+    className?: string;
+}
+export interface PopoverElementProps {
+    /**
+     * React Node
+     */
+    children: ReactNode;
+    /**
+     * Optional class for styling purpose
+     */
+    className?: string;
+}
+export declare const PopoverHeader: ({ children, className }: PopoverProps) => import("react/jsx-runtime").JSX.Element;
+export declare const PopoverBody: ({ children, className }: PopoverProps) => import("react/jsx-runtime").JSX.Element;
+export declare const PopoverFooter: ({ children, className }: PopoverProps) => import("react/jsx-runtime").JSX.Element;
+export declare const Popover: import('react').ForwardRefExoticComponent<PopoverProps & import('react').RefAttributes<HTMLDivElement>>;

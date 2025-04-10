@@ -1,0 +1,35 @@
+import { ComponentPropsWithRef, ReactNode } from "react";
+interface Item {
+    /**
+     * Object type
+     */
+    type?: undefined;
+    /**
+     * Icon component
+     */
+    icon: JSX.Element;
+    /**
+     * Label for a11y
+     */
+    label: string;
+    /**
+     * Action OnClick
+     */
+    action: (elem: any) => any;
+}
+interface Divider {
+    /**
+     * Object type
+     */
+    type: "divider";
+}
+export type DropdownMenuOptions = Item | Divider;
+export interface DropdownMenuProps extends ComponentPropsWithRef<"div"> {
+    children: ReactNode;
+    /** Use whole width ? */
+    block?: boolean;
+    /** Do not apply the default CSS classes in addition to those in the className prop ? */
+    unstyled?: boolean;
+}
+declare const DropdownMenu: import("react").ForwardRefExoticComponent<Omit<DropdownMenuProps, "ref"> & import("react").RefAttributes<HTMLDivElement>>;
+export default DropdownMenu;

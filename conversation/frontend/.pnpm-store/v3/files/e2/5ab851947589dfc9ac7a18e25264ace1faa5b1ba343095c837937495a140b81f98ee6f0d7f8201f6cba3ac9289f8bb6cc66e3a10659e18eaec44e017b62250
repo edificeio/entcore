@@ -1,0 +1,17 @@
+import { ComponentPropsWithRef, ReactNode } from "react";
+export interface AppHeaderProps extends ComponentPropsWithRef<"div"> {
+    /**
+     * Accept Breadcrumb Component
+     */
+    children: ReactNode;
+    /**
+     * Actions
+     */
+    render?: () => JSX.Element | null;
+    /**
+     * When no layout is used
+     */
+    isFullscreen?: boolean;
+}
+declare const AppHeader: import("react").ForwardRefExoticComponent<Omit<AppHeaderProps, "ref"> & import("react").RefAttributes<HTMLDivElement>>;
+export default AppHeader;

@@ -1,0 +1,4 @@
+import { ReactionDetailsData } from "edifice-ts-client";
+export declare function ReactionModalCard({ reaction, }: {
+    reaction: ReactionDetailsData["userReactions"][number];
+}): import("react/jsx-runtime").JSX.Element;

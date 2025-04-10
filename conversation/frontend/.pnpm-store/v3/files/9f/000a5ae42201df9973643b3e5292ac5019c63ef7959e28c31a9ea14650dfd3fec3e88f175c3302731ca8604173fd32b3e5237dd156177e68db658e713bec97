@@ -1,0 +1,52 @@
+import { start as start$1, stop as stop$1 } from "../effects/blur.js";
+import { start, save, stop } from "../effects/crop.js";
+import { save as save$1, stop as stop$2, start as start$2 } from "../effects/resize.js";
+import { rotate } from "../effects/rotate.js";
+function useImageEffects({
+  application,
+  spriteName,
+  onSave
+}) {
+  return {
+    rotate: async () => {
+      application && await rotate(application, spriteName);
+    },
+    startCrop: () => {
+      application && start(application, {
+        spriteName
+      });
+    },
+    stopCrop: (save$12) => {
+      if (application) {
+        if (save$12) {
+          const result = save(application);
+          result && onSave(result);
+        }
+        stop(application);
+      }
+    },
+    startBlur: () => {
+      application && start$1(application, {
+        spriteName
+      });
+    },
+    stopBlur: () => {
+      application && stop$1(application);
+    },
+    startResize: () => {
+      application && start$2(application, spriteName);
+    },
+    stopResize: (save2) => {
+      if (application) {
+        if (save2) {
+          const result = save$1(application);
+          result && onSave(result);
+        }
+        stop$2(application);
+      }
+    }
+  };
+}
+export {
+  useImageEffects as default
+};

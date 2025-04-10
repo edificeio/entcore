@@ -1,0 +1,14 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+const SvgIconOptions = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs("svg", { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", fill: "none", viewBox: "0 0 24 24", "aria-hidden": "true", "aria-labelledby": titleId, ...props, children: [
+  title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+  /* @__PURE__ */ jsx("circle", { cx: 12, cy: 4, r: 2.5, fill: "currentColor" }),
+  /* @__PURE__ */ jsx("circle", { cx: 12, cy: 12, r: 2.5, fill: "currentColor" }),
+  /* @__PURE__ */ jsx("circle", { cx: 12, cy: 20, r: 2.5, fill: "currentColor" })
+] });
+export {
+  SvgIconOptions as default
+};

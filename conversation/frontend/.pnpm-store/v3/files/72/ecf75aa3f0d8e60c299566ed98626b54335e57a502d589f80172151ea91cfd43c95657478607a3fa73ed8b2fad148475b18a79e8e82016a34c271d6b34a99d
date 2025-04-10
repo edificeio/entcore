@@ -1,0 +1,1 @@
+export declare const customSize: (bytes: number, decimalPoint: number) => string;

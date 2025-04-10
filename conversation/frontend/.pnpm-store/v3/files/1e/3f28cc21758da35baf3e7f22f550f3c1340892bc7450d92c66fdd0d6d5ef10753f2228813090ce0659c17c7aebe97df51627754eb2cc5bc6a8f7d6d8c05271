@@ -1,0 +1,20 @@
+import { Content, Extensions, FocusPosition } from '@tiptap/react';
+import { WorkspaceVisibility } from '@edifice.io/client';
+/**
+ * Hook that creates a tiptap editor instance.
+ *
+ * @param editable truthy if the editor content should be editable
+ * @param content default rich content
+ * @param focus set focus position to the editor
+ * @param placeholder editor placeholder content
+ * @param onContentChange callback to be called on content change
+ * @param visibility workspace visibility
+ * @param extensions extensions to add to the editor
+ * @returns the editor instance and the editable state
+ */
+export declare const useTipTapEditor: (editable: boolean, content: Content, focus?: FocusPosition, placeholder?: string, onContentChange?: ({ editor }: {
+    editor: any;
+}) => void, visibility?: WorkspaceVisibility, extensions?: Extensions) => {
+    editor: import('@tiptap/core').Editor | null;
+    editable: boolean;
+};

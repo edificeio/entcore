@@ -1,0 +1,154 @@
+import * as PIXI from 'pixi.js';
+export declare const DEFAULT_SPRITE_NAME = "image";
+/**
+ * A structure that define all setting of an image
+ * - positon
+ * - scale
+ * - size
+ * - size of the stage
+ */
+export interface ImageSettings {
+    stage: {
+        size: {
+            width: number;
+            height: number;
+        };
+        scale: {
+            x: number;
+            y: number;
+        };
+    };
+    sprite: {
+        rotation: number;
+        size: {
+            width: number;
+            height: number;
+        };
+        scale: {
+            x: number;
+            y: number;
+        };
+        position: {
+            x: number;
+            y: number;
+        };
+        anchor: {
+            x: number;
+            y: number;
+        };
+    };
+}
+/**
+ *  This function update the image content using Blob datasource
+ *
+ * @param application the PIXI.Application context
+ * @param param.spriteName the name of the sprite in the context
+ * @param param.imgDatasource the img data could be one of: string url, HTMLImageElement, PIXI.Sprite
+ * @param param.stageSize?: { width: number; height: number };
+ * @param param.spriteSize?: { width: number; height: number };
+ */
+export declare function updateImageFromBlob(application: PIXI.Application, { spriteName, imgDatasource, settings, }: {
+    spriteName: string;
+    imgDatasource: Blob;
+    settings?: ImageSettings;
+}): Promise<PIXI.Sprite | null>;
+/**
+ *  This function update the image content for the sprite in the PIXI.Application context
+ *
+ * @param application the PIXI.Application context
+ * @param param.spriteName the name of the sprite in the context
+ * @param param.imgDatasource the img data could be one of: string url, HTMLImageElement, PIXI.Sprite
+ * @param param.spriteSize
+ * @param param.stageSize
+ */
+export declare function updateImage(application: PIXI.Application, { spriteName, imgDatasource, settings, }: {
+    spriteName: string;
+    imgDatasource: string | HTMLImageElement | PIXI.Sprite;
+    settings?: ImageSettings;
+}): Promise<void>;
+/**
+ * This function resize the sprite according to the container width
+ *
+ * @param application The PIXI.Application context
+ * @param sprite The sprite object representing the image to resize
+ */
+export declare function autoResize(application: PIXI.Application, sprite: PIXI.Sprite): void;
+export declare function constraintSize(size: {
+    width: number;
+    height: number;
+}, constraints: {
+    width: {
+        max: number;
+        min: number;
+    };
+    height: {
+        max: number;
+        min: number;
+    };
+}): {
+    width: number;
+    height: number;
+};
+/**
+ * This function transform the stage into a blob
+ *
+ * @param application the PIXI.Application context
+ * @returns A promise of the generated blob
+ */
+export declare function saveAsBlob(application: PIXI.Application): Promise<Blob>;
+/**
+ * This function transform the stage into a data URL encoded image
+ *
+ * @param application the PIXI.Application context
+ * @returns the generated image as Data URL or undefined if failed
+ */
+export declare function saveAsDataURL(application: PIXI.Application): string | undefined;
+/**
+ * Calculates the scale percentage for a PIXI.Sprite or the application view based on the parent container's dimensions.
+ * @param application - The PIXI.Application instance.
+ * @param sprite - The PIXI.Sprite instance (optional).
+ * @returns The scale percentage.
+ */
+export declare function getApplicationScale(application: PIXI.Application): number;
+export declare function toBlob(application: PIXI.Application): Promise<Blob>;
+export declare function createImageSettings({ application, sprite, }: {
+    sprite: PIXI.Sprite;
+    application: PIXI.Application;
+}): {
+    sprite: {
+        rotation: number;
+        size: {
+            width: number;
+            height: number;
+        };
+        position: {
+            x: number;
+            y: number;
+        };
+        scale: {
+            x: number;
+            y: number;
+        };
+        anchor: {
+            x: number;
+            y: number;
+        };
+    };
+    stage: {
+        size: {
+            width: number;
+            height: number;
+        };
+        scale: {
+            x: number;
+            y: number;
+        };
+    };
+};
+export declare function trimStage(application: PIXI.Application, sprite: PIXI.Sprite): void;
+export declare function resizeStage({ application, sprite, newHeight, newWidth, }: {
+    newHeight: number;
+    newWidth: number;
+    application: PIXI.Application;
+    sprite: PIXI.Sprite;
+}): void;

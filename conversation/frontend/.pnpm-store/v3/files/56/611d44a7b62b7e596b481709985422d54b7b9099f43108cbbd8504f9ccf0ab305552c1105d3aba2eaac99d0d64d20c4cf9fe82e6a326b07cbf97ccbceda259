@@ -1,0 +1,6 @@
+import { ID } from '@edifice.io/client';
+declare const useDirectory: () => {
+    getAvatarURL: (userId: ID, type: "user" | "group") => string;
+    getUserbookURL: (userId: ID, type: "user" | "group") => string;
+};
+export default useDirectory;

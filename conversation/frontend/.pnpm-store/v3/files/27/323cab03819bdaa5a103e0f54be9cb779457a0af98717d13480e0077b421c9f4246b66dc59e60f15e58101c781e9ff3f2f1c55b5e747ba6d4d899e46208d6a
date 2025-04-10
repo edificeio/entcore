@@ -1,0 +1,19 @@
+import { jsx } from "react/jsx-runtime";
+import { Controller } from "react-hook-form";
+import { useLanguageOptions } from "../hooks/useLanguageOptions.js";
+import Select from "../../../../components/Select/Select.js";
+const defaultSelectLanguageOption = "bpr.form.publication.language", LangSelect = ({
+  control
+}) => {
+  const languageOptions = useLanguageOptions();
+  return /* @__PURE__ */ jsx("div", { className: "col", children: /* @__PURE__ */ jsx(Controller, { name: "language", control, rules: {
+    required: !0
+  }, render: ({
+    field: {
+      onChange
+    }
+  }) => /* @__PURE__ */ jsx(Select, { block: !0, size: "md", onValueChange: onChange, options: languageOptions, "aria-required": !0, placeholderOption: defaultSelectLanguageOption }) }) });
+};
+export {
+  LangSelect
+};

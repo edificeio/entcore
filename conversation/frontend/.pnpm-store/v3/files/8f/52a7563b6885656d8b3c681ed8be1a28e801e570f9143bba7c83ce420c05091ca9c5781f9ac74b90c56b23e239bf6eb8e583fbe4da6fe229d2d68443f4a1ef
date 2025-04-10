@@ -1,0 +1,11 @@
+import { jsx } from "react/jsx-runtime";
+import { useTranslation } from "react-i18next";
+const DropzoneDrag = () => {
+  const {
+    t
+  } = useTranslation();
+  return /* @__PURE__ */ jsx("div", { className: "drop-wrapper", children: /* @__PURE__ */ jsx("div", { className: "drop-content", children: /* @__PURE__ */ jsx("p", { className: "drop-text", children: t("dropzone.drop") }) }) });
+};
+export {
+  DropzoneDrag as default
+};

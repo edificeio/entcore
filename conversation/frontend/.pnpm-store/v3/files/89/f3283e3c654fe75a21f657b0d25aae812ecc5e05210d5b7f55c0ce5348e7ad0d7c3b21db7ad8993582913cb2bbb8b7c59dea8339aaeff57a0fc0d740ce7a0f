@@ -1,0 +1,46 @@
+import { useState } from "react";
+import { useImageSelection } from "./useImageSelection.js";
+import useToggle from "../../../hooks/useToggle/useToggle.js";
+import useWorkspaceFile from "../../../hooks/useWorkspaceFile/useWorkspaceFile.js";
+const useImageModal = (editor, application, visibility) => {
+  const [currentImage, setCurrentImage] = useState(void 0), [isOpen, toggle] = useToggle(!1), {
+    createOrUpdate
+  } = useWorkspaceFile(), {
+    setAttributes,
+    getSelection
+  } = useImageSelection(editor);
+  return {
+    isOpen,
+    currentImage,
+    toggle,
+    handleCancel: () => {
+      toggle();
+    },
+    handleEdit: () => {
+      const selected = getSelection()[0];
+      selected && (setCurrentImage(selected), toggle());
+    },
+    handleSave: async ({
+      blob,
+      legend,
+      altText: alt
+    }) => {
+      const res = await createOrUpdate({
+        blob,
+        legend,
+        alt,
+        uri: currentImage == null ? void 0 : currentImage.src,
+        visibility,
+        application
+      });
+      toggle(), setAttributes({
+        url: typeof res == "object" ? res.src : res,
+        alt,
+        title: legend
+      });
+    }
+  };
+};
+export {
+  useImageModal
+};

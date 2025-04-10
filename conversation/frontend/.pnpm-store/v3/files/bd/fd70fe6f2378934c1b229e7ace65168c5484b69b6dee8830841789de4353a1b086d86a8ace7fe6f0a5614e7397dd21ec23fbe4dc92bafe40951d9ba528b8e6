@@ -1,0 +1,133 @@
+import { jsx as e, jsxs as o, Fragment as j } from "react/jsx-runtime";
+import O, { useState as B, useEffect as M, useCallback as E } from "react";
+import { useBreakpoint as G, Card as r, Image as L, AppIcon as U, Avatar as q, Tooltip as P, useOdeClient as H, useDate as J, Button as K } from "@edifice-ui/react";
+import { useSpring as Q, animated as w } from "@react-spring/web";
+import V from "clsx";
+import { useTranslation as A } from "react-i18next";
+import { f as z, o as W, e as X, h as Y, i as Z, a as _ } from "./index2.js";
+import { useDraggable as tt } from "@dnd-kit/core";
+import { Users as et, Globe as it } from "@edifice-ui/icons";
+import { OneProfile as at } from "@edifice-ui/icons/nav";
+import { D as st } from "./DraggableCard.js";
+const $ = ({
+  app: l,
+  resource: t,
+  time: x,
+  isSelected: b = !1,
+  isSelectable: u = !0,
+  onClick: m,
+  onSelect: c
+}) => {
+  const [s, h] = B(!1), p = z(), {
+    lg: R
+  } = G(), g = `/userbook/avatar/${t == null ? void 0 : t.creatorId}`;
+  function I(a) {
+    const {
+      rights: D,
+      creatorId: F
+    } = a || {};
+    return D.filter((T) => !T.includes(F)).length >= 1;
+  }
+  const {
+    attributes: v,
+    listeners: C,
+    setNodeRef: y,
+    transform: n
+  } = tt({
+    id: t.id,
+    data: {
+      id: t.id,
+      type: "resource"
+    },
+    disabled: !!p || !R
+  }), S = I(t), N = t == null ? void 0 : t.public, f = W(), {
+    t: i
+  } = A(), d = {
+    position: s ? "absolute" : "relative",
+    zIndex: s ? 2e3 : 1,
+    transform: `translate3d(${((n == null ? void 0 : n.x) ?? 0) / 1}px, ${((n == null ? void 0 : n.y) ?? 0) / 1}px, 0)`
+  };
+  return M(() => {
+    const a = f.elementDrag === t.id;
+    h(a);
+  }, [f]), /* @__PURE__ */ e("div", { ref: y, ...C, ...v, style: {
+    ...d
+  }, children: s ? /* @__PURE__ */ e(st, { app: l, type: "resource", name: t == null ? void 0 : t.name }) : /* @__PURE__ */ e(r, { app: l, isSelected: !s && b, isSelectable: !s && u, onClick: m, onSelect: c, children: (a) => /* @__PURE__ */ o(j, { children: [
+    /* @__PURE__ */ o(r.Body, { children: [
+      /* @__PURE__ */ e("div", { className: "card-image medium", children: t != null && t.thumbnail ? /* @__PURE__ */ e(L, { alt: "", src: `${t == null ? void 0 : t.thumbnail}?thumbnail=80x80`, objectFit: "cover", className: "h-full w-100" }) : /* @__PURE__ */ e(U, { app: l, iconFit: "ratio", size: "80", variant: "rounded" }) }),
+      /* @__PURE__ */ o("div", { className: "text-truncate", children: [
+        /* @__PURE__ */ e(r.Title, { children: t == null ? void 0 : t.name }),
+        /* @__PURE__ */ e(r.Text, { children: /* @__PURE__ */ e("em", { children: x }) })
+      ] })
+    ] }),
+    /* @__PURE__ */ o(r.Footer, { children: [
+      /* @__PURE__ */ o("div", { className: "d-inline-flex align-items-center gap-8 text-truncate", children: [
+        g ? /* @__PURE__ */ e(q, { alt: (t == null ? void 0 : t.creatorName) || "", size: "xs", src: g, variant: "circle", width: "24", height: "24" }) : /* @__PURE__ */ e(at, {}),
+        /* @__PURE__ */ e(r.Text, { children: t == null ? void 0 : t.creatorName })
+      ] }),
+      /* @__PURE__ */ o("div", { className: "d-inline-flex align-items-center gap-8", children: [
+        S && /* @__PURE__ */ e(P, { message: i("tooltip.shared", {
+          ns: a
+        }), placement: "top", children: /* @__PURE__ */ e(et, { width: 16, height: 16 }) }),
+        N && /* @__PURE__ */ e(P, { message: i("tooltip.public", {
+          ns: a
+        }), placement: "top", children: /* @__PURE__ */ e(it, { width: 16, height: 16 }) })
+      ] })
+    ] })
+  ] }) }) });
+};
+$.displayName = "ResourceCard";
+const xt = ({
+  data: l,
+  fetchNextPage: t
+}) => {
+  const {
+    currentApp: x
+  } = H(), {
+    t: b
+  } = A(), {
+    fromNow: u
+  } = J(), m = X(), c = Y(), s = Z(), {
+    setSelectedResources: h,
+    setResourceIds: p,
+    openResource: R,
+    setResourceIsTrash: g
+  } = _(), I = z(), v = Q({
+    from: {
+      opacity: 0
+    },
+    to: {
+      opacity: 1
+    }
+  }), y = m.pagination.startIdx + m.pagination.pageSize < (m.pagination.maxIdx || 0), n = E(() => {
+    t();
+  }, []), S = (i) => {
+    I ? (g(!0), p([i.id]), h([i])) : R(i);
+  };
+  async function N(i) {
+    if (c.includes(i.id)) {
+      p(c.filter((d) => d !== i.id)), h(s.filter((d) => d.id !== i.id));
+      return;
+    }
+    p([...c, i.id]), h([...s, i]);
+  }
+  const f = V("grid ps-0 list-unstyled");
+  return /* @__PURE__ */ o(O.Fragment, { children: [
+    /* @__PURE__ */ e(w.ul, { className: f, children: l == null ? void 0 : l.pages.map((i, d) => /* @__PURE__ */ e(O.Fragment, { children: i.resources.map((a) => {
+      const {
+        id: D,
+        updatedAt: F
+      } = a, k = u(F);
+      return /* @__PURE__ */ e(w.li, { className: "g-col-4", style: {
+        position: "relative",
+        ...v
+      }, children: /* @__PURE__ */ e($, { app: x, resource: a, time: k, isSelectable: !0, isSelected: c.includes(a.id), onClick: (T) => {
+        T.stopPropagation(), S(a);
+      }, onSelect: () => N(a) }) }, D);
+    }) }, d)) }),
+    y && /* @__PURE__ */ e("div", { className: "d-grid gap-2 col-4 mx-auto my-24", children: /* @__PURE__ */ e(K, { type: "button", color: "secondary", variant: "filled", onClick: n, children: b("explorer.see.more") }) })
+  ] });
+};
+export {
+  xt as default
+};

@@ -1,0 +1,2 @@
+declare const LinkerNodeView: (Component: any) => import('@tiptap/core').Node<any, any>;
+export default LinkerNodeView;

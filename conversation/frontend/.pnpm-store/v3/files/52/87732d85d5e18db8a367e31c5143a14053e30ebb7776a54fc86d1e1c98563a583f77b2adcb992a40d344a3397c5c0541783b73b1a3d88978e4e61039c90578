@@ -1,0 +1,13 @@
+/// <reference types="react" />
+import { TabsItemProps } from "./TabsItem";
+export interface TabsContextProps {
+    activeTab?: string;
+    items: TabsItemProps[];
+    setSelectedTab: (key: string) => void;
+    tabsRef: React.MutableRefObject<(HTMLButtonElement | null)[]>;
+    tabUnderlineLeft: number;
+    tabUnderlineWidth: number;
+    onKeyDown: (event: React.KeyboardEvent<HTMLButtonElement>) => void;
+}
+export declare const TabsContext: import("react").Context<TabsContextProps | null>;
+export declare function useTabsContext(): TabsContextProps;

@@ -1,0 +1,56 @@
+import { jsxs, Fragment, jsx } from "react/jsx-runtime";
+import { customSize } from "@edifice.io/utilities";
+import { useRef, useEffect } from "react";
+import useUploadFiles from "../../../hooks/useUploadFiles/useUploadFiles.js";
+import UploadCard from "../UploadCard/UploadCard.js";
+import ImageEditor from "../ImageEditor/components/ImageEditor.js";
+const UploadFiles = ({
+  onFilesChange,
+  visibility = "protected"
+}) => {
+  const {
+    files,
+    uploadedFiles,
+    getUploadStatus,
+    uploadFile,
+    removeFile,
+    updateImage,
+    editingImage,
+    setEditingImage,
+    getUrl
+  } = useUploadFiles({
+    handleOnChange: onFilesChange,
+    application: "media-library",
+    visibility
+  }), fileBlobs = useRef(/* @__PURE__ */ new Map());
+  useEffect(() => {
+    const blobs = fileBlobs.current;
+    return () => {
+      blobs.forEach((url) => URL.revokeObjectURL(url)), blobs.clear();
+    };
+  }, []);
+  const renderItem = (file) => {
+    const src = file.type.startsWith("image") ? fileBlobs.current.get(file.name) : "";
+    return fileBlobs.current.has(file.name) || fileBlobs.current.set(file.name, URL.createObjectURL(file)), {
+      name: file.name,
+      info: {
+        type: file.type,
+        weight: customSize(file.size || 0, 1)
+      },
+      src
+    };
+  }, handleRemoveFile = (file) => {
+    const blobUrl = fileBlobs.current.get(file.name);
+    blobUrl && (URL.revokeObjectURL(blobUrl), fileBlobs.current.delete(file.name)), removeFile(file);
+  };
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    files.map((file) => {
+      const resource = uploadedFiles.find((uploadedFile) => uploadedFile.name === file.name);
+      return /* @__PURE__ */ jsx(UploadCard, { status: getUploadStatus(file), item: renderItem(file), onEdit: () => setEditingImage(resource), onRetry: () => uploadFile(file), onDelete: () => handleRemoveFile(file) }, file.name);
+    }),
+    editingImage && /* @__PURE__ */ jsx(ImageEditor, { altText: editingImage.alt, legend: editingImage.title, image: getUrl(editingImage, !0), isOpen: !!editingImage, onCancel: () => setEditingImage(void 0), onSave: updateImage, onError: console.error })
+  ] });
+};
+export {
+  UploadFiles as default
+};

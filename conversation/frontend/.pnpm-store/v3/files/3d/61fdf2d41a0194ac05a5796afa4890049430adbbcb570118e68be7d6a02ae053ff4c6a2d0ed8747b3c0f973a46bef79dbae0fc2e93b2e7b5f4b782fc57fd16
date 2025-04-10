@@ -1,0 +1,24 @@
+import { ReactNode } from 'react';
+export interface DropdownRadioItemProps {
+    /**
+     * Children Node
+     */
+    children: ReactNode;
+    /**
+     * Item Value
+     */
+    value: string;
+    /**
+     * Item model
+     */
+    model: string;
+    /**
+     * onKeyDown, onMouseUp handlers
+     */
+    onChange: (value: string) => void;
+}
+declare const DropdownRadioItem: {
+    ({ children, value, model, onChange, }: DropdownRadioItemProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default DropdownRadioItem;

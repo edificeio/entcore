@@ -1,0 +1,2 @@
+import { IWebApp } from '@edifice.io/client';
+export default function useBookmark(): IWebApp[] | undefined;

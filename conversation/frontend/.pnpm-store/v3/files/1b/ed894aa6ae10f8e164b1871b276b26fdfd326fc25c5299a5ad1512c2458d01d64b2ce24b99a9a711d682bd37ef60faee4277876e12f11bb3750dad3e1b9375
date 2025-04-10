@@ -1,0 +1,13 @@
+export { default as IconCongratsCounter } from './IconCongratsCounter';
+export { default as IconCongrats } from './IconCongrats';
+export { default as IconGreatCounter } from './IconGreatCounter';
+export { default as IconGreat } from './IconGreat';
+export { default as IconGuest } from './IconGuest';
+export { default as IconInterestingCounter } from './IconInterestingCounter';
+export { default as IconInteresting } from './IconInteresting';
+export { default as IconParent } from './IconParent';
+export { default as IconPersonnel } from './IconPersonnel';
+export { default as IconStudent } from './IconStudent';
+export { default as IconTeacher } from './IconTeacher';
+export { default as IconThanksCounter } from './IconThanksCounter';
+export { default as IconThanks } from './IconThanks';

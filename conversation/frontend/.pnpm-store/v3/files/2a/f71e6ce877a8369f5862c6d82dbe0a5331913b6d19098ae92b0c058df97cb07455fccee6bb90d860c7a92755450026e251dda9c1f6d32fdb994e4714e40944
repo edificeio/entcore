@@ -1,0 +1,28 @@
+import { jsxs, jsx, Fragment } from "react/jsx-runtime";
+import { NodeViewWrapper, NodeViewContent } from "@tiptap/react";
+import clsx from "clsx";
+import { useTranslation } from "react-i18next";
+import SvgIconRafterDown from "../../../icons/components/IconRafterDown.js";
+import SvgIconRafterUp from "../../../icons/components/IconRafterUp.js";
+import useToggle from "../../../../hooks/useToggle/useToggle.js";
+import Button from "../../../../components/Button/Button.js";
+const ConversationHistoryRenderer = () => {
+  const {
+    t
+  } = useTranslation("conversation"), [open, toggleOpen] = useToggle(!1), classes = clsx("conversation-history ps-16", {
+    show: open
+  });
+  return /* @__PURE__ */ jsxs(NodeViewWrapper, { as: "div", contentEditable: !1, children: [
+    /* @__PURE__ */ jsx(Button, { variant: "ghost", onClick: toggleOpen, size: "sm", className: "d-flex align-items-center gap-4 text-gray-800 fs-6 mt-24", children: open ? /* @__PURE__ */ jsxs(Fragment, { children: [
+      t("message.history.hide"),
+      /* @__PURE__ */ jsx(SvgIconRafterUp, { width: 16, height: 16 })
+    ] }) : /* @__PURE__ */ jsxs(Fragment, { children: [
+      t("message.history.show"),
+      /* @__PURE__ */ jsx(SvgIconRafterDown, { width: 16, height: 16 })
+    ] }) }),
+    /* @__PURE__ */ jsx("div", { className: classes, "data-testid": "conversation-history-content", children: /* @__PURE__ */ jsx(NodeViewContent, {}) })
+  ] });
+};
+export {
+  ConversationHistoryRenderer as default
+};

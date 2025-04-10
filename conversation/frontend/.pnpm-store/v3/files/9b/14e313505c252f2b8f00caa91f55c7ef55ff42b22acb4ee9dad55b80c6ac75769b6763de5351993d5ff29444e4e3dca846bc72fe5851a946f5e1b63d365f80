@@ -1,0 +1,10 @@
+import { Linker } from "@edifice.io/tiptap-extensions/linker";
+import { ReactNodeViewRenderer } from "@tiptap/react";
+const LinkerNodeView = (Component) => Linker.extend({
+  addNodeView() {
+    return ReactNodeViewRenderer(Component);
+  }
+});
+export {
+  LinkerNodeView as default
+};

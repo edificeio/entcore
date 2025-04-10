@@ -1,0 +1,7 @@
+import { UseMutationOptions, UseMutationResult } from '../../../../node_modules/@tanstack/react-query';
+import { UpdateParameters, UpdateResult } from "edifice-ts-client";
+declare const useUpdateMutation: ({ application, options, }: {
+    application: string;
+    options?: UseMutationOptions<UpdateResult, Error, UpdateParameters, unknown> | undefined;
+}) => UseMutationResult<UpdateResult, Error, UpdateParameters>;
+export default useUpdateMutation;

@@ -1,0 +1,11 @@
+import { odeServices } from "@edifice.io/client";
+import { useQuery } from "@tanstack/react-query";
+function useSession() {
+  return useQuery({
+    queryKey: ["session"],
+    queryFn: async () => await odeServices.session().getSession()
+  });
+}
+export {
+  useSession as default
+};

@@ -1,0 +1,31 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { forwardRef, useId } from "react";
+import clsx from "clsx";
+const Radio = /* @__PURE__ */ forwardRef(({
+  model,
+  icon,
+  label = !1,
+  disabled = !1,
+  checked,
+  ...restProps
+}, ref) => {
+  const id = useId(), radioProps = {
+    type: "radio",
+    checked,
+    disabled,
+    ref,
+    className: clsx(restProps.className, "form-check-input c-pointer", icon && "d-none"),
+    id
+  }, inputProps = {
+    ...restProps,
+    ...radioProps
+  };
+  return /* @__PURE__ */ jsxs("div", { className: clsx("form-check d-flex align-items-center gap-8", icon && "ps-0"), children: [
+    /* @__PURE__ */ jsx("input", { ...inputProps }),
+    icon && /* @__PURE__ */ jsx("label", { htmlFor: inputProps.id, className: clsx("c-pointer", model !== restProps.value && "text-muted"), children: icon }),
+    !icon && label && /* @__PURE__ */ jsx("label", { className: "form-check-label", htmlFor: inputProps.id, children: label })
+  ] });
+});
+export {
+  Radio as default
+};

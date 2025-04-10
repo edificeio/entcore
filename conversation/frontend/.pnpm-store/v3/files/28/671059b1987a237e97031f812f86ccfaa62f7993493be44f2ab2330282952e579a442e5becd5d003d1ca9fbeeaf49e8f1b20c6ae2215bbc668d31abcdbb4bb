@@ -1,0 +1,24 @@
+import { ResourceService, App, IAction, IFilter, IOrder, ResourceType } from 'edifice-ts-client';
+export interface AppParams {
+    /** Application code */
+    app: App;
+    /**
+     * Initialize App Resource Service
+     */
+    service: typeof ResourceService;
+    /** Array of ResourceType */
+    types: ResourceType[];
+    /** Array of IFilter */
+    filters: IFilter[];
+    /** Array of IOrder */
+    orders: IOrder[];
+    /** Array of IAction */
+    actions: IAction[];
+    /** Array of trashable IAction */
+    trashActions: IAction[];
+    /** BPR application code */
+    libraryAppFilter?: string;
+    /** Enable or disable Explorer Onboarding Modal */
+    enableOnboarding?: boolean;
+}
+export declare function getExplorerConfig(): AppParams;

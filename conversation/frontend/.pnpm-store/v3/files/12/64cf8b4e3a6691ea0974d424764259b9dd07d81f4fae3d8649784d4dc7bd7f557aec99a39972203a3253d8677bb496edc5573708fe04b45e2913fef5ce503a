@@ -1,0 +1,16 @@
+import { odeServices } from "@edifice.io/client";
+const useDirectory = () => {
+  function getAvatarURL(userId, type) {
+    return odeServices.directory().getAvatarUrl(userId, type);
+  }
+  function getUserbookURL(userId, type) {
+    return odeServices.directory().getDirectoryUrl(userId, type);
+  }
+  return {
+    getAvatarURL,
+    getUserbookURL
+  };
+};
+export {
+  useDirectory as default
+};

@@ -1,0 +1,3 @@
+import { RootProps } from '../types';
+declare const CommentProvider: ({ comments: defaultComments, options: commentOptions, ...props }: RootProps) => import("react/jsx-runtime").JSX.Element;
+export default CommentProvider;

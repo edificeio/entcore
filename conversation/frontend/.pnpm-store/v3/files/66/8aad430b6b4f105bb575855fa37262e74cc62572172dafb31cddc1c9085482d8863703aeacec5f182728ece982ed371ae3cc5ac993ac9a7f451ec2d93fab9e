@@ -1,0 +1,21 @@
+import { CardProps } from '@edifice-ui/react';
+import { ID, IWebApp } from 'edifice-ts-client';
+export interface FolderCardProps extends Omit<CardProps, 'children'> {
+    /**
+     * IWeb App
+     */
+    app?: IWebApp | undefined;
+    /**
+     * Folder's name
+     */
+    name: string;
+    /**
+     * Folder's id
+     */
+    idFolder: ID;
+}
+declare const FolderCard: {
+    ({ app, name, idFolder, isSelected, isSelectable, onClick, onSelect, }: FolderCardProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default FolderCard;

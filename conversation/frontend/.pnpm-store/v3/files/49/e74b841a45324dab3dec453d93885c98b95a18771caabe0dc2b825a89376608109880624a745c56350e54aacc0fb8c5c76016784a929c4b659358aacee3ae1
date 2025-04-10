@@ -1,0 +1,162 @@
+import * as PIXI from "pixi.js";
+const MIN_HEIGHT = 100, MIN_WIDTH = 100, MODAL_VERTICAL_PADDING = 450, MODAL_HORIZONTAL_PADDING = 64, DEFAULT_QUALITY = 0.5, DEFAULT_SPRITE_NAME = "image";
+function updateImageFromBlob(application, {
+  spriteName,
+  imgDatasource,
+  settings
+}) {
+  const imageUrl = URL.createObjectURL(imgDatasource), image = new Image();
+  return image.src = imageUrl, new Promise((resolve) => {
+    image.onload = async () => {
+      await updateImage(application, {
+        spriteName,
+        imgDatasource: image,
+        settings
+      });
+      const newSprite = application == null ? void 0 : application.stage.getChildByName(spriteName, !0);
+      resolve(newSprite);
+    };
+  });
+}
+async function updateImage(application, {
+  spriteName,
+  imgDatasource,
+  settings
+}) {
+  if (application === void 0 || application.stage === null)
+    return;
+  const previous = application.stage.getChildByName(spriteName, !0);
+  previous == null || previous.removeFromParent();
+  const texture = imgDatasource instanceof HTMLImageElement ? PIXI.Texture.from(imgDatasource) : imgDatasource instanceof PIXI.Sprite ? imgDatasource : await PIXI.Texture.fromURL(imgDatasource), sprite = texture instanceof PIXI.Sprite ? texture : PIXI.Sprite.from(texture, {});
+  if (sprite.interactive = !0, sprite.name = spriteName, settings) {
+    const {
+      sprite: {
+        anchor,
+        position,
+        scale,
+        size: spriteSize,
+        rotation
+      },
+      stage: {
+        size: stageSize
+      }
+    } = settings, isRotated = rotation % Math.PI !== 0;
+    sprite.anchor.x = anchor.x, sprite.anchor.y = anchor.y, sprite.position.x = position.x, sprite.position.y = position.y, sprite.scale.x = scale.x, sprite.scale.y = scale.y, sprite.width = isRotated ? spriteSize.height : spriteSize.width, sprite.height = isRotated ? spriteSize.width : spriteSize.height, application.stage.height = stageSize.height, application.stage.width = stageSize.width, application.renderer.resize(stageSize.width, stageSize.height), application.stage.addChild(sprite);
+  } else
+    application.stage.addChild(sprite), application.renderer.resize(sprite.width, sprite.height);
+  autoResize(application, sprite);
+}
+function autoResize(application, sprite) {
+  var _a;
+  const parent = application.view.parentNode, maxMobileWidth = window.innerWidth - MODAL_HORIZONTAL_PADDING, parentWidth = Math.max((parent == null ? void 0 : parent.offsetWidth) ?? 0, MIN_WIDTH), newSize = constraintSize({
+    width: sprite.width,
+    height: sprite.height
+  }, {
+    width: {
+      max: Math.min(parentWidth, maxMobileWidth),
+      min: MIN_WIDTH
+    },
+    height: {
+      min: MIN_HEIGHT,
+      max: window.innerHeight - MODAL_VERTICAL_PADDING
+    }
+  }), {
+    height: newHeight,
+    width: newWidth
+  } = newSize;
+  (_a = application.view) != null && _a.style && (application.view.style.width = `${newWidth}px`, application.view.style.height = `${newHeight}px`);
+}
+function constraintSize(size, constraints) {
+  const {
+    height,
+    width
+  } = size, ratio = width / height, {
+    height: constraintHeight,
+    width: constraintWidth
+  } = constraints;
+  let newWidth = constraintWidth.max, newHeight = constraintWidth.max / ratio;
+  return width > constraintWidth.max && (newWidth = constraintWidth.max, newHeight = newWidth / ratio), newHeight > constraintHeight.max && (newHeight = constraintHeight.max, newWidth = newHeight * ratio), newWidth < constraintWidth.min && (newWidth = constraintWidth.min, newHeight = newWidth / ratio), newHeight < constraintHeight.min && (newHeight = constraintHeight.min, newWidth = newHeight * ratio), {
+    width: newWidth,
+    height: newHeight
+  };
+}
+function saveAsBlob(application) {
+  return new Promise((resolve, reject) => {
+    var _a;
+    (_a = application == null ? void 0 : application.view) != null && _a.toBlob ? application.view.toBlob((blob) => {
+      blob ? resolve(blob) : reject("EXTRACT_FAILED");
+    }, "image/jpeg", DEFAULT_QUALITY) : reject("EXTRACT_FAILED");
+  });
+}
+function saveAsDataURL(application) {
+  var _a, _b;
+  return (_b = (_a = application.view).toDataURL) == null ? void 0 : _b.call(_a);
+}
+function getApplicationScale(application) {
+  return application.view.getBoundingClientRect ? application.view.getBoundingClientRect().width / application.view.width : 1;
+}
+function toBlob(application) {
+  return new Promise((resolve, reject) => {
+    var _a, _b;
+    (_b = (_a = application.view).toBlob) == null || _b.call(_a, (blob) => {
+      blob ? resolve(blob) : reject("EXTRACT_FAIL");
+    }, "image/png", 1);
+  });
+}
+function createImageSettings({
+  application,
+  sprite
+}) {
+  return {
+    sprite: {
+      rotation: sprite.rotation,
+      size: {
+        width: sprite.width,
+        height: sprite.height
+      },
+      position: {
+        x: sprite.position.x,
+        y: sprite.position.y
+      },
+      scale: {
+        x: sprite.scale.x,
+        y: sprite.scale.y
+      },
+      anchor: {
+        x: sprite.anchor.x,
+        y: sprite.anchor.y
+      }
+    },
+    stage: {
+      size: {
+        width: application.stage.width,
+        height: application.stage.height
+      },
+      scale: {
+        x: application.stage.scale.x,
+        y: application.stage.scale.y
+      }
+    }
+  };
+}
+function resizeStage({
+  application,
+  sprite,
+  newHeight,
+  newWidth
+}) {
+  sprite.anchor.x = 0.5, sprite.anchor.y = 0.5, sprite.position = new PIXI.Point(newWidth / 2, newHeight / 2), application.stage.height = newHeight, application.stage.width = newWidth, application.renderer.resize(newWidth, newHeight);
+}
+export {
+  DEFAULT_SPRITE_NAME,
+  autoResize,
+  constraintSize,
+  createImageSettings,
+  getApplicationScale,
+  resizeStage,
+  saveAsBlob,
+  saveAsDataURL,
+  toBlob,
+  updateImage,
+  updateImageFromBlob
+};

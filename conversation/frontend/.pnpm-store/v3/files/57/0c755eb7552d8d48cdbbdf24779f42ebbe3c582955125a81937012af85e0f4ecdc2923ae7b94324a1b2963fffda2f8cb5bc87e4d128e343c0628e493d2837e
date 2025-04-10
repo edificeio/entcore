@@ -1,0 +1,8 @@
+/**
+ * `ConversationHistoryRenderer` is a React component that renders a button to toggle the visibility
+ * of conversation history content. It uses the `@tiptap/react` library for rendering content and
+ * `clsx` for conditional class names. The component also utilizes the `useTranslation` hook from
+ * `react-i18next` for internationalization and a custom `useToggle` hook for managing the open state.
+ */
+declare const ConversationHistoryRenderer: () => import("react/jsx-runtime").JSX.Element;
+export default ConversationHistoryRenderer;

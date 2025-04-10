@@ -1,0 +1,49 @@
+import { ReactNode } from 'react';
+import { UserProfile } from '@edifice.io/client';
+export type BadgeRef = HTMLSpanElement;
+/** Badge variant : notification */
+export type NotificationBadgeVariant = {
+    type: 'notification';
+    level: 'success' | 'warning' | 'danger' | 'info';
+};
+/** Badge variant : content */
+export type ContentBadgeVariant = {
+    type: 'content';
+    level: 'success' | 'warning' | 'danger' | 'info';
+    background?: boolean;
+};
+/** Badge variant : profile = teacher, student, relative or personnel, guest */
+export type ProfileBadgeVariant = {
+    type: 'user';
+    profile: UserProfile[number];
+    background?: boolean;
+};
+/** Badge variant : chip */
+export type ChipBadgeVariant = {
+    type: 'chip';
+};
+/** Badge variant : link */
+export type LinkBadgeVariant = {
+    type: 'link';
+};
+export type BadgeVariants = NotificationBadgeVariant | ContentBadgeVariant | ProfileBadgeVariant | ChipBadgeVariant | LinkBadgeVariant;
+export interface BadgeProps extends React.ComponentPropsWithRef<'span'> {
+    /**
+     * Badge variant : notification, link or profile (Teacher|Student|Relative|Personnel)
+     * Defaults to notification.
+     */
+    variant?: BadgeVariants;
+    /**
+     * Text or icon (or whatever) to render as children elements.
+     */
+    children?: ReactNode;
+    /**
+     * Optional class for styling purpose
+     */
+    className?: string;
+}
+/**
+ * Primary UI component for user interaction
+ */
+declare const Badge: import('react').ForwardRefExoticComponent<Omit<BadgeProps, "ref"> & import('react').RefAttributes<HTMLSpanElement>>;
+export default Badge;

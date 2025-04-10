@@ -1,0 +1,7 @@
+export declare const useSearchForm: () => {
+    formRef: import('react').MutableRefObject<null>;
+    inputSearch: string;
+    handleInputSearchChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    handleKeyPress: (event: React.KeyboardEvent) => void;
+    handleSearchSubmit: (e: React.MouseEvent) => void;
+};

@@ -1,0 +1,66 @@
+import { useState, useEffect } from "react";
+import { toBlob } from "../effects/misc.js";
+const DEFAULT_MAX_HISTORY = 20, useHistoryTool = ({
+  maxSize = DEFAULT_MAX_HISTORY,
+  application,
+  spriteName,
+  onRestore
+}) => {
+  const [history, setHistory] = useState([]);
+  useEffect(() => {
+    setHistory([]);
+  }, [application]);
+  const restore = async () => {
+    const imgData = history.pop();
+    imgData && (onRestore(await imgData.backup, imgData), setHistory(history.filter((current) => current !== imgData)));
+  }, listSize = (arr) => (arr.length > maxSize && arr.splice(0, arr.length - maxSize), arr), historize = async (callback) => {
+    {
+      if (!application)
+        return;
+      const sprite = application.stage.getChildByName(spriteName, !0);
+      if (sprite == null)
+        return;
+      const promise = toBlob(application), state = {
+        backup: promise,
+        sprite: {
+          rotation: sprite.rotation,
+          size: {
+            width: sprite.width,
+            height: sprite.height
+          },
+          position: {
+            x: sprite.position.x,
+            y: sprite.position.y
+          },
+          scale: {
+            x: sprite.scale.x,
+            y: sprite.scale.y
+          },
+          anchor: {
+            x: sprite.anchor.x,
+            y: sprite.anchor.y
+          }
+        },
+        stage: {
+          size: {
+            width: application.stage.width,
+            height: application.stage.height
+          },
+          scale: {
+            x: application.stage.scale.x,
+            y: application.stage.scale.y
+          }
+        }
+      };
+      return setHistory([...listSize(history), state]), await promise, callback.call(callback);
+    }
+  };
+  return {
+    historyCount: history.length,
+    restore,
+    historize
+  };
+};
+export {
+  useHistoryTool as default
+};

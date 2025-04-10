@@ -1,0 +1,10 @@
+import { jsx } from "react/jsx-runtime";
+import SvgIconOneProfile from "../../modules/icons/components/nav/IconOneProfile.js";
+import Avatar from "../Avatar/Avatar.js";
+const CardUser = ({
+  userSrc,
+  creatorName
+}) => userSrc ? /* @__PURE__ */ jsx(Avatar, { alt: creatorName || "", size: "xs", src: userSrc, variant: "circle", width: "24", height: "24" }) : /* @__PURE__ */ jsx(SvgIconOneProfile, {});
+export {
+  CardUser as default
+};

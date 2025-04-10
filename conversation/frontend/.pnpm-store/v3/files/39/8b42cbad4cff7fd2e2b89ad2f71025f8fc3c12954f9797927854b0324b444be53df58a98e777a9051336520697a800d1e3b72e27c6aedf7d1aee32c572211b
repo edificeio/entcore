@@ -1,0 +1,30 @@
+import { useState, useEffect } from "react";
+import { odeServices } from "@edifice.io/client";
+const getOnboardingTrash = async (key) => await odeServices.conf().getPreference(key), saveOnboardingTrash = async (key) => await odeServices.conf().savePreference(key, JSON.stringify({
+  key: !1
+})), useOnboardingModal = (id) => {
+  const [isOpen, setIsOpen] = useState(!0), [isOnboarding, setIsOnboarding] = useState(!1);
+  return useEffect(() => {
+    (async () => {
+      const response = await getOnboardingTrash(id);
+      if (response) {
+        const {
+          key
+        } = response;
+        setIsOnboarding(key);
+        return;
+      }
+      setIsOnboarding(!0);
+    })();
+  }, [id]), {
+    isOpen,
+    setIsOpen,
+    isOnboarding,
+    handleSavePreference: async () => {
+      await saveOnboardingTrash(id), setIsOpen(!1);
+    }
+  };
+};
+export {
+  useOnboardingModal
+};

@@ -1,0 +1,6 @@
+import { QueryClient } from '@tanstack/react-query';
+import { ReactNode } from 'react';
+export declare const queryClient: QueryClient;
+export declare const Providers: ({ children }: {
+    children: ReactNode;
+}) => import("react/jsx-runtime").JSX.Element;

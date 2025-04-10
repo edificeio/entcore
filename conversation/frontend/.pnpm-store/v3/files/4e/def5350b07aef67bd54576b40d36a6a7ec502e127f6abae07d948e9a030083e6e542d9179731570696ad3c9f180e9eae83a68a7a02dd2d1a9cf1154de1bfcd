@@ -1,0 +1,8 @@
+const tippyOptions = {
+  placement: "bottom",
+  offset: [0, 10],
+  zIndex: 999
+};
+export {
+  tippyOptions
+};

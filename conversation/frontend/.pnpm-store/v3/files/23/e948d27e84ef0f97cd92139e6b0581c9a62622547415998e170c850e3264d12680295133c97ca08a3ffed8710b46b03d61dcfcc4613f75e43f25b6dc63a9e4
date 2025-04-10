@@ -1,0 +1,15 @@
+import { jsx } from "react/jsx-runtime";
+import clsx from "clsx";
+import { useModalContext } from "./ModalContext.js";
+const ModalBody = (props) => {
+  const {
+    ariaDescriptionId
+  } = useModalContext(), {
+    children,
+    className
+  } = props, classes = clsx("modal-body", className);
+  return /* @__PURE__ */ jsx("div", { id: ariaDescriptionId, className: classes, children });
+};
+export {
+  ModalBody as default
+};

@@ -1,0 +1,12 @@
+import { createContext, useContext } from "react";
+const MediaLibraryContext = /* @__PURE__ */ createContext(null);
+function useMediaLibraryContext() {
+  const context = useContext(MediaLibraryContext);
+  if (!context)
+    throw new Error("Innertabs compound components cannot be rendered outside the MediaLibrary component");
+  return context;
+}
+export {
+  MediaLibraryContext,
+  useMediaLibraryContext
+};

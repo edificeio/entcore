@@ -1,0 +1,54 @@
+import { jsx } from "react/jsx-runtime";
+import { useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { EdificeClientContext } from "./EdificeClientProvider.context.js";
+import useSession from "../../hooks/useSession/useSession.js";
+import useConf from "../../hooks/useConf/useConf.js";
+function EdificeClientProvider({
+  children,
+  params
+}) {
+  var _a;
+  const appCode = params.app, {
+    t
+  } = useTranslation(), translatedAppCode = t(appCode), sessionQuery = useSession(), confQuery = useConf({
+    appCode
+  }), init = (confQuery == null ? void 0 : confQuery.isSuccess) && (sessionQuery == null ? void 0 : sessionQuery.isSuccess), currentLanguage = ((_a = sessionQuery == null ? void 0 : sessionQuery.data) == null ? void 0 : _a.currentLanguage) ?? "fr";
+  useEffect(() => {
+    [
+      {
+        data: "html",
+        value: currentLanguage
+      },
+      // #WB-3137 Disable the translation of the content of the page which provoced issues
+      {
+        data: "translate",
+        value: "no"
+      }
+    ].forEach((attribute) => {
+      var _a2;
+      return (_a2 = document.querySelector("html")) == null ? void 0 : _a2.setAttribute(attribute.data, attribute.value);
+    });
+  }, [currentLanguage, sessionQuery.data]), useEffect(() => {
+    document.title = `${translatedAppCode}`;
+  }, [appCode, sessionQuery.data, translatedAppCode]);
+  const values = useMemo(() => {
+    var _a2, _b, _c, _d, _e;
+    return {
+      appCode,
+      applications: (_a2 = confQuery == null ? void 0 : confQuery.data) == null ? void 0 : _a2.applications,
+      confQuery,
+      currentApp: (_b = confQuery == null ? void 0 : confQuery.data) == null ? void 0 : _b.currentApp,
+      currentLanguage,
+      init,
+      sessionQuery,
+      user: (_c = sessionQuery == null ? void 0 : sessionQuery.data) == null ? void 0 : _c.user,
+      userDescription: (_d = sessionQuery == null ? void 0 : sessionQuery.data) == null ? void 0 : _d.userDescription,
+      userProfile: (_e = sessionQuery == null ? void 0 : sessionQuery.data) == null ? void 0 : _e.userProfile
+    };
+  }, [appCode, confQuery, currentLanguage, init, sessionQuery]);
+  return /* @__PURE__ */ jsx(EdificeClientContext.Provider, { value: values, children });
+}
+export {
+  EdificeClientProvider
+};

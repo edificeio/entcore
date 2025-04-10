@@ -1,0 +1,8 @@
+interface ModalProps {
+    onSuccess?: () => void;
+}
+export declare function useDeleteModal({ onSuccess }: ModalProps): {
+    isTrashFolder: boolean;
+    onDelete: () => Promise<void>;
+};
+export {};

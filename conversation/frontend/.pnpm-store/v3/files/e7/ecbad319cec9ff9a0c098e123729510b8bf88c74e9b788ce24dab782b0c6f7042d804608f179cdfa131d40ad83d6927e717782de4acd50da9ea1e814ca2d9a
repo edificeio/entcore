@@ -1,0 +1,13 @@
+import { jsx } from "react/jsx-runtime";
+import { forwardRef } from "react";
+import clsx from "clsx";
+const BreadcrumbList = /* @__PURE__ */ forwardRef(({
+  children,
+  className
+}, ref) => {
+  const classes = clsx("breadcrumb d-flex flex-nowrap align-items-center mb-0", className);
+  return /* @__PURE__ */ jsx("ol", { ref, className: classes, children });
+});
+export {
+  BreadcrumbList as default
+};

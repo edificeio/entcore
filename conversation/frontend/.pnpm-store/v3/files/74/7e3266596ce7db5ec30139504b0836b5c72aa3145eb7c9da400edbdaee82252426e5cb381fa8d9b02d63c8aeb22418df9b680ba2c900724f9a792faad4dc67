@@ -1,0 +1,7 @@
+import { TreeNodeProps, TreeProps } from '../types';
+declare const Tree: {
+    ({ nodes, selectedNodeId: externalSelectedNodeId, showIcon, shouldExpandAllNodes, draggedNode, renderNode, onTreeItemFold, onTreeItemUnfold, onTreeItemClick, }: TreeProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export declare const TreeNode: import('react').ForwardRefExoticComponent<Omit<TreeNodeProps, "ref"> & import('react').RefAttributes<HTMLLIElement>>;
+export default Tree;

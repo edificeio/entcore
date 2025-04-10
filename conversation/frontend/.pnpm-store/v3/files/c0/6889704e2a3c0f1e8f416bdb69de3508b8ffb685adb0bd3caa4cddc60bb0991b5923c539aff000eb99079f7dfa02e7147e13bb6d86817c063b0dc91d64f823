@@ -1,0 +1,7 @@
+import { Editor } from '@tiptap/react';
+interface AudioProps {
+    editor: Editor;
+    [x: string]: any;
+}
+declare const AudioRenderer: (props: AudioProps) => import("react/jsx-runtime").JSX.Element;
+export default AudioRenderer;

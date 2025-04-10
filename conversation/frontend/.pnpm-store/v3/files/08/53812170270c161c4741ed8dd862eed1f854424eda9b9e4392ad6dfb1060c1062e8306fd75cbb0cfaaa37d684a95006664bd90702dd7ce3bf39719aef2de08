@@ -1,0 +1,86 @@
+import { jsx, jsxs } from "react/jsx-runtime";
+import { forwardRef, createElement } from "react";
+import clsx from "clsx";
+import { useTranslation } from "react-i18next";
+import SvgIconFolder from "../../../modules/icons/components/IconFolder.js";
+import SvgIconRafterRight from "../../../modules/icons/components/IconRafterRight.js";
+import { useTree } from "../hooks/useTree.js";
+const Tree = ({
+  nodes,
+  selectedNodeId: externalSelectedNodeId,
+  showIcon = !1,
+  shouldExpandAllNodes = !1,
+  draggedNode,
+  renderNode,
+  onTreeItemFold,
+  onTreeItemUnfold,
+  onTreeItemClick
+}) => {
+  const {
+    selectedNodeId,
+    expandedNodes,
+    siblingsNodes,
+    handleItemClick,
+    handleFoldUnfold
+  } = useTree({
+    data: nodes,
+    externalSelectedNodeId,
+    draggedNode,
+    shouldExpandAllNodes,
+    onTreeItemClick,
+    onTreeItemFold,
+    onTreeItemUnfold
+  });
+  return /* @__PURE__ */ jsx("div", { className: "treeview", children: /* @__PURE__ */ jsx("ul", { role: "tree", className: "m-0 p-0", children: Array.isArray(nodes) ? nodes.map((node) => /* @__PURE__ */ jsx(TreeNode, { node, showIcon, selectedNodeId, expandedNodes, siblingsNodes, onTreeItemClick: handleItemClick, onToggleNode: handleFoldUnfold, renderNode }, node.id)) : /* @__PURE__ */ jsx(TreeNode, { node: nodes, selectedNodeId, expandedNodes, siblingsNodes, showIcon, onTreeItemClick: handleItemClick, onToggleNode: handleFoldUnfold }) }) });
+}, TreeNode = /* @__PURE__ */ forwardRef(({
+  node,
+  selectedNodeId,
+  showIcon = !1,
+  expandedNodes,
+  focused,
+  isChild,
+  renderNode,
+  onTreeItemClick,
+  onToggleNode,
+  ...restProps
+}, ref) => {
+  var _a;
+  const {
+    t
+  } = useTranslation(), selected = selectedNodeId === node.id, expanded = expandedNodes.has(node.id), treeItemClasses = {
+    action: clsx("action-container d-flex align-items-center gap-8 px-2", {
+      "drag-focus": focused,
+      "py-4": !node.section
+    }),
+    arrow: clsx({
+      "py-4": !node.section,
+      "py-8": node.section,
+      invisible: !Array.isArray(node.children) || node.children.length === 0
+    }),
+    button: clsx("flex-fill d-flex align-items-center text-truncate gap-8", {
+      "py-8": node.section
+    })
+  }, handleItemKeyDown = (event) => {
+    (event.code === "Enter" || event.code === "Space") && (event.preventDefault(), event.stopPropagation(), onTreeItemClick == null || onTreeItemClick(node.id));
+  }, handleItemToggleKeyDown = (event) => {
+    (event.code === "Enter" || event.code === "Space") && (event.preventDefault(), event.stopPropagation(), onToggleNode == null || onToggleNode(node.id));
+  };
+  return /* @__PURE__ */ createElement("li", { ...restProps, ref, key: node.id, id: `treeitem-${node.id}`, role: "treeitem", "aria-selected": selected, "aria-expanded": expanded }, /* @__PURE__ */ jsxs("div", { children: [
+    /* @__PURE__ */ jsxs("div", { className: treeItemClasses.action, children: [
+      node.children && node.children.length > 0 ? /* @__PURE__ */ jsx("div", { className: treeItemClasses.arrow, tabIndex: 0, role: "button", onClick: () => onToggleNode == null ? void 0 : onToggleNode(node.id), onKeyDown: handleItemToggleKeyDown, "aria-label": t("foldUnfold"), children: /* @__PURE__ */ jsx(SvgIconRafterRight, { width: 16, style: {
+        transform: expanded ? "rotate(90deg)" : ""
+      } }) }) : /* @__PURE__ */ jsx("div", { className: "py-8 invisible" }),
+      node.children && showIcon ? /* @__PURE__ */ jsx(SvgIconFolder, { title: "folder", width: 20, height: 20 }) : null,
+      /* @__PURE__ */ jsx("div", { tabIndex: 0, role: "button", className: treeItemClasses.button, onClick: () => onTreeItemClick(node.id), onKeyDown: handleItemKeyDown, children: renderNode ? renderNode({
+        node,
+        hasChildren: Array.isArray(node.children) && !!node.children.length,
+        isChild
+      }) : /* @__PURE__ */ jsx("div", { className: "text-truncate", children: node.name }) })
+    ] }),
+    expanded && node.children && !!node.children.length && /* @__PURE__ */ jsx("ul", { role: "group", children: (_a = node.children) == null ? void 0 : _a.map((node2) => /* @__PURE__ */ createElement(TreeNode, { ...restProps, ref, node: node2, key: node2.id, showIcon, selectedNodeId, expandedNodes, onTreeItemClick, onToggleNode, renderNode, isChild: !0 })) })
+  ] }));
+});
+export {
+  TreeNode,
+  Tree as default
+};

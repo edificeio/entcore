@@ -1,0 +1,31 @@
+import { TreeItem } from '../types';
+export declare const useTree: ({ data, externalSelectedNodeId, draggedNode, shouldExpandAllNodes, onTreeItemUnfold, onTreeItemFold, onTreeItemClick, }: {
+    data: TreeItem | TreeItem[];
+    externalSelectedNodeId?: string | null;
+    draggedNode?: {
+        isOver: boolean;
+        overId: string | undefined;
+        isTreeview: boolean;
+    };
+    shouldExpandAllNodes?: boolean;
+    /**
+     * Callback function to provide unfolded item to parent component
+     */
+    onTreeItemUnfold?: (nodeId: string) => void;
+    /**
+     * Callback function to provide folded item to parent component
+     */
+    onTreeItemFold?: (nodeId: string) => void;
+    /**
+     * Callback function to provide selected item to parent component
+     */
+    onTreeItemClick?: (nodeId: string) => void;
+}) => {
+    selectedNodeId: string | null | undefined;
+    expandedNodes: Set<string>;
+    siblingsNodes: import('react').MutableRefObject<Set<string>>;
+    draggedNodeId: string | undefined;
+    handleItemClick: (nodeId: string) => void;
+    handleFoldUnfold: (nodeId: string) => void;
+    handleCollapseNode: (nodeId: string) => void;
+};

@@ -1,0 +1,61 @@
+import { jsx, Fragment } from "react/jsx-runtime";
+import { useState, useMemo, useEffect } from "react";
+import { FloatingMenu } from "@tiptap/react";
+import { useTranslation } from "react-i18next";
+import SvgIconEdit from "../../../icons/components/IconEdit.js";
+import SvgIconExternalLink from "../../../icons/components/IconExternalLink.js";
+import SvgIconUnlink from "../../../icons/components/IconUnlink.js";
+import { tippyOptions } from "./LinkToolbar.TippyOptions.js";
+import { Toolbar } from "../../../../components/Toolbar/Toolbar.js";
+const LinkToolbar = ({
+  editor,
+  onEdit,
+  onOpen,
+  onUnlink
+}) => {
+  const {
+    t
+  } = useTranslation(), [linkAttrs, setLinkAttrs] = useState(), LinkToolbarItems = useMemo(() => [{
+    type: "icon",
+    name: "edit",
+    props: {
+      icon: /* @__PURE__ */ jsx(SvgIconEdit, {}),
+      "aria-label": t("tiptap.link.toolbar.edit"),
+      onClick: () => onEdit == null ? void 0 : onEdit(linkAttrs)
+    },
+    tooltip: {
+      message: t("tiptap.link.toolbar.tooltip.edit"),
+      position: "bottom"
+    }
+  }, {
+    type: "icon",
+    name: "open",
+    props: {
+      icon: /* @__PURE__ */ jsx(SvgIconExternalLink, {}),
+      "aria-label": t("tiptap.link.toolbar.open"),
+      onClick: () => onOpen == null ? void 0 : onOpen(linkAttrs)
+    },
+    tooltip: {
+      message: t("tiptap.link.toolbar.tooltip.open"),
+      position: "bottom"
+    }
+  }, {
+    type: "icon",
+    name: "unlink",
+    props: {
+      icon: /* @__PURE__ */ jsx(SvgIconUnlink, { className: "text-danger" }),
+      "aria-label": t("tiptap.link.toolbar.unlink"),
+      onClick: () => onUnlink == null ? void 0 : onUnlink(linkAttrs)
+    },
+    tooltip: {
+      message: t("tiptap.link.toolbar.tooltip.unlink"),
+      position: "bottom"
+    }
+  }], [onEdit, onOpen, onUnlink, t, linkAttrs]);
+  return useEffect(() => {
+    editor != null && editor.isActive("linker") ? setLinkAttrs(editor.getAttributes("linker")) : editor != null && editor.isActive("hyperlink") ? setLinkAttrs(editor.getAttributes("hyperlink")) : setLinkAttrs(void 0);
+  }, [editor == null ? void 0 : editor.state]), /* @__PURE__ */ jsx(Fragment, { children: editor && /* @__PURE__ */ jsx(FloatingMenu, { editor, tippyOptions, shouldShow: () => (editor == null ? void 0 : editor.isEditable) && ((editor == null ? void 0 : editor.isActive("linker")) || (editor == null ? void 0 : editor.isActive("hyperlink"))) || !1, children: /* @__PURE__ */ jsx(Toolbar, { className: "p-4", items: LinkToolbarItems }) }) });
+};
+export {
+  LinkToolbar as default
+};

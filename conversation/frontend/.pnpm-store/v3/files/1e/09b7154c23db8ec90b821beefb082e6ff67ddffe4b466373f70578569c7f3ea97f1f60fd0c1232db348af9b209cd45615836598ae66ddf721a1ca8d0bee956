@@ -1,0 +1,23 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { useTranslation } from "react-i18next";
+import AppIcon from "../../AppIcon/AppIcon.js";
+const WidgetAppsFooter = () => {
+  const {
+    t
+  } = useTranslation();
+  return /* @__PURE__ */ jsx("div", { className: "widget-footer", children: /* @__PURE__ */ jsx("div", { className: "widget-footer-action", children: /* @__PURE__ */ jsx("a", { href: "/welcome", className: "link", children: t("plus") }) }) });
+}, WidgetAppsBody = ({
+  bookmarkedApps
+}) => {
+  const {
+    t
+  } = useTranslation();
+  return /* @__PURE__ */ jsxs("div", { className: "widget-body d-flex flex-wrap", children: [
+    !bookmarkedApps.length && /* @__PURE__ */ jsx("div", { className: "text-dark", children: t("navbar.myapps.more") }),
+    bookmarkedApps.slice(0, 6).map((app, index) => /* @__PURE__ */ jsx("a", { href: app.address, className: "bookmarked-app", children: /* @__PURE__ */ jsx(AppIcon, { app, size: "32" }) }, index))
+  ] });
+};
+export {
+  WidgetAppsBody,
+  WidgetAppsFooter
+};

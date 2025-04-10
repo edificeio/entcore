@@ -1,0 +1,58 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
+import { Pagination } from "swiper/modules";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { useOnboardingModal } from "./useOnboardingModal.js";
+import Modal from "../../../components/Modal/Modal.js";
+import Image from "../../../components/Image/Image.js";
+import Button from "../../../components/Button/Button.js";
+const OnboardingModal = ({
+  id,
+  items,
+  modalOptions
+}) => {
+  const [swiperInstance, setSwiperInstance] = useState(), [swiperProgress, setSwiperprogress] = useState(0), {
+    isOpen,
+    isOnboarding,
+    setIsOpen,
+    handleSavePreference
+  } = useOnboardingModal(id);
+  useEffect(() => {
+    const link = document.createElement("link");
+    return link.href = "https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css", link.rel = "stylesheet", link.type = "text/css", document.head.appendChild(link), () => {
+      document.head.removeChild(link);
+    };
+  }, []);
+  const {
+    t
+  } = useTranslation(), {
+    title,
+    prevText,
+    closeText,
+    nextText
+  } = modalOptions;
+  return isOnboarding ? /* @__PURE__ */ createPortal(/* @__PURE__ */ jsxs(Modal, { id: "onboarding-modal", size: "md", isOpen, focusId: "nextButtonId", onModalClose: () => setIsOpen(!1), children: [
+    /* @__PURE__ */ jsx(Modal.Header, { onModalClose: () => setIsOpen(!1), children: t(title || "explorer.modal.onboarding.trash.title") }),
+    /* @__PURE__ */ jsx(Modal.Body, { children: /* @__PURE__ */ jsx(Swiper, { modules: [Pagination], onSwiper: (swiper) => {
+      setSwiperInstance(swiper);
+    }, onSlideChange: (swiper) => {
+      setSwiperprogress(swiper.progress);
+    }, pagination: {
+      clickable: !0
+    }, children: items.map((item, index) => /* @__PURE__ */ jsxs(SwiperSlide, { children: [
+      /* @__PURE__ */ jsx(Image, { width: "270", height: "140", className: "mx-auto my-12", loading: "lazy", src: item.src, alt: t(item.alt) }),
+      /* @__PURE__ */ jsx("p", { children: t(item.text) })
+    ] }, index)) }) }),
+    /* @__PURE__ */ jsxs(Modal.Footer, { children: [
+      /* @__PURE__ */ jsx(Button, { type: "button", color: "tertiary", variant: "ghost", onClick: () => setIsOpen(!1), children: t("explorer.modal.onboarding.trash.later") }),
+      swiperProgress > 0 && /* @__PURE__ */ jsx(Button, { type: "button", color: "primary", variant: "outline", onClick: () => swiperInstance.slidePrev(), children: t(prevText || "explorer.modal.onboarding.trash.prev") }),
+      swiperProgress < 1 && /* @__PURE__ */ jsx(Button, { id: "nextButtonId", type: "button", color: "primary", variant: "filled", onClick: () => swiperInstance.slideNext(), children: t(nextText || "explorer.modal.onboarding.trash.next") }),
+      swiperProgress === 1 && /* @__PURE__ */ jsx(Button, { type: "button", color: "primary", variant: "filled", onClick: handleSavePreference, children: t(closeText || "explorer.modal.onboarding.trash.close") })
+    ] })
+  ] }), document.getElementById("portal")) : null;
+};
+export {
+  OnboardingModal as default
+};

@@ -1,0 +1,9 @@
+import { DropdownMenuOptions } from '../../../../components';
+interface Props {
+    /**
+     * Options to display
+     */
+    options: DropdownMenuOptions[];
+}
+export declare const EditorToolbarPlusMenu: ({ options }: Props) => import("react/jsx-runtime").JSX.Element;
+export {};

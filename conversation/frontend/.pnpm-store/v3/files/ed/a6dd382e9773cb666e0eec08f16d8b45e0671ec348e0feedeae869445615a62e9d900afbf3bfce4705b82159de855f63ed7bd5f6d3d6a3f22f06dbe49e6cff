@@ -1,0 +1,7 @@
+export declare const useProfileQueries: (usersIds: string[]) => {
+    data: ({
+        userId: string;
+        profile: "Student" | "Teacher" | "Relative" | "Personnel" | "Guest";
+    } | undefined)[];
+    isLoading: boolean;
+};

@@ -1,0 +1,4 @@
+export declare const TableThead: {
+    (props: React.HTMLAttributes<HTMLTableSectionElement>): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};

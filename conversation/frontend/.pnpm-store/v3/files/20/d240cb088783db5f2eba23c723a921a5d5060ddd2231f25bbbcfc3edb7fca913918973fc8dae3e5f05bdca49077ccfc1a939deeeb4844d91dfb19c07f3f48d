@@ -1,0 +1,33 @@
+import { Role, WorkspaceElement, WorkspaceSearchFilter } from "edifice-ts-client";
+/**
+ * MediaLibrary component properties
+ */
+export interface WorkspaceProps {
+    /**
+     * Only display media elements having this role[s] (=generic file format).
+     * Set to null to display all medias.
+     */
+    roles: Role | Role[] | null;
+    /**
+     * If defined, try to auto-select the folder dedicated to this filter.
+     */
+    defaultFolder?: WorkspaceSearchFilter;
+    /**
+     * Allow selecting public documents.
+     */
+    showPublicFolder?: boolean;
+    /**
+     * Notify parent when media elements are successfully selected.
+     */
+    onSelect: (result: WorkspaceElement[]) => void;
+    /**
+     * Boolean to know if we can select 1 or many files.
+     */
+    multiple?: boolean | undefined;
+    /**
+     * Optional class for styling purpose
+     */
+    className?: string;
+}
+declare const Workspace: ({ roles, onSelect, multiple, className, defaultFolder, showPublicFolder, }: WorkspaceProps) => import("react/jsx-runtime").JSX.Element;
+export default Workspace;

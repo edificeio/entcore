@@ -1,0 +1,18 @@
+import { App, ResourceType } from '../globals';
+import { IOdeServices } from '../services/OdeServices';
+import { IBehaviourService } from './interface';
+export declare class SnipletsService {
+    private static registry;
+    static findBehaviour: (lookFor: {
+        application: App | string;
+        resourceType: ResourceType;
+    }, context: IOdeServices) => IBehaviourService;
+    static hasBehaviour: ({ application, resourceType, }: {
+        application: App | string;
+        resourceType: ResourceType | "main";
+    }) => boolean;
+    static resourceProducingApps: App[];
+    static initialize(context: IOdeServices, currentApp: App): Promise<App[]>;
+    static registerBehaviours(currentApp: App): Promise<void>;
+    private static serviceFor;
+}

@@ -1,0 +1,6 @@
+import { AbstractBehaviourService } from './AbstractBehaviourService';
+export declare class HomeworksBehaviour extends AbstractBehaviourService {
+    APP: string;
+    RESOURCE: string;
+    loadResources(): Promise<import('./AbstractBehaviourService').ILinkedResource[]>;
+}

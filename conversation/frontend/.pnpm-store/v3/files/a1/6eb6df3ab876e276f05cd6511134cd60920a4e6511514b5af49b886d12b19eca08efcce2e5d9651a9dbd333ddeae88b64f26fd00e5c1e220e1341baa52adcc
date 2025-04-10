@@ -1,0 +1,20 @@
+/**
+ * Limit text size a comment
+ */
+export declare const DEFAULT_MAX_COMMENT_LENGTH = 200;
+/**
+ * Limit text size a reply
+ */
+export declare const DEFAULT_MAX_REPLY_LENGTH = 200;
+/**
+ * Limit to display comments
+ */
+export declare const DEFAULT_MAX_COMMENTS = 4;
+/**
+ * Number of comments to add when adding more comment in the limited list
+ */
+export declare const DEFAULT_ADD_COMMENTS = 5;
+/**
+ * Limit to display replies of a comment
+ */
+export declare const DEFAULT_MAX_REPLIES = 5;

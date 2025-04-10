@@ -1,0 +1,10 @@
+import { ReactNode } from 'react';
+import { IOdeTheme } from '@edifice.io/client';
+export interface EdificeThemeProps {
+    children: ReactNode;
+    defaultTheme?: 'one' | 'neo' | 'none';
+}
+export interface EdificeThemeContextProps {
+    theme: IOdeTheme | undefined;
+}
+export declare const EdificeThemeContext: import('react').Context<EdificeThemeContextProps | null>;

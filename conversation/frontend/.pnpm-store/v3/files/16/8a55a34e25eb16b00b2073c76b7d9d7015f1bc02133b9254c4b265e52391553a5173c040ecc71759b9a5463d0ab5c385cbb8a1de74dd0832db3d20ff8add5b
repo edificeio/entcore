@@ -1,0 +1,39 @@
+import { DropdownProps } from '../Dropdown/Dropdown';
+import { DropdownTriggerProps } from '../Dropdown/DropdownTrigger';
+export interface OptionsType {
+    /**
+     * Select Option Value
+     */
+    value: string;
+    /**
+     * Option Option Label
+     */
+    label: string;
+    /**
+     * Icon Left Options
+     */
+    icon?: JSX.Element;
+}
+export interface SelectProps extends Omit<DropdownProps, 'children'>, Omit<DropdownTriggerProps, 'badgeContent'> {
+    /**
+     * Default select label
+     */
+    placeholderOption: string;
+    /**
+     * Select options
+     * */
+    options: OptionsType[] | string[];
+    /**
+     * Callback to get value
+     */
+    onValueChange?: (option: OptionsType | string) => void;
+}
+/**
+ *
+ * Select component is based on Dropdown Component. It extends `Dropdown` and `Dropdown.Trigger` props `block`, `overflow`, `icon`, `variant`, `size`, `disabled`
+ */
+declare const Select: {
+    ({ icon, options, overflow, block, variant, size, disabled, placeholderOption, onValueChange, }: SelectProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default Select;

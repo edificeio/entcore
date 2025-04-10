@@ -1,0 +1,12 @@
+import { ReactNode } from "react";
+export interface ModalSubtitleProps {
+    children: ReactNode;
+}
+/**
+ * Modal Subtitle
+ */
+declare const ModalSubtitle: {
+    (props: ModalSubtitleProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default ModalSubtitle;

@@ -1,0 +1,49 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { forwardRef, useImperativeHandle, useState } from "react";
+import clsx from "clsx";
+import { useTranslation } from "react-i18next";
+import SvgIconMic from "../../icons/components/IconMic.js";
+import AudioRecorderTimer from "./AudioRecorderTimer.js";
+import useAudioRecorder from "./useAudioRecorder.js";
+import FormControl from "../../../components/Form/FormControl.js";
+import Input from "../../../components/Input/Input.js";
+import { Toolbar } from "../../../components/Toolbar/Toolbar.js";
+const AudioRecorder = /* @__PURE__ */ forwardRef(({
+  onSaveSuccess,
+  onRecordUpdated,
+  hideSaveAction = !1,
+  visibility = "protected"
+}, ref) => {
+  const {
+    recordState,
+    playState,
+    recordTime,
+    audioRef,
+    audioNameRef,
+    toolbarItems,
+    maxDuration,
+    handlePlayEnded,
+    handleSave
+  } = useAudioRecorder(onSaveSuccess, onRecordUpdated, hideSaveAction, visibility, "media-library"), {
+    t
+  } = useTranslation();
+  useImperativeHandle(ref, () => ({
+    save: handleSave
+  }));
+  const [audioTime, setAudioTime] = useState(0), classColor = clsx({
+    "text-danger": recordState === "RECORDING",
+    "text-success": playState === "PLAYING"
+  }), handleTimeUpdate = (event) => {
+    setAudioTime(event.target.currentTime);
+  };
+  return /* @__PURE__ */ jsxs("div", { className: "audio-recorder m-auto d-flex flex-column", children: [
+    /* @__PURE__ */ jsx(FormControl, { id: "recordName", className: "mb-32", isRequired: !0, isReadOnly: recordState === "SAVED" || recordState === "SAVING", children: /* @__PURE__ */ jsx(Input, { type: "text", size: "sm", placeholder: t("bbm.audio.recorder.name"), ref: audioNameRef, defaultValue: t("bbm.audio.recorder.defaultName") + (/* @__PURE__ */ new Date()).toLocaleDateString() }) }),
+    /* @__PURE__ */ jsx("div", { className: "audio-recorder-icon mx-auto", children: /* @__PURE__ */ jsx(SvgIconMic, { width: 64, height: 64, className: classColor }) }),
+    /* @__PURE__ */ jsx(AudioRecorderTimer, { recordState, playState, recordTime, audioTime, maxDuration }),
+    /* @__PURE__ */ jsx("audio", { ref: audioRef, onEnded: handlePlayEnded, onTimeUpdate: handleTimeUpdate, children: /* @__PURE__ */ jsx("track", { default: !0, kind: "captions", srcLang: "fr", src: "" }) }),
+    /* @__PURE__ */ jsx(Toolbar, { items: toolbarItems })
+  ] });
+});
+export {
+  AudioRecorder as default
+};

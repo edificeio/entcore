@@ -1,0 +1,26 @@
+import { ReactNode } from "react";
+export type OmitLabelProps = "htmlFor";
+export interface LabelProps extends Omit<React.ComponentPropsWithRef<"label">, OmitLabelProps> {
+    /**
+     * Display Icon to the left
+     */
+    leftIcon?: ReactNode;
+    /**
+     * Translated Optional Text
+     */
+    optionalText?: string;
+    /**
+     * Required Indicator or Text
+     */
+    requiredText?: string;
+    /**
+     * Label Text
+     */
+    children: ReactNode;
+    /**
+     * Optional class for styling purpose
+     */
+    className?: string;
+}
+declare const Label: import("react").ForwardRefExoticComponent<Omit<LabelProps, "ref"> & import("react").RefAttributes<HTMLLabelElement>>;
+export default Label;

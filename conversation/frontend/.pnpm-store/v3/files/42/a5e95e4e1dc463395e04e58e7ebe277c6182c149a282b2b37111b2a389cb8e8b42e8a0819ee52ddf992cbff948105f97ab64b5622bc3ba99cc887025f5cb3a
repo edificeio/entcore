@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Exploration des ressources</title>
+    <link rel="icon" id="favicon" href="" />
+    <link rel="stylesheet" href="/assets/themes/edifice-bootstrap/index.css?v=0804c70a" />
+    <script type="module" crossorigin src="/index.js"></script>
+  </head>
+
+  <body class="app-react" data-explorer-config>
+    <!-- blog, collaborativeeditor, collaborativewall, exercizer, mindmap, pages, timelinegenerator, wiki, scrapbook -->
+    <div id="root"></div>
+    <div id="portal"></div>
+    <!-- SET INITIALISATION CONFIG -->
+    <script>
+      var WORFLOW_ACCESS = 'org.entcore.blog.controllers.BlogController|blog';
+      var WORKFLOW_CREATE =
+        'org.entcore.blog.controllers.BlogController|create';
+      var WORKFLOW_CREATE_PUBLIC =
+        'org.entcore.blog.controllers.BlogController|createPublicBlog';
+      var WORKFLOW_PRINT = 'org.entcore.blog.controllers.BlogController|print';
+      var WORKFLOW_PUBLISH =
+        'org.entcore.blog.controllers.BlogController|publish';
+      var explorerConfig = {
+        app: 'blog',
+        types: ['blog'],
+        enableOnboarding: false,
+        filters: [
+          { id: 'owner', defaultValue: true },
+          { id: 'public', defaultValue: false },
+          { id: 'shared', defaultValue: true },
+        ],
+        orders: [
+          { id: 'name', defaultValue: 'asc', i18n: 'explorer.sorts.name' },
+          { id: 'updatedAt', i18n: 'explorer.sorts.updatedat' },
+        ],
+        actions: [
+          {
+            id: 'open',
+            workflow: WORFLOW_ACCESS,
+            target: 'actionbar',
+            right: 'read',
+          },
+          {
+            id: 'share',
+            workflow: WORFLOW_ACCESS,
+            target: 'actionbar',
+            right: 'manager',
+          },
+          {
+            id: 'edit',
+            workflow: WORFLOW_ACCESS,
+            target: 'actionbar',
+            right: 'manager',
+          },
+          {
+            id: 'create',
+            workflow: WORKFLOW_CREATE,
+            target: 'tree',
+          },
+          {
+            id: 'createPublic',
+            workflow: WORKFLOW_CREATE_PUBLIC,
+            target: 'tree',
+          },
+          {
+            id: 'move',
+            workflow: WORFLOW_ACCESS,
+            target: 'actionbar',
+            right: 'read',
+          },
+          {
+            id: 'publish',
+            workflow: WORKFLOW_PUBLISH,
+            target: 'actionbar',
+            right: 'creator',
+          },
+          {
+            id: 'print',
+            workflow: WORKFLOW_PRINT,
+            target: 'actionbar',
+            right: 'read',
+          },
+          {
+            id: 'delete',
+            workflow: WORFLOW_ACCESS,
+            target: 'actionbar',
+            right: 'read',
+          },
+        ],
+        trashActions: [
+          {
+            id: 'restore',
+            available: true,
+            target: 'actionbar',
+            workflow: '',
+            right: 'manager',
+          },
+          {
+            id: 'delete',
+            available: true,
+            target: 'actionbar',
+            workflow: '',
+            right: 'manager',
+          },
+        ],
+      };
+      ////
+      var rootElement = document.querySelector('[data-explorer-config]');
+      rootElement.setAttribute(
+        'data-explorer-config',
+        JSON.stringify(explorerConfig),
+      );
+    </script>
+  </body>
+</html>

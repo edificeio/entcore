@@ -1,0 +1,75 @@
+import { jsxs, jsx, Fragment } from "react/jsx-runtime";
+import { useState, Suspense, lazy } from "react";
+import { useTranslation } from "react-i18next";
+import SvgIconSave from "../../icons/components/IconSave.js";
+import { useAutosizeTextarea } from "../hooks/useAutosizeTextarea.js";
+import { useCommentsContext } from "../hooks/useCommentsContext.js";
+import { BadgeProfile } from "./BadgeProfile.js";
+import { CommentAvatar } from "./CommentAvatar.js";
+import { CommentDate } from "./CommentDate.js";
+import { CommentTitle } from "./CommentTitle.js";
+import { TextCounter } from "./TextCounter.js";
+import Button from "../../../components/Button/Button.js";
+import LoadingScreen from "../../../components/LoadingScreen/LoadingScreen.js";
+const DeleteModal = /* @__PURE__ */ lazy(() => import("./DeleteModal.js")), Comment = ({
+  comment,
+  userId,
+  profile
+}) => {
+  const [value, setValue] = useState(""), {
+    id,
+    authorId,
+    authorName,
+    createdAt,
+    updatedAt,
+    comment: content
+  } = comment, [ref, onFocus, resizeTextarea] = useAutosizeTextarea(!0), [isDeleteModalOpen, setIsDeleteModalOpen] = useState(!1), {
+    t
+  } = useTranslation(), {
+    editCommentId,
+    options,
+    type,
+    userRights,
+    handleDeleteComment: onDeleteComment,
+    handleModifyComment,
+    handleReset,
+    handleUpdateComment
+  } = useCommentsContext(), isEditing = editCommentId === comment.id, handleChangeContent = (event) => {
+    resizeTextarea(), setValue(event.target.value);
+  };
+  return /* @__PURE__ */ jsxs("div", { className: `${isEditing ? "border rounded-3 p-12 pb-8 d-flex gap-12 bg-gray-200  my-16" : "border rounded-3 p-12 pb-8 d-flex gap-12 mt-16"}`, children: [
+    /* @__PURE__ */ jsx(CommentAvatar, { id: authorId }),
+    /* @__PURE__ */ jsxs("div", { className: "flex flex-fill", children: [
+      /* @__PURE__ */ jsxs("div", { className: "d-flex align-items-center gap-12", children: [
+        /* @__PURE__ */ jsx(CommentTitle, { children: authorName }),
+        /* @__PURE__ */ jsx(BadgeProfile, { profile }),
+        /* @__PURE__ */ jsx(CommentDate, { createdAt, updatedAt })
+      ] }),
+      isEditing ? /* @__PURE__ */ jsxs(Fragment, { children: [
+        /* @__PURE__ */ jsx("div", { className: "mt-8 mb-4", children: /* @__PURE__ */ jsx("textarea", { id: "update-comment", ref, value, className: "form-control", placeholder: t("comment.placeholder"), maxLength: options.maxCommentLength, onChange: handleChangeContent, rows: 1, style: {
+          resize: "none",
+          overflow: "hidden"
+        }, onFocus }) }),
+        /* @__PURE__ */ jsxs("div", { className: "d-flex justify-content-between align-items-center", children: [
+          /* @__PURE__ */ jsx(Button, { variant: "ghost", color: "tertiary", size: "sm", onClick: handleReset, children: t("comment.cancel") }),
+          /* @__PURE__ */ jsxs("div", { className: "d-flex justify-content-end align-items-center gap-4", children: [
+            /* @__PURE__ */ jsx(TextCounter, { content: value, maxLength: options.maxCommentLength }),
+            /* @__PURE__ */ jsx(Button, { type: "submit", variant: "ghost", size: "sm", leftIcon: /* @__PURE__ */ jsx(SvgIconSave, {}), disabled: !(content != null && content.length), onClick: () => handleUpdateComment(value), children: t("comment.save") })
+          ] })
+        ] })
+      ] }) : /* @__PURE__ */ jsxs(Fragment, { children: [
+        /* @__PURE__ */ jsx("div", { className: "mt-8 mb-4", children: content }),
+        type === "edit" && /* @__PURE__ */ jsxs("div", { className: "ms-n8", children: [
+          userId === authorId && /* @__PURE__ */ jsx(Button, { variant: "ghost", color: "tertiary", size: "sm", onClick: () => {
+            handleModifyComment(comment.id), setValue(content);
+          }, children: t("comment.edit") }),
+          (userId === authorId || (userRights == null ? void 0 : userRights.manager)) && /* @__PURE__ */ jsx(Button, { variant: "ghost", color: "tertiary", size: "sm", onClick: () => setIsDeleteModalOpen(!0), children: t("comment.remove") })
+        ] })
+      ] })
+    ] }),
+    /* @__PURE__ */ jsx(Suspense, { fallback: /* @__PURE__ */ jsx(LoadingScreen, { position: !1 }), children: isDeleteModalOpen && /* @__PURE__ */ jsx(DeleteModal, { isOpen: isDeleteModalOpen, onCancel: () => setIsDeleteModalOpen(!1), onSuccess: () => onDeleteComment(id) }) })
+  ] }, id);
+};
+export {
+  Comment
+};

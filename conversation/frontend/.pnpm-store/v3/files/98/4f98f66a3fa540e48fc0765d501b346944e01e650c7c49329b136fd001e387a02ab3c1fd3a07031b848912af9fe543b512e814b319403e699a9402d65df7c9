@@ -1,0 +1,116 @@
+import { jsxs as x, jsx as a } from "react/jsx-runtime";
+import { useId as j, useEffect as q } from "react";
+import { Modal as m, FormControl as B, Label as w, Input as R, Button as C } from "@edifice-ui/react";
+import { createPortal as T } from "react-dom";
+import { useTranslation as U } from "react-i18next";
+import { FOLDER as V } from "edifice-ts-client";
+import { useForm as _ } from "react-hook-form";
+import { j as k, c as z, t as A, v as H } from "./index2.js";
+function P({
+  edit: t,
+  onSuccess: e,
+  onClose: s
+}) {
+  var b;
+  const l = k(), r = z(), c = A(), f = H(), u = t ? (b = l[0]) == null ? void 0 : b.name : void 0, {
+    reset: o,
+    register: p,
+    handleSubmit: n,
+    setFocus: h,
+    formState: {
+      errors: F,
+      isSubmitting: i,
+      isDirty: I,
+      isValid: v
+    }
+  } = _({
+    mode: "onChange",
+    values: {
+      name: u || ""
+    }
+  }), M = j(), L = async function({
+    name: y
+  }) {
+    var g;
+    try {
+      if (t) {
+        const d = (g = l[0]) == null ? void 0 : g.parentId, E = l[0].id;
+        await f.mutate({
+          folderId: E,
+          parentId: d,
+          name: y
+        }), o(), e == null || e();
+      } else {
+        const d = (r == null ? void 0 : r.id) || V.DEFAULT;
+        await c.mutate({
+          name: y,
+          parentId: d
+        }), o(), e == null || e();
+      }
+    } catch (d) {
+      console.error(d);
+    }
+  };
+  function D() {
+    o(), s();
+  }
+  return {
+    formId: `createModal_${M}`,
+    errors: F,
+    isSubmitting: i,
+    isDirty: I,
+    isValid: v,
+    register: p,
+    setFocus: h,
+    handleSubmit: n,
+    onCancel: D,
+    onSubmit: L
+  };
+}
+function Z({
+  isOpen: t,
+  edit: e,
+  onSuccess: s,
+  onCancel: l
+}) {
+  const {
+    t: r
+  } = U(), {
+    isDirty: c,
+    isValid: f,
+    isSubmitting: u,
+    formId: o,
+    onSubmit: p,
+    onCancel: n,
+    handleSubmit: h,
+    register: F,
+    setFocus: i
+  } = P({
+    edit: e,
+    onSuccess: s,
+    onClose: l
+  });
+  return q(() => {
+    t && i("name");
+  }, [t, i]), t ? /* @__PURE__ */ T(/* @__PURE__ */ x(m, { isOpen: t, onModalClose: n, id: "modal_" + o, children: [
+    /* @__PURE__ */ a(m.Header, { onModalClose: n, children: r(e ? "explorer.rename.folder" : "explorer.create.folder") }),
+    /* @__PURE__ */ a(m.Body, { children: /* @__PURE__ */ a("form", { id: o, onSubmit: h(p), children: /* @__PURE__ */ x(B, { id: "nameFolder", isRequired: !0, children: [
+      /* @__PURE__ */ a(w, { children: r("explorer.create.folder.name") }),
+      /* @__PURE__ */ a(R, { type: "text", ...F("name", {
+        required: !0,
+        maxLength: 60,
+        pattern: {
+          value: /[^ ]/,
+          message: "invalid title"
+        }
+      }), placeholder: r("explorer.create.folder.name"), size: "md", "aria-required": !0, maxLength: 60 })
+    ] }) }) }),
+    /* @__PURE__ */ x(m.Footer, { children: [
+      /* @__PURE__ */ a(C, { color: "tertiary", onClick: n, type: "button", variant: "ghost", children: r("explorer.cancel") }),
+      /* @__PURE__ */ a(C, { form: o, type: "submit", color: "primary", variant: "filled", disabled: !c || !f || u, children: r(e ? "explorer.rename" : "explorer.create") })
+    ] })
+  ] }), document.getElementById("portal")) : null;
+}
+export {
+  Z as default
+};

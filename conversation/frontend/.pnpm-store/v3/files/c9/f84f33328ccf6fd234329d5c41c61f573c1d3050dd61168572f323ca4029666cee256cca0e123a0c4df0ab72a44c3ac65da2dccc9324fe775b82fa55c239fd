@@ -1,0 +1,5 @@
+import { AppParams } from '../config';
+declare const Explorer: ({ config }: {
+    config: AppParams;
+}) => import("react/jsx-runtime").JSX.Element;
+export default Explorer;

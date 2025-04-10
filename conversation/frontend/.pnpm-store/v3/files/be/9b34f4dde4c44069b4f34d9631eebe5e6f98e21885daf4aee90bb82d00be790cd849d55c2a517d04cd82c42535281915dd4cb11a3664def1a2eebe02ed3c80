@@ -1,0 +1,44 @@
+import { ReactNode } from "react";
+import { TabsItemProps } from "./TabsItem";
+export interface TabsProps {
+    /**
+     * Selected tab, by default.
+     */
+    defaultId?: string;
+    /**
+     * Items to be displayed
+     */
+    items: TabsItemProps[];
+    /**
+     * Get notified when a tab is selected
+     */
+    onChange?: (tab: TabsItemProps) => void;
+    /**
+     * Children Props
+     */
+    children?: (...props: any) => ReactNode;
+}
+/**
+ * Tab Content displayed one at a time when a Tab Item is selected
+ */
+export declare const Tabs: {
+    ({ defaultId, items, onChange, children }: TabsProps): import("react/jsx-runtime").JSX.Element;
+    Item: {
+        ({ icon, label, id, order, }: TabsItemProps & {
+            order: number; /**
+             * Children Props
+             */
+        }): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+    Panel: {
+        ({ children, currentItem }: import("./TabsPanel").TabsPanelProps): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+    List: {
+        (props: Omit<import("react").DetailedHTMLProps<import("react").HTMLAttributes<HTMLDivElement>, HTMLDivElement>, "ref">): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+    displayName: string;
+};
+export default Tabs;

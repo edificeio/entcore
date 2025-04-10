@@ -1,0 +1,60 @@
+import { jsx } from "react/jsx-runtime";
+import { useMemo, useEffect } from "react";
+import clsx from "clsx";
+import DropdownCheckboxItem from "./DropdownCheckboxItem.js";
+import { DropdownContext } from "./DropdownContext.js";
+import DropdownItem from "./DropdownItem.js";
+import DropdownMenu from "./DropdownMenu.js";
+import DropdownMenuGroup from "./DropdownMenuGroup.js";
+import DropdownRadioItem from "./DropdownRadioItem.js";
+import DropdownSeparator from "./DropdownSeparator.js";
+import DropdownTrigger from "./DropdownTrigger.js";
+import useDropdown from "../../hooks/useDropdown/useDropdown.js";
+import useClickOutside from "../../hooks/useClickOutside/useClickOutside.js";
+const Root = ({
+  children,
+  block,
+  overflow = !0,
+  placement = "bottom-start",
+  extraTriggerKeyDownHandler,
+  onToggle,
+  isTriggerHovered = !1
+}) => {
+  const {
+    visible,
+    isFocused,
+    triggerProps,
+    menuProps,
+    itemProps,
+    itemRefs,
+    setVisible
+  } = useDropdown(placement, extraTriggerKeyDownHandler, isTriggerHovered), ref = useClickOutside(() => {
+    setVisible(!1);
+  }), value = useMemo(() => ({
+    visible,
+    isFocused,
+    triggerProps,
+    menuProps,
+    itemProps,
+    itemRefs,
+    block,
+    setVisible
+  }), [visible, isFocused, triggerProps, menuProps, itemProps, itemRefs, block, setVisible]), dropdown = clsx("dropdown", {
+    "w-100": block,
+    overflow
+  });
+  return useEffect(() => {
+    onToggle == null || onToggle(visible);
+  }, [visible]), /* @__PURE__ */ jsx(DropdownContext.Provider, { value, children: /* @__PURE__ */ jsx("div", { ref, className: dropdown, children: typeof children == "function" ? children(triggerProps, itemRefs, setVisible) : children }) });
+}, Dropdown = /* @__PURE__ */ Object.assign(Root, {
+  Trigger: DropdownTrigger,
+  Menu: DropdownMenu,
+  Item: DropdownItem,
+  Separator: DropdownSeparator,
+  CheckboxItem: DropdownCheckboxItem,
+  RadioItem: DropdownRadioItem,
+  MenuGroup: DropdownMenuGroup
+});
+export {
+  Dropdown as default
+};

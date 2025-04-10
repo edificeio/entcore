@@ -1,0 +1,35 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import Checkbox from "../../../../components/Checkbox/Checkbox.js";
+import useToggle from "../../../../hooks/useToggle/useToggle.js";
+import { InternalLinker } from "../../Linker/InternalLinker/InternalLinker.js";
+import { useMediaLibraryContext } from "../MediaLibraryContext.js";
+const InternalLink = ({
+  target,
+  resourceId,
+  appPrefix
+}) => {
+  const {
+    t
+  } = useTranslation(), {
+    setResult,
+    setResultCounter,
+    appCode,
+    multiple
+  } = useMediaLibraryContext(), [isChecked, toggleChecked] = useToggle(target === "_blank"), [resources, setRessources] = useState([]), handleSelect = (resources2) => {
+    setRessources(resources2);
+  };
+  return useEffect(() => {
+    setResult({
+      target: isChecked ? "_blank" : void 0,
+      resources
+    }), resources && resources.length ? setResultCounter(resources.length) : setResultCounter(void 0);
+  }, [isChecked, resources]), /* @__PURE__ */ jsxs("div", { className: "d-flex flex-column flex-fill gap-16 overflow-hidden", children: [
+    /* @__PURE__ */ jsx(InternalLinker, { appCode, defaultAppCode: appPrefix, defaultResourceId: resourceId, onSelect: handleSelect, multiple }),
+    /* @__PURE__ */ jsx(Checkbox, { className: "align-items-center", checked: isChecked, label: t("bbm.linker.open.tab"), onChange: toggleChecked })
+  ] });
+};
+export {
+  InternalLink
+};

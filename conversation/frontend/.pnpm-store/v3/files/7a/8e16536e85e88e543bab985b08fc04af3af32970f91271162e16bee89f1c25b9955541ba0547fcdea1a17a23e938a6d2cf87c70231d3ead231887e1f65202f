@@ -1,0 +1,8 @@
+import { jsx } from "react/jsx-runtime";
+import { forwardRef } from "react";
+const ActionBar = /* @__PURE__ */ forwardRef(({
+  children
+}, ref) => /* @__PURE__ */ jsx("div", { ref, className: "actionbar", children }));
+export {
+  ActionBar as default
+};

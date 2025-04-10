@@ -1,0 +1,9 @@
+import { ReactNode } from "react";
+declare const CardText: {
+    ({ children, className, }: {
+        children: ReactNode;
+        className?: string | undefined;
+    }): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default CardText;

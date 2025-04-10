@@ -1,0 +1,11 @@
+import { ILinkedResource } from '@edifice.io/client';
+export type InternalLinkTabProps = {
+    target?: '_blank' | null;
+    appPrefix?: string | null;
+    resourceId?: string | null;
+};
+export type InternalLinkTabResult = {
+    target?: '_blank';
+    resources?: ILinkedResource[];
+};
+export declare const InternalLink: ({ target, resourceId, appPrefix, }: InternalLinkTabProps) => import("react/jsx-runtime").JSX.Element;

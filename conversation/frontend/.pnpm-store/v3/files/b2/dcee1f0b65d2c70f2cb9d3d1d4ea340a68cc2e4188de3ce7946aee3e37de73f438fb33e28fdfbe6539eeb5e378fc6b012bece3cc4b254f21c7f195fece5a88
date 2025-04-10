@@ -1,0 +1,4 @@
+import { App } from "edifice-ts-client";
+export default function useConf({ appCode }: {
+    appCode: App;
+}): QueryObserverResult<TData, TError>;

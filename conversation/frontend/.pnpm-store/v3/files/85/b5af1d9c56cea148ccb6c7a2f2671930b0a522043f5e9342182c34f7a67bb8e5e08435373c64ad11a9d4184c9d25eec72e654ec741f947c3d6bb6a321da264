@@ -1,0 +1,21 @@
+import { useState } from "react";
+const useCheckable = (data) => {
+  const [selectedItems, setSelectedItems] = useState([]), handleOnSelectItem = (itemId) => {
+    setSelectedItems((currentSelection) => {
+      const newSelection = [...currentSelection];
+      return newSelection.includes(itemId) ? newSelection.splice(newSelection.indexOf(itemId), 1) : newSelection.push(itemId), newSelection;
+    });
+  }, handleOnSelectAllItems = (deselect) => {
+    setSelectedItems(() => deselect ? [] : (data == null ? void 0 : data.map((item) => item._id)) ?? []);
+  }, allItemsSelected = (selectedItems == null ? void 0 : selectedItems.length) === (data == null ? void 0 : data.length) && (data == null ? void 0 : data.length) > 0, isIndeterminate = data ? (selectedItems == null ? void 0 : selectedItems.length) > 0 && (selectedItems == null ? void 0 : selectedItems.length) < (data == null ? void 0 : data.length) : !1;
+  return {
+    selectedItems,
+    allItemsSelected,
+    isIndeterminate,
+    handleOnSelectAllItems,
+    handleOnSelectItem
+  };
+};
+export {
+  useCheckable
+};

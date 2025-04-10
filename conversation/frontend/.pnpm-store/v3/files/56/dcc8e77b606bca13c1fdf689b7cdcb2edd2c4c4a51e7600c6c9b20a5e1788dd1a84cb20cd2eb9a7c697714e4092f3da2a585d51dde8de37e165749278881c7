@@ -1,0 +1,36 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { useTranslation } from "react-i18next";
+import Modal from "../../../components/Modal/Modal.js";
+import Button from "../../../components/Button/Button.js";
+function ConfirmModal({
+  variant = "yes/no",
+  id,
+  isOpen,
+  header,
+  body,
+  okText,
+  koText,
+  onSuccess = () => ({}),
+  onCancel = () => ({})
+}) {
+  const {
+    t
+  } = useTranslation("common"), ok = {
+    "yes/no": t("yes"),
+    "ok/cancel": t("ok")
+  }, ko = {
+    "yes/no": t("no"),
+    "ok/cancel": t("cancel")
+  };
+  return /* @__PURE__ */ jsxs(Modal, { isOpen, onModalClose: onCancel, id, children: [
+    /* @__PURE__ */ jsx(Modal.Header, { onModalClose: onCancel, children: header }),
+    /* @__PURE__ */ jsx(Modal.Body, { children: body }),
+    /* @__PURE__ */ jsxs(Modal.Footer, { children: [
+      /* @__PURE__ */ jsx(Button, { color: "tertiary", onClick: onCancel, type: "button", variant: "ghost", children: koText ? t(koText) : ko[variant] }),
+      /* @__PURE__ */ jsx(Button, { color: "danger", onClick: onSuccess, type: "button", variant: "filled", children: okText ? t(okText) : ok[variant] })
+    ] })
+  ] });
+}
+export {
+  ConfirmModal as default
+};

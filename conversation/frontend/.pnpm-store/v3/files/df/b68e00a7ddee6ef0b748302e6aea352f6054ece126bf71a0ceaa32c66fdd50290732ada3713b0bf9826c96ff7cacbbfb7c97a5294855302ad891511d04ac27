@@ -1,0 +1,38 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { forwardRef } from "react";
+import clsx from "clsx";
+import SvgIconRafterUp from "../../modules/icons/components/IconRafterUp.js";
+import { useDropdownContext } from "./DropdownContext.js";
+import Badge from "../Badge/Badge.js";
+const DropdownTrigger = /* @__PURE__ */ forwardRef(({
+  label,
+  icon,
+  variant,
+  disabled = !1,
+  size,
+  badgeContent,
+  hideCarret = !1,
+  ...restProps
+}, forwardRef2) => {
+  const {
+    triggerProps,
+    block
+  } = useDropdownContext(), className = clsx("dropdown-toggle ", size, variant, {
+    "w-100": block
+  }, triggerProps.className, restProps.className), mergedProps = {
+    ...triggerProps,
+    ...restProps,
+    className
+  };
+  return /* @__PURE__ */ jsxs("button", { ref: forwardRef2, type: "button", disabled, ...mergedProps, children: [
+    icon,
+    label,
+    badgeContent ? /* @__PURE__ */ jsx(Badge, { variant: {
+      level: "info",
+      type: "notification"
+    }, children: badgeContent }) : !hideCarret && /* @__PURE__ */ jsx(SvgIconRafterUp, { width: 16, height: 16, className: "dropdown-toggle-caret" })
+  ] });
+});
+export {
+  DropdownTrigger as default
+};

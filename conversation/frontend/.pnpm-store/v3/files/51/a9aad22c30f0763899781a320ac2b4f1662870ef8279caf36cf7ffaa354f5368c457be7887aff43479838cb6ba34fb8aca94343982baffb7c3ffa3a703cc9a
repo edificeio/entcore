@@ -1,0 +1,7 @@
+interface MoveModalProps {
+    isOpen: boolean;
+    onSuccess: () => void;
+    onCancel: () => void;
+}
+export default function MoveModal({ isOpen, onSuccess, onCancel, }: MoveModalProps): import('react').ReactPortal;
+export {};

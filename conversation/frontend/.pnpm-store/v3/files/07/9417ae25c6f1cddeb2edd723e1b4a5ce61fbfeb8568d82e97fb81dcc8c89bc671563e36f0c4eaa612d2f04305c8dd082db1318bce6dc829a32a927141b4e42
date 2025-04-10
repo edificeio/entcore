@@ -1,0 +1,17 @@
+import { App } from "../globals";
+import { IWebApp } from "../session/interfaces";
+export declare class AppConf {
+    private _publicConf;
+    private _currentApp?;
+    private _appConf;
+    /**
+     * Get the currently initialized App.
+     * @see getter SessionFramework.currentApp
+     */
+    get currentApp(): App | null;
+    setCurrentApp(app: App): AppConf;
+    initialize(app: App, alternativeApp?: boolean): Promise<void>;
+    getPublicConf(app: App): Promise<any>;
+    getWebAppConf(app: App): Promise<IWebApp | undefined>;
+    loadI18n(app: App): Promise<void>;
+}

@@ -1,0 +1,130 @@
+import { jsx, jsxs } from "react/jsx-runtime";
+import { useState, useCallback, useEffect } from "react";
+import { odeServices } from "@edifice.io/client";
+import { useTranslation } from "react-i18next";
+import { useDebounce } from "@uidotdev/usehooks";
+import { useEdificeTheme } from "../../../../providers/EdificeThemeProvider/EdificeThemeProvider.hook.js";
+import SvgIconApplications from "../../../icons/components/IconApplications.js";
+import LinkerCard from "../../LinkerCard/LinkerCard.js";
+import { useResourceSearch } from "../../../../hooks/useResourceSearch/useResourceSearch.js";
+import AppIcon from "../../../../components/AppIcon/AppIcon.js";
+import Dropdown from "../../../../components/Dropdown/Dropdown.js";
+import SearchBar from "../../../../components/SearchBar/SearchBar.js";
+import EmptyScreen from "../../../../components/EmptyScreen/EmptyScreen.js";
+import { emptyScreenMapping } from "../../../../utilities/emptyscreen-mapping/emptyscreen-mapping.js";
+const InternalLinker = ({
+  appCode,
+  defaultAppCode,
+  defaultResourceId,
+  onChange,
+  onSelect,
+  multiple = !0,
+  resourceList,
+  applicationList,
+  showApplicationSelector = !0
+}) => {
+  const {
+    t
+  } = useTranslation(), {
+    theme
+  } = useEdificeTheme(), {
+    resourceApplications,
+    loadResources
+  } = useResourceSearch(appCode), [options, setOptions] = useState(), [selectedApplication, setSelectedApplication] = useState(), [searchTerms, setSearchTerms] = useState(), debounceSearch = useDebounce(searchTerms || "", 500), [resources, setResources] = useState([]), filterResources = useCallback((resource, search) => {
+    var _a, _b, _c;
+    if (!search) return !0;
+    const searchParam = (search == null ? void 0 : search.toLowerCase()) || "";
+    return ((_a = resource.name) == null ? void 0 : _a.toLowerCase().includes(searchParam)) || ((_b = resource.creatorName) == null ? void 0 : _b.toLowerCase().includes(searchParam)) || ((_c = resource.description) == null ? void 0 : _c.toLowerCase().includes(searchParam));
+  }, []), sortResources = useCallback((resources2) => resources2.sort((a, b) => a.modifiedAt < b.modifiedAt ? 1 : -1), []), loadAndDisplayResources = useCallback((search) => {
+    async function load() {
+      if (resourceList) {
+        const filteredResources = resourceList.filter((resource) => filterResources(resource, search));
+        setResources(sortResources(filteredResources));
+        return;
+      } else if (selectedApplication)
+        try {
+          const resources2 = (await loadResources({
+            application: selectedApplication.application,
+            search,
+            types: [selectedApplication.application],
+            filters: {},
+            pagination: {
+              startIdx: 0,
+              pageSize: 300
+            }
+            // ignored at the moment
+          })).filter((resource) => filterResources(resource, search));
+          setResources(sortResources(resources2));
+          return;
+        } catch {
+        }
+      setResources([]);
+    }
+    load();
+  }, [loadResources, selectedApplication, filterResources, sortResources, resourceList]), [selectedDocuments, setSelectedDocuments] = useState([]), handleOptionClick = (option) => {
+    onChange == null || onChange(option), setSelectedApplication(option);
+  }, handleSearchChange = (event) => {
+    const newText = event.target.value;
+    setSearchTerms(newText.toString());
+  }, handleSubmit = useCallback((event) => {
+    loadAndDisplayResources(searchTerms), event.stopPropagation(), event.preventDefault();
+  }, [loadAndDisplayResources, searchTerms]), getSelectedResourceIndex = useCallback((resourceId) => selectedDocuments.findIndex((selectedDocument) => selectedDocument.assetId === resourceId), [selectedDocuments]), selectResource = useCallback((resource) => {
+    setSelectedDocuments(multiple ? (previousState) => [...previousState, resource] : [resource]);
+  }, [setSelectedDocuments, multiple]), toggleResourceSelection = useCallback((resource) => {
+    const index = getSelectedResourceIndex(resource.assetId);
+    index < 0 ? selectResource(resource) : setSelectedDocuments(selectedDocuments.filter((_value, i) => i !== index));
+  }, [getSelectedResourceIndex, selectResource, selectedDocuments]);
+  return useEffect(() => {
+    (async () => {
+      if (applicationList) {
+        setOptions(applicationList.sort((app1, app2) => app1.displayName.localeCompare(app2.displayName)));
+        return;
+      }
+      const appPromises = resourceApplications.map((application) => odeServices.session().getWebApp(application)), webApps = await Promise.all(appPromises);
+      setOptions(resourceApplications.map((application, index) => {
+        var _a;
+        return {
+          application,
+          displayName: t(((_a = webApps[index]) == null ? void 0 : _a.displayName) ?? application),
+          icon: /* @__PURE__ */ jsx(AppIcon, { app: webApps[index], size: "24" })
+        };
+      }).sort((app1, app2) => app1.displayName.localeCompare(app2.displayName)));
+    })();
+  }, [resourceApplications, t, applicationList]), useEffect(() => {
+    loadAndDisplayResources(debounceSearch);
+  }, [loadAndDisplayResources, debounceSearch]), useEffect(() => {
+    onSelect == null || onSelect(selectedDocuments);
+  }, [selectedDocuments]), useEffect(() => {
+    var _a;
+    const safeDefaultAppCode = defaultAppCode ?? ((applicationList == null ? void 0 : applicationList.length) === 1 && ((_a = applicationList == null ? void 0 : applicationList[0]) == null ? void 0 : _a.application));
+    if (safeDefaultAppCode) {
+      const option = options == null ? void 0 : options.find((option2) => safeDefaultAppCode === option2.application);
+      setSelectedApplication(option), loadAndDisplayResources("");
+    }
+  }, [options, defaultAppCode]), useEffect(() => {
+    if (defaultResourceId && getSelectedResourceIndex(defaultResourceId) < 0) {
+      const resource = resources == null ? void 0 : resources.find((resource2) => defaultResourceId === resource2.assetId);
+      resource && selectResource(resource);
+    }
+  }, [resources]), /* @__PURE__ */ jsxs("div", { className: "d-flex flex-column flex-fill overflow-hidden", children: [
+    /* @__PURE__ */ jsxs("div", { className: "search d-flex bg-light rounded-top border border-bottom-0", children: [
+      showApplicationSelector && /* @__PURE__ */ jsx("div", { className: "flex-shrink-1 px-8 py-12 border-end", children: /* @__PURE__ */ jsxs(Dropdown, { overflow: !0, children: [
+        /* @__PURE__ */ jsx(Dropdown.Trigger, { icon: /* @__PURE__ */ jsx("div", { className: "pe-8", children: (selectedApplication == null ? void 0 : selectedApplication.icon) || /* @__PURE__ */ jsx(SvgIconApplications, {}) }), label: t((selectedApplication == null ? void 0 : selectedApplication.displayName) || "bbm.linker.int.choose"), variant: "ghost", size: "md" }),
+        /* @__PURE__ */ jsx(Dropdown.Menu, { children: options == null ? void 0 : options.map((option) => /* @__PURE__ */ jsx(Dropdown.Item, { icon: option.icon, onClick: () => handleOptionClick(option), children: option.displayName }, option.application)) })
+      ] }) }),
+      /* @__PURE__ */ jsx("div", { className: "flex-grow-1 align-self-center", children: /* @__PURE__ */ jsx("form", { className: "gap-16 d-flex w-100 align-items-center px-16 py-8", onSubmit: handleSubmit, children: /* @__PURE__ */ jsx(SearchBar, { isVariant: !0, placeholder: t("search"), size: "lg", className: "w-100", disabled: !selectedApplication, onChange: handleSearchChange }) }) })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: "internal-linker flex-grow-1 w-100 rounded-bottom border gap-0 overflow-auto", children: [
+      selectedApplication && resources && resources.length > 0 && /* @__PURE__ */ jsx("div", { children: resources.map((resource) => {
+        const isSelected = selectedDocuments.findIndex((doc) => doc.assetId === resource.assetId) >= 0;
+        return /* @__PURE__ */ jsx(LinkerCard, { doc: resource, isSelected, onClick: () => toggleResourceSelection(resource) }, resource.path);
+      }) }),
+      selectedApplication && resources && resources.length <= 0 && /* @__PURE__ */ jsx("div", { className: "d-flex justify-content-center mt-16", children: /* @__PURE__ */ jsx(EmptyScreen, { imageSrc: emptyScreenMapping[(theme == null ? void 0 : theme.bootstrapVersion) ?? "one"][selectedApplication == null ? void 0 : selectedApplication.application], text: t("bbm.linker.int.notfound"), className: "mt-16" }) }),
+      !selectedApplication && /* @__PURE__ */ jsx("div", { className: "d-flex justify-content-center mt-32", children: /* @__PURE__ */ jsx(EmptyScreen, { imageSrc: emptyScreenMapping[(theme == null ? void 0 : theme.bootstrapVersion) ?? "one"].empty, text: t("bbm.linker.int.empty"), className: "mt-32" }) })
+    ] })
+  ] });
+};
+export {
+  InternalLinker,
+  InternalLinker as default
+};

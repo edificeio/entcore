@@ -1,0 +1,31 @@
+import { jsx } from "react/jsx-runtime";
+import { useMediaLibraryContext } from "../MediaLibraryContext.js";
+import Workspace$1 from "../../Workspace/Workspace.js";
+const Workspace = () => {
+  const {
+    type,
+    setResultCounter,
+    setResult,
+    multiple,
+    visibility
+  } = useMediaLibraryContext();
+  function getDocumentRoleFilter() {
+    switch (type) {
+      case "image":
+        return "img";
+      case "audio":
+        return "audio";
+      case "video":
+        return "video";
+      default:
+        return null;
+    }
+  }
+  function handleSelect(result) {
+    setResultCounter(result.length), result.length ? setResult(result) : setResult();
+  }
+  return /* @__PURE__ */ jsx(Workspace$1, { roles: getDocumentRoleFilter(), onSelect: handleSelect, multiple, className: "border rounded overflow-y-auto", defaultFolder: visibility, showPublicFolder: visibility === "public" });
+};
+export {
+  Workspace
+};

@@ -1,0 +1,25 @@
+import { ResourceType, App } from '..';
+import { IOdeServices } from '../services/OdeServices';
+export declare class ServiceRegistry<T> extends Map<string, (context: IOdeServices) => T> {
+    /** Register a service */
+    register({ application, resourceType, }: {
+        application: App | string;
+        resourceType: ResourceType;
+    }, service: (context: IOdeServices) => T): void;
+    /** Lookup for a service */
+    findService(lookFor: {
+        application: App | string;
+        resourceType: ResourceType;
+    }, context: IOdeServices): T;
+    /** Lookup for a main service */
+    findMainService({ application }: {
+        application: App | string;
+    }, context: IOdeServices): T;
+    /** Check if a service is registered. */
+    isRegistered({ application, resourceType, }: {
+        application: App | string;
+        resourceType: ResourceType | 'main';
+    }): boolean;
+    /** Private lookup for a service */
+    private lookupService;
+}

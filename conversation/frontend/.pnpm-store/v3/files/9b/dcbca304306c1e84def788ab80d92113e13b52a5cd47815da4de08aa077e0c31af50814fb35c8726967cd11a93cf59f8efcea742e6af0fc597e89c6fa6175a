@@ -1,0 +1,9 @@
+import { IHttp, ITransportFramework } from "./interfaces";
+declare class TransportFramework implements ITransportFramework {
+    private _http;
+    get http(): IHttp;
+    newHttpInstance(params?: any): IHttp;
+}
+/** The whole framework is a singleton. */
+export declare const transport: TransportFramework;
+export {};

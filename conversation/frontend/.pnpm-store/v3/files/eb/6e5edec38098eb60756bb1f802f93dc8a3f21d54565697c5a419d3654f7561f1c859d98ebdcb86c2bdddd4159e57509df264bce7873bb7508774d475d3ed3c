@@ -1,0 +1,42 @@
+import { ReactNode } from "react";
+export interface FormControlProps extends React.ComponentPropsWithRef<"div"> {
+    /**
+     * For accessibility
+     */
+    id: string;
+    /**
+     * Is field optional ?
+     */
+    isOptional?: boolean;
+    /**
+     * Is field required ?
+     */
+    isRequired?: boolean;
+    /**
+     * Is field readonly ?
+     */
+    isReadOnly?: boolean;
+    /**
+     * Label, Input and Text
+     */
+    children: ReactNode;
+    /**
+     * Optional class for styling purpose
+     */
+    className?: string;
+    /**
+     * Status to handle Form Validation
+     */
+    status?: "valid" | "invalid";
+}
+declare const FormControl: import("react").ForwardRefExoticComponent<Omit<FormControlProps, "ref"> & import("react").RefAttributes<HTMLDivElement>> & {
+    Label: import("react").ForwardRefExoticComponent<Omit<import("../Label").LabelProps, "ref"> & import("react").RefAttributes<HTMLLabelElement>>;
+    Input: import("react").ForwardRefExoticComponent<Omit<import("../Input").InputProps, "ref"> & import("react").RefAttributes<HTMLInputElement>>;
+    Text: {
+        ({ children }: {
+            children: ReactNode;
+        }): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+};
+export default FormControl;

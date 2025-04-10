@@ -1,0 +1,8 @@
+import { Meta, StoryObj } from "@storybook/react";
+import LinkerCard from "./LinkerCard";
+declare const meta: Meta<typeof LinkerCard>;
+export default meta;
+type Story = StoryObj<typeof LinkerCard>;
+export declare const Base: Story;
+export declare const TimelineGenerator: Story;
+export declare const Blog: Story;

@@ -1,0 +1,17 @@
+class s {
+  static isLocalURL(t) {
+    return t.length > 0 && t.charAt(0) === "/";
+  }
+  static startWithHttp(t) {
+    return /^https?:\/\//gi.test(t);
+  }
+  static toCounter(t) {
+    return t > 999 ? `${Number(t / 1e3).toFixed(1)} k` : "" + t;
+  }
+  static generateVirtualId() {
+    return "xxxx-xxxx-xxx-xxxx".replace(/[x]/g, () => Math.floor(Math.random() * 16).toString(16));
+  }
+}
+export {
+  s as StringUtils
+};

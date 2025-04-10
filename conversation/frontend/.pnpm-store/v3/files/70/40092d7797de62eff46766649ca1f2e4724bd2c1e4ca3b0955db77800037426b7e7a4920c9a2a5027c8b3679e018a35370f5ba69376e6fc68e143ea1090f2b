@@ -1,0 +1,19 @@
+import { jsx } from "react/jsx-runtime";
+import { forwardRef } from "react";
+import { TableTbody } from "./TableTbody.js";
+import { TableTd } from "./TableTd.js";
+import { TableTh } from "./TableTh.js";
+import { TableThead } from "./TableThead.js";
+import { TableTr } from "./TableTr.js";
+const Root = /* @__PURE__ */ forwardRef(({
+  children
+}, ref) => /* @__PURE__ */ jsx("div", { className: "table-responsive", children: /* @__PURE__ */ jsx("table", { ref, className: "table align-middle mb-0", children }) })), Table = /* @__PURE__ */ Object.assign(Root, {
+  Thead: TableThead,
+  Th: TableTh,
+  Tbody: TableTbody,
+  Tr: TableTr,
+  Td: TableTd
+});
+export {
+  Table as default
+};

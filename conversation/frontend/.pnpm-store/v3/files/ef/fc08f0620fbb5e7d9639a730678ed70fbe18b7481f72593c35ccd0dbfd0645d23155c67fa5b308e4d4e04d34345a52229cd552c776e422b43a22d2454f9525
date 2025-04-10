@@ -1,0 +1,33 @@
+import { jsxs, Fragment, jsx } from "react/jsx-runtime";
+import { useTranslation } from "react-i18next";
+import SvgIconArrowDown from "../../../icons/components/IconArrowDown.js";
+import SvgIconArrowLeft from "../../../icons/components/IconArrowLeft.js";
+import SvgIconArrowRight from "../../../icons/components/IconArrowRight.js";
+import SvgIconArrowUp from "../../../icons/components/IconArrowUp.js";
+import SvgIconHighlightColumn from "../../../icons/components/IconHighlightColumn.js";
+import SvgIconHighlightRow from "../../../icons/components/IconHighlightRow.js";
+import Tooltip from "../../../../components/Tooltip/Tooltip.js";
+import Dropdown from "../../../../components/Dropdown/Dropdown.js";
+const TableToolbarAddMenu = ({
+  editor
+}) => {
+  const {
+    t
+  } = useTranslation();
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx(Tooltip, { message: t("tiptap.table.toolbar.tooltip.add"), placement: "top", children: /* @__PURE__ */ jsx(Dropdown.Trigger, { variant: "ghost", label: t("tiptap.table.toolbar.add") }) }),
+    /* @__PURE__ */ jsxs(Dropdown.Menu, { children: [
+      /* @__PURE__ */ jsx(Dropdown.Item, { icon: /* @__PURE__ */ jsx(SvgIconArrowUp, {}), onClick: () => editor == null ? void 0 : editor.chain().focus().addRowBefore().run(), children: t("tiptap.table.toolbar.line.above") }, "add-above"),
+      /* @__PURE__ */ jsx(Dropdown.Item, { icon: /* @__PURE__ */ jsx(SvgIconArrowDown, {}), onClick: () => editor == null ? void 0 : editor.chain().focus().addRowAfter().run(), children: t("tiptap.table.toolbar.line.below") }, "add-below"),
+      /* @__PURE__ */ jsx(Dropdown.Separator, {}),
+      /* @__PURE__ */ jsx(Dropdown.Item, { icon: /* @__PURE__ */ jsx(SvgIconArrowLeft, {}), onClick: () => editor == null ? void 0 : editor.chain().focus().addColumnBefore().run(), children: t("tiptap.table.toolbar.col.left") }, "add-left"),
+      /* @__PURE__ */ jsx(Dropdown.Item, { icon: /* @__PURE__ */ jsx(SvgIconArrowRight, {}), onClick: () => editor == null ? void 0 : editor.chain().focus().addColumnAfter().run(), children: t("tiptap.table.toolbar.col.right") }, "add-right"),
+      /* @__PURE__ */ jsx(Dropdown.Separator, {}),
+      /* @__PURE__ */ jsx(Dropdown.Item, { icon: /* @__PURE__ */ jsx(SvgIconHighlightRow, {}), onClick: () => editor == null ? void 0 : editor.chain().focus().toggleHeaderRow().run(), children: t("tiptap.table.toolbar.line.head") }, "header-row"),
+      /* @__PURE__ */ jsx(Dropdown.Item, { icon: /* @__PURE__ */ jsx(SvgIconHighlightColumn, {}), onClick: () => editor == null ? void 0 : editor.chain().focus().toggleHeaderColumn().run(), children: t("tiptap.table.toolbar.col.head") }, "header-col")
+    ] })
+  ] });
+};
+export {
+  TableToolbarAddMenu
+};

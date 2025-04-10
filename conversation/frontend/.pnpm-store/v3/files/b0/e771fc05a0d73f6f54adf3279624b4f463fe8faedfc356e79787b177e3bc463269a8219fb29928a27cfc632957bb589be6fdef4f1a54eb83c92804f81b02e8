@@ -1,0 +1,7 @@
+import { IUserDescription, IUserInfo } from "edifice-ts-client";
+export interface useUserProps {
+    user: IUserInfo | undefined;
+    avatar: string;
+    userDescription: Partial<IUserDescription> | undefined;
+}
+export default function useUser(): useUserProps;

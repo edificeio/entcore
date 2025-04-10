@@ -1,0 +1,20 @@
+export interface ViewsCounterProps {
+    /**
+     * The number of views to display.
+     *
+     */
+    viewsCounter: number;
+    /**
+     * Optional click handler for the counter button.
+     */
+    onClick?: (event?: React.MouseEvent<HTMLButtonElement>) => void;
+    /**
+     * Optional CSS class name to apply to the counter component.
+     */
+    className?: string;
+}
+declare const ViewsCounter: {
+    ({ viewsCounter, onClick, className, }: ViewsCounterProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default ViewsCounter;

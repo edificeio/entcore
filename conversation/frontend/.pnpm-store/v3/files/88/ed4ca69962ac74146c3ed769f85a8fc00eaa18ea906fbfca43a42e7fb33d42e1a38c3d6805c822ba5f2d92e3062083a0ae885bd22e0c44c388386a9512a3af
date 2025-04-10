@@ -1,0 +1,47 @@
+import { jsxs, Fragment, jsx } from "react/jsx-runtime";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import SvgIconTextHighlight from "../../../icons/components/IconTextHighlight.js";
+import { useEditorContext } from "../../hooks/useEditorContext.js";
+import { DefaultPalette } from "../../../../components/ColorPicker/ColorPalette.js";
+import Tooltip from "../../../../components/Tooltip/Tooltip.js";
+import IconButton from "../../../../components/Button/IconButton.js";
+import Dropdown from "../../../../components/Dropdown/Dropdown.js";
+import ColorPicker from "../../../../components/ColorPicker/ColorPicker.js";
+const EditorToolbarHighlightColor = ({
+  triggerProps,
+  itemRefs
+}) => {
+  const {
+    t
+  } = useTranslation(), {
+    editor
+  } = useEditorContext(), [color, setColor] = useState("#4A4A4A"), isActive = useMemo(
+    () => editor == null ? void 0 : editor.isActive("customHighlight", {
+      color: /^#([0-9a-f]{3}){1,2}$/i
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [editor, editor == null ? void 0 : editor.state]
+  ), applyColor = useCallback((value) => {
+    value === color || value === "" ? (setColor(""), editor == null || editor.chain().focus().unsetHighlight().run()) : (setColor(value), editor == null || editor.chain().focus().setHighlight({
+      color: value
+    }).run());
+  }, [color, editor]);
+  useEffect(() => {
+    setColor((editor == null ? void 0 : editor.getAttributes("customHighlight").color) ?? "");
+  }, [editor, editor == null ? void 0 : editor.state]);
+  const palettes = [{
+    ...DefaultPalette,
+    reset: {
+      value: "transparent",
+      description: t("tiptap.toolbar.highlight.none")
+    }
+  }];
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx(Tooltip, { message: t("tiptap.toolbar.highlight.back"), placement: "top", children: /* @__PURE__ */ jsx(IconButton, { ...triggerProps, type: "button", variant: "ghost", color: "tertiary", icon: /* @__PURE__ */ jsx(SvgIconTextHighlight, {}), "aria-label": t("tiptap.toolbar.highlight.back"), className: isActive ? "selected" : "" }) }),
+    /* @__PURE__ */ jsx(Dropdown.Menu, { children: /* @__PURE__ */ jsx(ColorPicker, { ref: (el) => itemRefs.current["color-picker"] = el, palettes, model: color, onSuccess: (item) => applyColor(item.value) }) })
+  ] });
+};
+export {
+  EditorToolbarHighlightColor
+};

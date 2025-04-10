@@ -1,0 +1,21 @@
+import { jsx } from "react/jsx-runtime";
+import clsx from "clsx";
+import { useMenuContext } from "./MenuContext.js";
+import Button from "../../Button/Button.js";
+const MenuButton = (props) => {
+  const {
+    selected,
+    leftIcon,
+    rightIcon,
+    onClick,
+    children
+  } = props, {
+    childProps
+  } = useMenuContext();
+  return /* @__PURE__ */ jsx(Button, { variant: "ghost", color: "tertiary", className: clsx("stack w-100", {
+    selected
+  }), leftIcon, rightIcon, onClick, ...childProps, children });
+};
+export {
+  MenuButton
+};

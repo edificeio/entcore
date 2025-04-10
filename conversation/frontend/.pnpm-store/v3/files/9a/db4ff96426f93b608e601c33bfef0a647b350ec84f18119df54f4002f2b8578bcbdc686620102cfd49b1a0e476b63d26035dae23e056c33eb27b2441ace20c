@@ -1,0 +1,14 @@
+import { useCallback, useEffect } from "react";
+function useKeyPress(callback, keyCodes) {
+  const handler = useCallback(({
+    code
+  }) => {
+    keyCodes.includes(code) && callback();
+  }, [callback, keyCodes]);
+  useEffect(() => (window.addEventListener("keydown", handler), () => {
+    window.removeEventListener("keydown", handler);
+  }), [handler]);
+}
+export {
+  useKeyPress as default
+};

@@ -1,0 +1,99 @@
+import { Node, nodeInputRule, mergeAttributes } from "@tiptap/core";
+const VIDEO_INPUT_REGEX = /!\[(.+|:?)]\((\S+)(?:(?:\s+)["'](\S+)["'])?\)/, Video = Node.create({
+  name: "video",
+  group: "block",
+  draggable: !0,
+  selectable: !0,
+  addAttributes() {
+    return {
+      src: {
+        default: null,
+        parseHTML: (el) => el.getAttribute("src"),
+        renderHTML: (attrs) => ({ src: attrs.src })
+      },
+      controls: {
+        default: !0,
+        parseHTML: (el) => el.getAttribute("controls") ? el.getAttribute("controls") : !!el.hasAttribute("controls"),
+        renderHTML: (attrs) => ({ controls: attrs.controls })
+      },
+      documentId: {
+        default: "",
+        renderHTML: (attributes) => ({ "data-document-id": attributes.documentId }),
+        parseHTML: (element) => element.getAttribute("data-document-id")
+      },
+      isCaptation: {
+        default: !1,
+        renderHTML: (attributes) => ({ "data-document-is-captation": attributes.isCaptation }),
+        parseHTML: (element) => element.getAttribute("data-document-is-captation")
+      },
+      videoResolution: {
+        default: "404x720",
+        renderHTML: (attributes) => ({ "data-video-resolution": attributes.videoResolution }),
+        parseHTML: (element) => element.getAttribute("data-video-resolution")
+      },
+      width: {
+        renderHTML: (attributes) => ({
+          width: parseInt(attributes.width)
+        }),
+        parseHTML: (element) => element.getAttribute("width")
+      },
+      height: {
+        renderHTML: (attributes) => ({
+          height: parseInt(attributes.height)
+        }),
+        parseHTML: (element) => element.getAttribute("height")
+      }
+    };
+  },
+  parseHTML() {
+    return [
+      {
+        tag: "div.video-wrapper>video,video",
+        getAttrs: (el) => ({
+          src: el.getAttribute("src")
+        })
+      }
+    ];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return [
+      "div",
+      { class: "video-wrapper" },
+      ["video", mergeAttributes(HTMLAttributes)]
+    ];
+  },
+  addCommands() {
+    return {
+      setVideo: (id, src, isCaptation, width = 350, height = 197, controls = !0, controlslist = "nodownload", options) => ({ commands, state }) => commands.insertContentAt(
+        state.selection,
+        `<video 
+              controls="${controls}" 
+              controlslist="${controlslist}"
+              src="${src}" 
+              width="${width}"
+              height="${height}"
+              data-document-id="${id}" 
+              data-document-is-captation="${isCaptation}"
+              data-video-resolution="${width}x${height}" />`,
+        options
+      ),
+      toggleVideo: () => ({ commands }) => commands.toggleNode(this.name, "paragraph")
+    };
+  },
+  addInputRules() {
+    return [
+      nodeInputRule({
+        find: VIDEO_INPUT_REGEX,
+        type: this.type,
+        getAttributes: (match) => {
+          const [, , src] = match;
+          return { src };
+        }
+      })
+    ];
+  }
+});
+export {
+  Video
+};
+//# sourceMappingURL=video.js.map

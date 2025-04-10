@@ -1,0 +1,7 @@
+import { jsx } from "react/jsx-runtime";
+const CommentTitle = ({
+  children
+}) => /* @__PURE__ */ jsx("span", { className: "small text-gray-800", children });
+export {
+  CommentTitle
+};

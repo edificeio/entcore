@@ -1,0 +1,38 @@
+import { IResource } from '@edifice.io/client';
+import { SubmitHandler } from 'react-hook-form';
+interface ModalProps {
+    resource: IResource;
+    onSuccess?: () => void;
+}
+export interface FormDataProps {
+    title: string;
+    description: string;
+    activityType: string;
+    subjectArea: string;
+    language: string;
+    ageMin: string;
+    ageMax: string;
+    keyWords: string;
+}
+export default function usePublishModal({ onSuccess, resource }: ModalProps): {
+    control: import('react-hook-form').Control<FormDataProps, any>;
+    cover: string | File | Blob;
+    formState: {
+        errors: import('react-hook-form').FieldErrors<FormDataProps>;
+        isSubmitting: boolean;
+        isDirty: boolean;
+        isValid: boolean;
+    };
+    handleDeleteImage: () => void;
+    handlePublish: SubmitHandler<FormDataProps>;
+    handleSubmit: import('react-hook-form').UseFormHandleSubmit<FormDataProps, undefined>;
+    handleUploadImage: (file: File | string) => void;
+    register: import('react-hook-form').UseFormRegister<FormDataProps>;
+    selectActivities: (value: string | number) => void;
+    selectedActivities: (string | number)[];
+    selectedSubjectAreas: (string | number)[];
+    selectSubjects: (value: string | number) => void;
+    setValue: import('react-hook-form').UseFormSetValue<FormDataProps>;
+    watch: import('react-hook-form').UseFormWatch<FormDataProps>;
+};
+export {};

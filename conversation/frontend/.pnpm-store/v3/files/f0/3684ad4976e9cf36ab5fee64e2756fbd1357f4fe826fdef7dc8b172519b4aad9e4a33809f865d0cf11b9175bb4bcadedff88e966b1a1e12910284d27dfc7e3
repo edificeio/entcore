@@ -1,0 +1,30 @@
+import { jsx } from "react/jsx-runtime";
+import { useEffect } from "react";
+import { useDropdownContext } from "../Dropdown/DropdownContext.js";
+import Input from "../Input/Input.js";
+import FormControl from "../Form/FormControl.js";
+const ComboboxTrigger = ({
+  placeholder,
+  value = "",
+  searchMinLength = 3,
+  handleSearchInputChange
+}) => {
+  const {
+    triggerProps,
+    itemProps,
+    setVisible
+  } = useDropdownContext(), inputProps = {
+    ...triggerProps,
+    role: "combobox",
+    onClick: () => {
+      value.length >= searchMinLength && setVisible(!0);
+    },
+    onChange: handleSearchInputChange
+  };
+  return useEffect(() => {
+    setVisible(value.length >= searchMinLength);
+  }, [setVisible, value, searchMinLength]), /* @__PURE__ */ jsx(FormControl, { className: "d-flex align-items-center", id: "search", children: /* @__PURE__ */ jsx(Input, { ...inputProps, className: "max-w-512", noValidationIcon: !0, placeholder, size: "md", type: "search", onKeyDown: itemProps.onMenuItemKeyDown }) });
+};
+export {
+  ComboboxTrigger as default
+};

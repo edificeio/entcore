@@ -1,0 +1,18 @@
+import { jsx } from "react/jsx-runtime";
+import { useTranslation } from "react-i18next";
+import Badge from "../../../components/Badge/Badge.js";
+const BadgeProfile = ({
+  profile
+}) => {
+  const {
+    t
+  } = useTranslation();
+  return /* @__PURE__ */ jsx(Badge, { variant: {
+    type: "user",
+    profile,
+    background: !0
+  }, children: ((profile2) => t(`${profile2}`))(profile) });
+};
+export {
+  BadgeProfile
+};

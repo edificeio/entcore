@@ -1,0 +1,5 @@
+import { jsx } from "react/jsx-runtime";
+const ModalSubtitle = (props) => /* @__PURE__ */ jsx("p", { className: "modal-subtitle", children: props.children });
+export {
+  ModalSubtitle as default
+};

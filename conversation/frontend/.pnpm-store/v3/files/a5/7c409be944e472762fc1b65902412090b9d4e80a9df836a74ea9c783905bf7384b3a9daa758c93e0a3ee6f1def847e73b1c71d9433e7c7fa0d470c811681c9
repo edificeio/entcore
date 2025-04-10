@@ -1,0 +1,30 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import clsx from "clsx";
+import { useTranslation } from "react-i18next";
+import SvgIconPlus from "../../modules/icons/components/IconPlus.js";
+import Button from "../Button/Button.js";
+import { useDropzoneContext } from "./DropzoneContext.js";
+const DropzoneFile = ({
+  children,
+  multiple
+}) => {
+  const {
+    t
+  } = useTranslation(), {
+    files,
+    inputRef
+  } = useDropzoneContext(), hasFiles = files && files.length > 0, classes = clsx("drop-file-wrapper", {
+    "d-block": hasFiles,
+    "d-none": !hasFiles
+  });
+  return /* @__PURE__ */ jsxs("div", { className: classes, children: [
+    /* @__PURE__ */ jsx("div", { className: "drop-file-content", children: /* @__PURE__ */ jsx("div", { className: "add-button p-4", children: /* @__PURE__ */ jsx(Button, { variant: "ghost", leftIcon: /* @__PURE__ */ jsx(SvgIconPlus, {}), disabled: !multiple, onClick: () => {
+      var _a;
+      return (_a = inputRef == null ? void 0 : inputRef.current) == null ? void 0 : _a.click();
+    }, children: t("dropzone.add.more") }) }) }),
+    /* @__PURE__ */ jsx("div", { className: "p-8", children })
+  ] });
+};
+export {
+  DropzoneFile as default
+};

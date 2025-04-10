@@ -1,0 +1,101 @@
+import { useState, useEffect } from "react";
+import { odeServices } from "@edifice.io/client";
+import { useEdificeClient } from "../../providers/EdificeClientProvider/EdificeClientProvider.hook.js";
+import { useEdificeTheme } from "../../providers/EdificeThemeProvider/EdificeThemeProvider.hook.js";
+import useUser from "../useUser/useUser.js";
+import useIsAdml from "../useIsAdml/useIsAdml.js";
+import useHasWorkflow from "../useHasWorkflow/useHasWorkflow.js";
+function useZendeskGuide() {
+  const {
+    currentLanguage
+  } = useEdificeClient(), {
+    userDescription
+  } = useUser(), {
+    isAdml
+  } = useIsAdml(), {
+    theme
+  } = useEdificeTheme(), isMobileView = window.innerWidth <= 768, hasSupportWorkflow = useHasWorkflow("net.atos.entng.support.controllers.DisplayController|view"), [locationPathname, setLocationPathname] = useState(""), [dataModule, setDataModule] = useState(void 0), setZendeskGuideLabels = () => {
+    const modulePathnameSplit = locationPathname.split("/");
+    let moduleLabel = "", labels = "";
+    if (dataModule != null && dataModule.labels && Object.keys(dataModule == null ? void 0 : dataModule.labels).length > 0 && modulePathnameSplit.length > 1) {
+      for (let i = 1; i < modulePathnameSplit.length; i++)
+        modulePathnameSplit[i].length > 0 && modulePathnameSplit[i].match(/\d/) == null && (moduleLabel.length === 0 ? moduleLabel = modulePathnameSplit[i] : moduleLabel = moduleLabel + "/" + modulePathnameSplit[i]);
+      dataModule != null && dataModule.labels && Object.prototype.hasOwnProperty.call(dataModule == null ? void 0 : dataModule.labels, moduleLabel) ? labels = dataModule == null ? void 0 : dataModule.labels[moduleLabel] : dataModule != null && dataModule.default && String(dataModule.default).length > 0 && (labels = dataModule == null ? void 0 : dataModule.default);
+    } else dataModule != null && dataModule.default && String(dataModule == null ? void 0 : dataModule.default).length > 0 && (labels = dataModule == null ? void 0 : dataModule.default);
+    if (modulePathnameSplit.includes("collaborativewall") && modulePathnameSplit.includes("id") && isMobileView && window.zE("webWidget", "hide"), labels.includes("${adml}") && (isAdml ? labels = labels.replace("${adml}", "adml") : labels = labels.replace("/${adml}", "")), labels.includes("${profile}")) {
+      const userProfile = userDescription == null ? void 0 : userDescription.profiles;
+      labels = labels.replace("${profile}", userProfile[0].toLowerCase());
+    }
+    labels.includes("${theme") && (theme != null && theme.is1d ? labels = labels.replace("${theme}", "1D") : labels = labels.replace("${theme}", "2D")), window.zE("webWidget", "helpCenter:setSuggestions", {
+      labels: [labels]
+    });
+  };
+  return useEffect(() => {
+    window.location.pathname !== locationPathname && setLocationPathname(window.location.pathname), !(dataModule === void 0 || Object.keys(dataModule).length === 0) && setZendeskGuideLabels();
+  }, [window.location.pathname, dataModule]), useEffect(() => {
+    document.getElementById("ze-snippet") || hasSupportWorkflow === void 0 || (async () => {
+      const zendeskGuideConfig = await odeServices.http().get("/zendeskGuide/config");
+      if (zendeskGuideConfig && zendeskGuideConfig.key && zendeskGuideConfig.key !== "") {
+        const scriptZendesk = document.createElement("script");
+        scriptZendesk.id = "ze-snippet", scriptZendesk.src = `https://static.zdassets.com/ekr/snippet.js?key=${zendeskGuideConfig.key}`, document.body.appendChild(scriptZendesk).onload = () => {
+          currentLanguage === "es" ? window.zE(function() {
+            window.zE.setLocale("es-419");
+          }) : window.zE(function() {
+            window.zE.setLocale("fr");
+          }), Object.keys(zendeskGuideConfig.module).length > 0 && setDataModule(zendeskGuideConfig.module), window.zE("webWidget", "show"), window.zE("webWidget", "updateSettings", {
+            webWidget: {
+              color: {
+                theme: zendeskGuideConfig.color || "#ffc400"
+              },
+              zIndex: 3,
+              launcher: {
+                mobile: {
+                  labelVisible: !0
+                }
+              },
+              contactForm: {
+                suppress: !hasSupportWorkflow
+              },
+              helpCenter: {
+                messageButton: {
+                  "*": "Assistance ENT",
+                  "es-419": "Asistencia ENT"
+                }
+              }
+            }
+          }), window.addEventListener("scroll", () => {
+            window.zE("webWidget", "updateSettings", {
+              webWidget: {
+                launcher: {
+                  mobile: {
+                    labelVisible: window.scrollY <= 5
+                  }
+                }
+              }
+            });
+          }), window.zE("webWidget:on", "open", function() {
+            hasSupportWorkflow && window.zE("webWidget", "updateSettings", {
+              webWidget: {
+                contactForm: {
+                  suppress: !1
+                }
+              }
+            });
+          }), window.zE("webWidget:on", "userEvent", function(ref) {
+            const category = ref.category, action = ref.action, properties = ref.properties;
+            action === "Contact Form Shown" && category === "Zendesk Web Widget" && properties && properties.name === "contact-form" && hasSupportWorkflow && (window.zE("webWidget", "updateSettings", {
+              webWidget: {
+                contactForm: {
+                  suppress: !0
+                }
+              }
+            }), window.zE("webWidget", "close"), window.open("/support", "_blank"));
+          });
+        };
+      }
+    })();
+  }, [hasSupportWorkflow]), null;
+}
+export {
+  useZendeskGuide as default
+};

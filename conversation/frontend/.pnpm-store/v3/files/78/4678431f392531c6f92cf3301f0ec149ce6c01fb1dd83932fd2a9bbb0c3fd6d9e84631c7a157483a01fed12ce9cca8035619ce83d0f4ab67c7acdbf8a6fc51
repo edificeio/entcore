@@ -1,0 +1,8 @@
+const c = (o, r) => {
+  if (o == 0) return "0 octets";
+  const t = 1e3, a = r || 2, s = ["octets", "Ko", "Mo", "Go"], e = Math.floor(Math.log(o) / Math.log(t));
+  return parseFloat((o / Math.pow(t, e)).toFixed(a)) + " " + s[e];
+};
+export {
+  c as customSize
+};

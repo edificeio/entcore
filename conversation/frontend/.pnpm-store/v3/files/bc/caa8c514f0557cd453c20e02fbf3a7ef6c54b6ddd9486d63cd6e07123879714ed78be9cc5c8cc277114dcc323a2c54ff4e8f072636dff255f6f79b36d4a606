@@ -1,0 +1,37 @@
+import { useState, useEffect } from "react";
+import { Hyperlink } from "@edifice.io/tiptap-extensions/hyperlink";
+import CharacterCount from "@tiptap/extension-character-count";
+import { useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+const useCommentEditor = (editable, content, maxLength = 800) => {
+  const [commentLength, setCommentLength] = useState(0), editor = useEditor({
+    editable,
+    extensions: [StarterKit, Hyperlink, CharacterCount.configure({
+      limit: maxLength
+    })],
+    content
+  });
+  return useEffect(() => {
+    editor == null || editor.commands.setContent(content);
+  }, [content, editor]), useEffect(() => {
+    editor == null || editor.setEditable(editable);
+  }, [editable, editor]), useEffect(() => {
+    function setCounter() {
+      const length = (editor == null ? void 0 : editor.storage.characterCount.characters()) ?? 0;
+      setCommentLength(length);
+    }
+    return editor == null || editor.on("update", setCounter), () => {
+      editor == null || editor.off("update", setCounter);
+    };
+  }, [editor]), {
+    editor,
+    commentLength,
+    getComment: () => editor == null ? void 0 : editor.getHTML(),
+    resetComment: () => {
+      setCommentLength(0), editor == null || editor.commands.setContent(content);
+    }
+  };
+};
+export {
+  useCommentEditor
+};

@@ -1,0 +1,63 @@
+{
+  "name": "@edifice.io/client",
+  "version": "2.1.1-develop-b2school.20250321113048",
+  "description": "Edifice TypeScript Client",
+  "keywords": [
+    "typescript",
+    "client",
+    "edifice",
+    "frontend"
+  ],
+  "homepage": "https://github.com/edificeio/edifice-frontend-framework/tree/main/packages/client#readme",
+  "bugs": {
+    "url": "https://github.com/edificeio/edifice-frontend-framework/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/edificeio/edifice-frontend-framework.git",
+    "directory": "packages/client"
+  },
+  "license": "AGPL-3.0",
+  "author": "Edifice",
+  "type": "module",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "axios": "^1.7.7",
+    "core-js": "^3.35.1",
+    "@edifice.io/utilities": "2.1.1-develop-b2school.20250321113048"
+  },
+  "devDependencies": {
+    "@types/jasmine": "5.1.4",
+    "@types/node": "^22.9.1",
+    "jasmine": "5.1.0",
+    "rimraf": "5.0.5",
+    "rollup-plugin-visualizer": "5.12.0",
+    "typedoc": "0.25.7",
+    "typedoc-plugin-markdown": "3.17.1",
+    "vite": "^5.4.11",
+    "vite-plugin-dts": "^4.1.0",
+    "@edifice.io/config": "2.1.1-develop-b2school.20250321113048"
+  },
+  "scripts": {
+    "build": "vite build",
+    "docs": "npx rimraf ./docs/ && npx typedoc src/ts/index.ts --excludePrivate --disableSources --plugin typedoc-plugin-markdown",
+    "fix": "eslint --fix --report-unused-disable-directives --max-warnings 0",
+    "format": "pnpm run format:write && pnpm run format:check",
+    "format:check": "npx prettier --check \"src/ts/**/*.ts\"",
+    "format:write": "npx prettier --write \"src/ts/**/*.ts\"",
+    "lint": "eslint",
+    "test": "vitest"
+  }
+}

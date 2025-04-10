@@ -1,0 +1,14 @@
+/// <reference types="react" />
+import { IWebApp } from "edifice-ts-client";
+export interface BreadcrumbProps {
+    /**
+     * Pass all data about current application
+     */
+    app: IWebApp;
+    /**
+     * Show name of the current resource
+     */
+    name?: string;
+}
+declare const Breadcrumb: import("react").ForwardRefExoticComponent<BreadcrumbProps & import("react").RefAttributes<HTMLElement>>;
+export default Breadcrumb;

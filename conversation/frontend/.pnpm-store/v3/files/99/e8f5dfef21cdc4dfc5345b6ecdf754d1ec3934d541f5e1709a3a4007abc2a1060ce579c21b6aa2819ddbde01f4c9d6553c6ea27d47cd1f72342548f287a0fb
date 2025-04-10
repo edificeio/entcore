@@ -1,0 +1,14 @@
+export type MongoDate = {
+    $date: number | string;
+};
+export type IsoDate = string;
+export type NumberDate = number;
+/** Date formats we are going to deal with. */
+export type CoreDate = IsoDate | MongoDate | NumberDate;
+/**
+ * Hook to compute user-friendly dates from various format.
+ */
+export default function useDate(): {
+    fromNow: (date: CoreDate | NumberDate) => string;
+    formatDate: (date: CoreDate, format?: string) => string;
+};

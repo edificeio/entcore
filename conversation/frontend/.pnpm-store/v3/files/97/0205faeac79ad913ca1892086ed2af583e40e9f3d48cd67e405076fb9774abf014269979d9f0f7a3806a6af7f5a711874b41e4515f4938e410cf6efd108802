@@ -1,0 +1,42 @@
+interface ModalItemsProps {
+    /**
+     * /onboarding/*.svg
+     */
+    src: string;
+    /**
+     * Image Companion text
+     */
+    alt: string;
+    /**
+     * Text below image
+     */
+    text: string;
+}
+interface ModalOptionsProps {
+    /**
+     * Modal title
+     */
+    title: string;
+    /**
+     * Prev button text
+     */
+    prevText: string;
+    /**
+     * Next button text
+     */
+    nextText: string;
+    /**
+     * Close button text
+     */
+    closeText: string;
+}
+interface OnboardingProps {
+    id: string;
+    items: ModalItemsProps[];
+    modalOptions: ModalOptionsProps;
+}
+declare const OnboardingModal: {
+    ({ id, items, modalOptions }: OnboardingProps): import('react').ReactPortal | null;
+    displayName: string;
+};
+export default OnboardingModal;

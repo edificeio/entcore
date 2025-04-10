@@ -1,0 +1,14 @@
+import { ComponentPropsWithRef, ReactNode } from "react";
+export interface AttachmentProps extends ComponentPropsWithRef<"div"> {
+    /**
+     * Name of resource or Folder
+     * */
+    name?: string;
+    /**
+     * Actions attachment
+     * */
+    options: ReactNode | undefined;
+}
+export type AttachmentType = AttachmentProps;
+declare const Attachment: import("react").ForwardRefExoticComponent<Omit<AttachmentProps, "ref"> & import("react").RefAttributes<HTMLDivElement>>;
+export default Attachment;

@@ -1,0 +1,69 @@
+export declare abstract class ITimelineFactory {
+    static createInstance(): ITimelineApp;
+}
+export interface ITimelineApp {
+    initialize(): Promise<void>;
+    readonly notificationTypes: Array<string>;
+    readonly selectedNotificationTypes: Array<string>;
+    showMine: boolean;
+    /** Load more notifications, or force loading more by virtually incrementing the page. */
+    loadNotifications(force?: boolean): Promise<void>;
+    readonly notifications: Array<ITimelineNotification>;
+    resetPagination(): void;
+    readonly isLoading: boolean;
+    readonly page: number;
+    readonly hasMorePage: boolean;
+    savePreferences(): Promise<void>;
+    readonly preferences: any;
+    loadFlashMessages(): Promise<void>;
+    readonly flashMessages: Array<IFlashMessageModel>;
+    markAsRead(msg: IFlashMessageModel): Promise<void>;
+}
+export interface ITimelineNotification {
+    readonly _id: string;
+    readonly model: NotificationModel;
+    isUnread(): boolean;
+    delete(): Promise<void>;
+    discard(): Promise<void>;
+    report(): Promise<void>;
+}
+export type NotificationModel = {
+    _id: string;
+    type: string;
+    eventType: string;
+    resource: string;
+    sender: string;
+    params: {
+        uri: string;
+        username: string;
+        blogTitle: string;
+        resourceUri: string;
+    };
+    date: {
+        $date: number;
+    };
+    message: string;
+    recipients?: Array<Recipient>;
+    reported?: boolean;
+    reporters?: any;
+};
+export interface Recipient {
+    userId: string;
+}
+export interface IFlashMessageModel {
+    readonly id: string;
+    readonly title?: string;
+    readonly contents?: object;
+    readonly startDate?: string;
+    readonly endDate?: string;
+    readonly readCount?: number;
+    readonly author?: string;
+    readonly profiles?: string[];
+    readonly color?: string;
+    readonly customColor?: string | null;
+    readonly lastModifier?: string;
+    readonly structureId?: string;
+    readonly subStructures?: string[];
+    readonly signature?: string;
+    readonly signatureColor?: string;
+}

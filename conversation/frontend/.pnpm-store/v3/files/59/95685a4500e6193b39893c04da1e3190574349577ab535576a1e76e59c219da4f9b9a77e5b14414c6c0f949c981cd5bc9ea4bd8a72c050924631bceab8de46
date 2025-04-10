@@ -1,0 +1,7 @@
+/// <reference types="react" />
+export interface LoadingScreenProps {
+    position?: boolean;
+    caption?: string;
+}
+declare const LoadingScreen: import("react").ForwardRefExoticComponent<LoadingScreenProps & import("react").RefAttributes<HTMLDivElement>>;
+export default LoadingScreen;

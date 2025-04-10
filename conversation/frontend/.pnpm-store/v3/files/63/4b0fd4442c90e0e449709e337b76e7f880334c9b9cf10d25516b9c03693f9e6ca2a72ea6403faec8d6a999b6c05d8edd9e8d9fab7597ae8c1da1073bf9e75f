@@ -1,0 +1,24 @@
+import { ReactNode } from 'react';
+interface DropdownCheckboxItem {
+    /**
+     * Children Node
+     */
+    children: ReactNode;
+    /**
+     * Value
+     */
+    value: string | number;
+    /**
+     * Model
+     */
+    model: (string | number)[];
+    /**
+     * OnKeyDown handler
+     */
+    onChange: (value: string | number) => void;
+}
+declare const DropdownCheckboxItem: {
+    ({ children, value, model, onChange, }: DropdownCheckboxItem): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default DropdownCheckboxItem;

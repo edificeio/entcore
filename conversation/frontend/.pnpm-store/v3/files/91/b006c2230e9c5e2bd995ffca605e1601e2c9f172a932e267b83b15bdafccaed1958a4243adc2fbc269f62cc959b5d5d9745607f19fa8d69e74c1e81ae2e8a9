@@ -1,0 +1,20 @@
+import { ColorPaletteItem } from './ColorPalette';
+export interface ColorPickerItemProps {
+    /**
+     * Color item to display
+     */
+    model: ColorPaletteItem;
+    /**
+     * Render as selected
+     */
+    selected?: boolean;
+    /**
+     * Optional class for styling purpose
+     */
+    className?: string;
+}
+declare const ColorPickerItem: {
+    ({ model, selected, className, }: ColorPickerItemProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default ColorPickerItem;

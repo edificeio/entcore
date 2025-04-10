@@ -1,0 +1,22 @@
+import { useState, useRef, useEffect } from "react";
+function useHover() {
+  const [value, setValue] = useState(!1), ref = useRef(null), handleMouseOver = () => {
+    setValue(!0);
+  }, handleMouseOut = () => {
+    setValue(!1);
+  };
+  return useEffect(
+    () => {
+      const node = ref.current;
+      if (node)
+        return node.addEventListener("mouseover", handleMouseOver), node.addEventListener("mouseout", handleMouseOut), () => {
+          node.removeEventListener("mouseover", handleMouseOver), node.removeEventListener("mouseout", handleMouseOut);
+        };
+    },
+    [ref]
+    // Recall only if ref changes
+  ), [ref, value];
+}
+export {
+  useHover as default
+};

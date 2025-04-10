@@ -1,0 +1,8 @@
+/// <reference types="react" />
+export interface LogoProps {
+    src: string;
+    is1d?: boolean;
+    translate?: string;
+}
+declare const Logo: import("react").ForwardRefExoticComponent<LogoProps & import("react").RefAttributes<HTMLAnchorElement>>;
+export default Logo;

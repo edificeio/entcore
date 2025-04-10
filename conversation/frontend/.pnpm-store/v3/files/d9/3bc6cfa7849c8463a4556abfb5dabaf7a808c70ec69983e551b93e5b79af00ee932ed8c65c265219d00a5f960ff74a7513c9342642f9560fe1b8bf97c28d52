@@ -1,0 +1,22 @@
+import { SubmitHandler } from 'react-hook-form';
+interface useFolderModalProps {
+    edit: boolean;
+    onSuccess?: () => void;
+    onClose: () => void;
+}
+interface HandlerProps {
+    name: string;
+}
+export declare function useFolderModal({ edit, onSuccess, onClose, }: useFolderModalProps): {
+    formId: string;
+    errors: import('react-hook-form').FieldErrors<HandlerProps>;
+    isSubmitting: boolean;
+    isDirty: boolean;
+    isValid: boolean;
+    register: import('react-hook-form').UseFormRegister<HandlerProps>;
+    setFocus: import('react-hook-form').UseFormSetFocus<HandlerProps>;
+    handleSubmit: import('react-hook-form').UseFormHandleSubmit<HandlerProps, undefined>;
+    onCancel: () => void;
+    onSubmit: SubmitHandler<HandlerProps>;
+};
+export {};

@@ -1,0 +1,190 @@
+import { jsx, jsxs, Fragment } from "react/jsx-runtime";
+import clsx from "clsx";
+import { useTranslation } from "react-i18next";
+import { useEdificeClient } from "../../../providers/EdificeClientProvider/EdificeClientProvider.hook.js";
+import { useEdificeTheme } from "../../../providers/EdificeThemeProvider/EdificeThemeProvider.hook.js";
+import SvgIconRafterDown from "../../../modules/icons/components/IconRafterDown.js";
+import SvgIconCommunity from "../../../modules/icons/components/nav/IconCommunity.js";
+import SvgIconDisconnect from "../../../modules/icons/components/nav/IconDisconnect.js";
+import SvgIconHome from "../../../modules/icons/components/nav/IconHome.js";
+import SvgIconMyApps from "../../../modules/icons/components/nav/IconMyApps.js";
+import SvgIconNeoAssistance from "../../../modules/icons/components/nav/IconNeoAssistance.js";
+import SvgIconNeoMessaging from "../../../modules/icons/components/nav/IconNeoMessaging.js";
+import SvgIconNewRelease from "../../../modules/icons/components/nav/IconNewRelease.js";
+import SvgIconOneAssistance from "../../../modules/icons/components/nav/IconOneAssistance.js";
+import SvgIconOneMessaging from "../../../modules/icons/components/nav/IconOneMessaging.js";
+import SvgIconOneProfile from "../../../modules/icons/components/nav/IconOneProfile.js";
+import SvgIconUserbook from "../../../modules/icons/components/nav/IconUserbook.js";
+import useHeader from "../hooks/useHeader.js";
+import Help from "./Help.js";
+import { Navbar } from "./Navbar.js";
+import { NavBarNav } from "./NavbarNav.js";
+import { NavItem } from "./NavItem.js";
+import { NavLink } from "./NavLink.js";
+import SearchEngine from "./SearchEngine.js";
+import { WidgetAppsBody, WidgetAppsFooter } from "./WidgetApps.js";
+import useConversation from "../../../hooks/useConversation/useConversation.js";
+import useUser from "../../../hooks/useUser/useUser.js";
+import useHasWorkflow from "../../../hooks/useHasWorkflow/useHasWorkflow.js";
+import { useHelp } from "../hooks/useHelp.js";
+import Avatar from "../../Avatar/Avatar.js";
+import Badge from "../../Badge/Badge.js";
+import VisuallyHidden from "../../VisuallyHidden/VisuallyHidden.js";
+import Logo from "../../Logo/Logo.js";
+import { Popover, PopoverBody, PopoverFooter } from "../../Popover/Popover.js";
+const Header = ({
+  is1d = !1,
+  src = ""
+}) => {
+  const {
+    t
+  } = useTranslation(), {
+    messages,
+    msgLink,
+    zimbraWorkflow
+  } = useConversation(), {
+    user,
+    avatar
+  } = useUser(), {
+    currentLanguage,
+    currentApp
+  } = useEdificeClient(), hasOldHelpEnableWorkflow = useHasWorkflow("org.entcore.portal.controllers.PortalController|oldHelpEnable") || !1, {
+    isModalOpen: isHelpOpen,
+    setIsModalOpen: setIsHelpOpen,
+    parsedContent,
+    parsedHeadline,
+    error
+  } = useHelp(), classes = clsx("header", {
+    "no-2d": is1d,
+    "no-1d": !is1d
+  }), {
+    title,
+    bookmarkedApps,
+    appsRef,
+    isAppsHovered,
+    popoverAppsId,
+    userAvatar,
+    userName,
+    welcomeUser,
+    communityWorkflow,
+    conversationWorflow,
+    searchWorkflow,
+    isCollapsed,
+    toggleCollapsedNav,
+    handleLogout
+  } = useHeader({
+    user,
+    avatar
+  }), hasMessages = messages > 0, {
+    theme
+  } = useEdificeTheme();
+  return /* @__PURE__ */ jsx("header", { className: classes, children: is1d ? /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx("div", { className: "container-fluid", children: /* @__PURE__ */ jsxs(Navbar, { children: [
+      /* @__PURE__ */ jsx("a", { className: "navbar-title d-md-none text-truncate h4", href: currentApp ? currentApp.address : "/timeline/timeline", children: title }),
+      /* @__PURE__ */ jsxs("div", { className: "d-none d-md-inline-flex gap-12 align-items-center", children: [
+        /* @__PURE__ */ jsx(Avatar, { alt: userName, size: "sm", src: userAvatar, variant: "circle", width: "32", height: "32" }),
+        /* @__PURE__ */ jsx("span", { className: "navbar-text", children: welcomeUser })
+      ] }),
+      /* @__PURE__ */ jsxs(NavBarNav, { className: "gap-8", "aria-hidden": "false", "aria-label": t("navbar.main.navigation"), children: [
+        conversationWorflow && /* @__PURE__ */ jsx(NavItem, { children: /* @__PURE__ */ jsxs("a", { href: "/conversation/conversation", className: "nav-link", children: [
+          /* @__PURE__ */ jsx(SvgIconOneMessaging, { className: "icon notification" }),
+          hasMessages && /* @__PURE__ */ jsx(Badge, { variant: {
+            type: "notification",
+            level: "danger"
+          }, className: "position-absolute", children: messages }),
+          /* @__PURE__ */ jsx(VisuallyHidden, { children: t("navbar.messages") })
+        ] }) }),
+        /* @__PURE__ */ jsx(NavItem, { children: /* @__PURE__ */ jsx(NavLink, { link: "/userbook/mon-compte", className: "dropdown-item", translate: t("navbar.myaccount"), children: /* @__PURE__ */ jsx(SvgIconOneProfile, { className: "icon user" }) }) }),
+        currentLanguage === "fr" && hasOldHelpEnableWorkflow ? /* @__PURE__ */ jsxs(NavItem, { children: [
+          /* @__PURE__ */ jsxs("button", { className: "nav-link", onClick: () => {
+            setIsHelpOpen(!0);
+          }, children: [
+            /* @__PURE__ */ jsx(SvgIconOneAssistance, { className: "icon help" }),
+            /* @__PURE__ */ jsx(VisuallyHidden, { children: t("navbar.help") })
+          ] }),
+          /* @__PURE__ */ jsx(Help, { isHelpOpen, setIsHelpOpen, parsedContent, parsedHeadline, error })
+        ] }) : null,
+        /* @__PURE__ */ jsx(NavItem, { children: /* @__PURE__ */ jsxs("button", { className: "nav-link", onClick: handleLogout, children: [
+          /* @__PURE__ */ jsx(SvgIconDisconnect, { className: "icon logout" }),
+          /* @__PURE__ */ jsx(VisuallyHidden, { children: t("navbar.disconnect") })
+        ] }) }),
+        /* @__PURE__ */ jsx(NavItem, { className: "d-md-none", children: /* @__PURE__ */ jsx("button", { className: "nav-link btn btn-naked", type: "button", "aria-controls": "navbarCollapsed", "aria-expanded": !isCollapsed, "aria-label": t("navbar.secondary.navigation"), onClick: toggleCollapsedNav, children: /* @__PURE__ */ jsx(SvgIconRafterDown, { className: "icon rafter-down", width: "20", height: "20" }) }) })
+      ] })
+    ] }) }),
+    /* @__PURE__ */ jsx(Navbar, { className: "no-2d navbar-secondary navbar-expand-md", "aria-label": t("navbar.secondary.navigation"), children: /* @__PURE__ */ jsx("div", { className: "container-fluid", children: /* @__PURE__ */ jsxs("div", { className: `collapse navbar-collapse ${isCollapsed ? "" : "show"}`, id: "navbarCollapsed", children: [
+      /* @__PURE__ */ jsx(Logo, { is1d: !0, src: `${src}/img/illustrations/logo.png`, translate: t("navbar.home") }),
+      /* @__PURE__ */ jsxs(NavBarNav, { className: "gap-8", children: [
+        /* @__PURE__ */ jsx(NavItem, { children: /* @__PURE__ */ jsxs("a", { href: "/timeline/timeline", className: "button", children: [
+          /* @__PURE__ */ jsx(SvgIconNewRelease, { color: "#fff", className: "d-md-none" }),
+          /* @__PURE__ */ jsx("span", { className: "d-inline-block", children: t("portal.header.navigation.whatsnew") })
+        ] }) }),
+        /* @__PURE__ */ jsx(NavItem, { children: /* @__PURE__ */ jsxs("a", { href: "/userbook/annuaire", className: "button", children: [
+          /* @__PURE__ */ jsx(SvgIconUserbook, { color: "#fff", className: "d-md-none" }),
+          /* @__PURE__ */ jsx("span", { className: "d-inline-block", children: t("portal.header.navigation.classMembers") })
+        ] }) }),
+        /* @__PURE__ */ jsx(NavItem, { children: /* @__PURE__ */ jsxs("a", { href: "/welcome", className: "button", children: [
+          /* @__PURE__ */ jsx(SvgIconMyApps, { color: "#fff", className: "d-md-none" }),
+          /* @__PURE__ */ jsx("span", { className: "d-inline-block", children: t("portal.header.navigation.myapps") })
+        ] }) })
+      ] })
+    ] }) }) })
+  ] }) : /* @__PURE__ */ jsx(Navbar, { className: "navbar-expand-md", children: /* @__PURE__ */ jsxs("div", { className: "container-fluid", children: [
+    /* @__PURE__ */ jsx(Logo, { src: `${src}/img/illustrations/logo.png` }),
+    /* @__PURE__ */ jsx("a", { href: currentApp ? currentApp.address : "/timeline/timeline", className: "navbar-title text-truncate d-md-none", children: title }),
+    /* @__PURE__ */ jsxs("ul", { className: "navbar-nav", children: [
+      /* @__PURE__ */ jsx(NavItem, { children: /* @__PURE__ */ jsx(NavLink, { link: "/timeline/timeline", translate: t("navbar.home"), children: /* @__PURE__ */ jsx(SvgIconHome, { color: "#fff" }) }) }),
+      /* @__PURE__ */ jsxs(NavItem, { className: "position-relative", ref: appsRef, id: popoverAppsId, "aria-haspopup": "true", "aria-expanded": isAppsHovered, children: [
+        /* @__PURE__ */ jsx(NavLink, { link: "/welcome", translate: t("navbar.applications"), children: /* @__PURE__ */ jsx(SvgIconMyApps, { color: "#fff" }) }),
+        /* @__PURE__ */ jsxs(Popover, { className: "top-100 widget", id: popoverAppsId, isVisible: isAppsHovered, children: [
+          /* @__PURE__ */ jsx(PopoverBody, { children: /* @__PURE__ */ jsx(WidgetAppsBody, { bookmarkedApps }) }),
+          /* @__PURE__ */ jsx(PopoverFooter, { className: "widget-footer border-top border-ghost", children: /* @__PURE__ */ jsx(WidgetAppsFooter, {}) })
+        ] })
+      ] }),
+      conversationWorflow && /* @__PURE__ */ jsx(NavItem, { children: /* @__PURE__ */ jsxs(NavLink, { className: "position-relative", link: "/conversation/conversation", translate: t("conversation"), children: [
+        /* @__PURE__ */ jsx(SvgIconNeoMessaging, { color: "#fff" }),
+        hasMessages && /* @__PURE__ */ jsx(Badge, { variant: {
+          type: "notification",
+          level: "warning"
+        }, className: "position-absolute", children: messages })
+      ] }) }),
+      zimbraWorkflow && /* @__PURE__ */ jsx(NavItem, { children: /* @__PURE__ */ jsxs(NavLink, { className: "position-relative", link: msgLink, translate: t("conversation"), children: [
+        /* @__PURE__ */ jsx(SvgIconNeoMessaging, { color: "#fff" }),
+        hasMessages && /* @__PURE__ */ jsx(Badge, { variant: {
+          type: "notification",
+          level: "warning"
+        }, className: "position-absolute", children: messages })
+      ] }) }),
+      currentLanguage === "fr" && hasOldHelpEnableWorkflow ? /* @__PURE__ */ jsxs(NavItem, { children: [
+        /* @__PURE__ */ jsxs("button", { className: "nav-link btn btn-naked", onClick: () => {
+          setIsHelpOpen(!0);
+        }, children: [
+          /* @__PURE__ */ jsx(SvgIconNeoAssistance, { color: "#fff" }),
+          /* @__PURE__ */ jsx(VisuallyHidden, { children: t("support") })
+        ] }),
+        /* @__PURE__ */ jsx(Help, { isHelpOpen, setIsHelpOpen, parsedContent, parsedHeadline, error })
+      ] }) : null,
+      /* @__PURE__ */ jsx(NavItem, { children: /* @__PURE__ */ jsxs("div", { className: "dropdown", children: [
+        /* @__PURE__ */ jsx("button", { className: "nav-link btn btn-naked d-md-none", type: "button", "aria-controls": "dropdown-navbar", "aria-expanded": !isCollapsed, "aria-label": t("navbar.open.menu"), onClick: toggleCollapsedNav, children: /* @__PURE__ */ jsx(SvgIconRafterDown, { className: "icon rafter-down", width: "20", height: "20", color: "#fff" }) }),
+        /* @__PURE__ */ jsxs("ul", { className: `dropdown-menu dropdown-menu-end ${isCollapsed ? "" : "show"}`, id: "dropdown-navbar", children: [
+          communityWorkflow && /* @__PURE__ */ jsx(NavItem, { children: /* @__PURE__ */ jsxs("a", { href: "/community", className: "nav-link dropdown-item", children: [
+            /* @__PURE__ */ jsx(SvgIconCommunity, { className: "icon community" }),
+            /* @__PURE__ */ jsx("span", { className: "nav-text", children: t("navbar.community") })
+          ] }) }),
+          searchWorkflow ? /* @__PURE__ */ jsx(SearchEngine, {}) : null,
+          /* @__PURE__ */ jsx(NavItem, { children: /* @__PURE__ */ jsxs("a", { href: "/userbook/mon-compte", className: "nav-link dropdown-item", children: [
+            /* @__PURE__ */ jsx(Avatar, { alt: userName, size: "sm", src: userAvatar, variant: "circle", className: "bg-white", width: "32", height: "32" }),
+            /* @__PURE__ */ jsx("span", { className: "nav-text", children: t("navbar.myaccount") })
+          ] }) }),
+          /* @__PURE__ */ jsx(NavItem, { children: /* @__PURE__ */ jsx("hr", { className: "dropdown-divider" }) }),
+          /* @__PURE__ */ jsx(NavItem, { children: /* @__PURE__ */ jsxs("a", { href: "/auth/logout?callback=" + ((theme == null ? void 0 : theme.logoutCallback) ?? "/"), className: "nav-link dropdown-item", children: [
+            /* @__PURE__ */ jsx(SvgIconDisconnect, { className: "icon logout" }),
+            /* @__PURE__ */ jsx("span", { id: "logout-label", className: "nav-text", children: t("navbar.disconnect") })
+          ] }) })
+        ] })
+      ] }) })
+    ] })
+  ] }) }) });
+};
+export {
+  Header as default
+};

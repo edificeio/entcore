@@ -1,0 +1,10 @@
+export declare const InnerTabs: {
+    Audio: () => import("react/jsx-runtime").JSX.Element;
+    Video: () => import("react/jsx-runtime").JSX.Element;
+    Upload: () => import("react/jsx-runtime").JSX.Element;
+    ExternalLink: ({ link, multiNodeSelected, }: import('./ExternalLink').ExternalLinkTabProps) => import("react/jsx-runtime").JSX.Element;
+    Workspace: () => import("react/jsx-runtime").JSX.Element;
+    InternalLink: ({ target, resourceId, appPrefix, }: import('./InternalLink').InternalLinkTabProps) => import("react/jsx-runtime").JSX.Element;
+    Iframe: () => import("react/jsx-runtime").JSX.Element;
+    VideoEmbedder: () => import("react/jsx-runtime").JSX.Element;
+};

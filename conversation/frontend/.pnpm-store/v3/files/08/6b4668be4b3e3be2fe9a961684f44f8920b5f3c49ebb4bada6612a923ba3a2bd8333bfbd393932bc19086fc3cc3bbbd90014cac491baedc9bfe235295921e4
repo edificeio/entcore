@@ -1,0 +1,95 @@
+function useEdificeIcons() {
+  const iconOfWidget = {
+    "last-infos-widget": "ic-widget-actualites",
+    birthday: "ic-star",
+    "calendar-widget": "ic-widget-calendar",
+    "carnet-de-bord": "ic-widget-carnet-de-bord",
+    "record-me": "ic-widget-microphone",
+    mood: "ic-star",
+    "my-apps": "ic-widget-apps",
+    notes: "ic-widget-notes",
+    "rss-widget": "ic-widget-rss",
+    "bookmark-widget": "ic-widget-signets",
+    qwant: "ic-widget-qwant",
+    "qwant-junior": "ic-widget-qwant",
+    "agenda-widget": "ic-widget-agenda",
+    "cursus-widget": "ic-widget-aide-devoirs",
+    "maxicours-widget": "ic-widget-maxicours",
+    "school-widget": "ic-widget-schoolbook",
+    "universalis-widget": "ic-widget-universalis",
+    "briefme-widget": "ic-widget-briefme"
+  };
+  function getIconCode(app) {
+    let appCode = "";
+    switch (typeof app == "string" ? appCode = app : appCode = (app == null ? void 0 : app.icon) !== void 0 ? app == null ? void 0 : app.icon.trim().toLowerCase() : "placeholder", appCode && appCode.length > 0 ? appCode.endsWith("-large") && (appCode = appCode.replace("-large", "")) : typeof app == "object" && (appCode = (app == null ? void 0 : app.displayName) !== void 0 ? app == null ? void 0 : app.displayName.trim().toLowerCase() : ""), appCode) {
+      case "admin.title":
+        appCode = "admin";
+        break;
+      case "banques des savoirs":
+        appCode = "banquesavoir";
+        break;
+      case "collaborativewall":
+        appCode = "collaborative-wall";
+        break;
+      case "communautés":
+        appCode = "community";
+        break;
+      case "directory.user":
+        appCode = "userbook";
+        break;
+      case "emploi du temps":
+        appCode = "edt";
+        break;
+      case "formulaire":
+        appCode = "forms";
+        break;
+      case "messagerie":
+        appCode = "conversation";
+        break;
+      case "news":
+        appCode = "actualites";
+        break;
+      case "homeworks":
+      case "cahier de texte":
+        appCode = "cahier-de-texte";
+        break;
+      case "diary":
+      case "cahier de texte 2d":
+        appCode = "cahier-textes";
+        break;
+      case "scrap-book":
+        appCode = "scrapbook";
+        break;
+    }
+    return appCode;
+  }
+  function isIconUrl(icon) {
+    return icon && (icon.startsWith("/") || icon.startsWith("http://") || icon.startsWith("https://"));
+  }
+  function getIconClass(app) {
+    const appCode = getIconCode(app);
+    return appCode ? `color-app-${appCode}` : "color-app-placeholder";
+  }
+  function getBackgroundIconClass(app) {
+    const appCode = getIconCode(app);
+    return appCode ? `bg-app-${appCode}` : "bg-app-placeholder";
+  }
+  function getBackgroundLightIconClass(app) {
+    const appCode = getIconCode(app);
+    return appCode ? `bg-light-${appCode}` : "bg-light-placeholder";
+  }
+  function getWidgetIconClass(widget) {
+    return iconOfWidget[widget.platformConf.name];
+  }
+  return {
+    getIconClass,
+    getBackgroundIconClass,
+    getBackgroundLightIconClass,
+    getIconCode,
+    getWidgetIconClass,
+    isIconUrl
+  };
+}
+export {
+  useEdificeIcons as default
+};

@@ -1,0 +1,39 @@
+import { IOdeServices } from '../services/OdeServices';
+import { Embedder } from './interface';
+export declare class EmbedderService {
+    private context;
+    constructor(context: IOdeServices);
+    private get http();
+    /**
+     * Returns the default list of video embedder
+     * @returns the default list of video embedder
+     */
+    getDefault(): Promise<Embedder[]>;
+    /**
+     * Returns the custom list of video embedder
+     * @returns the custom list of video embedder
+     */
+    getCustom(): Promise<Embedder[]>;
+    /**
+     * The provider matching with the URL
+     * @param {Embedder[]} embedderList - The list of video providers to test with
+     * @param {String} url - The URL for the video
+     * @returns The provider matching with the URL or undefined
+     */
+    getProviderFromUrl(embedderList: Embedder[], url: string): Embedder | undefined;
+    private urlIsFromPattern;
+    /**
+     * Check if a given URL correspond to one of the URL pattern of the provider
+     * @param {String} url - The URL for the video
+     * @param {Embedder} embedder - The video provider to test with
+     * @returns boolean depending if a given URL correspond to one of the URL pattern of the provider
+     */
+    private isUrlFromProvider;
+    /**
+     * Get embed code to display the video for an URL and a provider
+     * @param {Embedder} embedder - The video provider for the URL
+     * @param {String} url - The URL for the video
+     * @returns embed code to display the video for an URL and a provider
+     */
+    getEmbedCodeForProvider(embedder: Embedder, url: string): string;
+}

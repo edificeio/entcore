@@ -1,0 +1,27 @@
+interface ImageEditorProps {
+    image: string;
+    isOpen: boolean;
+    legend?: string;
+    altText?: string;
+    onCancel(): void;
+    onSave(arg: {
+        blob: Blob;
+        legend: string;
+        altText: string;
+    }): void | Promise<void>;
+    onError?(err: string): void;
+}
+/**
+ * This component display the Image Editor as a Modal
+ *
+ * @param param.altText the initial alternative text of the image
+ * @param param.legend the initial title text of the image
+ * @param param.image the URL of the image to edit
+ * @param param.isOpen whether the modal is visible
+ * @param param.onCancel callback when the modal is closed without saving
+ * @param param.onError callback when the save action failed
+ * @param param.onSave callback when the save action succeed and receive as params the new image as blob and also the new legend and alt
+ * @returns A React Component
+ */
+declare const ImageEditor: ({ altText: altTextParam, legend: legendParam, image: imageSrc, isOpen, onCancel, onError, onSave, }: ImageEditorProps) => import("react/jsx-runtime").JSX.Element;
+export default ImageEditor;

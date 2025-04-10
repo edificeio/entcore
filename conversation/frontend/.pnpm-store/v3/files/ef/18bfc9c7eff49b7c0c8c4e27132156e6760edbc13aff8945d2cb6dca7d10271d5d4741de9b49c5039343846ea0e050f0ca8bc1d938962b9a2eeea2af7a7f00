@@ -1,0 +1,8 @@
+import * as PIXI from 'pixi.js';
+/**
+ * This function rotate the sprite by adding PI/2
+ *
+ * @param application The PIXI.Application context
+ * @param spriteName The name of the sprite representing the image
+ */
+export declare function rotate(application: PIXI.Application, spriteName: string): Promise<void>;

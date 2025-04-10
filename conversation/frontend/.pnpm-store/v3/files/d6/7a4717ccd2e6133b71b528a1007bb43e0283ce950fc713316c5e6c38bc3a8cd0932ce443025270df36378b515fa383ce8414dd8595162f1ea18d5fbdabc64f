@@ -1,0 +1,1 @@
+"use strict";Object.defineProperty(exports,Symbol.toStringTag,{value:"Module"});function n(e,i=0,t=0){return!e.includes("data:image")&&!e.includes("thumbnail")&&(e=e+(e.includes("?")?"&thumbnail=":"?thumbnail=")+`${i}x${t}`),e}exports.getThumbnail=n;

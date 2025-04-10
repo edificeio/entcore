@@ -1,0 +1,2 @@
+import { FloatingMenuProps } from '@tiptap/react';
+export declare const tippyOptions: FloatingMenuProps['tippyOptions'];

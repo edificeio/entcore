@@ -1,0 +1,51 @@
+import { jsx } from "react/jsx-runtime";
+import { forwardRef } from "react";
+import clsx from "clsx";
+import * as iconsApps from "../../icons-apps.js";
+import useEdificeIcons from "../../hooks/useEdificeIcons/useEdificeIcons.js";
+import SvgIconPlaceholder from "../../modules/icons/components/apps/IconPlaceholder.js";
+import Image from "../Image/Image.js";
+const AppIcon = /* @__PURE__ */ forwardRef(({
+  app,
+  size = "24",
+  iconFit = "contain",
+  variant = "square",
+  className = ""
+}, ref) => {
+  const {
+    isIconUrl,
+    getIconCode
+  } = useEdificeIcons(), isSquare = variant === "square", isRounded = variant === "rounded", isCircle = variant === "circle", isContain = iconFit === "contain", isRatio = iconFit === "ratio", iconSizes = {
+    "icon-xs": size === "24",
+    "icon-sm": size === "40",
+    "icon-md": size === "48",
+    "icon-lg": size === "80",
+    "icon-xl": size === "160"
+  }, iconVariant = {
+    square: isSquare,
+    rounded: isRounded,
+    "rounded-circle": isCircle
+  }, iconFits = {
+    "icon-contain": isContain,
+    "icon-ratio": isRatio
+  }, icon = typeof app == "string" ? app : (app == null ? void 0 : app.icon) !== void 0 ? app.icon : "placeholder", displayName = typeof app != "string" && (app == null ? void 0 : app.displayName) !== void 0 ? app.displayName : "", code = app ? getIconCode(app) : "", isIconURL = isIconUrl(icon), appCode = code || "placeholder", classes = clsx("app-icon", {
+    ...iconSizes,
+    ...iconVariant,
+    ...iconFits,
+    [`bg-light-${appCode}`]: !isContain,
+    [`color-app-${appCode}`]: appCode
+  }, className), IconComponent = iconsApps[`Icon${appCode.split("-").map((part) => part.charAt(0).toUpperCase() + part.slice(1)).join("")}`] ?? SvgIconPlaceholder;
+  if (isIconURL) {
+    const classes2 = clsx("h-full", className);
+    return /* @__PURE__ */ jsx(Image, { src: icon, alt: displayName, objectFit: "contain", width: size, height: size, className: classes2, style: {
+      minWidth: size + "px"
+    } });
+  }
+  return /* @__PURE__ */ jsx("div", { ref, className: classes, style: {
+    width: size + "px",
+    height: size + "px"
+  }, children: /* @__PURE__ */ jsx(IconComponent, { width: size, height: size }) });
+});
+export {
+  AppIcon as default
+};

@@ -1,0 +1,12 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+const SvgIconCloseFullScreen = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs("svg", { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", fill: "none", viewBox: "0 0 24 24", "aria-hidden": "true", "aria-labelledby": titleId, ...props, children: [
+  title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+  /* @__PURE__ */ jsx("path", { fill: "currentColor", fillRule: "evenodd", d: "M19.333 11a1 1 0 1 0 0-2h-2.919l6.293-6.293a1 1 0 0 0-1.414-1.414L15 7.586v-2.92a1 1 0 1 0-2 0V10a1 1 0 0 0 1 1zM4.667 13a1 1 0 1 0 0 2h2.919l-6.293 6.293a1 1 0 1 0 1.414 1.414L9 16.414v2.92a1 1 0 0 0 2 0V14a1 1 0 0 0-1-1z", clipRule: "evenodd" })
+] });
+export {
+  SvgIconCloseFullScreen as default
+};

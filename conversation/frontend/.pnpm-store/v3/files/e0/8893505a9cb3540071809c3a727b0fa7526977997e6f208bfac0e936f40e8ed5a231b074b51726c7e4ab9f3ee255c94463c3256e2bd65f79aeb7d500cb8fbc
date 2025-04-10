@@ -1,0 +1,5 @@
+import { ButtonProps } from "../../Button";
+export type MenuButtonProps = Pick<ButtonProps, "children" | "leftIcon" | "rightIcon" | "onClick"> & {
+    selected: boolean;
+};
+export declare const MenuButton: (props: Partial<MenuButtonProps>) => import("react/jsx-runtime").JSX.Element;

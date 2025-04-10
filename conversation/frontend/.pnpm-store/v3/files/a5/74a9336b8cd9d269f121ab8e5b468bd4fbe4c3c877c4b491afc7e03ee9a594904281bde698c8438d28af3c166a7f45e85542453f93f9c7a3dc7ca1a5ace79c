@@ -1,0 +1,2 @@
+declare const LoadMore: import('react').ForwardRefExoticComponent<import('react').RefAttributes<HTMLButtonElement>>;
+export default LoadMore;

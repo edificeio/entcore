@@ -1,0 +1,14 @@
+import { jsx } from "react/jsx-runtime";
+import { forwardRef } from "react";
+import clsx from "clsx";
+const NavItem = /* @__PURE__ */ forwardRef(({
+  children,
+  className,
+  ...restProps
+}, ref) => {
+  const classes = clsx("nav-item", className);
+  return /* @__PURE__ */ jsx("li", { ref, className: classes, ...restProps, children });
+});
+export {
+  NavItem
+};

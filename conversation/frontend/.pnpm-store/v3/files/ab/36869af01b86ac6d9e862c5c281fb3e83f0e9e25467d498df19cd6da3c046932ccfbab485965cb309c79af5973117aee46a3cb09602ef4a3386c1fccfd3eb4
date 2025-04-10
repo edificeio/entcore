@@ -1,0 +1,29 @@
+import { jsx, jsxs } from "react/jsx-runtime";
+import { Controller } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { useSubjectsOptions } from "../hooks/useSubjectsOptions.js";
+import Dropdown from "../../../../components/Dropdown/Dropdown.js";
+const SubjectsDropdown = ({
+  control,
+  selectedSubjectAreas,
+  selectSubjects
+}) => {
+  const subjectsOptions = useSubjectsOptions(), {
+    t
+  } = useTranslation();
+  return /* @__PURE__ */ jsx("div", { className: "col d-flex", children: /* @__PURE__ */ jsx(Controller, { name: "subjectArea", control, rules: {
+    required: !0
+  }, render: ({
+    field: {
+      onChange
+    }
+  }) => /* @__PURE__ */ jsxs(Dropdown, { block: !0, overflow: !0, children: [
+    /* @__PURE__ */ jsx(Dropdown.Trigger, { size: "md", label: t("bpr.form.publication.discipline"), badgeContent: selectedSubjectAreas == null ? void 0 : selectedSubjectAreas.length }),
+    /* @__PURE__ */ jsx(Dropdown.Menu, { children: subjectsOptions.map((option, index) => /* @__PURE__ */ jsx(Dropdown.CheckboxItem, { value: option.value, model: selectedSubjectAreas, onChange: () => {
+      selectSubjects(option.value), onChange(option.value);
+    }, children: option.label }, index)) })
+  ] }) }) });
+};
+export {
+  SubjectsDropdown
+};

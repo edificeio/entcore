@@ -1,0 +1,9 @@
+export declare function useHelp(): {
+    html: string;
+    visibility: boolean;
+    isModalOpen: boolean;
+    setIsModalOpen: import('react').Dispatch<import('react').SetStateAction<boolean>>;
+    parsedContent: any;
+    parsedHeadline: any;
+    error: boolean;
+};

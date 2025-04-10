@@ -1,0 +1,15 @@
+export interface ILastInfosModel {
+    date: string;
+    shared: [];
+    thread_icon: string;
+    thread_id: number;
+    thread_title: string;
+    title: string;
+    username: string;
+    _id: number;
+}
+export declare class LastInfosWidget {
+    loadInfos(maxResults: number): Promise<ILastInfosModel[]>;
+    getMaxResults(): Promise<number>;
+    setMaxResults(maxResults: number): Promise<void>;
+}

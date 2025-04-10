@@ -1,0 +1,25 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
+import Modal from "../../Modal/Modal.js";
+function Help({
+  isHelpOpen,
+  setIsHelpOpen,
+  parsedHeadline,
+  parsedContent,
+  error
+}) {
+  const {
+    t
+  } = useTranslation(), handleHelpOpen = () => {
+    setIsHelpOpen(!1);
+  };
+  return isHelpOpen ? /* @__PURE__ */ createPortal(/* @__PURE__ */ jsxs(Modal, { id: "help-modal", isOpen: isHelpOpen, onModalClose: handleHelpOpen, scrollable: !0, size: "lg", children: [
+    /* @__PURE__ */ jsx(Modal.Header, { onModalClose: handleHelpOpen, children: t("navbar.help") }),
+    /* @__PURE__ */ jsx(Modal.Subtitle, { children: error ? t("help.notfound.title") : parsedHeadline }),
+    /* @__PURE__ */ jsx(Modal.Body, { className: error ? "d-flex" : null, children: error ? t("help.notfound.text") : parsedContent })
+  ] }), document.getElementById("portal")) : null;
+}
+export {
+  Help as default
+};

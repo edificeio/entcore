@@ -1,0 +1,725 @@
+{
+  "version": "6.0",
+  "nxVersion": "19.6.0",
+  "deps": {
+    "@edifice.io/react": "link:../../../edifice-frontend-framework/packages/react",
+    "@edifice.io/bootstrap": "develop-b2school",
+    "@edifice.io/client": "link:../../../edifice-frontend-framework/packages/client",
+    "@edifice.io/utilities": "develop-b2school",
+    "@edifice.io/tiptap-extensions": "develop-b2school",
+    "@react-spring/web": "^9.7.5",
+    "@tanstack/react-query": "^5.59.13",
+    "clsx": "^2.1.1",
+    "i18next": "23.8.1",
+    "i18next-http-backend": "2.4.2",
+    "ode-explorer": "develop-b2school",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-error-boundary": "4.0.13",
+    "react-hook-form": "^7.53.0",
+    "react-i18next": "14.1.0",
+    "react-router-dom": "^6.27.0",
+    "zustand": "^4.5.5",
+    "@axe-core/react": "^4.10.0",
+    "@eslint/js": "^9.12.0",
+    "@tanstack/react-query-devtools": "^5.59.13",
+    "@testing-library/jest-dom": "^6.5.0",
+    "@testing-library/react": "^16.0.1",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/node": "^18.19.55",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.1",
+    "@vitejs/plugin-react": "^4.3.2",
+    "@vitest/coverage-v8": "^2.1.3",
+    "@vitest/ui": "^2.1.3",
+    "edifice-ts-client": "develop-b2school",
+    "eslint": "^9.12.0",
+    "eslint-plugin-react-hooks": "5.1.0-rc.0",
+    "eslint-plugin-react-refresh": "^0.4.12",
+    "globals": "^15.11.0",
+    "husky": "^9.1.6",
+    "inquirer": "^8.2.6",
+    "jsdom": "^25.0.1",
+    "lint-staged": "15.2.9",
+    "msw": "^2.4.11",
+    "nx": "19.6.0",
+    "prettier": "^3.3.3",
+    "puppeteer": "^24.4.0",
+    "typescript": "^5.6.3",
+    "typescript-eslint": "^8.8.1",
+    "vite": "5.4.1",
+    "vite-tsconfig-paths": "^5.0.1",
+    "vitest": "^2.1.3"
+  },
+  "pathMappings": {},
+  "nxJsonPlugins": [],
+  "fileMap": {
+    "projectFileMap": {},
+    "nonProjectFiles": [
+      {
+        "file": ".gitignore",
+        "hash": "7467546906615236738"
+      },
+      {
+        "file": ".husky/pre-commit",
+        "hash": "14986555958761173328"
+      },
+      {
+        "file": ".npmrc",
+        "hash": "5505743833671869854"
+      },
+      {
+        "file": ".prettierignore",
+        "hash": "14688272390704683536"
+      },
+      {
+        "file": ".prettierrc",
+        "hash": "6791331372628328787"
+      },
+      {
+        "file": "build.sh",
+        "hash": "17762886694283232957"
+      },
+      {
+        "file": "docker-compose.yml",
+        "hash": "10054456073999904245"
+      },
+      {
+        "file": "env.template",
+        "hash": "6515170397659404105"
+      },
+      {
+        "file": "eslint.config.js",
+        "hash": "14919933973800323074"
+      },
+      {
+        "file": "index.html",
+        "hash": "5998933648049667740"
+      },
+      {
+        "file": "nx.json",
+        "hash": "4390015820079940107"
+      },
+      {
+        "file": "package.json.template",
+        "hash": "10400376013168667340"
+      },
+      {
+        "file": "plugins/vite-plugin-edifice.ts",
+        "hash": "13539229676903309927"
+      },
+      {
+        "file": "scripts/get-tokens/config.template.json",
+        "hash": "35387790662566906"
+      },
+      {
+        "file": "scripts/get-tokens/index.cjs",
+        "hash": "7007945975296014059"
+      },
+      {
+        "file": "scripts/package.cjs",
+        "hash": "1727671942562833914"
+      },
+      {
+        "file": "src/assets/illu-messageRecalled.svg",
+        "hash": "10712051108469029718"
+      },
+      {
+        "file": "src/assets/starter.png",
+        "hash": "13874824119739842643"
+      },
+      {
+        "file": "src/components/FolderActionDropDown.tsx",
+        "hash": "11424745613339660443"
+      },
+      {
+        "file": "src/components/MessageActionDropDown/MessageActionDropDown.tsx",
+        "hash": "11305128362151267979"
+      },
+      {
+        "file": "src/components/MessageActionDropDown/hooks/useMessageActionDropDown.tsx",
+        "hash": "894112297004338100"
+      },
+      {
+        "file": "src/components/MessageAttachments/MessageAttachments.css",
+        "hash": "16285731179723935434"
+      },
+      {
+        "file": "src/components/MessageAttachments/MessageAttachments.test.tsx",
+        "hash": "299303000193899619"
+      },
+      {
+        "file": "src/components/MessageAttachments/MessageAttachments.tsx",
+        "hash": "1077972733468955900"
+      },
+      {
+        "file": "src/components/MessageAttachments/components/AddMessageAttachmentToWorkspaceModal.tsx",
+        "hash": "1534283452179903349"
+      },
+      {
+        "file": "src/components/MessageAttachments/components/MessageAttachment.tsx",
+        "hash": "16361286823250832963"
+      },
+      {
+        "file": "src/components/MessageBody.css",
+        "hash": "9346040429606414476"
+      },
+      {
+        "file": "src/components/MessageBody.tsx",
+        "hash": "15874037795201281080"
+      },
+      {
+        "file": "src/components/MessageRecipientList/MessageRecipientList.tsx",
+        "hash": "9772861659693979700"
+      },
+      {
+        "file": "src/components/MessageRecipientList/components/MessageRecipientListItem.tsx",
+        "hash": "8089382444774351275"
+      },
+      {
+        "file": "src/components/MessageRecipientList/components/MessageRecipientSubList.test.tsx",
+        "hash": "5498777020743594229"
+      },
+      {
+        "file": "src/components/MessageRecipientList/components/MessageRecipientSubList.tsx",
+        "hash": "13045338462110971667"
+      },
+      {
+        "file": "src/components/MessageRecipientList/hooks/useMessageCciToDisplay.tsx",
+        "hash": "5880861646235265205"
+      },
+      {
+        "file": "src/components/NewMessageButton.tsx",
+        "hash": "15240059264745140496"
+      },
+      {
+        "file": "src/components/OriginalFormatModal.tsx",
+        "hash": "14516631450418914534"
+      },
+      {
+        "file": "src/components/ProgressBar.css",
+        "hash": "7918245367300525748"
+      },
+      {
+        "file": "src/components/ProgressBar.tsx",
+        "hash": "7687064041968526386"
+      },
+      {
+        "file": "src/components/SignatureEditor/components/SignatureEditor.tsx",
+        "hash": "15841516115965240408"
+      },
+      {
+        "file": "src/components/SignatureEditor/components/SignatureEditorToolbar/SignatureEditorToolbar.DropdownMenu.tsx",
+        "hash": "8639319927618781186"
+      },
+      {
+        "file": "src/components/SignatureEditor/components/SignatureEditorToolbar/SignatureEditorToolbar.tsx",
+        "hash": "9553643987460533987"
+      },
+      {
+        "file": "src/components/SignatureEditor/components/SignatureEditorToolbar/index.ts",
+        "hash": "4122737203783399782"
+      },
+      {
+        "file": "src/components/SignatureEditor/indext.ts",
+        "hash": "11207668007466615096"
+      },
+      {
+        "file": "src/components/SignatureEditor/utilities/has-extension.ts",
+        "hash": "15229027349297217472"
+      },
+      {
+        "file": "src/components/SignatureEditor/utilities/has-mark.ts",
+        "hash": "2849744069316224853"
+      },
+      {
+        "file": "src/components/index.ts",
+        "hash": "13507259127248812256"
+      },
+      {
+        "file": "src/config/Actions.ts",
+        "hash": "3049703275212353723"
+      },
+      {
+        "file": "src/config/Config.ts",
+        "hash": "9486298309917792647"
+      },
+      {
+        "file": "src/config/index.ts",
+        "hash": "16324068671566904507"
+      },
+      {
+        "file": "src/features/app/Action/AppActionHeader.tsx",
+        "hash": "16984788928870093258"
+      },
+      {
+        "file": "src/features/app/Action/AppActionMenuOptions.tsx",
+        "hash": "14126431023874675824"
+      },
+      {
+        "file": "src/features/index.ts",
+        "hash": "15930624979109771141"
+      },
+      {
+        "file": "src/features/menu/components/DesktopMenu.tsx",
+        "hash": "16958603896735711960"
+      },
+      {
+        "file": "src/features/menu/components/MobileMenu.tsx",
+        "hash": "5007624743043850306"
+      },
+      {
+        "file": "src/features/menu/hooks/useFolderHandlers.tsx",
+        "hash": "8120734449058036961"
+      },
+      {
+        "file": "src/features/menu/hooks/useMenuData.tsx",
+        "hash": "10206075766401896855"
+      },
+      {
+        "file": "src/features/menu/index.ts",
+        "hash": "14044983939139872569"
+      },
+      {
+        "file": "src/features/message-edit/MessageEdit.tsx",
+        "hash": "6512988704878044430"
+      },
+      {
+        "file": "src/features/message-edit/components/MessageEditHeader.tsx",
+        "hash": "9475554167446311200"
+      },
+      {
+        "file": "src/features/message-edit/components/RecipientAvatar.tsx",
+        "hash": "9514339589861332817"
+      },
+      {
+        "file": "src/features/message-edit/components/RecipientListEdit.tsx",
+        "hash": "5297910383963825656"
+      },
+      {
+        "file": "src/features/message-edit/components/RecipientListItem.css",
+        "hash": "14630102071239045146"
+      },
+      {
+        "file": "src/features/message-edit/components/RecipientListItem.tsx",
+        "hash": "4418588113832371674"
+      },
+      {
+        "file": "src/features/message-edit/components/RecipientListSelectedItem.tsx",
+        "hash": "109092316168861437"
+      },
+      {
+        "file": "src/features/message-edit/hooks/useSearchRecipients.tsx",
+        "hash": "10039832502198281771"
+      },
+      {
+        "file": "src/features/message-list/MessageList.test.tsx",
+        "hash": "3885390342181519206"
+      },
+      {
+        "file": "src/features/message-list/MessageList.tsx",
+        "hash": "5807519708497498400"
+      },
+      {
+        "file": "src/features/message-list/components/MessageItem.tsx",
+        "hash": "4049350325560773882"
+      },
+      {
+        "file": "src/features/message-list/components/MessageListEmpty.test.tsx",
+        "hash": "15827877013097354021"
+      },
+      {
+        "file": "src/features/message-list/components/MessageListEmpty.tsx",
+        "hash": "13078599602922229419"
+      },
+      {
+        "file": "src/features/message-list/components/MessageListHeader.test.tsx",
+        "hash": "14273072453209239289"
+      },
+      {
+        "file": "src/features/message-list/components/MessageListHeader.tsx",
+        "hash": "13307678771059133789"
+      },
+      {
+        "file": "src/features/message-list/components/MessagePreview/MessagePreview.test.tsx",
+        "hash": "11243534787336684390"
+      },
+      {
+        "file": "src/features/message-list/components/MessagePreview/MessagePreview.tsx",
+        "hash": "18180255457021725659"
+      },
+      {
+        "file": "src/features/message-list/components/MessagePreview/components/RecipientAvatar.tsx",
+        "hash": "17905390105320786402"
+      },
+      {
+        "file": "src/features/message-list/components/MessagePreview/components/SenderAvatar.tsx",
+        "hash": "14371929488398855167"
+      },
+      {
+        "file": "src/features/message-list/components/MessagePreview/components/UserFolderIcon.tsx",
+        "hash": "11915423748285397820"
+      },
+      {
+        "file": "src/features/message-list/components/MessagePreview/hooks/useRecipientAvatar.ts",
+        "hash": "631273749021463525"
+      },
+      {
+        "file": "src/features/message-list/hooks/useSelectedMessages.ts",
+        "hash": "9134172502340120128"
+      },
+      {
+        "file": "src/features/message-list/hooks/useToolbarActions.ts",
+        "hash": "8093980127129961895"
+      },
+      {
+        "file": "src/features/message-list/hooks/useToolbarVisibility.ts",
+        "hash": "337473116661312418"
+      },
+      {
+        "file": "src/features/message/MessageNavigation.tsx",
+        "hash": "388768207619563597"
+      },
+      {
+        "file": "src/features/message/index.tsx",
+        "hash": "11737847331405975257"
+      },
+      {
+        "file": "src/features/message/message-header/index.test.tsx",
+        "hash": "1877764002379097109"
+      },
+      {
+        "file": "src/features/message/message-header/index.tsx",
+        "hash": "11035481294240380394"
+      },
+      {
+        "file": "src/features/modals/CreateFolderModal.test.tsx",
+        "hash": "12533070611563188145"
+      },
+      {
+        "file": "src/features/modals/CreateFolderModal.tsx",
+        "hash": "17721132878862600466"
+      },
+      {
+        "file": "src/features/modals/MoveMessageToFolderModal.tsx",
+        "hash": "804950077519575758"
+      },
+      {
+        "file": "src/features/modals/RenameFolderModal.test.tsx",
+        "hash": "2596148464968373836"
+      },
+      {
+        "file": "src/features/modals/RenameFolderModal.tsx",
+        "hash": "1073611988625868227"
+      },
+      {
+        "file": "src/features/modals/SignatureModal.tsx",
+        "hash": "13611829218308615912"
+      },
+      {
+        "file": "src/features/modals/TrashFolderModal.tsx",
+        "hash": "11128793368633484593"
+      },
+      {
+        "file": "src/features/modals/hooks/index.ts",
+        "hash": "4033258141205229400"
+      },
+      {
+        "file": "src/features/modals/hooks/useFolderActions.ts",
+        "hash": "18198092157699086460"
+      },
+      {
+        "file": "src/features/modals/hooks/useSignatureHandlers.tsx",
+        "hash": "4492973020320263190"
+      },
+      {
+        "file": "src/hooks/index.ts",
+        "hash": "16866812166896768677"
+      },
+      {
+        "file": "src/hooks/useI18n.ts",
+        "hash": "1488008513222874637"
+      },
+      {
+        "file": "src/hooks/useMessageAttachments.tsx",
+        "hash": "7669008908412094701"
+      },
+      {
+        "file": "src/hooks/useMessageFolderId.tsx",
+        "hash": "4571616355971631597"
+      },
+      {
+        "file": "src/hooks/useRecall.ts",
+        "hash": "4384334119959780124"
+      },
+      {
+        "file": "src/hooks/useRights.ts",
+        "hash": "5484202740082747755"
+      },
+      {
+        "file": "src/hooks/useSelectedFolder.ts",
+        "hash": "11938380626278179873"
+      },
+      {
+        "file": "src/hooks/useUsedSpace.ts",
+        "hash": "9140534511587663624"
+      },
+      {
+        "file": "src/hooks/useUserDisplayName.ts",
+        "hash": "17705875658232582987"
+      },
+      {
+        "file": "src/i18n.ts",
+        "hash": "6188777765179586640"
+      },
+      {
+        "file": "src/index.css",
+        "hash": "4025437524235993309"
+      },
+      {
+        "file": "src/main.tsx",
+        "hash": "5628466425246718481"
+      },
+      {
+        "file": "src/mocks/handlers.ts",
+        "hash": "13362052463193741422"
+      },
+      {
+        "file": "src/mocks/handlers/config-handlers.ts",
+        "hash": "15862222841761195827"
+      },
+      {
+        "file": "src/mocks/handlers/folder-handlers.ts",
+        "hash": "17288618411348956362"
+      },
+      {
+        "file": "src/mocks/handlers/message-handlers.ts",
+        "hash": "11626751598039874954"
+      },
+      {
+        "file": "src/mocks/index.ts",
+        "hash": "1677468540528883321"
+      },
+      {
+        "file": "src/mocks/mockedProvider.tsx",
+        "hash": "4574696722914141361"
+      },
+      {
+        "file": "src/mocks/renderWithRouter.tsx",
+        "hash": "16867184941478095683"
+      },
+      {
+        "file": "src/mocks/server.ts",
+        "hash": "5014735773024882507"
+      },
+      {
+        "file": "src/mocks/setup.ts",
+        "hash": "12015265033601583131"
+      },
+      {
+        "file": "src/models/attachment.ts",
+        "hash": "2913008231958104285"
+      },
+      {
+        "file": "src/models/folder.ts",
+        "hash": "7854896023139157639"
+      },
+      {
+        "file": "src/models/group.ts",
+        "hash": "13372534649271616554"
+      },
+      {
+        "file": "src/models/index.ts",
+        "hash": "13611246667450799347"
+      },
+      {
+        "file": "src/models/message.ts",
+        "hash": "392085885620443527"
+      },
+      {
+        "file": "src/models/recipient.ts",
+        "hash": "18047531916856120540"
+      },
+      {
+        "file": "src/models/signature.ts",
+        "hash": "16204737821816866746"
+      },
+      {
+        "file": "src/models/user.ts",
+        "hash": "17543028312909394512"
+      },
+      {
+        "file": "src/models/visible.ts",
+        "hash": "18418129605566165802"
+      },
+      {
+        "file": "src/providers/index.tsx",
+        "hash": "11226065940285808432"
+      },
+      {
+        "file": "src/routes/errors/not-found.tsx",
+        "hash": "7795888711105470702"
+      },
+      {
+        "file": "src/routes/errors/page-error.tsx",
+        "hash": "11915850845785316371"
+      },
+      {
+        "file": "src/routes/index.tsx",
+        "hash": "8292304881520693236"
+      },
+      {
+        "file": "src/routes/pages/FolderDisplay.tsx",
+        "hash": "17185881751095595889"
+      },
+      {
+        "file": "src/routes/pages/MessageCreate.tsx",
+        "hash": "2338892834478515049"
+      },
+      {
+        "file": "src/routes/pages/MessageDisplay.tsx",
+        "hash": "8687715754827388279"
+      },
+      {
+        "file": "src/routes/pages/MessageEdit.tsx",
+        "hash": "3221911055025278295"
+      },
+      {
+        "file": "src/routes/pages/OldFormat.tsx",
+        "hash": "10960552700525735406"
+      },
+      {
+        "file": "src/routes/redirections/index.tsx",
+        "hash": "7209138119984513929"
+      },
+      {
+        "file": "src/routes/root/index.css",
+        "hash": "3321464833517477986"
+      },
+      {
+        "file": "src/routes/root/index.tsx",
+        "hash": "12137350212012951745"
+      },
+      {
+        "file": "src/services/api/attachmentService.test.ts",
+        "hash": "13163202279034800424"
+      },
+      {
+        "file": "src/services/api/attachmentService.ts",
+        "hash": "6044618804020594292"
+      },
+      {
+        "file": "src/services/api/configService.test.ts",
+        "hash": "16191404745316859436"
+      },
+      {
+        "file": "src/services/api/configService.ts",
+        "hash": "4613699165784932143"
+      },
+      {
+        "file": "src/services/api/folderService.test.ts",
+        "hash": "14644563545612866418"
+      },
+      {
+        "file": "src/services/api/folderService.ts",
+        "hash": "10690507096940074681"
+      },
+      {
+        "file": "src/services/api/index.ts",
+        "hash": "17741179305733831841"
+      },
+      {
+        "file": "src/services/api/messageService.test.ts",
+        "hash": "16090313872578869188"
+      },
+      {
+        "file": "src/services/api/messageService.ts",
+        "hash": "13965853079778164542"
+      },
+      {
+        "file": "src/services/api/userService.ts",
+        "hash": "6157796561787100647"
+      },
+      {
+        "file": "src/services/index.ts",
+        "hash": "9505341819568155066"
+      },
+      {
+        "file": "src/services/queries/action.ts",
+        "hash": "4291332829827888961"
+      },
+      {
+        "file": "src/services/queries/attachment.ts",
+        "hash": "13586472076404986875"
+      },
+      {
+        "file": "src/services/queries/config.test.tsx",
+        "hash": "11280940547194973941"
+      },
+      {
+        "file": "src/services/queries/config.ts",
+        "hash": "14658343972304315526"
+      },
+      {
+        "file": "src/services/queries/folder.test.tsx",
+        "hash": "12125690280050886689"
+      },
+      {
+        "file": "src/services/queries/folder.ts",
+        "hash": "16026940536536014764"
+      },
+      {
+        "file": "src/services/queries/index.ts",
+        "hash": "4453092891540983476"
+      },
+      {
+        "file": "src/services/queries/message.test.tsx",
+        "hash": "9289506581250563000"
+      },
+      {
+        "file": "src/services/queries/message.ts",
+        "hash": "3269600538186537380"
+      },
+      {
+        "file": "src/services/queries/user.ts",
+        "hash": "4478920376981526680"
+      },
+      {
+        "file": "src/services/utils.ts",
+        "hash": "7682627648893884478"
+      },
+      {
+        "file": "src/store/actions.ts",
+        "hash": "9759510447100933373"
+      },
+      {
+        "file": "src/store/confirmModal.ts",
+        "hash": "12407938237045293715"
+      },
+      {
+        "file": "src/store/index.ts",
+        "hash": "14965547813947058732"
+      },
+      {
+        "file": "src/vite-env.d.ts",
+        "hash": "12946363841406869089"
+      },
+      {
+        "file": "tsconfig.app.json",
+        "hash": "14424666060859239273"
+      },
+      {
+        "file": "tsconfig.json",
+        "hash": "2365188958523842680"
+      },
+      {
+        "file": "tsconfig.node.json",
+        "hash": "13325416099155070725"
+      },
+      {
+        "file": "vite.config.ts",
+        "hash": "17120104740757576719"
+      }
+    ]
+  }
+}

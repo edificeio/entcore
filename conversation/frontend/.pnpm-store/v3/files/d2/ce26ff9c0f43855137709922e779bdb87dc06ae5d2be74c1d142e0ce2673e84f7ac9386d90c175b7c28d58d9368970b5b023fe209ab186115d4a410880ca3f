@@ -1,0 +1,22 @@
+import { CardProps } from '@edifice-ui/react';
+import { IResource, IWebApp } from 'edifice-ts-client';
+type OmitChildren = Omit<CardProps, 'children'>;
+export interface ResourceCardProps extends OmitChildren {
+    /**
+     * IWeb App
+     */
+    app?: IWebApp | undefined;
+    /**
+     * Resource
+     */
+    resource: Partial<IResource>;
+    /**
+     * Updated date
+     */
+    time: string;
+}
+declare const ResourceCard: {
+    ({ app, resource, time, isSelected, isSelectable, onClick, onSelect, }: ResourceCardProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default ResourceCard;

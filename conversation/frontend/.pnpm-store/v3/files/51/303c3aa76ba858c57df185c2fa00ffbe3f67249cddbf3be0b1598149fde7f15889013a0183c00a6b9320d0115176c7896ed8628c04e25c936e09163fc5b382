@@ -1,0 +1,100 @@
+import { useState, useCallback, useEffect } from "react";
+import { ImageResizer, addTimestampToImageUrl } from "@edifice.io/utilities";
+import { useDropzoneContext } from "../../components/Dropzone/DropzoneContext.js";
+import useWorkspaceFile from "../useWorkspaceFile/useWorkspaceFile.js";
+import useUpload from "../useUpload/useUpload.js";
+const useUploadFiles = ({
+  handleOnChange,
+  visibility,
+  application
+}) => {
+  const [uploadedFiles, setUploadedFiles] = useState([]), [editingImage, setEditingImage] = useState(void 0), {
+    files,
+    deleteFile,
+    replaceFileAt
+  } = useDropzoneContext(), {
+    remove,
+    createOrUpdate
+  } = useWorkspaceFile(), {
+    getUploadStatus,
+    setUploadStatus,
+    clearUploadStatus,
+    uploadFile,
+    uploadAlternateFile
+  } = useUpload(visibility, application), tryUploading = useCallback((files2) => {
+    files2.forEach(async (file, index) => {
+      if (file == null) return;
+      let resource;
+      if (file.type.startsWith("image"))
+        try {
+          const replacement = await ImageResizer.resizeImageFile(file);
+          resource = await uploadAlternateFile(file, replacement), replaceFileAt(index, replacement);
+        } catch (err) {
+          console.error(err);
+        }
+      resource || (resource = await uploadFile(file)), resource && setUploadedFiles((prevFiles) => [...prevFiles, resource]);
+    });
+  }, [uploadAlternateFile, uploadFile, replaceFileAt]);
+  useEffect(() => {
+    let numUploads = 0;
+    const newFiles = files.map((file) => {
+      if (numUploads >= 5) return null;
+      const status = getUploadStatus(file);
+      return status === "loading" && numUploads++, status ? null : file;
+    });
+    newFiles.forEach((file) => file && setUploadStatus(file, "idle")), tryUploading(newFiles);
+  }, [files, uploadedFiles, getUploadStatus, setUploadStatus, tryUploading]), useEffect(() => {
+    const sortedUploadedFiles = sortUploadedFiles(files, uploadedFiles);
+    handleOnChange(sortedUploadedFiles);
+  }, [uploadedFiles]);
+  const sortUploadedFiles = (filesArray, uploadedFilesArray) => {
+    const orderMap = filesArray.reduce((acc, item, index) => (acc[item.name] = index, acc), {});
+    return uploadedFilesArray.sort((a, b) => orderMap[a.name] - orderMap[b.name]);
+  };
+  async function removeFile(file) {
+    const resource = uploadedFiles.find((uploadedFile) => uploadedFile.name === file.name);
+    resource && (await remove(resource), clearUploadStatus(file), setUploadedFiles((prevFiles) => prevFiles.filter((prevFile) => prevFile.name !== (resource == null ? void 0 : resource.name)))), deleteFile(file);
+  }
+  async function updateImage({
+    blob,
+    legend,
+    altText: alt
+  }) {
+    if (editingImage)
+      try {
+        const res = await createOrUpdate({
+          blob,
+          legend,
+          alt,
+          uri: getUrl(editingImage)
+        });
+        res && typeof res == "object" && setUploadedFiles((prevFiles) => prevFiles.map((prevFile) => prevFile._id === res.file._id ? {
+          ...res.file,
+          title: legend,
+          alt
+        } : prevFile));
+      } finally {
+        setEditingImage(void 0);
+      }
+  }
+  const getUrl = (resource, timestamp) => {
+    const url = `/workspace/${resource != null && resource.public ? "pub/" : ""}document/${resource == null ? void 0 : resource._id}`;
+    return resource ? timestamp ? addTimestampToImageUrl(url) : url : "";
+  };
+  return {
+    /** List of files added from device */
+    files,
+    getUploadStatus,
+    clearUploadStatus,
+    uploadedFiles,
+    editingImage,
+    setEditingImage,
+    getUrl,
+    updateImage,
+    uploadFile,
+    removeFile
+  };
+};
+export {
+  useUploadFiles as default
+};

@@ -1,0 +1,9 @@
+import { TreeData } from "../types";
+/**
+ * Utility function to find a node in a subtree
+ * @param root The root node to begin with.
+ * @param predicate Function called on the node or its children, recursively.
+ *        Must return true when the child node is found.
+ * @returns The found child node (may be the root), or undefined
+ */
+export declare function findTreeNode(root: TreeData, predicate: (node: TreeData) => boolean): TreeData | undefined;

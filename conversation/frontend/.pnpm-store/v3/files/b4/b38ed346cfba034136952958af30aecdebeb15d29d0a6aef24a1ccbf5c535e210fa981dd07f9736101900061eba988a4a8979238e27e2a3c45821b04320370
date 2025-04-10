@@ -1,0 +1,32 @@
+import * as PIXI from "pixi.js";
+import { ImageSettings } from "../effects/misc";
+/**
+ * Defined the structure of the backup in history
+ */
+export interface HistoryState extends ImageSettings {
+    backup: Promise<Blob>;
+}
+export interface UseHistoryToolsProps {
+    maxSize?: number;
+    application?: PIXI.Application;
+    spriteName: string;
+    onRestore: (img: Blob, state: HistoryState) => void;
+}
+/**
+ * This hook expose all the functions needed for historizing actions:
+ * - historize: Create a backup
+ * - restore: Restore a backup
+ * - historyCount: How much states stored in history
+ *
+ * @param param.maxSize the maximum size of the history
+ * @param param.application the PIXI.Application context
+ * @param param.spriteName the sprite name of the edited image
+ * @param param.onRestore a callback called when a backup is restored
+ * @returns all functions needed for managing history
+ */
+declare const useHistoryTool: ({ maxSize, application, spriteName, onRestore, }: UseHistoryToolsProps) => {
+    historyCount: number;
+    restore: () => Promise<void>;
+    historize: <T extends (...args: any[]) => any>(callback: T) => Promise<any>;
+};
+export default useHistoryTool;

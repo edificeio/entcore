@@ -1,0 +1,34 @@
+import { jsx, Fragment } from "react/jsx-runtime";
+import { forwardRef } from "react";
+import clsx from "clsx";
+import { useFormControl } from "../Form/FormContext.js";
+const TextArea = /* @__PURE__ */ forwardRef(({
+  noValidationIcon,
+  placeholder,
+  size = "md",
+  height = "md",
+  className,
+  ...restProps
+}, ref) => {
+  const {
+    id,
+    isRequired,
+    isReadOnly,
+    status
+  } = useFormControl(), classes = clsx({
+    "form-control": !isReadOnly,
+    "form-control-lg": size === "lg",
+    "form-control-sm": size === "sm",
+    "textarea-height-lg": height === "lg",
+    "textarea-height-md": height === "md",
+    "textarea-height-sm": height === "sm",
+    "is-invalid": status === "invalid",
+    "is-valid": status === "valid",
+    "form-control-plaintext": isReadOnly,
+    "no-validation-icon": noValidationIcon
+  }, className);
+  return /* @__PURE__ */ jsx(Fragment, { children: /* @__PURE__ */ jsx("textarea", { ref, id, className: classes, placeholder, required: isRequired, readOnly: isReadOnly, ...restProps }) });
+});
+export {
+  TextArea as default
+};

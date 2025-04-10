@@ -1,0 +1,72 @@
+import * as PIXI from "pixi.js";
+import { aggregate } from "../utilities/aggregate.js";
+import { getApplicationScale } from "./misc.js";
+const BRUSH_SIZE = 20, DEBOUNCE = 50, CURSOR_NAME = "BRUSH_CURSOR";
+function drawBrush(points, scale) {
+  const container = new PIXI.Graphics();
+  for (const point of points)
+    point && (container.beginFill(16777215, 1), container.drawCircle(point.x, point.y, BRUSH_SIZE / scale), container.lineStyle(0), container.endFill());
+  return container;
+}
+function drawBlurListener(application, {
+  spriteName
+}) {
+  return aggregate(DEBOUNCE, (event) => application.stage.toLocal(event.global), (points) => {
+    const child = application.stage.getChildByName(spriteName), scale = getApplicationScale(application);
+    if (child == null) return;
+    const newSprite = new PIXI.Sprite(child.texture);
+    newSprite.filters = [
+      new PIXI.BlurFilter(
+        8,
+        // PIXI Default value for strength of the blur effect
+        4,
+        // Quality of the blur effect depending on the scale (4 is the PIXI default value)
+        Math.min(scale, 1)
+      )
+      // Resolution of the blur effect depending on the scale
+    ], newSprite.width = child.width, newSprite.height = child.height, newSprite.scale = new PIXI.Point(1, 1), newSprite.anchor = child.anchor, newSprite.mask = drawBrush(points, scale), child.addChild(newSprite);
+  });
+}
+function drawCursor(application) {
+  removeCursor(application);
+  const scale = getApplicationScale(application), circle = new PIXI.Graphics();
+  return circle.lineStyle(Math.max(1, 1 / scale), 16711680), circle.drawCircle(0, 0, BRUSH_SIZE / scale), circle.endFill(), circle.name = CURSOR_NAME, application.stage.addChild(circle), circle;
+}
+function removeCursor(application) {
+  const child = application.stage.getChildByName(CURSOR_NAME);
+  child && child.removeFromParent();
+}
+function moveCursorListener(application) {
+  return (event) => {
+    if (!application) return;
+    const point = application.stage.toLocal(event.global), child = application.stage.getChildByName(CURSOR_NAME, !0);
+    child && (child.position.x = point.x, child.position.y = point.y);
+  };
+}
+function start(application, {
+  spriteName
+}) {
+  application.stage.interactive = !0;
+  const cursor = drawCursor(application), cursorListener = moveCursorListener(application);
+  application.stage.on("pointermove", cursorListener);
+  const blurListener = drawBlurListener(application, {
+    spriteName
+  });
+  application.stage.on("pointerdown", () => {
+    application.stage.on("pointermove", blurListener);
+  });
+  const stopListening = () => {
+    var _a;
+    (_a = application == null ? void 0 : application.stage) == null || _a.off("pointermove", blurListener);
+  };
+  globalThis.addEventListener("pointerup", stopListening), cursor.once("destroyed", () => {
+    globalThis.removeEventListener("pointerup", stopListening);
+  });
+}
+function stop(application) {
+  removeCursor(application), application.stage.off("pointerdown"), application.stage.off("pointermove");
+}
+export {
+  start,
+  stop
+};

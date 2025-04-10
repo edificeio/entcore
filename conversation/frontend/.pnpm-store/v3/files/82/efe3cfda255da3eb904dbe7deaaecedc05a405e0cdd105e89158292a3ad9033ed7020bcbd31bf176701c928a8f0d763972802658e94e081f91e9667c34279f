@@ -1,0 +1,12 @@
+import { DataServiceProps, IEventBroker } from "./interface";
+import { IOdeServices } from "../services/OdeServices";
+export declare class WebBroker implements IEventBroker {
+    private odeServices;
+    private subscription?;
+    constructor(odeServices: IOdeServices);
+    private get http();
+    private get events();
+    private dispatchEvent;
+    initialize(props: DataServiceProps["web"] | undefined): this;
+    destroy(): void;
+}

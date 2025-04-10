@@ -1,0 +1,234 @@
+import { default as default2 } from "./modules/icons/components/apps/IconAccount.js";
+import { default as default3 } from "./modules/icons/components/apps/IconActualites.js";
+import { default as default4 } from "./modules/icons/components/apps/IconAdminPortal.js";
+import { default as default5 } from "./modules/icons/components/apps/IconAdmin.js";
+import { default as default6 } from "./modules/icons/components/apps/IconAdmissionPostBac.js";
+import { default as default7 } from "./modules/icons/components/apps/IconAgenda.js";
+import { default as default8 } from "./modules/icons/components/apps/IconAppointments.js";
+import { default as default9 } from "./modules/icons/components/apps/IconArchive.js";
+import { default as default10 } from "./modules/icons/components/apps/IconAssistance.js";
+import { default as default11 } from "./modules/icons/components/apps/IconAssr.js";
+import { default as default12 } from "./modules/icons/components/apps/IconAward.js";
+import { default as default13 } from "./modules/icons/components/apps/IconBanquesavoir.js";
+import { default as default14 } from "./modules/icons/components/apps/IconBcdi.js";
+import { default as default15 } from "./modules/icons/components/apps/IconBiblionisep.js";
+import { default as default16 } from "./modules/icons/components/apps/IconBlog.js";
+import { default as default17 } from "./modules/icons/components/apps/IconBookmarkEmpty.js";
+import { default as default18 } from "./modules/icons/components/apps/IconCahierDeTexte.js";
+import { default as default19 } from "./modules/icons/components/apps/IconCahierTextes.js";
+import { default as default20 } from "./modules/icons/components/apps/IconCalendar.js";
+import { default as default21 } from "./modules/icons/components/apps/IconCanalNumerique.js";
+import { default as default22 } from "./modules/icons/components/apps/IconCcn.js";
+import { default as default23 } from "./modules/icons/components/apps/IconCerise.js";
+import { default as default24 } from "./modules/icons/components/apps/IconCervoprint.js";
+import { default as default25 } from "./modules/icons/components/apps/IconCharlemagne.js";
+import { default as default26 } from "./modules/icons/components/apps/IconCharte.js";
+import { default as default27 } from "./modules/icons/components/apps/IconChat.js";
+import { default as default28 } from "./modules/icons/components/apps/IconCidj.js";
+import { default as default29 } from "./modules/icons/components/apps/IconCns.js";
+import { default as default30 } from "./modules/icons/components/apps/IconCollaborativeWall.js";
+import { default as default31 } from "./modules/icons/components/apps/IconCommunity.js";
+import { default as default32 } from "./modules/icons/components/apps/IconCompetences.js";
+import { default as default33 } from "./modules/icons/components/apps/IconConnecteurGenerique1.js";
+import { default as default34 } from "./modules/icons/components/apps/IconConnecteurGenerique2.js";
+import { default as default35 } from "./modules/icons/components/apps/IconConversation.js";
+import { default as default36 } from "./modules/icons/components/apps/IconDirectory.js";
+import { default as default37 } from "./modules/icons/components/apps/IconEducagri.js";
+import { default as default38 } from "./modules/icons/components/apps/IconEdumedia.js";
+import { default as default39 } from "./modules/icons/components/apps/IconEdumoov.js";
+import { default as default40 } from "./modules/icons/components/apps/IconEdutheque.js";
+import { default as default41 } from "./modules/icons/components/apps/IconElectron.js";
+import { default as default42 } from "./modules/icons/components/apps/IconElyceepicardie.js";
+import { default as default43 } from "./modules/icons/components/apps/IconEsidoc.js";
+import { default as default44 } from "./modules/icons/components/apps/IconEuropress.js";
+import { default as default45 } from "./modules/icons/components/apps/IconExercizer.js";
+import { default as default46 } from "./modules/icons/components/apps/IconForms.js";
+import { default as default47 } from "./modules/icons/components/apps/IconForum.js";
+import { default as default48 } from "./modules/icons/components/apps/IconGepi.js";
+import { default as default49 } from "./modules/icons/components/apps/IconGlpi.js";
+import { default as default50 } from "./modules/icons/components/apps/IconHiboutheque.js";
+import { default as default51 } from "./modules/icons/components/apps/IconItopstore.js";
+import { default as default52 } from "./modules/icons/components/apps/IconKne.js";
+import { default as default53 } from "./modules/icons/components/apps/IconLeSiteTv.js";
+import { default as default54 } from "./modules/icons/components/apps/IconLemonde.js";
+import { default as default55 } from "./modules/icons/components/apps/IconLesechos.js";
+import { default as default56 } from "./modules/icons/components/apps/IconLibrary.js";
+import { default as default57 } from "./modules/icons/components/apps/IconLsu.js";
+import { default as default58 } from "./modules/icons/components/apps/IconMadmagz.js";
+import { default as default59 } from "./modules/icons/components/apps/IconMatholycee.js";
+import { default as default60 } from "./modules/icons/components/apps/IconMaxicours.js";
+import { default as default61 } from "./modules/icons/components/apps/IconMediacentre.js";
+import { default as default62 } from "./modules/icons/components/apps/IconMindmap.js";
+import { default as default63 } from "./modules/icons/components/apps/IconMonorientationenligne.js";
+import { default as default64 } from "./modules/icons/components/apps/IconMonstageenligne.js";
+import { default as default65 } from "./modules/icons/components/apps/IconMoodle.js";
+import { default as default66 } from "./modules/icons/components/apps/IconMuseefrancaisphoto.js";
+import { default as default67 } from "./modules/icons/components/apps/IconMyNetwork.js";
+import { default as default68 } from "./modules/icons/components/apps/IconNetvibes.js";
+import { default as default69 } from "./modules/icons/components/apps/IconNote.js";
+import { default as default70 } from "./modules/icons/components/apps/IconNotebook.js";
+import { default as default71 } from "./modules/icons/components/apps/IconNotes.js";
+import { default as default72 } from "./modules/icons/components/apps/IconOnisep.js";
+import { default as default73 } from "./modules/icons/components/apps/IconOnisep2.js";
+import { default as default74 } from "./modules/icons/components/apps/IconPad.js";
+import { default as default75 } from "./modules/icons/components/apps/IconPages.js";
+import { default as default76 } from "./modules/icons/components/apps/IconParametrage.js";
+import { default as default77 } from "./modules/icons/components/apps/IconParametrages.js";
+import { default as default78 } from "./modules/icons/components/apps/IconParaschool.js";
+import { default as default79 } from "./modules/icons/components/apps/IconParcours.js";
+import { default as default80 } from "./modules/icons/components/apps/IconPearltrees.js";
+import { default as default81 } from "./modules/icons/components/apps/IconPicardieCursus.js";
+import { default as default82 } from "./modules/icons/components/apps/IconPlaceholder.js";
+import { default as default83 } from "./modules/icons/components/apps/IconPoll.js";
+import { default as default84 } from "./modules/icons/components/apps/IconPresences.js";
+import { default as default85 } from "./modules/icons/components/apps/IconProeps.js";
+import { default as default86 } from "./modules/icons/components/apps/IconPronote.js";
+import { default as default87 } from "./modules/icons/components/apps/IconPublic.js";
+import { default as default88 } from "./modules/icons/components/apps/IconQwantJunior.js";
+import { default as default89 } from "./modules/icons/components/apps/IconQwant.js";
+import { default as default90 } from "./modules/icons/components/apps/IconRack.js";
+import { default as default91 } from "./modules/icons/components/apps/IconRbs.js";
+import { default as default92 } from "./modules/icons/components/apps/IconResidenceArtiste.js";
+import { default as default93 } from "./modules/icons/components/apps/IconRessourcesdepartementale91.js";
+import { default as default94 } from "./modules/icons/components/apps/IconSacoche.js";
+import { default as default95 } from "./modules/icons/components/apps/IconSchoolbook.js";
+import { default as default96 } from "./modules/icons/components/apps/IconScolinfo.js";
+import { default as default97 } from "./modules/icons/components/apps/IconScrapbook.js";
+import { default as default98 } from "./modules/icons/components/apps/IconSearchengine.js";
+import { default as default99 } from "./modules/icons/components/apps/IconSettingsClass.js";
+import { default as default100 } from "./modules/icons/components/apps/IconSharebigfiles.js";
+import { default as default101 } from "./modules/icons/components/apps/IconStatistics.js";
+import { default as default102 } from "./modules/icons/components/apps/IconStats.js";
+import { default as default103 } from "./modules/icons/components/apps/IconSuitcase.js";
+import { default as default104 } from "./modules/icons/components/apps/IconSupport.js";
+import { default as default105 } from "./modules/icons/components/apps/IconTimeline.js";
+import { default as default106 } from "./modules/icons/components/apps/IconTimelinegenerator.js";
+import { default as default107 } from "./modules/icons/components/apps/IconTurboself.js";
+import { default as default108 } from "./modules/icons/components/apps/IconUniversalis.js";
+import { default as default109 } from "./modules/icons/components/apps/IconUnstagepourtous.js";
+import { default as default110 } from "./modules/icons/components/apps/IconUserbook.js";
+import { default as default111 } from "./modules/icons/components/apps/IconVideo.js";
+import { default as default112 } from "./modules/icons/components/apps/IconVieScolaire.js";
+import { default as default113 } from "./modules/icons/components/apps/IconVisioconf.js";
+import { default as default114 } from "./modules/icons/components/apps/IconWebclasseur.js";
+import { default as default115 } from "./modules/icons/components/apps/IconWebsite.js";
+import { default as default116 } from "./modules/icons/components/apps/IconWiki.js";
+import { default as default117 } from "./modules/icons/components/apps/IconWorkspace.js";
+export {
+  default2 as IconAccount,
+  default3 as IconActualites,
+  default5 as IconAdmin,
+  default4 as IconAdminPortal,
+  default6 as IconAdmissionPostBac,
+  default7 as IconAgenda,
+  default8 as IconAppointments,
+  default9 as IconArchive,
+  default10 as IconAssistance,
+  default11 as IconAssr,
+  default12 as IconAward,
+  default13 as IconBanquesavoir,
+  default14 as IconBcdi,
+  default15 as IconBiblionisep,
+  default16 as IconBlog,
+  default17 as IconBookmarkEmpty,
+  default18 as IconCahierDeTexte,
+  default19 as IconCahierTextes,
+  default20 as IconCalendar,
+  default21 as IconCanalNumerique,
+  default22 as IconCcn,
+  default23 as IconCerise,
+  default24 as IconCervoprint,
+  default25 as IconCharlemagne,
+  default26 as IconCharte,
+  default27 as IconChat,
+  default28 as IconCidj,
+  default29 as IconCns,
+  default30 as IconCollaborativeWall,
+  default31 as IconCommunity,
+  default32 as IconCompetences,
+  default33 as IconConnecteurGenerique1,
+  default34 as IconConnecteurGenerique2,
+  default35 as IconConversation,
+  default36 as IconDirectory,
+  default37 as IconEducagri,
+  default38 as IconEdumedia,
+  default39 as IconEdumoov,
+  default40 as IconEdutheque,
+  default41 as IconElectron,
+  default42 as IconElyceepicardie,
+  default43 as IconEsidoc,
+  default44 as IconEuropress,
+  default45 as IconExercizer,
+  default46 as IconForms,
+  default47 as IconForum,
+  default48 as IconGepi,
+  default49 as IconGlpi,
+  default50 as IconHiboutheque,
+  default51 as IconItopstore,
+  default52 as IconKne,
+  default53 as IconLeSiteTv,
+  default54 as IconLemonde,
+  default55 as IconLesechos,
+  default56 as IconLibrary,
+  default57 as IconLsu,
+  default58 as IconMadmagz,
+  default59 as IconMatholycee,
+  default60 as IconMaxicours,
+  default61 as IconMediacentre,
+  default62 as IconMindmap,
+  default63 as IconMonorientationenligne,
+  default64 as IconMonstageenligne,
+  default65 as IconMoodle,
+  default66 as IconMuseefrancaisphoto,
+  default67 as IconMyNetwork,
+  default68 as IconNetvibes,
+  default69 as IconNote,
+  default70 as IconNotebook,
+  default71 as IconNotes,
+  default72 as IconOnisep,
+  default73 as IconOnisep2,
+  default74 as IconPad,
+  default75 as IconPages,
+  default76 as IconParametrage,
+  default77 as IconParametrages,
+  default78 as IconParaschool,
+  default79 as IconParcours,
+  default80 as IconPearltrees,
+  default81 as IconPicardieCursus,
+  default82 as IconPlaceholder,
+  default83 as IconPoll,
+  default84 as IconPresences,
+  default85 as IconProeps,
+  default86 as IconPronote,
+  default87 as IconPublic,
+  default89 as IconQwant,
+  default88 as IconQwantJunior,
+  default90 as IconRack,
+  default91 as IconRbs,
+  default92 as IconResidenceArtiste,
+  default93 as IconRessourcesdepartementale91,
+  default94 as IconSacoche,
+  default95 as IconSchoolbook,
+  default96 as IconScolinfo,
+  default97 as IconScrapbook,
+  default98 as IconSearchengine,
+  default99 as IconSettingsClass,
+  default100 as IconSharebigfiles,
+  default101 as IconStatistics,
+  default102 as IconStats,
+  default103 as IconSuitcase,
+  default104 as IconSupport,
+  default105 as IconTimeline,
+  default106 as IconTimelinegenerator,
+  default107 as IconTurboself,
+  default108 as IconUniversalis,
+  default109 as IconUnstagepourtous,
+  default110 as IconUserbook,
+  default111 as IconVideo,
+  default112 as IconVieScolaire,
+  default113 as IconVisioconf,
+  default114 as IconWebclasseur,
+  default115 as IconWebsite,
+  default116 as IconWiki,
+  default117 as IconWorkspace
+};

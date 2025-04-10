@@ -1,0 +1,14 @@
+import { ReactNode } from "react";
+/**
+ * Menu Component to navigate between routes with react-router-dom
+ */
+export declare const Menu: {
+    ({ label, children, }: {
+        label: string;
+        children: ReactNode;
+    }): import("react/jsx-runtime").JSX.Element;
+    Item: ({ children }: {
+        children: ReactNode;
+    }) => import("react/jsx-runtime").JSX.Element;
+    Button: (props: Partial<import("./MenuButton").MenuButtonProps>) => import("react/jsx-runtime").JSX.Element;
+};

@@ -1,0 +1,324 @@
+import { jsx, Fragment, jsxs } from "react/jsx-runtime";
+import { useRef, useEffect, createContext, useContext, useState, useMemo } from "react";
+import { Send, Save } from "@edifice-ui/icons";
+import { useTranslation } from "react-i18next";
+import { f as useDirectory, A as Avatar, B as Button, H as Heading, c as Badge, d as useDate, a as useOdeClient, u as usePaths, E as EmptyScreen } from "./useDirectory-8dc7424c.js";
+import { useQueries } from "@tanstack/react-query";
+import { odeServices } from "edifice-ts-client";
+import "clsx";
+import "dayjs";
+const useAutosizeTextarea = (autoFocus) => {
+  const ref = useRef(null), resizeTextarea = () => {
+    if (ref.current) {
+      ref.current.style.height = "auto";
+      const scrollHeight = ref.current.scrollHeight;
+      ref.current.style.height = `${scrollHeight}px`;
+    }
+  };
+  return useEffect(() => {
+    var _a;
+    resizeTextarea(), autoFocus && ((_a = ref.current) == null || _a.focus());
+  }), [ref, (event) => {
+    event.currentTarget.setSelectionRange(event.currentTarget.value.length + 1, event.currentTarget.value.length + 1);
+  }, resizeTextarea];
+}, CommentContext = /* @__PURE__ */ createContext(null), useCommentsContext = () => {
+  const context = useContext(CommentContext);
+  if (!context)
+    throw new Error("Cannot be rendered outside the Card component");
+  return context;
+}, CommentAvatar = ({
+  id
+}) => {
+  const {
+    getAvatarURL
+  } = useDirectory(), {
+    t
+  } = useTranslation();
+  return /* @__PURE__ */ jsx(Avatar, { alt: t("comment.author.avatar"), size: "sm", src: getAvatarURL(id, "user"), variant: "circle" });
+}, TextCounter = ({
+  content,
+  maxLength
+}) => /* @__PURE__ */ jsx("p", { className: "small text-gray-700 p-2 text-end", children: `${(content == null ? void 0 : content.length) || 0} / ${maxLength}` }), CommentForm = ({
+  userId
+}) => {
+  const {
+    t
+  } = useTranslation(), {
+    content,
+    handleChangeContent,
+    handleCreateComment,
+    options,
+    type
+  } = useCommentsContext(), [ref, onFocus] = useAutosizeTextarea();
+  return /* @__PURE__ */ jsx(Fragment, { children: type === "edit" && /* @__PURE__ */ jsxs("div", { className: "border rounded-3 p-12 pb-8 d-flex gap-12 bg-gray-200", children: [
+    /* @__PURE__ */ jsx(CommentAvatar, { id: userId }),
+    /* @__PURE__ */ jsxs("div", { className: "d-flex flex-column flex-fill gap-4", children: [
+      /* @__PURE__ */ jsx("textarea", { id: "add-comment", ref, value: content, className: "form-control", placeholder: t("comment.placeholder.textarea"), maxLength: options.maxCommentLength, onChange: handleChangeContent, onFocus, rows: 1, style: {
+        resize: "none",
+        overflow: "hidden"
+      } }),
+      /* @__PURE__ */ jsxs("div", { className: "d-flex justify-content-end align-items-center gap-4", children: [
+        /* @__PURE__ */ jsx(TextCounter, { content, maxLength: options.maxCommentLength }),
+        /* @__PURE__ */ jsx(Button, { type: "submit", variant: "ghost", size: "sm", leftIcon: /* @__PURE__ */ jsx(Send, {}), disabled: !(content != null && content.length), onClick: () => handleCreateComment(content), children: t("comment.post") })
+      ] })
+    ] })
+  ] }) });
+}, CommentHeader = ({
+  title
+}) => /* @__PURE__ */ jsx(Heading, { level: "h3", headingStyle: "h3", children: title }), BadgeProfile = ({
+  profile
+}) => {
+  const {
+    t
+  } = useTranslation();
+  return /* @__PURE__ */ jsx(Badge, { variant: {
+    type: "user",
+    profile,
+    background: !0
+  }, children: ((profile2) => t(`${profile2}`))(profile) });
+}, CommentDate = ({
+  createdAt,
+  updatedAt
+}) => {
+  const {
+    fromNow
+  } = useDate(), {
+    t
+  } = useTranslation(), getPublishedDate = (date) => t("comment.publish.date", {
+    date: fromNow(date)
+  }), getUpdatedDate = (date) => t("comment.update.date", {
+    date: fromNow(date)
+  });
+  return updatedAt ? /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx("span", { className: "small text-gray-700", children: "|" }),
+    /* @__PURE__ */ jsx("span", { className: "small text-gray-700", children: getUpdatedDate(updatedAt) })
+  ] }) : createdAt ? /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx("span", { className: "small text-gray-700", children: "|" }),
+    /* @__PURE__ */ jsx("span", { className: "small text-gray-700", children: getPublishedDate(createdAt) })
+  ] }) : null;
+}, CommentTitle = ({
+  children
+}) => /* @__PURE__ */ jsx("span", { className: "small text-gray-800", children }), Comment = ({
+  comment,
+  userId,
+  profile
+}) => {
+  const [value, setValue] = useState(""), {
+    id,
+    authorId,
+    authorName,
+    createdAt,
+    updatedAt,
+    comment: content
+  } = comment, [ref, onFocus, resizeTextarea] = useAutosizeTextarea(!0), {
+    t
+  } = useTranslation(), {
+    editCommentId,
+    options,
+    type,
+    handleDeleteComment: onDeleteComment,
+    handleModifyComment,
+    handleReset,
+    handleUpdateComment
+  } = useCommentsContext(), isEditing = editCommentId === comment.id, handleChangeContent = (event) => {
+    resizeTextarea(), setValue(event.target.value);
+  };
+  return /* @__PURE__ */ jsxs("div", { className: `${isEditing ? "border rounded-3 p-12 pb-8 d-flex gap-12 bg-gray-200  my-16" : "border rounded-3 p-12 pb-8 d-flex gap-12 mt-16"}`, children: [
+    /* @__PURE__ */ jsx(CommentAvatar, { id: authorId }),
+    /* @__PURE__ */ jsxs("div", { className: "flex flex-fill", children: [
+      /* @__PURE__ */ jsxs("div", { className: "d-flex align-items-center gap-12", children: [
+        /* @__PURE__ */ jsx(CommentTitle, { children: authorName }),
+        /* @__PURE__ */ jsx(BadgeProfile, { profile }),
+        /* @__PURE__ */ jsx(CommentDate, { createdAt, updatedAt })
+      ] }),
+      isEditing ? /* @__PURE__ */ jsxs(Fragment, { children: [
+        /* @__PURE__ */ jsx("div", { className: "mt-8 mb-4", children: /* @__PURE__ */ jsx("textarea", { id: "update-comment", ref, value, className: "form-control", placeholder: t("comment.placeholder"), maxLength: options.maxCommentLength, onChange: handleChangeContent, rows: 1, style: {
+          resize: "none",
+          overflow: "hidden"
+        }, onFocus }) }),
+        /* @__PURE__ */ jsxs("div", { className: "d-flex justify-content-between align-items-center", children: [
+          /* @__PURE__ */ jsx(Button, { variant: "ghost", color: "tertiary", size: "sm", onClick: handleReset, children: t("comment.cancel") }),
+          /* @__PURE__ */ jsxs("div", { className: "d-flex justify-content-end align-items-center gap-4", children: [
+            /* @__PURE__ */ jsx(TextCounter, { content: value, maxLength: options.maxCommentLength }),
+            /* @__PURE__ */ jsx(Button, { type: "submit", variant: "ghost", size: "sm", leftIcon: /* @__PURE__ */ jsx(Save, {}), disabled: !(content != null && content.length), onClick: () => handleUpdateComment(value), children: t("comment.save") })
+          ] })
+        ] })
+      ] }) : /* @__PURE__ */ jsxs(Fragment, { children: [
+        /* @__PURE__ */ jsx("div", { className: "mt-8 mb-4", children: content }),
+        userId === authorId && type === "edit" && /* @__PURE__ */ jsxs("div", { className: "ms-n8", children: [
+          /* @__PURE__ */ jsx(Button, { variant: "ghost", color: "tertiary", size: "sm", onClick: () => {
+            handleModifyComment(comment.id), setValue(content);
+          }, children: t("comment.edit") }),
+          /* @__PURE__ */ jsx(Button, { variant: "ghost", color: "tertiary", size: "sm", onClick: () => onDeleteComment(id), children: t("comment.remove") })
+        ] })
+      ] })
+    ] })
+  ] }, id);
+};
+function CommentList() {
+  const {
+    user
+  } = useOdeClient(), {
+    comments,
+    profiles
+  } = useCommentsContext();
+  return comments == null ? void 0 : comments.map((comment) => {
+    var _a;
+    const {
+      authorId
+    } = comment, profile = ((_a = profiles == null ? void 0 : profiles.find((user2) => (user2 == null ? void 0 : user2.userId) === authorId)) == null ? void 0 : _a.profile) ?? "Guest";
+    return /* @__PURE__ */ jsx(Comment, { comment, profile, userId: user == null ? void 0 : user.userId }, comment.id);
+  });
+}
+const DEFAULT_MAX_COMMENT_LENGTH = 200, DEFAULT_MAX_REPLY_LENGTH = 200, DEFAULT_MAX_COMMENTS = 4, DEFAULT_ADD_COMMENTS = 5, DEFAULT_MAX_REPLIES = 5, useProfileQueries = (usersIds) => useQueries({
+  queries: usersIds.map((userId) => ({
+    queryKey: ["post", userId],
+    queryFn: async () => {
+      const data = await odeServices.session().getUserProfile({
+        params: {
+          id: userId
+        }
+      });
+      return {
+        userId,
+        profile: data[0]
+      };
+    },
+    staleTime: 1 / 0
+  })),
+  combine: (results2) => ({
+    data: results2.map((result) => result.data),
+    isLoading: results2.some((result) => result.isLoading)
+  })
+}), useComments = ({
+  defaultComments,
+  options,
+  type,
+  callbacks
+}) => {
+  const [content, setContent] = useState(""), [editCommentId, setEditCommentId] = useState(null), [commentLimit, setCommentLimit] = useState(options.maxComments), [imagePath] = usePaths(), {
+    t
+  } = useTranslation(), {
+    user
+  } = useOdeClient(), emptyscreenPath = `${imagePath}/emptyscreen/illu-pad.svg`, usersIds = Array.from(new Set(defaultComments == null ? void 0 : defaultComments.map((comment) => comment.authorId))), profilesQueries = useProfileQueries(usersIds), comments = useMemo(
+    () => type === "edit" ? (defaultComments == null ? void 0 : defaultComments.sort((a, b) => b.createdAt - a.createdAt).slice(0, commentLimit)) ?? [] : (defaultComments == null ? void 0 : defaultComments.sort((a, b) => b.createdAt - a.createdAt)) ?? [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [commentLimit, defaultComments]
+  ), commentsCount = (comments == null ? void 0 : comments.length) ?? 0, defaultCommentsCount = (defaultComments == null ? void 0 : defaultComments.length) ?? 0, title = defaultCommentsCount && defaultCommentsCount > 1 ? t("comment.several", {
+    number: defaultCommentsCount
+  }) : t("comment.little", {
+    number: defaultCommentsCount
+  });
+  return {
+    profilesQueries,
+    content,
+    title,
+    user,
+    emptyscreenPath,
+    defaultCommentsCount,
+    comments,
+    editCommentId,
+    setEditCommentId,
+    commentsCount,
+    t,
+    handleMoreComments: () => {
+      const newLimit = (comments == null ? void 0 : comments.length) + (options.additionalComments ?? 5);
+      newLimit !== comments.length && setCommentLimit(newLimit);
+    },
+    handleChangeContent: (event) => {
+      setContent(event.target.value);
+    },
+    handleDeleteComment: (id) => {
+      type === "edit" && (callbacks == null || callbacks.delete(id));
+    },
+    handleCreateComment: (content2) => {
+      type === "edit" && (callbacks == null || callbacks.post(content2)), setContent("");
+    },
+    handleModifyComment: (commentId) => {
+      setEditCommentId(commentId);
+    },
+    handleUpdateComment: (comment) => {
+      editCommentId && (type === "edit" && (callbacks == null || callbacks.put({
+        comment,
+        commentId: editCommentId
+      })), setEditCommentId(null));
+    },
+    handleReset: () => {
+      setContent(""), editCommentId && setEditCommentId(null);
+    }
+  };
+}, CommentProvider = ({
+  comments: defaultComments,
+  options: commentOptions,
+  ...props
+}) => {
+  const options = {
+    maxCommentLength: DEFAULT_MAX_COMMENT_LENGTH,
+    maxReplyLength: DEFAULT_MAX_REPLY_LENGTH,
+    maxComments: DEFAULT_MAX_COMMENTS,
+    additionalComments: DEFAULT_ADD_COMMENTS,
+    maxReplies: DEFAULT_MAX_REPLIES,
+    ...commentOptions
+  }, {
+    type
+  } = props, {
+    profilesQueries,
+    content,
+    title,
+    user,
+    emptyscreenPath,
+    defaultCommentsCount,
+    comments,
+    editCommentId,
+    setEditCommentId,
+    commentsCount,
+    t,
+    handleMoreComments,
+    handleChangeContent,
+    handleDeleteComment,
+    handleCreateComment,
+    handleModifyComment,
+    handleUpdateComment,
+    handleReset
+  } = useComments({
+    type,
+    defaultComments,
+    callbacks: type == "edit" ? props.callbacks : null,
+    options
+  }), values = useMemo(
+    () => ({
+      comments,
+      content,
+      profiles: profilesQueries.data,
+      editCommentId,
+      options,
+      type,
+      setEditCommentId,
+      handleCreateComment,
+      handleModifyComment,
+      handleUpdateComment,
+      handleDeleteComment,
+      handleReset,
+      handleChangeContent
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [comments, content, editCommentId, profilesQueries, options]
+  );
+  return /* @__PURE__ */ jsx(CommentContext.Provider, { value: values, children: /* @__PURE__ */ jsxs("div", { className: "my-24", children: [
+    /* @__PURE__ */ jsx(CommentHeader, { title }),
+    /* @__PURE__ */ jsxs("div", { className: "my-24", children: [
+      user && /* @__PURE__ */ jsx(CommentForm, { userId: user.userId }),
+      profilesQueries.isLoading ? null : /* @__PURE__ */ jsxs(Fragment, { children: [
+        /* @__PURE__ */ jsx(CommentList, {}),
+        commentsCount !== defaultCommentsCount && /* @__PURE__ */ jsx(Button, { variant: "ghost", color: "tertiary", onClick: handleMoreComments, className: "my-16", children: t("comment.more") })
+      ] })
+    ] }),
+    !commentsCount && type === "edit" && /* @__PURE__ */ jsxs("div", { className: "comments-emptyscreen", children: [
+      /* @__PURE__ */ jsx("div", { className: "comments-emptyscreen-wrapper", children: /* @__PURE__ */ jsx(EmptyScreen, { imageSrc: emptyscreenPath, size: 150 }) }),
+      /* @__PURE__ */ jsx("p", { children: t("comment.emptyscreen") })
+    ] })
+  ] }) });
+}, CommentProvider$1 = CommentProvider;
+export {
+  CommentProvider$1 as CommentProvider
+};

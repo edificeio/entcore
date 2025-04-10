@@ -1,0 +1,17 @@
+/// <reference types="react" />
+import { CommentOptions, CommentProps, CommentType, UserProfileResult } from "../types";
+export declare const CommentContext: import("react").Context<{
+    comments: CommentProps[] | undefined;
+    content: string;
+    editCommentId: string | null;
+    profiles: (UserProfileResult | undefined)[];
+    options: Partial<CommentOptions>;
+    type: CommentType;
+    setEditCommentId: (value: string | null) => void;
+    handleModifyComment: (commentId: string) => void;
+    handleChangeContent: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
+    handleCreateComment: (content: string) => void;
+    handleUpdateComment: (comment: string) => void;
+    handleDeleteComment: (id: string) => void;
+    handleReset: () => void;
+} | null>;

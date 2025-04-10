@@ -1,0 +1,40 @@
+import { GetEmojiUrl } from '../components/emoji/BaseEmojiProps';
+import { EmojiClickData, EmojiStyle, SkinTonePickerLocation, SkinTones, SuggestionMode, Theme } from '../types/exposedTypes';
+import { CategoriesConfig } from './categoryConfig';
+import { CustomEmoji } from './customEmojiConfig';
+export declare const DEFAULT_SEARCH_PLACEHOLDER = "Search";
+export declare function mergeConfig(userConfig?: PickerConfig): PickerConfigInternal;
+export declare function basePickerConfig(): PickerConfigInternal;
+export declare type PickerConfigInternal = {
+    emojiVersion: string | null;
+    searchPlaceHolder: string;
+    searchPlaceholder: string;
+    defaultSkinTone: SkinTones;
+    skinTonesDisabled: boolean;
+    autoFocusSearch: boolean;
+    emojiStyle: EmojiStyle;
+    categories: CategoriesConfig;
+    onEmojiClick: (emoji: EmojiClickData, event: MouseEvent) => void;
+    theme: Theme;
+    suggestedEmojisMode: SuggestionMode;
+    lazyLoadEmojis: boolean;
+    previewConfig: PreviewConfig;
+    height: PickerDimensions;
+    width: PickerDimensions;
+    getEmojiUrl: GetEmojiUrl;
+    searchDisabled: boolean;
+    skinTonePickerLocation: SkinTonePickerLocation;
+    unicodeToHide: Set<string>;
+    customEmojis: CustomEmoji[];
+};
+export declare type PreviewConfig = {
+    defaultEmoji: string;
+    defaultCaption: string;
+    showPreview: boolean;
+};
+declare type ConfigExternal = {
+    previewConfig: Partial<PreviewConfig>;
+} & Omit<PickerConfigInternal, 'previewConfig' | 'unicodeToHide'>;
+export declare type PickerConfig = Partial<ConfigExternal>;
+export declare type PickerDimensions = string | number;
+export {};

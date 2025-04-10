@@ -1,0 +1,145 @@
+var p = Object.defineProperty;
+var d = (i, t, s) => t in i ? p(i, t, { enumerable: !0, configurable: !0, writable: !0, value: s }) : i[t] = s;
+var n = (i, t, s) => d(i, typeof t != "symbol" ? t + "" : t, s);
+const o = class o {
+  constructor() {
+    n(this, "wordExtensions", /* @__PURE__ */ new Set());
+    n(this, "excelExtensions", /* @__PURE__ */ new Set());
+    n(this, "pptExtensions", /* @__PURE__ */ new Set());
+    n(this, "fileExtensionMap", /* @__PURE__ */ new Map());
+    n(this, "csvContentType", /* @__PURE__ */ new Set());
+    n(this, "csvExtensions", /* @__PURE__ */ new Set());
+    n(this, "txtExtensions", /* @__PURE__ */ new Set());
+    n(this, "mdExtensions", /* @__PURE__ */ new Set());
+    n(this, "PDF", "application/pdf");
+    n(this, "OCTET_STREAM", "application/octet-stream");
+    this.txtExtensions.add("txt"), this.mdExtensions.add("md"), this.wordExtensions.add("doc"), this.wordExtensions.add("dot"), this.wordExtensions.add("docx"), this.wordExtensions.add("dotx"), this.wordExtensions.add("docm"), this.wordExtensions.add("dotm"), this.wordExtensions.add("odt"), this.wordExtensions.add("ott"), this.wordExtensions.add("oth"), this.wordExtensions.add("odm"), this.excelExtensions.add("xls"), this.excelExtensions.add("xlt"), this.excelExtensions.add("xla"), this.excelExtensions.add("xlsx"), this.excelExtensions.add("xltx"), this.excelExtensions.add("xlsm"), this.excelExtensions.add("xltm"), this.excelExtensions.add("xlam"), this.excelExtensions.add("xlsb"), this.excelExtensions.add("ods"), this.excelExtensions.add("ots"), this.pptExtensions.add("ppt"), this.pptExtensions.add("pot"), this.pptExtensions.add("pps"), this.pptExtensions.add("ppa"), this.pptExtensions.add("pptx"), this.pptExtensions.add("potx"), this.pptExtensions.add("ppsx"), this.pptExtensions.add("ppam"), this.pptExtensions.add("pptm"), this.pptExtensions.add("potm"), this.pptExtensions.add("ppsm"), this.pptExtensions.add("odp"), this.pptExtensions.add("otp"), this.csvExtensions.add("csv"), this.fileExtensionMap.set("doc", "application/msword"), this.fileExtensionMap.set("dot", "application/msword"), this.fileExtensionMap.set(
+      "docx",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    ), this.fileExtensionMap.set(
+      "dotx",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.template"
+    ), this.fileExtensionMap.set(
+      "docm",
+      "application/vnd.ms-word.document.macroEnabled.12"
+    ), this.fileExtensionMap.set(
+      "dotm",
+      "application/vnd.ms-word.template.macroEnabled.12"
+    ), this.fileExtensionMap.set("xls", "application/vnd.ms-excel"), this.fileExtensionMap.set("xlt", "application/vnd.ms-excel"), this.fileExtensionMap.set("xla", "application/vnd.ms-excel"), this.fileExtensionMap.set(
+      "xlsx",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    ), this.fileExtensionMap.set(
+      "xltx",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.template"
+    ), this.fileExtensionMap.set(
+      "xlsm",
+      "application/vnd.ms-excel.sheet.macroEnabled.12"
+    ), this.fileExtensionMap.set(
+      "xltm",
+      "application/vnd.ms-excel.template.macroEnabled.12"
+    ), this.fileExtensionMap.set(
+      "xlam",
+      "application/vnd.ms-excel.addin.macroEnabled.12"
+    ), this.fileExtensionMap.set(
+      "xlsb",
+      "application/vnd.ms-excel.sheet.binary.macroEnabled.12"
+    ), this.fileExtensionMap.set("ppt", "application/vnd.ms-powerpoint"), this.fileExtensionMap.set("pot", "application/vnd.ms-powerpoint"), this.fileExtensionMap.set("pps", "application/vnd.ms-powerpoint"), this.fileExtensionMap.set("ppa", "application/vnd.ms-powerpoint"), this.fileExtensionMap.set(
+      "pptx",
+      "application/vnd.openxmlformats-officedocument.presentationml.presentation"
+    ), this.fileExtensionMap.set(
+      "potx",
+      "application/vnd.openxmlformats-officedocument.presentationml.template"
+    ), this.fileExtensionMap.set(
+      "ppsx",
+      "application/vnd.openxmlformats-officedocument.presentationml.slideshow"
+    ), this.fileExtensionMap.set(
+      "ppam",
+      "application/vnd.ms-powerpoint.addin.macroEnabled.12"
+    ), this.fileExtensionMap.set(
+      "pptm",
+      "application/vnd.ms-powerpoint.presentation.macroEnabled.12"
+    ), this.fileExtensionMap.set(
+      "potm",
+      "application/vnd.ms-powerpoint.presentation.macroEnabled.12"
+    ), this.fileExtensionMap.set(
+      "ppsm",
+      "application/vnd.ms-powerpoint.slideshow.macroEnabled.12"
+    ), this.fileExtensionMap.set("odt", "application/vnd.oasis.opendocument.text"), this.fileExtensionMap.set(
+      "ott",
+      "application/vnd.oasis.opendocument.text-template"
+    ), this.fileExtensionMap.set(
+      "oth",
+      "application/vnd.oasis.opendocument.text-web"
+    ), this.fileExtensionMap.set(
+      "odm",
+      "application/vnd.oasis.opendocument.text-master"
+    ), this.fileExtensionMap.set(
+      "odg",
+      "application/vnd.oasis.opendocument.graphics"
+    ), this.fileExtensionMap.set(
+      "otg",
+      "application/vnd.oasis.opendocument.graphics-template"
+    ), this.fileExtensionMap.set(
+      "odp",
+      "application/vnd.oasis.opendocument.presentation"
+    ), this.fileExtensionMap.set(
+      "otp",
+      "application/vnd.oasis.opendocument.presentation-template"
+    ), this.fileExtensionMap.set(
+      "ods",
+      "application/vnd.oasis.opendocument.spreadsheet"
+    ), this.fileExtensionMap.set(
+      "ots",
+      "application/vnd.oasis.opendocument.spreadsheet-template"
+    ), this.fileExtensionMap.set(
+      "odc",
+      "application/vnd.oasis.opendocument.chart"
+    ), this.fileExtensionMap.set(
+      "odf",
+      "application/vnd.oasis.opendocument.formula"
+    ), this.fileExtensionMap.set(
+      "odb",
+      "application/vnd.oasis.opendocument.database"
+    ), this.fileExtensionMap.set(
+      "odi",
+      "application/vnd.oasis.opendocument.image"
+    ), this.fileExtensionMap.set("oxt", "application/vnd.openofficeorg.extension"), this.fileExtensionMap.set("txt", "text/plain"), this.fileExtensionMap.set("md", "text/markdown"), this.csvContentType.add("text/comma-separated-values"), this.csvContentType.add("text/csv"), this.csvContentType.add("application/csv");
+  }
+  getContentTypeForExtension(t) {
+    return this.fileExtensionMap.has(t) ? this.fileExtensionMap.get(t) ?? null : null;
+  }
+  getExtensionForContentType(t) {
+    for (const s of Array.from(this.fileExtensionMap.keys()))
+      if ((this.fileExtensionMap.get(s) || "").toLowerCase() == (t || "").toLowerCase())
+        return s;
+    return null;
+  }
+  isWordLike(t, s) {
+    const e = this.getExtensionForContentType(t);
+    return e ? this.wordExtensions.has(e) : t == this.OCTET_STREAM && s ? this.wordExtensions.has(s) : !1;
+  }
+  isExcelLike(t, s) {
+    const e = this.getExtensionForContentType(t);
+    return e ? this.excelExtensions.has(e) : t == this.OCTET_STREAM && s ? this.excelExtensions.has(s) : !1;
+  }
+  isCsvLike(t, s) {
+    return this.csvContentType.has(t) ? !0 : t == this.OCTET_STREAM && s ? this.csvExtensions.has(s) : !1;
+  }
+  isPowerpointLike(t, s) {
+    const e = this.getExtensionForContentType(t);
+    return e ? this.pptExtensions.has(e) : t == this.OCTET_STREAM && s ? this.pptExtensions.has(s) : !1;
+  }
+  isTxtLike(t, s) {
+    const e = this.getExtensionForContentType(t);
+    return e ? this.txtExtensions.has(e) : t == this.OCTET_STREAM && s ? this.txtExtensions.has(s) : !1;
+  }
+  isMdLike(t, s) {
+    const e = this.getExtensionForContentType(t);
+    return e ? this.mdExtensions.has(e) : t == this.OCTET_STREAM && s ? this.mdExtensions.has(s) : !1;
+  }
+};
+n(o, "INSTANCE", new o());
+let a = o;
+export {
+  a as MimeTypeUtils
+};

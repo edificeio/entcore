@@ -1,0 +1,15 @@
+import { StringUtils as i } from "../string-utils/string-utils.js";
+const s = (e, r) => {
+  const t = "virtualID";
+  if (!Object.hasOwnProperty.apply(e, [t])) {
+    const a = r ?? `${i.generateVirtualId()}#${e.size}`;
+    Object.defineProperty(e, t, {
+      value: a,
+      writable: !1
+    });
+  }
+  return e[t];
+};
+export {
+  s as getOrGenerateBlobId
+};

@@ -1,0 +1,6 @@
+import { ReactNode } from "react";
+export interface VisuallyHiddenProps {
+    children: ReactNode;
+}
+declare const VisuallyHidden: import("react").ForwardRefExoticComponent<VisuallyHiddenProps & import("react").RefAttributes<HTMLSpanElement>>;
+export default VisuallyHidden;

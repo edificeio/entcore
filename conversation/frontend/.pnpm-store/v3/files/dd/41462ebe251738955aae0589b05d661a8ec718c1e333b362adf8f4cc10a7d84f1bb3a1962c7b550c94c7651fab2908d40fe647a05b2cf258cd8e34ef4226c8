@@ -1,0 +1,34 @@
+import { jsx, jsxs } from "react/jsx-runtime";
+import { useId } from "react";
+import clsx from "clsx";
+import { useDropdownContext } from "./DropdownContext.js";
+import Radio from "../Radio/Radio.js";
+const DropdownRadioItem = ({
+  children,
+  value,
+  model,
+  onChange
+}) => {
+  const {
+    itemProps,
+    itemRefs,
+    isFocused
+  } = useDropdownContext(), {
+    onMenuItemKeyDown,
+    onMenuItemMouseEnter
+  } = itemProps, id = useId(), radioProps = {
+    value,
+    model,
+    checked: value === model,
+    readOnly: !0
+  }, dropdownRadioItem = clsx("dropdown-item c-pointer", {
+    focus: isFocused === id
+  });
+  return /* @__PURE__ */ jsx("div", { id, ref: (el) => itemRefs.current[id] = el, role: "menuitemradio", "aria-checked": value === model, onMouseUp: () => onChange(value), onKeyDown: (event) => onMenuItemKeyDown(event, () => onChange(value)), onMouseEnter: onMenuItemMouseEnter, tabIndex: value === model ? 0 : -1, className: dropdownRadioItem, children: /* @__PURE__ */ jsxs("div", { className: "d-flex gap-8 align-items-center justify-content-between position-relative", children: [
+    children,
+    /* @__PURE__ */ jsx(Radio, { ...radioProps, className: "position-absolute start-0 end-0 top-0 bottom-0 opacity-0" })
+  ] }) });
+};
+export {
+  DropdownRadioItem as default
+};

@@ -1,0 +1,50 @@
+import { jsxs, Fragment, jsx } from "react/jsx-runtime";
+import { useState, useMemo, useCallback, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import SvgIconTextColor from "../../../icons/components/IconTextColor.js";
+import { useEditorContext } from "../../hooks/useEditorContext.js";
+import { DefaultPalette, AccessiblePalette } from "../../../../components/ColorPicker/ColorPalette.js";
+import Tooltip from "../../../../components/Tooltip/Tooltip.js";
+import IconButton from "../../../../components/Button/IconButton.js";
+import Dropdown from "../../../../components/Dropdown/Dropdown.js";
+import ColorPicker from "../../../../components/ColorPicker/ColorPicker.js";
+const EditorToolbarTextColor = ({
+  triggerProps,
+  itemRefs
+}) => {
+  const {
+    t
+  } = useTranslation(), {
+    editor
+  } = useEditorContext(), [color, setColor] = useState("#4A4A4A"), isActive = useMemo(
+    () => editor == null ? void 0 : editor.isActive("textStyle", {
+      color: /^#([0-9a-f]{3}){1,2}$/i
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [editor, editor == null ? void 0 : editor.state]
+  ), applyColor = useCallback((value) => {
+    value === color ? (setColor(""), editor == null || editor.chain().focus().unsetColor().run()) : (setColor(value), editor == null || editor.chain().focus().setColor(value).run());
+  }, [color, editor]);
+  useEffect(() => {
+    const textStyle = editor == null ? void 0 : editor.getAttributes("textStyle");
+    setColor((textStyle == null ? void 0 : textStyle.color) ?? "#4A4A4A");
+  }, [editor, editor == null ? void 0 : editor.state]);
+  const palettes = [{
+    ...DefaultPalette,
+    label: t("tiptap.toolbar.color.text")
+  }, {
+    ...AccessiblePalette,
+    label: t("tiptap.toolbar.color.a13y"),
+    tooltip: {
+      message: t("tiptap.toolbar.color.a13y.hint"),
+      placement: "right"
+    }
+  }];
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx(Tooltip, { message: t("tiptap.toolbar.color.text"), placement: "top", children: /* @__PURE__ */ jsx(IconButton, { ...triggerProps, type: "button", variant: "ghost", color: "tertiary", icon: /* @__PURE__ */ jsx(SvgIconTextColor, {}), "aria-label": t("tiptap.toolbar.color.text"), className: isActive ? "selected" : "" }) }),
+    /* @__PURE__ */ jsx(Dropdown.Menu, { children: /* @__PURE__ */ jsx(ColorPicker, { ref: (el) => itemRefs.current["color-picker"] = el, model: color, palettes, onSuccess: (item) => applyColor(item.value) }) })
+  ] });
+};
+export {
+  EditorToolbarTextColor
+};

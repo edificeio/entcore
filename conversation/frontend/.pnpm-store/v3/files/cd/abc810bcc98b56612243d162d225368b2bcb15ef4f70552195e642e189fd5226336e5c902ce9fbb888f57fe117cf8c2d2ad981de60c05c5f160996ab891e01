@@ -1,0 +1,18 @@
+import { jsx as s } from "react/jsx-runtime";
+import { useOdeClient as n, usePaths as a, EmptyScreen as o } from "@edifice-ui/react";
+import { useTranslation as c } from "react-i18next";
+function l() {
+  const {
+    appCode: e
+  } = n(), [r] = a(), {
+    t
+  } = c();
+  return /* @__PURE__ */ s(o, { imageSrc: `${r}/emptyscreen/illu-search.svg`, imageAlt: t("explorer.emptyScreen.search.alt", {
+    ns: e
+  }), text: t("explorer.emptyScreen.search.text", {
+    ns: e
+  }) });
+}
+export {
+  l as default
+};

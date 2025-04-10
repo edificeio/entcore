@@ -1,0 +1,31 @@
+import { jsxs, Fragment, jsx } from "react/jsx-runtime";
+import { useTranslation } from "react-i18next";
+import SvgIconDeleteColumnHighlight from "../../../icons/components/IconDeleteColumnHighlight.js";
+import SvgIconDeleteColumn from "../../../icons/components/IconDeleteColumn.js";
+import SvgIconDeleteRowHighlight from "../../../icons/components/IconDeleteRowHighlight.js";
+import SvgIconDeleteRow from "../../../icons/components/IconDeleteRow.js";
+import SvgIconDelete from "../../../icons/components/IconDelete.js";
+import Tooltip from "../../../../components/Tooltip/Tooltip.js";
+import Dropdown from "../../../../components/Dropdown/Dropdown.js";
+const TableToolbarDelMenu = ({
+  editor
+}) => {
+  const {
+    t
+  } = useTranslation();
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx(Tooltip, { message: t("tiptap.table.toolbar.tooltip.del"), placement: "top", children: /* @__PURE__ */ jsx(Dropdown.Trigger, { variant: "ghost", label: t("tiptap.table.toolbar.del") }) }),
+    /* @__PURE__ */ jsxs(Dropdown.Menu, { children: [
+      /* @__PURE__ */ jsx(Dropdown.Item, { icon: /* @__PURE__ */ jsx(SvgIconDeleteRow, {}), onClick: () => editor == null ? void 0 : editor.chain().focus().deleteRow().run(), children: t("tiptap.table.toolbar.del.line") }, "del-row"),
+      /* @__PURE__ */ jsx(Dropdown.Item, { icon: /* @__PURE__ */ jsx(SvgIconDeleteColumn, {}), onClick: () => editor == null ? void 0 : editor.chain().focus().deleteColumn().run(), children: t("tiptap.table.toolbar.del.col") }, "del-col"),
+      /* @__PURE__ */ jsx(Dropdown.Separator, {}),
+      /* @__PURE__ */ jsx(Dropdown.Item, { icon: /* @__PURE__ */ jsx(SvgIconDeleteRowHighlight, {}), onClick: () => editor == null ? void 0 : editor.chain().focus().toggleHeaderRow().run(), children: t("tiptap.table.toolbar.del.line.head") }, "del-header-row"),
+      /* @__PURE__ */ jsx(Dropdown.Item, { icon: /* @__PURE__ */ jsx(SvgIconDeleteColumnHighlight, {}), onClick: () => editor == null ? void 0 : editor.chain().focus().toggleHeaderColumn().run(), children: t("tiptap.table.toolbar.del.col.head") }, "del-header-col"),
+      /* @__PURE__ */ jsx(Dropdown.Separator, {}),
+      /* @__PURE__ */ jsx(Dropdown.Item, { icon: /* @__PURE__ */ jsx(SvgIconDelete, {}), onClick: () => editor == null ? void 0 : editor.chain().focus().deleteTable().run(), children: t("tiptap.table.toolbar.del.array") }, "del-table")
+    ] })
+  ] });
+};
+export {
+  TableToolbarDelMenu
+};

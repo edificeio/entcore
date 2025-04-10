@@ -1,0 +1,49 @@
+/// <reference types="react" />
+import { TreeData } from "../../types";
+export interface TreeNodeProps_V1 {
+    /**
+     * Data
+     */
+    node: TreeData;
+    /**
+     * Show or hide section icon (folder icon)
+     */
+    showIcon?: boolean;
+    /**
+     * Nodes expanded (opened)
+     */
+    expandedNodes: Set<string>;
+    /**
+     * Siblings nodes
+     */
+    siblingsNodes?: React.MutableRefObject<Set<string>>;
+    /**
+     * External node selected to sync Treeview
+     */
+    selectedNodeId?: string;
+    /**
+     * Is treeview is an array
+     */
+    isTreeviewArray?: boolean;
+    /**
+     * Is node over
+     */
+    focused?: boolean;
+    /**
+     * Id of draggable node
+     */
+    draggedNodeId?: string | undefined;
+    /**
+     * Function to select item
+     */
+    handleItemClick: (nodeId: string) => void;
+    /**
+     * Function to fold / unfold node
+     */
+    handleToggleNode?: (nodeId: string) => void;
+    /**
+     * Function to handle secondary action
+     */
+    handleItemAction?: (nodeId: string) => void;
+}
+export declare const TreeNode: ({ node, showIcon, selectedNodeId, expandedNodes, siblingsNodes, draggedNodeId, handleItemClick, handleToggleNode, handleItemAction, }: TreeNodeProps_V1) => import("react/jsx-runtime").JSX.Element;

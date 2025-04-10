@@ -1,0 +1,1 @@
+export default function EmptyScreenNoContentInFolder(): JSX.Element | null;

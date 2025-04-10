@@ -1,0 +1,23 @@
+import { ViewsDetails } from '@edifice.io/client';
+/**
+ * Props for the ViewsModal component.
+ */
+export interface ViewsModalProps {
+    /**
+     * Details of the views to be displayed in the modal.
+     */
+    viewsDetails: ViewsDetails;
+    /**
+     * Boolean flag indicating whether the modal is open.
+     */
+    isOpen: boolean;
+    /**
+     * Callback function to be called when the modal is closed.
+     */
+    onModalClose: () => void;
+}
+declare const ViewsModal: {
+    ({ viewsDetails, isOpen, onModalClose, }: ViewsModalProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default ViewsModal;

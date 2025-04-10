@@ -1,0 +1,14 @@
+import { WorkspaceElement } from '@edifice.io/client';
+export interface VideoRecorderProps {
+    appCode: string;
+    caption?: string;
+    onSuccess?: (res: WorkspaceElement[]) => void;
+    onError: (error: string) => void;
+    onRecordUpdated?: (recordURL?: string) => void;
+    hideSaveAction?: boolean;
+}
+export interface VideoRecorderRef {
+    save: () => Promise<WorkspaceElement | undefined>;
+}
+declare const VideoRecorder: import('react').ForwardRefExoticComponent<VideoRecorderProps & import('react').RefAttributes<unknown>>;
+export default VideoRecorder;

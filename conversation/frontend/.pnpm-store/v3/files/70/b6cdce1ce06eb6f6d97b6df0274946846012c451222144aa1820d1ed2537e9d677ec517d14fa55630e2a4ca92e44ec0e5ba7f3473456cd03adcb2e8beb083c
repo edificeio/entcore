@@ -1,0 +1,46 @@
+import { ComponentPropsWithRef } from 'react';
+import { IWebApp } from '@edifice.io/client';
+export interface ImagePickerProps extends ComponentPropsWithRef<'input'> {
+    /**
+     * Accessible description of the add button
+     */
+    addButtonLabel: string;
+    /**
+     * Accessible description of the delete button
+     */
+    deleteButtonLabel: string;
+    /**
+     * Provide a default image as placeholder
+     */
+    src?: string;
+    /**
+     * Pathe element select in WorkSpace
+     */
+    libraryMedia: string;
+    /**
+     * Element select in WorkSpace
+     */
+    mediaLibraryRef: any;
+    /**
+     * To show the icon of an application
+     */
+    app?: IWebApp | undefined;
+    appCode?: string;
+    /**
+     * Optional class for styling purpose
+     */
+    className?: string;
+    /**
+     * Callback when uploading image
+     */
+    onUploadImage: (file: File | string) => void;
+    /**
+     * Callback when deleting image
+     */
+    onDeleteImage: () => void;
+}
+declare const ImagePicker: {
+    ({ addButtonLabel, deleteButtonLabel, src, className, mediaLibraryRef, libraryMedia, app, onUploadImage, onDeleteImage, }: ImagePickerProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default ImagePicker;

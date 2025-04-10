@@ -1,0 +1,19 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import clsx from "clsx";
+import VisuallyHidden from "../../VisuallyHidden/VisuallyHidden.js";
+function NavLink({
+  link,
+  className,
+  children,
+  translate,
+  ...restProps
+}) {
+  const classes = clsx("nav-link", className);
+  return /* @__PURE__ */ jsxs("a", { href: link, className: classes, ...restProps, children: [
+    children,
+    translate && /* @__PURE__ */ jsx(VisuallyHidden, { children: /* @__PURE__ */ jsx("span", { className: "nav-text", children: translate }) })
+  ] });
+}
+export {
+  NavLink
+};

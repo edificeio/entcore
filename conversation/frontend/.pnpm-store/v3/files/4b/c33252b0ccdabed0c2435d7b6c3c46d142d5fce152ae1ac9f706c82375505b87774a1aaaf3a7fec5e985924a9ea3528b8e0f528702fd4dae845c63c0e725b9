@@ -1,0 +1,17 @@
+import { Editor } from '@tiptap/react';
+/**
+ * Custom hook to manage MathsModal events in an editor.
+ * @param editor an instance
+ * @returns {
+ * `isOpen`: truthy boolean when MathsModal sholud be visible,
+ * `toggle`: an imperative function to toggle the `isOpen` value,
+ * `onCancel`: Cancel event handler,
+ * `onSuccess`: Success event handler (adds a formula to the editor content),
+ * }
+ */
+export declare const useMathsModal: (editor: Editor | null) => {
+    isOpen: boolean;
+    toggle: any;
+    onCancel: () => void;
+    onSuccess: (formulaEditor: string) => void;
+};

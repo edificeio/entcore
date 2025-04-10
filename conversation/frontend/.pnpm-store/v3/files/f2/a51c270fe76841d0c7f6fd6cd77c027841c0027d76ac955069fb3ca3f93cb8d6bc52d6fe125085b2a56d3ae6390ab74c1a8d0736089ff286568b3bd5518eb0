@@ -1,0 +1,32 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import SvgIconCode from "../../icons/components/IconCode.js";
+import FormControl from "../../../components/Form/FormControl.js";
+import TextArea from "../../../components/TextArea/TextArea.js";
+const Embed = ({
+  onSuccess
+}) => {
+  const {
+    t
+  } = useTranslation(), [htmlContent, setHTMLContent] = useState();
+  function handleContentChange(event) {
+    const HTMLContent = event.target.value;
+    setHTMLContent(HTMLContent), HTMLContent != null && HTMLContent.length ? onSuccess(HTMLContent) : onSuccess();
+  }
+  return /* @__PURE__ */ jsxs("div", { className: "d-flex flex-column flex-fill", children: [
+    /* @__PURE__ */ jsx("div", { className: "mb-32", children: t("bbm.embed.description") }),
+    /* @__PURE__ */ jsxs("div", { className: "mb-8 d-flex", children: [
+      /* @__PURE__ */ jsx(SvgIconCode, { className: "me-8" }),
+      t("bbm.embed.title")
+    ] }),
+    /* @__PURE__ */ jsx(FormControl, { id: "iframeContent", children: /* @__PURE__ */ jsx(TextArea, { size: "md", height: "sm", placeholder: t("bbm.embed.placeholder"), onChange: handleContentChange }) }),
+    !!(htmlContent != null && htmlContent.length) && /* @__PURE__ */ jsx("div", { className: "embed-preview mt-12", dangerouslySetInnerHTML: {
+      __html: htmlContent
+    } }),
+    !(htmlContent != null && htmlContent.length) && /* @__PURE__ */ jsx("div", { className: "embed-preview mt-12 d-flex align-items-center justify-content-center bg-gray-300 text-black-50 rounded-3", children: /* @__PURE__ */ jsx("strong", { children: t("bbm.embed.preview") }) })
+  ] });
+};
+export {
+  Embed as default
+};

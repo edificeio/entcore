@@ -1,0 +1,33 @@
+import { jsx } from "react/jsx-runtime";
+import { forwardRef } from "react";
+import clsx from "clsx";
+import noAvatar from "@edifice.io/bootstrap/dist/images/avatar/no-avatar.svg";
+import Image from "../Image/Image.js";
+const Avatar = /* @__PURE__ */ forwardRef(({
+  variant = "square",
+  size = "md",
+  alt,
+  src,
+  imgPlaceholder,
+  className,
+  ...restProps
+}, ref) => {
+  const placeholder = imgPlaceholder || noAvatar, classes = clsx("avatar", {
+    ...{
+      "avatar-xs": size === "xs",
+      "avatar-sm": size === "sm",
+      "avatar-md": size === "md",
+      "avatar-lg": size === "lg",
+      "avatar-xl": size === "xl"
+    },
+    ...{
+      square: variant === "square",
+      rounded: variant === "rounded",
+      "rounded-circle": variant === "circle"
+    }
+  }, className);
+  return /* @__PURE__ */ jsx("div", { ref, className: classes, children: /* @__PURE__ */ jsx(Image, { src: src || placeholder, alt, imgPlaceholder: placeholder, ...restProps }) });
+});
+export {
+  Avatar as default
+};

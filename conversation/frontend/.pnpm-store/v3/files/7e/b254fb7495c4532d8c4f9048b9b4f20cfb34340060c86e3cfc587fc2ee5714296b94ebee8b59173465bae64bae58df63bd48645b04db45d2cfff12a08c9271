@@ -1,0 +1,57 @@
+/// <reference types="react" />
+import { TreeData } from "../../types";
+export interface TreeViewHandlers_V1 {
+    unselectAll: () => void;
+    select: (nodeId: string) => void;
+}
+export interface TreeViewProps {
+    /**
+     * TreeNode data
+     */
+    data: TreeData | TreeData[];
+    /**
+     * Node ID used for navigation folders
+     */
+    selectedNodeId?: string;
+    /**
+     * Show Section Icon Folder
+     */
+    showIcon?: boolean;
+    /**
+     * Open all treeview nodes
+     */
+    allExpandedNodes?: boolean;
+    /**
+     * Pass draggeNode when you drag an element from another context (resource / folder)
+     */
+    draggedNode?: {
+        isOver: boolean;
+        overId: string | undefined;
+        isTreeview: boolean;
+    };
+    /**
+     * Callback function to provide selected item to parent component
+     */
+    onTreeItemClick?: (nodeId: string) => void;
+    /**
+     * Callback function to provide folded item to parent component
+     */
+    onTreeItemFold?: (nodeId: string) => void;
+    /**
+     * Callback function to provide unfolded item to parent component
+     */
+    onTreeItemUnfold?: (nodeId: string) => void;
+    /**
+     * Callback function to secondary action
+     */
+    onTreeItemAction?: (nodeId: string) => void;
+}
+/**
+ * @deprecated This component is deprecated and will be removed in future versions.
+ * Please use the Tree component instead.
+ */
+/**
+ * UI TreeView Component
+ */
+declare const TreeView: import("react").ForwardRefExoticComponent<TreeViewProps & import("react").RefAttributes<TreeViewHandlers_V1>>;
+export default TreeView;

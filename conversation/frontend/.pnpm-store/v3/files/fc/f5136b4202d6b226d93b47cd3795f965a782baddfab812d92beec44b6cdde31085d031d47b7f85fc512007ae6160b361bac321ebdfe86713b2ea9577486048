@@ -1,0 +1,8 @@
+import { IWebApp } from '@edifice.io/client';
+declare const BookmarkedApps: {
+    ({ data }: {
+        data: IWebApp[];
+    }): import("react/jsx-runtime").JSX.Element | import("react/jsx-runtime").JSX.Element[];
+    displayName: string;
+};
+export default BookmarkedApps;

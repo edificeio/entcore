@@ -1,0 +1,10 @@
+import { RefObject } from 'react';
+import { MediaLibraryRef } from '../../../multimedia';
+interface Props {
+    /** Ref to a MediaLibrary instance */
+    mediaLibraryRef: RefObject<MediaLibraryRef>;
+    /** API to open/close a Math modal. */
+    toggleMathsModal: () => void;
+}
+export declare const EditorToolbar: ({ mediaLibraryRef, toggleMathsModal }: Props) => import("react/jsx-runtime").JSX.Element;
+export {};

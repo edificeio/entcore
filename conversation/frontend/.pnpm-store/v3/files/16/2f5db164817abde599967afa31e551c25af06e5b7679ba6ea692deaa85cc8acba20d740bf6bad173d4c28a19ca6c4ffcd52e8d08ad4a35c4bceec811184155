@@ -1,0 +1,35 @@
+import { jsxs as h, Fragment as S, jsx as e } from "react/jsx-runtime";
+import { Suspense as A, lazy as x } from "react";
+import { Plus as O } from "@edifice-ui/icons";
+import { useToggle as P, useOdeClient as R, Button as y, LoadingScreen as I, isActionAvailable as k, BlogPublic as F } from "@edifice-ui/react";
+import { useTranslation as T } from "react-i18next";
+import { u as j, a as v, b as B, c as w, d as z, e as L, g as M } from "./index2.js";
+const N = /* @__PURE__ */ x(async () => await import("./ResourceModal.js"));
+function Q() {
+  const [c, s] = P(), a = j((t) => t.config), {
+    appCode: o
+  } = R(), {
+    t: l
+  } = T(o), {
+    clearSelectedItems: i,
+    clearSelectedIds: u
+  } = v(), {
+    data: r
+  } = B(a == null ? void 0 : a.actions), d = r == null ? void 0 : r.find((t) => t.id === "create"), n = w(), m = z(), p = L();
+  return d ? /* @__PURE__ */ h(S, { children: [
+    /* @__PURE__ */ e(y, { type: "button", color: "primary", variant: "filled", leftIcon: /* @__PURE__ */ e(O, {}), className: "ms-auto", onClick: () => {
+      if (o == "scrapbook") {
+        M({
+          searchParams: p,
+          folderId: n.id
+        });
+        return;
+      }
+      i(), u(), s();
+    }, children: l("explorer.create.title") }),
+    /* @__PURE__ */ e(A, { fallback: /* @__PURE__ */ e(I, {}), children: c && /* @__PURE__ */ e(N, { mode: "create", currentFolder: n, createResource: m, isOpen: c, onSuccess: s, onCancel: s, children: (t, f, C, g, b) => o === "blog" && k("createPublic", r) && /* @__PURE__ */ e(F, { appCode: o, isUpdating: f, resource: t, watch: C, setValue: g, register: b }) }) })
+  ] }) : null;
+}
+export {
+  Q as default
+};

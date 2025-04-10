@@ -1,0 +1,10 @@
+import { ReactNode } from "react";
+declare const CardBody: {
+    ({ children, space, flexDirection, }: {
+        space?: "0" | "16" | "8" | null | undefined;
+        flexDirection?: "row" | "column" | null | undefined;
+        children: ReactNode;
+    }): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default CardBody;

@@ -1,0 +1,35 @@
+import { odeServices, ERROR_CODE } from "@edifice.io/client";
+import { useRef, useState, useCallback, useEffect } from "react";
+function useReactions(module, resourceType) {
+  const {
+    reactions
+  } = useRef(odeServices.audience(module, resourceType)).current, [availableReactions, setAvailableReactions] = useState([]);
+  async function loadAvailableReactions() {
+    const results = await reactions.loadAvailableReactions();
+    results && setAvailableReactions(results);
+  }
+  async function loadReactionSummaries(resourceIds) {
+    return await reactions.loadReactionSummaries(resourceIds);
+  }
+  const loadReactionDetails = async (resourceId, page, size = 30) => await reactions.loadReactionDetails(resourceId, page, size), applyReaction = useCallback(
+    async (resourceId, newReaction, oldReaction) => {
+      if (newReaction !== oldReaction && availableReactions.indexOf(newReaction) < 0)
+        return Promise.reject(ERROR_CODE.MALFORMED_DATA);
+      let result = "+";
+      return oldReaction ? newReaction === oldReaction ? (await reactions.deleteReaction(resourceId), result = "-") : (await reactions.updateReaction(resourceId, newReaction), result = "=") : await reactions.createReaction(resourceId, newReaction), odeServices.http().isResponseError() ? Promise.reject(ERROR_CODE.UNKNOWN) : result;
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [availableReactions]
+  );
+  return useEffect(() => {
+    loadAvailableReactions();
+  }, []), {
+    availableReactions,
+    loadReactionDetails,
+    loadReactionSummaries,
+    applyReaction
+  };
+}
+export {
+  useReactions as default
+};

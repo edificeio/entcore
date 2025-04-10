@@ -1,0 +1,106 @@
+import { useState, useCallback } from "react";
+import { ERROR_CODE, odeServices } from "@edifice.io/client";
+import { getOrGenerateBlobId } from "@edifice.io/utilities";
+import useBrowserInfo from "../useBrowserInfo/useBrowserInfo.js";
+import useWorkspaceFile from "../useWorkspaceFile/useWorkspaceFile.js";
+const useUpload = (visibility, application = "media-library") => {
+  const [status, setStatus] = useState({}), {
+    browser,
+    device
+  } = useBrowserInfo(navigator.userAgent), {
+    create
+  } = useWorkspaceFile(), getUploadStatus = useCallback((upload) => status[getOrGenerateBlobId(upload)], [status]), setUploadStatus = (blob, status2) => {
+    setStatus((prevStatus) => {
+      const key = getOrGenerateBlobId(blob);
+      return {
+        ...prevStatus,
+        [key]: status2
+      };
+    });
+  }, clearUploadStatus = (blob) => {
+    setStatus((prevStatus) => {
+      const key = getOrGenerateBlobId(blob), {
+        [key]: unused,
+        ...rest
+      } = prevStatus;
+      return rest;
+    });
+  };
+  async function uploadFile(file, metadata) {
+    setUploadStatus(file, "loading");
+    try {
+      let resource;
+      return application === "media-library" && file.type.includes("video") ? resource = await uploadVideo(file, {
+        filename: file.name,
+        ...metadata
+      }) : resource = await create(file, {
+        application,
+        visibility
+      }), setUploadStatus(file, "success"), resource;
+    } catch (error) {
+      return console.error(error), setUploadStatus(file, "error"), null;
+    }
+  }
+  async function uploadBlob(blob, metadata) {
+    setUploadStatus(blob, "loading");
+    try {
+      let resource;
+      if (blob.type.includes("video"))
+        resource = await uploadVideo(blob, metadata);
+      else
+        throw new Error(ERROR_CODE.NOT_SUPPORTED);
+      return setUploadStatus(blob, "success"), resource;
+    } catch (error) {
+      return console.error(error), setUploadStatus(blob, "error"), null;
+    }
+  }
+  const uploadVideo = async (blob, metadata) => {
+    const params = {
+      data: {
+        device: device.type,
+        browser: {
+          name: browser.name,
+          version: browser.version
+        },
+        url: window.location.hostname,
+        file: blob,
+        filename: (metadata == null ? void 0 : metadata.filename) ?? "filename",
+        weight: blob.size
+      },
+      appCode: application,
+      captation: !(blob instanceof File),
+      duration: (metadata == null ? void 0 : metadata.duration) ?? 0
+    }, uploadResponse = await odeServices.video().upload(params);
+    if (uploadResponse.state === "succeed")
+      return {
+        _id: uploadResponse.videoworkspaceid,
+        file: uploadResponse.videoid,
+        name: params.data.filename,
+        eType: "file",
+        eParent: "",
+        children: [],
+        created: /* @__PURE__ */ new Date(),
+        _shared: [],
+        _isShared: !1,
+        owner: {
+          userId: "",
+          displayName: ""
+        }
+      };
+    throw uploadResponse.state === "error" ? new Error(uploadResponse.code || "Error while uploading video") : new Error("Video encoding is still running");
+  };
+  function uploadAlternateFile(original, replacement, metadata) {
+    return getOrGenerateBlobId(replacement, getOrGenerateBlobId(original)), uploadFile(replacement, metadata);
+  }
+  return {
+    getUploadStatus,
+    setUploadStatus,
+    clearUploadStatus,
+    uploadFile,
+    uploadAlternateFile,
+    uploadBlob
+  };
+};
+export {
+  useUpload as default
+};

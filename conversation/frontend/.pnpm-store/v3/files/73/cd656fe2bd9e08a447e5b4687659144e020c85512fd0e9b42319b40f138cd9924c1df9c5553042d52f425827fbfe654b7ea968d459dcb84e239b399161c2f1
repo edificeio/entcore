@@ -1,0 +1,11 @@
+const n = (t) => {
+  if (t > 0) {
+    let r = Math.floor(t / 1e3), o = Math.floor(r / 60);
+    return r = r % 60, o = o % 60, e(o) + ":" + e(r);
+  }
+  return "00:00";
+}, e = (t) => t.toString().padStart(2, "0");
+export {
+  n as convertMsToMS,
+  e as padTo2Digits
+};

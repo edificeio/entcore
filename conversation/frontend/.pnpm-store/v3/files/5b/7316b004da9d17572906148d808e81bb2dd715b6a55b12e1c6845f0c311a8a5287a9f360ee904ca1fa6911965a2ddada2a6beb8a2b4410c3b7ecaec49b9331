@@ -1,0 +1,51 @@
+import { jsx } from "react/jsx-runtime";
+import { forwardRef } from "react";
+import { useTransition, animated } from "@react-spring/web";
+import clsx from "clsx";
+const PopoverHeader = ({
+  children,
+  className
+}) => {
+  const classes = clsx("popover-header", className);
+  return /* @__PURE__ */ jsx("div", { className: classes, children });
+}, PopoverBody = ({
+  children,
+  className
+}) => {
+  const classes = clsx("popover-body", className);
+  return /* @__PURE__ */ jsx("div", { className: classes, children });
+}, PopoverFooter = ({
+  children,
+  className
+}) => {
+  const classes = clsx("popover-footer p-8", className);
+  return /* @__PURE__ */ jsx("div", { className: classes, children });
+}, Popover = /* @__PURE__ */ forwardRef(({
+  children,
+  className,
+  id,
+  isVisible,
+  ...restProps
+}, ref) => {
+  const classes = clsx("popover d-block position-absolute top-100 start-50 translate-middle-x", className);
+  return useTransition(isVisible, {
+    from: {
+      opacity: 0
+    },
+    enter: {
+      opacity: 1
+    },
+    leave: {
+      opacity: 0
+    },
+    config: {
+      duration: 0
+    }
+  })((style, isVisible2) => isVisible2 && /* @__PURE__ */ jsx(animated.div, { ref, "aria-labelledby": id, className: classes, role: "tooltip", style, ...restProps, children }));
+});
+export {
+  Popover,
+  PopoverBody,
+  PopoverFooter,
+  PopoverHeader
+};

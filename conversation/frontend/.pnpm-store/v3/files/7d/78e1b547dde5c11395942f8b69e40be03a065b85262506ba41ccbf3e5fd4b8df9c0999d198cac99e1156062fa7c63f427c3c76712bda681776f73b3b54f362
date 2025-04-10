@@ -1,0 +1,15 @@
+import { jsx } from "react/jsx-runtime";
+import clsx from "clsx";
+import SvgIconPaperclip from "../../icons/components/IconPaperclip.js";
+const FileIcon = ({
+  type,
+  roleMap
+}) => {
+  const hasNoShadow = typeof (roleMap == null ? void 0 : roleMap.icon) != "string" && type !== "unknown", fileicon = clsx("position-absolute top-50 start-50 translate-middle", {
+    "p-12 rounded-circle shadow": hasNoShadow
+  }, roleMap == null ? void 0 : roleMap.color);
+  return /* @__PURE__ */ jsx("div", { className: fileicon, children: (roleMap == null ? void 0 : roleMap.icon) ?? /* @__PURE__ */ jsx(SvgIconPaperclip, {}) });
+};
+export {
+  FileIcon as default
+};

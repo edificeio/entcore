@@ -1,0 +1,6 @@
+import { ID, UserProfile } from "edifice-ts-client";
+export default function useAvatar(userId: ID, userProfile?: UserProfile[number]): {
+    badge: JSX.Element | null;
+    avatarURL: string;
+    userbookURL: string;
+};

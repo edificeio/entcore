@@ -1,0 +1,39 @@
+import { useState, useEffect } from "react";
+import { odeServices } from "@edifice.io/client";
+import { useQuery } from "@tanstack/react-query";
+import useHasWorkflow from "../useHasWorkflow/useHasWorkflow.js";
+const useConversation = () => {
+  const zimbraWorkflow = useHasWorkflow("fr.openent.zimbra.controllers.ZimbraController|view"), zimbraPreauth = useHasWorkflow("fr.openent.zimbra.controllers.ZimbraController|preauth"), [msgLink, setMsgLink] = useState(""), queryParams = {
+    unread: !0,
+    _: (/* @__PURE__ */ new Date()).getTime()
+  }, {
+    data: messages
+  } = useQuery({
+    queryKey: ["conversation-navbar-count"],
+    queryFn: async () => await odeServices.http().get(zimbraWorkflow ? "/zimbra/count/INBOX" : "/conversation/count/INBOX", {
+      queryParams
+    }),
+    staleTime: 5 * 60 * 1e3
+    // 5 minutes
+  }), goToMessagerie = async () => {
+    const defaultLink = "/zimbra/zimbra";
+    try {
+      const {
+        preference
+      } = await odeServices.http().get("/userbook/preference/zimbra"), isExpertMode = preference ? JSON.parse(preference).modeExpert : !1;
+      setMsgLink(isExpertMode && zimbraPreauth ? "/zimbra/preauth" : window.location.origin + defaultLink);
+    } catch (error) {
+      console.error(error), setMsgLink(window.location.origin + defaultLink);
+    }
+  };
+  return useEffect(() => {
+    goToMessagerie();
+  }, []), {
+    messages: messages ? messages.count : 0,
+    msgLink,
+    zimbraWorkflow
+  };
+};
+export {
+  useConversation as default
+};

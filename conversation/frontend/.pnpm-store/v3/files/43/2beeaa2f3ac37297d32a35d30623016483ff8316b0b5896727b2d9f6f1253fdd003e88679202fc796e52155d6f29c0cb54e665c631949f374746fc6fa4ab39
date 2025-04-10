@@ -1,0 +1,31 @@
+import { IWidgetFramework, IWidget, WidgetUserPref, WidgetName } from './interfaces';
+import { IWidgetModel, WidgetPosition } from '../session/interfaces';
+export declare class WidgetFramework implements IWidgetFramework {
+    private _initialized?;
+    private _widgets;
+    initialize(version: string | null, cdnDomain: string | null): Promise<void>;
+    get list(): Widget[];
+    lookup(widgetName: string): IWidget | undefined;
+    lookupDefaultPosition(widgetName: WidgetName): WidgetPosition | undefined;
+    private _userPrefs;
+    get userPrefs(): IWidgetUserPrefs;
+    private loadUserPrefs;
+    saveUserPrefs(): Promise<void>;
+    private applyUserPrefs;
+}
+declare class Widget implements IWidget {
+    private _platformConf;
+    constructor(_platformConf: IWidgetModel);
+    get platformConf(): IWidgetModel;
+    private _schoolConf;
+    get schoolConf(): {};
+    private _userPref;
+    get userPref(): WidgetUserPref;
+    applyUserPref(pref: WidgetUserPref): void;
+}
+interface IWidgetUserPrefs {
+    [widgetName: string]: WidgetUserPref;
+}
+/** The whole framework is a singleton. */
+export declare const widgets: WidgetFramework;
+export {};

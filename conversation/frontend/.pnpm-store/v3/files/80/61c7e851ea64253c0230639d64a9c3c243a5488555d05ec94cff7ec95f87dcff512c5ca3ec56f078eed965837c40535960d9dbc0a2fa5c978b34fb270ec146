@@ -1,0 +1,6 @@
+import { IExternalLink } from '../../Linker/ExternalLinker/ExternalLinker';
+export type ExternalLinkTabProps = {
+    multiNodeSelected?: boolean;
+    link?: Partial<IExternalLink>;
+};
+export declare const ExternalLink: ({ link, multiNodeSelected, }: ExternalLinkTabProps) => import("react/jsx-runtime").JSX.Element;

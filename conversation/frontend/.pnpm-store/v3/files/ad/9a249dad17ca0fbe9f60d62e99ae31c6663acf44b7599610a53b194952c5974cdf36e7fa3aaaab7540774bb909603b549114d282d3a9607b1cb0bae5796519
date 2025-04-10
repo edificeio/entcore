@@ -1,0 +1,19 @@
+import { useState, useEffect, useCallback } from "react";
+import { SnipletsService, odeServices } from "@edifice.io/client";
+const useResourceSearch = (appCode) => {
+  const [resourceApplications, setResourceApplications] = useState([]);
+  useEffect(() => {
+    (async () => (await SnipletsService.initialize(odeServices, appCode), await SnipletsService.registerBehaviours(appCode), setResourceApplications(SnipletsService.resourceProducingApps)))();
+  }, []);
+  const loadResources = useCallback(async (filters) => {
+    const [resourceType] = filters.types;
+    return await odeServices.behaviour(appCode, resourceType).loadResources(filters);
+  }, [appCode]);
+  return {
+    resourceApplications,
+    loadResources
+  };
+};
+export {
+  useResourceSearch
+};

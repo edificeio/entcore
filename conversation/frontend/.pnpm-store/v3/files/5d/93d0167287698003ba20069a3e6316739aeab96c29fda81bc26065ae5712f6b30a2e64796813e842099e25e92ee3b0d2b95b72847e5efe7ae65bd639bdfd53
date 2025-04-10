@@ -1,0 +1,7 @@
+import { UserProfile } from "edifice-ts-client";
+import { CommentProps } from "../types";
+export declare const Comment: ({ comment, userId, profile, }: {
+    comment: CommentProps;
+    userId: string;
+    profile: UserProfile[number];
+}) => import("react/jsx-runtime").JSX.Element;

@@ -1,0 +1,7 @@
+export type ImageEditorAction = "ROTATE" | "UNDO" | "CROP" | "BLUR" | "RESIZE";
+interface ImageEditorToolbarProps {
+    historyCount: number;
+    handle(operation: ImageEditorAction): void;
+}
+declare const ImageEditorToolbar: ({ historyCount, handle, }: ImageEditorToolbarProps) => import("react/jsx-runtime").JSX.Element;
+export default ImageEditorToolbar;

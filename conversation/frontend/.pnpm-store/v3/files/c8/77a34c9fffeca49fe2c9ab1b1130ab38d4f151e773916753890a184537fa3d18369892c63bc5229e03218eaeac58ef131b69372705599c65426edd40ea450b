@@ -1,0 +1,67 @@
+import { useRef, useState, useId } from "react";
+import { odeServices } from "@edifice.io/client";
+import { useTranslation } from "react-i18next";
+import { useToggle } from "@uidotdev/usehooks";
+import useToast from "../../../../hooks/useToast/useToast.js";
+const useShareBookmark = ({
+  shareRights,
+  shareDispatch
+}) => {
+  const toast = useToast(), {
+    t
+  } = useTranslation(), refBookmark = useRef(null), [bookmark, setBookmark] = useState({
+    name: "",
+    id: useId()
+  }), [showBookmark, setShowBookmark] = useToggle(!1), [showBookmarkInput, toggleBookmarkInput] = useState(!1), toggleBookmark = () => {
+    setShowBookmark();
+  }, handleBookmarkChange = () => {
+    setBookmark((prev) => {
+      var _a;
+      return {
+        ...prev,
+        name: ((_a = refBookmark.current) == null ? void 0 : _a.value) || ""
+      };
+    });
+  }, saveBookmark = async (name) => {
+    try {
+      const res = await odeServices.directory().saveBookmarks(name, {
+        users: shareRights.rights.filter((right) => right.type === "user").map((u) => u.id),
+        groups: shareRights.rights.filter((right) => right.type === "group").map((u) => u.id),
+        bookmarks: shareRights.rights.filter((right) => right.type === "sharebookmark").map((u) => u.id)
+      });
+      toast.success(t("explorer.bookmarked.status.saved")), shareDispatch({
+        type: "updateShareRights",
+        payload: {
+          ...shareRights,
+          visibleBookmarks: [...shareRights.visibleBookmarks, {
+            displayName: name,
+            id: res.id
+          }]
+        }
+      }), setBookmark((prev) => ({
+        ...prev,
+        bookmarkId: prev.id + (/* @__PURE__ */ new Date()).getTime().toString()
+      })), toggleBookmarkInput(!1);
+    } catch (e) {
+      console.error("Failed to save bookmark", e), toast.error(t("explorer.bookmarked.status.error"));
+    }
+  };
+  return {
+    refBookmark,
+    showBookmark,
+    showBookmarkInput,
+    bookmark,
+    handleBookmarkChange,
+    setBookmark,
+    handleOnSave: () => {
+      var _a;
+      const inputValue = ((_a = refBookmark.current) == null ? void 0 : _a.value) || "";
+      saveBookmark(inputValue);
+    },
+    toggleBookmark,
+    toggleBookmarkInput
+  };
+};
+export {
+  useShareBookmark
+};

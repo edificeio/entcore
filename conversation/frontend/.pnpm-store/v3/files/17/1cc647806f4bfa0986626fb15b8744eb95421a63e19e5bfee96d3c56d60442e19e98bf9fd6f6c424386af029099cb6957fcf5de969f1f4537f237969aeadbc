@@ -1,0 +1,9 @@
+import { Editor } from '@tiptap/react';
+interface TableToolbarProps {
+    /**
+     * editor instance
+     */
+    editor: Editor | null;
+}
+declare const TableToolbar: ({ editor }: TableToolbarProps) => import("react/jsx-runtime").JSX.Element;
+export default TableToolbar;

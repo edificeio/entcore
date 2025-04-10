@@ -1,0 +1,156 @@
+import { jsx, jsxs, Fragment } from "react/jsx-runtime";
+import { useId } from "react";
+import { odeServices } from "@edifice.io/client";
+import { createPortal } from "react-dom";
+import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { TextareaCounter } from "../../../components/TextArea/TextareaCounter.js";
+import ImagePicker from "../../multimedia/ImagePicker/ImagePicker.js";
+import { useThumb } from "./hooks/useThumb.js";
+import { useEdificeClient } from "../../../providers/EdificeClientProvider/EdificeClientProvider.hook.js";
+import useToast from "../../../hooks/useToast/useToast.js";
+import useResource from "../../../hooks/useResource/useResource.js";
+import useMediaLibrary from "../../../hooks/useMediaLibrary/useMediaLibrary.js";
+import LoadingScreen from "../../../components/LoadingScreen/LoadingScreen.js";
+import Modal from "../../../components/Modal/Modal.js";
+import Heading from "../../../components/Heading/Heading.js";
+import FormControl from "../../../components/Form/FormControl.js";
+import Label from "../../../components/Label/Label.js";
+import Input from "../../../components/Input/Input.js";
+import TextArea from "../../../components/TextArea/TextArea.js";
+import Button from "../../../components/Button/Button.js";
+import MediaLibrary from "../../multimedia/MediaLibrary/MediaLibrary.js";
+const DEFAULT_INPUT_MAX_LENGTH = 60, DEFAULT_TEXTAREA_MAX_LENGTH = 400, ResourceModal = ({
+  isOpen,
+  onCancel,
+  onSuccess,
+  children,
+  inputMaxLength = DEFAULT_INPUT_MAX_LENGTH,
+  textareaMaxLength = DEFAULT_TEXTAREA_MAX_LENGTH,
+  ...props
+}) => {
+  const {
+    appCode: application,
+    currentApp
+  } = useEdificeClient(), {
+    t
+  } = useTranslation(), {
+    mode
+  } = props, toast = useToast(), formId = useId(), isCreating = mode === "create", isUpdating = mode === "update", resource = useResource(application, isUpdating ? props.resourceId : ""), {
+    watch,
+    register,
+    handleSubmit,
+    setValue,
+    formState: {
+      isSubmitting,
+      isValid
+    }
+  } = useForm({
+    mode: "onChange",
+    defaultValues: {
+      description: isUpdating ? resource == null ? void 0 : resource.description : "",
+      enablePublic: isUpdating ? resource == null ? void 0 : resource.public : !1,
+      title: isUpdating ? resource == null ? void 0 : resource.name : "",
+      formSlug: isUpdating ? resource == null ? void 0 : resource.slug : ""
+    }
+  }), {
+    ref: mediaLibraryRef,
+    libraryMedia,
+    ...mediaLibraryHandlers
+  } = useMediaLibrary(), {
+    thumbnail,
+    handleDeleteImage,
+    handleUploadImage
+  } = useThumb({
+    isUpdating,
+    selectedResource: isUpdating ? resource : void 0
+  }), watchedDescription = watch("description"), onSubmit = async function(formData) {
+    var _a, _b;
+    try {
+      const data = {
+        description: formData.description || "",
+        name: formData.title,
+        public: formData.enablePublic,
+        slug: formData.enablePublic && formData.formSlug || "",
+        thumbnail
+      };
+      if (isCreating) {
+        const createParams = {
+          ...data,
+          folder: props.currentFolder === void 0 || // Fix #WB2-1296: when searching, currentFolder is undefined
+          ((_a = props.currentFolder) == null ? void 0 : _a.id) === "default" ? void 0 : parseInt(((_b = props.currentFolder) == null ? void 0 : _b.id) || ""),
+          application
+        };
+        props.createResource ? await props.createResource.mutateAsync(createParams) : await odeServices.resource(application).create(createParams);
+      } else {
+        const updateParams = {
+          ...data,
+          entId: resource.assetId,
+          trashed: resource.trashed
+        };
+        props.updateResource ? await props.updateResource.mutateAsync(updateParams) : await odeServices.resource(application).update(updateParams);
+      }
+      toast.success(/* @__PURE__ */ jsxs(Fragment, { children: [
+        /* @__PURE__ */ jsx("strong", { children: t(isCreating ? "explorer.resource.created" : "explorer.resource.updated") }),
+        /* @__PURE__ */ jsxs("p", { children: [
+          t("title"),
+          " : ",
+          formData.title
+        ] }),
+        /* @__PURE__ */ jsxs("p", { children: [
+          t("description"),
+          " : ",
+          formData.description
+        ] }),
+        application === "blog" && /* @__PURE__ */ jsxs("p", { children: [
+          "Public:",
+          formData.enablePublic ? t("explorer.enable.public.yes") : t("explorer.enable.public.no")
+        ] })
+      ] })), onSuccess();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+  return isUpdating && !resource ? /* @__PURE__ */ jsx(LoadingScreen, {}) : /* @__PURE__ */ createPortal(/* @__PURE__ */ jsxs(Modal, { id: `${mode}-resource`, size: "lg", isOpen, onModalClose: onCancel, children: [
+    /* @__PURE__ */ jsx(Modal.Header, { onModalClose: onCancel, children: t(`explorer.resource.editModal.header.${isCreating ? "create" : "edit"}`) }),
+    /* @__PURE__ */ jsxs(Modal.Body, { children: [
+      /* @__PURE__ */ jsx(Heading, { headingStyle: "h4", level: "h3", className: "mb-16", children: t("explorer.resource.editModal.heading.general") }),
+      /* @__PURE__ */ jsxs("form", { id: formId, onSubmit: handleSubmit(onSubmit), children: [
+        /* @__PURE__ */ jsxs("div", { className: "d-block d-md-flex gap-16 mb-24", children: [
+          /* @__PURE__ */ jsx("div", { children: /* @__PURE__ */ jsx(ImagePicker, { app: currentApp, src: isUpdating && (resource == null ? void 0 : resource.thumbnail) || "", addButtonLabel: t("explorer.imagepicker.button.add"), deleteButtonLabel: t("explorer.imagepicker.button.delete"), onUploadImage: handleUploadImage, onDeleteImage: handleDeleteImage, className: "align-self-center mt-8", libraryMedia, mediaLibraryRef }) }),
+          /* @__PURE__ */ jsxs("div", { className: "col", children: [
+            /* @__PURE__ */ jsxs(FormControl, { id: "title", className: "mb-16", isRequired: !0, children: [
+              /* @__PURE__ */ jsx(Label, { children: t("title") }),
+              /* @__PURE__ */ jsx(Input, { type: "text", defaultValue: isUpdating ? resource == null ? void 0 : resource.name : "", ...register("title", {
+                required: !0,
+                maxLength: inputMaxLength,
+                pattern: {
+                  value: /[^ ]/,
+                  message: "invalid title"
+                }
+              }), placeholder: t("explorer.resource.editModal.title.placeholder"), size: "md", "aria-required": !0, maxLength: inputMaxLength })
+            ] }),
+            /* @__PURE__ */ jsxs(FormControl, { id: "description", isOptional: !0, children: [
+              /* @__PURE__ */ jsx(Label, { children: t("description") }),
+              /* @__PURE__ */ jsx(TextArea, { defaultValue: (resource == null ? void 0 : resource.description) || "", ...register("description", {
+                required: !1,
+                maxLength: textareaMaxLength
+              }), placeholder: t("explorer.resource.editModal.description.placeholder"), size: "md", maxLength: textareaMaxLength }),
+              watchedDescription && /* @__PURE__ */ jsx(TextareaCounter, { content: watchedDescription, maxLength: textareaMaxLength })
+            ] })
+          ] })
+        ] }),
+        typeof children == "function" ? children(resource, isUpdating, watch, setValue, register) : children
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxs(Modal.Footer, { children: [
+      /* @__PURE__ */ jsx(Button, { color: "tertiary", onClick: onCancel, type: "button", variant: "ghost", children: t("explorer.cancel") }),
+      /* @__PURE__ */ jsx(Button, { form: formId, type: "submit", color: "primary", isLoading: isSubmitting, variant: "filled", disabled: !isValid || isSubmitting, children: t(isCreating ? "explorer.create" : "save") })
+    ] }),
+    /* @__PURE__ */ jsx(MediaLibrary, { appCode: application, ref: mediaLibraryRef, multiple: !1, visibility: "protected", ...mediaLibraryHandlers })
+  ] }), document.getElementById("portal"));
+};
+export {
+  ResourceModal,
+  ResourceModal as default
+};

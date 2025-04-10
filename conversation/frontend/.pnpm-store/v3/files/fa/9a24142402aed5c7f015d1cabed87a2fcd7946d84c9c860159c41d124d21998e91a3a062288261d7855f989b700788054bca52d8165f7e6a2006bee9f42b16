@@ -1,0 +1,86 @@
+import { jsx, jsxs, Fragment } from "react/jsx-runtime";
+import { useMemo } from "react";
+import { CommentForm } from "../components/CommentForm.js";
+import { CommentHeader } from "../components/CommentHeader.js";
+import { CommentList } from "../components/CommentList.js";
+import { DEFAULT_MAX_REPLIES, DEFAULT_ADD_COMMENTS, DEFAULT_MAX_COMMENTS, DEFAULT_MAX_REPLY_LENGTH, DEFAULT_MAX_COMMENT_LENGTH } from "../constants.js";
+import { CommentContext } from "../context/Context.js";
+import { useComments } from "../hooks/useComments.js";
+import Button from "../../../components/Button/Button.js";
+import EmptyScreen from "../../../components/EmptyScreen/EmptyScreen.js";
+const CommentProvider = ({
+  comments: defaultComments,
+  options: commentOptions,
+  ...props
+}) => {
+  const options = {
+    maxCommentLength: DEFAULT_MAX_COMMENT_LENGTH,
+    maxReplyLength: DEFAULT_MAX_REPLY_LENGTH,
+    maxComments: DEFAULT_MAX_COMMENTS,
+    additionalComments: DEFAULT_ADD_COMMENTS,
+    maxReplies: DEFAULT_MAX_REPLIES,
+    ...commentOptions
+  }, {
+    type
+  } = props, {
+    profilesQueries,
+    content,
+    title,
+    user,
+    emptyscreenPath,
+    defaultCommentsCount,
+    comments,
+    editCommentId,
+    setEditCommentId,
+    commentsCount,
+    t,
+    handleMoreComments,
+    handleChangeContent,
+    handleDeleteComment,
+    handleCreateComment,
+    handleModifyComment,
+    handleUpdateComment,
+    handleReset
+  } = useComments({
+    type,
+    defaultComments,
+    callbacks: type == "edit" ? props.callbacks : null,
+    options
+  }), userRights = type === "edit" ? props.rights : void 0, values = useMemo(
+    () => ({
+      comments,
+      content,
+      profiles: profilesQueries.data,
+      editCommentId,
+      options,
+      type,
+      userRights,
+      setEditCommentId,
+      handleCreateComment,
+      handleModifyComment,
+      handleUpdateComment,
+      handleDeleteComment,
+      handleReset,
+      handleChangeContent
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [comments, content, editCommentId, profilesQueries, options]
+  );
+  return /* @__PURE__ */ jsx(CommentContext.Provider, { value: values, children: /* @__PURE__ */ jsxs("div", { className: "my-24", children: [
+    /* @__PURE__ */ jsx(CommentHeader, { title }),
+    /* @__PURE__ */ jsxs("div", { className: "my-24", children: [
+      user && /* @__PURE__ */ jsx(CommentForm, { userId: user.userId }),
+      profilesQueries.isLoading ? null : /* @__PURE__ */ jsxs(Fragment, { children: [
+        /* @__PURE__ */ jsx(CommentList, {}),
+        commentsCount !== defaultCommentsCount && /* @__PURE__ */ jsx(Button, { variant: "ghost", color: "tertiary", onClick: handleMoreComments, className: "my-16", children: t("comment.more") })
+      ] })
+    ] }),
+    !commentsCount && type === "edit" && /* @__PURE__ */ jsxs("div", { className: "comments-emptyscreen", children: [
+      /* @__PURE__ */ jsx("div", { className: "comments-emptyscreen-wrapper", children: /* @__PURE__ */ jsx(EmptyScreen, { imageSrc: emptyscreenPath, size: 150 }) }),
+      /* @__PURE__ */ jsx("p", { children: t("comment.emptyscreen") })
+    ] })
+  ] }) });
+};
+export {
+  CommentProvider as default
+};

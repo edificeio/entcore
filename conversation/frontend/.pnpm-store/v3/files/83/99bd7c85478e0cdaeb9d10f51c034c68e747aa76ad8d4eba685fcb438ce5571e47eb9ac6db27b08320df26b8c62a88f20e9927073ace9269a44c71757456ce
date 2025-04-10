@@ -1,0 +1,61 @@
+import { jsx } from "react/jsx-runtime";
+import { useDroppable } from "@dnd-kit/core";
+import { forwardRef, useId } from "react";
+import { useTree } from "../hooks/useTree.js";
+import { TreeNode } from "./Tree.js";
+import { mergeRefs } from "../../../utilities/refs/ref.js";
+const DndTree = /* @__PURE__ */ forwardRef(({
+  nodes,
+  selectedNodeId: externalSelectedNodeId,
+  showIcon = !1,
+  shouldExpandAllNodes = !1,
+  draggedNode,
+  onTreeItemClick,
+  onTreeItemFold,
+  onTreeItemUnfold,
+  renderNode
+}, ref) => {
+  const {
+    selectedNodeId,
+    expandedNodes,
+    draggedNodeId,
+    handleItemClick,
+    handleFoldUnfold
+  } = useTree({
+    data: nodes,
+    externalSelectedNodeId,
+    draggedNode,
+    shouldExpandAllNodes,
+    onTreeItemClick,
+    onTreeItemFold,
+    onTreeItemUnfold
+  });
+  return /* @__PURE__ */ jsx("div", { className: "treeview", ref, children: /* @__PURE__ */ jsx("ul", { role: "tree", className: "m-0 p-0", children: Array.isArray(nodes) && nodes.map((node) => /* @__PURE__ */ jsx(DndTreeNode, { node, showIcon, draggedNodeId, expandedNodes, selectedNodeId, onTreeItemClick: handleItemClick, onToggleNode: handleFoldUnfold, renderNode }, node.id)) }) });
+}), DndTreeNode = /* @__PURE__ */ forwardRef(({
+  node,
+  selectedNodeId,
+  showIcon = !1,
+  expandedNodes,
+  renderNode,
+  onTreeItemClick,
+  onToggleNode,
+  draggedNodeId,
+  ...restProps
+}, ref) => {
+  const {
+    setNodeRef
+  } = useDroppable({
+    id: useId(),
+    data: {
+      id: node.id,
+      name: node.name,
+      isTreeview: !0,
+      accepts: ["folder", "resource"]
+    }
+  }), focused = draggedNodeId === node.id;
+  return /* @__PURE__ */ jsx(TreeNode, { ref: mergeRefs(ref, setNodeRef), node, showIcon, selectedNodeId, expandedNodes, onTreeItemClick, onToggleNode, renderNode, focused, ...restProps }, node.id);
+});
+export {
+  DndTree,
+  DndTree as default
+};

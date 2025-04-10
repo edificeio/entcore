@@ -1,0 +1,40 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { useState, useEffect, Fragment } from "react";
+import { useTranslation } from "react-i18next";
+import ComboboxTrigger from "./ComboboxTrigger.js";
+import Dropdown from "../Dropdown/Dropdown.js";
+import Loading from "../Loading/Loading.js";
+const Combobox = ({
+  onSearchResultsChange,
+  onSearchInputChange,
+  options,
+  value,
+  isLoading,
+  noResult,
+  searchMinLength,
+  placeholder
+}) => {
+  const {
+    t
+  } = useTranslation(), [localValue, setLocalValue] = useState([]);
+  useEffect(() => {
+    onSearchResultsChange(localValue);
+  }, [localValue]);
+  const handleOptionClick = (value2) => {
+    setLocalValue([value2]);
+  }, renderContent = () => isLoading ? /* @__PURE__ */ jsxs("div", { className: "d-flex align-items-center p-4", children: [
+    /* @__PURE__ */ jsx(Loading, { isLoading }),
+    /* @__PURE__ */ jsx("span", { className: "ps-4", children: t("explorer.search.pending") })
+  ] }) : noResult ? /* @__PURE__ */ jsx("div", { className: "p-4", children: t("portal.no.result") }) : options.map((option, index) => /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx(Dropdown.Item, { type: "select", icon: option.icon, onClick: () => handleOptionClick(option.value), children: option.label }),
+    index < options.length - 1 && /* @__PURE__ */ jsx(Dropdown.Separator, {})
+  ] }, index));
+  return /* @__PURE__ */ jsxs(Dropdown, { block: !0, children: [
+    /* @__PURE__ */ jsx(Combobox.Trigger, { placeholder, searchMinLength, handleSearchInputChange: onSearchInputChange, value }),
+    /* @__PURE__ */ jsx(Dropdown.Menu, { children: renderContent() })
+  ] });
+};
+Combobox.Trigger = ComboboxTrigger;
+export {
+  Combobox as default
+};

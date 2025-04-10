@@ -1,0 +1,78 @@
+import { useState, useRef } from "react";
+const useDropzone = (props) => {
+  const [dragging, setDragging] = useState(!1), [files, setFiles] = useState([]), inputRef = useRef(null), addFile = (file) => {
+    addFiles([file]);
+  }, deleteFile = (file) => {
+    setFiles((prevFiles) => prevFiles.filter((prevFile) => prevFile.name !== file.name));
+  }, replaceFileAt = (index, file) => {
+    setFiles((prevFiles) => {
+      if (0 <= index && index < prevFiles.length) {
+        const firstPart = prevFiles.slice(0, index), lastPart = index === prevFiles.length - 1 ? [] : prevFiles.slice(index + 1);
+        return [...firstPart, file, ...lastPart];
+      }
+      return prevFiles;
+    });
+  }, applyInputFiltersOn = (files2) => {
+    var _a;
+    let filteredFiles = files2;
+    if ((_a = inputRef.current) != null && _a.accept) {
+      const filters = inputRef.current.accept.split(",").map((filter) => filter.trim().toLowerCase()), extensions = filters.filter((filter) => filter.startsWith(".")), mimes = filters.filter((filter) => !filter.startsWith(".")).map((mime) => mime.replace("*", ""));
+      filteredFiles = [], files2.forEach((file) => {
+        const fileName = file.name.toLowerCase();
+        (extensions.some((extension) => fileName.endsWith(extension)) || mimes.some((mime) => file.type.includes(mime))) && filteredFiles.push(file);
+      });
+    }
+    return filteredFiles;
+  }, addFiles = (files2) => {
+    let filesToAdd = files2.map((file) => (
+      // #WB-3377: Remove special characters from the file name. (it can cause issues with vertx which replace it or remove it)
+      new File([file], file.name.replace(/[!:,;="']/g, ""), {
+        type: file.type
+      })
+    ));
+    filesToAdd.reverse(), props != null && props.forceFilters ? (filesToAdd = applyInputFiltersOn(filesToAdd), filesToAdd && filesToAdd.length && setFiles((prevFiles) => [...prevFiles, ...filesToAdd])) : setFiles((prevFiles) => [...prevFiles, ...files2]);
+  }, cleanFiles = () => {
+    setFiles([]);
+  }, handleOnChange = (event) => {
+    const files2 = event.target.files;
+    files2 && addFiles([...files2]);
+  }, handleDragging = (event) => {
+    event.preventDefault(), event.stopPropagation(), setDragging(!0);
+  }, handleDragLeave = (event) => {
+    event.preventDefault(), event.stopPropagation(), setDragging(!1);
+  };
+  return {
+    /** Reference to an `input[type=file]` HTMLElement, null at first. */
+    inputRef,
+    /** Read-only list of File·s  managed by this hook. */
+    files,
+    /** Truthy when a drag event is triggered. */
+    dragging,
+    /** Callback to attach to your drop zone (any HTMLElement). */
+    handleDragging,
+    /** Callback to attach to your drop zone (any HTMLElement). */
+    handleDragLeave,
+    /** Callback to attach to your drop zone (any HTMLElement). */
+    handleDrop: (event) => {
+      var _a;
+      handleDragLeave(event);
+      const files2 = (_a = event.dataTransfer) == null ? void 0 : _a.files;
+      files2 && (addFiles([...files2]), inputRef != null && inputRef.current && (inputRef.current.files = files2));
+    },
+    /** Replace a file in the `files` list. */
+    replaceFileAt,
+    /** Remove a file from the `files` list. */
+    deleteFile,
+    /** Add a file to the `files` list. */
+    addFile,
+    /** Add many files to the `files` list. */
+    addFiles,
+    /** Empty the `files` list. */
+    cleanFiles,
+    /** Callback to attach to your `input[type=file]` HTMLElement. */
+    handleOnChange
+  };
+};
+export {
+  useDropzone as default
+};

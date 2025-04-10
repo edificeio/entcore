@@ -1,0 +1,2 @@
+declare const AudioNodeView: (Component: any) => import('@tiptap/core').Node<any, any>;
+export default AudioNodeView;

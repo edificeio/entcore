@@ -1,0 +1,79 @@
+import { ReactNode } from "react";
+import { Placement } from "@floating-ui/react";
+import DropdownCheckboxItem from "./DropdownCheckboxItem";
+export interface DropdownProps {
+    /** Children Props */
+    children: ReactNode | ((...props: any) => ReactNode);
+    /** Full width Dropdown */
+    block?: boolean;
+    /**
+     * Add overflow and maxHeight
+     */
+    overflow?: boolean;
+    /**
+     * Default placement with FloatingUI
+     */
+    placement?: Placement;
+    /**
+     * Extra keydown handler for the Dropdown Trigger.
+     * Useful for a11y keyboard navigation between a Dropdown element and other elements,
+     * for example in the Toolbar component.
+     */
+    extraTriggerKeyDownHandler?: (event: React.KeyboardEvent<HTMLButtonElement>) => void;
+    /**
+     * Callback to get notified when dropdown `visible` state changes (opened/closed).
+     */
+    onToggle?: (visible: boolean) => void;
+    /**
+     * Whether the trigger is hovered or not.
+     */
+    isTriggerHovered?: boolean;
+}
+export type DropdownMenuOptions = {
+    /**
+     * Object type
+     */
+    type?: undefined;
+    /**
+     * Icon component
+     */
+    icon: JSX.Element;
+    /**
+     * Label for a11y
+     */
+    label: string;
+    /**
+     * Action OnClick
+     */
+    action: (elem: any) => any;
+} | {
+    /**
+     * Object type
+     */
+    type: "divider";
+};
+declare const Dropdown: {
+    ({ children, block, overflow, placement, extraTriggerKeyDownHandler, onToggle, isTriggerHovered, }: DropdownProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+} & {
+    Trigger: import("react").ForwardRefExoticComponent<Omit<import("./DropdownTrigger").DropdownTriggerProps, "ref"> & import("react").RefAttributes<HTMLButtonElement>>;
+    Menu: import("react").ForwardRefExoticComponent<Omit<import("./DropdownMenu").DropdownMenuProps, "ref"> & import("react").RefAttributes<HTMLDivElement>>;
+    Item: {
+        ({ type, icon, onClick, children, className, ...restProps }: import("./DropdownItem").DropdownItemProps): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+    Separator: {
+        (): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+    CheckboxItem: {
+        ({ children, value, model, onChange, }: DropdownCheckboxItem): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+    RadioItem: {
+        ({ children, value, model, onChange, }: import("./DropdownRadioItem").DropdownRadioItemProps): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+    MenuGroup: import("react").ForwardRefExoticComponent<import("./DropdownMenuGroup").DropdownMenuGroupProps & import("react").RefAttributes<HTMLDivElement>>;
+};
+export default Dropdown;

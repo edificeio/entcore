@@ -1,0 +1,52 @@
+import { ReactNode } from 'react';
+/**
+ * Props for the Dropzone component.
+ */
+interface DropzoneProps {
+    /**
+     * Optional additional class names to apply to the dropzone.
+     */
+    className?: string;
+    /**
+     * Array of accepted file types.
+     * See {@link https://developer.mozilla.org/en-US/docs/Web/HTML/Attributes/accept#unique_file_type_specifiers | MDN Documentation}.
+     */
+    accept?: string[];
+    /**
+     * Whether multiple files can be selected.
+     */
+    multiple?: boolean;
+    /**
+     * Whether the dropzone should handle the file drop.
+     */
+    handle?: boolean;
+    /**
+     * The content to be rendered inside the dropzone.
+     */
+    children?: ReactNode;
+}
+/**
+ *
+ * The Dropzone component allows to add or remove files. A `useDropzoneContext` hook is available to manage a specific UI component for handling file uploads.
+ *
+ */
+declare const Dropzone: {
+    ({ className, accept, multiple, handle, children, }: DropzoneProps): import("react/jsx-runtime").JSX.Element;
+    File: {
+        ({ children, multiple, }: {
+            children: ReactNode;
+            multiple?: boolean;
+        }): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+    Import: {
+        (): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+    Drag: {
+        (): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+    displayName: string;
+};
+export default Dropzone;

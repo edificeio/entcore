@@ -1,0 +1,7 @@
+export interface TrashButtonProps {
+    id: string;
+    selected: boolean;
+    onSelect: () => void;
+}
+export declare const TrashButton: ({ id, selected, onSelect, }: TrashButtonProps) => JSX.Element | null;
+export default TrashButton;

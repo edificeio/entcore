@@ -1,0 +1,41 @@
+{
+  "name": "@tiptap-pro/extension-mathematics",
+  "description": "latex math extension for tiptap",
+  "version": "2.2.1",
+  "homepage": "https://tiptap.dev/api/extensions/mathematics",
+  "keywords": [
+    "tiptap",
+    "tiptap extension"
+  ],
+  "license": "SEE LICENSE IN LICENSE.md",
+  "funding": {
+    "type": "github",
+    "url": "https://github.com/sponsors/ueberdosis"
+  },
+  "main": "dist/tiptap-extension-mathematics.cjs.js",
+  "module": "dist/tiptap-extension-mathematics.esm.js",
+  "umd": "dist/tiptap-extension-mathematics.umd.js",
+  "types": "dist/tiptap-pro/packages/extension-mathematics/src/index.d.ts",
+  "files": [
+    "dist",
+    "CHANGELOG.md",
+    "LICENSE.md"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build": "npm run clean && rollup -c"
+  },
+  "devDependencies": {
+    "@tiptap/core": "^2.0.0-beta.218",
+    "@tiptap/pm": "^2.0.0-beta.220",
+    "@types/katex": "^0.16.0"
+  },
+  "peerDependencies": {
+    "@tiptap/core": "^2.0.0-beta.218",
+    "@tiptap/pm": "^2.0.0-beta.218",
+    "katex": "^0.16.4"
+  },
+  "publishConfig": {
+    "registry": "https://registry.tiptap.dev"
+  }
+}

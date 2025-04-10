@@ -1,0 +1,34 @@
+import { jsx, jsxs } from "react/jsx-runtime";
+import { NodeViewWrapper } from "@tiptap/react";
+import clsx from "clsx";
+import useEdificeIcons from "../../../../hooks/useEdificeIcons/useEdificeIcons.js";
+import Badge from "../../../../components/Badge/Badge.js";
+import AppIcon from "../../../../components/AppIcon/AppIcon.js";
+const LinkerRenderer = ({
+  selected,
+  ...props
+}) => {
+  const {
+    getIconCode
+  } = useEdificeIcons(), {
+    editor,
+    node
+  } = props, {
+    class: className,
+    "data-app-prefix": appPrefix,
+    title,
+    href,
+    target
+  } = node.attrs, classes = clsx("align-middle badge-linker c-pointer mx-4 my-2", className, selected && "bg-secondary-200"), appCode = getIconCode(appPrefix);
+  return /* @__PURE__ */ jsx(NodeViewWrapper, { as: "span", contentEditable: !1, children: /* @__PURE__ */ jsxs(Badge, { variant: {
+    type: "chip"
+  }, className: classes, onClick: (event) => {
+    editor && !editor.isEditable && (event.preventDefault(), window.open(href ?? "about:blank", target ?? "_self"));
+  }, "data-drag-handle": !0, children: [
+    /* @__PURE__ */ jsx(AppIcon, { size: "24", app: appCode }),
+    /* @__PURE__ */ jsx("span", { className: "ms-8 text-truncate", children: title || node.textContent })
+  ] }) });
+};
+export {
+  LinkerRenderer as default
+};

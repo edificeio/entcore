@@ -1,0 +1,130 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { useState } from "react";
+import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
+import SvgIconBookmark from "../../icons/components/IconBookmark.js";
+import SvgIconInfoCircle from "../../icons/components/IconInfoCircle.js";
+import SvgIconRafterDown from "../../icons/components/IconRafterDown.js";
+import { ShareBookmark } from "./ShareBookmark.js";
+import { ShareBookmarkLine } from "./ShareBookmarkLine.js";
+import { useSearch } from "./hooks/useSearch.js";
+import useShare from "./hooks/useShare.js";
+import { useShareBookmark } from "./hooks/useShareBookmark.js";
+import Modal from "../../../components/Modal/Modal.js";
+import Heading from "../../../components/Heading/Heading.js";
+import LoadingScreen from "../../../components/LoadingScreen/LoadingScreen.js";
+import VisuallyHidden from "../../../components/VisuallyHidden/VisuallyHidden.js";
+import Avatar from "../../../components/Avatar/Avatar.js";
+import Checkbox from "../../../components/Checkbox/Checkbox.js";
+import Button from "../../../components/Button/Button.js";
+import Tooltip from "../../../components/Tooltip/Tooltip.js";
+import Combobox from "../../../components/Combobox/Combobox.js";
+function ShareResourceModal({
+  isOpen,
+  shareOptions,
+  shareResource,
+  children,
+  onSuccess,
+  onCancel
+}) {
+  const {
+    resourceId,
+    resourceCreatorId,
+    resourceRights
+  } = shareOptions, [isLoading, setIsLoading] = useState(!0), {
+    state: {
+      isSharing,
+      shareRights,
+      shareRightActions
+    },
+    dispatch: shareDispatch,
+    myAvatar,
+    currentIsAuthor,
+    handleShare,
+    toggleRight,
+    handleDeleteRow
+  } = useShare({
+    resourceId,
+    resourceCreatorId,
+    resourceRights,
+    shareResource,
+    setIsLoading,
+    onSuccess
+  }), {
+    state: {
+      searchResults,
+      searchInputValue
+    },
+    showSearchAdmlHint,
+    showSearchLoading,
+    showSearchNoResults,
+    getSearchMinLength,
+    handleSearchInputChange,
+    handleSearchResultsChange
+  } = useSearch({
+    resourceId,
+    resourceCreatorId,
+    shareRights,
+    shareDispatch
+  }), {
+    refBookmark,
+    showBookmark,
+    handleBookmarkChange,
+    toggleBookmark,
+    bookmark,
+    handleOnSave,
+    showBookmarkInput,
+    toggleBookmarkInput
+  } = useShareBookmark({
+    shareRights,
+    shareDispatch
+  }), {
+    t
+  } = useTranslation(), searchPlaceholder = showSearchAdmlHint() ? t("explorer.search.adml.hint") : t("explorer.modal.share.search.placeholder");
+  return /* @__PURE__ */ createPortal(/* @__PURE__ */ jsxs(Modal, { id: "share_modal", size: "lg", isOpen, onModalClose: onCancel, children: [
+    /* @__PURE__ */ jsx(Modal.Header, { onModalClose: onCancel, children: t("share.title") }),
+    /* @__PURE__ */ jsxs(Modal.Body, { children: [
+      /* @__PURE__ */ jsx(Heading, { headingStyle: "h4", level: "h3", className: "mb-16", children: t("explorer.modal.share.usersWithAccess") }),
+      /* @__PURE__ */ jsx("div", { className: "table-responsive", children: isLoading ? /* @__PURE__ */ jsx(LoadingScreen, {}) : /* @__PURE__ */ jsxs("table", { className: "table border align-middle mb-0", children: [
+        /* @__PURE__ */ jsx("thead", { className: "bg-secondary", children: /* @__PURE__ */ jsxs("tr", { children: [
+          /* @__PURE__ */ jsx("th", { scope: "col", className: "w-32", children: /* @__PURE__ */ jsx(VisuallyHidden, { children: t("explorer.modal.share.avatar.shared.alt") }) }),
+          /* @__PURE__ */ jsx("th", { scope: "col", children: /* @__PURE__ */ jsx(VisuallyHidden, { children: t("explorer.modal.share.search.placeholder") }) }),
+          shareRightActions.map((shareRightAction) => /* @__PURE__ */ jsx("th", { scope: "col", className: "text-center text-white", children: t(shareRightAction.displayName) }, shareRightAction.displayName)),
+          /* @__PURE__ */ jsx("th", { scope: "col", children: /* @__PURE__ */ jsx(VisuallyHidden, { children: t("close") }) })
+        ] }) }),
+        /* @__PURE__ */ jsxs("tbody", { children: [
+          currentIsAuthor() && /* @__PURE__ */ jsxs("tr", { children: [
+            /* @__PURE__ */ jsx("th", { scope: "row", children: /* @__PURE__ */ jsx(Avatar, { alt: t("explorer.modal.share.avatar.me.alt"), size: "xs", src: myAvatar, variant: "circle" }) }),
+            /* @__PURE__ */ jsx("td", { children: t("share.me") }),
+            shareRightActions.map((shareRightAction) => /* @__PURE__ */ jsx("td", { style: {
+              width: "80px"
+            }, className: "text-center text-white", children: /* @__PURE__ */ jsx(Checkbox, { checked: !0, disabled: !0 }) }, shareRightAction.displayName)),
+            /* @__PURE__ */ jsx("td", {})
+          ] }),
+          /* @__PURE__ */ jsx(ShareBookmarkLine, { showBookmark, shareRightActions, shareRights, onDeleteRow: handleDeleteRow, toggleRight, toggleBookmark })
+        ] })
+      ] }) }),
+      /* @__PURE__ */ jsxs("div", { className: "mt-16", children: [
+        /* @__PURE__ */ jsx(Button, { color: "tertiary", leftIcon: /* @__PURE__ */ jsx(SvgIconBookmark, {}), rightIcon: /* @__PURE__ */ jsx(SvgIconRafterDown, { title: t("show"), className: "w-16 min-w-0", style: {
+          transition: "rotate 0.2s ease-out",
+          rotate: showBookmarkInput ? "-180deg" : "0deg"
+        } }), type: "button", variant: "ghost", className: "fw-normal", onClick: () => toggleBookmarkInput(!showBookmarkInput), children: t("share.save.sharebookmark") }),
+        showBookmarkInput && /* @__PURE__ */ jsx(ShareBookmark, { refBookmark, bookmark, onBookmarkChange: handleBookmarkChange, onSave: handleOnSave })
+      ] }),
+      /* @__PURE__ */ jsx("hr", {}),
+      /* @__PURE__ */ jsxs(Heading, { headingStyle: "h4", level: "h3", className: "mb-16 d-flex align-items-center", children: [
+        /* @__PURE__ */ jsx("div", { className: "me-8", children: t("explorer.modal.share.search") }),
+        /* @__PURE__ */ jsx(Tooltip, { message: "Vos favoris de partage s’affichent en priorité dans votre liste lorsque vous recherchez un groupe ou une personne, vous pouvez les retrouver dans l’annuaire.", placement: "top", children: /* @__PURE__ */ jsx(SvgIconInfoCircle, { className: "c-pointer", height: "18" }) })
+      ] }),
+      /* @__PURE__ */ jsx("div", { className: "row", children: /* @__PURE__ */ jsx("div", { className: "col-10", children: /* @__PURE__ */ jsx(Combobox, { value: searchInputValue, placeholder: searchPlaceholder, isLoading: showSearchLoading(), noResult: showSearchNoResults(), options: searchResults, searchMinLength: getSearchMinLength(), onSearchInputChange: handleSearchInputChange, onSearchResultsChange: handleSearchResultsChange }) }) }),
+      children
+    ] }),
+    /* @__PURE__ */ jsxs(Modal.Footer, { children: [
+      /* @__PURE__ */ jsx(Button, { type: "button", color: "tertiary", variant: "ghost", onClick: onCancel, children: t("explorer.cancel") }),
+      /* @__PURE__ */ jsx(Button, { type: "button", color: "primary", variant: "filled", isLoading: isSharing, onClick: handleShare, disabled: isSharing, children: t("share") })
+    ] })
+  ] }), document.getElementById("portal"));
+}
+export {
+  ShareResourceModal as default
+};

@@ -1,0 +1,14 @@
+import { ResourceType } from '../..';
+import { CreateParameters, CreateResult, TimelineGeneratorUpdate, UpdateResult } from '../interface';
+import { ResourceService } from '../ResourceService';
+export declare class TimelineGeneratorResourceService extends ResourceService {
+    create(parameters: CreateParameters): Promise<CreateResult>;
+    update(parameters: TimelineGeneratorUpdate): Promise<UpdateResult>;
+    getResourceType(): ResourceType;
+    getApplication(): string;
+    getFormUrl(): string;
+    getViewUrl(resourceId: string): string;
+    getPrintUrl(resourceId: string): string;
+    getEditUrl(): string;
+    getExportUrl(): string;
+}

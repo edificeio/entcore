@@ -1,0 +1,28 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import clsx from "clsx";
+import { useTranslation } from "react-i18next";
+import SvgIconDownload from "../../modules/icons/components/IconDownload.js";
+import Button from "../Button/Button.js";
+import { useDropzoneContext } from "./DropzoneContext.js";
+const DropzoneImport = () => {
+  const {
+    t
+  } = useTranslation(), {
+    files,
+    inputRef
+  } = useDropzoneContext(), hasFiles = files && files.length > 0, classes = clsx("dropzone-import-wrapper", {
+    "d-flex": !hasFiles,
+    "d-none": hasFiles
+  });
+  return /* @__PURE__ */ jsxs("div", { className: classes, children: [
+    /* @__PURE__ */ jsx(SvgIconDownload, { height: 48, width: 48 }),
+    /* @__PURE__ */ jsx("p", { className: "my-16", children: t("dropzone.text") }),
+    /* @__PURE__ */ jsx(Button, { onClick: () => {
+      var _a;
+      return (_a = inputRef == null ? void 0 : inputRef.current) == null ? void 0 : _a.click();
+    }, children: t("dropzone.import") })
+  ] });
+};
+export {
+  DropzoneImport as default
+};

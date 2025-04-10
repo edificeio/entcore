@@ -1,0 +1,4 @@
+export declare const TextareaCounter: ({ content, maxLength, }: {
+    content: string;
+    maxLength: number;
+}) => import("react/jsx-runtime").JSX.Element;

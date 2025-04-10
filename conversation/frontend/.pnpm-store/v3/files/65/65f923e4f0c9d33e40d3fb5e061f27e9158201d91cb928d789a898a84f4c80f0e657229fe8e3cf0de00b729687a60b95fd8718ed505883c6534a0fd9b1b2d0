@@ -1,0 +1,75 @@
+import { ID } from '../globals';
+import { IOdeServices } from '../services/OdeServices';
+import { WorkspaceElement, WorkspaceSearchFilter, WorkspaceVisibility } from './interface';
+interface ElementQuery {
+    /**
+     * Keep only results having this criteria.
+     * Defaults to "owner" in backend but must be specified here for clarity.
+     */
+    filter: WorkspaceSearchFilter;
+    /** Restrict results to this element id only (kind of get). */
+    id?: ID;
+    /** Restrict results to element having this direct parent (folder). */
+    parentId?: ID;
+    /** Restrict results to elements having this ancestor (folder) at any level. */
+    ancestorId?: string;
+    /** Restrict results to the 1st folder hierarchy level. */
+    onlyRoot?: boolean;
+    /** Restrict results to this app. */
+    application?: string;
+    /** Restrict results to elements containing this text. */
+    search?: string;
+    /** Extend results to files AND folders. Defaults to false, with file results only. */
+    includeall?: boolean;
+    /** Max number of results needed. */
+    limit?: number;
+    /**
+     * Skip the first N results.
+     * Allows for pagination when used with the `limit` parameter.
+     */
+    skip?: number;
+    /**
+     * Restrict results to elements directly shared with the user.
+     * => Handle this param through a dedicated method. Do not expose it directly.
+     */
+    directShared?: boolean;
+    /**
+     * Truthy when result is a tree ?
+     * => Handle this param through a dedicated method. Do not expose it directly.
+     */
+    hierarchical?: boolean;
+}
+export declare class WorkspaceService {
+    private context;
+    constructor(context: IOdeServices);
+    private get http();
+    private extractMetadata;
+    saveFile(file: Blob | File, params?: {
+        parentId?: string;
+        visibility?: WorkspaceVisibility;
+        application?: string;
+    }): Promise<WorkspaceElement>;
+    updateFile(id: string, file: Blob | File, params?: {
+        alt?: string;
+        legend?: string;
+        name?: string;
+    }): Promise<any>;
+    deleteFile(elements: WorkspaceElement[]): Promise<void>;
+    private acceptDocuments;
+    searchDocuments(params: ElementQuery): Promise<WorkspaceElement[]>;
+    listDocuments(filter: WorkspaceSearchFilter, parentId?: ID): Promise<WorkspaceElement[]>;
+    /**
+     * Duplicate and transfers documents if needed to a different folder with the specified application and visibility.
+     * @param documents - The array of documents to transfer.
+     * @param application - The application to associate with the transferred documents.
+     * @param visibility - The visibility of the transferred documents. Defaults to "protected".
+     * @returns A Promise that resolves to an array of transferred WorkspaceElements.
+     */
+    transferDocuments(documents: WorkspaceElement[], application: string, visibility?: WorkspaceVisibility): Promise<WorkspaceElement[]>;
+    /**
+     * Get the URL of the thumbnail of a workspace element (or its URL),
+     * or `null` if none exists or can be created.
+     */
+    getThumbnailUrl(doc: WorkspaceElement | string, width?: number, height?: number): string | null;
+}
+export {};

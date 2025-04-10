@@ -1,0 +1,37 @@
+import { jsx } from "react/jsx-runtime";
+import { forwardRef } from "react";
+import { TreeNode } from "./TreeNode.js";
+import { useTreeView } from "./hooks/useTreeView.js";
+const TreeView = /* @__PURE__ */ forwardRef((props, ref) => {
+  const {
+    data,
+    onTreeItemClick,
+    onTreeItemUnfold,
+    onTreeItemFold,
+    onTreeItemAction,
+    draggedNode,
+    showIcon = !0,
+    allExpandedNodes = !1,
+    selectedNodeId: externalSelectedNodeId
+  } = props, {
+    selectedNodeId,
+    expandedNodes,
+    siblingsNodes,
+    draggedNodeId,
+    handleItemClick,
+    handleFoldUnfold
+  } = useTreeView({
+    data,
+    ref,
+    externalSelectedNodeId,
+    draggedNode,
+    allExpandedNodes,
+    onTreeItemClick,
+    onTreeItemFold,
+    onTreeItemUnfold
+  });
+  return /* @__PURE__ */ jsx("div", { className: "treeview", children: /* @__PURE__ */ jsx("ul", { role: "tree", className: "m-0 p-0", children: Array.isArray(data) ? data.map((node) => /* @__PURE__ */ jsx(TreeNode, { node, showIcon, selectedNodeId, expandedNodes, siblingsNodes, draggedNodeId, handleItemClick, handleToggleNode: handleFoldUnfold, handleItemAction: onTreeItemAction }, node.id)) : /* @__PURE__ */ jsx(TreeNode, { node: data, selectedNodeId, expandedNodes, siblingsNodes, showIcon, draggedNodeId, handleItemClick, handleToggleNode: handleFoldUnfold }) }) });
+});
+export {
+  TreeView as default
+};

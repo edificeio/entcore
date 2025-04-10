@@ -1,0 +1,1 @@
+export declare function useEdificeTheme(): import('./EdificeThemeProvider.context').EdificeThemeContextProps;

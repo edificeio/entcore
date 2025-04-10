@@ -1,0 +1,9 @@
+declare const CardImage: {
+    ({ imageSrc, className, variant, }: {
+        imageSrc?: string | undefined;
+        className?: string;
+        variant?: "small" | "medium" | "landscape";
+    }): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default CardImage;

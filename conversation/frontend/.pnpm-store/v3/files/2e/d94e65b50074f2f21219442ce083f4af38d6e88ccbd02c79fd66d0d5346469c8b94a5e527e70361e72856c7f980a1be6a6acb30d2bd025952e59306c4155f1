@@ -1,0 +1,9 @@
+/**
+ * Get or generate a virtual ID for a blob object.
+ * Virtual ID is immutable once generated.
+ *
+ * @param blob the Blob or File
+ * @param id (optional) Use this ID instead of generating one the first time.
+ * @return the blog virtual ID
+ */
+export declare const getOrGenerateBlobId: (blob: Blob | File, id?: string) => any;

@@ -1,0 +1,34 @@
+import { ITheme, IThemeConf, IThemeDesc, IThemeOverrides, IThemeConfOverriding } from "./interfaces";
+export declare class Theme implements ITheme {
+    private _conf?;
+    private _loaded?;
+    skinName: string;
+    themeName: string;
+    skin: string;
+    themeUrl: string;
+    templateOverrides: IThemeOverrides;
+    portalTemplate: string;
+    basePath: string;
+    logoutCallback: string;
+    skins: Array<IThemeConfOverriding>;
+    is1D: boolean;
+    is2D: boolean;
+    initialize(version?: string): Promise<void>;
+    private get version();
+    private get cdnDomain();
+    onFullyReady(): Promise<ITheme>;
+    private _onSkinReady;
+    onSkinReady(): Promise<ITheme>;
+    private _onOverrideReady;
+    onOverrideReady(): Promise<IThemeOverrides>;
+    getConf(version?: string): Promise<IThemeConf>;
+    load(version?: string): Promise<void>;
+    private loadDisconnected;
+    private loadConnected;
+    /** Load the user's configured theme. */
+    private loadDefaultTheme;
+    listThemes(): Promise<IThemeDesc[]>;
+    setDefaultTheme(theme: IThemeDesc): Promise<void>;
+    listSkins(): Promise<IThemeConfOverriding[]>;
+    getHelpPath(): Promise<String>;
+}

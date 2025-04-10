@@ -1,0 +1,41 @@
+import { jsxs, Fragment, jsx } from "react/jsx-runtime";
+import { useState } from "react";
+import clsx from "clsx";
+import { usePopper } from "react-popper";
+const Tooltip = ({
+  children,
+  message,
+  icon = null,
+  placement = "auto",
+  ...restProps
+}) => {
+  const [referenceElement, setReferenceElement] = useState(null), [popperElement, setPopperElement] = useState(null), [arrowElement, setArrowElement] = useState(null), {
+    styles,
+    attributes
+  } = usePopper(referenceElement, popperElement, {
+    placement,
+    modifiers: [{
+      name: "arrow",
+      options: {
+        element: arrowElement
+      }
+    }]
+  }), [visible, setVisible] = useState(!1);
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx("div", { className: "d-inline-block position-relative z-2", ref: setReferenceElement, onMouseEnter: () => {
+      setVisible(!0);
+    }, onMouseLeave: () => {
+      setVisible(!1);
+    }, ...restProps, children }),
+    visible && message && /* @__PURE__ */ jsxs("div", { className: clsx("tooltip d-block show mb-12", "bs-tooltip-auto"), ref: setPopperElement, style: styles.popper, ...attributes.popper, children: [
+      /* @__PURE__ */ jsxs("div", { className: "tooltip-inner shadow-hover d-flex gap-8 align-items-center", children: [
+        icon && icon,
+        /* @__PURE__ */ jsx("div", { children: message })
+      ] }),
+      /* @__PURE__ */ jsx("div", { className: "tooltip-arrow", ref: setArrowElement, style: styles.arrow })
+    ] })
+  ] });
+};
+export {
+  Tooltip as default
+};

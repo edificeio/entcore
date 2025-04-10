@@ -1,0 +1,37 @@
+import { useCallback } from "react";
+const useLinkToolbar = (editor, mediaLibraryRef) => ({
+  onEdit: useCallback((attrs) => {
+    var _a, _b;
+    editor != null && editor.isActive("hyperlink") && editor.commands.extendMarkRange("hyperlink");
+    const attrsLinker = attrs;
+    if (attrsLinker["data-id"] || attrsLinker["data-app-prefix"])
+      (_a = mediaLibraryRef.current) == null || _a.showLink({
+        target: attrs.target,
+        resourceId: attrsLinker["data-id"],
+        appPrefix: attrsLinker["data-app-prefix"]
+      });
+    else {
+      const {
+        href,
+        target
+      } = attrs;
+      (_b = mediaLibraryRef.current) == null || _b.showLink({
+        link: {
+          url: href || "",
+          target: target || void 0,
+          text: editor != null && editor.state.selection.empty ? "" : editor == null ? void 0 : editor.state.selection.content().content.child(0).textContent
+        }
+      });
+    }
+  }, [editor, mediaLibraryRef]),
+  onOpen: (attrs) => {
+    window.open(attrs.href || "about:blank", "_blank");
+  },
+  onUnlink: () => {
+    var _a, _b, _c, _d;
+    (_b = editor == null ? void 0 : (_a = editor.commands).unsetLinker) == null || _b.call(_a), (_d = editor == null ? void 0 : (_c = editor.commands).unsetLink) == null || _d.call(_c);
+  }
+});
+export {
+  useLinkToolbar
+};

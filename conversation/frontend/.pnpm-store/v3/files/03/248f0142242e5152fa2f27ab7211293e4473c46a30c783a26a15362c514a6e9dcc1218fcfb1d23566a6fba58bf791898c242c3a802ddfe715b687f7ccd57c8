@@ -1,0 +1,11 @@
+import { IResource } from "edifice-ts-client";
+interface UseThumbProps {
+    isUpdating: boolean;
+    selectedResource?: IResource;
+}
+export declare const useThumb: ({ isUpdating, selectedResource }: UseThumbProps) => {
+    thumbnail: string | File | Blob;
+    handleDeleteImage: () => void;
+    handleUploadImage: (file: File | string) => void;
+};
+export {};

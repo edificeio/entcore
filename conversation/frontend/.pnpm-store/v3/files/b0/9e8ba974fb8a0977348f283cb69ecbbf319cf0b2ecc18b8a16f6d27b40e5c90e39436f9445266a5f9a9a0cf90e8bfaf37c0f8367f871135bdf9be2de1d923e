@@ -1,0 +1,12 @@
+import { WorkspaceElement } from '@edifice.io/client';
+import { TabsItemProps } from '../../components';
+import { MediaLibraryRef, MediaLibraryResult } from '../../modules/multimedia';
+declare const useMediaLibrary: () => {
+    ref: import('react').RefObject<MediaLibraryRef>;
+    libraryMedia: any;
+    setLibraryMedia: import('react').Dispatch<any>;
+    onCancel: (uploads?: WorkspaceElement[]) => Promise<void>;
+    onSuccess: (result: MediaLibraryResult) => void;
+    onTabChange: (_tab: TabsItemProps, uploads?: WorkspaceElement[]) => Promise<void>;
+};
+export default useMediaLibrary;

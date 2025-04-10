@@ -1,0 +1,78 @@
+import { jsx } from "react/jsx-runtime";
+import { forwardRef, useState, useRef, useEffect, createElement } from "react";
+import clsx from "clsx";
+import { mergeRefs } from "../../utilities/refs/ref.js";
+import Tooltip from "../Tooltip/Tooltip.js";
+import Button from "../Button/Button.js";
+import Dropdown from "../Dropdown/Dropdown.js";
+import IconButton from "../Button/IconButton.js";
+const Toolbar = /* @__PURE__ */ forwardRef(({
+  items,
+  variant = "default",
+  align = "space",
+  isBlock = !1,
+  ariaControls,
+  className
+}, ref) => {
+  const [firstFocusableItemIndex, setFirstFocusableItemIndex] = useState(0), [a11yNavigationItems, setA11yNavigationItems] = useState([]), [firstA11yNavigationItem, setFirstA11yNavigationItem] = useState(), [lastA11yNavigationItem, setA11yNavigationLastItem] = useState(), divToolbarRef = useRef(), classes = clsx("toolbar z-1000 bg-white", className, {
+    default: variant === "default",
+    "no-shadow": variant === "no-shadow",
+    "d-flex": isBlock,
+    "d-inline-flex": !isBlock,
+    "overflow-x-auto": isBlock,
+    "justify-content-start": align === "left",
+    "justify-content-between": align === "space",
+    "justify-content-center": align === "center",
+    "justify-content-end": align === "right"
+  });
+  useEffect(() => {
+    var _a;
+    const buttons = (_a = divToolbarRef.current) == null ? void 0 : _a.querySelectorAll("button"), enabledItems = [];
+    let isfirstItemSet = !1;
+    buttons == null || buttons.forEach((item) => {
+      item.disabled || (isfirstItemSet || (setFirstA11yNavigationItem(item), isfirstItemSet = !0), setA11yNavigationLastItem(item), enabledItems.push(item));
+    }), setA11yNavigationItems(enabledItems), setFirstFocusableItemIndex(items.findIndex((item) => (item.type === "button" || item.type === "icon") && !item.props.disabled));
+  }, [items]);
+  const handleFocus = (event) => {
+    event.target.classList.add("focus");
+  }, handleBlur = (event) => {
+    event.target.classList.remove("focus");
+  }, handleKeyDown = (event) => {
+    var _a, _b;
+    const index = a11yNavigationItems.indexOf(event.currentTarget);
+    switch (event.code) {
+      case "ArrowLeft":
+        event.currentTarget === firstA11yNavigationItem ? lastA11yNavigationItem == null || lastA11yNavigationItem.focus() : (_a = a11yNavigationItems[index - 1]) == null || _a.focus();
+        break;
+      case "ArrowRight":
+        event.currentTarget === lastA11yNavigationItem ? firstA11yNavigationItem == null || firstA11yNavigationItem.focus() : (_b = a11yNavigationItems[index + 1]) == null || _b.focus();
+        break;
+    }
+  }, renderTooltipMessage = (item) => {
+    var _a;
+    return typeof item.tooltip == "string" ? item.tooltip : (_a = item.tooltip) == null ? void 0 : _a.message;
+  }, renderTooltipPosition = (item) => {
+    var _a;
+    return typeof item.tooltip != "string" ? (_a = item.tooltip) == null ? void 0 : _a.position : "top";
+  };
+  return /* @__PURE__ */ jsx("div", { ref: mergeRefs(ref, divToolbarRef), className: classes, role: "toolbar", "aria-label": "Text Formatting", "aria-controls": ariaControls, onFocus: handleFocus, onBlur: handleBlur, children: items.map((item, index) => {
+    if (item.visibility === "hide") return null;
+    switch (item.type) {
+      case "divider":
+        return /* @__PURE__ */ jsx("div", { className: "toolbar-divider" }, item.name ?? index);
+      case "button":
+        return /* @__PURE__ */ jsx(Tooltip, { message: renderTooltipMessage(item), placement: renderTooltipPosition(item), children: /* @__PURE__ */ createElement(Button, { ...item.props, key: item.name ?? index, color: item.props.color ? item.props.color : "tertiary", variant: "ghost", tabIndex: index === firstFocusableItemIndex ? 0 : -1, onKeyDown: handleKeyDown }) }, item.name ?? index);
+      case "icon":
+        return /* @__PURE__ */ jsx(Tooltip, { message: renderTooltipMessage(item), placement: renderTooltipPosition(item), children: /* @__PURE__ */ createElement(IconButton, { ...item.props, key: item.name ?? index, color: item.props.color ? item.props.color : "tertiary", variant: item.props.variant ? item.props.variant : "ghost", tabIndex: index === firstFocusableItemIndex ? 0 : -1, onKeyDown: handleKeyDown }) }, item.name ?? index);
+      case "dropdown":
+        return /* @__PURE__ */ createElement(Dropdown, { ...item.props, key: item.name ?? index, extraTriggerKeyDownHandler: handleKeyDown, overflow: item.overflow });
+      case "primary":
+        return /* @__PURE__ */ jsx(Tooltip, { message: renderTooltipMessage(item), placement: renderTooltipPosition(item), children: /* @__PURE__ */ jsx(Button, { ...item.props, variant: "filled", color: "primary", tabIndex: index === firstFocusableItemIndex ? 0 : -1, onKeyDown: handleKeyDown }) }, item.name ?? index);
+    }
+    return null;
+  }) });
+});
+export {
+  Toolbar,
+  Toolbar as default
+};

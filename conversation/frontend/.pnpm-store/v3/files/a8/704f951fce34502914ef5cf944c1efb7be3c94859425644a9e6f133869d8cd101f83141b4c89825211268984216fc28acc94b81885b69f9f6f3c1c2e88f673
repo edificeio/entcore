@@ -1,0 +1,19 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import Modal from "../../../components/Modal/Modal.js";
+import Button from "../../../components/Button/Button.js";
+const DeleteModal = ({
+  isOpen,
+  onCancel,
+  onSuccess
+}) => /* @__PURE__ */ jsxs(Modal, { isOpen, onModalClose: onCancel, id: "delete-comment-modal", children: [
+  /* @__PURE__ */ jsx(Modal.Header, { onModalClose: onCancel, children: "Suppression de commentaire" }),
+  /* @__PURE__ */ jsx(Modal.Body, { children: /* @__PURE__ */ jsx("p", { children: "Voulez-vous vraiment supprimer ce commentaire ?" }) }),
+  /* @__PURE__ */ jsxs(Modal.Footer, { children: [
+    /* @__PURE__ */ jsx(Button, { color: "tertiary", onClick: onCancel, type: "button", variant: "ghost", children: "Annuler" }),
+    /* @__PURE__ */ jsx(Button, { color: "danger", onClick: onSuccess, type: "button", variant: "filled", children: "Supprimer le commentaire" })
+  ] })
+] });
+export {
+  DeleteModal,
+  DeleteModal as default
+};

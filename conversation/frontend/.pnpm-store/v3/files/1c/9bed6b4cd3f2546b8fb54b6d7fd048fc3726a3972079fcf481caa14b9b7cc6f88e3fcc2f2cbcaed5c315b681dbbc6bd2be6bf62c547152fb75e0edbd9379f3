@@ -1,0 +1,38 @@
+import { ReactionDetailsData } from '@edifice.io/client';
+import { ReactionModalCard } from './ReactionModal.Card';
+/**
+ * Props for the ReactionModal component.
+ */
+export interface ReactionModalProps {
+    /**
+     * The unique identifier for the resource.
+     */
+    resourceId: string;
+    /**
+     * The number of items to display per page. Optional.
+     */
+    pageSize?: number;
+    /**
+     * Indicates whether the modal is open.
+     */
+    isOpen: boolean;
+    /**
+     * Callback function to handle the modal close event.
+     */
+    onModalClose(): void;
+    /**
+     * Function to load reaction details for a given resource.
+     *
+     * @param resourceId - The unique identifier for the resource.
+     * @param page - The current page number.
+     * @param size - The number of items to display per page.
+     * @returns A promise that resolves to the reaction details data or undefined.
+     */
+    reactionDetailsLoader: (resourceId: string, page: number, size: number) => Promise<ReactionDetailsData | undefined>;
+}
+declare const ReactionModal: {
+    ({ resourceId, pageSize, reactionDetailsLoader: loadReactionDetails, onModalClose, ...restProps }: ReactionModalProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+    Card: typeof ReactionModalCard;
+};
+export default ReactionModal;

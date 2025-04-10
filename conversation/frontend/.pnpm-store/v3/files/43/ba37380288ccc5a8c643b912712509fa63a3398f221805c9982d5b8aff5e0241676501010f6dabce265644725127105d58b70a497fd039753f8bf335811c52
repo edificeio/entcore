@@ -1,0 +1,26 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { convertMsToMS } from "@edifice.io/utilities";
+import SvgIconMic from "../../icons/components/IconMic.js";
+import SvgIconPause from "../../icons/components/IconPause.js";
+import SvgIconRecord from "../../icons/components/IconRecord.js";
+const AudioRecorderTimer = ({
+  recordState,
+  playState,
+  recordTime,
+  audioTime,
+  maxDuration
+}) => /* @__PURE__ */ jsxs("div", { className: "audio-recorder-time my-16 mx-auto", children: [
+  playState === "IDLE" && /* @__PURE__ */ jsxs("div", { className: "d-flex align-items-center", children: [
+    recordState === "PAUSED" ? /* @__PURE__ */ jsx(SvgIconPause, { width: 12, height: 12, className: "me-8 text-danger" }) : /* @__PURE__ */ jsx(SvgIconRecord, { width: 12, height: 12, className: "me-8 text-danger" }),
+    convertMsToMS(recordState !== "IDLE" ? recordTime : 0) + " / " + convertMsToMS(maxDuration)
+  ] }),
+  playState !== "IDLE" && /* @__PURE__ */ jsxs("div", { className: "d-flex align-items-center mx-auto", children: [
+    /* @__PURE__ */ jsx(SvgIconMic, { width: 12, height: 12, className: "me-8" }),
+    convertMsToMS(audioTime * 1e3),
+    " /",
+    convertMsToMS(recordTime)
+  ] })
+] });
+export {
+  AudioRecorderTimer as default
+};

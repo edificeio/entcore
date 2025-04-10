@@ -1,0 +1,21 @@
+import { useState } from "react";
+import { odeServices } from "@edifice.io/client";
+const useSpeechRecognition = (editor) => {
+  const [isActive, setActive] = useState(!1), toggle = () => {
+    if (isActive)
+      editor == null || editor.commands.stopSpeechRecognition(), setActive(!1);
+    else {
+      odeServices.data().trackSpeechAndText("STT");
+      const started = (editor == null ? void 0 : editor.commands.startSpeechRecognition()) || !1;
+      setActive(started);
+    }
+  };
+  return {
+    isAvailable: !!(window.SpeechRecognition || window.webkitSpeechRecognition),
+    isActive,
+    toggle
+  };
+};
+export {
+  useSpeechRecognition
+};

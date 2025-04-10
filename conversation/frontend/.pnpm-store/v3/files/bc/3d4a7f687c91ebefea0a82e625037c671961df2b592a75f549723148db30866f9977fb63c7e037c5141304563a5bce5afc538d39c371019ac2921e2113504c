@@ -1,0 +1,28 @@
+import { jsx, jsxs, Fragment } from "react/jsx-runtime";
+import { forwardRef } from "react";
+import { useTranslation } from "react-i18next";
+import SvgIconRafterRight from "../../modules/icons/components/IconRafterRight.js";
+import Heading from "../Heading/Heading.js";
+import BreadcrumbItem from "./BreadcrumbItem.js";
+import BreadcrumbList from "./BreadcrumbList.js";
+import BreadcrumbNav from "./BreadcrumbNav.js";
+import AppIcon from "../AppIcon/AppIcon.js";
+const Breadcrumb = /* @__PURE__ */ forwardRef(({
+  app,
+  name
+}, ref) => {
+  const {
+    t
+  } = useTranslation();
+  return /* @__PURE__ */ jsx(BreadcrumbNav, { app, ref, className: "mw-100", children: /* @__PURE__ */ jsx(BreadcrumbList, { className: "gap-12 mw-100", children: name ? /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx(BreadcrumbItem, { children: /* @__PURE__ */ jsx("a", { href: app == null ? void 0 : app.address, className: "d-flex", "aria-label": t(app == null ? void 0 : app.displayName), children: /* @__PURE__ */ jsx(AppIcon, { app, size: "40" }) }) }),
+    /* @__PURE__ */ jsx(BreadcrumbItem, { children: /* @__PURE__ */ jsx(SvgIconRafterRight, { color: "var(--edifice-gray-600)", width: 20, height: 20 }) }),
+    /* @__PURE__ */ jsx(BreadcrumbItem, { className: "text-truncate", children: /* @__PURE__ */ jsx(Heading, { level: "h1", headingStyle: "h3", className: "text-truncate", children: name }) })
+  ] }) : /* @__PURE__ */ jsxs(BreadcrumbItem, { className: "gap-12 d-flex align-items-center", children: [
+    /* @__PURE__ */ jsx("a", { href: app == null ? void 0 : app.address, className: "d-flex", "aria-label": t(app == null ? void 0 : app.displayName), children: /* @__PURE__ */ jsx(AppIcon, { app, size: "40" }) }),
+    /* @__PURE__ */ jsx(Heading, { level: "h1", headingStyle: "h3", className: "d-none d-md-flex", children: t(app == null ? void 0 : app.displayName) })
+  ] }) }) });
+});
+export {
+  Breadcrumb as default
+};

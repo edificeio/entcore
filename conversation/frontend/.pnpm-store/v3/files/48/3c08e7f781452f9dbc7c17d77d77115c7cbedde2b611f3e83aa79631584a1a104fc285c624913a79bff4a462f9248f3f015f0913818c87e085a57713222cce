@@ -1,0 +1,5 @@
+import "@edifice-ui/react";
+import { PublishModal as d } from "@edifice-ui/react";
+export {
+  d as default
+};

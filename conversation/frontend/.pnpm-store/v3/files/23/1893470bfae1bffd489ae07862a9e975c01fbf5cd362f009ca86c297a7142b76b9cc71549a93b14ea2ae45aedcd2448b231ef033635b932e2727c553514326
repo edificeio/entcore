@@ -1,0 +1,4 @@
+const hasRight = (shareRight, shareAction) => shareRight.actions.filter((a) => shareAction.id === a.id).length > 0;
+export {
+  hasRight
+};

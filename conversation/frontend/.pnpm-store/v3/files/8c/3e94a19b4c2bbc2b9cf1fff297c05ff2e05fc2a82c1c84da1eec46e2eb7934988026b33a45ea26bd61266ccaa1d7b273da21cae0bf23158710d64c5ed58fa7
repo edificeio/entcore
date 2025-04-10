@@ -1,0 +1,27 @@
+import { jsx } from "react/jsx-runtime";
+import { useMemo } from "react";
+import { useMenu } from "../hooks/useMenu.js";
+import { MenuButton } from "./MenuButton.js";
+import { MenuContext } from "./MenuContext.js";
+import { MenuItem } from "./MenuItem.js";
+const Menu = ({
+  label,
+  children
+}) => {
+  const {
+    menuRef,
+    childProps,
+    menuItems,
+    onKeyDown
+  } = useMenu(), values = useMemo(() => ({
+    menuRef,
+    menuItems,
+    childProps
+  }), [childProps, menuItems, menuRef]);
+  return /* @__PURE__ */ jsx(MenuContext.Provider, { value: values, children: /* @__PURE__ */ jsx("nav", { "aria-label": label, className: "menu", children: /* @__PURE__ */ jsx("ul", { ref: menuRef, role: "menubar", "aria-label": label, onKeyDown, "data-menubar-list": !0, className: "list-unstyled d-flex flex-column gap-4", children }) }) });
+};
+Menu.Item = MenuItem;
+Menu.Button = MenuButton;
+export {
+  Menu
+};

@@ -1,0 +1,217 @@
+import { jsx, jsxs, Fragment } from "react/jsx-runtime";
+import { forwardRef, useRef, useImperativeHandle, useState, useMemo, useEffect, useCallback } from "react";
+import { odeServices } from "@edifice.io/client";
+import { useTranslation } from "react-i18next";
+import SvgIconApplications from "../../icons/components/IconApplications.js";
+import SvgIconCode from "../../icons/components/IconCode.js";
+import SvgIconFolder from "../../icons/components/IconFolder.js";
+import SvgIconGlobe from "../../icons/components/IconGlobe.js";
+import SvgIconMic from "../../icons/components/IconMic.js";
+import SvgIconRecordVideo from "../../icons/components/IconRecordVideo.js";
+import SvgIconSmartphone from "../../icons/components/IconSmartphone.js";
+import { InnerTabs } from "./innertabs/index.js";
+import { MediaLibraryContext } from "./MediaLibraryContext.js";
+import useHttpErrorToast from "../../../hooks/useHttpErrorToast/useHttpErrorToast.js";
+import useHasWorkflow from "../../../hooks/useHasWorkflow/useHasWorkflow.js";
+import Modal from "../../../components/Modal/Modal.js";
+import { Tabs } from "../../../components/Tabs/components/Tabs.js";
+import Button from "../../../components/Button/Button.js";
+const orderedTabs = [
+  "audio-capture",
+  "video-capture",
+  "internal-link",
+  // Link to a shared resource (previously known as "internal linker")
+  "external-link",
+  // Link to an external website (previously known as "external linker")
+  "iframe",
+  // Framed website
+  "upload",
+  // Filesystem browser + drag'n'drop of files
+  "workspace",
+  // Media browser
+  "video-embedder"
+  // Link to a hosted video
+], mediaLibraryTypes = {
+  none: null,
+  audio: {
+    title: "bbm.audio.modal.title",
+    defaultTab: "audio-capture"
+  },
+  video: {
+    title: "bbm.video.modal.title",
+    defaultTab: "video-capture"
+  },
+  image: {
+    title: "bbm.image.modal.title",
+    defaultTab: "workspace"
+  },
+  attachment: {
+    title: "bbm.attachment.modal.title",
+    defaultTab: "workspace"
+  },
+  hyperlink: {
+    title: "bbm.link.modal.title",
+    defaultTab: "linker"
+  },
+  embedder: {
+    title: "bbm.embed.modal.title",
+    defaultTab: "iframe"
+  }
+}, MediaLibrary = /* @__PURE__ */ forwardRef(({
+  appCode,
+  visibility,
+  multiple,
+  onSuccess,
+  onCancel,
+  onTabChange
+}, ref) => {
+  var _a;
+  const linkTabProps = useRef(), refModal = useRef(null);
+  useImperativeHandle(ref, () => ({
+    show,
+    hide,
+    showLink,
+    type,
+    ...refModal.current
+  })), useHttpErrorToast({
+    isDismissible: !0,
+    duration: 1 / 0
+  });
+  const {
+    t
+  } = useTranslation(), workspaceCreateWorkflow = useHasWorkflow("org.entcore.workspace.controllers.WorkspaceController|addDocument"), videoCaptureWorkflow = useHasWorkflow("com.opendigitaleducation.video.controllers.VideoController|capture"), [type, setType] = useState(null), availableTabs = {
+    workspace: {
+      id: "workspace",
+      icon: /* @__PURE__ */ jsx(SvgIconFolder, {}),
+      label: t("bbm.workspace"),
+      content: /* @__PURE__ */ jsx(InnerTabs.Workspace, {}),
+      availableFor: ["audio", "video", "image", "attachment"],
+      isEnable: null
+    },
+    upload: {
+      id: "upload",
+      icon: /* @__PURE__ */ jsx(SvgIconSmartphone, {}),
+      label: t("bbm.device"),
+      content: /* @__PURE__ */ jsx(InnerTabs.Upload, {}),
+      availableFor: ["audio", "video", "image", "attachment"],
+      isEnable: () => !!workspaceCreateWorkflow
+    },
+    "video-capture": {
+      id: "video-capture",
+      icon: /* @__PURE__ */ jsx(SvgIconRecordVideo, {}),
+      label: t("bbm.video"),
+      content: /* @__PURE__ */ jsx(InnerTabs.Video, {}),
+      availableFor: ["video"],
+      isEnable: () => !!videoCaptureWorkflow
+    },
+    "audio-capture": {
+      id: "audio-capture",
+      icon: /* @__PURE__ */ jsx(SvgIconMic, {}),
+      label: t("bbm.audio"),
+      content: /* @__PURE__ */ jsx(InnerTabs.Audio, {}),
+      availableFor: ["audio"],
+      isEnable: () => !!workspaceCreateWorkflow
+    },
+    "external-link": {
+      id: "external-link",
+      icon: /* @__PURE__ */ jsx(SvgIconGlobe, {}),
+      label: t("bbm.linker.ext"),
+      content: /* @__PURE__ */ jsx(InnerTabs.ExternalLink, { ...linkTabProps.current }),
+      availableFor: ["hyperlink"],
+      isEnable: null
+    },
+    "internal-link": {
+      id: "internal-link",
+      icon: /* @__PURE__ */ jsx(SvgIconApplications, {}),
+      label: t("bbm.linker.int"),
+      content: /* @__PURE__ */ jsx(InnerTabs.InternalLink, { ...linkTabProps.current }),
+      availableFor: ["hyperlink"],
+      isEnable: null
+    },
+    iframe: {
+      id: "iframe",
+      icon: /* @__PURE__ */ jsx(SvgIconCode, {}),
+      label: t("bbm.embed"),
+      content: /* @__PURE__ */ jsx(InnerTabs.Iframe, {}),
+      availableFor: ["embedder"],
+      isEnable: null
+    },
+    "video-embedder": {
+      id: "iframe",
+      icon: /* @__PURE__ */ jsx(SvgIconCode, {}),
+      label: t("bbm.embed"),
+      content: /* @__PURE__ */ jsx(InnerTabs.VideoEmbedder, {}),
+      availableFor: ["video"],
+      isEnable: null
+    }
+  }, tabs = useMemo(
+    () => orderedTabs.map((key) => availableTabs[key]).filter((tab) => {
+      var _a2;
+      return ((_a2 = tab.isEnable) == null ? void 0 : _a2.call(tab)) !== !1 && (tab.availableFor.length === 0 || tab.availableFor.includes(type));
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [type]
+  ), [defaultTabId, setDefaultTabId] = useState(), defaultTabIdx = useMemo(() => {
+    const index = tabs.findIndex((t2) => t2.id === defaultTabId);
+    return 0 > index || index >= tabs.length ? 0 : index;
+  }, [tabs, defaultTabId]), [resultCounter, setResultCounter] = useState(), [result, setResult] = useState(), [deletionsOnCancel, setDeletionsOnCancel] = useState([]), [onSuccessAction, setPreSuccess] = useState();
+  function setVisibleTab(tab) {
+    throw tabs.findIndex((t2) => t2.id === tab) < 0 ? "tab.not.visible" : "not.implemented.yet";
+  }
+  function switchType(type2) {
+    linkTabProps.current = void 0, setDefaultTabId(void 0), setType(type2);
+  }
+  const show = (type2) => {
+    setType(type2);
+  }, hide = () => {
+    setType(null);
+  }, showLink = (props) => {
+    linkTabProps.current = props, "resourceId" in props || "appPrefix" in props || setDefaultTabId("external-link"), setType("hyperlink");
+  };
+  useEffect(() => {
+    var _a2, _b;
+    const typeKey = type || "none";
+    !defaultTabId && typeof ((_a2 = mediaLibraryTypes[typeKey]) == null ? void 0 : _a2.defaultTab) == "string" && setDefaultTabId((_b = mediaLibraryTypes[typeKey]) == null ? void 0 : _b.defaultTab);
+  }, [defaultTabId, type]);
+  const modalHeader = t(((_a = mediaLibraryTypes[type ?? "none"]) == null ? void 0 : _a.title) ?? "bbm"), resetState = () => {
+    linkTabProps.current = void 0, setResult(void 0), setResultCounter(void 0), setDefaultTabId(void 0), setPreSuccess(void 0), setDeletionsOnCancel([]);
+  }, handleTabChange = (tab) => {
+    onTabChange == null || onTabChange(tab, deletionsOnCancel), resetState();
+  }, handleOnSuccess = useCallback(() => {
+    const triggerSuccess = async (result2) => {
+      result2 instanceof Array && ["protected", "public"].findIndex((v) => v === visibility) >= 0 && (result2 = await odeServices.workspace().transferDocuments(result2, appCode ?? "media-library", visibility)), onSuccess(result2);
+    };
+    onSuccessAction ? onSuccessAction().then((result2) => {
+      triggerSuccess(result2);
+    }) : result && triggerSuccess(result), resetState();
+  }, [onSuccessAction, result, onSuccess, visibility, appCode]), handleOnCancel = () => {
+    onCancel(deletionsOnCancel), resetState();
+  };
+  return type && /* @__PURE__ */ jsx(MediaLibraryContext.Provider, { value: {
+    appCode,
+    visibility,
+    multiple,
+    type,
+    setResultCounter,
+    setResult,
+    setCancellable: (uploads) => setDeletionsOnCancel([...uploads]),
+    setVisibleTab,
+    switchType,
+    setPreSuccess
+  }, children: /* @__PURE__ */ jsxs(Modal, { id: "media-library", isOpen: type !== null, onModalClose: handleOnCancel, size: "lg", viewport: !0, scrollable: !0, children: [
+    /* @__PURE__ */ jsx(Modal.Header, { onModalClose: handleOnCancel, children: modalHeader }),
+    /* @__PURE__ */ jsx(Tabs, { items: tabs, defaultId: tabs[defaultTabIdx].id, onChange: handleTabChange, children: (currentItem) => /* @__PURE__ */ jsxs(Fragment, { children: [
+      tabs.length > 1 && /* @__PURE__ */ jsx(Tabs.List, { className: "mt-16" }),
+      /* @__PURE__ */ jsx(Modal.Body, { className: "d-flex", children: /* @__PURE__ */ jsx(Tabs.Panel, { currentItem, children: currentItem == null ? void 0 : currentItem.content }) })
+    ] }) }),
+    /* @__PURE__ */ jsxs(Modal.Footer, { children: [
+      /* @__PURE__ */ jsx(Button, { type: "button", color: "tertiary", variant: "ghost", onClick: handleOnCancel, children: t("cancel") }),
+      /* @__PURE__ */ jsx(Button, { type: "button", color: "primary", variant: "filled", disabled: typeof result > "u", onClick: handleOnSuccess, children: resultCounter && resultCounter > 1 ? t("addMultiple", {
+        number: resultCounter
+      }) : t("add") })
+    ] })
+  ] }) });
+});
+export {
+  MediaLibrary as default
+};

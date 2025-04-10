@@ -1,0 +1,16 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+const SvgIconTrendingUp = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs("svg", { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", fill: "none", viewBox: "0 0 24 24", "aria-hidden": "true", "aria-labelledby": titleId, ...props, children: [
+  title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+  /* @__PURE__ */ jsxs("g", { fill: "currentColor", fillRule: "evenodd", clipPath: "url(#icon-trending-up_svg__a)", clipRule: "evenodd", children: [
+    /* @__PURE__ */ jsx("path", { d: "M23.707 5.293a1 1 0 0 1 0 1.414l-9.5 9.5a1 1 0 0 1-1.414 0L8.5 11.914l-6.793 6.793a1 1 0 0 1-1.414-1.414l7.5-7.5a1 1 0 0 1 1.414 0l4.293 4.293 8.793-8.793a1 1 0 0 1 1.414 0" }),
+    /* @__PURE__ */ jsx("path", { d: "M16 6a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0V7h-5a1 1 0 0 1-1-1" })
+  ] }),
+  /* @__PURE__ */ jsx("defs", { children: /* @__PURE__ */ jsx("clipPath", { id: "icon-trending-up_svg__a", children: /* @__PURE__ */ jsx("path", { fill: "#fff", d: "M0 0h24v24H0z" }) }) })
+] });
+export {
+  SvgIconTrendingUp as default
+};

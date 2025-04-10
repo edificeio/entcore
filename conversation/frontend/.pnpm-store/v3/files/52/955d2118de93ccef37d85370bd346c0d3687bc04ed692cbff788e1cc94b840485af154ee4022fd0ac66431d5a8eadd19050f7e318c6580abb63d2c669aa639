@@ -1,0 +1,14 @@
+import { jsx } from "react/jsx-runtime";
+import { forwardRef } from "react";
+import clsx from "clsx";
+const BreadcrumbItem = /* @__PURE__ */ forwardRef(({
+  children,
+  className,
+  ...restProps
+}, forwardRef2) => {
+  const classes = clsx("breadcrumb-item", className);
+  return /* @__PURE__ */ jsx("li", { ref: forwardRef2, className: classes, ...restProps, children });
+});
+export {
+  BreadcrumbItem as default
+};

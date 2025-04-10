@@ -1,0 +1,1 @@
+"use strict";Object.defineProperty(exports,Symbol.toStringTag,{value:"Module"});const e={blog:"Blog",mindmap:"MindMap",scrapbook:"ScrapBook",collaborativewall:"CollaborativeWall",timelinegenerator:"TimelineGenerator",wiki:"Wiki",exercizer:"Exercizer"};exports.libraryMaps=e;

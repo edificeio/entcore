@@ -1,0 +1,27 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { forwardRef } from "react";
+import clsx from "clsx";
+import SvgIconLoader from "../../modules/icons/components/IconLoader.js";
+const Loading = /* @__PURE__ */ forwardRef((props, ref) => {
+  const {
+    isLoading,
+    loadingIcon,
+    loadingPosition = "left",
+    children,
+    className,
+    ...restProps
+  } = props, getLoadingIcon = () => {
+    let icon;
+    return loadingIcon ? icon = loadingIcon : icon = /* @__PURE__ */ jsx(SvgIconLoader, { ...restProps, "aria-label": "Loading" }), icon;
+  }, classes = clsx("loading d-flex align-items-center gap-8", {
+    "is-loading": isLoading
+  }, className);
+  return /* @__PURE__ */ jsxs("div", { className: classes, role: "status", ref, children: [
+    (!loadingPosition || loadingPosition === "left") && getLoadingIcon(),
+    children,
+    loadingPosition === "right" && getLoadingIcon()
+  ] });
+});
+export {
+  Loading as default
+};

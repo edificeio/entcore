@@ -1,0 +1,15 @@
+import { Editor } from '@tiptap/react';
+interface LinkToolbarProps {
+    /**
+     * editor instance
+     */
+    editor: Editor | null;
+    /** Handle Edit event */
+    onEdit: (attrs: any) => void;
+    /** Handle Open event */
+    onOpen: (attrs: any) => void;
+    /** Handle Unlink event */
+    onUnlink: (attrs: any) => void;
+}
+declare const LinkToolbar: ({ editor, onEdit, onOpen, onUnlink, }: LinkToolbarProps) => import("react/jsx-runtime").JSX.Element;
+export default LinkToolbar;

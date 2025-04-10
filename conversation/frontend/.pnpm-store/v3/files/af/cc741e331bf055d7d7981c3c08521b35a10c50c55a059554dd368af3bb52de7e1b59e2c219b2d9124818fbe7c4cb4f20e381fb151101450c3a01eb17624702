@@ -1,0 +1,29 @@
+import { ReactNode } from "react";
+export interface DropdownItemProps {
+    /**
+     * Object type
+     */
+    type?: "action" | "select";
+    /**
+     * Icon component
+     */
+    icon?: JSX.Element;
+    /**
+     * Content
+     */
+    children: ReactNode;
+    /**
+     *
+     * Action on click
+     */
+    onClick?: (event: React.MouseEvent) => void;
+    /**
+     * Additional class name
+     */
+    className?: string;
+}
+declare const DropdownItem: {
+    ({ type, icon, onClick, children, className, ...restProps }: DropdownItemProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default DropdownItem;

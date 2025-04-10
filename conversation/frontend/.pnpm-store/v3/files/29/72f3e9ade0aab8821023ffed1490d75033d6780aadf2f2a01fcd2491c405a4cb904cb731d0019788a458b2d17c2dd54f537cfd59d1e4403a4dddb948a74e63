@@ -1,0 +1,4 @@
+/**
+ * Object literal to find correct app code for Library Webapp
+ */
+export declare const libraryMaps: Record<string, string>;

@@ -1,0 +1,32 @@
+import { jsx } from "react/jsx-runtime";
+import { forwardRef, useMemo } from "react";
+import { Context } from "./FormContext.js";
+import FormText from "./FormText.js";
+import Input from "../Input/Input.js";
+import Label from "../Label/Label.js";
+const Root = /* @__PURE__ */ forwardRef(({
+  children,
+  className,
+  id,
+  isOptional,
+  isReadOnly,
+  isRequired,
+  status,
+  ...restProps
+}, ref) => {
+  const values = useMemo(() => ({
+    id,
+    isOptional,
+    isRequired,
+    isReadOnly,
+    status
+  }), [id, isOptional, isReadOnly, isRequired, status]);
+  return /* @__PURE__ */ jsx(Context.Provider, { value: values, children: /* @__PURE__ */ jsx("div", { ref, className, ...restProps, children }) });
+}), FormControl = /* @__PURE__ */ Object.assign(Root, {
+  Label,
+  Input,
+  Text: FormText
+});
+export {
+  FormControl as default
+};

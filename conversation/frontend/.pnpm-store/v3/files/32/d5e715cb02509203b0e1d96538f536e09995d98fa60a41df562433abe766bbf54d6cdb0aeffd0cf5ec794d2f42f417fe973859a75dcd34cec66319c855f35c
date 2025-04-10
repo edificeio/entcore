@@ -1,0 +1,12 @@
+import { type ReactNode } from "react";
+import { IOdeTheme } from "edifice-ts-client";
+export interface ThemeProps {
+    children: ReactNode;
+    defaultTheme?: "one" | "neo" | "none";
+}
+export interface ThemeContextProps {
+    theme: IOdeTheme | undefined;
+}
+export declare const ThemeContext: import("react").Context<ThemeContextProps | null>;
+export declare function ThemeProvider({ defaultTheme, children }: ThemeProps): import("react/jsx-runtime").JSX.Element;
+export declare function useOdeTheme(): ThemeContextProps;

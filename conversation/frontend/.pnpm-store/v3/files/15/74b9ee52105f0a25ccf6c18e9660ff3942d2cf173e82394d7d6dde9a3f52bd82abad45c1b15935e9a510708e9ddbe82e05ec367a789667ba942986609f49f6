@@ -1,0 +1,7 @@
+import { Control } from "react-hook-form";
+import { FormDataProps } from "../hooks/usePublishModal";
+export declare const SubjectsDropdown: ({ control, selectedSubjectAreas, selectSubjects, }: {
+    control: Control<FormDataProps, any>;
+    selectedSubjectAreas: Array<string | number>;
+    selectSubjects: (value: string | number) => void;
+}) => import("react/jsx-runtime").JSX.Element;

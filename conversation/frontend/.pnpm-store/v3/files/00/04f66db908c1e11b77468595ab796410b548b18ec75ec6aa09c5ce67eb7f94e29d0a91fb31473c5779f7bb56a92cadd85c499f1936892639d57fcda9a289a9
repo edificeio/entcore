@@ -1,0 +1,33 @@
+import { toBlob, updateImageFromBlob, createImageSettings, resizeStage } from "./misc.js";
+async function rotate(application, spriteName) {
+  const sprite = application == null ? void 0 : application.stage.getChildByName(spriteName, !0);
+  if (application && sprite) {
+    if (!application) return;
+    const blobBefore = await toBlob(application), mergedSprite = await updateImageFromBlob(application, {
+      imgDatasource: blobBefore,
+      spriteName,
+      settings: createImageSettings({
+        application,
+        sprite
+      })
+    });
+    if (!mergedSprite)
+      return;
+    let backupOldMaxHeight, backupOldVisibility;
+    const canvas = application.view;
+    canvas.style && (backupOldMaxHeight = canvas.style.maxHeight ?? "", backupOldVisibility = canvas.style.visibility ?? "", canvas.style.maxHeight = `${canvas.clientHeight}px`, canvas.style.visibility = "hidden"), mergedSprite.rotation += Math.PI / 2, resizeStage({
+      application,
+      sprite: mergedSprite,
+      newHeight: mergedSprite.width,
+      newWidth: mergedSprite.height
+    }), application.render();
+    const blobAfter = await toBlob(application);
+    backupOldMaxHeight !== void 0 && (canvas.style.maxHeight = backupOldMaxHeight), backupOldVisibility !== void 0 && (canvas.style.visibility = backupOldVisibility), await updateImageFromBlob(application, {
+      imgDatasource: blobAfter,
+      spriteName
+    });
+  }
+}
+export {
+  rotate
+};

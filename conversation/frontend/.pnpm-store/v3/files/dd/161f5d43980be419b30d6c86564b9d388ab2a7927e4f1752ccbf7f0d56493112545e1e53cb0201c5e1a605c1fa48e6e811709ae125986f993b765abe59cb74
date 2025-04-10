@@ -1,0 +1,47 @@
+import { WorkspaceVisibility } from '@edifice.io/client';
+import { Content, Extensions, FocusPosition, JSONContent } from '@tiptap/react';
+export interface EditorRef {
+    /** Get the current content. */
+    getContent: (as: 'html' | 'json' | 'plain') => undefined | string | JSONContent;
+    /** Get speech synthetisis current state */
+    isSpeeching: () => boolean;
+    /** [De]activate speech synthetisis */
+    toogleSpeechSynthetisis: () => boolean;
+}
+/**
+ * Editor component properties
+ */
+export interface EditorProps {
+    /**
+     * (Optional) id of the HTML element.
+     * Useful with an external `<FormControl id=...><Label/>`.
+     */
+    id?: string;
+    /** Rich content to render. */
+    content: Content;
+    /**
+     * Rendering mode : `edit` to allow content modifications, or `read` (default)
+     * Switching to `edit` mode will also render the toolbar
+     * (unless `toolbar` property is `none`).
+     */
+    mode?: 'edit' | 'read';
+    /** Toolbar to display in `edit` mode. */
+    toolbar?: 'full' | 'none';
+    /** Display with or without a border */
+    variant?: 'outline' | 'ghost';
+    /** Set focus position to the editor */
+    focus?: FocusPosition;
+    /** Editor placeholder content */
+    placeholder?: string;
+    /** Visibility of the content created
+     *  this will impact where the uploaded files will be upload and the availability of the public media files  */
+    visibility?: WorkspaceVisibility;
+    /** Function to listen if content change */
+    onContentChange?: ({ editor }: {
+        editor: any;
+    }) => void;
+    /** Extensions to add to the editor */
+    extensions?: Extensions;
+}
+declare const Editor: import('react').ForwardRefExoticComponent<EditorProps & import('react').RefAttributes<EditorRef>>;
+export default Editor;

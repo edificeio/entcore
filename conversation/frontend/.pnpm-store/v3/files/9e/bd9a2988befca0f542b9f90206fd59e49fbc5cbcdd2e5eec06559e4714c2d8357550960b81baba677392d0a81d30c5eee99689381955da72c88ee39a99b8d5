@@ -1,0 +1,40 @@
+import { jsx as a } from "react/jsx-runtime";
+import { usePaths as u, useOdeClient as d, useOdeTheme as m, EmptyScreen as x } from "@edifice-ui/react";
+import { useTranslation as S } from "react-i18next";
+import "@tanstack/react-query";
+import "edifice-ts-client";
+import "i18next";
+import { u as y, b as f } from "./index2.js";
+function P() {
+  const [o] = u(), {
+    appCode: r
+  } = d(), {
+    theme: e
+  } = m(), {
+    t: s
+  } = S(), l = y((i) => i.config), {
+    data: n
+  } = f(l == null ? void 0 : l.actions), t = n == null ? void 0 : n.find((i) => i.id === "create"), p = () => t != null && t.available && (e != null && e.is1d) ? s("explorer.emptyScreen.txt1d.create", {
+    ns: r
+  }) : t != null && t.available && !(e != null && e.is1d) ? s("explorer.emptyScreen.txt2d.create", {
+    ns: r
+  }) : !(t != null && t.available) && (e != null && e.is1d) ? s("explorer.emptyScreen.txt1d.consultation", {
+    ns: r
+  }) : s("explorer.emptyScreen.txt2d.consultation", {
+    ns: r
+  }), c = () => t != null && t.available && (e != null && e.is1d) ? s("explorer.emptyScreen.title1d.create", {
+    ns: r
+  }) : t != null && t.available && !(e != null && e.is1d) ? s("explorer.emptyScreen.title2d.create", {
+    ns: r
+  }) : !(t != null && t.available) && (e != null && e.is1d) ? s("explorer.emptyScreen.title1d.consultation", {
+    ns: r
+  }) : s("explorer.emptyScreen.title2d.consultation", {
+    ns: r
+  });
+  return /* @__PURE__ */ a(x, { imageSrc: `${o}/emptyscreen/illu-${r}.svg`, imageAlt: s("explorer.emptyScreen.app.alt", {
+    ns: r
+  }), title: c(), text: p() });
+}
+export {
+  P as default
+};

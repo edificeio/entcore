@@ -1,0 +1,10 @@
+/// <reference types="react" />
+export declare const useMenu: () => {
+    menuRef: import("react").MutableRefObject<HTMLUListElement | null>;
+    menuItems: Set<HTMLLIElement>;
+    childProps: {
+        "data-menubar-menuitem": string;
+        role: string;
+    };
+    onKeyDown: (event: React.KeyboardEvent<HTMLUListElement>) => void;
+};

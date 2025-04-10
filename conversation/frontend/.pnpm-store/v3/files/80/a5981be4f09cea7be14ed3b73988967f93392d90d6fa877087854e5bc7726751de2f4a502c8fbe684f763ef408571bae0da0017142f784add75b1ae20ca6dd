@@ -1,0 +1,17 @@
+import { useRef, useEffect } from "react";
+function useTrapFocus(isActive) {
+  const ref = useRef(null), focusableElements = 'button:not([disabled]), [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+  return useEffect(() => {
+    if (!isActive) return;
+    const node = ref.current, firstFocusableElement = node.querySelectorAll(focusableElements)[0], focusableContent = node.querySelectorAll(focusableElements), lastFocusableElement = ref && (focusableContent == null ? void 0 : focusableContent[focusableContent.length - 1]), handleKeydown = (event) => {
+      event.key === "Tab" && (event.shiftKey ? document.activeElement === firstFocusableElement && (lastFocusableElement.focus(), event.preventDefault()) : document.activeElement === lastFocusableElement && (firstFocusableElement.focus(), event.preventDefault()));
+    };
+    if (node)
+      return node.addEventListener("keydown", handleKeydown), () => {
+        node.removeEventListener("keydown", handleKeydown);
+      };
+  }, [isActive]), ref;
+}
+export {
+  useTrapFocus as default
+};

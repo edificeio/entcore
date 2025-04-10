@@ -1,0 +1,13 @@
+import { ReactNode } from 'react';
+export interface BreadcrumbItemProps extends React.ComponentPropsWithRef<'li'> {
+    /**
+     * Link or text to display
+     */
+    children: ReactNode;
+    /**
+     * Optional class for styling purpose
+     */
+    className?: string;
+}
+declare const BreadcrumbItem: import('react').ForwardRefExoticComponent<Omit<BreadcrumbItemProps, "ref"> & import('react').RefAttributes<HTMLLIElement>>;
+export default BreadcrumbItem;

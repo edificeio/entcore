@@ -1,0 +1,33 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { useRef, useId } from "react";
+import { useTranslation } from "react-i18next";
+import SvgIconSearch from "../../../modules/icons/components/nav/IconSearch.js";
+import { NavItem } from "./NavItem.js";
+import useHover from "../../../hooks/useHover/useHover.js";
+import { Popover } from "../../Popover/Popover.js";
+import FormControl from "../../Form/FormControl.js";
+import SearchButton from "../../Button/SearchButton.js";
+const SearchEngine = () => {
+  const [searchRef, isSearchHovered] = useHover(), inputRef = useRef(null), popoverSearchId = useId(), {
+    t
+  } = useTranslation();
+  function redirectToSearch() {
+    if (inputRef.current) {
+      const value = inputRef.current.value;
+      window.location.href = `/searchengine#/${value}`;
+    }
+  }
+  return /* @__PURE__ */ jsxs(NavItem, { id: popoverSearchId, ref: searchRef, className: "position-relative", "aria-haspopup": "true", "aria-expanded": isSearchHovered, children: [
+    /* @__PURE__ */ jsxs("a", { href: "/searchengine", className: "nav-link dropdown-item", children: [
+      /* @__PURE__ */ jsx(SvgIconSearch, { className: "icon search" }),
+      /* @__PURE__ */ jsx("span", { className: "nav-text", children: t("navbar.search") })
+    ] }),
+    /* @__PURE__ */ jsx(Popover, { id: popoverSearchId, isVisible: isSearchHovered, className: "d-none d-md-flex", children: /* @__PURE__ */ jsxs(FormControl, { id: "my-search-input", className: "search-text input-group py-8 px-12", children: [
+      /* @__PURE__ */ jsx(FormControl.Input, { ref: inputRef, size: "sm", type: "text", name: "my-search-input", placeholder: "Rechercher" }),
+      /* @__PURE__ */ jsx(SearchButton, { type: "submit", size: "sm", onClick: redirectToSearch, "aria-label": t("navbar.search") })
+    ] }) })
+  ] });
+};
+export {
+  SearchEngine as default
+};

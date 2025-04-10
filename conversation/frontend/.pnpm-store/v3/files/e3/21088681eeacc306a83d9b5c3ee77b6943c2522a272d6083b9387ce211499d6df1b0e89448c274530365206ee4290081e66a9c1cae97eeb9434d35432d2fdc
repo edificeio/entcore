@@ -1,0 +1,5 @@
+import "@edifice-ui/react";
+import { OnboardingModal as n } from "@edifice-ui/react";
+export {
+  n as default
+};

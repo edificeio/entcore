@@ -1,0 +1,7 @@
+import { Editor } from '@tiptap/react';
+interface AttachmentProps {
+    editor: Editor;
+    [x: string]: any;
+}
+declare const AttachmentRenderer: (props: AttachmentProps) => false | import("react/jsx-runtime").JSX.Element;
+export default AttachmentRenderer;

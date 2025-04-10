@@ -1,0 +1,19 @@
+import { ReactNode } from "react";
+export interface ModalHeaderProps {
+    /**
+     * Method called on modal close
+     */
+    onModalClose: () => void;
+    /**
+     * ReactNode
+     */
+    children: ReactNode;
+}
+/**
+ * Modal Header
+ */
+declare const ModalHeader: {
+    (props: ModalHeaderProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default ModalHeader;

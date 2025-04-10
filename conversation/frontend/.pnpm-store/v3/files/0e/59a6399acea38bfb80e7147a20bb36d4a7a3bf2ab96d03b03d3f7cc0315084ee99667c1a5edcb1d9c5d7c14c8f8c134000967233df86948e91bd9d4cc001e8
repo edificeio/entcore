@@ -1,0 +1,7 @@
+interface DeleteModalProps {
+    isOpen: boolean;
+    onCancel: () => void;
+    onSuccess: () => void;
+}
+export declare const DeleteModal: ({ isOpen, onCancel, onSuccess, }: DeleteModalProps) => import("react/jsx-runtime").JSX.Element;
+export default DeleteModal;

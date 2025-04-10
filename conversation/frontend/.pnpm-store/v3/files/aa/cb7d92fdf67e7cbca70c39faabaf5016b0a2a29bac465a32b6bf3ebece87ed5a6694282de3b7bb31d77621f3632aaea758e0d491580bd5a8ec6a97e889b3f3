@@ -1,0 +1,9 @@
+import UAParser from "ua-parser-js";
+export default function useBrowserInfo(userAgent?: string): {
+    os: UAParser.IOS;
+    device: UAParser.IDevice;
+    browser: UAParser.IBrowser;
+    isIphone: boolean;
+    isIpod: boolean;
+    isIpad: boolean;
+};

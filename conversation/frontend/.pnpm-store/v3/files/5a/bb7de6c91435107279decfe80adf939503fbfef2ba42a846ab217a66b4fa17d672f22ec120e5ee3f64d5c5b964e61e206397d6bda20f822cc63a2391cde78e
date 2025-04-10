@@ -1,0 +1,69 @@
+import { jsx, jsxs } from "react/jsx-runtime";
+import { useDroppable } from "@dnd-kit/core";
+import clsx from "clsx";
+import { useId } from "react";
+import { useTranslation } from "react-i18next";
+import SvgIconFolder from "../../modules/icons/components/IconFolder.js";
+import SvgIconPlus from "../../modules/icons/components/IconPlus.js";
+import SvgIconRafterDown from "../../modules/icons/components/IconRafterDown.js";
+import SvgIconRafterRight from "../../modules/icons/components/IconRafterRight.js";
+const TreeNode = ({
+  node,
+  showIcon,
+  selectedNodeId,
+  expandedNodes,
+  siblingsNodes,
+  draggedNodeId,
+  handleItemClick,
+  handleToggleNode,
+  handleItemAction
+}) => {
+  const expanded = expandedNodes.has(node.id), sibling = siblingsNodes == null ? void 0 : siblingsNodes.current.has(node.id), selected = selectedNodeId === node.id, focused = draggedNodeId === node.id, treeItemClasses = {
+    action: clsx("action-container d-flex align-items-center gap-8 px-2", {
+      "drag-focus": focused,
+      "py-4": !node.section
+    }),
+    arrow: clsx({
+      "py-4": !node.section,
+      "py-8": node.section,
+      invisible: !Array.isArray(node.children) || node.children.length === 0
+    }),
+    button: clsx("flex-fill d-flex align-items-center text-truncate gap-8", {
+      "py-8": node.section
+    })
+  }, iconSize = node.section ? 16 : 12, {
+    t
+  } = useTranslation(), {
+    setNodeRef
+  } = useDroppable({
+    id: useId(),
+    data: {
+      id: node.id,
+      name: node.name,
+      isTreeview: !0,
+      accepts: ["folder", "resource"]
+    }
+  }), handleOnItemClick = (nodeId) => handleItemClick == null ? void 0 : handleItemClick(nodeId), handleOnToggleNode = (nodeId) => handleToggleNode == null ? void 0 : handleToggleNode(nodeId), handleOnCreateChildrenPage = (nodeId) => handleItemAction == null ? void 0 : handleItemAction(nodeId), handleItemKeyDown = (event) => {
+    (event.code === "Enter" || event.code === "Space") && (event.preventDefault(), event.stopPropagation(), handleItemClick == null || handleItemClick(node.id));
+  }, handleItemToggleKeyDown = (event) => {
+    (event.code === "Enter" || event.code === "Space") && (event.preventDefault(), event.stopPropagation(), handleToggleNode == null || handleToggleNode(node.id));
+  }, renderRafterIcon = (expanded2) => /* @__PURE__ */ jsx(expanded2 ? SvgIconRafterDown : SvgIconRafterRight, { title: t("foldUnfold"), width: iconSize, height: iconSize }), shouldRenderRafterIcon = () => {
+    var _a;
+    const hasNoSiblings = !((_a = siblingsNodes == null ? void 0 : siblingsNodes.current) != null && _a.has(node.id)), hasChildren = Array.isArray(node.children) && node.children.length > 0;
+    return sibling || hasNoSiblings && hasChildren;
+  };
+  return /* @__PURE__ */ jsx("li", { ref: setNodeRef, id: `treeitem-${node.id}`, role: "treeitem", "aria-selected": selected && selected, "aria-expanded": expanded && expanded, children: /* @__PURE__ */ jsxs("div", { children: [
+    /* @__PURE__ */ jsxs("div", { className: treeItemClasses.action, children: [
+      /* @__PURE__ */ jsx("div", { className: treeItemClasses.arrow, tabIndex: 0, role: "button", onClick: () => handleOnToggleNode(node.id), onKeyDown: handleItemToggleKeyDown, "aria-label": t("foldUnfold"), children: shouldRenderRafterIcon() && renderRafterIcon(expanded) }),
+      /* @__PURE__ */ jsxs("div", { tabIndex: 0, role: "button", className: treeItemClasses.button, onClick: () => handleOnItemClick(node.id), onKeyDown: handleItemKeyDown, children: [
+        node.section && showIcon && /* @__PURE__ */ jsx(SvgIconFolder, { title: t("folder"), width: 20, height: 20 }),
+        /* @__PURE__ */ jsx("span", { className: "text-truncate", children: node.name })
+      ] }),
+      node.section && handleItemAction && /* @__PURE__ */ jsx("button", { className: "tree-btn mx-8", onClick: () => handleOnCreateChildrenPage(node.id), children: /* @__PURE__ */ jsx(SvgIconPlus, { height: 16, width: 16 }) })
+    ] }),
+    Array.isArray(node.children) && !!node.children.length && expanded && /* @__PURE__ */ jsx("ul", { role: "group", children: node.children.map((child) => /* @__PURE__ */ jsx(TreeNode, { node: child, selectedNodeId, expandedNodes, siblingsNodes, draggedNodeId, handleItemClick, handleToggleNode }, child.id)) })
+  ] }) }, node.id);
+};
+export {
+  TreeNode
+};

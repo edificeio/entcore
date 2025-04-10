@@ -1,0 +1,4 @@
+export default function TrashModal({ isOpen, onCancel, }: {
+    isOpen: boolean;
+    onCancel?: () => void;
+}): import('react').ReactPortal;

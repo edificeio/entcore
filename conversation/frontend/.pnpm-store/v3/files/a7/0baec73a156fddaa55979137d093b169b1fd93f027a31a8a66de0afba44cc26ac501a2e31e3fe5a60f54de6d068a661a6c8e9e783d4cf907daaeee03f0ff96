@@ -1,0 +1,198 @@
+import { MeasuringStrategy, useSensors, useSensor, PointerSensor, KeyboardSensor, defaultDropAnimation } from "@dnd-kit/core";
+import { sortableKeyboardCoordinates, arrayMove } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { useState, useEffect, useMemo } from "react";
+import { flattenTree, getProjection, getActiveAndOverNodes, determineNewParentId, getIndicesToUpdate, updateParentIds, buildTree, generateUpdateData } from "../utilities/tree-sortable.js";
+const useTreeSortable = ({
+  nodes,
+  onSortable,
+  handleCollapseNode
+}) => {
+  const [items, setItems] = useState(() => nodes), [activeId, setActiveId] = useState(null), [overId, setOverId] = useState(null), [offsetLeft, setOffsetLeft] = useState(0), [currentPosition, setCurrentPosition] = useState(null);
+  useEffect(() => {
+    setItems(nodes);
+  }, [nodes]);
+  const activationConstraint = {
+    delay: 200,
+    tolerance: 5
+  }, indicator = !1, indentationWidth = 64, flattenedTree = useMemo(() => flattenTree(items, null), [items]), activeItem = activeId ? flattenedTree.find(({
+    id
+  }) => id === activeId) : null, projected = activeId && overId ? getProjection(flattenedTree, activeId, overId, offsetLeft, indentationWidth) : null;
+  function handleDragStart(event) {
+    const {
+      active
+    } = event, {
+      activeNode
+    } = getActiveAndOverNodes(flattenedTree, active.id);
+    activeNode.parentId || handleCollapseNode(activeNode.id), setActiveId(active.id), setOverId(active.id);
+    const activeItem2 = flattenedTree.find(({
+      id
+    }) => id === activeId);
+    activeItem2 && setCurrentPosition({
+      parentId: activeItem2.parentId,
+      overId: activeId
+    });
+  }
+  function handleDragMove({
+    delta
+  }) {
+    setOffsetLeft(delta.x);
+  }
+  function handleDragOver(event) {
+    const {
+      over
+    } = event;
+    setOverId(over == null ? void 0 : over.id);
+  }
+  function handleDragEnd(event) {
+    const {
+      active,
+      over
+    } = event, {
+      activeNode,
+      activeNodeIndex,
+      overNode,
+      overNodeIndex
+    } = getActiveAndOverNodes(flattenedTree, active.id, over == null ? void 0 : over.id), newParentId = determineNewParentId(active, over, activeNode, overNode, projected), indicesToUpdate = getIndicesToUpdate(activeNode, activeNodeIndex, flattenedTree, projected);
+    updateParentIds(flattenedTree, indicesToUpdate, newParentId);
+    const updatedFlattenedTree = arrayMove(flattenedTree, activeNodeIndex, overNodeIndex), updatedTree = buildTree(updatedFlattenedTree), {
+      updateArray
+    } = generateUpdateData(updatedFlattenedTree, updatedTree);
+    setItems(updatedTree), setActiveId(null), setOverId(null), onSortable(updateArray);
+  }
+  const sortedIds = useMemo(() => flattenedTree.map(({
+    id
+  }) => id), [flattenedTree]);
+  function getMovementAnnouncement(eventName, activeId2, overId2) {
+    if (overId2 && projected) {
+      if (eventName !== "onDragEnd") {
+        if (currentPosition && projected.parentId === currentPosition.parentId && overId2 === currentPosition.overId)
+          return;
+        setCurrentPosition({
+          parentId: projected.parentId,
+          overId: overId2
+        });
+      }
+      const clonedItems = JSON.parse(JSON.stringify(flattenTree(items, null, 0))), overIndex = clonedItems.findIndex(({
+        id
+      }) => id === overId2), activeIndex = clonedItems.findIndex(({
+        id
+      }) => id === activeId2), sortedItems = arrayMove(clonedItems, activeIndex, overIndex), previousItem = sortedItems[overIndex - 1];
+      let announcement;
+      const movedVerb = eventName === "onDragEnd" ? "dropped" : "moved", nestedVerb = eventName === "onDragEnd" ? "dropped" : "nested";
+      if (previousItem)
+        if (projected.depth > previousItem.depth)
+          announcement = `${activeId2} was ${nestedVerb} under ${previousItem.id}.`;
+        else {
+          let previousSibling = previousItem;
+          for (; previousSibling && projected.depth < previousSibling.depth; ) {
+            const parentId = previousSibling.parentId;
+            previousSibling = sortedItems.find(({
+              id
+            }) => id === parentId);
+          }
+          previousSibling && (announcement = `${activeId2} was ${movedVerb} after ${previousSibling.id}.`);
+        }
+      else {
+        const nextItem = sortedItems[overIndex + 1];
+        nextItem ? announcement = `${activeId2} was ${movedVerb} before ${nextItem.id}.` : announcement = `${activeId2} was ${movedVerb} as the only item in the list.`;
+      }
+      return announcement;
+    }
+  }
+  const announcements = {
+    onDragStart({
+      active
+    }) {
+      return `Picked up ${active.id}.`;
+    },
+    onDragMove({
+      active,
+      over
+    }) {
+      return getMovementAnnouncement("onDragMove", active.id, over == null ? void 0 : over.id);
+    },
+    onDragOver({
+      active,
+      over
+    }) {
+      return getMovementAnnouncement("onDragOver", active.id, over == null ? void 0 : over.id);
+    },
+    onDragEnd({
+      active,
+      over
+    }) {
+      return getMovementAnnouncement("onDragEnd", active.id, over == null ? void 0 : over.id);
+    },
+    onDragCancel({
+      active
+    }) {
+      return `Moving was cancelled. ${active.id} was dropped in its original position.`;
+    }
+  }, dropAnimationConfig = {
+    keyframes({
+      transform
+    }) {
+      return [{
+        opacity: 1,
+        transform: CSS.Transform.toString(transform.initial)
+      }, {
+        opacity: 0,
+        transform: CSS.Transform.toString({
+          ...transform.final,
+          x: transform.final.x + 5,
+          y: transform.final.y + 5
+        })
+      }];
+    },
+    easing: "ease-out",
+    sideEffects({
+      active
+    }) {
+      active.node.animate([{
+        opacity: 0
+      }, {
+        opacity: 1
+      }], {
+        duration: defaultDropAnimation.duration,
+        easing: defaultDropAnimation.easing
+      });
+    }
+  }, adjustTranslate = ({
+    transform
+  }) => ({
+    ...transform,
+    y: transform.y - 25
+  }), measuring = {
+    droppable: {
+      strategy: MeasuringStrategy.Always
+    }
+  }, sensors = useSensors(useSensor(PointerSensor, {
+    activationConstraint
+  }), useSensor(KeyboardSensor, {
+    coordinateGetter: sortableKeyboardCoordinates
+  }));
+  return {
+    handleDragStart,
+    handleDragMove,
+    handleDragOver,
+    handleDragEnd,
+    adjustTranslate,
+    sortedIds,
+    indicator,
+    activationConstraint,
+    projected,
+    announcements,
+    activeId,
+    indentationWidth,
+    activeItem,
+    dropAnimationConfig,
+    measuring,
+    sensors,
+    items,
+    flattenedTree
+  };
+};
+export {
+  useTreeSortable
+};

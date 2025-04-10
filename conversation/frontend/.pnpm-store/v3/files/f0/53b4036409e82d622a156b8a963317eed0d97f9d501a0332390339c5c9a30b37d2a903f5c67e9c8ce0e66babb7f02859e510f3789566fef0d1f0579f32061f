@@ -1,0 +1,12 @@
+import { IOdeServices } from '../services/OdeServices';
+import { IViewsService, ViewsCounters, ViewsDetails } from './interface';
+export declare class ViewsService implements IViewsService {
+    private context;
+    private module;
+    private resourceType;
+    constructor(context: IOdeServices, module: string, resourceType: string);
+    private get http();
+    getCounters(resourceIds: string[]): Promise<ViewsCounters>;
+    getDetails(resourceId: string): Promise<ViewsDetails | undefined>;
+    trigger(resourceId: string): Promise<void>;
+}

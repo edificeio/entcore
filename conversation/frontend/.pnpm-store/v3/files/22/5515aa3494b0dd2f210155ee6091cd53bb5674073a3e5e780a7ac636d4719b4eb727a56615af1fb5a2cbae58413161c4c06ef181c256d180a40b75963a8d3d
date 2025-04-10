@@ -1,0 +1,5 @@
+import { jsx } from "react/jsx-runtime";
+const ModalFooter = (props) => /* @__PURE__ */ jsx("div", { className: "modal-footer", children: props.children });
+export {
+  ModalFooter as default
+};

@@ -1,0 +1,17 @@
+import { IOdeServices } from '../services/OdeServices';
+import { Bookmark, BookmarkWithDetails, BookmarkWithMembers, Group, User } from './interface';
+export declare class DirectoryService {
+    private odeServices;
+    constructor(odeServices: IOdeServices);
+    private get http();
+    private get cache();
+    getAvatarUrl(id: string, type: 'user' | 'group', size?: string): string;
+    getDirectoryUrl(id: string, type: 'user' | 'group'): string;
+    getBookMarks(): Promise<Bookmark[]>;
+    getBookMarkById(idBookmark: string): Promise<BookmarkWithDetails>;
+    saveBookmarks(name: string, { bookmarks, groups, users, }: {
+        users: string[] | User[];
+        groups: string[] | Group[];
+        bookmarks: BookmarkWithMembers[] | string[];
+    }): Promise<BookmarkWithMembers>;
+}

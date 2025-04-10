@@ -1,0 +1,18 @@
+import { useState, useEffect, useCallback } from "react";
+import { odeServices } from "@edifice.io/client";
+function useIsAdml() {
+  const [isAdml, setIsAdml] = useState(!1);
+  useEffect(() => {
+    initIsAdml();
+  }, []);
+  const initIsAdml = useCallback(async () => {
+    const isAdmlRes = await odeServices.session().isAdml();
+    setIsAdml(isAdmlRes);
+  }, []);
+  return {
+    isAdml
+  };
+}
+export {
+  useIsAdml as default
+};

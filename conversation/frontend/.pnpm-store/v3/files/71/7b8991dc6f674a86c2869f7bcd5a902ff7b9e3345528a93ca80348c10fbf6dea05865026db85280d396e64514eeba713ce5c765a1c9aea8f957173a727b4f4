@@ -1,0 +1,83 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { forwardRef, useId, useImperativeHandle, Suspense, lazy } from "react";
+import { EditorContent } from "@tiptap/react";
+import clsx from "clsx";
+import { useEdificeClient } from "../../../../providers/EdificeClientProvider/EdificeClientProvider.hook.js";
+import { useMathsStyles } from "../../hooks/useMathsStyles.js";
+import { useTipTapEditor } from "../../hooks/useTipTapEditor.js";
+import { useMediaLibraryEditor } from "../../hooks/useMediaLibraryEditor.js";
+import { useMathsModal } from "../../hooks/useMathsModal.js";
+import { useImageModal } from "../../hooks/useImageModal.js";
+import { useLinkToolbar } from "../../hooks/useLinkToolbar.js";
+import { useSpeechSynthetisis } from "../../hooks/useSpeechSynthetisis.js";
+import { EditorContext } from "../../hooks/useEditorContext.js";
+import { EditorToolbar } from "../EditorToolbar/EditorToolbar.js";
+import LinkToolbar from "../Toolbar/LinkToolbar.js";
+import TableToolbar from "../Toolbar/TableToolbar.js";
+import BubbleMenuEditImage from "../BubbleMenuEditImage/BubbleMenuEditImage.js";
+import MediaLibrary from "../../../multimedia/MediaLibrary/MediaLibrary.js";
+import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen.js";
+const MathsModal = /* @__PURE__ */ lazy(async () => await import("../MathsModal/MathsModal.js")), ImageEditor = /* @__PURE__ */ lazy(async () => await import("../../../multimedia/ImageEditor/components/ImageEditor.js")), Editor = /* @__PURE__ */ forwardRef(({
+  id,
+  content,
+  mode = "read",
+  toolbar = "full",
+  variant = "outline",
+  focus = "start",
+  placeholder = "",
+  visibility = "protected",
+  onContentChange,
+  extensions
+}, ref) => {
+  const editorId = useId(), {
+    appCode
+  } = useEdificeClient(), {
+    editor,
+    editable
+  } = useTipTapEditor(mode === "edit", content, focus, placeholder, onContentChange, visibility, extensions), {
+    ref: mediaLibraryModalRef,
+    ...mediaLibraryModalHandlers
+  } = useMediaLibraryEditor(editor), {
+    toggle: toggleMathsModal,
+    ...mathsModalHandlers
+  } = useMathsModal(editor), imageModal = useImageModal(editor, "media-library", visibility), linkToolbarHandlers = useLinkToolbar(editor, mediaLibraryModalRef), speechSynthetisis = useSpeechSynthetisis(editor);
+  if (useMathsStyles(), useImperativeHandle(ref, () => ({
+    getContent: (as) => {
+      switch (as) {
+        case "html":
+          return editor == null ? void 0 : editor.getHTML();
+        case "json":
+          return editor == null ? void 0 : editor.getJSON();
+        case "plain":
+          return editor == null ? void 0 : editor.getText();
+        default:
+          throw `[Editor] Unknown content format ${as}`;
+      }
+    },
+    toogleSpeechSynthetisis: speechSynthetisis.toggle,
+    isSpeeching: () => speechSynthetisis.isActivated
+  })), !editor) return null;
+  const borderClass = clsx(variant === "outline" && "border rounded-3"), contentClass = clsx(variant === "outline" && "py-12 px-16");
+  return /* @__PURE__ */ jsxs(EditorContext.Provider, { value: {
+    id: id ?? editorId,
+    appCode,
+    editor,
+    editable
+  }, children: [
+    /* @__PURE__ */ jsxs("div", { className: borderClass, children: [
+      toolbar !== "none" && editable && /* @__PURE__ */ jsx(EditorToolbar, { mediaLibraryRef: mediaLibraryModalRef, toggleMathsModal }),
+      /* @__PURE__ */ jsx(EditorContent, { id: id ?? editorId, editor, className: contentClass })
+    ] }),
+    /* @__PURE__ */ jsx(LinkToolbar, { editor, ...linkToolbarHandlers }),
+    /* @__PURE__ */ jsx(TableToolbar, { editor }),
+    editor && /* @__PURE__ */ jsx(BubbleMenuEditImage, { editor, onEditImage: imageModal.handleEdit, openEditImage: imageModal.isOpen, editable }),
+    /* @__PURE__ */ jsxs(Suspense, { fallback: /* @__PURE__ */ jsx(LoadingScreen, {}), children: [
+      editable && /* @__PURE__ */ jsx(MediaLibrary, { appCode, visibility, multiple: !0, ref: mediaLibraryModalRef, ...mediaLibraryModalHandlers }),
+      editable && mathsModalHandlers.isOpen && /* @__PURE__ */ jsx(MathsModal, { ...mathsModalHandlers }),
+      editable && (imageModal == null ? void 0 : imageModal.isOpen) && (imageModal == null ? void 0 : imageModal.currentImage) && /* @__PURE__ */ jsx(ImageEditor, { altText: imageModal == null ? void 0 : imageModal.currentImage.alt, legend: imageModal == null ? void 0 : imageModal.currentImage.title, image: imageModal == null ? void 0 : imageModal.currentImage.src, isOpen: imageModal.isOpen, onCancel: imageModal.handleCancel, onSave: imageModal.handleSave, onError: console.error })
+    ] })
+  ] });
+});
+export {
+  Editor as default
+};

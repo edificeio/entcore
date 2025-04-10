@@ -1,0 +1,14 @@
+import { IOdeServices } from '../services/OdeServices';
+import { IHttpParams, IHttpResponse } from '../transport/interfaces';
+export declare class CacheService {
+    private context;
+    constructor(context: IOdeServices);
+    private get http();
+    private fromCacheIfPossible;
+    clearCache(key?: string): void;
+    httpGet<R = any>(url: string, params?: IHttpParams): Promise<{
+        value: R;
+        response: IHttpResponse;
+    }>;
+    httpGetJson<R = any>(url: string, params?: IHttpParams): Promise<R>;
+}

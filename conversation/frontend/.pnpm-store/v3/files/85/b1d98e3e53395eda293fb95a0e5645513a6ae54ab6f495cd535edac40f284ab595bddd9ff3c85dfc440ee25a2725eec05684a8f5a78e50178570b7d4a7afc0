@@ -1,0 +1,4 @@
+export declare const useActivitiesOptions: () => {
+    value: string;
+    label: string;
+}[];

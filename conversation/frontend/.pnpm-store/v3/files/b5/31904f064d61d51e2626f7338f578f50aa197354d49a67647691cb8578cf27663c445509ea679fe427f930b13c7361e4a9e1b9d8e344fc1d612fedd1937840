@@ -1,0 +1,35 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { forwardRef, useRef, useImperativeHandle, useEffect, useId } from "react";
+import clsx from "clsx";
+const Checkbox = /* @__PURE__ */ forwardRef(({
+  label,
+  disabled = !1,
+  checked = !1,
+  indeterminate = !1,
+  ...restProps
+}, ref) => {
+  const refCheckbox = useRef(null);
+  useImperativeHandle(ref, () => ({
+    ...refCheckbox.current
+  })), useEffect(() => {
+    refCheckbox.current.indeterminate = indeterminate;
+  }, [refCheckbox, indeterminate]);
+  const id = useId(), checkboxProps = {
+    type: "checkbox",
+    checked,
+    disabled,
+    ref: refCheckbox,
+    className: clsx(restProps.className, "form-check-input c-pointer"),
+    id
+  }, inputProps = {
+    ...restProps,
+    ...checkboxProps
+  };
+  return /* @__PURE__ */ jsxs("div", { className: "form-check d-flex align-items-center gap-8", children: [
+    /* @__PURE__ */ jsx("input", { ...inputProps }),
+    label && /* @__PURE__ */ jsx("label", { className: "form-check-label", htmlFor: inputProps.id, children: label })
+  ] });
+});
+export {
+  Checkbox as default
+};

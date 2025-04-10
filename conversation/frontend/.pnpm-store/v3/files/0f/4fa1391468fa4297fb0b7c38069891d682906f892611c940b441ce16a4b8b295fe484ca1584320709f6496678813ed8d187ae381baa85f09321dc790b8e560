@@ -1,0 +1,52 @@
+import { jsxs, Fragment, jsx } from "react/jsx-runtime";
+import { useState, useEffect, Fragment as Fragment$1 } from "react";
+import { useTranslation } from "react-i18next";
+import SvgIconTextTypo from "../../../icons/components/IconTextTypo.js";
+import { useEditorContext } from "../../hooks/useEditorContext.js";
+import Tooltip from "../../../../components/Tooltip/Tooltip.js";
+import IconButton from "../../../../components/Button/IconButton.js";
+import Dropdown from "../../../../components/Dropdown/Dropdown.js";
+const EditorToolbarTypography = ({
+  triggerProps
+}) => {
+  const {
+    t
+  } = useTranslation(), {
+    editor
+  } = useEditorContext(), [value, setValue] = useState("sans-serif");
+  useEffect(() => {
+    const textStyle = editor == null ? void 0 : editor.getAttributes("textStyle");
+    setValue((textStyle == null ? void 0 : textStyle.fontFamily) ?? "");
+  }, [editor, editor == null ? void 0 : editor.state]);
+  const options = [{
+    value: "",
+    label: t("tiptap.toolbar.typo.sans")
+  }, {
+    value: "Lora",
+    label: t("tiptap.toolbar.typo.serif"),
+    className: "ff-serif"
+  }, {
+    value: "IBM Plex Mono",
+    label: t("tiptap.toolbar.typo.mono"),
+    className: "ff-script"
+  }, {
+    value: "Ecriture A",
+    label: t("tiptap.toolbar.typo.cursive"),
+    className: "ff-cursive"
+  }, {
+    value: "OpenDyslexic",
+    label: t("tiptap.toolbar.typo.dyslexic"),
+    className: "ff-dyslexic"
+  }];
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx(Tooltip, { message: t("tiptap.toolbar.typo.choice"), placement: "top", children: /* @__PURE__ */ jsx(IconButton, { ...triggerProps, type: "button", variant: "ghost", color: "tertiary", icon: /* @__PURE__ */ jsx(SvgIconTextTypo, {}), "aria-label": t("tiptap.toolbar.typo.choice"), className: editor != null && editor.isActive("textStyle", {
+      color: /^#([0-9a-f]{3}){1,2}$/i
+    }) ? "selected" : "" }) }),
+    /* @__PURE__ */ jsx(Dropdown.Menu, { children: options.map((option) => /* @__PURE__ */ jsx(Fragment$1, { children: /* @__PURE__ */ jsx(Dropdown.RadioItem, { value: option.value, model: value, onChange: (value2) => {
+      typeof value2 == "string" && value2.length > 0 ? (editor == null || editor.chain().focus().setFontFamily(value2).run(), setValue(value2)) : (editor == null || editor.chain().focus().unsetFontFamily().run(), setValue(""));
+    }, children: /* @__PURE__ */ jsx("span", { className: option.className, children: option.label }) }) }, option.label)) })
+  ] });
+};
+export {
+  EditorToolbarTypography
+};

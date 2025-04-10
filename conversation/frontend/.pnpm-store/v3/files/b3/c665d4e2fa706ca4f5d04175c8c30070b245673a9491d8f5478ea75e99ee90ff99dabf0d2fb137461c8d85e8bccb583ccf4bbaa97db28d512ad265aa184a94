@@ -1,0 +1,15 @@
+/// <reference types="react" />
+import { IntersectionOptions } from "react-intersection-observer";
+type LazyLoadOptions = {
+    ref?: React.RefObject<HTMLElement>;
+    intersectionOptions?: IntersectionOptions;
+};
+/**
+ * Preload a `src` URL and return true if it is available.
+ * @param src the URL to preload
+ * @param options if defined, lazy-load the `src` URL when ref is defined and visible,
+ *        with respect to the [`intersectionOptions`](https://github.com/thebuilder/react-intersection-observer/tree/dceba7f52aebea4d62d539bc55a1db129226bb6c?tab=readme-ov-file#options)
+ * @return `true` if `src` is available, or false otherwise, or `null` while not tested.
+ */
+export default function useThumbnail(src: string, options?: LazyLoadOptions): boolean | null;
+export {};

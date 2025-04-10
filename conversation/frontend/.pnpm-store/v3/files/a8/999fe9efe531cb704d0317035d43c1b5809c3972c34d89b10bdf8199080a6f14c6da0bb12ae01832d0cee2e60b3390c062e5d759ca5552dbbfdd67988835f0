@@ -1,0 +1,192 @@
+import { useReducer, useEffect } from "react";
+import { odeServices } from "@edifice.io/client";
+import { useTranslation } from "react-i18next";
+import { useEdificeClient } from "../../../../providers/EdificeClientProvider/EdificeClientProvider.hook.js";
+import useUser from "../../../../hooks/useUser/useUser.js";
+import useToast from "../../../../hooks/useToast/useToast.js";
+const initialState = {
+  isSharing: !1,
+  shareRights: {
+    rights: [],
+    visibleBookmarks: [],
+    visibleGroups: [],
+    visibleUsers: []
+  },
+  shareRightActions: []
+};
+function reducer(state, action) {
+  switch (action.type) {
+    case "init":
+      return {
+        ...state,
+        ...action.payload
+      };
+    case "deleteRow":
+      return {
+        ...state,
+        shareRights: action.payload
+      };
+    case "updateShareRights":
+      return {
+        ...state,
+        shareRights: action.payload
+      };
+    case "toggleRight":
+      return {
+        ...state,
+        shareRights: action.payload
+      };
+    case "isSharing":
+      return {
+        ...state,
+        isSharing: action.payload
+      };
+    default:
+      throw new Error("Unhandled action type");
+  }
+}
+function useShare({
+  resourceId,
+  resourceRights,
+  resourceCreatorId,
+  shareResource,
+  setIsLoading,
+  onSuccess
+}) {
+  const {
+    appCode
+  } = useEdificeClient(), {
+    user,
+    avatar
+  } = useUser(), toast = useToast(), {
+    t
+  } = useTranslation(), [state, dispatch] = useReducer(reducer, initialState);
+  useEffect(() => {
+    resourceId && (async () => {
+      try {
+        const [shareRightActions, shareRights] = await Promise.all([odeServices.share().getActionsForApp(appCode), odeServices.share().getRightsForResource(appCode, resourceId)]);
+        dispatch({
+          type: "init",
+          payload: {
+            shareRightActions,
+            shareRights
+          }
+        });
+      } catch (error) {
+        console.error(error);
+      }
+      setIsLoading(!1);
+    })();
+  }, [resourceId]);
+  const toggleRight = (shareRight, actionName) => {
+    var _a, _b;
+    const {
+      rights,
+      ...props
+    } = state.shareRights, newShareRights = [...rights], index = newShareRights.findIndex((x) => x.id === shareRight.id), actionObject = state.shareRightActions.filter((shareRightAction) => shareRightAction.id === actionName)[0];
+    if (newShareRights[index].actions.findIndex((action) => action.id === actionName) > -1) {
+      let updatedActions = newShareRights[index].actions.filter((action) => action.id !== actionName);
+      const requiredActions = state.shareRightActions.filter((shareRightAction) => {
+        var _a2;
+        return (_a2 = shareRightAction.requires) == null ? void 0 : _a2.includes(actionName);
+      });
+      updatedActions = updatedActions.filter((action) => !requiredActions.find((requiredAction) => requiredAction.id === action.id)), newShareRights[index] = {
+        ...newShareRights[index],
+        actions: updatedActions
+      };
+    } else {
+      const requiredActions = state.shareRightActions.filter((shareRightAction) => {
+        var _a2;
+        return ((_a2 = actionObject.requires) == null ? void 0 : _a2.includes(shareRightAction.id)) && !newShareRights[index].actions.find((action) => action.id === shareRightAction.id);
+      });
+      newShareRights[index] = {
+        ...newShareRights[index],
+        actions: [...newShareRights[index].actions, actionObject, ...requiredActions]
+      };
+    }
+    shareRight.type === "sharebookmark" && ((_a = newShareRights[index].users) == null || _a.forEach((user2) => {
+      const userIndex = newShareRights.findIndex((item) => item.id === user2.id);
+      newShareRights[userIndex] = {
+        ...newShareRights[userIndex],
+        actions: newShareRights[index].actions
+      };
+    }), (_b = newShareRights[index].groups) == null || _b.forEach((user2) => {
+      const userIndex = newShareRights.findIndex((item) => item.id === user2.id);
+      newShareRights[userIndex] = {
+        ...newShareRights[userIndex],
+        actions: newShareRights[index].actions
+      };
+    })), dispatch({
+      type: "toggleRight",
+      payload: {
+        rights: newShareRights,
+        ...props
+      }
+    });
+  }, notifySuccess = (value) => {
+    Object.keys(value)[0] === "error" ? (toast.error(t("explorer.shared.status.error")), console.error("Failed to save share", value)) : toast.success(t("explorer.shared.status.saved"));
+  };
+  return {
+    state,
+    dispatch,
+    currentIsAuthor: () => resourceCreatorId === (user == null ? void 0 : user.userId),
+    myAvatar: avatar,
+    handleDeleteRow: (shareRight) => {
+      dispatch({
+        type: "deleteRow",
+        payload: {
+          ...state.shareRights,
+          rights: state.shareRights.rights.filter((right) => {
+            var _a, _b;
+            return right.id !== shareRight.id && !((_a = shareRight.users) != null && _a.find((user2) => user2.id === right.id)) && !((_b = shareRight.groups) != null && _b.find((group) => group.id === right.id));
+          })
+        }
+      });
+    },
+    handleShare: async () => {
+      dispatch({
+        type: "isSharing",
+        payload: !0
+      });
+      try {
+        const myRights = resourceRights.filter((right) => user && right.includes(`user:${user.userId}`)).map((right) => right.split(":")[2]).filter((right) => !!right), shares = [...state.shareRights.rights];
+        if (myRights.length > 0) {
+          const actions = myRights.map((right) => ({
+            displayName: right,
+            id: right
+          }));
+          shares.push({
+            actions,
+            avatarUrl: "",
+            directoryUrl: "",
+            displayName: user.username,
+            id: user.userId,
+            type: "user"
+          });
+        }
+        if (shareResource) {
+          const result = await shareResource.mutateAsync({
+            resourceId,
+            rights: shares
+          });
+          notifySuccess(result);
+        } else {
+          const result = await odeServices.share().saveRights(appCode, resourceId, shares);
+          notifySuccess(result);
+        }
+        onSuccess();
+      } catch (error) {
+        typeof error == "string" && toast.error(t("explorer.shared.status.error")), console.error("Failed to save share", error);
+      } finally {
+        dispatch({
+          type: "isSharing",
+          payload: !1
+        });
+      }
+    },
+    toggleRight
+  };
+}
+export {
+  useShare as default
+};

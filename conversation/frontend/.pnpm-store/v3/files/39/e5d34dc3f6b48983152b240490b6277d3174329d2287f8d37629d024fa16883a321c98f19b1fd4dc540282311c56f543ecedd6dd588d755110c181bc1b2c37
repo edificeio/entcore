@@ -1,0 +1,15 @@
+import { TabsItemProps } from '../components/TabsItem';
+interface UseTabsProps {
+    defaultId?: string;
+    items: TabsItemProps[];
+    onChange?: (tab: TabsItemProps) => void;
+}
+export declare const useTabs: ({ defaultId, items, onChange }: UseTabsProps) => {
+    activeTab: string;
+    setSelectedTab: (id: string) => void;
+    tabsRef: import('react').MutableRefObject<(HTMLButtonElement | null)[]>;
+    tabUnderlineLeft: number;
+    tabUnderlineWidth: number;
+    onKeyDown: (event: React.KeyboardEvent<HTMLButtonElement>) => void;
+};
+export {};

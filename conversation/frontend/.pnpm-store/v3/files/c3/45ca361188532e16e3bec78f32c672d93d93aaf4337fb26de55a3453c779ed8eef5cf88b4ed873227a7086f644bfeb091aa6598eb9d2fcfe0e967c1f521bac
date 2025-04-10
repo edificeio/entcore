@@ -1,0 +1,72 @@
+import { jsx, jsxs, Fragment } from "react/jsx-runtime";
+import { forwardRef, useEffect } from "react";
+import { useTransition, animated } from "@react-spring/web";
+import clsx from "clsx";
+import ModalBody from "./ModalBody.js";
+import { ModalContext } from "./ModalContext.js";
+import ModalFooter from "./ModalFooter.js";
+import ModalHeader from "./ModalHeader.js";
+import ModalSubtitle from "./ModalSubtitle.js";
+import useClickOutside from "../../hooks/useClickOutside/useClickOutside.js";
+import useTrapFocus from "../../hooks/useTrapFocus/useTrapFocus.js";
+import useKeyPress from "../../hooks/useKeyPress/useKeyPress.js";
+const Root = /* @__PURE__ */ forwardRef((props, ref) => {
+  const {
+    id,
+    isOpen,
+    onModalClose,
+    size = "md",
+    viewport = !1,
+    scrollable = !1,
+    focusId,
+    children
+  } = props, ariaLabelId = `aria_label_${id}`, ariaDescriptionId = `aria_desc_${id}`, modalRef = useClickOutside(onModalClose), trapRef = useTrapFocus(isOpen);
+  useKeyPress(onModalClose, ["Escape"]), useEffect(() => {
+    if (isOpen && (document.body.style.overflow = "hidden", focusId)) {
+      const elem = document.getElementById(focusId);
+      elem == null || elem.focus();
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [focusId, isOpen]);
+  const modalClasses = clsx("modal fade", {
+    "show d-block": isOpen,
+    "modal-scrollable": scrollable,
+    viewport,
+    [`modal-${size}`]: size
+  }), dialogClasses = clsx("modal-dialog"), modalContextValue = {
+    ariaLabelId,
+    ariaDescriptionId,
+    focusId
+  }, transition = useTransition(isOpen, {
+    from: {
+      x: -50,
+      opacity: 0
+    },
+    enter: {
+      x: 0,
+      opacity: 1
+    },
+    leave: {
+      x: 50,
+      opacity: 0
+    }
+  });
+  return /* @__PURE__ */ jsx(ModalContext.Provider, { value: modalContextValue, children: transition((style, isOpen2) => /* @__PURE__ */ jsxs(Fragment, { children: [
+    isOpen2 && /* @__PURE__ */ jsx(animated.div, { id, ref, role: "dialog", "aria-modal": "true", "aria-labelledby": ariaLabelId, "aria-describedby": ariaDescriptionId, className: modalClasses, style, tabIndex: -1, children: /* @__PURE__ */ jsx("div", { id: `${id}_ref`, ref: (node) => {
+      modalRef.current = node, isOpen2 && (trapRef.current = node);
+    }, className: dialogClasses, children: /* @__PURE__ */ jsx("div", { className: "modal-content", children }) }) }),
+    isOpen2 && /* @__PURE__ */ jsx(animated.div, { className: "modal-backdrop fade show", style: {
+      opacity: 0.65
+    } })
+  ] })) });
+}), Modal = /* @__PURE__ */ Object.assign(Root, {
+  Header: ModalHeader,
+  Subtitle: ModalSubtitle,
+  Body: ModalBody,
+  Footer: ModalFooter
+});
+export {
+  Modal as default
+};

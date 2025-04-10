@@ -1,0 +1,51 @@
+import { ChangeEvent } from 'react';
+import { Size } from '../../types';
+export interface BaseProps extends Omit<React.ComponentPropsWithoutRef<'input'>, 'size'> {
+    /**
+     * String or Template literal with React i18next namespace
+     */
+    placeholder?: string;
+    /**
+     * Control SearchBar size
+     */
+    size?: Exclude<Size, 'sm'>;
+    /**
+     * Disabled status
+     */
+    disabled?: boolean;
+    /**
+     * Optional class for styling purpose
+     */
+    className?: string;
+    /**
+     * ChangeEvent Handler
+     */
+    onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
+}
+type DefaultSearchBar = {
+    /**
+     * Switch between button or dynamic search bar
+     */
+    isVariant: false;
+    /**
+     * Handle Search with Default SearchBar
+     */
+    onClick: () => void;
+};
+type DynamicSearchBar = {
+    /**
+     * Switch between button or dynamic search bar
+     */
+    isVariant: true;
+    /**
+     * Handle Search with Default SearchBar
+     */
+    onClick?: undefined;
+};
+export type Props = DefaultSearchBar | DynamicSearchBar;
+export type SearchBarProps = BaseProps & Props;
+declare const SearchBar: {
+    ({ isVariant, size, placeholder, className, disabled, onChange, onClick, ...restProps }: SearchBarProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default SearchBar;

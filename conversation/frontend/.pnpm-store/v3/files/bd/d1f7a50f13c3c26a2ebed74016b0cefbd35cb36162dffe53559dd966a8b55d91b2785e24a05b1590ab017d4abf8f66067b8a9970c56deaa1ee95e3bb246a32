@@ -1,0 +1,155 @@
+import * as PIXI from "pixi.js";
+import { getApplicationScale } from "./misc.js";
+const CORNERS = ["TOP_LEFT", "TOP_RIGHT", "BOTTOM_LEFT", "BOTTOM_RIGHT"], PADDING = 0, POINT_RADIUS = 20, CROP_BACKGROUND_NAME = "CROP_BACKGROUND_NAME", CROP_MASK_NAME = "CROP_MASK_NAME";
+function getCornerName(corner) {
+  return "CROP_CORNER_" + corner;
+}
+function drawBackground(application, {
+  spriteName
+}) {
+  removeBackground(application);
+  const sprite = application.stage.getChildByName(spriteName);
+  if (sprite == null) return;
+  const spriteBounds = sprite.getBounds(), stageTexture = application.renderer.generateTexture(application.stage).clone(), clonedStage = new PIXI.Sprite(stageTexture);
+  clonedStage.height = spriteBounds.height, clonedStage.width = spriteBounds.width, clonedStage.position = new PIXI.Point(0, 0);
+  const background = new PIXI.Graphics();
+  background.beginFill(16777215, 0.5), background.drawRect(0, 0, spriteBounds.width, spriteBounds.height), background.endFill(), background.name = CROP_BACKGROUND_NAME, background.position = new PIXI.Point(spriteBounds.x, spriteBounds.y);
+  const rectMask = new PIXI.Graphics();
+  rectMask.beginFill(0, 1), rectMask.drawRect(0, 0, spriteBounds.width - 2 * PADDING, spriteBounds.height - 2 * PADDING), rectMask.endFill(), rectMask.position = new PIXI.Point(PADDING, PADDING), rectMask.name = CROP_MASK_NAME, clonedStage.mask = rectMask, application.stage.addChild(background), background.addChild(rectMask), background.addChild(clonedStage);
+}
+function removeBackground(application) {
+  const child = application.stage.getChildByName(CROP_BACKGROUND_NAME, !0);
+  child == null || child.removeFromParent();
+}
+function computeCornerPosition(cornerType, bounds) {
+  switch (cornerType) {
+    case "TOP_LEFT":
+      return {
+        x: bounds.x,
+        y: bounds.y,
+        start: 0,
+        end: Math.PI / 2
+      };
+    case "TOP_RIGHT":
+      return {
+        x: bounds.x + bounds.width,
+        y: bounds.y,
+        start: Math.PI / 2,
+        end: Math.PI
+      };
+    case "BOTTOM_LEFT":
+      return {
+        x: bounds.x,
+        y: bounds.y + bounds.height,
+        start: 3 * Math.PI / 2,
+        end: 2 * Math.PI
+      };
+    case "BOTTOM_RIGHT":
+      return {
+        x: bounds.x + bounds.width,
+        y: bounds.y + bounds.height,
+        start: Math.PI,
+        end: 3 * Math.PI / 2
+      };
+  }
+}
+function refreshCorners(application) {
+  const mask = application.stage.getChildByName(CROP_MASK_NAME, !0);
+  mask != null && CORNERS.forEach((cornerType) => {
+    const corner = application.stage.getChildByName(getCornerName(cornerType), !0);
+    if (corner == null) return;
+    const position = computeCornerPosition(cornerType, {
+      height: mask.height,
+      width: mask.width,
+      x: mask.x,
+      y: mask.y
+    });
+    corner.position = new PIXI.Point(position.x, position.y);
+  });
+}
+function drawCorner(application, cornerType, {
+  spriteName
+}) {
+  const previous = application.stage.getChildByName(getCornerName(cornerType), !0), scale = getApplicationScale(application);
+  previous == null || previous.removeFromParent();
+  const background = application.stage.getChildByName(CROP_BACKGROUND_NAME, !0), mask = application.stage.getChildByName(CROP_MASK_NAME, !0), sprite = application.stage.getChildByName(spriteName);
+  if (sprite == null || background === null || background === void 0 || mask === void 0 || mask === null)
+    return;
+  const position = computeCornerPosition(cornerType, {
+    height: mask.height,
+    width: mask.width,
+    x: mask.x,
+    y: mask.y
+  }), corner = new PIXI.Graphics();
+  corner.beginFill(4960213, 1), corner.arc(0, 0, POINT_RADIUS / scale, position.start, position.end), corner.lineTo(0, 0), corner.endFill(), corner.position = new PIXI.Point(position.x, position.y), corner.name = getCornerName(cornerType), corner.interactive = !0;
+  let enable = !1;
+  application.stage.on("pointermove", (event) => {
+    if (enable === !1) return;
+    const localPosition = background.toLocal(event.global);
+    corner.position.x = localPosition.x, corner.position.y = localPosition.y, moveMask(application, cornerType, localPosition);
+  });
+  const handlePointerDown = () => {
+    enable = !0;
+  };
+  corner.on("pointerdown", handlePointerDown);
+  const handlePointerUp = () => {
+    enable = !1;
+  };
+  globalThis.addEventListener("pointerup", handlePointerUp), corner.once("destroyed", () => {
+    corner.off("pointerdown"), globalThis.removeEventListener("pointerup", handlePointerUp);
+  }), background.addChild(corner);
+}
+function moveMask(application, cornerType, position) {
+  const mask = application.stage.getChildByName(CROP_MASK_NAME, !0);
+  if (mask == null) return;
+  const right = mask.position.x + mask.width, bottom = mask.position.y + mask.height;
+  switch (cornerType) {
+    case "TOP_LEFT": {
+      mask.position.x = position.x, mask.position.y = position.y, mask.width = right - position.x, mask.height = bottom - position.y;
+      break;
+    }
+    case "TOP_RIGHT": {
+      mask.position.y = position.y, mask.width = position.x - mask.position.x, mask.height = bottom - position.y;
+      break;
+    }
+    case "BOTTOM_LEFT": {
+      mask.position.x = position.x, mask.width = right - position.x, mask.height = position.y - mask.position.y;
+      break;
+    }
+    case "BOTTOM_RIGHT": {
+      mask.width = position.x - mask.position.x, mask.height = position.y - mask.position.y;
+      break;
+    }
+  }
+  refreshCorners(application);
+}
+function start(application, {
+  spriteName
+}) {
+  stop(application), application.stage.interactive = !0, application.stage.interactiveChildren = !0, drawBackground(application, {
+    spriteName
+  }), drawCorner(application, "BOTTOM_LEFT", {
+    spriteName
+  }), drawCorner(application, "BOTTOM_RIGHT", {
+    spriteName
+  }), drawCorner(application, "TOP_LEFT", {
+    spriteName
+  }), drawCorner(application, "TOP_RIGHT", {
+    spriteName
+  });
+}
+function stop(application) {
+  removeBackground(application), application.stage.off("pointermove"), application.render();
+}
+function save(application) {
+  const mask = application.stage.getChildByName(CROP_MASK_NAME, !0);
+  if (mask == null) return;
+  stop(application);
+  const stageTexture = application.renderer.generateTexture(application.stage).clone(), clonedStage = new PIXI.Sprite(stageTexture), maskBounds = mask.getBounds(), bounds = new PIXI.Rectangle(Math.floor(maskBounds.x), Math.floor(maskBounds.y), Math.floor(maskBounds.width), Math.floor(maskBounds.height)), cropped = new PIXI.Texture(clonedStage.texture.baseTexture, bounds);
+  return new PIXI.Sprite(cropped);
+}
+export {
+  save,
+  start,
+  stop
+};

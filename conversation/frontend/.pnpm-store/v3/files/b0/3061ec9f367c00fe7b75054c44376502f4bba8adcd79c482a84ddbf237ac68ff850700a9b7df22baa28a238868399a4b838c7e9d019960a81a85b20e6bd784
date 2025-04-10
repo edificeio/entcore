@@ -1,0 +1,12 @@
+import { ReactNode } from 'react';
+export interface ModalFooterProps {
+    children: ReactNode;
+}
+/**
+ * Modal Footer
+ */
+declare const ModalFooter: {
+    (props: ModalFooterProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default ModalFooter;

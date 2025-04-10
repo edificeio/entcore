@@ -1,0 +1,265 @@
+import { jsx, jsxs, Fragment } from "react/jsx-runtime";
+import { forwardRef, useState, useRef, useImperativeHandle, useEffect, useCallback } from "react";
+import { odeServices } from "@edifice.io/client";
+import { getBestSupportedMimeType, convertMsToMS } from "@edifice.io/utilities";
+import { useTranslation } from "react-i18next";
+import SvgIconPause from "../../icons/components/IconPause.js";
+import SvgIconPlayFilled from "../../icons/components/IconPlayFilled.js";
+import SvgIconRecordStop from "../../icons/components/IconRecordStop.js";
+import SvgIconRecordVideo from "../../icons/components/IconRecordVideo.js";
+import SvgIconRecord from "../../icons/components/IconRecord.js";
+import SvgIconRefresh from "../../icons/components/IconRefresh.js";
+import SvgIconSave from "../../icons/components/IconSave.js";
+import useUpload from "../../../hooks/useUpload/useUpload.js";
+import useBrowserInfo from "../../../hooks/useBrowserInfo/useBrowserInfo.js";
+import FormControl from "../../../components/Form/FormControl.js";
+import Label from "../../../components/Label/Label.js";
+import Select from "../../../components/Select/Select.js";
+import LoadingScreen from "../../../components/LoadingScreen/LoadingScreen.js";
+import { Toolbar } from "../../../components/Toolbar/Toolbar.js";
+const VIDEO_HEIGHT = 9, VIDEO_WIDTH = 16, VideoRecorder = /* @__PURE__ */ forwardRef(({
+  appCode,
+  caption,
+  onSuccess,
+  onError,
+  onRecordUpdated,
+  hideSaveAction = !1
+}, ref) => {
+  const [maxDuration, setMaxDuration] = useState(18e4), [inputDevices, setInputDevices] = useState([]), [recording, setRecording] = useState(!1), [recorded, setRecorded] = useState(!1), [playing, setPlaying] = useState(!1), [saving, setSaving] = useState(!1), [saved, setSaved] = useState(!1), [mediaStreamConstraints, setMediaStreamConstraints] = useState({
+    audio: !0,
+    video: {
+      facingMode: "environment",
+      aspectRatio: VIDEO_WIDTH / VIDEO_HEIGHT
+    }
+  }), [stream, setStream] = useState(), [mimeType, setMimeType] = useState(""), [recordedChunks, setRecordedChunks] = useState([]), [recordedVideo, setRecordedVideo] = useState(), [recordedTime, setRecordedTime] = useState(0), [playedTime, setPlayedTime] = useState(0), videoRef = useRef(null), recorderRef = useRef(null), {
+    uploadBlob
+  } = useUpload(void 0, appCode), {
+    device
+  } = useBrowserInfo(navigator.userAgent);
+  useImperativeHandle(ref, () => ({
+    save: handleSave
+  }));
+  const {
+    t
+  } = useTranslation();
+  useEffect(() => {
+    initMaxDuration(), initInputDevices();
+  }, []), useEffect(() => (stream || enableStream(mediaStreamConstraints), () => {
+    stream && stream.getTracks().forEach((track) => track.stop());
+  }), [stream]), useEffect(() => {
+    if (recordedChunks.length && !recording && videoRef.current) {
+      const finalVideo = new Blob(recordedChunks, {
+        type: mimeType
+      });
+      if (setRecordedVideo(finalVideo), onRecordUpdated) {
+        const videoUrl = window.URL.createObjectURL(finalVideo);
+        onRecordUpdated(videoUrl);
+      }
+      videoRef.current.autoplay = !1, videoRef.current.srcObject = null, videoRef.current.src = window.URL.createObjectURL(finalVideo);
+    }
+  }, [recording, recordedChunks]), useEffect(() => {
+    if (recording) {
+      const startedAt = Date.now(), timer = window.setInterval(
+        // Compute exact elapsed time by diffing the start time.
+        () => setRecordedTime(Date.now() - startedAt),
+        500
+      );
+      return () => {
+        window.clearInterval(timer);
+      };
+    }
+  }, [recording]), useEffect(() => {
+    if (playing) {
+      const timer = window.setInterval(() => setPlayedTime((prev) => prev + 500), 500);
+      return () => {
+        window.clearInterval(timer);
+      };
+    }
+  }, [playing]);
+  const initMaxDuration = async () => {
+    const videoConfResponse = await odeServices.video().getVideoConf();
+    setMaxDuration((videoConfResponse.maxDuration ?? 3) * 60 * 1e3);
+  }, initInputDevices = async () => {
+    const videoDevices = (await navigator.mediaDevices.enumerateDevices()).filter((device2) => device2.kind === "videoinput");
+    switch (device.type) {
+      case "mobile":
+      case "tablet": {
+        const backCamera = {
+          deviceId: "environment",
+          label: t("video.back.camera"),
+          groupId: "",
+          kind: "videoinput"
+        }, frontCamera = {
+          deviceId: "user",
+          label: t("video.front.camera"),
+          groupId: "",
+          kind: "videoinput"
+        };
+        (videoDevices == null ? void 0 : videoDevices.length) > 1 ? setInputDevices([backCamera, frontCamera]) : setInputDevices([backCamera]);
+        break;
+      }
+      default:
+        setInputDevices(videoDevices);
+        break;
+    }
+  }, enableStream = async (mediaStreamConstraints2) => {
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia(mediaStreamConstraints2);
+      setStream(mediaStream), videoRef.current && (videoRef.current.src && (window.URL.revokeObjectURL(videoRef.current.src), videoRef.current.src = ""), videoRef.current.srcObject = mediaStream, videoRef.current.autoplay = !0, videoRef.current.volume = 1, videoRef.current.muted = !0);
+    } catch (err) {
+      console.error(err);
+    }
+  }, handleRecord = useCallback(() => {
+    setRecording(!0), videoRef && videoRef.current && (videoRef.current.muted = !0);
+    const mimeType2 = getBestSupportedMimeType();
+    setMimeType(mimeType2), stream && (recorderRef.current = new MediaRecorder(stream, {
+      mimeType: mimeType2
+    }), recorderRef.current.ondataavailable = ({
+      data
+    }) => {
+      data.size > 0 && setRecordedChunks((prev) => [...prev, data]);
+    }, recorderRef.current.onerror = (event) => console.error(event), recorderRef.current.start(1e3));
+  }, [stream]), handleStop = useCallback(() => {
+    var _a;
+    setRecording(!1), setRecorded(!0), ((_a = recorderRef.current) == null ? void 0 : _a.state) === "recording" && (recorderRef.current.requestData(), recorderRef.current.stop());
+  }, [recorderRef]), handlePlayPause = useCallback(() => {
+    var _a, _b;
+    videoRef && videoRef.current && (videoRef.current.muted = !1), playing ? ((_b = videoRef == null ? void 0 : videoRef.current) == null || _b.pause(), setPlaying(!1)) : ((_a = videoRef == null ? void 0 : videoRef.current) == null || _a.play(), setPlaying(!0));
+  }, [playing]), handleReset = () => {
+    setRecorded(!1), setRecording(!1), setPlaying(!1), setSaved(!1), setRecordedTime(0), setRecordedChunks([]), setRecordedVideo(void 0), enableStream(mediaStreamConstraints), onRecordUpdated && onRecordUpdated();
+  }, handleSave = async () => {
+    var _a;
+    if ((_a = videoRef == null ? void 0 : videoRef.current) == null || _a.pause(), setSaving(!0), !recordedVideo) {
+      console.error("Error while saving video: recorded video is undefined.");
+      return;
+    }
+    const resVideo = await uploadBlob(recordedVideo, {
+      duration: recordedTime
+    });
+    if (resVideo != null)
+      return onSuccess == null || onSuccess([resVideo]), setSaving(!1), setSaved(!0), [resVideo];
+    onError("Error while uploading video"), setSaving(!1), setSaved(!0);
+  }, handleEnded = () => {
+    setPlaying(!1), setPlayedTime(0), videoRef.current && (videoRef.current.currentTime = 0);
+  }, handleInputDeviceChange = (option) => {
+    var _a;
+    const selectedDevice = inputDevices.find((inputDevice) => inputDevice.label === option);
+    let mediaStreamConstraints2 = {};
+    selectedDevice != null && selectedDevice.deviceId ? ((selectedDevice == null ? void 0 : selectedDevice.deviceId) === "environment" || (selectedDevice == null ? void 0 : selectedDevice.deviceId) === "user" ? mediaStreamConstraints2 = {
+      audio: !0,
+      video: {
+        aspectRatio: VIDEO_WIDTH / VIDEO_HEIGHT,
+        facingMode: selectedDevice == null ? void 0 : selectedDevice.deviceId
+      }
+    } : mediaStreamConstraints2 = {
+      audio: !0,
+      video: {
+        aspectRatio: VIDEO_WIDTH / VIDEO_HEIGHT,
+        deviceId: selectedDevice.deviceId
+      }
+    }, setMediaStreamConstraints(mediaStreamConstraints2), stream && (((_a = recorderRef.current) == null ? void 0 : _a.state) === "recording" && (recorderRef.current.requestData(), recorderRef.current.stop()), stream.getTracks().forEach((track) => track.stop()), setStream(void 0)), enableStream(mediaStreamConstraints2)) : console.error("Selected input device id is null");
+  };
+  useEffect(() => {
+    recordedTime >= maxDuration && handleStop();
+  }, [recordedTime, handleStop]);
+  const toolbarItems = [{
+    type: "icon",
+    name: "record",
+    props: {
+      icon: /* @__PURE__ */ jsx(SvgIconRecord, { color: recording || recorded ? "" : "red" }),
+      color: "danger",
+      disabled: recording || recorded || saving,
+      onClick: handleRecord,
+      "aria-label": t("bbm.video.record.start")
+    },
+    tooltip: t("bbm.video.record.start")
+  }, {
+    type: "icon",
+    name: "stop",
+    props: {
+      icon: /* @__PURE__ */ jsx(SvgIconRecordStop, {}),
+      disabled: !recording || recorded || saving,
+      onClick: handleStop,
+      "aria-label": t("bbm.video.record.stop")
+    },
+    tooltip: t("bbm.video.record.stop")
+  }, {
+    type: "icon",
+    name: "play",
+    visibility: playing ? "hide" : "show",
+    props: {
+      icon: /* @__PURE__ */ jsx(SvgIconPlayFilled, {}),
+      disabled: !recorded || saving,
+      onClick: handlePlayPause,
+      "aria-label": t("bbm.video.play.start")
+    },
+    tooltip: t("bbm.video.play.start")
+  }, {
+    type: "icon",
+    name: "pause",
+    visibility: playing ? "show" : "hide",
+    props: {
+      icon: /* @__PURE__ */ jsx(SvgIconPause, {}),
+      disabled: !recorded || saving,
+      onClick: handlePlayPause,
+      "aria-label": t("bbm.video.play.pause")
+    },
+    tooltip: t("bbm.video.play.pause")
+  }, {
+    type: "divider"
+  }, {
+    type: "icon",
+    name: "reset",
+    props: {
+      icon: /* @__PURE__ */ jsx(SvgIconRefresh, {}),
+      disabled: !recorded || saving,
+      onClick: handleReset,
+      "aria-label": t("bbm.video.record.reset")
+    },
+    tooltip: t("bbm.video.record.reset")
+  }, {
+    type: "icon",
+    name: "save",
+    visibility: hideSaveAction ? "hide" : "show",
+    props: {
+      icon: /* @__PURE__ */ jsx(SvgIconSave, {}),
+      disabled: !recorded || saving || saved,
+      onClick: handleSave,
+      "aria-label": t("bbm.video.record.save")
+    },
+    tooltip: t("bbm.video.record.save")
+  }];
+  return /* @__PURE__ */ jsxs("div", { className: "video-recorder d-flex flex-fill flex-column align-items-center pb-8", children: [
+    /* @__PURE__ */ jsx("div", { className: "video-recorder-caption d-none d-md-block", children: caption }),
+    inputDevices.length > 1 && /* @__PURE__ */ jsx("div", { className: "video-recorder-devices mb-12", children: /* @__PURE__ */ jsxs(FormControl, { id: "selectInputDevice", children: [
+      /* @__PURE__ */ jsx(Label, { className: "d-none d-md-block", children: t("bbm.video.record.select.devices.label") }),
+      /* @__PURE__ */ jsx(Select, { placeholderOption: t("bbm.video.record.select.devices.placeholder"), options: inputDevices.map((videoInputDevice) => videoInputDevice.label), onValueChange: handleInputDeviceChange })
+    ] }) }),
+    /* @__PURE__ */ jsxs("div", { className: "video-recorder-video-container position-relative align-self-stretch", children: [
+      /* @__PURE__ */ jsx("video", { ref: videoRef, playsInline: !0, autoPlay: !0, controls: !1, muted: !0, onEnded: handleEnded, className: "rounded", children: /* @__PURE__ */ jsx("track", { default: !0, kind: "captions", srcLang: "fr", src: "" }) }),
+      (recording || recorded) && /* @__PURE__ */ jsxs("div", { className: "video-recorder-time d-flex align-items-center font-monospace fs-6 text-bg-dark rounded", children: [
+        recording && /* @__PURE__ */ jsxs(Fragment, { children: [
+          /* @__PURE__ */ jsx(SvgIconRecord, { width: 12, height: 12, color: "red", className: "me-4" }),
+          /* @__PURE__ */ jsxs("span", { children: [
+            convertMsToMS(recordedTime),
+            "/",
+            convertMsToMS(maxDuration)
+          ] })
+        ] }),
+        recorded && /* @__PURE__ */ jsxs(Fragment, { children: [
+          /* @__PURE__ */ jsx(SvgIconRecordVideo, { width: 14, height: 14, className: "me-4" }),
+          /* @__PURE__ */ jsxs("span", { children: [
+            convertMsToMS(playedTime),
+            "/",
+            convertMsToMS(recordedTime)
+          ] })
+        ] })
+      ] }),
+      stream && /* @__PURE__ */ jsx(Toolbar, { items: toolbarItems, className: "position-absolute bottom-0 start-50 bg-white" })
+    ] }),
+    saving && /* @__PURE__ */ jsx(LoadingScreen, { position: !1, caption: t("bbm.video.save.loader.caption") })
+  ] });
+});
+export {
+  VideoRecorder as default
+};

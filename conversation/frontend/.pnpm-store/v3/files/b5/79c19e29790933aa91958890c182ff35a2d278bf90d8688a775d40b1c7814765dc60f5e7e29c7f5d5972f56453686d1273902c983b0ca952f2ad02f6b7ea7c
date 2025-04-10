@@ -1,0 +1,17 @@
+import { ReactNode } from 'react';
+declare function Widget({ children }: {
+    children: ReactNode;
+}): import("react/jsx-runtime").JSX.Element;
+declare namespace Widget {
+    var Header: ({ children }: {
+        children: string;
+    }) => import("react/jsx-runtime").JSX.Element;
+    var Body: ({ children }: {
+        children: ReactNode;
+    }) => import("react/jsx-runtime").JSX.Element;
+    var Footer: ({ children }: {
+        children: ReactNode;
+    }) => import("react/jsx-runtime").JSX.Element;
+    var displayName: string;
+}
+export default Widget;

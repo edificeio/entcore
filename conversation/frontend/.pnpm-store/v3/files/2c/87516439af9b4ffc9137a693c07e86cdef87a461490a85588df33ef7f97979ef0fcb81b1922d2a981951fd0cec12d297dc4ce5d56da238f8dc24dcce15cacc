@@ -1,0 +1,5 @@
+import { hasMark } from "./has-mark.js";
+const hasTextStyle = (styleName, editor) => editor == null ? void 0 : editor.extensionManager.extensions.find((item) => item.name === styleName && hasMark("textStyle", editor));
+export {
+  hasTextStyle
+};

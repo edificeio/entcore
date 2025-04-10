@@ -1,0 +1,13 @@
+import { odeServices } from "@edifice.io/client";
+import { useQuery } from "@tanstack/react-query";
+function useConf({
+  appCode
+}) {
+  return useQuery({
+    queryKey: ["conf"],
+    queryFn: async () => await odeServices.conf().getConf(appCode)
+  });
+}
+export {
+  useConf as default
+};

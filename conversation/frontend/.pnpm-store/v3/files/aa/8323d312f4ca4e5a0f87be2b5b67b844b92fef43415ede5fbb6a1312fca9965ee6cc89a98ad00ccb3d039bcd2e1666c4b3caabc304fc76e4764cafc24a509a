@@ -1,0 +1,9 @@
+import { ID, Role, WorkspaceElement, WorkspaceSearchFilter } from "edifice-ts-client";
+import { TreeData } from "../../types";
+export type FolderNode = TreeData & {
+    files?: WorkspaceElement[];
+};
+export default function useWorkspaceSearch(rootId: string, rootName: string, filter: WorkspaceSearchFilter, format: Role | Role[] | null): {
+    root: FolderNode;
+    loadContent: (folderId?: ID) => void;
+};

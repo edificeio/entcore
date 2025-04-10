@@ -1,0 +1,17 @@
+import { jsx } from "react/jsx-runtime";
+import { forwardRef } from "react";
+import clsx from "clsx";
+import SvgIconSearch from "../../modules/icons/components/IconSearch.js";
+import IconButton from "./IconButton.js";
+const SearchButton = /* @__PURE__ */ forwardRef(({
+  icon = /* @__PURE__ */ jsx(SvgIconSearch, {}),
+  onClick,
+  className,
+  ...restProps
+}, ref) => {
+  const classes = clsx("btn-search", className);
+  return /* @__PURE__ */ jsx(IconButton, { ref, className: classes, icon, onClick, ...restProps });
+});
+export {
+  SearchButton as default
+};

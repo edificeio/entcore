@@ -1,0 +1,18 @@
+import { jsx as r } from "react/jsx-runtime";
+import { usePaths as o, useOdeClient as m, EmptyScreen as l } from "@edifice-ui/react";
+import { useTranslation as p } from "react-i18next";
+function i() {
+  const [n] = o(), {
+    appCode: e
+  } = m(), {
+    t
+  } = p();
+  return /* @__PURE__ */ r(l, { imageSrc: `${n}/emptyscreen/illu-no-content-in-folder.svg`, imageAlt: t("explorer.emptyScreen.folder.empty.alt", {
+    ns: e
+  }), text: t("explorer.emptyScreen.label", {
+    ns: e
+  }) });
+}
+export {
+  i as default
+};

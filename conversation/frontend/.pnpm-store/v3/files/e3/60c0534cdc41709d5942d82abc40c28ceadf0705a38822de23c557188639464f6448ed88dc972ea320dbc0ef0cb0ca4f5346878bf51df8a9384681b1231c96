@@ -1,0 +1,11 @@
+import { BlogUpdate, CreateParameters, CreateResult, ResourceService, ResourceType, UpdateResult } from 'edifice-ts-client';
+export declare class BlogResourceService extends ResourceService {
+    getEditUrl(): string;
+    create(parameters: CreateParameters): Promise<CreateResult>;
+    update(parameters: BlogUpdate): Promise<UpdateResult>;
+    getResourceType(): ResourceType;
+    getApplication(): string;
+    getFormUrl(folderId?: string): string;
+    getViewUrl(resourceId: string): string;
+    getPrintUrl(resourceId: string): string;
+}

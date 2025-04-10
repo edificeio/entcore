@@ -1,0 +1,21 @@
+import { IOdeServices } from "../services/OdeServices";
+import { VideoConf, VideoUploadParams, VideoUploadResponse } from "./interface";
+export declare class VideoService {
+    private context;
+    private static MAX_WEIGHT;
+    private static MAX_DURATION;
+    constructor(context: IOdeServices);
+    private get http();
+    private get conf();
+    /**
+     * Returns the video app public conf (maxWeight, maxDuration and accepted extensions)
+     * @returns the Video app public conf
+     */
+    getVideoConf(): Promise<VideoConf>;
+    /**
+     * Starts the encoding process and check when video is fully processed.
+     * @param params cf VideoUploadParams
+     * @returns a VideoCheckResponse
+     */
+    upload({ data, appCode, captation, duration, }: VideoUploadParams): Promise<VideoUploadResponse>;
+}

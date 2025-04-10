@@ -1,0 +1,60 @@
+import { ComponentPropsWithRef, ReactNode } from 'react';
+export interface AlertRef {
+    show: () => void;
+    hide: () => void;
+}
+export type AlertTypes = 'success' | 'warning' | 'info' | 'danger';
+export type AlertPosition = 'none' | 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+export interface AlertProps extends ComponentPropsWithRef<'div'> {
+    /**
+     * Type of alert
+     */
+    type?: AlertTypes;
+    /**
+     * Alert can be closed with a button ?
+     */
+    isDismissible?: boolean;
+    /**
+     * Alert is displayed as Toast
+     */
+    isToast?: boolean;
+    /**
+     * Alert is displayed as a confirm box (cancel button and confirm button)
+     */
+    isConfirm?: boolean;
+    /**
+     * Alert poistion.
+     */
+    position?: AlertPosition;
+    /**
+     * Alert must close after delay
+     */
+    autoClose?: boolean;
+    /**
+     * If autoClose if activated, set the delay
+     * Défault : 3000
+     */
+    autoCloseDelay?: number;
+    /**
+     * Alert box content
+     */
+    children: ReactNode;
+    /**
+     * Alert box action
+     */
+    button?: ReactNode;
+    /**
+     * Callback when alert is closed
+     */
+    onClose?: () => void;
+    /**
+     * Callback when alert is closed
+     */
+    onVisibilityChange?: (isVisible: boolean) => void;
+    /**
+     * Optional class for styling purpose
+     */
+    className?: string;
+}
+declare const Alert: import('react').ForwardRefExoticComponent<Omit<AlertProps, "ref"> & import('react').RefAttributes<AlertRef>>;
+export default Alert;

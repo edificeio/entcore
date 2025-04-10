@@ -1,0 +1,52 @@
+{
+  "name": "@edifice.io/utilities",
+  "version": "2.1.1-develop-b2school.20250321113048",
+  "description": "Edifice Utilities Package",
+  "keywords": [
+    "utilities",
+    "edifice",
+    "frontend",
+    "framework"
+  ],
+  "homepage": "https://github.com/edificeio/edifice-frontend-framework/tree/main/packages/utilities#readme",
+  "bugs": {
+    "url": "https://github.com/edificeio/edifice-frontend-framework/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/edificeio/edifice-frontend-framework.git",
+    "directory": "packages/utilities"
+  },
+  "license": "AGPL-3.0",
+  "author": "Edifice",
+  "type": "module",
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@types/node": "^22.9.1",
+    "vite": "^5.4.11",
+    "vite-plugin-dts": "^4.1.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "vite build",
+    "fix": "eslint --fix --report-unused-disable-directives --max-warnings 0",
+    "format": "pnpm run format:write && pnpm run format:check",
+    "format:check": "npx prettier --check \"src/**/*.ts\"",
+    "format:write": "npx prettier --write \"src/**/*.ts\"",
+    "lint": "eslint"
+  }
+}

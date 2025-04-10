@@ -1,0 +1,22 @@
+import { useEdificeClient } from "../../providers/EdificeClientProvider/EdificeClientProvider.hook.js";
+import { useEdificeTheme } from "../../providers/EdificeThemeProvider/EdificeThemeProvider.hook.js";
+function useUser() {
+  const {
+    user,
+    userDescription
+  } = useEdificeClient(), {
+    theme
+  } = useEdificeTheme();
+  function avatarUrl() {
+    let avatar = userDescription == null ? void 0 : userDescription.picture;
+    return (!avatar || avatar === "no-avatar.jpg" || avatar === "no-avatar.svg") && (avatar = `${theme == null ? void 0 : theme.basePath}/img/illustrations/no-avatar.svg`), avatar;
+  }
+  return {
+    user,
+    avatar: avatarUrl(),
+    userDescription
+  };
+}
+export {
+  useUser as default
+};

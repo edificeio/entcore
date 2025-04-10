@@ -1,0 +1,50 @@
+import { useReducer, useCallback } from "react";
+import { odeServices, DocumentHelper } from "@edifice.io/client";
+import { findNodeById } from "../../components/TreeView/utilities/treeview.js";
+import useHasWorkflow from "../useHasWorkflow/useHasWorkflow.js";
+function useWorkspaceSearch(rootId, rootName, filter, format) {
+  const canListDocs = useHasWorkflow("org.entcore.workspace.controllers.WorkspaceController|listDocuments"), canListFolders = useHasWorkflow("org.entcore.workspace.controllers.WorkspaceController|listFolders");
+  function treeReducer(state, action) {
+    switch (action.type) {
+      case "update": {
+        const node = findNodeById(state, action.folderId);
+        return node && (node.children = action.subfolders.map((f) => ({
+          id: f._id || "",
+          name: f.name
+        })), node.files = action.files), {
+          ...state
+        };
+      }
+      default:
+        throw Error("[useWorkspaceSearch] Unknown action type: " + action.type);
+    }
+  }
+  const [root, dispatch] = useReducer(treeReducer, {
+    id: rootId,
+    name: rootName,
+    section: !0
+  }), loadContent = useCallback(async (folderId) => {
+    if (canListDocs && canListFolders) {
+      const realWorkspaceId = folderId === rootId ? "" : folderId, payload = await odeServices.workspace().listDocuments(filter, realWorkspaceId), subfolders = [], files = [];
+      payload.filter((f) => {
+        if (!format || f.eType === "folder") return !0;
+        const role = DocumentHelper.getRole(f);
+        return typeof format == "string" ? format === role : Array.isArray(format) ? format.findIndex((format2) => format2 === role) >= 0 : !1;
+      }).forEach((doc) => {
+        doc.eType === "folder" ? subfolders.push(doc) : files.push(doc);
+      }), dispatch({
+        folderId,
+        subfolders,
+        files,
+        type: "update"
+      });
+    }
+  }, [canListDocs, canListFolders, rootId, filter, format]);
+  return {
+    root,
+    loadContent
+  };
+}
+export {
+  useWorkspaceSearch as default
+};

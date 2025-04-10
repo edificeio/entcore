@@ -1,0 +1,15 @@
+import { odeServices } from "@edifice.io/client";
+import { useMutation } from "@tanstack/react-query";
+const useShareMutation = ({
+  application,
+  options
+}) => useMutation({
+  mutationFn: async ({
+    resourceId,
+    rights
+  }) => await odeServices.share().saveRights(application, resourceId, rights),
+  ...options
+});
+export {
+  useShareMutation as default
+};

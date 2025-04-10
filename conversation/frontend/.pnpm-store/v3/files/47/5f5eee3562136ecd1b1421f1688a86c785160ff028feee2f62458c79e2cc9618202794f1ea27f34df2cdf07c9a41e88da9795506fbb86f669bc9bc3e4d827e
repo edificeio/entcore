@@ -1,0 +1,4 @@
+import { App, IGetConf } from '@edifice.io/client';
+export default function useConf({ appCode }: {
+    appCode: App;
+}): import('../../../node_modules/@tanstack/react-query').UseQueryResult<IGetConf, Error>;

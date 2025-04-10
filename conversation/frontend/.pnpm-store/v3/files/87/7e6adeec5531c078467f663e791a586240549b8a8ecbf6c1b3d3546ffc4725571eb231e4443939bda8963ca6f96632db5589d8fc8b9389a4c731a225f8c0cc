@@ -1,0 +1,25 @@
+import { jsxs, Fragment, jsx } from "react/jsx-runtime";
+import { forwardRef } from "react";
+import loadingScreen from "@edifice.io/bootstrap/dist/images/loading/screen-loading.gif";
+import clsx from "clsx";
+const LoadingScreen = /* @__PURE__ */ forwardRef(({
+  position = !0,
+  caption
+}, ref) => {
+  const containerClasses = clsx("top-0 end-0 start-0 bottom-0 d-grid justify-content-center align-content-center align-items-center z-2000", {
+    "position-fixed": !position,
+    "position-static": position
+  }), captionClasses = clsx("text-center pt-12", {
+    "text-white": !position
+  });
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsxs("div", { ref, className: containerClasses, children: [
+      /* @__PURE__ */ jsx("div", { className: "bg-white rounded-circle mx-auto w-25", children: /* @__PURE__ */ jsx("img", { src: loadingScreen, alt: "loading" }) }),
+      caption && /* @__PURE__ */ jsx("div", { className: captionClasses, children: caption })
+    ] }),
+    !position && /* @__PURE__ */ jsx("div", { className: "modal-backdrop fade show" })
+  ] });
+});
+export {
+  LoadingScreen as default
+};

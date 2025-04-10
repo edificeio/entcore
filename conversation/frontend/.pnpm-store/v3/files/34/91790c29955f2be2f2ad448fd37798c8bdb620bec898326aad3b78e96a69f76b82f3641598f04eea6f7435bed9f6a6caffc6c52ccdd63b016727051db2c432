@@ -1,0 +1,19 @@
+import { useRef, useEffect } from "react";
+const useAutosizeTextarea = (autoFocus) => {
+  const ref = useRef(null), resizeTextarea = () => {
+    if (ref.current) {
+      ref.current.style.height = "auto";
+      const scrollHeight = ref.current.scrollHeight;
+      ref.current.style.height = `${scrollHeight}px`;
+    }
+  };
+  return useEffect(() => {
+    var _a;
+    resizeTextarea(), autoFocus && ((_a = ref.current) == null || _a.focus());
+  }), [ref, (event) => {
+    event.currentTarget.setSelectionRange(event.currentTarget.value.length + 1, event.currentTarget.value.length + 1);
+  }, resizeTextarea];
+};
+export {
+  useAutosizeTextarea
+};

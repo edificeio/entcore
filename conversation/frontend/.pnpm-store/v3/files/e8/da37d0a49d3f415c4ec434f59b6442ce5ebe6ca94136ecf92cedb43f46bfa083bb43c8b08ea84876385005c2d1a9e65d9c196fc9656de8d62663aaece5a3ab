@@ -1,0 +1,13 @@
+import { jsx } from "react/jsx-runtime";
+import clsx from "clsx";
+function Navbar({
+  children,
+  className,
+  ...restProps
+}) {
+  const classes = clsx("navbar", className);
+  return /* @__PURE__ */ jsx("nav", { className: classes, ...restProps, children });
+}
+export {
+  Navbar
+};

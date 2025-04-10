@@ -1,0 +1,22 @@
+export declare class MimeTypeUtils {
+    static INSTANCE: MimeTypeUtils;
+    private wordExtensions;
+    private excelExtensions;
+    private pptExtensions;
+    private fileExtensionMap;
+    private csvContentType;
+    private csvExtensions;
+    private txtExtensions;
+    private mdExtensions;
+    PDF: string;
+    OCTET_STREAM: string;
+    constructor();
+    getContentTypeForExtension(extension: string): string | null;
+    getExtensionForContentType(contentType: string): string | null;
+    isWordLike(contentType: string, originalExt?: string): boolean;
+    isExcelLike(contentType: string, originalExt?: string): boolean;
+    isCsvLike(contentType: string, originalExt?: string): boolean;
+    isPowerpointLike(contentType: string, originalExt?: string): boolean;
+    isTxtLike(contentType: string, originalExt?: string): boolean;
+    isMdLike(contentType: string, originalExt?: string): boolean;
+}

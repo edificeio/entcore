@@ -1,0 +1,41 @@
+import { jsx } from "react/jsx-runtime";
+import { forwardRef } from "react";
+import clsx from "clsx";
+import commonPlaceholder from "@edifice.io/bootstrap/dist/images/common/image-placeholder.png";
+import useImage from "../../hooks/useImage/useImage.js";
+const Image = /* @__PURE__ */ forwardRef(({
+  src,
+  alt,
+  imgPlaceholder,
+  ratio,
+  objectFit,
+  className,
+  ...restProps
+}, ref) => {
+  const placeholder = imgPlaceholder ?? commonPlaceholder, {
+    imgSrc,
+    onError
+  } = useImage({
+    src,
+    placeholder
+  }), ratioImage = {
+    "ratio ratio-1x1": ratio === "1",
+    "ratio ratio-4x3": ratio === "4",
+    "ratio ratio-16x9": ratio === "16",
+    "ratio ratio-21x9": ratio === "21"
+  }, objectImage = {
+    "object-fit-contain": objectFit === "contain",
+    "object-fit-cover": objectFit === "cover",
+    "object-fit-fill": objectFit === "fill",
+    "object-fit-scale": objectFit === "scale",
+    "object-fit-none": objectFit === "none"
+  }, ratioClasses = clsx({
+    ...ratioImage
+  }), classes = clsx({
+    ...objectImage
+  }, className), renderImage = /* @__PURE__ */ jsx("img", { alt, onError, ref, src: imgSrc, className: classes, ...restProps });
+  return ratio ? /* @__PURE__ */ jsx("div", { className: ratioClasses, children: renderImage }) : renderImage;
+});
+export {
+  Image as default
+};

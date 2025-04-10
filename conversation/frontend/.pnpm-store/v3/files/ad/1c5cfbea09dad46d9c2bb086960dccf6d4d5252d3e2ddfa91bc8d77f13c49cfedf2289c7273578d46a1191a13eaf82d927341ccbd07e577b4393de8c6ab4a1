@@ -1,0 +1,7 @@
+import { jsx } from "react/jsx-runtime";
+const CardFooter = ({
+  children
+}) => /* @__PURE__ */ jsx("div", { className: "card-footer gap-16", children });
+export {
+  CardFooter as default
+};

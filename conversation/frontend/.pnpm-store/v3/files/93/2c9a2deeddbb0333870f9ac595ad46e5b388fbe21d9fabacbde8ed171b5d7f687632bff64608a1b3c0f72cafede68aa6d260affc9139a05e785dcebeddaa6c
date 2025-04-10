@@ -1,0 +1,18 @@
+import { ComponentPropsWithRef } from "react";
+import { ColorPalette, ColorPaletteItem } from "./ColorPalette";
+export interface ColorPickerProps extends ComponentPropsWithRef<"div"> {
+    /**
+     * Palettes of pickable colors
+     */
+    palettes?: ColorPalette[];
+    /**
+     * Current picked color
+     */
+    model?: string;
+    /**
+     * Triggered when a color is picked
+     */
+    onSuccess?: (item: ColorPaletteItem) => void;
+}
+declare const ColorPicker: import("react").ForwardRefExoticComponent<Omit<ColorPickerProps, "ref"> & import("react").RefAttributes<HTMLDivElement>>;
+export default ColorPicker;

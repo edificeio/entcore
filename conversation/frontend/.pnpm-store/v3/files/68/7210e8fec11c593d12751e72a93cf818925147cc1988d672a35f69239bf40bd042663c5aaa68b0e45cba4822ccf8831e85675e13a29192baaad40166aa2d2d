@@ -1,0 +1,12 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+const SvgIconFolder = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs("svg", { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", fill: "none", viewBox: "0 0 24 24", "aria-hidden": "true", "aria-labelledby": titleId, ...props, children: [
+  title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+  /* @__PURE__ */ jsx("path", { fill: "currentColor", fillRule: "evenodd", d: "M3.057 5.5A.057.057 0 0 0 3 5.557v13.03h18V7.875h-8.697a1 1 0 0 1-1-1c0-.759-.615-1.374-1.374-1.374zM1 5.557C1 4.42 1.92 3.5 3.057 3.5h6.872c1.515 0 2.797.999 3.223 2.374H21a2 2 0 0 1 2 2v10.714a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2z", clipRule: "evenodd" })
+] });
+export {
+  SvgIconFolder as default
+};

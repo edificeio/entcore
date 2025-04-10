@@ -1,0 +1,21 @@
+import { App } from '../globals';
+import { IOdeServices } from '../services/OdeServices';
+import { IGetConf } from './interfaces';
+export declare class ConfService {
+    private context;
+    constructor(context: IOdeServices);
+    private get http();
+    private get cache();
+    private get cdnDomain();
+    private get notify();
+    getConf(app: App): Promise<IGetConf>;
+    getPublicConf<T>(app: App): Promise<T>;
+    getCdnUrl(): string | undefined;
+    savePreference<T>(key: string, value: T): Promise<void>;
+    getPreference<T>(key: string): Promise<T>;
+    private getThemeConf;
+    private getApplicationsList;
+    private getWebAppConf;
+    private getTheme;
+    getLogoutCallback(version?: string): Promise<any>;
+}

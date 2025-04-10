@@ -1,0 +1,43 @@
+import { CardProps } from '../../../components';
+import { Status } from '../../../types';
+export interface UploadItemProps {
+    /**
+     * File's image
+     * */
+    src: string;
+    /**
+     * File's name
+     * */
+    name: string;
+    /**
+     * File's info
+     * */
+    info?: {
+        type: string;
+        weight: string;
+    };
+}
+export interface UploadCardProps extends CardProps {
+    /**
+     * UploadItemProps
+     * */
+    item: UploadItemProps;
+    /**
+     * idle, loading, success, warning, error
+     * */
+    status?: Status;
+    /**
+     * Delete callback
+     * */
+    onDelete?: () => void;
+    /**
+     * Edit callback
+     * */
+    onEdit?: () => void;
+    /**
+     * Retry callback
+     * */
+    onRetry?: () => void;
+}
+declare const UploadCard: ({ item, status, isClickable, isSelectable, onDelete, onEdit, onRetry, }: UploadCardProps) => import("react/jsx-runtime").JSX.Element;
+export default UploadCard;

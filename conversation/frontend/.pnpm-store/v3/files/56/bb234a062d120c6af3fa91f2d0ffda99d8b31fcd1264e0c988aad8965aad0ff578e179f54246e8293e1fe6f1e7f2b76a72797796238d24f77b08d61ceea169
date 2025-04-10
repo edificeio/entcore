@@ -1,0 +1,30 @@
+/// <reference types="react" />
+import { CommentCallbacks, CommentOptions, CommentProps, CommentType } from "../types";
+export declare const useComments: ({ defaultComments, options, type, callbacks, }: {
+    defaultComments: CommentProps[] | undefined;
+    options: CommentOptions;
+    type: CommentType;
+    callbacks: CommentCallbacks | null;
+}) => {
+    profilesQueries: {
+        data: any[];
+        isLoading: boolean;
+    };
+    content: string;
+    title: string;
+    user: import("edifice-ts-client").IUserInfo | undefined;
+    emptyscreenPath: string;
+    defaultCommentsCount: number;
+    comments: CommentProps[];
+    editCommentId: string | null;
+    setEditCommentId: import("react").Dispatch<import("react").SetStateAction<string | null>>;
+    commentsCount: number;
+    t: import("i18next").TFunction<"translation", undefined>;
+    handleMoreComments: () => void;
+    handleChangeContent: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
+    handleDeleteComment: (id: string) => void;
+    handleCreateComment: (content: string) => void;
+    handleModifyComment: (commentId: string) => void;
+    handleUpdateComment: (comment: string) => void;
+    handleReset: () => void;
+};

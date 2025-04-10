@@ -1,0 +1,27 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import SvgIconClose from "../../modules/icons/components/IconClose.js";
+import IconButton from "../Button/IconButton.js";
+import { useModalContext } from "./ModalContext.js";
+const ModalHeader = (props) => {
+  const {
+    onModalClose,
+    children
+  } = props, {
+    ariaLabelId,
+    focusId
+  } = useModalContext(), closeButtonRef = useRef(null), {
+    t
+  } = useTranslation();
+  return useEffect(() => {
+    var _a;
+    focusId || (_a = closeButtonRef.current) == null || _a.focus();
+  }, [focusId]), /* @__PURE__ */ jsxs("div", { className: "modal-header", children: [
+    /* @__PURE__ */ jsx("h2", { id: ariaLabelId, className: "modal-title", tabIndex: -1, children }),
+    /* @__PURE__ */ jsx(IconButton, { ref: closeButtonRef, "aria-label": t("close"), color: "tertiary", icon: /* @__PURE__ */ jsx(SvgIconClose, {}), type: "button", variant: "ghost", title: t("close"), onClick: onModalClose, className: "btn-close" })
+  ] });
+};
+export {
+  ModalHeader as default
+};

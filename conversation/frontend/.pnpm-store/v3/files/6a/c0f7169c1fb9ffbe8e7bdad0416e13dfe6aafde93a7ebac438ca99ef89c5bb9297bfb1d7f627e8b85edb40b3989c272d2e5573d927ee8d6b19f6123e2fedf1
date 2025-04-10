@@ -1,0 +1,5 @@
+import { ReactionType } from '@edifice.io/client';
+export default function useReactionIcons(): {
+    getReactionIcon: (reactionType?: ReactionType | null, asCounter?: boolean) => import("react/jsx-runtime").JSX.Element;
+    getReactionLabel: (reactionType?: ReactionType | null) => "audience.reaction.thanks" | "audience.reaction.great" | "audience.reaction.congrats" | "audience.reaction.interesting" | "audience.reaction.default";
+};

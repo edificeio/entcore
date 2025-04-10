@@ -1,0 +1,44 @@
+import { jsx, Fragment, jsxs } from "react/jsx-runtime";
+import { StringUtils } from "@edifice.io/utilities";
+import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
+import SvgIconSee from "../icons/components/IconSee.js";
+import SvgIconUsers from "../icons/components/IconUsers.js";
+import ViewsByProfileCard from "./ViewsByProfileCard.js";
+import Modal from "../../components/Modal/Modal.js";
+import Button from "../../components/Button/Button.js";
+const ViewsModal = ({
+  viewsDetails,
+  isOpen,
+  onModalClose
+}) => {
+  var _a;
+  const {
+    t
+  } = useTranslation(), hasUniqueViews = viewsDetails.uniqueViewsCounter !== void 0;
+  return (
+    // Using a fragment to ensure Storybook correctly interprets JSDoc comments: https://github.com/storybookjs/storybook/issues/27169
+    /* @__PURE__ */ jsx(Fragment, { children: /* @__PURE__ */ createPortal(/* @__PURE__ */ jsxs(Modal, { id: "ViewsModal", isOpen, onModalClose, children: [
+      /* @__PURE__ */ jsx(Modal.Header, { onModalClose, children: t("audience.views.title") }),
+      /* @__PURE__ */ jsxs(Modal.Body, { children: [
+        /* @__PURE__ */ jsxs("div", { className: "views-detail-line p-8 mb-12", children: [
+          /* @__PURE__ */ jsx("div", { className: "views-detail-icon rounded p-8", children: /* @__PURE__ */ jsx(SvgIconSee, {}) }),
+          /* @__PURE__ */ jsx("div", { className: "h3", children: StringUtils.toCounter(viewsDetails.viewsCounter) }),
+          /* @__PURE__ */ jsx("div", { children: t("audience.views.detail.viewsCounter") })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "views-detail-line p-8 mb-12", children: [
+          /* @__PURE__ */ jsx("div", { className: "views-detail-icon rounded p-8", children: /* @__PURE__ */ jsx(SvgIconUsers, {}) }),
+          hasUniqueViews ? /* @__PURE__ */ jsxs(Fragment, { children: [
+            /* @__PURE__ */ jsx("div", { className: "h3", children: StringUtils.toCounter(viewsDetails.uniqueViewsCounter) }),
+            /* @__PURE__ */ jsx("div", { children: t("audience.views.detail.uniqueViewsCounter") })
+          ] }) : /* @__PURE__ */ jsx("div", { children: t("audience.views.detail.noUniqueViews") })
+        ] }),
+        hasUniqueViews ? (_a = viewsDetails.uniqueViewsPerProfile) == null ? void 0 : _a.map((viewsByProfile) => /* @__PURE__ */ jsx(ViewsByProfileCard, { viewsByProfile }, viewsByProfile.profile)) : null
+      ] }),
+      /* @__PURE__ */ jsx(Modal.Footer, { children: /* @__PURE__ */ jsx(Button, { color: "primary", onClick: onModalClose, type: "button", variant: "filled", children: t("audience.views.cancel") }) })
+    ] }), document.getElementById("portal")) })
+  );
+};
+export {
+  ViewsModal as default
+};

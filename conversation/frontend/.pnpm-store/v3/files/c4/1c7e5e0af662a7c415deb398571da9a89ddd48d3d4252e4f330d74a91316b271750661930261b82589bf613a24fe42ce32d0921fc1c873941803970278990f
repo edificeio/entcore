@@ -1,0 +1,44 @@
+import { jsx, jsxs, Fragment } from "react/jsx-runtime";
+import clsx from "clsx";
+import { Toaster } from "react-hot-toast";
+import { useTranslation } from "react-i18next";
+import { useEdificeTheme } from "../../providers/EdificeThemeProvider/EdificeThemeProvider.hook.js";
+import Header from "./components/Header.js";
+import useCookiesConsent from "../../hooks/useCookiesConsent/useCookiesConsent.js";
+import useZendeskGuide from "../../hooks/useZendeskGuide/useZendeskGuide.js";
+import useCantoo from "../../hooks/useCantoo/useCantoo.js";
+import Alert from "../Alert/Alert.js";
+import Button from "../Button/Button.js";
+const Layout = ({
+  children,
+  headless = !1,
+  ...restProps
+}) => {
+  const {
+    theme
+  } = useEdificeTheme(), {
+    t
+  } = useTranslation(), {
+    showCookiesConsent,
+    handleConsultCookies,
+    handleCloseCookiesConsent
+  } = useCookiesConsent();
+  useZendeskGuide(), useCantoo();
+  const classes = clsx("d-flex flex-column bg-white", {
+    "container-fluid": !headless,
+    "rounded-4 border": (theme == null ? void 0 : theme.is1d) && !headless,
+    "mt-24": (theme == null ? void 0 : theme.is1d) && !headless
+  }), renderHeader = headless ? null : /* @__PURE__ */ jsx(Header, { is1d: theme == null ? void 0 : theme.is1d, src: theme == null ? void 0 : theme.basePath }), renderCookies = showCookiesConsent && /* @__PURE__ */ jsx(Alert, { type: "info", className: "m-12 rgpd", isConfirm: !0, position: "bottom-right", button: /* @__PURE__ */ jsx(Button, { color: "tertiary", variant: "ghost", onClick: handleConsultCookies, children: t("rgpd.cookies.banner.button.consult") }), onClose: handleCloseCookiesConsent, children: t("rgpd.cookies.banner.text1") }), renderToaster = /* @__PURE__ */ jsx(Toaster, { containerClassName: "toaster-container", toastOptions: {
+    position: "top-right"
+  } });
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    renderHeader,
+    /* @__PURE__ */ jsx("main", { className: classes, ...restProps, children }),
+    renderToaster,
+    renderCookies
+  ] });
+};
+export {
+  Layout,
+  Layout as default
+};

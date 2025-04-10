@@ -1,0 +1,28 @@
+import { type ReactNode } from "react";
+import { App, GetContextParameters, IResource, ResourceType, WorkspaceElement } from "edifice-ts-client";
+export interface MockedDataProps {
+    children: ReactNode;
+    mocks: {
+        /** Current app code */
+        app?: App;
+        /** User's granted workflow rights */
+        workflows?: string[];
+        /** List of pseudo-documents from workspace. */
+        workspaceDocuments?: WorkspaceElement[];
+        /** List of available apps. */
+        availableApps?: App[];
+        /** List of pseudo-IResource by type. */
+        appResources?: {
+            [resourceType: ResourceType]: IResource[];
+        };
+    };
+}
+export interface MockedContextProps {
+    app?: App;
+    availableApps?: Promise<App[]>;
+    hasWorkflow?: (workflow: string) => Promise<boolean>;
+    listWorkspaceDocuments?: () => Promise<WorkspaceElement[]>;
+    loadResources?: (filters: GetContextParameters) => Promise<IResource[]>;
+}
+export declare function MockedDataProvider({ children, mocks }: MockedDataProps): import("react/jsx-runtime").JSX.Element;
+export declare function useMockedData(): MockedContextProps | null;

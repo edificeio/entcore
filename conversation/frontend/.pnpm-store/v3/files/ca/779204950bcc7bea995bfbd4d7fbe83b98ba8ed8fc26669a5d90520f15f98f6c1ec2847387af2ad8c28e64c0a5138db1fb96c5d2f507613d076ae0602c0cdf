@@ -1,0 +1,69 @@
+import { Node } from "@tiptap/core";
+const Iframe = Node.create({
+  name: "iframe",
+  group: "block",
+  atom: !0,
+  draggable: !0,
+  addOptions() {
+    return {
+      allowFullscreen: !0,
+      HTMLAttributes: {
+        class: "iframe-wrapper"
+      }
+    };
+  },
+  addAttributes() {
+    return {
+      src: {
+        default: null
+      },
+      frameborder: {
+        default: 0
+      },
+      allowfullscreen: {
+        default: this.options.allowFullscreen,
+        parseHTML: () => this.options.allowFullscreen
+      },
+      width: {
+        renderHTML: (attributes) => attributes.width ? {
+          width: attributes.width === "100%" ? "100%" : parseInt(attributes.width)
+        } : {},
+        parseHTML: (element) => element.getAttribute("width")
+      },
+      height: {
+        renderHTML: (attributes) => attributes.height ? {
+          height: parseInt(attributes.height)
+        } : {},
+        parseHTML: (element) => element.getAttribute("height")
+      },
+      style: {
+        renderHTML: (attributes) => attributes.style ? {
+          style: attributes.style
+        } : {},
+        parseHTML: (element) => element.getAttribute("style")
+      }
+    };
+  },
+  parseHTML() {
+    return [
+      {
+        tag: "iframe"
+      }
+    ];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return ["div", this.options.HTMLAttributes, ["iframe", HTMLAttributes]];
+  },
+  addCommands() {
+    return {
+      setIframe: (options) => ({ tr, dispatch }) => {
+        const { selection } = tr, node = this.type.create(options);
+        return dispatch && tr.replaceRangeWith(selection.from, selection.to, node), !0;
+      }
+    };
+  }
+});
+export {
+  Iframe
+};
+//# sourceMappingURL=iframe.js.map

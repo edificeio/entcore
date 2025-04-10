@@ -1,0 +1,22 @@
+import { IOdeServices } from '../services/OdeServices';
+import { IReactionsService, ReactionDetailsData, ReactionSummaryData, ReactionType } from './interface';
+export type ReactionSummariesData = {
+    reactionsByResource: {
+        [resourceId: string]: ReactionSummaryData | undefined;
+    };
+};
+export declare class ReactionsService implements IReactionsService {
+    private context;
+    private module;
+    private resourceType;
+    constructor(context: IOdeServices, module: string, resourceType: string);
+    private get http();
+    loadAvailableReactions(): Promise<("REACTION_1" | "REACTION_2" | "REACTION_3" | "REACTION_4")[] | undefined>;
+    loadReactionSummaries(resourceIds: string[]): Promise<{
+        [resourceId: string]: ReactionSummaryData | undefined;
+    }>;
+    loadReactionDetails(resourceId: string, page: number, size: number): Promise<ReactionDetailsData | undefined>;
+    deleteReaction(resourceId: string): Promise<void>;
+    updateReaction(resourceId: string, reactionType: ReactionType): Promise<void>;
+    createReaction(resourceId: string, reactionType: ReactionType): Promise<void>;
+}

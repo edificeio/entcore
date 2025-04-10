@@ -1,0 +1,4 @@
+import { PublishResult } from "edifice-ts-client";
+export declare function ToastSuccess({ result }: {
+    result: PublishResult;
+}): import("react/jsx-runtime").JSX.Element;

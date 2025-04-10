@@ -1,0 +1,52 @@
+import { App, CreateFolderParameters, CreateFolderResult, DeleteParameters, GetContextParameters, GetContextResult, GetSubFoldersResult, IActionResult, ID, ISearchResults, MoveParameters, PublishParameters, PublishResult, ResourceType, UpdateFolderParameters } from "..";
+import { IOdeServices } from "../services/OdeServices";
+import { CopyParameters, CopyResult, CreateParameters, CreateResult, GetResourceParameters, IResource, IResourceService, IWebResourceService, UpdateParameters, UpdateResult } from "./interface";
+export declare abstract class ResourceService implements IResourceService, IWebResourceService {
+    protected context: IOdeServices;
+    private static registry;
+    static register: ({ application, resourceType, }: {
+        application: string;
+        resourceType: string;
+    }, service: (context: IOdeServices) => IResourceService & IWebResourceService) => void;
+    static findService: (lookFor: {
+        application: string;
+        resourceType: string;
+    }, context: IOdeServices) => IResourceService & IWebResourceService;
+    static findMainService: ({ application }: {
+        application: string;
+    }, context: IOdeServices) => IResourceService & IWebResourceService;
+    static isRegistered: ({ application, resourceType, }: {
+        application: string;
+        resourceType: string;
+    }) => boolean;
+    constructor(context: IOdeServices);
+    protected get http(): import("../transport/Service").HttpService;
+    abstract getApplication(): App | string;
+    abstract getPrintUrl(resourceId: string): string;
+    abstract getViewUrl(resourceId: string): string;
+    abstract getFormUrl(folderId?: string): string;
+    abstract getEditUrl(resourceId?: string): string;
+    abstract create<T extends CreateParameters>(parameters: T): Promise<CreateResult>;
+    abstract update<T extends UpdateParameters>(parameters: T): Promise<UpdateResult>;
+    abstract getResourceType(): ResourceType;
+    copy(parameters: CopyParameters): Promise<CopyResult>;
+    publish(parameters: PublishParameters): Promise<PublishResult>;
+    createContext(parameters: GetContextParameters): Promise<GetContextResult>;
+    searchContext(parameters: GetContextParameters): Promise<ISearchResults>;
+    searchResource(parameters: GetResourceParameters): Promise<IResource>;
+    createFolder(parameters: CreateFolderParameters): Promise<CreateFolderResult>;
+    updateFolder(parameters: UpdateFolderParameters): Promise<CreateFolderResult>;
+    moveToFolder(parameters: MoveParameters, useAssetId?: boolean): Promise<IActionResult>;
+    listSubfolders(folderId: ID): Promise<GetSubFoldersResult>;
+    deleteAll(parameters: DeleteParameters, useAssetId?: boolean): Promise<IActionResult>;
+    trashAll({ resourceType, ...parameters }: DeleteParameters, useAssetId?: boolean): Promise<IActionResult>;
+    /** Trash folders and/or resources. */
+    restoreAll({ resourceType, ...parameters }: DeleteParameters, useAssetId?: boolean): Promise<IActionResult>;
+    protected checkHttpResponse: <R>(result: R) => R;
+    private mapAssetIdToIds;
+    protected getThumbnailPath(file: string | Blob | File | undefined): Promise<string | undefined>;
+    private toQueryParams;
+    private getResourceParams;
+    private createFolderToBodyParams;
+    private moveToBodyParams;
+}

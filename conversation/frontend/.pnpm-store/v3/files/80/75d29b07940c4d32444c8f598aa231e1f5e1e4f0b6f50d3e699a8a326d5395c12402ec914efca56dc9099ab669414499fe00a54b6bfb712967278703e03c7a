@@ -1,0 +1,21 @@
+import { jsx } from "react/jsx-runtime";
+import clsx from "clsx";
+import { useCardContext } from "./CardContext.js";
+import Image from "../Image/Image.js";
+import AppIcon from "../AppIcon/AppIcon.js";
+const CardImage = ({
+  imageSrc,
+  className,
+  variant = "medium"
+}) => {
+  const {
+    app
+  } = useCardContext(), style = variant === "landscape" ? {
+    width: "100%",
+    height: "auto"
+  } : null;
+  return /* @__PURE__ */ jsx("div", { className: clsx("card-image", variant), children: imageSrc ? /* @__PURE__ */ jsx(Image, { alt: "", src: imageSrc, objectFit: "cover", className: clsx("h-full w-100", className) }) : /* @__PURE__ */ jsx(AppIcon, { app, iconFit: "ratio", size: "80", variant: "rounded", ...style }) });
+};
+export {
+  CardImage as default
+};

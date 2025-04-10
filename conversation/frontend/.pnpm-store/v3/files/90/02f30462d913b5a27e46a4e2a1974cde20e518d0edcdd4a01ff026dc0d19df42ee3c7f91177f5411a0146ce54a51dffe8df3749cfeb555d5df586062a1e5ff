@@ -1,0 +1,3 @@
+import { MediaResizeProps } from '../../hooks';
+declare const MediaRenderer: (props: MediaResizeProps) => import("react/jsx-runtime").JSX.Element;
+export default MediaRenderer;

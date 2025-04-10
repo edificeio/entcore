@@ -1,0 +1,8 @@
+import { Editor } from '@tiptap/react';
+declare const BubbleMenuEditImage: ({ editor, onEditImage, openEditImage, editable, }: {
+    editor: Editor;
+    onEditImage: () => void;
+    openEditImage: boolean;
+    editable: boolean;
+}) => import("react/jsx-runtime").JSX.Element;
+export default BubbleMenuEditImage;

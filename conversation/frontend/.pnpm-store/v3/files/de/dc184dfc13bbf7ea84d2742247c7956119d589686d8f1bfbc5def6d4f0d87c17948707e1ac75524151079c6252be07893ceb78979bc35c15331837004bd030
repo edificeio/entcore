@@ -1,0 +1,40 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { useState, useEffect } from "react";
+import clsx from "clsx";
+import SvgIconDelete from "../../icons/components/IconDelete.js";
+import SvgIconEdit from "../../icons/components/IconEdit.js";
+import IconButton from "../../../components/Button/IconButton.js";
+import Avatar from "../../../components/Avatar/Avatar.js";
+import AppIcon from "../../../components/AppIcon/AppIcon.js";
+const ImagePicker = ({
+  addButtonLabel = "Add image",
+  deleteButtonLabel = "Delete image",
+  src,
+  className,
+  mediaLibraryRef,
+  libraryMedia,
+  app,
+  onUploadImage,
+  onDeleteImage
+}) => {
+  const [preview, setPreview] = useState(src || "");
+  useEffect(() => {
+    libraryMedia && (setPreview(libraryMedia), onUploadImage(libraryMedia));
+  }, [libraryMedia]);
+  const handleClick = () => {
+    var _a;
+    (_a = mediaLibraryRef.current) == null || _a.show("image");
+  }, handleClean = () => {
+    setPreview(""), onDeleteImage();
+  }, classes = clsx("image-input", className);
+  return /* @__PURE__ */ jsxs("div", { id: "image-input", className: classes, children: [
+    /* @__PURE__ */ jsxs("div", { className: "image-input-actions gap-8", children: [
+      /* @__PURE__ */ jsx(IconButton, { "aria-label": addButtonLabel, color: "tertiary", icon: /* @__PURE__ */ jsx(SvgIconEdit, {}), onClick: handleClick, type: "button", variant: "ghost" }),
+      /* @__PURE__ */ jsx(IconButton, { "aria-label": deleteButtonLabel, color: "danger", disabled: !preview, icon: /* @__PURE__ */ jsx(SvgIconDelete, {}), onClick: handleClean, type: "button", variant: "ghost" })
+    ] }),
+    preview ? /* @__PURE__ */ jsx(Avatar, { alt: "", src: preview, size: "xl" }) : /* @__PURE__ */ jsx(AppIcon, { app, iconFit: "ratio", size: "160", variant: "rounded" })
+  ] });
+};
+export {
+  ImagePicker as default
+};

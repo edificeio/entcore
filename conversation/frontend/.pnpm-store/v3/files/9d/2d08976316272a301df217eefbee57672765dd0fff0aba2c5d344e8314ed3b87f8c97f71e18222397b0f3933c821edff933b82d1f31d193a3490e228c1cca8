@@ -1,0 +1,19 @@
+import { jsx } from "react/jsx-runtime";
+import { useRef, useId, useEffect } from "react";
+import { useMenuContext } from "./MenuContext.js";
+const MenuItem = ({
+  children
+}) => {
+  const itemRef = useRef(null), id = useId(), {
+    menuItems
+  } = useMenuContext();
+  return useEffect(() => {
+    const itemNode = itemRef.current;
+    return itemNode && menuItems.add(itemNode), () => {
+      itemNode && menuItems.delete(itemNode);
+    };
+  }, [menuItems]), /* @__PURE__ */ jsx("li", { ref: itemRef, id, role: "none", "data-menubar-listitem": !0, children });
+};
+export {
+  MenuItem
+};

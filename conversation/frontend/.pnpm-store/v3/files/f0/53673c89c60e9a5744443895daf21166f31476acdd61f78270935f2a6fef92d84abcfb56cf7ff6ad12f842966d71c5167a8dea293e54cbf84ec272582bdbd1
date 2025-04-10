@@ -1,0 +1,12 @@
+import { odeServices } from "@edifice.io/client";
+import { useMutation } from "@tanstack/react-query";
+const useUpdateMutation = ({
+  application,
+  options
+}) => useMutation({
+  mutationFn: async (params) => await odeServices.resource(application).update(params),
+  ...options
+});
+export {
+  useUpdateMutation as default
+};

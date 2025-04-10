@@ -1,0 +1,13 @@
+function aggregate(delay, map, callback) {
+  let timerId;
+  const pending = [];
+  return function(arg) {
+    pending.push(map(arg)), !timerId && (timerId = setTimeout(() => {
+      const copy = [...pending];
+      pending.splice(0, pending.length), callback(copy), timerId = void 0;
+    }, delay));
+  };
+}
+export {
+  aggregate
+};

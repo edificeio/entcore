@@ -1,0 +1,12 @@
+import { ComponentPropsWithoutRef, ReactNode } from 'react';
+export interface LayoutProps extends ComponentPropsWithoutRef<any> {
+    /**  Main content of an application */
+    children: ReactNode;
+    /** Full screen mode without header component  */
+    headless?: boolean;
+}
+export declare const Layout: {
+    ({ children, headless, ...restProps }: LayoutProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default Layout;

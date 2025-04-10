@@ -1,0 +1,35 @@
+import { jsx, jsxs } from "react/jsx-runtime";
+import { forwardRef } from "react";
+import clsx from "clsx";
+import Loading from "../Loading/Loading.js";
+const Button = /* @__PURE__ */ forwardRef(({
+  color = "primary",
+  type = "button",
+  size = "md",
+  children,
+  isLoading,
+  loadingIcon,
+  loadingPosition,
+  leftIcon,
+  rightIcon,
+  className,
+  variant = "filled",
+  ...restProps
+}, ref) => {
+  const classes = clsx("btn", {
+    [`btn-filled btn-${color}`]: variant === "filled",
+    [`btn-${variant}-${color}`]: variant === "outline" || variant === "ghost",
+    "btn-icon": !children,
+    "btn-loading": isLoading,
+    "btn-lg": size === "lg",
+    "btn-sm": size === "sm"
+  }, className);
+  return /* @__PURE__ */ jsx("button", { ref, "data-testid": "button", className: classes, type, ...restProps, children: isLoading ? /* @__PURE__ */ jsx(Loading, { isLoading: !0, loadingIcon, loadingPosition, children }) : /* @__PURE__ */ jsxs("span", { children: [
+    leftIcon,
+    children,
+    rightIcon
+  ] }) });
+});
+export {
+  Button as default
+};

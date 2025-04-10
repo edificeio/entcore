@@ -1,0 +1,24 @@
+import { ReactionSummaryData, ReactionType } from '@edifice.io/client';
+/**
+ * Props for the ReactionChoice component.
+ */
+export interface ReactionChoiceProps {
+    /**
+     * An array of available reactions that can be chosen.
+     */
+    availableReactions: ReactionType[];
+    /**
+     * Optional summary data of the reactions.
+     */
+    summary?: ReactionSummaryData;
+    /**
+     * Optional callback function that is called when a reaction is chosen.
+     * @param chosenReaction - The reaction that was chosen.
+     */
+    onChange?: (chosenReaction?: ReactionType) => void;
+}
+declare const ReactionChoice: {
+    ({ availableReactions, summary, onChange, }: ReactionChoiceProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default ReactionChoice;

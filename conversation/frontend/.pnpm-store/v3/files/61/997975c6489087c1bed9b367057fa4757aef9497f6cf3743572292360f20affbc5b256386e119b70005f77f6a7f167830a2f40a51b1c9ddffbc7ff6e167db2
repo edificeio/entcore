@@ -1,0 +1,13 @@
+import { App, ResourceType } from "../globals";
+import { IOdeServices } from "../services/OdeServices";
+import { ReactionsService } from "./ReactionsService";
+import { ViewsService } from "./ViewsService";
+import { IAudienceService } from "./interface";
+export declare class AudienceService implements IAudienceService {
+    private context;
+    private module;
+    private resourceType;
+    constructor(context: IOdeServices, module: App, resourceType: ResourceType);
+    get views(): ViewsService;
+    get reactions(): ReactionsService;
+}

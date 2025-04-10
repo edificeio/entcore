@@ -1,0 +1,9 @@
+import { type IWidget, IWebApp } from "edifice-ts-client";
+export default function useOdeIcons(): {
+    getIconClass: (app: IWebApp | string) => string;
+    getBackgroundIconClass: (app: IWebApp | string) => string;
+    getBackgroundLightIconClass: (app: IWebApp | string) => string;
+    getIconCode: (app: IWebApp | string | undefined) => string;
+    getWidgetIconClass: (widget: IWidget) => string;
+    isIconUrl: (icon: string) => string | boolean;
+};

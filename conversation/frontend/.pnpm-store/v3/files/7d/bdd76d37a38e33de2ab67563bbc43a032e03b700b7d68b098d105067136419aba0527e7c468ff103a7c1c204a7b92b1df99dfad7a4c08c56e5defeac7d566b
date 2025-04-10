@@ -1,0 +1,45 @@
+/**
+ * ImageResizer is a utility class that provides methods to resize and compress images.
+ */
+export default class ImageResizer {
+    /**
+     * Adjusts the dimensions of an image to fit within the specified maximum width and height,
+     * preserving the aspect ratio.
+     *
+     * @param height - The original height of the image.
+     * @param maxHeight - The maximum allowed height for the image.
+     * @param width - The original width of the image.
+     * @param maxWidth - The maximum allowed width for the image.
+     * @returns An object containing the adjusted height and width of the image.
+     */
+    private static changeDimension;
+    /**
+     * Renames the file extension of a given filename.
+     *
+     * @param filename - The original filename whose extension needs to be changed.
+     * @param newExtension - The new extension to be applied to the filename.
+     * @returns The filename with the new extension.
+     */
+    private static renameFileNameExtension;
+    /**
+     * Resizes an image to the specified dimensions and compresses it to the specified format and quality.
+     *
+     * @param image - The HTMLImageElement to be resized.
+     * @param fileName - The name of the output file.
+     * @param maxWidth - The maximum width of the resized image.
+     * @param maxHeight - The maximum height of the resized image.
+     * @param compressFormat - The format to compress the image to (default is "jpeg").
+     * @param quality - The quality of the compressed image, as a percentage (default is 80).
+     * @returns A Promise that resolves to a File object containing the resized and compressed image.
+     */
+    private static resizeImage;
+    /**
+     * Resize and compress Image File in JPEG format (other format don't work well with canvas.toBlob() with quality parameter)
+     * @param file  The image file to resize
+     * @param maxWidth  The maximum width of the resized image
+     * @param maxHeight   The maximum height of the resized image
+     * @param quality   The quality of the compressed image
+     * @returns   The resized image file
+     */
+    static resizeImageFile(file: File, maxWidth?: number, maxHeight?: number, quality?: number): Promise<File>;
+}

@@ -1,0 +1,10 @@
+import { odeServices } from "@edifice.io/client";
+function usePreferences(name) {
+  return {
+    getPreference: async () => await odeServices.conf().getPreference(name),
+    savePreference: async (value) => await odeServices.conf().savePreference(name, JSON.stringify(value))
+  };
+}
+export {
+  usePreferences as default
+};

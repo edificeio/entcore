@@ -1,0 +1,2 @@
+"use strict";Object.defineProperty(exports,Symbol.toStringTag,{value:"Module"});const core=require("@tiptap/core"),Abbr=core.Mark.create({name:"abbr",addOptions(){return{HTMLAttributes:{}}},parseHTML(){return[{tag:"abbr"}]},renderHTML({HTMLAttributes}){return["abbr",core.mergeAttributes(this.options.HTMLAttributes,HTMLAttributes),0]},addCommands(){return{setAbbr:()=>({commands})=>commands.setMark(this.name),toggleAbbr:()=>({commands})=>commands.toggleMark(this.name)}}});exports.Abbr=Abbr;
+//# sourceMappingURL=abbr.cjs.map

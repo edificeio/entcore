@@ -1,0 +1,34 @@
+import { ChangeEvent } from 'react';
+declare const useDropzone: (props?: {
+    /**
+     * Truthy when the `accept` attribute of the referenced `input[type=file]`
+     * must be force-checked against any added file.
+     */
+    forceFilters: boolean;
+}) => {
+    /** Reference to an `input[type=file]` HTMLElement, null at first. */
+    inputRef: import('react').MutableRefObject<HTMLInputElement | null>;
+    /** Read-only list of File·s  managed by this hook. */
+    files: File[];
+    /** Truthy when a drag event is triggered. */
+    dragging: boolean;
+    /** Callback to attach to your drop zone (any HTMLElement). */
+    handleDragging: <T extends HTMLElement>(event: React.DragEvent<T>) => void;
+    /** Callback to attach to your drop zone (any HTMLElement). */
+    handleDragLeave: <T extends HTMLElement>(event: React.DragEvent<T>) => void;
+    /** Callback to attach to your drop zone (any HTMLElement). */
+    handleDrop: <T extends HTMLElement>(event: React.DragEvent<T>) => void;
+    /** Replace a file in the `files` list. */
+    replaceFileAt: (index: number, file: File) => void;
+    /** Remove a file from the `files` list. */
+    deleteFile: (file: File) => void;
+    /** Add a file to the `files` list. */
+    addFile: (file: File) => void;
+    /** Add many files to the `files` list. */
+    addFiles: (files: File[]) => void;
+    /** Empty the `files` list. */
+    cleanFiles: () => void;
+    /** Callback to attach to your `input[type=file]` HTMLElement. */
+    handleOnChange: (event: ChangeEvent<HTMLInputElement>) => void;
+};
+export default useDropzone;

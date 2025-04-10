@@ -1,0 +1,41 @@
+import { useState, useId, useEffect } from "react";
+import { hash } from "ohash";
+import { useTranslation } from "react-i18next";
+import slugify from "react-slugify";
+import useToast from "../../../../hooks/useToast/useToast.js";
+const useSlug = ({
+  watch,
+  setValue,
+  selectedResource
+}) => {
+  const [slug, setSlug] = useState(""), [isPublic, setIsPublic] = useState((selectedResource == null ? void 0 : selectedResource.public) || !1), uniqueId = useId(), resourceName = watch("title"), {
+    t
+  } = useTranslation(), toast = useToast();
+  useEffect(() => {
+    if (isPublic) {
+      let slug2 = "";
+      selectedResource ? slug2 = selectedResource.slug ? selectedResource.slug : `${hash({
+        foo: `${resourceName}${uniqueId}`
+      })}-${slugify(resourceName)}` : slug2 = `${hash({
+        foo: `${resourceName}${uniqueId}`
+      })}-${slugify(resourceName)}`, setValue("formSlug", slug2), setSlug(slug2);
+    }
+  }, [isPublic, resourceName]);
+  function onPublicChange(value) {
+    setIsPublic(value);
+  }
+  function onCopyToClipBoard(pathname) {
+    navigator.clipboard.writeText(`${window.location.origin}${pathname || window.location.pathname}/pub/${slug}`), toast.success(t("explorer.copy.clipboard"));
+  }
+  return {
+    slug,
+    uniqueId,
+    isPublic,
+    resourceName,
+    onPublicChange,
+    onCopyToClipBoard
+  };
+};
+export {
+  useSlug
+};

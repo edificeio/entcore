@@ -1,0 +1,20 @@
+import { jsxs as a, jsx as o } from "react/jsx-runtime";
+import { Modal as r, Button as i } from "@edifice-ui/react";
+import { createPortal as d } from "react-dom";
+import { useTranslation as n } from "react-i18next";
+function h({
+  isOpen: l,
+  onCancel: t = () => ({})
+}) {
+  const {
+    t: e
+  } = n();
+  return /* @__PURE__ */ d(/* @__PURE__ */ a(r, { isOpen: l, onModalClose: t, id: "trash_action_disable_resource", children: [
+    /* @__PURE__ */ o(r.Header, { onModalClose: () => t(), children: e("explorer.trash.action.modal.title") }),
+    /* @__PURE__ */ o(r.Body, { children: /* @__PURE__ */ o("p", { className: "body", children: e("explorer.trash.action.modal.text") }) }),
+    /* @__PURE__ */ o(r.Footer, { children: /* @__PURE__ */ o(i, { color: "primary", onClick: t, type: "button", variant: "outline", children: e("close") }) })
+  ] }), document.getElementById("portal"));
+}
+export {
+  h as default
+};

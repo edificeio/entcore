@@ -1,0 +1,13 @@
+import { ReactNode } from 'react';
+export interface BreadcrumbListProps {
+    /**
+     * Breadcrumb LI
+     */
+    children: ReactNode;
+    /**
+     * Optional class for styling purpose
+     */
+    className?: string;
+}
+declare const BreadcrumbList: import('react').ForwardRefExoticComponent<BreadcrumbListProps & import('react').RefAttributes<HTMLOListElement>>;
+export default BreadcrumbList;

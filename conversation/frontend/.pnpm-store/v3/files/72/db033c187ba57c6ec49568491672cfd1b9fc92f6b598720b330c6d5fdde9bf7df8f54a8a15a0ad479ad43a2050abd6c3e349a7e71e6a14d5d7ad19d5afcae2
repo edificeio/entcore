@@ -1,0 +1,26 @@
+import { ReactNode } from "react";
+export interface TabsItemProps {
+    /**
+     * Item identifier
+     */
+    id: string;
+    /**
+     * Item icon
+     */
+    icon: ReactNode;
+    /**
+     * Item label
+     */
+    label: string;
+    /**
+     * Item content, to be displayed in the panel when selected.
+     */
+    content: ReactNode;
+}
+declare const TabsItem: {
+    ({ icon, label, id, order, }: TabsItemProps & {
+        order: number;
+    }): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default TabsItem;

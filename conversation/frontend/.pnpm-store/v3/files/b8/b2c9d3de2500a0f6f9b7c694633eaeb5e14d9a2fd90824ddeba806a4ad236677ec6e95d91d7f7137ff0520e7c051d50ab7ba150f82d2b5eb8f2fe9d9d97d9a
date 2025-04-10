@@ -1,0 +1,5 @@
+import { IUserInfo } from "edifice-ts-client";
+export default function useHeader({ user, avatar, }: {
+    user: IUserInfo | undefined;
+    avatar: string;
+}): any;

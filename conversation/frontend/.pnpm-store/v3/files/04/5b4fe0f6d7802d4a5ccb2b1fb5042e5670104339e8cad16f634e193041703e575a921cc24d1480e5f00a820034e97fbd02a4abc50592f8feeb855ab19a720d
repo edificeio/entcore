@@ -1,0 +1,18 @@
+import { RefObject } from 'react';
+import { HyperlinkAttributes } from '@edifice.io/tiptap-extensions/hyperlink';
+import { LinkerAttributes } from '@edifice.io/tiptap-extensions/linker';
+import { Editor } from '@tiptap/react';
+import { MediaLibraryRef } from '../../multimedia';
+/**
+ * Custom hook to handle LinkToolbar events.
+ * @returns {
+ * `onOpen`: Opens a link ,
+ * `onEdit`: Edit a link,
+ * `onUnlink`: Removes a link,
+ * }
+ */
+export declare const useLinkToolbar: (editor: Editor | null, mediaLibraryRef: RefObject<MediaLibraryRef>) => {
+    onEdit: (attrs: LinkerAttributes | HyperlinkAttributes) => void;
+    onOpen: (attrs: LinkerAttributes) => void;
+    onUnlink: () => void;
+};

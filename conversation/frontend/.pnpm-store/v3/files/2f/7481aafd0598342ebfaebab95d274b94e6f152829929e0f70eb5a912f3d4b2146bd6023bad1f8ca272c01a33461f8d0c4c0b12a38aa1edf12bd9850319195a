@@ -1,0 +1,6 @@
+/**
+ * Router Params Id === ResourceId
+ */
+type UseTrashedResourceProps = string | undefined;
+declare const useTrashedResource: (id: UseTrashedResourceProps) => void;
+export default useTrashedResource;

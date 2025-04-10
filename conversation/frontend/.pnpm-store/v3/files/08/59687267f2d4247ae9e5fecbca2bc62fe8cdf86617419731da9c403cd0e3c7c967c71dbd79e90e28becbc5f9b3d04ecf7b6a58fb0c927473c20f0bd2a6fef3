@@ -1,0 +1,18 @@
+import { AddBundleCallback, IIdiom } from "../configure/interfaces";
+export declare const defaultDiacriticsRemovalMap: {
+    base: string;
+    letters: RegExp;
+}[];
+export declare class Idiom implements IIdiom {
+    translate(key: string, params?: {
+        [param: string]: any;
+    }): string;
+    addBundlePromise(path: string): Promise<void>;
+    addBundle(path: string, callback?: AddBundleCallback): void;
+    loadBundlePromise(lang: string, path: string): Promise<void>;
+    private loadBundle;
+    addTranslations(folder: string, callback?: AddBundleCallback): void;
+    addAllTranslations(folders: string[]): Promise<void>;
+    addKeys(keys: any): void;
+    removeAccents(str: string): string;
+}

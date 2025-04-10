@@ -1,0 +1,46 @@
+import { jsx } from "react/jsx-runtime";
+import { useEffect, useMemo } from "react";
+import { useEdificeClient } from "../EdificeClientProvider/EdificeClientProvider.hook.js";
+import { EdificeThemeContext } from "./EdificeThemeProvider.context.js";
+import useConf from "../../hooks/useConf/useConf.js";
+function EdificeThemeProvider({
+  defaultTheme,
+  children
+}) {
+  var _a;
+  const {
+    appCode
+  } = useEdificeClient(), confQuery = useConf({
+    appCode
+  });
+  useEffect(() => {
+    var _a2, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
+    const favicon = document.getElementById("favicon");
+    favicon.href = `${(_b = (_a2 = confQuery == null ? void 0 : confQuery.data) == null ? void 0 : _a2.theme) == null ? void 0 : _b.basePath}/img/illustrations/favicon.ico`;
+    const bootstrapVersion = (_e = (_d = (_c = confQuery == null ? void 0 : confQuery.data) == null ? void 0 : _c.theme) == null ? void 0 : _d.bootstrapVersion) == null ? void 0 : _e.split("-"), dataProduct = bootstrapVersion ? bootstrapVersion[bootstrapVersion.length - 1] : void 0;
+    [{
+      data: "data-skin",
+      value: (_g = (_f = confQuery == null ? void 0 : confQuery.data) == null ? void 0 : _f.theme) == null ? void 0 : _g.skinName
+    }, {
+      data: "data-theme",
+      // WB2-1885, add npmTheme for dynamic theme on springboard
+      value: ((_i = (_h = confQuery == null ? void 0 : confQuery.data) == null ? void 0 : _h.theme) == null ? void 0 : _i.npmTheme) ?? ((_k = (_j = confQuery == null ? void 0 : confQuery.data) == null ? void 0 : _j.theme) == null ? void 0 : _k.themeName)
+    }, {
+      data: "data-product",
+      value: defaultTheme === "none" ? "" : defaultTheme ?? dataProduct
+    }].forEach((attribute) => {
+      var _a3;
+      return (_a3 = document.querySelector("html")) == null ? void 0 : _a3.setAttribute(attribute.data, attribute.value);
+    });
+  }, [confQuery == null ? void 0 : confQuery.data, defaultTheme]);
+  const values = useMemo(() => {
+    var _a2;
+    return {
+      theme: (_a2 = confQuery == null ? void 0 : confQuery.data) == null ? void 0 : _a2.theme
+    };
+  }, [(_a = confQuery == null ? void 0 : confQuery.data) == null ? void 0 : _a.theme]);
+  return /* @__PURE__ */ jsx(EdificeThemeContext.Provider, { value: values, children });
+}
+export {
+  EdificeThemeProvider
+};

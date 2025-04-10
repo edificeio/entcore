@@ -1,0 +1,12 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+const SvgIconAccount = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", width: "24", height: "24", "aria-hidden": "true", "aria-labelledby": titleId, ...props, children: [
+  title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+  /* @__PURE__ */ jsx("path", { fill: "currentColor", d: "M12.01 14.42c2.68 0 8.03 1.31 8.03 3.99v2.02H3.99V18.4c0-2.68 5.35-3.99 8.02-3.99zm0-2.02a4.02 4.02 0 0 1 0-8.02C14.21 4.38 16 6.2 16 8.4s-1.78 4-3.99 4" })
+] });
+export {
+  SvgIconAccount as default
+};

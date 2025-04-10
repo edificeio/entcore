@@ -1,0 +1,2 @@
+declare const VideoNodeView: (Component: any) => import('@tiptap/core').Node<any, any>;
+export default VideoNodeView;

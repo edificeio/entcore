@@ -1,0 +1,11 @@
+import { ReactNode } from 'react';
+import { ButtonProps } from './Button';
+type OmittedProps = 'children' | 'leftIcon' | 'rightIcon';
+export interface IconButtonProps extends Omit<ButtonProps, OmittedProps> {
+    icon?: ReactNode;
+}
+/**
+ * IconButton extends ButtonComponent.
+ */
+declare const IconButton: import('react').ForwardRefExoticComponent<Omit<IconButtonProps, "ref"> & import('react').RefAttributes<HTMLButtonElement>>;
+export default IconButton;

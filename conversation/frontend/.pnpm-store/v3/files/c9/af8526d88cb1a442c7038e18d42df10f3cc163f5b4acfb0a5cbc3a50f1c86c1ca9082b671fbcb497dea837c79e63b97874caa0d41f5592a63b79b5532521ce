@@ -1,0 +1,10 @@
+import { IOdeServices } from "./OdeServices";
+export declare const odeServices: IOdeServices;
+export * from "../directory/interface";
+export type { ILinkedResource } from "../resources/behaviours/AbstractBehaviourService";
+export * from "../resources/interface";
+export * from "../resources/ResourceService";
+export * from "../resources/SnipletsService";
+export * from "../rights/interface";
+export * from "../share/interface";
+export * from "../workspace/interface";

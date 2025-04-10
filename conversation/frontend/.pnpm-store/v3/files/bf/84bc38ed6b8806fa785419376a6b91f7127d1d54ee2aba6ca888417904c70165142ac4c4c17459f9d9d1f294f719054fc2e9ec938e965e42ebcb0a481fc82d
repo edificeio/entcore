@@ -1,0 +1,37 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import SelectTrigger from "./SelectTrigger.js";
+import Dropdown from "../Dropdown/Dropdown.js";
+const Select = ({
+  icon,
+  options,
+  overflow,
+  block,
+  variant,
+  size,
+  disabled,
+  placeholderOption,
+  onValueChange
+}) => {
+  const [localValue, setLocalValue] = useState(), {
+    t
+  } = useTranslation();
+  useEffect(() => {
+    if (localValue) {
+      const value = typeof localValue == "object" ? localValue.value : localValue;
+      onValueChange == null || onValueChange(value);
+    }
+  }, [localValue]);
+  const label = typeof localValue == "object" ? localValue.label : localValue, iconChange = typeof localValue == "object" ? localValue.icon : void 0;
+  return /* @__PURE__ */ jsxs(Dropdown, { overflow, block, children: [
+    /* @__PURE__ */ jsx(SelectTrigger, { icon: iconChange || icon, label: t(label || placeholderOption), variant, size, disabled }),
+    /* @__PURE__ */ jsx(Dropdown.Menu, { role: "listbox", children: options == null ? void 0 : options.map((option) => {
+      const value = typeof option == "object" ? option.value : option, label2 = typeof option == "object" ? option.label : option, icon2 = typeof option == "object" ? option.icon : void 0;
+      return /* @__PURE__ */ jsx(Dropdown.Item, { type: "action", onClick: () => setLocalValue(option), icon: icon2, children: label2 }, value);
+    }) })
+  ] });
+};
+export {
+  Select as default
+};

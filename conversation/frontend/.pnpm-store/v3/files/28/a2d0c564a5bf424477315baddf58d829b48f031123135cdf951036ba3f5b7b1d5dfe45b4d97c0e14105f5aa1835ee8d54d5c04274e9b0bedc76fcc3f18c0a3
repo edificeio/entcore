@@ -1,0 +1,73 @@
+{
+  "name": "@edifice-ui/icons",
+  "version": "1.7.4-develop-b2school.20241204163938",
+  "description": "Edifice Icons Library",
+  "keywords": [
+    "react",
+    "frontend",
+    "icons",
+    "ui"
+  ],
+  "homepage": "https://github.com/edificeio/edifice-ui/tree/main/packages/icons#readme",
+  "bugs": {
+    "url": "https://github.com/edificeio/edifice-ui/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/edificeio/edifice-ui.git"
+  },
+  "license": "AGPL-3.0",
+  "author": "Edifice",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./nav": {
+      "types": "./dist/nav/index.d.ts",
+      "import": "./dist/nav.js",
+      "require": "./dist/nav.cjs"
+    },
+    "./audience": {
+      "types": "./dist/audience/index.d.ts",
+      "import": "./dist/audience.js",
+      "require": "./dist/audience.cjs"
+    }
+  },
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "*.d.ts"
+  ],
+  "devDependencies": {
+    "@svgr/cli": "8.1.0",
+    "@types/node": "20.8.9",
+    "@types/react": "18.2.33",
+    "@types/react-dom": "18.2.14",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "peerDependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "3e1c3f5b48505564db1b70aab22063a70336f3b0",
+  "scripts": {
+    "build": "pnpm build:icons && pnpm build:vite",
+    "build:icons": "svgr assets --config-file ./svgr.config.cjs",
+    "build:vite": "vite build",
+    "fix": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "format": "pnpm run format:write && pnpm run format:check",
+    "format:check": "npx prettier --check .",
+    "format:write": "npx prettier --write .",
+    "lint": "eslint \"**/*.{ts,tsx}\""
+  }
+}

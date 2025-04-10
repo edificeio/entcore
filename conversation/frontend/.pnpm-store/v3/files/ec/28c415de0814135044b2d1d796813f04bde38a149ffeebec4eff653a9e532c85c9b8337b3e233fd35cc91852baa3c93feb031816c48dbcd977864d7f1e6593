@@ -1,0 +1,22 @@
+import { IConfigurationFramework } from "./interfaces";
+import { Theme } from "./Theme";
+import { Idiom } from "../idiom/Idiom";
+import { User } from "./User";
+import { AppConf } from "./AppConf";
+import { Analytics } from "./Analytics";
+export declare class ConfigurationFramework implements IConfigurationFramework {
+    readonly Platform: {
+        deploymentTag: string;
+        cdnDomain: string;
+        apps: AppConf;
+        theme: Theme;
+        analytics: Analytics;
+        idiom: Idiom;
+        listLanguages: () => Promise<any>;
+    };
+    readonly School: {};
+    readonly User: User;
+    initialize(version?: string | null, cdnDomain?: string | null): Promise<void>;
+}
+/** The whole framework is a singleton. */
+export declare const configure: ConfigurationFramework;

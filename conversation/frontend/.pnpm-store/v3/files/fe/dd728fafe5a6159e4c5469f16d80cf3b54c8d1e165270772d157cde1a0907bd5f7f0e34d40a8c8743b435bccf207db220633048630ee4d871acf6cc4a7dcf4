@@ -1,0 +1,16 @@
+import { jsx } from "react/jsx-runtime";
+import { forwardRef } from "react";
+import clsx from "clsx";
+const Heading = /* @__PURE__ */ forwardRef(({
+  level: Component = "h1",
+  headingStyle = "h1",
+  children,
+  className,
+  ...restProps
+}, ref) => {
+  const classes = clsx(headingStyle, className);
+  return /* @__PURE__ */ jsx(Component, { ref, className: classes, ...restProps, children });
+});
+export {
+  Heading as default
+};

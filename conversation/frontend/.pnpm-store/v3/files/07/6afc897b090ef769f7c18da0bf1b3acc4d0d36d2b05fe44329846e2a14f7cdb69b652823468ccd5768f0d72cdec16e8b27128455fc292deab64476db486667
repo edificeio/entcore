@@ -1,0 +1,11 @@
+import { jsx } from "react/jsx-runtime";
+const TableTr = (props) => {
+  const {
+    children,
+    ...restProps
+  } = props;
+  return /* @__PURE__ */ jsx("tr", { ...restProps, children });
+};
+export {
+  TableTr
+};

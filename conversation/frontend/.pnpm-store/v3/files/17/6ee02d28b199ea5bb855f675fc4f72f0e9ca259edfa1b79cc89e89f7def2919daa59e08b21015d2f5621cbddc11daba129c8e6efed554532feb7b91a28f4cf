@@ -1,0 +1,17 @@
+import { ReactNode } from "react";
+import { ToastPosition } from "react-hot-toast";
+export interface CustomToastOptions {
+    id?: string;
+    isDismissible?: boolean;
+    position?: ToastPosition;
+    duration?: number;
+}
+export default function useToast(): {
+    success: (message: string | ReactNode, options?: CustomToastOptions) => string;
+    error: (message: string | ReactNode, options?: CustomToastOptions) => string;
+    info: (message: string | ReactNode, options?: CustomToastOptions) => string;
+    warning: (message: string | ReactNode, options?: CustomToastOptions) => string;
+    loading: (message: import("react-hot-toast").Renderable | import("react-hot-toast").ValueFunction<import("react-hot-toast").Renderable, import("react-hot-toast").Toast>, options?: Partial<Pick<import("react-hot-toast").Toast, "id" | "style" | "className" | "icon" | "position" | "duration" | "ariaProps" | "iconTheme">> | undefined) => string;
+    dismiss: (id: string) => void;
+    remove: (id: string) => void;
+};

@@ -1,0 +1,14 @@
+import { ResourceType } from '../..';
+import { HomeworksCreate, CreateResult, HomeworksUpdate, UpdateResult } from '../interface';
+import { ResourceService } from '../ResourceService';
+export declare class HomeworksResourceService extends ResourceService {
+    create<T extends HomeworksCreate>(parameters: T): Promise<CreateResult>;
+    update(parameters: HomeworksUpdate): Promise<UpdateResult>;
+    getResourceType(): ResourceType;
+    getApplication(): string;
+    getFormUrl(folderId?: string): string;
+    getViewUrl(resourceId: string): string;
+    getPrintUrl(resourceId: string): string;
+    getEditUrl(resourceId: string): string;
+    getExportUrl(): string;
+}

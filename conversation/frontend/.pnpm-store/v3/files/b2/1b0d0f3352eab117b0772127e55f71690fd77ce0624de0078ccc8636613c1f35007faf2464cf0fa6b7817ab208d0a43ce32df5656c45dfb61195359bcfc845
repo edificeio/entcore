@@ -1,0 +1,23 @@
+import { jsxs, Fragment, jsx } from "react/jsx-runtime";
+import { useTranslation } from "react-i18next";
+import creativeCommons from "@edifice.io/bootstrap/dist/images/common/image-creative-commons.png";
+import Alert from "../../../../components/Alert/Alert.js";
+const PublishModalFooter = () => {
+  const {
+    t
+  } = useTranslation();
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsxs("ul", { className: "mb-12", children: [
+      /* @__PURE__ */ jsxs("li", { children: [
+        t("bpr.form.publication.licence.text.1"),
+        /* @__PURE__ */ jsx("img", { className: "ms-8 d-inline-block", src: creativeCommons, alt: "licence creative commons" })
+      ] }),
+      /* @__PURE__ */ jsx("li", { children: t("bpr.form.publication.licence.text.2") })
+    ] }),
+    /* @__PURE__ */ jsx(Alert, { type: "info", className: "mb-12", children: t("bpr.form.publication.licence.text.3") }),
+    /* @__PURE__ */ jsx(Alert, { type: "warning", children: t("bpr.form.publication.licence.text.4") })
+  ] });
+};
+export {
+  PublishModalFooter
+};

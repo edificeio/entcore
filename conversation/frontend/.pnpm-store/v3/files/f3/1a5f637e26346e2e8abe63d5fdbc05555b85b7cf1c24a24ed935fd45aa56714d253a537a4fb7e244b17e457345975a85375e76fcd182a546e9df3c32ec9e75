@@ -1,0 +1,87 @@
+import { jsxs as T, jsx as s } from "react/jsx-runtime";
+import { findNodeById as x, getAncestors as C, useOdeClient as S, Modal as m, TreeView as F, Button as b } from "@edifice-ui/react";
+import { createPortal as g } from "react-dom";
+import { useTranslation as w } from "react-i18next";
+import { useQueryClient as A } from "@tanstack/react-query";
+import { useState as B } from "react";
+import { y as D, j, i as k, z as E, a as O } from "./index2.js";
+function U({
+  onSuccess: a
+}) {
+  const [d, n] = B(), u = A(), o = D(), h = j(), p = k(), i = E(), {
+    fetchTreeData: v
+  } = O();
+  async function y() {
+    try {
+      if (!d) throw new Error("explorer.move.selection.empty");
+      await o.mutate(d), await (a == null ? void 0 : a());
+    } catch (r) {
+      console.error(r);
+    }
+  }
+  const I = (r) => {
+    var f, c;
+    const t = C(i, r);
+    for (const e of h)
+      if (r === e.id || r === e.parentId || (f = e.childrenIds) != null && f.includes(r) || t.includes(e.id))
+        return !1;
+    for (const e of p)
+      if (r === ((e == null ? void 0 : e.folderIds) && e.folderIds[0]) || ((c = e == null ? void 0 : e.folderIds) == null ? void 0 : c.length) === 0 && r === "default")
+        return !1;
+    return !0;
+  };
+  return {
+    treeData: i,
+    disableSubmit: !d,
+    handleTreeItemSelect: (r) => {
+      I(r) ? n(r) : n(void 0);
+    },
+    handleOnTreeItemUnfold: (r) => {
+      var c, e;
+      const t = x(i, r), f = (c = t == null ? void 0 : t.children) == null ? void 0 : c.some((l) => {
+        var M;
+        return Array.isArray(l == null ? void 0 : l.children) && ((M = l.children) == null ? void 0 : M.length) > 0;
+      });
+      (e = t == null ? void 0 : t.children) == null || e.forEach((l) => {
+        f || v(l.id, u);
+      });
+    },
+    onMove: () => y()
+  };
+}
+function W({
+  isOpen: a,
+  onSuccess: d,
+  onCancel: n
+}) {
+  const {
+    appCode: u
+  } = S(), {
+    t: o
+  } = w(), {
+    treeData: h,
+    handleTreeItemSelect: p,
+    handleOnTreeItemUnfold: i,
+    onMove: v,
+    disableSubmit: y
+  } = U({
+    onSuccess: d
+  }), I = {
+    ...h,
+    name: o("explorer.filters.mine", {
+      ns: u
+    })
+  };
+  return /* @__PURE__ */ g(/* @__PURE__ */ T(m, { isOpen: a, onModalClose: n, id: "moveModal", children: [
+    /* @__PURE__ */ s(m.Header, { onModalClose: n, children: o("explorer.move.title") }),
+    /* @__PURE__ */ s(m.Subtitle, { children: o("explorer.move.subtitle") }),
+    /* @__PURE__ */ s(m.Body, { children: /* @__PURE__ */ s(F, { data: I, onTreeItemClick: p, onTreeItemUnfold: i }) }),
+    /* @__PURE__ */ T(m.Footer, { children: [
+      /* @__PURE__ */ s(b, { color: "tertiary", onClick: n, type: "button", variant: "ghost", children: o("explorer.cancel") }),
+      /* @__PURE__ */ s(b, { color: "primary", onClick: v, type: "button", variant: "filled", disabled: y, children: o("explorer.move") })
+    ] })
+  ] }), document.getElementById("portal"));
+}
+export {
+  W as default
+};

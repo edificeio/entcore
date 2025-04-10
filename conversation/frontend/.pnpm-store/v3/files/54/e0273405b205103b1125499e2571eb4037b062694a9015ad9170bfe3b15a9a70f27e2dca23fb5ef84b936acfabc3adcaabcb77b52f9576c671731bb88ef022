@@ -1,0 +1,2 @@
+import { EdificeThemeProps } from './EdificeThemeProvider.context';
+export declare function EdificeThemeProvider({ defaultTheme, children, }: EdificeThemeProps): import("react/jsx-runtime").JSX.Element;

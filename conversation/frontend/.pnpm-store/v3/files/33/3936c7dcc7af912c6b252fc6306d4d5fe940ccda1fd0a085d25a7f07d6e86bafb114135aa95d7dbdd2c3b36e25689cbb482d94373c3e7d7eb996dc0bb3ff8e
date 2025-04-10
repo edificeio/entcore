@@ -1,0 +1,34 @@
+import { IEmailValidationInfos, IEmailValidationState, IMfaCodeState, IMfaInfos, IMobileValidationInfos, IMobileValidationState, IQuotaAndUsage, ISession, IUserDescription, IUserInfo, UserProfile } from './interfaces';
+import { App } from '../globals';
+export declare class Session implements ISession {
+    private _me;
+    private _currentLanguage;
+    private _notLoggedIn;
+    private _description?;
+    private _profile?;
+    get currentLanguage(): string;
+    get notLoggedIn(): boolean;
+    get description(): IUserDescription;
+    get avatarUrl(): string;
+    get user(): IUserInfo;
+    get currentApp(): App | null;
+    initialize(): Promise<void>;
+    private setCurrentModel;
+    hasWorkflow(workflowName: string): boolean;
+    hasRight(resource: any, right: any): boolean;
+    get latestQuotaAndUsage(): Promise<IQuotaAndUsage>;
+    private setCurrentLanguage;
+    private loadDefaultLanguage;
+    private loadDescription;
+    get profile(): UserProfile;
+    getUserProfile(): Promise<UserProfile>;
+    private loadUserLanguage;
+    getEmailValidationInfos(): Promise<IEmailValidationInfos>;
+    checkEmail(email: string): Promise<void>;
+    tryEmailValidation(code: string): Promise<IEmailValidationState>;
+    getMobileValidationInfos(): Promise<IMobileValidationInfos>;
+    checkMobile(mobile: string): Promise<void>;
+    tryMobileValidation(code: string): Promise<IMobileValidationState>;
+    getMfaInfos(): Promise<IMfaInfos>;
+    tryMfaCode(code: string): Promise<IMfaCodeState>;
+}

@@ -1,0 +1,50 @@
+import { jsxs, Fragment, jsx } from "react/jsx-runtime";
+import { useMediaQuery } from "@uidotdev/usehooks";
+import clsx from "clsx";
+import { useEffect, Fragment as Fragment$1 } from "react";
+import { useCheckable } from "../../hooks/useCheckable/useCheckable.js";
+import Checkbox from "../Checkbox/Checkbox.js";
+import { Toolbar } from "../Toolbar/Toolbar.js";
+const List = ({
+  items,
+  isCheckable = !1,
+  data,
+  renderNode,
+  onSelectedItems,
+  className
+}) => {
+  const {
+    selectedItems,
+    allItemsSelected,
+    isIndeterminate,
+    handleOnSelectAllItems,
+    handleOnSelectItem
+  } = useCheckable(data), isDesktopDevice = useMediaQuery("only screen and (min-width: 1024px)");
+  return useEffect(() => {
+    selectedItems && (onSelectedItems == null || onSelectedItems(selectedItems));
+  }, [onSelectedItems, selectedItems]), /* @__PURE__ */ jsxs(Fragment, { children: [
+    (items || isCheckable) && /* @__PURE__ */ jsxs(Fragment, { children: [
+      /* @__PURE__ */ jsx("div", { className: clsx("list-header d-flex align-items-center gap-8 px-12", className), children: /* @__PURE__ */ jsxs(Fragment, { children: [
+        /* @__PURE__ */ jsxs("div", { className: "d-flex align-items-center gap-8 py-12", children: [
+          /* @__PURE__ */ jsx(Checkbox, { checked: allItemsSelected, indeterminate: isIndeterminate, onChange: () => handleOnSelectAllItems(allItemsSelected) }),
+          /* @__PURE__ */ jsxs("span", { children: [
+            "(",
+            selectedItems.length,
+            ")"
+          ] })
+        ] }),
+        items && /* @__PURE__ */ jsx(Toolbar, { items, isBlock: !0, align: "left", variant: "no-shadow", className: clsx("gap-4 py-4", {
+          "px-0 ms-auto": !isDesktopDevice
+        }) })
+      ] }) }),
+      /* @__PURE__ */ jsx("div", { className: "border-top" })
+    ] }),
+    /* @__PURE__ */ jsx("div", { className: "mt-8", children: data == null ? void 0 : data.map((node) => {
+      const checked = selectedItems.includes(node._id);
+      return /* @__PURE__ */ jsx(Fragment$1, { children: renderNode(node, /* @__PURE__ */ jsx(Checkbox, { checked, onChange: () => handleOnSelectItem(node._id), onClick: (event) => event.stopPropagation() }), checked) }, node._id);
+    }) })
+  ] });
+};
+export {
+  List
+};

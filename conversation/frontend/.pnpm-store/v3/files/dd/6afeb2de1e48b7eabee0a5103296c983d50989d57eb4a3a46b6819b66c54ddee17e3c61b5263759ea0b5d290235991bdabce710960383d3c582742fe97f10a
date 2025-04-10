@@ -1,0 +1,49 @@
+import { jsx, jsxs } from "react/jsx-runtime";
+import { useTranslation } from "react-i18next";
+import SvgIconBookmark from "../../icons/components/IconBookmark.js";
+import SvgIconClose from "../../icons/components/IconClose.js";
+import SvgIconRafterDown from "../../icons/components/IconRafterDown.js";
+import SvgIconUsers from "../../icons/components/IconUsers.js";
+import { hasRight } from "./utils/hasRight.js";
+import { showShareRightLine } from "./utils/showShareRightLine.js";
+import Avatar from "../../../components/Avatar/Avatar.js";
+import Button from "../../../components/Button/Button.js";
+import Checkbox from "../../../components/Checkbox/Checkbox.js";
+import IconButton from "../../../components/Button/IconButton.js";
+const ShareBookmarkLine = ({
+  shareRights,
+  showBookmark,
+  toggleBookmark,
+  shareRightActions,
+  toggleRight,
+  onDeleteRow
+}) => {
+  const {
+    t
+  } = useTranslation();
+  return shareRights == null ? void 0 : shareRights.rights.map((shareRight) => {
+    const selectedAvatar = {
+      user: /* @__PURE__ */ jsx(Avatar, { alt: t("explorer.modal.share.avatar.shared.alt"), size: "xs", src: shareRight.avatarUrl, variant: "circle" }),
+      group: /* @__PURE__ */ jsx("div", { className: "avatar-xs bg-primary-200 justify-content-center d-flex rounded-circle", children: /* @__PURE__ */ jsx(SvgIconUsers, { width: 16 }) }),
+      sharebookmark: /* @__PURE__ */ jsx(SvgIconBookmark, {})
+    }[shareRight.type] || null, isTypeBookmark = shareRight.type === "sharebookmark", isTypeUser = shareRight.type === "user";
+    return showShareRightLine(shareRight, showBookmark) && /* @__PURE__ */ jsxs("tr", { className: shareRight.isBookmarkMember ? "bg-light" : "", children: [
+      /* @__PURE__ */ jsx("td", { children: selectedAvatar }),
+      /* @__PURE__ */ jsx("td", { children: /* @__PURE__ */ jsxs("div", { className: "d-flex", children: [
+        isTypeBookmark && /* @__PURE__ */ jsx(Button, { color: "tertiary", rightIcon: /* @__PURE__ */ jsx(SvgIconRafterDown, { title: t("show"), className: "w-16 min-w-0", style: {
+          transition: "rotate 0.2s ease-out",
+          rotate: showBookmark ? "-180deg" : "0deg"
+        } }), type: "button", variant: "ghost", className: "fw-normal ps-0", onClick: toggleBookmark, children: shareRight.displayName }),
+        !isTypeBookmark && shareRight.displayName,
+        isTypeUser && ` (${t(shareRight.profile || "")})`
+      ] }) }),
+      shareRightActions.map((shareRightAction) => /* @__PURE__ */ jsx("td", { style: {
+        width: "80px"
+      }, className: "text-center text-white", children: /* @__PURE__ */ jsx(Checkbox, { checked: hasRight(shareRight, shareRightAction), onChange: () => toggleRight(shareRight, shareRightAction.id) }) }, shareRightAction.displayName)),
+      /* @__PURE__ */ jsx("td", { children: !shareRight.isBookmarkMember && /* @__PURE__ */ jsx(IconButton, { "aria-label": t("close"), color: "tertiary", icon: /* @__PURE__ */ jsx(SvgIconClose, {}), type: "button", variant: "ghost", title: t("close"), onClick: () => onDeleteRow(shareRight) }) })
+    ] }, shareRight.id);
+  });
+};
+export {
+  ShareBookmarkLine
+};

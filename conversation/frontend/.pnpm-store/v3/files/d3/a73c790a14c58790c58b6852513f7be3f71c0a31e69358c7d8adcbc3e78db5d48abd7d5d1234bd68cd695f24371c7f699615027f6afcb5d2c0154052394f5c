@@ -1,0 +1,4 @@
+/** Apply XiTi tracking (navigation). */
+export default function useXitiTrackPageLoad(): {
+    xitiStatus: string;
+};

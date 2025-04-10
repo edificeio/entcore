@@ -1,0 +1,178 @@
+import { jsx } from "react/jsx-runtime";
+import { useReducer, useEffect } from "react";
+import { odeServices } from "@edifice.io/client";
+import { useTranslation } from "react-i18next";
+import { useDebounce } from "@uidotdev/usehooks";
+import { useEdificeClient } from "../../../../providers/EdificeClientProvider/EdificeClientProvider.hook.js";
+import SvgIconBookmark from "../../../icons/components/IconBookmark.js";
+import useIsAdml from "../../../../hooks/useIsAdml/useIsAdml.js";
+const initialState = {
+  searchInputValue: "",
+  searchResults: [],
+  searchAPIResults: [],
+  isSearching: !1
+};
+function reducer(state, action) {
+  switch (action.type) {
+    case "onChange":
+      return {
+        ...state,
+        searchInputValue: action.payload
+      };
+    case "isSearching":
+      return {
+        ...state,
+        isSearching: action.payload
+      };
+    case "addResult":
+      return {
+        ...state,
+        searchResults: action.payload
+      };
+    case "addApiResult":
+      return {
+        ...state,
+        searchAPIResults: action.payload
+      };
+    case "updateSearchResult":
+      return {
+        ...state,
+        searchResults: action.payload
+      };
+    case "emptyResult":
+      return {
+        ...state,
+        searchResults: action.payload
+      };
+    default:
+      throw new Error("Unhandled action type");
+  }
+}
+const defaultActions = [{
+  id: "read",
+  displayName: "read"
+}, {
+  id: "comment",
+  displayName: "comment"
+}], useSearch = ({
+  resourceId,
+  resourceCreatorId,
+  shareRights,
+  shareDispatch
+}) => {
+  const [state, dispatch] = useReducer(reducer, initialState), debouncedSearchInputValue = useDebounce(state.searchInputValue, 500), {
+    isAdml
+  } = useIsAdml(), {
+    appCode
+  } = useEdificeClient(), {
+    t
+  } = useTranslation();
+  useEffect(() => {
+    search(debouncedSearchInputValue);
+  }, [debouncedSearchInputValue]);
+  const handleSearchInputChange = (event) => {
+    const value = event.target.value;
+    dispatch({
+      type: "onChange",
+      payload: value
+    });
+  }, search = async (debouncedSearchInputValue2) => {
+    if (resourceId) {
+      if (dispatch({
+        type: "isSearching",
+        payload: !0
+      }), !isAdml && debouncedSearchInputValue2.length >= 1 || isAdml && debouncedSearchInputValue2.length >= 3) {
+        const resSearchShareSubjects = await odeServices.share().searchShareSubjects(appCode, resourceId, debouncedSearchInputValue2);
+        dispatch({
+          type: "addApiResult",
+          payload: resSearchShareSubjects
+        });
+        const adaptedResults = resSearchShareSubjects.filter((right) => !shareRights.rights.find((shareRight) => shareRight.id === right.id)).filter((right) => !(right.type === "user" && right.id === resourceCreatorId)).map((searchResult) => {
+          let label = searchResult.displayName;
+          return searchResult.type === "user" && searchResult.profile ? label = `${label} (${t(searchResult.profile)})` : searchResult.type === "group" && searchResult.structureName && (label = `${label} (${searchResult.structureName})`), {
+            value: searchResult.id,
+            label,
+            icon: searchResult.type === "sharebookmark" ? /* @__PURE__ */ jsx(SvgIconBookmark, {}) : null
+          };
+        });
+        dispatch({
+          type: "addResult",
+          payload: adaptedResults
+        });
+      } else
+        dispatch({
+          type: "emptyResult",
+          payload: []
+        }), Promise.resolve();
+      dispatch({
+        type: "isSearching",
+        payload: !1
+      });
+    }
+  };
+  return {
+    state,
+    showSearchAdmlHint: () => isAdml && state.searchInputValue.length < 3,
+    showSearchLoading: () => state.isSearching,
+    showSearchNoResults: () => !state.isSearching && !isAdml && debouncedSearchInputValue.length > 0 && state.searchResults.length === 0 || !state.isSearching && isAdml && debouncedSearchInputValue.length > 3 && state.searchResults.length === 0,
+    getSearchMinLength: () => isAdml ? 3 : 1,
+    handleSearchInputChange,
+    handleSearchResultsChange: async (model) => {
+      const shareSubject = state.searchAPIResults.find((searchAPIResult) => searchAPIResult.id === model[0]);
+      if (shareSubject) {
+        let rightsToAdd = [];
+        if (shareSubject.type === "sharebookmark") {
+          const bookmarkRes = await odeServices.directory().getBookMarkById(shareSubject.id);
+          rightsToAdd.push({
+            ...bookmarkRes,
+            type: "sharebookmark",
+            avatarUrl: "",
+            directoryUrl: "",
+            actions: defaultActions
+          }), bookmarkRes == null || bookmarkRes.users.filter((user) => !shareRights.rights.find((right) => right.id === user.id)).forEach((user) => {
+            rightsToAdd.push({
+              ...user,
+              type: "user",
+              avatarUrl: "",
+              directoryUrl: "",
+              actions: defaultActions,
+              isBookmarkMember: !0
+            });
+          }), bookmarkRes.groups.filter((group) => !shareRights.rights.find((right) => right.id === group.id)).forEach((group) => {
+            rightsToAdd.push({
+              ...group,
+              type: "group",
+              avatarUrl: "",
+              directoryUrl: "",
+              actions: defaultActions,
+              isBookmarkMember: !0
+            });
+          });
+        } else
+          rightsToAdd = [{
+            ...shareSubject,
+            actions: [{
+              id: "read",
+              displayName: "read"
+            }, {
+              id: "comment",
+              displayName: "comment"
+            }]
+          }];
+        shareDispatch({
+          type: "updateShareRights",
+          payload: {
+            ...shareRights,
+            rights: [...shareRights.rights, ...rightsToAdd]
+          }
+        }), dispatch({
+          type: "updateSearchResult",
+          payload: state.searchResults.filter((result) => result.value !== model[0])
+        });
+      }
+    }
+  };
+};
+export {
+  useSearch
+};

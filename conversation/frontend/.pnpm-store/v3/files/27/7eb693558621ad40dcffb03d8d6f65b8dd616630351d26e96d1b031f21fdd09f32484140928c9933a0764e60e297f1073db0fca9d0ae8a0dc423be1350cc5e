@@ -1,0 +1,2 @@
+import { IGetSession } from '@edifice.io/client';
+export default function useSession(): import('../../../node_modules/@tanstack/react-query').UseQueryResult<IGetSession, Error>;

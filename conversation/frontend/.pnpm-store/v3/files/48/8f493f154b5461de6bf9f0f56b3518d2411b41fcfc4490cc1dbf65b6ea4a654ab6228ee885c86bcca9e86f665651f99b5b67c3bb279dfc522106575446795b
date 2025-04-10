@@ -1,0 +1,14 @@
+import { jsx } from "react/jsx-runtime";
+import { NodeViewWrapper } from "@tiptap/react";
+const AudioRenderer = (props) => {
+  const {
+    node
+  } = props;
+  return /* @__PURE__ */ jsx(NodeViewWrapper, { style: {
+    display: "inline-block",
+    width: "fit-content"
+  }, children: /* @__PURE__ */ jsx("div", { className: "audio-wrapper", "data-drag-handle": !0, children: /* @__PURE__ */ jsx("audio", { src: node.attrs.src, controls: !0, "data-document-id": node.attrs.src, children: /* @__PURE__ */ jsx("track", { kind: "captions" }) }) }) });
+};
+export {
+  AudioRenderer as default
+};

@@ -1,0 +1,7 @@
+import { InfiniteData } from '@tanstack/react-query';
+import { ISearchResults } from 'edifice-ts-client';
+declare const FoldersList: ({ data, }: {
+    data: InfiniteData<ISearchResults> | undefined;
+    isFetching: boolean;
+}) => import("react/jsx-runtime").JSX.Element | null;
+export default FoldersList;

@@ -1,0 +1,13 @@
+import { Editor } from '@tiptap/react';
+interface Props {
+    /**
+     * editor instance
+     */
+    editor: Editor | null;
+    /**
+     * Tracks refs on ColorPickers.
+     */
+    itemRefs: any;
+}
+export declare const TableToolbarCellColor: ({ editor, itemRefs }: Props) => import("react/jsx-runtime").JSX.Element;
+export {};

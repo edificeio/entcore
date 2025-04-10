@@ -1,0 +1,9 @@
+import { ShareRight, ShareRightAction, ShareRightActionDisplayName, ShareRightWithVisibles } from "edifice-ts-client";
+export declare const ShareBookmarkLine: ({ shareRights, showBookmark, toggleBookmark, shareRightActions, toggleRight, onDeleteRow, }: {
+    shareRights: ShareRightWithVisibles;
+    shareRightActions: ShareRightAction[];
+    showBookmark: boolean;
+    toggleRight: (shareRight: ShareRight, actionName: ShareRightActionDisplayName) => void;
+    toggleBookmark: () => void;
+    onDeleteRow: (shareRight: ShareRight) => void;
+}) => (false | import("react/jsx-runtime").JSX.Element)[];

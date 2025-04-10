@@ -1,0 +1,2 @@
+import { Editor } from '@tiptap/react';
+export declare const hasExtension: (extensionName: string, editor: Editor | null) => boolean;

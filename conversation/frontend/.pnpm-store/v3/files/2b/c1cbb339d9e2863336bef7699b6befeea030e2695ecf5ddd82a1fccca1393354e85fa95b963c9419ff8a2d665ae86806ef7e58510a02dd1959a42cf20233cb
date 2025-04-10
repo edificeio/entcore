@@ -1,0 +1,9 @@
+import { IHttpErrorEvent, ISubject, ISubjectMessage, ISubscription, LayerName } from './interfaces';
+export declare class Subject implements ISubject {
+    private publishChannels;
+    private getChannelName;
+    private getPublishChannel;
+    newChannel(layer: string): BroadcastChannel;
+    publish(layer: LayerName, message: ISubjectMessage | IHttpErrorEvent): void;
+    subscribe<T extends ISubjectMessage>(layer: LayerName, handler: (message: T) => void): ISubscription;
+}

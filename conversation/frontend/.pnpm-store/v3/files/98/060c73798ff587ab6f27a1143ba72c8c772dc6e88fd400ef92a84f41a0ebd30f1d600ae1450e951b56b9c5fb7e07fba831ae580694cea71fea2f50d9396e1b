@@ -1,0 +1,18 @@
+import { jsx } from "react/jsx-runtime";
+import clsx from "clsx";
+const CardBody = ({
+  children,
+  space = null,
+  flexDirection = "row"
+}) => {
+  const cardbody = clsx("card-body", {
+    [`p-${space}`]: space,
+    [`gap-${space}`]: space,
+    "align-items-start": flexDirection === "column",
+    "flex-column": flexDirection === "column"
+  });
+  return /* @__PURE__ */ jsx("div", { className: cardbody, children });
+};
+export {
+  CardBody as default
+};

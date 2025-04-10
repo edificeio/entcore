@@ -1,0 +1,23 @@
+import { Dispatch } from 'react';
+import { ShareRightWithVisibles } from '@edifice.io/client';
+import { ShareAction } from './useShare';
+interface UseShareBookmarkProps {
+    shareRights: ShareRightWithVisibles;
+    shareDispatch: Dispatch<ShareAction>;
+}
+export type BookmarkProps = {
+    name: string;
+    id: string;
+};
+export declare const useShareBookmark: ({ shareRights, shareDispatch, }: UseShareBookmarkProps) => {
+    refBookmark: import('react').RefObject<HTMLInputElement>;
+    showBookmark: boolean;
+    showBookmarkInput: boolean;
+    bookmark: BookmarkProps;
+    handleBookmarkChange: () => void;
+    setBookmark: Dispatch<import('react').SetStateAction<BookmarkProps>>;
+    handleOnSave: () => void;
+    toggleBookmark: () => void;
+    toggleBookmarkInput: Dispatch<import('react').SetStateAction<boolean>>;
+};
+export {};

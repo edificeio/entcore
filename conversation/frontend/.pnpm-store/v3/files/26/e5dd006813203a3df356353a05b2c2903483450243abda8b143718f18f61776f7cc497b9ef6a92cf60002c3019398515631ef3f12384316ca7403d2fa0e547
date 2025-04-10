@@ -1,0 +1,12 @@
+import { Editor } from '@tiptap/react';
+/**
+ * Custom hook to manage speech synthetisis.
+ * @returns {
+ * `isActivated`: truthy boolean when speech synthetisis is activated,
+ * `toggle`: an imperative function to toggle the `isActivated` value,
+ * }
+ */
+export declare const useSpeechSynthetisis: (editor: Editor | null) => {
+    isActivated: boolean;
+    toggle: () => boolean;
+};

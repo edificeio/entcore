@@ -1,0 +1,116 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { useState } from "react";
+import { Stage } from "@pixi/react";
+import { useTranslation } from "react-i18next";
+import useImageEditor from "../hooks/useImageEditor.js";
+import ImageEditorToolbar from "./ImageEditorToolbar.js";
+import Modal from "../../../../components/Modal/Modal.js";
+import LoadingScreen from "../../../../components/LoadingScreen/LoadingScreen.js";
+import FormControl from "../../../../components/Form/FormControl.js";
+import Label from "../../../../components/Label/Label.js";
+import Input from "../../../../components/Input/Input.js";
+import Button from "../../../../components/Button/Button.js";
+const ImageEditor = ({
+  altText: altTextParam,
+  legend: legendParam,
+  image: imageSrc,
+  isOpen,
+  onCancel,
+  onError,
+  onSave
+}) => {
+  const {
+    t
+  } = useTranslation(), [currentOperation, setCurrentOperation] = useState(void 0), [isSaving, setSaving] = useState(!1), [altText, setAltText] = useState(altTextParam ?? ""), [legend, setLegend] = useState(legendParam ?? ""), [dirty, setDirty] = useState(!1), {
+    toBlob,
+    setApplication,
+    startBlur,
+    stopBlur,
+    restore,
+    rotate,
+    startCrop,
+    stopCrop,
+    startResize,
+    stopResize,
+    historyCount,
+    loading
+  } = useImageEditor({
+    imageSrc
+  }), stopAll = () => {
+    stopBlur(), stopCrop(currentOperation === "CROP"), stopResize(currentOperation === "RESIZE");
+  }, handleSave = async () => {
+    try {
+      setSaving(!0), stopAll();
+      const blob = await toBlob();
+      blob && await onSave({
+        blob,
+        legend,
+        altText
+      });
+    } catch (e) {
+      onError == null || onError(`${e}`);
+    } finally {
+      setSaving(!1);
+    }
+  }, handleCancel = () => {
+    onCancel();
+  }, handleOperation = async (operation) => {
+    switch (stopAll(), setCurrentOperation(operation), setDirty(!0), operation) {
+      case "ROTATE": {
+        await rotate();
+        break;
+      }
+      case "UNDO": {
+        await restore();
+        break;
+      }
+      case "CROP": {
+        startCrop();
+        break;
+      }
+      case "RESIZE": {
+        await startResize();
+        break;
+      }
+      case "BLUR": {
+        await startBlur();
+        break;
+      }
+    }
+  };
+  return /* @__PURE__ */ jsxs(Modal, { id: "image-editor", isOpen, onModalClose: handleCancel, size: "lg", children: [
+    /* @__PURE__ */ jsx(Modal.Header, { onModalClose: handleCancel, children: /* @__PURE__ */ jsx("span", { className: "h2", children: t("imageeditor.title") }) }),
+    /* @__PURE__ */ jsx(Modal.Body, { className: "d-flex flex-column align-items-center", children: /* @__PURE__ */ jsxs("div", { className: "d-flex flex-column gap-12 w-100 flex-grow-1", children: [
+      /* @__PURE__ */ jsx(ImageEditorToolbar, { handle: handleOperation, historyCount }),
+      /* @__PURE__ */ jsxs("div", { className: "position-relative d-flex flex-column align-items-center justify-content-center flex-grow-1 w-100 image-editor", children: [
+        /* @__PURE__ */ jsx(Stage, { onMount: (app) => setApplication(app), options: {
+          preserveDrawingBuffer: !0,
+          backgroundAlpha: 0,
+          resolution: 1
+        } }),
+        !!loading && /* @__PURE__ */ jsx("div", { className: "position-absolute top-0 start-0 bottom-0 end-0 m-10 d-flex align-items-center justify-content-center bg-black opacity-25", children: /* @__PURE__ */ jsx(LoadingScreen, {}) })
+      ] }),
+      /* @__PURE__ */ jsxs("div", { className: "d-flex flex-column flex-md-row m-10 gap-12 w-100", children: [
+        /* @__PURE__ */ jsxs(FormControl, { id: "alt", className: "flex-grow-1", children: [
+          /* @__PURE__ */ jsx(Label, { children: t("alttext") }),
+          /* @__PURE__ */ jsx(Input, { value: altText, onChange: (e) => {
+            setDirty(!0), setAltText(e.target.value);
+          }, placeholder: t("alttext.help"), size: "md", type: "text" })
+        ] }),
+        /* @__PURE__ */ jsxs(FormControl, { id: "legend", className: "flex-grow-1", children: [
+          /* @__PURE__ */ jsx(Label, { children: t("legend") }),
+          /* @__PURE__ */ jsx(Input, { value: legend, onChange: (e) => {
+            setDirty(!0), setLegend(e.target.value);
+          }, placeholder: t("legend.help"), size: "md", type: "text" })
+        ] })
+      ] })
+    ] }) }),
+    /* @__PURE__ */ jsxs(Modal.Footer, { children: [
+      /* @__PURE__ */ jsx(Button, { color: "tertiary", onClick: handleCancel, type: "button", variant: "ghost", children: t("imageeditor.cancel") }),
+      /* @__PURE__ */ jsx(Button, { color: "primary", onClick: handleSave, type: "button", variant: "filled", isLoading: isSaving, disabled: isSaving || !dirty, children: t("imageeditor.save") })
+    ] })
+  ] });
+};
+export {
+  ImageEditor as default
+};

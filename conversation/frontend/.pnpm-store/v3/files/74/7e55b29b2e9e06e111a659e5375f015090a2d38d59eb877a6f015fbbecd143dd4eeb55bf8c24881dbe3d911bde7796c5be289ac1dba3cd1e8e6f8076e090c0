@@ -1,0 +1,26 @@
+import { useRef, useEffect } from "react";
+const DEFAULT_EVENTS = ["mousedown", "touchstart"];
+function useClickOutside(handler, events, nodes) {
+  const ref = useRef();
+  return useEffect(() => {
+    const listener = (event) => {
+      const {
+        target
+      } = event ?? {};
+      if (Array.isArray(nodes)) {
+        const shouldIgnore = (target == null ? void 0 : target.hasAttribute("data-ignore-outside-clicks")) || !document.body.contains(target) && target.tagName !== "HTML";
+        nodes.every((node) => !!node && !event.composedPath().includes(node)) && !shouldIgnore && handler();
+      } else ref.current && !ref.current.contains(target) && handler();
+    };
+    return (events || DEFAULT_EVENTS).forEach((fn) => {
+      document.addEventListener(fn, listener);
+    }), () => {
+      (events || DEFAULT_EVENTS).forEach((fn) => {
+        document.removeEventListener(fn, listener);
+      });
+    };
+  }, [ref, handler, nodes, events]), ref;
+}
+export {
+  useClickOutside as default
+};

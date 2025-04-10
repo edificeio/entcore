@@ -1,0 +1,29 @@
+import { useState, useEffect } from "react";
+import usePreferences from "../usePreferences/usePreferences.js";
+function useCookiesConsent() {
+  const [showCookiesConsent, setShowCookiesConsent] = useState(!1), {
+    getPreference,
+    savePreference
+  } = usePreferences("rgpdCookies");
+  return useEffect(() => {
+    (async () => {
+      const res = await getPreference();
+      setShowCookiesConsent(res === null ? !0 : res.showInfoTip);
+    })();
+  }, []), {
+    showCookiesConsent,
+    handleConsultCookies: () => {
+      document.location.href = "/userbook/mon-compte", savePreference({
+        showInfoTip: !1
+      }), setShowCookiesConsent(!1);
+    },
+    handleCloseCookiesConsent: () => {
+      savePreference({
+        showInfoTip: !1
+      }), setShowCookiesConsent(!1);
+    }
+  };
+}
+export {
+  useCookiesConsent as default
+};

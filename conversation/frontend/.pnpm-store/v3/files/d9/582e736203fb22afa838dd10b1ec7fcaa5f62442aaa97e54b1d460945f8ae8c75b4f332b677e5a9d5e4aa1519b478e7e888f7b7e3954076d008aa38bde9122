@@ -1,0 +1,17 @@
+import { IResource } from "edifice-ts-client";
+import { UseFormSetValue, UseFormWatch } from "react-hook-form";
+import { FormInputs } from "../ResourceModal";
+interface UseSlugProps {
+    watch: UseFormWatch<FormInputs>;
+    setValue: UseFormSetValue<FormInputs>;
+    selectedResource?: IResource;
+}
+export declare const useSlug: ({ watch, setValue, selectedResource, }: UseSlugProps) => {
+    slug: string;
+    uniqueId: string;
+    isPublic: boolean;
+    resourceName: string;
+    onPublicChange: (value: boolean) => void;
+    onCopyToClipBoard: (pathname: string) => void;
+};
+export {};

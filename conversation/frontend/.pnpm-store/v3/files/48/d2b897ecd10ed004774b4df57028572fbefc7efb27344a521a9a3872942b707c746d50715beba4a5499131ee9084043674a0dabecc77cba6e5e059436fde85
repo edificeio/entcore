@@ -1,0 +1,25 @@
+import { IFlashMessageModel, ITimelineApp } from "./interfaces";
+import { Notification } from "./Notification.model";
+export declare class TimelineApp implements ITimelineApp {
+    private _notifications;
+    private _notificationTypes;
+    private _flashMessages;
+    private _pageNumber;
+    private _lastPage;
+    private _loading;
+    showMine: boolean;
+    get notifications(): Array<Notification>;
+    get isLoading(): boolean;
+    get page(): number;
+    get hasMorePage(): boolean;
+    get notificationTypes(): Array<string>;
+    get selectedNotificationTypes(): Array<string>;
+    get preferences(): any;
+    get flashMessages(): IFlashMessageModel[];
+    savePreferences(): Promise<void>;
+    resetPagination(): void;
+    initialize(): Promise<void>;
+    loadNotifications(force?: boolean): Promise<void>;
+    loadFlashMessages(): Promise<void>;
+    markAsRead(msg: IFlashMessageModel): Promise<void>;
+}

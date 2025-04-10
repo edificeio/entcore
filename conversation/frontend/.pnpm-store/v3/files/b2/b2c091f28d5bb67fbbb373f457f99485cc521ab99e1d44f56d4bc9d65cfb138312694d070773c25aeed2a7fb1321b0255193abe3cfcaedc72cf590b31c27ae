@@ -1,0 +1,20 @@
+import { jsx } from "react/jsx-runtime";
+import { Controller } from "react-hook-form";
+import { ageOptions } from "../constants/ageOptions.js";
+import Select from "../../../../components/Select/Select.js";
+const AgeSelect = ({
+  name,
+  control,
+  placeholderOption,
+  validate
+}) => /* @__PURE__ */ jsx(Controller, { name, control, rules: {
+  required: !0,
+  validate
+}, render: ({
+  field: {
+    onChange
+  }
+}) => /* @__PURE__ */ jsx(Select, { block: !0, size: "md", onValueChange: onChange, options: ageOptions, "aria-required": !0, placeholderOption }) });
+export {
+  AgeSelect
+};

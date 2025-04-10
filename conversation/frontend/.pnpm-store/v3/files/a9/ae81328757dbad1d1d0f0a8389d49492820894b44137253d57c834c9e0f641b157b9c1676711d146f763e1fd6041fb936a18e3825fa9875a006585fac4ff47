@@ -1,0 +1,94 @@
+import { jsx, jsxs } from "react/jsx-runtime";
+import { useRef } from "react";
+import { DocumentHelper, odeServices } from "@edifice.io/client";
+import clsx from "clsx";
+import SvgIconLandscape from "../../icons/components/IconLandscape.js";
+import SvgIconMic from "../../icons/components/IconMic.js";
+import SvgIconTextPage from "../../icons/components/IconTextPage.js";
+import SvgIconVideo from "../../icons/components/IconVideo.js";
+import FileIcon from "./FileIcon.js";
+import useThumbnail from "../../../hooks/useThumbnail/useThumbnail.js";
+import Card from "../../../components/Card/Card.js";
+const FileCard = ({
+  doc,
+  isClickable = !0,
+  isSelectable = !1,
+  isSelected = !1,
+  onClick,
+  className
+}) => {
+  var _a;
+  const ref = useRef(null), type = DocumentHelper.getRole(doc);
+  function getRoleMap(type2) {
+    const roleMappings = {
+      csv: {
+        icon: ".CSV",
+        color: "bg-orange-200"
+      },
+      xls: {
+        icon: ".XLS",
+        color: "bg-green-200"
+      },
+      doc: {
+        icon: ".DOC",
+        color: "bg-blue-200"
+      },
+      txt: {
+        icon: ".TXT",
+        color: "bg-blue-200"
+      },
+      pdf: {
+        icon: ".PDF",
+        color: "bg-red-200"
+      },
+      audio: {
+        icon: /* @__PURE__ */ jsx(SvgIconMic, { width: 22, height: 22 }),
+        color: "bg-red-200"
+      },
+      ppt: {
+        icon: ".PPT",
+        color: "bg-yellow-200"
+      },
+      img: {
+        icon: /* @__PURE__ */ jsx(SvgIconLandscape, { width: 22, height: 22 }),
+        color: "bg-green-200"
+      },
+      video: {
+        icon: /* @__PURE__ */ jsx(SvgIconVideo, { width: 22, height: 22 }),
+        color: "bg-purple-200"
+      },
+      zip: {
+        icon: ".ZIP",
+        color: "bg-gray-300"
+      },
+      md: {
+        icon: ".MD",
+        color: "bg-blue-200"
+      },
+      unknown: {
+        icon: /* @__PURE__ */ jsx(SvgIconTextPage, { width: 22, height: 22 }),
+        color: "bg-gray-300"
+      }
+    };
+    return roleMappings[type2] || roleMappings.unknown;
+  }
+  const file = clsx("file position-relative rounded", ((_a = getRoleMap(type ?? "default")) == null ? void 0 : _a.color) ?? "bg-yellow-200"), mediaSrc = type === "img" || type === "video" ? odeServices.workspace().getThumbnailUrl(doc) : null, hasThumbnail = useThumbnail(mediaSrc, {
+    ref
+  }), imageStyles = hasThumbnail && {
+    backgroundImage: `url(${mediaSrc})`,
+    backgroundSize: "cover"
+  };
+  return /* @__PURE__ */ jsx(Card, { className: clsx("card-file", className), isClickable, isSelectable, isSelected, onClick, children: /* @__PURE__ */ jsxs(Card.Body, { space: "8", children: [
+    /* @__PURE__ */ jsx("div", { ref, className: file, style: {
+      aspectRatio: "16/10",
+      ...imageStyles
+    }, children: type !== "img" || type === "img" && !hasThumbnail ? /* @__PURE__ */ jsx(FileIcon, { type, roleMap: getRoleMap(type) }) : null }),
+    /* @__PURE__ */ jsxs("div", { className: "mt-4", children: [
+      /* @__PURE__ */ jsx(Card.Text, { children: doc.name }),
+      /* @__PURE__ */ jsx(Card.Text, { className: "text-black-50", children: doc == null ? void 0 : doc.ownerName })
+    ] })
+  ] }) });
+};
+export {
+  FileCard as default
+};

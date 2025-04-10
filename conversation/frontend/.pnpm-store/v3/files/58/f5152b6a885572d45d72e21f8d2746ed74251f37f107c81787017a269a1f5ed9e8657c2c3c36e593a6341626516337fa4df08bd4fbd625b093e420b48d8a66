@@ -1,0 +1,21 @@
+import { App } from "../globals";
+import { IUserPreferences } from "./interfaces";
+import { IWebApp } from "../session/interfaces";
+export declare class User {
+    private _me;
+    private _keepOpenOnLogout;
+    private _preferences;
+    private _bookmarkedApps;
+    get keepOpenOnLogout(): boolean;
+    get preferences(): IUserPreferences;
+    get bookmarkedApps(): Array<IWebApp>;
+    initialize(version?: string): Promise<void>;
+    private setCurrentModel;
+    private loadPublicConf;
+    /** Bookmarks : pinned apps */
+    private loadBookmarks;
+    loadAppPrefs(app: App): Promise<any>;
+    saveAppPrefs(app: App): Promise<void>;
+    loadLanguage(): Promise<string>;
+    saveLanguage(lang: string): Promise<void>;
+}

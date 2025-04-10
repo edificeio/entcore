@@ -1,0 +1,18 @@
+import { jsxs, Fragment, jsx } from "react/jsx-runtime";
+import { useTranslation } from "react-i18next";
+function ToastSuccess({
+  result
+}) {
+  const {
+    t
+  } = useTranslation();
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx("h3", { className: "pt-24", children: t("bpr.form.publication.response.success.title") }),
+    /* @__PURE__ */ jsx("p", { className: "pt-24", children: t("bpr.form.publication.response.success.content.1") }),
+    /* @__PURE__ */ jsx("p", { className: "pt-24", children: t("bpr.form.publication.response.success.content.2") }),
+    result.details.front_url && /* @__PURE__ */ jsx("p", { className: "pt-24 pb-24", children: /* @__PURE__ */ jsx("a", { className: "button right-magnet", href: result.details.front_url, target: "_blank", rel: "noreferrer", children: t("bpr.form.publication.response.success.button") }) })
+  ] });
+}
+export {
+  ToastSuccess
+};

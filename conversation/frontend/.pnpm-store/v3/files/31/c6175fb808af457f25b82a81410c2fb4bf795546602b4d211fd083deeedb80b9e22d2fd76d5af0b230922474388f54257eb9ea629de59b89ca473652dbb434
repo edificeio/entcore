@@ -1,0 +1,10 @@
+import { ReactionSummaryData } from "edifice-ts-client";
+export interface ReactionSummaryProps {
+    summary?: ReactionSummaryData;
+    onClick?: () => void;
+}
+declare const ReactionSummary: {
+    ({ summary, onClick, }: ReactionSummaryProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default ReactionSummary;

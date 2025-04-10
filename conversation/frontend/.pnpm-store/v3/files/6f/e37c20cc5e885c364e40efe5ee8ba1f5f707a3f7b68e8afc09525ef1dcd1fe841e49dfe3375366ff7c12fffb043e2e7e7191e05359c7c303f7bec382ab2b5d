@@ -1,0 +1,34 @@
+import { ID, IHttpParams, ResourceType } from '../..';
+import { IOdeServices } from '../../services/OdeServices';
+import { GetContextParameters, IBehaviourService, IResource } from '../interface';
+export interface LinkerModel {
+    _id: ID;
+    title: string;
+    ownerName: string;
+    owner: string;
+    icon: string;
+    shared: boolean;
+    path?: string;
+    modified: string | {
+        $date: number | string;
+    };
+}
+export interface ILinkedResource extends IResource {
+    path: string;
+}
+/**
+ * TO BE DEPRECATED. DO NOT USE UNLESS YOU KNOW WHAT YOU ARE DOING.
+ */
+export declare abstract class AbstractBehaviourService implements IBehaviourService {
+    protected context: IOdeServices;
+    abstract APP: string;
+    abstract RESOURCE: ResourceType;
+    /** Adapter function to be implemented by subclasses. */
+    abstract loadResources(parameters?: GetContextParameters): Promise<ILinkedResource[]>;
+    constructor(context: IOdeServices);
+    getApplication(): string;
+    getResourceType(): ResourceType;
+    private _cache;
+    protected httpGet<R>(url: string, params?: IHttpParams | undefined): Promise<R>;
+    protected dataToResource({ modified, ...resource }: LinkerModel): ILinkedResource;
+}

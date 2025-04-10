@@ -1,0 +1,14 @@
+import { RightRole } from 'edifice-ts-client';
+export interface IObjectWithRights {
+    rights: string[];
+}
+interface AccessControlProps {
+    roles: RightRole | RightRole[];
+    rights: string | string[] | IObjectWithRights | IObjectWithRights[];
+    action: string | undefined;
+}
+export declare function useAccessControl({ roles, rights, action, }: AccessControlProps): {
+    visible: boolean;
+    refreshState: () => Promise<void>;
+};
+export {};

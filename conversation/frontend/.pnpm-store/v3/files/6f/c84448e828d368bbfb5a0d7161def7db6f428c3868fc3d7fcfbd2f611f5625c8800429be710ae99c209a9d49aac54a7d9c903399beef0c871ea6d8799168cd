@@ -1,0 +1,11 @@
+/// <reference types="react" />
+export interface ViewsCounterProps {
+    viewsCounter: number;
+    onClick?: (event?: React.MouseEvent<HTMLButtonElement>) => void;
+    className?: string;
+}
+declare const ViewsCounter: {
+    ({ viewsCounter, onClick, className, }: ViewsCounterProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default ViewsCounter;

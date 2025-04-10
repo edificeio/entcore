@@ -1,0 +1,61 @@
+import { useState, useRef, useCallback, useEffect } from "react";
+const useTabs = ({
+  defaultId,
+  items,
+  onChange
+}) => {
+  const [activeTab, setActiveTab] = useState(defaultId || ""), [tabUnderlineWidth, setTabUnderlineWidth] = useState(0), [tabUnderlineLeft, setTabUnderlineLeft] = useState(0), tabsRef = useRef([]), setSelectedTab = useCallback((id) => {
+    setActiveTab(id);
+  }, []);
+  useEffect(() => {
+    const currentItem = items.find((item) => item.id === activeTab);
+    currentItem && (onChange == null || onChange(currentItem));
+  }, [activeTab]), useEffect(() => {
+    function setTabPosition() {
+      var _a;
+      if (((_a = document == null ? void 0 : document.activeElement) == null ? void 0 : _a.tagName) !== "INPUT") {
+        const currentTabIndex = items.findIndex((item) => item.id === activeTab);
+        currentTabIndex === -1 && defaultId && setActiveTab(defaultId);
+        const currentTabRef = tabsRef.current[currentTabIndex];
+        currentTabRef && (currentTabRef.focus(), setTabUnderlineLeft((currentTabRef == null ? void 0 : currentTabRef.offsetLeft) ?? 0), setTabUnderlineWidth((currentTabRef == null ? void 0 : currentTabRef.clientWidth) ?? 0));
+      }
+    }
+    return setTabPosition(), window.addEventListener("resize", setTabPosition), () => window.removeEventListener("resize", setTabPosition);
+  }, [activeTab, items, defaultId]);
+  const moveFocusToPreviousTab = useCallback((activeTab2) => {
+    var _a, _b, _c;
+    const index = items.findIndex((item) => item.id === activeTab2);
+    activeTab2 === ((_a = items[0]) == null ? void 0 : _a.id) ? setActiveTab((_b = items[items.length - 1]) == null ? void 0 : _b.id) : setActiveTab((_c = items[index - 1]) == null ? void 0 : _c.id);
+  }, [items]), moveFocusToNextTab = useCallback((activeTab2) => {
+    var _a, _b, _c;
+    const index = items.findIndex((item) => item.id === activeTab2);
+    activeTab2 === ((_a = items[items.length - 1]) == null ? void 0 : _a.id) ? setActiveTab((_b = items[0]) == null ? void 0 : _b.id) : setActiveTab((_c = items[index + 1]) == null ? void 0 : _c.id);
+  }, [items]), onKeyDown = useCallback((event) => {
+    var _a, _b;
+    switch (event.code) {
+      case "ArrowLeft":
+        moveFocusToPreviousTab(activeTab);
+        break;
+      case "ArrowRight":
+        moveFocusToNextTab(activeTab);
+        break;
+      case "Home":
+        setActiveTab((_a = items[0]) == null ? void 0 : _a.id);
+        break;
+      case "End":
+        setActiveTab((_b = items[items.length - 1]) == null ? void 0 : _b.id);
+        break;
+    }
+  }, [activeTab, items, moveFocusToNextTab, moveFocusToPreviousTab]);
+  return {
+    activeTab,
+    setSelectedTab,
+    tabsRef,
+    tabUnderlineLeft,
+    tabUnderlineWidth,
+    onKeyDown
+  };
+};
+export {
+  useTabs
+};

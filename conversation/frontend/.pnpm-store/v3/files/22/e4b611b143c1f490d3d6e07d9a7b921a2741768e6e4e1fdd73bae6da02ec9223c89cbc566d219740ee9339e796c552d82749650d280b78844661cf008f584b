@@ -1,0 +1,58 @@
+import { useRef, useState } from "react";
+import useWorkspaceFile from "../useWorkspaceFile/useWorkspaceFile.js";
+const useMediaLibrary = () => {
+  const mediaLibraryRef = useRef(null), [libraryMedia, setLibraryMedia] = useState(), {
+    remove
+  } = useWorkspaceFile();
+  return {
+    ref: mediaLibraryRef,
+    libraryMedia,
+    setLibraryMedia,
+    onCancel: async (uploads) => {
+      var _a, _b;
+      (_a = mediaLibraryRef.current) != null && _a.type && uploads && uploads.length > 0 && await remove(uploads), (_b = mediaLibraryRef.current) == null || _b.hide();
+    },
+    onSuccess: (result) => {
+      var _a, _b, _c, _d;
+      let updatedMedia;
+      switch ((_a = mediaLibraryRef.current) == null ? void 0 : _a.type) {
+        case "video": {
+          if (typeof result == "object")
+            updatedMedia = result[0];
+          else {
+            const element = new DOMParser().parseFromString(result, "text/html").body.firstChild, href = element == null ? void 0 : element.getAttribute("src");
+            (_b = mediaLibraryRef.current) == null || _b.hide(), updatedMedia = href;
+          }
+          break;
+        }
+        case "embedder": {
+          const element = new DOMParser().parseFromString(result, "text/html").body.firstChild, href = element == null ? void 0 : element.getAttribute("src");
+          (_c = mediaLibraryRef.current) == null || _c.hide(), updatedMedia = href;
+          break;
+        }
+        case "audio": {
+          result.length === void 0 ? updatedMedia = result : updatedMedia = result[0];
+          break;
+        }
+        case "hyperlink": {
+          updatedMedia = result;
+          break;
+        }
+        case "image": {
+          updatedMedia = `/workspace/document/${result[0]._id}`;
+          break;
+        }
+        default:
+          updatedMedia = result[0];
+      }
+      (_d = mediaLibraryRef.current) == null || _d.hide(), setLibraryMedia(updatedMedia);
+    },
+    onTabChange: async (_tab, uploads) => {
+      var _a;
+      (_a = mediaLibraryRef.current) != null && _a.type && uploads && uploads.length > 0 && await remove(uploads);
+    }
+  };
+};
+export {
+  useMediaLibrary as default
+};

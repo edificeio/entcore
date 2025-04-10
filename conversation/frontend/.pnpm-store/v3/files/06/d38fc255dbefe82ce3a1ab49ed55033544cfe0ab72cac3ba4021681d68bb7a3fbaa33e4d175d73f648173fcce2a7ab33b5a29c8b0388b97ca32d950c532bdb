@@ -1,0 +1,27 @@
+import { jsx, jsxs } from "react/jsx-runtime";
+import { StringUtils } from "@edifice.io/utilities";
+import useReactionIcons from "./hooks/useReactionIcons.js";
+import Button from "../../components/Button/Button.js";
+const ReactionSummary = ({
+  summary = {
+    userReaction: null,
+    totalReactionsCounter: 0
+  },
+  onClick
+}) => {
+  const {
+    getReactionIcon
+  } = useReactionIcons(), {
+    totalReactionsCounter,
+    reactionTypes
+  } = summary, hasNoReactions = totalReactionsCounter === 0;
+  return /* @__PURE__ */ jsx(Button, { variant: "ghost", className: "py-4 px-8 btn-icon", disabled: hasNoReactions, onClick: (event) => {
+    event.preventDefault(), event.stopPropagation(), onClick == null || onClick();
+  }, children: /* @__PURE__ */ jsxs("div", { className: "d-flex align-items-center", children: [
+    /* @__PURE__ */ jsx("div", { className: "text-gray-700 fw-normal me-8", children: StringUtils.toCounter(totalReactionsCounter) }),
+    hasNoReactions ? /* @__PURE__ */ jsx("div", { className: "reaction-overlap", children: getReactionIcon("REACTION_1", !0) }) : reactionTypes == null ? void 0 : reactionTypes.map((reactionType) => /* @__PURE__ */ jsx("div", { className: "reaction-overlap", children: getReactionIcon(reactionType, !0) }, reactionType))
+  ] }) });
+};
+export {
+  ReactionSummary as default
+};

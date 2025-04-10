@@ -1,0 +1,55 @@
+import { Node, mergeAttributes } from "@tiptap/core";
+const Audio = Node.create({
+  name: "audio",
+  group: "inline",
+  inline: !0,
+  selectable: !0,
+  draggable: !0,
+  addAttributes() {
+    return {
+      src: {
+        default: null,
+        parseHTML: (el) => el.getAttribute("src"),
+        renderHTML: (attrs) => ({ src: attrs.src })
+      },
+      documentId: {
+        default: "",
+        renderHTML: (attributes) => ({ "data-document-id": attributes.documentId }),
+        parseHTML: (element) => element.getAttribute("data-document-id")
+      }
+    };
+  },
+  parseHTML() {
+    return [
+      {
+        tag: "div.audio-wrapper>audio,audio",
+        getAttrs: (el) => ({
+          src: el.getAttribute("src")
+        })
+      }
+    ];
+  },
+  renderHTML({ HTMLAttributes }) {
+    return [
+      "div",
+      { class: "audio-wrapper" },
+      ["audio", mergeAttributes(HTMLAttributes)]
+    ];
+  },
+  addCommands() {
+    return {
+      setAudio: (id, src, options) => ({ commands, state }) => commands.insertContentAt(
+        state.selection,
+        `<audio 
+              src="${src}" 
+              controls preload="none"
+              data-document-id="${id}"></audio>`,
+        options
+      )
+    };
+  }
+});
+export {
+  Audio
+};
+//# sourceMappingURL=audio.js.map

@@ -1,0 +1,8 @@
+import { jsx } from "react/jsx-runtime";
+import { forwardRef } from "react";
+const VisuallyHidden = /* @__PURE__ */ forwardRef(({
+  children
+}, ref) => /* @__PURE__ */ jsx("span", { className: "visually-hidden", ref, children }));
+export {
+  VisuallyHidden as default
+};

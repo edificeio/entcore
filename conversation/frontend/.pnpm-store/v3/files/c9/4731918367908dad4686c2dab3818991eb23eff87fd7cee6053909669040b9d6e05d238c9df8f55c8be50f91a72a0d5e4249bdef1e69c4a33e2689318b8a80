@@ -1,0 +1,39 @@
+import { ComponentPropsWithRef } from "react";
+import { IWebApp } from "edifice-ts-client";
+export interface ImagePickerProps extends ComponentPropsWithRef<"input"> {
+    /**
+     * Description of the ImagePicker label.
+     */
+    label: string;
+    /**
+     * Accessible description of the add button
+     */
+    addButtonLabel: string;
+    /**
+     * Accessible description of the delete button
+     */
+    deleteButtonLabel: string;
+    /**
+     * Provide a default image as placeholder
+     */
+    src?: string;
+    /**
+     * To show the icon of an application
+     */
+    app?: IWebApp | undefined;
+    appCode?: string;
+    /**
+     * Optional class for styling purpose
+     */
+    className?: string;
+    /**
+     * Callback when uploading image
+     */
+    onUploadImage: (file: File) => void;
+    /**
+     * Callback when deleting image
+     */
+    onDeleteImage: () => void;
+}
+declare const ImagePicker: import("react").ForwardRefExoticComponent<Omit<ImagePickerProps, "ref"> & import("react").RefAttributes<HTMLInputElement>>;
+export default ImagePicker;

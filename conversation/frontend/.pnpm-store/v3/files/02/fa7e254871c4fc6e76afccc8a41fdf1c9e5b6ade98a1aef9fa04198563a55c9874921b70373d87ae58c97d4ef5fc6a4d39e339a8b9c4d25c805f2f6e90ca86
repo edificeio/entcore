@@ -1,0 +1,1 @@
+export declare const Workspace: () => import("react/jsx-runtime").JSX.Element;

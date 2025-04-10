@@ -1,0 +1,593 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { useState, useCallback, useEffect, forwardRef, createContext, useMemo, useContext } from "react";
+import clsx from "clsx";
+import { Loader } from "@edifice-ui/icons";
+import dayjs from "dayjs";
+import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
+import { odeServices } from "edifice-ts-client";
+function useImage({
+  src,
+  placeholder
+}) {
+  const [imgSrc, setImgSrc] = useState(src || placeholder), onError = useCallback(() => {
+    setImgSrc(placeholder);
+  }, [placeholder]);
+  return useEffect(() => {
+    setImgSrc(src);
+  }, [src]), {
+    imgSrc,
+    onError
+  };
+}
+const Loading = /* @__PURE__ */ forwardRef((props, ref) => {
+  const {
+    isLoading,
+    loadingIcon,
+    loadingPosition = "left",
+    children,
+    className,
+    ...restProps
+  } = props, getLoadingIcon = () => {
+    let icon;
+    return loadingIcon ? icon = loadingIcon : icon = /* @__PURE__ */ jsx(Loader, { ...restProps, "aria-label": "Loading" }), icon;
+  }, classes = clsx("loading d-flex align-items-center gap-8", {
+    "is-loading": isLoading
+  }, className);
+  return /* @__PURE__ */ jsxs("div", { className: classes, role: "status", ref, children: [
+    (!loadingPosition || loadingPosition === "left") && getLoadingIcon(),
+    children,
+    loadingPosition === "right" && getLoadingIcon()
+  ] });
+}), Loading$1 = Loading, Button = /* @__PURE__ */ forwardRef(({
+  color = "primary",
+  type = "button",
+  size = "md",
+  children,
+  isLoading,
+  loadingIcon,
+  loadingPosition,
+  leftIcon,
+  rightIcon,
+  className,
+  variant = "filled",
+  ...restProps
+}, ref) => {
+  const classes = clsx("btn", {
+    [`btn-filled btn-${color}`]: variant === "filled",
+    [`btn-${variant}-${color}`]: variant === "outline" || variant === "ghost",
+    "btn-icon": !children,
+    "btn-loading": isLoading,
+    "btn-lg": size === "lg",
+    "btn-sm": size === "sm"
+  }, className);
+  return /* @__PURE__ */ jsx("button", { ref, className: classes, type, ...restProps, children: isLoading ? /* @__PURE__ */ jsx(Loading$1, { isLoading: !0, loadingIcon, loadingPosition, children }) : /* @__PURE__ */ jsxs("span", { children: [
+    leftIcon,
+    children,
+    rightIcon
+  ] }) });
+}), Button$1 = Button;
+function usePaths() {
+  const base = "/", imagePath = `${base}assets/themes/edifice-bootstrap/images`, iconPath = `${base}assets/themes/edifice-bootstrap/icons`, fontPath = `${base}assets/themes/edifice-bootstrap/fonts`;
+  return [imagePath, iconPath, fontPath];
+}
+function useConf({
+  appCode
+}) {
+  return useQuery({
+    queryKey: ["conf"],
+    queryFn: async () => await odeServices.conf().getConf(appCode)
+  });
+}
+function useSession() {
+  return useQuery({
+    queryKey: ["session"],
+    queryFn: async () => await odeServices.session().getSession()
+  });
+}
+const OdeClientContext = /* @__PURE__ */ createContext(null);
+function OdeClientProvider({
+  children,
+  params
+}) {
+  var _a;
+  const appCode = params.app, {
+    t
+  } = useTranslation(), translatedAppCode = t(appCode), sessionQuery = useSession(), confQuery = useConf({
+    appCode
+  }), init = (confQuery == null ? void 0 : confQuery.isSuccess) && (sessionQuery == null ? void 0 : sessionQuery.isSuccess), currentLanguage = ((_a = sessionQuery == null ? void 0 : sessionQuery.data) == null ? void 0 : _a.currentLanguage) ?? "fr";
+  useEffect(() => {
+    [
+      {
+        data: "html",
+        value: currentLanguage
+      },
+      // #WB-3137 Disable the translation of the content of the page which provoced issues
+      {
+        data: "translate",
+        value: "no"
+      }
+    ].forEach((attribute) => {
+      var _a2;
+      return (_a2 = document.querySelector("html")) == null ? void 0 : _a2.setAttribute(attribute.data, attribute.value);
+    });
+  }, [currentLanguage, sessionQuery.data]), useEffect(() => {
+    document.title = `${translatedAppCode}`;
+  }, [appCode, sessionQuery.data, translatedAppCode]);
+  const values = useMemo(() => {
+    var _a2, _b, _c, _d, _e;
+    return {
+      appCode,
+      applications: (_a2 = confQuery == null ? void 0 : confQuery.data) == null ? void 0 : _a2.applications,
+      confQuery,
+      currentApp: (_b = confQuery == null ? void 0 : confQuery.data) == null ? void 0 : _b.currentApp,
+      currentLanguage,
+      init,
+      sessionQuery,
+      user: (_c = sessionQuery == null ? void 0 : sessionQuery.data) == null ? void 0 : _c.user,
+      userDescription: (_d = sessionQuery == null ? void 0 : sessionQuery.data) == null ? void 0 : _d.userDescription,
+      userProfile: (_e = sessionQuery == null ? void 0 : sessionQuery.data) == null ? void 0 : _e.userProfile
+    };
+  }, [appCode, confQuery, currentLanguage, init, sessionQuery]);
+  return /* @__PURE__ */ jsx(OdeClientContext.Provider, { value: values, children });
+}
+function useOdeClient() {
+  const context = useContext(OdeClientContext);
+  if (!context)
+    throw new Error("Cannot be used outside of OdeClientProvider");
+  return context;
+}
+const Image = /* @__PURE__ */ forwardRef(({
+  src,
+  alt,
+  imgPlaceholder,
+  ratio,
+  objectFit,
+  className,
+  ...restProps
+}, ref) => {
+  const [imagePath] = usePaths(), placeholder = imgPlaceholder ?? `${imagePath}/common/image-placeholder.png`, {
+    imgSrc,
+    onError
+  } = useImage({
+    src,
+    placeholder
+  }), ratioImage = {
+    "ratio ratio-1x1": ratio === "1",
+    "ratio ratio-4x3": ratio === "4",
+    "ratio ratio-16x9": ratio === "16",
+    "ratio ratio-21x9": ratio === "21"
+  }, objectImage = {
+    "object-fit-contain": objectFit === "contain",
+    "object-fit-cover": objectFit === "cover",
+    "object-fit-fill": objectFit === "fill",
+    "object-fit-scale": objectFit === "scale",
+    "object-fit-none": objectFit === "none"
+  }, ratioClasses = clsx({
+    ...ratioImage
+  }), classes = clsx({
+    ...objectImage
+  }, className), renderImage = /* @__PURE__ */ jsx("img", { alt, onError, ref, src: imgSrc, className: classes, ...restProps });
+  return ratio ? /* @__PURE__ */ jsx("div", { className: ratioClasses, children: renderImage }) : renderImage;
+}), Image$1 = Image, Avatar = /* @__PURE__ */ forwardRef(({
+  variant = "square",
+  size = "md",
+  alt,
+  src,
+  imgPlaceholder,
+  className,
+  ...restProps
+}, ref) => {
+  const [imagePath] = usePaths(), placeholder = imgPlaceholder || `${imagePath}/avatar/no-avatar.svg`, classes = clsx("avatar", {
+    ...{
+      "avatar-xs": size === "xs",
+      "avatar-sm": size === "sm",
+      "avatar-md": size === "md",
+      "avatar-lg": size === "lg",
+      "avatar-xl": size === "xl"
+    },
+    ...{
+      square: variant === "square",
+      rounded: variant === "rounded",
+      "rounded-circle": variant === "circle"
+    }
+  }, className);
+  return /* @__PURE__ */ jsx("div", { ref, className: classes, children: /* @__PURE__ */ jsx(Image$1, { src: src || placeholder, alt, imgPlaceholder: placeholder, ...restProps }) });
+}), Avatar$1 = Avatar, Badge = /* @__PURE__ */ forwardRef(({
+  className,
+  variant = {
+    type: "notification",
+    level: "info"
+  },
+  children,
+  ...restProps
+}, ref) => {
+  const classes = clsx("badge rounded-pill", (variant.type === "content" || variant.type === "user") && "background" in variant ? "bg-gray-200" : (variant.type === "content" || variant.type === "user") && !("background" in variant) ? "border border-0" : "", variant.type === "content" && `text-${variant.level}`, variant.type === "notification" && `badge-notification bg-${variant.level} text-light border border-0`, variant.type === "user" && `badge-profile-${variant.profile.toLowerCase()}`, variant.type === "link" && "badge-link border border-0", variant.type === "chip" && "bg-gray-200", className);
+  return /* @__PURE__ */ jsx("span", { ref, className: classes, ...restProps, children: variant.type === "chip" ? /* @__PURE__ */ jsx("div", { className: "d-flex fw-800 align-items-center", children }) : children });
+}), Badge$1 = Badge, Heading = /* @__PURE__ */ forwardRef(({
+  level: Component = "h1",
+  headingStyle = "h1",
+  children,
+  className,
+  ...restProps
+}, ref) => {
+  const classes = clsx(headingStyle, className);
+  return /* @__PURE__ */ jsx(Component, { ref, className: classes, ...restProps, children });
+}), Heading$1 = Heading, EmptyScreen = ({
+  imageSrc,
+  imageAlt = "",
+  title,
+  text,
+  size = 250,
+  className
+}) => {
+  const textClass = clsx("text", className);
+  return /* @__PURE__ */ jsxs("div", { className: "emptyscreen", children: [
+    imageSrc && /* @__PURE__ */ jsx("div", { className: "emptyscreen-image mb-12", children: /* @__PURE__ */ jsx("img", { className: "mx-auto", src: imageSrc, alt: imageAlt, width: size, height: size }) }),
+    title && /* @__PURE__ */ jsx(Heading$1, { level: "h2", headingStyle: "h2", className: "text-secondary mb-8", children: title }),
+    text && /* @__PURE__ */ jsx("div", { className: textClass, children: text })
+  ] });
+}, EmptyScreen$1 = EmptyScreen;
+var commonjsGlobal = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {};
+function getDefaultExportFromCjs(x) {
+  return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, "default") ? x.default : x;
+}
+var customParseFormat$1 = { exports: {} };
+(function(module, exports) {
+  (function(e, t) {
+    module.exports = t();
+  })(commonjsGlobal, function() {
+    var e = { LTS: "h:mm:ss A", LT: "h:mm A", L: "MM/DD/YYYY", LL: "MMMM D, YYYY", LLL: "MMMM D, YYYY h:mm A", LLLL: "dddd, MMMM D, YYYY h:mm A" }, t = /(\[[^[]*\])|([-_:/.,()\s]+)|(A|a|YYYY|YY?|MM?M?M?|Do|DD?|hh?|HH?|mm?|ss?|S{1,3}|z|ZZ?)/g, n = /\d\d/, r = /\d\d?/, i = /\d*[^-_:/,()\s\d]+/, o = {}, s = function(e2) {
+      return (e2 = +e2) + (e2 > 68 ? 1900 : 2e3);
+    }, a = function(e2) {
+      return function(t2) {
+        this[e2] = +t2;
+      };
+    }, f = [/[+-]\d\d:?(\d\d)?|Z/, function(e2) {
+      (this.zone || (this.zone = {})).offset = function(e3) {
+        if (!e3 || e3 === "Z")
+          return 0;
+        var t2 = e3.match(/([+-]|\d\d)/g), n2 = 60 * t2[1] + (+t2[2] || 0);
+        return n2 === 0 ? 0 : t2[0] === "+" ? -n2 : n2;
+      }(e2);
+    }], h = function(e2) {
+      var t2 = o[e2];
+      return t2 && (t2.indexOf ? t2 : t2.s.concat(t2.f));
+    }, u = function(e2, t2) {
+      var n2, r2 = o.meridiem;
+      if (r2) {
+        for (var i2 = 1; i2 <= 24; i2 += 1)
+          if (e2.indexOf(r2(i2, 0, t2)) > -1) {
+            n2 = i2 > 12;
+            break;
+          }
+      } else
+        n2 = e2 === (t2 ? "pm" : "PM");
+      return n2;
+    }, d = { A: [i, function(e2) {
+      this.afternoon = u(e2, !1);
+    }], a: [i, function(e2) {
+      this.afternoon = u(e2, !0);
+    }], S: [/\d/, function(e2) {
+      this.milliseconds = 100 * +e2;
+    }], SS: [n, function(e2) {
+      this.milliseconds = 10 * +e2;
+    }], SSS: [/\d{3}/, function(e2) {
+      this.milliseconds = +e2;
+    }], s: [r, a("seconds")], ss: [r, a("seconds")], m: [r, a("minutes")], mm: [r, a("minutes")], H: [r, a("hours")], h: [r, a("hours")], HH: [r, a("hours")], hh: [r, a("hours")], D: [r, a("day")], DD: [n, a("day")], Do: [i, function(e2) {
+      var t2 = o.ordinal, n2 = e2.match(/\d+/);
+      if (this.day = n2[0], t2)
+        for (var r2 = 1; r2 <= 31; r2 += 1)
+          t2(r2).replace(/\[|\]/g, "") === e2 && (this.day = r2);
+    }], M: [r, a("month")], MM: [n, a("month")], MMM: [i, function(e2) {
+      var t2 = h("months"), n2 = (h("monthsShort") || t2.map(function(e3) {
+        return e3.slice(0, 3);
+      })).indexOf(e2) + 1;
+      if (n2 < 1)
+        throw new Error();
+      this.month = n2 % 12 || n2;
+    }], MMMM: [i, function(e2) {
+      var t2 = h("months").indexOf(e2) + 1;
+      if (t2 < 1)
+        throw new Error();
+      this.month = t2 % 12 || t2;
+    }], Y: [/[+-]?\d+/, a("year")], YY: [n, function(e2) {
+      this.year = s(e2);
+    }], YYYY: [/\d{4}/, a("year")], Z: f, ZZ: f };
+    function c(n2) {
+      var r2, i2;
+      r2 = n2, i2 = o && o.formats;
+      for (var s2 = (n2 = r2.replace(/(\[[^\]]+])|(LTS?|l{1,4}|L{1,4})/g, function(t2, n3, r3) {
+        var o2 = r3 && r3.toUpperCase();
+        return n3 || i2[r3] || e[r3] || i2[o2].replace(/(\[[^\]]+])|(MMMM|MM|DD|dddd)/g, function(e2, t3, n4) {
+          return t3 || n4.slice(1);
+        });
+      })).match(t), a2 = s2.length, f2 = 0; f2 < a2; f2 += 1) {
+        var h2 = s2[f2], u2 = d[h2], c2 = u2 && u2[0], l = u2 && u2[1];
+        s2[f2] = l ? { regex: c2, parser: l } : h2.replace(/^\[|\]$/g, "");
+      }
+      return function(e2) {
+        for (var t2 = {}, n3 = 0, r3 = 0; n3 < a2; n3 += 1) {
+          var i3 = s2[n3];
+          if (typeof i3 == "string")
+            r3 += i3.length;
+          else {
+            var o2 = i3.regex, f3 = i3.parser, h3 = e2.slice(r3), u3 = o2.exec(h3)[0];
+            f3.call(t2, u3), e2 = e2.replace(u3, "");
+          }
+        }
+        return function(e3) {
+          var t3 = e3.afternoon;
+          if (t3 !== void 0) {
+            var n4 = e3.hours;
+            t3 ? n4 < 12 && (e3.hours += 12) : n4 === 12 && (e3.hours = 0), delete e3.afternoon;
+          }
+        }(t2), t2;
+      };
+    }
+    return function(e2, t2, n2) {
+      n2.p.customParseFormat = !0, e2 && e2.parseTwoDigitYear && (s = e2.parseTwoDigitYear);
+      var r2 = t2.prototype, i2 = r2.parse;
+      r2.parse = function(e3) {
+        var t3 = e3.date, r3 = e3.utc, s2 = e3.args;
+        this.$u = r3;
+        var a2 = s2[1];
+        if (typeof a2 == "string") {
+          var f2 = s2[2] === !0, h2 = s2[3] === !0, u2 = f2 || h2, d2 = s2[2];
+          h2 && (d2 = s2[2]), o = this.$locale(), !f2 && d2 && (o = n2.Ls[d2]), this.$d = function(e4, t4, n3) {
+            try {
+              if (["x", "X"].indexOf(t4) > -1)
+                return new Date((t4 === "X" ? 1e3 : 1) * e4);
+              var r4 = c(t4)(e4), i3 = r4.year, o2 = r4.month, s3 = r4.day, a3 = r4.hours, f3 = r4.minutes, h3 = r4.seconds, u3 = r4.milliseconds, d3 = r4.zone, l2 = /* @__PURE__ */ new Date(), m2 = s3 || (i3 || o2 ? 1 : l2.getDate()), M2 = i3 || l2.getFullYear(), Y = 0;
+              i3 && !o2 || (Y = o2 > 0 ? o2 - 1 : l2.getMonth());
+              var p = a3 || 0, v = f3 || 0, D = h3 || 0, g = u3 || 0;
+              return d3 ? new Date(Date.UTC(M2, Y, m2, p, v, D, g + 60 * d3.offset * 1e3)) : n3 ? new Date(Date.UTC(M2, Y, m2, p, v, D, g)) : new Date(M2, Y, m2, p, v, D, g);
+            } catch {
+              return /* @__PURE__ */ new Date("");
+            }
+          }(t3, a2, r3), this.init(), d2 && d2 !== !0 && (this.$L = this.locale(d2).$L), u2 && t3 != this.format(a2) && (this.$d = /* @__PURE__ */ new Date("")), o = {};
+        } else if (a2 instanceof Array)
+          for (var l = a2.length, m = 1; m <= l; m += 1) {
+            s2[1] = a2[m - 1];
+            var M = n2.apply(this, s2);
+            if (M.isValid()) {
+              this.$d = M.$d, this.$L = M.$L, this.init();
+              break;
+            }
+            m === l && (this.$d = /* @__PURE__ */ new Date(""));
+          }
+        else
+          i2.call(this, e3);
+      };
+    };
+  });
+})(customParseFormat$1);
+var customParseFormatExports = customParseFormat$1.exports;
+const customParseFormat = /* @__PURE__ */ getDefaultExportFromCjs(customParseFormatExports);
+var localizedFormat$1 = { exports: {} };
+(function(module, exports) {
+  (function(e, t) {
+    module.exports = t();
+  })(commonjsGlobal, function() {
+    var e = { LTS: "h:mm:ss A", LT: "h:mm A", L: "MM/DD/YYYY", LL: "MMMM D, YYYY", LLL: "MMMM D, YYYY h:mm A", LLLL: "dddd, MMMM D, YYYY h:mm A" };
+    return function(t, o, n) {
+      var r = o.prototype, i = r.format;
+      n.en.formats = e, r.format = function(t2) {
+        t2 === void 0 && (t2 = "YYYY-MM-DDTHH:mm:ssZ");
+        var o2 = this.$locale().formats, n2 = function(t3, o3) {
+          return t3.replace(/(\[[^\]]+])|(LTS?|l{1,4}|L{1,4})/g, function(t4, n3, r2) {
+            var i2 = r2 && r2.toUpperCase();
+            return n3 || o3[r2] || e[r2] || o3[i2].replace(/(\[[^\]]+])|(MMMM|MM|DD|dddd)/g, function(e2, t5, o4) {
+              return t5 || o4.slice(1);
+            });
+          });
+        }(t2, o2 === void 0 ? {} : o2);
+        return i.call(this, n2);
+      };
+    };
+  });
+})(localizedFormat$1);
+var localizedFormatExports = localizedFormat$1.exports;
+const localizedFormat = /* @__PURE__ */ getDefaultExportFromCjs(localizedFormatExports);
+var relativeTime$1 = { exports: {} };
+(function(module, exports) {
+  (function(r, e) {
+    module.exports = e();
+  })(commonjsGlobal, function() {
+    return function(r, e, t) {
+      r = r || {};
+      var n = e.prototype, o = { future: "in %s", past: "%s ago", s: "a few seconds", m: "a minute", mm: "%d minutes", h: "an hour", hh: "%d hours", d: "a day", dd: "%d days", M: "a month", MM: "%d months", y: "a year", yy: "%d years" };
+      function i(r2, e2, t2, o2) {
+        return n.fromToBase(r2, e2, t2, o2);
+      }
+      t.en.relativeTime = o, n.fromToBase = function(e2, n2, i2, d2, u) {
+        for (var f, a, s, l = i2.$locale().relativeTime || o, h = r.thresholds || [{ l: "s", r: 44, d: "second" }, { l: "m", r: 89 }, { l: "mm", r: 44, d: "minute" }, { l: "h", r: 89 }, { l: "hh", r: 21, d: "hour" }, { l: "d", r: 35 }, { l: "dd", r: 25, d: "day" }, { l: "M", r: 45 }, { l: "MM", r: 10, d: "month" }, { l: "y", r: 17 }, { l: "yy", d: "year" }], m = h.length, c = 0; c < m; c += 1) {
+          var y = h[c];
+          y.d && (f = d2 ? t(e2).diff(i2, y.d, !0) : i2.diff(e2, y.d, !0));
+          var p = (r.rounding || Math.round)(Math.abs(f));
+          if (s = f > 0, p <= y.r || !y.r) {
+            p <= 1 && c > 0 && (y = h[c - 1]);
+            var v = l[y.l];
+            u && (p = u("" + p)), a = typeof v == "string" ? v.replace("%d", p) : v(p, n2, y.l, s);
+            break;
+          }
+        }
+        if (n2)
+          return a;
+        var M = s ? l.future : l.past;
+        return typeof M == "function" ? M(a) : M.replace("%s", a);
+      }, n.to = function(r2, e2) {
+        return i(r2, e2, this, !0);
+      }, n.from = function(r2, e2) {
+        return i(r2, e2, this);
+      };
+      var d = function(r2) {
+        return r2.$u ? t.utc() : t();
+      };
+      n.toNow = function(r2) {
+        return this.to(d(this), r2);
+      }, n.fromNow = function(r2) {
+        return this.from(d(this), r2);
+      };
+    };
+  });
+})(relativeTime$1);
+var relativeTimeExports = relativeTime$1.exports;
+const relativeTime = /* @__PURE__ */ getDefaultExportFromCjs(relativeTimeExports);
+var de = { exports: {} };
+(function(module, exports) {
+  (function(e, n) {
+    module.exports = n(dayjs);
+  })(commonjsGlobal, function(e) {
+    function n(e2) {
+      return e2 && typeof e2 == "object" && "default" in e2 ? e2 : { default: e2 };
+    }
+    var t = n(e), a = { s: "ein paar Sekunden", m: ["eine Minute", "einer Minute"], mm: "%d Minuten", h: ["eine Stunde", "einer Stunde"], hh: "%d Stunden", d: ["ein Tag", "einem Tag"], dd: ["%d Tage", "%d Tagen"], M: ["ein Monat", "einem Monat"], MM: ["%d Monate", "%d Monaten"], y: ["ein Jahr", "einem Jahr"], yy: ["%d Jahre", "%d Jahren"] };
+    function i(e2, n2, t2) {
+      var i2 = a[t2];
+      return Array.isArray(i2) && (i2 = i2[n2 ? 0 : 1]), i2.replace("%d", e2);
+    }
+    var r = { name: "de", weekdays: "Sonntag_Montag_Dienstag_Mittwoch_Donnerstag_Freitag_Samstag".split("_"), weekdaysShort: "So._Mo._Di._Mi._Do._Fr._Sa.".split("_"), weekdaysMin: "So_Mo_Di_Mi_Do_Fr_Sa".split("_"), months: "Januar_Februar_März_April_Mai_Juni_Juli_August_September_Oktober_November_Dezember".split("_"), monthsShort: "Jan._Feb._März_Apr._Mai_Juni_Juli_Aug._Sept._Okt._Nov._Dez.".split("_"), ordinal: function(e2) {
+      return e2 + ".";
+    }, weekStart: 1, yearStart: 4, formats: { LTS: "HH:mm:ss", LT: "HH:mm", L: "DD.MM.YYYY", LL: "D. MMMM YYYY", LLL: "D. MMMM YYYY HH:mm", LLLL: "dddd, D. MMMM YYYY HH:mm" }, relativeTime: { future: "in %s", past: "vor %s", s: i, m: i, mm: i, h: i, hh: i, d: i, dd: i, M: i, MM: i, y: i, yy: i } };
+    return t.default.locale(r, null, !0), r;
+  });
+})(de);
+var es = { exports: {} };
+(function(module, exports) {
+  (function(e, o) {
+    module.exports = o(dayjs);
+  })(commonjsGlobal, function(e) {
+    function o(e2) {
+      return e2 && typeof e2 == "object" && "default" in e2 ? e2 : { default: e2 };
+    }
+    var s = o(e), d = { name: "es", monthsShort: "ene_feb_mar_abr_may_jun_jul_ago_sep_oct_nov_dic".split("_"), weekdays: "domingo_lunes_martes_miércoles_jueves_viernes_sábado".split("_"), weekdaysShort: "dom._lun._mar._mié._jue._vie._sáb.".split("_"), weekdaysMin: "do_lu_ma_mi_ju_vi_sá".split("_"), months: "enero_febrero_marzo_abril_mayo_junio_julio_agosto_septiembre_octubre_noviembre_diciembre".split("_"), weekStart: 1, formats: { LT: "H:mm", LTS: "H:mm:ss", L: "DD/MM/YYYY", LL: "D [de] MMMM [de] YYYY", LLL: "D [de] MMMM [de] YYYY H:mm", LLLL: "dddd, D [de] MMMM [de] YYYY H:mm" }, relativeTime: { future: "en %s", past: "hace %s", s: "unos segundos", m: "un minuto", mm: "%d minutos", h: "una hora", hh: "%d horas", d: "un día", dd: "%d días", M: "un mes", MM: "%d meses", y: "un año", yy: "%d años" }, ordinal: function(e2) {
+      return e2 + "º";
+    } };
+    return s.default.locale(d, null, !0), d;
+  });
+})(es);
+var fr = { exports: {} };
+(function(module, exports) {
+  (function(e, n) {
+    module.exports = n(dayjs);
+  })(commonjsGlobal, function(e) {
+    function n(e2) {
+      return e2 && typeof e2 == "object" && "default" in e2 ? e2 : { default: e2 };
+    }
+    var t = n(e), i = { name: "fr", weekdays: "dimanche_lundi_mardi_mercredi_jeudi_vendredi_samedi".split("_"), weekdaysShort: "dim._lun._mar._mer._jeu._ven._sam.".split("_"), weekdaysMin: "di_lu_ma_me_je_ve_sa".split("_"), months: "janvier_février_mars_avril_mai_juin_juillet_août_septembre_octobre_novembre_décembre".split("_"), monthsShort: "janv._févr._mars_avr._mai_juin_juil._août_sept._oct._nov._déc.".split("_"), weekStart: 1, yearStart: 4, formats: { LT: "HH:mm", LTS: "HH:mm:ss", L: "DD/MM/YYYY", LL: "D MMMM YYYY", LLL: "D MMMM YYYY HH:mm", LLLL: "dddd D MMMM YYYY HH:mm" }, relativeTime: { future: "dans %s", past: "il y a %s", s: "quelques secondes", m: "une minute", mm: "%d minutes", h: "une heure", hh: "%d heures", d: "un jour", dd: "%d jours", M: "un mois", MM: "%d mois", y: "un an", yy: "%d ans" }, ordinal: function(e2) {
+      return "" + e2 + (e2 === 1 ? "er" : "");
+    } };
+    return t.default.locale(i, null, !0), i;
+  });
+})(fr);
+var it = { exports: {} };
+(function(module, exports) {
+  (function(e, o) {
+    module.exports = o(dayjs);
+  })(commonjsGlobal, function(e) {
+    function o(e2) {
+      return e2 && typeof e2 == "object" && "default" in e2 ? e2 : { default: e2 };
+    }
+    var t = o(e), n = { name: "it", weekdays: "domenica_lunedì_martedì_mercoledì_giovedì_venerdì_sabato".split("_"), weekdaysShort: "dom_lun_mar_mer_gio_ven_sab".split("_"), weekdaysMin: "do_lu_ma_me_gi_ve_sa".split("_"), months: "gennaio_febbraio_marzo_aprile_maggio_giugno_luglio_agosto_settembre_ottobre_novembre_dicembre".split("_"), weekStart: 1, monthsShort: "gen_feb_mar_apr_mag_giu_lug_ago_set_ott_nov_dic".split("_"), formats: { LT: "HH:mm", LTS: "HH:mm:ss", L: "DD/MM/YYYY", LL: "D MMMM YYYY", LLL: "D MMMM YYYY HH:mm", LLLL: "dddd D MMMM YYYY HH:mm" }, relativeTime: { future: "tra %s", past: "%s fa", s: "qualche secondo", m: "un minuto", mm: "%d minuti", h: "un' ora", hh: "%d ore", d: "un giorno", dd: "%d giorni", M: "un mese", MM: "%d mesi", y: "un anno", yy: "%d anni" }, ordinal: function(e2) {
+      return e2 + "º";
+    } };
+    return t.default.locale(n, null, !0), n;
+  });
+})(it);
+var pt = { exports: {} };
+(function(module, exports) {
+  (function(e, a) {
+    module.exports = a(dayjs);
+  })(commonjsGlobal, function(e) {
+    function a(e2) {
+      return e2 && typeof e2 == "object" && "default" in e2 ? e2 : { default: e2 };
+    }
+    var o = a(e), t = { name: "pt", weekdays: "domingo_segunda-feira_terça-feira_quarta-feira_quinta-feira_sexta-feira_sábado".split("_"), weekdaysShort: "dom_seg_ter_qua_qui_sex_sab".split("_"), weekdaysMin: "Do_2ª_3ª_4ª_5ª_6ª_Sa".split("_"), months: "janeiro_fevereiro_março_abril_maio_junho_julho_agosto_setembro_outubro_novembro_dezembro".split("_"), monthsShort: "jan_fev_mar_abr_mai_jun_jul_ago_set_out_nov_dez".split("_"), ordinal: function(e2) {
+      return e2 + "º";
+    }, weekStart: 1, yearStart: 4, formats: { LT: "HH:mm", LTS: "HH:mm:ss", L: "DD/MM/YYYY", LL: "D [de] MMMM [de] YYYY", LLL: "D [de] MMMM [de] YYYY [às] HH:mm", LLLL: "dddd, D [de] MMMM [de] YYYY [às] HH:mm" }, relativeTime: { future: "em %s", past: "há %s", s: "alguns segundos", m: "um minuto", mm: "%d minutos", h: "uma hora", hh: "%d horas", d: "um dia", dd: "%d dias", M: "um mês", MM: "%d meses", y: "um ano", yy: "%d anos" } };
+    return o.default.locale(t, null, !0), t;
+  });
+})(pt);
+dayjs.extend(relativeTime);
+dayjs.extend(customParseFormat);
+dayjs.extend(localizedFormat);
+function useDate() {
+  const {
+    currentLanguage
+  } = useOdeClient(), parseDate = useCallback((date, lang) => {
+    if (date.length < 11)
+      return dayjs(date, ["YYYY-MM-DD"], lang);
+    if (date.split("").findIndex((char) => "0" > char || char > "9") < 0)
+      return dayjs(Number.parseInt(date)).locale(currentLanguage);
+    {
+      let day = dayjs(date).locale(currentLanguage);
+      return day.isValid() || (day = dayjs(date, ["YYYY-MM-DD HH:mm:ss.SSS"]).locale(currentLanguage)), day;
+    }
+  }, [currentLanguage]), fromNow = useCallback((date) => {
+    let computedDate = dayjs();
+    try {
+      return typeof date > "u" ? "" : (typeof date == "string" ? computedDate = parseDate(date) : typeof date == "number" ? computedDate = dayjs(date).locale(currentLanguage) : typeof date.$date == "number" ? computedDate = dayjs(new Date(date.$date)).locale(currentLanguage) : typeof date.$date == "string" && (computedDate = parseDate(date.$date)), computedDate.isValid() ? computedDate.fromNow() : "");
+    } catch {
+      return "";
+    }
+  }, [currentLanguage, parseDate]), formatDate = useCallback((date, format = "short") => {
+    let computedDate = dayjs();
+    try {
+      if (typeof date > "u")
+        return "";
+      typeof date == "string" ? computedDate = parseDate(date) : typeof date == "number" ? computedDate = dayjs(date).locale(currentLanguage) : typeof date.$date == "number" ? computedDate = dayjs(new Date(date.$date)).locale(currentLanguage) : typeof date.$date == "string" && (computedDate = parseDate(date.$date));
+      let dayjsFormat = "";
+      switch (format) {
+        case "short":
+          dayjsFormat = "L";
+          break;
+        case "long":
+          dayjsFormat = "LL";
+          break;
+        case "abbr":
+          dayjsFormat = "ll";
+          break;
+        default:
+          dayjsFormat = format;
+      }
+      return computedDate.isValid() ? computedDate.locale(currentLanguage).format(dayjsFormat) : "";
+    } catch {
+      return "";
+    }
+  }, [currentLanguage, parseDate]);
+  return {
+    fromNow,
+    formatDate
+  };
+}
+const useDirectory = () => {
+  function getAvatarURL(userId, type) {
+    return odeServices.directory().getAvatarUrl(userId, type);
+  }
+  function getUserbookURL(userId, type) {
+    return odeServices.directory().getDirectoryUrl(userId, type);
+  }
+  return {
+    getAvatarURL,
+    getUserbookURL
+  };
+}, useDirectory$1 = useDirectory;
+export {
+  Avatar$1 as A,
+  Button$1 as B,
+  EmptyScreen$1 as E,
+  Heading$1 as H,
+  Image$1 as I,
+  Loading$1 as L,
+  OdeClientContext as O,
+  useOdeClient as a,
+  useConf as b,
+  Badge$1 as c,
+  useDate as d,
+  OdeClientProvider as e,
+  useDirectory$1 as f,
+  useSession as g,
+  useImage as h,
+  usePaths as u
+};

@@ -1,0 +1,17 @@
+import { IOdeServices } from '../services/OdeServices';
+import { IWebApp } from '../session/interfaces';
+export declare class AnalyticsService {
+    private context;
+    constructor(context: IOdeServices);
+    private get http();
+    private get session();
+    /**
+     * Xiti tracker for page loading.
+     * @param locationPath
+     * @param app
+     */
+    trackPageLoad(locationPath: string, app: IWebApp): Promise<void>;
+    private getXitiConfig;
+    private loadXitiScript;
+    private getXitiTrackingParams;
+}

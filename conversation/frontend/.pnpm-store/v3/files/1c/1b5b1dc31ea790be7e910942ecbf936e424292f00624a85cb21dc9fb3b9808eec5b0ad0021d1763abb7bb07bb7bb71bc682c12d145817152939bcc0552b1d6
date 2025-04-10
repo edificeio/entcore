@@ -1,0 +1,40 @@
+import { AnalyticStatus, IXitiTrackingParams, IMatomoTrackingParams, ITrackingParams, TrackingType } from './interfaces';
+export type ParamsByTrackingSystem = {
+    type: 'none' | 'internal' | 'matomo' | 'multiple';
+    internal?: ITrackingParams;
+    matomo?: IMatomoTrackingParams;
+    xiti?: IXitiTrackingParams;
+};
+export type XitiConf = {
+    ID_EXPLOITANT: string;
+    ID_PLATEFORME: string;
+    ID_PROJET: string;
+    active: boolean;
+    config: boolean;
+    structureMap?: {
+        [structureId: string]: {
+            UAI?: string;
+            active: boolean;
+            collectiviteId?: number;
+            plateformeId?: any;
+            projetId?: any;
+        };
+    };
+};
+export declare class Analytics {
+    private _status;
+    private _params?;
+    get status(): AnalyticStatus;
+    xiti(): Promise<IXitiTrackingParams | undefined>;
+    parameters<T extends ITrackingParams>(type: TrackingType): Promise<T | undefined>;
+    private parametersWithCheck;
+    /**
+     * This method loads the conf and waits for the user session to start.
+     * It can be called ASAP, but it will be automatically called if needed.
+     * @returns A promise of the end of the init process (it may throw errors)
+     * @throws ERROR_CODE.MALFORMED_DATA when config cannot be read.
+     */
+    private initialize;
+    /** 2021 implementation of XiTi. */
+    private initializeXiti;
+}

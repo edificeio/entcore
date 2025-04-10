@@ -1,0 +1,41 @@
+import { ReactNode } from 'react';
+import { ID, PutShareResponse, RightStringified, ShareRight } from '@edifice.io/client';
+import { UseMutationResult } from '../../../../node_modules/@tanstack/react-query';
+export type ShareOptions = {
+    resourceId: ID;
+    resourceRights: RightStringified[];
+    resourceCreatorId: string;
+};
+export type ShareResourceMutation = UseMutationResult<PutShareResponse, unknown, {
+    resourceId: string;
+    rights: ShareRight[];
+}, unknown>;
+interface ShareResourceModalProps {
+    /** Handle open/close state */
+    isOpen: boolean;
+    /**
+     * Expect resourceId,
+     * new rights array (replace shared array),
+     * creatorId
+     * of a resource */
+    shareOptions: ShareOptions;
+    /**
+     * Use the `shareResource` props when you need to do Optimistic UI
+     * otherwise ShareModal handles everything
+     * Must use React Query */
+    shareResource?: ShareResourceMutation;
+    /**
+     * To pass any specific app related component (e.g: Blog)
+     */
+    children?: ReactNode;
+    /**
+     * onSuccess callback when a resource is successfully shared
+     */
+    onSuccess: () => void;
+    /**
+     * onCancel handler to close ShareModal
+     */
+    onCancel: () => void;
+}
+export default function ShareResourceModal({ isOpen, shareOptions, shareResource, children, onSuccess, onCancel, }: ShareResourceModalProps): import('react').ReactPortal;
+export {};

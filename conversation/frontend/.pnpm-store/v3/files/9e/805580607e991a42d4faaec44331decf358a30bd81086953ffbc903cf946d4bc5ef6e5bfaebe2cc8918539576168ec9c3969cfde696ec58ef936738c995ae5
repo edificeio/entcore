@@ -1,0 +1,10 @@
+import { Editor } from '@tiptap/react';
+export interface MediaResizeProps {
+    editor: Editor;
+    [x: string]: any;
+}
+export declare const useResizeMedia: (props: MediaResizeProps, refResizable: React.RefObject<HTMLImageElement | HTMLVideoElement>) => {
+    startVerticalResize: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
+    stopVerticalResize: () => void;
+    isVerticalResizeActive: import('react').MutableRefObject<boolean>;
+};

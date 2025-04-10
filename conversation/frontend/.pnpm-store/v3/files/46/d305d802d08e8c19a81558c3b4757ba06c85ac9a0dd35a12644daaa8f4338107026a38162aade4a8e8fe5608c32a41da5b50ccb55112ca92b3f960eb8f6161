@@ -1,0 +1,2 @@
+declare const ConversationHistoryNodeView: (Component: any) => import('@tiptap/core').Node<any, any>;
+export default ConversationHistoryNodeView;

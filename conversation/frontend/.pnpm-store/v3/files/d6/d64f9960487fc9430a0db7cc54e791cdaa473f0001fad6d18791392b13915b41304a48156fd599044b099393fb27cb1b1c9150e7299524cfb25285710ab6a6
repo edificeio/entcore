@@ -1,0 +1,8 @@
+import { Control, FieldValues, Validate } from "react-hook-form";
+import { FormDataProps } from "../hooks/usePublishModal";
+export declare const AgeSelect: ({ name, control, placeholderOption, validate, }: {
+    name: "ageMin" | "ageMax";
+    control: Control<FormDataProps, any>;
+    placeholderOption: string;
+    validate: Validate<any, FieldValues> | Record<string, Validate<any, FieldValues>> | undefined;
+}) => import("react/jsx-runtime").JSX.Element;

@@ -1,0 +1,23 @@
+import * as PIXI from "pixi.js";
+export interface UseImageEffectsProps {
+    spriteName: string;
+    application?: PIXI.Application;
+    onSave(sprite: PIXI.Sprite): void;
+}
+/**
+ * This hook expose all effects of the pixi editor
+ *
+ * @param args.spriteName The spriteName of the original image
+ * @param args.application The PIXI.Application context
+ * @param args.onSave A callback called when the sprite changes
+ * @returns all the action available for the image editor
+ */
+export default function useImageEffects({ application, spriteName, onSave, }: UseImageEffectsProps): {
+    rotate: () => Promise<void>;
+    startCrop: () => void;
+    stopCrop: (save: boolean) => void;
+    startBlur: () => void;
+    stopBlur: () => void;
+    startResize: () => void;
+    stopResize: (save: boolean) => void;
+};

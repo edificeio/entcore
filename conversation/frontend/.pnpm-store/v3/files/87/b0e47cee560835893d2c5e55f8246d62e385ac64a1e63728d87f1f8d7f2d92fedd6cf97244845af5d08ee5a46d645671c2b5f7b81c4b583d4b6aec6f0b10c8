@@ -1,0 +1,11 @@
+import { createContext, useContext } from "react";
+const Context = /* @__PURE__ */ createContext(null), useFormControl = () => {
+  const context = useContext(Context);
+  if (!context)
+    throw new Error("Cannot be rendered outside the FormControl component");
+  return context;
+};
+export {
+  Context,
+  useFormControl
+};

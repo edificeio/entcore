@@ -1,0 +1,21 @@
+import { Editor } from '@tiptap/react';
+/**
+ * This hooks lets manipulate selected image node by
+ * - setting attributes
+ * - getting their attributes
+ *
+ * @param editor
+ * @returns
+ */
+export declare function useImageSelection(editor?: Editor | null | undefined): {
+    setAttributes: ({ url, alt, title, }: {
+        url: string;
+        alt?: string;
+        title?: string;
+    }) => void;
+    getSelection: () => {
+        src: string;
+        title: string;
+        alt: string;
+    }[];
+};

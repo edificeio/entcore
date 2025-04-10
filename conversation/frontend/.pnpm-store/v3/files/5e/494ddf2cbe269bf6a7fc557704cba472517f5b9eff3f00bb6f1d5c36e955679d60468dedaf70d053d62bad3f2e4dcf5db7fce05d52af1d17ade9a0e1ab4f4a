@@ -1,0 +1,7 @@
+function m(t) {
+  const e = (/* @__PURE__ */ new Date()).getTime(), a = t.includes("?") ? "&" : "?";
+  return `${t}${a}timestamp=${e}`;
+}
+export {
+  m as addTimestampToImageUrl
+};

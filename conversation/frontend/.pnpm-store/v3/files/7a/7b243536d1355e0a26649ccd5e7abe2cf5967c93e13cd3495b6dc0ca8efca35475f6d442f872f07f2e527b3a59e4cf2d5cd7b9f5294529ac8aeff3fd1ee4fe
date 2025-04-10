@@ -1,0 +1,4 @@
+/**
+ * No operation function.
+ */
+export declare const NOOP: () => void;

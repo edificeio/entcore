@@ -1,0 +1,14 @@
+function mergeRefs(...refs) {
+  return (val) => {
+    setRef(val, ...refs);
+  };
+}
+function setRef(val, ...refs) {
+  refs.forEach((ref) => {
+    typeof ref == "function" ? ref(val) : ref != null && (ref.current = val);
+  });
+}
+export {
+  mergeRefs,
+  setRef
+};

@@ -1,0 +1,12 @@
+import { createContext, useContext } from "react";
+const EditorContext = /* @__PURE__ */ createContext(null);
+function useEditorContext() {
+  const context = useContext(EditorContext);
+  if (!context)
+    throw new Error("Editor compound components cannot be rendered outside the Editor component");
+  return context;
+}
+export {
+  EditorContext,
+  useEditorContext
+};

@@ -1,0 +1,11 @@
+/**
+ * This hook provides functions to easily call "audience" backend endpoints.
+ * @param module application code, e.g. "blog"
+ * @param resourceType type of resource, e.g. "post"
+ * @returns functions to easily call "audience" backend endpoints.
+ */
+export default function useViews(module: string, resourceType: string): {
+    getViewsCounter: (resourceIds: string[]) => Promise<import("edifice-ts-client").ViewsCounters>;
+    getViewsDetail: (resourceId: string) => Promise<import("edifice-ts-client").ViewsDetails | undefined>;
+    triggerView: (resourceId: string) => Promise<void>;
+};

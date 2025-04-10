@@ -1,0 +1,30 @@
+import { Active, Over, UniqueIdentifier } from '@dnd-kit/core';
+import { FlattendedNodes, FlattenedItem, Projected, TreeItem } from '../types';
+export declare function getDragDepth(offset: number, indentationWidth: number): number;
+export declare function determineNewParentId(active: Active, over: Over | null, activeNode: FlattenedItem, overNode: FlattenedItem | null, projected: Projected): string | null | undefined;
+export declare function getActiveAndOverNodes(tree: FlattenedItem[], activeId: UniqueIdentifier, overId?: UniqueIdentifier | undefined): {
+    activeNode: FlattenedItem;
+    activeNodeIndex: number;
+    overNode: FlattenedItem | null;
+    overNodeIndex: number;
+};
+export declare function getIndicesToUpdate(activeNode: FlattenedItem, activeNodeIndex: number, flattenedTree: FlattenedItem[], projected: Projected): number[];
+export declare function flattenTree(tree: TreeItem[], parentId: string | null, depth?: number): FlattenedItem[];
+export declare function flattenNodes(nodes: TreeItem[], expandedNodes: Set<string>): FlattendedNodes[];
+export declare function updateParentIds(flattenedTree: any[], indices: number[], newParentId: string | null | undefined): void;
+export declare function findItemIndexInTree(tree: any[], itemId: string): number | null;
+export declare function generateUpdateData(updatedFlattenedTree: FlattenedItem[], tree: TreeItem[]): {
+    updateArray: {
+        _id: string;
+        position: number;
+        parentId?: string;
+    }[];
+    updatedTreeData: FlattenedItem[];
+};
+export declare const buildTree: (flatNodes: FlattenedItem[]) => TreeItem[];
+export declare function getProjection(items: FlattenedItem[], activeId: UniqueIdentifier, overId: UniqueIdentifier, dragOffset: number, indentationWidth: number): {
+    depth: number;
+    parentId: string | null;
+    activeId: UniqueIdentifier;
+    previousItem: FlattenedItem;
+};

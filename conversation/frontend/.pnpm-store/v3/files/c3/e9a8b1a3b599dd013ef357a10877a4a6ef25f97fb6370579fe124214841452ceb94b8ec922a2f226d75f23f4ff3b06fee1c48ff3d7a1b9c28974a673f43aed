@@ -1,0 +1,120 @@
+import { jsx, jsxs } from "react/jsx-runtime";
+import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
+import { ActivitiesDropdown } from "./components/ActivitiesDropdown.js";
+import { AgeSelect } from "./components/AgeSelect.js";
+import { LangSelect } from "./components/LangSelect.js";
+import { PublishModalFooter } from "./components/PublishModalFooter.js";
+import { SubjectsDropdown } from "./components/SubjectsDropdown.js";
+import usePublishModal from "./hooks/usePublishModal.js";
+import { useEdificeClient } from "../../../providers/EdificeClientProvider/EdificeClientProvider.hook.js";
+import ImagePicker from "../../multimedia/ImagePicker/ImagePicker.js";
+import useMediaLibrary from "../../../hooks/useMediaLibrary/useMediaLibrary.js";
+import useResource from "../../../hooks/useResource/useResource.js";
+import LoadingScreen from "../../../components/LoadingScreen/LoadingScreen.js";
+import Modal from "../../../components/Modal/Modal.js";
+import Heading from "../../../components/Heading/Heading.js";
+import FormControl from "../../../components/Form/FormControl.js";
+import Label from "../../../components/Label/Label.js";
+import Input from "../../../components/Input/Input.js";
+import TextArea from "../../../components/TextArea/TextArea.js";
+import Button from "../../../components/Button/Button.js";
+import MediaLibrary from "../../multimedia/MediaLibrary/MediaLibrary.js";
+function PublishModal({
+  isOpen,
+  resourceId,
+  onSuccess,
+  onCancel
+}) {
+  const {
+    appCode: application,
+    currentApp
+  } = useEdificeClient(), {
+    ref: mediaLibraryRef,
+    libraryMedia,
+    ...mediaLibraryHandlers
+  } = useMediaLibrary(), {
+    t
+  } = useTranslation(), resource = useResource(application, resourceId), {
+    control,
+    cover,
+    formState: {
+      isDirty,
+      isValid,
+      isSubmitting
+    },
+    handleDeleteImage,
+    handleSubmit,
+    handleUploadImage,
+    handlePublish,
+    register,
+    selectActivities,
+    selectedActivities,
+    selectedSubjectAreas,
+    selectSubjects
+  } = usePublishModal({
+    resource,
+    onSuccess
+  }), defaultSelectAgeMinOption = "bpr.form.publication.age.min", defaultSelectAgeMaxOption = "bpr.form.publication.age.max";
+  return resource ? /* @__PURE__ */ createPortal(/* @__PURE__ */ jsxs(Modal, { isOpen, onModalClose: onCancel, id: "libraryModal", size: "lg", children: [
+    /* @__PURE__ */ jsx(Modal.Header, { onModalClose: onCancel, children: t("bpr.publish") }),
+    /* @__PURE__ */ jsx(Modal.Subtitle, { children: t("bpr.form.tip") }),
+    /* @__PURE__ */ jsxs(Modal.Body, { children: [
+      /* @__PURE__ */ jsx(Heading, { headingStyle: "h4", level: "h3", className: "mb-16", children: t("bpr.form.publication.heading.general") }),
+      /* @__PURE__ */ jsxs("form", { id: "libraryModalForm", onSubmit: handleSubmit(handlePublish), children: [
+        /* @__PURE__ */ jsxs("div", { className: "d-block d-md-flex mb-24 gap-24", children: [
+          /* @__PURE__ */ jsxs("div", { style: {
+            maxWidth: "160px"
+          }, children: [
+            /* @__PURE__ */ jsx("div", { className: "form-label", children: t("bpr.form.publication.cover.title") }),
+            /* @__PURE__ */ jsx(ImagePicker, { app: currentApp, src: resource == null ? void 0 : resource.thumbnail, addButtonLabel: t("bpr.form.publication.cover.upload.add"), deleteButtonLabel: t("bpr.form.publication.cover.upload.remove"), onUploadImage: handleUploadImage, onDeleteImage: handleDeleteImage, className: "align-self-center", libraryMedia, mediaLibraryRef }),
+            !cover && /* @__PURE__ */ jsx("p", { className: "form-text is-invalid", children: /* @__PURE__ */ jsx("em", { children: t("bpr.form.publication.cover.upload.required.image") }) })
+          ] }),
+          /* @__PURE__ */ jsxs("div", { className: "flex-fill", children: [
+            /* @__PURE__ */ jsxs(FormControl, { id: "title", className: "mb-16", isRequired: !0, children: [
+              /* @__PURE__ */ jsx(Label, { children: t("bpr.form.publication.title") }),
+              /* @__PURE__ */ jsx(Input, { type: "text", defaultValue: resource == null ? void 0 : resource.name, ...register("title", {
+                required: !0
+              }), placeholder: t("bpr.form.publication.title.placeholder"), size: "md", "aria-required": !0 })
+            ] }),
+            /* @__PURE__ */ jsxs(FormControl, { id: "description", isRequired: !0, children: [
+              /* @__PURE__ */ jsx(Label, { children: t("bpr.form.publication.description") }),
+              /* @__PURE__ */ jsx(TextArea, { ...register("description", {
+                required: !0
+              }), placeholder: t("bpr.form.publication.description.placeholder"), size: "md" })
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsx("hr", {}),
+        /* @__PURE__ */ jsx(Heading, { headingStyle: "h4", level: "h3", className: "mb-16", children: t("bpr.form.publication.heading.infos") }),
+        /* @__PURE__ */ jsxs("div", { className: "d-flex flex-column flex-md-row gap-16 row mb-24", children: [
+          /* @__PURE__ */ jsx(ActivitiesDropdown, { control, selectedActivities, selectActivities }),
+          /* @__PURE__ */ jsx(SubjectsDropdown, { control, selectedSubjectAreas, selectSubjects }),
+          /* @__PURE__ */ jsx(LangSelect, { control })
+        ] }),
+        /* @__PURE__ */ jsxs("div", { className: "mb-24", children: [
+          /* @__PURE__ */ jsx("label", { htmlFor: "", className: "form-label", children: t("bpr.form.publication.age") }),
+          /* @__PURE__ */ jsxs("div", { className: "d-flex gap-8", children: [
+            /* @__PURE__ */ jsx("div", { className: "col col-md-2 d-flex", children: /* @__PURE__ */ jsx(AgeSelect, { control, name: "ageMin", placeholderOption: defaultSelectAgeMinOption, validate: (value, formValues) => parseInt(value) <= parseInt(formValues.ageMax) }) }),
+            /* @__PURE__ */ jsx("div", { className: "col col-md-2 d-flex", children: /* @__PURE__ */ jsx(AgeSelect, { control, name: "ageMax", placeholderOption: defaultSelectAgeMaxOption, validate: (value, formValues) => parseInt(value) >= parseInt(formValues.ageMin) }) })
+          ] })
+        ] }),
+        /* @__PURE__ */ jsx("div", { className: "mb-24", children: /* @__PURE__ */ jsxs(FormControl, { id: "keywords", isOptional: !0, children: [
+          /* @__PURE__ */ jsx(Label, { children: t("bpr.form.publication.keywords") }),
+          /* @__PURE__ */ jsx(Input, { type: "text", ...register("keyWords"), size: "md", placeholder: t("bpr.form.publication.keywords.placeholder") })
+        ] }) }),
+        /* @__PURE__ */ jsx("hr", {}),
+        /* @__PURE__ */ jsx(Heading, { headingStyle: "h4", level: "h3", className: "mb-16", children: t("bpr.form.publication.licence.text") }),
+        /* @__PURE__ */ jsx(PublishModalFooter, {})
+      ] })
+    ] }),
+    /* @__PURE__ */ jsxs(Modal.Footer, { children: [
+      /* @__PURE__ */ jsx(Button, { color: "tertiary", onClick: onCancel, type: "button", variant: "ghost", children: t("cancel") }),
+      /* @__PURE__ */ jsx(Button, { form: "libraryModalForm", type: "submit", color: "primary", variant: "filled", isLoading: isSubmitting, disabled: !cover || isSubmitting || !isDirty || !isValid, children: t("bpr.form.submit") })
+    ] }),
+    /* @__PURE__ */ jsx(MediaLibrary, { appCode: application, ref: mediaLibraryRef, multiple: !1, visibility: "protected", ...mediaLibraryHandlers })
+  ] }), document.getElementById("portal")) : /* @__PURE__ */ jsx(LoadingScreen, {});
+}
+export {
+  PublishModal as default
+};

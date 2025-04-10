@@ -1,0 +1,12 @@
+import { ReactElement, ReactNode } from 'react';
+import { IAction, RightRole } from 'edifice-ts-client';
+import { IObjectWithRights } from './useAccessControl';
+interface AccessControlProps {
+    roleExpected: RightRole | RightRole[];
+    resourceRights: string | string[] | IObjectWithRights | IObjectWithRights[];
+    action: IAction;
+    children: ReactNode;
+    renderWhenForbidden?: () => ReactElement;
+}
+export declare function AccessControl({ resourceRights, roleExpected, action, children, renderWhenForbidden, }: AccessControlProps): ReactElement;
+export {};

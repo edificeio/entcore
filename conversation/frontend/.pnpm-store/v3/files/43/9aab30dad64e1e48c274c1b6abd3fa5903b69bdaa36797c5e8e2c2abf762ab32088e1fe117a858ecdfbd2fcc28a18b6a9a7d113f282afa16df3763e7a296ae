@@ -1,0 +1,9 @@
+interface useImageProps {
+    src: string;
+    placeholder: string;
+}
+export default function useImage({ src, placeholder }: useImageProps): {
+    imgSrc: string;
+    onError: () => void;
+};
+export {};

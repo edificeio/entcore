@@ -1,0 +1,37 @@
+import { jsx, Fragment, jsxs } from "react/jsx-runtime";
+import { useTranslation } from "react-i18next";
+import SvgIconSend from "../../icons/components/IconSend.js";
+import { useAutosizeTextarea } from "../hooks/useAutosizeTextarea.js";
+import { useCommentsContext } from "../hooks/useCommentsContext.js";
+import { CommentAvatar } from "./CommentAvatar.js";
+import { TextCounter } from "./TextCounter.js";
+import Button from "../../../components/Button/Button.js";
+const CommentForm = ({
+  userId
+}) => {
+  const {
+    t
+  } = useTranslation(), {
+    content,
+    handleChangeContent,
+    handleCreateComment,
+    options,
+    type
+  } = useCommentsContext(), [ref, onFocus] = useAutosizeTextarea();
+  return /* @__PURE__ */ jsx(Fragment, { children: type === "edit" && /* @__PURE__ */ jsxs("div", { className: "border rounded-3 p-12 pb-8 d-flex gap-12 bg-gray-200", children: [
+    /* @__PURE__ */ jsx(CommentAvatar, { id: userId }),
+    /* @__PURE__ */ jsxs("div", { className: "d-flex flex-column flex-fill gap-4", children: [
+      /* @__PURE__ */ jsx("textarea", { id: "add-comment", ref, value: content, className: "form-control", placeholder: t("comment.placeholder.textarea"), maxLength: options.maxCommentLength, onChange: handleChangeContent, onFocus, rows: 1, style: {
+        resize: "none",
+        overflow: "hidden"
+      } }),
+      /* @__PURE__ */ jsxs("div", { className: "d-flex justify-content-end align-items-center gap-4", children: [
+        /* @__PURE__ */ jsx(TextCounter, { content, maxLength: options.maxCommentLength }),
+        /* @__PURE__ */ jsx(Button, { type: "submit", variant: "ghost", size: "sm", leftIcon: /* @__PURE__ */ jsx(SvgIconSend, {}), disabled: !(content != null && content.length), onClick: () => handleCreateComment(content), children: t("comment.post") })
+      ] })
+    ] })
+  ] }) });
+};
+export {
+  CommentForm
+};

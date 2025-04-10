@@ -1,0 +1,11 @@
+import { createContext, useContext } from "react";
+const CardContext = /* @__PURE__ */ createContext(null), useCardContext = () => {
+  const context = useContext(CardContext);
+  if (!context)
+    throw new Error("Cannot be rendered outside the Card component");
+  return context;
+};
+export {
+  CardContext,
+  useCardContext
+};

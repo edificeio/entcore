@@ -1,0 +1,16 @@
+import UAParser from "ua-parser-js";
+function useBrowserInfo(userAgent) {
+  var _a, _b, _c;
+  const uaParser = new UAParser(userAgent), os = uaParser.getOS(), device = uaParser.getDevice(), browser = uaParser.getBrowser(), isIphone = ((_a = device.model) == null ? void 0 : _a.indexOf("iPhone")) != -1, isIpod = ((_b = device.model) == null ? void 0 : _b.indexOf("iPod")) != -1, isIpad = ((_c = device.model) == null ? void 0 : _c.indexOf("iPad")) != -1;
+  return {
+    os,
+    device,
+    browser,
+    isIphone,
+    isIpod,
+    isIpad
+  };
+}
+export {
+  useBrowserInfo as default
+};

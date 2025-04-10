@@ -1,0 +1,15 @@
+import { jsx } from "react/jsx-runtime";
+import VideoEmbed from "../../VideoEmbed/VideoEmbed.js";
+import { useMediaLibraryContext } from "../MediaLibraryContext.js";
+const VideoEmbedder = () => {
+  const {
+    switchType,
+    setResult
+  } = useMediaLibraryContext();
+  return /* @__PURE__ */ jsx(VideoEmbed, { switchType, onSuccess: (ressource) => {
+    setResult(ressource);
+  } });
+};
+export {
+  VideoEmbedder
+};

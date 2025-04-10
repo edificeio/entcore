@@ -1,0 +1,45 @@
+import { IWebApp } from '@edifice.io/client';
+export type AppIconSize = '24' | '32' | '40' | '48' | '80' | '160';
+export interface BaseProps {
+    /**
+     * Define icon size
+     */
+    size?: AppIconSize;
+    /**
+     * App information to get code and name
+     */
+    app?: IWebApp | string;
+    /**
+     * Custom class name
+     */
+    className?: string;
+}
+type AppVariants = 'square' | 'circle' | 'rounded';
+type SquareVariant = Extract<AppVariants, 'square'>;
+type SquareIcon = {
+    /**
+     * Show icon full width
+     */
+    iconFit?: 'contain';
+    /**
+     * Square variant
+     */
+    variant?: SquareVariant;
+};
+type VariantsIcon = {
+    /**
+     * Add padding around icon
+     */
+    iconFit: 'ratio';
+    /**
+     * Rounded or Circle variant
+     */
+    variant: AppVariants;
+};
+export type Props = SquareIcon | VariantsIcon;
+export type AppIconProps = BaseProps & Props;
+/**
+ * Icon Component used to display the icon of an application
+ */
+declare const AppIcon: import('react').ForwardRefExoticComponent<AppIconProps & import('react').RefAttributes<HTMLDivElement>>;
+export default AppIcon;

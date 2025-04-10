@@ -1,0 +1,32 @@
+import { Dispatch, MutableRefObject, SetStateAction } from 'react';
+import { Placement } from '@floating-ui/react';
+export declare enum KEYS {
+    Enter = "Enter",
+    Space = "Space",
+    ArrowDown = "ArrowDown",
+    ArrowUp = "ArrowUp",
+    Down = "Down",
+    Up = "Up",
+    Tab = "Tab",
+    Esc = "Esc",
+    Escape = "Escape",
+    Home = "Home",
+    End = "End",
+    PageUp = "PageUp",
+    PageDown = "PageDown"
+}
+export interface UseDropdownProps {
+    isFocused: string | null;
+    visible: boolean;
+    itemRefs: MutableRefObject<{
+        [key: string]: HTMLElement | null;
+    }>;
+    triggerRef: MutableRefObject<HTMLButtonElement | null>;
+    menuRef: MutableRefObject<HTMLUListElement | null>;
+    triggerProps: Record<string, any>;
+    menuProps: Record<string, any>;
+    itemProps: Record<string, any>;
+    setVisible: Dispatch<SetStateAction<boolean>>;
+}
+declare const useDropdown: (placement: Placement | undefined, extraTriggerKeyDownHandler?: (event: React.KeyboardEvent<HTMLButtonElement>) => void, isTriggerHovered?: boolean) => UseDropdownProps;
+export default useDropdown;

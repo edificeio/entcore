@@ -1,0 +1,46 @@
+import { addTimestampToImageUrl } from "@edifice.io/utilities";
+function useImageSelection(editor) {
+  return {
+    setAttributes: ({
+      url,
+      alt,
+      title
+    }) => {
+      (editor == null ? void 0 : editor.chain().updateAttributes("custom-image", {
+        src: addTimestampToImageUrl(url),
+        alt,
+        title
+      }).run()) || editor == null || editor.chain().updateAttributes("image", {
+        src: addTimestampToImageUrl(url),
+        alt,
+        title
+      }).run();
+    },
+    getSelection: () => {
+      const datas = [];
+      if (!editor)
+        return datas;
+      const {
+        $from,
+        $to
+      } = editor.state.selection;
+      return editor.state.doc.nodesBetween($from.pos, $to.pos, (node) => {
+        if (node.isAtom && (node.type.name === "image" || node.type.name === "custom-image")) {
+          const {
+            src,
+            title,
+            alt
+          } = node.attrs;
+          datas.push({
+            src,
+            title,
+            alt
+          });
+        }
+      }), datas;
+    }
+  };
+}
+export {
+  useImageSelection
+};

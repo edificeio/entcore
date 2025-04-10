@@ -1,0 +1,76 @@
+import { jsxs, jsx, Fragment } from "react/jsx-runtime";
+import { useState, useId, useEffect } from "react";
+import { odeServices } from "@edifice.io/client";
+import { useDebounce } from "@uidotdev/usehooks";
+import { useTranslation } from "react-i18next";
+import SvgIconArrowRight from "../../icons/components/IconArrowRight.js";
+import SvgIconGlobe from "../../icons/components/IconGlobe.js";
+import illuError from "@edifice.io/bootstrap/dist/images/emptyscreen/illu-error.svg";
+import FormControl from "../../../components/Form/FormControl.js";
+import Input from "../../../components/Input/Input.js";
+import Image from "../../../components/Image/Image.js";
+import EmptyScreen from "../../../components/EmptyScreen/EmptyScreen.js";
+import Button from "../../../components/Button/Button.js";
+const VideoEmbed = ({
+  switchType,
+  onSuccess
+}) => {
+  const {
+    t
+  } = useTranslation(), [url, setUrl] = useState(), [embedVideo, setEmbedVideo] = useState(), [embedder, setEmbedder] = useState(void 0), [whiteListProvider, setWhiteListProvider] = useState(), debounceChangeUrl = useDebounce(url || "", 300), formControlId = useId();
+  useEffect(() => {
+    initWhiteListProvider();
+  }, []), useEffect(() => {
+    if (whiteListProvider && debounceChangeUrl) {
+      const embedderFound = odeServices.embedder().getProviderFromUrl(whiteListProvider, debounceChangeUrl);
+      if (embedderFound) {
+        setEmbedder(embedderFound);
+        const embedVideo2 = odeServices.embedder().getEmbedCodeForProvider(embedderFound, debounceChangeUrl);
+        setEmbedVideo(embedVideo2), onSuccess(embedVideo2);
+      } else
+        setEmbedder(void 0), onSuccess();
+    }
+  }, [debounceChangeUrl, whiteListProvider]);
+  const initWhiteListProvider = async () => {
+    const whiteListProviderResponse = await Promise.all([odeServices.embedder().getDefault(), odeServices.embedder().getCustom()]).then((results) => results.flat());
+    setWhiteListProvider(whiteListProviderResponse);
+  };
+  function handleUrlChange(event) {
+    const url2 = event.currentTarget.value;
+    setUrl(url2), onSuccess(url2 != null && url2.length ? url2 : void 0);
+  }
+  function handleSwitchToEmbedderClick() {
+    switchType == null || switchType("embedder");
+  }
+  const renderContent = () => debounceChangeUrl ? embedder ? /* @__PURE__ */ jsxs("div", { className: "mx-auto mt-16", children: [
+    /* @__PURE__ */ jsxs("div", { className: "video-embed-provider d-flex align-items-center", children: [
+      /* @__PURE__ */ jsx(Image, { src: embedder.logo, alt: "Logo " + embedder.displayName, className: "video-embed-provider-logo" }),
+      embedder.displayName
+    ] }),
+    embedVideo && /* @__PURE__ */ jsx("div", { className: "video-embed-preview mt-12", dangerouslySetInnerHTML: {
+      __html: embedVideo
+    } })
+  ] }) : /* @__PURE__ */ jsxs("div", { className: "d-flex flex-column align-items-center m-16", children: [
+    /* @__PURE__ */ jsx(EmptyScreen, { imageSrc: illuError, title: t("bbm.video.previewError.title"), text: t("bbm.video.previewError.text") }),
+    switchType && /* @__PURE__ */ jsxs(Button, { variant: "ghost", color: "primary", onClick: handleSwitchToEmbedderClick, className: "align-items-start mt-16", children: [
+      t("bbm.video.useEmbedCode"),
+      " ",
+      /* @__PURE__ */ jsx(SvgIconArrowRight, {})
+    ] })
+  ] }) : switchType && /* @__PURE__ */ jsx("div", { className: "d-flex my-16 align-items-start", children: /* @__PURE__ */ jsxs(Button, { variant: "ghost", color: "primary", onClick: handleSwitchToEmbedderClick, className: "align-items-start", children: [
+    t("bbm.video.useEmbedCode"),
+    " ",
+    /* @__PURE__ */ jsx(SvgIconArrowRight, {})
+  ] }) });
+  return /* @__PURE__ */ jsxs("div", { className: "d-flex flex-column flex-fill video-embed", children: [
+    /* @__PURE__ */ jsxs("div", { className: "mb-8 d-flex", children: [
+      /* @__PURE__ */ jsx(SvgIconGlobe, { className: "me-8" }),
+      t("bbm.video.url.title")
+    ] }),
+    /* @__PURE__ */ jsx(FormControl, { id: formControlId, children: /* @__PURE__ */ jsx(Input, { size: "md", type: "text", placeholder: t("bbm.video.url.placeholder"), onChange: handleUrlChange }) }),
+    /* @__PURE__ */ jsx(Fragment, { children: renderContent() })
+  ] });
+};
+export {
+  VideoEmbed as default
+};

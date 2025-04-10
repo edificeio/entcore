@@ -1,0 +1,34 @@
+import { jsx } from "react/jsx-runtime";
+import toast from "react-hot-toast";
+import Alert from "../../components/Alert/Alert.js";
+const DEFAULT_POSITION = "top-right";
+function useToast() {
+  return {
+    success: (message, options) => toast.custom(/* @__PURE__ */ jsx(Alert, { type: "success", isToast: !0, isDismissible: options == null ? void 0 : options.isDismissible, className: "mb-12", children: message }), {
+      id: options == null ? void 0 : options.id,
+      duration: options == null ? void 0 : options.duration,
+      position: (options == null ? void 0 : options.position) ?? DEFAULT_POSITION
+    }),
+    error: (message, options) => toast.custom(/* @__PURE__ */ jsx(Alert, { type: "danger", isToast: !0, isDismissible: options == null ? void 0 : options.isDismissible, className: "mb-12", children: message }), {
+      id: options == null ? void 0 : options.id,
+      duration: options == null ? void 0 : options.duration,
+      position: (options == null ? void 0 : options.position) ?? DEFAULT_POSITION
+    }),
+    info: (message, options) => toast.custom(/* @__PURE__ */ jsx(Alert, { type: "info", isToast: !0, isDismissible: options == null ? void 0 : options.isDismissible, className: "mb-12", children: message }), {
+      id: options == null ? void 0 : options.id,
+      duration: options == null ? void 0 : options.duration,
+      position: (options == null ? void 0 : options.position) ?? DEFAULT_POSITION
+    }),
+    warning: (message, options) => toast.custom(/* @__PURE__ */ jsx(Alert, { type: "warning", isToast: !0, isDismissible: options == null ? void 0 : options.isDismissible, className: "mb-12", children: message }), {
+      id: options == null ? void 0 : options.id,
+      duration: options == null ? void 0 : options.duration,
+      position: (options == null ? void 0 : options.position) ?? DEFAULT_POSITION
+    }),
+    loading: toast.loading,
+    dismiss: (id) => toast.dismiss(id),
+    remove: (id) => toast.remove(id)
+  };
+}
+export {
+  useToast as default
+};

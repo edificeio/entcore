@@ -1,0 +1,6 @@
+import { ComponentPropsWithoutRef } from 'react';
+declare const TabsList: {
+    (props: ComponentPropsWithoutRef<"div">): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default TabsList;

@@ -1,0 +1,16 @@
+/// <reference types="react" />
+export declare const useCommentsContext: () => {
+    comments: import("../types").CommentProps[] | undefined;
+    content: string;
+    editCommentId: string | null;
+    profiles: (import("../types").UserProfileResult | undefined)[];
+    options: Partial<import("../types").CommentOptions>;
+    type: import("../types").CommentType;
+    setEditCommentId: (value: string | null) => void;
+    handleModifyComment: (commentId: string) => void;
+    handleChangeContent: (event: import("react").ChangeEvent<HTMLTextAreaElement>) => void;
+    handleCreateComment: (content: string) => void;
+    handleUpdateComment: (comment: string) => void;
+    handleDeleteComment: (id: string) => void;
+    handleReset: () => void;
+};

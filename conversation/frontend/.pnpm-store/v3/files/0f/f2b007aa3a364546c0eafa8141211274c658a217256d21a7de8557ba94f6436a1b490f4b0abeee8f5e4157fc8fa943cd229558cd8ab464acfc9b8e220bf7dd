@@ -1,0 +1,32 @@
+import { jsx } from "react/jsx-runtime";
+import clsx from "clsx";
+const Grid = ({
+  children,
+  className,
+  ...restProps
+}) => {
+  const classes = clsx("grid", className);
+  return /* @__PURE__ */ jsx("div", { className: classes, ...restProps, children });
+}, Column = ({
+  sm,
+  md,
+  lg,
+  xl,
+  children,
+  className,
+  as,
+  ...restProps
+}) => {
+  const Component = as || "div", classes = clsx({
+    [`g-col-${sm}`]: sm,
+    [md ? `g-col-md-${md}` : ""]: md,
+    [lg ? `g-col-lg-${lg}` : ""]: lg,
+    [xl ? `g-col-xl-${xl}` : ""]: xl
+  }, className);
+  return /* @__PURE__ */ jsx(Component, { className: classes, ...restProps, children });
+};
+Grid.Col = Column;
+export {
+  Column,
+  Grid
+};

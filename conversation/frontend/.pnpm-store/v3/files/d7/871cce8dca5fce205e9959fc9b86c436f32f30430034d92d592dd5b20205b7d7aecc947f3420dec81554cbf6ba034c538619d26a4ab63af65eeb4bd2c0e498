@@ -1,0 +1,9 @@
+import { Node } from '@tiptap/pm/model';
+import { Editor } from '@tiptap/react';
+interface LinkerProps {
+    selected: boolean;
+    editor: Editor;
+    node: Node;
+}
+declare const LinkerRenderer: ({ selected, ...props }: LinkerProps) => import("react/jsx-runtime").JSX.Element;
+export default LinkerRenderer;

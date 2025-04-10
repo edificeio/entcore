@@ -1,0 +1,2 @@
+import { type MutableRefObject } from "react";
+export default function useHover<T>(): [MutableRefObject<T>, boolean];

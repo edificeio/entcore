@@ -1,0 +1,1 @@
+"use strict";Object.defineProperty(exports,Symbol.toStringTag,{value:"Module"});const a=(o,r)=>{if(o==0)return"0 octets";const t=1e3,i=r||2,s=["octets","Ko","Mo","Go"],e=Math.floor(Math.log(o)/Math.log(t));return parseFloat((o/Math.pow(t,e)).toFixed(i))+" "+s[e]};exports.customSize=a;

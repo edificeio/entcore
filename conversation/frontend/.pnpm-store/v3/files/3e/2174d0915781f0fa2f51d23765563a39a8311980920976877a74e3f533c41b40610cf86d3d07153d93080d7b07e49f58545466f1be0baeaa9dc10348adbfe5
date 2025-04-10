@@ -1,0 +1,17 @@
+import { ReactNode } from 'react';
+import { TabsItemProps } from './TabsItem';
+export interface TabsPanelProps {
+    /**
+     * Content of the item
+     */
+    children: ReactNode;
+    /**
+     * Current Item
+     */
+    currentItem: TabsItemProps | undefined;
+}
+declare const TabsPanel: {
+    ({ children, currentItem }: TabsPanelProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default TabsPanel;

@@ -1,0 +1,25 @@
+import { DataServiceProps, IDataService } from "./interface";
+import { IOdeServices } from "../services/OdeServices";
+/** Public conf of an app with a DataService activated. See backend /conf/public */
+export interface PublicConfForDataService {
+    "data-service"?: DataServiceProps;
+}
+export declare class DataService implements IDataService {
+    private odeServices;
+    private _webBroker?;
+    private app?;
+    private user?;
+    private profile?;
+    constructor(odeServices: IOdeServices);
+    private get conf();
+    private get notify();
+    initialize(): Promise<void>;
+    predestroy(): void;
+    /** Send a web-user-level event to the data pipeline. */
+    private trackWebEvent;
+    private addUserInfos;
+    trackVideoSave(video_id: string, duration: number, weight: number, isCaptation: boolean, url: string, browser: string, deviceType?: string): void;
+    trackVideoRead(video_id: string, isCaptation: boolean, url: string, browser: string, deviceType?: string): void;
+    trackSpeechAndText(direction: "STT" | "TTS"): void;
+    trackAccessLibraryFromExplorer(): void;
+}

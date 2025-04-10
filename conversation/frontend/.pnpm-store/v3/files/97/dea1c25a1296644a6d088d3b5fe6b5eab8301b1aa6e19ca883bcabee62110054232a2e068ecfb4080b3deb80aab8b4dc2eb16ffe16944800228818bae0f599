@@ -1,0 +1,5 @@
+import { Control } from 'react-hook-form';
+import { FormDataProps } from '../hooks/usePublishModal';
+export declare const LangSelect: ({ control, }: {
+    control: Control<FormDataProps, any>;
+}) => import("react/jsx-runtime").JSX.Element;

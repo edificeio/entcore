@@ -1,0 +1,26 @@
+import { jsx } from "react/jsx-runtime";
+import { forwardRef } from "react";
+import clsx from "clsx";
+import { useDropdownContext } from "./DropdownContext.js";
+const DropdownMenu = /* @__PURE__ */ forwardRef(({
+  children,
+  block,
+  unstyled,
+  ...restProps
+}, forwardRef2) => {
+  const {
+    menuProps,
+    visible
+  } = useDropdownContext(), className = clsx({
+    "w-100": block,
+    "bg-white shadow rounded-4 p-8": !unstyled
+  }, menuProps.className, restProps.className), mergedProps = {
+    ...menuProps,
+    ...restProps,
+    className
+  };
+  return visible ? /* @__PURE__ */ jsx("div", { ref: forwardRef2, ...mergedProps, children }) : null;
+});
+export {
+  DropdownMenu as default
+};

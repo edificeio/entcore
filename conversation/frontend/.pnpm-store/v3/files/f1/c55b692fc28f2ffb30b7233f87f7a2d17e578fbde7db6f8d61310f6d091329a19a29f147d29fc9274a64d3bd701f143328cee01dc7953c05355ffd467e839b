@@ -1,0 +1,7 @@
+/**
+ * Search for Library app in userinfo apps and return Library URL as a string.
+ *
+ * @returns the Library URL as a string. Returns null if no library was found in user apps.
+ */
+declare const useLibraryUrl: () => string | null;
+export default useLibraryUrl;

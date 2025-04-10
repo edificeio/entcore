@@ -1,0 +1,40 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { StringUtils } from "@edifice.io/utilities";
+import { useTranslation } from "react-i18next";
+import SvgIconUsers from "../icons/components/IconUsers.js";
+import SvgIconGuest from "../icons/components/audience/IconGuest.js";
+import SvgIconParent from "../icons/components/audience/IconParent.js";
+import SvgIconPersonnel from "../icons/components/audience/IconPersonnel.js";
+import SvgIconStudent from "../icons/components/audience/IconStudent.js";
+import SvgIconTeacher from "../icons/components/audience/IconTeacher.js";
+const ViewsByProfileCard = ({
+  viewsByProfile
+}) => {
+  const {
+    t
+  } = useTranslation(), profile = viewsByProfile.profile.toLowerCase(), classNameIcon = `views-detail-icon rounded p-8 views-detail-icon-${profile}`;
+  function getIcon(profile2) {
+    switch (profile2) {
+      case "student":
+        return /* @__PURE__ */ jsx(SvgIconStudent, {});
+      case "relative":
+        return /* @__PURE__ */ jsx(SvgIconParent, {});
+      case "teacher":
+        return /* @__PURE__ */ jsx(SvgIconTeacher, {});
+      case "personnel":
+        return /* @__PURE__ */ jsx(SvgIconPersonnel, {});
+      case "guest":
+        return /* @__PURE__ */ jsx(SvgIconGuest, {});
+      default:
+        return /* @__PURE__ */ jsx(SvgIconUsers, {});
+    }
+  }
+  return /* @__PURE__ */ jsxs("div", { className: "views-detail-line p-8 ms-32 mb-12", children: [
+    /* @__PURE__ */ jsx("div", { className: classNameIcon, children: getIcon(profile) }),
+    /* @__PURE__ */ jsx("div", { className: "h3", children: StringUtils.toCounter(viewsByProfile.counter) }),
+    /* @__PURE__ */ jsx("div", { children: t(`audience.views.uniqueViewsPerProfile.${profile}`) })
+  ] }, profile);
+};
+export {
+  ViewsByProfileCard as default
+};

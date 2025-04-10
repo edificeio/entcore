@@ -1,0 +1,1531 @@
+import { jsxs as E, Fragment as G, jsx as c } from "react/jsx-runtime";
+import { useEffect as $, Suspense as M, lazy as q, useState as le, useRef as Se, Fragment as be } from "react";
+import { useSensor as oe, PointerSensor as we, KeyboardSensor as xe, useSensors as Te, DndContext as Ce } from "@dnd-kit/core";
+import { snapCenterToCursor as Fe } from "@dnd-kit/modifiers";
+import { findNodeById as J, wrapTreeNode as Re, findParentNode as Ne, useToast as L, moveNode as Ee, deleteNode as Pe, useUser as de, useShareMutation as Ae, useUpdateMutation as Qe, useOdeClient as v, addNode as qe, updateNode as Oe, getAncestors as ne, LoadingScreen as U, FormControl as ke, Input as Ue, SearchButton as Me, Dropdown as j, useToggle as Le, useScrollToTop as ve, TreeView as Be, Button as Ke, IconButton as $e, useXitiTrackPageLoad as _e, isActionAvailable as ae, AppHeader as ze, Breadcrumb as je, Grid as te } from "@edifice-ui/react";
+import { odeServices as A, FOLDER as N, SORT_ORDER as Ve, ResourceService as ue } from "edifice-ts-client";
+import { t as P } from "i18next";
+import { createStore as We, useStore as He } from "zustand";
+import { useQuery as Ge, queryOptions as Je, useQueryClient as k, useMutation as B, useInfiniteQuery as Xe } from "@tanstack/react-query";
+import { useTranslation as _ } from "react-i18next";
+import { Filter as Ye, Delete as Ze, Plus as et, ArrowLeft as tt } from "@edifice-ui/icons";
+const he = async (e) => {
+  const t = await A.resource(e.application).searchContext(e);
+  return {
+    ...t,
+    folders: t.folders.filter((s) => !s.trashed)
+  };
+}, st = async ({
+  searchParams: e,
+  name: t,
+  parentId: s
+}) => {
+  const r = {
+    name: t,
+    parentId: s,
+    application: e.application,
+    type: e.types[0]
+  };
+  return await A.resource(e.application).createFolder(r);
+}, rt = async ({
+  folderId: e,
+  searchParams: t,
+  parentId: s,
+  name: r
+}) => {
+  const o = {
+    folderId: e,
+    name: r,
+    parentId: s,
+    application: t.application,
+    type: t.types[0]
+  };
+  return await A.resource(t.application).updateFolder(o);
+}, ot = async ({
+  searchParams: e,
+  resourceIds: t,
+  useAssetIds: s,
+  folderIds: r
+}) => {
+  const o = {
+    application: e.application,
+    resourceType: e.types[0],
+    resourceIds: t,
+    folderIds: r
+  };
+  return await A.resource(e.application).trashAll(o, s);
+}, nt = async ({
+  searchParams: e,
+  resourceIds: t,
+  useAssetIds: s,
+  folderIds: r
+}) => {
+  const o = {
+    application: e.application,
+    resourceType: e.types[0],
+    resourceIds: t,
+    folderIds: r
+  };
+  return await A.resource(e.application).deleteAll(o, s);
+}, at = async ({
+  searchParams: e,
+  resourceIds: t,
+  folderIds: s,
+  useAssetIds: r
+}) => {
+  const o = {
+    application: e.application,
+    resourceType: e.types[0],
+    resourceIds: t,
+    folderIds: s
+  };
+  return await A.resource(e.application).restoreAll(o, r);
+}, ct = async (e, t) => await A.resource(e.application).copy({
+  application: e.application,
+  resourceId: t
+}), pe = async ({
+  searchParams: e,
+  resourceIds: t,
+  folderId: s,
+  folderIds: r,
+  useAssetIds: o
+}) => {
+  const a = {
+    application: e.application,
+    folderId: s,
+    resourceIds: t,
+    folderIds: r
+  };
+  return await A.resource(e.application).moveToFolder(a, o);
+}, it = async (e) => await A.rights().sessionHasWorkflowRights(e), lt = ({
+  searchParams: e,
+  assetId: t
+}) => {
+  const s = A.resource(e.application).getViewUrl(t);
+  window.open(s, "_self");
+}, dt = ({
+  searchParams: e,
+  params: t
+}) => A.resource(e.application).create(t), ut = ({
+  searchParams: e,
+  assetId: t
+}) => {
+  const s = A.resource(e.application).getPrintUrl(t);
+  return window.open(s, "_blank");
+}, is = ({
+  searchParams: e,
+  folderId: t
+}) => {
+  const s = A.resource(e.application).getFormUrl(t);
+  return window.open(s, "_self");
+}, ls = ({
+  searchParams: e,
+  assetId: t
+}) => {
+  const s = A.resource(e.application).getEditUrl(t);
+  return window.open(s, "_self");
+}, ds = ({
+  searchParams: e,
+  assetId: t
+}) => {
+  const s = A.resource(e.application).getExportUrl(t);
+  return window.open(s, "_self");
+}, fe = {
+  id: N.DEFAULT,
+  name: P("explorer.filters.mine"),
+  section: !0,
+  children: []
+}, ht = {
+  config: void 0,
+  searchConfig: {
+    minLength: 1
+  },
+  searchParams: {
+    filters: {
+      folder: N.DEFAULT,
+      owner: void 0,
+      shared: void 0,
+      public: void 0
+    },
+    orders: {
+      updatedAt: Ve.DESC
+    },
+    application: "",
+    types: [],
+    pagination: {
+      startIdx: 0,
+      pageSize: 48,
+      maxIdx: 0
+    },
+    trashed: !1
+  },
+  treeData: fe,
+  selectedNodeId: "default",
+  currentFolder: {
+    id: "default"
+  },
+  selectedFolders: [],
+  selectedResources: [],
+  folderIds: [],
+  resourceIds: [],
+  resourceIsTrash: !1,
+  resourceOrFolderIsDraggable: {
+    isDrag: !1,
+    elementDrag: void 0
+  },
+  elementDragOver: {
+    isOver: !1,
+    isTreeview: !1,
+    canMove: !0,
+    overId: void 0
+  },
+  resourceActionDisable: !1,
+  status: void 0
+}, pt = We()((e, t) => ({
+  ...ht,
+  actions: {
+    setConfig: (s) => e({
+      config: s
+    }),
+    setSearchConfig: (s) => e((r) => ({
+      searchConfig: {
+        ...r.searchConfig,
+        ...s
+      }
+    })),
+    setTreeData: (s) => e(() => ({
+      treeData: s
+    })),
+    setSearchParams: (s) => {
+      e((r) => {
+        const {
+          searchParams: o
+        } = r;
+        return o.search !== s.search ? s.search ? {
+          ...r,
+          selectedFolders: [],
+          selectedNodeId: void 0,
+          selectedResources: [],
+          currentFolder: void 0,
+          searchParams: {
+            ...o,
+            ...s,
+            trashed: !1,
+            filters: {
+              ...o.filters,
+              folder: void 0
+            }
+          }
+        } : {
+          ...r,
+          selectedFolders: [],
+          selectedNodeId: "default",
+          selectedResources: [],
+          currentFolder: {
+            id: "default"
+          },
+          searchParams: {
+            ...o,
+            ...s,
+            trashed: !1,
+            filters: {
+              ...o.filters
+            }
+          }
+        } : {
+          searchParams: {
+            ...o,
+            ...s
+          }
+        };
+      });
+    },
+    setSelectedFolders: (s) => e(() => ({
+      selectedFolders: s
+    })),
+    setSelectedResources: (s) => e(() => ({
+      selectedResources: s
+    })),
+    setFolderIds: (s) => e(() => ({
+      folderIds: s
+    })),
+    setResourceIds: (s) => e(() => ({
+      resourceIds: s
+    })),
+    setResourceIsTrash: (s) => e(() => ({
+      resourceIsTrash: s
+    })),
+    setResourceOrFolderIsDraggable: (s) => e(() => ({
+      resourceOrFolderIsDraggable: s
+    })),
+    setElementDragOver: (s) => e(() => ({
+      elementDragOver: s
+    })),
+    setResourceActionDisable: (s) => e(() => ({
+      resourceActionDisable: s
+    })),
+    clearSelectedItems: () => e(() => ({
+      selectedFolders: [],
+      selectedResources: []
+    })),
+    clearSelectedIds: () => e(() => ({
+      resourceIds: [],
+      folderIds: []
+    })),
+    openResource: (s) => {
+      try {
+        const {
+          searchParams: r
+        } = t();
+        lt({
+          searchParams: r,
+          assetId: s.assetId
+        });
+      } catch (r) {
+        console.error("explorer open failed: ", r);
+      }
+    },
+    printSelectedResource: () => {
+      try {
+        const {
+          searchParams: s,
+          selectedResources: r,
+          resourceIds: o
+        } = t();
+        if (r.length !== 1)
+          throw new Error("Cannot open more than 1 resource");
+        const a = r.find((n) => n.id === o[0]);
+        ut({
+          searchParams: s,
+          assetId: a.assetId
+        });
+      } catch (s) {
+        console.error("explorer print failed: ", s);
+      }
+    },
+    openFolder: ({
+      folderId: s,
+      folder: r,
+      queryClient: o
+    }) => {
+      const {
+        searchParams: a
+      } = t(), n = a.filters.folder, u = s;
+      n !== s && (t().actions.fetchTreeData(s, o), e((p) => ({
+        ...p,
+        // reset selection when changing folder
+        folderIds: [],
+        resourceIds: [],
+        selectedNodeId: u,
+        currentFolder: r || {
+          id: s
+        },
+        searchParams: {
+          ...a,
+          search: void 0,
+          filters: {
+            ...a.filters,
+            folder: s
+          },
+          trashed: s === N.BIN
+        }
+      })));
+    },
+    foldTreeItem: () => e((s) => ({
+      ...s,
+      status: "fold"
+    })),
+    fetchTreeData: async (s, r) => {
+      const o = J(t().treeData, s), a = o == null ? void 0 : o.id;
+      if (Array.isArray(o == null ? void 0 : o.children) && o.children.length) return;
+      const n = await r.fetchQuery({
+        queryKey: ["prefetchContext", {
+          folderId: a,
+          trashed: !1
+        }],
+        queryFn: async () => await he({
+          ...t().searchParams,
+          filters: {
+            ...t().searchParams.filters,
+            folder: a
+          }
+        })
+      });
+      t().actions.setTreeData(Re(t().treeData, n == null ? void 0 : n.folders, a || N.DEFAULT));
+    },
+    selectTreeItem: (s, r) => {
+      const {
+        treeData: o
+      } = t(), {
+        openFolder: a,
+        fetchTreeData: n
+      } = t().actions, u = J(o, s);
+      n(s, r), e((p) => ({
+        ...p,
+        searchParams: {
+          ...p.searchParams,
+          search: void 0
+        },
+        status: "select",
+        selectedResources: []
+      })), a({
+        folder: u,
+        folderId: s
+      });
+    },
+    gotoPreviousFolder: () => {
+      const {
+        selectedNodeId: s,
+        treeData: r,
+        searchParams: o
+      } = t(), {
+        openFolder: a
+      } = t().actions;
+      if (o.search && a({
+        folder: fe,
+        folderId: N.DEFAULT
+      }), !s) return;
+      const n = Ne(r, s);
+      a({
+        folder: n,
+        folderId: (n == null ? void 0 : n.id) || N.DEFAULT
+      });
+    },
+    goToTrash: () => {
+      e((s) => ({
+        ...s,
+        selectedNodeId: void 0,
+        selectedResources: [],
+        resourceIds: [],
+        folderIds: [],
+        status: "select",
+        searchParams: {
+          ...s.searchParams,
+          search: void 0,
+          filters: {
+            folder: N.BIN
+          },
+          trashed: !0
+        },
+        currentFolder: {
+          id: N.BIN
+        }
+      }));
+    }
+  }
+}));
+function T(e) {
+  return He(pt, e);
+}
+const ft = (e) => e.treeData, gt = (e) => e.actions, V = () => T(ft), F = () => T(gt), Q = () => T((e) => e.searchParams), se = () => T((e) => e.selectedNodeId), us = () => T((e) => e.selectedFolders), hs = () => T((e) => e.selectedResources), mt = () => T((e) => e.searchConfig), X = () => T((e) => e.folderIds), Y = () => T((e) => e.resourceIds), Z = () => T((e) => e.selectedResources.map((t) => t.assetId)), ee = () => T((e) => e.selectedResources.filter((t) => t.assetId === t.id)), W = () => T((e) => e.currentFolder), re = () => {
+  const e = W();
+  return (e == null ? void 0 : e.id) === N.BIN;
+}, yt = () => T((e) => e.resourceIsTrash), ps = () => T((e) => e.resourceOrFolderIsDraggable), It = () => T((e) => e.elementDragOver), Dt = () => T((e) => e.resourceActionDisable), St = () => {
+  const e = W();
+  return (e == null ? void 0 : e.id) === "default";
+}, bt = () => T((e) => e.status), wt = () => {
+  const e = Dt(), {
+    clearSelectedIds: t,
+    setResourceActionDisable: s,
+    clearSelectedItems: r
+  } = F();
+  return {
+    isActionDisableModalOpen: e,
+    onActionDisableCancel: () => {
+      t(), r(), s(!1);
+    }
+  };
+}, xt = () => {
+  const e = yt(), {
+    clearSelectedIds: t,
+    setResourceIsTrash: s,
+    clearSelectedItems: r
+  } = F();
+  return {
+    isTrashedModalOpen: e,
+    onTrashedCancel: () => {
+      t(), r(), s(!1);
+    }
+  };
+}, Tt = 175, Ct = 10, ge = "blog", me = "blog";
+class ye extends ue {
+  getEditUrl() {
+    throw new Error("Method not implemented.");
+  }
+  async create(t) {
+    const s = t.thumbnail ? await this.getThumbnailPath(t.thumbnail) : "", r = t.public ? "/blog/pub" : "/blog", o = await this.http.post(r, {
+      title: t.name,
+      description: t.description,
+      visibility: t.public ? "PUBLIC" : "OWNER",
+      thumbnail: s,
+      trashed: !1,
+      folder: t.folder,
+      slug: t.public ? t.slug : "",
+      "publish-type": t.publishType || "RESTRAINT",
+      "comment-type": "IMMEDIATE"
+    });
+    return this.checkHttpResponse(o), o;
+  }
+  async update(t) {
+    const s = t.thumbnail ? await this.getThumbnailPath(t.thumbnail) : "", r = await this.http.put(`/blog/${t.entId}`, {
+      trashed: t.trashed,
+      _id: t.entId,
+      title: t.name,
+      thumbnail: s,
+      description: t.description,
+      visibility: t.public ? "PUBLIC" : "OWNER",
+      slug: t.public ? t.slug : "",
+      "publish-type": t["publish-type"] || "RESTRAINT",
+      "comment-type": "IMMEDIATE"
+    });
+    return this.checkHttpResponse(r), {
+      thumbnail: s,
+      entId: t.entId
+    };
+  }
+  getResourceType() {
+    return me;
+  }
+  getApplication() {
+    return ge;
+  }
+  getFormUrl(t) {
+    return t ? `/blog?folderid=${t}#/edit/new` : "/blog#/edit/new";
+  }
+  getViewUrl(t) {
+    return `/blog/id/${t}`;
+  }
+  getPrintUrl(t) {
+    return `/blog/print/${t}`;
+  }
+}
+ue.register({
+  application: ge,
+  resourceType: me
+}, (e) => new ye(e));
+const K = document.querySelector("[data-explorer-config]");
+let ce;
+function fs() {
+  var e;
+  if ((e = K == null ? void 0 : K.dataset) != null && e.explorerConfig) {
+    const {
+      explorerConfig: t
+    } = K.dataset;
+    try {
+      const s = JSON.parse(t);
+      ce = {
+        ...s,
+        service: ye,
+        enableOnboarding: s.enableOnboarding !== void 0 ? s.enableOnboarding : !0
+      };
+    } catch (s) {
+      console.error("[Explorer Config] could not parse app params from root data attributes:", K == null ? void 0 : K.dataset, s);
+    }
+  }
+  return ce;
+}
+const Ft = (e, t) => {
+  const s = e.map((o) => o.workflow), r = new Set(s);
+  return Je({
+    queryKey: [...r],
+    queryFn: () => it([...r]),
+    select: (o) => e.filter((a) => o[a.workflow]).map((a) => ({
+      ...a,
+      available: !0
+    })),
+    staleTime: 1 / 0,
+    enabled: !!t
+  });
+}, Rt = (e) => {
+  const t = T((s) => s.config);
+  return Ge(Ft(e, t));
+}, Nt = () => {
+  const e = T((n) => n.config), t = Q(), {
+    filters: s,
+    trashed: r,
+    search: o
+  } = t, a = ["context", {
+    folderId: s.folder,
+    filters: s,
+    trashed: r,
+    search: o
+  }];
+  return Xe({
+    queryKey: a,
+    queryFn: async ({
+      pageParam: n
+    }) => await he({
+      ...t,
+      application: e == null ? void 0 : e.app,
+      types: e == null ? void 0 : e.types,
+      pagination: {
+        ...t.pagination,
+        startIdx: n
+      }
+    }),
+    staleTime: 5e3,
+    initialPageParam: 0,
+    enabled: !!e,
+    retry: !1,
+    getNextPageParam: (n) => n.pagination.startIdx + n.pagination.pageSize
+  });
+}, gs = () => {
+  const e = L(), t = k(), s = Q(), r = V(), o = X(), a = Z(), n = Y(), u = ee().length > 0, p = u ? a : n, {
+    clearSelectedItems: i,
+    clearSelectedIds: l,
+    setTreeData: h,
+    setSearchParams: d
+  } = F(), {
+    filters: f,
+    trashed: m
+  } = s, D = ["context", {
+    folderId: f.folder,
+    filters: f,
+    trashed: m
+  }];
+  return B({
+    mutationFn: async () => await ot({
+      searchParams: s,
+      folderIds: o,
+      resourceIds: p,
+      useAssetIds: u
+    }),
+    onError(I) {
+      typeof I == "string" && e.error(P(I));
+    },
+    onSuccess: async (I) => {
+      if (await t.cancelQueries({
+        queryKey: D
+      }), t.getQueryData(D))
+        return e.success(P("explorer.trash.title")), t.setQueryData(D, (C) => {
+          var O;
+          if (C) {
+            const x = {
+              ...C,
+              pages: C == null ? void 0 : C.pages.map((y) => {
+                var g;
+                return {
+                  ...y,
+                  folders: y.folders.filter((S) => !o.includes(S.id)),
+                  pagination: {
+                    ...y.pagination,
+                    // @ts-ignore
+                    maxIdx: ((g = y == null ? void 0 : y.pagination) == null ? void 0 : g.maxIdx) - I.resources.length
+                  },
+                  resources: y.resources.filter((S) => u ? !a.includes(S.assetId) : !p.includes(S.id))
+                };
+              })
+            }, b = Pe(r, {
+              folders: o
+            });
+            return h(b), d({
+              ...s,
+              pagination: {
+                ...s.pagination,
+                // @ts-ignore
+                maxIdx: ((O = s.pagination) == null ? void 0 : O.maxIdx) - I.resources.length
+              }
+            }), x;
+          }
+        });
+    },
+    onSettled: () => {
+      i(), l();
+    }
+  });
+}, ms = () => {
+  const e = L(), t = k(), s = Q(), r = X(), o = Z(), a = Y(), n = ee().length > 0, u = n ? o : a, {
+    setFolderIds: p,
+    setResourceIds: i,
+    setSelectedResources: l,
+    setSelectedFolders: h
+  } = F(), {
+    filters: d,
+    trashed: f
+  } = s, m = ["context", {
+    folderId: d.folder,
+    filters: d,
+    trashed: f
+  }];
+  return B({
+    mutationFn: async () => await at({
+      searchParams: s,
+      folderIds: r,
+      resourceIds: u,
+      useAssetIds: n
+    }),
+    onError(D) {
+      typeof D == "string" && e.error(P(D));
+    },
+    onSuccess: async () => {
+      if (await t.cancelQueries({
+        queryKey: m
+      }), t.getQueryData(m))
+        return e.success(P("explorer.trash.toast")), t.setQueryData(m, (I) => {
+          if (I)
+            return {
+              ...I,
+              pages: I == null ? void 0 : I.pages.map((w) => ({
+                ...w,
+                folders: w.folders.filter((C) => !r.includes(C.id)),
+                resources: w.resources.filter((C) => n ? !o.includes(C.assetId) : !u.includes(C.id))
+              }))
+            };
+        });
+    },
+    onSettled: () => {
+      i([]), l([]), p([]), h([]);
+    }
+  });
+}, ys = () => {
+  const e = L(), t = k(), s = Q(), r = X(), o = Z(), a = Y(), n = ee().length > 0, u = n ? o : a, {
+    clearSelectedItems: p,
+    clearSelectedIds: i
+  } = F(), {
+    filters: l,
+    trashed: h
+  } = s, d = ["context", {
+    folderId: l.folder,
+    filters: l,
+    trashed: h
+  }];
+  return B({
+    mutationFn: async () => await nt({
+      searchParams: s,
+      folderIds: r,
+      resourceIds: u,
+      useAssetIds: n
+    }),
+    onError(f) {
+      typeof f == "string" && e.error(P(f));
+    },
+    onSuccess: async () => {
+      if (await t.cancelQueries({
+        queryKey: d
+      }), t.getQueryData(d))
+        return e.success(P("explorer.removed.from.trash")), t.setQueryData(d, (m) => {
+          if (m)
+            return {
+              ...m,
+              pages: m == null ? void 0 : m.pages.map((I) => ({
+                ...I,
+                folders: I.folders.filter((w) => !r.includes(w.id)),
+                resources: I.resources.filter((w) => n ? !o.includes(w.assetId) : !u.includes(w.id))
+              }))
+            };
+        });
+    },
+    onSettled: () => {
+      p(), i();
+    }
+  });
+}, Is = () => {
+  const e = L(), t = Q(), s = k(), {
+    user: r
+  } = de(), o = W(), {
+    filters: a,
+    trashed: n
+  } = t, u = "duplicate_start", p = ["context", {
+    folderId: a.folder,
+    filters: a,
+    trashed: n
+  }];
+  return B({
+    mutationFn: async (i) => (e.info(P("duplicate.start"), {
+      id: u
+    }), await ct(t, i.assetId)),
+    onSuccess: async (i, l) => {
+      e.remove(u), e.success(P("duplicate.done")), await s.cancelQueries({
+        queryKey: p
+      });
+      const h = s.getQueryData(p), d = {
+        ...l,
+        name: `${l.name}${P("duplicate.suffix")}`,
+        assetId: i.duplicateId,
+        id: i.duplicateId,
+        creatorId: r == null ? void 0 : r.userId,
+        creatorName: r == null ? void 0 : r.username,
+        createdAt: Date.now(),
+        slug: l.slug || "",
+        modifiedAt: Date.now(),
+        modifierId: (r == null ? void 0 : r.userId) || "",
+        modifierName: (r == null ? void 0 : r.username) || "",
+        updatedAt: Date.now(),
+        trashed: !1,
+        rights: [`creator:${r == null ? void 0 : r.userId}`]
+      };
+      h && s.setQueryData(p, (f) => {
+        if (f)
+          return {
+            ...f,
+            pages: f == null ? void 0 : f.pages.map((m) => ({
+              ...m,
+              resources: [d, ...m.resources]
+            }))
+          };
+      }), o.id && o.id !== N.DEFAULT && pe({
+        searchParams: t,
+        resourceIds: [i.duplicateId],
+        folderId: o.id,
+        folderIds: [],
+        useAssetIds: !0
+      });
+    },
+    onError: (i) => {
+      e.remove(u), typeof i == "string" && e.error(`${P("duplicate.error")}: ${i}`);
+    }
+  });
+}, Et = () => {
+  const e = L(), t = k(), s = Q(), r = V(), o = X(), a = Z(), n = Y(), u = ee().length > 0, p = u ? a : n, {
+    clearSelectedIds: i,
+    clearSelectedItems: l,
+    setTreeData: h,
+    setSearchParams: d
+  } = F(), {
+    filters: f,
+    trashed: m
+  } = s, D = ["context", {
+    folderId: f.folder,
+    filters: f,
+    trashed: m
+  }];
+  return B({
+    mutationFn: async (I) => await pe({
+      searchParams: s,
+      folderId: I,
+      folderIds: o,
+      resourceIds: p,
+      useAssetIds: u
+    }),
+    onError(I) {
+      typeof I == "string" && e.error(P(I));
+    },
+    onSuccess: async (I, w) => {
+      if (t.getQueryData(D))
+        return t.setQueryData(D, (O) => {
+          var x;
+          if (O) {
+            const b = Ee(r, {
+              destinationId: w,
+              folders: o
+            }), y = {
+              ...O,
+              pages: O == null ? void 0 : O.pages.map((g) => {
+                var S;
+                return {
+                  ...g,
+                  folders: g.folders.filter((R) => !o.includes(R.id)),
+                  pagination: {
+                    ...g.pagination,
+                    // @ts-ignore
+                    maxIdx: ((S = g.pagination) == null ? void 0 : S.maxIdx) - I.resources.length
+                  },
+                  resources: g.resources.filter((R) => u ? !a.includes(R.assetId) : !p.includes(R.id))
+                };
+              })
+            };
+            return h(b), d({
+              ...s,
+              pagination: {
+                ...s.pagination,
+                // @ts-ignore
+                maxIdx: ((x = s.pagination) == null ? void 0 : x.maxIdx) - I.resources.length
+              }
+            }), y;
+          }
+        });
+      t.invalidateQueries();
+    },
+    onSettled: () => {
+      l(), i();
+    }
+  });
+}, Ds = () => {
+  const e = L(), t = k(), s = Q(), r = V(), {
+    setTreeData: o
+  } = F(), {
+    filters: a,
+    trashed: n
+  } = s, u = ["context", {
+    folderId: a.folder,
+    filters: a,
+    trashed: n
+  }];
+  return B({
+    mutationFn: async ({
+      name: p,
+      parentId: i
+    }) => await st({
+      searchParams: s,
+      name: p,
+      parentId: i
+    }),
+    onError(p) {
+      typeof p == "string" && e.error(P(p));
+    },
+    onSuccess: async (p, i) => {
+      await t.cancelQueries({
+        queryKey: u
+      });
+      const l = t.getQueryData(u), h = {
+        ...p,
+        parentId: i.parentId,
+        children: [],
+        rights: [`creator:${p == null ? void 0 : p.creator_id}`]
+      };
+      if (l)
+        return t.setQueryData(u, (d) => {
+          if (d) {
+            const f = {
+              ...d,
+              pages: d == null ? void 0 : d.pages.map((D) => ({
+                ...D,
+                folders: [...D.folders, h]
+              }))
+            }, m = qe(r, {
+              parentId: i.parentId,
+              newFolder: h
+            });
+            return o(m), f;
+          }
+        });
+    }
+  });
+}, Ss = () => {
+  const e = L(), t = k(), s = Q(), r = V(), {
+    setFolderIds: o,
+    setSelectedFolders: a,
+    setTreeData: n
+  } = F(), {
+    filters: u,
+    trashed: p
+  } = s, i = ["context", {
+    folderId: u.folder,
+    filters: u,
+    trashed: p
+  }];
+  return B({
+    mutationFn: async ({
+      folderId: l,
+      name: h,
+      parentId: d
+    }) => await rt({
+      searchParams: s,
+      folderId: l,
+      parentId: d,
+      name: h
+    }),
+    onError(l) {
+      typeof l == "string" && e.error(P(l));
+    },
+    onSuccess: async (l, h) => {
+      if (await t.cancelQueries({
+        queryKey: i
+      }), t.getQueryData(i))
+        return t.setQueryData(i, (f) => {
+          if (f) {
+            const m = {
+              ...f,
+              pages: f == null ? void 0 : f.pages.map((I) => ({
+                ...I,
+                folders: I.folders.map((w) => w.id === l.id ? {
+                  ...l,
+                  parentId: h.parentId,
+                  rights: w.rights
+                } : w)
+              }))
+            }, D = Oe(r, {
+              folderId: h.folderId,
+              newFolder: l
+            });
+            return n(D), m;
+          }
+        });
+    },
+    onSettled: () => {
+      o([]), a([]);
+    }
+  });
+}, bs = (e) => {
+  const t = k(), s = Q(), {
+    setResourceIds: r,
+    setSelectedResources: o
+  } = F(), {
+    filters: a,
+    trashed: n
+  } = s, u = ["context", {
+    folderId: a.folder,
+    filters: a,
+    trashed: n
+  }];
+  return Ae({
+    application: e,
+    options: {
+      onSuccess: async (p, i) => {
+        if (await t.cancelQueries({
+          queryKey: u
+        }), t.getQueryData(u))
+          return t.setQueryData(u, (h) => {
+            if (h)
+              return {
+                ...h,
+                pages: h == null ? void 0 : h.pages.map((d) => ({
+                  ...d,
+                  resources: d.resources.map((f) => {
+                    if (f.assetId === (i == null ? void 0 : i.resourceId)) {
+                      let m = [`creator:${f.creatorId}`];
+                      return (i == null ? void 0 : i.rights.length) >= 1 && (m = [...m, ...i.rights.flatMap((D) => D.actions.map((I) => `${D.type}:${D.id}:${I.id}`))]), {
+                        ...f,
+                        rights: m
+                      };
+                    } else
+                      return f;
+                  })
+                }))
+              };
+          });
+      },
+      onSettled: () => {
+        r([]), o([]);
+      }
+    }
+  });
+}, ws = (e) => {
+  const t = k(), s = Q(), {
+    filters: r,
+    trashed: o
+  } = s, a = ["context", {
+    folderId: r.folder,
+    filters: r,
+    trashed: o
+  }];
+  return Qe({
+    application: e,
+    options: {
+      onSuccess: async (n, u) => {
+        if (await t.cancelQueries({
+          queryKey: a
+        }), t.getQueryData(a))
+          return t.setQueryData(a, (i) => {
+            if (i)
+              return {
+                ...i,
+                pages: i == null ? void 0 : i.pages.map((l) => ({
+                  ...l,
+                  resources: l.resources.map((h) => {
+                    if (h.assetId === (u == null ? void 0 : u.entId)) {
+                      const {
+                        name: d,
+                        thumbnail: f,
+                        public: m,
+                        description: D,
+                        slug: I,
+                        ...w
+                      } = u;
+                      return {
+                        ...h,
+                        ...w,
+                        // add any custom field
+                        name: d,
+                        thumbnail: typeof f == "string" ? f : URL.createObjectURL(f),
+                        public: m,
+                        description: D,
+                        slug: I
+                      };
+                    } else
+                      return h;
+                  })
+                }))
+              };
+          });
+      }
+    }
+  });
+}, xs = () => {
+  const e = L(), t = k(), s = Q(), {
+    user: r
+  } = de(), {
+    appCode: o
+  } = v(), a = ["context", {
+    folderId: s.filters.folder,
+    filters: s.filters,
+    trashed: s.trashed
+  }];
+  return B({
+    mutationFn: async (n) => await dt({
+      searchParams: s,
+      params: n
+    }),
+    onError(n) {
+      typeof n == "string" && e.error(P(n));
+    },
+    onSuccess: async (n, u) => {
+      var l, h, d;
+      await t.cancelQueries({
+        queryKey: a
+      });
+      const p = t.getQueryData(a), i = {
+        ...u,
+        thumbnail: n.thumbnail || "",
+        application: o,
+        assetId: n._id || n.entId || "",
+        id: n._id || n.entId || "",
+        creatorId: r == null ? void 0 : r.userId,
+        creatorName: r == null ? void 0 : r.username,
+        createdAt: Date.now(),
+        slug: u.slug || "",
+        modifiedAt: ((l = n.modified) == null ? void 0 : l.$date) || "",
+        modifierId: ((h = n.author) == null ? void 0 : h.userId) || "",
+        modifierName: ((d = n.author) == null ? void 0 : d.username) || "",
+        updatedAt: Date.now(),
+        trashed: !1,
+        rights: [`creator:${r == null ? void 0 : r.userId}`]
+      };
+      if (p)
+        return t.setQueryData(a, (f) => {
+          if (f)
+            return {
+              ...f,
+              pages: f == null ? void 0 : f.pages.map((m) => ({
+                ...m,
+                resources: [i, ...m.resources]
+              }))
+            };
+        });
+    }
+  });
+};
+function ie(e, t) {
+  var r;
+  const s = J(e, t);
+  return (r = s == null ? void 0 : s.folder) != null && r.childrenIds ? [...(s == null ? void 0 : s.folder.childrenIds) || [], t] : t === N.BIN ? [N.BIN] : [N.DEFAULT];
+}
+function Pt() {
+  const e = k(), t = Et(), s = L(), {
+    appCode: r
+  } = v(), {
+    t: o
+  } = _(["common", r]), a = o("explorer.filters.mine", {
+    ns: r
+  }), {
+    setResourceOrFolderIsDraggable: n,
+    setElementDragOver: u,
+    setResourceIds: p,
+    setFolderIds: i,
+    fetchTreeData: l
+  } = F(), h = V(), f = oe(we, {
+    activationConstraint: {
+      delay: Tt,
+      tolerance: Ct
+    }
+  }), m = oe(xe), D = Te(f, m), I = (x, b) => {
+    var y;
+    ((y = x.data.current) == null ? void 0 : y.type) === "resource" ? s.success(/* @__PURE__ */ E(G, { children: [
+      o("explorer.dragged.resource"),
+      " ",
+      /* @__PURE__ */ c("strong", { children: b })
+    ] })) : s.success(/* @__PURE__ */ E(G, { children: [
+      o("explorer.dragged.folder"),
+      " ",
+      /* @__PURE__ */ c("strong", { children: b })
+    ] }));
+  };
+  return {
+    handleDragEnd: async (x) => {
+      const {
+        over: b,
+        active: y
+      } = x, g = b == null ? void 0 : b.data.current, S = y.data.current, R = ne(h, g == null ? void 0 : g.id), z = ie(h, g == null ? void 0 : g.id);
+      if ((S == null ? void 0 : S.id) == (g == null ? void 0 : g.id) || R.includes(S == null ? void 0 : S.id) || z.includes(S == null ? void 0 : S.id))
+        p([]), i([]);
+      else {
+        const H = (g == null ? void 0 : g.name) ?? a;
+        if (b)
+          try {
+            await t.mutate(g == null ? void 0 : g.id), I(y, H);
+          } catch (De) {
+            console.error(De);
+          } finally {
+            u({
+              isOver: !1,
+              overId: void 0,
+              canMove: !0,
+              isTreeview: !1
+            });
+          }
+      }
+      n({
+        isDrag: !1,
+        elementDrag: void 0
+      });
+    },
+    handleDragStart: (x) => {
+      const {
+        active: b
+      } = x, y = b.data.current;
+      (y == null ? void 0 : y.type) === "resource" ? p([y == null ? void 0 : y.id]) : (y == null ? void 0 : y.type) === "folder" && i([y == null ? void 0 : y.id]), n({
+        isDrag: !0,
+        elementDrag: y == null ? void 0 : y.id
+      });
+    },
+    handleDragOver: (x) => {
+      const {
+        over: b,
+        active: y
+      } = x, g = b == null ? void 0 : b.data.current, S = y == null ? void 0 : y.data.current, R = ne(h, g == null ? void 0 : g.id), z = ie(h, g == null ? void 0 : g.id);
+      if (b) {
+        const H = {
+          isOver: !0,
+          canMove: !1,
+          overId: g == null ? void 0 : g.id,
+          isTreeview: g == null ? void 0 : g.isTreeview
+        };
+        (S == null ? void 0 : S.id) === (g == null ? void 0 : g.id) || R.includes(S == null ? void 0 : S.id) || z.includes(S == null ? void 0 : S.id) ? u({
+          ...H,
+          canMove: !1
+        }) : (l(g == null ? void 0 : g.id, e), u({
+          ...H,
+          canMove: !0
+        }));
+      } else
+        u({
+          isOver: !1,
+          overId: void 0,
+          canMove: !0,
+          isTreeview: !1
+        });
+    },
+    sensors: D
+  };
+}
+const At = /* @__PURE__ */ q(async () => await import("./EmptyScreenApp.js")), Qt = /* @__PURE__ */ q(async () => await import("./EmptyScreenSearch.js")), qt = /* @__PURE__ */ q(async () => await import("./EmptyScreenError.js")), Ot = /* @__PURE__ */ q(async () => await import("./EmptyScreenNoContentInFolder.js")), kt = /* @__PURE__ */ q(async () => await import("./EmptyScreenTrash.js")), Ut = /* @__PURE__ */ q(async () => await import("./FoldersList.js")), Mt = /* @__PURE__ */ q(async () => await import("./ResourcesList.js")), Lt = () => {
+  const e = St(), t = re(), s = se(), r = Q(), o = W(), a = L(), n = k(), {
+    appCode: u
+  } = v(), {
+    t: p
+  } = _([u]), {
+    setSearchParams: i,
+    setSearchConfig: l,
+    fetchTreeData: h
+  } = F(), {
+    data: d,
+    isError: f,
+    error: m,
+    isLoading: D,
+    isFetching: I,
+    fetchNextPage: w
+  } = Nt(), C = (d == null ? void 0 : d.pages[0].folders.length) === 0, O = (d == null ? void 0 : d.pages[0].resources.length) === 0, x = C && O;
+  return $(() => {
+    var b, y;
+    d && ((b = d == null ? void 0 : d.pages[0]) != null && b.searchConfig && l(d.pages[0].searchConfig), !r.search && o.id === "default" && h(o.id, n), i({
+      ...r,
+      pagination: (y = d == null ? void 0 : d.pages[(d == null ? void 0 : d.pages.length) - 1]) == null ? void 0 : y.pagination
+    }));
+  }, [d]), $(() => {
+    m && typeof m == "string" && a.error(p(m));
+  }, [m]), D ? /* @__PURE__ */ c(U, {}) : f ? /* @__PURE__ */ c(M, { fallback: /* @__PURE__ */ c(U, {}), children: /* @__PURE__ */ c(qt, {}) }) : r.search && x ? /* @__PURE__ */ c(M, { fallback: /* @__PURE__ */ c(U, {}), children: /* @__PURE__ */ c(Qt, {}) }) : e && x ? /* @__PURE__ */ c(M, { fallback: /* @__PURE__ */ c(U, {}), children: /* @__PURE__ */ c(At, {}) }) : s && x && !t ? /* @__PURE__ */ c(M, { fallback: /* @__PURE__ */ c(U, {}), children: /* @__PURE__ */ c(Ot, {}) }) : t && (d == null ? void 0 : d.pages[0].resources.length) === 0 ? /* @__PURE__ */ c(M, { fallback: /* @__PURE__ */ c(U, {}), children: /* @__PURE__ */ c(kt, {}) }) : /* @__PURE__ */ E(M, { fallback: /* @__PURE__ */ c(U, {}), children: [
+    /* @__PURE__ */ c(Ut, { data: d, isFetching: I }),
+    /* @__PURE__ */ c(Mt, { data: d, isFetching: I, fetchNextPage: w })
+  ] });
+}, Ie = () => {
+  const e = Q(), [t, s] = le(""), r = mt(), o = bt(), a = Se(null), {
+    setSearchParams: n
+  } = F(), u = (l) => {
+    const h = l.target.value;
+    s(h.toString());
+  }, p = (l) => {
+    (l.key === "Enter" || l.key === "Return") && (l.preventDefault(), n({
+      search: t || void 0
+    }));
+  }, i = (l) => {
+    l.preventDefault(), n({
+      search: t || void 0
+    });
+  };
+  return $(() => {
+    const h = t.length == 0 || t.length >= r.minLength ? {
+      search: t || void 0
+    } : {};
+    n({
+      ...e,
+      ...h
+    });
+  }, [t, r.minLength]), $(() => {
+    o === "select" && s("");
+  }, [o]), $(() => {
+    s(() => {
+      var l;
+      return ((l = e.search) == null ? void 0 : l.toString()) ?? "";
+    });
+  }, [e]), {
+    formRef: a,
+    inputSearch: t,
+    handleInputSearchChange: u,
+    handleKeyPress: p,
+    handleSearchSubmit: i
+  };
+}, vt = () => {
+  const {
+    appCode: e,
+    currentApp: t
+  } = v(), {
+    t: s
+  } = _(), [r, o] = le(""), a = (l) => {
+    if (l === "0") {
+      o("");
+      return;
+    }
+    o(l);
+  }, n = W(), u = Q(), {
+    setSearchParams: p
+  } = F();
+  $(() => {
+    const l = () => r.includes("1") ? !0 : void 0, h = () => r.includes("2") ? !0 : void 0, d = () => r.includes("7") ? !0 : void 0;
+    p({
+      ...u,
+      filters: {
+        owner: l(),
+        public: d(),
+        shared: h(),
+        folder: n ? n.id : "default"
+      }
+    });
+  }, [n, p, r]);
+  const i = [{
+    label: s("explorer.filter.all", {
+      ns: e
+    }),
+    value: "0"
+  }, {
+    label: s("explorer.filter.owner", {
+      ns: e
+    }),
+    value: "1"
+  }, {
+    label: s("explorer.filter.shared", {
+      ns: e
+    }),
+    value: "2"
+  }, ...(t == null ? void 0 : t.displayName) == "exercizer" ? [{
+    label: "Exercices interactifs",
+    value: "3"
+  }] : [], ...(t == null ? void 0 : t.displayName) == "exercizer" ? [{
+    label: "Exercices à rendre",
+    value: "4"
+  }] : [], ...(t == null ? void 0 : t.displayName) == "pages" ? [{
+    label: "Projets publics",
+    value: "5"
+  }] : [], ...(t == null ? void 0 : t.displayName) == "pages" ? [{
+    label: "Projets internes",
+    value: "6"
+  }] : [], ...(t == null ? void 0 : t.displayName) == "blog" ? [{
+    label: s("explorer.filter.public", {
+      ns: e
+    }),
+    value: "7"
+  }] : []];
+  return {
+    selectedFilters: r,
+    options: i,
+    handleOnSelectFilter: a
+  };
+}, Bt = () => {
+  const {
+    appCode: e
+  } = v(), {
+    t
+  } = _(), {
+    selectedFilters: s,
+    options: r,
+    handleOnSelectFilter: o
+  } = vt(), {
+    formRef: a,
+    inputSearch: n,
+    handleInputSearchChange: u,
+    handleKeyPress: p,
+    handleSearchSubmit: i
+  } = Ie(), l = s.length > 0 ? s.length : void 0;
+  return /* @__PURE__ */ E("form", { noValidate: !0, className: "bg-light p-16 ps-24 ms-n16 ms-lg-n24 me-n16 position-relative d-flex gap-8", ref: a, children: [
+    /* @__PURE__ */ E(ke, { id: "search", className: "input-group", children: [
+      /* @__PURE__ */ c(Ue, { type: "search", placeholder: t("explorer.label.search", {
+        ns: e
+      }), size: "lg", noValidationIcon: !0, value: n, onChange: u, onKeyDown: p }),
+      /* @__PURE__ */ c(Me, { type: "submit", "aria-label": t("explorer.label.search", {
+        ns: e
+      }), onClick: i })
+    ] }),
+    /* @__PURE__ */ E(j, { placement: "bottom-end", children: [
+      /* @__PURE__ */ c(j.Trigger, { label: t("explorer.filters"), icon: /* @__PURE__ */ c(Ye, { width: 20 }), variant: "ghost", badgeContent: l }),
+      /* @__PURE__ */ c(j.Menu, { children: r.map((h) => h.value === "0" ? /* @__PURE__ */ E(be, { children: [
+        /* @__PURE__ */ c(j.RadioItem, { value: h.value, model: s, onChange: () => o(h.value), children: h.label }),
+        /* @__PURE__ */ c(j.Separator, {})
+      ] }, "0") : /* @__PURE__ */ c(j.RadioItem, { value: h.value, model: s, onChange: () => o(h.value), children: h.label }, h.value)) })
+    ] })
+  ] });
+}, Kt = ({
+  id: e,
+  selected: t,
+  onSelect: s
+}) => {
+  const {
+    t: r
+  } = _();
+  return /* @__PURE__ */ c("div", { className: "treeview", children: /* @__PURE__ */ c("ul", { role: "tree", className: "m-0 p-0", children: /* @__PURE__ */ c("li", { id: e, role: "treeitem", "aria-selected": t, children: /* @__PURE__ */ c("div", { children: /* @__PURE__ */ c("div", { className: "action-container", children: /* @__PURE__ */ c("div", { onClick: s, role: "button", tabIndex: 0, children: /* @__PURE__ */ E("div", { className: "d-flex align-items-center gap-8 py-8 ps-24", children: [
+    /* @__PURE__ */ c(Ze, { width: "20", height: "20" }),
+    /* @__PURE__ */ c("span", { children: r("explorer.tree.trash") })
+  ] }) }) }) }) }) }) });
+}, $t = /* @__PURE__ */ q(async () => await import("./FolderModal.js")), _t = () => {
+  const [e, t] = Le(), s = k(), r = V(), o = re(), a = se(), n = It(), u = ve(), p = o ? N.BIN : a, {
+    appCode: i
+  } = v(), {
+    t: l
+  } = _(["common", i]), h = {
+    ...r,
+    name: l("explorer.filters.mine", {
+      ns: i
+    })
+  }, {
+    goToTrash: d,
+    selectTreeItem: f,
+    clearSelectedItems: m,
+    clearSelectedIds: D,
+    fetchTreeData: I
+  } = F(), w = (x) => {
+    f(x, s), u();
+  }, C = (x) => {
+    var g, S;
+    const b = J(r, x), y = (g = b == null ? void 0 : b.children) == null ? void 0 : g.some((R) => {
+      var z;
+      return Array.isArray(R == null ? void 0 : R.children) && ((z = R.children) == null ? void 0 : z.length) > 0;
+    });
+    (S = b == null ? void 0 : b.children) == null || S.forEach((R) => {
+      y || I(R.id, s);
+    });
+  }, O = () => {
+    m(), D(), t();
+  };
+  return /* @__PURE__ */ E(G, { children: [
+    /* @__PURE__ */ c(Be, { data: h, selectedNodeId: p, draggedNode: n != null && n.isTreeview ? n : void 0, onTreeItemClick: w, onTreeItemUnfold: C }),
+    /* @__PURE__ */ c(Kt, { id: N.BIN, selected: o, onSelect: d }),
+    /* @__PURE__ */ c("div", { className: "d-grid my-16", children: /* @__PURE__ */ c(Ke, { disabled: o, type: "button", color: "primary", variant: "outline", leftIcon: /* @__PURE__ */ c(et, {}), onClick: O, children: l("explorer.folder.new") }) }),
+    /* @__PURE__ */ c(M, { fallback: /* @__PURE__ */ c(U, {}), children: e && /* @__PURE__ */ c($t, { edit: !1, isOpen: e, onSuccess: t, onCancel: t }) })
+  ] });
+};
+function zt() {
+  const {
+    appCode: e
+  } = v(), {
+    gotoPreviousFolder: t
+  } = F(), {
+    t: s
+  } = _(["common", e]), {
+    inputSearch: r
+  } = Ie(), o = se(), a = re(), n = W(), u = s("explorer.tree.trash"), p = s("explorer.tree.search"), i = s("explorer.filters.mine", {
+    ns: e
+  }), l = (n == null ? void 0 : n.name) || i;
+  return /* @__PURE__ */ c("div", { className: "py-16", children: o && o !== "bin" && o !== "default" && !a ? /* @__PURE__ */ E("div", { className: "d-flex align-items-center gap-8", children: [
+    /* @__PURE__ */ c($e, { icon: /* @__PURE__ */ c(tt, {}), variant: "ghost", color: "tertiary", "aria-label": s("back"), className: "ms-n16", onClick: t }),
+    /* @__PURE__ */ c("p", { className: "body py-8 text-truncate", children: /* @__PURE__ */ c("strong", { children: l }) })
+  ] }) : /* @__PURE__ */ c("h2", { className: "body py-8 fw-bold", children: r.length !== 0 ? p : a ? u : i }) });
+}
+const jt = /* @__PURE__ */ q(async () => await import("./AppAction.js")), Vt = /* @__PURE__ */ q(async () => await import("./Library.js")), Wt = /* @__PURE__ */ q(async () => await import("./ActionBarContainer.js")), Ht = /* @__PURE__ */ q(async () => await import("./DisableModal.js")), Gt = /* @__PURE__ */ q(async () => await import("./TrashModal.js")), Jt = /* @__PURE__ */ q(async () => await import("./OnboardingModal.js")), Ts = ({
+  config: e
+}) => {
+  const t = Q(), {
+    setConfig: s,
+    setSearchParams: r
+  } = F();
+  $(() => {
+    s(e || {}), r({
+      ...t,
+      application: e.app,
+      types: e.types
+    });
+  }, [e]);
+  const {
+    currentApp: o
+  } = v(), {
+    data: a
+  } = Rt(e.actions), {
+    isTrashedModalOpen: n,
+    onTrashedCancel: u
+  } = xt(), {
+    isActionDisableModalOpen: p,
+    onActionDisableCancel: i
+  } = wt(), {
+    handleDragEnd: l,
+    handleDragOver: h,
+    handleDragStart: d,
+    sensors: f
+  } = Pt();
+  _e();
+  const m = ae("publish", a), D = ae("create", a);
+  return e && /* @__PURE__ */ E(G, { children: [
+    /* @__PURE__ */ c(ze, { render: () => D ? /* @__PURE__ */ c(M, { fallback: /* @__PURE__ */ c(U, {}), children: /* @__PURE__ */ c(jt, {}) }) : null, children: /* @__PURE__ */ c(je, { app: o }) }),
+    /* @__PURE__ */ c(te, { className: "flex-grow-1", children: /* @__PURE__ */ E(Ce, { sensors: f, modifiers: [Fe], onDragStart: d, onDragEnd: l, onDragOver: h, children: [
+      /* @__PURE__ */ c(te.Col, { sm: "3", lg: "2", xl: "3", className: "border-end pt-16 pe-16 d-none d-lg-block", as: "aside", children: /* @__PURE__ */ E(M, { fallback: /* @__PURE__ */ c(U, {}), children: [
+        /* @__PURE__ */ c(_t, {}),
+        m && /* @__PURE__ */ c(Vt, {})
+      ] }) }),
+      /* @__PURE__ */ E(te.Col, { sm: "4", md: "8", lg: "6", xl: "9", children: [
+        /* @__PURE__ */ c(Bt, {}),
+        /* @__PURE__ */ c(zt, {}),
+        /* @__PURE__ */ c(Lt, {})
+      ] }),
+      /* @__PURE__ */ E(M, { fallback: /* @__PURE__ */ c(U, {}), children: [
+        /* @__PURE__ */ c(Wt, {}),
+        e.enableOnboarding && /* @__PURE__ */ c(Jt, { id: "showOnboardingTrash", items: [{
+          src: "onboarding/illu-trash-menu.svg",
+          alt: "explorer.modal.onboarding.trash.screen1.alt",
+          text: "explorer.modal.onboarding.trash.screen1.title"
+        }, {
+          src: "onboarding/illu-trash-notif.svg",
+          alt: "explorer.modal.onboarding.trash.screen2.alt",
+          text: "explorer.modal.onboarding.trash.screen2.alt"
+        }, {
+          src: "onboarding/illu-trash-delete.svg",
+          alt: "explorer.modal.onboarding.trash.screen3.alt",
+          text: "explorer.modal.onboarding.trash.screen3.title"
+        }], modalOptions: {
+          title: "explorer.modal.onboarding.trash.title",
+          prevText: "explorer.modal.onboarding.trash.prev",
+          nextText: "explorer.modal.onboarding.trash.next",
+          closeText: "explorer.modal.onboarding.trash.close"
+        } }),
+        n && /* @__PURE__ */ c(Gt, { isOpen: n, onCancel: u }),
+        p && /* @__PURE__ */ c(Ht, { isOpen: p, onCancel: i })
+      ] })
+    ] }) })
+  ] });
+};
+export {
+  ds as A,
+  fs as B,
+  Ts as E,
+  F as a,
+  Rt as b,
+  W as c,
+  xs as d,
+  Q as e,
+  re as f,
+  is as g,
+  Y as h,
+  hs as i,
+  us as j,
+  X as k,
+  ms as l,
+  yt as m,
+  Is as n,
+  ps as o,
+  ls as p,
+  bs as q,
+  ws as r,
+  It as s,
+  Ds as t,
+  T as u,
+  Ss as v,
+  ys as w,
+  gs as x,
+  Et as y,
+  V as z
+};

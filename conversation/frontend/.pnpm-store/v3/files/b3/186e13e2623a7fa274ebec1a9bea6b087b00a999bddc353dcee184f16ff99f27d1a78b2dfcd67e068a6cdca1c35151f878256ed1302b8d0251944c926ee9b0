@@ -1,0 +1,29 @@
+import { IGetConf, ITheme, IThemeOverrides } from '../configure/interfaces';
+import { IUserInfo } from '../session/interfaces';
+import { Subject } from './Subject';
+import { IPromisified, INotifyFramework } from './interfaces';
+/** Utility class */
+export declare class Promisified<T> implements IPromisified<T> {
+    private _resolution?;
+    private _rejection?;
+    private _promise;
+    get promise(): Promise<T>;
+    resolve(value: T | PromiseLike<T>): void;
+    reject(reason?: any): void;
+}
+/** The notify framework implementation. */
+declare class NotifyFramework implements INotifyFramework {
+    private promises;
+    private subject;
+    private asyncData;
+    onSessionReady(): IPromisified<IUserInfo>;
+    onLangReady(): IPromisified<string>;
+    onSkinReady(): Promisified<ITheme>;
+    onOverridesReady(): Promisified<IThemeOverrides>;
+    onAppConfReady(): Promisified<IGetConf>;
+    promisify<T>(): IPromisified<T>;
+    events(): Subject;
+}
+/** The whole framework is a singleton. */
+export declare const notify: NotifyFramework;
+export {};

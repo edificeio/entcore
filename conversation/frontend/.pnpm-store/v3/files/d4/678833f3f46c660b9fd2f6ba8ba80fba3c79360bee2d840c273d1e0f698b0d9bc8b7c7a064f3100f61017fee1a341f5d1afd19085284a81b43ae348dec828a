@@ -1,0 +1,12 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { forwardRef } from "react";
+const DropdownMenuGroup = /* @__PURE__ */ forwardRef(({
+  label,
+  children
+}, forwardRef2) => /* @__PURE__ */ jsxs("div", { ref: forwardRef2, role: "group", children: [
+  /* @__PURE__ */ jsx("span", { className: "small px-4", children: /* @__PURE__ */ jsx("strong", { children: label }) }),
+  children
+] }));
+export {
+  DropdownMenuGroup as default
+};

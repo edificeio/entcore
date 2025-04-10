@@ -1,0 +1,42 @@
+import { ReactNode } from 'react';
+export type ConfirmModalVariant = 'yes/no' | 'ok/cancel';
+interface ConfirmModalProps {
+    /**
+     * Variant of text buttons content
+     */
+    variant?: ConfirmModalVariant;
+    /**
+     * Modal id (useful when multiple modal on the same page)
+     */
+    id: string;
+    /**
+     * Is Modal Open
+     */
+    isOpen: boolean;
+    /**
+     * Content of header modal's
+     */
+    header?: ReactNode;
+    /**
+     * Content of body modal's
+     */
+    body?: ReactNode;
+    /**
+     * Key text translation of confirm button (useTranslation('common'))
+     */
+    okText?: string;
+    /**
+     * Key text translation of cancel button (useTranslation('common'))
+     */
+    koText?: string;
+    /**
+     * Function to call when success button proceed
+     */
+    onSuccess?: () => void;
+    /**
+     * Function to call when closing modal
+     */
+    onCancel?: () => void;
+}
+export default function ConfirmModal({ variant, id, isOpen, header, body, okText, koText, onSuccess, onCancel, }: ConfirmModalProps): import("react/jsx-runtime").JSX.Element;
+export {};

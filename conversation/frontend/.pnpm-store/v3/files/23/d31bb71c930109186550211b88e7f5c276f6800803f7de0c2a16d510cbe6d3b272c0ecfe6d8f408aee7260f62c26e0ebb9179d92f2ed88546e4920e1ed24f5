@@ -1,0 +1,65 @@
+import { useCallback } from "react";
+import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat.js";
+import localizedFormat from "dayjs/plugin/localizedFormat.js";
+import relativeTime from "dayjs/plugin/relativeTime.js";
+import "dayjs/locale/de.js";
+import "dayjs/locale/es.js";
+import "dayjs/locale/fr.js";
+import "dayjs/locale/it.js";
+import "dayjs/locale/pt.js";
+import { useEdificeClient } from "../../providers/EdificeClientProvider/EdificeClientProvider.hook.js";
+dayjs.extend(relativeTime);
+dayjs.extend(customParseFormat);
+dayjs.extend(localizedFormat);
+function useDate() {
+  const {
+    currentLanguage
+  } = useEdificeClient(), parseDate = useCallback((date, lang) => {
+    if (date.length < 11) return dayjs(date, ["YYYY-MM-DD"], lang);
+    if (date.split("").findIndex((char) => "0" > char || char > "9") < 0)
+      return dayjs(Number.parseInt(date)).locale(currentLanguage);
+    {
+      let day = dayjs(date).locale(currentLanguage);
+      return day.isValid() || (day = dayjs(date, ["YYYY-MM-DD HH:mm:ss.SSS"]).locale(currentLanguage)), day;
+    }
+  }, [currentLanguage]), fromNow = useCallback((date) => {
+    let computedDate = dayjs();
+    try {
+      return typeof date > "u" ? "" : (typeof date == "string" ? computedDate = parseDate(date) : typeof date == "number" ? computedDate = dayjs(date).locale(currentLanguage) : typeof date.$date == "number" ? computedDate = dayjs(new Date(date.$date)).locale(currentLanguage) : typeof date.$date == "string" && (computedDate = parseDate(date.$date)), computedDate.isValid() ? computedDate.fromNow() : "");
+    } catch (error) {
+      return console.error(error), "";
+    }
+  }, [currentLanguage, parseDate]), formatDate = useCallback((date, format = "short") => {
+    let computedDate = dayjs();
+    try {
+      if (typeof date > "u")
+        return "";
+      typeof date == "string" ? computedDate = parseDate(date) : typeof date == "number" ? computedDate = dayjs(date).locale(currentLanguage) : typeof date.$date == "number" ? computedDate = dayjs(new Date(date.$date)).locale(currentLanguage) : typeof date.$date == "string" && (computedDate = parseDate(date.$date));
+      let dayjsFormat = "";
+      switch (format) {
+        case "short":
+          dayjsFormat = "L";
+          break;
+        case "long":
+          dayjsFormat = "LL";
+          break;
+        case "abbr":
+          dayjsFormat = "ll";
+          break;
+        default:
+          dayjsFormat = format;
+      }
+      return computedDate.isValid() ? computedDate.locale(currentLanguage).format(dayjsFormat) : "";
+    } catch (error) {
+      return console.error(error), "";
+    }
+  }, [currentLanguage, parseDate]);
+  return {
+    fromNow,
+    formatDate
+  };
+}
+export {
+  useDate as default
+};

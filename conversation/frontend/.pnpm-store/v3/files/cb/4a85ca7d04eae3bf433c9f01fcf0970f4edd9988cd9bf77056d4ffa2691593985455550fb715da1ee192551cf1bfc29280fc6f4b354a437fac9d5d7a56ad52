@@ -1,0 +1,45 @@
+import { jsx } from "react/jsx-runtime";
+import SvgIconReaction from "../../icons/components/IconReaction.js";
+import SvgIconCongratsCounter from "../../icons/components/audience/IconCongratsCounter.js";
+import SvgIconCongrats from "../../icons/components/audience/IconCongrats.js";
+import SvgIconGreatCounter from "../../icons/components/audience/IconGreatCounter.js";
+import SvgIconGreat from "../../icons/components/audience/IconGreat.js";
+import SvgIconInterestingCounter from "../../icons/components/audience/IconInterestingCounter.js";
+import SvgIconInteresting from "../../icons/components/audience/IconInteresting.js";
+import SvgIconThanksCounter from "../../icons/components/audience/IconThanksCounter.js";
+import SvgIconThanks from "../../icons/components/audience/IconThanks.js";
+function useReactionIcons() {
+  return {
+    getReactionIcon: (reactionType, asCounter) => {
+      switch (reactionType) {
+        case "REACTION_1":
+          return asCounter ? /* @__PURE__ */ jsx(SvgIconThanksCounter, {}) : /* @__PURE__ */ jsx(SvgIconThanks, {});
+        case "REACTION_2":
+          return asCounter ? /* @__PURE__ */ jsx(SvgIconGreatCounter, {}) : /* @__PURE__ */ jsx(SvgIconGreat, {});
+        case "REACTION_3":
+          return asCounter ? /* @__PURE__ */ jsx(SvgIconCongratsCounter, {}) : /* @__PURE__ */ jsx(SvgIconCongrats, {});
+        case "REACTION_4":
+          return asCounter ? /* @__PURE__ */ jsx(SvgIconInterestingCounter, {}) : /* @__PURE__ */ jsx(SvgIconInteresting, {});
+        default:
+          return /* @__PURE__ */ jsx(SvgIconReaction, {});
+      }
+    },
+    getReactionLabel: (reactionType) => {
+      switch (reactionType) {
+        case "REACTION_1":
+          return "audience.reaction.thanks";
+        case "REACTION_2":
+          return "audience.reaction.great";
+        case "REACTION_3":
+          return "audience.reaction.congrats";
+        case "REACTION_4":
+          return "audience.reaction.interesting";
+        default:
+          return "audience.reaction.default";
+      }
+    }
+  };
+}
+export {
+  useReactionIcons as default
+};

@@ -1,0 +1,10 @@
+import { Ref } from 'react';
+export interface MenuContextProps {
+    menuRef: Ref<HTMLUListElement | null>;
+    menuItems: Set<HTMLLIElement>;
+    childProps: {
+        [key: string]: string;
+    };
+}
+export declare const MenuContext: import('react').Context<MenuContextProps | null>;
+export declare function useMenuContext(): MenuContextProps;

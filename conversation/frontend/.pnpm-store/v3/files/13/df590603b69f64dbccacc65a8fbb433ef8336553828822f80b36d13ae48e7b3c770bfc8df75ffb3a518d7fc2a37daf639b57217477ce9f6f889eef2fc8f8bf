@@ -1,0 +1,11 @@
+interface ModalProps {
+    onSuccess?: () => void;
+}
+export declare function useMoveModal({ onSuccess }: ModalProps): {
+    treeData: import('@edifice-ui/react').TreeData;
+    disableSubmit: boolean;
+    handleTreeItemSelect: (folderId: string) => void;
+    handleOnTreeItemUnfold: (nodeId: string) => void;
+    onMove: () => Promise<void>;
+};
+export {};

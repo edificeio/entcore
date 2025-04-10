@@ -1,0 +1,81 @@
+import { jsx, Fragment, jsxs } from "react/jsx-runtime";
+import { forwardRef, useState, useRef, useCallback, useImperativeHandle, useLayoutEffect, useEffect } from "react";
+import clsx from "clsx";
+import { useTranslation } from "react-i18next";
+import SvgIconAlertCircle from "../../modules/icons/components/IconAlertCircle.js";
+import SvgIconError from "../../modules/icons/components/IconError.js";
+import SvgIconInfoCircle from "../../modules/icons/components/IconInfoCircle.js";
+import SvgIconSuccessOutline from "../../modules/icons/components/IconSuccessOutline.js";
+import Button from "../Button/Button.js";
+const Alert = /* @__PURE__ */ forwardRef(({
+  type = "success",
+  className = "",
+  children,
+  button,
+  isDismissible = !1,
+  isToast = !1,
+  isConfirm = !1,
+  position = "none",
+  autoClose = !1,
+  autoCloseDelay = 3e3,
+  onClose,
+  onVisibilityChange
+}, ref) => {
+  const [isVisible, setVisibleStatus] = useState(!0), refAlert = useRef(null), {
+    t
+  } = useTranslation(), hide = useCallback(() => {
+    setVisibleStatus(!1), onClose == null || onClose();
+  }, [onClose]);
+  useImperativeHandle(ref, () => ({
+    show,
+    hide,
+    ...refAlert.current
+  })), useLayoutEffect(() => {
+    onVisibilityChange == null || onVisibilityChange(isVisible);
+  }, [isVisible, onVisibilityChange]), useEffect(() => {
+    autoClose && isVisible && setTimeout(() => {
+      hide();
+    }, autoCloseDelay);
+  }, [autoClose, autoCloseDelay, hide, isVisible]);
+  const show = () => {
+    setVisibleStatus(!0);
+  }, mapping = {
+    success: {
+      icon: /* @__PURE__ */ jsx(SvgIconSuccessOutline, {}),
+      classModifier: "alert-success"
+    },
+    warning: {
+      icon: /* @__PURE__ */ jsx(SvgIconAlertCircle, {}),
+      classModifier: "alert-warning"
+    },
+    info: {
+      icon: /* @__PURE__ */ jsx(SvgIconInfoCircle, {}),
+      classModifier: "alert-info"
+    },
+    danger: {
+      icon: /* @__PURE__ */ jsx(SvgIconError, {}),
+      classModifier: "alert-danger"
+    }
+  }, toastClasses = {
+    "is-dismissible": isDismissible,
+    "is-toast ": isToast
+  }, confirmClasses = {
+    "is-confirm": isConfirm
+  }, divContainerClasses = clsx("alert gap-12", mapping[type].classModifier, toastClasses, confirmClasses, position, className);
+  return /* @__PURE__ */ jsx(Fragment, { children: isVisible ? /* @__PURE__ */ jsxs("div", { ref: refAlert, className: divContainerClasses, role: "alert", children: [
+    !isConfirm && mapping[type].icon,
+    /* @__PURE__ */ jsx("div", { className: "alert-content small", children }),
+    button && /* @__PURE__ */ jsxs("div", { className: "ms-12", children: [
+      button,
+      " ",
+      isConfirm && /* @__PURE__ */ jsx(Button, { onClick: hide, children: t("close") })
+    ] }),
+    (isDismissible || isConfirm) && /* @__PURE__ */ jsx("div", { className: "btn-close-container", children: /* @__PURE__ */ jsx("button", { type: "button", className: "btn-close", "data-bs-dismiss": "alert", "aria-label": t("close"), onClick: hide }) }),
+    autoClose && /* @__PURE__ */ jsx("div", { className: "alert-progress", style: {
+      transform: "scaleX(0)"
+    } })
+  ] }) : null });
+});
+export {
+  Alert as default
+};

@@ -1,0 +1,17 @@
+import { jsx } from "react/jsx-runtime";
+import clsx from "clsx";
+import { useFormControl } from "./FormContext.js";
+const FormText = ({
+  children
+}) => {
+  const {
+    status
+  } = useFormControl(), classes = clsx("form-text", {
+    "is-invalid": status === "invalid",
+    valid: status === "valid"
+  });
+  return /* @__PURE__ */ jsx("p", { className: classes, children: /* @__PURE__ */ jsx("em", { children }) });
+};
+export {
+  FormText as default
+};

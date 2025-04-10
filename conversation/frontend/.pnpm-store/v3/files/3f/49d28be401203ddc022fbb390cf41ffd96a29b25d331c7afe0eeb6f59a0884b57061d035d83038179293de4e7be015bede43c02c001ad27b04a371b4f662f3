@@ -1,0 +1,5 @@
+import { jsx } from "react/jsx-runtime";
+const DropdownSeparator = () => /* @__PURE__ */ jsx("div", { role: "separator", className: "px-4", children: /* @__PURE__ */ jsx("hr", { className: "m-0" }) });
+export {
+  DropdownSeparator as default
+};

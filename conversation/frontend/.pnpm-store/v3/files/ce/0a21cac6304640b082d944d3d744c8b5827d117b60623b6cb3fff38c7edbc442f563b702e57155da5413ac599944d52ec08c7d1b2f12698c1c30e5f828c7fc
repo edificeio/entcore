@@ -1,0 +1,46 @@
+import { jsx, Fragment, jsxs } from "react/jsx-runtime";
+import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { StringUtils } from "@edifice.io/utilities";
+import useToggle from "../../../../hooks/useToggle/useToggle.js";
+import FormControl from "../../../../components/Form/FormControl.js";
+import Label from "../../../../components/Label/Label.js";
+import Input from "../../../../components/Input/Input.js";
+import Checkbox from "../../../../components/Checkbox/Checkbox.js";
+const ExternalLinker = ({
+  link,
+  onChange,
+  multiNodeSelected = !1
+}) => {
+  const {
+    t
+  } = useTranslation(), [linkText, setLinkText] = useState((link == null ? void 0 : link.text) || ""), [linkURL, setLinkURL] = useState((link == null ? void 0 : link.url) || ""), [isBlankTarget, toggleBlankTarget] = useToggle(link ? link.target === "_blank" : !0);
+  return useEffect(() => {
+    multiNodeSelected && (link != null && link.text) && setLinkText(link.text.slice(0, 20) + "...");
+  }, [multiNodeSelected, link]), useEffect(() => {
+    if (!linkURL.length) {
+      onChange == null || onChange();
+      return;
+    }
+    const newLink = {
+      url: linkURL,
+      text: multiNodeSelected ? link == null ? void 0 : link.text : linkText || linkURL,
+      target: isBlankTarget ? "_blank" : void 0
+    };
+    !StringUtils.isLocalURL(linkURL) && !StringUtils.startWithHttp(linkURL) && (newLink.url = "http://" + linkURL), onChange == null || onChange(newLink);
+  }, [linkText, linkURL, isBlankTarget]), /* @__PURE__ */ jsx(Fragment, { children: /* @__PURE__ */ jsxs("div", { className: "d-flex flex-column flex-fill gap-24", children: [
+    /* @__PURE__ */ jsxs(FormControl, { id: "linkText", isOptional: !0, children: [
+      /* @__PURE__ */ jsx(Label, { children: t("bbm.linker.ext.text") }),
+      /* @__PURE__ */ jsx(Input, { type: "text", placeholder: t("bbm.linker.ext.text.placeholder"), size: "md", disabled: multiNodeSelected, value: linkText, onChange: (e) => setLinkText(e.target.value) })
+    ] }),
+    /* @__PURE__ */ jsxs(FormControl, { id: "linkUrl", isRequired: !0, children: [
+      /* @__PURE__ */ jsx(Label, { children: t("bbm.linker.ext.url") }),
+      /* @__PURE__ */ jsx(Input, { type: "text", placeholder: t("bbm.linker.ext.url.placeholder"), size: "md", value: linkURL, onChange: (e) => setLinkURL(e.target.value) })
+    ] }),
+    /* @__PURE__ */ jsx(Checkbox, { label: t("bbm.linker.open.tab"), onChange: () => toggleBlankTarget(), checked: isBlankTarget })
+  ] }) });
+};
+export {
+  ExternalLinker,
+  ExternalLinker as default
+};

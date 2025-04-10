@@ -1,0 +1,24 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import clsx from "clsx";
+import { useTabsContext } from "../context/TabsContext.js";
+import { Tabs } from "./Tabs.js";
+const TabsList = (props) => {
+  const {
+    items,
+    tabUnderlineLeft,
+    tabUnderlineWidth
+  } = useTabsContext(), {
+    className,
+    ...restProps
+  } = props, tabslist = clsx("position-relative flex-shrink-0 overflow-x-auto", className);
+  return /* @__PURE__ */ jsxs("div", { className: tabslist, ...restProps, children: [
+    /* @__PURE__ */ jsx("ul", { className: "nav nav-tabs flex-nowrap", role: "tablist", children: items.map((item, order) => /* @__PURE__ */ jsx(Tabs.Item, { order, ...item }, item.id)) }),
+    /* @__PURE__ */ jsx("span", { className: "nav-slide", style: {
+      left: tabUnderlineLeft,
+      width: tabUnderlineWidth
+    } })
+  ] });
+};
+export {
+  TabsList as default
+};

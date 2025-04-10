@@ -1,0 +1,8 @@
+interface FolderModalProps {
+    isOpen: boolean;
+    edit: boolean;
+    onSuccess?: () => void;
+    onCancel: () => void;
+}
+export default function FolderModal({ isOpen, edit, onSuccess, onCancel: onClose, }: FolderModalProps): import('react').ReactPortal | null;
+export {};

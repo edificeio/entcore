@@ -1,0 +1,22 @@
+/// <reference types="react" />
+import { IconButtonProps } from "./IconButton";
+type PickedProps = "type" | "icon" | "size";
+export interface SearchButtonProps extends Pick<IconButtonProps, PickedProps> {
+    /**
+     * OnClick Handler
+     */
+    onClick?: () => void;
+    /**
+     * Disabled state of Search Button
+     */
+    disabled?: boolean;
+    /**
+     * Optional class for styling purpose
+     */
+    className?: string;
+}
+/**
+ * SearchButton extends the IconButton component by omitting unnecessary props.
+ */
+declare const SearchButton: import("react").ForwardRefExoticComponent<SearchButtonProps & import("react").RefAttributes<HTMLButtonElement>>;
+export default SearchButton;

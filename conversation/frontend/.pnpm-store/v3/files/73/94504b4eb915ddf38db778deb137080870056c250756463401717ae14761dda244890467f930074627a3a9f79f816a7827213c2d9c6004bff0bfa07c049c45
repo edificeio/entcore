@@ -1,0 +1,17 @@
+import { useState, useEffect } from "react";
+const useThumb = ({
+  isUpdating,
+  selectedResource
+}) => {
+  const [thumbnail, setThumbnail] = useState(isUpdating && (selectedResource == null ? void 0 : selectedResource.thumbnail) || "");
+  return useEffect(() => {
+    setThumbnail((selectedResource == null ? void 0 : selectedResource.thumbnail) || "");
+  }, [selectedResource]), {
+    thumbnail,
+    handleDeleteImage: () => setThumbnail(""),
+    handleUploadImage: (file) => setThumbnail(file)
+  };
+};
+export {
+  useThumb
+};

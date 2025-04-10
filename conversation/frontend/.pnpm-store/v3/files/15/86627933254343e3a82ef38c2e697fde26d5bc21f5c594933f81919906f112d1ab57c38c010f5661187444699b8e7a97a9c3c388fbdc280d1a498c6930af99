@@ -1,0 +1,9 @@
+function useScrollToTop() {
+  const refToTop = document.querySelector("html");
+  return () => {
+    refToTop && refToTop.scrollIntoView();
+  };
+}
+export {
+  useScrollToTop as default
+};

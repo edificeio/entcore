@@ -1,0 +1,28 @@
+/**
+ * Properties for the ExternalLink.
+ */
+export interface IExternalLink {
+    /** Link Url */
+    url: string;
+    /** Link text for the llink display */
+    text?: string;
+    /** Link target (default: _blank) */
+    target?: '_blank';
+}
+/**
+ * Properties for the ExternalLinker react component.
+ */
+export type ExternalLinkerProps = {
+    /** Default link to update. */
+    link?: Partial<IExternalLink>;
+    /**
+     * Set true if the user select multiple nodes. (note simple text selection)
+     */
+    multiNodeSelected?: boolean;
+    /** Target */
+    target?: '_blank';
+    /** Notify when the user change any link information */
+    onChange?: (link?: IExternalLink) => void;
+};
+export declare const ExternalLinker: ({ link, onChange, multiNodeSelected, }: ExternalLinkerProps) => import("react/jsx-runtime").JSX.Element;
+export default ExternalLinker;

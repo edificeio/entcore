@@ -1,0 +1,8 @@
+import { InfiniteData } from '@tanstack/react-query';
+import { ISearchResults } from 'edifice-ts-client';
+declare const ResourcesList: ({ data, fetchNextPage, }: {
+    data: InfiniteData<ISearchResults> | undefined;
+    isFetching: boolean;
+    fetchNextPage: () => void;
+}) => JSX.Element | null;
+export default ResourcesList;

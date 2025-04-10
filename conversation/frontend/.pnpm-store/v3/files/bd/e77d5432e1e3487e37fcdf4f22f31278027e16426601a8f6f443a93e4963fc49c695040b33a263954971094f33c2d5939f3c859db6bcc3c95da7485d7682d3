@@ -1,0 +1,31 @@
+export interface EmptyScreenProps {
+    /**
+     * Image source
+     */
+    imageSrc: string;
+    /**
+     * Image alt
+     */
+    imageAlt?: string;
+    /**
+     * Title
+     */
+    title?: string;
+    /**
+     * Text to display
+     */
+    text?: string;
+    /**
+     * Size of the EmptyScreen image. Must be square
+     */
+    size?: number;
+    /**
+     * Optional class for styling purpose
+     */
+    className?: string;
+}
+declare const EmptyScreen: {
+    ({ imageSrc, imageAlt, title, text, size, className, }: EmptyScreenProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default EmptyScreen;

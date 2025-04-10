@@ -1,0 +1,28 @@
+import { default as default2 } from "./modules/icons/components/audience/IconCongratsCounter.js";
+import { default as default3 } from "./modules/icons/components/audience/IconCongrats.js";
+import { default as default4 } from "./modules/icons/components/audience/IconGreatCounter.js";
+import { default as default5 } from "./modules/icons/components/audience/IconGreat.js";
+import { default as default6 } from "./modules/icons/components/audience/IconGuest.js";
+import { default as default7 } from "./modules/icons/components/audience/IconInterestingCounter.js";
+import { default as default8 } from "./modules/icons/components/audience/IconInteresting.js";
+import { default as default9 } from "./modules/icons/components/audience/IconParent.js";
+import { default as default10 } from "./modules/icons/components/audience/IconPersonnel.js";
+import { default as default11 } from "./modules/icons/components/audience/IconStudent.js";
+import { default as default12 } from "./modules/icons/components/audience/IconTeacher.js";
+import { default as default13 } from "./modules/icons/components/audience/IconThanksCounter.js";
+import { default as default14 } from "./modules/icons/components/audience/IconThanks.js";
+export {
+  default3 as IconCongrats,
+  default2 as IconCongratsCounter,
+  default5 as IconGreat,
+  default4 as IconGreatCounter,
+  default6 as IconGuest,
+  default8 as IconInteresting,
+  default7 as IconInterestingCounter,
+  default9 as IconParent,
+  default10 as IconPersonnel,
+  default11 as IconStudent,
+  default12 as IconTeacher,
+  default14 as IconThanks,
+  default13 as IconThanksCounter
+};

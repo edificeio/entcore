@@ -1,0 +1,2 @@
+/// <reference types="react" />
+export default function useClickOutside<T extends HTMLElement = any>(handler: () => void, events?: string[] | null, nodes?: Array<HTMLElement | null>): import("react").MutableRefObject<T | undefined>;

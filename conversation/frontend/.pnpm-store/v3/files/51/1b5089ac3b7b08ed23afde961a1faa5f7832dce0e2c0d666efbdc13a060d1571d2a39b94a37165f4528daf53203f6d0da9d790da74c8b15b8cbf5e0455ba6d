@@ -1,0 +1,19 @@
+import * as PIXI from 'pixi.js';
+/**
+ * This function start the blur controler
+ * - drawing cursor
+ * - listening mouse move to move cursor
+ * - listening
+ *
+ * @param application
+ * @param param1
+ */
+export declare function start(application: PIXI.Application, { spriteName }: {
+    spriteName: string;
+}): void;
+/**
+ * This function remove cursor and all mouse event listeners
+ *
+ * @param application the PIXI.Application context
+ */
+export declare function stop(application: PIXI.Application): void;

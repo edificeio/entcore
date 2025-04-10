@@ -1,0 +1,19 @@
+import { ReactionSummaryData } from '@edifice.io/client';
+/**
+ * Props for the ReactionSummary component.
+ */
+export interface ReactionSummaryProps {
+    /**
+     * An optional summary of reaction data.
+     */
+    summary?: ReactionSummaryData;
+    /**
+     * An optional click handler function.
+     */
+    onClick?: () => void;
+}
+declare const ReactionSummary: {
+    ({ summary, onClick, }: ReactionSummaryProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default ReactionSummary;

@@ -1,0 +1,10 @@
+import { useState, useEffect } from "react";
+function useTitle() {
+  const documentDefined = typeof document < "u", [title, setTitle] = useState(() => document.title);
+  return useEffect(() => {
+    documentDefined && setTitle(document.title);
+  }, [documentDefined]), title;
+}
+export {
+  useTitle as default
+};

@@ -1,0 +1,22 @@
+import { ReactNode, RefAttributes } from 'react';
+import { DropdownMenuOptions, IconButtonProps } from '../../../../components';
+interface Props {
+    /**
+     * Props for the trigger
+     */
+    triggerProps: JSX.IntrinsicAttributes & Omit<IconButtonProps, 'ref'> & RefAttributes<HTMLButtonElement>;
+    /**
+     * Menu icon
+     */
+    icon: ReactNode;
+    /**
+     * Menu label (for accessibility)
+     */
+    ariaLabel: string;
+    /**
+     * Options to display
+     */
+    options: DropdownMenuOptions[];
+}
+export declare const EditorToolbarDropdownMenu: ({ triggerProps, icon, ariaLabel, options, }: Props) => import("react/jsx-runtime").JSX.Element;
+export {};

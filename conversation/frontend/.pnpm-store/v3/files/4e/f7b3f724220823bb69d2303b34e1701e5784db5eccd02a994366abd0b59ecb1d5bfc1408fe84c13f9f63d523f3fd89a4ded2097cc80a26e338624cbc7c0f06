@@ -1,0 +1,4 @@
+const showShareRightLine = (shareRight, showBookmarkMembers) => shareRight.isBookmarkMember && showBookmarkMembers || !shareRight.isBookmarkMember;
+export {
+  showShareRightLine
+};

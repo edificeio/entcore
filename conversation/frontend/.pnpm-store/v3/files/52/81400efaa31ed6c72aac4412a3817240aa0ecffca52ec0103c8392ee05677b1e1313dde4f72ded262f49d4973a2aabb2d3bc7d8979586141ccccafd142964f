@@ -1,0 +1,9 @@
+import { ReactNode } from 'react';
+declare const DropzoneFile: {
+    ({ children, multiple, }: {
+        children: ReactNode;
+        multiple?: boolean;
+    }): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default DropzoneFile;

@@ -1,0 +1,3 @@
+export declare const CommentAvatar: ({ id }: {
+    id: string;
+}) => import("react/jsx-runtime").JSX.Element;

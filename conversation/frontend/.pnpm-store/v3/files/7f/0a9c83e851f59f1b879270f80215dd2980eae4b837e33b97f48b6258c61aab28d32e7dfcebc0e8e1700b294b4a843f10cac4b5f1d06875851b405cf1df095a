@@ -1,0 +1,139 @@
+import { jsx, jsxs } from "react/jsx-runtime";
+import { DndContext, DragOverlay } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import clsx from "clsx";
+import { forwardRef } from "react";
+import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
+import SvgIconFolder from "../../../modules/icons/components/IconFolder.js";
+import SvgIconRafterRight from "../../../modules/icons/components/IconRafterRight.js";
+import { useTree } from "../hooks/useTree.js";
+import { useTreeSortable } from "../hooks/useTreeSortable.js";
+import { flattenNodes } from "../utilities/tree-sortable.js";
+import { mergeRefs } from "../../../utilities/refs/ref.js";
+const SortableTree = ({
+  nodes,
+  selectedNodeId: externalSelectedNodeId,
+  showIcon = !1,
+  shouldExpandAllNodes = !1,
+  renderNode,
+  isDisabled = () => !1,
+  onTreeItemClick,
+  onSortable
+}) => {
+  const {
+    selectedNodeId,
+    expandedNodes,
+    handleItemClick,
+    handleFoldUnfold,
+    handleCollapseNode
+  } = useTree({
+    data: nodes,
+    externalSelectedNodeId,
+    shouldExpandAllNodes,
+    onTreeItemClick
+  }), {
+    handleDragEnd,
+    handleDragMove,
+    handleDragOver,
+    handleDragStart,
+    adjustTranslate,
+    sortedIds,
+    indicator,
+    projected,
+    announcements,
+    activeId,
+    indentationWidth,
+    activeItem,
+    dropAnimationConfig,
+    measuring,
+    sensors,
+    items
+  } = useTreeSortable({
+    nodes,
+    onSortable,
+    handleCollapseNode
+  }), newNodes = flattenNodes(items, expandedNodes);
+  return /* @__PURE__ */ jsx("div", { className: "treeview", children: /* @__PURE__ */ jsx("div", { role: "tree", className: "m-0 p-0", children: /* @__PURE__ */ jsxs(DndContext, { accessibility: {
+    announcements
+  }, sensors, measuring, onDragStart: handleDragStart, onDragEnd: handleDragEnd, onDragOver: handleDragOver, onDragMove: handleDragMove, children: [
+    /* @__PURE__ */ jsx(SortableContext, { items: sortedIds, strategy: verticalListSortingStrategy, children: Array.isArray(items) && newNodes.map((node) => node.parentExpanded ? /* @__PURE__ */ jsx(TreeNode, { node, showIcon, expandedNodes, selectedNodeId, renderNode, disabled: isDisabled(node.id), onTreeItemClick: handleItemClick, onToggleNode: handleFoldUnfold, depth: node.id === activeId && projected ? projected.depth : 0, isChild: node.isChild, indentationWidth, projected }, node.id) : null) }),
+    /* @__PURE__ */ createPortal(/* @__PURE__ */ jsx(DragOverlay, { dropAnimation: dropAnimationConfig, modifiers: indicator ? [adjustTranslate] : void 0, children: activeId && activeItem ? /* @__PURE__ */ jsx(DragOverlayItem, { activeItem }) : null }), document.body)
+  ] }) }) });
+}, TreeNode = /* @__PURE__ */ forwardRef(({
+  node,
+  selectedNodeId,
+  showIcon = !1,
+  expandedNodes,
+  focused,
+  disabled,
+  indentationWidth,
+  depth,
+  isChild,
+  renderNode,
+  onTreeItemClick,
+  onToggleNode
+}, ref) => {
+  const {
+    t
+  } = useTranslation(), selected = selectedNodeId === node.id, expanded = expandedNodes.has(node.id), animateLayoutChanges = ({
+    isSorting,
+    wasDragging
+  }) => !(isSorting || wasDragging), {
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({
+    id: node.id,
+    disabled,
+    animateLayoutChanges
+  }), style = {
+    transform: CSS.Translate.toString(transform),
+    transition
+  }, treeItemClasses = {
+    action: clsx("action-container d-flex align-items-center gap-8 px-8", {
+      "drag-focus": focused,
+      "border border-secondary rounded rounded-2 shadow bg-white": isDragging,
+      display: expanded ? "block" : "none"
+    }),
+    button: clsx("flex-fill d-flex align-items-center text-truncate gap-8", {
+      "py-8": depth === 0,
+      "py-4": depth === 1,
+      "ps-8": isChild
+    })
+  }, handleItemKeyDown = (event) => {
+    (event.code === "Enter" || event.code === "Space") && (event.preventDefault(), event.stopPropagation(), onTreeItemClick == null || onTreeItemClick(node.id));
+  }, handleItemToggleKeyDown = (event) => {
+    (event.code === "Enter" || event.code === "Space") && (event.preventDefault(), event.stopPropagation(), onToggleNode == null || onToggleNode(node.id));
+  }, spaceGestion = () => isDragging ? isChild ? depth === 1 ? `${indentationWidth * depth}px` : "0px" : `${indentationWidth * depth}px` : isChild ? "20px" : null;
+  return /* @__PURE__ */ jsx("li", { ref: mergeRefs(setNodeRef, ref), id: `treeitem-${node.id}`, role: "treeitem", "aria-selected": selected, "aria-expanded": expanded, style: {
+    ...style,
+    marginLeft: spaceGestion()
+  }, ...listeners, children: /* @__PURE__ */ jsx("div", { children: /* @__PURE__ */ jsxs("div", { className: treeItemClasses.action, children: [
+    node.haveChilds && /* @__PURE__ */ jsx("div", { tabIndex: 0, role: "button", onClick: () => onToggleNode == null ? void 0 : onToggleNode(node.id), onKeyDown: handleItemToggleKeyDown, "aria-label": t("foldUnfold"), children: /* @__PURE__ */ jsx(SvgIconRafterRight, { width: 16, style: {
+      transform: expanded ? "rotate(90deg)" : ""
+    } }) }),
+    node.children && showIcon ? /* @__PURE__ */ jsx(SvgIconFolder, { title: "folder", width: 20, height: 20 }) : null,
+    /* @__PURE__ */ jsx("div", { tabIndex: 0, role: "button", className: treeItemClasses.button, onClick: () => onTreeItemClick(node.id), onKeyDown: handleItemKeyDown, children: renderNode ? renderNode({
+      node,
+      hasChildren: Array.isArray(node.children) && !!node.children.length,
+      isChild
+    }) : /* @__PURE__ */ jsx("div", { className: "text-truncate", children: node.name }) })
+  ] }) }) }, node.id);
+}), DragOverlayItem = /* @__PURE__ */ forwardRef(({
+  activeItem,
+  ...props
+}, ref) => /* @__PURE__ */ jsx("div", { ref, ...props, className: "opacity-0", style: {
+  cursor: "grabbing"
+}, children: /* @__PURE__ */ jsx("div", { className: clsx("action-container align-items-center gap-8 px-2"), style: {
+  backgroundColor: "white",
+  border: "1px solid black",
+  width: "100px"
+}, children: /* @__PURE__ */ jsx("div", { className: clsx("flex-fill d-flex align-items-center text-truncate gap-8 py-8"), children: /* @__PURE__ */ jsx("span", { className: "text-truncate", children: activeItem == null ? void 0 : activeItem.name }) }) }) }));
+export {
+  DragOverlayItem,
+  SortableTree as default
+};

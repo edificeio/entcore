@@ -1,0 +1,31 @@
+import { jsx } from "react/jsx-runtime";
+import { forwardRef } from "react";
+import clsx from "clsx";
+import { useFormControl } from "../Form/FormContext.js";
+const Input = /* @__PURE__ */ forwardRef(({
+  noValidationIcon,
+  placeholder,
+  size = "md",
+  type = "text",
+  className,
+  ...restProps
+}, ref) => {
+  const {
+    id,
+    isRequired,
+    isReadOnly,
+    status
+  } = useFormControl(), classes = clsx({
+    "form-control": !isReadOnly,
+    "form-control-lg": size === "lg",
+    "form-control-sm": size === "sm",
+    "is-invalid": status === "invalid",
+    "is-valid": status === "valid",
+    "form-control-plaintext": isReadOnly,
+    "no-validation-icon": noValidationIcon
+  }, className);
+  return /* @__PURE__ */ jsx("input", { ref, id, className: classes, type, placeholder, required: isRequired, readOnly: isReadOnly, ...restProps });
+});
+export {
+  Input as default
+};

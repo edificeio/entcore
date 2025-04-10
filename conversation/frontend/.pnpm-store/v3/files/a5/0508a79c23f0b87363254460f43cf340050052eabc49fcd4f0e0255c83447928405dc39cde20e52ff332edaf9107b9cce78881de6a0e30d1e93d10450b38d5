@@ -1,0 +1,10 @@
+import { useState, useCallback } from "react";
+function useToggle(initialState = !1) {
+  const [state, setState] = useState(initialState), toggle = useCallback(() => {
+    setState((prevState) => !prevState);
+  }, []);
+  return [state, toggle];
+}
+export {
+  useToggle as default
+};

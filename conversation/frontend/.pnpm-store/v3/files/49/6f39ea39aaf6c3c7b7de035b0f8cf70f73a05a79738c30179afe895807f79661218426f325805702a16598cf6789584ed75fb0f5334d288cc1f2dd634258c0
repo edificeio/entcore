@@ -1,0 +1,177 @@
+var __defProp = Object.defineProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: !0, configurable: !0, writable: !0, value }) : obj[key] = value;
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value);
+import { FOLDER } from "@edifice.io/client";
+function findTreeNode(root, predicate) {
+  if (predicate(root)) return root;
+  if (Array.isArray(root.children))
+    for (const child of root.children) {
+      const found = findTreeNode(child, predicate);
+      if (found) return found;
+    }
+}
+function findNodeById(data, id) {
+  if (Array.isArray(data))
+    for (const node of data) {
+      const result = findNodeById(node, id);
+      if (result)
+        return result;
+    }
+  else {
+    if (data.id === id) return data;
+    if (data.children)
+      for (const child of data.children) {
+        const result = findNodeById(child, id);
+        if (result)
+          return result;
+      }
+  }
+}
+function addNode(node, {
+  parentId,
+  newFolder
+}) {
+  return modifyNode(node, (node2) => {
+    var _a;
+    if (node2.id === parentId) {
+      const parentAncestors = [...((_a = node2.folder) == null ? void 0 : _a.ancestors) || []], ancestors = arrayUnique([...parentAncestors, node2.id]);
+      return {
+        ...node2,
+        children: [...node2.children || [], new TreeNodeFolderWrapper({
+          ...newFolder,
+          ancestors
+        })]
+      };
+    } else
+      return node2;
+  });
+}
+function arrayUnique(array) {
+  return array.filter((item, index) => array.indexOf(item) === index);
+}
+function deleteNode(node, {
+  folders
+}) {
+  return modifyNode(node, (node2) => {
+    if (!folders.includes(node2.id))
+      return node2;
+  });
+}
+const findParentNode = (parentNode, childId) => {
+  if (parentNode.children)
+    for (const child of parentNode.children) {
+      if (child.id === childId)
+        return parentNode;
+      const foundNode = findParentNode(child, childId);
+      if (foundNode)
+        return foundNode;
+    }
+};
+function getAncestors(data, folderId) {
+  var _a;
+  const findItem = findNodeById(data, folderId);
+  return (_a = findItem == null ? void 0 : findItem.folder) != null && _a.ancestors ? [...(findItem == null ? void 0 : findItem.folder.ancestors) || [], folderId] : folderId === FOLDER.BIN ? [FOLDER.BIN] : [FOLDER.DEFAULT];
+}
+function hasChildren(folderId, data) {
+  return data.id === folderId && data.children ? data.children.length > 0 : data.children ? data.children.some((child) => hasChildren(data.id, child)) : !1;
+}
+function modifyNode(data, callback) {
+  return doModify(data, callback) || data;
+}
+function doModify(current, callback, parent) {
+  var _a;
+  const result = callback(current, parent);
+  if ((_a = result == null ? void 0 : result.children) != null && _a.length) {
+    const children = [];
+    for (const child of (result == null ? void 0 : result.children) || []) {
+      const res = doModify(child, callback, result);
+      res && children.push(res);
+    }
+    return {
+      ...result,
+      children
+    };
+  }
+  return result;
+}
+function moveNode(node, {
+  destinationId,
+  folders
+}) {
+  return modifyNode(node, (node2, parent) => {
+    var _a, _b;
+    if (destinationId === node2.id) {
+      const parentAncestors = [...((_a = node2.folder) == null ? void 0 : _a.ancestors) || []], ancestors = arrayUnique([...parentAncestors, node2.id]), newChildren = [...node2.children || []], childrenIds = ((_b = node2.children) == null ? void 0 : _b.map((child) => child.id)) || [];
+      for (const folder of folders)
+        if (!childrenIds.includes(folder)) {
+          const item = findNodeById(node2, folder);
+          item && newChildren.push({
+            ...item,
+            folder: {
+              ...item == null ? void 0 : item.folder,
+              ancestors
+            }
+          });
+        }
+      return {
+        ...node2,
+        children: newChildren
+      };
+    } else return folders.includes(node2.id) && destinationId !== (parent == null ? void 0 : parent.id) ? void 0 : node2;
+  });
+}
+const wrapTreeNode = (node, folders, parentId) => modifyNode(node, (node2) => (node2.id === parentId && (node2.children = folders == null ? void 0 : folders.map((e) => new TreeNodeFolderWrapper(e))), node2));
+function updateNode(node, {
+  folderId,
+  newFolder
+}) {
+  return modifyNode(node, (node2) => node2.id === folderId ? new TreeNodeFolderWrapper(newFolder) : node2);
+}
+function findPathById(tree, nodeId) {
+  let path = [];
+  function traverse(node, currentPath) {
+    if (node.id === nodeId)
+      return path = currentPath.concat(node.id), !0;
+    if (node.children) {
+      for (const child of node.children)
+        if (traverse(child, currentPath.concat(node.id)))
+          return !0;
+    }
+    return !1;
+  }
+  function startTraverse(nodes) {
+    if (Array.isArray(nodes)) {
+      for (const node of nodes)
+        if (traverse(node, []))
+          break;
+    } else
+      traverse(nodes, []);
+  }
+  return startTraverse(tree), path;
+}
+class TreeNodeFolderWrapper {
+  constructor(folder) {
+    __publicField(this, "id");
+    __publicField(this, "name");
+    __publicField(this, "childNumber");
+    __publicField(this, "section", !1);
+    __publicField(this, "children", []);
+    this.folder = folder, this.id = folder.id, this.name = folder.name, this.childNumber = folder.childNumber;
+  }
+}
+export {
+  TreeNodeFolderWrapper,
+  addNode,
+  arrayUnique,
+  deleteNode,
+  findNodeById,
+  findParentNode,
+  findPathById,
+  findTreeNode,
+  getAncestors,
+  hasChildren,
+  modifyNode,
+  moveNode,
+  updateNode,
+  wrapTreeNode
+};

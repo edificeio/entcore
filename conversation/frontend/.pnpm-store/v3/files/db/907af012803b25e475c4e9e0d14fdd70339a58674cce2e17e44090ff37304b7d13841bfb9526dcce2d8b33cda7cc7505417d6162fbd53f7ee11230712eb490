@@ -1,0 +1,2 @@
+export declare const convertMsToMS: (milliseconds: number) => string;
+export declare const padTo2Digits: (val: number) => string;

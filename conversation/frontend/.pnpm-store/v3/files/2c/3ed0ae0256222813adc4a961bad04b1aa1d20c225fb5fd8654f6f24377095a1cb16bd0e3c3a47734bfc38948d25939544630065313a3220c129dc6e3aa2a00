@@ -1,0 +1,15 @@
+import { ReactionType } from '@edifice.io/client';
+/**
+ * This hook implements some logic and provides functions to easily call "audience" backend endpoints.
+ * @param module application code, e.g. "blog"
+ * @param resourceType type of resource, e.g. "post"
+ * @returns functions to easily call "audience" backend endpoints
+ */
+export default function useReactions(module: string, resourceType: string): {
+    availableReactions: ("REACTION_1" | "REACTION_2" | "REACTION_3" | "REACTION_4")[];
+    loadReactionDetails: (resourceId: string, page: number, size?: number) => Promise<import('@edifice.io/client').ReactionDetailsData | undefined>;
+    loadReactionSummaries: (resourceIds: string[]) => Promise<{
+        [resourceId: string]: import('@edifice.io/client').ReactionSummaryData | undefined;
+    }>;
+    applyReaction: (resourceId: string, newReaction: ReactionType, oldReaction: ReactionType | null) => Promise<"-" | "+" | "=">;
+};

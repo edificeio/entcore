@@ -1,0 +1,7 @@
+import { DragEndEvent, DragOverEvent, DragStartEvent } from '@dnd-kit/core';
+export default function useDndKit(): {
+    handleDragEnd: (event: DragEndEvent) => Promise<void>;
+    handleDragStart: (event: DragStartEvent) => void;
+    handleDragOver: (event: DragOverEvent) => void;
+    sensors: import('@dnd-kit/core').SensorDescriptor<import('@dnd-kit/core').SensorOptions>[];
+};

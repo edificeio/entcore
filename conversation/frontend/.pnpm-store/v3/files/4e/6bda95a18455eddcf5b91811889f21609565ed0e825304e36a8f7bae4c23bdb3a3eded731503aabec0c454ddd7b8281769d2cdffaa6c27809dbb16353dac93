@@ -1,0 +1,6 @@
+import { ReactNode } from 'react';
+export interface NavbarProps {
+    children: ReactNode;
+    className?: string;
+}
+export declare function Navbar({ children, className, ...restProps }: NavbarProps): import("react/jsx-runtime").JSX.Element;

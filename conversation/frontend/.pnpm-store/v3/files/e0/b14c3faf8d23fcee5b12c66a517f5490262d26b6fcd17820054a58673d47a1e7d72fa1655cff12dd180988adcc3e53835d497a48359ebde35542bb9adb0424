@@ -1,0 +1,34 @@
+import { IFolder } from "edifice-ts-client";
+import { TreeItem } from "../types";
+export declare function findNodeById(data: TreeItem | TreeItem[], id: string): TreeItem | undefined;
+export declare function addNode(node: TreeItem, { parentId, newFolder }: {
+    parentId: string;
+    newFolder: IFolder;
+}): TreeItem;
+export declare function arrayUnique<T>(array: T[]): T[];
+export declare function deleteNode(node: TreeItem, { folders }: {
+    folders: string[];
+}): TreeItem;
+export declare const findParentNode: (parentNode: TreeItem, childId: string) => TreeItem | undefined;
+export declare function getAncestors(data: TreeItem, folderId: string): string[];
+export declare function hasChildren(folderId: string, data: TreeItem): boolean;
+export declare function modifyNode(data: TreeItem, callback: (node: TreeItem, parent?: TreeItem) => TreeItem | undefined): TreeItem;
+export declare function moveNode(node: TreeItem, { destinationId, folders }: {
+    destinationId: string;
+    folders: string[];
+}): TreeItem;
+export declare const wrapTreeNode: (node: TreeItem, folders: IFolder[] | undefined, parentId: string) => TreeItem;
+export declare function updateNode(node: TreeItem, { folderId, newFolder }: {
+    folderId: string;
+    newFolder: IFolder;
+}): TreeItem;
+export declare function findPathById(tree: TreeItem | TreeItem[], nodeId: string): string[];
+export declare class TreeNodeFolderWrapper implements TreeItem {
+    readonly folder: IFolder;
+    constructor(folder: IFolder);
+    readonly id: string;
+    readonly name: string;
+    readonly childNumber: number;
+    section: boolean;
+    readonly children: TreeItem[];
+}

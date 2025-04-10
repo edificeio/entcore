@@ -1,0 +1,105 @@
+import { useState, useRef, useEffect, useMemo, useImperativeHandle } from "react";
+import { findNodeById, findPathById } from "../utilities/treeview.js";
+const useTreeView = ({
+  data,
+  ref,
+  externalSelectedNodeId,
+  draggedNode,
+  allExpandedNodes,
+  onTreeItemUnfold,
+  onTreeItemFold,
+  onTreeItemClick
+}) => {
+  const [internalSelectedNodeId, setInternalSelectedNodeId] = useState(void 0), [expandedNodes, setExpandedNodes] = useState(/* @__PURE__ */ new Set()), siblingsNodes = useRef(/* @__PURE__ */ new Set()), [draggedNodeId, setDraggedNodeId] = useState(void 0), selectedNodeId = internalSelectedNodeId ?? externalSelectedNodeId;
+  function addNodesWithSiblingHavingChildren(data2) {
+    var _a;
+    Array.isArray(data2) ? data2.forEach((node) => {
+      const resultSet = new Set(siblingsNodes.current);
+      data2.filter(({
+        id
+      }) => id !== node.id).some((sibling) => sibling.children && sibling.children.length > 0) && resultSet.add(node.id), node.children && node.children.length > 0 && node.children.forEach((child) => {
+        var _a2;
+        const childSiblings = (_a2 = node.children) == null ? void 0 : _a2.filter(({
+          id
+        }) => id !== child.id);
+        (childSiblings == null ? void 0 : childSiblings.some((sibling) => sibling.children && sibling.children.length > 0)) && resultSet.add(child.id), addNodesWithSiblingHavingChildren(child);
+      });
+    }) : (_a = data2.children) == null || _a.forEach((child) => {
+      var _a2;
+      const resultSet = new Set(siblingsNodes.current), siblings = (_a2 = data2.children) == null ? void 0 : _a2.filter((c) => c.id !== child.id);
+      (siblings == null ? void 0 : siblings.some((sibling) => sibling.children && sibling.children.length > 0)) && (resultSet.add(child.id), siblingsNodes.current = resultSet), addNodesWithSiblingHavingChildren(child);
+    });
+  }
+  const expandedAllNodes = (allExpandedNodes2) => {
+    const initExpandedNodes = new Set("");
+    data && Array.isArray(data) && allExpandedNodes2 && (data.forEach((node) => {
+      initExpandedNodes.add(node.id);
+    }), setExpandedNodes(initExpandedNodes));
+  };
+  useEffect(() => {
+    data && addNodesWithSiblingHavingChildren(data);
+  }, [data]), useEffect(() => {
+    draggedNode != null && draggedNode.isOver && draggedNode.isTreeview ? (draggedNode.overId && handleItemDrag(draggedNode.overId), setDraggedNodeId(draggedNode.overId)) : setDraggedNodeId(void 0);
+  }, [draggedNode]);
+  const handlers = useMemo(
+    () => ({
+      unselectAll() {
+        setInternalSelectedNodeId(void 0);
+      },
+      select(nodeId) {
+        handleItemClick(nodeId);
+      },
+      allExpandedNodes() {
+        expandedAllNodes(allExpandedNodes);
+      }
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+  useImperativeHandle(ref, () => handlers, [handlers]), useEffect(() => {
+    expandedAllNodes(allExpandedNodes);
+  }, []), useEffect(() => {
+    externalSelectedNodeId && !allExpandedNodes ? (handleExternalSelectedNodeId(externalSelectedNodeId), setInternalSelectedNodeId(externalSelectedNodeId)) : setInternalSelectedNodeId(void 0);
+  }, [externalSelectedNodeId]);
+  const handleExternalSelectedNodeId = (nodeId) => {
+    if (!findNodeById(data, selectedNodeId)) {
+      setInternalSelectedNodeId(void 0);
+      return;
+    }
+    if (externalSelectedNodeId === "default") {
+      expandedNodes.forEach((node) => onTreeItemUnfold == null ? void 0 : onTreeItemUnfold(node));
+      return;
+    }
+    handleExpandNode(nodeId);
+  }, handleExpandNode = (nodeId) => {
+    const updatedExpandedNodes = new Set(expandedNodes), parents = findPathById(data, nodeId), arrayOrder = Array.from(updatedExpandedNodes);
+    parents.forEach((parent) => {
+      const index = arrayOrder.indexOf(parent);
+      index > -1 && arrayOrder.splice(index, 1), arrayOrder.push(parent);
+    }), updatedExpandedNodes.clear(), arrayOrder.forEach((node) => updatedExpandedNodes.add(node)), updatedExpandedNodes.forEach((node) => onTreeItemUnfold == null ? void 0 : onTreeItemUnfold(node)), setExpandedNodes(updatedExpandedNodes);
+  }, handleCollapseNode = (nodeId) => {
+    const updatedExpandedNodes = new Set(expandedNodes);
+    updatedExpandedNodes.delete(nodeId), updatedExpandedNodes.forEach((node) => onTreeItemFold == null ? void 0 : onTreeItemFold(node)), setExpandedNodes(updatedExpandedNodes);
+  }, handleToggleNode = (nodeId) => {
+    expandedNodes.has(nodeId) ? handleCollapseNode(nodeId) : handleExpandNode(nodeId);
+  }, handleSelectedItem = (nodeId) => {
+    selectedNodeId !== nodeId && setInternalSelectedNodeId(nodeId);
+  }, handleItemClick = (nodeId) => {
+    handleSelectedItem(nodeId), handleExpandNode(nodeId), onTreeItemClick == null || onTreeItemClick(nodeId);
+  }, handleFoldUnfold = (nodeId) => {
+    handleToggleNode(nodeId);
+  }, handleItemDrag = (nodeId) => {
+    findNodeById(data, externalSelectedNodeId) && handleExpandNode(nodeId);
+  };
+  return {
+    selectedNodeId,
+    expandedNodes,
+    siblingsNodes,
+    draggedNodeId,
+    handleItemClick,
+    handleFoldUnfold
+  };
+};
+export {
+  useTreeView
+};

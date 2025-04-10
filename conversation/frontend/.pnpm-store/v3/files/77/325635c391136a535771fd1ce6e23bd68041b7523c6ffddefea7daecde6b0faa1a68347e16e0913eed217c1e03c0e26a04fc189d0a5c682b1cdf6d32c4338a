@@ -1,0 +1,26 @@
+import { jsx, jsxs } from "react/jsx-runtime";
+import clsx from "clsx";
+import { useTranslation } from "react-i18next";
+import { useTabsContext } from "../context/TabsContext.js";
+const TabsItem = ({
+  icon,
+  label,
+  id,
+  order
+}) => {
+  const {
+    activeTab,
+    setSelectedTab,
+    onKeyDown,
+    tabsRef
+  } = useTabsContext(), {
+    t
+  } = useTranslation(), classes = clsx("nav-link d-inline-flex gap-8 border-0", activeTab === id ? "selected" : "");
+  return /* @__PURE__ */ jsx("li", { className: "nav-item flex-shrink-0", role: "presentation", children: /* @__PURE__ */ jsxs("button", { ref: (el) => tabsRef.current[order] = el, type: "button", id: `tab-${id}`, className: classes, onClick: () => setSelectedTab(id), onKeyDown: (event) => onKeyDown(event), role: "tab", "aria-controls": `tabpanel-${id}`, "aria-selected": activeTab === id, tabIndex: activeTab === id ? 0 : -1, children: [
+    icon,
+    /* @__PURE__ */ jsx("small", { children: t(label) })
+  ] }) });
+};
+export {
+  TabsItem as default
+};

@@ -1,0 +1,43 @@
+import { jsxs, Fragment, jsx } from "react/jsx-runtime";
+import { useState, useEffect } from "react";
+import { odeServices } from "@edifice.io/client";
+import { useTranslation } from "react-i18next";
+import { useEdificeClient } from "../../../../providers/EdificeClientProvider/EdificeClientProvider.hook.js";
+import useResource from "../../../../hooks/useResource/useResource.js";
+import Heading from "../../../../components/Heading/Heading.js";
+import Radio from "../../../../components/Radio/Radio.js";
+function ShareBlog({
+  resourceId,
+  updateResource
+}) {
+  const {
+    appCode
+  } = useEdificeClient(), {
+    t
+  } = useTranslation(appCode), resource = useResource("blog", resourceId), publishType = resource && resource["publish-type"], [radioPublicationValue, setRadioPublicationValue] = useState(publishType ?? "RESTRAINT");
+  useEffect(() => {
+    publishType && setRadioPublicationValue(publishType);
+  }, [publishType]);
+  const handleRadioPublicationChange = async (event) => {
+    const value = event.target.value, params = {
+      description: resource.description || "",
+      entId: resource.assetId,
+      name: resource.name,
+      public: !!resource.public,
+      slug: resource.slug || "",
+      thumbnail: resource.thumbnail,
+      trashed: resource.trashed,
+      "publish-type": value
+    };
+    updateResource ? await updateResource.mutateAsync(params) : await odeServices.resource("blog").update(params), setRadioPublicationValue(value);
+  };
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx("hr", {}),
+    /* @__PURE__ */ jsx(Heading, { headingStyle: "h4", level: "h3", className: "mb-16", children: t("explorer.publication.steps") }),
+    /* @__PURE__ */ jsx(Radio, { label: t("explorer.immediat.publication"), id: "publication-now", name: "publication", value: "IMMEDIATE", model: radioPublicationValue, checked: radioPublicationValue === "IMMEDIATE", onChange: handleRadioPublicationChange }),
+    /* @__PURE__ */ jsx(Radio, { label: t("explorer.validate.publication"), id: "publication-validate", name: "publication", value: "RESTRAINT", checked: radioPublicationValue === "RESTRAINT", model: radioPublicationValue, onChange: handleRadioPublicationChange })
+  ] });
+}
+export {
+  ShareBlog as default
+};

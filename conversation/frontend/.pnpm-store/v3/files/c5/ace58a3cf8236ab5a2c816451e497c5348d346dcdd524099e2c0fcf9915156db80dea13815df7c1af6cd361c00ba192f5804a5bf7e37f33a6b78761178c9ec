@@ -1,0 +1,47 @@
+import { useRef, useEffect } from "react";
+const MIN_WIDTH = 80, useResizeMedia = (props, refResizable) => {
+  const aspectRatio = useRef(0), lastCursorX = useRef(-1), isVerticalResizeActive = useRef(!1), proseMirrorContainerWidth = useRef(0), limitWidthOrHeight = (width) => width < MIN_WIDTH;
+  useEffect(() => {
+    const proseMirrorContainerDiv = document.querySelector(".ProseMirror");
+    proseMirrorContainerDiv && (proseMirrorContainerWidth.current = proseMirrorContainerDiv == null ? void 0 : proseMirrorContainerDiv.clientWidth), refResizable && (aspectRatio.current = 1.5);
+  }, []);
+  const onVerticalResize = (directionOfMouseMove, diff) => {
+    var _a, _b;
+    if (!refResizable) {
+      console.error("Media ref is undefined|null", {
+        refResizable
+      });
+      return;
+    }
+    const currentMediaDimensions = {
+      width: (_a = refResizable.current) == null ? void 0 : _a.width,
+      height: (_b = refResizable.current) == null ? void 0 : _b.height
+    }, newMediaDimensions = {
+      width: -1,
+      height: -1
+    };
+    currentMediaDimensions.width && (directionOfMouseMove === "left" ? newMediaDimensions.width = currentMediaDimensions.width - Math.abs(diff) : newMediaDimensions.width = currentMediaDimensions.width + Math.abs(diff)), newMediaDimensions.width > proseMirrorContainerWidth.current && (newMediaDimensions.width = proseMirrorContainerWidth.current), diff !== 0 && limitWidthOrHeight(newMediaDimensions.width) && (newMediaDimensions.width = MIN_WIDTH), newMediaDimensions.height = newMediaDimensions.width / aspectRatio.current, setTimeout(() => {
+      props.updateAttributes(newMediaDimensions);
+    });
+  }, onVerticalMouseMove = (event) => {
+    if (!isVerticalResizeActive.current) return;
+    const {
+      clientX
+    } = event, diff = lastCursorX.current - clientX;
+    if (lastCursorX.current = clientX, diff === 0) return;
+    const directionOfMouseMove = diff > 0 ? "left" : "right";
+    onVerticalResize(directionOfMouseMove, Math.abs(diff));
+  }, startVerticalResize = (event) => {
+    isVerticalResizeActive.current = !0, lastCursorX.current = event.clientX, document.addEventListener("mousemove", onVerticalMouseMove), document.addEventListener("mouseup", stopVerticalResize);
+  }, stopVerticalResize = () => {
+    isVerticalResizeActive.current = !1, lastCursorX.current = -1, document.removeEventListener("mousemove", onVerticalMouseMove), document.removeEventListener("mouseup", stopVerticalResize);
+  };
+  return {
+    startVerticalResize,
+    stopVerticalResize,
+    isVerticalResizeActive
+  };
+};
+export {
+  useResizeMedia
+};

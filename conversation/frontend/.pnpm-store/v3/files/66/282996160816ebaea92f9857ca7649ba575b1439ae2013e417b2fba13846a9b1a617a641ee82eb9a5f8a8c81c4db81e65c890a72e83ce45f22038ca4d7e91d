@@ -1,0 +1,13 @@
+export declare const useCheckable: <T extends {
+    _id: string;
+}>(
+/**
+ * Generic data
+ */
+data: T[] | undefined) => {
+    selectedItems: string[];
+    allItemsSelected: boolean;
+    isIndeterminate: boolean;
+    handleOnSelectAllItems: (deselect: boolean) => void;
+    handleOnSelectItem: (itemId: string) => void;
+};

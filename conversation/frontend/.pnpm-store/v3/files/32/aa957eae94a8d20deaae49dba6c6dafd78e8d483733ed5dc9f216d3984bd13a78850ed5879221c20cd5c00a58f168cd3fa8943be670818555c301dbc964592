@@ -1,0 +1,2 @@
+import { ShareRight, ShareRightAction } from "edifice-ts-client";
+export declare const hasRight: (shareRight: ShareRight, shareAction: ShareRightAction) => boolean;

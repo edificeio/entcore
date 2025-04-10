@@ -1,0 +1,76 @@
+import { useState, useEffect } from "react";
+import "@pixi/mixin-get-child-by-name";
+import useHistoryTool from "./useHistoryTool.js";
+import useImageEffects from "./useImageEffects.js";
+import { updateImage, DEFAULT_SPRITE_NAME, saveAsBlob, saveAsDataURL, updateImageFromBlob } from "../effects/misc.js";
+function useImageEditor({
+  imageSrc,
+  spriteName = DEFAULT_SPRITE_NAME
+}) {
+  const [application, setApplication] = useState(void 0), [loading, setLoading] = useState(!0), {
+    rotate,
+    startBlur,
+    startCrop,
+    startResize,
+    stopBlur,
+    stopCrop,
+    stopResize
+  } = useImageEffects({
+    spriteName,
+    application,
+    onSave(sprite) {
+      application && updateImage(application, {
+        imgDatasource: sprite,
+        spriteName
+      });
+    }
+  }), toBlob = () => application ? saveAsBlob(application) : Promise.resolve(void 0), toDataURL = () => {
+    if (application)
+      return saveAsDataURL(application);
+  }, {
+    restore,
+    historize,
+    historyCount
+  } = useHistoryTool({
+    application,
+    spriteName,
+    onRestore(imgDatasource, state) {
+      application && updateImageFromBlob(application, {
+        imgDatasource,
+        spriteName,
+        settings: state
+      });
+    }
+  });
+  return useEffect(() => {
+    application && (setLoading(!0), updateImage(application, {
+      spriteName,
+      imgDatasource: imageSrc
+    }).finally(() => setLoading(!1)));
+  }, [application, imageSrc, spriteName]), {
+    historyCount,
+    setApplication,
+    restore,
+    stopCrop,
+    stopBlur,
+    stopResize,
+    startResize: async () => {
+      setLoading(!0), await historize(startResize), setLoading(!1);
+    },
+    startCrop: async () => {
+      setLoading(!0), await historize(startCrop), setLoading(!1);
+    },
+    startBlur: async () => {
+      setLoading(!0), await historize(startBlur), setLoading(!1);
+    },
+    rotate: async () => {
+      setLoading(!0), await historize(rotate), setLoading(!1);
+    },
+    toBlob,
+    toDataURL,
+    loading
+  };
+}
+export {
+  useImageEditor as default
+};

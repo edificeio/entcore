@@ -1,0 +1,51 @@
+{
+  "name": "@edifice.io/bootstrap",
+  "version": "2.1.1-develop-b2school.20250321113048",
+  "description": "Edifice CSS framework based on Bootstrap",
+  "keywords": [
+    "Bootstrap",
+    "Framework CSS",
+    "Edifice",
+    "Theme"
+  ],
+  "homepage": "https://github.com/edificeio/edifice-frontend-framework/tree/main/packages/bootstrap#readme",
+  "bugs": {
+    "url": "https://github.com/edificeio/edifice-frontend-framework/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/edificeio/edifice-frontend-framework.git"
+  },
+  "license": "AGPL-3.0",
+  "author": "Edifice",
+  "main": "dist/index.css",
+  "files": [
+    "dist",
+    "version.txt"
+  ],
+  "dependencies": {
+    "@popperjs/core": "2.11.8",
+    "bootstrap": "5.3.2"
+  },
+  "devDependencies": {
+    "sass": "^1.81.0",
+    "stylelint": "^16.2.0",
+    "stylelint-config-recommended-scss": "^14.0.0",
+    "stylelint-config-standard": "^36.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "rm -rf dist && cp -r assets dist && pnpm run compile",
+    "clean": "rm -rf dist",
+    "compile": "sass --load-path=node_modules/ --style=compressed src/index.scss dist/index.css",
+    "fix": "stylelint src/**/*.scss --fix",
+    "format": "pnpm format:write && pnpm format:check",
+    "format:check": "npx prettier --check src/**/*.scss",
+    "format:write": "npx prettier --write src/**/*.scss",
+    "generate-commit-version": "node scripts/version.cjs",
+    "lint": "stylelint src/**/*.scss",
+    "watch": "sass --watch --load-path=node_modules/ --style=compressed src/index.scss dist/index.css"
+  }
+}

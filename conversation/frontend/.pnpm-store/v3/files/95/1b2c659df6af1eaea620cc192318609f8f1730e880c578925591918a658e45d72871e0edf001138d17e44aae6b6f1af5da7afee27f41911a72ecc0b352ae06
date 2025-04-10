@@ -1,0 +1,7 @@
+interface ModalProps {
+    isOpen: boolean;
+    onSuccess?: (formulaEditor: string) => void;
+    onCancel?: () => void;
+}
+declare const MathsModal: ({ isOpen, onSuccess, onCancel }: ModalProps) => import("react/jsx-runtime").JSX.Element;
+export default MathsModal;

@@ -1,0 +1,89 @@
+import { jsx, Fragment } from "react/jsx-runtime";
+import { useState, useMemo, useEffect } from "react";
+import { findParentNodeClosestToPos, FloatingMenu } from "@tiptap/react";
+import { useTranslation } from "react-i18next";
+import SvgIconMergeCells from "../../../icons/components/IconMergeCells.js";
+import SvgIconSplitCells from "../../../icons/components/IconSplitCells.js";
+import { TableToolbarAddMenu } from "./TableToolbar.AddMenu.js";
+import { TableToolbarCellColor } from "./TableToolbar.CellColor.js";
+import { TableToolbarDelMenu } from "./TableToolbar.DelMenu.js";
+import { Toolbar } from "../../../../components/Toolbar/Toolbar.js";
+const TableToolbar = ({
+  editor
+}) => {
+  const {
+    t
+  } = useTranslation(), [isSpan, setSpan] = useState(void 0), tippyOptions = useMemo(() => {
+    function adjustRect(rect) {
+      let yOffset = 0;
+      if (window.visualViewport) {
+        const bottomScreen = window.innerHeight || document.documentElement.clientHeight;
+        rect.bottom >= bottomScreen && (yOffset += rect.bottom - bottomScreen - rect.height);
+      }
+      return new DOMRect(rect.x, rect.y - yOffset, rect.width, rect.height);
+    }
+    return {
+      placement: "bottom",
+      offset: [0, 0],
+      zIndex: 999,
+      // popperOptions: {modifiers: [ /*see popper v2 modifiers*/ ]},
+      // Try to get the bounding rect of the table.
+      getReferenceClientRect: () => {
+        const parentDiv = editor != null && editor.isActive("table") ? findParentNodeClosestToPos(editor.state.selection.$anchor, (node) => node.type.name === "table") : null;
+        if (parentDiv) {
+          const parentDomNode = editor == null ? void 0 : editor.view.nodeDOM(parentDiv.pos), tableDomNode = (parentDomNode == null ? void 0 : parentDomNode.querySelector("table")) || parentDomNode;
+          if (tableDomNode)
+            return adjustRect(tableDomNode.getBoundingClientRect());
+        }
+        return new DOMRect(0, 0, 100, 100);
+      }
+    };
+  }, [editor]);
+  return useEffect(() => {
+    const cellAttr = editor == null ? void 0 : editor.getAttributes("tableCell"), headAttr = editor == null ? void 0 : editor.getAttributes("tableHeader");
+    if (typeof cellAttr < "u" || typeof headAttr < "u") {
+      const newSpan = (cellAttr == null ? void 0 : cellAttr.colspan) > 1 || (cellAttr == null ? void 0 : cellAttr.rowspan) > 1 || (headAttr == null ? void 0 : headAttr.colspan) > 1 || (headAttr == null ? void 0 : headAttr.rowspan) > 1;
+      newSpan !== isSpan && setSpan(newSpan);
+    } else
+      isSpan && setSpan(void 0);
+  }, [editor, editor == null ? void 0 : editor.state, isSpan]), /* @__PURE__ */ jsx(Fragment, { children: editor && /* @__PURE__ */ jsx(FloatingMenu, { editor, tippyOptions, shouldShow: () => (editor == null ? void 0 : editor.isEditable) && editor.isActive("table") || !1, children: /* @__PURE__ */ jsx(Toolbar, { className: "p-4", items: [{
+    type: "dropdown",
+    name: "bkg-col",
+    // isEnable:
+    //   typeof editor?.getAttributes("tableCell") !== "undefined",
+    props: {
+      children: (_triggerProps, itemRefs) => /* @__PURE__ */ jsx(TableToolbarCellColor, { editor, itemRefs })
+    }
+  }, {
+    type: "icon",
+    name: "mergeorsplit",
+    // isEnable: typeof isSpan !== "undefined",
+    props: {
+      icon: isSpan ? /* @__PURE__ */ jsx(SvgIconSplitCells, {}) : /* @__PURE__ */ jsx(SvgIconMergeCells, {}),
+      "aria-label": t(isSpan ? "tiptap.table.toolbar.split" : "tiptap.table.toolbar.merge"),
+      onClick: () => editor == null ? void 0 : editor.chain().focus().mergeOrSplit().run()
+    },
+    tooltip: t(isSpan ? "tiptap.table.toolbar.split" : "tiptap.table.toolbar.merge")
+  }, {
+    type: "divider",
+    name: "add-d0"
+  }, {
+    type: "dropdown",
+    name: "add",
+    props: {
+      children: () => /* @__PURE__ */ jsx(TableToolbarAddMenu, { editor })
+    }
+  }, {
+    type: "divider",
+    name: "add-d1"
+  }, {
+    type: "dropdown",
+    name: "del",
+    props: {
+      children: () => /* @__PURE__ */ jsx(TableToolbarDelMenu, { editor })
+    }
+  }] }) }) });
+};
+export {
+  TableToolbar as default
+};

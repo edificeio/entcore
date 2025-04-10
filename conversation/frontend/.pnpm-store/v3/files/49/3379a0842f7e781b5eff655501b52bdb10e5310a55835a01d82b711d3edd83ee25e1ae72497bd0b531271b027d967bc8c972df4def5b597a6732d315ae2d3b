@@ -1,0 +1,16 @@
+import { ComponentPropsWithoutRef, ReactNode } from 'react';
+export interface MainProps extends ComponentPropsWithoutRef<'main'> {
+    /**
+     * App content
+     */
+    children: ReactNode;
+    /**
+     * Optional class for styling purpose
+     */
+    className?: string;
+}
+declare function Main({ children, className, ...restProps }: MainProps): import("react/jsx-runtime").JSX.Element;
+declare namespace Main {
+    var displayName: string;
+}
+export default Main;

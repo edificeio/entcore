@@ -1,0 +1,17 @@
+import { Meta, StoryObj } from '@storybook/react';
+import { default as FileCard } from './FileCard';
+declare const meta: Meta<typeof FileCard>;
+export default meta;
+type Story = StoryObj<typeof FileCard>;
+export declare const Base: Story;
+export declare const AudioFile: Story;
+export declare const ImageFile: Story;
+export declare const VideoFile: Story;
+export declare const TextFile: Story;
+export declare const DocFile: Story;
+export declare const PptFile: Story;
+export declare const PdfFile: Story;
+export declare const ZipFile: Story;
+export declare const CsvFile: Story;
+export declare const XlsFile: Story;
+export declare const MdFile: Story;

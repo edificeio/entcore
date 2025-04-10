@@ -1,0 +1,29 @@
+import { useState, useEffect } from "react";
+import { useInView } from "react-intersection-observer";
+function useThumbnail(src, options) {
+  const [status, setStatus] = useState(null), {
+    ref: inViewRef,
+    inView
+  } = useInView({
+    triggerOnce: !0,
+    ...options == null ? void 0 : options.intersectionOptions
+  });
+  return useEffect(() => {
+    var _a;
+    (_a = options == null ? void 0 : options.ref) != null && _a.current && (inViewRef == null || inViewRef(options.ref.current));
+  }, [options == null ? void 0 : options.ref, inViewRef]), useEffect(() => {
+    if ((options == null ? void 0 : options.ref) === void 0 || inView) {
+      const img = new Image();
+      return img.src = src, img.onload = () => {
+        setStatus(!0);
+      }, img.onerror = () => {
+        setStatus(!1);
+      }, () => {
+        img.onload = null, img.onerror = null, setStatus(null);
+      };
+    }
+  }, [inView]), status;
+}
+export {
+  useThumbnail as default
+};

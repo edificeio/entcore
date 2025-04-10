@@ -1,0 +1,25 @@
+import { jsxs as a, jsx as r } from "react/jsx-runtime";
+import { Files as s } from "@edifice-ui/icons";
+import { AppIcon as l } from "@edifice-ui/react";
+function n({
+  app: e,
+  type: i
+}) {
+  return i === "folder" ? /* @__PURE__ */ r(s, { width: "24", height: "24", className: `color-app-${e == null ? void 0 : e.displayName}` }) : i === "resource" ? /* @__PURE__ */ r(l, { app: e, iconFit: "ratio", size: "24", variant: "rounded" }) : null;
+}
+const g = ({
+  app: e,
+  type: i,
+  name: t
+}) => /* @__PURE__ */ a("div", { className: "d-inline-flex align-items-center card is-selected gap-8", style: {
+  flexDirection: "row",
+  width: "252px",
+  height: "32px",
+  boxShadow: "0 0.2rem 0.6em rgba(0, 0, 0, 0.15)"
+}, children: [
+  /* @__PURE__ */ r("div", { className: "ms-8", children: /* @__PURE__ */ r(n, { app: e, type: i }) }),
+  /* @__PURE__ */ r("div", { className: "text-truncate", children: t })
+] });
+export {
+  g as D
+};

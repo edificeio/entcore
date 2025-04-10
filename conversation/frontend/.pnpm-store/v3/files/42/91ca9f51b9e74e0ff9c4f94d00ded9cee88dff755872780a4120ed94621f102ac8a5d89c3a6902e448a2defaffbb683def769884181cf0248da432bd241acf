@@ -1,0 +1,85 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { useState, useEffect } from "react";
+import parse, { domToReact, attributesToProps } from "html-react-parser";
+import SvgIconBurgerMenu from "../../../modules/icons/components/IconBurgerMenu.js";
+import { useEdificeClient } from "../../../providers/EdificeClientProvider/EdificeClientProvider.hook.js";
+import { useEdificeTheme } from "../../../providers/EdificeThemeProvider/EdificeThemeProvider.hook.js";
+import Button from "../../Button/Button.js";
+function useHelp() {
+  var _a, _b, _c, _d, _e;
+  const {
+    appCode
+  } = useEdificeClient(), {
+    theme
+  } = useEdificeTheme(), [html, setHtml] = useState(""), [visibility, setVisibility] = useState(!0), [isModalOpen, setIsModalOpen] = useState(!1), [error, setError] = useState(!1), helpPath = theme != null && theme.is1d ? "/help-1d" : "/help-2d";
+  useEffect(() => {
+    (async () => {
+      let helpURL = "";
+      helpURL = helpPath + "/application/" + appCode + "/", !appCode && window.location.pathname !== "/adapter" ? helpURL = helpPath + "/application/portal/" : window.location.pathname === "/adapter" ? helpURL = helpPath + "/application/" + window.location.search.split("eliot=")[1].split("&")[0] + "/" : window.location.pathname.includes("/directory/class-admin") ? helpURL = helpPath + "/application/parametrage-de-la-classe/" : (window.location.pathname.includes("/userbook/mon-compte") || window.location.pathname.includes("/timeline/preferencesView") || window.location.pathname.includes("/timeline/historyView")) && (helpURL = helpPath + "/application/userbook/");
+      try {
+        const res = await fetch(helpURL), html2 = await res.text();
+        if (res.status === 404) {
+          setError(!0);
+          return;
+        }
+        setHtml(html2), setError(!1);
+      } catch (error2) {
+        setError(!0), console.error(error2);
+      }
+    })();
+  }, [appCode, helpPath]);
+  const parsedHTML = parse(html, {
+    replace: (domNode) => {
+      const typedDomNode = domNode;
+      if (typedDomNode.attribs && typedDomNode.attribs.id === "TOC")
+        return /* @__PURE__ */ jsxs("nav", { id: "TOC", children: [
+          /* @__PURE__ */ jsx(Button, { onClick: () => {
+            setVisibility(!visibility);
+          }, children: /* @__PURE__ */ jsx(SvgIconBurgerMenu, {}) }),
+          domToReact(typedDomNode.children, {
+            replace: (domNode2) => {
+              const typedDomNode2 = domNode2;
+              if (typedDomNode2.attribs && typedDomNode2.name === "ul")
+                return /* @__PURE__ */ jsx("ul", { id: "TOC-list", style: {
+                  display: visibility ? "block" : "none"
+                }, children: domToReact(typedDomNode2.children, {
+                  replace: (domNode3) => {
+                    const typedDomNode3 = domNode3;
+                    if (typedDomNode3.attribs && typedDomNode3.name === "a")
+                      return /* @__PURE__ */ jsx("a", { ...attributesToProps(typedDomNode3.attribs), children: /* @__PURE__ */ jsx("span", { onClick: () => {
+                        setVisibility(!1);
+                      }, children: domToReact(typedDomNode3.children) }) });
+                  }
+                }) });
+            }
+          })
+        ] });
+      if (typedDomNode.attribs && typedDomNode.attribs.class === "section level2") {
+        const props = attributesToProps(domNode.attribs);
+        return /* @__PURE__ */ jsx("div", { ...props, className: "section level2", style: {
+          display: typedDomNode.attribs.id !== "présentation" ? "none" : "block"
+        }, children: domToReact(typedDomNode.children, {
+          replace: (domNode2) => {
+            const typedDomNode2 = domNode2;
+            if (typedDomNode2.attribs && typedDomNode2.name === "img") {
+              const attribs = domNode2.attribs.src;
+              return /* @__PURE__ */ jsx("img", { ...attributesToProps(typedDomNode2.attribs), src: `${helpPath}/${attribs}`, alt: "" });
+            }
+          }
+        }) });
+      }
+    }
+  }), parsedContent = (_c = (_b = (_a = parsedHTML == null ? void 0 : parsedHTML.props) == null ? void 0 : _a.children.find((child) => child.type === "body")) == null ? void 0 : _b.props) == null ? void 0 : _c.children, parsedHeadline = (_e = (_d = parsedContent == null ? void 0 : parsedContent.find((child) => child.type === "p")) == null ? void 0 : _d.props) == null ? void 0 : _e.children;
+  return {
+    html,
+    visibility,
+    isModalOpen,
+    setIsModalOpen,
+    parsedContent,
+    parsedHeadline,
+    error
+  };
+}
+export {
+  useHelp
+};

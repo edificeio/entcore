@@ -1,0 +1,8 @@
+import { ID, UpdateParameters, UpdateResult } from '@edifice.io/client';
+import { UseMutationResult } from '../../../../../node_modules/@tanstack/react-query';
+export type PublicationType = 'RESTRAINT' | 'IMMEDIATE' | undefined;
+export interface ShareBlogProps {
+    resourceId: ID;
+    updateResource?: UseMutationResult<UpdateResult, unknown, UpdateParameters, unknown>;
+}
+export default function ShareBlog({ resourceId, updateResource, }: ShareBlogProps): import("react/jsx-runtime").JSX.Element;

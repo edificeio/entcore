@@ -1,0 +1,86 @@
+import { useEffect } from "react";
+import { Alert } from "@edifice.io/tiptap-extensions/alert";
+import { FontSize } from "@edifice.io/tiptap-extensions/font-size";
+import { CustomHeading } from "@edifice.io/tiptap-extensions/heading";
+import { CustomHighlight } from "@edifice.io/tiptap-extensions/highlight";
+import { Hyperlink } from "@edifice.io/tiptap-extensions/hyperlink";
+import { Iframe } from "@edifice.io/tiptap-extensions/iframe";
+import { SpeechRecognition } from "@edifice.io/tiptap-extensions/speech-recognition";
+import { SpeechSynthesis } from "@edifice.io/tiptap-extensions/speech-synthesis";
+import { TableCell } from "@edifice.io/tiptap-extensions/table-cell";
+import { Mathematics } from "@tiptap-pro/extension-mathematics";
+import Color from "@tiptap/extension-color";
+import Focus from "@tiptap/extension-focus";
+import FontFamily from "@tiptap/extension-font-family";
+import Placeholder from "@tiptap/extension-placeholder";
+import Subscript from "@tiptap/extension-subscript";
+import Superscript from "@tiptap/extension-superscript";
+import Table from "@tiptap/extension-table";
+import TableHeader from "@tiptap/extension-table-header";
+import TableRow from "@tiptap/extension-table-row";
+import TextAlign from "@tiptap/extension-text-align";
+import TextStyle from "@tiptap/extension-text-style";
+import Typography from "@tiptap/extension-typography";
+import Underline from "@tiptap/extension-underline";
+import { useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { useTranslation } from "react-i18next";
+import { useEdificeClient } from "../../../providers/EdificeClientProvider/EdificeClientProvider.hook.js";
+import useUpload from "../../../hooks/useUpload/useUpload.js";
+import VideoNodeView from "../components/NodeView/VideoNodeView.js";
+import AudioNodeView from "../components/NodeView/AudioNodeView.js";
+import LinkerNodeView from "../components/NodeView/LinkerNodeView.js";
+import ImageNodeView from "../components/NodeView/ImageNodeView.js";
+import AttachmentNodeView from "../components/NodeView/AttachmentNodeView.js";
+import MediaRenderer from "../components/Renderer/MediaRenderer.js";
+import AudioRenderer from "../components/Renderer/AudioRenderer.js";
+import LinkerRenderer from "../components/Renderer/LinkerRenderer.js";
+import AttachmentRenderer from "../components/Renderer/AttachmentRenderer.js";
+const useTipTapEditor = (editable, content, focus, placeholder, onContentChange, visibility = "protected", extensions) => {
+  const {
+    currentLanguage
+  } = useEdificeClient(), {
+    t
+  } = useTranslation(), {
+    uploadFile
+  } = useUpload(visibility), editor = useEditor({
+    // fix WB-2534
+    // TipTap editor must be instantiated in editable mode for table columns to be resizable.
+    // It will then be set in the correct editable mode, by a useEffect below.
+    editable: !0,
+    extensions: [StarterKit, Focus.configure({
+      className: "has-focus",
+      mode: "all"
+    }), Placeholder.configure({
+      placeholder: t(placeholder || "tiptap.placeholder")
+    }), CustomHighlight.configure({
+      multicolor: !0
+    }), Underline, TextStyle, Color, Subscript, Superscript, Table.configure({
+      resizable: !0
+    }), TableRow, TableHeader, TableCell, TextAlign.configure({
+      types: ["heading", "paragraph", "video"]
+    }), CustomHeading.configure({
+      levels: [1, 2]
+    }), Typography, FontSize, SpeechRecognition, SpeechSynthesis.configure({
+      lang: (currentLanguage == null ? void 0 : currentLanguage.length) === 2 ? `${currentLanguage}-${currentLanguage.toUpperCase()}` : "fr-FR"
+    }), Iframe, Hyperlink, FontFamily, Mathematics, Alert, VideoNodeView(MediaRenderer), AudioNodeView(AudioRenderer), LinkerNodeView(LinkerRenderer), ImageNodeView(MediaRenderer, uploadFile), AttachmentNodeView(AttachmentRenderer), ...extensions || []],
+    content,
+    // If the onContentChange callback is provided, we call it on every content change.
+    ...onContentChange ? {
+      onUpdate: onContentChange
+    } : {}
+  });
+  return useEffect(() => {
+    editor == null || editor.setEditable(editable, !1);
+  }, [editor, editable]), useEffect(() => {
+    editor == null || editor.commands.setContent(content);
+  }, [content]), useEffect(() => {
+    focus && (editor == null || editor.commands.focus(focus));
+  }, [editor, focus, editable]), {
+    editor,
+    editable
+  };
+};
+export {
+  useTipTapEditor
+};

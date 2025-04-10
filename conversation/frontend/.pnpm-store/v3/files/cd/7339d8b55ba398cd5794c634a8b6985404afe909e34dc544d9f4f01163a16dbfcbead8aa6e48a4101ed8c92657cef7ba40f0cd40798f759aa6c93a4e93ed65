@@ -1,0 +1,55 @@
+import { jsx, jsxs, Fragment } from "react/jsx-runtime";
+import { useMemo } from "react";
+import clsx from "clsx";
+import { DropzoneContext } from "./DropzoneContext.js";
+import DropzoneDrag from "./DropzoneDrag.js";
+import DropzoneFile from "./DropzoneFile.js";
+import DropzoneImport from "./DropzoneImport.js";
+import useDropzone from "../../hooks/useDropzone/useDropzone.js";
+const Dropzone = ({
+  className,
+  accept,
+  multiple = !0,
+  handle = !1,
+  children
+}) => {
+  const {
+    inputRef,
+    dragging,
+    files,
+    addFile,
+    deleteFile,
+    replaceFileAt,
+    handleDragLeave,
+    handleDragging,
+    handleDrop,
+    handleOnChange
+  } = useDropzone(accept ? {
+    forceFilters: !0
+  } : void 0), classes = clsx("dropzone", {
+    "is-dragging": (multiple || files.length < 1) && dragging,
+    "is-drop-files": !(files.length !== 0 && !handle)
+  }, className), value = useMemo(() => ({
+    inputRef,
+    files,
+    addFile,
+    deleteFile,
+    replaceFileAt
+  }), [addFile, deleteFile, replaceFileAt, files, inputRef]);
+  return /* @__PURE__ */ jsx(DropzoneContext.Provider, { value, children: /* @__PURE__ */ jsxs("div", { className: classes, onDragEnter: handleDragging, onDragOver: handleDragging, onDragLeave: handleDragLeave, onDrop: files.length > 0 && !multiple ? void 0 : handleDrop, children: [
+    /* @__PURE__ */ jsxs("div", { className: "d-flex flex-fill", children: [
+      handle ? null : /* @__PURE__ */ jsxs(Fragment, { children: [
+        /* @__PURE__ */ jsx(Dropzone.File, { multiple, children }),
+        /* @__PURE__ */ jsx(Dropzone.Import, {})
+      ] }),
+      /* @__PURE__ */ jsx(Dropzone.Drag, {})
+    ] }),
+    /* @__PURE__ */ jsx("input", { ref: inputRef, accept: accept == null ? void 0 : accept.join(","), multiple, type: "file", name: "attachment-input", id: "attachment-input", onChange: handleOnChange, hidden: !0 })
+  ] }) });
+};
+Dropzone.File = DropzoneFile;
+Dropzone.Import = DropzoneImport;
+Dropzone.Drag = DropzoneDrag;
+export {
+  Dropzone as default
+};

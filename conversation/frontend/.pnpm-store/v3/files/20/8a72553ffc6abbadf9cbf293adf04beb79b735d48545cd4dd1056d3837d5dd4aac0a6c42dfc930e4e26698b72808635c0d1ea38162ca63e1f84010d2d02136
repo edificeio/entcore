@@ -1,0 +1,17 @@
+import useToggle from "../../../hooks/useToggle/useToggle.js";
+const useMathsModal = (editor) => {
+  const [isOpen, toggle] = useToggle(!1);
+  return {
+    isOpen,
+    toggle,
+    onCancel: () => {
+      toggle();
+    },
+    onSuccess: (formulaEditor) => {
+      editor == null || editor.commands.insertContentAt(editor.view.state.selection, formulaEditor), editor == null || editor.commands.enter(), toggle();
+    }
+  };
+};
+export {
+  useMathsModal
+};

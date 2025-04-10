@@ -1,0 +1,16 @@
+import { WorkspaceElement, WorkspaceVisibility } from '@edifice.io/client';
+import { ToolbarItem } from '../../../components';
+export type RecordState = 'IDLE' | 'RECORDING' | 'PAUSED' | 'RECORDED' | 'SAVING' | 'SAVED';
+export type PlayState = 'IDLE' | 'PLAYING' | 'PAUSED';
+export default function useAudioRecorder(onSaveSuccess?: (resource: WorkspaceElement) => void, onUpdateRecord?: (audioUrl?: string) => void, hideSaveAction?: boolean, visibility?: WorkspaceVisibility, application?: string): {
+    recordState: RecordState;
+    playState: PlayState;
+    audioContext: AudioContext | undefined;
+    recordTime: number;
+    maxDuration: number;
+    audioRef: import('react').RefObject<HTMLAudioElement>;
+    audioNameRef: import('react').RefObject<HTMLInputElement>;
+    toolbarItems: ToolbarItem[];
+    handlePlayEnded: () => void;
+    handleSave: () => Promise<WorkspaceElement | undefined>;
+};

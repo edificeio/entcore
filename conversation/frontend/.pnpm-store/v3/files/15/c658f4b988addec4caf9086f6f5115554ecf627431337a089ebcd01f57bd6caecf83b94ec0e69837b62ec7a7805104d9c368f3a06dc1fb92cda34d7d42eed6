@@ -1,0 +1,9 @@
+import { IWebApp, IWidget } from '@edifice.io/client';
+export default function useEdificeIcons(): {
+    getIconClass: (app: IWebApp | string) => string;
+    getBackgroundIconClass: (app: IWebApp | string) => string;
+    getBackgroundLightIconClass: (app: IWebApp | string) => string;
+    getIconCode: (app: IWebApp | string | undefined) => string;
+    getWidgetIconClass: (widget: IWidget) => string;
+    isIconUrl: (icon: string) => string | boolean;
+};

@@ -1,0 +1,84 @@
+import { WorkspaceElement, WorkspaceVisibility } from '@edifice.io/client';
+import { TabsItemProps } from '../../../components';
+import { ExternalLinkTabProps } from './innertabs/ExternalLink';
+import { InternalLinkTabProps, InternalLinkTabResult } from './innertabs/InternalLink';
+/** Ordered list of tabs. */
+declare const orderedTabs: string[];
+/**
+ * Available features exposed by tabs :
+ * "workspace" | "upload" | "audio-capture" | ...
+ */
+export type AvailableTab = (typeof orderedTabs)[number];
+/** Additional properties of tabs. */
+export type MediaLibraryTabProps = {
+    /**
+     * Media Library types where this tab should be displayed.
+     * "*" for all types.
+     */
+    availableFor: Array<MediaLibraryType | '*' | null>;
+    /** Required checks before using this feature. */
+    isEnable: null | (() => boolean);
+};
+/**
+ * Pre-configured types of media libraries.
+ * Choosing a type will filter out unwanted tabs.
+ */
+export type MediaLibraryType = 
+/** Audio files */
+'audio'
+/** Video files / streams / links */
+ | 'video'
+/** Image files */
+ | 'image'
+/** Attached files */
+ | 'attachment'
+/** Embedded websites */
+ | 'embedder'
+/** Hyperlinks */
+ | 'hyperlink';
+export interface MediaLibraryRef {
+    /** Open the Media Library on given type. */
+    show: (type: MediaLibraryType) => void;
+    /** Close the Media Library. */
+    hide: () => void;
+    /**
+     * Open the MediaLibrary on a internal/external link Tab,
+     * and prefill the tab with data.
+     */
+    showLink: (data: InternalLinkTabProps | ExternalLinkTabProps) => void;
+    /** Get the Media Libray type currently displayed, or null if hidden. */
+    type: MediaLibraryType | null;
+}
+/**
+ * The resulting type depends on the actual selected Tab when modal is closed.
+ */
+export type MediaLibraryResult = WorkspaceElement[] | WorkspaceElement | InternalLinkTabResult | string | /*TODO type des autres résultats ?*/ any;
+/**
+ * MediaLibrary component properties
+ */
+export interface MediaLibraryProps {
+    /** Application Code (example: "blog"). */
+    appCode: string;
+    /** Visibility of the uploaded files "protected" | "public" | "external". */
+    visibility: WorkspaceVisibility;
+    /** Allow selecting / uploading multiple files at once ? */
+    multiple?: boolean;
+    /**
+     * Called when the user validates the modal (Add button).
+     * @param result depends on which InnerTab is visible
+     */
+    onSuccess: (result: MediaLibraryResult) => void;
+    /**
+     * Called when the user closes the modal.
+     * @param uploads uploaded workspace elements to cancel.
+     */
+    onCancel: (uploads?: WorkspaceElement[]) => void;
+    /**
+     * Called when the user swith between tabs, without closing the modal.
+     * @param tab Props of the newly displayed tab.
+     * @param uploads uploaded workspace elements to cancel.
+     */
+    onTabChange?: (tab: TabsItemProps, uploads?: WorkspaceElement[]) => void;
+}
+declare const MediaLibrary: import('react').ForwardRefExoticComponent<MediaLibraryProps & import('react').RefAttributes<MediaLibraryRef>>;
+export default MediaLibrary;

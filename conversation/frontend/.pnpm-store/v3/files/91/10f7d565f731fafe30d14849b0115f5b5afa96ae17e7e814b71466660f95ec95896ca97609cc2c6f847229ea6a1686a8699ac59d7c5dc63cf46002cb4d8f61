@@ -1,0 +1,72 @@
+import { jsx } from "react/jsx-runtime";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import SvgIconBlur from "../../../icons/components/IconBlur.js";
+import SvgIconCrop from "../../../icons/components/IconCrop.js";
+import SvgIconReset from "../../../icons/components/IconReset.js";
+import SvgIconUndo from "../../../icons/components/IconUndo.js";
+import { Toolbar } from "../../../../components/Toolbar/Toolbar.js";
+const ImageEditorToolbar = ({
+  historyCount,
+  handle
+}) => {
+  const {
+    t
+  } = useTranslation(), [action, setAction] = useState(void 0), handleAndSave = (action2) => {
+    setAction(action2), handle(action2);
+  }, ImageEditorItems = [{
+    type: "button",
+    name: "undo",
+    props: {
+      color: "tertiary",
+      leftIcon: /* @__PURE__ */ jsx(SvgIconUndo, {}),
+      "aria-label": t("cancel"),
+      children: t("cancel"),
+      onClick: () => handleAndSave("UNDO"),
+      disabled: historyCount === 0
+    },
+    tooltip: t("cancel")
+  }, {
+    type: "divider",
+    name: "div-1"
+  }, {
+    type: "button",
+    name: "reset",
+    props: {
+      color: "tertiary",
+      leftIcon: /* @__PURE__ */ jsx(SvgIconReset, {}),
+      "aria-label": t("rotate"),
+      children: t("rotate"),
+      onClick: () => handleAndSave("ROTATE")
+    },
+    tooltip: t("rotate")
+  }, {
+    type: "button",
+    name: "crop",
+    props: {
+      color: "tertiary",
+      leftIcon: /* @__PURE__ */ jsx(SvgIconCrop, {}),
+      "aria-label": t("crop"),
+      children: t("crop"),
+      className: action === "CROP" ? "is-selected" : "",
+      onClick: () => handleAndSave("CROP")
+    },
+    tooltip: t("crop")
+  }, {
+    type: "button",
+    name: "blur",
+    props: {
+      color: "tertiary",
+      leftIcon: /* @__PURE__ */ jsx(SvgIconBlur, {}),
+      "aria-label": t("blur"),
+      children: t("blur"),
+      className: action === "BLUR" ? "is-selected" : "",
+      onClick: () => handleAndSave("BLUR")
+    },
+    tooltip: t("blur")
+  }];
+  return /* @__PURE__ */ jsx(Toolbar, { variant: "no-shadow", align: "left", isBlock: !0, items: ImageEditorItems });
+};
+export {
+  ImageEditorToolbar as default
+};

@@ -1,0 +1,27 @@
+import { useState, useEffect } from "react";
+import { odeServices } from "@edifice.io/client";
+import { useEdificeClient } from "../../providers/EdificeClientProvider/EdificeClientProvider.hook.js";
+import useUser from "../useUser/useUser.js";
+const useTrashedResource = (id) => {
+  const {
+    appCode
+  } = useEdificeClient(), {
+    user
+  } = useUser(), [trashed, setTrashed] = useState(!1);
+  useEffect(() => {
+    (async () => {
+      var _a, _b;
+      const explorerData = await odeServices.http().get(`/explorer/resources?application=${appCode}&resource_type=${appCode}&asset_id[]=${id}`), resource = (_a = explorerData == null ? void 0 : explorerData.resources) == null ? void 0 : _a.find((resource2) => resource2.assetId === id);
+      (resource != null && resource.trashed || (_b = resource == null ? void 0 : resource.trashedBy) != null && _b.includes(user == null ? void 0 : user.userId)) && setTrashed(!0);
+    })();
+  }, []), useEffect(() => {
+    if (trashed)
+      throw new Response("", {
+        status: 404,
+        statusText: "Not Found"
+      });
+  }, [trashed]);
+};
+export {
+  useTrashedResource as default
+};

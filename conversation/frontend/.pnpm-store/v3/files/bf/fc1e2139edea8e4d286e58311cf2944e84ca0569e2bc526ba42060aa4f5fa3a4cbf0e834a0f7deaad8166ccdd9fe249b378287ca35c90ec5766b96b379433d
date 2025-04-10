@@ -1,0 +1,18 @@
+import { jsx } from "react/jsx-runtime";
+import { forwardRef } from "react";
+import clsx from "clsx";
+import Button from "./Button.js";
+const IconButton = /* @__PURE__ */ forwardRef(({
+  icon,
+  className,
+  ...restProps
+}, ref) => {
+  const buttonProps = {
+    ...restProps,
+    className: clsx("btn-icon btn-sm", className)
+  };
+  return /* @__PURE__ */ jsx(Button, { ref, ...buttonProps, children: icon });
+});
+export {
+  IconButton as default
+};

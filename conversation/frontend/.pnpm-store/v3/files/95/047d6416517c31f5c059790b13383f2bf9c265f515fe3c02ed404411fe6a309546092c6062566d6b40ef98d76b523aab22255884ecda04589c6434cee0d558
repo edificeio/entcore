@@ -1,0 +1,5 @@
+import { RefObject } from 'react';
+import { Editor } from '@tiptap/react';
+import { DropdownMenuOptions } from '../../../components';
+import { MediaLibraryRef } from '../../multimedia';
+export declare const useActionOptions: (editor: Editor | null, toggleMathsModal: () => void, mediaLibraryRef: RefObject<MediaLibraryRef>) => DropdownMenuOptions[][];

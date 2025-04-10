@@ -1,0 +1,46 @@
+import { jsxs as s, jsx as l } from "react/jsx-runtime";
+import { Modal as a, Button as d } from "@edifice-ui/react";
+import { createPortal as c } from "react-dom";
+import { useTranslation as h } from "react-i18next";
+import { w as m, x as p, f as u } from "./index2.js";
+function f({
+  onSuccess: t
+}) {
+  const i = m(), r = p(), e = u();
+  async function o() {
+    try {
+      e ? await i.mutate() : await r.mutate(), t == null || t();
+    } catch (n) {
+      console.error(n);
+    }
+  }
+  return {
+    isTrashFolder: e,
+    onDelete: o
+  };
+}
+function T({
+  isOpen: t,
+  onSuccess: i = () => ({}),
+  onCancel: r = () => ({})
+}) {
+  const {
+    t: e
+  } = h(), {
+    isTrashFolder: o,
+    onDelete: n
+  } = f({
+    onSuccess: i
+  });
+  return /* @__PURE__ */ c(/* @__PURE__ */ s(a, { isOpen: t, onModalClose: r, id: "deleteModal", children: [
+    /* @__PURE__ */ l(a.Header, { onModalClose: r, children: e(o ? "explorer.delete.title" : "explorer.trash.title") }),
+    /* @__PURE__ */ l(a.Body, { children: /* @__PURE__ */ l("p", { className: "body", children: e(o ? "explorer.delete.subtitle" : "explorer.trash.subtitle") }) }),
+    /* @__PURE__ */ s(a.Footer, { children: [
+      /* @__PURE__ */ l(d, { color: "tertiary", onClick: r, type: "button", variant: "ghost", children: e("explorer.cancel") }),
+      /* @__PURE__ */ l(d, { color: "danger", onClick: n, type: "button", variant: "filled", children: e(o ? "explorer.delete" : "explorer.trash") })
+    ] })
+  ] }), document.getElementById("portal"));
+}
+export {
+  T as default
+};

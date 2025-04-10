@@ -1,0 +1,9 @@
+import { App } from '@edifice.io/client';
+import { EdificeClientProviderProps } from './EdificeClientProvider.context';
+export interface OdeProviderParams {
+    alternativeApp?: boolean;
+    app: App;
+    cdnDomain?: string | null;
+    version?: string | null;
+}
+export declare function EdificeClientProvider({ children, params, }: EdificeClientProviderProps): import("react/jsx-runtime").JSX.Element;

@@ -1,0 +1,11 @@
+import { createContext, useContext } from "react";
+const DropdownContext = /* @__PURE__ */ createContext(null), useDropdownContext = () => {
+  const context = useContext(DropdownContext);
+  if (!context)
+    throw new Error("Cannot be rendered outside the Dropdown Component");
+  return context;
+};
+export {
+  DropdownContext,
+  useDropdownContext
+};

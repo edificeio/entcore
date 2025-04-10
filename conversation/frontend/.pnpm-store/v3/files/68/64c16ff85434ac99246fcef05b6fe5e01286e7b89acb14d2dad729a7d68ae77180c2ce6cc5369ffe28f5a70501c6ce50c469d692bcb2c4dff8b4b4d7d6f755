@@ -1,0 +1,314 @@
+import { jsx } from "react/jsx-runtime";
+import { useReducer, useRef, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
+import SvgIconLoader from "../../icons/components/IconLoader.js";
+import SvgIconPause from "../../icons/components/IconPause.js";
+import SvgIconPlayFilled from "../../icons/components/IconPlayFilled.js";
+import SvgIconRecordPause from "../../icons/components/IconRecordPause.js";
+import SvgIconRecord from "../../icons/components/IconRecord.js";
+import SvgIconRefresh from "../../icons/components/IconRefresh.js";
+import SvgIconRestart from "../../icons/components/IconRestart.js";
+import SvgIconSave from "../../icons/components/IconSave.js";
+import useWorkspaceFile from "../../../hooks/useWorkspaceFile/useWorkspaceFile.js";
+function useAudioRecorder(onSaveSuccess, onUpdateRecord, hideSaveAction = !1, visibility = "protected", application = "media-library") {
+  var _a;
+  function audioReducer(state, action) {
+    return {
+      ...state,
+      ...action.updatedState
+    };
+  }
+  const [{
+    recordState,
+    playState,
+    micStream,
+    micStreamAudioSourceNode,
+    audioWorkletNode,
+    audioContext,
+    encoderWorker,
+    maxDuration,
+    recordTime,
+    isEncoding
+  }, dispatch] = useReducer(audioReducer, {
+    recordState: "IDLE",
+    isEncoding: !1,
+    playState: "IDLE",
+    recordTime: 0,
+    maxDuration: 180
+    // max duration in s (3 minutes by default)
+  }), audioNameRef = useRef(null), audioRef = useRef(null), leftChannelRef = useRef(), rightChannelRef = useRef(), {
+    t
+  } = useTranslation(), {
+    create
+  } = useWorkspaceFile(), BUFFER_SIZE = 128, DEFAULT_SAMPLE_RATE = 48e3;
+  useEffect(() => {
+    const encoderWorker2 = new Worker("/infra/public/js/audioEncoder.js");
+    return dispatch({
+      type: "update",
+      updatedState: {
+        encoderWorker: encoderWorker2
+      }
+    }), encoderWorker2.postMessage(["init", (audioContext == null ? void 0 : audioContext.sampleRate) || DEFAULT_SAMPLE_RATE]), () => {
+      closeAudioStream(), encoderWorker2.terminate();
+    };
+  }, []);
+  const handleAudioWorkletNodeMessage = (event) => {
+    var _a2, _b;
+    const leftChannel = event.data.inputs[0][0];
+    let rightChannel = event.data.inputs[0][1];
+    (!rightChannel || rightChannel.filter((data) => data !== void 0).length === 0) && (rightChannel = leftChannel), (_a2 = leftChannelRef.current) == null || _a2.push(leftChannel), (_b = rightChannelRef.current) == null || _b.push(rightChannel);
+  }, closeAudioStream = useCallback(() => {
+    micStream == null || micStream.getTracks().forEach((track) => track.stop()), micStreamAudioSourceNode == null || micStreamAudioSourceNode.disconnect(), audioWorkletNode == null || audioWorkletNode.port.removeEventListener("message", handleAudioWorkletNodeMessage), audioWorkletNode == null || audioWorkletNode.port.close(), audioWorkletNode == null || audioWorkletNode.disconnect(), audioContext == null || audioContext.close();
+  }, [audioContext, audioWorkletNode, micStream, micStreamAudioSourceNode]), initRecording = async () => {
+    const micStream2 = await navigator.mediaDevices.getUserMedia({
+      audio: !0
+    }), audioContext2 = new AudioContext({
+      sampleRate: DEFAULT_SAMPLE_RATE
+    }), micStreamAudioSourceNode2 = audioContext2.createMediaStreamSource(micStream2);
+    try {
+      await audioContext2.audioWorklet.addModule("/infra/public/js/audio-recorder-processor.js");
+    } catch (err) {
+      console.error(err);
+    }
+    const audioWorkletNode2 = new AudioWorkletNode(audioContext2, "audio-recorder-processor");
+    audioWorkletNode2.port.addEventListener("message", handleAudioWorkletNodeMessage), dispatch({
+      type: "update",
+      updatedState: {
+        micStream: micStream2,
+        micStreamAudioSourceNode: micStreamAudioSourceNode2,
+        audioContext: audioContext2,
+        recordTime: 0,
+        audioWorkletNode: audioWorkletNode2,
+        recordState: "RECORDING",
+        playState: "IDLE"
+      }
+    }), rightChannelRef.current = [], leftChannelRef.current = [], audioWorkletNode2.port.start(), micStreamAudioSourceNode2.connect(audioWorkletNode2), audioWorkletNode2.connect(audioContext2.destination);
+  }, handleRecord = useCallback(async () => {
+    audioRef.current && (audioRef.current.currentTime = 0, audioRef.current.pause()), recordState === "PAUSED" ? (dispatch({
+      type: "update",
+      updatedState: {
+        recordState: "RECORDING",
+        playState: "IDLE"
+      }
+    }), audioContext == null || audioContext.resume(), onUpdateRecord == null || onUpdateRecord(void 0)) : initRecording();
+  }, [recordState, audioContext, audioRef]), handleRecordPause = useCallback(() => {
+    dispatch({
+      type: "update",
+      updatedState: {
+        recordState: "PAUSED",
+        playState: "IDLE",
+        isEncoding: !0
+      }
+    }), audioContext == null || audioContext.suspend(), encoderWorker && leftChannelRef.current && rightChannelRef.current && (encoderWorker.postMessage(["wav", rightChannelRef.current, leftChannelRef.current, rightChannelRef.current.length * BUFFER_SIZE]), encoderWorker.onmessage = (event) => {
+      const audioUrl = window.URL.createObjectURL(event.data);
+      dispatch({
+        type: "update",
+        updatedState: {
+          isEncoding: !1
+        }
+      }), audioRef.current && (audioRef.current.src = audioUrl), onUpdateRecord && onUpdateRecord(audioUrl);
+    });
+  }, [audioContext, encoderWorker, onUpdateRecord]), handlePlay = useCallback(() => {
+    var _a2;
+    dispatch({
+      type: "update",
+      updatedState: {
+        playState: "PLAYING"
+      }
+    }), ((_a2 = audioRef == null ? void 0 : audioRef.current) != null && _a2.currentTime || audioRef.current) && audioRef.current.play();
+  }, [audioRef]), handlePlayPause = useCallback(() => {
+    var _a2;
+    (_a2 = audioRef == null ? void 0 : audioRef.current) == null || _a2.pause(), dispatch({
+      type: "update",
+      updatedState: {
+        playState: "PAUSED"
+      }
+    });
+  }, [audioRef]), handleReset = useCallback(() => {
+    closeAudioStream(), dispatch({
+      type: "update",
+      updatedState: {
+        playState: "IDLE",
+        recordState: "IDLE"
+      }
+    }), rightChannelRef.current = [], leftChannelRef.current = [], onUpdateRecord && onUpdateRecord(void 0);
+  }, [closeAudioStream, onUpdateRecord]), handleSave = useCallback(async () => {
+    var _a2;
+    const audioName = (_a2 = audioNameRef.current) == null ? void 0 : _a2.value;
+    if (!audioName) {
+      console.error("Audio name is required");
+      return;
+    }
+    return audioRef.current && (audioRef.current.pause(), audioRef.current.currentTime = 0), dispatch({
+      type: "update",
+      updatedState: {
+        recordState: "SAVING",
+        playState: "IDLE"
+      }
+    }), new Promise((resolve, reject) => {
+      try {
+        encoderWorker && leftChannelRef.current && rightChannelRef.current && (encoderWorker.postMessage(["mp3", rightChannelRef.current, leftChannelRef.current, rightChannelRef.current.length * BUFFER_SIZE]), encoderWorker.onmessage = async (event) => {
+          if (event.data instanceof Blob) {
+            const file = new File([event.data], audioName, {
+              type: "audio/mp3"
+            }), resourceAudio = await create(file, {
+              application,
+              visibility
+            });
+            resourceAudio && onSaveSuccess && onSaveSuccess(resourceAudio), dispatch({
+              type: "update",
+              updatedState: {
+                recordState: "SAVED"
+              }
+            }), resolve(resourceAudio);
+          }
+        });
+      } catch (error) {
+        dispatch({
+          type: "update",
+          updatedState: {
+            playState: "IDLE",
+            recordState: "IDLE"
+          }
+        }), console.error("Error while saving", error), reject();
+      }
+    });
+  }, [recordState, onSaveSuccess, closeAudioStream]), handlePlayStop = useCallback(() => {
+    audioRef != null && audioRef.current && (audioRef.current.pause(), audioRef.current.currentTime = 0), dispatch({
+      type: "update",
+      updatedState: {
+        playState: "IDLE"
+      }
+    });
+  }, [audioRef]), handlePlayEnded = useCallback(() => {
+    dispatch({
+      type: "update",
+      updatedState: {
+        playState: "PAUSED"
+      }
+    }), audioRef.current && (audioRef.current.currentTime = 0);
+  }, [audioRef]);
+  useEffect(() => {
+    if (recordState === "RECORDING" && audioContext) {
+      const timer = window.setInterval(
+        // Compute exact elapsed time by diffing the start time.
+        () => {
+          dispatch({
+            type: "update",
+            updatedState: {
+              recordTime: audioContext.currentTime
+            }
+          }), audioContext.currentTime >= maxDuration && (handleRecordPause(), window.clearInterval(timer));
+        },
+        100
+      );
+      return () => window.clearInterval(timer);
+    }
+  }, [audioContext, handleRecordPause, maxDuration, recordState]);
+  const recordText = t(recordState === "IDLE" ? "bbm.audio.record.start" : "bbm.audio.record.resume"), toolbarItems = [{
+    type: "icon",
+    name: "record",
+    visibility: recordState === "RECORDING" ? "hide" : "show",
+    props: {
+      icon: /* @__PURE__ */ jsx(SvgIconRecord, {}),
+      color: "danger",
+      disabled: recordState !== "IDLE" && recordState !== "PAUSED" || recordTime >= maxDuration,
+      onClick: handleRecord,
+      "aria-label": recordText
+    },
+    tooltip: recordText
+  }, {
+    type: "icon",
+    name: "recordPause",
+    visibility: recordState === "RECORDING" ? "show" : "hide",
+    props: {
+      icon: /* @__PURE__ */ jsx(SvgIconRecordPause, {}),
+      color: "danger",
+      disabled: recordState !== "RECORDING",
+      onClick: handleRecordPause,
+      "aria-label": t("bbm.audio.record.pause")
+    },
+    tooltip: t("bbm.audio.record.pause")
+  }, {
+    type: "divider"
+  }, {
+    type: "icon",
+    name: "encoding",
+    visibility: isEncoding ? "show" : "hide",
+    props: {
+      icon: /* @__PURE__ */ jsx(SvgIconLoader, { style: {
+        animation: "loading 1s infinite"
+      } }),
+      disabled: !0
+    }
+  }, {
+    type: "icon",
+    name: "play",
+    visibility: isEncoding || playState === "PLAYING" ? "hide" : "show",
+    props: {
+      icon: /* @__PURE__ */ jsx(SvgIconPlayFilled, {}),
+      disabled: recordState !== "RECORDED" && recordState !== "PAUSED" && recordState !== "SAVED",
+      onClick: handlePlay,
+      "aria-label": t("bbm.audio.play.start")
+    },
+    tooltip: t("bbm.audio.play.start")
+  }, {
+    type: "icon",
+    name: "playPause",
+    visibility: !isEncoding && playState === "PLAYING" ? "show" : "hide",
+    props: {
+      icon: /* @__PURE__ */ jsx(SvgIconPause, {}),
+      onClick: handlePlayPause,
+      "aria-label": t("bbm.audio.play.pause")
+    },
+    tooltip: t("bbm.audio.play.pause")
+  }, {
+    type: "icon",
+    name: "stop",
+    props: {
+      icon: /* @__PURE__ */ jsx(SvgIconRestart, {}),
+      disabled: playState !== "PLAYING" && playState !== "PAUSED",
+      onClick: handlePlayStop,
+      "aria-label": t("bbm.audio.play.stop")
+    },
+    tooltip: t("bbm.audio.play.stop")
+  }, {
+    type: "divider"
+  }, {
+    type: "icon",
+    name: "reset",
+    props: {
+      icon: /* @__PURE__ */ jsx(SvgIconRefresh, {}),
+      disabled: recordState !== "RECORDED" && recordState !== "PAUSED" && playState !== "PLAYING" && playState !== "PAUSED",
+      onClick: handleReset,
+      "aria-label": t("bbm.audio.record.reset")
+    },
+    tooltip: t("bbm.audio.record.reset")
+  }, {
+    type: "icon",
+    name: "save",
+    visibility: hideSaveAction ? "hide" : "show",
+    props: {
+      icon: /* @__PURE__ */ jsx(SvgIconSave, {}),
+      disabled: recordState !== "RECORDED" && recordState !== "PAUSED" && playState !== "PLAYING" && playState !== "PAUSED" || recordState === "SAVED" || !((_a = audioNameRef.current) != null && _a.value),
+      onClick: handleSave,
+      "aria-label": t("bbm.audio.record.save")
+    },
+    tooltip: t("bbm.audio.record.save")
+  }];
+  return {
+    recordState,
+    playState,
+    audioContext,
+    recordTime: recordTime * 1e3,
+    maxDuration: maxDuration * 1e3,
+    audioRef,
+    audioNameRef,
+    toolbarItems,
+    handlePlayEnded,
+    handleSave
+  };
+}
+export {
+  useAudioRecorder as default
+};

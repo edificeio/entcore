@@ -1,0 +1,36 @@
+import { jsxs as t, jsx as i } from "react/jsx-runtime";
+import { ArrowRight as o } from "@edifice-ui/icons";
+import { useOdeTheme as n, usePaths as s, useLibraryUrl as c, Image as m } from "@edifice-ui/react";
+import { useTranslation as p } from "react-i18next";
+import { odeServices as d } from "edifice-ts-client";
+const b = () => {
+  const {
+    theme: r
+  } = n(), [l] = s(), e = c(), a = `${l}/${r == null ? void 0 : r.bootstrapVersion}/image-library.svg`;
+  return {
+    libraryUrl: e,
+    imageFullURL: a,
+    handleClick: () => {
+      e && (window.open(e, "_blank"), d.data().trackAccessLibraryFromExplorer());
+    }
+  };
+}, k = () => {
+  const {
+    libraryUrl: r,
+    imageFullURL: l,
+    handleClick: e
+  } = b(), {
+    t: a
+  } = p();
+  return r && /* @__PURE__ */ t("div", { className: "p-16", children: [
+    /* @__PURE__ */ i(m, { width: "270", height: "140", loading: "lazy", className: "rounded", src: l, alt: a("explorer.libray.img.alt") }),
+    /* @__PURE__ */ i("p", { className: "m-8", children: a("explorer.libray.title") }),
+    /* @__PURE__ */ t("button", { type: "button", onClick: e, rel: "noreferrer", className: "btn btn-ghost-primary d-inline-flex align-items-center gap-4 p-8", children: [
+      /* @__PURE__ */ i("span", { children: a("explorer.libray.btn") }),
+      /* @__PURE__ */ i(o, {})
+    ] })
+  ] });
+};
+export {
+  k as default
+};

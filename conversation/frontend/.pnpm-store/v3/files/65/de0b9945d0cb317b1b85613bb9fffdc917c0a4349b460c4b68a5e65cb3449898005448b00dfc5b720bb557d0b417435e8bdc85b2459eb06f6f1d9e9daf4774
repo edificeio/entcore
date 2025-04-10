@@ -1,0 +1,18 @@
+import { ReactNode } from "react";
+import { IWebApp } from "edifice-ts-client";
+export interface BreadcrumbNavProps extends React.ComponentPropsWithRef<"nav"> {
+    /**
+     * Pass all data about current application
+     */
+    app: IWebApp;
+    /**
+     * Children
+     */
+    children: ReactNode;
+    /**
+     * Optional class for styling purpose
+     */
+    className?: string;
+}
+declare const BreadcrumbNav: import("react").ForwardRefExoticComponent<Omit<BreadcrumbNavProps, "ref"> & import("react").RefAttributes<HTMLElement>>;
+export default BreadcrumbNav;

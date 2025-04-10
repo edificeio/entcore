@@ -1,0 +1,5 @@
+export interface EmbedProps {
+    onSuccess: (resource?: string) => void;
+}
+declare const Embed: ({ onSuccess }: EmbedProps) => import("react/jsx-runtime").JSX.Element;
+export default Embed;

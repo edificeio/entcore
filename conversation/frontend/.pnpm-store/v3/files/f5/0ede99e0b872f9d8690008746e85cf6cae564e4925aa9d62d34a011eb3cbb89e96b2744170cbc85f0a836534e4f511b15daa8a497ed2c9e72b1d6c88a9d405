@@ -1,0 +1,6 @@
+import { jsx } from "react/jsx-runtime";
+import Dropdown from "../Dropdown/Dropdown.js";
+const SelectTrigger = (props) => /* @__PURE__ */ jsx(Dropdown.Trigger, { ...props, "aria-haspopup": "listbox", role: "combobox" });
+export {
+  SelectTrigger as default
+};

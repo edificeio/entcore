@@ -1,0 +1,4 @@
+const hasExtension = (extensionName, editor) => !!(editor != null && editor.extensionManager.extensions.find((item) => item.name === extensionName));
+export {
+  hasExtension
+};

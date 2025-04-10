@@ -1,0 +1,18 @@
+import { IAction } from 'edifice-ts-client';
+import { AppParams } from '../../config';
+/**
+ * actionsQueryOptions: check action availability depending on workflow right
+ * @param actions (expects an array of actions)
+ * @returns queryOptions with key, fn, and selected data
+ */
+export declare const actionsQueryOptions: (actions: IAction[], config: AppParams | undefined) => import('@tanstack/react-query').OmitKeyof<import('@tanstack/react-query').UseQueryOptions<Record<string, boolean>, Error, IAction[], import('@tanstack/react-query').QueryKey>, "queryFn"> & {
+    queryFn?: import('@tanstack/react-query').QueryFunction<Record<string, boolean>, import('@tanstack/react-query').QueryKey, never> | undefined;
+} & {
+    queryKey: import('@tanstack/react-query').DataTag<import('@tanstack/react-query').QueryKey, Record<string, boolean>>;
+};
+/**
+ * useActions query
+ * set actions correctly with workflow rights
+ * @returns actions data
+ */
+export declare const useActions: (actions: IAction[]) => import('@tanstack/react-query').UseQueryResult<IAction[], Error>;

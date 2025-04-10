@@ -1,0 +1,13 @@
+/// <reference types="react" />
+import { WorkspaceElement, WorkspaceVisibility } from "edifice-ts-client";
+export interface AudioRecorderProps {
+    onSaveSuccess?: (resource: WorkspaceElement) => void;
+    onRecordUpdated?: (recordURL?: string) => void;
+    hideSaveAction?: boolean;
+    visibility?: WorkspaceVisibility;
+}
+export interface AudioRecorderRef {
+    save: () => Promise<WorkspaceElement | undefined>;
+}
+declare const AudioRecorder: import("react").ForwardRefExoticComponent<AudioRecorderProps & import("react").RefAttributes<unknown>>;
+export default AudioRecorder;

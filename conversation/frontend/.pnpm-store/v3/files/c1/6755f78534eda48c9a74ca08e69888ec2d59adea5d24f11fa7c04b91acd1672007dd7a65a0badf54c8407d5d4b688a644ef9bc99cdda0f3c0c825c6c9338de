@@ -1,0 +1,38 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import clsx from "clsx";
+import { useTranslation } from "react-i18next";
+import SvgIconSearch from "../../modules/icons/components/IconSearch.js";
+import FormControl from "../Form/FormControl.js";
+import SearchButton from "../Button/SearchButton.js";
+const SearchBar = ({
+  isVariant = !1,
+  size = "md",
+  placeholder = "search",
+  className,
+  disabled,
+  onChange,
+  onClick,
+  ...restProps
+}) => {
+  const {
+    t
+  } = useTranslation(), searchbar = clsx(className, {
+    "input-group": !isVariant,
+    "position-relative": isVariant
+  }), input = clsx({
+    "border-end-0": !isVariant,
+    "ps-48": isVariant
+  }), handleClick = () => {
+    onClick == null || onClick();
+  }, handleKeyDown = (e) => {
+    e.key === "Enter" && (e.preventDefault(), handleClick());
+  };
+  return /* @__PURE__ */ jsxs(FormControl, { id: "search-bar", className: searchbar, children: [
+    isVariant && /* @__PURE__ */ jsx("div", { className: "position-absolute z-1 top-50 start-0 translate-middle-y border-0 ps-12 bg-transparent", children: /* @__PURE__ */ jsx(SvgIconSearch, {}) }),
+    /* @__PURE__ */ jsx(FormControl.Input, { type: "search", placeholder: t(placeholder), size, noValidationIcon: !0, className: input, onChange, disabled, onKeyDown: handleKeyDown, ...restProps }),
+    !isVariant && /* @__PURE__ */ jsx(SearchButton, { type: "submit", "aria-label": t("search"), icon: /* @__PURE__ */ jsx(SvgIconSearch, {}), className: "border-start-0", onClick: handleClick })
+  ] });
+};
+export {
+  SearchBar as default
+};

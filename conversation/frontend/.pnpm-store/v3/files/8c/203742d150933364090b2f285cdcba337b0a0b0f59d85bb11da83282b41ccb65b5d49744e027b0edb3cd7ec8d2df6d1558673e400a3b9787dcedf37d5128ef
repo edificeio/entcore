@@ -1,0 +1,152 @@
+import { useCallback, useRef } from "react";
+import { addTimestampToImageUrl } from "@edifice.io/utilities";
+import useWorkspaceFile from "../../../hooks/useWorkspaceFile/useWorkspaceFile.js";
+const useMediaLibraryEditor = (editor) => {
+  const {
+    remove
+  } = useWorkspaceFile(), appendResult = useCallback((type, result) => {
+    if (!(!type || !editor))
+      switch (type) {
+        case "image": {
+          const images = result, imagesSize = images.length - 1;
+          images.forEach((image, index) => {
+            const url = `/workspace/${image.public ? "pub/" : ""}document/${image._id}`;
+            editor == null || editor.chain().focus().setNewImage({
+              /**
+               * WB-3053: addTimestampToImageUrl to update correctly image in tiptap-image-extension
+               */
+              src: addTimestampToImageUrl(url),
+              alt: image.alt,
+              title: image.title
+            }).run(), index < imagesSize && (editor == null || editor.commands.setTextSelection(editor.state.selection.to));
+          });
+          break;
+        }
+        case "audio": {
+          const sounds = Array.isArray(result) ? result : [result], {
+            from
+          } = editor.state.selection;
+          sounds.reverse().forEach((sound) => {
+            editor == null || editor.commands.setAudio(sound._id || "", `/workspace/${sound.public ? "pub/" : ""}document/${sound._id}`), editor == null || editor.commands.setTextSelection(from);
+          });
+          break;
+        }
+        case "video": {
+          if (typeof result == "string")
+            editor == null || editor.commands.insertContentAt(editor.view.state.selection, result);
+          else {
+            const videos = result, {
+              from
+            } = editor.state.selection;
+            videos.reverse().forEach((video) => {
+              editor == null || editor.commands.setVideo(video._id || "", `/workspace/${video.public ? "pub/" : ""}document/${video._id}`, !0), editor == null || editor.commands.setTextSelection(from);
+            });
+          }
+          break;
+        }
+        case "attachment": {
+          let innerHtml = "";
+          for (let i = 0; i < result.length; i++) {
+            const link = result[i];
+            innerHtml += `<a href="/workspace/${link.public ? "pub/" : ""}document/${link._id}">${link.name}
+            </a>`;
+          }
+          const richContent = `<div class="attachments">
+            ${innerHtml}
+          </div>`;
+          editor == null || editor.commands.insertContentAt(editor.view.state.selection, richContent), editor == null || editor.commands.enter();
+          break;
+        }
+        case "hyperlink": {
+          const resourceTabResult = result;
+          if (editor != null && editor.isActive("linker") && editor.commands.unsetLinker(), editor != null && editor.isActive("hyperlink") && editor.commands.toggleMark("hyperlink"), editor == null || editor.commands.focus(), editor.state.selection.empty && Array.isArray(resourceTabResult.resources))
+            resourceTabResult.resources.forEach((link) => {
+              editor == null || editor.commands.setLinker({
+                href: link.path,
+                "data-app-prefix": link.application,
+                "data-id": link.assetId,
+                target: resourceTabResult.target ?? null,
+                title: link.name
+              }), resourceTabResult && resourceTabResult.resources && resourceTabResult.resources.length > 1 && editor.commands.enter();
+            });
+          else {
+            const insertAndSelectText = (name) => {
+              if (!name) return;
+              const from = editor.state.selection.head, to = from + name.length;
+              editor == null || editor.chain().insertContent(name).setTextSelection({
+                from,
+                to
+              }).run();
+            };
+            if (Array.isArray(resourceTabResult.resources))
+              resourceTabResult.resources.forEach((link) => {
+                var _a;
+                editor.state.selection.empty && insertAndSelectText(link.name), editor == null || editor.commands.setLink({
+                  href: link.path,
+                  target: resourceTabResult.target ?? null
+                });
+                const newPosition = editor.state.selection.head;
+                editor.commands.setTextSelection({
+                  from: newPosition,
+                  to: newPosition
+                }), resourceTabResult != null && resourceTabResult.resources && ((_a = resourceTabResult == null ? void 0 : resourceTabResult.resources) == null ? void 0 : _a.length) > 1 && editor.commands.enter();
+              });
+            else {
+              const {
+                url,
+                target,
+                text
+              } = result;
+              if (editor.state.selection.empty)
+                insertAndSelectText(text);
+              else {
+                const {
+                  selection
+                } = editor.view.state, {
+                  from,
+                  to
+                } = selection;
+                text && selection.content().content.child(0).textContent !== text && editor.chain().focus().insertContentAt({
+                  from,
+                  to
+                }, text).setTextSelection({
+                  from,
+                  to: from + text.length
+                }).run();
+              }
+              editor == null || editor.commands.setLink({
+                href: url,
+                title: "",
+                target
+              });
+            }
+          }
+          break;
+        }
+        case "embedder": {
+          editor == null || editor.commands.insertContentAt(editor.view.state.selection, result), editor == null || editor.commands.enter();
+          break;
+        }
+        default:
+          return `<div>[useMediaLibraryEditor/onSuccess] Le contenu de type "${type}" n'est pas convertissable pour l'instant !</div>`;
+      }
+  }, [editor]), mediaLibraryRef = useRef(null);
+  return {
+    ref: mediaLibraryRef,
+    onCancel: async (uploads) => {
+      var _a, _b;
+      (_a = mediaLibraryRef.current) != null && _a.type && uploads && uploads.length > 0 && await remove(uploads), (_b = mediaLibraryRef.current) == null || _b.hide();
+    },
+    onSuccess: (result) => {
+      var _a, _b;
+      (_a = mediaLibraryRef.current) != null && _a.type && (appendResult(mediaLibraryRef.current.type, result), (_b = mediaLibraryRef.current) == null || _b.hide());
+    },
+    onTabChange: async (_tab, uploads) => {
+      var _a;
+      (_a = mediaLibraryRef.current) != null && _a.type && uploads && uploads.length > 0 && await remove(uploads);
+    }
+  };
+};
+export {
+  useMediaLibraryEditor
+};

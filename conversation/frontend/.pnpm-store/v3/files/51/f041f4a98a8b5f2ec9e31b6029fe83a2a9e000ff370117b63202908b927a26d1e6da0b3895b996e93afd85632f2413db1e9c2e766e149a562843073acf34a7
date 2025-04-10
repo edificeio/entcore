@@ -1,0 +1,14 @@
+import { jsx } from "react/jsx-runtime";
+import { forwardRef } from "react";
+import clsx from "clsx";
+const Logo = /* @__PURE__ */ forwardRef(({
+  src,
+  is1d,
+  translate = "Retour accueil"
+}, ref) => {
+  const classes = clsx("navbar-brand d-none d-md-block");
+  return /* @__PURE__ */ jsx("a", { ref, className: classes, href: "/timeline/timeline", "aria-label": translate, children: /* @__PURE__ */ jsx("img", { className: "logo", src, alt: `logo ${is1d ? "ONE" : "NEO"}`, width: "300", height: "52" }) });
+});
+export {
+  Logo as default
+};

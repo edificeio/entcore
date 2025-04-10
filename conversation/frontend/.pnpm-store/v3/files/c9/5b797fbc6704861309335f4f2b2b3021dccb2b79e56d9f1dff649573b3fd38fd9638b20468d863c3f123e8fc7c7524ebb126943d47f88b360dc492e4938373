@@ -1,0 +1,3 @@
+import { CustomToastOptions } from "../../hooks/useToast/useToast";
+declare const useHttpErrorToast: (options?: CustomToastOptions) => string | undefined;
+export default useHttpErrorToast;

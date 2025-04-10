@@ -1,0 +1,21 @@
+import { libraryMaps } from "@edifice.io/utilities";
+import { useEdificeClient } from "../../providers/EdificeClientProvider/EdificeClientProvider.hook.js";
+const useLibraryUrl = () => {
+  var _a;
+  const {
+    user,
+    appCode
+  } = useEdificeClient(), appName = libraryMaps[appCode], libraryApp = user == null ? void 0 : user.apps.find((app) => app.isExternal && app.address.includes("library"));
+  if (!libraryApp)
+    return null;
+  const libraryUrlSplit = (_a = libraryApp.address) == null ? void 0 : _a.split("?");
+  if (!libraryUrlSplit || libraryUrlSplit.length < 2)
+    return null;
+  let libraryHost = libraryUrlSplit[0];
+  libraryHost.endsWith("/") || (libraryHost = `${libraryHost}/`);
+  const platformURLParam = libraryUrlSplit == null ? void 0 : libraryUrlSplit[1], searchParams = `application%5B0%5D=${appName}&page=1&sort_field=views&sort_order=desc`;
+  return `${libraryHost}search/?${platformURLParam}&${searchParams}`;
+};
+export {
+  useLibraryUrl as default
+};

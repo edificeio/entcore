@@ -1,0 +1,1 @@
+export declare function ExplorerBreadcrumb(): import("react/jsx-runtime").JSX.Element;

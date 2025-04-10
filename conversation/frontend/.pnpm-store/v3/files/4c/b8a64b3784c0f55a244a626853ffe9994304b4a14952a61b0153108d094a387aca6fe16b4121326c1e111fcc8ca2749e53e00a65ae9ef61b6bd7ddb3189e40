@@ -1,0 +1,3 @@
+import { IResource } from '@edifice.io/client';
+declare const useResource: (application: string, id: string) => IResource;
+export default useResource;

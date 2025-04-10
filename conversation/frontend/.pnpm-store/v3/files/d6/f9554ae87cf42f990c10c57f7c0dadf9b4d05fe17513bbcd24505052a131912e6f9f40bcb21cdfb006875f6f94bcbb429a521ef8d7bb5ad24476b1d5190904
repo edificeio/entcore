@@ -1,0 +1,2 @@
+import { TreeData } from '@edifice-ui/react';
+export declare function getChildrenIds(data: TreeData, folderId: string): string[];

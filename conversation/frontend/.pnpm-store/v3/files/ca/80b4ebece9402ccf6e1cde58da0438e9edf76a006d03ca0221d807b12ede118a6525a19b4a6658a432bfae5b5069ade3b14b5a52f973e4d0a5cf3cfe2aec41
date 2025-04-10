@@ -1,0 +1,49 @@
+import { odeServices } from "@edifice.io/client";
+const useWorkspaceFile = () => ({
+  createOrUpdate: async ({
+    alt,
+    uri,
+    blob,
+    legend,
+    parentId,
+    application,
+    visibility
+  }) => {
+    const regex = /\/workspace\/document\/([0-9a-fA-F-]+)/, matches = (uri ?? "").match(regex);
+    if (matches && matches.length === 2) {
+      const uuid = matches[1], existingDocuments = await odeServices.workspace().searchDocuments({
+        filter: "all",
+        id: uuid,
+        limit: 1
+      }), name = existingDocuments.length ? existingDocuments[0].name : void 0;
+      await odeServices.workspace().updateFile(uuid, blob, {
+        alt,
+        legend,
+        name
+      });
+      const updatedFile = (await odeServices.workspace().searchDocuments({
+        filter: "all",
+        id: uuid,
+        limit: 1
+      }))[0];
+      return {
+        file: updatedFile,
+        src: `/workspace/${updatedFile.public ? "pub/" : ""}document/${uuid}`
+      };
+    } else {
+      const res = await odeServices.workspace().saveFile(blob, {
+        application,
+        parentId,
+        visibility
+      });
+      return `/workspace/${res.public ? "pub/" : ""}document/${res._id}`;
+    }
+  },
+  // get,
+  create: async (file, params) => await odeServices.workspace().saveFile(file, params),
+  // put,
+  remove: async (file) => !file || Array.isArray(file) && file.length === 0 ? Promise.resolve() : await odeServices.workspace().deleteFile(Array.isArray(file) ? file : [file])
+});
+export {
+  useWorkspaceFile as default
+};

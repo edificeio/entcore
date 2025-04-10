@@ -1,0 +1,31 @@
+import { ChangeEvent } from 'react';
+export interface ComboboxProps extends React.InputHTMLAttributes<HTMLInputElement> {
+    onSearchResultsChange: (model: (string | number)[]) => void;
+    onSearchInputChange: (event: ChangeEvent<HTMLInputElement>) => void;
+    options: OptionListItemType[];
+    value: string;
+    isLoading: boolean;
+    noResult: boolean;
+    searchMinLength?: number;
+    placeholder?: string;
+}
+export interface OptionListItemType {
+    /**
+     * Value
+     */
+    value: string | number;
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Add an icon
+     */
+    icon?: any;
+}
+declare const Combobox: {
+    ({ onSearchResultsChange, onSearchInputChange, options, value, isLoading, noResult, searchMinLength, placeholder, }: ComboboxProps): import("react/jsx-runtime").JSX.Element;
+    Trigger: ({ placeholder, value, searchMinLength, handleSearchInputChange, }: import('./ComboboxTrigger').ComboboxTriggerProps) => import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default Combobox;

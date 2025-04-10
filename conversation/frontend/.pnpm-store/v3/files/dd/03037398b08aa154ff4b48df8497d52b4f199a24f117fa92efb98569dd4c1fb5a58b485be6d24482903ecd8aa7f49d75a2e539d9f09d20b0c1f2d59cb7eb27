@@ -1,0 +1,13 @@
+import { PutShareResponse, ShareRight } from '@edifice.io/client';
+import { UseMutationOptions, UseMutationResult } from '../../../../../node_modules/@tanstack/react-query';
+declare const useShareMutation: ({ application, options, }: {
+    application: string;
+    options?: UseMutationOptions<PutShareResponse, Error, {
+        resourceId: string;
+        rights: ShareRight[];
+    }>;
+}) => UseMutationResult<PutShareResponse, Error, {
+    resourceId: string;
+    rights: ShareRight[];
+}>;
+export default useShareMutation;

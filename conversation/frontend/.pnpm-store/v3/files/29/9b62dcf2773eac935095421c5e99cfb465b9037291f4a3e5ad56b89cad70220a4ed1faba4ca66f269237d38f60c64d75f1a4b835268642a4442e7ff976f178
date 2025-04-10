@@ -1,0 +1,8 @@
+/// <reference types="react" />
+export interface ModalContextProps {
+    ariaLabelId: string;
+    ariaDescriptionId: string;
+    focusId: string | undefined;
+}
+export declare const ModalContext: import("react").Context<ModalContextProps>;
+export declare const useModalContext: () => ModalContextProps;

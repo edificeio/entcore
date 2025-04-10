@@ -1,0 +1,45 @@
+import { jsx, jsxs, Fragment } from "react/jsx-runtime";
+import { useMemo } from "react";
+import { TabsContext } from "../context/TabsContext.js";
+import { useTabs } from "../hooks/useTabs.js";
+import TabsItem from "./TabsItem.js";
+import TabsList from "./TabsList.js";
+import TabsPanel from "./TabsPanel.js";
+const Tabs = ({
+  defaultId,
+  items,
+  onChange,
+  children
+}) => {
+  const {
+    activeTab,
+    setSelectedTab,
+    tabsRef,
+    tabUnderlineLeft,
+    tabUnderlineWidth,
+    onKeyDown
+  } = useTabs({
+    defaultId,
+    items,
+    onChange
+  }), value = useMemo(() => ({
+    activeTab,
+    items,
+    setSelectedTab,
+    tabsRef,
+    tabUnderlineLeft,
+    tabUnderlineWidth,
+    onKeyDown
+  }), [activeTab, items, onKeyDown, setSelectedTab, tabUnderlineLeft, tabUnderlineWidth, tabsRef]), currentItem = items.find((item) => item.id === activeTab);
+  return /* @__PURE__ */ jsx(TabsContext.Provider, { value, children: typeof children == "function" ? children(currentItem) : /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx(Tabs.List, {}),
+    /* @__PURE__ */ jsx(Tabs.Panel, { currentItem, children: currentItem == null ? void 0 : currentItem.content })
+  ] }) });
+};
+Tabs.Item = TabsItem;
+Tabs.Panel = TabsPanel;
+Tabs.List = TabsList;
+export {
+  Tabs,
+  Tabs as default
+};

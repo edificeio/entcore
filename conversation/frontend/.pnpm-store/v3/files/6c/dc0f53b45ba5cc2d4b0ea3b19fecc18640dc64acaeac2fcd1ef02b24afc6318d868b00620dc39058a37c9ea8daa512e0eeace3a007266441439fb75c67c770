@@ -1,0 +1,45 @@
+import { jsxs, Fragment, jsx } from "react/jsx-runtime";
+import { useState, useCallback, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import Tooltip from "../../../../components/Tooltip/Tooltip.js";
+import Dropdown from "../../../../components/Dropdown/Dropdown.js";
+import ColorPickerItem from "../../../../components/ColorPicker/ColorPickerItem.js";
+import ColorPicker from "../../../../components/ColorPicker/ColorPicker.js";
+import { DefaultPalette } from "../../../../components/ColorPicker/ColorPalette.js";
+const TableToolbarCellColor = ({
+  editor,
+  itemRefs
+}) => {
+  const {
+    t
+  } = useTranslation(), [color, setColor] = useState("transparent"), applyColor = useCallback((value) => {
+    editor == null || editor.chain().focus().setCellAttribute(
+      "backgroundColor",
+      // reset color is transparent here => remove bkg color
+      value === "transparent" ? "" : value
+    ).run(), setColor(value);
+  }, [editor, setColor]);
+  useEffect(() => {
+    setColor((editor == null ? void 0 : editor.getAttributes("tableCell").backgroundColor) ?? "transparent");
+  }, [editor, editor == null ? void 0 : editor.state]);
+  const palettes = [{
+    ...DefaultPalette,
+    label: t("tiptap.table.toolbar.cell.color"),
+    reset: {
+      value: "transparent",
+      description: t("tiptap.table.toolbar.cell.none"),
+      isReset: !0
+    }
+  }];
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx(Tooltip, { message: t("tiptap.table.toolbar.cell.bk"), placement: "top", children: /* @__PURE__ */ jsx(Dropdown.Trigger, { variant: "ghost", "aria-label": t("tiptap.table.toolbar.cell.bk"), icon: /* @__PURE__ */ jsx(ColorPickerItem, { model: {
+      value: color,
+      description: "",
+      isReset: !color || color.length === 0 || color === "transparent"
+    } }) }) }),
+    /* @__PURE__ */ jsx(Dropdown.Menu, { children: /* @__PURE__ */ jsx(ColorPicker, { ref: (el) => itemRefs.current["color-picker"] = el, model: color, palettes, onSuccess: (item) => applyColor(item.value) }) })
+  ] });
+};
+export {
+  TableToolbarCellColor
+};

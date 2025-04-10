@@ -1,0 +1,19 @@
+import { ReactNode } from 'react';
+export interface ModalBodyProps {
+    /**
+     *Children
+     */
+    children: ReactNode;
+    /**
+     * Optional class for styling purpose
+     */
+    className?: string | null;
+}
+/**
+ * Modal Body
+ */
+declare const ModalBody: {
+    (props: ModalBodyProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default ModalBody;

@@ -1,0 +1,27 @@
+import { WorkspaceElement } from "../services";
+export type RoleMapperParams = {
+    type: string;
+    previewRole: boolean;
+    extension?: string;
+};
+declare const defaultMappers: {
+    readonly csv: ({ type, extension }: RoleMapperParams) => boolean;
+    readonly doc: ({ type, extension }: RoleMapperParams) => boolean;
+    readonly xls: ({ type, extension }: RoleMapperParams) => boolean;
+    readonly img: ({ type }: RoleMapperParams) => boolean;
+    readonly pdf: ({ type }: RoleMapperParams) => boolean;
+    readonly ppt: ({ type, extension }: RoleMapperParams) => boolean;
+    readonly txt: ({ type, extension }: RoleMapperParams) => boolean;
+    readonly md: ({ type, extension }: RoleMapperParams) => boolean;
+    readonly video: ({ type }: RoleMapperParams) => boolean;
+    readonly audio: ({ type }: RoleMapperParams) => boolean;
+    readonly zip: ({ type }: RoleMapperParams) => boolean;
+};
+export type Role = keyof typeof defaultMappers;
+export type RoleMapper = (params: RoleMapperParams) => Role | undefined;
+export declare abstract class DocumentHelper {
+    private static roleMappers;
+    static getRole(doc: WorkspaceElement): Role | "unknown";
+    static role(contentType: string | undefined, previewRole?: boolean, extension?: string): Role | "unknown";
+}
+export {};

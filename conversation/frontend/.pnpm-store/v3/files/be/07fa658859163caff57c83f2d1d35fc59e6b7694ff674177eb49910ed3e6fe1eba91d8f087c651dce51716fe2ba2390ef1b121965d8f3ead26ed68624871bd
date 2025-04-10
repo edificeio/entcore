@@ -1,0 +1,30 @@
+import { ReactNode } from 'react';
+import { CreateParameters, CreateResult, ID, IFolder, UpdateParameters, UpdateResult } from '@edifice.io/client';
+import { UseMutationResult } from '../../../../node_modules/@tanstack/react-query';
+export interface FormInputs {
+    title: string;
+    description: string;
+    enablePublic: boolean;
+    formSlug: string;
+}
+interface BaseProps {
+    isOpen: boolean;
+    children?: ReactNode | ((...props: any) => ReactNode);
+    inputMaxLength?: number;
+    textareaMaxLength?: number;
+    onSuccess: () => void;
+    onCancel: () => void;
+}
+interface CreateProps extends BaseProps {
+    mode: 'create';
+    createResource?: UseMutationResult<CreateResult, Error, CreateParameters, unknown>;
+    currentFolder: Partial<IFolder>;
+}
+interface UpdateProps extends BaseProps {
+    mode: 'update';
+    updateResource?: UseMutationResult<UpdateResult, unknown, UpdateParameters, unknown>;
+    resourceId: ID;
+}
+type Props = CreateProps | UpdateProps;
+export declare const ResourceModal: ({ isOpen, onCancel, onSuccess, children, inputMaxLength, textareaMaxLength, ...props }: Props) => import("react/jsx-runtime").JSX.Element;
+export default ResourceModal;

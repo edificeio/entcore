@@ -1,0 +1,50 @@
+import { usePrevious } from "@uidotdev/usehooks";
+import { useRef, useState, useEffect, useMemo } from "react";
+const useMenu = () => {
+  const menuRef = useRef(null), menuItems = useRef(/* @__PURE__ */ new Set()).current, [currentIndex, setCurrentIndex] = useState(0), previousIndex = usePrevious(currentIndex) ?? 0;
+  useEffect(() => {
+    var _a, _b;
+    if (currentIndex !== previousIndex) {
+      const items = Array.from(menuItems), currentNode = (_a = items[currentIndex]) == null ? void 0 : _a.firstChild, previousNode = (_b = items[previousIndex]) == null ? void 0 : _b.firstChild;
+      previousNode == null || previousNode.setAttribute("tabindex", "-1"), currentNode == null || currentNode.setAttribute("tabindex", "0"), currentNode == null || currentNode.focus({
+        preventScroll: !0
+      });
+    }
+  }, [currentIndex, previousIndex, menuItems]);
+  const first = () => setCurrentIndex(0), last = () => setCurrentIndex(menuItems.size - 1), next = () => {
+    const index = currentIndex === menuItems.size - 1 ? 0 : currentIndex + 1;
+    setCurrentIndex(index);
+  }, previous = () => {
+    const index = currentIndex === 0 ? menuItems.size - 1 : currentIndex - 1;
+    setCurrentIndex(index);
+  }, onKeyDown = (event) => {
+    switch (event.stopPropagation(), event.code) {
+      case "ArrowUp":
+        event.preventDefault(), previous();
+        break;
+      case "ArrowDown":
+        event.preventDefault(), next();
+        break;
+    }
+    switch (event.code) {
+      case "End":
+        event.preventDefault(), last();
+        break;
+      case "Home":
+        event.preventDefault(), first();
+        break;
+    }
+  }, childProps = useMemo(() => ({
+    "data-menubar-menuitem": "",
+    role: "menuitem"
+  }), []);
+  return {
+    menuRef,
+    menuItems,
+    childProps,
+    onKeyDown
+  };
+};
+export {
+  useMenu
+};

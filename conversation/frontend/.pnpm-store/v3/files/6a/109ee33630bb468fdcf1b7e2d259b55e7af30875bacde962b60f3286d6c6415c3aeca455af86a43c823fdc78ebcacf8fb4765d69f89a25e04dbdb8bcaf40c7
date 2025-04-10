@@ -1,0 +1,8 @@
+import { UseDropdownProps } from '../../hooks/useDropdown/useDropdown';
+type OmittedProps = Omit<UseDropdownProps, 'triggerRef' | 'menuRef'>;
+export interface DropdownContextProps extends OmittedProps {
+    block?: boolean;
+}
+export declare const DropdownContext: import('react').Context<DropdownContextProps | null>;
+export declare const useDropdownContext: () => DropdownContextProps;
+export {};

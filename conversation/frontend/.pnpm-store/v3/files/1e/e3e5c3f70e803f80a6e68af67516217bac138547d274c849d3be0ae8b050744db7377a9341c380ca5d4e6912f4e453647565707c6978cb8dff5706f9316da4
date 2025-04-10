@@ -1,0 +1,62 @@
+import { jsxs, Fragment, jsx } from "react/jsx-runtime";
+import { useTranslation } from "react-i18next";
+import SvgIconCopy from "../../../icons/components/IconCopy.js";
+import { useSlug } from "../hooks/useSlug.js";
+import Heading from "../../../../components/Heading/Heading.js";
+import Alert from "../../../../components/Alert/Alert.js";
+import FormControl from "../../../../components/Form/FormControl.js";
+import Input from "../../../../components/Input/Input.js";
+import Button from "../../../../components/Button/Button.js";
+const BlogPublic = ({
+  appCode,
+  isUpdating,
+  resource,
+  watch,
+  register,
+  setValue
+}) => {
+  const {
+    t
+  } = useTranslation(), {
+    slug,
+    isPublic,
+    resourceName,
+    onPublicChange,
+    onCopyToClipBoard
+  } = useSlug({
+    watch,
+    setValue,
+    selectedResource: isUpdating ? resource : void 0
+  });
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsxs(Heading, { headingStyle: "h4", level: "h3", className: "mb-16", children: [
+      t("explorer.resource.editModal.heading.access"),
+      appCode
+    ] }),
+    /* @__PURE__ */ jsx(Alert, { type: "info", children: t("explorer.resource.editModal.access.alert") }),
+    /* @__PURE__ */ jsxs(FormControl, { id: "flexSwitchCheckDefault", className: "form-switch d-flex gap-8 mt-16 mb-8", children: [
+      /* @__PURE__ */ jsx(FormControl.Input, { type: "checkbox", role: "switch", defaultChecked: isUpdating ? resource.public : !1, ...register("enablePublic", {
+        disabled: !resourceName,
+        onChange: (event) => {
+          const checked = event.target.checked;
+          onPublicChange(checked);
+        }
+      }), className: "form-check-input mt-0", size: "md" }),
+      /* @__PURE__ */ jsx(FormControl.Label, { className: "form-check-label mb-0", children: t("explorer.resource.editModal.access.flexSwitchCheckDefault.label") })
+    ] }),
+    isPublic && /* @__PURE__ */ jsxs(Fragment, { children: [
+      /* @__PURE__ */ jsx(FormControl, { id: "formSlug", children: /* @__PURE__ */ jsx(Input, { type: "text", hidden: !0, defaultValue: isUpdating ? slug : "", ...register("formSlug"), size: "sm" }) }, slug),
+      /* @__PURE__ */ jsxs("div", { className: "d-flex flex-wrap align-items-center gap-4", children: [
+        /* @__PURE__ */ jsxs("p", { className: "text-break", children: [
+          window.location.origin,
+          "/blog/pub/",
+          slug
+        ] }),
+        /* @__PURE__ */ jsx(Button, { color: "primary", disabled: !isPublic, onClick: () => onCopyToClipBoard("/blog"), type: "button", leftIcon: /* @__PURE__ */ jsx(SvgIconCopy, {}), variant: "ghost", className: "text-nowrap", children: t("explorer.resource.editModal.access.url.button") })
+      ] })
+    ] })
+  ] });
+};
+export {
+  BlogPublic as default
+};

@@ -1,0 +1,1 @@
+export default function useTrapFocus(isActive?: boolean): import('react').MutableRefObject<HTMLElement | null>;

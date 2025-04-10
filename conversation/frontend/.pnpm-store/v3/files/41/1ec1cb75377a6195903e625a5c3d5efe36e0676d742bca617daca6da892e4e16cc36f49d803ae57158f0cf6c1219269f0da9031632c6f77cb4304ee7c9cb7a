@@ -1,0 +1,46 @@
+import { UseMutationOptions, UseMutationResult, InfiniteData } from '@tanstack/react-query';
+import { CreateParameters, PutShareResponse, UpdateParameters, UpdateResult, IResource, ISearchResults, ShareRight } from 'edifice-ts-client';
+export * from './actions';
+/**
+ * useSearchContext query
+ * update state according to currentFolder ID
+ * @returns infinite query to load resources
+ */
+export declare const useSearchContext: () => import('@tanstack/react-query').UseInfiniteQueryResult<InfiniteData<ISearchResults, unknown>, Error>;
+/**
+ * useTrash query
+ * Optimistic UI when resource or folder is trashed
+ */
+export declare const useTrash: () => UseMutationResult<import('edifice-ts-client').IActionResult, Error, void, unknown>;
+/**
+ * useRestore query
+ * Optimistic UI when resource is restored
+ */
+export declare const useRestore: () => UseMutationResult<import('edifice-ts-client').IActionResult, Error, void, unknown>;
+/**
+ * useDelete query
+ * Optimistic UI when resource is deleted
+ */
+export declare const useDelete: () => UseMutationResult<import('edifice-ts-client').IActionResult, Error, void, unknown>;
+/**
+ * useCopyResource query.
+ * Optimistic UI when resource is copied.
+ */
+export declare const useCopyResource: () => UseMutationResult<import('edifice-ts-client').CopyResult, Error, IResource, unknown>;
+export declare const useMoveItem: () => UseMutationResult<import('edifice-ts-client').IActionResult, Error, string, unknown>;
+export declare const useCreateFolder: () => UseMutationResult<import('edifice-ts-client').CreateFolderResult, Error, {
+    name: string;
+    parentId: string;
+}, unknown>;
+export declare const useUpdatefolder: () => UseMutationResult<import('edifice-ts-client').CreateFolderResult, Error, {
+    folderId: string;
+    name: string;
+    parentId: string;
+}, unknown>;
+export declare const useShareResource: (application: string) => UseMutationResult<PutShareResponse, Error, {
+    resourceId: string;
+    rights: ShareRight[];
+}>;
+export declare const useUpdateResource: (application: string) => UseMutationResult<UpdateResult, Error, UpdateParameters>;
+export declare const useCustomMutation: <TData = unknown, TError = unknown, TVariables = void, TContext = unknown>(options: UseMutationOptions<TData, TError, TVariables, TContext>) => UseMutationResult<TData, TError, TVariables, TContext>;
+export declare const useCreateResource: () => UseMutationResult<import('edifice-ts-client').CreateResult, Error, CreateParameters, unknown>;

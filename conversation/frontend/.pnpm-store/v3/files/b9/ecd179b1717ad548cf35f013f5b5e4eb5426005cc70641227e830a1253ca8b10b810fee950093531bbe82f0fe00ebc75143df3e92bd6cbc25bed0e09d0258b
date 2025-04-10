@@ -1,0 +1,13 @@
+import { Content, HTMLContent } from '@tiptap/react';
+/**
+ * Hook that creates a tiptap editor instance with plugins for editing comments.
+ *
+ * @param editable truthy if the editor content should be editable
+ * @param content default rich content
+ */
+export declare const useCommentEditor: (editable: boolean, content: Content, maxLength?: number) => {
+    editor: import('@tiptap/core').Editor | null;
+    commentLength: number;
+    getComment: () => HTMLContent;
+    resetComment: () => void;
+};

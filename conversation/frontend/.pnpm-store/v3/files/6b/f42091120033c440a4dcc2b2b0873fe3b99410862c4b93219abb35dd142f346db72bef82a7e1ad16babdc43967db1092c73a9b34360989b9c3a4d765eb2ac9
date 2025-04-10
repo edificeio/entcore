@@ -1,0 +1,19 @@
+import { WorkspaceElement } from '@edifice.io/client';
+import { Editor } from '@tiptap/react';
+import { TabsItemProps } from '../../../components';
+import { MediaLibraryRef, MediaLibraryResult } from '../../multimedia';
+/**
+ * Custom hook to manage MediaLibrary events in an editor.
+ * @param editor an instance
+ * @returns {
+ * `ref`: a reference to a MediaLibrary instance,
+ * `onCancel`: Cancel event handler,
+ * `onSuccess`: Success event handler (adds a formula to the editor content),
+ * }
+ */
+export declare const useMediaLibraryEditor: (editor: Editor | null) => {
+    ref: import('react').RefObject<MediaLibraryRef>;
+    onCancel: (uploads?: WorkspaceElement[]) => Promise<void>;
+    onSuccess: (result: MediaLibraryResult) => void;
+    onTabChange: (_tab: TabsItemProps, uploads?: WorkspaceElement[]) => Promise<void>;
+};

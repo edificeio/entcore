@@ -1,0 +1,37 @@
+export interface DropdownTriggerProps extends React.ComponentPropsWithRef<'button'> {
+    /**
+     * Dropdown trigger title
+     */
+    label?: string;
+    /**
+     * Add an icon in dropdown trigger
+     */
+    icon?: React.ReactNode;
+    /**
+     * Add a badge
+     */
+    badgeContent?: string | number;
+    /**
+     * Set appearance
+     */
+    variant?: 'ghost';
+    /**
+     * Button size
+     */
+    size?: 'sm' | 'md' | 'lg';
+    /**
+     * Disabled Trigger
+     * */
+    disabled?: boolean;
+    /**
+     * Stretch the dropdown trigger.
+     */
+    block?: boolean;
+    /**
+     * Hide the carret
+     */
+    hideCarret?: boolean;
+}
+export type DropdownTriggerType = React.ReactElement<DropdownTriggerProps>;
+declare const DropdownTrigger: import('react').ForwardRefExoticComponent<Omit<DropdownTriggerProps, "ref"> & import('react').RefAttributes<HTMLButtonElement>>;
+export default DropdownTrigger;

@@ -1,0 +1,9 @@
+import { ViewsDetailsProfile } from "edifice-ts-client";
+export interface ViewsCardProps {
+    viewsByProfile: ViewsDetailsProfile;
+}
+declare const ViewsByProfileCard: {
+    ({ viewsByProfile }: ViewsCardProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default ViewsByProfileCard;

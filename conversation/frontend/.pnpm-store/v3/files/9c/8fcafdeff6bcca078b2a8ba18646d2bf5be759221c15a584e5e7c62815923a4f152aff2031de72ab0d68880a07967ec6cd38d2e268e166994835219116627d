@@ -1,0 +1,2 @@
+import { ShareRight } from '@edifice.io/client';
+export declare const showShareRightLine: (shareRight: ShareRight, showBookmarkMembers: boolean) => boolean;

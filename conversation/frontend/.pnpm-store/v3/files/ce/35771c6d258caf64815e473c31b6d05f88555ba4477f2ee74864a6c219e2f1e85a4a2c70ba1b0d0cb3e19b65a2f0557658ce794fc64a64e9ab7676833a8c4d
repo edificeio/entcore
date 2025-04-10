@@ -1,0 +1,331 @@
+import { jsx } from "react/jsx-runtime";
+import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import "@tiptap/react";
+import SvgIconAlignLeft from "../../../icons/components/IconAlignLeft.js";
+import SvgIconBulletList from "../../../icons/components/IconBulletList.js";
+import SvgIconLandscape from "../../../icons/components/IconLandscape.js";
+import SvgIconLink from "../../../icons/components/IconLink.js";
+import SvgIconMic from "../../../icons/components/IconMic.js";
+import SvgIconPaperclip from "../../../icons/components/IconPaperclip.js";
+import SvgIconRecordVideo from "../../../icons/components/IconRecordVideo.js";
+import SvgIconRedo from "../../../icons/components/IconRedo.js";
+import SvgIconSpeechToText from "../../../icons/components/IconSpeechToText.js";
+import SvgIconTextBold from "../../../icons/components/IconTextBold.js";
+import SvgIconTextItalic from "../../../icons/components/IconTextItalic.js";
+import SvgIconTextUnderline from "../../../icons/components/IconTextUnderline.js";
+import SvgIconUndo from "../../../icons/components/IconUndo.js";
+import { hasExtension } from "../../utilities/has-extension.js";
+import { hasMark } from "../../utilities/has-mark.js";
+import { hasTextStyle } from "../../utilities/has-text-style.js";
+import { EditorToolbarDropdownMenu } from "./EditorToolbar.DropdownMenu.js";
+import { EditorToolbarEmoji } from "./EditorToolbar.Emoji.js";
+import { EditorToolbarHighlightColor } from "./EditorToolbar.HighlightColor.js";
+import { EditorToolbarPlusMenu } from "./EditorToolbar.PlusMenu.js";
+import { EditorToolbarTextColor } from "./EditorToolbar.TextColor.js";
+import { EditorToolbarTextSize } from "./EditorToolbar.TextSize.js";
+import { EditorToolbarTypography } from "./EditorToolbar.Typography.js";
+import { useEditorContext } from "../../hooks/useEditorContext.js";
+import { useActionOptions } from "../../hooks/useActionOptions.js";
+import { useSpeechRecognition } from "../../hooks/useSpeechRecognition.js";
+import { Toolbar } from "../../../../components/Toolbar/Toolbar.js";
+const EditorToolbar = ({
+  mediaLibraryRef,
+  toggleMathsModal
+}) => {
+  const {
+    t
+  } = useTranslation(), {
+    id,
+    editor
+  } = useEditorContext(), [plusOptions, listOptions, alignmentOptions] = useActionOptions(editor, toggleMathsModal, mediaLibraryRef), {
+    isAvailable: canRecognizeSpeech,
+    isActive: speechRecognition,
+    toggle: toggleSpeechRecognition
+  } = useSpeechRecognition(editor), toolbarItems = useMemo(() => {
+    const showIf = (truthy) => truthy ? "show" : "hide", showLinkModal = () => {
+      var _a, _b;
+      const {
+        state
+      } = editor;
+      state.selection.empty ? (_a = mediaLibraryRef.current) == null || _a.show("hyperlink") : (_b = mediaLibraryRef.current) == null || _b.showLink({
+        link: {
+          text: state.selection.content().content.child(0).textContent,
+          target: "_blank"
+        },
+        multiNodeSelected: state.selection.content().content.childCount > 1
+      });
+    };
+    return [
+      //--------------- UNDO ---------------//
+      {
+        type: "icon",
+        props: {
+          icon: /* @__PURE__ */ jsx(SvgIconUndo, {}),
+          "aria-label": t("editor.option.undo"),
+          onClick: () => editor == null ? void 0 : editor.chain().focus().undo().run(),
+          disabled: !(editor != null && editor.can().undo())
+        },
+        name: "undo",
+        tooltip: t("editor.option.undo"),
+        visibility: showIf(hasExtension("history", editor))
+      },
+      //--------------- REDO ---------------//
+      {
+        type: "icon",
+        props: {
+          icon: /* @__PURE__ */ jsx(SvgIconRedo, {}),
+          "aria-label": t("editor.option.redo"),
+          onClick: () => editor == null ? void 0 : editor.chain().focus().redo().run(),
+          disabled: !(editor != null && editor.can().redo())
+        },
+        name: "redo",
+        tooltip: t("editor.option.redo"),
+        visibility: showIf(hasExtension("history", editor))
+      },
+      //-------------------------------------//
+      {
+        type: "divider",
+        name: "div-1"
+      },
+      //--------------- IMAGE ---------------//
+      {
+        type: "icon",
+        props: {
+          icon: /* @__PURE__ */ jsx(SvgIconLandscape, {}),
+          className: "bg-green-200",
+          "aria-label": t("tiptap.toolbar.picture"),
+          onClick: () => {
+            var _a;
+            return (_a = mediaLibraryRef.current) == null ? void 0 : _a.show("image");
+          }
+        },
+        name: "image",
+        tooltip: t("tiptap.toolbar.picture")
+      },
+      //--------------- VIDEO ---------------//
+      {
+        type: "icon",
+        props: {
+          icon: /* @__PURE__ */ jsx(SvgIconRecordVideo, {}),
+          className: "bg-purple-200",
+          "aria-label": t("tiptap.toolbar.video"),
+          onClick: () => {
+            var _a;
+            return (_a = mediaLibraryRef.current) == null ? void 0 : _a.show("video");
+          }
+        },
+        name: "video",
+        tooltip: t("tiptap.toolbar.video")
+      },
+      //--------------- AUDIO ---------------//
+      {
+        type: "icon",
+        props: {
+          icon: /* @__PURE__ */ jsx(SvgIconMic, {}),
+          className: "bg-red-200",
+          "aria-label": t("tiptap.toolbar.audio"),
+          onClick: () => {
+            var _a;
+            return (_a = mediaLibraryRef.current) == null ? void 0 : _a.show("audio");
+          }
+        },
+        name: "audio",
+        tooltip: t("tiptap.toolbar.audio")
+      },
+      //--------------- ATTACHMENT ---------------//
+      {
+        type: "icon",
+        props: {
+          icon: /* @__PURE__ */ jsx(SvgIconPaperclip, {}),
+          className: "bg-yellow-200",
+          "aria-label": t("tiptap.toolbar.attachment"),
+          onClick: () => {
+            var _a;
+            return (_a = mediaLibraryRef.current) == null ? void 0 : _a.show("attachment");
+          }
+        },
+        name: "attachment",
+        tooltip: t("tiptap.toolbar.attachment")
+      },
+      {
+        type: "divider",
+        name: "div-2"
+      },
+      //--------------- SPEECH TO TEXT ---------------//
+      {
+        type: "icon",
+        props: {
+          icon: /* @__PURE__ */ jsx(SvgIconSpeechToText, {}),
+          "aria-label": t("tiptap.toolbar.stt"),
+          className: speechRecognition ? "is-selected" : "",
+          onClick: () => toggleSpeechRecognition()
+        },
+        visibility: canRecognizeSpeech ? "show" : "hide",
+        name: "speechtotext",
+        tooltip: t("tiptap.toolbar.stt")
+      },
+      //------------------------------------//
+      {
+        type: "divider",
+        name: "div-speech",
+        visibility: canRecognizeSpeech ? "show" : "hide"
+      },
+      //--------------- TYPOGRAPHY ---------------//
+      {
+        type: "dropdown",
+        props: {
+          children: (triggerProps) => /* @__PURE__ */ jsx(EditorToolbarTypography, { triggerProps })
+        },
+        name: "text_typo",
+        visibility: showIf(hasExtension("fontFamily", editor)),
+        tooltip: t("tiptap.toolbar.typo.choice")
+      },
+      //--------------- TEXT SIZE ---------------//
+      {
+        type: "dropdown",
+        props: {
+          children: (triggerProps) => /* @__PURE__ */ jsx(EditorToolbarTextSize, { triggerProps })
+        },
+        name: "text_size",
+        visibility: showIf(hasExtension("fontSize", editor) || hasExtension("heading", editor)),
+        tooltip: t("tiptap.toolbar.size.choice")
+      },
+      //--------------- TEXT COLOR ---------------//
+      {
+        type: "dropdown",
+        props: {
+          children: (triggerProps, itemRefs) => /* @__PURE__ */ jsx(EditorToolbarTextColor, { triggerProps, itemRefs })
+        },
+        overflow: !1,
+        name: "color",
+        visibility: hasTextStyle("color", editor) ? "show" : "hide",
+        tooltip: t("tiptap.toolbar.color.text")
+      },
+      //--------------- TEXT HIGHLIGHTING COLOR ---------------//
+      {
+        type: "dropdown",
+        props: {
+          children: (triggerProps, itemRefs) => /* @__PURE__ */ jsx(EditorToolbarHighlightColor, { triggerProps, itemRefs })
+        },
+        name: "highlight",
+        visibility: showIf(hasMark("customHighlight", editor)),
+        tooltip: t("tiptap.toolbar.highlight.back")
+      },
+      //-------------------------------------//
+      {
+        type: "divider",
+        name: "div-3"
+      },
+      //--------------- BOLD ---------------//
+      {
+        type: "icon",
+        props: {
+          icon: /* @__PURE__ */ jsx(SvgIconTextBold, {}),
+          "aria-label": t("tiptap.toolbar.bold"),
+          className: editor != null && editor.isActive("bold") ? "is-selected" : "",
+          onClick: () => editor == null ? void 0 : editor.chain().focus().toggleBold().run(),
+          disabled: editor == null ? void 0 : editor.isActive("heading")
+        },
+        name: "bold",
+        visibility: showIf(hasMark("bold", editor)),
+        tooltip: t("tiptap.toolbar.bold")
+      },
+      //--------------- ITALIC ---------------//
+      {
+        type: "icon",
+        props: {
+          icon: /* @__PURE__ */ jsx(SvgIconTextItalic, {}),
+          "aria-label": t("tiptap.toolbar.italic"),
+          className: editor != null && editor.isActive("italic") ? "is-selected" : "",
+          onClick: () => editor == null ? void 0 : editor.chain().focus().toggleItalic().run()
+        },
+        name: "italic",
+        visibility: showIf(hasMark("italic", editor)),
+        tooltip: t("tiptap.toolbar.italic")
+      },
+      //--------------- UNDERLINE ---------------//
+      {
+        type: "icon",
+        props: {
+          icon: /* @__PURE__ */ jsx(SvgIconTextUnderline, {}),
+          "aria-label": t("tiptap.toolbar.underline"),
+          className: editor != null && editor.isActive("underline") ? "is-selected" : "",
+          onClick: () => editor == null ? void 0 : editor.chain().focus().toggleUnderline().run()
+        },
+        name: "underline",
+        visibility: showIf(hasMark("underline", editor)),
+        tooltip: t("tiptap.toolbar.underline")
+      },
+      //-------------------------------------//
+      {
+        type: "divider",
+        name: "div-4"
+      },
+      //--------------- EMOJI ---------------//
+      {
+        type: "dropdown",
+        props: {
+          children: (triggerProps, itemRefs) => /* @__PURE__ */ jsx(EditorToolbarEmoji, { triggerProps, itemRefs })
+        },
+        name: "emoji",
+        tooltip: t("tiptap.toolbar.emojisPicker")
+      },
+      //--------------- LINKER (internal / external) ---------------//
+      {
+        type: "icon",
+        props: {
+          icon: /* @__PURE__ */ jsx(SvgIconLink, {}),
+          "aria-label": t("tiptap.toolbar.linker"),
+          className: editor != null && editor.isActive("linker") ? "is-selected" : "",
+          onClick: () => showLinkModal()
+        },
+        name: "linker",
+        tooltip: t("tiptap.toolbar.linker")
+      },
+      //-----------------------------------//
+      {
+        type: "divider",
+        name: "div-5"
+      },
+      //--------------- LIST MENU ---------------//
+      {
+        type: "dropdown",
+        props: {
+          children: (triggerProps) => /* @__PURE__ */ jsx(EditorToolbarDropdownMenu, { triggerProps, icon: /* @__PURE__ */ jsx(SvgIconBulletList, {}), ariaLabel: t("tiptap.toolbar.listoptions"), options: listOptions })
+        },
+        name: "list",
+        visibility: showIf(hasExtension("starterKit", editor)),
+        tooltip: t("tiptap.toolbar.listoptions")
+      },
+      //--------------- TEXT ALIGNMENT ---------------//
+      {
+        type: "dropdown",
+        props: {
+          children: (triggerProps) => /* @__PURE__ */ jsx(EditorToolbarDropdownMenu, { triggerProps, icon: /* @__PURE__ */ jsx(SvgIconAlignLeft, {}), ariaLabel: t("tiptap.toolbar.align"), options: alignmentOptions })
+        },
+        name: "alignment",
+        visibility: showIf(hasExtension("textAlign", editor)),
+        tooltip: t("tiptap.toolbar.align")
+      },
+      //-------------------------------------//
+      {
+        type: "divider",
+        name: "div-6"
+      },
+      //--------------- MORE sub-menu ---------------//
+      {
+        type: "dropdown",
+        props: {
+          children: () => /* @__PURE__ */ jsx(EditorToolbarPlusMenu, { options: plusOptions })
+        },
+        name: "plus",
+        visibility: showIf(hasExtension("textAlign", editor))
+      }
+    ];
+  }, [alignmentOptions, canRecognizeSpeech, editor, listOptions, mediaLibraryRef, plusOptions, speechRecognition, t, toggleSpeechRecognition]);
+  return /* @__PURE__ */ jsx("div", { className: "sticky-top z-1 editor-toolbar rounded-3", children: /* @__PURE__ */ jsx(Toolbar, { items: toolbarItems, variant: "no-shadow", className: "rounded-top-3", isBlock: !0, align: "left", ariaControls: id }) });
+};
+export {
+  EditorToolbar
+};

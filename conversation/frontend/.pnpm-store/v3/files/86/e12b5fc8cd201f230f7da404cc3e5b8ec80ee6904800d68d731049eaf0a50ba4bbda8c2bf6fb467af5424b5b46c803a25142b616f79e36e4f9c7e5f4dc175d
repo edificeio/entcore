@@ -1,0 +1,4 @@
+export declare const TableTh: {
+    (props: React.HTMLAttributes<HTMLTableCellElement>): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};

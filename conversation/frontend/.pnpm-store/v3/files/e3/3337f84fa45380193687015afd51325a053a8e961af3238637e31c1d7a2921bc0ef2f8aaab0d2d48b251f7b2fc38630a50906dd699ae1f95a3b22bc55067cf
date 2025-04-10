@@ -1,0 +1,9 @@
+import { ID } from "edifice-ts-client";
+interface PublishModalProps {
+    isOpen: boolean;
+    resourceId: ID;
+    onSuccess: () => void;
+    onCancel: () => void;
+}
+export default function PublishModal({ isOpen, resourceId, onSuccess, onCancel, }: PublishModalProps): import("react/jsx-runtime").JSX.Element;
+export {};

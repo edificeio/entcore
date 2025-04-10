@@ -1,0 +1,31 @@
+import { WorkspaceVisibility } from '@edifice.io/client';
+import { Editor } from '@tiptap/react';
+type EditedImage = {
+    src: string;
+    alt?: string;
+    title?: string;
+} | undefined;
+/**
+ * Custom hook to manage ImageModal success and cancelation in the current editor context.
+ * @returns {
+ * `isOpen`: truthy boolean when the modal should be visible,
+ * `currentImage`: the image being edited,
+ * `toggle`: an imperative function to toggle the `isOpen` value,
+ * `handleCancel`: Cancel event handler,
+ * `handleEdit`: Edit event handler,
+ * `handleSave`: Success event handler,
+ * }
+ */
+export declare const useImageModal: (editor: Editor | null, application?: string, visibility?: WorkspaceVisibility) => {
+    isOpen: boolean;
+    currentImage: EditedImage;
+    toggle: any;
+    handleCancel: () => void;
+    handleEdit: () => void;
+    handleSave: ({ blob, legend, altText: alt, }: {
+        blob: Blob;
+        legend: string;
+        altText: string;
+    }) => Promise<void>;
+};
+export {};

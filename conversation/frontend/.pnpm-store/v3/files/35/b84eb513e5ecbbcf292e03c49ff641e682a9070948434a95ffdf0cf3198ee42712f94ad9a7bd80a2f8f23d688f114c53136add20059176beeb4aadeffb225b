@@ -1,0 +1,5 @@
+import { FormDataProps } from '../hooks/usePublishModal';
+export declare function ToastError({ formData, errorMessage, }: {
+    formData?: FormDataProps;
+    errorMessage?: string;
+}): import("react/jsx-runtime").JSX.Element;

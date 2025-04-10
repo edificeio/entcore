@@ -1,0 +1,161 @@
+import { arrayMove } from "@dnd-kit/sortable";
+function getDragDepth(offset, indentationWidth) {
+  return Math.round(offset / indentationWidth);
+}
+function getSubtreeIndices(flattenedTree, activeIndex) {
+  const indices = [activeIndex], nodeIds = [flattenedTree[activeIndex].id];
+  for (let i = activeIndex + 1; i < flattenedTree.length; i++) {
+    const item = flattenedTree[i];
+    item.parentId && nodeIds.includes(item.parentId) && (indices.push(i), nodeIds.push(item.id));
+  }
+  return indices;
+}
+function determineNewParentId(active, over, activeNode, overNode, projected) {
+  if (projected && (projected.depth === 0 || projected.depth === 1))
+    return projected.parentId;
+  if (active.id !== (over == null ? void 0 : over.id) && overNode)
+    return overNode.parentId === activeNode.parentId ? activeNode.parentId : overNode.parentId;
+}
+function getActiveAndOverNodes(tree, activeId, overId) {
+  const activeNodeIndex = tree.findIndex(({
+    id
+  }) => id === activeId), overNodeIndex = overId ? tree.findIndex(({
+    id
+  }) => id === overId) : -1, activeNode = tree[activeNodeIndex], overNode = overNodeIndex !== -1 ? tree[overNodeIndex] : null;
+  return {
+    activeNode,
+    activeNodeIndex,
+    overNode,
+    overNodeIndex
+  };
+}
+function getIndicesToUpdate(activeNode, activeNodeIndex, flattenedTree, projected) {
+  return activeNode.children && activeNode.children.length > 0 && (projected == null ? void 0 : projected.depth) === 1 ? getSubtreeIndices(flattenedTree, activeNodeIndex) : [activeNodeIndex];
+}
+function flattenTree(tree, parentId, depth = 0) {
+  return tree.reduce((acc, node) => (acc.push({
+    ...node,
+    id: node.id,
+    name: node.name,
+    parentId: parentId ?? null,
+    position: node.position ?? void 0,
+    depth: depth ?? 0,
+    children: node.children
+  }), node.children && node.children.length > 0 && (acc = acc.concat(flattenTree(node.children, node.id, depth + 1))), acc), []);
+}
+function flattenNodes(nodes, expandedNodes) {
+  const flatten = (nodes2, isChild = !1, parentExpanded = !0) => nodes2.reduce((acc, node) => {
+    var _a;
+    const isExpanded = expandedNodes.has(node.id) && node.children && node.children.length > 0;
+    return acc.push({
+      ...node,
+      id: node.id,
+      name: node.name,
+      isChild,
+      haveChilds: !!((_a = node.children) != null && _a.length),
+      expandNode: isExpanded ?? !1,
+      parentExpanded
+    }), node.children && isExpanded && (acc = acc.concat(flatten(node.children, !0, isExpanded))), acc;
+  }, []);
+  return flatten(nodes);
+}
+function updateParentIds(flattenedTree, indices, newParentId) {
+  indices.forEach((index) => {
+    flattenedTree[index] = {
+      ...flattenedTree[index],
+      parentId: newParentId
+    };
+  });
+}
+function findItemIndexInTree(tree, itemId) {
+  for (let i = 0; i < tree.length; i++) {
+    const node = tree[i];
+    if (node.id === itemId)
+      return i;
+    if (node.children && node.children.length > 0) {
+      const result = findItemIndexInTree(node.children, itemId);
+      if (result)
+        return result;
+    }
+  }
+  return 0;
+}
+function generateUpdateData(updatedFlattenedTree, tree) {
+  const updateArray = [];
+  let positionCounter = 0;
+  const itemMap = /* @__PURE__ */ new Map();
+  updatedFlattenedTree.forEach((item) => {
+    itemMap.set(item.id, item);
+  });
+  function traverse(items, parentId) {
+    for (const item of items) {
+      const updateItem = {
+        _id: item.id,
+        position: positionCounter,
+        parentId: parentId ?? void 0,
+        isVisible: item.isVisible
+      };
+      updateArray.push(updateItem);
+      const flattenedItem = itemMap.get(item.id);
+      flattenedItem && (flattenedItem.position = positionCounter), positionCounter++, item.children && item.children.length > 0 && traverse(item.children, item.id);
+    }
+  }
+  return traverse(tree, null), {
+    updateArray,
+    updatedTreeData: updatedFlattenedTree
+  };
+}
+const buildTree = (flatNodes) => {
+  const nodeMap = /* @__PURE__ */ new Map();
+  flatNodes.forEach((node) => {
+    nodeMap.set(node.id, {
+      id: node.id,
+      name: node.name,
+      children: [],
+      position: node.position,
+      isVisible: node.isVisible
+    });
+  });
+  const tree = [];
+  return flatNodes.forEach((node) => {
+    var _a;
+    const treeNode = nodeMap.get(node.id);
+    if (node.parentId === null || node.parentId === void 0)
+      tree.push(treeNode);
+    else {
+      const parentNode = nodeMap.get(node.parentId);
+      parentNode && (parentNode.children = parentNode.children ?? void 0, (_a = parentNode.children) == null || _a.push(treeNode));
+    }
+  }), tree;
+};
+function getProjection(items, activeId, overId, dragOffset, indentationWidth) {
+  const overItemIndex = items.findIndex(({
+    id
+  }) => id === overId), activeItemIndex = items.findIndex(({
+    id
+  }) => id === activeId), activeItem = items[activeItemIndex], newItems = arrayMove(items, activeItemIndex, overItemIndex), previousItem = newItems[overItemIndex - 1], dragDepth = getDragDepth(dragOffset, indentationWidth), projectedDepth = activeItem.depth + dragDepth;
+  let depth = projectedDepth + activeItem.depth;
+  return previousItem ? depth = Math.max(0, Math.min(1, projectedDepth)) : depth = 0, {
+    depth,
+    parentId: getParentId(),
+    activeId,
+    previousItem
+  };
+  function getParentId() {
+    var _a;
+    return depth === 0 || !previousItem ? null : depth === previousItem.depth ? previousItem.parentId : depth > previousItem.depth ? previousItem.id : ((_a = newItems.slice(0, overItemIndex).reverse().find((item) => item.depth === depth)) == null ? void 0 : _a.parentId) ?? null;
+  }
+}
+export {
+  buildTree,
+  determineNewParentId,
+  findItemIndexInTree,
+  flattenNodes,
+  flattenTree,
+  generateUpdateData,
+  getActiveAndOverNodes,
+  getDragDepth,
+  getIndicesToUpdate,
+  getProjection,
+  updateParentIds
+};

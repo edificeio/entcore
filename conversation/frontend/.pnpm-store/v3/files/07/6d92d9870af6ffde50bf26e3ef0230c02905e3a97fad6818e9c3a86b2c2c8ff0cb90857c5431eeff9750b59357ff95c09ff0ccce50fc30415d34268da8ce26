@@ -1,0 +1,29 @@
+import { jsx, jsxs } from "react/jsx-runtime";
+import { Controller } from "react-hook-form";
+import { useTranslation } from "react-i18next";
+import { useActivitiesOptions } from "../hooks/useActivitiesOptions.js";
+import Dropdown from "../../../../components/Dropdown/Dropdown.js";
+const ActivitiesDropdown = ({
+  control,
+  selectedActivities,
+  selectActivities
+}) => {
+  const activitiesOptions = useActivitiesOptions(), {
+    t
+  } = useTranslation();
+  return /* @__PURE__ */ jsx("div", { className: "col d-flex", children: /* @__PURE__ */ jsx(Controller, { name: "activityType", control, rules: {
+    required: !0
+  }, render: ({
+    field: {
+      onChange
+    }
+  }) => /* @__PURE__ */ jsxs(Dropdown, { block: !0, overflow: !0, children: [
+    /* @__PURE__ */ jsx(Dropdown.Trigger, { size: "md", label: t("bpr.form.publication.type"), badgeContent: selectedActivities == null ? void 0 : selectedActivities.length }),
+    /* @__PURE__ */ jsx(Dropdown.Menu, { children: activitiesOptions.map((option, index) => /* @__PURE__ */ jsx(Dropdown.CheckboxItem, { value: option.value, model: selectedActivities, onChange: () => {
+      selectActivities(option.value), onChange(option.value);
+    }, children: option.label }, index)) })
+  ] }) }) });
+};
+export {
+  ActivitiesDropdown
+};

@@ -1,0 +1,17 @@
+import { jsx } from "react/jsx-runtime";
+import { useTranslation } from "react-i18next";
+import useDirectory from "../../../hooks/useDirectory/useDirectory.js";
+import Avatar from "../../../components/Avatar/Avatar.js";
+const CommentAvatar = ({
+  id
+}) => {
+  const {
+    getAvatarURL
+  } = useDirectory(), {
+    t
+  } = useTranslation();
+  return /* @__PURE__ */ jsx(Avatar, { alt: t("comment.author.avatar"), size: "sm", src: getAvatarURL(id, "user"), variant: "circle" });
+};
+export {
+  CommentAvatar
+};

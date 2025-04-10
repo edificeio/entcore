@@ -1,0 +1,33 @@
+import { jsx, jsxs } from "react/jsx-runtime";
+import { useId } from "react";
+import clsx from "clsx";
+import { useDropdownContext } from "./DropdownContext.js";
+const DropdownItem = ({
+  type = "action",
+  icon,
+  onClick,
+  children,
+  className,
+  ...restProps
+}) => {
+  const {
+    itemProps,
+    itemRefs,
+    isFocused
+  } = useDropdownContext(), {
+    onMenuItemKeyDown,
+    onMenuItemMouseEnter,
+    onMenuItemClick
+  } = itemProps, handleOnClick = (event) => {
+    onClick == null || onClick(event), type === "action" && (onMenuItemClick(), event.stopPropagation());
+  }, id = useId(), dropdownItem = clsx("dropdown-item", {
+    focus: isFocused === id
+  }, className);
+  return /* @__PURE__ */ jsx("div", { id, role: "menuitem", ref: (el) => itemRefs.current[id] = el, tabIndex: isFocused === id ? 0 : -1, className: dropdownItem, "aria-current": isFocused === id, onClick: handleOnClick, onMouseEnter: onMenuItemMouseEnter, onKeyDown: (event) => onMenuItemKeyDown(event, onClick), ...restProps, children: /* @__PURE__ */ jsxs("div", { className: "d-flex gap-8 align-items-center", children: [
+    icon,
+    children
+  ] }) });
+};
+export {
+  DropdownItem as default
+};

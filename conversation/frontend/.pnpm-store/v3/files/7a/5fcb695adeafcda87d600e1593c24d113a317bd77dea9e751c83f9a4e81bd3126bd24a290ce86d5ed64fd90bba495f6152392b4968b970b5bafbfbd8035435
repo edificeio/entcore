@@ -1,0 +1,3 @@
+import { WorkspaceElement } from '@edifice.io/client';
+declare const ImageNodeView: (Component: any, uploadFile: (file: File) => Promise<WorkspaceElement | null>) => import('@tiptap/core').Node<import('@edifice.io/tiptap-extensions/image').CustomImageOptions, any>;
+export default ImageNodeView;

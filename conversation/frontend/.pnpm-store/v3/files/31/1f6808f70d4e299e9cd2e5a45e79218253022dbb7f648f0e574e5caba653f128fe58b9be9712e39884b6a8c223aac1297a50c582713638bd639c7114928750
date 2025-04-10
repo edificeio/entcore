@@ -1,0 +1,6 @@
+/**
+ *
+ * @param imageUrl : string
+ * @returns workspace file path with timestamp
+ */
+export declare function addTimestampToImageUrl(imageUrl: string): string;

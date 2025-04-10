@@ -1,0 +1,2 @@
+/// <reference types="react" />
+export declare const useAutosizeTextarea: (autoFocus?: boolean) => [import("react").RefObject<HTMLTextAreaElement>, (event: React.FocusEvent<HTMLTextAreaElement>) => void, () => void];

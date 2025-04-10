@@ -1,0 +1,10 @@
+/// <reference types="react" />
+import { FlattenedItem, SortableTreeProps } from "../types";
+declare const SortableTree: {
+    ({ nodes, selectedNodeId: externalSelectedNodeId, showIcon, shouldExpandAllNodes, renderNode, isDisabled, onTreeItemClick, onSortable, }: SortableTreeProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export declare const DragOverlayItem: import("react").ForwardRefExoticComponent<{
+    activeItem: FlattenedItem | null | undefined;
+} & import("react").RefAttributes<HTMLDivElement>>;
+export default SortableTree;

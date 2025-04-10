@@ -1,0 +1,2 @@
+import { IAction } from '../services';
+export declare const isActionAvailable: (workflow: string, actions: IAction[] | undefined) => boolean | undefined;

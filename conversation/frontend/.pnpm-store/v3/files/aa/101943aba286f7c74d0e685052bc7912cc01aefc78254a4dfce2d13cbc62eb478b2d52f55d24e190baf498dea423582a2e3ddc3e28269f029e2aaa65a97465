@@ -1,0 +1,18 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { forwardRef } from "react";
+import SvgIconPaperclip from "../../modules/icons/components/IconPaperclip.js";
+import Tooltip from "../Tooltip/Tooltip.js";
+const Attachment = /* @__PURE__ */ forwardRef(({
+  name = "Attachment Name",
+  options,
+  ...restProps
+}, ref) => /* @__PURE__ */ jsxs("div", { ref, className: "attachment px-12 py-8", ...restProps, tabIndex: 0, children: [
+  /* @__PURE__ */ jsxs(Tooltip, { message: name, className: "filename text-truncate d-flex align-items-center gap-8", children: [
+    /* @__PURE__ */ jsx(SvgIconPaperclip, { height: 22, width: 22 }),
+    /* @__PURE__ */ jsx("div", { className: "filename text-truncate", children: name })
+  ] }),
+  options && /* @__PURE__ */ jsx("div", { className: "options ps-12", children: options })
+] }));
+export {
+  Attachment as default
+};

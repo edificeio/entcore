@@ -1,0 +1,11 @@
+import { useContext } from "react";
+import { EdificeThemeContext } from "./EdificeThemeProvider.context.js";
+function useEdificeTheme() {
+  const context = useContext(EdificeThemeContext);
+  if (!context)
+    throw new Error("Cannot be used outside of EdificeThemeProvider");
+  return context;
+}
+export {
+  useEdificeTheme
+};

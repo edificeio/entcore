@@ -1,0 +1,25 @@
+import * as PIXI from "pixi.js";
+/**
+ * Draw all graphical object to control the resize
+ *
+ * @param application the PIXI.Application context
+ * @param spriteName the name of the sprite representing the image
+ */
+export declare function start(application: PIXI.Application, spriteName: string): void;
+/**
+ * If {saveChanges} is true remove all graphical controls then resize the sprite
+ * If {saveChanges} is false remove all graphical controls and keep original size
+ *
+ * @param application the PIXI.Application context
+ * @param param.saveChanges true if we should save the resize
+ * @param param.spriteName the name of the sprite representing the original image
+ */
+export declare function stop(application: PIXI.Application): void;
+/**
+ *
+ * @param application the PIXI.Application context
+ * @param spriteName  the name of the sprite representing the image
+ * @param size the target size of the image {width, height}
+ * @returns a PIXI.Sprite with a image resized or undefined if not found
+ */
+export declare function save(application: PIXI.Application): PIXI.Sprite | undefined;

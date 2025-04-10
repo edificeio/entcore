@@ -1,0 +1,6 @@
+export interface VideoEmbedProps {
+    switchType?: (type: "embedder") => void;
+    onSuccess: (resource?: string) => void;
+}
+declare const VideoEmbed: ({ switchType, onSuccess }: VideoEmbedProps) => import("react/jsx-runtime").JSX.Element;
+export default VideoEmbed;

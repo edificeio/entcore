@@ -1,0 +1,46 @@
+import { useState, useId, useCallback, useMemo } from "react";
+import { odeServices } from "@edifice.io/client";
+import { useHover } from "@uidotdev/usehooks";
+import { useTranslation } from "react-i18next";
+import { useEdificeClient } from "../../../providers/EdificeClientProvider/EdificeClientProvider.hook.js";
+import { useEdificeTheme } from "../../../providers/EdificeThemeProvider/EdificeThemeProvider.hook.js";
+import useBookmark from "../../../hooks/useBookmark/useBookmark.js";
+import useHasWorkflow from "../../../hooks/useHasWorkflow/useHasWorkflow.js";
+function useHeader({
+  user,
+  avatar
+}) {
+  const {
+    appCode
+  } = useEdificeClient(), {
+    t
+  } = useTranslation(), {
+    theme
+  } = useEdificeTheme(), title = t(appCode), [isCollapsed, setIsCollapsed] = useState(!0), [appsRef, isAppsHovered] = useHover(), popoverAppsId = useId(), popoverSearchId = useId(), userAvatar = avatar, userName = user == null ? void 0 : user.username, welcomeUser = t("welcome", {
+    username: user == null ? void 0 : user.firstName
+  }), bookmarkedApps = useBookmark(), communityWorkflow = useHasWorkflow("net.atos.entng.community.controllers.CommunityController|view"), conversationWorflow = useHasWorkflow("org.entcore.conversation.controllers.ConversationController|view"), searchWorkflow = useHasWorkflow("fr.openent.searchengine.controllers.SearchEngineController|view"), toggleCollapsedNav = useCallback(() => {
+    setIsCollapsed(!isCollapsed);
+  }, [isCollapsed]), handleLogout = async () => {
+    await odeServices.session().logout(), window.location.href = (theme == null ? void 0 : theme.logoutCallback) ?? "/auth/login";
+  };
+  return useMemo(() => ({
+    title,
+    bookmarkedApps,
+    appsRef,
+    isAppsHovered,
+    popoverAppsId,
+    popoverSearchId,
+    userAvatar,
+    userName,
+    welcomeUser,
+    communityWorkflow,
+    conversationWorflow,
+    searchWorkflow,
+    isCollapsed,
+    toggleCollapsedNav,
+    handleLogout
+  }), [appsRef, bookmarkedApps, communityWorkflow, conversationWorflow, handleLogout, isAppsHovered, isCollapsed, popoverAppsId, popoverSearchId, searchWorkflow, title, toggleCollapsedNav, userAvatar, userName, welcomeUser]);
+}
+export {
+  useHeader as default
+};

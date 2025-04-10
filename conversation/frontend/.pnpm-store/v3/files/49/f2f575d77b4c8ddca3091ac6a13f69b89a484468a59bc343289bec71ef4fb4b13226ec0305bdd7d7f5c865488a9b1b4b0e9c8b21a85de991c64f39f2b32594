@@ -1,0 +1,9 @@
+export interface DropzoneContextType {
+    inputRef: React.MutableRefObject<HTMLInputElement | null>;
+    files: File[];
+    addFile: (file: File) => void;
+    deleteFile: (file: File) => void;
+    replaceFileAt: (index: number, file: File) => void;
+}
+export declare const DropzoneContext: import('react').Context<DropzoneContextType | null>;
+export declare function useDropzoneContext(): DropzoneContextType;

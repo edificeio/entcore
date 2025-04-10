@@ -1,0 +1,10 @@
+import { ITimelineNotification, NotificationModel } from "./interfaces";
+export declare class Notification implements ITimelineNotification {
+    constructor(model: NotificationModel);
+    _id: string;
+    model: NotificationModel;
+    isUnread(): boolean;
+    delete(): Promise<any>;
+    discard(): Promise<any>;
+    report(): Promise<any>;
+}

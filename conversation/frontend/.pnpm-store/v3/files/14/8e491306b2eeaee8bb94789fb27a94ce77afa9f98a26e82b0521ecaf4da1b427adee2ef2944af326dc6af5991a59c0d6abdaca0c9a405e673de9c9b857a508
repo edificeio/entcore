@@ -1,0 +1,2 @@
+import { IResource } from 'edifice-ts-client';
+export declare function isResourceShared(resource: IResource): boolean;

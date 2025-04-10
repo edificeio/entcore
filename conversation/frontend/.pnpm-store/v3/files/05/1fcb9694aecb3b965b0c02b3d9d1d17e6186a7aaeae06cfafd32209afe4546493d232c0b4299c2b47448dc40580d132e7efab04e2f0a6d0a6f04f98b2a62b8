@@ -1,0 +1,21 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import clsx from "clsx";
+import Heading from "../Heading/Heading.js";
+const EmptyScreen = ({
+  imageSrc,
+  imageAlt = "",
+  title,
+  text,
+  size = 250,
+  className
+}) => {
+  const textClass = clsx("text", className);
+  return /* @__PURE__ */ jsxs("div", { className: "emptyscreen", children: [
+    imageSrc && /* @__PURE__ */ jsx("div", { className: "emptyscreen-image mb-12", children: /* @__PURE__ */ jsx("img", { className: "mx-auto", src: imageSrc, alt: imageAlt, width: size, height: size }) }),
+    title && /* @__PURE__ */ jsx(Heading, { level: "h2", headingStyle: "h2", className: "text-secondary mb-8", children: title }),
+    text && /* @__PURE__ */ jsx("div", { className: textClass, children: text })
+  ] });
+};
+export {
+  EmptyScreen as default
+};

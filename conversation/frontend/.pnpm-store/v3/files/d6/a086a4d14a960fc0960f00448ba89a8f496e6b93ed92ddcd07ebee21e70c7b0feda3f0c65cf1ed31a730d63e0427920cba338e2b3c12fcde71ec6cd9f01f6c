@@ -1,0 +1,7 @@
+interface ModalProps {
+    isOpen: boolean;
+    onSuccess?: () => void;
+    onCancel?: () => void;
+}
+export default function DeleteModal({ isOpen, onSuccess, onCancel, }: ModalProps): import('react').ReactPortal;
+export {};

@@ -1,0 +1,76 @@
+import { ReactNode } from "react";
+import { ButtonProps, IconButtonProps } from "../Button";
+import { DropdownProps } from "../Dropdown";
+import { Placement } from "../Tooltip";
+export interface ToolbarCommonItem {
+    /** Object type */
+    type: string;
+    /** Items should be named, except for dividers */
+    name?: string;
+    /** Set to "hide" to hide this item. Defaults to "show" when undefined. */
+    visibility?: "show" | "hide";
+}
+export interface ToolbarTooltipProps {
+    tooltip?: string | {
+        message: string;
+        position?: Placement;
+    };
+}
+export interface ToolbarButtonItem extends ToolbarCommonItem, ToolbarTooltipProps {
+    type: "button";
+    name: string;
+    props: ButtonProps;
+}
+export interface ToolbarIconButtonItem extends ToolbarCommonItem, ToolbarTooltipProps {
+    type: "icon";
+    name: string;
+    props: IconButtonProps;
+}
+export interface ToolbarDropdownItem extends ToolbarCommonItem {
+    type: "dropdown";
+    props: DropdownProps;
+    overflow?: boolean;
+}
+export interface ToolbarPrimaryItem extends ToolbarCommonItem, ToolbarTooltipProps {
+    type: "primary";
+    props: ButtonProps;
+}
+export interface ToolbarDividerItem extends ToolbarCommonItem {
+    type: "divider";
+}
+export type ToolbarRef = HTMLDivElement;
+export type ToolbarVariant = "default" | "no-shadow";
+export type ToolbarAlign = "left" | "center" | "space" | "right";
+export type ToolbarItem = ToolbarButtonItem | ToolbarIconButtonItem | ToolbarDropdownItem | ToolbarPrimaryItem | ToolbarDividerItem;
+export interface ToolbarProps extends React.ComponentPropsWithRef<"div"> {
+    /**
+     * Toolbar data items
+     */
+    items: ToolbarItem[];
+    /**
+     * Toolbar variant
+     */
+    variant?: ToolbarVariant;
+    /**
+     * Buttons alignement when isBlock is true
+     */
+    align?: ToolbarAlign;
+    /**
+     * Toolbar has width 100%
+     */
+    isBlock?: boolean;
+    /**
+     * Editor container ID for a11y purpose
+     */
+    ariaControls?: string;
+    /**
+     * Additional CSS classes.
+     */
+    className?: string;
+    /**
+     * Accept optional children
+     */
+    children?: ReactNode;
+}
+export declare const Toolbar: import("react").ForwardRefExoticComponent<Omit<ToolbarProps, "ref"> & import("react").RefAttributes<HTMLDivElement>>;
+export default Toolbar;

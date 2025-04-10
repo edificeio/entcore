@@ -1,0 +1,14 @@
+import { useEdificeClient } from "../../providers/EdificeClientProvider/EdificeClientProvider.hook.js";
+function useBookmark() {
+  var _a;
+  const {
+    sessionQuery
+  } = useEdificeClient(), set = /* @__PURE__ */ new Set();
+  return (_a = sessionQuery == null ? void 0 : sessionQuery.data) == null ? void 0 : _a.bookmarkedApps.filter((el) => {
+    const duplicate = set.has(el.displayName);
+    return set.add(el.displayName), !duplicate;
+  });
+}
+export {
+  useBookmark as default
+};

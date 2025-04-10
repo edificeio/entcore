@@ -1,0 +1,33 @@
+import { jsx, jsxs } from "react/jsx-runtime";
+import clsx from "clsx";
+import { useTranslation } from "react-i18next";
+import useReactionIcons from "./hooks/useReactionIcons.js";
+import Dropdown from "../../components/Dropdown/Dropdown.js";
+import Tooltip from "../../components/Tooltip/Tooltip.js";
+import IconButton from "../../components/Button/IconButton.js";
+const ReactionChoice = ({
+  availableReactions,
+  summary = {
+    totalReactionsCounter: 0,
+    userReaction: null
+  },
+  onChange
+}) => {
+  const {
+    t
+  } = useTranslation(), {
+    getReactionIcon,
+    getReactionLabel
+  } = useReactionIcons(), {
+    userReaction
+  } = summary, classes = clsx({
+    "fw-bold": !!userReaction
+  });
+  return /* @__PURE__ */ jsx("div", { className: "reaction-choice", children: /* @__PURE__ */ jsxs(Dropdown, { placement: "top-start", children: [
+    /* @__PURE__ */ jsx(Dropdown.Trigger, { className: classes, color: "tertiary", variant: "ghost", size: "sm", icon: getReactionIcon(userReaction), hideCarret: !0, label: t(getReactionLabel(userReaction)) }),
+    /* @__PURE__ */ jsx(Dropdown.Menu, { unstyled: !0, className: "bg-white shadow rounded-8 overflow-visible", children: /* @__PURE__ */ jsx("div", { className: "d-flex align-items-center justify-content-between", children: availableReactions == null ? void 0 : availableReactions.map((reactionType) => /* @__PURE__ */ jsx(Dropdown.Item, { className: "p-0", children: /* @__PURE__ */ jsx(Tooltip, { message: t(getReactionLabel(reactionType)), placement: "top", children: /* @__PURE__ */ jsx(IconButton, { className: "reaction-available m-4", variant: "ghost", size: "sm", icon: getReactionIcon(reactionType), onClick: () => onChange == null ? void 0 : onChange(reactionType) }) }) }, reactionType)) }) })
+  ] }) });
+};
+export {
+  ReactionChoice as default
+};

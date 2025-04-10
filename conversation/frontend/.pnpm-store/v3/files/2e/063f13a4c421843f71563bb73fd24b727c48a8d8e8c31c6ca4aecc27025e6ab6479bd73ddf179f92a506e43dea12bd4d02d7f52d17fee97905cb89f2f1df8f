@@ -1,0 +1,4 @@
+export default function usePreferences(name: string): {
+    getPreference: () => Promise<any>;
+    savePreference: (value: any) => Promise<void>;
+};

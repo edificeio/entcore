@@ -1,0 +1,4652 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+const SvgAddUser = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M21 7a1 1 0 1 0-2 0v2h-2a1 1 0 1 0 0 2h2v2a1 1 0 1 0 2 0v-2h2a1 1 0 1 0 0-2h-2zM2.005 14.694C2.981 13.622 4.325 13 5.75 13h8.5c1.424 0 2.769.622 3.744 1.694.974 1.068 1.506 2.498 1.506 3.973V21a1 1 0 1 1-2 0v-2.333c0-1.001-.363-1.945-.984-2.627-.618-.679-1.436-1.04-2.266-1.04h-8.5c-.83 0-1.648.361-2.266 1.04-.621.682-.984 1.626-.984 2.627V21a1 1 0 1 1-2 0v-2.333c0-1.475.533-2.905 1.505-3.974M10 2a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7M4.5 5.5a5.5 5.5 0 1 1 11 0 5.5 5.5 0 0 1-11 0",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgAddUser$1 = SvgAddUser, SvgAdd = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M1 4a3 3 0 0 1 3-3h16a3 3 0 0 1 3 3v16a3 3 0 0 1-3 3H4a3 3 0 0 1-3-3zm3-1a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zm1 9a1 1 0 0 1 1-1h5V6a1 1 0 1 1 2 0v5h5a1 1 0 1 1 0 2h-5v5a1 1 0 1 1-2 0v-5H6a1 1 0 0 1-1-1",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgAdd$1 = SvgAdd, SvgAlertCircle = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18M1 12C1 5.925 5.925 1 12 1s11 4.925 11 11-4.925 11-11 11S1 18.075 1 12",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M12 6a1 1 0 0 1 1 1v5a1 1 0 1 1-2 0V7a1 1 0 0 1 1-1M11 16a1 1 0 0 1 1-1h.01a1 1 0 1 1 0 2H12a1 1 0 0 1-1-1",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgAlertCircle$1 = SvgAlertCircle, SvgAlertTriangle = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M12 8a1 1 0 0 1 1 1v5a1 1 0 1 1-2 0V9a1 1 0 0 1 1-1M11 17.5a1 1 0 0 1 1-1h.01a1 1 0 1 1 0 2H12a1 1 0 0 1-1-1",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M10.248 2.111c.76-1.381 2.745-1.381 3.505 0l9.308 16.925C23.794 20.37 22.83 22 21.31 22H2.69C1.171 22 .206 20.369.94 19.036zM21.308 20 12 3.075 2.691 20z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgAlertTriangle$1 = SvgAlertTriangle, SvgAlignCenter = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          d: "M2 12a1 1 0 0 1 1-1h18a1 1 0 1 1 0 2H3a1 1 0 0 1-1-1M6 4c0-.552.384-1 .857-1h10.286c.473 0 .857.448.857 1s-.384 1-.857 1H6.857C6.384 5 6 4.552 6 4M6 20c0-.552.298-1 .667-1h10.666c.369 0 .667.448.667 1s-.299 1-.667 1H6.667C6.298 21 6 20.552 6 20"
+        }
+      )
+    ]
+  }
+), SvgAlignCenter$1 = SvgAlignCenter, SvgAlignJustify = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          d: "M2 4a1 1 0 0 1 1-1h18a1 1 0 1 1 0 2H3a1 1 0 0 1-1-1M2 12c0-.552.64-1 1.429-1H20.57c.79 0 1.429.448 1.429 1s-.64 1-1.429 1H3.43C2.639 13 2 12.552 2 12M2 20c0-.552.497-1 1.111-1H20.89c.614 0 1.111.448 1.111 1s-.497 1-1.111 1H3.11C2.497 21 2 20.552 2 20"
+        }
+      )
+    ]
+  }
+), SvgAlignJustify$1 = SvgAlignJustify, SvgAlignLeft = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          d: "M2 4a1 1 0 0 1 1-1h18a1 1 0 1 1 0 2H3a1 1 0 0 1-1-1M2 12c0-.552.384-1 .857-1h10.286c.473 0 .857.448.857 1s-.384 1-.857 1H2.857C2.384 13 2 12.552 2 12M2 20a1 1 0 0 1 1-1h16a1 1 0 1 1 0 2H3a1 1 0 0 1-1-1"
+        }
+      )
+    ]
+  }
+), SvgAlignLeft$1 = SvgAlignLeft, SvgAlignRight = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          d: "M2 4a1 1 0 0 1 1-1h18a1 1 0 1 1 0 2H3a1 1 0 0 1-1-1M10 12c0-.552.384-1 .857-1h10.286c.473 0 .857.448.857 1s-.384 1-.857 1H10.857c-.473 0-.857-.448-.857-1M4 20a1 1 0 0 1 1-1h16a1 1 0 1 1 0 2H5a1 1 0 0 1-1-1"
+        }
+      )
+    ]
+  }
+), SvgAlignRight$1 = SvgAlignRight, SvgAnswer = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M14.293 8.293a1 1 0 0 0 0 1.414L18.586 14l-4.293 4.293a1 1 0 0 0 1.414 1.414l5-5a1 1 0 0 0 0-1.414l-5-5a1 1 0 0 0-1.414 0",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M4 2a1 1 0 0 0-1 1v7a5 5 0 0 0 5 5h12a1 1 0 1 0 0-2H8a3 3 0 0 1-3-3V3a1 1 0 0 0-1-1",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgAnswer$1 = SvgAnswer, SvgApplications = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    width: "24",
+    height: "24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M1 3c0-1.1.9-2 2-2h6a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2zm8 0H3v6h6zm4 0c0-1.1.9-2 2-2h6a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2zm8 0h-6v6h6zm-8 12c0-1.1.9-2 2-2h6a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2zm8 0h-6v6h6zM1 15c0-1.1.9-2 2-2h6a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2zm8 0H3v6h6z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgApplications$1 = SvgApplications, SvgArrowDown = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M12 4a1 1 0 0 1 1 1v14a1 1 0 1 1-2 0V5a1 1 0 0 1 1-1",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M4.293 11.293a1 1 0 0 1 1.414 0L12 17.586l6.293-6.293a1 1 0 0 1 1.414 1.414l-7 7a1 1 0 0 1-1.414 0l-7-7a1 1 0 0 1 0-1.414",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgArrowDown$1 = SvgArrowDown, SvgArrowLeft = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M4 12a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2H5a1 1 0 0 1-1-1",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M12.707 4.293a1 1 0 0 1 0 1.414L6.414 12l6.293 6.293a1 1 0 0 1-1.414 1.414l-7-7a1 1 0 0 1 0-1.414l7-7a1 1 0 0 1 1.414 0",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgArrowLeft$1 = SvgArrowLeft, SvgArrowRight = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M4 12a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2H5a1 1 0 0 1-1-1",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M11.293 4.293a1 1 0 0 1 1.414 0l7 7a1 1 0 0 1 0 1.414l-7 7a1 1 0 0 1-1.414-1.414L17.586 12l-6.293-6.293a1 1 0 0 1 0-1.414",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgArrowRight$1 = SvgArrowRight, SvgArrowUp = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M12 4a1 1 0 0 1 1 1v14a1 1 0 1 1-2 0V5a1 1 0 0 1 1-1",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M11.293 4.293a1 1 0 0 1 1.414 0l7 7a1 1 0 0 1-1.414 1.414L12 6.414l-6.293 6.293a1 1 0 0 1-1.414-1.414z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgArrowUp$1 = SvgArrowUp, SvgBlock = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M6.382 4.968a9 9 0 0 1 12.65 12.65zM4.968 6.382a9 9 0 0 0 12.65 12.65zM12 1C5.925 1 1 5.925 1 12s4.925 11 11 11 11-4.925 11-11S18.075 1 12 1",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgBlock$1 = SvgBlock, SvgBlur = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "g",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          clipPath: "url(#blur_svg__a)",
+          clipRule: "evenodd",
+          children: /* @__PURE__ */ jsx("path", { d: "M17.504 1.673a1 1 0 0 1 .932.491c.37.63.9 1.935 1.404 3.18l.08.197c.502 1.24.994 2.457 1.369 3.205l-.895.447.895-.447c.561 1.122 1.962 4.049 2.136 6.753.087 1.364-.125 2.839-1.094 3.978-.987 1.16-2.573 1.76-4.757 1.76-2.186 0-3.777-.6-4.777-1.752-.983-1.134-1.221-2.604-1.152-3.973.138-2.711 1.514-5.636 2.13-6.79.86-1.611 2.414-5.32 2.874-6.433a1 1 0 0 1 .855-.616m.104 3.492c-.657 1.533-1.496 3.425-2.07 4.5-.59 1.106-1.781 3.703-1.895 5.949-.057 1.11.158 1.976.665 2.56.49.565 1.427 1.063 3.266 1.063 1.84 0 2.76-.498 3.233-1.055.492-.579.694-1.44.622-2.555-.145-2.253-1.36-4.848-1.929-5.986-.412-.823-.932-2.108-1.417-3.308l-.097-.238q-.196-.487-.378-.93M12.843 22.535a1 1 0 0 1-1.034.964l-.259-.009a1 1 0 0 1-.257-.042q-.125.029-.26.024l-.257-.009a11 11 0 0 1-2.102-.279 1 1 0 0 1 .457-1.947 9 9 0 0 0 1.715.228l.258.009q.134.004.257.042.125-.028.26-.024l.257.009a1 1 0 0 1 .965 1.034m-6.615-1.329a1 1 0 0 1-1.396.226 10.9 10.9 0 0 1-2.877-3.086 1 1 0 1 1 1.7-1.054 8.9 8.9 0 0 0 2.347 2.518 1 1 0 0 1 .226 1.396M1.622 15.22a1 1 0 0 1-1.147-.827 10.9 10.9 0 0 1 .148-4.218 1 1 0 0 1 1.947.457 8.9 8.9 0 0 0-.12 3.441 1 1 0 0 1-.828 1.147m.978-7.49a1 1 0 0 1-.226-1.397A10.9 10.9 0 0 1 5.46 3.455a1 1 0 0 1 1.054 1.7 8.9 8.9 0 0 0-2.518 2.347 1 1 0 0 1-1.396.226m5.988-4.607a1 1 0 0 1 .827-1.147 11 11 0 0 1 2.116-.132l.258.01q.135.004.257.042.125-.03.26-.025l.258.01a1 1 0 0 1-.07 1.998l-.258-.009a1 1 0 0 1-.258-.043q-.125.03-.259.025l-.258-.009a9 9 0 0 0-1.727.108 1 1 0 0 1-1.146-.828" })
+        }
+      ),
+      /* @__PURE__ */ jsx("defs", { children: /* @__PURE__ */ jsx("clipPath", { id: "blur_svg__a", children: /* @__PURE__ */ jsx("path", { fill: "#fff", d: "M0 0h24v24H0z" }) }) })
+    ]
+  }
+), SvgBlur$1 = SvgBlur, SvgBookmark = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    viewBox: "0 0 24 24",
+    width: "24",
+    height: "24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          d: "M7 4a1 1 0 0 0-1 1v14.06l5.42-3.87a1 1 0 0 1 1.16 0L18 19.06V5a1 1 0 0 0-1-1zM4.88 2.88A3 3 0 0 1 7 2h10a3 3 0 0 1 3 3v16a1 1 0 0 1-1.58.81L12 17.23 5.58 21.8A1 1 0 0 1 4 21V5a3 3 0 0 1 .88-2.12"
+        }
+      )
+    ]
+  }
+), SvgBookmark$1 = SvgBookmark, SvgBulletList = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx("circle", { cx: 3.5, cy: 12, r: 1.5, fill: "currentColor" }),
+      /* @__PURE__ */ jsx("circle", { cx: 3.5, cy: 3.5, r: 1.5, fill: "currentColor" }),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M8 3.5c0-.552.418-1 .933-1h12.134c.515 0 .933.448.933 1s-.418 1-.933 1H8.933C8.418 4.5 8 4.052 8 3.5M8 12c0-.552.418-1 .933-1h12.134c.515 0 .933.448.933 1s-.418 1-.933 1H8.933C8.418 13 8 12.552 8 12",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx("circle", { cx: 3.5, cy: 20.5, r: 1.5, fill: "currentColor" }),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M8 20.5c0-.552.418-1 .933-1h12.134c.515 0 .933.448.933 1s-.418 1-.933 1H8.933c-.515 0-.933-.448-.933-1",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgBulletList$1 = SvgBulletList, SvgBurgerMenu = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M21 5c0 .828-.711 1.5-1.588 1.5H4.588C3.711 6.5 3 5.828 3 5s.711-1.5 1.588-1.5h14.824C20.289 3.5 21 4.172 21 5M21 12c0 .828-.711 1.5-1.588 1.5H4.588C3.711 13.5 3 12.828 3 12s.711-1.5 1.588-1.5h14.824c.877 0 1.588.672 1.588 1.5M21 19c0 .828-.711 1.5-1.588 1.5H4.588C3.711 20.5 3 19.828 3 19s.711-1.5 1.588-1.5h14.824c.877 0 1.588.672 1.588 1.5",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgBurgerMenu$1 = SvgBurgerMenu, SvgCalendarLight = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M17 2a1 1 0 1 0-2 0v1H9V2a1 1 0 0 0-2 0v1H5a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3V6a3 3 0 0 0-3-3h-2zm3 7V6a1 1 0 0 0-1-1h-2v1a1 1 0 1 1-2 0V5H9v1a1 1 0 0 1-2 0V5H5a1 1 0 0 0-1 1v3zM4 11h16v9a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgCalendarLight$1 = SvgCalendarLight, SvgCalendar = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M16 0a1 1 0 0 1 1 1v1h2a3 3 0 0 1 3 3v14a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3h2V1a1 1 0 0 1 2 0v1h6V1a1 1 0 0 1 1-1M4 16v3a1 1 0 0 0 1 1h3v-4zm4-2H4v-4h4zm2 2v4h4v-4zm4-2h-4v-4h4zm2 2v4h3a1 1 0 0 0 1-1v-3zm4-2h-4v-4h4zm0-9v3H4V5a1 1 0 0 1 1-1h2v1a1 1 0 0 0 2 0V4h6v1a1 1 0 1 0 2 0V4h2a1 1 0 0 1 1 1",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgCalendar$1 = SvgCalendar, SvgCamera = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M8.168 2.445A1 1 0 0 1 9 2h6a1 1 0 0 1 .832.445L17.535 5H21a3 3 0 0 1 3 3v11a3 3 0 0 1-3 3H3a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3h3.465zM9.535 4 7.832 6.555A1 1 0 0 1 7 7H3a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1h-4a1 1 0 0 1-.832-.445L14.465 4z",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M12 10a3 3 0 1 0 0 6 3 3 0 0 0 0-6m-5 3a5 5 0 1 1 10 0 5 5 0 0 1-10 0",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgCamera$1 = SvgCamera, SvgCenter = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 21 20",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M4.018 2.5C3.456 2.5 3 2.958 3 3.52v2.407a.833.833 0 1 1-1.667 0V3.519A2.685 2.685 0 0 1 4.018.834H7.26a.833.833 0 1 1 0 1.667zm8.89-.833c0-.46.372-.833.833-.833h3.24a2.685 2.685 0 0 1 2.686 2.685v2.408a.833.833 0 0 1-1.667 0V3.519c0-.562-.456-1.018-1.019-1.018h-3.24a.833.833 0 0 1-.834-.834M2.165 13.242c.46 0 .834.373.834.833v2.407c0 .563.456 1.019 1.018 1.019H7.26a.833.833 0 1 1 0 1.666h-3.24a2.685 2.685 0 0 1-2.686-2.685v-2.407c0-.46.373-.833.833-.833m16.667 0c.46 0 .834.373.834.833v2.407a2.685 2.685 0 0 1-2.686 2.686h-3.24a.833.833 0 1 1 0-1.667h3.24c.563 0 1.019-.456 1.019-1.019v-2.407c0-.46.373-.833.833-.833M6.333 10c0-.46.373-.834.833-.834h2.5v-2.5a.833.833 0 1 1 1.667 0v2.5h2.5a.833.833 0 0 1 0 1.667h-2.5v2.5a.833.833 0 0 1-1.667 0v-2.5h-2.5a.833.833 0 0 1-.833-.833",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgCenter$1 = SvgCenter, SvgCheck = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          stroke: "currentColor",
+          strokeLinecap: "round",
+          strokeLinejoin: "round",
+          strokeWidth: 2,
+          d: "M20 5 10 18l-6-7"
+        }
+      )
+    ]
+  }
+), SvgCheck$1 = SvgCheck, SvgChecklist = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M6 3a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zM3 4a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v16a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          d: "M9 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0M9 12.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0M9 17a1 1 0 1 1-2 0 1 1 0 0 1 2 0M11 8a1 1 0 0 1 1-1h4a1 1 0 1 1 0 2h-4a1 1 0 0 1-1-1M11 12.5a1 1 0 0 1 1-1h4a1 1 0 1 1 0 2h-4a1 1 0 0 1-1-1M11 17a1 1 0 0 1 1-1h4a1 1 0 1 1 0 2h-4a1 1 0 0 1-1-1"
+        }
+      )
+    ]
+  }
+), SvgChecklist$1 = SvgChecklist, SvgClock = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0m2 0c0 6.075-4.925 11-11 11S1 18.075 1 12 5.925 1 12 1s11 4.925 11 11M13 6.177a1 1 0 1 0-2 0v5.99l-2.86 2.288a1 1 0 0 0 1.25 1.561l3.235-2.588a1 1 0 0 0 .375-.78z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgClock$1 = SvgClock, SvgCloseFullScreen = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M19.333 11a1 1 0 1 0 0-2h-2.919l6.293-6.293a1 1 0 0 0-1.414-1.414L15 7.586v-2.92a1 1 0 1 0-2 0V10a1 1 0 0 0 1 1zM4.667 13a1 1 0 1 0 0 2h2.919l-6.293 6.293a1 1 0 1 0 1.414 1.414L9 16.414v2.92a1 1 0 0 0 2 0V14a1 1 0 0 0-1-1z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgCloseFullScreen$1 = SvgCloseFullScreen, SvgClose = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M4.222 4.222a1.1 1.1 0 0 1 1.556 0l14 14a1.1 1.1 0 1 1-1.556 1.556l-14-14a1.1 1.1 0 0 1 0-1.556",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M19.778 4.222a1.1 1.1 0 0 1 0 1.556l-14 14a1.1 1.1 0 1 1-1.556-1.556l14-14a1.1 1.1 0 0 1 1.556 0",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgClose$1 = SvgClose, SvgCode = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M17.327 5.76a1 1 0 0 1 1.413.067l5 5.5a1 1 0 0 1 0 1.346l-5 5.5a1 1 0 1 1-1.48-1.346L21.648 12 17.26 7.173a1 1 0 0 1 .067-1.413M6.673 5.76a1 1 0 0 1 .067 1.413L2.35 12l4.389 4.827a1 1 0 0 1-1.48 1.346l-5-5.5a1 1 0 0 1 0-1.346l5-5.5a1 1 0 0 1 1.413-.067M8.979 21.609a1 1 0 0 1-.658-1.252l5.375-17.29a1 1 0 1 1 1.91.594L10.23 20.95a1 1 0 0 1-1.251.658",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgCode$1 = SvgCode, SvgCopy = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M6.676 3c.284-.672.853-1 1.263-1h11.423c.566 0 1.438.628 1.438 1.923v13.154c0 1.056-.58 1.668-1.1 1.858V6.923C19.7 4.99 18.3 3 16.061 3zm-2.272.007C4.765 1.41 6.056 0 7.939 0h11.423C21.599 0 23 1.99 23 3.923v13.154c0 1.865-1.303 3.782-3.403 3.916C19.235 22.59 17.944 24 16.06 24H4.638C2.401 24 1 22.01 1 20.077V6.923c0-1.865 1.303-3.782 3.404-3.916M3.2 6.923C3.2 5.628 4.072 5 4.638 5h11.423c.567 0 1.439.628 1.439 1.923v13.154c0 1.295-.872 1.923-1.439 1.923H4.638c-.566 0-1.438-.628-1.438-1.923z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgCopy$1 = SvgCopy, SvgCrop = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx("g", { clipPath: "url(#crop_svg__a)", children: /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M7.13 1.009a1 1 0 1 0-2-.018l-.036 4.103-4.103.036a1 1 0 1 0 .018 2l4.068-.035L5 15.99V16a3 3 0 0 0 3 3h9v4a1 1 0 1 0 2 0v-4h4a1 1 0 1 0 0-2h-4V8a3 3 0 0 0-3-3l-8.905.077zm-.053 6.068L7 16.004A1 1 0 0 0 8 17h9V8a1 1 0 0 0-.996-1z",
+          clipRule: "evenodd"
+        }
+      ) }),
+      /* @__PURE__ */ jsx("defs", { children: /* @__PURE__ */ jsx("clipPath", { id: "crop_svg__a", children: /* @__PURE__ */ jsx("path", { fill: "#fff", d: "M0 0h24v24H0z" }) }) })
+    ]
+  }
+), SvgCrop$1 = SvgCrop, SvgCut = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx("g", { clipPath: "url(#cut_svg__a)", children: /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M21.593 19.227a.995.995 0 0 0 1.355-.397c.258-.483.07-1.089-.42-1.353l-9.638-5.198 9.639-5.197c.49-.264.678-.87.42-1.353a.995.995 0 0 0-1.355-.396L10.8 11.153l-1.974-1.065 1.164-1.9c.41-.67.59-1.469.46-2.234A2.64 2.64 0 0 0 9.162 4.08L6.76 2.71c-.713-.406-1.558-.445-2.323-.183A3.46 3.46 0 0 0 2.63 3.994l-.567.924c-.41.671-.59 1.47-.46 2.234a2.64 2.64 0 0 0 1.288 1.873l3.393 1.934q.06.044.126.08l.27.146.217.123q.06.034.123.06l1.69.911-1.698.916a1 1 0 0 0-.115.056l-.18.103-.307.165q-.07.039-.132.085l-3.388 1.93a2.64 2.64 0 0 0-1.287 1.873c-.13.765.048 1.563.46 2.234l.565.924c.411.671 1.05 1.207 1.807 1.467.764.261 1.61.222 2.322-.184l2.405-1.37a2.64 2.64 0 0 0 1.287-1.873c.13-.765-.048-1.563-.46-2.233L8.827 14.47l1.974-1.064zM8.441 6.274c.046.27-.013.606-.203.916L7.057 9.118l-3.13-1.784c-.137-.078-.27-.237-.315-.501-.046-.271.013-.606.203-.916l.566-.925c.19-.31.466-.522.734-.614.262-.09.47-.053.607.025l2.404 1.37c.137.077.27.236.315.5m0 12.011c.046-.27-.013-.605-.203-.916l-1.18-1.928-3.132 1.784c-.137.078-.27.237-.315.502-.046.27.013.606.203.916l.566.924c.19.31.466.522.734.614.262.09.47.054.608-.024l2.404-1.37c.137-.078.27-.237.315-.502",
+          clipRule: "evenodd"
+        }
+      ) }),
+      /* @__PURE__ */ jsx("defs", { children: /* @__PURE__ */ jsx("clipPath", { id: "cut_svg__a", children: /* @__PURE__ */ jsx("path", { fill: "#fff", d: "M0 0h24v24H0z" }) }) })
+    ]
+  }
+), SvgCut$1 = SvgCut, SvgDeleteColor = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M8.937 15.502a1 1 0 0 1 1.061.934c.046.727.17 1.217.408 1.526.188.244.574.538 1.594.538a1 1 0 1 1 0 2c-1.442 0-2.507-.444-3.18-1.319-.622-.809-.767-1.82-.818-2.618a1 1 0 0 1 .935-1.061",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M12.95 1.184a1 1 0 0 0-1.897 0c-.575 1.722-1.339 3.332-2.14 4.9l1.485 1.485A56 56 0 0 0 12 4.263c.662 1.515 1.413 2.95 2.118 4.298.291.556.574 1.098.84 1.624.623 1.231 1.148 2.372 1.51 3.455l2.522 2.523c-.1-2.342-1.112-4.636-2.247-6.88-.291-.577-.592-1.151-.893-1.729-1.065-2.035-2.146-4.105-2.9-6.37m4.89 19.484-1.459-1.459a4.2 4.2 0 0 1-.606.869c-.733.806-1.906 1.422-3.773 1.422s-3.04-.616-3.775-1.422c-.757-.831-1.142-1.969-1.215-3.14-.108-1.745.501-3.561 1.474-5.624L6.988 9.816c-1.165 2.362-2.125 4.778-1.972 7.246.094 1.497.592 3.11 1.732 4.362C7.91 22.7 9.648 23.5 12.002 23.5s4.09-.8 5.252-2.076q.328-.36.586-.756M3.293 3.293a1 1 0 0 1 1.414 0l17 17a1 1 0 0 1-1.414 1.414l-17-17a1 1 0 0 1 0-1.414",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgDeleteColor$1 = SvgDeleteColor, SvgDeleteColumnHighlight = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M3 4.222C3 3.547 3.547 3 4.222 3H6v18H4.222A1.22 1.22 0 0 1 3 19.778zM8 21h11.778c.675 0 1.222-.547 1.222-1.222V4.222C21 3.547 20.453 3 19.778 3H8zM4.222 1A3.22 3.22 0 0 0 1 4.222v15.556A3.22 3.22 0 0 0 4.222 23h15.556A3.22 3.22 0 0 0 23 19.778V4.222A3.22 3.22 0 0 0 19.778 1z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgDeleteColumnHighlight$1 = SvgDeleteColumnHighlight, SvgDeleteColumn = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M3 4.222C3 3.547 3.547 3 4.222 3H6v3a1 1 0 0 0 2 0V3h11.778C20.453 3 21 3.547 21 4.222v15.556c0 .675-.547 1.222-1.222 1.222H8v-3a1 1 0 1 0-2 0v3H4.222A1.22 1.22 0 0 1 3 19.778zM6.978 23H4.222A3.22 3.22 0 0 1 1 19.778V4.222A3.22 3.22 0 0 1 4.222 1h15.556A3.22 3.22 0 0 1 23 4.222v15.556A3.22 3.22 0 0 1 19.778 23h-12.8M7 9a1 1 0 0 1 1 1v4a1 1 0 1 1-2 0v-4a1 1 0 0 1 1-1m4.318-.182a1 1 0 0 1 1.414 0l1.768 1.768 1.767-1.768a1 1 0 1 1 1.415 1.414L15.914 12l1.768 1.768a1 1 0 1 1-1.414 1.414L14.5 13.414l-1.768 1.768a1 1 0 0 1-1.414-1.414L13.086 12l-1.768-1.768a1 1 0 0 1 0-1.414",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgDeleteColumn$1 = SvgDeleteColumn, SvgDeleteRowHighlight = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M3 4.222C3 3.547 3.547 3 4.222 3h15.556C20.453 3 21 3.547 21 4.222v1.444H3zM1 6.666V4.222A3.22 3.22 0 0 1 4.222 1h15.556A3.22 3.22 0 0 1 23 4.222v15.556A3.22 3.22 0 0 1 19.778 23H4.222A3.22 3.22 0 0 1 1 19.778zm20 1v12.112c0 .675-.547 1.222-1.222 1.222H4.222A1.22 1.22 0 0 1 3 19.778V7.666z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgDeleteRowHighlight$1 = SvgDeleteRowHighlight, SvgDeleteRow = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M3 4.222C3 3.547 3.547 3 4.222 3h15.556C20.453 3 21 3.547 21 4.222V6h-3a1 1 0 1 0 0 2h3v11.778c0 .675-.547 1.222-1.222 1.222H4.222A1.22 1.22 0 0 1 3 19.778V8h3a1 1 0 0 0 0-2H3zm20 0v15.556A3.22 3.22 0 0 1 19.778 23H4.222A3.22 3.22 0 0 1 1 19.778V4.222A3.22 3.22 0 0 1 4.222 1h15.556A3.22 3.22 0 0 1 23 4.222m-12.768 7.096a1 1 0 1 0-1.414 1.414l1.768 1.768-1.768 1.767a1 1 0 1 0 1.414 1.415L12 15.914l1.768 1.768a1 1 0 0 0 1.414-1.414L13.414 14.5l1.768-1.768a1 1 0 1 0-1.415-1.414L12 13.086zM10 6a1 1 0 1 0 0 2h4a1 1 0 1 0 0-2z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgDeleteRow$1 = SvgDeleteRow, SvgDelete = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M9.461 3.689a.96.96 0 0 1 .675-.28h3.819a.955.955 0 0 1 .954.955v.954H9.182v-.954c0-.254.1-.496.28-.675m7.357.675v.954h3.818a.955.955 0 0 1 0 1.91h-.954v12.408a2.864 2.864 0 0 1-2.864 2.864H7.273a2.864 2.864 0 0 1-2.864-2.864V7.227h-.954a.955.955 0 1 1 0-1.909h3.818v-.954A2.864 2.864 0 0 1 10.136 1.5h3.819a2.864 2.864 0 0 1 2.863 2.864m-10.5 2.863v12.41a.954.954 0 0 0 .955.954h9.545a.955.955 0 0 0 .955-.955V7.227zm3.818 2.864c.528 0 .955.427.955.955v5.727a.955.955 0 1 1-1.91 0v-5.727c0-.528.428-.955.955-.955m4.773 6.682v-5.727a.955.955 0 0 0-1.909 0v5.727a.955.955 0 1 0 1.91 0",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgDelete$1 = SvgDelete, SvgDepositeInbox = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M1 12a1 1 0 0 1 1-1h6a1 1 0 0 1 .832.445L10.535 14h2.93l1.703-2.555A1 1 0 0 1 16 11h6a1 1 0 1 1 0 2h-5.465l-1.703 2.555A1 1 0 0 1 14 16h-4a1 1 0 0 1-.832-.445L7.465 13H2a1 1 0 0 1-1-1",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M12 1a1 1 0 0 1 1 1v6.201l1.312-1.243a1 1 0 1 1 1.376 1.452l-3 2.842a1 1 0 0 1-1.376 0l-3-2.842a1 1 0 1 1 1.376-1.452L11 8.201V2a1 1 0 0 1 1-1M7.24 3.842H8a1 1 0 1 1 0 2h-.76c-.196 0-.386.053-.546.147a.94.94 0 0 0-.358.37l-.002.002L3 12.669v5.436c0 .22.091.442.274.614.183.174.444.281.726.281h16c.282 0 .543-.107.727-.28a.85.85 0 0 0 .273-.615V12.67l-3.334-6.308-.002-.003a.94.94 0 0 0-.358-.37 1.1 1.1 0 0 0-.546-.146H16a1 1 0 1 1 0-2h.76c.547 0 1.087.145 1.56.422a2.94 2.94 0 0 1 1.116 1.165l3.448 6.525a1 1 0 0 1 .116.467v5.684c0 .786-.33 1.528-.898 2.066A3.06 3.06 0 0 1 20 21H4a3.06 3.06 0 0 1-2.102-.829A2.85 2.85 0 0 1 1 18.105v-5.684a1 1 0 0 1 .116-.467l3.448-6.525.001-.001a2.94 2.94 0 0 1 1.116-1.164 3.1 3.1 0 0 1 1.559-.422",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgDepositeInbox$1 = SvgDepositeInbox, SvgDownload = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsxs(
+        "g",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          clipPath: "url(#download_svg__a)",
+          clipRule: "evenodd",
+          children: [
+            /* @__PURE__ */ jsx("path", { d: "M7.293 16.293a1 1 0 0 1 1.414 0L12 19.586l3.293-3.293a1 1 0 0 1 1.414 1.414l-4 4a1 1 0 0 1-1.414 0l-4-4a1 1 0 0 1 0-1.414" }),
+            /* @__PURE__ */ jsx("path", { d: "M12 11a1 1 0 0 1 1 1v9a1 1 0 1 1-2 0v-9a1 1 0 0 1 1-1" }),
+            /* @__PURE__ */ jsx("path", { d: "M8.668 1.994A9 9 0 0 1 17.48 8H18a6.002 6.002 0 0 1 5.689 7.919 6 6 0 0 1-2.234 2.989 1 1 0 1 1-1.15-1.636A4 4 0 0 0 18 10H16.74a1 1 0 0 1-.969-.751A7 7 0 1 0 3.75 15.627a1 1 0 1 1-1.498 1.326A9 9 0 0 1 8.668 1.994" })
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsx("defs", { children: /* @__PURE__ */ jsx("clipPath", { id: "download_svg__a", children: /* @__PURE__ */ jsx("path", { fill: "#fff", d: "M0 0h24v24H0z" }) }) })
+    ]
+  }
+), SvgDownload$1 = SvgDownload, SvgEdit = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M1.879 3.879A3 3 0 0 1 4 3h7a1 1 0 1 1 0 2H4a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7a1 1 0 1 1 2 0v7a3 3 0 0 1-3 3H4a3 3 0 0 1-3-3V6a3 3 0 0 1 .879-2.121",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M20 2.879c-.297 0-.583.118-.793.328l-9.304 9.304-.529 2.115 2.115-.529 9.304-9.304A1.121 1.121 0 0 0 20 2.879m-2.207-1.086a3.121 3.121 0 0 1 4.414 4.414l-9.5 9.5a1 1 0 0 1-.464.263l-4 1a1 1 0 0 1-1.213-1.212l1-4a1 1 0 0 1 .263-.465z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgEdit$1 = SvgEdit, SvgError = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M3 12a9 9 0 1 1 18 0 9 9 0 0 1-18 0m9-11C5.925 1 1 5.925 1 12s4.925 11 11 11 11-4.925 11-11S18.075 1 12 1M8.293 15.707a1 1 0 0 1 0-1.414L10.586 12 8.293 9.707a1 1 0 0 1 1.414-1.414L12 10.586l2.293-2.293a1 1 0 1 1 1.414 1.414L13.414 12l2.293 2.293a1 1 0 0 1-1.414 1.414L12 13.414l-2.293 2.293a1 1 0 0 1-1.414 0",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgError$1 = SvgError, SvgExternalLink = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M5 7a1 1 0 0 0-1 1v11a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-6a1 1 0 1 1 2 0v6a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3h6a1 1 0 1 1 0 2zM14 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0V4h-5a1 1 0 0 1-1-1",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M21.707 2.293a1 1 0 0 1 0 1.414l-11 11a1 1 0 0 1-1.414-1.414l11-11a1 1 0 0 1 1.414 0",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgExternalLink$1 = SvgExternalLink, SvgFiles = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    width: "24",
+    height: "24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M20.91 9.14v1.27H8.25a4.7 4.7 0 0 0-3.86 1.98L1.5 16.53V6.4a2.3 2.3 0 0 1 .77-1.69A2.68 2.68 0 0 1 4.11 4h3.73a2.68 2.68 0 0 1 1.84.71c.25.22.45.48.58.77s.2.6.2.92v.34h7.84c.7.01 1.35.27 1.84.71.49.45.76 1.06.77 1.7ZM8.25 11.92h14.47c.63 0 1 .68.64 1.18l-3.52 5.04a3.13 3.13 0 0 1-2.57 1.32H2.79c-.62 0-.99-.68-.64-1.18l3.53-5.04a3.13 3.13 0 0 1 2.57-1.32",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgFiles$1 = SvgFiles, SvgFilter = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M1.093 2.58A1 1 0 0 1 2 2h20a1 1 0 0 1 .764 1.646L15 12.826V21a1 1 0 0 1-1.447.894l-4-2A1 1 0 0 1 9 19v-6.174l-7.764-9.18a1 1 0 0 1-.143-1.067M4.155 4l6.609 7.814a1 1 0 0 1 .236.646v5.922l2 1V12.46a1 1 0 0 1 .236-.646L19.845 4z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgFilter$1 = SvgFilter, SvgFlag = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          d: "M21.37 2.1a1.14 1.14 0 0 0-1.15.17s-.92.73-3.5.73a10.6 10.6 0 0 1-3.83-.93A12.4 12.4 0 0 0 8.28 1c-3.43 0-4.74 1.08-5 1.29A1 1 0 0 0 3 3v19a1 1 0 0 0 1.06 1 1 1 0 0 0 1.05-1v-6.46A7.6 7.6 0 0 1 8.28 15a10.6 10.6 0 0 1 3.83.93A12.4 12.4 0 0 0 16.72 17c3.43 0 4.74-1.08 5-1.29A1 1 0 0 0 22 15V3a1 1 0 0 0-.63-.9m-1.48 12.36a7.5 7.5 0 0 1-3.17.54 10.6 10.6 0 0 1-3.83-.93A12.6 12.6 0 0 0 8.28 13a11.4 11.4 0 0 0-3.17.39V3.54A7.5 7.5 0 0 1 8.28 3a10.6 10.6 0 0 1 3.83.93A12.4 12.4 0 0 0 16.72 5a11.4 11.4 0 0 0 3.17-.39z"
+        }
+      )
+    ]
+  }
+), SvgFlag$1 = SvgFlag, SvgFolderMove = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsxs(
+        "g",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          clipPath: "url(#folder-move_svg__a)",
+          clipRule: "evenodd",
+          children: [
+            /* @__PURE__ */ jsx("path", { d: "M12.965 7a2 2 0 0 1-1.98-1.717A1.5 1.5 0 0 0 9.5 4H2v15h20V7zM0 3.902C0 2.852.852 2 1.902 2H9.5a3.5 3.5 0 0 1 3.465 3H22a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2z" }),
+            /* @__PURE__ */ jsx("path", { d: "M6.5 13a1 1 0 0 1 1-1h9a1 1 0 1 1 0 2h-9a1 1 0 0 1-1-1" }),
+            /* @__PURE__ */ jsx("path", { d: "M12.293 8.793a1 1 0 0 1 1.414 0l3.5 3.5a1 1 0 0 1 0 1.414l-3.5 3.5a1 1 0 0 1-1.414-1.414L15.086 13l-2.793-2.793a1 1 0 0 1 0-1.414" })
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsx("defs", { children: /* @__PURE__ */ jsx("clipPath", { id: "folder-move_svg__a", children: /* @__PURE__ */ jsx("path", { fill: "#fff", d: "M0 0h24v24H0z" }) }) })
+    ]
+  }
+), SvgFolderMove$1 = SvgFolderMove, SvgFolder = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M3.057 5.5A.057.057 0 0 0 3 5.557v13.03h18V7.875h-8.697a1 1 0 0 1-1-1c0-.759-.615-1.374-1.374-1.374zM1 5.557C1 4.42 1.92 3.5 3.057 3.5h6.872c1.515 0 2.797.999 3.223 2.374H21a2 2 0 0 1 2 2v10.714a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgFolder$1 = SvgFolder, SvgForgoing = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M19.887 8.564c-1.905-4.616-7.175-6.815-11.766-4.92A8.9 8.9 0 0 0 4.824 5.99l1.55.112a1 1 0 0 1-.145 1.995l-3.345-.243a1 1 0 0 1-.921-.884l-.411-3.617a1 1 0 1 1 1.987-.226l.132 1.165a10.9 10.9 0 0 1 3.687-2.497c5.619-2.318 12.054.375 14.377 6.006a11.03 11.03 0 0 1-.762 9.945 1 1 0 1 1-1.71-1.036 9.03 9.03 0 0 0 .624-8.146M7.06 22.049a1 1 0 0 1 .824-1.822 9 9 0 0 0 1.725.575 1 1 0 0 1-.435 1.952c-.722-.161-1.43-.396-2.114-.705m10.67-3.447a1 1 0 1 1 1.368 1.46 11 11 0 0 1-2.128 1.558 1 1 0 1 1-.979-1.744 9 9 0 0 0 1.739-1.274m-5.624 4.405a1 1 0 0 1-.093-1.998 9 9 0 0 0 1.73-.249 1 1 0 0 1 .473 1.943c-.693.17-1.4.27-2.11.304M13.5 7a1 1 0 1 0-2 0v6.117l-3.143 2.637a1 1 0 1 0 1.286 1.533l3.5-2.938a1 1 0 0 0 .357-.766z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgForgoing$1 = SvgForgoing, SvgFullScreen = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M16.667 1a1 1 0 1 0 0 2h2.919l-6.293 6.293a1 1 0 0 0 1.414 1.414L21 4.414v2.92a1 1 0 1 0 2 0V2a1 1 0 0 0-1-1zM7.333 23a1 1 0 1 0 0-2H4.414l6.293-6.293a1 1 0 0 0-1.414-1.414L3 19.586v-2.92a1 1 0 1 0-2 0V22a1 1 0 0 0 1 1z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgFullScreen$1 = SvgFullScreen, SvgGlobe = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M9.726 3.29A9.01 9.01 0 0 0 3.055 11H7.05a16.3 16.3 0 0 1 2.676-7.71m4.548 0A16.3 16.3 0 0 1 16.95 11h3.995a9.01 9.01 0 0 0-6.67-7.71m.668 7.71A14.3 14.3 0 0 0 12 3.55 14.3 14.3 0 0 0 9.058 11zm-5.884 2h5.884A14.3 14.3 0 0 1 12 20.45 14.3 14.3 0 0 1 9.058 13M7.05 13H3.055a9.01 9.01 0 0 0 6.67 7.71A16.3 16.3 0 0 1 7.05 13m7.224 7.71A16.3 16.3 0 0 0 16.95 13h3.995a9.01 9.01 0 0 1-6.67 7.71M12 23c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgGlobe$1 = SvgGlobe, SvgHeadphone = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M6.343 6.343A8 8 0 0 1 20 12v1h-2a3 3 0 0 0-3 3v3a3 3 0 0 0 3 3h1a3 3 0 0 0 3-3v-7a10 10 0 0 0-20 0v7a3 3 0 0 0 3 3h1a3 3 0 0 0 3-3v-3a3 3 0 0 0-3-3H4v-1a8 8 0 0 1 2.343-5.657M4 15v4a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-3a1 1 0 0 0-1-1zm16 0h-2a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-4",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgHeadphone$1 = SvgHeadphone, SvgHide = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx("g", { clipPath: "url(#hide_svg__a)", children: /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M1.707.293A1 1 0 0 0 .293 1.707l4.275 4.276a19.5 19.5 0 0 0-4.45 5.544 1 1 0 0 0-.012.92L1 12c-.894.447-.894.448-.894.449l.002.002.003.007.011.022.04.078q.053.099.152.276a20.682 20.682 0 0 0 2.831 3.85C5.105 18.774 8.1 21 12 21h.016a11.07 11.07 0 0 0 5.81-1.76l4.467 4.467a1 1 0 0 0 1.414-1.414l-5.06-5.06-3.816-3.816-.007-.007-4.234-4.234-.007-.007-3.816-3.816zm14.664 17.493-2.321-2.322a4 4 0 0 1-3.623.32A4 4 0 0 1 8.536 9.95L5.987 7.401a17.5 17.5 0 0 0-3.844 4.602 18.68 18.68 0 0 0 2.462 3.313c1.789 1.909 4.29 3.68 7.387 3.684a9.1 9.1 0 0 0 4.38-1.214m-6.343-6.344a2 2 0 0 0 2.53 2.53zm10.725 2.246L12.073 5c3.067.028 5.546 1.789 7.322 3.684a18.7 18.7 0 0 1 2.463 3.314 18 18 0 0 1-1.105 1.69M23 12l.894-.447zm.882.471a1 1 0 0 0 .012-.918l-.002-.004-.003-.007-.011-.022a9 9 0 0 0-.192-.354 20.676 20.676 0 0 0-2.831-3.85C18.895 5.226 15.9 3 12 3a10 10 0 0 0-2.329.266 1 1 0 0 0-.48 1.68l10.94 10.95a1 1 0 0 0 1.473-.062 19.5 19.5 0 0 0 2.277-3.363M12.002 3H12v1z",
+          clipRule: "evenodd"
+        }
+      ) }),
+      /* @__PURE__ */ jsx("defs", { children: /* @__PURE__ */ jsx("clipPath", { id: "hide_svg__a", children: /* @__PURE__ */ jsx("path", { fill: "#fff", d: "M0 0h24v24H0z" }) }) })
+    ]
+  }
+), SvgHide$1 = SvgHide, SvgHighlightColumn = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M4.222 1.001A3.22 3.22 0 0 0 1 4.224v15.555a3.22 3.22 0 0 0 3.222 3.222h15.555A3.22 3.22 0 0 0 23 19.78V4.224A3.22 3.22 0 0 0 19.777 1zm3.778 20h11.777c.675 0 1.223-.547 1.223-1.222V4.224C21 3.549 20.452 3 19.777 3H6.91V21z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgHighlightColumn$1 = SvgHighlightColumn, SvgHighlightRow = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M1 4.224A3.22 3.22 0 0 1 4.222 1h15.555A3.22 3.22 0 0 1 23 4.224v15.555a3.22 3.22 0 0 1-3.223 3.222H4.222A3.22 3.22 0 0 1 1 19.78zm20 2.353v13.202c0 .675-.548 1.222-1.223 1.222H4.222A1.22 1.22 0 0 1 3 19.78V6.577z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgHighlightRow$1 = SvgHighlightRow, SvgHome = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M12.614.21a1 1 0 0 0-1.228 0l-9 7A1 1 0 0 0 2 8v11a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3V8a1 1 0 0 0-.386-.79zM16 20h3a1 1 0 0 0 1-1V8.49l-8-6.223-8 6.222V19a1 1 0 0 0 1 1h3v-9a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1zm-6 0v-8h4v8z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgHome$1 = SvgHome, SvgHourglass = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "m13.138 11.993 4.358-7.721a.1.1 0 0 0 .004-.034.14.14 0 0 0-.03-.069.4.4 0 0 0-.137-.108A.6.6 0 0 0 17.05 4H6.939a.6.6 0 0 0-.258.056.4.4 0 0 0-.147.11.15.15 0 0 0-.033.072q-.003.014.003.035l4.358 7.72a1 1 0 0 1 0 1.014l-4.358 7.721a.1.1 0 0 0-.004.034.14.14 0 0 0 .03.069.4.4 0 0 0 .137.108.6.6 0 0 0 .283.061h10.111a.6.6 0 0 0 .258-.056.4.4 0 0 0 .147-.11.15.15 0 0 0 .033-.072q.003-.014-.003-.035l-4.358-7.72a1 1 0 0 1 0-1.014m-4.286.507L4.735 5.207 4.7 5.14A2.1 2.1 0 0 1 4.515 4c.046-.391.202-.755.439-1.06.235-.304.542-.54.884-.699s.716-.24 1.09-.242H17.09l.084.001c.366.016.729.108 1.058.274s.624.405.847.708a2.093 2.093 0 0 1 .186 2.224L15.148 12.5l4.117 7.293.035.067c.166.354.232.747.185 1.139a2.14 2.14 0 0 1-.439 1.06c-.235.304-.542.54-.884.699a2.6 2.6 0 0 1-1.09.242H6.91l-.084-.001a2.6 2.6 0 0 1-1.058-.274 2.4 2.4 0 0 1-.847-.708 2.094 2.094 0 0 1-.186-2.224z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgHourglass$1 = SvgHourglass, SvgImageSizeLarge = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 20 16",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M1.667.5C.747.5 0 1.246 0 2.167v11.579c0 .92.746 1.666 1.667 1.666h16.666c.92 0 1.667-.746 1.667-1.666V2.167C20 1.247 19.254.5 18.333.5zm16.666 8.586v-6.92H1.667v11.58H5.05l7.736-8.423a.833.833 0 0 1 1.162-.064zm-11.02 4.66h11.02v-2.448l-4.868-4.25z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgImageSizeLarge$1 = SvgImageSizeLarge, SvgImageSizeMedium = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 20 16",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M1.667.5C.747.5 0 1.246 0 2.167v.294a.833.833 0 1 0 1.667 0v-.294H3.75A.833.833 0 0 0 3.75.5zM7.5.5a.833.833 0 1 0 0 1.667h4.583a.833.833 0 1 0 0-1.667zm8.75 0a.833.833 0 0 0 0 1.667h2.083v1.911a.833.833 0 0 0 1.667 0V2.167C20 1.247 19.254.5 18.333.5zM20 6.824a.833.833 0 1 0-1.667 0v2.352a.833.833 0 0 0 1.667 0zm0 5.098a.833.833 0 1 0-1.667 0v1.911h-1.25a.833.833 0 0 0 0 1.667h1.25c.92 0 1.667-.746 1.667-1.667zM0 5.867C0 4.947.746 4.2 1.667 4.2h11.666c.92 0 1.667.746 1.667 1.667v7.966c0 .92-.746 1.667-1.667 1.667H1.667C.747 15.5 0 14.754 0 13.833zm13.333 0v4.304l-2.812-2.454a.833.833 0 0 0-1.162.064l-5.558 6.052H1.667V5.867zm0 7.966h-7.27l3.974-4.326 3.296 2.877z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgImageSizeMedium$1 = SvgImageSizeMedium, SvgImageSizeSmall = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 20 16",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M1.667.5C.747.5 0 1.246 0 2.167v1.911a.833.833 0 1 0 1.667 0V2.167H3.75A.833.833 0 0 0 3.75.5zM7.5.5a.833.833 0 1 0 0 1.667h4.583a.833.833 0 1 0 0-1.667zm8.75 0a.833.833 0 0 0 0 1.667h2.083v1.911a.833.833 0 0 0 1.667 0V2.167C20 1.247 19.254.5 18.333.5zM20 6.824a.833.833 0 1 0-1.667 0v2.352a.833.833 0 0 0 1.667 0zm0 5.098a.833.833 0 1 0-1.667 0v1.911H16.25a.833.833 0 0 0 0 1.667h2.083c.92 0 1.667-.746 1.667-1.667zM0 8c0-.92.746-1.667 1.667-1.667h8.714c.92 0 1.666.747 1.666 1.667v5.833c0 .92-.746 1.667-1.666 1.667H1.667C.747 15.5 0 14.754 0 13.833zm10.38 5.833H5.326l2.688-2.926 2.368 2.066zm0-5.833v2.76L8.498 9.118a.833.833 0 0 0-1.162.064l-4.273 4.652H1.667V8z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgImageSizeSmall$1 = SvgImageSizeSmall, SvgInbox = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M16.76 4H7.24c-.558 0-1.106.148-1.58.425a2.9 2.9 0 0 0-1.105 1.146v.002l-2.913 5.493a1 1 0 0 0-.608 1.192A1 1 0 0 0 1 12.5v5.667c0 .751.316 1.472.879 2.003S3.204 21 4 21h16c.796 0 1.559-.299 2.121-.83A2.76 2.76 0 0 0 23 18.167V12.5a1 1 0 0 0-.034-.242 1 1 0 0 0-.608-1.192l-2.913-5.494a2.9 2.9 0 0 0-1.105-1.147A3.13 3.13 0 0 0 16.76 4m3.326 7-2.43-4.584-.002-.003a.97.97 0 0 0-.368-.382 1.04 1.04 0 0 0-.526-.142H7.24c-.186 0-.368.05-.526.142a.97.97 0 0 0-.368.382l-.896-.42.894.423L3.914 11H8a1 1 0 0 1 .832.445L10.535 14h2.93l1.703-2.555A1 1 0 0 1 16 11zM3 13v5.167c0 .25.105.49.293.667.187.178.442.277.707.277h16c.265 0 .52-.1.707-.277a.92.92 0 0 0 .293-.667V13h-4.465l-1.703 2.555A1 1 0 0 1 14 16h-4a1 1 0 0 1-.832-.445L7.465 13z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgInbox$1 = SvgInbox, SvgInfoCircle = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18M1 12C1 5.925 5.925 1 12 1s11 4.925 11 11-4.925 11-11 11S1 18.075 1 12",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M12.01 17a1 1 0 0 1-1-1v-5a1 1 0 1 1 2 0v5a1 1 0 0 1-1 1M13.01 7.5a1 1 0 0 1-1 1H12a1 1 0 1 1 0-2h.01a1 1 0 0 1 1 1",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgInfoCircle$1 = SvgInfoCircle, SvgLandscape = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M4.222 5.037c-.895 0-1.222.555-1.222.792v12.675c0 .237.327.792 1.222.792h1.364l9.707-9.886a.987.987 0 0 1 1.414 0L21 13.782V5.829c0-.237-.328-.792-1.222-.792zM23 16.224V5.829C23 4.066 21.337 3 19.778 3H4.222C2.662 3 1 4.066 1 5.83v12.674c0 1.763 1.662 2.829 3.222 2.829h15.556c1.56 0 3.222-1.066 3.222-2.83v-2.279m-2 .439-5-5.093-7.585 7.726h11.363c.894 0 1.222-.555 1.222-.792zM8 8.093c-.552 0-1 .455-1 1.018a1.01 1.01 0 0 0 1 1.018c.552 0 1-.456 1-1.018a1.01 1.01 0 0 0-1-1.019M5 9.11c0-1.688 1.343-3.056 3-3.056s3 1.368 3 3.056-1.343 3.055-3 3.055-3-1.368-3-3.055",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgLandscape$1 = SvgLandscape, SvgLink = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsxs(
+        "g",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          clipPath: "url(#link_svg__a)",
+          clipRule: "evenodd",
+          children: [
+            /* @__PURE__ */ jsx("path", { d: "M5.333 13.334a3.771 3.771 0 1 0 5.333 5.333l2-2A.943.943 0 0 1 14 18l-2 2a5.657 5.657 0 1 1-8-8l2-2a.943.943 0 1 1 1.333 1.333zm4.667-6A.943.943 0 0 1 10 6l2-2a5.658 5.658 0 0 1 8 8l-2 2a.943.943 0 0 1-1.334-1.333l2-2a3.77 3.77 0 1 0-5.333-5.334l-2 2a.943.943 0 0 1-1.333 0" }),
+            /* @__PURE__ */ jsx("path", { d: "M8.464 15.536a1 1 0 0 1 0-1.415l5.657-5.657a1 1 0 1 1 1.414 1.415l-5.657 5.657a1 1 0 0 1-1.414 0" })
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsx("defs", { children: /* @__PURE__ */ jsx("clipPath", { id: "link_svg__a", children: /* @__PURE__ */ jsx("path", { fill: "#fff", d: "M0 0h24v24H0z" }) }) })
+    ]
+  }
+), SvgLink$1 = SvgLink, SvgListOrder = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M6.5 3a1 1 0 0 1 .713.298l4.5 4.572a1 1 0 0 1-1.426 1.403L7.5 6.44V20a1 1 0 1 1-2 0V6.441L2.713 9.273A1 1 0 0 1 1.287 7.87l4.5-4.572A1 1 0 0 1 6.5 3M17.5 3a1 1 0 0 1 1 1v13.559l2.787-2.832a1 1 0 0 1 1.426 1.403l-4.5 4.572a1 1 0 0 1-1.426 0l-4.5-4.572a1 1 0 0 1 1.426-1.403L16.5 17.56V4a1 1 0 0 1 1-1",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgListOrder$1 = SvgListOrder, SvgLoader = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M16.672 5.558a7.96 7.96 0 0 0-9.841.397 7.95 7.95 0 0 0-1.908 9.66 7.964 7.964 0 0 0 8.949 4.12A7.95 7.95 0 0 0 19.962 12a1.021 1.021 0 1 1 2.045 0A9.994 9.994 0 0 1 7.83 21.083a10.01 10.01 0 0 1-5.634-11.027 9.99 9.99 0 0 1 9.402-8.048c2.244-.09 4.453.577 6.272 1.895a1.022 1.022 0 1 1-1.198 1.655",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgLoader$1 = SvgLoader, SvgLock = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M9.172 4.172A4 4 0 0 1 16 7v3H8V7a4 4 0 0 1 1.172-2.828M6 10V7a6 6 0 1 1 12 0v3h1a3 3 0 0 1 3 3v7a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3v-7a3 3 0 0 1 3-3zm11 2H5a1 1 0 0 0-1 1v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7a1 1 0 0 0-1-1z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgLock$1 = SvgLock, SvgMail = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx("g", { clipPath: "url(#mail_svg__a)", children: /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M2.084 5.447c.2-.55.73-.947 1.36-.947h17.112c.63 0 1.16.397 1.36.947L12 12.014zM2 7.79V18.07c0 .783.64 1.429 1.444 1.429h17.112c.803 0 1.444-.646 1.444-1.429V7.79l-9.448 6.257a1 1 0 0 1-1.104 0zm22-1.842V18.07c0 1.9-1.548 3.429-3.444 3.429H3.444A3.437 3.437 0 0 1 0 18.071V5.93C0 4.029 1.548 2.5 3.444 2.5h17.112A3.437 3.437 0 0 1 24 5.948",
+          clipRule: "evenodd"
+        }
+      ) }),
+      /* @__PURE__ */ jsx("defs", { children: /* @__PURE__ */ jsx("clipPath", { id: "mail_svg__a", children: /* @__PURE__ */ jsx("path", { fill: "#fff", d: "M0 0h24v24H0z" }) }) })
+    ]
+  }
+), SvgMail$1 = SvgMail, SvgMergeCells = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx("g", { fill: "currentColor", clipPath: "url(#merge-cells_svg__a)", children: /* @__PURE__ */ jsx("path", { d: "M3.444 2C2.554 2 2 2.635 2 3.222v1.89a1 1 0 1 1-2 0v-1.89C0 1.355 1.634 0 3.444 0h17.112C22.366 0 24 1.355 24 3.222v1.89a1 1 0 0 1-2 0v-1.89C22 2.635 21.445 2 20.556 2zM1 17.89a1 1 0 0 1 1 1v1.888C2 21.366 2.555 22 3.444 22h17.112c.89 0 1.444-.634 1.444-1.222v-1.889a1 1 0 1 1 2 0v1.889C24 22.645 22.366 24 20.556 24H3.444C1.634 24 0 22.645 0 20.778v-1.889a1 1 0 0 1 1-1M0 12a1 1 0 0 1 1-1h5.586L4.293 8.707a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L6.586 13H1a1 1 0 0 1-1-1M23 13a1 1 0 1 0 0-2h-5.586l2.293-2.293a1 1 0 0 0-1.414-1.414l-4 4a1 1 0 0 0 0 1.414l4 4a1 1 0 0 0 1.414-1.414L17.414 13z" }) }),
+      /* @__PURE__ */ jsx("defs", { children: /* @__PURE__ */ jsx("clipPath", { id: "merge-cells_svg__a", children: /* @__PURE__ */ jsx("path", { fill: "#fff", d: "M0 0h24v24H0z" }) }) })
+    ]
+  }
+), SvgMergeCells$1 = SvgMergeCells, SvgMessageInfo = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M4.3 5c-.292 0-.572.105-.778.293A.96.96 0 0 0 3.2 6v14.586l2.522-2.293c.206-.188.486-.293.778-.293h13.2c.292 0 .572-.105.778-.293A.96.96 0 0 0 20.8 17V6a.96.96 0 0 0-.322-.707A1.16 1.16 0 0 0 19.7 5zM1.967 3.879A3.48 3.48 0 0 1 4.3 3h15.4c.875 0 1.715.316 2.334.879C22.652 4.44 23 5.204 23 6v11c0 .796-.348 1.559-.966 2.121A3.48 3.48 0 0 1 19.7 20H6.956l-4.078 3.707a1.18 1.18 0 0 1-1.199.217C1.268 23.769 1 23.404 1 23V6c0-.796.348-1.559.967-2.121",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M7 9a1 1 0 0 1 1-1h8a1 1 0 1 1 0 2H8a1 1 0 0 1-1-1M7 14a1 1 0 0 1 1-1h6a1 1 0 1 1 0 2H8a1 1 0 0 1-1-1",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgMessageInfo$1 = SvgMessageInfo, SvgMic = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M12 .5a4.07 4.07 0 0 0-2.812 1.115A3.8 3.8 0 0 0 8 4.364V12a3.8 3.8 0 0 0 1.188 2.748A4.07 4.07 0 0 0 12 15.864a4.07 4.07 0 0 0 2.812-1.116A3.8 3.8 0 0 0 16 12V4.364a3.8 3.8 0 0 0-1.188-2.749A4.07 4.07 0 0 0 12 .5m-1.43 2.562A2.07 2.07 0 0 1 12 2.5c.545 0 1.059.207 1.43.562.371.354.57.823.57 1.302V12a1.8 1.8 0 0 1-.57 1.302 2.07 2.07 0 0 1-1.43.562 2.07 2.07 0 0 1-1.43-.562A1.8 1.8 0 0 1 10 12V4.364a1.8 1.8 0 0 1 .57-1.302M6 10.091a1 1 0 0 0-2 0V12c0 2.053.855 4.011 2.36 5.448A8.13 8.13 0 0 0 11 19.622V21.5H8a1 1 0 1 0 0 2h8a1 1 0 1 0 0-2h-3v-1.878a8.13 8.13 0 0 0 4.64-2.174C19.145 16.011 20 14.053 20 12v-1.91a1 1 0 0 0-2 0V12c0 1.491-.62 2.932-1.74 4.001s-2.646 1.678-4.248 1.68h-.024c-1.602-.002-3.128-.611-4.247-1.68C6.62 14.931 6 13.491 6 12z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgMic$1 = SvgMic, SvgMinus = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M3 12a1 1 0 0 1 1-1h16a1 1 0 1 1 0 2H4a1 1 0 0 1-1-1",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgMinus$1 = SvgMinus, SvgMove = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M5.707 8.293a1 1 0 0 1 0 1.414L3.414 12l2.293 2.293a1 1 0 1 1-1.414 1.414l-3-3a1 1 0 0 1 0-1.414l3-3a1 1 0 0 1 1.414 0M11.293 1.293a1 1 0 0 1 1.414 0l3 3a1 1 0 0 1-1.414 1.414L12 3.414 9.707 5.707a1 1 0 0 1-1.414-1.414zM8.293 18.293a1 1 0 0 1 1.414 0L12 20.586l2.293-2.293a1 1 0 0 1 1.414 1.414l-3 3a1 1 0 0 1-1.414 0l-3-3a1 1 0 0 1 0-1.414M18.293 8.293a1 1 0 0 1 1.414 0l3 3a1 1 0 0 1 0 1.414l-3 3a1 1 0 0 1-1.414-1.414L20.586 12l-2.293-2.293a1 1 0 0 1 0-1.414",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M1 12a1 1 0 0 1 1-1h20a1 1 0 1 1 0 2H2a1 1 0 0 1-1-1",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M12 1a1 1 0 0 1 1 1v20a1 1 0 1 1-2 0V2a1 1 0 0 1 1-1",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgMove$1 = SvgMove, SvgNoColors = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx("path", { fill: "currentColor", d: "M23 0h-4L1 24h4z" })
+    ]
+  }
+), SvgNoColors$1 = SvgNoColors, SvgOptions = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx("circle", { cx: 12, cy: 4, r: 2.5, fill: "currentColor" }),
+      /* @__PURE__ */ jsx("circle", { cx: 12, cy: 12, r: 2.5, fill: "currentColor" }),
+      /* @__PURE__ */ jsx("circle", { cx: 12, cy: 20, r: 2.5, fill: "currentColor" })
+    ]
+  }
+), SvgOptions$1 = SvgOptions, SvgOrderedList = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx("rect", { width: 14, height: 2, x: 8.5, y: 11, fill: "currentColor", rx: 1 }),
+      /* @__PURE__ */ jsx("rect", { width: 14, height: 2, x: 8.5, y: 2.5, fill: "currentColor", rx: 1 }),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M4.25.566a.67.67 0 0 1 .378.6v4.667a.667.667 0 0 1-1.333 0v-3.28l-.712.57a.667.667 0 0 1-.833-1.041L3.545.646c.2-.16.474-.191.705-.08M2.833 11v.007A.667.667 0 0 1 1.5 11h.667H1.5v-.015l.004-.09q.005-.083.026-.213c.028-.169.085-.404.207-.647.123-.246.318-.512.622-.715C2.67 9.114 3.05 9 3.5 9c.887 0 1.517.4 1.844.979.296.524.324 1.176.086 1.652-.126.25-.389.581-.646.884a30 30 0 0 1-1.042 1.152h1.425a.667.667 0 1 1 0 1.333h-3a.667.667 0 0 1-.472-1.138l.025-.025.074-.074a58 58 0 0 0 1.095-1.136c.309-.33.624-.675.88-.975.273-.323.427-.534.468-.617a.52.52 0 0 0-.054-.4c-.071-.127-.237-.302-.683-.302-.217 0-.335.053-.401.097a.5.5 0 0 0-.17.202 1 1 0 0 0-.096.375v-.006",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx("rect", { width: 14, height: 2, x: 8.5, y: 19.5, fill: "currentColor", rx: 1 }),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M2.561 23.25a2 2 0 0 1-.773-.702l-.002-.002A1.9 1.9 0 0 1 1.5 21.53a.68.68 0 0 1 .187-.485.65.65 0 0 1 .474-.203c.184 0 .352.07.478.208a.68.68 0 0 1 .183.48q0 .181.098.34.1.155.284.26a.9.9 0 0 0 .418.096c.254 0 .422-.065.537-.164.11-.094.177-.23.177-.45 0-.14-.03-.252-.085-.347l-.002-.003a.65.65 0 0 0-.232-.247.6.6 0 0 0-.324-.086.7.7 0 0 1-.494-.195l-.004-.004-.004-.004a.68.68 0 0 1-.195-.485c0-.182.065-.354.203-.486a.7.7 0 0 1 .494-.195q.113 0 .228-.057.119-.067.193-.167a.3.3 0 0 0 .058-.186.32.32 0 0 0-.117-.257.5.5 0 0 0-.362-.12.9.9 0 0 0-.36.073.6.6 0 0 0-.232.174l-.022.03-.032.042a.4.4 0 0 0-.034.054v.007a.73.73 0 0 1-.172.482l-.003.004-.004.004a.6.6 0 0 1-.192.15.662.662 0 0 1-.726-.132l-.008-.01-.008-.008a.7.7 0 0 1-.18-.476c0-.343.1-.592.273-.846.177-.261.419-.462.713-.603.297-.147.624-.218.973-.218q.492-.001.907.214c.275.138.498.332.66.584.172.253.255.54.255.852 0 .232-.056.45-.177.644a1.6 1.6 0 0 1-.32.384q.078.057.15.12.29.253.43.602.139.338.138.719 0 .539-.29.982l-.002.002q-.286.42-.749.661l-.004.003a2.2 2.2 0 0 1-1.012.233c-.401 0-.77-.08-1.1-.248z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgOrderedList$1 = SvgOrderedList, SvgPaperclip = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M15.968 3c-.775 0-1.517.306-2.062.847l-8.983 8.918a4.8 4.8 0 0 0-1.423 3.41c0 1.277.511 2.504 1.423 3.41A4.9 4.9 0 0 0 8.368 21a4.9 4.9 0 0 0 3.445-1.416l8.983-8.918a1 1 0 1 1 1.409 1.42l-8.983 8.917A6.9 6.9 0 0 1 8.368 23a6.9 6.9 0 0 1-4.854-1.997A6.8 6.8 0 0 1 1.5 16.174c0-1.812.725-3.549 2.014-4.828l8.983-8.918A4.93 4.93 0 0 1 15.967 1c1.301 0 2.55.513 3.471 1.428a4.87 4.87 0 0 1 1.442 3.456 4.87 4.87 0 0 1-1.442 3.455l-8.992 8.918a2.965 2.965 0 0 1-4.175 0 2.935 2.935 0 0 1 0-4.165l8.299-8.23a1 1 0 0 1 1.408 1.42l-8.298 8.23a.935.935 0 0 0 0 1.326.963.963 0 0 0 1.357 0l8.992-8.918c.545-.541.85-1.274.85-2.036a2.87 2.87 0 0 0-.85-2.037A2.93 2.93 0 0 0 15.968 3",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgPaperclip$1 = SvgPaperclip, SvgPause = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M5.5 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h3a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm0 2h3v16h-3zm10-2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h3a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm0 2h3v16h-3z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgPause$1 = SvgPause, SvgPinOff = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M3.707 2.293a1 1 0 0 0-1.414 1.414l5.084 5.084-.728.273a1 1 0 0 0-.356.229l-1.5 1.5a1 1 0 0 0 0 1.414L7.586 15l-3.793 3.793a1 1 0 1 0 1.414 1.414L9 16.414l2.793 2.793a1 1 0 0 0 1.414 0l1.5-1.5a1 1 0 0 0 .23-.356l.272-.727 5.084 5.083a1 1 0 0 0 1.414-1.414l-6.118-6.118a1 1 0 0 0-.062-.069L10.694 9.28zM12.5 17.086l-2.793-2.793L6.914 11.5l.64-.64 1.376-.516.35.35 4.376 4.376-.516 1.376zm3.207-13.293 4.5 4.5.5.5a1 1 0 0 1-1.176 1.59l-2.574 2.575a1 1 0 1 1-1.414-1.414L18.086 9 15 5.914l-2.542 2.542a1 1 0 1 1-1.414-1.414l2.573-2.573a1 1 0 0 1 1.59-1.176z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgPinOff$1 = SvgPinOff, SvgPinOn = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M15.207 3.293a1 1 0 0 0-1.59 1.176l-3.17 3.17-3.798 1.425a1 1 0 0 0-.356.229l-1.5 1.5a1 1 0 0 0 0 1.414L7.586 15l-3.793 3.793a1 1 0 1 0 1.414 1.414L9 16.414l2.793 2.793a1 1 0 0 0 1.414 0l1.5-1.5a1 1 0 0 0 .23-.356l1.423-3.797 3.17-3.17a1 1 0 0 0 1.177-1.591l-.5-.5-4.5-4.5zM15 5.914l-3.293 3.293a1 1 0 0 1-.356.23L7.554 10.86l-.64.64 2.793 2.793 2.793 2.793.64-.64 1.424-3.797a1 1 0 0 1 .229-.356L18.086 9z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgPinOn$1 = SvgPinOn, SvgPlaceholder = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsxs("g", { fill: "currentColor", clipPath: "url(#placeholder_svg__a)", children: [
+        /* @__PURE__ */ jsx("path", { d: "M11.945 22.68C6.048 22.578 1.348 17.632 1.45 11.635 1.545 5.782 6.187 1.058 11.945.96a10.4 10.4 0 0 1 4.572 1.051 1.38 1.38 0 0 1 .71 1.802 1.34 1.34 0 0 1-1.88.666A7.924 7.924 0 0 0 4.71 8.325a8.18 8.18 0 0 0 3.765 10.819 7.927 7.927 0 0 0 10.663-3.849 8.2 8.2 0 0 0 .773-3.475 6 6 0 0 0-.269-2.117 1.375 1.375 0 0 1 .869-1.738 1.34 1.34 0 0 1 1.691.887c.297.95.431 1.944.397 2.939.029 5.983-4.718 10.86-10.602 10.889z" }),
+        /* @__PURE__ */ jsx("path", { d: "M19.087 7.325c.786 0 1.422-.647 1.422-1.445s-.636-1.445-1.422-1.445-1.421.647-1.421 1.445.636 1.445 1.421 1.445" })
+      ] }),
+      /* @__PURE__ */ jsx("defs", { children: /* @__PURE__ */ jsx("clipPath", { id: "placeholder_svg__a", children: /* @__PURE__ */ jsx("path", { fill: "#fff", d: "M0 0h24v24H0z" }) }) })
+    ]
+  }
+), SvgPlaceholder$1 = SvgPlaceholder, SvgPlayFilled = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          d: "M5 3.804c0-1.57 1.728-2.528 3.06-1.696l13.113 8.196a2 2 0 0 1 0 3.392L8.06 21.892C6.728 22.724 5 21.767 5 20.196z"
+        }
+      )
+    ]
+  }
+), SvgPlayFilled$1 = SvgPlayFilled, SvgPlay = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M4.5 3.804c0-1.57 1.728-2.528 3.06-1.696l13.113 8.196a2 2 0 0 1 0 3.392L7.56 21.892c-1.332.832-3.06-.125-3.06-1.696zM19.613 12 6.5 3.804v16.392z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgPlay$1 = SvgPlay, SvgPlus = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M13 4a1 1 0 1 0-2 0v7H4a1 1 0 1 0 0 2h7v7a1 1 0 1 0 2 0v-7h7a1 1 0 1 0 0-2h-7z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgPlus$1 = SvgPlus, SvgPointerDefault = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M2.567 2.285a1 1 0 0 0-.227 1.092l7.77 19.092a1 1 0 0 0 1.857-.012l3.025-7.712 7.35-2.678a1 1 0 0 0 .056-1.857L3.664 2.083a1 1 0 0 0-1.097.202M19.3 11.047l-5.417 1.973a1 1 0 0 0-.589.575l-2.276 5.802L5.116 4.893z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgPointerDefault$1 = SvgPointerDefault, SvgPointerHand = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          d: "M21.7 6.2c-.6-.5-1.4-.7-1.9-.7-.2 0-.5 0-.8.1v-.4c0-.7-.3-1.4-.8-1.9-.7-.7-1.8-.9-2.7-.6 0-.2-.1-.4-.2-.5q-.15-.45-.6-.9l-.9-.6q-1.05-.45-2.1 0-.45.15-.9.6-.45.3-.6.9c-.1.2-.1.3-.2.5-.9-.3-2-.1-2.7.6-.5.5-.8 1.2-.8 1.9v6.1c-.5-.4-1.1-.7-1.8-.8s-1.3.1-1.9.4-1 .9-1.2 1.5-.1 1.3.3 1.9c1.3 2.1 1.8 3.1 2.1 3.8.2.4.3.7.5 1 1 1.4 2.7 2.4 3.6 2.8 1.5.7 3.6 1.6 5.9 1.6 2.7 0 4-1.1 5.2-2.3 1.3-1.1 2.2-2.6 2.8-4.4.5-1.6.6-7.6.6-8.8q-.15-1.05-.9-1.8m-1.6 10c-.5 1.5-1.2 2.7-2.2 3.6-1.2 1.1-2 1.7-3.8 1.7-2 0-3.7-.7-5.1-1.4-1.3-.6-2.3-1.4-2.8-2.2-.1-.2-.2-.4-.4-.7-.3-.7-.8-1.8-2.2-4q-.15-.15 0-.3 0-.15.3-.3c.2-.1.5-.2.7-.1.2 0 .5.1.7.3L7 14.3s.1 0 .1.1c.1 0 .1.1.2.1H8c.1 0 .1-.1.1-.1.1 0 .1-.1.2-.1 0 0 0-.1.1-.1 0-.1.1-.1.1-.2V5.2c0-.2.1-.3.2-.5.3-.3.8-.3 1.1 0 .1.1.2.3.2.5v5.2c0 .6.4 1 1 1s1-.4 1-1V3c0-.1.1-.1.1-.2.1-.1.2-.1.2-.2q.3-.15.6 0c.1 0 .2.1.2.2l.2.2v7.6c0 .6.4 1 1 1s1-.4 1-1V5.2c0-.2.1-.3.2-.5.3-.3.8-.3 1.1 0 .3.1.4.3.4.5v6.3c0 .6.4 1 1 1s1-.4 1-1V8c0-.1.1-.2.2-.3s.3-.2.6-.2.5.1.6.2.2.2.2.3c-.1 2.6-.2 7.2-.5 8.2"
+        }
+      )
+    ]
+  }
+), SvgPointerHand$1 = SvgPointerHand, SvgPrint = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M5 3a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v5h1a3 3 0 0 1 3 3v5a3 3 0 0 1-3 3h-1v2a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-2H4a3 3 0 0 1-3-3v-5a3 3 0 0 1 3-3h1zm2 15v3h10v-6H7zm12-1v-3a1 1 0 0 0-1-1H6a1 1 0 0 0-1 1v3H4a1 1 0 0 1-1-1v-5a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1zM17 3v5H7V3z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgPrint$1 = SvgPrint, SvgQuestion = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18M1 12C1 5.925 5.925 1 12 1s11 4.925 11 11-4.925 11-11 11S1 18.075 1 12",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M11.032 8.427c-.185.242-.282.61-.282 1.017a1 1 0 1 1-2 0c0-.662.148-1.516.69-2.228C10.017 6.456 10.935 6 12.165 6c1.416 0 2.32.74 2.757 1.658.391.822.408 1.785.18 2.428-.28.784-.819 1.407-1.2 1.848l-.159.185c-.431.513-.578.79-.578 1.094v1.12a1 1 0 0 1-2 0v-1.12c0-1.087.605-1.854 1.048-2.381l.199-.235c.393-.461.66-.776.805-1.183.044-.124.07-.536-.101-.897a.85.85 0 0 0-.3-.358c-.12-.08-.319-.159-.651-.159-.695 0-.985.231-1.133.427",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx("path", { fill: "currentColor", d: "M13.325 17.167a1 1 0 1 1-2 0 1 1 0 0 1 2 0" })
+    ]
+  }
+), SvgQuestion$1 = SvgQuestion, SvgRafterDown = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M4.012 7.871a1.5 1.5 0 0 1 2.117.141L12 14.722l5.871-6.71a1.5 1.5 0 1 1 2.258 1.976l-7 8a1.5 1.5 0 0 1-2.258 0l-7-8a1.5 1.5 0 0 1 .141-2.117",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgRafterDown$1 = SvgRafterDown, SvgRafterLeft = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M16.129 4.012a1.5 1.5 0 0 1-.141 2.117L9.278 12l6.71 5.871a1.5 1.5 0 0 1-1.976 2.258l-8-7a1.5 1.5 0 0 1 0-2.258l8-7a1.5 1.5 0 0 1 2.117.141",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgRafterLeft$1 = SvgRafterLeft, SvgRafterRight = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M7.871 19.988a1.5 1.5 0 0 1 .141-2.117L14.722 12l-6.71-5.871A1.5 1.5 0 0 1 9.988 3.87l8 7a1.5 1.5 0 0 1 0 2.258l-8 7a1.5 1.5 0 0 1-2.117-.141",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgRafterRight$1 = SvgRafterRight, SvgRafterUp = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M19.988 17.129a1.5 1.5 0 0 1-2.117-.141L12 10.278l-5.871 6.71a1.5 1.5 0 0 1-2.258-1.976l7-8a1.5 1.5 0 0 1 2.258 0l7 8a1.5 1.5 0 0 1-.141 2.117",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgRafterUp$1 = SvgRafterUp, SvgReaction = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          d: "M12 22a9.7 9.7 0 0 1-3.9-.788 10.1 10.1 0 0 1-3.175-2.137q-1.35-1.35-2.137-3.175A9.7 9.7 0 0 1 2 12q0-2.075.788-3.9a10.1 10.1 0 0 1 2.137-3.175q1.35-1.35 3.175-2.137A9.7 9.7 0 0 1 12 2a10 10 0 0 1 3.423.596.89.89 0 0 1 .577.85c0 .726-.797 1.197-1.485.966A7.697 7.697 0 0 0 12 4Q8.675 4 6.338 6.338 4 8.675 4 12t2.338 5.663T12 20t5.663-2.337T20 12a7.3 7.3 0 0 0-.18-1.633C19.667 9.697 20.143 9 20.83 9c.428 0 .81.277.908.693A10 10 0 0 1 22 12a9.7 9.7 0 0 1-.788 3.9 10.1 10.1 0 0 1-2.137 3.175q-1.35 1.35-3.175 2.137A9.7 9.7 0 0 1 12 22m7-16h-1a.97.97 0 0 1-.712-.287A.97.97 0 0 1 17 5q0-.424.288-.713A.97.97 0 0 1 18 4h1V3q0-.424.288-.712A.97.97 0 0 1 20 2q.424 0 .712.288Q21 2.575 21 3v1h1q.424 0 .712.287Q23 4.576 23 5q0 .424-.288.713A.97.97 0 0 1 22 6h-1v1q0 .424-.288.713A.97.97 0 0 1 20 8a.97.97 0 0 1-.712-.287A.97.97 0 0 1 19 7zm-3.5 5q.624 0 1.063-.437Q17 10.125 17 9.5t-.437-1.062A1.45 1.45 0 0 0 15.5 8q-.625 0-1.062.438A1.45 1.45 0 0 0 14 9.5q0 .624.438 1.063.437.437 1.062.437m-7 0q.624 0 1.063-.437Q10 10.125 10 9.5t-.437-1.062A1.45 1.45 0 0 0 8.5 8q-.625 0-1.062.438A1.45 1.45 0 0 0 7 9.5q0 .624.438 1.063Q7.875 11 8.5 11m3.5 6.5q1.45 0 2.675-.7a5.53 5.53 0 0 0 1.975-1.9q.15-.3-.025-.6a.57.57 0 0 0-.525-.3H7.9a.57.57 0 0 0-.525.3q-.175.3-.025.6a5.5 5.5 0 0 0 1.988 1.9 5.3 5.3 0 0 0 2.662.7"
+        }
+      )
+    ]
+  }
+), SvgReaction$1 = SvgReaction, SvgRecordPause = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M23 12c0 6.075-4.925 11-11 11S1 18.075 1 12 5.925 1 12 1s11 4.925 11 11M10 6H8a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h2a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1m4 0h2a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgRecordPause$1 = SvgRecordPause, SvgRecordStop = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          d: "M2 6a4 4 0 0 1 4-4h12a4 4 0 0 1 4 4v12a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4z"
+        }
+      )
+    ]
+  }
+), SvgRecordStop$1 = SvgRecordStop, SvgRecordVideo = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M2 4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-1.936l4.409 1.365A2 2 0 0 0 24 15.519V8.48a2 2 0 0 0-2.591-1.91l-4.41 1.364V6a2 2 0 0 0-2-2zm0 2h13v12H2zm15 7.97V10.03l5-1.548v7.037z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgRecordVideo$1 = SvgRecordVideo, SvgRecord = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx("circle", { cx: 12, cy: 12, r: 11, fill: "currentColor" })
+    ]
+  }
+), SvgRecord$1 = SvgRecord, SvgRedo = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M14.293 13.707a1 1 0 0 1 0-1.414L18.586 8l-4.293-4.293a1 1 0 0 1 1.414-1.414l5 5a1 1 0 0 1 0 1.414l-5 5a1 1 0 0 1-1.414 0",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M4 20a1 1 0 0 1-1-1v-7a5 5 0 0 1 5-5h12a1 1 0 1 1 0 2H8a3 3 0 0 0-3 3v7a1 1 0 0 1-1 1",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgRedo$1 = SvgRedo, SvgRefresh = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx("g", { clipPath: "url(#refresh_svg__a)", children: /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M12.304 21c3.015 0 5.65-1.924 6.838-4.752a.986.986 0 0 1 1.297-.53c.503.216.738.803.524 1.311C19.498 20.522 16.19 23 12.304 23c-4.644 0-8.444-3.522-9.299-8.113L1.86 17.142a.99.99 0 0 1-1.33.449 1 1 0 0 1-.417-1.348L2.51 11.52c.135-.265.376-.457.66-.527a.96.96 0 0 1 .812.169L8.1 14.297c.433.33.515.958.185 1.404a.98.98 0 0 1-1.382.212L4.93 14.41c.65 3.785 3.744 6.59 7.374 6.59m4.794-12.913a.98.98 0 0 0-1.381.211 1.01 1.01 0 0 0 .184 1.405l4.117 3.135a.96.96 0 0 0 .812.169c.284-.07.525-.262.66-.527l2.398-4.723c.252-.496.065-1.1-.418-1.348a.99.99 0 0 0-1.329.449l-1.145 2.255C20.14 4.522 16.34 1 11.696 1 7.81 1 4.505 3.478 3.037 6.97a1.004 1.004 0 0 0 .525 1.312.986.986 0 0 0 1.297-.53C6.046 4.924 8.681 3 11.697 3c3.63 0 6.724 2.805 7.374 6.59z",
+          clipRule: "evenodd"
+        }
+      ) }),
+      /* @__PURE__ */ jsx("defs", { children: /* @__PURE__ */ jsx("clipPath", { id: "refresh_svg__a", children: /* @__PURE__ */ jsx("path", { fill: "#fff", d: "M0 0h24v24H0z" }) }) })
+    ]
+  }
+), SvgRefresh$1 = SvgRefresh, SvgReset = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M4.583 7.313 3.976 3.87a.996.996 0 1 0-1.96.346l1.012 5.747a.996.996 0 0 0 1.153.809l5.743-1.014a.997.997 0 0 0-.346-1.962l-3.3.582a7.754 7.754 0 0 1 8.399-4.254 7.76 7.76 0 0 1 .78 15.064 7.745 7.745 0 0 1-8.912-3.56.995.995 0 1 0-1.724.997 9.744 9.744 0 0 0 11.201 4.474 9.74 9.74 0 0 0 5.19-3.718 9.756 9.756 0 0 0-.625-12.055A9.74 9.74 0 0 0 8.73 3.117a9.75 9.75 0 0 0-4.147 4.196",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgReset$1 = SvgReset, SvgRestart = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          d: "M17.919 3.15c1.33-.856 3.081.1 3.081 1.682v14.336c0 1.583-1.75 2.538-3.081 1.683L7 13.83V19a2 2 0 1 1-4 0V5a2 2 0 1 1 4 0v5.168z"
+        }
+      )
+    ]
+  }
+), SvgRestart$1 = SvgRestart, SvgRestore = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "m20.417 7.812.606-3.442a.996.996 0 1 1 1.962.346l-1.013 5.747a.996.996 0 0 1-1.153.809l-5.743-1.014a.996.996 0 0 1 .346-1.962l3.3.582a7.754 7.754 0 0 0-8.399-4.254 7.75 7.75 0 0 0-6.321 7.224 7.76 7.76 0 0 0 5.54 7.84 7.745 7.745 0 0 0 8.913-3.56.995.995 0 1 1 1.724.997 9.744 9.744 0 0 1-11.201 4.474 9.74 9.74 0 0 1-5.19-3.718 9.756 9.756 0 0 1 .625-12.055A9.74 9.74 0 0 1 16.27 3.617a9.75 9.75 0 0 1 4.147 4.195",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgRestore$1 = SvgRestore, SvgSave = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M5 4a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h1v-7a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v7h1a1 1 0 0 0 1-1V8.414L15.586 4H8v3h7a1 1 0 1 1 0 2H7a1 1 0 0 1-1-1V4zm2-2H5a3 3 0 0 0-3 3v14a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3V8a1 1 0 0 0-.293-.707l-5-5A1 1 0 0 0 16 2zm1 12v6h8v-6z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgSave$1 = SvgSave, SvgSearch = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    width: "24",
+    height: "24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M4 10a7 7 0 1 1 14 0 7 7 0 0 1-14 0m7-9a9 9 0 1 0 5.7 15.96 1 1 0 0 0 .24.4l4.35 4.35a1 1 0 0 0 1.42-1.42l-4.35-4.35a1 1 0 0 0-.4-.24A9 9 0 0 0 11 1",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgSearch$1 = SvgSearch, SvgSee = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M2.14 12a18.68 18.68 0 0 0 2.464 3.316C6.397 17.226 8.9 19 12 19s5.605-1.774 7.395-3.684A18.7 18.7 0 0 0 21.86 12a18.681 18.681 0 0 0-2.464-3.316C17.606 6.774 15.101 5 12 5S6.396 6.774 4.605 8.684A18.7 18.7 0 0 0 2.14 12M23 12l.894-.448-.002-.003-.003-.007-.011-.022a11 11 0 0 0-.192-.354 20.675 20.675 0 0 0-2.831-3.85C18.895 5.226 15.899 3 12 3S5.104 5.226 3.145 7.316a20.7 20.7 0 0 0-2.831 3.85 12 12 0 0 0-.192.354l-.011.022-.003.007-.002.002s0 .002.894.449l-.894-.447a1 1 0 0 0 0 .894L1 12l-.894.447.002.004.003.007.011.022a8 8 0 0 0 .192.354 20.67 20.67 0 0 0 2.831 3.85C5.105 18.774 8.1 21 12 21s6.895-2.226 8.855-4.316a20.7 20.7 0 0 0 2.831-3.85 12 12 0 0 0 .192-.354l.011-.022.003-.007.002-.002s0-.002-.894-.449m0 0 .894.447c.141-.281.14-.613 0-.895z",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-4 2a4 4 0 1 1 8 0 4 4 0 0 1-8 0",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgSee$1 = SvgSee, SvgSend = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M20.604 3.159a.91.91 0 0 1 .345 1.05l-6.364 18.182a.909.909 0 0 1-1.689.07l-3.494-7.863-7.862-3.495a.91.91 0 0 1 .069-1.688l18.158-6.356a.91.91 0 0 1 .837.1M11.175 14.11l6.742-6.742-4.29 12.258zM9.89 12.825l-5.515-2.452 12.257-4.29z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgSend$1 = SvgSend, SvgSetBackground = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsxs(
+        "g",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          clipPath: "url(#set-background_svg__a)",
+          clipRule: "evenodd",
+          children: [
+            /* @__PURE__ */ jsx("path", { d: "M21 6H7V4h14a3 3 0 0 1 3 3v12a3 3 0 0 1-3 3H4v-2h17a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1" }),
+            /* @__PURE__ */ jsx("path", { d: "M17.703 11.502a1 1 0 0 1 .74.269l5.241 4.921a1 1 0 1 1-1.369 1.458l-4.477-4.203-6.578 7.702a1 1 0 0 1-1.52-1.298l7.258-8.5a1 1 0 0 1 .705-.35M12.5 9a1 1 0 1 0 0 2 1 1 0 0 0 0-2m-3 1a3 3 0 1 1 6 0 3 3 0 0 1-6 0M4 16a2 2 0 1 0 0 4v2a4 4 0 1 1 3.772-5.333 1 1 0 1 1-1.886.666A2 2 0 0 0 4 16M4 2a2 2 0 0 0-2 2H0a4 4 0 1 1 8 0H6a2 2 0 0 0-2-2" }),
+            /* @__PURE__ */ jsx("path", { d: "M8 4v13a1 1 0 1 1-2 0V4zM0 18V4h2v14z" })
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsx("defs", { children: /* @__PURE__ */ jsx("clipPath", { id: "set-background_svg__a", children: /* @__PURE__ */ jsx("path", { fill: "#fff", d: "M0 0h24v24H0z" }) }) })
+    ]
+  }
+), SvgSetBackground$1 = SvgSetBackground, SvgSettings = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsxs(
+        "g",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          clipPath: "url(#settings_svg__a)",
+          clipRule: "evenodd",
+          children: [
+            /* @__PURE__ */ jsx("path", { d: "M12 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-4 2a4 4 0 1 1 8 0 4 4 0 0 1-8 0" }),
+            /* @__PURE__ */ jsx("path", { d: "M12 2a1 1 0 0 0-1 1v.174a2.65 2.65 0 0 1-1.606 2.425 1 1 0 0 1-.264.073 2.65 2.65 0 0 1-2.73-.607l-.007-.008-.06-.06a1.003 1.003 0 0 0-1.415 0h-.001a1 1 0 0 0 0 1.415l.068.069a2.65 2.65 0 0 1 .542 2.894 2.65 2.65 0 0 1-2.414 1.705H3a1 1 0 0 0 0 2h.174a2.65 2.65 0 0 1 2.423 1.601 2.65 2.65 0 0 1-.532 2.918l-.008.008-.06.06a1 1 0 0 0-.217 1.09 1 1 0 0 0 .217.325v.001a1 1 0 0 0 1.415 0l.069-.068a2.65 2.65 0 0 1 2.894-.543 2.65 2.65 0 0 1 1.705 2.415V21a1 1 0 0 0 2 0v-.174a2.65 2.65 0 0 1 1.601-2.423 2.65 2.65 0 0 1 2.918.532l.008.008.06.06a1 1 0 0 0 1.415 0h.001a1 1 0 0 0 0-1.416l-.068-.068a2.65 2.65 0 0 1-.532-2.918A2.65 2.65 0 0 1 20.906 13H21a1 1 0 0 0 0-2h-.174a2.65 2.65 0 0 1-2.425-1.606 1 1 0 0 1-.073-.264 2.65 2.65 0 0 1 .607-2.73l.008-.007.06-.06a1 1 0 0 0 0-1.415v-.001a1 1 0 0 0-1.416 0l-.068.068a2.65 2.65 0 0 1-2.918.532A2.65 2.65 0 0 1 13 3.094V3a1 1 0 0 0-1-1m7.4 13 .915.404a.65.65 0 0 0 .127.714l.055.055a3 3 0 0 1 0 4.245l-.707-.708.707.707a3 3 0 0 1-4.244 0l-.055-.055a.65.65 0 0 0-.714-.127l-.01.004a.65.65 0 0 0-.394.593V21a3 3 0 0 1-6 0v-.076a.65.65 0 0 0-.425-.585l-.059-.024a.65.65 0 0 0-.714.127l-.054.055a3.002 3.002 0 1 1-4.245-4.244l.055-.055a.65.65 0 0 0 .127-.714l-.004-.01a.65.65 0 0 0-.594-.394H3a3 3 0 0 1 0-6h.076a.65.65 0 0 0 .585-.425l.024-.059a.65.65 0 0 0-.127-.714l-.055-.054a3 3 0 1 1 4.244-4.245l.055.055a.65.65 0 0 0 .714.127 1 1 0 0 1 .2-.064A.65.65 0 0 0 9 3.167V3a3 3 0 1 1 6 0v.087a.65.65 0 0 0 .394.594l.01.004a.65.65 0 0 0 .714-.127l.055-.055a3 3 0 0 1 4.895 3.27c-.151.365-.372.696-.65.974l-.056.055a.65.65 0 0 0-.127.714q.043.096.064.2a.65.65 0 0 0 .534.284H21a3 3 0 1 1 0 6h-.087a.65.65 0 0 0-.594.394z" })
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsx("defs", { children: /* @__PURE__ */ jsx("clipPath", { id: "settings_svg__a", children: /* @__PURE__ */ jsx("path", { fill: "#fff", d: "M0 0h24v24H0z" }) }) })
+    ]
+  }
+), SvgSettings$1 = SvgSettings, SvgShare = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M18.3 2.59c-1.16 0-2.1.937-2.1 2.092a2.07 2.07 0 0 0 .316 1.103 2.1 2.1 0 0 0 1.784.988c1.16 0 2.1-.936 2.1-2.091s-.94-2.091-2.1-2.091m-2.984 5.035A4.2 4.2 0 0 0 18.3 8.864c2.32 0 4.2-1.873 4.2-4.182S20.62.5 18.3.5s-4.2 1.872-4.2 4.182c0 .394.055.775.157 1.137L8.684 9.057A4.2 4.2 0 0 0 5.7 7.818C3.38 7.818 1.5 9.69 1.5 12s1.88 4.182 4.2 4.182a4.2 4.2 0 0 0 2.984-1.24l5.575 3.234a4.2 4.2 0 0 0-.159 1.142c0 2.31 1.88 4.182 4.2 4.182s4.2-1.872 4.2-4.182-1.88-4.182-4.2-4.182c-1.165 0-2.22.473-2.98 1.236l-5.577-3.235a4.17 4.17 0 0 0 0-2.274zm-7.831 3.273a1 1 0 0 0 .058.1 2.075 2.075 0 0 1-.059 2.105 2.1 2.1 0 0 1-1.784.988c-1.16 0-2.1-.936-2.1-2.091s.94-2.09 2.1-2.09a2.1 2.1 0 0 1 1.785.988m8.715 8.42c0-.34.081-.66.226-.944a1 1 0 0 0 .129-.219 2.1 2.1 0 0 1 1.745-.928c1.16 0 2.1.936 2.1 2.091s-.94 2.091-2.1 2.091-2.1-.936-2.1-2.09",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgShare$1 = SvgShare, SvgSmartphone = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M7 3a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zM4 4a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v16a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M11 18a1 1 0 0 1 1-1h.01a1 1 0 1 1 0 2H12a1 1 0 0 1-1-1",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgSmartphone$1 = SvgSmartphone, SvgSmiley = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18M1 12C1 5.925 5.925 1 12 1s11 4.925 11 11-4.925 11-11 11S1 18.075 1 12",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M7 10a1 1 0 0 1 1-1h1a1 1 0 0 1 0 2H8a1 1 0 0 1-1-1M14 10a1 1 0 0 1 1-1h1a1 1 0 1 1 0 2h-1a1 1 0 0 1-1-1M7.692 15.41a1 1 0 0 1 1.397-.218c.355.259.796.476 1.3.627A5.6 5.6 0 0 0 12 16.05c.558 0 1.107-.08 1.61-.23a4.3 4.3 0 0 0 1.3-.628 1 1 0 0 1 1.18 1.616 6.3 6.3 0 0 1-1.904.927 7.6 7.6 0 0 1-2.186.316 7.6 7.6 0 0 1-2.186-.316 6.3 6.3 0 0 1-1.903-.927 1 1 0 0 1-.22-1.397",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgSmiley$1 = SvgSmiley, SvgSortAscendingLetters = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M16.133 6.173c-.026.023-.133.118-.133.541v.715h2v-.715c0-.423-.107-.518-.133-.541C17.805 6.12 17.594 6 17 6s-.805.12-.867.173M20 6.714c0-.76-.203-1.521-.832-2.06C18.575 4.145 17.786 4 17 4s-1.575.145-2.168.654c-.629.539-.832 1.3-.832 2.06V11a1 1 0 1 0 2 0V9.429h2V11a1 1 0 1 0 2 0zM14 14a1 1 0 0 1 1-1h4a1 1 0 0 1 .832 1.555L16.87 19H19a1 1 0 1 1 0 2h-4a1 1 0 0 1-.832-1.555L17.132 15H15a1 1 0 0 1-1-1M3.293 16.293a1 1 0 0 1 1.414 0L7 18.586l2.293-2.293a1 1 0 0 1 1.414 1.414l-3 3a1 1 0 0 1-1.414 0l-3-3a1 1 0 0 1 0-1.414",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M7 4a1 1 0 0 1 1 1v15a1 1 0 1 1-2 0V5a1 1 0 0 1 1-1",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgSortAscendingLetters$1 = SvgSortAscendingLetters, SvgSortDescendingLetters = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M16.133 6.173c-.026.023-.133.118-.133.541v.715h2v-.715c0-.423-.107-.518-.133-.541C17.805 6.12 17.594 6 17 6s-.805.12-.867.173M20 6.714c0-.76-.203-1.521-.832-2.06C18.575 4.145 17.786 4 17 4s-1.575.145-2.168.654c-.629.539-.832 1.3-.832 2.06V11a1 1 0 1 0 2 0V9.429h2V11a1 1 0 1 0 2 0zM14 14a1 1 0 0 1 1-1h4a1 1 0 0 1 .832 1.555L16.87 19H19a1 1 0 1 1 0 2h-4a1 1 0 0 1-.832-1.555L17.132 15H15a1 1 0 0 1-1-1M3.293 8.707a1 1 0 0 0 1.414 0L7 6.414l2.293 2.293a1 1 0 0 0 1.414-1.414l-3-3a1 1 0 0 0-1.414 0l-3 3a1 1 0 0 0 0 1.414",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M7 21a1 1 0 0 0 1-1V5a1 1 0 0 0-2 0v15a1 1 0 0 0 1 1",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgSortDescendingLetters$1 = SvgSortDescendingLetters, SvgSortDescending = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M18 6a1 1 0 0 1-1 1h-4a1 1 0 1 1 0-2h4a1 1 0 0 1 1 1M20 12a1 1 0 0 1-1 1h-6a1 1 0 1 1 0-2h6a1 1 0 0 1 1 1M22 18a1 1 0 0 0-1-1h-8a1 1 0 1 0 0 2h8a1 1 0 0 0 1-1M9.707 16.293a1 1 0 0 0-1.414 0L6 18.586l-2.293-2.293a1 1 0 0 0-1.414 1.414l3 3a1 1 0 0 0 1.414 0l3-3a1 1 0 0 0 0-1.414",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M6 4a1 1 0 0 1 1 1v15a1 1 0 1 1-2 0V5a1 1 0 0 1 1-1",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgSortDescending$1 = SvgSortDescending, SvgSortTime = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M13.509 6.027a6.138 6.138 0 1 1-.28 12.099 1 1 0 1 0-.383 1.963A8.138 8.138 0 1 0 9.653 5.488a1 1 0 1 0 1.168 1.624 6.1 6.1 0 0 1 2.688-1.085",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M14.38 8.252a1 1 0 0 0-1 1v3.8a1 1 0 0 0 .456.838l2.052 1.332a1 1 0 0 0 1.089-1.678l-1.597-1.036V9.252a1 1 0 0 0-1-1M1.793 16.293a1 1 0 0 1 1.414 0L5.5 18.586l2.293-2.293a1 1 0 0 1 1.414 1.414l-3 3a1 1 0 0 1-1.414 0l-3-3a1 1 0 0 1 0-1.414",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M5.5 4a1 1 0 0 0-1 1v15a1 1 0 1 0 2 0V5a1 1 0 0 0-1-1",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgSortTime$1 = SvgSortTime, SvgSpeechToText = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M9.18 17.657H6.25c-.622 0-1.178.357-1.42.887l-1.253 2.73c-.197.428-.007.942.462 1.146.13.054.26.08.38.08a.93.93 0 0 0 .844-.526l1.178-2.567h2.237c1.305 0 2.34-1.025 2.34-2.25v-3.57l.475-.026c1.528-.08 2.72-1.304 2.72-2.769 0-.785-.348-1.538-.962-2.068a10.37 10.37 0 0 1-3.202-4.932L9.563 2.14c-.135-.455-.64-.744-1.146-.605a.87.87 0 0 0-.628 1.078l.486 1.652a12.1 12.1 0 0 0 3.738 5.757l.003.003c.216.189.352.464.352.767a1.03 1.03 0 0 1-1.033 1.023h-.848c-.737 0-1.308.575-1.308 1.249zM15.419 17.833a.847.847 0 0 0 0 1.227c.179.173.413.261.657.261a.94.94 0 0 0 .657-.261 3.53 3.53 0 0 0 0-5.117.956.956 0 0 0-1.315 0 .843.843 0 0 0 .002 1.227c.365.354.566.827.566 1.331 0 .508-.207.978-.565 1.33zM18.972 21.379h.002c.143.082.302.12.463.12a.94.94 0 0 0 .803-.444 8.87 8.87 0 0 0 0-9.112.947.947 0 0 0-1.269-.323.855.855 0 0 0-.333 1.188 7.18 7.18 0 0 1 0 7.383.853.853 0 0 0 .334 1.188",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgSpeechToText$1 = SvgSpeechToText, SvgSplitCells = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx("g", { fill: "currentColor", clipPath: "url(#split-cells_svg__a)", children: /* @__PURE__ */ jsx("path", { d: "M3.444 2C2.554 2 2 2.635 2 3.222v1.89a1 1 0 1 1-2 0v-1.89C0 1.355 1.634 0 3.444 0h4.278a1 1 0 1 1 0 2zM15.278 1a1 1 0 0 1 1-1h4.278C22.366 0 24 1.355 24 3.222v1.89a1 1 0 0 1-2 0v-1.89C22 2.635 21.445 2 20.556 2h-4.278a1 1 0 0 1-1-1M1 17.89a1 1 0 0 1 1 1v1.888C2 21.366 2.555 22 3.444 22h4.278a1 1 0 1 1 0 2H3.444C1.634 24 0 22.645 0 20.778v-1.889a1 1 0 0 1 1-1M23 17.89a1 1 0 0 1 1 1v1.888C24 22.645 22.366 24 20.556 24h-4.278a1 1 0 0 1 0-2h4.278c.89 0 1.444-.634 1.444-1.222v-1.889a1 1 0 0 1 1-1M14 12a1 1 0 0 1 1-1h5.586l-2.293-2.293a1 1 0 0 1 1.414-1.414l4 4a1 1 0 0 1 0 1.414l-4 4a1 1 0 0 1-1.414-1.414L20.586 13H15a1 1 0 0 1-1-1M9 13a1 1 0 1 0 0-2H3.414l2.293-2.293a1 1 0 0 0-1.414-1.414l-4 4a1 1 0 0 0 0 1.414l4 4a1 1 0 0 0 1.414-1.414L3.414 13z" }) }),
+      /* @__PURE__ */ jsx("defs", { children: /* @__PURE__ */ jsx("clipPath", { id: "split-cells_svg__a", children: /* @__PURE__ */ jsx("path", { fill: "#fff", d: "M0 0h24v24H0z" }) }) })
+    ]
+  }
+), SvgSplitCells$1 = SvgSplitCells, SvgSquareRoot = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M10.375 2a1 1 0 0 0-.983.816L6.678 17.293 4.56 11.649A1 1 0 0 0 3.625 11H2.5a1 1 0 1 0 0 2h.432l3.132 8.351a1 1 0 0 0 1.919-.167L11.205 4h10.42a1 1 0 1 0 0-2zm9.496 12.043c-.58.58-1.132 1.309-1.62 2.015.199.521.358.977.494 1.365l.005.014c.176.506.299.857.416 1.122.057.129.103.214.14.27l.032.045.037.001H20.5a1 1 0 1 1 0 2h-1.125c-.468 0-.924-.125-1.315-.457-.35-.297-.564-.692-.722-1.048-.152-.342-.298-.763-.456-1.215l-.026-.074-.012-.035c-.327.417-.68.829-1.051 1.2-.81.81-1.903 1.629-3.168 1.629a1 1 0 1 1 0-2c.422 0 1.017-.306 1.754-1.043.583-.583 1.137-1.315 1.627-2.025a51 51 0 0 1-.484-1.326l-.012-.032c-.178-.505-.302-.857-.421-1.124a2 2 0 0 0-.143-.276l-.034-.048-.037-.001H13.75a1 1 0 1 1 0-2h1.125c.47 0 .925.125 1.317.459.35.298.564.694.724 1.052.152.343.301.764.462 1.22l.03.085.002.007c.326-.415.677-.824 1.047-1.194.81-.81 1.903-1.629 3.168-1.629a1 1 0 1 1 0 2c-.422 0-1.017.306-1.754 1.043",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgSquareRoot$1 = SvgSquareRoot, SvgSubscript = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M3.78 4.375a1 1 0 0 0-1.56 1.25L7.32 12l-5.1 6.375a1 1 0 0 0 1.56 1.25L8.6 13.6l4.82 6.024a1 1 0 1 0 1.56-1.25L9.88 12l5.1-6.375a1 1 0 0 0-1.56-1.25L8.6 10.4zm16.632 7.636a3.3 3.3 0 0 0-3.28 1.635 1 1 0 0 0 1.736.993 1.3 1.3 0 0 1 2.295 1.212l-3.916 4.475A1 1 0 0 0 18 21.984h4.561a1 1 0 1 0 0-2h-2.357l2.54-2.902a1 1 0 0 0 .115-.163 3.3 3.3 0 0 0-2.448-4.908",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgSubscript$1 = SvgSubscript, SvgSuccessFill = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M12 23c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11m4.808-13.41a1 1 0 1 0-1.616-1.18l-3.61 4.951-1.806-2.222a1 1 0 0 0-1.552 1.26l2.625 3.232a1 1 0 0 0 1.584-.042z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgSuccessFill$1 = SvgSuccessFill, SvgSuccessOutline = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18M1 12C1 5.925 5.925 1 12 1s11 4.925 11 11-4.925 11-11 11S1 18.075 1 12",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M16.59 8.192a1 1 0 0 1 .218 1.397l-4.375 6a1 1 0 0 1-1.584.042L8.224 12.4a1 1 0 0 1 1.552-1.261l1.806 2.223 3.61-4.951a1 1 0 0 1 1.397-.219",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgSuccessOutline$1 = SvgSuccessOutline, SvgSuperscript = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M20.412 1.01a3.3 3.3 0 0 0-3.28 1.636 1 1 0 0 0 1.736.993 1.299 1.299 0 0 1 2.295 1.212l-3.916 4.475A1 1 0 0 0 18 10.984h4.561a1 1 0 1 0 0-2h-2.357l2.54-2.902a1 1 0 0 0 .115-.163 3.298 3.298 0 0 0-2.448-4.908M3.78 4.376a1 1 0 1 0-1.562 1.25L7.32 12l-5.1 6.375a1 1 0 0 0 1.562 1.25L8.6 13.6l4.82 6.024a1 1 0 1 0 1.56-1.25L9.88 12l5.1-6.375a1 1 0 1 0-1.56-1.25L8.6 10.4z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgSuperscript$1 = SvgSuperscript, SvgTable = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M4.5 3A1.5 1.5 0 0 0 3 4.5V7h4V3zM7 9H3v10.5A1.5 1.5 0 0 0 4.5 21H7zm2 0h12v10.5a1.5 1.5 0 0 1-1.5 1.5H9zm12-2H9V3h10.5A1.5 1.5 0 0 1 21 4.5zM1 4.5A3.5 3.5 0 0 1 4.5 1h15A3.5 3.5 0 0 1 23 4.5v15a3.5 3.5 0 0 1-3.5 3.5h-15A3.5 3.5 0 0 1 1 19.5z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgTable$1 = SvgTable, SvgTextBold = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          d: "M7.058 20.963a1.13 1.13 0 0 1-.759-.276.93.93 0 0 1-.299-.713V3.989q0-.437.276-.713A.97.97 0 0 1 6.989 3h5.566q1.426 0 2.553.598a4.7 4.7 0 0 1 1.817 1.633q.667 1.012.667 2.369 0 1.219-.667 2.162a4.4 4.4 0 0 1-1.702 1.472q1.518.39 2.461 1.518.943 1.104.943 2.852 0 1.587-.736 2.783-.712 1.196-2.001 1.886-1.265.69-2.921.69zm.92-1.863h4.991q1.08 0 1.909-.414a3.37 3.37 0 0 0 1.334-1.196q.483-.782.483-1.886 0-1.012-.483-1.748a3.1 3.1 0 0 0-1.334-1.127q-.828-.39-1.909-.391H7.978zm0-8.648h4.577q1.357 0 2.231-.736.874-.735.874-2.116 0-1.357-.874-2.047t-2.231-.69H7.978z"
+        }
+      )
+    ]
+  }
+), SvgTextBold$1 = SvgTextBold, SvgTextColor = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          d: "M5.74 18a.91.91 0 0 1-.838-.473 1.01 1.01 0 0 1-.043-.99L11.01 1.888q.28-.688.946-.688.71 0 .968.688L19.1 16.58a.97.97 0 0 1-.086.968q-.28.452-.84.452-.278 0-.537-.15a1.05 1.05 0 0 1-.387-.474l-5.571-13.68h.624l-5.615 13.68a.92.92 0 0 1-.387.473q-.258.15-.56.151m1.248-4.832.796-1.7h8.54l.774 1.7z"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "#46AFE6",
+          d: "M1.2 21.8a2 2 0 0 1 2-2h3.4V24H3.2a2 2 0 0 1-2-2z"
+        }
+      ),
+      /* @__PURE__ */ jsx("path", { fill: "#A348C0", d: "M6.6 19.8H12V24H6.6z" }),
+      /* @__PURE__ */ jsx("path", { fill: "#FF3A55", d: "M12 19.8h5.4V24H12z" }),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "#FF8D2E",
+          d: "M17.4 19.8h3.4a2 2 0 0 1 2 2v.2a2 2 0 0 1-2 2h-3.4z"
+        }
+      )
+    ]
+  }
+), SvgTextColor$1 = SvgTextColor, SvgTextHighlight = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "#46AFE6",
+          d: "M1.2 21.8a2 2 0 0 1 2-2h3.4V24H3.2a2 2 0 0 1-2-2z"
+        }
+      ),
+      /* @__PURE__ */ jsx("path", { fill: "#A348C0", d: "M6.6 19.8H12V24H6.6z" }),
+      /* @__PURE__ */ jsx("path", { fill: "#FF3A55", d: "M12 19.8h5.4V24H12z" }),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "#FF8D2E",
+          d: "M17.4 19.8h3.4a2 2 0 0 1 2 2v.2a2 2 0 0 1-2 2h-3.4z"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M17.245.78A3.005 3.005 0 0 0 13 .986L6.71 7.874a4 4 0 0 0-1.032 3.056l-3.03 6.114a1 1 0 0 0 .895 1.444l5.673.006a1 1 0 0 0 .522-.146l2.442-1.492a4 4 0 0 0 2.954-1.314l6.29-6.888a3.005 3.005 0 0 0-.192-4.245zm-5.398 14.047-.05-.081-.087.053a2 2 0 0 1-.884-.466L8.318 12.05a2 2 0 0 1-.548-.837l.043-.087-.08-.04A2 2 0 0 1 8.19 9.22l6.29-6.888a1 1 0 0 1 1.414-.069l3.987 3.63c.408.371.437 1.005.064 1.415l-6.29 6.887a2 2 0 0 1-1.808.632m-5.113-1.524q.111.12.233.23l2.508 2.283q.117.106.24.202l-.78.476-3.78-.004z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgTextHighlight$1 = SvgTextHighlight, SvgTextItalic = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M9.4 4a1 1 0 0 1 1-1h6a1 1 0 1 1 0 2h-1.916L11.19 19H13a1 1 0 1 1 0 2H7a1 1 0 1 1 0-2h2.135L12.43 5H10.4a1 1 0 0 1-1-1",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgTextItalic$1 = SvgTextItalic, SvgTextPage = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M6.286 3c-.35 0-.68.135-.92.368-.238.231-.366.54-.366.854v15.556c0 .315.128.623.367.854.239.233.569.368.919.368h11.428c.35 0 .68-.135.92-.368.238-.231.366-.54.366-.854V8h-3a2 2 0 0 1-2-2V3zM16 6h1.986L16 4.08zm5 13.778V6.556a1 1 0 0 0-.305-.72L15.98 1.281A1 1 0 0 0 15.286 1h-9a3.32 3.32 0 0 0-2.314.934A3.2 3.2 0 0 0 3 4.222v15.556c0 .864.353 1.686.972 2.288S5.423 23 6.286 23h11.428c.863 0 1.695-.333 2.314-.934.619-.602.972-1.424.972-2.288M8 6a1 1 0 0 0 0 2h3a1 1 0 1 0 0-2zm-1 6a1 1 0 0 1 1-1h8a1 1 0 1 1 0 2H8a1 1 0 0 1-1-1m5 4a1 1 0 1 0 0 2h4a1 1 0 1 0 0-2z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgTextPage$1 = SvgTextPage, SvgTextSize = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M2 4a1 1 0 0 0 0 2h6v13a1 1 0 1 0 2 0V6h6a1 1 0 1 0 0-2zm15 8h-3a1 1 0 1 1 0-2h8a1 1 0 1 1 0 2h-3v7a1 1 0 1 1-2 0z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgTextSize$1 = SvgTextSize, SvgTextToSpeech = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M12.6 21h-.3c-.4 0-.7-.2-1-.5l-4.9-4.1H3.1q-.9 0-1.5-.6c-.4-.4-.6-1-.6-1.5V9.7q0-.9.6-1.5c.4-.4 1-.6 1.5-.6h3.2l4.9-4.1c.3-.2.7-.4 1-.5.4-.1.8 0 1.1.2s.6.4.9.7c.2.3.3.7.3 1.1v14c0 .4-.1.8-.3 1.1s-.5.6-.9.8c-.037 0-.1.013-.18.03-.14.03-.33.07-.52.07M5 9.6H3v4.8h2zm2.3 5a.8.8 0 0 0-.3-.15V9.559a1 1 0 0 0 .4-.258l5.2-4.4-.1 14zM20 17.4c.1.1.3.1.5.1.3 0 .6-.2.8-.4 1.7-2.8 1.7-6.3 0-9.1-.3-.5-.9-.7-1.3-.4-.4.2-.6.8-.3 1.2 1.4 2.3 1.4 5.1 0 7.4-.3.4-.2.9.3 1.2m-3.6-3.6c-.4.3-.4.9 0 1.2.2.2.4.3.7.3.2 0 .5-.1.7-.3.7-.7 1.1-1.6 1.1-2.6s-.4-1.9-1.1-2.6c-.4-.3-1-.3-1.3 0-.4.3-.4.9 0 1.2.4.4.6.8.6 1.3-.1.7-.3 1.2-.7 1.5",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgTextToSpeech$1 = SvgTextToSpeech, SvgTextTypo = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          d: "M12.199 20.963q-.414 0-.713-.276a1.01 1.01 0 0 1-.276-.713V3h1.978v16.974q0 .414-.276.713a.97.97 0 0 1-.713.276M5.92 4.817q-.414 0-.667-.253A.92.92 0 0 1 5 3.92q0-.414.253-.667T5.92 3h12.581q.414 0 .667.253t.253.667q0 .368-.253.644-.253.253-.667.253z"
+        }
+      )
+    ]
+  }
+), SvgTextTypo$1 = SvgTextTypo, SvgTextUnderline = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx("rect", { width: 14, height: 2, x: 5, y: 20.5, fill: "currentColor", rx: 1 }),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          d: "M12.056 18q-2.077 0-3.684-.786-1.585-.787-2.479-2.18Q5 13.618 5 11.821V3.966q0-.427.268-.696Q5.537 3 5.96 3q.425 0 .692.27.268.27.268.696v7.855q0 1.28.648 2.27.647.988 1.808 1.55 1.185.562 2.68.562 1.473 0 2.59-.562 1.139-.563 1.786-1.55.648-.99.648-2.27V3.966q0-.427.268-.696A.98.98 0 0 1 18.04 3q.447 0 .692.27.268.27.268.696v7.855q0 1.798-.893 3.213-.893 1.393-2.456 2.18-1.563.786-3.595.786"
+        }
+      )
+    ]
+  }
+), SvgTextUnderline$1 = SvgTextUnderline, SvgTextVanilla = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          d: "m9.976 13.304-1.47 6.244a1 1 0 0 0 1.947.458l1.186-5.039zM12.716 10.388 13.984 5H19.9a1 1 0 1 0 0-2h-14a1 1 0 0 0-.46.112L7.328 5h4.601l-.876 3.725z"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M1.793 2.293a1 1 0 0 1 1.414 0l18 18a1 1 0 0 1-1.414 1.414l-18-18a1 1 0 0 1 0-1.414",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgTextVanilla$1 = SvgTextVanilla, SvgTool = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M15.865 3.931a4.761 4.761 0 0 0-4.873 6.696.95.95 0 0 1-.195 1.066l-6.58 6.58a1.068 1.068 0 0 0 1.51 1.511l6.58-6.581a.95.95 0 0 1 1.067-.194 4.762 4.762 0 0 0 6.695-4.873l-2.45 2.45a1.905 1.905 0 0 1-2.667 0l-.006-.008-1.53-1.53a1.905 1.905 0 0 1 0-2.667l.006-.007zm-1.73-1.826a6.67 6.67 0 0 1 3.943.485.953.953 0 0 1 .281 1.54l-3.584 3.584 1.51 1.51 3.584-3.583a.952.952 0 0 1 1.542.28 6.666 6.666 0 0 1-8.197 9.07l-6.14 6.14a2.973 2.973 0 0 1-4.205-4.204l6.141-6.141a6.667 6.667 0 0 1 5.125-8.681",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgTool$1 = SvgTool, SvgTrendingUp = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsxs(
+        "g",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          clipPath: "url(#trending-up_svg__a)",
+          clipRule: "evenodd",
+          children: [
+            /* @__PURE__ */ jsx("path", { d: "M23.707 5.293a1 1 0 0 1 0 1.414l-9.5 9.5a1 1 0 0 1-1.414 0L8.5 11.914l-6.793 6.793a1 1 0 0 1-1.414-1.414l7.5-7.5a1 1 0 0 1 1.414 0l4.293 4.293 8.793-8.793a1 1 0 0 1 1.414 0" }),
+            /* @__PURE__ */ jsx("path", { d: "M16 6a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0V7h-5a1 1 0 0 1-1-1" })
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsx("defs", { children: /* @__PURE__ */ jsx("clipPath", { id: "trending-up_svg__a", children: /* @__PURE__ */ jsx("path", { fill: "#fff", d: "M0 0h24v24H0z" }) }) })
+    ]
+  }
+), SvgTrendingUp$1 = SvgTrendingUp, SvgUndo = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M9.707 13.707a1 1 0 0 0 0-1.414L5.414 8l4.293-4.293a1 1 0 0 0-1.414-1.414l-5 5a1 1 0 0 0 0 1.414l5 5a1 1 0 0 0 1.414 0",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M20 20a1 1 0 0 0 1-1v-7a5 5 0 0 0-5-5H4a1 1 0 1 0 0 2h12a3 3 0 0 1 3 3v7a1 1 0 0 0 1 1",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgUndo$1 = SvgUndo, SvgUnlink = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "g",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          clipPath: "url(#unlink_svg__a)",
+          clipRule: "evenodd",
+          children: /* @__PURE__ */ jsx("path", { d: "M4.953 13.538a4 4 0 1 0 5.755 5.557l2.084-2.158a1 1 0 0 1 1.439 1.39l-2.084 2.157a6 6 0 0 1-8.632-8.336L5.599 9.99a1 1 0 1 1 1.438 1.39zm4.838-6.45a1 1 0 0 1-.024-1.414l2.084-2.158a5.999 5.999 0 1 1 8.632 8.336l-2.084 2.158a1 1 0 0 1-1.439-1.39l2.084-2.157a4 4 0 0 0-5.755-5.558l-2.084 2.159a1 1 0 0 1-1.414.024M7.91 5.965a1 1 0 0 1-1.238-.686l-.55-1.922a1 1 0 1 1 1.922-.551l.55 1.922a1 1 0 0 1-.685 1.237M16.089 18.035a1 1 0 0 1 1.237.685l.55 1.923a1 1 0 1 1-1.922.55l-.55-1.922a1 1 0 0 1 .685-1.236M5.825 8.123a1 1 0 0 1-1.212.729l-1.94-.484a1 1 0 0 1 .483-1.94l1.94.483a1 1 0 0 1 .73 1.212M18.173 15.877a1 1 0 0 1 1.212-.729l1.94.484a1 1 0 0 1-.483 1.94l-1.94-.483a1 1 0 0 1-.73-1.212" })
+        }
+      ),
+      /* @__PURE__ */ jsx("defs", { children: /* @__PURE__ */ jsx("clipPath", { id: "unlink_svg__a", children: /* @__PURE__ */ jsx("path", { fill: "#fff", d: "M0 0h24v24H0z" }) }) })
+    ]
+  }
+), SvgUnlink$1 = SvgUnlink, SvgUnlock = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx("g", { clipPath: "url(#unlock_svg__a)", children: /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M7.919 3.981a4 4 0 0 1 7.337.888 1 1 0 0 0 1.926-.538A6 6 0 0 0 5.624 7.558L6.027 9H5a3 3 0 0 0-3 3v7a3 3 0 0 0 3 3h14a3 3 0 0 0 3-3v-7a3 3 0 0 0-3-3H8.102l-.014-.053-.537-1.927a4 4 0 0 1 .368-3.039M4 12a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1z",
+          clipRule: "evenodd"
+        }
+      ) }),
+      /* @__PURE__ */ jsx("defs", { children: /* @__PURE__ */ jsx("clipPath", { id: "unlock_svg__a", children: /* @__PURE__ */ jsx("path", { fill: "#fff", d: "M0 0h24v24H0z" }) }) })
+    ]
+  }
+), SvgUnlock$1 = SvgUnlock, SvgUpload = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsxs(
+        "g",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          clipPath: "url(#upload_svg__a)",
+          clipRule: "evenodd",
+          children: [
+            /* @__PURE__ */ jsx("path", { d: "M11.293 11.293a1 1 0 0 1 1.414 0l4 4a1 1 0 0 1-1.414 1.414L12 13.414l-3.293 3.293a1 1 0 0 1-1.414-1.414z" }),
+            /* @__PURE__ */ jsx("path", { d: "M12 11a1 1 0 0 1 1 1v9a1 1 0 1 1-2 0v-9a1 1 0 0 1 1-1" }),
+            /* @__PURE__ */ jsx("path", { d: "M8.663 2.009A9 9 0 0 1 17.48 8H18a6.002 6.002 0 0 1 5.497 8.398 6 6 0 0 1-2.628 2.87 1 1 0 0 1-.958-1.756A4 4 0 0 0 18 10H16.74a1 1 0 0 1-.968-.75 7 7 0 1 0-12.023 6.388 1 1 0 0 1-1.498 1.324A9 9 0 0 1 8.663 2.01" }),
+            /* @__PURE__ */ jsx("path", { d: "M11.293 11.293a1 1 0 0 1 1.414 0l4 4a1 1 0 0 1-1.414 1.414L12 13.414l-3.293 3.293a1 1 0 0 1-1.414-1.414z" })
+          ]
+        }
+      ),
+      /* @__PURE__ */ jsx("defs", { children: /* @__PURE__ */ jsx("clipPath", { id: "upload_svg__a", children: /* @__PURE__ */ jsx("path", { fill: "#fff", d: "M0 0h24v24H0z" }) }) })
+    ]
+  }
+), SvgUpload$1 = SvgUpload, SvgUserSearch = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M11 3a8 8 0 1 0 0 16 8 8 0 0 0 0-16M1 11C1 5.477 5.477 1 11 1s10 4.477 10 10-4.477 10-10 10S1 16.523 1 11",
+          clipRule: "evenodd"
+        }
+      ),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M17.293 17.293a1 1 0 0 1 1.414 0l4 4a1 1 0 0 1-1.414 1.414l-4-4a1 1 0 0 1 0-1.414M5.932 14.876C6.552 14.05 7.464 13.5 8.5 13.5h5c1.036 0 1.948.55 2.568 1.376a1 1 0 0 1-1.6 1.2c-.318-.424-.678-.576-.968-.576h-5c-.29 0-.65.152-.968.576a1 1 0 1 1-1.6-1.2M11 6.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-4 2a4 4 0 1 1 8 0 4 4 0 0 1-8 0",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgUserSearch$1 = SvgUserSearch, SvgUser = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M4.005 14.694C4.981 13.622 6.325 13 7.75 13h8.5c1.424 0 2.769.622 3.744 1.694.974 1.068 1.506 2.498 1.506 3.973V21a1 1 0 1 1-2 0v-2.333c0-1.001-.363-1.945-.984-2.627-.618-.679-1.436-1.04-2.266-1.04h-8.5c-.83 0-1.648.361-2.266 1.04-.621.682-.984 1.626-.984 2.627V21a1 1 0 1 1-2 0v-2.333c0-1.475.533-2.905 1.505-3.974M12 2a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7M6.5 5.5a5.5 5.5 0 1 1 11 0 5.5 5.5 0 0 1-11 0",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgUser$1 = SvgUser, SvgUsers = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "g",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          clipPath: "url(#users_svg__a)",
+          clipRule: "evenodd",
+          children: /* @__PURE__ */ jsx("path", { d: "M19.055 12.803a1 1 0 0 1 1.272-.618c1.128.39 2.061 1.247 2.7 2.351.64 1.106.972 2.435.973 3.782V21a1 1 0 1 1-2 0v-2.681c0-1.03-.258-2.009-.704-2.782-.448-.773-1.034-1.258-1.623-1.462a1 1 0 0 1-.618-1.272M15.187 1.384a1 1 0 0 1 1.036-.962 5.129 5.129 0 0 1 2.11 9.71 1 1 0 1 1-.896-1.788 3.129 3.129 0 0 0-1.288-5.924 1 1 0 0 1-.962-1.036M1.505 15.694C2.481 14.622 3.825 14 5.25 14h8.5c1.424 0 2.769.622 3.744 1.694.974 1.068 1.506 2.498 1.506 3.973V22a1 1 0 1 1-2 0v-2.333c0-1.001-.363-1.945-.984-2.627-.618-.679-1.436-1.04-2.266-1.04h-8.5c-.83 0-1.648.361-2.266 1.04-.621.682-.984 1.626-.984 2.627V22a1 1 0 1 1-2 0v-2.333c0-1.475.533-2.905 1.505-3.974M9.5 3a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7M4 6.5a5.5 5.5 0 1 1 11 0 5.5 5.5 0 0 1-11 0" })
+        }
+      ),
+      /* @__PURE__ */ jsx("defs", { children: /* @__PURE__ */ jsx("clipPath", { id: "users_svg__a", children: /* @__PURE__ */ jsx("path", { fill: "#fff", d: "M0 0h24v24H0z" }) }) })
+    ]
+  }
+), SvgUsers$1 = SvgUsers, SvgVideo = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M4 4.962C4 4.376 4.435 4 4.853 4H6.5v2H4zM4 8h2.5v3H4zm-2 4V4.962C2 3.381 3.224 2 4.853 2h13.294C19.776 2 21 3.38 21 4.962v14.076C21 20.619 19.776 22 18.147 22H4.853C3.224 22 2 20.62 2 19.038zm17-6V4.962c0-.586-.435-.962-.853-.962H16.5v2zm0 2h-2.5v3H19zm-2.5 5H19v3h-2.5zm0 5H19v1.038c0 .586-.435.962-.853.962H16.5zm-2-7V4h-6v7zm-6 2h6v7h-6zm-2 5v2H4.853C4.435 20 4 19.624 4 19.038V18zm0-2v-3H4v3z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgVideo$1 = SvgVideo, SvgViewCalendar = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M4 5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v3H4zm9 5h7v4h-7zm-2 4v-4H4v4zm-7 2h7v4H5a1 1 0 0 1-1-1zm-2-1V5a3 3 0 0 1 3-3h14a3 3 0 0 1 3 3v14a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3zm18 1v3a1 1 0 0 1-1 1h-6v-4z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgViewCalendar$1 = SvgViewCalendar, SvgViewList = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx("circle", { cx: 3.5, cy: 5, r: 1.5, fill: "currentColor" }),
+      /* @__PURE__ */ jsx("circle", { cx: 3.5, cy: 12, r: 1.5, fill: "currentColor" }),
+      /* @__PURE__ */ jsx("circle", { cx: 3.5, cy: 19, r: 1.5, fill: "currentColor" }),
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M7 5a1 1 0 0 1 1-1h13a1 1 0 1 1 0 2H8a1 1 0 0 1-1-1M7 12a1 1 0 0 1 1-1h13a1 1 0 1 1 0 2H8a1 1 0 0 1-1-1M7 19a1 1 0 0 1 1-1h13a1 1 0 1 1 0 2H8a1 1 0 0 1-1-1",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgViewList$1 = SvgViewList, SvgWand = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M10 0a1 1 0 0 1 1 1 1 1 0 0 0 1 1 1 1 0 1 1 0 2 1 1 0 0 0-1 1 1 1 0 1 1-2 0 1 1 0 0 0-1-1 1 1 0 0 1 0-2 1 1 0 0 0 1-1 1 1 0 0 1 1-1m9.914 2a2 2 0 0 0-2.828 0L1 18.086a2 2 0 0 0 0 2.828L3.086 23a2 2 0 0 0 2.828 0L22 6.914a2 2 0 0 0 0-2.828zm-3.75 3.75L18.5 3.414 20.586 5.5 18.25 7.836zM14.75 7.164 2.414 19.5 4.5 21.586 16.836 9.25zM21 13a1 1 0 1 0-2 0 1 1 0 0 1-1 1 1 1 0 1 0 0 2 1 1 0 0 1 1 1 1 1 0 1 0 2 0 1 1 0 0 1 1-1 1 1 0 1 0 0-2 1 1 0 0 1-1-1",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgWand$1 = SvgWand, SvgWrite = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M11 20a1 1 0 0 1 1-1h9a1 1 0 1 1 0 2h-9a1 1 0 0 1-1-1M18 3.879c-.297 0-.583.118-.793.328L4.903 16.511l-.529 2.115 2.115-.529L18.793 5.793A1.123 1.123 0 0 0 18 3.879m-2.207-1.086a3.121 3.121 0 0 1 4.414 4.414l-12.5 12.5a1 1 0 0 1-.464.263l-4 1a1 1 0 0 1-1.213-1.213l1-4a1 1 0 0 1 .263-.464z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgWrite$1 = SvgWrite, SvgZoomIn = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M3.6 10.95a7.35 7.35 0 1 1 12.644 5.1 1 1 0 0 0-.195.194A7.35 7.35 0 0 1 3.6 10.95m13.249 7.384A9.4 9.4 0 0 1 10.95 20.4a9.45 9.45 0 1 1 9.45-9.45 9.4 9.4 0 0 1-2.066 5.899l3.858 3.858a1.05 1.05 0 0 1-1.485 1.485zM10.95 6.75c.58 0 1.05.47 1.05 1.05v2.1h2.1a1.05 1.05 0 0 1 0 2.1H12v2.1a1.05 1.05 0 1 1-2.1 0V12H7.8a1.05 1.05 0 1 1 0-2.1h2.1V7.8c0-.58.47-1.05 1.05-1.05",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgZoomIn$1 = SvgZoomIn, SvgZoomOut = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs(
+  "svg",
+  {
+    xmlns: "http://www.w3.org/2000/svg",
+    width: "24",
+    height: "24",
+    fill: "none",
+    viewBox: "0 0 24 24",
+    "aria-hidden": "true",
+    "aria-labelledby": titleId,
+    ...props,
+    children: [
+      title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+      /* @__PURE__ */ jsx(
+        "path",
+        {
+          fill: "currentColor",
+          fillRule: "evenodd",
+          d: "M10.95 3.6a7.35 7.35 0 1 0 5.1 12.644 1 1 0 0 1 .194-.195A7.35 7.35 0 0 0 10.95 3.6m0 16.8a9.4 9.4 0 0 0 5.899-2.066l3.858 3.858a1.05 1.05 0 1 0 1.485-1.485l-3.858-3.858A9.4 9.4 0 0 0 20.4 10.95a9.45 9.45 0 1 0-9.45 9.45M7.8 9.9a1.05 1.05 0 0 0 0 2.1h6.3a1.05 1.05 0 1 0 0-2.1z",
+          clipRule: "evenodd"
+        }
+      )
+    ]
+  }
+), SvgZoomOut$1 = SvgZoomOut;
+export {
+  SvgAdd$1 as Add,
+  SvgAddUser$1 as AddUser,
+  SvgAlertCircle$1 as AlertCircle,
+  SvgAlertTriangle$1 as AlertTriangle,
+  SvgAlignCenter$1 as AlignCenter,
+  SvgAlignJustify$1 as AlignJustify,
+  SvgAlignLeft$1 as AlignLeft,
+  SvgAlignRight$1 as AlignRight,
+  SvgAnswer$1 as Answer,
+  SvgApplications$1 as Applications,
+  SvgArrowDown$1 as ArrowDown,
+  SvgArrowLeft$1 as ArrowLeft,
+  SvgArrowRight$1 as ArrowRight,
+  SvgArrowUp$1 as ArrowUp,
+  SvgBlock$1 as Block,
+  SvgBlur$1 as Blur,
+  SvgBookmark$1 as Bookmark,
+  SvgBulletList$1 as BulletList,
+  SvgBurgerMenu$1 as BurgerMenu,
+  SvgCalendar$1 as Calendar,
+  SvgCalendarLight$1 as CalendarLight,
+  SvgCamera$1 as Camera,
+  SvgCenter$1 as Center,
+  SvgCheck$1 as Check,
+  SvgChecklist$1 as Checklist,
+  SvgClock$1 as Clock,
+  SvgClose$1 as Close,
+  SvgCloseFullScreen$1 as CloseFullScreen,
+  SvgCode$1 as Code,
+  SvgCopy$1 as Copy,
+  SvgCrop$1 as Crop,
+  SvgCut$1 as Cut,
+  SvgDelete$1 as Delete,
+  SvgDeleteColor$1 as DeleteColor,
+  SvgDeleteColumn$1 as DeleteColumn,
+  SvgDeleteColumnHighlight$1 as DeleteColumnHighlight,
+  SvgDeleteRow$1 as DeleteRow,
+  SvgDeleteRowHighlight$1 as DeleteRowHighlight,
+  SvgDepositeInbox$1 as DepositeInbox,
+  SvgDownload$1 as Download,
+  SvgEdit$1 as Edit,
+  SvgError$1 as Error,
+  SvgExternalLink$1 as ExternalLink,
+  SvgFiles$1 as Files,
+  SvgFilter$1 as Filter,
+  SvgFlag$1 as Flag,
+  SvgFolder$1 as Folder,
+  SvgFolderMove$1 as FolderMove,
+  SvgForgoing$1 as Forgoing,
+  SvgFullScreen$1 as FullScreen,
+  SvgGlobe$1 as Globe,
+  SvgHeadphone$1 as Headphone,
+  SvgHide$1 as Hide,
+  SvgHighlightColumn$1 as HighlightColumn,
+  SvgHighlightRow$1 as HighlightRow,
+  SvgHome$1 as Home,
+  SvgHourglass$1 as Hourglass,
+  SvgImageSizeLarge$1 as ImageSizeLarge,
+  SvgImageSizeMedium$1 as ImageSizeMedium,
+  SvgImageSizeSmall$1 as ImageSizeSmall,
+  SvgInbox$1 as Inbox,
+  SvgInfoCircle$1 as InfoCircle,
+  SvgLandscape$1 as Landscape,
+  SvgLink$1 as Link,
+  SvgListOrder$1 as ListOrder,
+  SvgLoader$1 as Loader,
+  SvgLock$1 as Lock,
+  SvgMail$1 as Mail,
+  SvgMergeCells$1 as MergeCells,
+  SvgMessageInfo$1 as MessageInfo,
+  SvgMic$1 as Mic,
+  SvgMinus$1 as Minus,
+  SvgMove$1 as Move,
+  SvgNoColors$1 as NoColors,
+  SvgOptions$1 as Options,
+  SvgOrderedList$1 as OrderedList,
+  SvgPaperclip$1 as Paperclip,
+  SvgPause$1 as Pause,
+  SvgPinOff$1 as PinOff,
+  SvgPinOn$1 as PinOn,
+  SvgPlaceholder$1 as Placeholder,
+  SvgPlay$1 as Play,
+  SvgPlayFilled$1 as PlayFilled,
+  SvgPlus$1 as Plus,
+  SvgPointerDefault$1 as PointerDefault,
+  SvgPointerHand$1 as PointerHand,
+  SvgPrint$1 as Print,
+  SvgQuestion$1 as Question,
+  SvgRafterDown$1 as RafterDown,
+  SvgRafterLeft$1 as RafterLeft,
+  SvgRafterRight$1 as RafterRight,
+  SvgRafterUp$1 as RafterUp,
+  SvgReaction$1 as Reaction,
+  SvgRecord$1 as Record,
+  SvgRecordPause$1 as RecordPause,
+  SvgRecordStop$1 as RecordStop,
+  SvgRecordVideo$1 as RecordVideo,
+  SvgRedo$1 as Redo,
+  SvgRefresh$1 as Refresh,
+  SvgReset$1 as Reset,
+  SvgRestart$1 as Restart,
+  SvgRestore$1 as Restore,
+  SvgSave$1 as Save,
+  SvgSearch$1 as Search,
+  SvgSee$1 as See,
+  SvgSend$1 as Send,
+  SvgSetBackground$1 as SetBackground,
+  SvgSettings$1 as Settings,
+  SvgShare$1 as Share,
+  SvgSmartphone$1 as Smartphone,
+  SvgSmiley$1 as Smiley,
+  SvgSortAscendingLetters$1 as SortAscendingLetters,
+  SvgSortDescending$1 as SortDescending,
+  SvgSortDescendingLetters$1 as SortDescendingLetters,
+  SvgSortTime$1 as SortTime,
+  SvgSpeechToText$1 as SpeechToText,
+  SvgSplitCells$1 as SplitCells,
+  SvgSquareRoot$1 as SquareRoot,
+  SvgSubscript$1 as Subscript,
+  SvgSuccessFill$1 as SuccessFill,
+  SvgSuccessOutline$1 as SuccessOutline,
+  SvgSuperscript$1 as Superscript,
+  SvgTable$1 as Table,
+  SvgTextBold$1 as TextBold,
+  SvgTextColor$1 as TextColor,
+  SvgTextHighlight$1 as TextHighlight,
+  SvgTextItalic$1 as TextItalic,
+  SvgTextPage$1 as TextPage,
+  SvgTextSize$1 as TextSize,
+  SvgTextToSpeech$1 as TextToSpeech,
+  SvgTextTypo$1 as TextTypo,
+  SvgTextUnderline$1 as TextUnderline,
+  SvgTextVanilla$1 as TextVanilla,
+  SvgTool$1 as Tool,
+  SvgTrendingUp$1 as TrendingUp,
+  SvgUndo$1 as Undo,
+  SvgUnlink$1 as Unlink,
+  SvgUnlock$1 as Unlock,
+  SvgUpload$1 as Upload,
+  SvgUser$1 as User,
+  SvgUserSearch$1 as UserSearch,
+  SvgUsers$1 as Users,
+  SvgVideo$1 as Video,
+  SvgViewCalendar$1 as ViewCalendar,
+  SvgViewList$1 as ViewList,
+  SvgWand$1 as Wand,
+  SvgWrite$1 as Write,
+  SvgZoomIn$1 as ZoomIn,
+  SvgZoomOut$1 as ZoomOut
+};

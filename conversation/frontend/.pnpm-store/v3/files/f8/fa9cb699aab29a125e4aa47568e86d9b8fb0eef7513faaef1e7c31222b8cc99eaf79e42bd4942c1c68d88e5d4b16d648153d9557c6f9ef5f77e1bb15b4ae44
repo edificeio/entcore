@@ -1,0 +1,49 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { useState, useEffect } from "react";
+import Mathematics from "@tiptap-pro/extension-mathematics";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { useTranslation } from "react-i18next";
+import Modal from "../../../../components/Modal/Modal.js";
+import Button from "../../../../components/Button/Button.js";
+const MathsModal = ({
+  isOpen,
+  onSuccess,
+  onCancel
+}) => {
+  const FORMULA_PLACEHOLDER = "\\frac{-b + \\sqrt{b^2 - 4ac}}{2a}", [formulaEditor, setFormulaEditor] = useState(`$${FORMULA_PLACEHOLDER}$`), {
+    t
+  } = useTranslation(), editor = useEditor({
+    extensions: [StarterKit, Mathematics],
+    content: "",
+    editable: !1
+  });
+  useEffect(() => {
+    editor == null || editor.commands.setContent(formulaEditor), editor == null || editor.commands.enter();
+  }, [editor, formulaEditor]);
+  const handleChange = (event) => {
+    const newFormulaEditor = event.target.value.replaceAll(`
+`, "$<br/>$");
+    newFormulaEditor ? (editor == null || editor.commands.setContent(`$${newFormulaEditor}$`), setFormulaEditor(`$${newFormulaEditor}$`)) : (editor == null || editor.commands.setContent(""), setFormulaEditor("")), editor == null || editor.commands.enter();
+  }, handleOnCancel = () => {
+    onCancel == null || onCancel();
+  };
+  return /* @__PURE__ */ jsxs(Modal, { id: "MathsModal", isOpen, onModalClose: handleOnCancel, children: [
+    /* @__PURE__ */ jsx(Modal.Header, { onModalClose: handleOnCancel, children: t("tiptap.maths.title") }),
+    /* @__PURE__ */ jsxs(Modal.Subtitle, { children: [
+      t("tiptap.maths.subtitle.1"),
+      /* @__PURE__ */ jsx("a", { href: t("https://fr.wikibooks.org/wiki/LaTeX/%C3%89crire_des_math%C3%A9matiques"), target: "_blank", children: t("tiptap.maths.subtitle.2") })
+    ] }),
+    /* @__PURE__ */ jsxs(Modal.Body, { children: [
+      /* @__PURE__ */ jsx("textarea", { id: "formulaTextArea", name: "formula", rows: 4, cols: 50, onChange: handleChange, placeholder: `Exemple : ${FORMULA_PLACEHOLDER}`, className: "border rounded-3 w-100 px-16 py-12" }),
+      /* @__PURE__ */ jsx(EditorContent, { editor, className: "pt-24 pb-0 text-center fs-1" })
+    ] }),
+    /* @__PURE__ */ jsxs(Modal.Footer, { children: [
+      /* @__PURE__ */ jsx(Button, { color: "tertiary", onClick: onCancel, type: "button", variant: "ghost", children: t("tiptap.maths.cancel") }),
+      /* @__PURE__ */ jsx(Button, { color: "primary", onClick: () => onSuccess == null ? void 0 : onSuccess(formulaEditor), type: "button", variant: "filled", children: t("tiptap.maths.add") })
+    ] })
+  ] });
+};
+export {
+  MathsModal as default
+};

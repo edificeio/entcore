@@ -1,0 +1,11 @@
+import { RightRole } from '@edifice.io/client';
+export interface IObjectWithRights {
+    rights: string[];
+}
+type Roles = RightRole | RightRole[];
+interface UseHasRightsProps {
+    roles: Roles;
+    rights: string | string[] | IObjectWithRights | IObjectWithRights[] | undefined;
+}
+export declare const checkUserRight: (rights: UseHasRightsProps["rights"], additionalRoles?: RightRole | RightRole[]) => Promise<Record<RightRole, boolean>>;
+export {};

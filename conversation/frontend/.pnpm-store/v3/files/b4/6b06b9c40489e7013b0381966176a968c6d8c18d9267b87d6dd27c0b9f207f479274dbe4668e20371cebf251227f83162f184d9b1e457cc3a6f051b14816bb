@@ -1,0 +1,39 @@
+import { App } from "../globals";
+import { GetUserProfileOptions, IGetSession, IQuotaAndUsage, IUserInfo, IWebApp, UserProfile } from "./interfaces";
+import { IOdeServices } from "../services/OdeServices";
+export declare class SessionService {
+    private context;
+    constructor(context: IOdeServices);
+    get http(): import("../transport/Service").HttpService;
+    get cache(): import("../cache/Service").CacheService;
+    private get conf();
+    /**
+     * Callback to call when user logout
+     */
+    onLogout(): void;
+    /**
+     * Callback to call when session change
+     */
+    onRefreshSession(): void;
+    getSession(): Promise<IGetSession>;
+    login(email: string, password: string, rememberMe?: boolean, secureLocation?: boolean): Promise<void>;
+    logout(): Promise<void>;
+    latestQuotaAndUsage(user: IUserInfo | undefined): Promise<IQuotaAndUsage>;
+    getCurrentLanguage(user: IUserInfo | undefined): Promise<string | undefined>;
+    private loadUserLanguage;
+    private loadDefaultLanguage;
+    getUser(): Promise<IUserInfo | undefined>;
+    hasWorkflow({ workflowName, user, }: {
+        workflowName: string;
+        user: IUserInfo;
+    }): boolean;
+    private loadDescription;
+    private getBookmarks;
+    getUserProfile(options?: Partial<GetUserProfileOptions>): Promise<UserProfile>;
+    isAdml(): Promise<boolean>;
+    /**
+     * Get details of an application if the user can access it.
+     * @return undefined if no access, or app not found
+     */
+    getWebApp(application: App): Promise<IWebApp | undefined>;
+}

@@ -1,0 +1,8 @@
+import { RefAttributes } from "react";
+import { JSX } from "react/jsx-runtime";
+import { DropdownTriggerProps } from "../Dropdown/DropdownTrigger";
+declare const SelectTrigger: {
+    (props: JSX.IntrinsicAttributes & Omit<DropdownTriggerProps, "ref"> & RefAttributes<HTMLButtonElement>): JSX.Element;
+    displayName: string;
+};
+export default SelectTrigger;

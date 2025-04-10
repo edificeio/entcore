@@ -1,0 +1,33 @@
+import { Size } from '../../types';
+export type OmitInputProps = 'disabled' | 'required' | 'size' | 'id' | 'readOnly';
+export interface InputProps extends Omit<React.ComponentPropsWithRef<'input'>, OmitInputProps> {
+    /**
+     * Control size of input
+     */
+    size: Size;
+    /**
+     * Type of input (text, password, ..)
+     */
+    type: string;
+    /**
+     * Change text of placeholder
+     */
+    placeholder?: string;
+    /**
+     * Disabled status
+     */
+    disabled?: boolean;
+    /**
+     * Remove validation icon
+     */
+    noValidationIcon?: boolean;
+    /**
+     * Optional class for styling purpose
+     */
+    className?: string;
+}
+/**
+ * Input Form Component
+ */
+declare const Input: import('react').ForwardRefExoticComponent<Omit<InputProps, "ref"> & import('react').RefAttributes<HTMLInputElement>>;
+export default Input;

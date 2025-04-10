@@ -1,0 +1,18 @@
+import { jsx } from "react/jsx-runtime";
+import { StringUtils } from "@edifice.io/utilities";
+import clsx from "clsx";
+import SvgIconSee from "../icons/components/IconSee.js";
+import Button from "../../components/Button/Button.js";
+const ViewsCounter = ({
+  viewsCounter,
+  onClick,
+  className
+}) => {
+  const handleButtonClick = (event) => {
+    event.preventDefault(), event.stopPropagation(), onClick == null || onClick();
+  };
+  return className = clsx("text-gray-700 fw-normal py-4 px-8 btn-icon", className), /* @__PURE__ */ jsx(Button, { rightIcon: /* @__PURE__ */ jsx(SvgIconSee, {}), variant: "ghost", type: "button", className, onClick: handleButtonClick, disabled: !viewsCounter, children: StringUtils.toCounter(viewsCounter) });
+};
+export {
+  ViewsCounter as default
+};

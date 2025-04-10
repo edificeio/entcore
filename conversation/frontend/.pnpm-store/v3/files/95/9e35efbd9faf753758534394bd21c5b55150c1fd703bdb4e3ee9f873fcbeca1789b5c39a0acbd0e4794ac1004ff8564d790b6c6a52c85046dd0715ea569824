@@ -1,0 +1,23 @@
+import { ReactNode } from "react";
+import { ToolbarItem } from "..";
+export type ListProps<T> = {
+    /**
+     * Toolbar data items
+     */
+    items?: ToolbarItem[];
+    /**
+     * Generic data
+     */
+    data: T[] | undefined;
+    /**
+     * render to display its own JSX
+     */
+    renderNode: (node: T, checkbox?: JSX.Element, checked?: boolean) => ReactNode;
+    /**
+     * Callback to get selected ids
+     */
+    onSelectedItems?: (selectedIds: string[]) => void;
+};
+export declare const List: <T extends {
+    _id: string;
+}>({ items, data, renderNode, onSelectedItems, }: ListProps<T>) => import("react/jsx-runtime").JSX.Element;

@@ -1,0 +1,22 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { forwardRef } from "react";
+import clsx from "clsx";
+const AppHeader = /* @__PURE__ */ forwardRef(({
+  children,
+  render,
+  isFullscreen = !1,
+  ...restProps
+}, ref) => {
+  const classes = clsx("d-flex flex-wrap p-16 gap-8 border-bottom bg-white", {
+    "justify-content-between": render,
+    "mx-n16": !isFullscreen,
+    "z-3 top-0 start-0 end-0": isFullscreen
+  });
+  return /* @__PURE__ */ jsxs("div", { ref, className: classes, ...restProps, children: [
+    children,
+    render ? /* @__PURE__ */ jsx("div", { className: "d-flex align-items-center ms-auto gap-8", children: render() }) : null
+  ] });
+});
+export {
+  AppHeader as default
+};

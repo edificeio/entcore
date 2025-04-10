@@ -1,0 +1,135 @@
+import { jsx } from "react/jsx-runtime";
+import { useMemo } from "react";
+import { BubbleMenu } from "@tiptap/react";
+import { useTranslation } from "react-i18next";
+import { Toolbar } from "../../../../components/Toolbar/Toolbar.js";
+import SvgIconImageSizeLarge from "../../../icons/components/IconImageSizeLarge.js";
+import SvgIconImageSizeMedium from "../../../icons/components/IconImageSizeMedium.js";
+import SvgIconImageSizeSmall from "../../../icons/components/IconImageSizeSmall.js";
+import SvgIconWand from "../../../icons/components/IconWand.js";
+const BubbleMenuEditImage = ({
+  editor,
+  onEditImage,
+  openEditImage,
+  editable
+}) => {
+  const {
+    t
+  } = useTranslation(), {
+    selection
+  } = editor.view.state, selectedNode = editor.view.state.doc.nodeAt(selection.anchor), handleButtonClick = (buttonSize) => {
+    editor.chain().focus().setAttributes({
+      width: buttonSize.width,
+      height: buttonSize.height,
+      size: buttonSize.size
+    }).run();
+  }, ImageSizeItems = useMemo(() => {
+    var _a, _b, _c, _d, _e, _f;
+    return [{
+      type: "button",
+      name: "edit",
+      props: {
+        size: "lg",
+        color: "secondary",
+        leftIcon: /* @__PURE__ */ jsx(SvgIconWand, {}),
+        "aria-label": t("tiptap.tooltip.bubblemenu.image.edit"),
+        children: t("tiptap.bubblemenu.edit"),
+        onClick: onEditImage
+      },
+      tooltip: {
+        message: t("tiptap.tooltip.bubblemenu.image.edit"),
+        position: "top"
+      }
+    }, {
+      type: "divider",
+      name: "div-4"
+    }, {
+      type: "icon",
+      name: "small",
+      props: {
+        icon: /* @__PURE__ */ jsx(SvgIconImageSizeSmall, {}),
+        "aria-label": t("tiptap.tooltip.bubblemenu.image.small"),
+        color: "tertiary",
+        className: ((_a = selectedNode == null ? void 0 : selectedNode.attrs) == null ? void 0 : _a.size) === "small" && ((_b = selectedNode == null ? void 0 : selectedNode.attrs) == null ? void 0 : _b.width) === 250 ? "is-selected" : "",
+        onClick: () => handleButtonClick({
+          size: "small",
+          width: 250,
+          height: "auto"
+        })
+      },
+      tooltip: {
+        message: t("tiptap.tooltip.bubblemenu.image.small"),
+        position: "top"
+      }
+    }, {
+      type: "icon",
+      name: "medium",
+      props: {
+        icon: /* @__PURE__ */ jsx(SvgIconImageSizeMedium, {}),
+        "aria-label": t("tiptap.tooltip.bubblemenu.image.medium"),
+        color: "tertiary",
+        className: ((_c = selectedNode == null ? void 0 : selectedNode.attrs) == null ? void 0 : _c.size) === "medium" && ((_d = selectedNode == null ? void 0 : selectedNode.attrs) == null ? void 0 : _d.width) === 350 ? "is-selected" : "",
+        onClick: () => handleButtonClick({
+          size: "medium",
+          width: 350,
+          height: "auto"
+        })
+      },
+      tooltip: {
+        message: t("tiptap.tooltip.bubblemenu.image.medium"),
+        position: "top"
+      }
+    }, {
+      type: "icon",
+      name: "large",
+      props: {
+        icon: /* @__PURE__ */ jsx(SvgIconImageSizeLarge, {}),
+        "aria-label": t("tiptap.tooltip.bubblemenu.image.big"),
+        color: "tertiary",
+        className: ((_e = selectedNode == null ? void 0 : selectedNode.attrs) == null ? void 0 : _e.size) === "large" && ((_f = selectedNode == null ? void 0 : selectedNode.attrs) == null ? void 0 : _f.width) === 500 ? "is-selected" : "",
+        onClick: () => handleButtonClick({
+          size: "large",
+          width: 500,
+          height: "auto"
+        })
+      },
+      tooltip: {
+        message: t("tiptap.tooltip.bubblemenu.image.big"),
+        position: "top"
+      }
+    }];
+  }, [t, selectedNode]), tippyOptions = useMemo(() => {
+    function adjustRect(rect) {
+      let yOffset = 0;
+      if (window.visualViewport) {
+        const bottomScreen = window.innerHeight || document.documentElement.clientHeight;
+        rect.bottom >= bottomScreen && (yOffset += rect.bottom - bottomScreen - rect.height);
+      }
+      return new DOMRect(rect.x, rect.y - yOffset, rect.width, rect.height);
+    }
+    return {
+      placement: "bottom-start",
+      offset: [0, 0],
+      zIndex: 999,
+      duration: 100,
+      // Try to get the bounding rect of the table.
+      getReferenceClientRect: () => {
+        const parentDiv = editor != null && editor.isActive("custom-image") ? editor.state.selection.$anchor : null;
+        if (parentDiv) {
+          const parentDomNode = editor == null ? void 0 : editor.view.nodeDOM(parentDiv.pos);
+          if (parentDomNode) {
+            const childDomNode = parentDomNode.firstChild;
+            return adjustRect(childDomNode.getBoundingClientRect());
+          }
+        }
+        return new DOMRect(0, 0, 100, 100);
+      }
+    };
+  }, [editor]);
+  return /* @__PURE__ */ jsx(BubbleMenu, { className: openEditImage ? "d-none" : "", shouldShow: ({
+    editor: editor2
+  }) => editor2.isActive("custom-image") && !openEditImage, editor, tippyOptions, children: editable && /* @__PURE__ */ jsx(Toolbar, { className: "p-8", items: ImageSizeItems }) });
+};
+export {
+  BubbleMenuEditImage as default
+};

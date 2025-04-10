@@ -1,0 +1,12 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+const SvgIconPause = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs("svg", { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", fill: "none", viewBox: "0 0 24 24", "aria-hidden": "true", "aria-labelledby": titleId, ...props, children: [
+  title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+  /* @__PURE__ */ jsx("path", { fill: "currentColor", fillRule: "evenodd", d: "M5.5 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h3a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm0 2h3v16h-3zm10-2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h3a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2zm0 2h3v16h-3z", clipRule: "evenodd" })
+] });
+export {
+  SvgIconPause as default
+};

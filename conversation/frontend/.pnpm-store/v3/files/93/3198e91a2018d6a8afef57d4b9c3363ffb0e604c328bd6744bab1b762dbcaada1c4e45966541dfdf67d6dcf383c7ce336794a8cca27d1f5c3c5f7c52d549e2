@@ -1,0 +1,7 @@
+import { GetContextParameters } from '../interface';
+import { AbstractBehaviourService, ILinkedResource } from './AbstractBehaviourService';
+export declare class WorkspaceBehaviour extends AbstractBehaviourService {
+    APP: string;
+    RESOURCE: string;
+    loadResources({ search, asset_id }: GetContextParameters): Promise<ILinkedResource[]>;
+}

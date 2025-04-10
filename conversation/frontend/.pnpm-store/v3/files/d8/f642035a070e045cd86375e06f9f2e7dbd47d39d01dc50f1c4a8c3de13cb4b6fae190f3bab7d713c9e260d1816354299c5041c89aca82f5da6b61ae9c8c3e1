@@ -1,0 +1,13 @@
+import { ReactNode } from 'react';
+export interface DropdownMenuGroupProps {
+    /**
+     * Label
+     */
+    label: string;
+    /**
+     * Children Node
+     */
+    children: ReactNode;
+}
+declare const DropdownMenuGroup: import('react').ForwardRefExoticComponent<DropdownMenuGroupProps & import('react').RefAttributes<HTMLDivElement>>;
+export default DropdownMenuGroup;

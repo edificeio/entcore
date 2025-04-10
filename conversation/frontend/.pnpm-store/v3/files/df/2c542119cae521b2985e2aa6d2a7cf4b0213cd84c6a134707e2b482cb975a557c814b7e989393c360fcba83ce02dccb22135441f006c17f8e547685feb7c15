@@ -1,0 +1,5 @@
+export declare const useAutosizeTextarea: (
+/**
+ * Set autofocus when editing content
+ */
+autoFocus?: boolean) => [React.RefObject<HTMLTextAreaElement>, (event: React.FocusEvent<HTMLTextAreaElement>) => void, () => void];

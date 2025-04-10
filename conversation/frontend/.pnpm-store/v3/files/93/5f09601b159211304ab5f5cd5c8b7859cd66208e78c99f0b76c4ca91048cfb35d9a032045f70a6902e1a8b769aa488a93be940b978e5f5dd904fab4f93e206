@@ -1,0 +1,12 @@
+import { createContext, useContext } from "react";
+const DropzoneContext = /* @__PURE__ */ createContext(null);
+function useDropzoneContext() {
+  const context = useContext(DropzoneContext);
+  if (!context)
+    throw new Error("Cannot be rendered outside Dropzone Provider");
+  return context;
+}
+export {
+  DropzoneContext,
+  useDropzoneContext
+};

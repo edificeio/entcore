@@ -1,0 +1,53 @@
+import { jsx, jsxs } from "react/jsx-runtime";
+import { forwardRef, useMemo } from "react";
+import clsx from "clsx";
+import CardBody from "./CardBody.js";
+import { CardContext } from "./CardContext.js";
+import CardFooter from "./CardFooter.js";
+import CardHeader from "./CardHeader.js";
+import CardImage from "./CardImage.js";
+import CardText from "./CardText.js";
+import CardTitle from "./CardTitle.js";
+import CardUser from "./CardUser.js";
+import useEdificeIcons from "../../hooks/useEdificeIcons/useEdificeIcons.js";
+const Root = /* @__PURE__ */ forwardRef(({
+  app,
+  isSelectable = !0,
+  isClickable = !0,
+  isSelected = !1,
+  isFocused = !1,
+  onClick,
+  onSelect,
+  children,
+  className
+}, ref) => {
+  const {
+    getIconCode
+  } = useEdificeIcons(), appCode = app ? getIconCode(app) : "placeholder", values = useMemo(() => ({
+    app,
+    appCode,
+    isSelectable,
+    isClickable,
+    onClick,
+    onSelect
+  }), [app, appCode, isSelectable, isClickable, onClick, onSelect]);
+  return /* @__PURE__ */ jsx(CardContext.Provider, { value: values, children: /* @__PURE__ */ jsxs("div", { ref, className: clsx("card", {
+    "drag-focus": isFocused,
+    "is-selected": isSelected,
+    "c-pointer": isClickable
+  }, className), children: [
+    /* @__PURE__ */ jsx(Card.Header, {}),
+    typeof children == "function" ? children(appCode) : children
+  ] }) });
+}), Card = /* @__PURE__ */ Object.assign(Root, {
+  Title: CardTitle,
+  Text: CardText,
+  Image: CardImage,
+  Body: CardBody,
+  User: CardUser,
+  Footer: CardFooter,
+  Header: CardHeader
+});
+export {
+  Card as default
+};

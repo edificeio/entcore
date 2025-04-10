@@ -1,0 +1,37 @@
+import { Editor } from '@tiptap/react';
+export declare const EditorContext: import('react').Context<{
+    /**
+     * Application code (example: "blog")
+     */
+    appCode: string;
+    /**
+     * TipTap editor instance
+     */
+    editor: Editor | null;
+    /**
+     * To know if TipTap editor is editable
+     */
+    editable: boolean;
+    /**
+     * Id of the editor's HTMLElement
+     */
+    id: string;
+}>;
+export declare function useEditorContext(): {
+    /**
+     * Application code (example: "blog")
+     */
+    appCode: string;
+    /**
+     * TipTap editor instance
+     */
+    editor: Editor | null;
+    /**
+     * To know if TipTap editor is editable
+     */
+    editable: boolean;
+    /**
+     * Id of the editor's HTMLElement
+     */
+    id: string;
+};

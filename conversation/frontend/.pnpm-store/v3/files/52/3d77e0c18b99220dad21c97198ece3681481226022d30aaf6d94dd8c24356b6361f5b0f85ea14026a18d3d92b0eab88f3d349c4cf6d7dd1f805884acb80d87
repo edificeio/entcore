@@ -1,0 +1,21 @@
+import { WorkspaceElement, WorkspaceVisibility } from '@edifice.io/client';
+declare const useWorkspaceFile: () => {
+    createOrUpdate: ({ alt, uri, blob, legend, parentId, application, visibility, }: {
+        blob: Blob;
+        uri?: string;
+        alt?: string;
+        legend?: string;
+        application?: string;
+        parentId?: string;
+        visibility?: WorkspaceVisibility;
+    }) => Promise<string | {
+        file: WorkspaceElement;
+        src: string;
+    }>;
+    create: (file: File, params?: {
+        visibility?: WorkspaceVisibility;
+        application?: string | undefined;
+    }) => Promise<WorkspaceElement>;
+    remove: (file: WorkspaceElement | WorkspaceElement[]) => Promise<void>;
+};
+export default useWorkspaceFile;

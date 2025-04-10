@@ -1,0 +1,15 @@
+import { createContext, useContext } from "react";
+const ModalContext = /* @__PURE__ */ createContext({
+  ariaLabelId: "",
+  ariaDescriptionId: "",
+  focusId: ""
+}), useModalContext = () => {
+  const context = useContext(ModalContext);
+  if (!context)
+    throw new Error("Cannot be rendered outside the Modal component");
+  return context;
+};
+export {
+  ModalContext,
+  useModalContext
+};

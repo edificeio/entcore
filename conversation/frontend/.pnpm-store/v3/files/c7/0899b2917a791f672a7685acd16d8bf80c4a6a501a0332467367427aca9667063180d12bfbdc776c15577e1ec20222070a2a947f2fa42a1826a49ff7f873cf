@@ -1,0 +1,14 @@
+import { jsx } from "react/jsx-runtime";
+import { useTabsContext } from "../context/TabsContext.js";
+const TabsPanel = ({
+  children,
+  currentItem
+}) => {
+  const {
+    activeTab
+  } = useTabsContext();
+  return /* @__PURE__ */ jsx("div", { className: "tab-content d-flex flex-fill w-100", children: /* @__PURE__ */ jsx("div", { className: `tab-pane flex-fill w-100 fade ${activeTab === (currentItem == null ? void 0 : currentItem.id) ? "show active" : ""}`, id: `tabpanel-${currentItem == null ? void 0 : currentItem.id}`, role: "tabpanel", "aria-labelledby": `tab-${currentItem == null ? void 0 : currentItem.id}`, tabIndex: 0, children }) });
+};
+export {
+  TabsPanel as default
+};

@@ -1,0 +1,12 @@
+import { Image } from "@edifice.io/tiptap-extensions/image";
+import { ReactNodeViewRenderer } from "@tiptap/react";
+const ImageNodeView = (Component, uploadFile) => Image.extend({
+  addNodeView() {
+    return ReactNodeViewRenderer(Component);
+  }
+}).configure({
+  uploadFile
+});
+export {
+  ImageNodeView as default
+};

@@ -1,0 +1,18 @@
+import { jsx } from "react/jsx-runtime";
+import { forwardRef } from "react";
+import clsx from "clsx";
+const Badge = /* @__PURE__ */ forwardRef(({
+  className,
+  variant = {
+    type: "notification",
+    level: "info"
+  },
+  children,
+  ...restProps
+}, ref) => {
+  const classes = clsx("badge rounded-pill", (variant.type === "content" || variant.type === "user") && "background" in variant ? "bg-gray-200" : (variant.type === "content" || variant.type === "user") && !("background" in variant) ? "border border-0" : "", variant.type === "content" && `text-${variant.level}`, variant.type === "notification" && `badge-notification bg-${variant.level} text-light border border-0`, variant.type === "user" && `badge-profile-${variant.profile.toLowerCase()}`, variant.type === "link" && "badge-link border border-0", variant.type === "chip" && "bg-gray-200", className);
+  return /* @__PURE__ */ jsx("span", { ref, className: classes, ...restProps, children: variant.type === "chip" ? /* @__PURE__ */ jsx("div", { className: "d-flex fw-800 align-items-center", children }) : children });
+});
+export {
+  Badge as default
+};

@@ -1,0 +1,14 @@
+import { jsx } from "react/jsx-runtime";
+import { useMediaLibraryContext } from "../MediaLibraryContext.js";
+import Embed from "../../Embed/Embed.js";
+const Iframe = () => {
+  const {
+    setResult
+  } = useMediaLibraryContext();
+  return /* @__PURE__ */ jsx(Embed, { onSuccess: (ressource) => {
+    ressource = ressource == null ? void 0 : ressource.replace(/<p /g, "<div ").replace(/\/p>/g, "/div>"), setResult(ressource);
+  } });
+};
+export {
+  Iframe
+};

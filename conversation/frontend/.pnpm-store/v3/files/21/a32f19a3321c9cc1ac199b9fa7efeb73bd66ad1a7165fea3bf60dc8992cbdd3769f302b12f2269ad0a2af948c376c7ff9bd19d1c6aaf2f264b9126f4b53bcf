@@ -1,0 +1,106 @@
+import { jsx } from "react/jsx-runtime";
+import { useState, useEffect } from "react";
+import { odeServices } from "@edifice.io/client";
+import { useForm } from "react-hook-form";
+import { libraryMaps } from "@edifice.io/utilities";
+import { useEdificeClient } from "../../../../providers/EdificeClientProvider/EdificeClientProvider.hook.js";
+import { ToastError } from "../components/ToastError.js";
+import { ToastSuccess } from "../components/ToastSuccess.js";
+import useToast from "../../../../hooks/useToast/useToast.js";
+function usePublishModal({
+  onSuccess,
+  resource
+}) {
+  const {
+    user,
+    appCode
+  } = useEdificeClient(), toast = useToast(), [cover, setCover] = useState((resource == null ? void 0 : resource.thumbnail) || "");
+  useEffect(() => {
+    setCover(resource == null ? void 0 : resource.thumbnail);
+  }, [resource]);
+  const {
+    control,
+    register,
+    watch,
+    setValue,
+    handleSubmit,
+    formState: {
+      errors,
+      isSubmitting,
+      isDirty,
+      isValid
+    }
+  } = useForm({
+    mode: "onChange"
+  }), [selectedActivities, setSelectedActivities] = useState([]), [selectedSubjectAreas, setSelectedSubjectAreas] = useState([]), selectOption = (value, selectedOptions, setSelectedOptions) => {
+    let checked = [...selectedOptions];
+    const findIndex = checked.findIndex((item) => item === value);
+    selectedOptions.includes(value) ? checked = selectedOptions.filter((_, index) => index !== findIndex) : checked = [...selectedOptions, value], setSelectedOptions(checked);
+  };
+  return {
+    control,
+    cover,
+    formState: {
+      errors,
+      isSubmitting,
+      isDirty,
+      isValid
+    },
+    handleDeleteImage: () => setCover(""),
+    handlePublish: async (formData) => {
+      const userId = user ? user == null ? void 0 : user.userId : "";
+      try {
+        let coverBlob = new Blob();
+        typeof cover == "string" ? coverBlob = await odeServices.http().get(cover, {
+          responseType: "blob"
+        }) : cover ? coverBlob = await odeServices.http().get(URL.createObjectURL(cover), {
+          responseType: "blob"
+        }) : resource != null && resource.thumbnail && (coverBlob = await odeServices.http().get(resource == null ? void 0 : resource.thumbnail, {
+          responseType: "blob"
+        }));
+        const teacherAvatar = await odeServices.http().get(`/userbook/avatar/${userId}?thumbnail=48x48`, {
+          responseType: "blob"
+        }), resAttachmentSchool = await odeServices.http().get(`/directory/user/${userId}/attachment-school`, {
+          responseType: "json"
+        }), application = libraryMaps[appCode], parameters = {
+          activityType: selectedActivities,
+          age: [formData.ageMin, formData.ageMax],
+          application,
+          cover: coverBlob,
+          description: formData.description,
+          keyWords: formData.keyWords,
+          language: formData.language,
+          licence: "CC-BY",
+          resourceId: resource == null ? void 0 : resource.assetId,
+          resourceEntId: resource == null ? void 0 : resource.assetId,
+          subjectArea: selectedSubjectAreas,
+          teacherAvatar,
+          title: formData.title,
+          userId,
+          userStructureName: resAttachmentSchool.name || (user == null ? void 0 : user.structureNames[0])
+        }, result = await odeServices.resource(appCode).publish(parameters);
+        result.success ? toast.success(/* @__PURE__ */ jsx(ToastSuccess, { result }), {
+          duration: 1e4
+        }) : result.message === "CONTENT_TOO_LARGE" ? toast.error(/* @__PURE__ */ jsx(ToastError, { errorMessage: result.message })) : toast.error(/* @__PURE__ */ jsx(ToastError, { formData })), onSuccess == null || onSuccess();
+      } catch (error) {
+        console.error(error), toast.error(/* @__PURE__ */ jsx(ToastError, { formData }));
+      }
+    },
+    handleSubmit,
+    handleUploadImage: (file) => setCover(file),
+    register,
+    selectActivities: (value) => {
+      selectOption(value, selectedActivities, setSelectedActivities);
+    },
+    selectedActivities,
+    selectedSubjectAreas,
+    selectSubjects: (value) => {
+      selectOption(value, selectedSubjectAreas, setSelectedSubjectAreas);
+    },
+    setValue,
+    watch
+  };
+}
+export {
+  usePublishModal as default
+};

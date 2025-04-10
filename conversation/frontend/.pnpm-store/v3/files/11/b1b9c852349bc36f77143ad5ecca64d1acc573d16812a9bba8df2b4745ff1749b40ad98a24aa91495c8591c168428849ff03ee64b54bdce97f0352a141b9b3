@@ -1,0 +1,312 @@
+import { jsx as a, Fragment as X, jsxs as Q } from "react/jsx-runtime";
+import { useState as L, useEffect as Z, Suspense as pe, lazy as b } from "react";
+import { useUser as he, Button as W, useOdeClient as fe, ActionBar as Re, LoadingScreen as me, isActionAvailable as Se, BlogPublic as Ee, ShareModal as Oe, ShareBlog as Ce } from "@edifice-ui/react";
+import { useTransition as be, animated as ye } from "@react-spring/web";
+import { useTranslation as ee } from "react-i18next";
+import { odeServices as D, ACTION as c } from "edifice-ts-client";
+import { f as J, u as Ie, c as ge, h as ve, i as se, j as Ae, k as Me, l as Pe, m as we, e as Fe, n as xe, o as Te, a as te, b as Be, p as De, q as Le, r as _e } from "./index2.js";
+function Ne({
+  roles: r,
+  rights: s,
+  action: t
+}) {
+  const [p, o] = L(!1), {
+    user: E
+  } = he(), i = J();
+  Z(() => {
+    f();
+  }, [r, s]);
+  const m = async function(l) {
+    const n = l instanceof Array ? l : [l];
+    if (r instanceof Array) {
+      const R = await D.rights().sessionHasAtLeastOneResourceRight(r, n);
+      o(R);
+    } else {
+      const R = await D.rights().sessionHasResourceRight(r, n);
+      o(R);
+    }
+  }, h = async function(l) {
+    if (r instanceof Array) {
+      const n = await D.rights().sessionHasAtLeastOneResourceRightForEachList(r, l);
+      o(n);
+    } else {
+      const n = await D.rights().sessionHasResourceRightForEachList(r, l);
+      o(n);
+    }
+  }, f = async function() {
+    var l, n, R;
+    if (r === void 0) {
+      o(!0);
+      return;
+    }
+    if (i && ((n = (l = s[0]) == null ? void 0 : l.trashedBy) != null && n.includes(E == null ? void 0 : E.userId)) && t === "restore" && !((R = s[0]) != null && R.trashed)) {
+      o(!0);
+      return;
+    }
+    if (s instanceof Array)
+      if (s.length > 0)
+        if (typeof s[0] == "string")
+          await m(s);
+        else {
+          const y = s.map((I) => I.rights);
+          await h(y);
+        }
+      else
+        o(!1);
+    else
+      typeof s == "string" ? await m(s) : await m(s.rights);
+  };
+  return {
+    visible: p,
+    refreshState: f
+  };
+}
+function oe() {
+  const [r, s] = L(!1), [t, p] = L("void"), [o, E] = L(), i = Ie((e) => e.config), m = ge(), h = ve(), f = se(), l = Ae(), n = Me(), R = J(), y = Pe(), I = we(), M = Fe(), _ = xe(), N = Te(), {
+    openResource: P,
+    printSelectedResource: k,
+    openFolder: H,
+    clearSelectedItems: w,
+    clearSelectedIds: F
+  } = te(), {
+    data: U
+  } = Be(i == null ? void 0 : i.actions);
+  Z(() => {
+    if (h.length === 0 && n.length === 0) {
+      s(!1);
+      return;
+    }
+    if (I) {
+      s(!1);
+      return;
+    }
+    if (N.isDrag) {
+      s(!1);
+      return;
+    }
+    s(!0);
+  }, [h, n]);
+  async function Y(e) {
+    var B;
+    switch ((B = document.getElementById("root")) == null || B.setAttribute("aria-hidden", "true"), E(e), e.id) {
+      case c.OPEN:
+        return h.length > 0 ? P(f[0]) : H({
+          folder: l[0],
+          folderId: l[0].id
+        });
+      case c.COPY:
+        return le();
+      case c.MOVE:
+        return p("move");
+      case c.PRINT:
+        return k();
+      case c.DELETE:
+        return p("delete");
+      case c.RESTORE:
+        return await x();
+      case c.PUBLISH:
+        return p("publish");
+      case c.UPD_PROPS:
+      case "edit":
+        return ue();
+      case c.SHARE:
+        return p("share");
+      case c.EXPORT:
+        return p("export");
+      default:
+        throw Error(`Unknown action: ${e.id}`);
+    }
+  }
+  function j(e) {
+    const B = h.length + n.length, O = h.length === 1 || n.length === 1, K = B === 1, C = n.length === 0;
+    switch (e.id) {
+      case c.OPEN:
+        return K;
+      case c.MANAGE:
+        return O;
+      case c.COPY:
+        return O && C;
+      case c.PUBLISH:
+        return O && C;
+      case c.UPD_PROPS:
+        return O && C;
+      case c.SHARE:
+        return C && O;
+      case "export":
+        return O && C;
+      case c.PRINT:
+        return O && C;
+      case "edit":
+        return K;
+      default:
+        return !0;
+    }
+  }
+  const z = () => !0;
+  async function x() {
+    try {
+      if (R)
+        await y.mutate();
+      else
+        throw new Error("Cannot restore untrashed resources");
+      g();
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  function g() {
+    var e;
+    p("void"), o != null && o.id && ((e = document.getElementById(o == null ? void 0 : o.id)) == null || e.focus());
+  }
+  const u = (e) => () => {
+    t === e && (g(), w(), F());
+  }, S = u("move"), V = u("move"), T = u("delete"), $ = u("delete"), v = u("publish"), A = u("publish"), d = u("edit_folder"), q = u("edit_folder"), G = u("edit_resource"), re = u("edit_resource"), ne = u("share"), ce = u("share"), ae = u("export"), ie = u("export");
+  async function le() {
+    if (f && f.length > 0) {
+      const e = f[0];
+      await _.mutate(e), w(), F();
+    }
+  }
+  function ue() {
+    if (h && h.length > 0) {
+      const e = f[0].assetId;
+      (i == null ? void 0 : i.app) === "scrapbook" ? De({
+        searchParams: M,
+        assetId: e
+      }) : p("edit_resource");
+    } else
+      p("edit_folder");
+  }
+  function de(e) {
+    return e.id === "edit" && n.length > 0 ? "explorer.rename" : `explorer.actions.${e.id}`;
+  }
+  return {
+    onRestore: x,
+    actions: R ? i == null ? void 0 : i.trashActions : U,
+    selectedElement: [...f, ...l],
+    currentFolderId: m == null ? void 0 : m.id,
+    overrideLabel: de,
+    handleClick: Y,
+    isActivable: R ? z : j,
+    isActionBarOpen: r,
+    isMoveModalOpen: t === "move",
+    onMoveCancel: S,
+    onMoveSuccess: V,
+    isDeleteModalOpen: t === "delete",
+    onDeleteCancel: $,
+    onDeleteSuccess: T,
+    isPublishModalOpen: t === "publish",
+    onPublishCancel: A,
+    onPublishSuccess: v,
+    isEditFolderOpen: t === "edit_folder",
+    onEditFolderCancel: q,
+    onEditFolderSuccess: d,
+    isEditResourceOpen: t === "edit_resource",
+    onEditResourceCancel: re,
+    onEditResourceSuccess: G,
+    isShareResourceOpen: t === "share",
+    onShareResourceCancel: ce,
+    onShareResourceSuccess: ne,
+    isExportModalOpen: t === "export",
+    onExportCancel: ae,
+    onExportSuccess: ie,
+    onClearActionBar: g
+  };
+}
+function ke({
+  resourceRights: r,
+  roleExpected: s,
+  action: t,
+  children: p,
+  renderWhenForbidden: o
+}) {
+  const {
+    t: E
+  } = ee(), {
+    overrideLabel: i
+  } = oe(), {
+    visible: m
+  } = Ne({
+    roles: s,
+    rights: r,
+    action: t == null ? void 0 : t.id
+  }), {
+    setResourceActionDisable: h
+  } = te(), f = J();
+  return m ? /* @__PURE__ */ a(X, { children: p }) : o ? o() : f && !m ? /* @__PURE__ */ a(W, { type: "button", color: "primary", variant: "filled", onClick: () => {
+    h(!0);
+  }, children: E(i(t)) }) : /* @__PURE__ */ a(X, {});
+}
+const He = /* @__PURE__ */ b(async () => await import("./PublishModal.js")), Ue = /* @__PURE__ */ b(async () => await import("./ResourceModal.js")), Ye = /* @__PURE__ */ b(async () => await import("./DeleteModal.js")), je = /* @__PURE__ */ b(async () => await import("./MoveModal.js")), ze = /* @__PURE__ */ b(async () => await import("./FolderModal.js")), Ve = /* @__PURE__ */ b(async () => await import("./ExportModal.js"));
+function Ze() {
+  const {
+    appCode: r
+  } = fe(), {
+    t: s
+  } = ee(), {
+    actions: t,
+    selectedElement: p,
+    isMoveModalOpen: o,
+    isDeleteModalOpen: E,
+    isPublishModalOpen: i,
+    isActionBarOpen: m,
+    isEditFolderOpen: h,
+    overrideLabel: f,
+    onEditFolderCancel: l,
+    onEditFolderSuccess: n,
+    isEditResourceOpen: R,
+    onEditResourceCancel: y,
+    onEditResourceSuccess: I,
+    isShareResourceOpen: M,
+    onShareResourceCancel: _,
+    onShareResourceSuccess: N,
+    isExportModalOpen: P,
+    onExportCancel: k,
+    onExportSuccess: H,
+    onMoveCancel: w,
+    onMoveSuccess: F,
+    onDeleteCancel: U,
+    onDeleteSuccess: Y,
+    onPublishCancel: j,
+    onPublishSuccess: z,
+    isActivable: x,
+    handleClick: g
+  } = oe(), S = se()[0], V = Le(r), T = _e(r), $ = be(m, {
+    from: {
+      opacity: 0,
+      transform: "translateY(100%)"
+    },
+    enter: {
+      opacity: 1,
+      transform: "translateY(0)"
+    },
+    leave: {
+      opacity: 0,
+      transform: "translateY(100%)"
+    }
+  });
+  return /* @__PURE__ */ Q(X, { children: [
+    $((v, A) => A && /* @__PURE__ */ a(ye.div, { className: "position-fixed bottom-0 start-0 end-0", style: {
+      ...v,
+      zIndex: 4
+    }, children: /* @__PURE__ */ a(Re, { children: t == null ? void 0 : t.filter((d) => d.available && d.target === "actionbar").map((d) => x(d) && /* @__PURE__ */ a(ke, { resourceRights: p, roleExpected: d.right, action: d, children: /* @__PURE__ */ a(W, { id: d.id, type: "button", color: "primary", variant: "filled", onClick: () => {
+      g(d);
+    }, children: s(f(d)) }, d.id) }, d.id)) }) })),
+    /* @__PURE__ */ Q(pe, { fallback: /* @__PURE__ */ a(me, {}), children: [
+      o && /* @__PURE__ */ a(je, { isOpen: o, onCancel: w, onSuccess: F }),
+      E && /* @__PURE__ */ a(Ye, { isOpen: E, onCancel: U, onSuccess: Y }),
+      i && S && /* @__PURE__ */ a(He, { isOpen: i, resourceId: S.assetId, onCancel: j, onSuccess: z }),
+      h && /* @__PURE__ */ a(ze, { edit: !0, isOpen: h, onCancel: l, onSuccess: n }),
+      R && S && /* @__PURE__ */ a(Ue, { mode: "update", isOpen: R, resourceId: S.assetId, updateResource: T, onCancel: y, onSuccess: I, children: (v, A, d, q, G) => r === "blog" && Se("createPublic", t) && /* @__PURE__ */ a(Ee, { appCode: r, isUpdating: A, resource: v, watch: d, setValue: q, register: G }) }),
+      M && S && /* @__PURE__ */ a(Oe, { isOpen: M, shareResource: V, shareOptions: {
+        resourceCreatorId: S.creatorId,
+        resourceId: S.assetId,
+        resourceRights: S.rights
+      }, onCancel: _, onSuccess: N, children: r === "blog" ? /* @__PURE__ */ a(Ce, { resourceId: S.assetId, updateResource: T }) : null }),
+      P && S && /* @__PURE__ */ a(Ve, { isOpen: P, onCancel: k, onSuccess: H })
+    ] })
+  ] });
+}
+export {
+  Ze as default
+};

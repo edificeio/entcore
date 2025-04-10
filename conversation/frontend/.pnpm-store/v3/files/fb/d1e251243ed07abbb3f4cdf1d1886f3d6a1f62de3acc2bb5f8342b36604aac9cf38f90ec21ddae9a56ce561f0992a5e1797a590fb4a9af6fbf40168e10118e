@@ -1,0 +1,17 @@
+import { jsx } from "react/jsx-runtime";
+import { ExternalLinker } from "../../Linker/ExternalLinker/ExternalLinker.js";
+import { useMediaLibraryContext } from "../MediaLibraryContext.js";
+const ExternalLink = ({
+  link,
+  multiNodeSelected = !1
+}) => {
+  const {
+    setResult
+  } = useMediaLibraryContext();
+  return /* @__PURE__ */ jsx(ExternalLinker, { link, onChange: (link2) => {
+    setResult(link2);
+  }, multiNodeSelected });
+};
+export {
+  ExternalLink
+};

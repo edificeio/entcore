@@ -1,0 +1,9 @@
+export interface HeaderProps {
+    is1d?: boolean;
+    src: string | undefined;
+}
+declare const Header: {
+    ({ is1d, src }: HeaderProps): JSX.Element;
+    displayName: string;
+};
+export default Header;

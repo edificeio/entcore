@@ -1,0 +1,6 @@
+export type AppKeys = 'blog' | 'wiki' | 'empty' | 'collaborative-wall' | 'community' | 'exercizer' | 'formulaire' | 'forum' | 'homeworks' | 'magneto';
+export interface ThemeMapping {
+    one: Record<AppKeys, string>;
+    neo: Record<AppKeys, string>;
+}
+export declare const emptyScreenMapping: ThemeMapping;

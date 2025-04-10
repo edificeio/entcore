@@ -1,0 +1,75 @@
+import { jsx, jsxs } from "react/jsx-runtime";
+import commonPlaceholder from "@edifice.io/bootstrap/dist/images/common/image-placeholder.png";
+import { useTranslation } from "react-i18next";
+import SvgIconClose from "../../icons/components/IconClose.js";
+import SvgIconReset from "../../icons/components/IconReset.js";
+import SvgIconSuccessOutline from "../../icons/components/IconSuccessOutline.js";
+import SvgIconWand from "../../icons/components/IconWand.js";
+import Tooltip from "../../../components/Tooltip/Tooltip.js";
+import Loading from "../../../components/Loading/Loading.js";
+import Button from "../../../components/Button/Button.js";
+import Card from "../../../components/Card/Card.js";
+import IconButton from "../../../components/Button/IconButton.js";
+import Image from "../../../components/Image/Image.js";
+const UploadCard = ({
+  item,
+  status = "idle",
+  isClickable = !1,
+  isSelectable = !1,
+  onDelete,
+  onEdit,
+  onRetry
+}) => {
+  const {
+    t
+  } = useTranslation(), {
+    src,
+    name,
+    info
+  } = item, isIdle = status === "idle", isLoading = status === "loading", isSuccess = status === "success", isTypeImage = info == null ? void 0 : info.type.startsWith("image"), defaultMapping = {
+    text: "",
+    context: null,
+    image: /* @__PURE__ */ jsx("img", { src: commonPlaceholder, alt: "", width: "48", height: "48" })
+  }, mapping = {
+    error: {
+      text: /* @__PURE__ */ jsx("strong", { children: /* @__PURE__ */ jsx("small", { className: "text-danger caption", children: t("tiptap.upload.error") }) }),
+      context: /* @__PURE__ */ jsx(Button, { leftIcon: /* @__PURE__ */ jsx(SvgIconReset, {}), variant: "ghost", color: "tertiary", onClick: onRetry, children: t("tiptap.upload.retry") }),
+      image: /* @__PURE__ */ jsx(Image, { alt: "", src: `${commonPlaceholder}/common/image-status-error.svg`, objectFit: "cover" })
+    },
+    idle: defaultMapping,
+    loading: {
+      text: "",
+      context: /* @__PURE__ */ jsx(Tooltip, { message: t("tiptap.tooltip.upload.loading"), placement: "top", children: /* @__PURE__ */ jsx(Loading, { isLoading: !0, loadingPosition: "left", className: "text-secondary" }) }),
+      image: defaultMapping.image
+    },
+    warning: defaultMapping,
+    success: {
+      text: /* @__PURE__ */ jsxs("em", { children: [
+        info == null ? void 0 : info.type,
+        " ",
+        (info == null ? void 0 : info.weight) && `- ${info.weight}`
+      ] }),
+      context: /* @__PURE__ */ jsx(Tooltip, { message: t("tiptap.tooltip.upload.loaded"), placement: "top", children: /* @__PURE__ */ jsx(SvgIconSuccessOutline, { className: "text-success" }) }),
+      image: /* @__PURE__ */ jsx(Image, { alt: "", src: src ?? "", width: "48", objectFit: "cover", className: "rounded", style: {
+        aspectRatio: 1 / 1
+      } })
+    },
+    unknown: defaultMapping
+  }, canEditItem = () => isTypeImage && /* @__PURE__ */ jsx(Tooltip, { message: t("tiptap.tooltip.upload.edit"), placement: "top", children: /* @__PURE__ */ jsx(IconButton, { icon: /* @__PURE__ */ jsx(SvgIconWand, {}), variant: "ghost", "aria-label": t("tiptap.tooltip.upload.loading"), disabled: isLoading || !isSuccess, onClick: onEdit, color: "secondary" }) });
+  return /* @__PURE__ */ jsx(Card, { isClickable, isSelectable, className: "card-upload", children: /* @__PURE__ */ jsxs(Card.Body, { children: [
+    /* @__PURE__ */ jsx("div", { className: "card-image", children: mapping[status].image }),
+    /* @__PURE__ */ jsxs("div", { className: "text-truncate", children: [
+      /* @__PURE__ */ jsx(Card.Text, { children: name }),
+      /* @__PURE__ */ jsx(Card.Text, { className: "caption", children: mapping[status].text })
+    ] }),
+    !isIdle && /* @__PURE__ */ jsx("div", { className: "ms-auto", children: /* @__PURE__ */ jsxs("div", { className: "d-flex align-items-center gap-12", children: [
+      mapping[status].context,
+      !isIdle && /* @__PURE__ */ jsx("div", { className: "vr" }),
+      canEditItem(),
+      /* @__PURE__ */ jsx(Tooltip, { message: t("tiptap.tooltip.upload.delete"), placement: "top", children: /* @__PURE__ */ jsx(IconButton, { icon: /* @__PURE__ */ jsx(SvgIconClose, {}), variant: "ghost", "aria-label": t("tiptap.tooltip.upload.delete"), color: "tertiary", onClick: onDelete }) })
+    ] }) })
+  ] }) });
+};
+export {
+  UploadCard as default
+};

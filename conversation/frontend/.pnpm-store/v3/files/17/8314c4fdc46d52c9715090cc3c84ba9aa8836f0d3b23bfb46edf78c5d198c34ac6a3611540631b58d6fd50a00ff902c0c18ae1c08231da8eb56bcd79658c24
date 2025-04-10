@@ -1,0 +1,8 @@
+import { jsx } from "react/jsx-runtime";
+import Heading from "../../../components/Heading/Heading.js";
+const CommentHeader = ({
+  title
+}) => /* @__PURE__ */ jsx(Heading, { level: "h3", headingStyle: "h3", children: title });
+export {
+  CommentHeader
+};

@@ -1,0 +1,38 @@
+import { Announcements, DragEndEvent, DragMoveEvent, DragOverEvent, DragStartEvent, MeasuringStrategy, Modifier, UniqueIdentifier } from '@dnd-kit/core';
+import { FlattenedItem, TreeItem, UpdateTreeData } from '../types';
+export declare const useTreeSortable: ({ nodes, onSortable, handleCollapseNode, }: {
+    nodes: TreeItem[];
+    onSortable: (updateArray: UpdateTreeData[]) => void;
+    handleCollapseNode: (nodeId: string) => void;
+}) => {
+    handleDragStart: (event: DragStartEvent) => void;
+    handleDragMove: ({ delta }: DragMoveEvent) => void;
+    handleDragOver: (event: DragOverEvent) => void;
+    handleDragEnd: (event: DragEndEvent) => void;
+    adjustTranslate: Modifier;
+    sortedIds: string[];
+    indicator: boolean;
+    activationConstraint: {
+        delay: number;
+        tolerance: number;
+    };
+    projected: {
+        depth: number;
+        parentId: string | null;
+        activeId: UniqueIdentifier;
+        previousItem: FlattenedItem;
+    } | null;
+    announcements: Announcements;
+    activeId: string | null;
+    indentationWidth: number;
+    activeItem: FlattenedItem | null | undefined;
+    dropAnimationConfig: import('@dnd-kit/core/dist/components/DragOverlay/hooks/useDropAnimation').DropAnimationOptions;
+    measuring: {
+        droppable: {
+            strategy: MeasuringStrategy;
+        };
+    };
+    sensors: import('@dnd-kit/core').SensorDescriptor<import('@dnd-kit/core').SensorOptions>[];
+    items: TreeItem[];
+    flattenedTree: FlattenedItem[];
+};

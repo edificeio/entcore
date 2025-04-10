@@ -1,0 +1,18 @@
+import { useState, useCallback, useEffect } from "react";
+function useImage({
+  src,
+  placeholder
+}) {
+  const [imgSrc, setImgSrc] = useState(src || placeholder), onError = useCallback(() => {
+    setImgSrc(placeholder);
+  }, [placeholder]);
+  return useEffect(() => {
+    setImgSrc(src);
+  }, [src]), {
+    imgSrc,
+    onError
+  };
+}
+export {
+  useImage as default
+};

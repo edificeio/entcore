@@ -1,0 +1,16 @@
+import { jsx as s } from "react/jsx-runtime";
+import { useOdeClient as a, usePaths as m, EmptyScreen as n } from "@edifice-ui/react";
+import { useTranslation as o } from "react-i18next";
+function c() {
+  const {
+    appCode: t
+  } = a(), [r] = m(), {
+    t: e
+  } = o();
+  return /* @__PURE__ */ s(n, { imageSrc: `${r}/emptyscreen/illu-trash.svg`, imageAlt: e("explorer.emptyScreen.trash.alt"), title: e("explorer.emptyScreen.trash.title"), text: e("explorer.emptyScreen.trash.empty", {
+    ns: t
+  }) });
+}
+export {
+  c as default
+};

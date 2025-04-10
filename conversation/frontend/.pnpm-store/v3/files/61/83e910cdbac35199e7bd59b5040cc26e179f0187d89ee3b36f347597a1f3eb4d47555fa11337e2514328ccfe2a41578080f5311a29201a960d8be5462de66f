@@ -1,0 +1,172 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { useRef, useState, useCallback, useEffect } from "react";
+import clsx from "clsx";
+import { useTranslation } from "react-i18next";
+import SvgIconSortAscendingLetters from "../../icons/components/IconSortAscendingLetters.js";
+import SvgIconSortDescendingLetters from "../../icons/components/IconSortDescendingLetters.js";
+import SvgIconSortTime from "../../icons/components/IconSortTime.js";
+import illuTrash from "@edifice.io/bootstrap/dist/images/emptyscreen/illu-trash.svg";
+import useWorkspaceSearch from "../../../hooks/useWorkspaceSearch/useWorkspaceSearch.js";
+import { Grid } from "../../../components/Grid/Grid.js";
+import TreeView from "../../../components/TreeView/TreeView.js";
+import SearchBar from "../../../components/SearchBar/SearchBar.js";
+import Dropdown from "../../../components/Dropdown/Dropdown.js";
+import LoadingScreen from "../../../components/LoadingScreen/LoadingScreen.js";
+import FileCard from "../FileCard/FileCard.js";
+import EmptyScreen from "../../../components/EmptyScreen/EmptyScreen.js";
+import { findTreeNode } from "../../../components/TreeView/utilities/treeview.js";
+const Workspace = ({
+  roles,
+  onSelect,
+  multiple = !0,
+  className,
+  defaultFolder,
+  showPublicFolder
+}) => {
+  const {
+    t
+  } = useTranslation(), {
+    root: ownerRoot,
+    loadContent: loadOwnerDocs
+  } = useWorkspaceSearch("root", t("workspace.tree.owner"), "owner", roles), {
+    root: sharedRoot,
+    loadContent: loadSharedDocs
+  } = useWorkspaceSearch("root", t("workspace.tree.shared"), "shared", roles), {
+    root: protectRoot,
+    loadContent: loadProtectedDocs
+  } = useWorkspaceSearch("root", t("workspace.tree.protected"), "protected", roles), {
+    root: publicRoot,
+    loadContent: loadPublicDocs
+  } = useWorkspaceSearch("root", t("workspace.tree.public"), "public", roles), ownerRef = useRef(null), sharedRef = useRef(null), protectRef = useRef(null), publicRef = useRef(null), [currentFilter, setCurrentFilter] = useState(() => defaultFolder === "public" ? showPublicFolder ? defaultFolder : "protected" : defaultFolder === "protected" || defaultFolder === "shared" ? defaultFolder : "owner"), [currentNode, setCurrentNode] = useState(() => defaultFolder === "public" ? showPublicFolder ? publicRoot : protectRoot : defaultFolder === "protected" ? protectRoot : defaultFolder === "shared" ? sharedRoot : ownerRoot), [documents, setDocuments] = useState(), [searchTerm, setSearchTerm] = useState(null), [sortOrder, setSortOrder] = useState(["modified", "desc"]), [selectedDocuments, setSelectedDocuments] = useState([]), rootNodeFor = useCallback((filter) => {
+    switch (filter) {
+      case "owner":
+        return {
+          root: ownerRoot,
+          othersRef: [sharedRef, protectRef, publicRef]
+        };
+      case "shared":
+        return {
+          root: sharedRoot,
+          othersRef: [ownerRef, protectRef, publicRef]
+        };
+      case "protected":
+        return {
+          root: protectRoot,
+          othersRef: [ownerRef, sharedRef, publicRef]
+        };
+      case "public":
+        return {
+          root: publicRoot,
+          othersRef: [ownerRef, sharedRef, protectRef]
+        };
+      default:
+        throw "no.root.node";
+    }
+  }, [ownerRoot, sharedRoot, protectRoot, publicRoot]), loadContent = useCallback(() => {
+    switch (currentFilter) {
+      case "owner":
+        loadOwnerDocs(currentNode.id);
+        break;
+      case "shared":
+        loadSharedDocs(currentNode.id);
+        break;
+      case "protected":
+        loadProtectedDocs(currentNode.id);
+        break;
+      case "public":
+        loadPublicDocs(currentNode.id);
+        break;
+      default:
+        throw "no.way";
+    }
+  }, [currentFilter, currentNode.id, loadOwnerDocs, loadProtectedDocs, loadPublicDocs, loadSharedDocs]);
+  function selectAndLoadContent(filter, nodeId) {
+    setCurrentFilter(filter);
+    const {
+      root,
+      othersRef
+    } = rootNodeFor(filter), targetNode = findTreeNode(root, (node) => node.id === nodeId);
+    targetNode && (setCurrentNode(targetNode), othersRef.forEach((otherRef) => {
+      var _a;
+      return (_a = otherRef.current) == null ? void 0 : _a.unselectAll();
+    }));
+  }
+  useEffect(() => {
+    var _a;
+    let ref;
+    switch (currentFilter) {
+      case "owner":
+        ref = ownerRef;
+        break;
+      case "shared":
+        ref = sharedRef;
+        break;
+      case "protected":
+        ref = protectRef;
+        break;
+      case "public":
+        ref = publicRef;
+        break;
+      default:
+        return;
+    }
+    (_a = ref == null ? void 0 : ref.current) == null || _a.select("root");
+  }, [currentFilter]), useEffect(loadContent, [loadContent]), useEffect(() => {
+    if (currentNode.files) {
+      let list = [].concat(currentNode.files);
+      searchTerm && (list = list.filter((f) => f.name.indexOf(searchTerm) >= 0));
+      const sortFunction = sortOrder[0] === "name" ? sortOrder[1] === "asc" ? (a, b) => compare(a.name, b.name) : (a, b) => compare(b.name, a.name) : (a, b) => compare(b.modified, a.modified);
+      setDocuments(() => list.sort(sortFunction));
+    } else
+      setDocuments(void 0);
+  }, [currentNode, ownerRoot, protectRoot, sharedRoot, publicRoot, searchTerm, sortOrder]);
+  const handleSearchChange = useCallback((e) => {
+    setSearchTerm(e.target.value);
+  }, [setSearchTerm]);
+  function compare(a, b) {
+    return a ? b ? a.localeCompare(b) : 1 : -1;
+  }
+  function getSortOrderLabel() {
+    return sortOrder[0] === "name" ? sortOrder[1] === "asc" ? t("sort.order.alpha.asc") : t("sort.order.alpha.desc") : t("sort.order.modify.desc");
+  }
+  function handleSelectDoc(doc) {
+    let currentDocuments = [...selectedDocuments];
+    multiple ? currentDocuments.includes(doc) ? currentDocuments = currentDocuments.filter((selectedDocument) => selectedDocument._id !== doc._id) : currentDocuments = [...currentDocuments, doc] : currentDocuments = [doc], setSelectedDocuments(currentDocuments), onSelect(currentDocuments);
+  }
+  const workspace = clsx("workspace flex-grow-1 gap-0", className);
+  return /* @__PURE__ */ jsxs(Grid, { className: workspace, children: [
+    /* @__PURE__ */ jsx(Grid.Col, { sm: "12", md: "3", xl: "4", className: "workspace-folders p-12 pt-0 gap-12", children: /* @__PURE__ */ jsxs("div", { style: {
+      position: "sticky",
+      top: 0,
+      paddingTop: "1.2rem"
+    }, children: [
+      /* @__PURE__ */ jsx(TreeView, { ref: ownerRef, data: ownerRoot, onTreeItemClick: (nodeId) => selectAndLoadContent("owner", nodeId), onTreeItemUnfold: (nodeId) => selectAndLoadContent("owner", nodeId) }),
+      /* @__PURE__ */ jsx(TreeView, { ref: sharedRef, data: sharedRoot, onTreeItemClick: (nodeId) => selectAndLoadContent("shared", nodeId), onTreeItemUnfold: (nodeId) => selectAndLoadContent("shared", nodeId) }),
+      /* @__PURE__ */ jsx(TreeView, { ref: protectRef, data: protectRoot, onTreeItemClick: (nodeId) => selectAndLoadContent("protected", nodeId), onTreeItemUnfold: (nodeId) => selectAndLoadContent("protected", nodeId) }),
+      showPublicFolder && /* @__PURE__ */ jsx(TreeView, { ref: publicRef, data: publicRoot, onTreeItemClick: (nodeId) => selectAndLoadContent("public", nodeId), onTreeItemUnfold: (nodeId) => selectAndLoadContent("public", nodeId) })
+    ] }) }),
+    /* @__PURE__ */ jsx(Grid.Col, { sm: "12", md: "5", xl: "8", children: /* @__PURE__ */ jsxs(Grid, { className: "flex-grow-1 gap-0", children: [
+      /* @__PURE__ */ jsxs(Grid.Col, { sm: "4", md: "8", xl: "12", children: [
+        /* @__PURE__ */ jsx("div", { className: "workspace-search px-16 py-8 ", children: /* @__PURE__ */ jsx(SearchBar, { isVariant: !0, className: "gap-16", onChange: handleSearchChange }) }),
+        /* @__PURE__ */ jsxs("div", { className: "d-flex align-items-center justify-content-end px-8 py-4", children: [
+          /* @__PURE__ */ jsx("small", { className: "text-muted", children: t("workspace.search.order") }),
+          /* @__PURE__ */ jsxs(Dropdown, { children: [
+            /* @__PURE__ */ jsx(Dropdown.Trigger, { size: "sm", label: getSortOrderLabel(), variant: "ghost" }),
+            /* @__PURE__ */ jsxs(Dropdown.Menu, { children: [
+              /* @__PURE__ */ jsx(Dropdown.Item, { icon: /* @__PURE__ */ jsx(SvgIconSortTime, {}), onClick: () => setSortOrder(["modified", "desc"]), children: t("sort.order.modify.desc") }),
+              /* @__PURE__ */ jsx(Dropdown.Item, { icon: /* @__PURE__ */ jsx(SvgIconSortAscendingLetters, {}), onClick: () => setSortOrder(["name", "asc"]), children: t("sort.order.alpha.asc") }),
+              /* @__PURE__ */ jsx(Dropdown.Item, { icon: /* @__PURE__ */ jsx(SvgIconSortDescendingLetters, {}), onClick: () => setSortOrder(["name", "desc"]), children: t("sort.order.alpha.desc") })
+            ] })
+          ] })
+        ] })
+      ] }),
+      /* @__PURE__ */ jsx(Grid.Col, { sm: "4", md: "8", xl: "12", className: "p-8 gap-8", children: documents ? documents.length !== 0 ? /* @__PURE__ */ jsx("div", { className: "grid grid-workspace", children: documents.map((doc) => {
+        const isSelected = selectedDocuments.includes(doc);
+        return /* @__PURE__ */ jsx(FileCard, { doc, isSelected, onClick: () => handleSelectDoc(doc) }, doc._id);
+      }) }) : /* @__PURE__ */ jsx(EmptyScreen, { imageSrc: illuTrash, text: t("workspace.empty.docSpace"), title: t("explorer.emptyScreen.trash.title") }) : /* @__PURE__ */ jsx(LoadingScreen, {}) })
+    ] }) })
+  ] });
+};
+export {
+  Workspace as default
+};

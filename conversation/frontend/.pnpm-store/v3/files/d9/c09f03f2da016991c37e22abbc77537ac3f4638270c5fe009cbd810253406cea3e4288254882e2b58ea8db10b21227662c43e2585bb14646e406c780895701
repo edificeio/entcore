@@ -1,0 +1,22 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { useTranslation } from "react-i18next";
+import SvgIconOptions from "../../modules/icons/components/IconOptions.js";
+import { useCardContext } from "./CardContext.js";
+import IconButton from "../Button/IconButton.js";
+const CardHeader = () => {
+  const {
+    isSelectable,
+    isClickable,
+    onClick,
+    onSelect
+  } = useCardContext(), {
+    t
+  } = useTranslation();
+  return isSelectable || isClickable ? /* @__PURE__ */ jsxs("div", { className: "card-header", children: [
+    isSelectable ? /* @__PURE__ */ jsx(IconButton, { "aria-label": t("card.open.menu"), className: "z-3 bg-white", color: "secondary", icon: /* @__PURE__ */ jsx(SvgIconOptions, {}), onClick: onSelect, variant: "ghost" }) : null,
+    isClickable ? /* @__PURE__ */ jsx("button", { type: "button", onClick, className: "position-absolute bottom-0 end-0 top-0 start-0 opacity-0 z-1 w-100", "aria-label": t("card.open.resource") }) : null
+  ] }) : null;
+};
+export {
+  CardHeader as default
+};

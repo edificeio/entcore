@@ -1,0 +1,9 @@
+import { Editor } from '@tiptap/react';
+interface Props {
+    /**
+     * editor instance
+     */
+    editor: Editor | null;
+}
+export declare const TableToolbarAddMenu: ({ editor }: Props) => import("react/jsx-runtime").JSX.Element;
+export {};

@@ -1,0 +1,9 @@
+import { WorkspaceElement, WorkspaceVisibility } from "edifice-ts-client";
+declare const UploadFiles: {
+    ({ onFilesChange, visibility, }: {
+        onFilesChange: (uploadedFiles: WorkspaceElement[]) => void;
+        visibility?: WorkspaceVisibility | undefined;
+    }): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default UploadFiles;

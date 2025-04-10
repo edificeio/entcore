@@ -1,0 +1,24 @@
+import { jsxs, Fragment, jsx } from "react/jsx-runtime";
+import { useTranslation } from "react-i18next";
+function ToastError({
+  formData,
+  errorMessage
+}) {
+  const {
+    t
+  } = useTranslation(), regexInput = (value) => value == null ? void 0 : value.match(/^\s/);
+  return errorMessage === "CONTENT_TOO_LARGE" ? /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx("h3", { className: "pt-24", children: t("bpr.form.publication.response.error.title") }),
+    /* @__PURE__ */ jsx("p", { className: "pt-24 pb-24", children: /* @__PURE__ */ jsx("strong", { children: t("bpr.form.publication.response.error.content_too_large") }) })
+  ] }) : /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx("h3", { className: "pt-24", children: t("bpr.form.publication.response.error.title") }),
+    /* @__PURE__ */ jsx("p", { className: "pt-24 pb-24", children: /* @__PURE__ */ jsx("strong", { children: t("bpr.form.publication.response.error.content") }) }),
+    /* @__PURE__ */ jsxs("ul", { children: [
+      regexInput(formData == null ? void 0 : formData.title) && /* @__PURE__ */ jsx("li", { className: "pt-2 pb-2", children: /* @__PURE__ */ jsx("strong", { children: t("bpr.form.publication.response.empty.title") }) }),
+      regexInput(formData == null ? void 0 : formData.description) && /* @__PURE__ */ jsx("li", { className: "pt-2 pb-2", children: /* @__PURE__ */ jsx("strong", { children: t("bpr.form.publication.response.empty.description") }) })
+    ] })
+  ] });
+}
+export {
+  ToastError
+};

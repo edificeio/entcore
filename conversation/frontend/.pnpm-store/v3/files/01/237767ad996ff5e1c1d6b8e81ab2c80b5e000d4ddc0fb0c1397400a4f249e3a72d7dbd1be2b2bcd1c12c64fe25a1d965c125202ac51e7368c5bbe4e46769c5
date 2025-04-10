@@ -1,0 +1,183 @@
+{
+  "name": "@edifice.io/react",
+  "version": "2.1.1-develop-b2school.20250321113048",
+  "description": "Edifice React Library",
+  "keywords": [
+    "react",
+    "frontend",
+    "components",
+    "library",
+    "ui"
+  ],
+  "homepage": "https://github.com/edificeio/edifice-frontend-framework/tree/main/packages/react#readme",
+  "bugs": {
+    "url": "https://github.com/edificeio/edifice-frontend-framework/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/edificeio/edifice-frontend-framework.git",
+    "directory": "packages/react"
+  },
+  "license": "AGPL-3.0",
+  "author": "Edifice",
+  "sideEffects": false,
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js"
+    },
+    "./audience": {
+      "import": "./dist/audience.js",
+      "types": "./dist/modules/audience/index.d.ts"
+    },
+    "./comments": {
+      "import": "./dist/comments.js",
+      "types": "./dist/modules/comments/index.d.ts"
+    },
+    "./editor": {
+      "import": "./dist/editor.js",
+      "types": "./dist/modules/editor/index.d.ts"
+    },
+    "./icons": {
+      "import": "./dist/icons.js",
+      "types": "./dist/modules/icons/components/index.d.ts"
+    },
+    "./icons/nav": {
+      "import": "./dist/icons-nav.js",
+      "types": "./dist/modules/icons/components/nav/index.d.ts"
+    },
+    "./icons/apps": {
+      "import": "./dist/icons-apps.js",
+      "types": "./dist/modules/icons/components/apps/index.d.ts"
+    },
+    "./icons/audience": {
+      "import": "./dist/icons-audience.js",
+      "types": "./dist/modules/icons/components/audience/index.d.ts"
+    },
+    "./modals": {
+      "import": "./dist/modals.js",
+      "types": "./dist/modules/modals/index.d.ts"
+    },
+    "./multimedia": {
+      "import": "./dist/multimedia.js",
+      "types": "./dist/modules/multimedia/index.d.ts"
+    },
+    "./widgets": {
+      "import": "./dist/widgets.js",
+      "types": "./dist/modules/widgets/index.d.ts"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@dnd-kit/core": "^6.1.0",
+    "@dnd-kit/sortable": "^8.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@floating-ui/react": "0.26.0",
+    "@pixi/mixin-get-child-by-name": "7.4.2",
+    "@pixi/react": "7.1.2",
+    "@popperjs/core": "2.11.8",
+    "@tiptap/core": "2.11.0",
+    "@tiptap/extension-character-count": "2.11.0",
+    "@tiptap/extension-color": "2.11.0",
+    "@tiptap/extension-focus": "2.11.0",
+    "@tiptap/extension-font-family": "2.11.0",
+    "@tiptap/extension-heading": "2.11.0",
+    "@tiptap/extension-highlight": "2.11.0",
+    "@tiptap/extension-image": "2.11.0",
+    "@tiptap/extension-link": "2.11.0",
+    "@tiptap/extension-list-item": "2.11.0",
+    "@tiptap/extension-placeholder": "2.11.0",
+    "@tiptap/extension-subscript": "2.11.0",
+    "@tiptap/extension-superscript": "2.11.0",
+    "@tiptap/extension-table": "2.11.0",
+    "@tiptap/extension-table-cell": "2.11.0",
+    "@tiptap/extension-table-header": "2.11.0",
+    "@tiptap/extension-table-row": "2.11.0",
+    "@tiptap/extension-text-align": "2.11.0",
+    "@tiptap/extension-text-style": "2.11.0",
+    "@tiptap/extension-typography": "2.11.0",
+    "@tiptap/extension-underline": "2.11.0",
+    "@tiptap/pm": "2.11.0",
+    "@tiptap/react": "2.11.0",
+    "@tiptap/starter-kit": "2.11.0",
+    "@uidotdev/usehooks": "^2.4.1",
+    "clsx": "^2.1.1",
+    "dayjs": "1.11.10",
+    "emoji-picker-react": "4.5.2",
+    "html-react-parser": "4.2.1",
+    "ohash": "1.1.3",
+    "pako": "2.1.0",
+    "pixi.js": "7.4.2",
+    "react-hot-toast": "^2.4.1",
+    "react-intersection-observer": "9.5.3",
+    "react-popper": "^2.3.0",
+    "react-slugify": "^3.0.3",
+    "swiper": "^10.1.0",
+    "ua-parser-js": "^1.0.36",
+    "@edifice.io/bootstrap": "2.1.1-develop-b2school.20250321113048",
+    "@edifice.io/tiptap-extensions": "2.1.1-develop-b2school.20250321113048",
+    "@edifice.io/utilities": "2.1.1-develop-b2school.20250321113048"
+  },
+  "devDependencies": {
+    "@babel/plugin-transform-react-pure-annotations": "^7.23.3",
+    "@eslint/js": "^9.12.0",
+    "@react-spring/web": "^9.7.5",
+    "@svgr/cli": "^8.1.0",
+    "@tanstack/query-core": "5.62.7",
+    "@tanstack/react-query": "5.62.7",
+    "@testing-library/jest-dom": "^6.5.0",
+    "@testing-library/react": "^16.0.1",
+    "@testing-library/user-event": "^14.5.2",
+    "@types/node": "^22.9.1",
+    "@types/pako": "^2.0.3",
+    "@types/react": "^18.2.33",
+    "@types/react-dom": "^18.2.14",
+    "@types/ua-parser-js": "^0.7.37",
+    "@vitejs/plugin-react": "^4.3.2",
+    "eslint": "^9.12.0",
+    "eslint-plugin-react-hooks": "5.1.0-rc.0",
+    "eslint-plugin-react-refresh": "^0.4.12",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.53.0",
+    "react-i18next": "^14.1.0",
+    "rollup-plugin-pure": "^0.2.1",
+    "rollup-plugin-visualizer": "5.12.0",
+    "typescript-eslint": "^8.8.1",
+    "vite": "^5.4.11",
+    "vite-plugin-dts": "^4.1.0",
+    "vite-tsconfig-paths": "^5.0.1",
+    "@edifice.io/client": "2.1.1-develop-b2school.20250321113048",
+    "@edifice.io/config": "2.1.1-develop-b2school.20250321113048"
+  },
+  "peerDependencies": {
+    "@react-spring/web": "^9.7.5",
+    "@tanstack/react-query": "5.62.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.53.0",
+    "react-i18next": "^14.1.0"
+  },
+  "optionalDependencies": {
+    "@tiptap-pro/extension-mathematics": "2.2.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "gitHead": "3e1c3f5b48505564db1b70aab22063a70336f3b0",
+  "scripts": {
+    "build": "pnpm build:icons && vite build",
+    "build:icons": "svgr src/modules/icons/assets --config-file ./svgr.config.cjs",
+    "fix": "eslint --fix --report-unused-disable-directives --max-warnings 0",
+    "format": "pnpm run format:write && pnpm run format:check",
+    "format:check": "npx prettier --check \"src/**/*.{ts,tsx}\"",
+    "format:write": "npx prettier --write \"src/**/*.{ts,tsx}\"",
+    "lint": "eslint",
+    "test": "vitest",
+    "test:watch": "vitest --watch"
+  }
+}

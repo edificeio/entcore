@@ -1,0 +1,152 @@
+import { CreateParameters, GetContextParameters, IActionParameters, ID, IFolder, ISearchParameters, PublishParameters, ShareRight, UpdateParameters } from 'edifice-ts-client';
+/**
+ * searchContext API
+ * @param searchParams
+ * @returns resources, no trashed folders and pagination
+ */
+export declare const searchContext: (searchParams: GetContextParameters) => Promise<{
+    folders: IFolder[];
+    pagination: import('edifice-ts-client').IPagination;
+    resources: import('edifice-ts-client').IResource[];
+    searchConfig?: {
+        minLength: number;
+    };
+}>;
+/**
+ * createFolder API
+ * @param searchParams, name, parentId
+ * @returns a new folder
+ */
+export declare const createFolder: ({ searchParams, name, parentId, }: {
+    searchParams: ISearchParameters & IActionParameters;
+    name: string;
+    parentId: ID;
+}) => Promise<import('edifice-ts-client').CreateFolderResult>;
+/**
+ * updateFolder API
+ * @param searchParams, folderId, parentId, name
+ * @returns updated folder
+ */
+export declare const updateFolder: ({ folderId, searchParams, parentId, name, }: {
+    folderId: ID;
+    searchParams: ISearchParameters & IActionParameters;
+    parentId: ID;
+    name: string;
+}) => Promise<import('edifice-ts-client').CreateFolderResult>;
+/**
+ * trashAll API
+ * @param searchParams, resourceIds, folderIds
+ * @move resources and folders to bin
+ */
+export declare const trashAll: ({ searchParams, resourceIds, useAssetIds, folderIds, }: {
+    searchParams: ISearchParameters & IActionParameters;
+    resourceIds: ID[];
+    useAssetIds: boolean;
+    folderIds: ID[];
+}) => Promise<import('edifice-ts-client').IActionResult>;
+/**
+ * deleteAll API
+ * @param searchParams, resourceIds, folderIds
+ * @delete folders and resources
+ */
+export declare const deleteAll: ({ searchParams, resourceIds, useAssetIds, folderIds, }: {
+    searchParams: ISearchParameters & IActionParameters;
+    resourceIds: ID[];
+    useAssetIds: boolean;
+    folderIds: ID[];
+}) => Promise<import('edifice-ts-client').IActionResult>;
+/**
+ * restoreAll API
+ * @param searchParams, resourceIds, folderIds
+ * @restore trashed folders and resources
+ */
+export declare const restoreAll: ({ searchParams, resourceIds, folderIds, useAssetIds, }: {
+    searchParams: ISearchParameters & IActionParameters;
+    resourceIds: ID[];
+    useAssetIds: boolean;
+    folderIds: ID[];
+}) => Promise<import('edifice-ts-client').IActionResult>;
+/**
+ * copyResource API.
+ * @param searchParams searchParams to retrieve the application name.
+ * @param resourceId the resource id to copy.
+ * @returns copied ressource id and message.
+ */
+export declare const copyResource: (searchParams: ISearchParameters & IActionParameters, resourceId: ID) => Promise<import('edifice-ts-client').CopyResult>;
+/**
+ * moveToFolder API
+ * @param searchParams, resourceIds, folderIds, folderId
+ * @returns folders and resources to new folderId location
+ */
+export declare const moveToFolder: ({ searchParams, resourceIds, folderId, folderIds, useAssetIds, }: {
+    searchParams: ISearchParameters & IActionParameters;
+    folderId: ID;
+    resourceIds: ID[];
+    useAssetIds: boolean;
+    folderIds: ID[];
+}) => Promise<import('edifice-ts-client').IActionResult>;
+/**
+ * shareResource API
+ * @param searchParams, entId, shares
+ * @returns shared resource
+ */
+export declare const shareResource: ({ application, resourceId, rights, }: {
+    application: string;
+    resourceId: ID;
+    rights: ShareRight[];
+}) => Promise<import('edifice-ts-client').PutShareResponse>;
+/**
+ * updateResource API
+ * @param searchParams, params
+ * @returns updated resource
+ */
+export declare const updateResource: ({ application, params, }: {
+    application: string;
+    params: UpdateParameters;
+}) => Promise<import('edifice-ts-client').UpdateResult>;
+/**
+ * sessionHasWorkflowRights API
+ * @param actionRights
+ * @returns check if user has rights
+ */
+export declare const sessionHasWorkflowRights: (actionRights: string[]) => Promise<Record<string, boolean>>;
+export declare const goToResource: ({ searchParams, assetId, }: {
+    searchParams: ISearchParameters & IActionParameters;
+    assetId: ID;
+}) => void;
+export declare const createResource: ({ searchParams, params, }: {
+    searchParams: ISearchParameters & IActionParameters;
+    params: CreateParameters;
+}) => Promise<import('edifice-ts-client').CreateResult>;
+export declare const printResource: ({ searchParams, assetId, }: {
+    searchParams: ISearchParameters & IActionParameters;
+    assetId: ID;
+}) => Window | null;
+export declare const goToCreate: ({ searchParams, folderId, }: {
+    searchParams: ISearchParameters & IActionParameters;
+    folderId?: ID;
+}) => Window | null;
+export declare const goToEdit: ({ searchParams, assetId, }: {
+    searchParams: ISearchParameters & IActionParameters;
+    assetId: ID;
+}) => Window | null;
+export declare const goToExport: ({ searchParams, assetId, }: {
+    searchParams: ISearchParameters & IActionParameters;
+    assetId: ID;
+}) => Window | null;
+export declare const publishResource: ({ searchParams, params, }: {
+    searchParams: ISearchParameters & IActionParameters;
+    params: PublishParameters;
+}) => Promise<import('edifice-ts-client').PublishResult>;
+/**
+ * getPreference API
+ * @returns check onboarding trash param
+ */
+export declare const getOnboardingTrash: (key: string) => Promise<{
+    showOnboardingTrash: boolean;
+}>;
+/**
+ * savePreference API
+ * @returns set onboarding trash param
+ */
+export declare const saveOnboardingTrash: (key: string) => Promise<void>;

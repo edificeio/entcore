@@ -1,0 +1,55 @@
+/// <reference types="react" />
+import { type ShareRight, type ShareRightAction, type ShareRightActionDisplayName, type ShareRightWithVisibles } from "edifice-ts-client";
+import { ShareOptions, ShareResourceMutation } from "../ShareModal";
+interface UseShareResourceModalProps {
+    /**
+     * Resource ID (assetId)
+     */
+    resourceId: ShareOptions["resourceId"];
+    /**
+     * Resource Rights (based on the new rights array)
+     */
+    resourceRights: ShareOptions["resourceRights"];
+    /**
+     * Resource Creator Id: Id of the user who created the resource
+     */
+    resourceCreatorId: ShareOptions["resourceCreatorId"];
+    shareResource?: ShareResourceMutation;
+    onSuccess: () => void;
+    setIsLoading: (value: boolean) => void;
+}
+type State = {
+    isSharing: boolean;
+    shareRights: ShareRightWithVisibles;
+    shareRightActions: ShareRightAction[];
+};
+export type ShareAction = {
+    type: "init";
+    payload: Partial<State>;
+} | {
+    type: "updateShareRights";
+    payload: ShareRightWithVisibles;
+} | {
+    type: "toggleRight";
+    payload: ShareRightWithVisibles;
+} | {
+    type: "deleteRow";
+    payload: ShareRightWithVisibles;
+} | {
+    type: "isSharing";
+    payload: boolean;
+};
+export default function useShare({ resourceId, resourceRights, resourceCreatorId, shareResource, setIsLoading, onSuccess, }: UseShareResourceModalProps): {
+    state: {
+        isSharing: boolean;
+        shareRights: ShareRightWithVisibles;
+        shareRightActions: ShareRightAction[];
+    };
+    dispatch: import("react").Dispatch<ShareAction>;
+    currentIsAuthor: () => boolean;
+    myAvatar: string;
+    handleDeleteRow: (shareRight: ShareRight) => void;
+    handleShare: () => Promise<void>;
+    toggleRight: (shareRight: ShareRight, actionName: ShareRightActionDisplayName) => void;
+};
+export {};

@@ -1,0 +1,9 @@
+import { ReactNode } from 'react';
+import { IWebApp } from '@edifice.io/client';
+export declare const WidgetAppsFooter: () => import("react/jsx-runtime").JSX.Element;
+export declare const WidgetAppsBody: ({ bookmarkedApps, }: {
+    bookmarkedApps: IWebApp[];
+}) => import("react/jsx-runtime").JSX.Element;
+export default function WidgetApps({ children }: {
+    children: ReactNode;
+}): import("react/jsx-runtime").JSX.Element;

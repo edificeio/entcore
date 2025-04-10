@@ -1,0 +1,10 @@
+import { RefAttributes } from 'react';
+import { IconButtonProps } from '../../../../components';
+interface Props {
+    /**
+     * Props for the trigger
+     */
+    triggerProps: JSX.IntrinsicAttributes & Omit<IconButtonProps, 'ref'> & RefAttributes<HTMLButtonElement>;
+}
+export declare const EditorToolbarTypography: ({ triggerProps }: Props) => import("react/jsx-runtime").JSX.Element;
+export {};

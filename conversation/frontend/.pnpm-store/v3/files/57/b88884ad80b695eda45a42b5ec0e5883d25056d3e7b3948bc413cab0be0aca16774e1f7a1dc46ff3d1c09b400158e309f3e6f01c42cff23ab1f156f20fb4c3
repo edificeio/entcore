@@ -1,0 +1,10 @@
+import { ISessionFramework } from "./interfaces";
+import { Session } from "./Session";
+export declare class SessionFramework implements ISessionFramework {
+    session: Session;
+    initialize(): Promise<void>;
+    login(email: string, password: string, rememberMe?: boolean, secureLocation?: boolean): Promise<void>;
+    logout(): Promise<void>;
+}
+/** The whole framework is a singleton. */
+export declare const session: SessionFramework;

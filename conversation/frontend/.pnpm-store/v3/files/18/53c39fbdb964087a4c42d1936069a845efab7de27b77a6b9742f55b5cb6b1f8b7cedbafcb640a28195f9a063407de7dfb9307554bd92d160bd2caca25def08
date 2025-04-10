@@ -1,0 +1,18 @@
+import { WorkspaceElement, WorkspaceVisibility } from '@edifice.io/client';
+import { Status } from '../../types';
+declare const useUpload: (visibility?: WorkspaceVisibility, application?: string) => {
+    getUploadStatus: (upload: File | Blob) => Status | undefined;
+    setUploadStatus: (blob: File | Blob, status: Status) => void;
+    clearUploadStatus: (blob: File | Blob) => void;
+    uploadFile: (file: File, metadata?: {
+        duration: number;
+    }) => Promise<WorkspaceElement | null>;
+    uploadAlternateFile: (original: File, replacement: File, metadata?: {
+        duration: number;
+    }) => Promise<WorkspaceElement | null>;
+    uploadBlob: (blob: Blob, metadata?: {
+        filename?: string;
+        duration?: number;
+    }) => Promise<WorkspaceElement | null>;
+};
+export default useUpload;

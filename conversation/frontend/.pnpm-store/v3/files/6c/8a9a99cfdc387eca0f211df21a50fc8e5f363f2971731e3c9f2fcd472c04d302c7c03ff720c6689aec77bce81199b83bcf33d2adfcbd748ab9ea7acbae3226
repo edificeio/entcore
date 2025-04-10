@@ -1,0 +1,18 @@
+import { IOdeServices } from "../services/OdeServices";
+import { GetResourceRightPayload, PutShareResponse, ShareMapping, ShareRight, ShareRightAction, ShareRightActionDisplayName, ShareRightWithVisibles, ShareSubject } from "./interface";
+export declare class ShareService {
+    protected context: IOdeServices;
+    constructor(context: IOdeServices);
+    get directory(): import("../directory/Service").DirectoryService;
+    get http(): import("../transport/Service").HttpService;
+    get cache(): import("../cache/Service").CacheService;
+    searchShareSubjects(app: string, resourceId: string, searchText: string): Promise<ShareSubject[]>;
+    getShareMapping(app: string): Promise<ShareMapping>;
+    getActionsAvailableFor({ id, type }: {
+        id: string;
+        type: "user" | "group";
+    }, payload: GetResourceRightPayload, mapping: ShareMapping): ShareRightActionDisplayName[];
+    getRightsForResource(app: string, resourceId: string): Promise<ShareRightWithVisibles>;
+    saveRights(app: string, resourceId: string, rights: ShareRight[]): Promise<PutShareResponse>;
+    getActionsForApp(app: string): Promise<ShareRightAction[]>;
+}

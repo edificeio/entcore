@@ -1,0 +1,13 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+const SvgIconRedo = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs("svg", { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", fill: "none", viewBox: "0 0 24 24", "aria-hidden": "true", "aria-labelledby": titleId, ...props, children: [
+  title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+  /* @__PURE__ */ jsx("path", { fill: "currentColor", fillRule: "evenodd", d: "M14.293 13.707a1 1 0 0 1 0-1.414L18.586 8l-4.293-4.293a1 1 0 0 1 1.414-1.414l5 5a1 1 0 0 1 0 1.414l-5 5a1 1 0 0 1-1.414 0", clipRule: "evenodd" }),
+  /* @__PURE__ */ jsx("path", { fill: "currentColor", fillRule: "evenodd", d: "M4 20a1 1 0 0 1-1-1v-7a5 5 0 0 1 5-5h12a1 1 0 1 1 0 2H8a3 3 0 0 0-3 3v7a1 1 0 0 1-1 1", clipRule: "evenodd" })
+] });
+export {
+  SvgIconRedo as default
+};

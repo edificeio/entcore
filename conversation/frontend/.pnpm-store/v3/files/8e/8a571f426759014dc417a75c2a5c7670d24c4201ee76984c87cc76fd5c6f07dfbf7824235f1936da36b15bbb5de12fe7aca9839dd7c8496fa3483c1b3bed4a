@@ -1,0 +1,12 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+const SvgIconBlock = ({
+  title,
+  titleId,
+  ...props
+}) => /* @__PURE__ */ jsxs("svg", { xmlns: "http://www.w3.org/2000/svg", width: "24", height: "24", fill: "none", viewBox: "0 0 24 24", "aria-hidden": "true", "aria-labelledby": titleId, ...props, children: [
+  title ? /* @__PURE__ */ jsx("title", { id: titleId, children: title }) : null,
+  /* @__PURE__ */ jsx("path", { fill: "currentColor", fillRule: "evenodd", d: "M6.382 4.968a9 9 0 0 1 12.65 12.65zM4.968 6.382a9 9 0 0 0 12.65 12.65zM12 1C5.925 1 1 5.925 1 12s4.925 11 11 11 11-4.925 11-11S18.075 1 12 1", clipRule: "evenodd" })
+] });
+export {
+  SvgIconBlock as default
+};

@@ -1,0 +1,34 @@
+import { jsx } from "react/jsx-runtime";
+import { useMediaLibraryContext } from "../MediaLibraryContext.js";
+import Dropzone from "../../../../components/Dropzone/Dropzone.js";
+import UploadFiles from "../../UploadFiles/UploadFiles.js";
+const acceptedTypes = (type) => {
+  const acceptedTypes2 = [];
+  switch (type) {
+    case "audio":
+      acceptedTypes2.push("audio/*");
+      break;
+    case "video":
+      acceptedTypes2.push("video/*");
+      break;
+    case "image":
+      acceptedTypes2.push("image/png"), acceptedTypes2.push("image/jpeg"), acceptedTypes2.push("image/webp"), acceptedTypes2.push("image/gif"), acceptedTypes2.push("image/avif");
+      break;
+  }
+  return acceptedTypes2;
+}, Upload = () => {
+  const {
+    type,
+    visibility,
+    multiple,
+    setResult,
+    setResultCounter,
+    setCancellable
+  } = useMediaLibraryContext(), handleOnFilesChange = (uploadedFiles) => {
+    uploadedFiles.length ? (setCancellable(uploadedFiles), setResultCounter(uploadedFiles.length), setResult(uploadedFiles)) : (setCancellable([]), setResultCounter(void 0), setResult(void 0));
+  };
+  return /* @__PURE__ */ jsx("div", { className: "py-8 flex-grow-1", children: /* @__PURE__ */ jsx(Dropzone, { multiple, accept: acceptedTypes(type ?? "embedder"), children: /* @__PURE__ */ jsx(UploadFiles, { onFilesChange: handleOnFilesChange, visibility }) }) });
+};
+export {
+  Upload
+};

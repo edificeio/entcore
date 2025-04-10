@@ -1,0 +1,6 @@
+declare const useConversation: () => {
+    readonly messages: number;
+    readonly msgLink: string;
+    readonly zimbraWorkflow: boolean | Record<string, boolean> | undefined;
+};
+export default useConversation;

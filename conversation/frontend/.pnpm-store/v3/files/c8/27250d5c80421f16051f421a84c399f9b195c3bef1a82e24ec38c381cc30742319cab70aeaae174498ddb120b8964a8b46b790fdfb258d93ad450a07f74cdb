@@ -1,0 +1,7 @@
+/// <reference types="react" />
+import { FormControlProps } from "./FormControl";
+type Props = Omit<FormControlProps, "className" | "children">;
+export type FormContextProps = Props;
+export declare const Context: import("react").Context<Props | null>;
+export declare const useFormControl: () => Props;
+export {};

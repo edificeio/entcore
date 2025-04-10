@@ -1,0 +1,53 @@
+import { IWidgetModel, WidgetPosition } from '../session/interfaces';
+export declare const WIDGET_NAME: {
+    readonly LAST_INFOS: "last-infos-widget";
+    readonly BIRTHDAY: "birthday";
+    readonly CALENDAR: "calendar-widget";
+    readonly CARNET: "carnet-de-bord";
+    readonly RECORD: "record-me";
+    readonly MOOD: "mood";
+    readonly MY_APPS: "my-apps";
+    readonly NOTES: "notes";
+    readonly RSS: "rss-widget";
+    readonly BOOKMARK: "bookmark-widget";
+    readonly QWANT: "qwant";
+    readonly QWANT_JUNIOR: "qwant-junior";
+    readonly AGENDA: "agenda-widget";
+    readonly CURSUS: "cursus-widget";
+    readonly MAXICOURS: "maxicours-widget";
+    readonly UNIVERSALIS: "universalis-widget";
+    readonly BRIEFME: "briefme-widget";
+    readonly SCHOOL: "school-widget";
+};
+export type WidgetName = (typeof WIDGET_NAME)[keyof typeof WIDGET_NAME];
+export declare abstract class WidgetFrameworkFactory {
+    static instance(): IWidgetFramework;
+}
+export interface IWidgetFramework {
+    /** Loads the widget configuration. */
+    initialize(version: string | null, cdnDomain: string | null): Promise<void>;
+    /** Save user preferences */
+    saveUserPrefs(): Promise<any>;
+    /** List widgets that are visible to the connected user. */
+    readonly list: IWidget[];
+    /** Retrieve a widget by name. */
+    lookup(widgetName: string): IWidget | undefined;
+}
+export interface IWidget {
+    /** The widgets conf at platform level. */
+    readonly platformConf: IWidgetModel;
+    /** The widgets conf at user level. */
+    readonly userPref: WidgetUserPref;
+}
+export type WidgetSpecificUserPrefs = 'schoolId';
+export type WidgetUserPref = {
+    /** Integer defining the sort order of this widget. */
+    index: number;
+    /** Boolean indicating wether the user wants to see this widget, or not. */
+    show: boolean;
+    /** Prefered position on-screen (left, right...). */
+    position?: WidgetPosition;
+} & {
+    [pref in WidgetSpecificUserPrefs]?: any;
+};
+export * from './LastInfos.widget';

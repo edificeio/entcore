@@ -1,0 +1,19 @@
+import { jsx } from "react/jsx-runtime";
+import { useRef } from "react";
+import { useMediaLibraryContext } from "../MediaLibraryContext.js";
+import AudioRecorder from "../../AudioRecorder/AudioRecorder.js";
+const Audio = () => {
+  const {
+    setResult,
+    setPreSuccess,
+    visibility
+  } = useMediaLibraryContext(), ref = useRef(null);
+  return /* @__PURE__ */ jsx(AudioRecorder, { ref, onRecordUpdated: (recordURL) => {
+    recordURL ? (setResult(recordURL), setPreSuccess(() => ref.current.save)) : setResult();
+  }, onSaveSuccess: (audioRessource) => {
+    audioRessource && setResult(audioRessource);
+  }, hideSaveAction: !0, visibility });
+};
+export {
+  Audio
+};

@@ -1,0 +1,47 @@
+import { jsxs as l, jsx as r } from "react/jsx-runtime";
+import { useToast as d, Modal as n, Alert as p, Button as a } from "@edifice-ui/react";
+import { createPortal as x } from "react-dom";
+import { useTranslation as c } from "react-i18next";
+import { i as h, e as u, A as m } from "./index2.js";
+const f = (i) => {
+  const t = h(), o = u(), s = d(), {
+    t: e
+  } = c();
+  return {
+    handleExportClick: () => {
+      t.length ? (m({
+        searchParams: o,
+        assetId: t[0].assetId
+      }), i()) : s.error(e("explorer.error.noResourceSelected"));
+    }
+  };
+};
+function C({
+  isOpen: i,
+  onSuccess: t,
+  onCancel: o
+}) {
+  const {
+    handleExportClick: s
+  } = f(t), {
+    t: e
+  } = c();
+  return /* @__PURE__ */ x(/* @__PURE__ */ l(n, { isOpen: i, onModalClose: o, id: "exportModal", children: [
+    /* @__PURE__ */ r(n.Header, { onModalClose: o, children: e("explorer.export.title") }),
+    /* @__PURE__ */ l(n.Body, { children: [
+      /* @__PURE__ */ l("ul", { children: [
+        /* @__PURE__ */ r("li", { children: e("explorer.export.body.info.1") }),
+        /* @__PURE__ */ r("li", { children: e("explorer.export.body.info.2") }),
+        /* @__PURE__ */ r("li", { children: e("explorer.export.body.info.3") })
+      ] }),
+      /* @__PURE__ */ r(p, { type: "warning", children: e("explorer.export.body.warning") })
+    ] }),
+    /* @__PURE__ */ l(n.Footer, { children: [
+      /* @__PURE__ */ r(a, { color: "tertiary", onClick: o, type: "button", variant: "ghost", children: e("explorer.cancel") }),
+      /* @__PURE__ */ r(a, { color: "primary", onClick: s, type: "button", variant: "filled", children: e("explorer.actions.export") })
+    ] })
+  ] }), document.getElementById("portal"));
+}
+export {
+  C as default
+};

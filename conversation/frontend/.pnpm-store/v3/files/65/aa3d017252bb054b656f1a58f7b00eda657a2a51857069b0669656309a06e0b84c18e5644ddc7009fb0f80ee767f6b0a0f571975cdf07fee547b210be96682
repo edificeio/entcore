@@ -1,0 +1,18 @@
+import { jsxs, Fragment, jsx } from "react/jsx-runtime";
+import { Fragment as Fragment$1 } from "react";
+import { useTranslation } from "react-i18next";
+import Dropdown from "../../../../components/Dropdown/Dropdown.js";
+const EditorToolbarPlusMenu = ({
+  options
+}) => {
+  const {
+    t
+  } = useTranslation();
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx(Dropdown.Trigger, { variant: "ghost", label: t("tiptap.toolbar.plus"), size: "md", tabIndex: -1 }),
+    /* @__PURE__ */ jsx(Dropdown.Menu, { children: options.map((option, index) => /* @__PURE__ */ jsx(Fragment$1, { children: option.type === "divider" ? /* @__PURE__ */ jsx(Dropdown.Separator, {}) : /* @__PURE__ */ jsx(Dropdown.Item, { icon: option.icon, onClick: () => option.action(null), children: option.label }) }, index)) })
+  ] });
+};
+export {
+  EditorToolbarPlusMenu
+};

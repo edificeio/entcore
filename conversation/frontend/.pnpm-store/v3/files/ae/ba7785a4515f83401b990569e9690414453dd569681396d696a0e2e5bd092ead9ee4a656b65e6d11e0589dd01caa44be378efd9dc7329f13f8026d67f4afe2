@@ -1,0 +1,87 @@
+import { ReactNode } from 'react';
+import { IWebApp } from '@edifice.io/client';
+export interface CardProps {
+    /**
+     * IWebApp
+     */
+    app?: IWebApp | undefined;
+    /**
+     * Has option
+     */
+    isSelectable?: boolean;
+    /**
+     * Action on Card
+     */
+    isClickable?: boolean;
+    /**
+     * Selected state
+     */
+    isSelected?: boolean;
+    /**
+     * Card is Focus
+     */
+    isFocused?: boolean;
+    /**
+     * Click on card
+     */
+    onClick?: (item?: any) => void;
+    /**
+     * Select a card with option menu
+     */
+    onSelect?: () => void;
+    children?: ReactNode | ((...props: any) => ReactNode);
+    /**
+     * Optional class for styling purpose
+     */
+    className?: string;
+}
+declare const Card: import('react').ForwardRefExoticComponent<CardProps & import('react').RefAttributes<HTMLDivElement>> & {
+    Title: {
+        ({ children, className, }: {
+            children: ReactNode;
+            className?: string;
+        }): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+    Text: {
+        ({ children, className, }: {
+            children: ReactNode;
+            className?: string;
+        }): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+    Image: {
+        ({ imageSrc, className, variant, }: {
+            imageSrc?: string | undefined;
+            className?: string;
+            variant?: "small" | "medium" | "landscape";
+        }): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+    Body: {
+        ({ children, space, flexDirection, }: {
+            space?: "0" | "8" | "16" | null;
+            flexDirection?: "row" | "column" | null;
+            children: ReactNode;
+        }): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+    User: {
+        ({ userSrc, creatorName, }: {
+            userSrc: string;
+            creatorName: string;
+        }): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+    Footer: {
+        ({ children }: {
+            children: ReactNode;
+        }): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+    Header: {
+        (): import("react/jsx-runtime").JSX.Element | null;
+        displayName: string;
+    };
+};
+export default Card;

@@ -1,0 +1,77 @@
+import { IOdeServices } from "../services/OdeServices";
+import { ResourceRight, RightRole, RightStringified } from "./interface";
+export declare class RightService {
+    private context;
+    constructor(context: IOdeServices);
+    get session(): import("../session/Service").SessionService;
+    /**
+     * Parse right concat as "$TYPE:$ID:$RIGHT"
+     * $TYPE = user | group | creator
+     * $ID: id of the resource
+     * $RIGHT: read | contrib | manage
+     *
+     * @param right  a concat right
+     * @returns Right parsed
+     */
+    parseResourceRight(right: RightStringified): ResourceRight | undefined;
+    /**
+     * Parse an array of rights concat as "$TYPE:$ID:$RIGHT"
+     * $TYPE = user | group | creator
+     * $ID: id of the resource
+     * $RIGHT: read | contrib | manage
+     *
+     * @param rights  a list of concat rights
+     * @returns Array of Right parsed
+     */
+    parseResourceRights(rights: RightStringified[]): ResourceRight[];
+    /**
+     * Check wether a user has the expected right for a ressource
+     * @param user the userId and groupId concerned by the check
+     * @param expect the expected right to check
+     * @param rights array of Right for the resource
+     * @returns true if has rights
+     */
+    hasResourceRight({ id, groupIds }: {
+        id: string;
+        groupIds: string[];
+    }, expect: RightRole, rights: ResourceRight[] | RightStringified[]): boolean;
+    /**
+     * Check wether the current user have resource right
+     * @param expect the expected right to check
+     * @param rights array of Right for the resource
+     * @returns true if has rights
+     */
+    sessionHasResourceRight(expect: RightRole, rights: ResourceRight[] | RightStringified[]): Promise<boolean>;
+    /**
+     * Check wether the current user have at least one of resource right expected
+     * @param expects array of expected right to check
+     * @param rights array of Right for the resource
+     * @returns true if has rights
+     */
+    sessionHasAtLeastOneResourceRight(expects: RightRole[], rights: ResourceRight[] | RightStringified[]): Promise<boolean>;
+    /**
+     * Check wether the current user has resource right for each right list
+     * @param expect expected right to check
+     * @param rightsArray array of array of Right for multiple resources
+     * @returns true if has rights
+     */
+    sessionHasResourceRightForEachList(expect: RightRole, rightsArray: ResourceRight[][] | RightStringified[][]): Promise<boolean>;
+    /**
+     * Check wether the current user have at least one of resource right for each right list
+     * @param expects array of expected right to check
+     * @param rightsArray array of array of Right for multiple resources
+     * @returns true if has rights
+     */
+    sessionHasAtLeastOneResourceRightForEachList(expects: RightRole[], rightsArray: ResourceRight[][] | RightStringified[][]): Promise<boolean>;
+    hasWorkflowRight(expect: string, right: string[]): boolean;
+    /**
+     * @param expect a workflow right
+     * @returns true if current session has right on it
+     */
+    sessionHasWorkflowRight(expect: string): Promise<boolean>;
+    /**
+     * @param expect a workflow right
+     * @returns a record with right as key and boolean as value if current session has right on it
+     */
+    sessionHasWorkflowRights(expects: string[]): Promise<Record<string, boolean>>;
+}

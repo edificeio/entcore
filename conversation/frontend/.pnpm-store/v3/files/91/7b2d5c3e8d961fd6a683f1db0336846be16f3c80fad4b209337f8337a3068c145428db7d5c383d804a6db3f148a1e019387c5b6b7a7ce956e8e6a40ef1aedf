@@ -1,0 +1,70 @@
+import { jsx, jsxs, Fragment } from "react/jsx-runtime";
+import { useRef, useEffect } from "react";
+import { odeServices } from "@edifice.io/client";
+import { NodeViewWrapper } from "@tiptap/react";
+import { useTranslation } from "react-i18next";
+import useBrowserInfo from "../../../../hooks/useBrowserInfo/useBrowserInfo.js";
+import { useResizeMedia } from "../../hooks/useResizeMedia.js";
+import Image from "../../../../components/Image/Image.js";
+const MediaRenderer = (props) => {
+  const {
+    node
+  } = props, {
+    t
+  } = useTranslation(), {
+    browser,
+    device
+  } = useBrowserInfo(navigator.userAgent), resizableMedia = useRef(null), {
+    startVerticalResize,
+    stopVerticalResize,
+    isVerticalResizeActive
+  } = useResizeMedia(props, resizableMedia), alignContent = (textalign) => {
+    switch (textalign) {
+      case "center":
+      case "justify":
+        return {
+          marginLeft: "auto",
+          marginRight: "auto",
+          width: "fit-content"
+        };
+      case "left":
+        return {
+          marginRight: "auto",
+          width: "fit-content"
+        };
+      case "right":
+        return {
+          marginLeft: "auto",
+          width: "fit-content"
+        };
+      default:
+        return {};
+    }
+  }, onVideoPlay = () => {
+    if (resizableMedia.current instanceof HTMLVideoElement) {
+      const videoElement = resizableMedia.current, videoId = videoElement.dataset.documentId, isCaptation = (videoElement.dataset.documentIsCaptation || "false") == "true";
+      videoId && odeServices.data().trackVideoRead(videoId, isCaptation, window.location.hostname, `${browser.name} ${browser.version}`, device.type);
+    }
+  };
+  return useEffect(() => {
+    if (!resizableMedia.current) return;
+    const element = resizableMedia.current;
+    return element.addEventListener("play", onVideoPlay), () => {
+      element.removeEventListener("play", onVideoPlay);
+    };
+  }, []), /* @__PURE__ */ jsx(NodeViewWrapper, { style: alignContent(node.attrs.textAlign), children: /* @__PURE__ */ jsxs("div", { className: "media-node-view", children: [
+    /* @__PURE__ */ jsx("div", { "data-drag-handle": !0, children: node.type.name === "custom-image" ? /* @__PURE__ */ jsxs(Fragment, { children: [
+      /* @__PURE__ */ jsx(Image, { src: node.attrs.src, alt: node.attrs.alt, title: node.attrs.title, width: node.attrs.width, style: node.attrs.style, height: node.attrs.height, className: "custom-image", ref: resizableMedia }),
+      node.attrs.title && // Display legend (set in title attribute) if it exists
+      /* @__PURE__ */ jsx("em", { className: "custom-image-legend caption text-align-left", children: node.attrs.title })
+    ] }) : /* @__PURE__ */ jsx("video", { ref: resizableMedia, controls: node.attrs.controls === "true", src: node.attrs.src, width: node.attrs.width, height: node.attrs.height, "data-video-resolution": `${node.attrs.width}x${node.attrs.height}`, "data-document-id": node.attrs.documentId, "data-document-is-captation": node.attrs.isCaptation, children: /* @__PURE__ */ jsx("source", { src: node.attrs.src }) }) }),
+    /* @__PURE__ */ jsx("div", { className: `vertical-resize-handle ${isVerticalResizeActive ? "vertical-resize-active" : ""}`, title: t("tiptap.media.resize"), onMouseDown: (e) => {
+      e.stopPropagation(), startVerticalResize(e);
+    }, onMouseUp: (e) => {
+      e.stopPropagation(), stopVerticalResize();
+    } })
+  ] }) });
+};
+export {
+  MediaRenderer as default
+};

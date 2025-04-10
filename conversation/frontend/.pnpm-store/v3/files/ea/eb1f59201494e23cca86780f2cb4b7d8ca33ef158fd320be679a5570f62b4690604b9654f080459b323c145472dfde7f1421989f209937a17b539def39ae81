@@ -1,0 +1,6 @@
+function t(i, n = 0, u = 0) {
+  return !i.includes("data:image") && !i.includes("thumbnail") && (i = i + (i.includes("?") ? "&thumbnail=" : "?thumbnail=") + `${n}x${u}`), i;
+}
+export {
+  t as getThumbnail
+};

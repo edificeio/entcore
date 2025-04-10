@@ -1,0 +1,24 @@
+import { ChangeEvent, Dispatch } from "react";
+import { ShareRightWithVisibles, ShareSubject } from "edifice-ts-client";
+import { OptionListItemType } from "../../../components";
+import { ShareOptions } from "../ShareModal";
+import { ShareAction } from "./useShare";
+export declare const useSearch: ({ resourceId, resourceCreatorId, shareRights, shareDispatch, }: {
+    resourceId: ShareOptions["resourceCreatorId"];
+    resourceCreatorId: ShareOptions["resourceCreatorId"];
+    shareRights: ShareRightWithVisibles;
+    shareDispatch: Dispatch<ShareAction>;
+}) => {
+    state: {
+        searchInputValue: string;
+        searchResults: OptionListItemType[];
+        searchAPIResults: ShareSubject[];
+        isSearching: boolean;
+    };
+    showSearchAdmlHint: () => boolean;
+    showSearchLoading: () => boolean;
+    showSearchNoResults: () => boolean;
+    getSearchMinLength: () => number;
+    handleSearchInputChange: (event: ChangeEvent<HTMLInputElement>) => void;
+    handleSearchResultsChange: (model: Array<string | number>) => Promise<void>;
+};

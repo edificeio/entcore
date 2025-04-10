@@ -1,0 +1,14 @@
+import { ResourceType } from "../..";
+import { CreateParameters, CreateResult, ScrapbookUpdate, UpdateResult } from "../interface";
+import { ResourceService } from "../ResourceService";
+export declare class ScrapbookResourceService extends ResourceService {
+    create<T extends CreateParameters>(parameters: T): Promise<CreateResult>;
+    update(parameters: ScrapbookUpdate): Promise<UpdateResult>;
+    getResourceType(): ResourceType;
+    getApplication(): string;
+    getFormUrl(folderId?: string): string;
+    getViewUrl(resourceId: string): string;
+    getPrintUrl(resourceId: string): string;
+    getEditUrl(resourceId: string): string;
+    getExportUrl(resourceId: string): string;
+}

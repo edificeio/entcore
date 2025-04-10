@@ -1,0 +1,20 @@
+import { useState, useCallback } from "react";
+import { odeServices } from "@edifice.io/client";
+const useSpeechSynthetisis = (editor) => {
+  const [isActivated, setActivated] = useState(!1), toggle = useCallback(() => {
+    if (isActivated)
+      return editor == null || editor.commands.stopSpeechSynthesis(), setActivated(!1), !1;
+    {
+      odeServices.data().trackSpeechAndText("TTS");
+      const speech = (editor == null ? void 0 : editor.commands.startSpeechSynthesis()) || !1;
+      return setActivated(speech), speech;
+    }
+  }, [editor == null ? void 0 : editor.commands, isActivated]);
+  return {
+    isActivated,
+    toggle
+  };
+};
+export {
+  useSpeechSynthetisis
+};

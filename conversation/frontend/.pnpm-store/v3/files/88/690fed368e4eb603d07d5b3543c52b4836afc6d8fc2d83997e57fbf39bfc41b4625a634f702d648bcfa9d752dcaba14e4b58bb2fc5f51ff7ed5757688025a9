@@ -1,0 +1,44 @@
+import "@edifice.io/client";
+function findNodeById(data, id) {
+  if (Array.isArray(data))
+    for (const node of data) {
+      const result = findNodeById(node, id);
+      if (result)
+        return result;
+    }
+  else {
+    if (data.id === id) return data;
+    if (data.children)
+      for (const child of data.children) {
+        const result = findNodeById(child, id);
+        if (result)
+          return result;
+      }
+  }
+}
+function findPathById(tree, nodeId) {
+  let path = [];
+  function traverse(node, currentPath) {
+    if (node.id === nodeId)
+      return path = currentPath.concat(node.id), !0;
+    if (node.children) {
+      for (const child of node.children)
+        if (traverse(child, currentPath.concat(node.id)))
+          return !0;
+    }
+    return !1;
+  }
+  function startTraverse(nodes) {
+    if (Array.isArray(nodes)) {
+      for (const node of nodes)
+        if (traverse(node, []))
+          break;
+    } else
+      traverse(nodes, []);
+  }
+  return startTraverse(tree), path;
+}
+export {
+  findNodeById,
+  findPathById
+};

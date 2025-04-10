@@ -1,0 +1,22 @@
+import { jsx, jsxs } from "react/jsx-runtime";
+import { useTranslation } from "react-i18next";
+import SvgIconSave from "../../icons/components/IconSave.js";
+import FormControl from "../../../components/Form/FormControl.js";
+import Button from "../../../components/Button/Button.js";
+const ShareBookmark = ({
+  bookmark,
+  refBookmark,
+  onBookmarkChange,
+  onSave
+}) => {
+  const {
+    t
+  } = useTranslation();
+  return /* @__PURE__ */ jsx("div", { className: "mt-16", children: /* @__PURE__ */ jsxs(FormControl, { id: "bookmarkName", className: "d-flex flex-wrap align-items-center gap-16", children: [
+    /* @__PURE__ */ jsx("div", { className: "flex-fill", children: /* @__PURE__ */ jsx(FormControl.Input, { ref: refBookmark, onChange: onBookmarkChange, placeholder: t("explorer.modal.share.sharebookmark.placeholder"), size: "sm", type: "text" }, bookmark.id) }),
+    /* @__PURE__ */ jsx(Button, { type: "button", color: "primary", variant: "ghost", disabled: bookmark.name.length === 0, leftIcon: /* @__PURE__ */ jsx(SvgIconSave, {}), onClick: onSave, className: "text-nowrap", children: t("explorer.modal.share.sharebookmark.save") })
+  ] }) });
+};
+export {
+  ShareBookmark
+};

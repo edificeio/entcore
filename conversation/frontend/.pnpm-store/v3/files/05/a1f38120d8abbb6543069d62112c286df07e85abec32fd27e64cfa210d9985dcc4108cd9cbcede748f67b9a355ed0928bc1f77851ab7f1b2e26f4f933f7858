@@ -1,0 +1,1 @@
+"use strict";Object.defineProperty(exports,Symbol.toStringTag,{value:"Module"});const n=t=>{if(t>0){let o=Math.floor(t/1e3),e=Math.floor(o/60);return o=o%60,e=e%60,r(e)+":"+r(o)}return"00:00"},r=t=>t.toString().padStart(2,"0");exports.convertMsToMS=n;exports.padTo2Digits=r;

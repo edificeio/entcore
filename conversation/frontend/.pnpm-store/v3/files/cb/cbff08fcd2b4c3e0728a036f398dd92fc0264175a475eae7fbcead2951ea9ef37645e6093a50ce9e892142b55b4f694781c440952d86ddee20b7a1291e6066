@@ -1,0 +1,37 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { forwardRef, useEffect } from "react";
+import clsx from "clsx";
+import { useTranslation } from "react-i18next";
+import { useFormControl } from "../Form/FormContext.js";
+const Label = /* @__PURE__ */ forwardRef(({
+  leftIcon,
+  optionalText,
+  requiredText = "*",
+  children,
+  className
+}, ref) => {
+  const {
+    id,
+    isOptional,
+    isRequired
+  } = useFormControl(), {
+    t
+  } = useTranslation(), classes = clsx("form-label", {
+    "has-icon": leftIcon
+  }, className), optionalState = isOptional && !isRequired, requiredState = isRequired && !isOptional;
+  return useEffect(() => {
+    if (isOptional && isRequired)
+      throw new Error("Cannot be optional and required at the same time");
+  }, [isOptional, isRequired]), /* @__PURE__ */ jsxs("label", { ref, htmlFor: id, className: classes, children: [
+    leftIcon,
+    children,
+    optionalState && /* @__PURE__ */ jsxs("em", { className: "optional", children: [
+      "- ",
+      optionalText ?? t("explorer.optional")
+    ] }),
+    requiredState && /* @__PURE__ */ jsx("em", { className: "required", children: requiredText })
+  ] });
+});
+export {
+  Label as default
+};

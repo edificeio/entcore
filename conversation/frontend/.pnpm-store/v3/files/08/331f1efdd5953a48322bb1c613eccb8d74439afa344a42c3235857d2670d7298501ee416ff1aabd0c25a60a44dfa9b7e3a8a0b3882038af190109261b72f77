@@ -1,0 +1,9 @@
+import { ChangeEvent } from "react";
+export interface ComboboxTriggerProps extends React.ComponentPropsWithRef<"button"> {
+    handleSearchInputChange: (event: ChangeEvent<HTMLInputElement>) => void;
+    value: string;
+    searchMinLength?: number;
+    placeholder?: string;
+}
+declare const ComboboxTrigger: ({ placeholder, value, searchMinLength, handleSearchInputChange, }: ComboboxTriggerProps) => import("react/jsx-runtime").JSX.Element;
+export default ComboboxTrigger;

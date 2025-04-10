@@ -1,0 +1,6 @@
+import { Editor } from '@tiptap/react';
+export declare const useSpeechRecognition: (editor: Editor | null) => {
+    isAvailable: boolean;
+    isActive: boolean;
+    toggle: () => void;
+};

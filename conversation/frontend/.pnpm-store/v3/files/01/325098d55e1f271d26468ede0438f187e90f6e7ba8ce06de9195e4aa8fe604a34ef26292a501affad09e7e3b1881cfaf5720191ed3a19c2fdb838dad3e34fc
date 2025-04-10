@@ -1,0 +1,4 @@
+export declare class StringUtils {
+    static removeAccents(str: string): string;
+    static generateVirtualId(): string;
+}

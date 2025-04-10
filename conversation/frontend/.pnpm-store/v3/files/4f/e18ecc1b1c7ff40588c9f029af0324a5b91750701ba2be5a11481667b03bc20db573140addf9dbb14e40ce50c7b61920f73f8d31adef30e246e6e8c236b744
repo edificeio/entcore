@@ -1,0 +1,5 @@
+import "@edifice-ui/react";
+import { ResourceModal as d } from "@edifice-ui/react";
+export {
+  d as default
+};

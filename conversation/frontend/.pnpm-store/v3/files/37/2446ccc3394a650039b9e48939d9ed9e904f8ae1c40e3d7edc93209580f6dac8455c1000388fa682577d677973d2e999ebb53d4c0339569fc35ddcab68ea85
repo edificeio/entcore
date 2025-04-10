@@ -1,0 +1,12 @@
+import { jsx } from "react/jsx-runtime";
+import clsx from "clsx";
+const CardText = ({
+  children,
+  className
+}) => {
+  const text = clsx("card-text small text-break text-truncate text-truncate-1", className);
+  return /* @__PURE__ */ jsx("p", { className: text, children });
+};
+export {
+  CardText as default
+};

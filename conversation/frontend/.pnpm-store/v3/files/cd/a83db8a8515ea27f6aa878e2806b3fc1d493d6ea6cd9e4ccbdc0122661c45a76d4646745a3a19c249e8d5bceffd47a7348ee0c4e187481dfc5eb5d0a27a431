@@ -1,0 +1,62 @@
+import { jsxs, Fragment, jsx } from "react/jsx-runtime";
+import { Fragment as Fragment$1 } from "react";
+import { useTranslation } from "react-i18next";
+import SvgIconTextSize from "../../../icons/components/IconTextSize.js";
+import { useEditorContext } from "../../hooks/useEditorContext.js";
+import { hasExtension } from "../../utilities/has-extension.js";
+import Tooltip from "../../../../components/Tooltip/Tooltip.js";
+import IconButton from "../../../../components/Button/IconButton.js";
+import Dropdown from "../../../../components/Dropdown/Dropdown.js";
+const EditorToolbarTextSize = ({
+  triggerProps
+}) => {
+  const {
+    t
+  } = useTranslation(), {
+    editor
+  } = useEditorContext(), textOptions = [{
+    id: "title-1",
+    label: t("tiptap.toolbar.size.h1"),
+    className: "fs-2 fw-bold text-secondary",
+    action: () => editor == null ? void 0 : editor.chain().focus().setCustomHeading({
+      level: 1
+    }).run(),
+    visibility: hasExtension("customHeading", editor)
+  }, {
+    id: "title-2",
+    label: t("tiptap.toolbar.size.h2"),
+    className: "fs-3 fw-bold text-secondary",
+    action: () => editor == null ? void 0 : editor.chain().focus().setCustomHeading({
+      level: 2
+    }).run(),
+    visibility: hasExtension("customHeading", editor)
+  }, {
+    id: "divider",
+    type: "divider",
+    visibility: hasExtension("customHeading", editor) && hasExtension("fontSize", editor)
+  }, {
+    id: "big-text",
+    label: t("tiptap.toolbar.size.big"),
+    className: "fs-4",
+    action: () => editor == null ? void 0 : editor.chain().focus().setParagraph().setFontSize("18px").run(),
+    visibility: hasExtension("fontSize", editor)
+  }, {
+    id: "normal-text",
+    label: t("tiptap.toolbar.size.normal"),
+    action: () => editor == null ? void 0 : editor.chain().focus().setParagraph().setFontSize("16px").run(),
+    visibility: hasExtension("fontSize", editor)
+  }, {
+    id: "small-text",
+    label: t("tiptap.toolbar.size.small"),
+    className: "fs-6",
+    action: () => editor == null ? void 0 : editor.chain().focus().setParagraph().setFontSize("14px").run(),
+    visibility: hasExtension("fontSize", editor)
+  }];
+  return /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx(Tooltip, { message: t("tiptap.toolbar.size.choice"), placement: "top", children: /* @__PURE__ */ jsx(IconButton, { ...triggerProps, type: "button", variant: "ghost", color: "tertiary", icon: /* @__PURE__ */ jsx(SvgIconTextSize, {}), "aria-label": t("tiptap.toolbar.size.choice") }) }),
+    /* @__PURE__ */ jsx(Dropdown.Menu, { children: textOptions.map((option) => /* @__PURE__ */ jsx(Fragment$1, { children: option.type === "divider" && option.visibility ? /* @__PURE__ */ jsx(Dropdown.Separator, {}) : option.visibility ? /* @__PURE__ */ jsx(Dropdown.Item, { onClick: option.action, children: /* @__PURE__ */ jsx("span", { className: option.className, children: option.label }) }) : null }, option.id)) })
+  ] });
+};
+export {
+  EditorToolbarTextSize
+};

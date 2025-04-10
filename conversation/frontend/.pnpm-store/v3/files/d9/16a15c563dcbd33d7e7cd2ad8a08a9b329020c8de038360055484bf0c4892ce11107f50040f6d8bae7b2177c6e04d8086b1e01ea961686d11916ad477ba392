@@ -1,0 +1,10 @@
+interface ExportModalProps {
+    isOpen: boolean;
+    onSuccess: () => void;
+    onCancel: () => void;
+}
+/**
+ * HTML Export Modal (for Scrapbook)
+ */
+export default function ExportModal({ isOpen, onSuccess, onCancel, }: ExportModalProps): import('react').ReactPortal;
+export {};

@@ -1,0 +1,8 @@
+import { Ref } from "react";
+import { BookmarkProps } from "./hooks/useShareBookmark";
+export declare const ShareBookmark: ({ bookmark, refBookmark, onBookmarkChange, onSave, }: {
+    bookmark: BookmarkProps;
+    refBookmark: Ref<HTMLInputElement>;
+    onBookmarkChange: () => void;
+    onSave: () => void;
+}) => import("react/jsx-runtime").JSX.Element;

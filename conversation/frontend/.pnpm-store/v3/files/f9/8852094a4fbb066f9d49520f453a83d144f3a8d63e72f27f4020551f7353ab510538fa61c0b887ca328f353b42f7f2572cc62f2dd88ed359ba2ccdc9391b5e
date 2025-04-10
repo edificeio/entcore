@@ -1,0 +1,5 @@
+declare const CardHeader: {
+    (): import("react/jsx-runtime").JSX.Element | null;
+    displayName: string;
+};
+export default CardHeader;

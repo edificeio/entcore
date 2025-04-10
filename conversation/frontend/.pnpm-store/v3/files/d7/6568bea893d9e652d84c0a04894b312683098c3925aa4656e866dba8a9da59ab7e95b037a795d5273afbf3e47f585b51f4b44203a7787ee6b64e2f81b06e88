@@ -1,0 +1,86 @@
+import { jsx } from "react/jsx-runtime";
+import { useTranslation } from "react-i18next";
+import SvgIconAlignCenter from "../../icons/components/IconAlignCenter.js";
+import SvgIconAlignJustify from "../../icons/components/IconAlignJustify.js";
+import SvgIconAlignLeft from "../../icons/components/IconAlignLeft.js";
+import SvgIconAlignRight from "../../icons/components/IconAlignRight.js";
+import SvgIconBulletList from "../../icons/components/IconBulletList.js";
+import SvgIconCode from "../../icons/components/IconCode.js";
+import SvgIconOrderedList from "../../icons/components/IconOrderedList.js";
+import SvgIconSquareRoot from "../../icons/components/IconSquareRoot.js";
+import SvgIconSubscript from "../../icons/components/IconSubscript.js";
+import SvgIconSuperscript from "../../icons/components/IconSuperscript.js";
+import SvgIconTable from "../../icons/components/IconTable.js";
+import SvgIconTextVanilla from "../../icons/components/IconTextVanilla.js";
+const useActionOptions = (editor, toggleMathsModal, mediaLibraryRef) => {
+  const {
+    t
+  } = useTranslation(), options = [{
+    icon: /* @__PURE__ */ jsx(SvgIconTextVanilla, {}),
+    label: t("tiptap.toolbar.removeFormat"),
+    action: () => editor == null ? void 0 : editor.chain().clearNodes().unsetAllMarks().run()
+  }, {
+    type: "divider"
+  }, {
+    icon: /* @__PURE__ */ jsx(SvgIconTable, {}),
+    label: t("tiptap.toolbar.table"),
+    action: () => editor == null ? void 0 : editor.chain().focus().insertTable({
+      rows: 3,
+      cols: 3,
+      withHeaderRow: !0
+    }).run()
+  }, {
+    type: "divider"
+  }, {
+    icon: /* @__PURE__ */ jsx(SvgIconSuperscript, {}),
+    label: t("tiptap.toolbar.superscript"),
+    action: () => editor == null ? void 0 : editor.chain().focus().toggleSuperscript().run()
+  }, {
+    icon: /* @__PURE__ */ jsx(SvgIconSubscript, {}),
+    label: t("tiptap.toolbar.subscript"),
+    action: () => editor == null ? void 0 : editor.chain().focus().toggleSubscript().run()
+  }, {
+    icon: /* @__PURE__ */ jsx(SvgIconSquareRoot, {}),
+    label: t("tiptap.toolbar.mathjax"),
+    action: () => {
+      toggleMathsModal();
+    }
+  }, {
+    type: "divider"
+  }, {
+    icon: /* @__PURE__ */ jsx(SvgIconCode, {}),
+    label: t("tiptap.toolbar.embed.iframe"),
+    action: () => {
+      var _a;
+      return (_a = mediaLibraryRef.current) == null ? void 0 : _a.show("embedder");
+    }
+  }], listOptions = [{
+    icon: /* @__PURE__ */ jsx(SvgIconBulletList, {}),
+    label: t("tiptap.toolbar.ulist"),
+    action: () => editor == null ? void 0 : editor.chain().focus().toggleBulletList().run()
+  }, {
+    icon: /* @__PURE__ */ jsx(SvgIconOrderedList, {}),
+    label: t("tiptap.toolbar.olist"),
+    action: () => editor == null ? void 0 : editor.chain().focus().toggleOrderedList().run()
+  }], alignmentOptions = [{
+    icon: /* @__PURE__ */ jsx(SvgIconAlignLeft, {}),
+    label: t("tiptap.toolbar.text.left"),
+    action: () => editor == null ? void 0 : editor.chain().focus().setTextAlign("left").run()
+  }, {
+    icon: /* @__PURE__ */ jsx(SvgIconAlignCenter, {}),
+    label: t("tiptap.toolbar.text.center"),
+    action: () => editor == null ? void 0 : editor.chain().focus().setTextAlign("center").run()
+  }, {
+    icon: /* @__PURE__ */ jsx(SvgIconAlignRight, {}),
+    label: t("tiptap.toolbar.text.right"),
+    action: () => editor == null ? void 0 : editor.chain().focus().setTextAlign("right").run()
+  }, {
+    icon: /* @__PURE__ */ jsx(SvgIconAlignJustify, {}),
+    label: t("tiptap.toolbar.text.justify"),
+    action: () => editor == null ? void 0 : editor.chain().focus().setTextAlign("justify").run()
+  }];
+  return [options, listOptions, alignmentOptions];
+};
+export {
+  useActionOptions
+};

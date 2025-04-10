@@ -1,0 +1,40 @@
+import { jsx, jsxs, Fragment } from "react/jsx-runtime";
+import { useState, useEffect } from "react";
+import { NodeViewWrapper } from "@tiptap/react";
+import { useTranslation } from "react-i18next";
+import SvgIconDelete from "../../../icons/components/IconDelete.js";
+import SvgIconDownload from "../../../icons/components/IconDownload.js";
+import Attachment from "../../../../components/Attachment/Attachment.js";
+import IconButton from "../../../../components/Button/IconButton.js";
+import { useEditorContext } from "../../hooks/useEditorContext.js";
+import { Grid } from "../../../../components/Grid/Grid.js";
+const AttachmentRenderer = (props) => {
+  const {
+    node,
+    editor
+  } = props, [attachmentArrayAttrs, setAttachmentArrayAttrs] = useState(node.attrs.links), {
+    t
+  } = useTranslation(), {
+    editable
+  } = useEditorContext();
+  useEffect(() => {
+    attachmentArrayAttrs !== node.attrs.links && setAttachmentArrayAttrs(node.attrs.links);
+  }, [node.attrs.links, attachmentArrayAttrs]);
+  const handleDelete = (index, documentId) => {
+    editor.commands.unsetAttachment(documentId), setAttachmentArrayAttrs((oldAttachments) => oldAttachments.filter((_, i) => i !== index));
+  };
+  return (attachmentArrayAttrs == null ? void 0 : attachmentArrayAttrs.length) !== 0 && /* @__PURE__ */ jsx(NodeViewWrapper, { children: /* @__PURE__ */ jsxs("div", { style: {
+    backgroundColor: "#F2F2F2",
+    borderRadius: ".8rem",
+    padding: "1.2rem"
+  }, "data-drag-handle": !0, children: [
+    /* @__PURE__ */ jsx("p", { className: "m-12 mt-0", children: t("tiptap.attachments.bloc") }),
+    /* @__PURE__ */ jsx(Grid, { children: attachmentArrayAttrs == null ? void 0 : attachmentArrayAttrs.map((attachment, index) => /* @__PURE__ */ jsx(Grid.Col, { sm: "6", children: /* @__PURE__ */ jsx(Attachment, { name: attachment.name, options: /* @__PURE__ */ jsxs(Fragment, { children: [
+      /* @__PURE__ */ jsx("a", { href: attachment.href, download: !0, children: /* @__PURE__ */ jsx(IconButton, { "aria-label": t("tiptap.attachments.download"), color: "tertiary", type: "button", icon: /* @__PURE__ */ jsx(SvgIconDownload, {}), variant: "ghost" }) }),
+      editable && /* @__PURE__ */ jsx(IconButton, { "aria-label": t("tiptap.attachments.delete"), color: "danger", type: "button", icon: /* @__PURE__ */ jsx(SvgIconDelete, {}), variant: "ghost", onClick: () => handleDelete(index, attachment.documentId) })
+    ] }) }) }, index)) })
+  ] }) });
+};
+export {
+  AttachmentRenderer as default
+};

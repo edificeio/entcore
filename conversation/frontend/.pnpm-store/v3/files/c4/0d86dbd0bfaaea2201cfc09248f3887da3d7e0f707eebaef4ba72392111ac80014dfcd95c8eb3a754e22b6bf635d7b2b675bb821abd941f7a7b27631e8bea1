@@ -1,0 +1,8 @@
+declare const CardUser: {
+    ({ userSrc, creatorName, }: {
+        userSrc: string;
+        creatorName: string;
+    }): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default CardUser;

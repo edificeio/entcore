@@ -1,0 +1,25 @@
+import { WorkspaceElement, WorkspaceVisibility } from '@edifice.io/client';
+declare const useUploadFiles: ({ handleOnChange, visibility, application, }: {
+    handleOnChange: (uploadedFiles: WorkspaceElement[]) => void;
+    visibility?: WorkspaceVisibility;
+    application?: string;
+}) => {
+    /** List of files added from device */
+    files: File[];
+    getUploadStatus: (upload: File | Blob) => import('../..').Status | undefined;
+    clearUploadStatus: (blob: File | Blob) => void;
+    uploadedFiles: WorkspaceElement[];
+    editingImage: WorkspaceElement | undefined;
+    setEditingImage: import('react').Dispatch<import('react').SetStateAction<WorkspaceElement | undefined>>;
+    getUrl: (resource?: WorkspaceElement, timestamp?: boolean) => string;
+    updateImage: ({ blob, legend, altText: alt, }: {
+        blob: Blob;
+        legend: string;
+        altText: string;
+    }) => Promise<void>;
+    uploadFile: (file: File, metadata?: {
+        duration: number;
+    }) => Promise<WorkspaceElement | null>;
+    removeFile: (file: File) => Promise<void>;
+};
+export default useUploadFiles;

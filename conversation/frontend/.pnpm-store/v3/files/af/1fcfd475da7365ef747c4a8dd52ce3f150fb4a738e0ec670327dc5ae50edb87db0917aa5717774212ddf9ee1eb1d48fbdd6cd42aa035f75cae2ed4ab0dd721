@@ -1,0 +1,13 @@
+import { IResource } from "edifice-ts-client";
+import { UseFormRegister, UseFormSetValue, UseFormWatch } from "react-hook-form";
+import { FormInputs } from "../ResourceModal";
+interface BlogPublicProps {
+    appCode: string;
+    isUpdating: boolean;
+    resource: IResource;
+    watch: UseFormWatch<FormInputs>;
+    register: UseFormRegister<FormInputs>;
+    setValue: UseFormSetValue<FormInputs>;
+}
+declare const BlogPublic: ({ appCode, isUpdating, resource, watch, register, setValue, }: BlogPublicProps) => import("react/jsx-runtime").JSX.Element;
+export default BlogPublic;

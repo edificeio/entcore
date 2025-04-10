@@ -1,0 +1,12 @@
+import { jsx } from "react/jsx-runtime";
+import clsx from "clsx";
+const CardTitle = ({
+  children,
+  className
+}) => {
+  const title = clsx("card-title body text-break text-truncate text-truncate-2", className);
+  return /* @__PURE__ */ jsx("h3", { className: title, children: /* @__PURE__ */ jsx("strong", { children }) });
+};
+export {
+  CardTitle as default
+};

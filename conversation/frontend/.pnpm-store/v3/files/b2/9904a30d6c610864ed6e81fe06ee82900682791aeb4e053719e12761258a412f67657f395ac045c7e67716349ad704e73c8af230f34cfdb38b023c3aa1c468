@@ -1,0 +1,34 @@
+/**
+ * Table  Component
+ * @see WAI-ARIA https://www.w3.org/WAI/ARIA/apg/patterns/table/
+ */
+import { ReactNode } from "react";
+export type TableRef = HTMLTableElement;
+export interface TableProps {
+    children?: Array<React.ReactElement<HTMLTableSectionElement>> | any;
+}
+declare const Table: import("react").ForwardRefExoticComponent<{
+    children: ReactNode;
+} & import("react").RefAttributes<HTMLTableElement>> & {
+    Thead: {
+        (props: import("react").HTMLAttributes<HTMLTableSectionElement>): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+    Th: {
+        (props: import("react").HTMLAttributes<HTMLTableCellElement>): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+    Tbody: {
+        (props: import("react").HTMLAttributes<HTMLTableSectionElement>): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+    Tr: {
+        (props: import("react").HTMLAttributes<HTMLTableRowElement>): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+    Td: {
+        (props: import("react").HTMLAttributes<HTMLTableCellElement>): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+};
+export default Table;

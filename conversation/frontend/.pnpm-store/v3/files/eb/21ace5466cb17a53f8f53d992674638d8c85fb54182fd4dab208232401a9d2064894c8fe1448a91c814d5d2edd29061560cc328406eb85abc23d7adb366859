@@ -1,0 +1,75 @@
+import { jsx, Fragment, jsxs } from "react/jsx-runtime";
+import { ReactionTypes } from "@edifice.io/client";
+import { StringUtils } from "@edifice.io/utilities";
+import { useState, useId, useCallback, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { useTranslation } from "react-i18next";
+import useReactionIcons from "./hooks/useReactionIcons.js";
+import { ReactionModalCard } from "./ReactionModal.Card.js";
+import Modal from "../../components/Modal/Modal.js";
+import Button from "../../components/Button/Button.js";
+import { Tabs } from "../../components/Tabs/components/Tabs.js";
+const ALL_TAB_ID = "all", ReactionModal = ({
+  resourceId,
+  pageSize = 30,
+  reactionDetailsLoader: loadReactionDetails,
+  onModalClose,
+  ...restProps
+}) => {
+  const [counters, setCounters] = useState({
+    countByType: {},
+    allReactionsCounter: 0
+  }), [reactions, setReactions] = useState([]), [currentTabId, setCurrentTabId] = useState(ALL_TAB_ID), id = useId(), {
+    t
+  } = useTranslation(), {
+    getReactionIcon
+  } = useReactionIcons(), [latestPage, setLatestPage] = useState(0), loadNextPage = useCallback(async () => {
+    const nextPage = latestPage + 1;
+    setLatestPage(nextPage);
+    const data = await loadReactionDetails(resourceId, nextPage, pageSize);
+    if (data) {
+      const {
+        reactionCounters,
+        userReactions
+      } = data;
+      nextPage === 1 && setCounters(reactionCounters), setReactions((old) => [...old, ...userReactions.filter((reaction) => !old.some((oldReaction) => oldReaction.userId === reaction.userId))]);
+    }
+  }, [latestPage, loadReactionDetails, pageSize, resourceId]), panel = useMemo(() => /* @__PURE__ */ jsx("div", { className: "d-flex flex-column w-100 gap-8 mt-32", children: reactions.filter((reaction) => currentTabId === ALL_TAB_ID || reaction.reactionType === currentTabId).map((reaction) => /* @__PURE__ */ jsx(ReactionModal.Card, { reaction }, reaction.userId)) }), [currentTabId, reactions]), tabs = useMemo(() => {
+    const items = ReactionTypes.filter((type) => {
+      var _a;
+      return typeof ((_a = counters.countByType) == null ? void 0 : _a[type]) == "number";
+    }).map((type) => ({
+      id: type,
+      icon: getReactionIcon(type),
+      label: StringUtils.toCounter(counters.countByType[type]),
+      content: panel
+    }));
+    return [{
+      id: ALL_TAB_ID,
+      icon: null,
+      label: t("audience.reaction.tab.all"),
+      content: panel
+    }, ...items];
+  }, [counters.countByType, panel]);
+  useEffect(() => {
+    loadNextPage();
+  }, []);
+  const handleTabChange = (tab) => {
+    setCurrentTabId(tab.id);
+  }, hasMore = reactions.length < counters.allReactionsCounter;
+  return (
+    // Using a fragment to ensure Storybook correctly interprets JSDoc comments: https://github.com/storybookjs/storybook/issues/27169
+    /* @__PURE__ */ jsx(Fragment, { children: /* @__PURE__ */ createPortal(/* @__PURE__ */ jsxs(Modal, { id, ...restProps, onModalClose, size: "md", scrollable: !0, children: [
+      /* @__PURE__ */ jsx(Modal.Header, { onModalClose, children: t("audience.reaction.modal.header") }),
+      /* @__PURE__ */ jsx(Modal.Body, { children: /* @__PURE__ */ jsx(Tabs, { items: tabs, defaultId: ALL_TAB_ID, onChange: handleTabChange }) }),
+      /* @__PURE__ */ jsxs(Modal.Footer, { children: [
+        hasMore && /* @__PURE__ */ jsx(Button, { color: "tertiary", onClick: loadNextPage, children: t("audience.reaction.modal.more") }),
+        /* @__PURE__ */ jsx(Button, { color: "primary", onClick: onModalClose, type: "button", variant: "filled", children: t("close") })
+      ] })
+    ] }), document.getElementById("portal")) })
+  );
+};
+ReactionModal.Card = ReactionModalCard;
+export {
+  ReactionModal as default
+};

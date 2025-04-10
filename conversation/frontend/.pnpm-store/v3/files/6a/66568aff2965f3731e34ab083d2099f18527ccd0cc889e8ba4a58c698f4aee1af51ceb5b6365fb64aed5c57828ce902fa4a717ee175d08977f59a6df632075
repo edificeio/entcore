@@ -1,0 +1,21 @@
+import React, { useRef, useEffect } from "react";
+import { odeServices, LAYER_NAME } from "@edifice.io/client";
+import { useTranslation } from "react-i18next";
+import useToast from "../useToast/useToast.js";
+const useHttpErrorToast = (options) => {
+  const message = useRef(), toast = useToast(), {
+    t
+  } = useTranslation();
+  return useEffect(() => {
+    const subscription = odeServices.notify().events().subscribe(LAYER_NAME.TRANSPORT, (event) => {
+      var _a, _b;
+      message.current = t(((_b = (_a = event == null ? void 0 : event.data) == null ? void 0 : _a.payload) == null ? void 0 : _b.error) || event.data.response.statusText), toast.error(/* @__PURE__ */ React.createElement("div", {
+        children: [message.current]
+      }), options);
+    });
+    return () => subscription.revoke();
+  }, [t, toast]), message.current;
+};
+export {
+  useHttpErrorToast as default
+};

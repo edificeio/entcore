@@ -1,0 +1,4 @@
+import { UserProfile } from "edifice-ts-client";
+export declare const BadgeProfile: ({ profile }: {
+    profile: UserProfile[number];
+}) => import("react/jsx-runtime").JSX.Element;

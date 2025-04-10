@@ -1,0 +1,6 @@
+import { Role } from "edifice-ts-client";
+declare const FileIcon: ({ type, roleMap, }: {
+    type: Role | "unknown";
+    roleMap?: Record<string, string | JSX.Element> | undefined;
+}) => import("react/jsx-runtime").JSX.Element;
+export default FileIcon;

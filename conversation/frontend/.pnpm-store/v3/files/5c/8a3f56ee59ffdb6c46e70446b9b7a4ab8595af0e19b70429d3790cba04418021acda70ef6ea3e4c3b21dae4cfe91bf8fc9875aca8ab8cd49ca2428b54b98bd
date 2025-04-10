@@ -1,0 +1,4 @@
+import { Plugin } from '@tiptap/pm/state';
+import { DecorationSet } from '@tiptap/pm/view';
+import { MathematicsOptions } from './types';
+export declare const MathematicsPlugin: (options: MathematicsOptions) => Plugin<DecorationSet>;

@@ -1,0 +1,26 @@
+import { IHttp, IHttpParams, IHttpResponse } from './interfaces';
+export declare class Http implements IHttp {
+    private axios;
+    private _latestResponse;
+    constructor(params?: any);
+    setCdn(cdnUrl: string): void;
+    private toAxiosConfig;
+    private toCdnUrl;
+    private mapAxiosError;
+    private mapAxiosResponse;
+    get latestResponse(): IHttpResponse;
+    isResponseError(): boolean;
+    get<R = any>(url: string, params?: IHttpParams): Promise<R>;
+    post<R = any>(url: string, data?: any, params?: IHttpParams): Promise<R>;
+    postFile<R = any>(url: string, data: any, params?: IHttpParams): Promise<R>;
+    postJson<R = any>(url: string, json: any, params?: IHttpParams): Promise<R>;
+    put<R = any>(url: string, data?: any, params?: IHttpParams): Promise<R>;
+    putJson<R = any>(url: string, json: any, params?: IHttpParams): Promise<R>;
+    delete<R = any>(url: string, params?: IHttpParams): Promise<R>;
+    deleteJson<R = any>(url: string, json: any): Promise<R>;
+    getScript<R = any>(url: string, params?: IHttpParams, variableName?: string): Promise<R>;
+    loadScript(url: string, params?: IHttpParams): Promise<void>;
+}
+/**
+ * Promisified HTTP
+ */

@@ -1,0 +1,158 @@
+import { useId, useState, useRef, useEffect, useCallback } from "react";
+import { useFloating, offset, size, flip, autoUpdate, useHover, safePolygon } from "@floating-ui/react";
+import { mergeRefs } from "../../utilities/refs/ref.js";
+const useDropdown = (placement, extraTriggerKeyDownHandler, isTriggerHovered = !1) => {
+  const id = useId(), [visible, setVisible] = useState(!1), [activeIndex, setActiveIndex] = useState(-1), [isFocused, setIsFocused] = useState(null), {
+    refs,
+    floatingStyles,
+    context
+  } = useFloating({
+    placement,
+    open: visible,
+    onOpenChange: setVisible,
+    whileElementsMounted: autoUpdate,
+    middleware: [offset(4), size({
+      apply({
+        rects,
+        elements
+      }) {
+        elements.floating.style.minWidth = `${rects.reference.width}px`;
+      }
+    }), flip({
+      padding: 0
+    })]
+  });
+  useHover(context, {
+    enabled: isTriggerHovered,
+    // Configure the delay for opening and closing separately.
+    delay: {
+      open: 200
+    },
+    handleClose: safePolygon()
+  });
+  const menuRef = useRef(null), triggerRef = useRef(null), itemRefs = useRef({});
+  useEffect(() => {
+    visible ? menuRef.current && (menuRef.current.focus(), setActiveIndex(0)) : (setActiveIndex(-1), itemRefs.current = {});
+  }, [visible]), useEffect(() => {
+    if (activeIndex !== -1) {
+      const currentItem = Object.values(itemRefs.current)[activeIndex];
+      if (currentItem) {
+        const id2 = currentItem.getAttribute("id");
+        setIsFocused(id2), currentItem.focus();
+      }
+    }
+  }, [activeIndex]);
+  const nextItem = () => {
+    const itemCount = Object.values(itemRefs.current).length;
+    setActiveIndex((prevIndex) => (prevIndex + 1) % itemCount);
+  }, previousItem = () => {
+    const itemCount = Object.values(itemRefs.current).length;
+    setActiveIndex((prevIndex) => (prevIndex - 1 + itemCount) % itemCount);
+  }, firstItem = () => {
+    setActiveIndex(0);
+  }, lastItem = () => {
+    const itemCount = Object.values(itemRefs.current).length;
+    setActiveIndex(itemCount - 1);
+  }, openDropdown = useCallback(() => {
+    setVisible(!0);
+  }, []), closeDropdown = useCallback(() => {
+    triggerRef.current && (triggerRef.current.focus({
+      preventScroll: !0
+    }), setVisible(!1));
+  }, []), stopEvents = (flag, event) => {
+    flag && (event.stopPropagation(), event.preventDefault());
+  }, onTriggerKeyDown = useCallback((event) => {
+    let flag = !1;
+    switch (event.code) {
+      case " ":
+      case "Space":
+      case "Enter":
+      case "ArrowDown":
+      case "Down":
+        openDropdown(), flag = !0;
+        break;
+      case "Esc":
+      case "Escape":
+        closeDropdown(), flag = !0;
+        break;
+      case "Up":
+      case "ArrowUp":
+        openDropdown(), flag = !0;
+        break;
+    }
+    extraTriggerKeyDownHandler == null || extraTriggerKeyDownHandler(event), stopEvents(flag, event);
+  }, [closeDropdown, openDropdown]), onMenuItemMouseEnter = (event) => {
+    const index = Object.values(itemRefs.current).findIndex((item) => item.id === event.currentTarget.getAttribute("id"));
+    setActiveIndex(index);
+  }, onMenuItemKeyDown = useCallback((event, onSuccess) => {
+    let flag = !1;
+    if (event.shiftKey)
+      event.key === "Tab" && (closeDropdown(), flag = !0);
+    else {
+      switch (event.code) {
+        case "Escape":
+          closeDropdown();
+          break;
+        case " ":
+        case "Enter":
+          activeIndex !== -1 && (Object.values(itemRefs.current)[activeIndex].getAttribute("role") === "menuitem" && triggerRef.current && (triggerRef.current.focus(), setVisible(!1)), onSuccess == null || onSuccess()), flag = !0;
+          break;
+        case "ArrowDown":
+        case "Down":
+          nextItem(), flag = !0;
+          break;
+        case "ArrowUp":
+        case "Up":
+          previousItem(), flag = !0;
+          break;
+        case "Home":
+          firstItem(), flag = !0;
+          break;
+        case "End":
+          lastItem(), flag = !0;
+          break;
+      }
+      stopEvents(flag, event);
+    }
+  }, [activeIndex, closeDropdown]), onTriggerClick = useCallback((event) => {
+    setVisible(visible !== !0), event.stopPropagation(), event.preventDefault();
+  }, [visible]);
+  return {
+    isFocused,
+    visible,
+    itemRefs,
+    triggerRef,
+    menuRef,
+    /* TriggerProps to spread to any Trigger component */
+    triggerProps: {
+      ref: mergeRefs(triggerRef, refs.setReference),
+      id: `dropdown-toggle-${id}`,
+      "aria-haspopup": "menu",
+      "aria-controls": `dropdown-${id}`,
+      "aria-expanded": !!visible,
+      className: `${visible ? "selected" : ""}`,
+      onClick: onTriggerClick,
+      onKeyDown: onTriggerKeyDown,
+      "aria-activedescendant": isFocused
+    },
+    /* MenuProps to spread to any Menu Component */
+    menuProps: {
+      ref: mergeRefs(menuRef, refs.setFloating),
+      className: "dropdown-menu",
+      "aria-labelledby": `dropdown-toggle-${id}`,
+      style: {
+        ...floatingStyles
+      }
+    },
+    /* ItemProps to spread to any item Component */
+    itemProps: {
+      onMenuItemMouseEnter,
+      onMenuItemClick: closeDropdown,
+      onMenuItemKeyDown
+    },
+    setVisible
+  };
+};
+export {
+  useDropdown as default
+};

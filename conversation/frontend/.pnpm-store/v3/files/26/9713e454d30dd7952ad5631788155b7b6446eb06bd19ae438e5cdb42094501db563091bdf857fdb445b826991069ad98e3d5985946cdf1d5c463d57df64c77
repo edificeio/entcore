@@ -1,0 +1,38 @@
+import { jsx, jsxs } from "react/jsx-runtime";
+import { useMemo } from "react";
+import clsx from "clsx";
+import SvgIconUsers from "../../icons/components/IconUsers.js";
+import useDate from "../../../hooks/useDate/useDate.js";
+import Card from "../../../components/Card/Card.js";
+import Image from "../../../components/Image/Image.js";
+import AppIcon from "../../../components/AppIcon/AppIcon.js";
+const LinkerCard = ({
+  doc,
+  isClickable = !0,
+  isSelectable = !1,
+  isSelected = !1,
+  onClick,
+  className
+}) => {
+  const {
+    fromNow
+  } = useDate(), {
+    fromDate
+  } = useMemo(() => ({
+    fromDate: fromNow(doc.modifiedAt)
+  }), [fromNow, doc]);
+  return /* @__PURE__ */ jsx(Card, { className: clsx("card-linker shadow-none", className), isClickable, isSelectable, isSelected, onClick, children: /* @__PURE__ */ jsxs(Card.Body, { space: "8", children: [
+    /* @__PURE__ */ jsx("div", { className: "card-image ps-8 pe-4", children: doc.thumbnail && doc.thumbnail.length > 0 ? /* @__PURE__ */ jsx(Image, { alt: "", height: 48, width: 48, src: doc.thumbnail, objectFit: "cover", className: "rounded h-full", style: {
+      aspectRatio: 1 / 1
+    } }) : /* @__PURE__ */ jsx(AppIcon, { app: doc.application, iconFit: "ratio", size: "48", variant: "rounded" }) }),
+    /* @__PURE__ */ jsxs("div", { className: "w-75", children: [
+      /* @__PURE__ */ jsx(Card.Text, { children: doc.name }),
+      /* @__PURE__ */ jsx(Card.Text, { className: "text-black-50", children: doc == null ? void 0 : doc.creatorName })
+    ] }),
+    /* @__PURE__ */ jsx("div", { className: "d-none d-md-block text-black-50 ps-4 pe-8", children: /* @__PURE__ */ jsx(Card.Text, { children: fromDate }) }),
+    doc.shared && /* @__PURE__ */ jsx("div", { className: "ps-4 pe-8", children: /* @__PURE__ */ jsx(SvgIconUsers, { width: "20", height: "20" }) })
+  ] }) });
+};
+export {
+  LinkerCard as default
+};

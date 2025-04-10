@@ -1,0 +1,8 @@
+import { jsx } from "react/jsx-runtime";
+const TextCounter = ({
+  content,
+  maxLength
+}) => /* @__PURE__ */ jsx("p", { className: "small text-gray-700 p-2 text-end", children: `${(content == null ? void 0 : content.length) || 0} / ${maxLength}` });
+export {
+  TextCounter
+};

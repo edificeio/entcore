@@ -1,0 +1,6 @@
+import { IWebApp } from 'edifice-ts-client';
+export declare const DraggableCard: ({ app, type, name, }: {
+    app?: IWebApp;
+    type: "folder" | "resource";
+    name?: string;
+}) => import("react/jsx-runtime").JSX.Element;

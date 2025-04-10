@@ -1,0 +1,27 @@
+import { jsxs, Fragment, jsx } from "react/jsx-runtime";
+import { useTranslation } from "react-i18next";
+import useDate from "../../../hooks/useDate/useDate.js";
+const CommentDate = ({
+  createdAt,
+  updatedAt
+}) => {
+  const {
+    fromNow
+  } = useDate(), {
+    t
+  } = useTranslation(), getPublishedDate = (date) => t("comment.publish.date", {
+    date: fromNow(date)
+  }), getUpdatedDate = (date) => t("comment.update.date", {
+    date: fromNow(date)
+  });
+  return updatedAt ? /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx("span", { className: "small text-gray-700", children: "|" }),
+    /* @__PURE__ */ jsx("span", { className: "small text-gray-700", children: getUpdatedDate(updatedAt) })
+  ] }) : createdAt ? /* @__PURE__ */ jsxs(Fragment, { children: [
+    /* @__PURE__ */ jsx("span", { className: "small text-gray-700", children: "|" }),
+    /* @__PURE__ */ jsx("span", { className: "small text-gray-700", children: getPublishedDate(createdAt) })
+  ] }) : null;
+};
+export {
+  CommentDate
+};

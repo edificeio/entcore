@@ -1,0 +1,66 @@
+import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { useEdificeClient } from "../../../providers/EdificeClientProvider/EdificeClientProvider.hook.js";
+import { useProfileQueries } from "./useProfileQueries.js";
+import illuPad from "@edifice.io/bootstrap/dist/images/emptyscreen/illu-pad.svg";
+const useComments = ({
+  defaultComments,
+  options,
+  type,
+  callbacks
+}) => {
+  const [content, setContent] = useState(""), [editCommentId, setEditCommentId] = useState(null), [commentLimit, setCommentLimit] = useState(options.maxComments), {
+    t
+  } = useTranslation(), {
+    user
+  } = useEdificeClient(), usersIds = Array.from(new Set(defaultComments == null ? void 0 : defaultComments.map((comment) => comment.authorId))), profilesQueries = useProfileQueries(usersIds), comments = useMemo(
+    () => type === "edit" ? (defaultComments == null ? void 0 : defaultComments.sort((a, b) => b.createdAt - a.createdAt).slice(0, commentLimit)) ?? [] : (defaultComments == null ? void 0 : defaultComments.sort((a, b) => b.createdAt - a.createdAt)) ?? [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [commentLimit, defaultComments]
+  ), commentsCount = (comments == null ? void 0 : comments.length) ?? 0, defaultCommentsCount = (defaultComments == null ? void 0 : defaultComments.length) ?? 0, title = defaultCommentsCount && defaultCommentsCount > 1 ? t("comment.several", {
+    number: defaultCommentsCount
+  }) : t("comment.little", {
+    number: defaultCommentsCount
+  });
+  return {
+    profilesQueries,
+    content,
+    title,
+    user,
+    emptyscreenPath: illuPad,
+    defaultCommentsCount,
+    comments,
+    editCommentId,
+    setEditCommentId,
+    commentsCount,
+    t,
+    handleMoreComments: () => {
+      const newLimit = (comments == null ? void 0 : comments.length) + (options.additionalComments ?? 5);
+      newLimit !== comments.length && setCommentLimit(newLimit);
+    },
+    handleChangeContent: (event) => {
+      setContent(event.target.value);
+    },
+    handleDeleteComment: (id) => {
+      type === "edit" && (callbacks == null || callbacks.delete(id));
+    },
+    handleCreateComment: (content2) => {
+      type === "edit" && (callbacks == null || callbacks.post(content2)), setContent("");
+    },
+    handleModifyComment: (commentId) => {
+      setEditCommentId(commentId);
+    },
+    handleUpdateComment: async (comment) => {
+      editCommentId && (type === "edit" && (callbacks == null || callbacks.put({
+        comment,
+        commentId: editCommentId
+      })), setEditCommentId(null));
+    },
+    handleReset: () => {
+      setContent(""), editCommentId && setEditCommentId(null);
+    }
+  };
+};
+export {
+  useComments
+};

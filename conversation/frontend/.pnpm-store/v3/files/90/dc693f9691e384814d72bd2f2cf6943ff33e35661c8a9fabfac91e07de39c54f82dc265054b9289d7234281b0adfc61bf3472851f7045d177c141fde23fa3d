@@ -1,0 +1,2 @@
+/** Add Zendesk Guide  */
+export default function useZendeskGuide(): null;

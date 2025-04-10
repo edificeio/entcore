@@ -1,0 +1,10 @@
+import { PlayState, RecordState } from "./useAudioRecorder";
+export interface AudioRecorderTimerProps {
+    recordState: RecordState;
+    playState: PlayState;
+    recordTime: number | undefined;
+    audioTime: number;
+    maxDuration: number;
+}
+declare const AudioRecorderTimer: ({ recordState, playState, recordTime, audioTime, maxDuration, }: AudioRecorderTimerProps) => import("react/jsx-runtime").JSX.Element;
+export default AudioRecorderTimer;

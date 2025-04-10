@@ -1,0 +1,11 @@
+import { ReactionSummaryData, ReactionType } from "edifice-ts-client";
+export interface ReactionChoiceProps {
+    availableReactions: ReactionType[];
+    summary?: ReactionSummaryData;
+    onChange?: (chosenReaction?: ReactionType) => void;
+}
+declare const ReactionChoice: {
+    ({ availableReactions, summary, onChange, }: ReactionChoiceProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default ReactionChoice;

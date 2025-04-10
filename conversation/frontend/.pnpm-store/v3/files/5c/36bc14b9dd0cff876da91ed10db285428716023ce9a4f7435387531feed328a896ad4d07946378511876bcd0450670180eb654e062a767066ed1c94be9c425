@@ -1,0 +1,33 @@
+import { jsxs, jsx } from "react/jsx-runtime";
+import { useTranslation } from "react-i18next";
+import useReactionIcons from "./hooks/useReactionIcons.js";
+import useDirectory from "../../hooks/useDirectory/useDirectory.js";
+import Avatar from "../../components/Avatar/Avatar.js";
+function ReactionModalCard({
+  reaction
+}) {
+  const {
+    t
+  } = useTranslation(), {
+    getAvatarURL
+  } = useDirectory(), {
+    getReactionIcon,
+    getReactionLabel
+  } = useReactionIcons();
+  return /* @__PURE__ */ jsxs("div", { className: "reaction-modal-card w-100 d-flex gap-8", children: [
+    /* @__PURE__ */ jsxs("div", { className: "position-relative p-8", children: [
+      /* @__PURE__ */ jsx(Avatar, { variant: "circle", size: "md", src: getAvatarURL(reaction.userId, "user"), alt: reaction.displayName }),
+      /* @__PURE__ */ jsx("div", { className: "position-absolute end-0 bottom-0", children: getReactionIcon(reaction.reactionType, !0) })
+    ] }),
+    /* @__PURE__ */ jsxs("div", { className: "d-flex flex-column w-100 pt-8", children: [
+      /* @__PURE__ */ jsxs("div", { className: "d-flex align-items-baseline", children: [
+        /* @__PURE__ */ jsx("div", { className: "d-flex overflow-hidden", children: /* @__PURE__ */ jsx("div", { className: "text-reset flex-shrink-0", children: reaction.displayName }) }),
+        /* @__PURE__ */ jsx("strong", { className: "ms-12 caption text-gray-700", children: t(reaction.profile) })
+      ] }),
+      /* @__PURE__ */ jsx("p", { className: "caption text-gray-700", children: t(getReactionLabel(reaction.reactionType)) })
+    ] })
+  ] });
+}
+export {
+  ReactionModalCard
+};

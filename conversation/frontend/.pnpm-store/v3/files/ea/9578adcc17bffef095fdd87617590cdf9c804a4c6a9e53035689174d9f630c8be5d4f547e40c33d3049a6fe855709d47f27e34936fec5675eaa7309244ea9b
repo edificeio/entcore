@@ -1,0 +1,1 @@
+"use strict";Object.defineProperty(exports,Symbol.toStringTag,{value:"Module"});const n=require("../string-utils/string-utils.cjs"),a=(e,r)=>{const t="virtualID";if(!Object.hasOwnProperty.apply(e,[t])){const i=r??`${n.StringUtils.generateVirtualId()}#${e.size}`;Object.defineProperty(e,t,{value:i,writable:!1})}return e[t]};exports.getOrGenerateBlobId=a;

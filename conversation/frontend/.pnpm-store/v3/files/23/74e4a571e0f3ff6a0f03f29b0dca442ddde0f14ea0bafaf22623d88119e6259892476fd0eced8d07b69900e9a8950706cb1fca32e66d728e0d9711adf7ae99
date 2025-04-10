@@ -1,0 +1,37 @@
+import { App, ILinkedResource } from '@edifice.io/client';
+/**
+ * Definition of an internal link.
+ */
+type ApplicationOption = {
+    /** Icon to display */
+    icon?: JSX.Element;
+    /** Application code */
+    application: string;
+    /** Display name */
+    displayName: string;
+};
+/**
+ * Properties for the InternalLinker react component.
+ */
+export interface InternalLinkerProps {
+    /** Currently running application */
+    appCode: App;
+    /** When defined, preloads and displays this type of resources. */
+    defaultAppCode?: App | null;
+    /** When defined, selects this resource (defaultApp must be specified) */
+    defaultResourceId?: string | null;
+    /** Notify when the user selects an application in the dropdown */
+    onChange?: (application?: ApplicationOption) => void;
+    /** Notify when resources selection changes */
+    onSelect?: (resources: ILinkedResource[]) => void;
+    /** Whether to allow multiple resources selection */
+    multiple: boolean | undefined;
+    /** List of resources to display */
+    resourceList?: ILinkedResource[];
+    /** List of applications to display */
+    applicationList?: ApplicationOption[];
+    /** Whether to show the application selector */
+    showApplicationSelector?: boolean;
+}
+export declare const InternalLinker: ({ appCode, defaultAppCode, defaultResourceId, onChange, onSelect, multiple, resourceList, applicationList, showApplicationSelector, }: InternalLinkerProps) => import("react/jsx-runtime").JSX.Element;
+export default InternalLinker;

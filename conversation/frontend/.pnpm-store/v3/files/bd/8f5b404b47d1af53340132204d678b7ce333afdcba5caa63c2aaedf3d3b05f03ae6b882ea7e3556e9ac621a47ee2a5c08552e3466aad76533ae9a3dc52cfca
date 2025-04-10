@@ -1,0 +1,20 @@
+import { jsx } from "react/jsx-runtime";
+import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
+import { EdificeClientProvider } from "../EdificeClientProvider/EdificeClientProvider.js";
+import { EdificeThemeContext } from "../EdificeThemeProvider/EdificeThemeProvider.context.js";
+const queryClient = new QueryClient(), Providers = ({
+  children
+}) => /* @__PURE__ */ jsx(QueryClientProvider, { client: queryClient, children: /* @__PURE__ */ jsx(EdificeClientProvider, { params: {
+  app: "wiki"
+}, children }) }), MockedProvider = ({
+  children
+}) => {
+  const themeContextValue = {
+    theme: "default",
+    setTheme: vi.fn()
+  };
+  return /* @__PURE__ */ jsx(Providers, { children: /* @__PURE__ */ jsx(EdificeThemeContext.Provider, { value: themeContextValue, children }) });
+};
+export {
+  MockedProvider
+};

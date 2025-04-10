@@ -1,0 +1,55 @@
+export type ModalElement = HTMLDivElement;
+export type ModalSize = 'sm' | 'md' | 'lg';
+export interface ModalProps {
+    /**
+     * Modal id (useful when multiple modal on the same page)
+     */
+    id: string;
+    /**
+     * Is Modal Open
+     */
+    isOpen: boolean;
+    /**
+     * Function to call when closing modal
+     */
+    onModalClose: () => void;
+    /**
+     * Size of the modal (width)
+     */
+    size?: ModalSize;
+    /**
+     * Is modal scrollable (see https://getbootstrap.com/docs/5.0/components/modal/#scrolling-long-content)
+     */
+    scrollable?: boolean;
+    /**
+     * ID of the HTML element to receive focus when modal is active.
+     */
+    focusId?: string;
+    /**
+     * Modal takes the full height of the window
+     */
+    viewport?: boolean;
+    /**
+     * Children
+     */
+    children: React.ReactNode;
+}
+declare const Modal: import('react').ForwardRefExoticComponent<ModalProps & import('react').RefAttributes<HTMLDivElement>> & {
+    Header: {
+        (props: import('./ModalHeader').ModalHeaderProps): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+    Subtitle: {
+        (props: import('./ModalSubtitle').ModalSubtitleProps): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+    Body: {
+        (props: import('./ModalBody').ModalBodyProps): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+    Footer: {
+        (props: import('./ModalFooter').ModalFooterProps): import("react/jsx-runtime").JSX.Element;
+        displayName: string;
+    };
+};
+export default Modal;

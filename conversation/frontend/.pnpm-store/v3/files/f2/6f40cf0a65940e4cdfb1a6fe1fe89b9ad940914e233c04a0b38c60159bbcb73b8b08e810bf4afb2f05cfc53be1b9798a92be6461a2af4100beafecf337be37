@@ -1,0 +1,9 @@
+import { Meta, StoryObj } from "@storybook/react";
+import UploadCard from "./UploadCard";
+declare const meta: Meta<typeof UploadCard>;
+export default meta;
+type Story = StoryObj<typeof UploadCard>;
+export declare const Base: Story;
+export declare const IsLoading: Story;
+export declare const IsSuccess: Story;
+export declare const IsError: Story;

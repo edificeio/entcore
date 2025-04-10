@@ -1,0 +1,13 @@
+import { IResource } from "edifice-ts-client";
+import { CardProps } from "../../components";
+export interface LinkerCardProps extends CardProps {
+    /**
+     * Resource to render as a card
+     * */
+    doc: IResource;
+}
+declare const LinkerCard: {
+    ({ doc, isClickable, isSelectable, isSelected, onClick, className, }: LinkerCardProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default LinkerCard;

@@ -1,0 +1,13 @@
+import { jsx } from "react/jsx-runtime";
+import clsx from "clsx";
+import SvgIconDeleteColor from "../../modules/icons/components/IconDeleteColor.js";
+const ColorPickerItem = ({
+  model,
+  selected,
+  className
+}) => model.isReset ? /* @__PURE__ */ jsx(SvgIconDeleteColor, {}) : /* @__PURE__ */ jsx("div", { "aria-label": model.description, className: clsx("color-picker-hue-color-item rounded-1", className, model.hue === "light" ? "light" : "dark", selected && "selected"), style: {
+  backgroundColor: model.value
+} });
+export {
+  ColorPickerItem as default
+};

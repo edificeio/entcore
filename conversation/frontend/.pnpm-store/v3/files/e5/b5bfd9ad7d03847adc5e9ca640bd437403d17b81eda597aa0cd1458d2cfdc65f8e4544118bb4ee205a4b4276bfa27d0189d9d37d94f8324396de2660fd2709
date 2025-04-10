@@ -1,0 +1,157 @@
+import * as PIXI from "pixi.js";
+const POINT_RADIUS = 20, CONTROL_NAME = "CONTROL_NAME";
+function getCornerName(index) {
+  return "RESIZE_CORNER_" + index;
+}
+function computeCornerPosition(position, sprite) {
+  const left = sprite.x, top = sprite.y;
+  switch (position) {
+    case "TOP_LEFT":
+      return {
+        x: left,
+        y: top,
+        start: 0,
+        end: Math.PI / 2
+      };
+    case "TOP_RIGHT":
+      return {
+        x: left + sprite.width,
+        y: top,
+        start: Math.PI / 2,
+        end: Math.PI
+      };
+    case "BOTTOM_LEFT":
+      return {
+        x: left,
+        y: top + sprite.height,
+        start: 3 * Math.PI / 2,
+        end: 2 * Math.PI
+      };
+    case "BOTTOM_RIGHT":
+      return {
+        x: left + sprite.width,
+        y: top + sprite.height,
+        start: Math.PI,
+        end: 3 * Math.PI / 2
+      };
+  }
+}
+function resizeContainer(application, {
+  container,
+  cornerType,
+  position,
+  spriteName
+}) {
+  const sprite = application.stage.getChildByName(spriteName, !0);
+  if (sprite == null) return;
+  const isRotated = sprite.rotation % Math.PI !== 0, spriteWidth = isRotated ? sprite.height : sprite.width, spriteHeight = isRotated ? sprite.width : sprite.height;
+  switch (cornerType) {
+    case "TOP_LEFT": {
+      container.position = new PIXI.Point(position.x, position.y), container.width = spriteWidth - 2 * position.x, container.height = spriteHeight - 2 * position.y;
+      break;
+    }
+    case "TOP_RIGHT": {
+      const newX = spriteWidth - position.x;
+      container.position = new PIXI.Point(newX, position.y), container.width = spriteWidth - 2 * newX, container.height = spriteHeight - 2 * position.y;
+      break;
+    }
+    case "BOTTOM_LEFT": {
+      const newY = spriteHeight - position.y;
+      container.position = new PIXI.Point(position.x, newY), container.width = spriteWidth - 2 * position.x, container.height = spriteHeight - 2 * newY;
+      break;
+    }
+    case "BOTTOM_RIGHT": {
+      const newY = spriteHeight - position.y, newX = spriteWidth - position.x;
+      container.position = new PIXI.Point(newX, newY), container.width = spriteWidth - 2 * newX, container.height = spriteHeight - 2 * newY;
+      break;
+    }
+  }
+}
+function removeCorner(application, cornerType) {
+  const previous = application.stage.getChildByName(getCornerName(cornerType), !0);
+  previous == null || previous.removeFromParent();
+}
+function drawCorner(application, cornerType, {
+  spriteName
+}) {
+  removeCorner(application, cornerType);
+  const sprite = application.stage.getChildByName(spriteName, !0), container = application.stage.getChildByName(CONTROL_NAME, !0);
+  if (sprite == null || container === null || container === void 0) return;
+  const position = computeCornerPosition(cornerType, container), corner = new PIXI.Graphics();
+  corner.beginFill(4960213, 1), corner.arc(0, 0, POINT_RADIUS, position.start, position.end), corner.lineTo(0, 0), corner.endFill(), corner.position = new PIXI.Point(position.x, position.y), corner.name = getCornerName(cornerType), corner.interactive = !0;
+  let enable = !1;
+  application.stage.on("pointermove", (event) => {
+    if (enable === !1) return;
+    const localPosition = application.stage.toLocal(event.global);
+    resizeContainer(application, {
+      cornerType,
+      position: localPosition,
+      container,
+      spriteName
+    });
+  });
+  const handlePointerUp = () => {
+    enable = !1;
+  };
+  globalThis.addEventListener("pointerup", handlePointerUp), corner.once("destroyed", () => {
+    corner.off("pointerdown"), globalThis.removeEventListener("pointerup", handlePointerUp);
+  });
+  const handlePointerDown = () => {
+    enable = !0;
+  };
+  corner.on("pointerdown", handlePointerDown), container.addChild(corner);
+}
+function drawContainer(application, spriteName) {
+  removeContainer(application);
+  const sprite = application.stage.getChildByName(spriteName, !0);
+  if (sprite == null) return;
+  const stageTexture = application.renderer.generateTexture(application.stage), clonedStage = new PIXI.Sprite(stageTexture);
+  application.stage.children.forEach((child) => {
+    child.alpha = 0;
+  });
+  const container = new PIXI.Graphics();
+  container.drawRect(0, 0, sprite.width, sprite.height), container.name = CONTROL_NAME, container.interactive = !0, container.interactiveChildren = !0, application.stage.interactive = !0, application.stage.interactiveChildren = !0, application.stage.addChild(container), container.addChild(clonedStage);
+}
+function removeContainer(application) {
+  const container = application.stage.getChildByName(CONTROL_NAME, !0);
+  container == null || container.removeFromParent(), application.stage.children.forEach((child) => {
+    child.alpha = 1;
+  });
+}
+function drawControl(application, spriteName) {
+  drawContainer(application, spriteName), drawCorner(application, "BOTTOM_LEFT", {
+    spriteName
+  }), drawCorner(application, "BOTTOM_RIGHT", {
+    spriteName
+  }), drawCorner(application, "TOP_LEFT", {
+    spriteName
+  }), drawCorner(application, "TOP_RIGHT", {
+    spriteName
+  });
+}
+function removeControl(application) {
+  removeContainer(application), removeCorner(application, "BOTTOM_LEFT"), removeCorner(application, "BOTTOM_RIGHT"), removeCorner(application, "TOP_LEFT"), removeCorner(application, "TOP_RIGHT"), application.stage.off("pointermove");
+}
+function start(application, spriteName) {
+  drawControl(application, spriteName);
+}
+function stop(application) {
+  removeControl(application), application.stage.off("pointermove"), application.render();
+}
+function save(application) {
+  var _a;
+  const container = (_a = application == null ? void 0 : application.stage) == null ? void 0 : _a.getChildByName(CONTROL_NAME, !0), size = container ? {
+    height: container.height,
+    width: container.width
+  } : void 0;
+  if (removeControl(application), size) {
+    const stageTexture = application.renderer.generateTexture(application.stage).clone(), clonedStage = new PIXI.Sprite(stageTexture);
+    return clonedStage.width = size.width, clonedStage.height = size.height, clonedStage;
+  } else
+    return;
+}
+export {
+  save,
+  start,
+  stop
+};

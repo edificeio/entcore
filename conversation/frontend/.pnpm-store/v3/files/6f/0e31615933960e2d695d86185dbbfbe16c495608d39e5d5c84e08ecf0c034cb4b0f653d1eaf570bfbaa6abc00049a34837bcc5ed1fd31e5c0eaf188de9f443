@@ -1,0 +1,154 @@
+import { TreeData } from '@edifice-ui/react';
+import { QueryClient } from '@tanstack/react-query';
+import { IActionParameters, ID, IFolder, IResource, ISearchParameters } from 'edifice-ts-client';
+import { useStore } from 'zustand';
+import { AppParams } from '../config';
+export type ExtractState<S> = S extends {
+    getState: () => infer T;
+} ? T : never;
+type Params<U> = Parameters<typeof useStore<typeof store, U>>;
+interface ElementDrag {
+    isDrag: boolean;
+    elementDrag: ID | undefined;
+}
+interface ElementOver {
+    isOver: boolean;
+    isTreeview: boolean;
+    canMove?: boolean;
+    overId: ID | undefined;
+}
+type State = {
+    config: AppParams | undefined;
+    searchParams: ISearchParameters & IActionParameters;
+    treeData: TreeData;
+    selectedNodeId: string | undefined;
+    currentFolder: Partial<IFolder>;
+    selectedFolders: IFolder[];
+    selectedResources: IResource[];
+    folderIds: ID[];
+    resourceIds: ID[];
+    resourceIsTrash: boolean;
+    resourceOrFolderIsDraggable: ElementDrag;
+    elementDragOver: ElementOver;
+    resourceActionDisable: boolean;
+    searchConfig: {
+        minLength: number;
+    };
+    status: string | undefined;
+};
+type Action = {
+    actions: {
+        setConfig: (config: AppParams) => void;
+        setSearchConfig: (config: {
+            minLength: number;
+        }) => void;
+        setTreeData: (treeData: TreeData) => void;
+        setSearchParams: (searchParams: Partial<ISearchParameters & IActionParameters>) => void;
+        setSelectedFolders: (selectedFolders: IFolder[]) => void;
+        setSelectedResources: (selectedResources: IResource[]) => void;
+        setFolderIds: (folderIds: ID[]) => void;
+        setResourceIds: (resourceIds: ID[]) => void;
+        setResourceIsTrash: (resourceIsTrash: boolean) => void;
+        setResourceOrFolderIsDraggable: (resourceOrFolderIsDraggable: ElementDrag) => void;
+        setElementDragOver: (elementDragOver: ElementOver) => void;
+        setResourceActionDisable: (resourceActionDisable: boolean) => void;
+        clearSelectedItems: () => void;
+        clearSelectedIds: () => void;
+        openResource: (resource: IResource) => void;
+        printSelectedResource: () => void;
+        openFolder: ({ folderId, folder, queryClient, }: {
+            folderId: ID;
+            folder?: IFolder;
+            queryClient?: QueryClient;
+        }) => void;
+        foldTreeItem: (folderId: string) => void;
+        selectTreeItem: (folderId: string, queryClient: QueryClient) => void;
+        fetchTreeData: (folderId: string, queryClient: QueryClient) => Promise<void>;
+        gotoPreviousFolder: () => void;
+        goToTrash: () => void;
+    };
+};
+declare const store: import('zustand').StoreApi<State & Action>;
+export declare function useStoreContext<U>(selector: Params<U>[1]): U;
+export declare const getTreeData: () => TreeData;
+export declare const getStoreActions: () => {
+    setConfig: (config: AppParams) => void;
+    setSearchConfig: (config: {
+        minLength: number;
+    }) => void;
+    setTreeData: (treeData: TreeData) => void;
+    setSearchParams: (searchParams: Partial<ISearchParameters & IActionParameters>) => void;
+    setSelectedFolders: (selectedFolders: IFolder[]) => void;
+    setSelectedResources: (selectedResources: IResource[]) => void;
+    setFolderIds: (folderIds: ID[]) => void;
+    setResourceIds: (resourceIds: ID[]) => void;
+    setResourceIsTrash: (resourceIsTrash: boolean) => void;
+    setResourceOrFolderIsDraggable: (resourceOrFolderIsDraggable: ElementDrag) => void;
+    setElementDragOver: (elementDragOver: ElementOver) => void;
+    setResourceActionDisable: (resourceActionDisable: boolean) => void;
+    clearSelectedItems: () => void;
+    clearSelectedIds: () => void;
+    openResource: (resource: IResource) => void;
+    printSelectedResource: () => void;
+    openFolder: ({ folderId, folder, queryClient, }: {
+        folderId: ID;
+        folder?: IFolder;
+        queryClient?: QueryClient;
+    }) => void;
+    foldTreeItem: (folderId: string) => void;
+    selectTreeItem: (folderId: string, queryClient: QueryClient) => void;
+    fetchTreeData: (folderId: string, queryClient: QueryClient) => Promise<void>;
+    gotoPreviousFolder: () => void;
+    goToTrash: () => void;
+};
+export declare const useTreeData: () => TreeData;
+export declare const useStoreActions: () => {
+    setConfig: (config: AppParams) => void;
+    setSearchConfig: (config: {
+        minLength: number;
+    }) => void;
+    setTreeData: (treeData: TreeData) => void;
+    setSearchParams: (searchParams: Partial<ISearchParameters & IActionParameters>) => void;
+    setSelectedFolders: (selectedFolders: IFolder[]) => void;
+    setSelectedResources: (selectedResources: IResource[]) => void;
+    setFolderIds: (folderIds: ID[]) => void;
+    setResourceIds: (resourceIds: ID[]) => void;
+    setResourceIsTrash: (resourceIsTrash: boolean) => void;
+    setResourceOrFolderIsDraggable: (resourceOrFolderIsDraggable: ElementDrag) => void;
+    setElementDragOver: (elementDragOver: ElementOver) => void;
+    setResourceActionDisable: (resourceActionDisable: boolean) => void;
+    clearSelectedItems: () => void;
+    clearSelectedIds: () => void;
+    openResource: (resource: IResource) => void;
+    printSelectedResource: () => void;
+    openFolder: ({ folderId, folder, queryClient, }: {
+        folderId: ID;
+        folder?: IFolder;
+        queryClient?: QueryClient;
+    }) => void;
+    foldTreeItem: (folderId: string) => void;
+    selectTreeItem: (folderId: string, queryClient: QueryClient) => void;
+    fetchTreeData: (folderId: string, queryClient: QueryClient) => Promise<void>;
+    gotoPreviousFolder: () => void;
+    goToTrash: () => void;
+};
+export declare const useSearchParams: () => ISearchParameters & IActionParameters;
+export declare const useSelectedNodeId: () => string | undefined;
+export declare const useSelectedFolders: () => IFolder[];
+export declare const useSelectedResources: () => IResource[];
+export declare const useSearchConfig: () => {
+    minLength: number;
+};
+export declare const useFolderIds: () => string[];
+export declare const useResourceIds: () => string[];
+export declare const useResourceAssetIds: () => string[];
+export declare const useResourceWithoutIds: () => IResource[];
+export declare const useCurrentFolder: () => Partial<IFolder>;
+export declare const useIsTrash: () => boolean;
+export declare const useResourceIsTrash: () => boolean;
+export declare const useResourceOrFolderIsDraggable: () => ElementDrag;
+export declare const useElementDragOver: () => ElementOver;
+export declare const useResourceActionDisable: () => boolean;
+export declare const useIsRoot: () => boolean;
+export declare const useTreeStatus: () => string | undefined;
+export {};

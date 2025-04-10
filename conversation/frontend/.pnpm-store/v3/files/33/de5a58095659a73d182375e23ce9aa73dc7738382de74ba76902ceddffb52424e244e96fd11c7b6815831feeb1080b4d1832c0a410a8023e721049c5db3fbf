@@ -1,0 +1,13 @@
+import { WorkspaceElement } from '@edifice.io/client';
+import { CardProps } from '../../../components';
+export interface FileCardProps extends CardProps {
+    /**
+     * WorkspaceElement
+     * */
+    doc: WorkspaceElement;
+}
+declare const FileCard: {
+    ({ doc, isClickable, isSelectable, isSelected, onClick, className, }: FileCardProps): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default FileCard;

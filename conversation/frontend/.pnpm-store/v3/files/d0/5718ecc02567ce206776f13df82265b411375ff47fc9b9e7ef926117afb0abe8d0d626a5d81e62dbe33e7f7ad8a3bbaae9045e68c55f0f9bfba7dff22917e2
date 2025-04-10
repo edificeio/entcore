@@ -1,0 +1,5 @@
+declare const DropdownSeparator: {
+    (): import("react/jsx-runtime").JSX.Element;
+    displayName: string;
+};
+export default DropdownSeparator;

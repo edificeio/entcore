@@ -1,0 +1,5 @@
+export declare class StringUtils {
+    static isLocalURL(str: string): boolean;
+    static startWithHttp(str: string): boolean;
+    static toCounter(counter: number): string;
+}

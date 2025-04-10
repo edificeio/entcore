@@ -1,0 +1,18 @@
+import { App, GetContextParameters, ILinkedResource } from '@edifice.io/client';
+/**
+ * A hook to search for resources produced by applications.
+ *
+ * @param appCode Currently running application.
+ * @returns An object with 2 fields :
+ *
+ * `resourceApplications: Array<App>`
+ * Resources-producing applications the user can use.
+ *
+ * `loadResources: (filters:GetContextParameters) => Promise<ILinkedResource[]>`
+ * A search method with filters.
+ *
+ */
+export declare const useResourceSearch: (appCode: App) => {
+    resourceApplications: Array<App>;
+    loadResources: (filters: GetContextParameters) => Promise<ILinkedResource[]>;
+};

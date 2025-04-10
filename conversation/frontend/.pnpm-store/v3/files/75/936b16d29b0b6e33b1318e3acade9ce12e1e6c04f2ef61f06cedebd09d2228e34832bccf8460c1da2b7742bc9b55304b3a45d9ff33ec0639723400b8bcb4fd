@@ -1,0 +1,1 @@
+export default function useKeyPress(callback: () => void, keyCodes: string[]): void;

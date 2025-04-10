@@ -1,0 +1,11 @@
+import { jsx } from "react/jsx-runtime";
+const TableThead = (props) => {
+  const {
+    children,
+    ...restProps
+  } = props;
+  return /* @__PURE__ */ jsx("thead", { ...restProps, children });
+};
+export {
+  TableThead
+};
