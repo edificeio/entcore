@@ -1,4 +1,4 @@
-import { useSelectedFolders } from '~/store';
+import { useAppActions, useSelectedFolders } from '~/store';
 import { useToast } from '@edifice.io/react';
 import {
   searchFolder,
@@ -20,6 +20,7 @@ export function useFolderActions() {
   const currentFolder = useSelectedFolder();
   const foldersTreeQuery = useFoldersTree();
   const selectedFolders = useSelectedFolders();
+  const { setSelectedFolders } = useAppActions();
   const createMutation = useCreateFolder();
   const trashMutation = useTrashFolder();
   const renameMutation = useRenameFolder();
@@ -33,7 +34,7 @@ export function useFolderActions() {
         name = name.substring(0, MAX_LENGTH);
       }
       if (name.length === 0) {
-        error(t('onversation.error.new.folder'));
+        error(t('conversation.error.new.folder'));
         return false;
       }
 
@@ -71,6 +72,7 @@ export function useFolderActions() {
         {
           onSuccess: () => {
             success(t('conversation.success.trash.folder'));
+            setSelectedFolders([]);
             if (
               id === currentFolder.folderId ||
               id === currentFolder.userFolder?.id
@@ -92,6 +94,7 @@ export function useFolderActions() {
     error,
     navigate,
     selectedFolders,
+    setSelectedFolders,
     success,
     t,
     trashMutation,

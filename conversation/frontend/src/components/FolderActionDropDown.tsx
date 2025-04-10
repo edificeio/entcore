@@ -11,22 +11,22 @@ import { useI18n } from '~/hooks';
 import { Folder } from '~/models';
 
 export function FolderActionDropDown({ folder }: { folder: Folder }) {
-  const { common_t } = useI18n();
+  const { common_t, t } = useI18n();
   const { handleMove, handleRename, handleTrash } = useFolderHandlers();
 
   const options = [
     {
-      label: common_t('move'),
+      label: t('move.first.caps'),
       icon: <IconFolderMove />,
       action: handleMove,
     },
     {
-      label: common_t('rename'),
+      label: t('rename'),
       icon: <IconEdit />,
       action: handleRename,
     },
     {
-      label: common_t('delete'),
+      label: t('delete'),
       icon: <IconDelete />,
       action: handleTrash,
     },
