@@ -135,7 +135,7 @@
   "message.replied": "Vous avez répondu à ce message",
   "message.has.attachment": "Ce message contient des pièces jointes",
   "message.warning.original.button": "Voir l’ancienne version",
-  "message.warning.original.text": "Ce message a été créé avec une version antérieure de l'application'. S’il ne s’affiche pas correctement, vous pouvez voir l’ancienne version.",
+  "message.warning.original.text": "Ce message a été créé avec une version antérieure de l'application. S’il ne s’affiche pas correctement, vous pouvez voir l’ancienne version.",
   "message.modal.original.title": "Ancienne version du message ",
   "message.modal.notfound.or.unauthorized": "Ce message n'existe pas, ou ne vous est pas accessible.",
   "ml.sent": "Message envoyé",
