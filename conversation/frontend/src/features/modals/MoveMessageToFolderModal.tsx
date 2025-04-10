@@ -1,9 +1,10 @@
 import { Button, Modal, Tree, TreeItem, useToast } from '@edifice.io/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useFolderActions, useI18n } from '~/hooks';
+import { useI18n } from '~/hooks';
 import { buildTree, useFolderUtils, useMoveMessage } from '~/services';
 import { useAppActions, useSelectedMessageIds } from '~/store';
+import { useFolderActions } from './hooks';
 
 export function MoveMessageToFolderModal() {
   const { t, common_t } = useI18n();
