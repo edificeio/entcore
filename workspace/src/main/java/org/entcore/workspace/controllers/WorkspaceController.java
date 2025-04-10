@@ -522,20 +522,22 @@ public class WorkspaceController extends BaseController {
 		});
 	}
 
+	//TODO should delete this api and use copyDocument/copyDocuments instead
+	@Deprecated()
 	@Put("/folder/copy/:id")
 	@SecuredAction(value = "workspace.read", type = ActionType.RESOURCE)
 	public void copyFolder(final HttpServerRequest request) {
 		request.setExpectMultipart(true);
 		request.endHandler(v -> {
 			final String id = request.params().get("id");
-			final String parentFolderId = request.formAttributes().get("parentFolderId");
+			//final String parentFolderId = request.formAttributes().get("parentFolderId");
 			if (StringUtils.isEmpty(id)) {
 				badRequest(request);
 				return;
 			}
 			UserUtils.getUserInfos(eb, request, userInfos -> {
 				if (userInfos != null) {
-					workspaceService.copy(id, Optional.ofNullable(parentFolderId), userInfos, event -> {
+					workspaceService.copy(id, Optional.empty(), userInfos, event -> {
 						if (event.succeeded()) {
 							renderJson(request, event.result());
 						} else {

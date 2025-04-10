@@ -68,12 +68,23 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 			case "getPreview":
 				authorizeGetDocument(request, user, binding.getServiceMethod(), handler);
 				break;
+			case "copyDocument":
+				// check wether we can read source docs
+				authorizeDocumentOrFolder(request, user, binding.getServiceMethod(), res -> {
+					if (res) {
+						// check whether we can write in dest folder
+						authorizeDocumentOrFolder(request, user, WorkspaceController.WRITE_ACTION, "folder", handler);
+					} else {
+						// not authorize to read
+						handler.handle(res);
+					}
+				});
+				break;
 			case "commentDocument":
 			case "commentFolder":
 			case "updateDocument":
 			case "moveDocument":
 			case "moveFolder":
-			case "copyDocument":
 			case "copyFolder":
 			case "deleteDocument":
 			case "deleteFolder":
@@ -83,18 +94,18 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 			case "removeShare":
 			case "getRevision":
 			case "listRevisions":
-				authorizeDocument(request, user, binding.getServiceMethod(), handler);
+				authorizeDocumentOrFolder(request, user, binding.getServiceMethod(), handler);
 				break;
 			case "deleteRevision":
 				authorizeRevisionOwner(request, user, binding.getServiceMethod(), new Handler<Boolean>() {
 					public void handle(Boolean check) {
 						if (check) {
-							authorizeDocument(request, user,
+							authorizeDocumentOrFolder(request, user,
 									serviceMethod.substring(0, WorkspaceController.class.getName().length() + 1)
 											+ "updateDocument",
 									handler);
 						} else {
-							authorizeDocument(request, user, binding.getServiceMethod(), handler);
+							authorizeDocumentOrFolder(request, user, binding.getServiceMethod(), handler);
 						}
 					}
 				});
@@ -103,19 +114,30 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 				authorizeCommentOwner(request, user, binding.getServiceMethod(), new Handler<Boolean>() {
 					public void handle(Boolean check) {
 						if (check) {
-							authorizeDocument(request, user,
+							authorizeDocumentOrFolder(request, user,
 									serviceMethod.substring(0, WorkspaceController.class.getName().length() + 1)
 											+ "commentDocument",
 									handler);
 						} else {
-							authorizeDocument(request, user, binding.getServiceMethod(), handler);
+							authorizeDocumentOrFolder(request, user, binding.getServiceMethod(), handler);
 						}
+					}
+				});
+				break;
+			case "copyDocuments":
+				// check wether we can read source docs
+				authorizeDocuments(request, user, binding.getServiceMethod(), res -> {
+					if (res) {
+						// check whether we can write in dest folder
+						authorizeDocumentOrFolder(request, user, WorkspaceController.WRITE_ACTION, "folder", handler);
+					} else {
+						// not authorize to read
+						handler.handle(res);
 					}
 				});
 				break;
 			case "moveDocuments":
 			case "moveTrashFolder":
-			case "copyDocuments":
 			case "moveTrash":
 			case "restoreFolder":
 			case "restoreTrash":
@@ -131,7 +153,7 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 			case "getParentInfos":
 			case "renameDocument":
 			case "renameFolder":
-				authorizeDocument(request, user, binding.getServiceMethod(), handler);
+				authorizeDocumentOrFolder(request, user, binding.getServiceMethod(), handler);
 				break;
 			default:
 				handler.handle(false);
@@ -279,9 +301,14 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 		}
 	}
 
-	private void authorizeDocument(HttpServerRequest request, UserInfos user, String serviceMethod,
-                       Handler<Boolean> handler) {
-		String id = request.params().get("id");
+	private void authorizeDocumentOrFolder(HttpServerRequest request, UserInfos user, String serviceMethod,
+										   Handler<Boolean> handler) {
+		authorizeDocumentOrFolder(request, user, serviceMethod, "id", handler);
+	}
+
+	private void authorizeDocumentOrFolder(HttpServerRequest request, UserInfos user, String serviceMethod, final String idParamName,
+										   Handler<Boolean> handler) {
+		String id = request.params().get(idParamName);
 		if (id != null && !id.trim().isEmpty()) {
 			ElementQuery query = new ElementQuery(true);
 			query.setId(id);
