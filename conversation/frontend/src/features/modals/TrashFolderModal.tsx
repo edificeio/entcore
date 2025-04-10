@@ -1,10 +1,11 @@
 import { useAppActions } from '~/store';
-import { Button, Modal } from '@edifice.io/react';
+import { ConfirmModal } from '@edifice.io/react';
 import { useEffect } from 'react';
-import { useFolderActions, useI18n } from '~/hooks';
+import { useI18n } from '~/hooks';
+import { useFolderActions } from './hooks';
 
 export function TrashFolderModal() {
-  const { t, common_t } = useI18n();
+  const { t } = useI18n();
   const { setOpenedModal } = useAppActions();
   const { trashFolder: handleTrashClick, isActionPending } = useFolderActions();
 
@@ -13,39 +14,18 @@ export function TrashFolderModal() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isActionPending]);
 
-  const handleClose = () => setOpenedModal(undefined);
+  const handleCancelClick = () => setOpenedModal(undefined);
 
   return (
-    <Modal
-      size="sm"
+    <ConfirmModal
       id="modalFolderTrash"
+      variant="ok/cancel"
+      header={t('folder.trash.title')}
+      body={t('folder.trash.body')}
+      okText={t('delete')}
+      onCancel={handleCancelClick}
+      onSuccess={handleTrashClick}
       isOpen={true}
-      onModalClose={handleClose}
-    >
-      <Modal.Header onModalClose={handleClose}>{t('put.trash')}</Modal.Header>
-
-      <Modal.Body>{t('folder.trash.body')}</Modal.Body>
-
-      <Modal.Footer>
-        <Button
-          type="button"
-          color="tertiary"
-          variant="ghost"
-          onClick={handleClose}
-        >
-          {common_t('cancel')}
-        </Button>
-        <Button
-          type="button"
-          color="primary"
-          variant="filled"
-          onClick={handleTrashClick}
-          isLoading={isActionPending === true}
-          disabled={isActionPending === true}
-        >
-          {common_t('delete')}
-        </Button>
-      </Modal.Footer>
-    </Modal>
+    ></ConfirmModal>
   );
 }

@@ -1,6 +1,6 @@
 import { Button, Checkbox, Loading, Modal } from '@edifice.io/react';
 import { useI18n } from '~/hooks';
-import { useSignatureHandlers } from './hooks/useSignatureHandlers';
+import { useSignatureHandlers } from './hooks';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useSignaturePreferences } from '~/services';
 import {
