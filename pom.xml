@@ -56,12 +56,16 @@
     </modules>
 
     <properties>
-        <revision>6.0-develop-integration-SNAPSHOT</revision>
+        <revision>6.5-SNAPSHOT</revision>
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
         <modPostgresVersion>2.0-SNAPSHOT</modPostgresVersion>
         <modMongoVersion>4.0-SNAPSHOT</modMongoVersion>
+<<<<<<< HEAD
         <webUtilsVersion>3.1-develop-integration-SNAPSHOT</webUtilsVersion>
+=======
+        <webUtilsVersion>3.1-SNAPSHOT</webUtilsVersion>
+>>>>>>> c057b44f8 (chore: prepare next development iteration)
         <mongodbHelperVersion>3.0-SNAPSHOT</mongodbHelperVersion>
         <jodaTimeVersion>2.9.4</jodaTimeVersion>
         <scramVersion>2.1</scramVersion>
