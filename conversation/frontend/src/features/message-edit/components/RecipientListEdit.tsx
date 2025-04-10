@@ -156,12 +156,12 @@ export function RecipientListEdit({
         onSearchInputChange={handleSearchInputChange}
         variant="ghost"
         renderNoResult={
-          <div>
-            <h3>
+          <div className="p-8">
+            <h4>
               {t('conversation.users.search.noResult.header', {
                 search: searchInputValue,
               })}
-            </h3>
+            </h4>
             <div>{t('conversation.users.search.noResult.text')}</div>
           </div>
         }
