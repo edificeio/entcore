@@ -232,7 +232,7 @@
   "conversation.error.trash.folder": "Le dossier n'a pas pu être supprimé",
   "conversation.success.new.folder": "Le dossier a bien été créé",
   "conversation.success.rename.folder": "Le dossier a bien été renommé",
-  "conversation.success.trash.folder": "Le dossier est a bien été supprimé",
+  "conversation.success.trash.folder": "Le dossier a bien été supprimé",
   "conversation.warn.message.grouped": "Vous créez votre premier message groupé ! Attention, les destinataires pourront répondre aux autres destinataires. Si vous ne souhaitez pas ouvrir une conversation de groupe, ajoutez les utilisateurs en copie cachée.",
   "Manual": "",
   "aria.message.content": "Contenu du message",
