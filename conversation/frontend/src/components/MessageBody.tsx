@@ -45,25 +45,6 @@ export function MessageBody({
     </div>
   ) : (
     <>
-      {message.original_format_exists && !editMode && (
-        <Alert
-          type="warning"
-          className="my-24"
-          button={
-            <Button
-              color="tertiary"
-              type="button"
-              variant="ghost"
-              className="text-gray-700"
-              onClick={() => setOriginalFormatOpen(true)}
-            >
-              {t('message.warning.original.button')}
-            </Button>
-          }
-        >
-          {t('message.warning.original.text')}
-        </Alert>
-      )}
       <section className="d-flex flex-column gap-16">
         <Editor
           id="messageBody"
@@ -75,6 +56,26 @@ export function MessageBody({
         />
         <MessageAttachments message={message} editMode={editMode} />
       </section>
+
+      {message.original_format_exists && !editMode && (
+        <Alert
+          type="warning"
+          className="my-24"
+          button={
+            <Button
+              type="button"
+              color="tertiary"
+              variant="ghost"
+              className="btn-icon text-gray-700"
+              onClick={() => setOriginalFormatOpen(true)}
+            >
+              {t('message.warning.original.button')}
+            </Button>
+          }
+        >
+          {t('message.warning.original.text')}
+        </Alert>
+      )}
 
       <Suspense>
         {isOriginalFormatOpen && !editMode && (

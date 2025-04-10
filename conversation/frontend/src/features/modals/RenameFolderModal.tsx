@@ -1,8 +1,9 @@
 import { useAppActions, useSelectedFolders } from '~/store';
 import { Button, FormControl, Input, Label, Modal } from '@edifice.io/react';
 import { useCallback, useEffect, useRef } from 'react';
-import { useFolderActions, useI18n } from '~/hooks';
+import { useI18n } from '~/hooks';
 import { searchFolder } from '~/services';
+import { useFolderActions } from './hooks';
 
 export function RenameFolderModal() {
   const { t, common_t } = useI18n();
