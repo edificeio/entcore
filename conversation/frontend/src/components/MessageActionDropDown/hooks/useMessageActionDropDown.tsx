@@ -206,6 +206,15 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
       },
       hidden: !message.trashed,
     },
+    {
+      label: t('transfer'),
+      id: 'transfer',
+      icon: <IconRedo />,
+      action: () => {
+        alert('transfer');
+      },
+      hidden: message.state !== 'SENT' || message.trashed,
+    },
   ];
 
   const dropdownOptions = [
@@ -254,33 +263,7 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
         (message.state !== 'DRAFT' && !message.trashed),
     },
     {
-      label: t('trash'),
-      id: 'trash',
-      icon: <IconDelete />,
-      action: () => {
-        moveToTrashQuery.mutate({ id: message.id });
-        navigate(`../..`, { relative: 'path' });
-      },
-      hidden: !hasActionsList('trash') || message.trashed,
-    },
-    {
-      label: t('delete'),
-      id: 'delete',
-      icon: <IconDelete />,
-      action: handleDeleteClick,
-      hidden: !hasActionsList('delete') || !message.trashed,
-    },
-    {
-      label: t('print'),
-      id: 'print',
-      icon: <IconPrint />,
-      action: () => {
-        alert('print');
-      },
-      hidden: !hasActionsList('print') || message.state === 'DRAFT',
-    },
-    {
-      label: t('move'),
+      label: t('move.first.caps'),
       id: 'move',
       icon: <IconFolderMove />,
       action: () => {
@@ -299,6 +282,32 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
         !hasActionsList('remove-from-folder-modal') ||
         !isInFolder ||
         message.state === 'DRAFT',
+    },
+    {
+      label: t('print'),
+      id: 'print',
+      icon: <IconPrint />,
+      action: () => {
+        alert('print');
+      },
+      hidden: !hasActionsList('print') || message.state === 'DRAFT',
+    },
+    {
+      label: t('trash'),
+      id: 'trash',
+      icon: <IconDelete />,
+      action: () => {
+        moveToTrashQuery.mutate({ id: message.id });
+        navigate(`../..`, { relative: 'path' });
+      },
+      hidden: !hasActionsList('trash') || message.trashed,
+    },
+    {
+      label: t('delete'),
+      id: 'delete',
+      icon: <IconDelete />,
+      action: handleDeleteClick,
+      hidden: !hasActionsList('delete') || !message.trashed,
     },
   ];
 
