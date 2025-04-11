@@ -2,6 +2,7 @@ import {
   List,
   Loading,
   ToolbarItem,
+  useBreakpoint,
   useEdificeClient,
 } from '@edifice.io/react';
 import {
@@ -14,13 +15,13 @@ import {
 } from '@edifice.io/react/icons';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import { useSelectedFolder } from '~/hooks';
 import { useFolderMessages } from '~/services';
 import { useAppActions } from '~/store/actions';
 import { MessageItem } from './components/MessageItem';
 import useToolbarActions from './hooks/useToolbarActions';
 import useToolbarVisibility from './hooks/useToolbarVisibility';
-import { useSearchParams } from 'react-router-dom';
 
 export function MessageList() {
   const { folderId } = useSelectedFolder();
@@ -49,13 +50,13 @@ export function MessageList() {
   } = useToolbarActions(messages);
 
   const {
-    canBeMoveToFolder,
-    canBeMovetoTrash,
-    canEmptyTrash,
-    canMarkAsReadMessages,
-    canMarkAsUnReadMessages,
-    isInFolder,
-    isTrashMessage,
+    showEmptyTrash,
+    showFolderActions,
+    showMarkAsReadMessages,
+    showMarkAsUnReadMessages,
+    showMoveToFolder,
+    showMoveToTrash,
+    showTrashActions,
   } = useToolbarVisibility(messages);
 
   const [keyList, setKeyList] = useState(0);
@@ -83,120 +84,82 @@ export function MessageList() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isLoadingMessage, isLoadingNextPage, fetchNextPage, hasNextPage]);
 
-  const toolbar: ToolbarItem[] = [
+  const toolbarItemsData = [
     {
-      type: 'button',
       name: 'read',
-      props: {
-        children: (
-          <>
-            <IconReadMail />
-            <span>{t('tag.read')}</span>
-          </>
-        ),
-        onClick: handleMarkAsReadClick,
-        hidden: !canMarkAsReadMessages,
-      },
+      visibility: showMarkAsReadMessages,
+      label: t('tag.read'),
+      icon: <IconReadMail />,
+      onClick: handleMarkAsReadClick,
     },
     {
-      type: 'button',
       name: 'unread',
-      props: {
-        children: (
-          <>
-            <IconUnreadMail />
-            <span>{t('tag.unread')}</span>
-          </>
-        ),
-        onClick: handleMarkAsUnreadClick,
-        hidden: !canMarkAsUnReadMessages,
-      },
+      visibility: showMarkAsUnReadMessages,
+      label: t('tag.unread'),
+      icon: <IconUnreadMail />,
+      onClick: handleMarkAsUnreadClick,
     },
     {
-      type: 'button',
       name: 'delete',
-      props: {
-        children: (
-          <>
-            <IconDelete />
-            <span>{t('delete')}</span>
-          </>
-        ),
-        onClick: handleMoveToTrash,
-        hidden: !canBeMovetoTrash,
-      },
+      visibility: showMoveToTrash,
+      label: t('delete'),
+      icon: <IconDelete />,
+      onClick: handleMoveToTrash,
     },
     {
-      type: 'button',
       name: 'restore',
-      props: {
-        children: (
-          <>
-            <IconRestore />
-            <span>{t('restore')}</span>
-          </>
-        ),
-        onClick: handleRestore,
-        hidden: !isTrashMessage,
-      },
+      visibility: showTrashActions,
+      label: t('restore'),
+      icon: <IconRestore />,
+      onClick: handleRestore,
     },
     {
-      type: 'button',
       name: 'move',
-      props: {
-        children: (
-          <>
-            <IconFolderMove />
-            <span>{t('move')}</span>
-          </>
-        ),
-        onClick: handleMoveToFolder,
-        hidden: !canBeMoveToFolder,
-      },
+      visibility: showMoveToFolder,
+      label: t('move'),
+      icon: <IconFolderMove />,
+      onClick: handleMoveToFolder,
     },
     {
-      type: 'button',
       name: 'delete-definitely',
-      props: {
-        children: (
-          <>
-            <IconDelete />
-            <span>{t('delete.definitely')}</span>
-          </>
-        ),
-        onClick: handleDelete,
-        hidden: !isTrashMessage,
-      },
+      visibility: showTrashActions,
+      label: t('delete.definitely'),
+      icon: <IconDelete />,
+      onClick: handleDelete,
     },
     {
-      type: 'button',
       name: 'remove-from-folder',
-      props: {
-        children: (
-          <>
-            <IconFolderDelete />
-            <span>{t('remove.from.folder')}</span>
-          </>
-        ),
-        onClick: handleRemoveFromFolder,
-        hidden: !isInFolder,
-      },
+      visibility: showFolderActions,
+      label: t('remove.from.folder'),
+      icon: <IconFolderDelete />,
+      onClick: handleRemoveFromFolder,
     },
     {
-      type: 'button',
       name: 'empty-trash',
-      props: {
-        children: (
-          <>
-            <IconDelete />
-            <span>{t('empty.trash')}</span>
-          </>
-        ),
-        onClick: handleEmptyTrash,
-        hidden: !canEmptyTrash,
-      },
+      visibility: showEmptyTrash,
+      label: t('empty.trash'),
+      icon: <IconDelete />,
+      onClick: handleEmptyTrash,
     },
   ];
+
+  const toolbar: ToolbarItem[] = toolbarItemsData.map(
+    ({ name, label, visibility, icon, onClick }) => ({
+      type: 'button',
+      name,
+      visibility,
+      props: {
+        'children': (
+          <>
+            {icon}
+            <span>{label}</span>
+          </>
+        ),
+        'aria-label': label,
+        onClick,
+      },
+    }),
+  );
 
   if (!messages?.length) return null;
   return (
