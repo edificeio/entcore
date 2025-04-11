@@ -1,5 +1,5 @@
 import { check, sleep } from "k6";
-import {chai, describe } from "https://jslib.k6.io/k6chaijs/4.3.4.0/index.js";
+import {describe } from "https://jslib.k6.io/k6chaijs/4.3.4.0/index.js";
 
 import {
   getTeacherRole,
@@ -26,12 +26,9 @@ import {
   getRandomUser,
   getRandomUserWithProfile,
   Session,
-  createUser,
   ShareBookMarkCreationRequest,
   createUserAndGetData,
   createShareBookMarkOrFail,
-  getProfileGroupOfStructure,
-  getProfileGroupOfStructureByType,
   removeCommunicationBetweenGroups,
   getGuestRole
 } from "../../../node_modules/edifice-k6-commons/dist/index.js";
@@ -187,28 +184,37 @@ function testSharesViaProfileGroupInDifferentSchools(data) {
     const studentRole2 = getStudentRole(structure2)
     const teacher1 = getRandomUserWithProfile(users1, 'Teacher');
     const teacher12 = getRandomUserWithProfile(users1, 'Teacher', [teacher1]);
-    const parent = getRandomUserWithProfile(users2, 'Relative')
+    const parent1 = getRandomUserWithProfile(users1, 'Relative')
+    const parent2 = getRandomUserWithProfile(users2, 'Relative')
     console.log("Teacher 1 - ", teacher1.login);
     console.log("Teacher 1.2 - ", teacher12.login);
-    console.log("Parent - ", parent.login);
+    console.log("Parent 1 - ", parent1.login);
+    console.log("Parent 2 - ", parent2.login);
     // Teacher upload a file
     authenticateWeb(teacher1.login, 'password');
     const uploadedFile = uploadFile(fileToUpload);
     const fileId = uploadedFile._id;
+    // Share this file to parent 1 as a manager -> ok
     // Share this file to parents 2 as a manager -> ok
     const shares = {bookmarks: {}, groups: {}, users: {}}
+    shares.users[parent1.id] = WS_MANAGER_SHARE;
     shares.groups[parentRole2.id] = WS_MANAGER_SHARE;
     res = shareFile(fileId, shares);
-    checkShareOk(res, 'teacher of school 1 shares to parents group of school 2')
+    checkShareOk(res, 'teacher of school 1 shares to parents group of school 2 and parent of school 1')
     res = getShares(fileId)
+    checkPresentShares(res, "users", [parent1.id], "parent of school 1 appears in shares")
     checkPresentShares(res, "groups", [parentRole2.id], "parents group of school 2 appears in shares")
     // Parent of school 2 tries to share it to students of school 2 -> ok
-    let parentSession = <Session>authenticateWeb(parent.login, 'password');
+    let parentSession = <Session>authenticateWeb(parent2.login, 'password');
     shares.groups[studentRole2.id] = WS_READER_SHARE;
+    // Check that the shares of school 1 are still ok
+    // Sleep 5 seconds
+    console.log("Sleeping");
     res = shareFile(fileId, shares)
     checkShareOk(res, 'parent of school 2 shares to students of school 2')
     res = getShares(fileId)
     checkPresentShares(res, "groups", [studentRole2.id], "student group of school 2 appears in shares")
+    checkPresentShares(res, "users", [parent1.id], "parent of school 1 still appears in shares after parent of school 2 shares")
     // Teacher 2 of school 1 tries to modify shares of students of school 2 -> ko
     shares.groups[studentRole2.id] = WS_MANAGER_SHARE;
     authenticateWeb(teacher12.login, 'password')
@@ -222,6 +228,17 @@ function testSharesViaProfileGroupInDifferentSchools(data) {
     shares.users[teacher1.id] = WS_MANAGER_SHARE
     res = shareFile(fileId, shares)
     checkShareOk(res, 'parent of school 2 tries to add creator as a manager')
+    // Check that the shares of school 1 are still ok
+    res = getShares(fileId)
+    checkPresentShares(res, "users", [parent1.id], "parent of school 1 still appears in shares after shares from school 2")
+    // Check that if user of school 2 removes his shares to student of school 2, the shares of school 1 are still ok
+    delete shares.groups[studentRole2.id]
+    res = shareFile(fileId, shares)
+    checkShareOk(res, 'parent of school 2 removes shares to student of school 2')
+    res = getShares(fileId)
+    checkPresentShares(res, "users", [parent1.id], "parent of school 1 still appears in shares after shares from school 2")
+    checkPresentShares(res, "groups", [parentRole2.id], "parents group of school 2 appears in shares after shares from school 2")
+    checkAbsentShares(res, "groups", [studentRole2.id], "student group of school 2 does not appear in shares after shares from school 2")
   })
 }
 function testSharesViaBroadcastGroupInDifferentSchools(data) {
