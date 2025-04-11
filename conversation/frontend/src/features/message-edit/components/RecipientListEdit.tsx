@@ -80,6 +80,12 @@ export function RecipientListEdit({
     setRecipientArray((prev) =>
       prev.filter((item) => item.id !== recipient.id),
     );
+    recipients.users = recipients.users.filter(
+      (item) => item.id !== recipient.id,
+    );
+    recipients.groups = recipients.groups.filter(
+      (item) => item.id !== recipient.id,
+    );
     updateMessage();
   };
 
@@ -169,13 +175,13 @@ export function RecipientListEdit({
         renderSelectedItems={recipientArray.map((recipient) => {
           const type = 'size' in recipient ? 'group' : 'user';
           return (
-            <Fragment key={recipient.id}>
+            <li key={recipient.id} className="d-inline">
               <RecipientListSelectedItem
                 recipient={recipient}
                 type={type}
                 onRemoveClick={handleRemoveRecipient}
               />
-            </Fragment>
+            </li>
           );
         })}
         renderList={(recipients) => (
