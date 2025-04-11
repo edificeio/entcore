@@ -177,7 +177,7 @@
 //	private void addStructure(final Handler<String> handler) {
 //		JsonObject action = new JsonObject().put("action", "manual-create-structure")
 //				.put("data", new JsonObject().put("name", "bla"));
-//		eb.send(ENTCORE_FEEDER, action,new Handler<Message<JsonObject>>() {
+//		eb.request(ENTCORE_FEEDER, action,new Handler<Message<JsonObject>>() {
 //			@Override
 //			public void handle(Message<JsonObject> event) {
 //				assertEquals("ok", event.body().getString("status"));
@@ -195,7 +195,7 @@
 //				.put("structureId", structureId)
 //				.put("data", new JsonObject()
 //						.put("firstName", "blip").putString("lastName", "blop"));
-//		eb.send(ENTCORE_FEEDER, j, new Handler<Message<JsonObject>>() {
+//		eb.request(ENTCORE_FEEDER, j, new Handler<Message<JsonObject>>() {
 //			@Override
 //			public void handle(Message<JsonObject> event) {
 //				assertEquals(expectedStatus, event.body().getString("status"));
@@ -248,7 +248,7 @@
 //			@Override
 //			public void handle(AsyncResult<Void> event) {
 //				if (event.succeeded()) {
-//					eb.send(ENTCORE_FEEDER, new JsonObject().put("action", "transition"),
+//					eb.request(ENTCORE_FEEDER, new JsonObject().put("action", "transition"),
 //							new Handler<Message<JsonObject>>() {
 //						@Override
 //						public void handle(Message<JsonObject> message) {
@@ -263,7 +263,7 @@
 //	}
 //
 //	private void importAAF(final Handler<Void> handler) {
-//		eb.send(ENTCORE_FEEDER, new JsonObject().put("action", "import"), new Handler<Message<JsonObject>>() {
+//		eb.request(ENTCORE_FEEDER, new JsonObject().put("action", "import"), new Handler<Message<JsonObject>>() {
 //			@Override
 //			public void handle(Message<JsonObject> message) {
 //				assertEquals("ok", message.body().getString("status"));
@@ -323,7 +323,7 @@
 //			@Override
 //			public void handle(AsyncResult<Void> event) {
 //				if (event.succeeded()) {
-//					eb.send(ENTCORE_FEEDER, new JsonObject().put("action", "import"),
+//					eb.request(ENTCORE_FEEDER, new JsonObject().put("action", "import"),
 //							new Handler<Message<JsonObject>>() {
 //								@Override
 //								public void handle(Message<JsonObject> message) {

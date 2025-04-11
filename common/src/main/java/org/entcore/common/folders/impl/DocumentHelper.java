@@ -154,30 +154,29 @@ public class DocumentHelper {
 		}
 	}
 
-	public static JsonObject setModified(JsonObject doc, Date date)
-	{
-		try
-		{
-			// Check that the dates are in string format
-			String m = doc.getString("modified");
-			String c = doc.getString("created");
-
-			//If we get there, the dates should be strings
+	public static JsonObject setModified(JsonObject doc, Date date) {
+		Object modified = doc.getValue("modified");
+		Object created = doc.getValue("created");
+		// Check that the dates are in string format
+		// we also check for nullity to keep the same behaviour as in vertx 3
+		if((modified == null || modified instanceof String) &&
+			(created == null || created instanceof String)) {
 			String now = MongoDb.formatDate(date != null ? date : new Date());
 
 			doc.put("modified", now);
 
-			if(c == null)
+			if(created == null) {
 				doc.put("created", now);
-		}
-		catch(Exception e)
-		{
+			}
+		} else {
+			// It appears that those dates were in fact objects
 			JsonObject now = MongoDb.now();
 
 			doc.put("modified", now);
 
-			if(doc.getJsonObject("created") == null)
-					doc.put("created", now);
+			if(created == null) {
+				doc.put("created", now);
+			}
 		}
 
 		return doc;

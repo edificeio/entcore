@@ -41,7 +41,7 @@ public class FranceConnectServiceProvider implements OpenIdConnectServiceProvide
 	private static final String QUERY_PIVOT_FC =
 			"MATCH (u:User) WHERE (lower(u.lastName) = lower({family_name}) OR lower(u.lastName) = lower({preferred_username})) " +
 			"AND lower({given_name}) CONTAINS lower(u.firstName) AND u.birthDate = {birthdate} AND NOT(HAS(u.subFC)) " +
-			"SET u.subFC = {sub}, u.federated = {setFederated} " +
+			"SET u.subFC = {sub}, u.federated = {setFederated}, u.changePw=null " +
 			"WITH u " + AbstractSSOProvider.RETURN_QUERY;
 	private static final String QUERY_MAPPING_FC =
 			"MATCH (n:User {login:{login}}) " +
@@ -50,7 +50,7 @@ public class FranceConnectServiceProvider implements OpenIdConnectServiceProvide
 	private static final String QUERY_SET_MAPPING_FC =
 			"MATCH (u:User {login:{login}}) " +
 			"WHERE NOT(HAS(u.subFC)) " +
-			"SET u.subFC = {sub}, u.federated = {setFederated} " +
+			"SET u.subFC = {sub}, u.federated = {setFederated}, u.changePw=null " +
 			"WITH u " + AbstractSSOProvider.RETURN_QUERY;
 	private boolean setFederated = true;
 

@@ -1,7 +1,6 @@
 package org.entcore.workspace.controllers;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
-import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.http.response.DefaultResponseHandler.asyncArrayResponseHandler;
@@ -17,6 +16,7 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 
 import fr.wseduc.rs.*;
+import io.vertx.core.*;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
@@ -44,17 +44,12 @@ import org.vertx.java.core.http.RouteMatcher;
 
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.security.ActionType;
-import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.ETag;
 import fr.wseduc.webutils.request.RequestUtils;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -78,7 +73,8 @@ public class WorkspaceController extends BaseController {
 	private final PdfGenerator pdfGenerator;
 	private DocumentDao dao;
 	private FolderManager folderManager;
-
+	// disable full text search for workspace
+	private boolean disableFullTextSearch;
 	private Storage storage;
 
 	public WorkspaceController(Storage storage, WorkspaceService workspaceService,
@@ -90,6 +86,10 @@ public class WorkspaceController extends BaseController {
 		this.pdfGenerator = aPdfGenerator;
 		this.dao = new DocumentDao(mongo);
 		this.folderManager = fm;
+	}
+
+	public void setDisableFullTextSearch(boolean disableFullTextSearch) {
+		this.disableFullTextSearch = disableFullTextSearch;
 	}
 
 	@Post("/document")
@@ -159,7 +159,7 @@ public class WorkspaceController extends BaseController {
 					}
 					final Future<FolderImporterZip.FolderImporterZipContext> future = FolderImporterZip.createContext(vertx, userInfos, request);
 					request.resume();
-					future.setHandler(resContext -> {
+					future.onComplete(resContext -> {
 						if(resContext.succeeded()){
 							final FolderImporterZip.FolderImporterZipContext context = resContext.result();
 							if(hasFoundParent){
@@ -215,11 +215,22 @@ public class WorkspaceController extends BaseController {
 				if (userInfos != null) {
 					JsonObject folder = new JsonObject().put("name", name).put("application", MEDIALIB_APP);
                     if (externalId == null || externalId.trim().isEmpty()){
-						if (parentFolderId == null || parentFolderId.trim().isEmpty())
+						if (parentFolderId == null || parentFolderId.trim().isEmpty()) {
+							// if the parent folder id is null, we can create the folder in the root folder
 							workspaceService.createFolder(folder, userInfos, asyncDefaultResponseHandler(request, 201));
-						else
-							workspaceService.createFolder(parentFolderId, userInfos, folder,
-									asyncDefaultResponseHandler(request, 201));
+						} else {
+							// check if the user has write access on the parent folder (the api is only protected by workflow rights)
+ 							workspaceService.canWriteOn(Optional.ofNullable(parentFolderId), userInfos, canWrite -> {
+								if(canWrite.succeeded() && canWrite.result().isPresent()){
+									// if the user has write access on the parent folder, we can create the folder
+									workspaceService.createFolder(parentFolderId, userInfos, folder,
+											asyncDefaultResponseHandler(request, 201));
+								} else {
+									// if the user has no write access on the parent folder, we can't create the folder
+									unauthorized(request);
+								}
+							});
+						}
                     }else {
 						workspaceService.createExternalFolder(folder, userInfos, externalId, asyncDefaultResponseHandler(request, 200));
                     }
@@ -365,7 +376,7 @@ public class WorkspaceController extends BaseController {
 							if (recipientIds.isEmpty()) {
 								return Future.succeededFuture(new JsonObject());
 							}
-							Future<JsonObject> futureFindResource = Future.future();
+							Promise<JsonObject> futureFindResource = Promise.promise();
 							String elementId = null;
 							if (addVersion) {
 								// notification about a changed file
@@ -376,7 +387,7 @@ public class WorkspaceController extends BaseController {
 							} else {
 								// neither a folderid of a fileid => bad request
 								futureFindResource.fail("the id of the concerned folder was not specified");
-								return futureFindResource;
+								return futureFindResource.future();
 							}
 							final String elementIdFinal = elementId;
 							final ElementQuery notifiedEltQuery = new ElementQuery(true);
@@ -395,8 +406,8 @@ public class WorkspaceController extends BaseController {
 									futureFindResource.fail("missing name or resource" + elementIdFinal);
 								}
 							});
-							return futureFindResource;
-						}).setHandler(ev -> {
+							return futureFindResource.future();
+						}).onComplete(ev -> {
 							if (ev.succeeded()) {
 								Set<String> recipientId = futureRecipientIds.result();
 								JsonObject result = ev.result();
@@ -696,7 +707,11 @@ public class WorkspaceController extends BaseController {
 		// search
 		if (!StringUtils.isEmpty(search)) {
 			final List<String> searchs = StringUtils.split(search, "\\s+");
-			query.setFullTextSearch(searchs);
+			if(disableFullTextSearch) {
+				log.warn("Full text search is disabled for workspace");
+			} else {
+				query.setFullTextSearch(searchs);
+			}
 			query.addSort("modified", ElementSort.Desc);
 		}
 		// parent
@@ -916,8 +931,9 @@ public class WorkspaceController extends BaseController {
 		});
 	}
 
-	private void getFile(final HttpServerRequest request, String owner, boolean publicOnly) {
-		workspaceService.findById(request.params().get("id"), owner, publicOnly, new Handler<JsonObject>() {
+	private void getFile(final HttpServerRequest request, final String owner, boolean publicOnly) {
+		final String fileId = request.params().get("id");
+		workspaceService.findById(fileId, owner, publicOnly, new Handler<JsonObject>() {
 			@Override
 			public void handle(JsonObject res) {
 				String status = res.getString("status");
@@ -926,76 +942,96 @@ public class WorkspaceController extends BaseController {
 				if ("ok".equals(status) && jo != null) {
 					boolean createThumbnails = !StringUtils.isEmpty(thumbSize) && (jo.getJsonObject("thumbnails") == null ||
 							StringUtils.isEmpty(jo.getJsonObject("thumbnails").getString(thumbSize)));
-					JsonObject thumbnails = createThumbnails ? new JsonObject().put(thumbSize, "") : new JsonObject();
-					folderManager.createThumbnailIfNeeded(jo, thumbnails, asyncDefaultResponseHandler ->
-					{
-						JsonObject result;
-						boolean failed = asyncDefaultResponseHandler.failed();
-						if (failed == true)
-						{
-							log.error(asyncDefaultResponseHandler.cause());
-							result = jo;
+					boolean useAnyThumbnail;
+					if(createThumbnails) {
+						// We launch the creation of the thumbnail if it was required but we won't wait for its creation.
+						// Instead, we will send the first thumbnail that we find and if none is present, we will send back the original file.
+						// It is a workaround to cut the dependency on the thumbnail creation service.
+						final JsonObject thumbnails = new JsonObject().put(thumbSize, "");
+						folderManager.createThumbnailIfNeeded(jo, thumbnails, asyncDefaultResponseHandler -> {
+							boolean failed = asyncDefaultResponseHandler.failed();
+							if (failed) {
+								log.error("An error occurred while creating file thumbnail " + fileId, asyncDefaultResponseHandler.cause());
+							}
+							else {
+								log.debug("Successfully created thumbnail for file " + fileId);
+							}
+						});
+						useAnyThumbnail = true; // Send back the first thumbnail that we find
+					} else {
+						useAnyThumbnail = false;
+					}
+					String file;
+					if (!createThumbnails && thumbSize != null && !thumbSize.trim().isEmpty()) {
+						file = DocumentHelper.getThumbnails(jo).getString(thumbSize,
+								jo.getString("file"));
+						if(StringUtils.isEmpty(file)) {
+							file = jo.getString("file");
 						}
-						else
-							result = asyncDefaultResponseHandler.result();
-
-						String file;
-						if (failed == false && thumbSize != null && !thumbSize.trim().isEmpty()) {
-							file = DocumentHelper.getThumbnails(result).getString(thumbSize,
-									result.getString("file"));
-							if(file == null || file.trim().isEmpty() == true)
-								file = result.getString("file");
+						// If we looked for a specific thumbnail but couldn't find one "file" has
+						// the value of jo.get("file"), so we use that as a marker that we will instead
+						// return any thumbnail that is present
+						useAnyThumbnail = file != null && file.equals(jo.getString("file"));
+					} else {
+						file = jo.getString("file");
+					}
+					if(useAnyThumbnail) {
+						file = getAnyThumbnail(jo);
+					}
+					if (!StringUtils.isEmpty(file)) {
+						boolean inline = inlineDocumentResponse(jo, request.params().get("application"));
+						if (inline && ETag.check(request, file)) {
+							notModified(request, file);
 						} else {
-							file = result.getString("file");
-						}
+							JsonObject metadata = DocumentHelper.getMetadata(jo);
+							if (!StringUtils.isEmpty(thumbSize) &&
+									DocumentHelper.getContentType(jo).startsWith("video")) {
+								String thumbDownloadName = jo.getString("name");
+								String[] nameSplit = jo.getString("name").split("\\.");
 
-						if (file != null && !file.trim().isEmpty()) {
-							boolean inline = inlineDocumentResponse(result, request.params().get("application"));
-							if (inline && ETag.check(request, file)) {
-								notModified(request, file);
-							} else {
-								JsonObject metadata = DocumentHelper.getMetadata(result);
-								if (thumbSize != null
-										&& !thumbSize.trim().isEmpty()
-										&& DocumentHelper.getContentType(result).startsWith("video")) {
-									String thumbDownloadName = result.getString("name");
-									String[] nameSplit = result.getString("name").split("\\.");
-
-									if (nameSplit != null && nameSplit.length > 1) {
-										thumbDownloadName = nameSplit[0] + ".png";
-									}
-
-									JsonObject thumbMetadata = new JsonObject()
-											.put("content-type", "image/png")
-											.put("filename", thumbDownloadName)
-											.put("size", metadata.getLong("size"));
-
-									storage.sendFile(file, thumbDownloadName, request, inline, thumbMetadata);
-								} else {
-									storage.sendFile(file, result.getString("name"), request, inline, metadata);
+								if (nameSplit != null && nameSplit.length > 1) {
+									thumbDownloadName = nameSplit[0] + ".png";
 								}
-							}
-							// eventStore.createAndStoreEvent(WokspaceEvent.GET_RESOURCE.name(), request,
-							// 		new JsonObject().put("resource", request.params().get("id")));
 
-							// Log Video Event
-							if (request.headers().get("Range") != null
-                                    && request.headers().get("Range").startsWith("bytes=0-")
-                                    && jo.getJsonObject("metadata") != null
-                                    && jo.getJsonObject("metadata").getBoolean("captation", false)) {
-								// TODO: Ici semble le meilleur endroit pour prélever/générer les mesures nécessaires aux VIDEO_EVENT_STREAM
+								JsonObject thumbMetadata = new JsonObject()
+										.put("content-type", "image/png")
+										.put("filename", thumbDownloadName)
+										.put("size", metadata.getLong("size"));
+
+								storage.sendFile(file, thumbDownloadName, request, inline, thumbMetadata);
+							} else {
+								if(useAnyThumbnail) {
+									// Deactivate the cache because we know that the image that we are
+									// sending back is not the version that was asked
+									metadata.put("ETag", String.valueOf(System.currentTimeMillis()));
+								}
+								storage.sendFile(file, jo.getString("name"), request, inline, metadata);
 							}
-						} else {
-							request.response().setStatusCode(404).end();
 						}
-					});
+						// eventStore.createAndStoreEvent(WokspaceEvent.GET_RESOURCE.name(), request,
+						// 		new JsonObject().put("resource", request.params().get("id")));
 
-
+						// Log Video Event
+						if (request.headers().get("Range") != null
+								&& request.headers().get("Range").startsWith("bytes=0-")
+								&& jo.getJsonObject("metadata") != null
+								&& jo.getJsonObject("metadata").getBoolean("captation", false)) {
+							// TODO: Ici semble le meilleur endroit pour prélever/générer les mesures nécessaires aux VIDEO_EVENT_STREAM
+						}
+					} else {
+						request.response().setStatusCode(404).end();
+					}
 				} else {
 					request.response().setStatusCode(404).end();
 				}
 			}
 		});
+	}
+
+	private String getAnyThumbnail(final JsonObject file) {
+		final JsonObject thumbnails = DocumentHelper.getThumbnails(file);
+		final Optional<String> thumbnail = thumbnails.stream().findAny().map(th -> (String)th.getValue());
+		return thumbnail.orElseGet(() -> file.getString("file"));
 	}
 
 	@Get("/pub/document/:id")
@@ -1436,7 +1472,7 @@ public class WorkspaceController extends BaseController {
 				.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
 				.put("username", user.getUsername()).put("appPrefix", pathPrefix + "/workspace").put("doc", "share");
 		JsonObject keys = new JsonObject().put("name", 1).put("eType", 1).put("eParent", 1).put("isShared", 1);
-		Future<JsonObject> futureFindById = Future.future();
+		Promise<JsonObject> futureFindById = Promise.promise();
 		workspaceService.findById(resource, keys, event -> {
 			if ("ok".equals(event.getString("status")) && event.getJsonObject("result") != null) {
 				futureFindById.complete(event.getJsonObject("result"));
@@ -1445,7 +1481,7 @@ public class WorkspaceController extends BaseController {
 				futureFindById.fail("Unable to send timeline notification : missing name on resource " + resource);
 			}
 		});
-		futureFindById.compose(result -> {
+		futureFindById.future().compose(result -> {
 			boolean isFolder = DocumentHelper.isFolder(result);
 			String parentId = DocumentHelper.getParent(result);
 			if (isFolder) {
@@ -1453,7 +1489,7 @@ public class WorkspaceController extends BaseController {
 			} else if (parentId == null) {
 				return Future.succeededFuture(new JsonObject());
 			} else {
-				Future<JsonObject> futureParent = Future.future();
+				Promise<JsonObject> futureParent = Promise.promise();
 				workspaceService.findById(parentId, keys, event -> {
 					if ("ok".equals(event.getString("status")) && event.getJsonObject("result") != null) {
 						futureParent.complete(event.getJsonObject("result"));
@@ -1462,12 +1498,12 @@ public class WorkspaceController extends BaseController {
 						futureParent.complete(new JsonObject());
 					}
 				});
-				return futureParent;
+				return futureParent.future();
 			}
-		}).setHandler(evtParent -> {
+		}).onComplete(evtParent -> {
 			if (evtParent.succeeded()) {
 				JsonObject parent = evtParent.result();
-				JsonObject result = futureFindById.result();
+				JsonObject result = futureFindById.future().result();
 				String resourceName = result.getString("name", "");
 				boolean isFolder = DocumentHelper.isFolder(result);
 				final JsonObject pushNotif = new JsonObject();
@@ -1719,7 +1755,7 @@ public class WorkspaceController extends BaseController {
 			return;
 		}
 		String name = message.body().getString("name");
-		JsonArray t = message.body().getJsonArray("thumbs", new fr.wseduc.webutils.collections.JsonArray());
+		JsonArray t = message.body().getJsonArray("thumbs", new JsonArray());
 		List<String> thumbs = new ArrayList<>();
 		for (int i = 0; i < t.size(); i++) {
 			thumbs.add(t.getString(i));
@@ -1745,6 +1781,7 @@ public class WorkspaceController extends BaseController {
 		context.put("lazyMode", config.getJsonObject("publicConf", new JsonObject()).getBoolean("lazy-mode", false));
 		context.put("cacheDocTTl", config.getJsonObject("publicConf", new JsonObject()).getInteger("ttl-documents", -1));
 		context.put("cacheFolderTtl", config.getJsonObject("publicConf", new JsonObject()).getInteger("ttl-folders", -1));
+		context.put("disableFullTextSearch", disableFullTextSearch);
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(final UserInfos user) {

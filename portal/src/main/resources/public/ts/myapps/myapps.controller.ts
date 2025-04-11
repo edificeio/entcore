@@ -1,8 +1,8 @@
 import http from "axios";
-import { ng, idiom as lang, model, notify, skin } from 'entcore';
+import { idiom as lang, model, ng, notify, skin } from 'entcore';
 import { create } from 'sortablejs';
-import { App } from "./myapps.types";
 import { AppsService } from './myapps.service';
+import { App } from "./myapps.types";
 
 export interface AppControllerScope {
     lang: typeof lang;
@@ -115,6 +115,7 @@ export const appController = ng.controller('ApplicationController', ['$scope', a
         const applications = displayedApplications.filter(app => !app.isExternal);
         if ($scope.display.showConnectorSection && AppsService.getInstance().isConnectorBeforeLastAppInMyApps(applications, connectors)) {
             AppsService.getInstance().orderAppsFirstInMyApps(applications);
+            console.log("Reordering myApps to have apps first and then connectors");
             await http.put('/userbook/preference/apps', model.me.myApps);
         }
 

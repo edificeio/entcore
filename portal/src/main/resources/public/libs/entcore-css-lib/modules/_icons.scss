@@ -121,7 +121,7 @@ i.important::after{
 
 //FLAGS
 
-$flags: fr, en, pt, es, it, de;
+$flags: fr, en, pt, es, it, de, co;
 
 @for $i from 1 through length($flags) {
 	.flag-#{nth($flags, $i)}{

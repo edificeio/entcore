@@ -19,18 +19,29 @@
 
 package org.entcore.feeder;
 
+import fr.wseduc.webutils.I18n;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.Json;
+import org.entcore.common.bus.MessageUtils;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.Neo4jQueryAndParams;
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.neo4j.TransactionHelper;
+import org.entcore.common.schema.Source;
+//import org.entcore.common.schema.users.User;
+//import org.entcore.common.schema.structures.Structure;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.position.UserPositionService;
+import org.entcore.common.user.position.impl.DefaultUserPositionService;
 import org.entcore.common.utils.StringUtils;
+import org.entcore.common.utils.Id;
 import org.entcore.feeder.dictionary.structures.*;
 import org.entcore.feeder.dictionary.structures.User.DeleteTask;
 import org.entcore.feeder.exceptions.TransactionException;
@@ -41,6 +52,7 @@ import org.vertx.java.busmods.BusModBase;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
@@ -55,6 +67,8 @@ public class ManualFeeder extends BusModBase {
 	private final Neo4j neo4j;
 	private EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Feeder.class.getSimpleName());
 	public static final String SOURCE = "MANUAL";
+	private final UserPositionService userPositionService;
+	private Boolean loginAliasValidatorForAD;
 
 	static {
 		Map<String, Validator> p = new HashMap<>();
@@ -66,9 +80,10 @@ public class ManualFeeder extends BusModBase {
 		profiles = Collections.unmodifiableMap(p);
 	}
 
-	public ManualFeeder(Neo4j neo4j, EventBus eb) {
+	public ManualFeeder(Neo4j neo4j, EventBus eb, final UserPositionService userPositionService) {
 		this.neo4j = neo4j;
 		this.eb = eb;
+		this.userPositionService = userPositionService;
 	}
 
 	public void createStructure(final Message<JsonObject> message) {
@@ -222,7 +237,7 @@ public class ManualFeeder extends BusModBase {
 							final JsonArray results = event.body().getJsonArray("results");
 							if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
 								// Notify apps which groups have been deleted.
-								JsonArray r = getOrElse(results.getJsonArray(0), new fr.wseduc.webutils.collections.JsonArray());
+								JsonArray r = getOrElse(results.getJsonArray(0), new JsonArray());
 								if( r!=null && !r.isEmpty() ) {
 									Transition.publishDeleteGroups(eb, logger, r);
 								}
@@ -257,7 +272,7 @@ public class ManualFeeder extends BusModBase {
 
 	public void createUser(final Message<JsonObject> message) {
 		logger.info("enter create user");
-		logger.info(((JsonObject) message.body()).encode());
+		logger.info(message.body().encode());
 		final JsonObject user = getMandatoryObject("data", message);
 		if (user == null) return;
 		if (user.getString("externalId") == null) {
@@ -272,6 +287,12 @@ public class ManualFeeder extends BusModBase {
 		if ("Relative".equals(profile)) {
 			childrenIds = user.getJsonArray("childrenIds");
 		}
+		JsonArray userPositionIds = user.getJsonArray("userPositionIds");;
+		if (userPositionIds != null && !userPositionIds.isEmpty() && !"Personnel".equals(profile)) {
+			logger.warn("Cannot create a user with profile {0} and positions", profile);
+			sendError(message, "user.profiles.not.allowed.for.profile.at.creation");
+			return;
+		}
 		final String userSource = "SSO".equals(user.getString("source")) ? "SSO": SOURCE;
 		final String error = profiles.get(profile).validate(user);
 		if (error != null) {
@@ -285,7 +306,7 @@ public class ManualFeeder extends BusModBase {
 		final String structureId = message.body().getString("structureId");
 		if (structureId != null && !structureId.trim().isEmpty()) {
 			final JsonArray classesNames = message.body().getJsonArray("classesNames");
-			createUserInStructure(message, user, profile, structureId, childrenIds, classesNames);
+			createUserInStructure(message, user, profile, structureId, childrenIds, classesNames, userPositionIds);
 			return;
 		}
 		final String classId = message.body().getString("classId");
@@ -297,7 +318,8 @@ public class ManualFeeder extends BusModBase {
 	}
 
 	private void createUserInStructure(final Message<JsonObject> message,
-			final JsonObject user, String profile, String structureId, JsonArray childrenIds, JsonArray classesNames) {
+			final JsonObject user, String profile, String structureId, JsonArray childrenIds, 
+			JsonArray classesNames, JsonArray userPositionIds) {
 		final Integer transactionId = message.body().getInteger("transactionId");
 		final Boolean commit = message.body().getBoolean("commit", true);
 		StatementsBuilder statementsBuilder = new StatementsBuilder();
@@ -337,133 +359,121 @@ public class ManualFeeder extends BusModBase {
 					.put("source", user.getString("source"));
 			statementsBuilder.add(classesQuery, classesParams);
 		}
-		neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				final JsonArray results = event.body().getJsonArray("results");
-				if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
-					message.reply(event.body().put("result", results.getJsonArray(0)));
-					if (commit.booleanValue()) {
-						eventStore.createAndStoreEvent(Feeder.FeederEvent.CREATE_USER.name(),
+		final Promise<Void> promise = Promise.promise();
+		if (userPositionIds == null) {
+			promise.complete();
+		} else {
+			userPositionService.getUserPositionSettingQueryAndParam(
+				userPositionIds.stream().map(id -> (String) id).collect(Collectors.toSet()),
+				user.getString("id"),
+				message.body().getString("callerId"))
+			.onSuccess(queryAndParams -> {
+				statementsBuilder.add(queryAndParams.getQuery(), queryAndParams.getParams());
+				promise.complete();
+			})
+			.onFailure(promise::fail);
+		}
+		promise.future().onSuccess(e -> {
+			neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit, new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					final JsonArray results = event.body().getJsonArray("results");
+					if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
+						message.reply(event.body().put("result", results.getJsonArray(0)));
+						if (commit) {
+							eventStore.createAndStoreEvent(Feeder.FeederEvent.CREATE_USER.name(),
 								(UserInfos) null, new JsonObject().put("new-user", user.getString("id")));
+						}
+					} else {
+						message.reply(event.body());
 					}
-				} else {
-					message.reply(event.body());
 				}
-			}
+			});
+		}).onFailure(th -> {
+			logger.warn("An error occurred when trying to create user positions update metho", th);
+			message.reply("Unknown error");
 		});
 	}
 
-	public void addUser(final Message<JsonObject> message) {
+	public void addUser(final Message<JsonObject> message)
+	{
 		final String userId = getMandatoryString("userId", message);
 		if (userId == null) return;
 
+		TransactionHelper tx = TransactionHelper.DEFAULT;
+		final Integer transactionId = message.body().getInteger("transactionId");
+		final Boolean commit = message.body().getBoolean("commit", true);
+		if(transactionId != null)
+			tx = new TransactionHelper(Neo4j.getInstance(), Source.MANUAL, transactionId);
+
 		final String structureId = message.body().getString("structureId");
-		if (structureId != null && !structureId.trim().isEmpty()) {
-			addUserInStructure(message, userId, structureId);
-			return;
-		}
 		final String classId = message.body().getString("classId");
-		if (classId != null && !classId.trim().isEmpty()) {
+		if (structureId != null && !structureId.trim().isEmpty())
+		{
+			MessageUtils.replyWithResults(message,
+				new org.entcore.common.schema.users.User(userId).attach(tx, new Id<org.entcore.common.schema.structures.Structure, String>(structureId))
+			);
+
+		}
+		else if (classId != null && !classId.trim().isEmpty())
 			addUserInClass(message, userId, classId);
+		else
+		{
+			sendError(message, "structureId or classId must be specified");
 			return;
 		}
-		sendError(message, "structureId or classId must be specified");
+
+		if(Boolean.TRUE.equals(commit))
+			tx.commit();
 	}
 
 
-	public void addUsers(final Message<JsonObject> message) {
+	public void addUsers(final Message<JsonObject> message)
+	{
 		final JsonArray userIds = message.body().getJsonArray("userIds", new JsonArray());
 		if (userIds.isEmpty()) return;
 
 		final String structureId = message.body().getString("structureId");
-		if (structureId != null && !structureId.trim().isEmpty()) {
-			addUsersInStructure(message, userIds, structureId);
-			return;
-		}
 		final String classId = message.body().getString("classId");
-		if (classId != null && !classId.trim().isEmpty()) {
-			addUsersInClass(message, userIds, classId);
-			return;
-		}
-		sendError(message, "structureId or classId must be specified");
-	}
+		if (structureId != null && !structureId.trim().isEmpty())
+		{
+			TransactionHelper tx = new TransactionHelper(Neo4j.getInstance(), Source.MANUAL);
+			StatementsBuilder statementsBuilder = new StatementsBuilder();
+			for(Object userId : userIds.getList())
+				new org.entcore.common.schema.users.User(userId.toString()).attach(tx, new Id<org.entcore.common.schema.structures.Structure, String>(structureId));
 
-	private void addUserInStructure(final Message<JsonObject> message,
-			String userId, String structureId) {
-		final Integer transactionId = message.body().getInteger("transactionId");
-		final Boolean commit = message.body().getBoolean("commit", true);
-		StatementsBuilder statementsBuilder = new StatementsBuilder();
-		JsonObject params = new JsonObject()
-				.put("structureId", structureId)
-				.put("userId", userId);
-		String query =
-				"MATCH (u:User { id : {userId}})-[:IN]->(opg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-				"WITH u, p " +
-				"MATCH (s:Structure { id : {structureId}})<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->p " +
-				"WITH u, s, pg, MAX(CASE WHEN length([rStruct IN u.removedFromStructures WHERE rStruct = s.externalId]) > 0 THEN null ELSE 'MANUAL' END) AS inSource " +
-				"CREATE UNIQUE pg<-[:IN {source: inSource}]-u " +
-				"SET u.structures = CASE WHEN s.externalId IN u.structures THEN " +
-				"u.structures ELSE coalesce(u.structures, []) + s.externalId END, " +
-				"u.removedFromStructures = [removedStruct IN u.removedFromStructures WHERE removedStruct <> s.externalId]" +
-				"RETURN DISTINCT u.id as id";
-		String removeDefaultGroup = "MATCH (u:User {id:{userId}})-[indpg:IN]-(:DefaultProfileGroup) DELETE indpg;";
-		statementsBuilder.add(query, params);
-		statementsBuilder.add(removeDefaultGroup, params);
-		neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				final JsonArray results = event.body().getJsonArray("results");
-				if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
-					message.reply(event.body().put("result", results.getJsonArray(0)));
-				} else {
-					message.reply(event.body());
+			tx.commit(new Handler<Message<JsonObject>>()
+			{
+				@Override
+				public void handle(Message<JsonObject> res)
+				{
+					message.reply(res.body());
 				}
-			}
-		});
-	}
-
-	private void addUsersInStructure(final Message<JsonObject> message,
-									JsonArray userIds, String structureId) {
-		StatementsBuilder statementsBuilder = new StatementsBuilder();
-		for(Object userId : userIds.getList()){
-			JsonObject params = new JsonObject()
-					.put("structureId", structureId)
-					.put("userId", userId.toString());
-			String query =
-					"MATCH (u:User { id : {userId}})-[:IN]->(opg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
-							"WITH u, p " +
-							"MATCH (s:Structure { id : {structureId}})<-[:DEPENDS]-(pg:ProfileGroup)-[:HAS_PROFILE]->(p) " +
-							"WITH u, s, pg, MAX(CASE WHEN length([rStruct IN u.removedFromStructures WHERE rStruct = s.externalId]) > 0 THEN null ELSE 'MANUAL' END) AS inSource " +
-							"MERGE (pg)<-[:IN {source: inSource}]-(u) " +
-							"SET u.structures = CASE WHEN s.externalId IN u.structures THEN " +
-							"u.structures ELSE coalesce(u.structures, []) + s.externalId END, " +
-							"u.removedFromStructures = [removedStruct IN u.removedFromStructures WHERE removedStruct <> s.externalId]" +
-							"RETURN DISTINCT u.id as id";
-			String removeDefaultGroup = "MATCH (u:User {id:{userId}})-[indpg:IN]-(:DefaultProfileGroup) DELETE indpg;";
-			statementsBuilder.add(query, params);
-			statementsBuilder.add(removeDefaultGroup, params);
+			});
 		}
-		neo4j.executeTransaction(statementsBuilder.build(), null, true, res-> {
-				message.reply(res.body());
-		});
+		else if (classId != null && !classId.trim().isEmpty())
+			addUsersInClass(message, userIds, classId);
+		else
+			sendError(message, "structureId or classId must be specified");
 	}
 
-	public void removeUser(final Message<JsonObject> message) {
+	public void removeUser(final Message<JsonObject> message)
+	{
 		final String userId = getMandatoryString("userId", message);
 		if (userId == null) return;
 
 		final String structureId = message.body().getString("structureId");
-		if (structureId != null && !structureId.trim().isEmpty()) {
-			removeUserFromStructure(message, userId, structureId);
-			return;
-		}
 		final String classId = message.body().getString("classId");
-		if (classId != null && !classId.trim().isEmpty()) {
-			removeUserFromClass(message, userId, classId);
-			return;
+		if (structureId != null && !structureId.trim().isEmpty())
+		{
+			MessageUtils.replyWithResults(message,
+				new org.entcore.common.schema.users.User(userId.toString()).dettach(TransactionHelper.DEFAULT, new Id<org.entcore.common.schema.structures.Structure, String>(structureId))
+			);
 		}
-		sendError(message, "structureId or classId must be specified");
+		else if (classId != null && !classId.trim().isEmpty())
+			removeUserFromClass(message, userId, classId);
+		else
+			sendError(message, "structureId or classId must be specified");
 	}
 
 	public void removeUsers(final Message<JsonObject> message) {
@@ -596,6 +606,8 @@ public class ManualFeeder extends BusModBase {
 			final JsonObject user, String profile, String classId, JsonArray childrenIds) {
 		final Integer transactionId = message.body().getInteger("transactionId");
 		final Boolean commit = message.body().getBoolean("commit", true);
+		// Retrieve user position ids and remove them from user properties before creating user node
+		final JsonArray userPositionIds = (JsonArray) user.remove("userPositionIds");
 		StatementsBuilder statementsBuilder = new StatementsBuilder();
 		String related = "";
 		JsonObject params = new JsonObject()
@@ -619,21 +631,39 @@ public class ManualFeeder extends BusModBase {
 				related +
 				"RETURN DISTINCT u.id as id, u.login AS login";
 		statementsBuilder.add(query, params);
-		neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				final JsonArray results = event.body().getJsonArray("results");
-				if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
-					message.reply(event.body().put("result", results.getJsonArray(0)));
-					if (commit.booleanValue()) {
-						eventStore.createAndStoreEvent(Feeder.FeederEvent.CREATE_USER.name(),
+		final Promise<Void> promise = Promise.promise();
+		if(userPositionIds == null) {
+			promise.complete();
+		} else {
+			userPositionService.getUserPositionSettingQueryAndParam(
+				userPositionIds.stream().map(id -> (String) id).collect(Collectors.toSet()),
+				user.getString("id"),
+				message.body().getString("callerId"))
+			.onSuccess(queryAndParams -> {
+				statementsBuilder.add(queryAndParams.getQuery(), queryAndParams.getParams());
+				promise.complete();
+			}).onFailure(promise::fail);
+		}
+		promise.future().onSuccess(e -> {
+			neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit.booleanValue(), new Handler<Message<JsonObject>>() {
+				@Override
+				public void handle(Message<JsonObject> event) {
+					final JsonArray results = event.body().getJsonArray("results");
+					if ("ok".equals(event.body().getString("status")) && results != null && results.size() > 0) {
+						message.reply(event.body().put("result", results.getJsonArray(0)));
+						if (commit) {
+							eventStore.createAndStoreEvent(Feeder.FeederEvent.CREATE_USER.name(),
 								(UserInfos) null, new JsonObject().put("new-user", user.getString("id")));
+						}
+					} else {
+						message.reply(event.body());
 					}
-				} else {
-					message.reply(event.body());
 				}
-			}
-		});
+			});
+			}).onFailure(th -> {
+				logger.warn("An error occurred while creating user position update query", th);
+				sendError(message, "Unknown error");
+			});
 
 	}
 
@@ -805,7 +835,9 @@ public class ManualFeeder extends BusModBase {
 		final JsonObject user = getMandatoryObject("data", message);
 		if (user == null) return;
 		final String userId = getMandatoryString("userId", message);
+		final String callerId = message.body().getString("callerId");
 		if (userId == null) return;
+		final Boolean useLoginAliasValidatorForAD = this.loginAliasValidatorForAD;
 		String q =
 				"MATCH (u:User { id : {userId}})-[:IN]->(pg:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
 				"RETURN DISTINCT p.name as profile, u.login as login, u.loginAlias as loginAlias ";
@@ -815,6 +847,11 @@ public class ManualFeeder extends BusModBase {
 				JsonArray res = r.body().getJsonArray("result");
 				if ("ok".equals(r.body().getString("status")) && res != null && res.size() > 0)
 				{
+					StatementsBuilder statementsBuilder = new StatementsBuilder();
+					final Integer transactionId = message.body().getInteger("transactionId");
+					final Boolean commit = message.body().getBoolean("commit", true);
+					// Retrieve user position ids and remove them from user properties before updating user node
+					final JsonArray userPositionIds = (JsonArray) user.remove("positionIds");
 					Set<String> oldLogins = new HashSet<String>();
 					String updatedLoginAlias = user.getString("loginAlias");
 					final JsonArray deletedAlias = new JsonArray();
@@ -827,11 +864,18 @@ public class ManualFeeder extends BusModBase {
 							return;
 						}
 
-						// Remove the login alias if a user manually restores their original login
-						if(updatedLoginAlias != null && updatedLoginAlias.equals(((JsonObject) o).getString("login")))
-							user.putNull("loginAlias");
+						String error = null;
 
-						final String error = v.modifiableValidate(user);
+						// Remove the login alias if a user manually restores their original login
+						if(updatedLoginAlias != null) {
+							if (updatedLoginAlias.equals(((JsonObject) o).getString("login"))) {
+								user.putNull("loginAlias");
+							} else if (useLoginAliasValidatorForAD) {
+								error = Validator.validAdLoginAlias("loginAlias", updatedLoginAlias, "AdLoginAlias", "fr", I18n.getInstance(), false);
+							}
+						}
+
+						error = (error == null) ? v.modifiableValidate(user) : error;
 						if (error != null) {
 							logger.error(error);
 							sendError(message, error);
@@ -858,14 +902,42 @@ public class ManualFeeder extends BusModBase {
 							"SET " + Neo4jUtils.nodeSetPropertiesFromJson("u", user) +
 							"RETURN DISTINCT u.id as id ";
 					JsonObject params = user.put("userId", userId);
-					neo4j.execute(query, params, new Handler<Message<JsonObject>>() {
-								@Override
-								public void handle(Message<JsonObject> m) {
-									Validator.removeLogins(oldLogins);
-									DeleteTask.storeDeleteUserEvent(eventStore, deletedAlias);
-									message.reply(m.body());
+					statementsBuilder.add(query, params);
+
+					final Promise<Void> promise = Promise.promise();
+					if (userPositionIds == null) {
+						promise.complete();
+					} else {
+						userPositionService.getUserPositionSettingQueryAndParam(
+							userPositionIds.stream().map(id -> (String) id).collect(Collectors.toSet()),
+							userId,
+							callerId)
+						.onSuccess(queryAndParams -> {
+							statementsBuilder.add(queryAndParams.getQuery(), queryAndParams.getParams());
+							promise.complete();
+						})
+						.onFailure(promise::fail);
+					}
+					promise.future().onSuccess(e -> {
+						neo4j.executeTransaction(statementsBuilder.build(), transactionId, commit, new Handler<Message<JsonObject>>() {
+							@Override
+							public void handle(Message<JsonObject> m) {
+								Validator.removeLogins(oldLogins);
+								DeleteTask.storeDeleteUserEvent(eventStore, deletedAlias);
+								final JsonObject body = m.body();
+								// Send back to the requester only the id of the updated user
+								final JsonArray results = (JsonArray) body.remove("results");
+								if(results != null && !results.isEmpty()) {
+									// 0 is the index at which the result of the query updating the user node is stored
+									body.put("result", results.getValue(0));
 								}
-							});
+								message.reply(body);
+							}
+						});
+					}).onFailure(th -> {
+						logger.warn("An error occurred while creating user position update query", th);
+						sendError(message, "Unknown error");
+					});
 				} else {
 					sendError(message, "Invalid profile.");
 				}
@@ -971,7 +1043,7 @@ public class ManualFeeder extends BusModBase {
 								final JsonObject j = (JsonObject) o;
 								final String id = j.getString("id");
 								if (isNotEmpty(id)) {
-									User.backupRelationship(id, tx);
+									User.backupRelationship(id, false, tx);
 									User.preDelete(id, tx);
 									if (j.getBoolean("inactive", false)) {
 										oldLogins.add(j.getString("login"));
@@ -1500,5 +1572,9 @@ public class ManualFeeder extends BusModBase {
 				User.unlinkRelativeStudent(relativeId, studentId, tx);
 			}
 		});
+	}
+
+	public void setLoginAliasValidatorForAD(Boolean loginAliasValidatorForAD) {
+		this.loginAliasValidatorForAD = loginAliasValidatorForAD;
 	}
 }

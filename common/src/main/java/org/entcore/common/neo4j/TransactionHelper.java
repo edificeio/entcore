@@ -20,7 +20,11 @@
 package org.entcore.common.neo4j;
 
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.schema.Source;
+
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.Future;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -35,7 +39,17 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.List;
 import java.util.ArrayList;
 
-public class TransactionHelper {
+public class TransactionHelper
+{
+    public static final TransactionHelper DEFAULT = new TransactionHelper(Source.MANUAL)
+	{
+		@Override
+		public void add(Statement s)
+		{
+			super.add(s);
+			this.commit();
+		}
+	};
 
 	private static final Logger log = LoggerFactory.getLogger(TransactionHelper.class);
 	private final Neo4j neo4j;
@@ -52,6 +66,8 @@ public class TransactionHelper {
 	private Handler<Message<JsonObject>> flushHandler;
 	private boolean autoSend = true;
 
+	public final Source source;
+
 	class ResetTransactionTimer extends TimerTask {
 
 		@Override
@@ -66,11 +82,44 @@ public class TransactionHelper {
 
 	}
 
-	static class Statement
+	public static class Statement
 	{
 		public String query;
 		public JsonObject params;
 		public Handler<Either<String, JsonArray>> resultHandler;
+
+		public Statement(String query)
+		{
+			this(query, (JsonObject) null);
+		}
+
+		public Statement(String query, Promise<JsonArray> promise)
+		{
+			this(query, null, promise);
+		}
+
+		public Statement(String query, JsonObject params)
+		{
+			this(query, params, (Handler<Either<String, JsonArray>>) null);
+		}
+
+		public Statement(String query, JsonObject params, Promise<JsonArray> promise)
+		{
+			this(query, params, new Handler<Either<String, JsonArray>>()
+			{
+				@Override
+				public void handle(Either<String, JsonArray> res)
+				{
+					if(promise != null)
+					{
+						if(res.isLeft())
+							promise.fail(res.left().getValue());
+						else
+							promise.complete(res.right().getValue());
+					}
+				}
+			});
+		}
 
 		public Statement(String query, JsonObject params, Handler<Either<String, JsonArray>> resultHandler)
 		{
@@ -79,7 +128,7 @@ public class TransactionHelper {
 			this.resultHandler = resultHandler;
 		}
 
-		public JsonObject toJsonObject()
+		protected JsonObject toJsonObject()
 		{
 			JsonObject o = new JsonObject().put("statement", this.query);
 			if(this.params != null)
@@ -87,19 +136,19 @@ public class TransactionHelper {
 			return o;
 		}
 
-		public void handleResult(JsonArray result)
+		protected void handleResult(JsonArray result)
 		{
 			if(this.resultHandler != null)
 				this.resultHandler.handle(new Either.Right<String, JsonArray>(result));
 		}
 
-		public void handleError(String error)
+		protected void handleError(String error)
 		{
 			if(this.resultHandler != null)
 				this.resultHandler.handle(new Either.Left<String, JsonArray>(error));
 		}
 
-		public static JsonArray toNeoStatements(List<Statement> statements)
+		protected static JsonArray toNeoStatements(List<Statement> statements)
 		{
 			JsonArray neoStatements = new JsonArray();
 			for(int i = 0; i < statements.size(); i++)
@@ -108,20 +157,26 @@ public class TransactionHelper {
 		}
 	}
 
-	public TransactionHelper(Neo4j neo4j, Integer transactionId) {
-		this(neo4j, 1000, transactionId);
+	public TransactionHelper(Source source)
+	{
+		this(Neo4j.getInstance(), source);
 	}
 
-	public TransactionHelper(Neo4j neo4j) {
-		this(neo4j, 1000);
+	public TransactionHelper(Neo4j neo4j, Source source, Integer transactionId) {
+		this(neo4j, source, 1000, transactionId);
 	}
 
-	public TransactionHelper(Neo4j neo4j, int statementNumber) {
-		this(neo4j, statementNumber, null);
+	public TransactionHelper(Neo4j neo4j, Source source) {
+		this(neo4j, source, 1000);
 	}
 
-	public TransactionHelper(Neo4j neo4j, int statementNumber, Integer transactionId) {
+	public TransactionHelper(Neo4j neo4j, Source source, int statementNumber) {
+		this(neo4j, source, statementNumber, null);
+	}
+
+	public TransactionHelper(Neo4j neo4j, Source source, int statementNumber, Integer transactionId) {
 		this.neo4j = neo4j;
+		this.source = source;
 		this.remainingStatementNumber = new AtomicInteger(statementNumber);
 		this.statementNumber = statementNumber;
 		this.statements = new ArrayList<Statement>();
@@ -131,10 +186,25 @@ public class TransactionHelper {
 		}
 	}
 
-	public void add(String query, JsonObject params) {
-		this.add(query, params, null);
+	public void add(String query, JsonObject params)
+	{
+		this.add(query, params, (Promise<JsonArray>) null);
 	}
-	public void add(String query, JsonObject params, Handler<Either<String, JsonArray>> resultHandler) {
+
+	public void add(String query, JsonObject params, Promise<JsonArray> promise)
+	{
+		this.add(new Statement(query, params, promise));
+	}
+
+	public void add(String query, JsonObject params, Handler<Either<String, JsonArray>> resultHandler)
+	{
+		this.add(new Statement(query, params, resultHandler));
+	}
+	
+	public void add(Statement statement)
+	{
+		if(statement == null)
+			return;
 		if (autoSend && !waitingQuery && transactionId != null &&
 				remainingStatementNumber.getAndDecrement() == 0) {
 			final List<Statement> s = statements;
@@ -142,11 +212,13 @@ public class TransactionHelper {
 			send(s);
 			remainingStatementNumber = new AtomicInteger(statementNumber);
 		}
+		String query = statement.query;
+		JsonObject params = statement.params;
 		if (query != null && !query.trim().isEmpty()) {
 			if (log.isDebugEnabled()) {
 				log.debug("query : " + query + " - params : " + (params != null ? params.encode() : "{}"));
 			}
-			statements.add(new Statement(query, params, resultHandler));
+			statements.add(statement);
 		}
 	}
 
@@ -167,6 +239,7 @@ public class TransactionHelper {
 						flushHandler = null;
 					handler.handle(message);
 				}
+				JsonObject body = message.body();
 				if ("ok".equals(message.body().getString("status"))) {
 					Integer tId = message.body().getInteger("transactionId");
 					if (transactionId == null && tId != null) {
@@ -174,9 +247,15 @@ public class TransactionHelper {
 						resetTimeOutTimer = new Timer();
 						//resetTimeOutTimer.schedule(new ResetTransactionTimer(), 0, 55000); // TODO use transaction expires
 					}
+					JsonArray results = body.getJsonArray("results");
+					for(int i = 0; i < s.size(); i++)
+						s.get(i).handleResult(results.getJsonArray(i));
 				} else {
 					error = message;
 					log.error(message.body().encode());
+					String error = body.getString("message", "");
+					for(int i = 0; i < s.size(); i++)
+						s.get(i).handleError(error);
 				}
 				waitingQuery = false;
 				if (commit) {
@@ -186,6 +265,24 @@ public class TransactionHelper {
 				}
 			}
 		});
+	}
+
+	public Future<JsonArray> commit()
+	{
+		Promise<JsonArray> promise = Promise.promise();
+		commit(new Handler<Message<JsonObject>>()
+		{
+			@Override
+			public void handle(Message<JsonObject> msg)
+			{
+				JsonObject body = msg.body();
+				if("ok".equals(body.getString("status")))
+					promise.complete(body.getJsonArray("results"));
+				else
+					promise.fail(body.getString("message", ""));
+			}
+		});
+		return promise.future();
 	}
 
 	public void commit(Handler<Message<JsonObject>> handler) {
@@ -208,7 +305,8 @@ public class TransactionHelper {
 		if (transactionId != null || statements.size() > 0)
 		{
 			List<Statement> commitStatements = statements;
-			neo4j.executeTransaction(Statement.toNeoStatements(statements), transactionId, true, new Handler<Message<JsonObject>>()
+			this.statements = new ArrayList<Statement>();
+			neo4j.executeTransaction(Statement.toNeoStatements(commitStatements), transactionId, true, new Handler<Message<JsonObject>>()
 			{
 				@Override
 				public void handle(Message<JsonObject> msg)
@@ -249,6 +347,24 @@ public class TransactionHelper {
 			resetTimeOutTimer.purge();
 			transactionId = null;
 		}
+	}
+
+	public Future<JsonArray> flush()
+	{
+		Promise<JsonArray> promise = Promise.promise();
+		flush(new Handler<Message<JsonObject>>()
+		{
+			@Override
+			public void handle(Message<JsonObject> msg)
+			{
+				JsonObject body = msg.body();
+				if("ok".equals(body.getString("status")))
+					promise.complete(body.getJsonArray("results"));
+				else
+					promise.fail(body.getString("message", ""));
+			}
+		});
+		return promise.future();
 	}
 
 	public void flush(Handler<Message<JsonObject>> handler) {

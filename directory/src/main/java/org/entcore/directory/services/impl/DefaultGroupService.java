@@ -32,6 +32,7 @@ import org.entcore.directory.services.GroupService;
 
 import java.util.List;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static org.entcore.common.neo4j.Neo4jResult.*;
 import static org.entcore.common.user.DefaultFunctions.ADMIN_LOCAL;
@@ -84,7 +85,7 @@ public class DefaultGroupService implements GroupService {
 			List<String> scope = f.getScope();
 			if (scope != null && !scope.isEmpty()) {
 				condition += "AND s.id IN {structures} ";
-				params.put("structures", new fr.wseduc.webutils.collections.JsonArray(scope));
+				params.put("structures", new JsonArray(scope));
 			}
 		}
 
@@ -98,8 +99,10 @@ public class DefaultGroupService implements GroupService {
 				"WITH g, collect({name: c.name, id: c.id}) as classes, collect( distinct {name: s.name, id: s.id}) as structures, " +
 				"HEAD(filter(x IN labels(g) WHERE x <> 'Visible' AND x <> 'Group')) as type " +
 				"RETURN DISTINCT g.id as id, g.name as name, g.displayName as displayName, g.filter as filter, labels(g) as labels, " +
+				"g.createdAt as createdAt, g.createdByName as createdByName, g.modifiedAt as modifiedAt, g.modifiedByName as modifiedByName, " +
 				"g.autolinkTargetAllStructs as autolinkTargetAllStructs, g.autolinkTargetStructs as autolinkTargetStructs," +
-				"g.autolinkUsersFromGroups as autolinkUsersFromGroups, type, g.users as internalCommunicationRule, "+
+				"g.autolinkUsersFromGroups as autolinkUsersFromGroups, g.autolinkUsersFromLevels as autolinkUsersFromLevels," +
+				"type, g.users as internalCommunicationRule, "+
 				"g.lockDelete AS lockDelete, coalesce(g.nbUsers,0) as nbUsers, " +
 				"CASE WHEN any(x in classes where x <> {name: null, id: null}) THEN classes END as classes," +
 				"CASE WHEN any(x in structures where x <> {name: null, id: null}) THEN structures END as structures, " +
@@ -109,6 +112,7 @@ public class DefaultGroupService implements GroupService {
 					" WHEN (g: ManualGroup) AND (" +
 						" g.autolinkTargetAllStructs = true " +
 						" OR size(coalesce(g.autolinkUsersFromGroups, [])) > 0 " +
+						" OR size(coalesce(g.autolinkUsersFromLevels, [])) > 0 " +
 						" OR size(coalesce(g.autolinkTargetStructs, [])) > 0 " +
 				 	") THEN 'BroadcastGroup' " +
 				"END as subType";
@@ -124,7 +128,7 @@ public class DefaultGroupService implements GroupService {
 				.put("structureId", structureId)
 				.put("classId", classId)
 				.put("group", group);
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, result)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, result)));
 	}
 
 	@Override
@@ -132,7 +136,7 @@ public class DefaultGroupService implements GroupService {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-delete-group")
 				.put("groupId", groupId);
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
@@ -165,7 +169,7 @@ public class DefaultGroupService implements GroupService {
 				.put("action", "manual-add-group-users")
 				.put("groupId", groupId)
 				.put("userIds", userIds);
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 	
 	@Override
@@ -174,7 +178,7 @@ public class DefaultGroupService implements GroupService {
 				.put("action", "manual-remove-group-users")
 				.put("groupId", groupId)
 				.put("userIds", userIds);
-		eventBus.send(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
 	}
 
 	@Override
@@ -184,6 +188,33 @@ public class DefaultGroupService implements GroupService {
 				"RETURN g.id as id, g.name as name, g.nbUsers as nbUsers ";
 		final JsonObject params = new JsonObject().put("id", groupId);
 		neo.execute(query, params, validUniqueResultHandler(handler));
+	}
+
+	@Override
+	public void getBatchInfos(JsonArray groupIds, int fieldMask, Handler<Either<String, JsonArray>> handler) {
+		final boolean withDisplayName = Field.DISPLAY_NAME.isSetIn(fieldMask);
+		final boolean withTypeSubType = Field.TYPE_SUBTYPE.isSetIn(fieldMask);
+		final boolean withNbUsers = Field.NB_USERS.isSetIn(fieldMask);
+		final String query =
+			"MATCH (g:Group) WHERE g.id IN {groupIds} " +
+			"WITH g " +
+			(withTypeSubType ? ", HEAD(filter(x IN labels(g) WHERE x <> 'Visible' AND x <> 'Group')) as type " : "") +
+			"RETURN DISTINCT g.id as id, g.name as name " +
+			(withDisplayName ? ", g.displayName as displayName " : "") +
+			(withNbUsers ? ", coalesce(g.nbUsers,0) as nbUsers " : "") +
+			(withTypeSubType ? ", type, CASE " +
+				" WHEN (g: ProfileGroup)-[:DEPENDS]-(:Structure) THEN 'StructureGroup' " +
+				" WHEN (g: ProfileGroup)-[:DEPENDS]->(:Class) THEN 'ClassGroup' " +
+				" WHEN HAS(g.subType) THEN g.subType " +
+				" WHEN (g: ManualGroup) AND (" +
+					" g.autolinkTargetAllStructs = true " +
+					" OR size(coalesce(g.autolinkUsersFromGroups, [])) > 0 " +
+					" OR size(coalesce(g.autolinkUsersFromLevels, [])) > 0 " +
+					" OR size(coalesce(g.autolinkTargetStructs, [])) > 0 " +
+				") THEN 'BroadcastGroup' END as subType" : "");
+
+		final JsonObject params = new JsonObject().put("groupIds", getOrElse(groupIds, new JsonArray()));
+		neo.execute(query, params, validResultHandler(handler));
 	}
 
 	@Override
@@ -209,7 +240,7 @@ public class DefaultGroupService implements GroupService {
 			List<String> scope = f.getScope();
 			if (scope != null && !scope.isEmpty()) {
 				structureCondition += " AND s.id IN {structures} ";
-				params.put("structures", new fr.wseduc.webutils.collections.JsonArray(scope));
+				params.put("structures", new JsonArray(scope));
 			}
 		}
 

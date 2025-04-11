@@ -63,30 +63,36 @@ public class DuplicateUsers {
 			"MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}}), " +
 					"(u1)-[:RELATED]->()-[rp:DUPLICATE]-()<-[:RELATED]-(u2) " +
 					"SET rp.score = rp.score + 1 ";
+	private static final String ADML_SCOPES_MERGE_QUERY =
+			"MATCH (u1:User {id: {userId1}}), (u2:User {id: {userId2}}), (adml:Function {externalId:'ADMIN_LOCAL'}) " +
+			"OPTIONAL MATCH (u1)-[hf1:HAS_FUNCTION]->(adml) " +
+			"OPTIONAL MATCH (u2)-[hf2:HAS_FUNCTION]->(adml) " +
+			"UNWIND COALESCE(hf1.scope, []) + COALESCE(hf2.scope, []) as scopes " +
+			"WITH u1, u2, adml, COLLECT(DISTINCT scopes) as unionScope " +
+			"WHERE size(unionScope) > 0 " +
+			"MERGE (u1)-[hf:HAS_FUNCTION]->(adml) " +
+			"ON CREATE SET hf.scope = unionScope " +
+			"ON MATCH SET hf.scope = unionScope ";
 	private static final String SIMPLE_MERGE_QUERY =
-			"MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}})-[r2]-() " +
-					"OPTIONAL MATCH (u2)-[hf:HAS_FUNCTION]->(adml {externalId:'ADMIN_LOCAL'}) " +
+					"MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}})-[r2]-() " +
 					"OPTIONAL MATCH (u2)-[ain:IN]->(afg: FunctionGroup) " +
 					"WHERE afg.name ENDS WITH 'AdminLocal' " +
 					"SET u1.ignoreDuplicates = FILTER(uId IN u1.ignoreDuplicates WHERE uId <> {userId2}) " +
-					"WITH u1, u2, r, r2, u2.IDPN as IDPN, u2.id as oldId, u2.externalId as u2ExternalId, adml, hf.scope AS hfScope, ain.source AS ainSource, afg " +
+					"WITH u1, u2, r, r2, u2.IDPN as IDPN, u2.id as oldId, u2.externalId as u2ExternalId, ain.source AS ainSource, afg " +
 					"SET u1.mergedIds = FILTER(oldIdF IN coalesce(u1.mergedIds, []) WHERE oldIdF <> oldId) + oldId, " +
 					"u1.mergedExternalIds = FILTER(u2ExternalIdF IN coalesce(u1.mergedExternalIds, []) WHERE u2ExternalIdF <> u2ExternalId) + u2ExternalId " +
 					"DELETE r, r2, u2 " +
-					"MERGE (u1)-[:HAS_FUNCTION {scope: hfScope}]->(adml) " +
 					"MERGE (u1)-[nin:IN {source:ainSource}]->(afg) " +
 					"WITH u1, IDPN, oldId, u2ExternalId " +
 					"WHERE NOT(HAS(u1.IDPN)) AND NOT(IDPN IS NULL) " +
 					"SET u1.IDPN = IDPN " +
 					"RETURN DISTINCT oldId, u1.id as id, HEAD(u1.profiles) as profile ";
 	private static final String SWITCH_MERGE_QUERY =
-			"MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}})-[r2]-() " +
-					"OPTIONAL MATCH (u2)-[hf:HAS_FUNCTION]->(adml {externalId:'ADMIN_LOCAL'}) " +
+					"MATCH (u1:User {id: {userId1}})-[r:DUPLICATE]-(u2:User {id: {userId2}})-[r2]-() " +
 					"OPTIONAL MATCH (u2)-[ain:IN]->(afg: FunctionGroup) " +
 					"WHERE afg.name ENDS WITH 'AdminLocal' " +
-					"WITH u1, u2, r, r2, u2.source as source, u2.externalId as externalId, u2.IDPN as IDPN, u2.id as oldId, adml, hf.scope AS hfScope, ain.source AS ainSource, afg " +
+					"WITH u1, u2, r, r2, u2.source as source, u2.externalId as externalId, u2.IDPN as IDPN, u2.id as oldId, ain.source AS ainSource, afg " +
 					"DELETE r, r2, u2 " +
-					"MERGE (u1)-[:HAS_FUNCTION {scope: hfScope}]->(adml) " +
 					"MERGE (u1)-[nin:IN {source:ainSource}]->(afg) " +
 					"WITH u1, source, externalId, IDPN, oldId, u1.externalId as u1ExternalId " +
 					"SET u1.ignoreDuplicates = FILTER(uId IN u1.ignoreDuplicates WHERE uId <> {userId2}), " +
@@ -383,9 +389,9 @@ public class DuplicateUsers {
 				(!activatedU1 && !activatedU2)) {
 			query = SIMPLE_MERGE_QUERY;
 			if (prioritySource(source1) == prioritySource(source2) && notDeduplicateSource.contains(source1)) {
-				if (!missing1 && activatedU1) {
+				if ((!missing1 && activatedU1) || (!activatedU1 && !activatedU2 && missing2)) {
 					params.put("userId1", userId1).put("userId2", userId2);
-				} else if (!missing2 && activatedU2) {
+				} else if ((!missing2 && activatedU2) || (!activatedU1 && !activatedU2 && missing1)) {
 					params.put("userId1", userId2).put("userId2", userId1);
 				} else {
 					query = SWITCH_MERGE_QUERY;
@@ -439,6 +445,7 @@ public class DuplicateUsers {
 
 		if (tx != null) {
 			tx.add(INCREMENT_RELATIVE_SCORE, params);
+			tx.add(ADML_SCOPES_MERGE_QUERY, params);
 			tx.add(query, params, duplicatesChecker);
 			addDisappearingUserRelationship(relationshipsToKeepPerUser, userIdThatWillStay, userIdThatWillDisappear, tx);
 			sendMergedEvent(params.getString("userId1"), params.getString("userId2"));
@@ -447,6 +454,7 @@ public class DuplicateUsers {
 			try {
 				TransactionHelper txl = TransactionManager.getTransaction();
 				txl.add(INCREMENT_RELATIVE_SCORE, params);
+				txl.add(ADML_SCOPES_MERGE_QUERY, params);
 				txl.add(query, params, duplicatesChecker);
 				addDisappearingUserRelationship(relationshipsToKeepPerUser, userIdThatWillStay, userIdThatWillDisappear, txl);
 				txl.commit(new Handler<Message<JsonObject>>() {
@@ -569,7 +577,7 @@ public class DuplicateUsers {
 							String mergeKey = result.getJsonObject(0).getString("mergeKey");
 							if (mergeKey != null && mergeKeys.contains(mergeKey)) {
 								// Don't merge a user with himself
-								final JsonArray tmp = new fr.wseduc.webutils.collections.JsonArray();
+								final JsonArray tmp = new JsonArray();
 								for (Object o : mergeKeys) {
 									if (!mergeKey.equals(o)) {
 										tmp.add(o);
@@ -589,7 +597,7 @@ public class DuplicateUsers {
 
 								// Backup users relations before they are merged.
 								// This will allow restoring relations if/when unmerged later.
-								mergeUserIds.forEach(id -> User.backupRelationship(id.toString(), tx));
+								mergeUserIds.forEach(id -> User.backupRelationship(id.toString(), false, tx));
 
 								// Do merge
 								tx.add(
@@ -778,7 +786,7 @@ public class DuplicateUsers {
 			log.error("Error when find duplicate users.", e);
 			return;
 		}
-		final JsonArray result = new fr.wseduc.webutils.collections.JsonArray();
+		final JsonArray result = new JsonArray();
 		for (int i = 0; i < search.size(); i++) {
 			final JsonObject json = search.getJsonObject(i);
 			final String firstNameAttr = luceneAttribute("firstName", json.getString("firstName"), 0.6);
@@ -948,7 +956,7 @@ public class DuplicateUsers {
 					}
 				} else {
 					log.info("No duplicates automatically mergeable.");
-					handler.handle(new DefaultAsyncResult<>(new fr.wseduc.webutils.collections.JsonArray()));
+					handler.handle(new DefaultAsyncResult<>(new JsonArray()));
 				}
 			}
 
@@ -1090,7 +1098,7 @@ public class DuplicateUsers {
 						"OPTIONAL MATCH (old)-[r]-() " +
 						"DELETE r, rb, b, old, rUb, ub " +
 						"WITH oldId, oldLogin, oldPassword, oldEmail " +
-						"MATCH (u:User {login: {id}}) " +
+						"MATCH (u:User {id: {id}}) " +
 						"SET u.oldId = u.id, u.id = oldId, u.oldLogin = u.login, u.login = oldLogin, " +
 						"u.activationCode = null, u.password = oldPassword, u.email = oldEmail ";
 		tx.add(query4, params, new Handler<Either<String, JsonArray>>() {

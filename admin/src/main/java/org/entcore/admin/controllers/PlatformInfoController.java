@@ -18,18 +18,17 @@
 
 package org.entcore.admin.controllers;
 
-import io.vertx.core.shareddata.LocalMap;
-import org.entcore.common.http.filter.AdminFilter;
-import org.entcore.common.http.filter.ResourceFilter;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.json.JsonArray;
-
 import fr.wseduc.rs.Get;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.http.BaseController;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.shareddata.LocalMap;
+import org.entcore.common.http.filter.AdminFilter;
+import org.entcore.common.http.filter.ResourceFilter;
 
 import java.util.Arrays;
 import java.util.List;
@@ -71,7 +70,8 @@ public class PlatformInfoController extends BaseController {
 				.put("reset-code-delay", config.getLong("resetCodeDelay", 0L))
 				.put("distributions", config.getJsonArray("distributions", new JsonArray()))
 				.put("hide-adminv1-link", config.getBoolean("hide-adminv1-link", false))
-				.put("hide-personal-data", serverMap.get("hidePersonalData"));
+				.put("hide-personal-data", serverMap.get("hidePersonalData"))
+				.put("mass-messaging-enabled", config.getBoolean("mass-messaging-enabled"));
 
 		if (preDelete != null && preDelete.size() == PROFILES.size() &&
 				PROFILES.containsAll(preDelete.fieldNames())) {

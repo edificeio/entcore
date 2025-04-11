@@ -1,5 +1,6 @@
 import {Injectable} from '@angular/core';
 import {Subject} from 'rxjs';
+import { UserPosition } from '../store/models/userPosition.model';
 
 export abstract class UserFilter<T> {
 
@@ -89,14 +90,14 @@ class SourcesFilter extends UserFilter<string> {
     }
 }
 
-class FunctionsFilter extends UserFilter<Array<string>> {
+class FunctionsFilter extends UserFilter<string> {
     type = 'aafFunctions';
     label = 'functions.multi.combo.title';
-    comboModel: Array<Array<string>> = [];
+    comboModel: Array<string> = [];
     order = '+';
     filterProp = 'this';
 
-    filter = (functions: Array<Array<string>>) => {
+    filter = (functions: Array<string>) => {
         const outputModel = this.outputModel;
         let res = false;
 
@@ -245,6 +246,25 @@ class BlockedFilter extends UserFilter<string> {
     }
 }
 
+class PositionFilter extends UserFilter<{id:string}> {
+    type = 'userPositions';
+    label = 'userPositions.multi.combo.title';
+    display = 'name';
+    comboModel = [];
+    order = '+name';
+    filterProp = 'name';
+
+    filter = (userPositions: Array<UserPosition>) => {
+        const outputModel = this.outputModel;
+
+        return outputModel.length === 0 ||
+            userPositions && userPositions.length > 0 &&
+            userPositions.some(f => {
+                return outputModel.some(o => o.id === f.id);
+            });
+    }
+}
+
 @Injectable()
 export class UserlistFiltersService {
 
@@ -257,6 +277,7 @@ export class UserlistFiltersService {
     private functionalGroupsFilter = new FunctionalGroupsFilter(this.$updateSubject);
     private manualGroupsFilter = new ManualGroupsFilter(this.$updateSubject);
     private activationFilter = new ActivationFilter(this.$updateSubject);
+    private positionFilter = new PositionFilter(this.$updateSubject);
     private functionsFilter = new FunctionsFilter(this.$updateSubject);
     private sourcesFilter = new SourcesFilter(this.$updateSubject);
     private duplicatesFilter = new DuplicatesFilter(this.$updateSubject);
@@ -272,6 +293,7 @@ export class UserlistFiltersService {
         this.functionalGroupsFilter,
         this.manualGroupsFilter,
         this.activationFilter,
+        this.positionFilter,
         this.functionsFilter,
         this.sourcesFilter,
         this.duplicatesFilter,
@@ -300,7 +322,7 @@ export class UserlistFiltersService {
         this.sourcesFilter.comboModel = combos;
     }
 
-    setFunctionsComboModel(combos: Array<Array<string>>) {
+    setFunctionsComboModel(combos: Array<string>) {
         this.functionsFilter.comboModel = combos;
     }
 
@@ -330,6 +352,10 @@ export class UserlistFiltersService {
 
     setBlockedComboModel(combos: string[]) {
         this.blockedFilter.comboModel = combos;
+    }
+
+    setPositionComboModel(combos: UserPosition[]) {
+        this.positionFilter.comboModel = combos;
     }
 
     getFormattedFilters(customFilters?: UserFilter<any> | UserFilterList<any>): any {

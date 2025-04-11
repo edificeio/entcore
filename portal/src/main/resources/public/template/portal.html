@@ -99,7 +99,7 @@
             </span></a
           >
         </li>
-        <li ng-if="currentLanguage == 'fr'" class="nav-item">
+        <li ng-if="currentLanguage == 'fr' && me.hasWorkflow('org.entcore.portal.controllers.PortalController|oldHelpEnable')" class="nav-item">
           <style>
             .ic-help {
               font-size: 24px;
@@ -380,7 +380,7 @@
             class="nav-link"
             aria-label="navbar.help"
             pulsar="{ index:5, style:{zIndex:1021}, i18n:'portal.pulsar.help', position:'bottom center'}"
-            ng-if="currentLanguage == 'fr'"
+            ng-if="currentLanguage == 'fr' && me.hasWorkflow('org.entcore.portal.controllers.PortalController|oldHelpEnable')"
           >
             <help></help
             ><!-- i18n>help.icon</i18n -->

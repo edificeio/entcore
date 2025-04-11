@@ -24,6 +24,7 @@ package org.entcore.communication.services.impl;
 
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
@@ -34,6 +35,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.notification.TimelineHelper;
 import org.entcore.communication.services.CommunicationService;
 import org.entcore.test.TestHelper;
 import org.junit.Before;
@@ -75,8 +77,7 @@ public class OptimComTest {
 	//@Before
 	public void setUp(TestContext context) {
 		vertx = test.vertx();
-		defaultComService = new DefaultCommunicationService();
-		xpComService = new XpCommunicationService();
+		defaultComService = new DefaultCommunicationService(Vertx.vertx(), new TimelineHelper(vertx, vertx.eventBus(), new JsonObject()), new JsonObject());
 	}
 
 	//@Test
@@ -108,7 +109,7 @@ public class OptimComTest {
 					final String userProfile = ((JsonObject) o).getString("profile");
 					futures.add(getComRules(communicationService, userId, userProfile, i++));
 				}
-				CompositeFuture.all(futures).setHandler(ar -> {
+				CompositeFuture.all(futures).onComplete(ar -> {
 					if (ar.succeeded()) {
 						int mean = 0;
 						List<Integer> times = new ArrayList<>();
@@ -157,28 +158,26 @@ public class OptimComTest {
 	}
 
 	private Future<Void> getComRules(CommunicationService communicationService, String userId, String userProfile, long i) {
-		final Future<Void> future = Future.future();
+		final Promise<Void> future = Promise.promise();
 		vertx.setTimer(i * 50L, h -> {
 			final long start = System.currentTimeMillis();
 			communicationService.visibleUsers(userId, null, null, true, true,
-					false, null, CUSTOM_RETURN, new JsonObject(), userProfile, visibles -> {
+					false, null, CUSTOM_RETURN, new JsonObject(), userProfile, false, visibles -> {
 						if (visibles.isRight()) {
 							final JsonObject j = new JsonObject()
 									.put("visibles", visibles.right().getValue())
 									.put("time", System.currentTimeMillis() - start)
 									.put("userId", userId);
-							if (communicationService instanceof XpCommunicationService) {
-								xpResults.put(userId, j);
-							} else {
-								defaultResults.put(userId, j);
-							}
+
+							defaultResults.put(userId, j);
+
 							future.complete();
 						} else {
 							future.fail(new RuntimeException(visibles.left().getValue()));
 						}
 					});
 		});
-		return future;
+		return future.future();
 	}
 
 }
