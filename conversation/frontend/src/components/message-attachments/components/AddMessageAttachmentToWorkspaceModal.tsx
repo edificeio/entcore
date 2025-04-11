@@ -12,7 +12,6 @@ interface AddMessageAttachmentToWorkspaceModalProps {
   onModalClose: () => void;
   isOpen?: boolean;
 }
-
 export function AddMessageAttachmentToWorkspaceModal({
   message,
   attachmentId,
@@ -21,20 +20,24 @@ export function AddMessageAttachmentToWorkspaceModal({
 }: AddMessageAttachmentToWorkspaceModalProps) {
   const { t } = useI18n();
   const { copyToWorkspace } = useMessageAttachments(message);
-  const [selectedFolderId, setSelectedFolderId] = useState<
+  const [selectedFolderIdToCopyFile, setSelectedFolderIdToCopyFile] = useState<
     string | undefined
-  >();
+  >(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [disabled, setDisabled] = useState(false);
 
-  const handleFolderSelected = (folderId: string) => {
-    setSelectedFolderId(folderId);
+  const handleFolderSelected = (folderId: string, canCopyFileInto: boolean) => {
+    setSelectedFolderIdToCopyFile(canCopyFileInto ? folderId : undefined);
   };
 
   const handleAddAttachmentToWorkspace = async () => {
-    if (!selectedFolderId) return;
+    if (selectedFolderIdToCopyFile === undefined) return;
     setIsLoading(true);
-    const isSuccess = await copyToWorkspace(attachmentId, selectedFolderId);
+
+    const isSuccess = await copyToWorkspace(
+      attachmentId,
+      selectedFolderIdToCopyFile,
+    );
     if (isSuccess) {
       onModalClose();
     }
@@ -43,8 +46,8 @@ export function AddMessageAttachmentToWorkspaceModal({
 
   // Make the button accessible when is disabled change to false
   useEffect(() => {
-    setDisabled(!selectedFolderId);
-  }, [selectedFolderId]);
+    setDisabled(selectedFolderIdToCopyFile === undefined);
+  }, [selectedFolderIdToCopyFile]);
 
   return createPortal(
     <Modal
