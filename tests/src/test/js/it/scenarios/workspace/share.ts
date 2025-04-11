@@ -389,7 +389,6 @@ function testSharesViaProfileGroupInDifferentSchools(data) {
     checkPresentShares(res, "users", [parent1.id], "parent of school 1 still appears in shares after shares from school 2")
     checkPresentShares(res, "groups", [parentRole2.id], "parents group of school 2 appears in shares after shares from school 2")
     checkAbsentShares(res, "groups", [studentRole2.id], "student group of school 2 does not appear in shares after shares from school 2")
-    // Check that if we want to modify the shares of a user of school 1, we cannot do it
   })
 }
 function testSharesViaBroadcastGroupInDifferentSchools(data) {

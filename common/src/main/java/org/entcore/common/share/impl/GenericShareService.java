@@ -559,7 +559,7 @@ public abstract class GenericShareService implements ShareService {
 								.collect(Collectors.toSet());
 							log.warn("WARNING - tried to add rights on resource " + resourceId + "to a user/group " + unmatchedUserIds + " not visible to user");
 						}
-						promise.complete(new AccessibleUsersCheck(usersThatCanBeConfidentlyActedUpon, true));
+						promise.complete(usersThatCanBeConfidentlyActedUpon);
 					} else {
 						promise.complete(new AccessibleUsersCheck(Collections.emptySet(), false));
 					}
