@@ -60,7 +60,6 @@ export function MessageList() {
   } = useToolbarVisibility(messages);
 
   const [keyList, setKeyList] = useState(0);
-  const { md } = useBreakpoint();
 
   //handle reload list when search params change
   useEffect(() => {
@@ -149,12 +148,11 @@ export function MessageList() {
       type: 'button',
       name,
       visibility,
-      tooltip: md ? undefined : label,
       props: {
         'children': (
           <>
             {icon}
-            {md && <span>{label}</span>}
+            <span>{label}</span>
           </>
         ),
         'aria-label': label,
