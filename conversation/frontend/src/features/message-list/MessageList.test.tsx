@@ -72,13 +72,13 @@ describe('Message list component', () => {
 
     const checkboxList = screen.getAllByRole('checkbox');
     act(() => {
-      checkboxList[2].click();
       checkboxList[1].click();
+      checkboxList[2].click();
       checkboxList[3].click();
     });
 
-    expect(screen.getByText('tag.read')).toBeVisible();
-    expect(screen.getByText('tag.unread')).toBeVisible();
+    expect(screen.queryByLabelText('tag.read')).toBeVisible();
+    expect(screen.queryByLabelText('tag.unread')).toBeVisible();
   });
 
   it('should not render mark as read / unread action when selected message is from current user without being a recipient', async () => {
@@ -104,17 +104,17 @@ describe('Message list component', () => {
       checkboxList[4].click();
     });
 
-    expect(screen.getByText('tag.read')).not.toBeVisible();
-    expect(screen.getByText('tag.unread')).not.toBeVisible();
+    expect(screen.queryByLabelText('tag.read')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('tag.unread')).not.toBeInTheDocument();
     act(() => {
       checkboxList[4].click();
     });
-    expect(screen.getByText('tag.read')).toBeVisible();
-    expect(screen.getByText('tag.unread')).toBeVisible();
+    expect(screen.queryByLabelText('tag.read')).toBeInTheDocument();
+    expect(screen.queryByLabelText('tag.unread')).toBeInTheDocument();
     act(() => {
       checkboxList[0].click();
     });
-    expect(screen.getByText('tag.read')).not.toBeVisible();
-    expect(screen.getByText('tag.unread')).not.toBeVisible();
+    expect(screen.queryByLabelText('tag.read')).not.toBeInTheDocument();
+    expect(screen.queryByLabelText('tag.unread')).not.toBeInTheDocument();
   });
 });
