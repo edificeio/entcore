@@ -512,20 +512,21 @@ public abstract class GenericShareService implements ShareService {
 				.onSuccess(visibleChunks -> {
 					final JsonArray visibleArray = new JsonArray();
 					visibleChunks.forEach(visibleArray::addAll);
-					final Set<String> visibleSharedUsersAndGroups = visibleArray.stream()
+					final Set<String> seeableUsersAndGroupsFromOriginalShares = visibleArray.stream()
 							.map(entry -> ((JsonObject) entry).getString("id"))
 							.collect(Collectors.toSet());
 					// Check that original shares are untouched or that the ones that are modified, are modified accordingly to
 					// users/groups visibility
 					boolean sharesAreValid = true;
-					final Set<String> originalUsersAndGroups = new HashSet<>();
+					final Set<String> usersAndGroupsPresentInOriginalShares = new HashSet<>();
 					for (Object originalShare : originalShares) {
 						final JsonObject share = (JsonObject) originalShare;
 						final String idOfShare = getUserOrGroupIdOfShare(share);
-						originalUsersAndGroups.add(idOfShare);
-						if(visibleSharedUsersAndGroups.contains(idOfShare)) {
+						usersAndGroupsPresentInOriginalShares.add(idOfShare);
+						if(seeableUsersAndGroupsFromOriginalShares.contains(idOfShare)) {
 							log.debug(idOfShare + " is visible so it can be changed");
 						} else {
+							// If the original share is not visible to the user, we check that the user is not trying to change it
 							final Set<String> originalRights = share.stream()
 									.filter(e -> !e.getKey().equals("userId") && !e.getKey().equals("groupId") && (Boolean) e.getValue())
 									.map(Map.Entry::getKey)
@@ -543,15 +544,22 @@ public abstract class GenericShareService implements ShareService {
 						}
 					}
 					if(sharesAreValid) {
-						final Set<String> unmatchedUserIds = shareUpdates.keySet().stream()
-								.filter(id -> !originalUsersAndGroups.contains(id)) // Added users and groups
-								.filter(id -> !visibleSharedUsersAndGroups.contains(id))
+						// So far, we have checked that the user is not trying to modify existing shares that are not visible to him
+						// But we need to check if he is trying to add new shares to people or groups that are not visible to him
+						final Set<String> unmatchedUserIds = shareUpdates.keySet().stream() // From the user's request
+								.filter(id -> !usersAndGroupsPresentInOriginalShares.contains(id)) // Remove users that we have already checked
+								.filter(id -> !seeableUsersAndGroupsFromOriginalShares.contains(id)) // Remove users that are visible to the user
 								.collect(Collectors.toSet());
-						if(!unmatchedUserIds.isEmpty()) {
-							// Warning if added the user does not have access to (can not see) added groups or users
+						final Set<String> usersThatCanBeConfidentlyActedUpon;
+						if(unmatchedUserIds.isEmpty()) {
+							usersThatCanBeConfidentlyActedUpon = shareUpdates.keySet();
+						} else {
+							usersThatCanBeConfidentlyActedUpon = shareUpdates.keySet().stream()
+								.filter(id -> !unmatchedUserIds.contains(id))
+								.collect(Collectors.toSet());
 							log.warn("WARNING - tried to add rights on resource " + resourceId + "to a user/group " + unmatchedUserIds + " not visible to user");
 						}
-						promise.complete(visibleSharedUsersAndGroups);
+						promise.complete(usersThatCanBeConfidentlyActedUpon);
 					} else {
 						promise.complete(Collections.emptySet());
 					}
