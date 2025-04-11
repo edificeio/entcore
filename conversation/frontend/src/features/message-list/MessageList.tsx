@@ -2,7 +2,6 @@ import {
   List,
   Loading,
   ToolbarItem,
-  useBreakpoint,
   useEdificeClient,
 } from '@edifice.io/react';
 import {
