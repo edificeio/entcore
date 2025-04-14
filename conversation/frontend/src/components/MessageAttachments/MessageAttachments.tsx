@@ -7,12 +7,13 @@ import {
   IconPlus,
 } from '@edifice.io/react/icons';
 import clsx from 'clsx';
-import { ChangeEvent, useRef } from 'react';
+import { ChangeEvent, useEffect, useRef } from 'react';
 import { useI18n } from '~/hooks';
 import { useMessageAttachments } from '~/hooks/useMessageAttachments';
 import { Message } from '~/models';
+import { useMessageUpdated } from '~/store';
 import { MessageAttachment } from './components/MessageAttachment';
-import './index.css';
+import './MessageAttachments.css';
 
 export interface MessageAttachmentsProps {
   message: Message;
@@ -25,8 +26,14 @@ export function MessageAttachments({
 }: MessageAttachmentsProps) {
   const { common_t, t } = useI18n();
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const messageUpdated = useMessageUpdated();
   const { attachments, downloadAllUrl, attachFiles, detachFiles, isMutating } =
-    useMessageAttachments(message);
+    useMessageAttachments(
+      editMode && messageUpdated ? messageUpdated : message,
+    );
+  useEffect(() => {
+    console.log('attachments', messageUpdated);
+  }, [messageUpdated]);
 
   if (!attachments.length && !editMode) return null;
 
