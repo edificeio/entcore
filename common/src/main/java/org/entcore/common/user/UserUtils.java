@@ -51,15 +51,7 @@ import org.entcore.common.utils.HostUtils;
 import org.entcore.common.utils.StringUtils;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
@@ -352,7 +344,8 @@ public class UserUtils {
 		dbResult.put("positions", positions);
 	}
 
-	public static JsonArray mapObjectToContact(final String profile, final JsonArray shareBookmarks, final JsonArray visible, final String acceptLanguage) {
+	public static JsonArray mapObjectToContact(final String profile, final JsonArray shareBookmarks,
+																						 final JsonArray visible, final String acceptLanguage) {
 		final List<String> usedInAll = Arrays.asList("TO", "CC", "CCI");
 		final List<String> usedInCCI = Collections.singletonList("CCI");
 
@@ -384,6 +377,10 @@ public class UserUtils {
 			res.add(j);
 		}
 
+		final Set<String> alreadyAddedUsers = new HashSet<>();
+		final Map<String, List<JsonObject>> children = new HashMap<>();
+		final Map<String, List<JsonObject>> parents = new HashMap<>();
+		final Set<JsonObject> unrolledUsers = new HashSet<>();
 		for (Object o: visible) {
 			if (!(o instanceof JsonObject)) continue;
 			JsonObject j = (JsonObject) o;
@@ -427,6 +424,24 @@ public class UserUtils {
 				j.remove("nbUsers");
 				if (profile.equals("Student")) {
 					j.remove("relatives");
+					j.remove("children");
+				}
+				alreadyAddedUsers.add(j.getString("id"));
+				if (!profile.equals("Student")) {
+					final JsonArray userChildren = extractChildren(j);
+					final JsonArray relatives = extractRelatives(j);
+					for (Object _child : userChildren) {
+						final JsonObject child = (JsonObject)_child;
+						final String id = child.getString("id");
+						unrolledUsers.add(child);
+						parents.computeIfAbsent(id, k -> new ArrayList<>()).add(j);
+					}
+					for (Object _rel : relatives) {
+						final JsonObject relative = (JsonObject)_rel;
+						final String id = relative.getString("id");
+						unrolledUsers.add(relative);
+						children.computeIfAbsent(id, k -> new ArrayList<>()).add(j);
+					}
 				}
 			}
 
@@ -442,7 +457,46 @@ public class UserUtils {
 
 			res.add(j);
 		}
+		for (JsonObject unrolledUser : unrolledUsers) {
+			final String id = unrolledUser.getString("id");
+			unrolledUser.put("children", children.get(id));
+			unrolledUser.put("relatives", parents.get(id));
+			if(!alreadyAddedUsers.contains(id)) {
+				res.add(unrolledUser);
+			}
+		}
 		return res;
+	}
+
+	private static JsonArray extractRelatives(JsonObject user) {
+		return extractPeople(user, "relatives", "Relative");
+	}
+
+	private static JsonArray extractChildren(JsonObject user) {
+		return extractPeople(user, "children", "Student");
+	}
+
+	private static JsonArray extractPeople(JsonObject user, final String fieldName, final String profileType) {
+		final JsonArray newUsers;
+		final JsonArray relatives = user.getJsonArray(fieldName);
+		newUsers = new JsonArray();
+		if(relatives != null) {
+			for (int i = 0; i < relatives.size(); i++) {
+				final JsonObject relative = relatives.getJsonObject(i);
+				newUsers.add(makeUser(relative, profileType));
+			}
+		}
+		return newUsers;
+	}
+
+	private static JsonObject makeUser(JsonObject swiftUSer, String type) {
+		final JsonObject user = new JsonObject()
+			.put("id", swiftUSer.getString("id"))
+			.put("displayName", swiftUSer.getString("displayName"))
+			.put("profile", type)
+			.put("type", "User")
+			.put("usedIn", Arrays.asList("TO", "CC", "CCI"));
+		return user;
 	}
 
 	private static JsonArray sortShareBookmarksByName(JsonArray sb) {
