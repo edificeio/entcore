@@ -1,17 +1,17 @@
+import { Alert, Button, EmptyScreen } from '@edifice.io/react';
 import {
   ConversationHistoryNodeView,
   ConversationHistoryRenderer,
   Editor,
 } from '@edifice.io/react/editor';
-import { MessageAttachments } from '~/components/message-attachments';
-import { Message } from '~/models';
 import { Suspense, useState } from 'react';
-import { Alert, Button } from '@edifice.io/react';
-import { useI18n } from '~/hooks';
-import { EmptyScreen } from '@edifice.io/react';
-import OriginalFormatModal from './OriginalFormatModal';
 import illuRecall from '~/assets/illu-messageRecalled.svg';
+import { MessageAttachments } from '~/components/MessageAttachments/MessageAttachments';
+import { useI18n } from '~/hooks';
+import { Message } from '~/models';
+import { useMessageUpdated } from '~/store';
 import './MessageBody.css';
+import OriginalFormatModal from './OriginalFormatModal';
 
 export interface MessageBodyProps {
   message: Message;
@@ -28,6 +28,7 @@ export function MessageBody({
   const content = message.body;
   const extensions = [ConversationHistoryNodeView(ConversationHistoryRenderer)];
   const [isOriginalFormatOpen, setOriginalFormatOpen] = useState(false);
+  const messageUpdated = useMessageUpdated();
 
   const handleContentChange = ({ editor }: { editor: any }) => {
     if (!editMode) return;
@@ -54,7 +55,10 @@ export function MessageBody({
           extensions={extensions}
           onContentChange={handleContentChange}
         />
-        <MessageAttachments message={message} editMode={editMode} />
+        <MessageAttachments
+          message={editMode && messageUpdated ? messageUpdated : message}
+          editMode={editMode}
+        />
       </section>
 
       {message.original_format_exists && !editMode && (
