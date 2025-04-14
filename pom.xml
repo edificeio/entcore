@@ -59,7 +59,7 @@
         <revision>6.6-develop-b2school-SNAPSHOT</revision>
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
-        <modPostgresVersion>2.0.1</modPostgresVersion>
+        <modPostgresVersion>2.0-develop-b2school-SNAPSHOT</modPostgresVersion>
         <modMongoVersion>4.0-SNAPSHOT</modMongoVersion>
         <webUtilsVersion>3.0-develop-b2school-SNAPSHOT</webUtilsVersion>
         <mongodbHelperVersion>4.0-develop-b2school-SNAPSHOT</mongodbHelperVersion>
