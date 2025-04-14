@@ -19,6 +19,7 @@ import { useFolderHandlers } from '~/features/menu/hooks/useFolderHandlers';
 import { useI18n, useRecall, useSelectedFolder } from '~/hooks';
 import { Message, Recipients } from '~/models';
 import {
+  baseUrl,
   isInRecipient,
   useCreateOrUpdateDraft,
   useDeleteMessage,
@@ -120,8 +121,16 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
 
   const handleDraftSaveClick = async () => {
     const promise = await createOrUpdateDraft();
-    if (promise) {
-      if (promise && promise.id) navigate(`/draft/message/${promise.id}`);
+    if (
+      promise &&
+      promise.id &&
+      !location.pathname.includes(`/draft/message/${promise.id}`)
+    ) {
+      window.history.replaceState(
+        null,
+        '',
+        `${baseUrl}/draft/message/${promise.id}`,
+      );
     }
   };
 
@@ -186,7 +195,10 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
       action: () => {
         alert('reply');
       },
-      hidden: message.state === 'DRAFT' || message.trashed,
+      hidden:
+        message.state === 'SENT' ||
+        message.state === 'DRAFT' ||
+        message.trashed,
     },
     {
       label: t('submit'),
@@ -218,6 +230,15 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
   ];
 
   const dropdownOptions = [
+    {
+      label: t('reply'),
+      id: 'reply',
+      icon: <IconUndo />,
+      action: () => {
+        alert('reply');
+      },
+      hidden: message.state === 'DRAFT' || message.trashed,
+    },
     {
       label: t('replyall'),
       id: 'replyall',

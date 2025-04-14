@@ -23,7 +23,7 @@ export function MessageEdit({ message }: MessageEditProps) {
   const messageUpdatedNeedSave = useMessageUpdatedNeedToSave();
   const { setMessageUpdated, setMessageUpdatedNeedToSave } = useAppActions();
   const { fromNow } = useDate();
-  const debounceTimeToSave = useRef(5000);
+  const debounceTimeToSave = useRef(3000);
   const createOrUpdateDraft = useCreateOrUpdateDraft();
   const [contentKey, setContentKey] = useState(0);
   const [dateKey, setDateKey] = useState(0);

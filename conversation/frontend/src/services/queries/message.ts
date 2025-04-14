@@ -486,6 +486,9 @@ export const useUpdateDraft = () => {
       queryClient.invalidateQueries({
         queryKey: messageQueryOptions.getById(draftId).queryKey,
       });
+      queryClient.invalidateQueries({
+        queryKey: [...folderQueryOptions.base, 'draft', 'messages'],
+      });
     },
   });
 };
@@ -527,6 +530,9 @@ export const useSendDraft = () => {
       }
       queryClient.invalidateQueries({
         queryKey: ['folder', 'inbox', 'messages'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['folder', 'draft', 'messages'],
       });
     },
   });
