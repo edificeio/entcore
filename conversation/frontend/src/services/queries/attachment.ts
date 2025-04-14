@@ -1,7 +1,6 @@
 import { useToast } from '@edifice.io/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useI18n } from '~/hooks';
-import { Message } from '~/models';
 import { useAppActions } from '~/store';
 import { attachmentService, messageQueryOptions } from '..';
 
@@ -21,7 +20,7 @@ export const useAttachFiles = () => {
       Promise.all(files.map((file) => attachmentService.attach(draftId, file))),
     onSuccess(_ids, { draftId }) {
       queryClient
-        .invalidateQueries<Message>({
+        .invalidateQueries({
           queryKey: messageQueryOptions.getById(draftId).queryKey,
         })
         .then(() => {
