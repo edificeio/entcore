@@ -408,6 +408,8 @@ export const useCreateOrUpdateDraft = () => {
         { payload },
         {
           onSuccess: ({ id }) =>
+            // Update the URL to point to the draft message
+            // We can't use useNavigate because it will lose editor focus if there is any
             window.history.replaceState(
               null,
               '',
@@ -449,9 +451,20 @@ export const useCreateDraft = () => {
       setMessageUpdated({ ...messageUpdated });
       updateFolderBadgeCountLocal('draft', 1);
       // Update the message unread status in the list
-      queryClient.invalidateQueries({
-        queryKey: [...folderQueryOptions.base, 'draft', 'messages'],
-      });
+      queryClient.setQueryData(
+        messageQueryOptions.getById(id).queryKey,
+        (message: Message | undefined) => {
+          return message ? { ...message, ...messageUpdated } : undefined;
+        },
+      );
+      queryClient.setQueryData(
+        [...folderQueryOptions.base, 'draft', 'messages'],
+        (data: InfiniteData<Message[]>) => {
+          if (!data) return data;
+          data.pages[0] = [messageUpdated, ...data.pages[0]];
+          return { ...data };
+        },
+      );
     },
   });
 };
@@ -483,12 +496,27 @@ export const useUpdateDraft = () => {
       if (!messageUpdated) return;
 
       setMessageUpdated({ ...messageUpdated });
-      queryClient.invalidateQueries({
-        queryKey: messageQueryOptions.getById(draftId).queryKey,
-      });
-      queryClient.invalidateQueries({
-        queryKey: [...folderQueryOptions.base, 'draft', 'messages'],
-      });
+      queryClient.setQueryData(
+        messageQueryOptions.getById(draftId).queryKey,
+        (message: Message | undefined) => {
+          return message ? { ...message, ...messageUpdated } : undefined;
+        },
+      );
+      queryClient.setQueryData(
+        [...folderQueryOptions.base, 'draft', 'messages'],
+        (data: InfiniteData<Message[]>) => {
+          if (!data) return data;
+          const pages = data.pages.map((page: Message[]) =>
+            page.map((message: Message) => {
+              if (message.id === draftId) {
+                return { ...message, ...messageUpdated };
+              }
+              return message;
+            }),
+          );
+          return { ...data, pages };
+        },
+      );
     },
   });
 };
