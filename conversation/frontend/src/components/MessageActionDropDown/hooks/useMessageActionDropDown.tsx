@@ -19,7 +19,6 @@ import { useFolderHandlers } from '~/features/menu/hooks/useFolderHandlers';
 import { useI18n, useRecall, useSelectedFolder } from '~/hooks';
 import { Message, Recipients } from '~/models';
 import {
-  baseUrl,
   isInRecipient,
   useCreateOrUpdateDraft,
   useDeleteMessage,
@@ -120,18 +119,7 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
   };
 
   const handleDraftSaveClick = async () => {
-    const promise = await createOrUpdateDraft();
-    if (
-      promise &&
-      promise.id &&
-      !location.pathname.includes(`/draft/message/${promise.id}`)
-    ) {
-      window.history.replaceState(
-        null,
-        '',
-        `${baseUrl}/draft/message/${promise.id}`,
-      );
-    }
+    await createOrUpdateDraft();
   };
 
   const handleMarkAsUnreadClick = () => {

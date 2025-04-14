@@ -1,7 +1,9 @@
 import { useToast } from '@edifice.io/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { attachmentService, messageQueryOptions } from '..';
 import { useI18n } from '~/hooks';
+import { Message } from '~/models';
+import { useAppActions } from '~/store';
+import { attachmentService, messageQueryOptions } from '..';
 
 /**
  * Hook to attach many Files to a draft message.
@@ -9,6 +11,8 @@ import { useI18n } from '~/hooks';
  */
 export const useAttachFiles = () => {
   const queryClient = useQueryClient();
+  const { setMessageUpdated } = useAppActions();
+
   const toast = useToast();
   const { t } = useI18n();
 
@@ -16,9 +20,23 @@ export const useAttachFiles = () => {
     mutationFn: ({ draftId, files }: { draftId: string; files: File[] }) =>
       Promise.all(files.map((file) => attachmentService.attach(draftId, file))),
     onSuccess(_ids, { draftId }) {
-      queryClient.invalidateQueries({
-        queryKey: messageQueryOptions.getById(draftId).queryKey,
-      });
+      queryClient
+        .invalidateQueries<Message>({
+          queryKey: messageQueryOptions.getById(draftId).queryKey,
+        })
+        .then(() => {
+          // Refresh the message data after attaching files to the draft message
+          // This is necessary to update the message state in the store
+          queryClient
+            .ensureQueryData(messageQueryOptions.getById(draftId))
+            .then((message) => {
+              if (message) {
+                setMessageUpdated({
+                  ...message,
+                });
+              }
+            });
+        });
       toast.success(t('attachments.loaded'));
     },
     onError(error, { draftId }) {
