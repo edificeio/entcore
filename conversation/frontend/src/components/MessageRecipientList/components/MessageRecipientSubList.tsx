@@ -1,12 +1,11 @@
 import clsx from 'clsx';
-import { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Recipients } from '~/models';
 import { MessageRecipientListItem } from './MessageRecipientListItem';
 
 export interface MessageRecipientSubListProps {
   recipients: Recipients;
-  head: ReactNode;
+  head: string;
   truncate?: boolean;
   inline?: boolean;
 }
@@ -34,7 +33,7 @@ export function MessageRecipientSubList({
           const type = index < recipients.users.length ? 'user' : 'group';
           const isLast = index === recipientArray.length - 1;
           return (
-            <li key={recipient.id} className="d-inline">
+            <li key={head + recipient.id} className="d-inline">
               <MessageRecipientListItem
                 recipient={recipient}
                 color={color}
