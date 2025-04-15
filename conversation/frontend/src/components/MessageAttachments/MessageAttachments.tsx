@@ -31,9 +31,6 @@ export function MessageAttachments({
     useMessageAttachments(
       editMode && messageUpdated ? messageUpdated : message,
     );
-  useEffect(() => {
-    console.log('attachments', messageUpdated);
-  }, [messageUpdated]);
 
   if (!attachments.length && !editMode) return null;
 
