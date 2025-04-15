@@ -29,22 +29,6 @@ export function MessageEdit({ message }: MessageEditProps) {
   const [dateKey, setDateKey] = useState(0);
   const { data: publicConfig } = useConversationConfig();
 
-  useEffect(() => {
-    setMessageUpdated(message);
-    setContentKey((contentKey) => contentKey + 1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (publicConfig && publicConfig['debounce-time-to-auto-save']) {
-      debounceTimeToSave.current = publicConfig['debounce-time-to-auto-save'];
-    }
-  }, [publicConfig]);
-
-  useEffect(() => {
-    setMessageUpdated(message);
-  }, [message, setMessageUpdated]);
-
   const handleSubjectChange = (subject: string) => {
     setSubject(subject);
     setMessageUpdated({ ...(messageUpdated || message), subject });
@@ -62,18 +46,32 @@ export function MessageEdit({ message }: MessageEditProps) {
   );
 
   useEffect(() => {
+    setMessageUpdated(message);
+    setContentKey((contentKey) => contentKey + 1);
+
+    const interval = setInterval(() => setDateKey((prev) => ++prev), 6000);
+
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (publicConfig && publicConfig['debounce-time-to-auto-save']) {
+      debounceTimeToSave.current = publicConfig['debounce-time-to-auto-save'];
+    }
+  }, [publicConfig]);
+
+  useEffect(() => {
+    setMessageUpdated(message);
+  }, [message, setMessageUpdated]);
+
+  useEffect(() => {
     if (messageUpdatedDebounced && messageUpdatedNeedSave) {
       createOrUpdateDraft();
       setMessageUpdatedNeedToSave(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messageUpdatedDebounced]);
-
-  useEffect(() => {
-    const interval = setInterval(() => setDateKey((prev) => ++prev), 1000);
-
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <>
