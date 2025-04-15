@@ -90,12 +90,13 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 	private final SamlHelper samlHelper;
 	private final JwtVerifier jwtVerifier;
 	private final boolean otpDisabled;
+	private final int tokenExpirationTimeSeconds;
 
 	public OAuthDataHandler(Request request, Neo4j neo, MongoDb mongo, RedisClient redisClient,
 			OpenIdConnectService openIdConnectService, boolean checkFederatedLogin,
 			int pwMaxRetry, long pwBanDelay, String passwordEventMinDate, int defaultSyncValue,
 			JsonArray clientPWSupportSaml2, EventStore eventStore, SamlHelper samlHelper, JwtVerifier jwtVerifier,
-			final boolean otpDisabled) {
+			final boolean otpDisabled, int tokenExpirationTimeSeconds) {
 		super(request);
 		this.neo = neo;
 		this.mongo = mongo;
@@ -111,6 +112,7 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 		this.clientPWSupportSaml2 = clientPWSupportSaml2;
 		this.samlHelper = samlHelper;
 		this.jwtVerifier = jwtVerifier;
+		this.tokenExpirationTimeSeconds = tokenExpirationTimeSeconds;
 	}
 
 	@Override
@@ -483,7 +485,7 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 										.put("authId", authInfo.getId())
 										.put("token", UUID.randomUUID().toString())
 										.put("createdOn", MongoDb.now())
-										.put("expiresIn", 3600);
+										.put("expiresIn", tokenExpirationTimeSeconds);
 								if (openIdConnectService != null && authInfo.getScope() != null
 										&& authInfo.getScope().contains("openid")) {
 									// "2.0".equals(RequestUtils.getAcceptVersion(getRequest().getHeader("Accept"))))
@@ -523,7 +525,7 @@ public class OAuthDataHandler extends DataHandler implements OpenIdDataHandler {
 												t.setAuthId(authInfo.getId());
 												t.setToken(token.getString("token"));
 								t.setCreatedOn(MongoDb.parseIsoDate(token.getJsonObject("createdOn")));
-												t.setExpiresIn(3600);
+												t.setExpiresIn(tokenExpirationTimeSeconds);
 												if (token.containsKey("id_token")) {
 													t.setIdToken(token.getString("id_token"));
 												}

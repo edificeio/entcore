@@ -49,11 +49,12 @@ public class OAuthDataHandlerFactory implements DataHandlerFactory {
 	private final boolean otpDisabled;
 	private SamlHelper samlHelper;
 	private JwtVerifier jwtVerifier;
+	private final int tokenExpirationTimeSeconds;
 
 	public OAuthDataHandlerFactory(
 			OpenIdConnectService openIdConnectService, boolean cfl, int pwMaxRetry, long pwBanDelay,
 			String passwordEventMinDate, int defaultSyncValue, JsonArray clientPWSupportSaml2, EventStore eventStore,
-			final boolean otpDisabled) {
+			final boolean otpDisabled, int tokenExpirationTimeSeconds) {
 		this.otpDisabled = otpDisabled;
 		this.neo = Neo4j.getInstance();
 		this.mongo = MongoDb.getInstance();
@@ -66,19 +67,20 @@ public class OAuthDataHandlerFactory implements DataHandlerFactory {
 		this.passwordEventMinDate = passwordEventMinDate;
 		this.defaultSyncValue = defaultSyncValue;
 		this.clientPWSupportSaml2 = clientPWSupportSaml2;
+		this.tokenExpirationTimeSeconds = tokenExpirationTimeSeconds;
 	}
 
 	@Override
 	public DataHandler create(Request request) {
 		return new OAuthDataHandler(request, neo, mongo, redisClient, openIdConnectService, checkFederatedLogin,
 				pwMaxRetry, pwBanDelay, passwordEventMinDate, defaultSyncValue, clientPWSupportSaml2, eventStore, samlHelper,
-				jwtVerifier, otpDisabled);
+				jwtVerifier, otpDisabled, tokenExpirationTimeSeconds);
 	}
 
 	public DataHandler create(JsonRequestAdapter request) {
 		return new OAuthDataHandler(request, neo, mongo, redisClient, openIdConnectService, checkFederatedLogin,
 				pwMaxRetry, pwBanDelay, passwordEventMinDate, defaultSyncValue, clientPWSupportSaml2, eventStore,
-				samlHelper, jwtVerifier, otpDisabled);
+				samlHelper, jwtVerifier, otpDisabled, tokenExpirationTimeSeconds);
 	}
 
 	public void setSamlHelper(SamlHelper samlHelper) {
