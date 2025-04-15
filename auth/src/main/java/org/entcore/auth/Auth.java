@@ -90,7 +90,7 @@ public class Auth extends BaseServer {
 				openIdConnectService, checkFederatedLogin, config.getInteger("maxRetry", 5), config.getLong("banDelay", 900000L),
 				config.getString("password-event-min-date"), config.getInteger("password-event-sync-default-value", 0),
 				config.getJsonArray("oauth2-pw-client-enable-saml2"), eventStore,
-				config.getBoolean("otp-disabled", false));
+				config.getBoolean("otp-disabled", false), config.getInteger("oauth2-token-expiration-time-seconds", 3600));
 
 		AuthController authController = new AuthController();
 		authController.setEventStore(eventStore);
