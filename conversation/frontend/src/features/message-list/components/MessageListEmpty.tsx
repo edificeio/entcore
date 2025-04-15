@@ -1,5 +1,4 @@
-import { Button, EmptyScreen, useEdificeClient } from '@edifice.io/react';
-import { IconEdit } from '@edifice.io/react/icons';
+import { EmptyScreen, useEdificeClient } from '@edifice.io/react';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
 
@@ -7,6 +6,7 @@ import illuMessagerie from '@images/emptyscreen/illu-messagerie.svg';
 import illuNoContent from '@images/emptyscreen/illu-no-content-in-folder.svg';
 import illuSearch from '@images/emptyscreen/illu-search.svg';
 import illuTrash from '@images/emptyscreen/illu-trash.svg';
+import { NewMessageButton } from '~/components/NewMessageButton';
 
 export function MessageListEmpty() {
   const { folderId } = useParams();
@@ -60,10 +60,7 @@ export function MessageListEmpty() {
       />
       {getEmptyScreenData().withNewMessage && (
         <div>
-          <Button>
-            <IconEdit />
-            {t('new.message')}
-          </Button>
+          <NewMessageButton />
         </div>
       )}
     </div>
