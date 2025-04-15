@@ -52,6 +52,6 @@ public interface DirectoryBrokerListener {
    * @param request The request object containing the external ID of the group to be found.
    * @return A response object containing the details of the found group or an indication that the group was not found.
    */
-  @BrokerListener(subject = "directory.group.find-by-external-id", proxy = true)
+  @BrokerListener(subject = "directory.group.find.byexternalid", proxy = true)
   Future<FindGroupByExternalIdResponseDTO> findGroupByExternalId(FindGroupByExternalIdRequestDTO request);
 }

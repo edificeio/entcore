@@ -10,7 +10,7 @@ import org.entcore.broker.api.dto.i18n.FetchTranslationsResponseDTO;
  * It provides functionality to fetch translations by language and theme.
  */
 public interface I18nBrokerListener {
-
+  //TODO use {application} in route (1 per application)
   /**
    * This method is used to fetch translations for a specific language and theme.
    * @param request The request object containing the language and theme for which to fetch translations.
