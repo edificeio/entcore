@@ -33,7 +33,7 @@ export function MessageRecipientSubList({
           const type = index < recipients.users.length ? 'user' : 'group';
           const isLast = index === recipientArray.length - 1;
           return (
-            <li key={head + recipient.id} className="d-inline">
+            <li key={head + recipient.id + index} className="d-inline">
               <MessageRecipientListItem
                 recipient={recipient}
                 color={color}
