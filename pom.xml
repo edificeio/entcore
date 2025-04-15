@@ -61,7 +61,7 @@
         <testContainerVersion>1.19.3</testContainerVersion>
         <modPostgresVersion>2.0-develop-b2school-SNAPSHOT</modPostgresVersion>
         <modMongoVersion>4.0-SNAPSHOT</modMongoVersion>
-        <webUtilsVersion>3.0-develop-b2school-SNAPSHOT</webUtilsVersion>
+        <webUtilsVersion>3.1-develop-b2school-SNAPSHOT</webUtilsVersion>
         <mongodbHelperVersion>4.0-develop-b2school-SNAPSHOT</mongodbHelperVersion>
         <jodaTimeVersion>2.9.4</jodaTimeVersion>
         <scramVersion>2.1</scramVersion>
@@ -69,7 +69,7 @@
         <owaspVersion>20220608.1</owaspVersion>
         <jacksonVersion>2.15.2</jacksonVersion>
         <casVersion>0.2.2</casVersion>
-        <vertxCronTimerVersion>3.0-b2school-SNAPSHOT</vertxCronTimerVersion>
+        <vertxCronTimerVersion>3.0-develop-b2school-SNAPSHOT</vertxCronTimerVersion>
         <jnaVersion>3.0.2</jnaVersion>
         <lamejbVersion>0.2.0</lamejbVersion>
         <opencsvVersion>3.9</opencsvVersion>
