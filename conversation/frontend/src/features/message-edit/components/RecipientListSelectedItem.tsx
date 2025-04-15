@@ -61,7 +61,7 @@ export function RecipientListSelectedItem({
           href={getUserbookURL(recipient.id, type)}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-gray-800"
+          className="link-primary text-gray-800"
         >
           {recipientName}
           {type === 'user' && (
