@@ -35,13 +35,11 @@ export default function useToolbarActions(messages: MessageMetadata[]) {
   const handleEmptyTrash = () => {
     openModal({
       id: 'empty-trash-modal',
-      header: t('empty.trash'),
-      body: t('empty.trash.confirm', {
-        count: messages.length,
-      }),
-
-      okText: t('confirm'),
+      header: t('trash.empty.confirm.title'),
+      body: t('trash.empty.confirm.description'),
+      okText: t('delete'),
       koText: t('cancel'),
+      size: 'sm',
       onSuccess: () => {
         emptyTrashQuery.mutate();
       },
