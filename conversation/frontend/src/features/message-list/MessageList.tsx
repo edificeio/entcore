@@ -115,7 +115,7 @@ export function MessageList() {
     {
       name: 'move',
       visibility: showMoveToFolder,
-      label: t('move'),
+      label: t('move.first.caps'),
       icon: <IconFolderMove />,
       onClick: handleMoveToFolder,
     },
