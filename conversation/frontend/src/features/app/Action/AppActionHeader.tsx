@@ -1,20 +1,15 @@
-import {
-  Button,
-  Dropdown,
-  IconButton,
-  IconButtonProps,
-} from '@edifice.io/react';
-import { IconOptions, IconPlus, IconSignature } from '@edifice.io/react/icons';
+import { Dropdown, IconButton, IconButtonProps } from '@edifice.io/react';
+import { IconOptions, IconSignature } from '@edifice.io/react/icons';
 import { Fragment, RefAttributes } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { NewMessageButton } from '~/components/NewMessageButton';
 import { useI18n } from '~/hooks';
-import { AppActionMenuOptions } from './AppActionMenuOptions';
 import { useAppActions } from '~/store';
+import { AppActionMenuOptions } from './AppActionMenuOptions';
 
 export const AppActionHeader = () => {
   const { t, common_t } = useI18n();
   const { setOpenedModal } = useAppActions();
-  const navigate = useNavigate();
   const location = useLocation();
   const draftRoute = '/draft/create';
 
@@ -30,21 +25,11 @@ export const AppActionHeader = () => {
     },
   ];
 
-  const handleCreateNewClick = () => {
-    navigate(draftRoute);
-  };
-
   return (
     <>
       {!isDraft && (
         <div className="d-flex flex-fill align-items-center justify-content-end gap-12 align-self-end">
-          <Button
-            leftIcon={<IconPlus />}
-            onClick={handleCreateNewClick}
-            className="text-nowrap"
-          >
-            {t('new.message')}
-          </Button>
+          <NewMessageButton />
 
           <Dropdown>
             {(
