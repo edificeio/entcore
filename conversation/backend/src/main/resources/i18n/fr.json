@@ -63,6 +63,8 @@
   "messagerie.empty.text": "Avec la Messagerie, communiquez facilement avec la communauté de l’école. Vos messages prennent leur envol !",
   "trash.empty.title": "C’est vide par ici !",
   "trash.empty.text": "Aucun message dans votre corbeille pour le moment.",
+  "trash.empty.confirm.title": "Vider la corbeille",
+  "trash.empty.confirm.description": "Êtes-vous sûr de vouloir vider la corbeille ? Tous les messages seront supprimés définitivement.",
   "noContent.empty.title": "Ce dossier est vide pour le moment.",
   "noContent.empty.text": "Vous pouvez organiser votre messagerie en déplacant des messages dedans, dès maintenant !",
   "print": "Imprimer",
