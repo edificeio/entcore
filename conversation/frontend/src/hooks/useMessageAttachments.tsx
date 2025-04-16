@@ -1,19 +1,21 @@
-import { useToast, useWorkspaceFile } from '@edifice.io/react';
-import { t } from 'i18next';
+import { useToast } from '@edifice.io/react';
+import { odeServices } from 'edifice-ts-client';
 import { Attachment, Message } from '~/models';
 import { baseUrl, useCreateOrUpdateDraft } from '~/services';
+
 import {
   useAttachFiles,
   useDetachFile,
   useDownloadAttachment,
 } from '~/services/queries/attachment';
+import { useI18n } from './useI18n';
 
 export function useMessageAttachments({ id, attachments }: Message) {
   const attachFileMutation = useAttachFiles();
   const detachFileMutation = useDetachFile();
   const downloadAttachmentMutation = useDownloadAttachment();
-  const { createOrUpdate: saveAttachmentToWorkspace } = useWorkspaceFile();
   const toast = useToast();
+  const { t } = useI18n();
 
   // These hooks is required when attaching files to a blank new draft, without id.
   const createOrUpdateDraft = useCreateOrUpdateDraft();
@@ -52,23 +54,26 @@ export function useMessageAttachments({ id, attachments }: Message) {
   }
 
   async function copyToWorkspace(
-    attachementId: string,
+    attachment: Attachment,
     selectedFolderId: string,
   ) {
     try {
       const attachmentBlob = await downloadAttachmentMutation.mutateAsync({
         messageId: id,
-        attachmentId: attachementId,
+        attachmentId: attachment.id,
       });
-
       if (!attachmentBlob) return;
 
-      await saveAttachmentToWorkspace({
-        blob: attachmentBlob,
+      const file = new File([attachmentBlob], attachment.filename, {
+        type: attachment.contentType,
+      });
+      await odeServices.workspace().saveFile(file, {
         parentId: selectedFolderId,
       });
     } catch (error) {
-      toast.error(t('conversation.error.copyToWorkspace'));
+      let errorMessage = t('conversation.error.copyToWorkspace');
+      if (error) errorMessage += `: ${t(error as string)}`; //TODO type the error in the Ode services
+      toast.error(errorMessage);
       return false;
     }
     toast.success(t('conversation.notify.copyToWorkspace'));

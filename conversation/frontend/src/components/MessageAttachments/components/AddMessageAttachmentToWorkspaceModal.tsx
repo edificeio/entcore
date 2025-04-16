@@ -4,21 +4,21 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useI18n } from '~/hooks';
 import { useMessageAttachments } from '~/hooks/useMessageAttachments';
-import { Message } from '~/models';
+import { Attachment, Message } from '~/models';
 
 interface AddMessageAttachmentToWorkspaceModalProps {
   message: Message;
-  attachmentId: string;
+  attachment: Attachment;
   onModalClose: () => void;
   isOpen?: boolean;
 }
 export function AddMessageAttachmentToWorkspaceModal({
   message,
-  attachmentId,
+  attachment,
   isOpen = false,
   onModalClose,
 }: AddMessageAttachmentToWorkspaceModalProps) {
-  const { t } = useI18n();
+  const { t, common_t } = useI18n();
   const { copyToWorkspace } = useMessageAttachments(message);
   const [selectedFolderIdToCopyFile, setSelectedFolderIdToCopyFile] = useState<
     string | undefined
@@ -33,9 +33,8 @@ export function AddMessageAttachmentToWorkspaceModal({
   const handleAddAttachmentToWorkspace = async () => {
     if (selectedFolderIdToCopyFile === undefined) return;
     setIsLoading(true);
-
     const isSuccess = await copyToWorkspace(
-      attachmentId,
+      attachment,
       selectedFolderIdToCopyFile,
     );
     if (isSuccess) {
@@ -57,7 +56,7 @@ export function AddMessageAttachmentToWorkspaceModal({
       size="md"
     >
       <Modal.Header onModalClose={onModalClose}>
-        {t('attachments.add.to.folder.modal')}
+        {common_t('attachments.add.to.folder.modal')}
       </Modal.Header>
       <Modal.Body>
         <WorkspaceFolders onFolderSelected={handleFolderSelected} />

@@ -72,7 +72,7 @@ export function MessageAttachment({
           message={message}
           isOpen={showAddToWorkspaceModal}
           onModalClose={() => setShowAddToWorkspaceModal(false)}
-          attachmentId={attachment.id}
+          attachment={attachment}
         />
       )}
     </>
