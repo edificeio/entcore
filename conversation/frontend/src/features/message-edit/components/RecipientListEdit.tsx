@@ -104,6 +104,7 @@ export function RecipientListEdit({
     hasSearchNoResults,
     searchMinLength,
     handleSearchInputChange,
+    handleSearchInputKeyUp,
   } = useSearchRecipients({
     recipientType,
   });
@@ -160,6 +161,7 @@ export function RecipientListEdit({
         options={searchResults}
         searchMinLength={searchMinLength}
         onSearchInputChange={handleSearchInputChange}
+        onSearchInputKeyUp={handleSearchInputKeyUp}
         variant="ghost"
         renderNoResult={
           <div className="p-8">
