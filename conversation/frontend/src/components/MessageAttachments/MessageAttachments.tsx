@@ -7,7 +7,7 @@ import {
   IconPlus,
 } from '@edifice.io/react/icons';
 import clsx from 'clsx';
-import { ChangeEvent, useEffect, useRef } from 'react';
+import { ChangeEvent, useRef } from 'react';
 import { useI18n } from '~/hooks';
 import { useMessageAttachments } from '~/hooks/useMessageAttachments';
 import { Message } from '~/models';
