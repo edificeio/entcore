@@ -34,17 +34,16 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface BrokerListener {
   /**
-   * The NATS subject to subscribe to.
+   * The NATS subject to subscribe to.<br />
+   * This subject must :
+   * <ul>
+   * <li>respect the naming conventions of <a href="https://docs.nats.io/nats-concepts/subjects">NATS subjects</a></li>
+   * <li>(when {@code proxy=true})can contain parameters enclosed in brackets (e.g. {@code {application}.export.resources}) that will be replaced by the values
+   * provided in the {@code addressParameters} at instantiation</li>
+   * </ul>
    * @return NATS subject
    */
   String subject();
-
-  /**
-   * Optional queue name for queue groups.
-   * If specified, the subscription will join this queue group.
-   * @return queue name
-   */
-  String queue() default "";
 
   /**
    * Description of this NATS endpoint.

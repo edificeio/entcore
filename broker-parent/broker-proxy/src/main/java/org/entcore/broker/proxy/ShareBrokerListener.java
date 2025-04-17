@@ -10,7 +10,6 @@ import org.entcore.broker.api.dto.shares.UpsertGroupSharesResponseDTO;
  * This interface defines the methods that will be used to listen to events from the share broker.
  */
 public interface ShareBrokerListener {
-  //TODO allow dynamic routes using constructor params in impl?
   /**
    * This method is used to upsert shares of a group.
    * @param request The request object containing the details of the shares to be upserted.
