@@ -121,6 +121,8 @@ export default (data) => {
   testSharesViaBroadcastGroupInDifferentSchools(data)
   testSharesViaProfileGroupInDifferentSchools(data)
   testSharesViaFavouritesWithUsersWhoBecameInvisible(data)
+  testForbiddenShares(data)
+  testEmptyShares(data)
 };
 
 
@@ -161,6 +163,31 @@ function checkPresentShares(res, sharesType, expectedSharesToBePresent, checkNam
   }
 }
 
+function checkHasCorrectShares(res, sharesType, entityId, expectedShares, checkName) {
+  const checks = {}
+  checks[checkName] = (r) => {
+    let ok = true;
+    const actualShares = res[sharesType].checked[entityId];
+    for(let actualShare of actualShares) {
+      if(expectedShares.indexOf(actualShare) < 0) {
+        ok = false;
+        console.error("Found share", actualShare, "that was not expected");
+      }
+    }
+    for(let expectedShare of expectedShares) {
+      if(actualShares.indexOf(expectedShare) < 0) {
+        ok = false;
+      }
+      console.error("Expected share", expectedShare);
+    }
+    return ok;
+  }
+  const ok = check(res, checks)
+  if (!ok) {
+    console.error(checkName, res)
+  }
+}
+
 function checkAbsentShares(res, sharesType, expectedSharesToBeAbsent, checkName) {
   const checks = {}
   checks[checkName] = (r) => {
@@ -171,6 +198,127 @@ function checkAbsentShares(res, sharesType, expectedSharesToBeAbsent, checkName)
   if (!ok) {
     console.error(checkName, res)
   }
+}
+
+
+
+function testEmptyShares(data) {
+  const { structure1, structure2 } = data;
+  describe('[Workspace] Test a user can share to no one', () => {
+    let res;
+    authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+    const users1 = getUsersOfSchool(structure1);
+    const student1 = getRandomUserWithProfile(users1, 'Student');
+    const teacher1 = getRandomUserWithProfile(users1, 'Teacher');
+    const teacher12 = getRandomUserWithProfile(users1, 'Teacher', [teacher1]);
+    const teacher13 = getRandomUserWithProfile(users1, 'Teacher', [teacher1, teacher12]);
+    // Teacher upload a file
+    authenticateWeb(teacher1.login, 'password');
+    const uploadedFile = uploadFile(fileToUpload);
+    const fileId = uploadedFile._id;
+    let shares = {bookmarks: {}, groups: {}, users: {}}
+
+    describe('Share a freshly created file to no one', () => {
+      res = shareFile(fileId, shares);
+      checkShareOk(res, 'can send to no one')
+    })
+
+    describe('Share the file to users to initiate shares', () => {
+      
+
+      shares.users[student1.id] = WS_MANAGER_SHARE;
+      shares.users[teacher1.id] = WS_MANAGER_SHARE;
+      shares.users[teacher12.id] = WS_MANAGER_SHARE;
+      shares.users[teacher13.id] = WS_MANAGER_SHARE;
+      res = shareFile(fileId, shares);
+    checkShareOk(res, 'can share to users')
+    })
+
+    describe('Erase all the shares', () => {
+      shares = {bookmarks: {}, groups: {}, users: {}}
+      res = shareFile(fileId, shares);
+      checkShareOk(res, '200 while sharing to no one a file that was shared before')
+    })
+  })
+}
+
+function testForbiddenShares(data) {
+  const { structure1, structure2 } = data;
+  describe('[Workspace] Test forbidden shares via profile groups in two different schools', () => {
+    let res;
+    authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+    const users1 = getUsersOfSchool(structure1);
+    const users2 = getUsersOfSchool(structure2);
+    const parentRole2 = getParentRole(structure2)
+    const studentRole2 = getStudentRole(structure2)
+    const student1 = getRandomUserWithProfile(users1, 'Student');
+    const teacher1 = getRandomUserWithProfile(users1, 'Teacher');
+    const teacher12 = getRandomUserWithProfile(users1, 'Teacher', [teacher1]);
+    const teacher13 = getRandomUserWithProfile(users1, 'Teacher', [teacher1, teacher12]);
+    const parent1 = getRandomUserWithProfile(users1, 'Relative')
+    const parent2 = getRandomUserWithProfile(users2, 'Relative')
+    console.log("Student 1 - ", student1.login, " - " , student1.id);
+    console.log("Teacher 1 - ", teacher1.login, " - " , teacher1.id);
+    console.log("Teacher 1.2 - ", teacher12.login, " - " , teacher12.id);
+    console.log("Parent 1 - ", parent1.login, " - " , parent1.id);
+    console.log("Parent 2 - ", parent2.login, " - " , parent1.id);
+    // Teacher upload a file
+    const teacher1Session = authenticateWeb(teacher1.login, 'password');
+    const uploadedFile = uploadFile(fileToUpload);
+    const fileId = uploadedFile._id;
+    const shares = {bookmarks: {}, groups: {}, users: {}}
+    shares.users[student1.id] = WS_MANAGER_SHARE;
+    shares.users[parent1.id] = WS_MANAGER_SHARE;
+    shares.users[teacher12.id] = WS_MANAGER_SHARE;
+    shares.users[teacher13.id] = WS_MANAGER_SHARE;
+    shares.groups[parentRole2.id] = WS_MANAGER_SHARE;
+    res = shareFile(fileId, shares);
+    
+    authenticateWeb(parent2.login, 'password');
+    shares.groups[studentRole2.id] = WS_READER_SHARE;
+    // Check that the shares of school 1 are still ok
+    res = shareFile(fileId, shares)
+    checkShareOk(res, 'parent of school 2 shares to students of school 2')
+
+
+    res = getShares(fileId)
+    checkPresentShares(res, "groups", [parentRole2.id], "parents group of school 2 can see")
+    checkPresentShares(res, "users", [student1.id], "student of group of school 1 can see")
+    checkPresentShares(res, "users", [parent1.id], "parent of group of school 1 can see")
+    checkPresentShares(res, "users", [teacher12.id], "teacher of group of school 1 can see")
+    checkPresentShares(res, "users", [teacher13.id], "teacher of group of school 1 can see")
+
+    // Check that a manager can remove shares of a user he/she cannot see
+    delete shares.users[student1.id];
+    res = shareFile(fileId, shares)
+    checkShareOk(res, '200 while trying to remove shares of a user he/she cannot see')
+    res = getShares(fileId)
+    checkPresentShares(res, "groups", [parentRole2.id], "parents group of school 2 still appears in shares after forbidden removal")
+    checkPresentShares(res, "users", [parent1.id], "parent of group of school 1 still appears in shares after forbidden removal")
+    checkPresentShares(res, "users", [teacher12.id], "teacher of group of school 1 still appears in shares after forbidden removal")
+    checkPresentShares(res, "users", [teacher13.id], "teacher of group of school 1 still appears in shares after forbidden removal")
+
+    // Check that a user cannot modify shares of a user he/she cannot see
+    shares.users[teacher13.id] = WS_READER_SHARE;
+    res = shareFile(fileId, shares)
+    checkShareKo(res, '400 while trying to modify shares of a user he/she cannot see')
+    res = getShares(fileId)
+    checkPresentShares(res, "groups", [parentRole2.id], "parents group of school 2 still appears in shares after forbidden modification")
+    checkPresentShares(res, "users", [parent1.id], "parent of group of school 1 still appears in shares after forbidden modification")
+    checkPresentShares(res, "users", [teacher12.id], "teacher of group of school 1 still appears in shares after forbidden modification")
+    checkHasCorrectShares(res, "users", teacher13.id, WS_MANAGER_SHARE, "teacher of group of school 1 still has manager rights after forbidden modification")
+
+    // Check that a user cannot modify and delete shares of a user he/she cannot see
+    delete shares.users[teacher12.id];
+    shares.users[teacher13.id] = WS_READER_SHARE;
+    res = shareFile(fileId, shares)
+    checkShareOk(res, '400 while trying to modify and delete shares of a user he/she cannot see')
+    res = getShares(fileId)
+    checkPresentShares(res, "groups", [parentRole2.id], "parents group of school 2 still appears in shares after forbidden modification and deletion")
+    checkPresentShares(res, "users", [parent1.id], "parent of group of school 1 still appears in shares after forbidden modification and deletion")
+    checkPresentShares(res, "users", [teacher12.id], "teacher of group of school 1 still appears in shares after forbidden modification and deletion")
+    checkHasCorrectShares(res, "users", teacher13.id, WS_MANAGER_SHARE, "teacher of group of school 1 still has manager rights after forbidden modification and deletion")
+  })
 }
 
 function testSharesViaProfileGroupInDifferentSchools(data) {
@@ -220,6 +368,8 @@ function testSharesViaProfileGroupInDifferentSchools(data) {
     authenticateWeb(teacher12.login, 'password')
     res = shareFile(fileId, shares)
     checkShareKo(res, 'other teacher of school 1 tries to modify shares of student of school 2')
+
+
     // Parent of school 2 tries to do the same thing -> ok
     switchSession(parentSession);
     res = shareFile(fileId, shares)
@@ -239,6 +389,7 @@ function testSharesViaProfileGroupInDifferentSchools(data) {
     checkPresentShares(res, "users", [parent1.id], "parent of school 1 still appears in shares after shares from school 2")
     checkPresentShares(res, "groups", [parentRole2.id], "parents group of school 2 appears in shares after shares from school 2")
     checkAbsentShares(res, "groups", [studentRole2.id], "student group of school 2 does not appear in shares after shares from school 2")
+    // Check that if we want to modify the shares of a user of school 1, we cannot do it
   })
 }
 function testSharesViaBroadcastGroupInDifferentSchools(data) {
@@ -250,8 +401,8 @@ function testSharesViaBroadcastGroupInDifferentSchools(data) {
     const users2 = getUsersOfSchool(structure2);
     const broadcastGroup = getBroadcastGroup(broadcastGroupNameChapeau, chapeau);
     const broadcastGroupSchool1 = getBroadcastGroup(broadcastGroupName, structure1);
-    const teachers1 = users1.filter(u => u.type === 'Teacher')
-    const teachers2 = users2.filter(u => u.type === 'Teacher')
+    const teachers1 = users1.filter(u => u.type === 'Teacher').filter(t => t.classes && t.classes.length > 0)
+    const teachers2 = users2.filter(u => u.type === 'Teacher').filter(t => t.classes && t.classes.length > 0)
     const students1 = users1.filter(u => u.type === 'Student')
     const students2 = users2.filter(u => u.type === 'Student')
     const teacher1 = getRandomUser(teachers1);

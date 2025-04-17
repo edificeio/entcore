@@ -474,12 +474,12 @@ public abstract class GenericShareService implements ShareService {
 	 * @return A {@code Future} that completes with a set of the visible shares id (original and updated) iff all
 	 * the detailed conditions above were met, and an empty set otherwise.
 	 */
-	private Future<Set<String>> getVisibleShares(
+	private Future<AccessibleUsersCheck> getVisibleShares(
 		final String userId,
 		final String resourceId,
 		final JsonArray originalShares,
 		final Map<String, Set<String>> shareUpdates) {
-		final Promise<Set<String>> promise = Promise.promise();
+		final Promise<AccessibleUsersCheck> promise = Promise.promise();
 		final String customReturn = "RETURN DISTINCT visibles.id as id, has(visibles.login) as isUser";
 
 		// Parallelizing the process of fetching the visibles
@@ -559,9 +559,9 @@ public abstract class GenericShareService implements ShareService {
 								.collect(Collectors.toSet());
 							log.warn("WARNING - tried to add rights on resource " + resourceId + "to a user/group " + unmatchedUserIds + " not visible to user");
 						}
-						promise.complete(usersThatCanBeConfidentlyActedUpon);
+						promise.complete(new AccessibleUsersCheck(usersThatCanBeConfidentlyActedUpon, true));
 					} else {
-						promise.complete(Collections.emptySet());
+						promise.complete(new AccessibleUsersCheck(Collections.emptySet(), false));
 					}
 				});
 		return promise.future();
@@ -606,8 +606,9 @@ public abstract class GenericShareService implements ShareService {
 																			final Set<String> shareBookmarkIds) {
 		getOriginalShares(resourceId, userId)
 		.compose(shares -> getVisibleShares(userId, resourceId, shares, membersActions))
-		.onSuccess(visibleShares -> {
-			if(!visibleShares.isEmpty()) {
+		.onSuccess(visibleSharesCheckResult -> {
+			if(visibleSharesCheckResult.sharesOk) {
+				final Set<String> visibleShares = visibleSharesCheckResult.users;
 				//		final String preFilter = "AND m.id IN {members} ";
 				final Set<String> members = membersActions.keySet().stream()
 						.filter(visibleShares::contains)
@@ -739,4 +740,14 @@ public abstract class GenericShareService implements ShareService {
 
 	protected abstract List<String> removeOldSharedInSerializedModel(List<String> rights, JsonArray oldShared);
 
+
+	public static class AccessibleUsersCheck {
+		private final Set<String> users;
+		private final boolean sharesOk;
+
+    public AccessibleUsersCheck(Set<String> users, boolean sharesOk) {
+      this.users = users;
+      this.sharesOk = sharesOk;
+    }
+  }
 }
