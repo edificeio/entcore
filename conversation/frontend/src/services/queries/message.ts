@@ -553,7 +553,7 @@ export const useSendDraft = () => {
         cci?: string[];
       };
     }) => messageService.send(draftId, payload),
-    onSuccess: (_result, { payload }) => {
+    onSuccess: (response, { payload }) => {
       toast.success(t('message.sent'));
       updateFolderBadgeCountLocal('draft', -1);
       if (
@@ -566,13 +566,15 @@ export const useSendDraft = () => {
         ].includes(user.userId)
       ) {
         updateFolderBadgeCountLocal('inbox', +1);
+        queryClient.invalidateQueries({
+          queryKey: ['folder', 'inbox', 'messages'],
+        });
       }
-      queryClient.invalidateQueries({
-        queryKey: ['folder', 'inbox', 'messages'],
-      });
       queryClient.invalidateQueries({
         queryKey: ['folder', 'draft', 'messages'],
       });
+
+      return response;
     },
   });
 };
