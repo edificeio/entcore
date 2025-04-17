@@ -99,7 +99,7 @@ export function MessageEdit({ message }: MessageEditProps) {
               <MessageActionDropDown
                 message={messageUpdated}
                 appearance={{
-                  dropdownVariant: 'filled',
+                  dropdownVariant: 'outline',
                   mainButtonVariant: 'filled',
                   buttonColor: 'primary',
                 }}
