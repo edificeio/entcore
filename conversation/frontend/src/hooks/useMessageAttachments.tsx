@@ -72,7 +72,7 @@ export function useMessageAttachments({ id, attachments }: Message) {
       });
     } catch (error) {
       let errorMessage = t('conversation.error.copyToWorkspace');
-      if (error) errorMessage += `: ${t(error as string)}`; //TODO type the error in the Ode services
+      errorMessage += `: ${t(error as string)}`; //TODO type the error in the Ode services
       toast.error(errorMessage);
       return false;
     }

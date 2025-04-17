@@ -51,8 +51,9 @@ export default function useToolbarActions(messages: MessageMetadata[]) {
       id: 'delete-modal',
       header: t('delete.definitely'),
       body: t('delete.definitely.confirm'),
-      okText: t('confirm'),
+      okText: t('delete'),
       koText: t('cancel'),
+      size: 'sm',
       onSuccess: () => {
         deleteMessage.mutate({ id: selectedIds });
       },
