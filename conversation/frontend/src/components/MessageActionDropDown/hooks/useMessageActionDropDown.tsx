@@ -42,7 +42,8 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
   const createOrUpdateDraft = useCreateOrUpdateDraft();
   const moveMessage = useMoveMessage();
   const { handleMoveMessage } = useFolderHandlers();
-  const { setSelectedMessageIds } = useAppActions();
+  const { setSelectedMessageIds, setOpenedModal, setInactiveUsers } =
+    useAppActions();
   const sendDraftQuery = useSendDraft();
 
   const { folderId } = useSelectedFolder();
@@ -151,16 +152,26 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
   };
 
   const handleSendClick = () => {
-    sendDraftQuery.mutate({
-      draftId: message.id,
-      payload: {
-        subject: message.subject,
-        body: message.body,
-        to: recipientToIds(message.to),
-        cc: recipientToIds(message.cc),
-        cci: message.cci ? recipientToIds(message.cci) : undefined,
+    sendDraftQuery.mutate(
+      {
+        draftId: message.id,
+        payload: {
+          subject: message.subject,
+          body: message.body,
+          to: recipientToIds(message.to),
+          cc: recipientToIds(message.cc),
+          cci: message.cci ? recipientToIds(message.cci) : undefined,
+        },
       },
-    });
+      {
+        onSuccess: (response) => {
+          if (response.inactive.length > 0) {
+            setInactiveUsers(response.inactive);
+            setOpenedModal('inactive-users');
+          }
+        },
+      },
+    );
     navigate(`/inbox`);
   };
 
