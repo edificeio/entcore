@@ -109,8 +109,9 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
       id: 'delete-modal',
       header: <>{t('delete.definitely')}</>,
       body: <p>{t('delete.definitely.confirm')}</p>,
-      okText: t('confirm'),
+      okText: t('delete'),
       koText: t('cancel'),
+      size: 'sm',
       onSuccess: () => {
         deleteMessage.mutate({ id: message.id });
         navigate('/trash');
