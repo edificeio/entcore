@@ -62,6 +62,7 @@ export function RecipientListSelectedItem({
           target="_blank"
           rel="noopener noreferrer"
           className="link-primary text-gray-800"
+          draggable={false}
         >
           {recipientName}
           {type === 'user' && (
