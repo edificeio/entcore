@@ -1,7 +1,7 @@
 import { NOOP } from '@edifice.io/utilities';
 import { odeServices } from 'edifice-ts-client';
 
-import { Message } from '~/models';
+import { Message, MessageSentResponse } from '~/models';
 
 /** Utility function to map one or more IDs to an array of IDs */
 function asArray(ids: string | string[]): string[] {
@@ -117,18 +117,9 @@ export const createMessageService = (baseURL: string) => ({
       cci?: string[];
     },
   ) {
-    return odeServices.http().post<{
-      id: string;
-      subject: string;
-      body: string;
-      thread_id: string;
-      /** Number of reached recipients. */
-      sent: number;
-      /** IDs of unreachable recipients. */
-      undelivered: [];
-      /** IDs of inactive recipients. */
-      inactive: string[];
-    }>(`${baseURL}/send?id=${draftId}`, payload);
+    return odeServices
+      .http()
+      .post<MessageSentResponse>(`${baseURL}/send?id=${draftId}`, payload);
   },
 
   recall(messageId: string) {
