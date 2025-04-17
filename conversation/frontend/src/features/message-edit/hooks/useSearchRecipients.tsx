@@ -1,4 +1,4 @@
-import { ChangeEvent, useEffect, useReducer } from 'react';
+import { ChangeEvent, KeyboardEvent, useEffect, useReducer } from 'react';
 
 import { OptionListItemType, useDebounce, useIsAdml } from '@edifice.io/react';
 import { Visible } from '~/models/visible';
@@ -98,6 +98,11 @@ export const useSearchRecipients = ({
       payload: adaptedResults,
     });
   };
+  const handleSearchInputKeyUp = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      search(event.currentTarget.value, true);
+    }
+  };
 
   const handleSearchInputChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
@@ -107,18 +112,22 @@ export const useSearchRecipients = ({
     });
   };
 
-  const search = async (debouncedSearchInputValue: string) => {
+  const search = async (debouncedSearchInputValue: string, force = false) => {
     dispatch({
       type: 'isSearching',
       payload: true,
     });
+    const minSearchLength = isAdml ? 3 : 1;
     if (
       defaultBookmarks ||
-      debouncedSearchInputValue.length >= searchMinLength
+      debouncedSearchInputValue.length >= minSearchLength ||
+      force
     ) {
       let searchVisibles = defaultBookmarks || [];
-      // start search from 1 caracter length for non Adml but start from 3 for Adml
-      if (debouncedSearchInputValue.length >= searchMinLength) {
+      if (
+        debouncedSearchInputValue.length >= minSearchLength ||
+        (force && debouncedSearchInputValue.length > 0)
+      ) {
         searchVisibles = await searchVisible(debouncedSearchInputValue);
       }
       updateVisiblesFound(searchVisibles);
@@ -136,7 +145,7 @@ export const useSearchRecipients = ({
     });
   };
 
-  const searchMinLength = isAdml ? 3 : 1;
+  const searchMinLength = 1;
 
   const hasSearchNoResults =
     !state.isSearching &&
@@ -150,5 +159,6 @@ export const useSearchRecipients = ({
     isSearchLoading: state.isSearching,
     hasSearchNoResults,
     handleSearchInputChange,
+    handleSearchInputKeyUp,
   };
 };
