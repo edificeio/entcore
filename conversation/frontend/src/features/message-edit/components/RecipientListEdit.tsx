@@ -53,11 +53,17 @@ export function RecipientListEdit({
       const shareBookmark = await getBookmarkById(recipient.id);
 
       if (shareBookmark) {
-        setRecipientArray((prev) => [
-          ...prev,
-          ...shareBookmark.users,
-          ...shareBookmark.groups,
-        ]);
+        setRecipientArray((prev) => {
+          const newRecipients = [
+            ...prev,
+            ...shareBookmark.users,
+            ...shareBookmark.groups,
+          ];
+          // Remove duplicates by id
+          return [...new Set(newRecipients.map((item) => item.id))].map(
+            (id) => newRecipients.find((item) => item.id === id)!,
+          );
+        });
         recipients.users.push(
           ...shareBookmark.users.map((user) => ({
             id: user.id,
