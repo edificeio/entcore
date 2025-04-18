@@ -9,6 +9,7 @@ import {
 } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
+import { useI18n } from '~/hooks';
 import { Message, MessageBase, MessageMetadata } from '~/models';
 import {
   baseUrl,
@@ -430,6 +431,8 @@ export const useCreateDraft = () => {
   const messageUpdated = useMessageUpdated();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
   const queryClient = useQueryClient();
+  const toast = useToast();
+  const { t } = useI18n();
 
   return useMutation({
     mutationFn: ({
@@ -465,6 +468,7 @@ export const useCreateDraft = () => {
           return { ...data };
         },
       );
+      toast.success(t('message.draft.saved'));
     },
   });
 };
@@ -477,6 +481,8 @@ export const useUpdateDraft = () => {
   const { setMessageUpdated } = useAppActions();
   const queryClient = useQueryClient();
   const messageUpdated = useMessageUpdated();
+  const toast = useToast();
+  const { t } = useI18n();
 
   return useMutation({
     mutationFn: ({
@@ -495,6 +501,7 @@ export const useUpdateDraft = () => {
     onSuccess: (_data, { draftId }) => {
       if (!messageUpdated) return;
 
+      toast.success(t('message.draft.saved'));
       setMessageUpdated({ ...messageUpdated });
       queryClient.setQueryData(
         messageQueryOptions.getById(draftId).queryKey,
@@ -529,6 +536,9 @@ export const useSendDraft = () => {
   const queryClient = useQueryClient();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
   const { user } = useEdificeClient();
+  const toast = useToast();
+  const { t } = useI18n();
+
   return useMutation({
     mutationFn: ({
       draftId,
@@ -543,7 +553,8 @@ export const useSendDraft = () => {
         cci?: string[];
       };
     }) => messageService.send(draftId, payload),
-    onSuccess: (_result, { payload }) => {
+    onSuccess: (response, { payload }) => {
+      toast.success(t('message.sent'));
       updateFolderBadgeCountLocal('draft', -1);
       if (
         payload &&
@@ -555,13 +566,15 @@ export const useSendDraft = () => {
         ].includes(user.userId)
       ) {
         updateFolderBadgeCountLocal('inbox', +1);
+        queryClient.invalidateQueries({
+          queryKey: ['folder', 'inbox', 'messages'],
+        });
       }
-      queryClient.invalidateQueries({
-        queryKey: ['folder', 'inbox', 'messages'],
-      });
       queryClient.invalidateQueries({
         queryKey: ['folder', 'draft', 'messages'],
       });
+
+      return response;
     },
   });
 };
