@@ -9,7 +9,6 @@ type OpenedModal =
   | 'rename'
   | 'trash'
   | 'move-message'
-  | 'inactive-users'
   | 'signature';
 
 interface State {

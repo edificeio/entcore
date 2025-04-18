@@ -7,7 +7,9 @@ import {
   IconButtonProps,
 } from '@edifice.io/react';
 import { IconOptions } from '@edifice.io/react/icons';
-import { RefAttributes } from 'react';
+import { RefAttributes, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { SentToInactiveUsersModal } from '~/features/message-edit/components/SentToInactiveUsersModal';
 import { Message } from '~/models';
 import { useMessageActionDropDown } from './hooks/useMessageActionDropDown';
 
@@ -30,12 +32,24 @@ export function MessageActionDropDown({
     buttonColor: 'primary',
   },
 }: MessageActionDropDownProps) {
-  const { actionButtons, dropdownOptions } = useMessageActionDropDown(
+  const [inactiveUsers, setInactiveUsers] = useState<string[]>([]);
+  const [openedIncativeUsersModal, setOpenedInactiveUsersModal] =
+    useState(false);
+  const { actionButtons, dropdownOptions } = useMessageActionDropDown({
     message,
     actions,
-  );
+    setInactiveUsers,
+    setOpenedInactiveUsersModal,
+  });
+  const navigate = useNavigate();
 
   const visibleOptions = dropdownOptions.filter((o) => !o.hidden);
+
+  const handleCloseModal = () => {
+    setOpenedInactiveUsersModal(false);
+    setInactiveUsers([]);
+    navigate(`/inbox`);
+  };
 
   return (
     <div className="d-flex align-items-center gap-12">
@@ -101,6 +115,13 @@ export function MessageActionDropDown({
           );
         }}
       </Dropdown>
+      {openedIncativeUsersModal && (
+        <SentToInactiveUsersModal
+          open={openedIncativeUsersModal}
+          onModalClose={handleCloseModal}
+          users={inactiveUsers}
+        />
+      )}
     </div>
   );
 }

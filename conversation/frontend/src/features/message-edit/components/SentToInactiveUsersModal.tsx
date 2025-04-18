@@ -1,22 +1,27 @@
 import { Button, Modal } from '@edifice.io/react';
 import { useI18n } from '~/hooks';
-import { useAppActions, useInactiveUsers } from '~/store';
 
-export function SentToInactiveUsersModal() {
-  const { setOpenedModal } = useAppActions();
-  const users = useInactiveUsers();
+export interface SentToInactiveUsersModalProps {
+  open: boolean;
+  users: string[];
+  onModalClose: () => void;
+}
+
+export function SentToInactiveUsersModal({
+  open,
+  users,
+  onModalClose,
+}: SentToInactiveUsersModalProps) {
   const { t, common_t } = useI18n();
-
-  const handleCloseFolderModal = () => setOpenedModal(undefined);
 
   return (
     <Modal
       size="sm"
       id="modalSentToInactiveUsers"
-      isOpen={true}
-      onModalClose={handleCloseFolderModal}
+      isOpen={open}
+      onModalClose={onModalClose}
     >
-      <Modal.Header onModalClose={handleCloseFolderModal}>
+      <Modal.Header onModalClose={onModalClose}>
         {t('warning.inactive.title')}
       </Modal.Header>
       <Modal.Body>
@@ -41,7 +46,7 @@ export function SentToInactiveUsersModal() {
           type="button"
           color="primary"
           variant="filled"
-          onClick={handleCloseFolderModal}
+          onClick={onModalClose}
         >
           {common_t('warning.inactive.action')}
         </Button>

@@ -30,7 +30,19 @@ import {
 } from '~/services';
 import { useAppActions, useConfirmModalStore } from '~/store';
 
-export function useMessageActionDropDown(message: Message, actions?: string[]) {
+export interface MessageActionDropDownProps {
+  message: Message;
+  actions?: string[];
+  setInactiveUsers: (inactiveUsers: string[]) => void;
+  setOpenedInactiveUsersModal: (opened: boolean) => void;
+}
+
+export function useMessageActionDropDown({
+  message,
+  setInactiveUsers,
+  setOpenedInactiveUsersModal,
+  actions,
+}: MessageActionDropDownProps) {
   const { t } = useI18n();
   const markAsUnreadQuery = useMarkUnread();
   const navigate = useNavigate();
@@ -42,8 +54,7 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
   const createOrUpdateDraft = useCreateOrUpdateDraft();
   const moveMessage = useMoveMessage();
   const { handleMoveMessage } = useFolderHandlers();
-  const { setSelectedMessageIds, setOpenedModal, setInactiveUsers } =
-    useAppActions();
+  const { setSelectedMessageIds } = useAppActions();
   const sendDraftQuery = useSendDraft();
 
   const { folderId } = useSelectedFolder();
@@ -167,12 +178,13 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
         onSuccess: (response) => {
           if (response.inactive.length > 0) {
             setInactiveUsers(response.inactive);
-            setOpenedModal('inactive-users');
+            setOpenedInactiveUsersModal(true);
+          } else {
+            navigate(`/inbox`);
           }
         },
       },
     );
-    navigate(`/inbox`);
   };
 
   const handleRemoveFromFolder = () => {

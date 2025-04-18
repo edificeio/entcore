@@ -19,7 +19,6 @@ import {
   TrashFolderModal,
 } from '~/features';
 import { AppActionHeader } from '~/features/app/Action/AppActionHeader';
-import { SentToInactiveUsersModal } from '~/features/modals/SentToInactiveUsersModal';
 import {
   actionsQueryOptions,
   configQueryOptions,
@@ -99,7 +98,6 @@ export function Component() {
       {openedModal === 'trash' && <TrashFolderModal />}
       {openedModal === 'move-message' && <MoveMessageToFolderModal />}
       {openedModal === 'signature' && <SignatureModal />}
-      {openedModal === 'inactive-users' && <SentToInactiveUsersModal />}
     </Layout>
   );
 }
