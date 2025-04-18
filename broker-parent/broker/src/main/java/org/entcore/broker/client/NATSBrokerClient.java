@@ -1,5 +1,6 @@
 package org.entcore.broker.client;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.nats.client.Message;
@@ -13,6 +14,7 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.broker.api.dto.BaseResponseDTO;
 import org.entcore.broker.listener.BrokerListener;
 import org.entcore.broker.nats.model.NATSContract;
 import org.entcore.broker.nats.model.NATSEndpoint;
@@ -121,7 +123,13 @@ public class NATSBrokerClient implements BrokerClient {
   }
 
   private void sendError(Message msg, Throwable e) {
-    natsClient.publish(msg.getReplyTo(), e.getMessage() == null ? String.valueOf(e).getBytes() : e.getMessage().getBytes());
+    final String message = e.getMessage() == null ? String.valueOf(e) : e.getMessage();
+    try {
+      natsClient.publish(msg.getReplyTo(), mapper.writeValueAsBytes(new BaseResponseDTO(false, message)));
+    } catch (JsonProcessingException ex) {
+      log.error("Cannot serialize error", ex);
+      natsClient.publish(msg.getReplyTo(), message.getBytes(StandardCharsets.UTF_8));
+    }
   }
 
   private void registerListeners(NATSContract contracts) {
