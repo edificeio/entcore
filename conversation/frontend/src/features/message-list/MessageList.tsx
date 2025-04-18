@@ -98,13 +98,7 @@ export function MessageList() {
       icon: <IconUnreadMail />,
       onClick: handleMarkAsUnreadClick,
     },
-    {
-      name: 'delete',
-      visibility: showMoveToTrash,
-      label: t('delete'),
-      icon: <IconDelete />,
-      onClick: handleMoveToTrash,
-    },
+
     {
       name: 'restore',
       visibility: showTrashActions,
@@ -139,6 +133,13 @@ export function MessageList() {
       label: t('empty.trash'),
       icon: <IconDelete />,
       onClick: handleEmptyTrash,
+    },
+    {
+      name: 'delete',
+      visibility: showMoveToTrash,
+      label: t('delete'),
+      icon: <IconDelete />,
+      onClick: handleMoveToTrash,
     },
   ];
 
