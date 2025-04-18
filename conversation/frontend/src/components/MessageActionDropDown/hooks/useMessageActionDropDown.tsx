@@ -89,7 +89,9 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
     return (
       !message.trashed &&
       !['draft', 'outbox', 'trash'].includes(folderId!) &&
-      message.subject.length > 0 &&
+      (message.subject.length > 0 ||
+        message.body.length > 0 ||
+        message.attachments.length > 0) &&
       (message.to.users.length > 0 ||
         message.to.groups.length > 0 ||
         message.cc.users.length > 0 ||
