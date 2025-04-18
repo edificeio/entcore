@@ -38,84 +38,120 @@ export class EntNatsServiceClient {
   async i18nTranslationsFetch(event: FetchTranslationsRequestDTO): Promise<FetchTranslationsResponseDTO> {
     const eventAddress = this.getSubject(`i18n.translations.fetch`);
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, event));
-    return reply as FetchTranslationsResponseDTO;
+    if(!reply) {
+      throw new Error('No reply received');
+    }
+    return JSON.parse(reply) as FetchTranslationsResponseDTO;
   }
         
   
   async shareGroupUpsertByApplication(event: UpsertGroupSharesRequestDTO): Promise<UpsertGroupSharesResponseDTO> {
     const eventAddress = this.getSubject(`share.group.upsert.${this.application}`);
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, event));
-    return reply as UpsertGroupSharesResponseDTO;
+    if(!reply) {
+      throw new Error('No reply received');
+    }
+    return JSON.parse(reply) as UpsertGroupSharesResponseDTO;
   }
         
   
   async shareGroupRemoveByApplication(event: RemoveGroupSharesRequestDTO): Promise<RemoveGroupSharesResponseDTO> {
     const eventAddress = this.getSubject(`share.group.remove.${this.application}`);
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, event));
-    return reply as RemoveGroupSharesResponseDTO;
+    if(!reply) {
+      throw new Error('No reply received');
+    }
+    return JSON.parse(reply) as RemoveGroupSharesResponseDTO;
   }
         
   
   async directoryGroupManualCreate(event: CreateGroupRequestDTO): Promise<CreateGroupResponseDTO> {
     const eventAddress = this.getSubject(`directory.group.manual.create`);
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, event));
-    return reply as CreateGroupResponseDTO;
+    if(!reply) {
+      throw new Error('No reply received');
+    }
+    return JSON.parse(reply) as CreateGroupResponseDTO;
   }
         
   
   async directoryGroupManualUpdate(event: UpdateGroupRequestDTO): Promise<UpdateGroupResponseDTO> {
     const eventAddress = this.getSubject(`directory.group.manual.update`);
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, event));
-    return reply as UpdateGroupResponseDTO;
+    if(!reply) {
+      throw new Error('No reply received');
+    }
+    return JSON.parse(reply) as UpdateGroupResponseDTO;
   }
         
   
   async directoryGroupManualDelete(event: DeleteGroupRequestDTO): Promise<DeleteGroupResponseDTO> {
     const eventAddress = this.getSubject(`directory.group.manual.delete`);
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, event));
-    return reply as DeleteGroupResponseDTO;
+    if(!reply) {
+      throw new Error('No reply received');
+    }
+    return JSON.parse(reply) as DeleteGroupResponseDTO;
   }
         
   
   async directoryGroupMemberAdd(event: AddGroupMemberRequestDTO): Promise<AddGroupMemberResponseDTO> {
     const eventAddress = this.getSubject(`directory.group.member.add`);
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, event));
-    return reply as AddGroupMemberResponseDTO;
+    if(!reply) {
+      throw new Error('No reply received');
+    }
+    return JSON.parse(reply) as AddGroupMemberResponseDTO;
   }
         
   
   async directoryGroupMemberDelete(event: RemoveGroupMemberRequestDTO): Promise<RemoveGroupMemberResponseDTO> {
     const eventAddress = this.getSubject(`directory.group.member.delete`);
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, event));
-    return reply as RemoveGroupMemberResponseDTO;
+    if(!reply) {
+      throw new Error('No reply received');
+    }
+    return JSON.parse(reply) as RemoveGroupMemberResponseDTO;
   }
         
   
   async directoryGroupFindByexternalid(event: FindGroupByExternalIdRequestDTO): Promise<FindGroupByExternalIdResponseDTO> {
     const eventAddress = this.getSubject(`directory.group.find.byexternalid`);
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, event));
-    return reply as FindGroupByExternalIdResponseDTO;
+    if(!reply) {
+      throw new Error('No reply received');
+    }
+    return JSON.parse(reply) as FindGroupByExternalIdResponseDTO;
   }
         
   
   async sessionFind(event: FindSessionRequestDTO): Promise<FindSessionResponseDTO> {
     const eventAddress = this.getSubject(`session.find`);
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, event));
-    return reply as FindSessionResponseDTO;
+    if(!reply) {
+      throw new Error('No reply received');
+    }
+    return JSON.parse(reply) as FindSessionResponseDTO;
   }
         
   
   async entAppregistryAppRegister(event: AppRegistrationRequestDTO): Promise<AppRegistrationResponseDTO> {
     const eventAddress = this.getSubject(`ent.appregistry.app.register`);
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, event));
-    return reply as AppRegistrationResponseDTO;
+    if(!reply) {
+      throw new Error('No reply received');
+    }
+    return JSON.parse(reply) as AppRegistrationResponseDTO;
   }
         
   
   async entByApplicationTest(event: AppRegistrationRequestDTO): Promise<AppRegistrationResponseDTO> {
     const eventAddress = this.getSubject(`ent.${this.application}.test`);
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, event));
-    return reply as AppRegistrationResponseDTO;
+    if(!reply) {
+      throw new Error('No reply received');
+    }
+    return JSON.parse(reply) as AppRegistrationResponseDTO;
   }
         
 
