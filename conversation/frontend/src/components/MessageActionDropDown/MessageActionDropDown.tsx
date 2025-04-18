@@ -1,5 +1,7 @@
 import {
   Button,
+  ButtonColors,
+  ButtonVariants,
   Dropdown,
   IconButton,
   IconButtonProps,
@@ -12,8 +14,9 @@ import { useMessageActionDropDown } from './hooks/useMessageActionDropDown';
 export interface MessageActionDropDownProps {
   message: Message;
   appearance?: {
-    variant?: 'outline' | 'ghost';
-    btnColor?: 'tertiary' | 'primary';
+    mainButtonVariant?: ButtonVariants;
+    dropdownVariant?: ButtonVariants;
+    buttonColor?: ButtonColors;
   };
   actions?: string[];
 }
@@ -22,8 +25,9 @@ export function MessageActionDropDown({
   message,
   actions,
   appearance = {
-    variant: 'outline',
-    btnColor: 'primary',
+    mainButtonVariant: 'outline',
+    dropdownVariant: 'outline',
+    buttonColor: 'primary',
   },
 }: MessageActionDropDownProps) {
   const { actionButtons, dropdownOptions } = useMessageActionDropDown(
@@ -40,8 +44,8 @@ export function MessageActionDropDown({
         .map((option) => (
           <Button
             key={option.id}
-            color={appearance.btnColor}
-            variant={appearance.variant}
+            color={appearance.buttonColor}
+            variant={appearance.mainButtonVariant}
             leftIcon={option.icon}
             onClick={option.action}
             disabled={option.disabled}
@@ -61,8 +65,8 @@ export function MessageActionDropDown({
                 {...triggerProps}
                 type="button"
                 size="sm"
-                color={appearance.btnColor}
-                variant={appearance.variant}
+                color={appearance.buttonColor}
+                variant={appearance.dropdownVariant}
                 icon={<IconOptions />}
               />
               <Dropdown.Menu>
