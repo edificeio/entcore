@@ -25,7 +25,6 @@ export function MessageEdit({ message }: MessageEditProps) {
   const { fromNow } = useDate();
   const debounceTimeToSave = useRef(3000);
   const createOrUpdateDraft = useCreateOrUpdateDraft();
-  const [contentKey, setContentKey] = useState(0);
   const [dateKey, setDateKey] = useState(0);
   const { data: publicConfig } = useConversationConfig();
 
@@ -47,7 +46,6 @@ export function MessageEdit({ message }: MessageEditProps) {
 
   useEffect(() => {
     setMessageUpdated(message);
-    setContentKey((contentKey) => contentKey + 1);
 
     const interval = setInterval(() => setDateKey((prev) => ++prev), 6000);
 
@@ -89,7 +87,6 @@ export function MessageEdit({ message }: MessageEditProps) {
             />
           </FormControl>
           <MessageBody
-            key={contentKey}
             message={message}
             editMode={true}
             onMessageChange={handleMessageChange}

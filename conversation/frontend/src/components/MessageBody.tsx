@@ -4,7 +4,7 @@ import {
   ConversationHistoryRenderer,
   Editor,
 } from '@edifice.io/react/editor';
-import { Suspense, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import illuRecall from '~/assets/illu-messageRecalled.svg';
 import { MessageAttachments } from '~/components/MessageAttachments/MessageAttachments';
 import { useI18n } from '~/hooks';
@@ -25,7 +25,7 @@ export function MessageBody({
   onMessageChange,
 }: MessageBodyProps) {
   const { t } = useI18n();
-  const content = message.body;
+  const [content, setContent] = useState('');
   const extensions = [ConversationHistoryNodeView(ConversationHistoryRenderer)];
   const [isOriginalFormatOpen, setOriginalFormatOpen] = useState(false);
   const messageUpdated = useMessageUpdated();
@@ -34,6 +34,11 @@ export function MessageBody({
     if (!editMode) return;
     onMessageChange?.({ ...message, body: editor?.getHTML() });
   };
+  useEffect(() => {
+    // Set the content of the editor to the message body only on the first render
+    setContent(message.body);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return message.state === 'RECALL' ? (
     <div className="d-flex flex-column gap-16 align-items-center justify-content-center">
