@@ -1,9 +1,11 @@
 package org.entcore.broker.client;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.nats.client.Message;
 import io.nats.vertx.NatsClient;
 import io.nats.vertx.NatsOptions;
+import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -20,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -72,19 +75,23 @@ public class NATSBrokerClient implements BrokerClient {
       try {
         this.natsClient.subscribe(endpoint.getSubject(), msg -> {
           final Promise<Object> promise = Promise.promise();
-            eb.request(endpoint.getSubject(), msg.getData())
-              .onSuccess(response -> {
-                try {
-                  promise.tryComplete(response.body());
-                } catch (Exception e) {
-                  log.error("Error serializing response to JSON", e);
-                  promise.tryFail(e);
-                }
-              })
-              .onFailure(th -> {
-                log.error("Error calling subject " + endpoint.getSubject());
-                promise.tryFail(th);
-              });
+            try {
+              eb.request(endpoint.getSubject(), getDataFromMessage(msg))
+                .onSuccess(response -> {
+                  try {
+                    promise.tryComplete(response.body());
+                  } catch (Exception e) {
+                    log.error("Error serializing response to JSON", e);
+                    promise.tryFail(e);
+                  }
+                })
+                .onFailure(th -> {
+                  log.error("Error calling subject " + endpoint.getSubject());
+                  promise.tryFail(th);
+                });
+            } catch (IOException e) {
+              promise.tryFail(e);
+            }
             promise.future().onSuccess(response -> {
               try {
                 final byte[] payload = mapper.writeValueAsString(response).getBytes(charset);
@@ -101,6 +108,16 @@ public class NATSBrokerClient implements BrokerClient {
         throw new RuntimeException("Error while registering listener for subject: " + endpoint, e);
       }
     }
+  }
+
+  private @Nullable Object getDataFromMessage(Message msg) throws IOException {
+    byte[] data = msg.getData();
+    final JsonNode rootNode = mapper.readTree(data);
+    JsonNode dataNode = rootNode.get("data");
+    if (dataNode != null) {
+      data = dataNode.toString().getBytes(StandardCharsets.UTF_8);
+    }
+    return data;
   }
 
   private void sendError(Message msg, Throwable e) {
