@@ -25,7 +25,6 @@ export function MessageEdit({ message }: MessageEditProps) {
   const { fromNow } = useDate();
   const debounceTimeToSave = useRef(3000);
   const createOrUpdateDraft = useCreateOrUpdateDraft();
-  const [contentKey, setContentKey] = useState(0);
   const [dateKey, setDateKey] = useState(0);
   const { data: publicConfig } = useConversationConfig();
 
