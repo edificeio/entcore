@@ -1,35 +1,25 @@
-// Generated NATS clients for quarkus-nats-service v1.0.0
+// Generated NATS clients for ent-nats-service v1.0.0
 
-export { ShareGroupUpsertClient } from './share-group-upsert.client';
-export type { UpsertGroupSharesRequestDTO, UpsertGroupSharesResponseDTO } from './share-group-upsert.types';
-
-export { ShareGroupRemoveClient } from './share-group-remove.client';
-export type { RemoveGroupSharesRequestDTO, RemoveGroupSharesResponseDTO } from './share-group-remove.types';
-
-export { SessionFindClient } from './session-find.client';
-export type { FindSessionRequestDTO, FindSessionResponseDTO } from './session-find.types';
-
-export { DirectoryGroupManualCreateClient } from './directory-group-manual-create.client';
-export type { CreateGroupRequestDTO, CreateGroupResponseDTO } from './directory-group-manual-create.types';
-
-export { DirectoryGroupManualUpdateClient } from './directory-group-manual-update.client';
-export type { UpdateGroupRequestDTO, UpdateGroupResponseDTO } from './directory-group-manual-update.types';
-
-export { DirectoryGroupManualDeleteClient } from './directory-group-manual-delete.client';
-export type { DeleteGroupRequestDTO, DeleteGroupResponseDTO } from './directory-group-manual-delete.types';
-
-export { DirectoryGroupMemberAddClient } from './directory-group-member-add.client';
-export type { AddGroupMemberRequestDTO, AddGroupMemberResponseDTO } from './directory-group-member-add.types';
-
-export { DirectoryGroupMemberDeleteClient } from './directory-group-member-delete.client';
-export type { RemoveGroupMemberRequestDTO, RemoveGroupMemberResponseDTO } from './directory-group-member-delete.types';
-
-export { DirectoryGroupFindByexternalidClient } from './directory-group-find-byexternalid.client';
-export type { FindGroupByExternalIdRequestDTO, FindGroupByExternalIdResponseDTO } from './directory-group-find-byexternalid.types';
-
-export { EntAppregistryAppRegisterClient } from './ent-appregistry-app-register.client';
-export type { AppRegistrationRequestDTO, AppRegistrationResponseDTO } from './ent-appregistry-app-register.types';
-
-export { I18nTranslationsFetchClient } from './i18n-translations-fetch.client';
-export type { FetchTranslationsRequestDTO, FetchTranslationsResponseDTO } from './i18n-translations-fetch.types';
-
+export type { FetchTranslationsRequestDTO } from './ent-nats-service.types';
+export type { FetchTranslationsResponseDTO } from './ent-nats-service.types';
+export type { UpsertGroupSharesRequestDTO } from './ent-nats-service.types';
+export type { UpsertGroupSharesResponseDTO } from './ent-nats-service.types';
+export type { RemoveGroupSharesRequestDTO } from './ent-nats-service.types';
+export type { RemoveGroupSharesResponseDTO } from './ent-nats-service.types';
+export type { CreateGroupRequestDTO } from './ent-nats-service.types';
+export type { CreateGroupResponseDTO } from './ent-nats-service.types';
+export type { UpdateGroupRequestDTO } from './ent-nats-service.types';
+export type { UpdateGroupResponseDTO } from './ent-nats-service.types';
+export type { DeleteGroupRequestDTO } from './ent-nats-service.types';
+export type { DeleteGroupResponseDTO } from './ent-nats-service.types';
+export type { AddGroupMemberRequestDTO } from './ent-nats-service.types';
+export type { AddGroupMemberResponseDTO } from './ent-nats-service.types';
+export type { RemoveGroupMemberRequestDTO } from './ent-nats-service.types';
+export type { RemoveGroupMemberResponseDTO } from './ent-nats-service.types';
+export type { FindGroupByExternalIdRequestDTO } from './ent-nats-service.types';
+export type { FindGroupByExternalIdResponseDTO } from './ent-nats-service.types';
+export type { FindSessionRequestDTO } from './ent-nats-service.types';
+export type { FindSessionResponseDTO } from './ent-nats-service.types';
+export type { AppRegistrationRequestDTO } from './ent-nats-service.types';
+export type { AppRegistrationResponseDTO } from './ent-nats-service.types';
+export { EntNatsServiceClient } from './ent-nats-service.client';

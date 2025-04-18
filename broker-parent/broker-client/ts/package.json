@@ -4,7 +4,7 @@
   "description": "Clients to interact with ENT service",
   "scripts": {
     "dev": "vite",
-    "build": "generate-nats-ts ../../broker/target/classes/META-INF/nats.json ./src/nats && generate-nats-ts ../../broker-proxy/target/classes/META-INF/nats.json ./src/nats && tsc && vite build",
+    "build": "generate-nats-ts ../../broker-proxy/target/classes/META-INF/nats.json ./src/nats && tsc && vite build",
     "build:types": "tsc --build",
     "preview": "vite preview",
     "prepare": "husky",

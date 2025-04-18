@@ -8,6 +8,7 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import org.entcore.broker.api.dto.i18n.FetchTranslationsRequestDTO;
 import org.entcore.broker.api.dto.i18n.FetchTranslationsResponseDTO;
+import org.entcore.broker.api.dto.i18n.LangAndDomain;
 import org.entcore.broker.proxy.I18nBrokerListener;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.slf4j.Logger;
@@ -74,7 +75,7 @@ public class I18nBrokerListenerImpl implements I18nBrokerListener {
                 translations.mergeIn(i18n.load(httpRequest));
             } else {
                 // Use explicit language and domain
-                final FetchTranslationsRequestDTO.LangAndDomain langAndDomain = request.getLangAndDomain();
+                final LangAndDomain langAndDomain = request.getLangAndDomain();
                 // Use I18n to load translations based on language and domain
                 //noinspection deprecation
                 translations.mergeIn(langAndDomain.getDomain() ==  null ?
