@@ -96,7 +96,14 @@ export function MessageEdit({ message }: MessageEditProps) {
           />
           <div className="d-flex justify-content-end gap-12 pt-24 pe-16">
             <div className="d-flex align-items-end flex-column gap-16">
-              <MessageActionDropDown message={messageUpdated} />
+              <MessageActionDropDown
+                message={messageUpdated}
+                appearance={{
+                  dropdownVariant: 'outline',
+                  mainButtonVariant: 'filled',
+                  buttonColor: 'primary',
+                }}
+              />
               {messageUpdated?.date && (
                 <div className="caption fst-italic" key={dateKey}>
                   {fromNow(messageUpdated.date)}

@@ -1,12 +1,16 @@
-import { MessageActionDropDown } from '~/components/MessageActionDropDown/MessageActionDropDown';
+import {
+  MessageActionDropDown,
+  MessageActionDropDownProps,
+} from '~/components/MessageActionDropDown/MessageActionDropDown';
 import { MessageProps } from '.';
 
 export function MessageNavigation({ message }: MessageProps) {
-  const actionDropDownProps = {
+  const actionDropDownProps: MessageActionDropDownProps = {
     message,
     appearance: {
-      variant: 'ghost' as const,
-      btnColor: 'tertiary' as const,
+      dropdownVariant: 'ghost',
+      mainButtonVariant: 'ghost',
+      buttonColor: 'tertiary',
     },
   };
   return (
