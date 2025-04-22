@@ -21,7 +21,9 @@ package org.entcore.directory.services.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.collections.Joiner;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -257,5 +259,21 @@ public class DefaultGroupService implements GroupService {
 				returnStructure;
 
 		neo.execute(query, params, validResultHandler(results));
+	}
+
+	@Override
+	public Future<JsonObject> getGroupByExternalId(String externalId) {
+		final Promise<JsonObject> promise = Promise.promise();
+		final String query =
+				"MATCH (g:Group {externalId:{externalId}}) RETURN g.id as id, g.name as name";
+		final JsonObject params = new JsonObject().put("externalId", externalId);
+		neo.execute(query, params, validUniqueResultHandler(event -> {
+			if (event.isLeft()) {
+				promise.fail(event.left().getValue());
+			} else {
+				promise.complete(event.right().getValue());
+			}
+		}));
+		return promise.future();
 	}
 }

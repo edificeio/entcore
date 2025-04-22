@@ -36,7 +36,7 @@ import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import org.checkerframework.checker.units.qual.A;
+import org.apache.commons.lang3.NotImplementedException;
 import org.entcore.broker.api.appregistry.AppRegistrationRequestDTO;
 import org.entcore.broker.api.appregistry.AppRegistrationResponseDTO;
 import org.entcore.broker.proxy.AppRegistryProxy;
@@ -532,7 +532,7 @@ public class AppRegistryController extends BaseController implements AppRegistry
     @Put("/structures/:structureId/roles")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(AdminFilter.class)
-	@MfaProtected()
+		@MfaProtected()
     public void authorizeProfiles(final HttpServerRequest request) {
         bodyToJson(request, new Handler<JsonObject>() {
             @Override
@@ -739,5 +739,10 @@ public class AppRegistryController extends BaseController implements AppRegistry
 			promise.tryFail(e);
 		}
 		return promise.future();
+	}
+
+	@Override
+	public Future<AppRegistrationResponseDTO> testApplication(AppRegistrationRequestDTO request) {
+		return Future.failedFuture(new NotImplementedException());
 	}
 }

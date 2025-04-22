@@ -24,6 +24,7 @@ import fr.wseduc.webutils.Either;
 import java.util.Arrays;
 import java.util.List;
 
+import io.vertx.core.Future;
 import org.entcore.common.user.UserInfos;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
@@ -54,4 +55,6 @@ public interface GroupService {
 	void getFuncAndDisciplinesGroups(String structureId, Boolean recursive, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
 
 	void getCommunityGroup(String structureId, Handler<Either<String, JsonArray>> results);
+
+	Future<JsonObject> getGroupByExternalId(String externalId);
 }

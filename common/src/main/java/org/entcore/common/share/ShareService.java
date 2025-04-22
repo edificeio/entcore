@@ -27,6 +27,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -90,5 +91,33 @@ public interface ShareService {
 	 */
 	default Future<String> getResourceOwnerUserId(final String resourceId) {
 		return Future.succeededFuture("");
+	}
+
+	/**
+	 * Converts a JsonArray of shared objects to a JsonObject with separate arrays for users, groups, and bookmarks.
+	 * @param sharedArray The JsonArray containing shared objects.
+	 * @return A JsonObject with separate arrays for users, groups, and bookmarks.
+	 */
+	default JsonObject sharedArrayToSharedObject(final JsonArray sharedArray){
+		// Create a new JsonObject to hold the separated data
+		final JsonObject sharePayload = new JsonObject();
+		sharePayload.put("users", new JsonArray());
+		sharePayload.put("groups", new JsonArray());
+		sharePayload.put("bookmarks", new JsonArray());
+		// Iterate through the sharedArray and separate the data
+		for(int i = 0; i < sharedArray.size(); i++){
+			final JsonObject share = sharedArray.getJsonObject(i);
+			if (share != null) {
+				final JsonArray keys = new JsonArray(new ArrayList(share.fieldNames()));
+				if (share.getValue("userId") != null) {
+					keys.remove("userId");
+					sharePayload.getJsonArray("users").addAll(keys);
+				} else if (share.getValue("groupId") != null) {
+					keys.remove("groupId");
+					sharePayload.getJsonArray("groups").addAll(keys);
+				}
+			}
+		}
+		return sharePayload;
 	}
 }
