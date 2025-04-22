@@ -1,7 +1,7 @@
 import {
   List,
   Loading,
-  ToolbarItem,
+  ToolbarButtonItem,
   useEdificeClient,
 } from '@edifice.io/react';
 import {
@@ -143,19 +143,15 @@ export function MessageList() {
     },
   ];
 
-  const toolbar: ToolbarItem[] = toolbarItemsData.map(
+  const toolbar: ToolbarButtonItem[] = toolbarItemsData.map(
     ({ name, label, visibility, icon, onClick }) => ({
       type: 'button',
       name,
       visibility,
+      tooltip: label,
       props: {
-        'children': (
-          <>
-            {icon}
-            <span>{label}</span>
-          </>
-        ),
-        'aria-label': label,
+        leftIcon: icon,
+        children: label,
         onClick,
       },
     }),
@@ -169,6 +165,7 @@ export function MessageList() {
         items={toolbar}
         isCheckable={true}
         onSelectedItems={setSelectedMessageIds}
+        toolbarOptions={{ shouldHideLabelsOnMobile: true }}
         className="ps-16 ps-md-24"
         key={keyList}
         renderNode={(message, checkbox, checked) => (
