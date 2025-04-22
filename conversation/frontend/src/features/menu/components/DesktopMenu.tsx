@@ -151,7 +151,7 @@ export function DesktopMenu() {
             className="d-inline-flex"
             onClick={handleNewFolderClick}
           >
-            {t('workspace.folder.create')}
+            {common_t('workspace.folder.create')}
           </Button>
         </div>
       </Menu.Item>

@@ -45,6 +45,8 @@
   "attachments": "Pièces jointes",
   "attachments.add.to.folder.modal": "Ajout à l’espace doc",
   "attachments.add.to.folder.modal.description": "Rechercher et/ou sélectionner le dossier où vous voulez copier les éléments.",
+  "attachments.add.to.folder.modal.description_one": "Rechercher et/ou sélectionner le dossier où vous voulez copier l'élément.",
+  "attachments.add.to.folder.modal.description_other": "Rechercher et/ou sélectionner le dossier où vous voulez copier les [[count]] éléments.",
   "attachment.add": "Ajouter une pièce jointe",
   "attendance": "Gestion des absences",
   "back": "Retour",
