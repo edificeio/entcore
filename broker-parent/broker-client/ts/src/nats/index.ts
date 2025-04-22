@@ -1,11 +1,25 @@
-// Generated NATS clients for quarkus-nats-service v1.0.0
+// Generated NATS clients for ent-nats-service v1.0.0
 
-export { DirectorySharesCreateClient } from './directory-shares-create.client';
-export type { CreateSharesRequestDTO, CreateSharesResponseDTO } from './directory-shares-create.types';
-
-export { DirectorySharesDeleteClient } from './directory-shares-delete.client';
-export type { DeleteSharesRequestDTO, DeleteSharesResponseDTO } from './directory-shares-delete.types';
-
-export { EntAppregistryAppRegisterClient } from './ent-appregistry-app-register.client';
-export type { AppRegistrationRequestDTO, AppRegistrationResponseDTO } from './ent-appregistry-app-register.types';
-
+export type { FetchTranslationsRequestDTO } from './ent-nats-service.types';
+export type { FetchTranslationsResponseDTO } from './ent-nats-service.types';
+export type { UpsertGroupSharesRequestDTO } from './ent-nats-service.types';
+export type { UpsertGroupSharesResponseDTO } from './ent-nats-service.types';
+export type { RemoveGroupSharesRequestDTO } from './ent-nats-service.types';
+export type { RemoveGroupSharesResponseDTO } from './ent-nats-service.types';
+export type { CreateGroupRequestDTO } from './ent-nats-service.types';
+export type { CreateGroupResponseDTO } from './ent-nats-service.types';
+export type { UpdateGroupRequestDTO } from './ent-nats-service.types';
+export type { UpdateGroupResponseDTO } from './ent-nats-service.types';
+export type { DeleteGroupRequestDTO } from './ent-nats-service.types';
+export type { DeleteGroupResponseDTO } from './ent-nats-service.types';
+export type { AddGroupMemberRequestDTO } from './ent-nats-service.types';
+export type { AddGroupMemberResponseDTO } from './ent-nats-service.types';
+export type { RemoveGroupMemberRequestDTO } from './ent-nats-service.types';
+export type { RemoveGroupMemberResponseDTO } from './ent-nats-service.types';
+export type { FindGroupByExternalIdRequestDTO } from './ent-nats-service.types';
+export type { FindGroupByExternalIdResponseDTO } from './ent-nats-service.types';
+export type { FindSessionRequestDTO } from './ent-nats-service.types';
+export type { FindSessionResponseDTO } from './ent-nats-service.types';
+export type { AppRegistrationRequestDTO } from './ent-nats-service.types';
+export type { AppRegistrationResponseDTO } from './ent-nats-service.types';
+export { EntNatsServiceClient } from './ent-nats-service.client';

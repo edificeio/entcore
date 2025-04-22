@@ -62,48 +62,22 @@
                     </execution>
                 </executions>
             </plugin>
-                        <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-proxy-nats</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.entcore</groupId>
-                                    <artifactId>broker-proxy</artifactId>
-                                    <version>${project.version}</version>
-                                    <type>jar</type>
-                                    <includes>META-INF/nats.json</includes>
-                                </artifactItem>
-                            </artifactItems>
-                            <outputDirectory>${project.build.directory}/temp-proxy-nats</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-antrun-plugin</artifactId>
+                <groupId>com.coderplus.maven.plugins</groupId>
+                <artifactId>copy-rename-maven-plugin</artifactId>
+                <version>1.0.1</version>
                 <executions>
                     <execution>
-                        <id>rename-proxy-nats</id>
+                        <id>copy-broker-nats-file</id>
                         <phase>prepare-package</phase>
                         <goals>
-                            <goal>run</goal>
+                            <goal>copy</goal>
                         </goals>
                         <configuration>
-                            <target>
-                                <copy file="${project.build.directory}/temp-proxy-nats/META-INF/nats.json"
-                                      tofile="${project.build.directory}/classes/META-INF/broker-proxy.nats.json"
-                                      failonerror="false" />
-                            </target>
+                            <sourceFile>${project.basedir}/../broker-proxy/target/classes/META-INF/nats.json</sourceFile>
+                            <destinationFile>${project.build.directory}/classes/META-INF/broker-proxy.nats.json</destinationFile>
+                            <overWrite>true</overWrite>
+                            <failIfSourceDoesntExist>true</failIfSourceDoesntExist>
                         </configuration>
                     </execution>
                 </executions>

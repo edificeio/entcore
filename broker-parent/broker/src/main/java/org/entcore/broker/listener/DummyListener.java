@@ -21,12 +21,12 @@ public class DummyListener {
     this.vertx = vertx;
   }
 
-  @BrokerListener(subject = "ent.test.listen", queue = "ent")
+  @BrokerListener(subject = "ent.test.listen")
   public void listenOnlyExample(ListenOnlyDTO request) {
     log.info("DummyListener listenOnlyExemple called with request: " + request);
   }
 
-  @BrokerListener(subject = "ent.test.listen.reply", queue = "ent")
+  @BrokerListener(subject = "ent.test.listen.reply")
   public Future<DummyResponseDTO> listenOnlyExample(ListenAndAnswerDTO request) {
     log.info("DummyListener listenOnlyExemple called with request: " + request);
     final Promise<DummyResponseDTO> promise = Promise.promise();
