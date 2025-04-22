@@ -149,12 +149,8 @@ export function MessageList() {
       name,
       visibility,
       props: {
-        'children': (
-          <>
-            {icon}
-            <span>{label}</span>
-          </>
-        ),
+        'leftIcon': icon,
+        'children': label,
         'aria-label': label,
         onClick,
       },
