@@ -37,6 +37,7 @@ import io.vertx.core.http.HttpServerResponse;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.notification.TimelineHelper;
@@ -1909,6 +1910,97 @@ public class ConversationController extends BaseController {
 				}
 			}
 		});
+	}
+
+
+	/**
+	 * Api to send a message from an external application
+	 * Content type : application/json: * - messageBody : the body of the message
+	 * - subject : the subject of the message
+	 * - to : the id of the user to send the message to
+	 * - from : the id of the user sending the message
+	 * - username : the name of the user sending the message
+	 **/
+	@Post("externe")
+	@SecuredAction(value="", type=ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void sendFromExterne(HttpServerRequest request) {
+
+		bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject body) {
+
+          		/* Example of message body
+				  "<h3>Bonjour,</h3>
+				  <p>Ceci est un message de test avec un contexte</p>
+				  <p><br/><div>Consultez l'application test</div></p>
+				  <p><a href=\"https://www.google.com\">Google</a></p>
+				  <p><img src=\"https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png\" alt=\"Google Logo\" /></p>"
+				*/
+				final String messageBody = body.getString("messageBody");
+
+				// Subject of the message. Example : "Test message"
+				final String subject = body.getString("subject");
+
+				// ENT ID of the recipient user
+				final String to = body.getString("to");
+
+				// ENT ID of the sender user
+				final String from = body.getString("from");
+
+				// Username of the user sending the message
+				final String username = body.getString("username");
+
+				if (messageBody == null || messageBody.trim().isEmpty() || subject == null || subject.trim().isEmpty() || to == null || to.trim().isEmpty() || from == null || from.trim().isEmpty() || username == null || username.trim().isEmpty()) {
+					badRequest(request, "Missing required fields");
+					return;
+				}
+
+
+				JsonObject message = new JsonObject()
+						.put("subject", subject)
+						.put("body", messageBody)
+						.put("to", new JsonArray().add(to))
+						.put("cci", new JsonArray());
+
+				JsonObject action = new JsonObject()
+						.put("action", "send")
+						.put("userId", from)
+						.put("username", username)
+						.put("message", message);
+
+
+				final UserInfos user = new UserInfos();
+				user.setUserId(action.getString("userId"));
+				user.setUsername(action.getString("username"));
+				message.put("from", action.getString("userId"));
+				userService.addDisplayNames(message, null, new Handler<JsonObject>() {
+					public void handle(final JsonObject m) {
+						saveAndSend(null, m, user, null, null,
+								new Handler<Either<String, JsonObject>>() {
+									@Override
+									public void handle(Either<String, JsonObject> event) {
+										if (event.isRight()) {
+											JsonObject result = event.right().getValue();
+											JsonObject timelineParams = new JsonObject()
+													.put("subject", result.getString("subject"))
+													.put("id", result.getString("id"))
+													.put("thread_id", result.getString("thread_id"))
+													.put("sentIds", m.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray()));
+											timelineNotification(request, timelineParams, user);
+											JsonObject s = new JsonObject().put("status", "ok")
+													.put("result", new fr.wseduc.webutils.collections.JsonArray().add(new JsonObject()));
+											renderJson(request,s);
+										} else {
+											JsonObject error = new JsonObject()
+													.put("error", event.left().getValue());
+											badRequest(request, error.toString());
+										}
+									}
+								}, request);
+					}
+				});
+			}});
 	}
 
 }
