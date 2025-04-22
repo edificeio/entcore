@@ -29,7 +29,10 @@ import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.apache.commons.lang3.tuple.Pair;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+
 import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.email.EmailFactory;
@@ -260,9 +263,8 @@ public class Directory extends BaseServer {
 			addController(remoteUserController);
 		}
 		// add the directory broker listener
-		BrokerProxyUtils.addBrokerProxy(new DirectoryBrokerListenerImpl(vertx, userService), vertx);
-		BrokerProxyUtils.addBrokerProxy(new LoadTestProxyImpl(vertx), vertx);
-		return Future.succeededFuture();
+		BrokerProxyUtils.addBrokerProxy(new DirectoryBrokerListenerImpl(vertx), vertx);
+
 	}
 
 }

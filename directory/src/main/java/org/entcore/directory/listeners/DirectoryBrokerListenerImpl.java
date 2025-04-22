@@ -5,47 +5,39 @@ import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.entcore.broker.api.dto.directory.*;
 import org.entcore.broker.proxy.DirectoryBrokerListener;
 import org.entcore.directory.services.GroupService;
-import org.entcore.directory.services.UserService;
 import org.entcore.directory.services.impl.DefaultGroupService;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Implementation of the DirectoryBrokerListener interface.
- * This class handles directory operations received through the message broker.
+ * This class handles group management operations received through the message broker.
  */
 public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
     
     private static final Logger log = LoggerFactory.getLogger(DirectoryBrokerListenerImpl.class);
     private final GroupService groupService;
-    private final UserService userService;
 
     /**
      * Constructor for DirectoryBrokerListenerImpl.
      *
      * @param vertx The Vertx instance
      */
-    public DirectoryBrokerListenerImpl(Vertx vertx, UserService userService) {
-        this(new DefaultGroupService(vertx.eventBus()), userService);
+    public DirectoryBrokerListenerImpl(Vertx vertx) {
+        this(new DefaultGroupService(vertx.eventBus()));
     }
-    
+
     /**
      * Constructor for DirectoryBrokerListenerImpl.
      *
      * @param groupService The group service to handle group operations
-     * @param userService The user service to handle user operations
      */
-    public DirectoryBrokerListenerImpl(GroupService groupService, UserService userService) {
+    public DirectoryBrokerListenerImpl(GroupService groupService) {
         this.groupService = groupService;
-        this.userService = userService;
     }
 
     /**
@@ -67,7 +59,6 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
         // Create group data
         final JsonObject group = new JsonObject()
                 .put("name", request.getName())
-                .put("filter", request.getFilter())
                 // an empty id means a new group
                 .put("id", "");
         // an empty externalId means no externalId
@@ -77,30 +68,13 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
         // an empty structureId means no structure
         final String structureId = request.getStructureId() != null ? request.getStructureId(): "";
         // an empty classId means no class
-        final String classId = request.getClassId() != null ? request.getClassId(): "";
+        final String classId = request.getClassId() != null ? request.getStructureId(): "";
 
         // Create group using existing service
         groupService.createOrUpdateManual(group, structureId, classId, event -> {
             if (event.isRight()) {
                 final String id = event.right().getValue().getString("id");
-                
-                // Check if labels are provided in the request
-                if (request.getLabels() != null && !request.getLabels().isEmpty()) {
-                    // Add the labels to the created group
-                    groupService.addLabelsToGroup(id, request.getLabels())
-                        .onSuccess(labelResult -> {
-                            log.debug("Successfully added labels {} to group {}", request.getLabels(), id);
-                            promise.complete(new CreateGroupResponseDTO(id));
-                        })
-                        .onFailure(error -> {
-                            log.error("Failed to add labels {} to group {}: {}", request.getLabels(), id, error.getMessage());
-                            // We still consider the group creation as successful even if label addition fails
-                            promise.complete(new CreateGroupResponseDTO(id));
-                        });
-                } else {
-                    // No labels to add, complete directly
-                    promise.complete(new CreateGroupResponseDTO(id));
-                }
+                promise.complete(new CreateGroupResponseDTO(id));
             } else {
                 log.error("Error creating group: {}", event.left().getValue());
                 promise.fail(event.left().getValue());
@@ -273,177 +247,6 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
         }).onFailure(error -> {
             log.error("Error finding group by external ID: ", error);
             promise.fail(error);
-        });
-
-        return promise.future();
-    }
-
-    /**
-     * Retrieves display names for multiple users by their ENT IDs.
-     *
-     * @param request The request containing a list of user IDs
-     * @return Response with a map of user IDs to their display names
-     */
-    @Override
-    public Future<GetUserDisplayNamesResponseDTO> getUserDisplayNames(GetUserDisplayNamesRequestDTO request) {
-        final Promise<GetUserDisplayNamesResponseDTO> promise = Promise.promise();
-        
-        // Check if the request is valid
-        if (request == null || !request.isValid()) {
-            log.error("Invalid request for getUserDisplayNames: {}", request);
-            promise.fail("request.parameters.invalid");
-            return promise.future();
-        }
-        
-        // Convert list of user IDs to JsonArray
-        final JsonArray userIdsArray = new JsonArray(request.getUserIds());
-        
-        // Use the UserService to get display names
-        userService.getUsersDisplayNames(userIdsArray)
-            .onSuccess(result -> {
-                // Convert JsonObject to Map<String, String>
-                final Map<String, String> displayNamesMap = new HashMap<>();
-                for (String userId : result.fieldNames()) {
-                    displayNamesMap.put(userId, result.getString(userId));
-                }
-                
-                // Return response DTO with the map
-                promise.complete(new GetUserDisplayNamesResponseDTO(displayNamesMap));
-            })
-            .onFailure(error -> {
-                log.error("Error retrieving user display names: ", error);
-                promise.fail(error);
-            });
-        
-        return promise.future();
-    }
-
-    /**
-     * Retrieves users by their ENT IDs including profile and function information
-     *
-     * @param request The request containing a list of user IDs
-     * @return Response with detailed user information
-     */
-    @Override
-    public Future<GetUsersByIdsResponseDTO> getUsersByIds(GetUsersByIdsRequestDTO request) {
-        final Promise<GetUsersByIdsResponseDTO> promise = Promise.promise();
-        
-        // Check if the request is valid
-        if (request == null || !request.isValid()) {
-            log.error("Invalid request for getUsersByIds: {}", request);
-            promise.fail("request.parameters.invalid");
-            return promise.future();
-        }
-        
-        // Convert list of user IDs to JsonArray
-        final JsonArray userIdsArray = new JsonArray(request.getUserIds());
-        
-        // Use the UserService to get users by IDs
-        userService.getUsersByIds(userIdsArray)
-            .onSuccess(usersArray -> {
-                // Transform JsonArray of users to List<UserDTO>
-                List<UserDTO> usersList = new ArrayList<>();
-                
-                for (int i = 0; i < usersArray.size(); i++) {
-                    JsonObject userJson = usersArray.getJsonObject(i);
-                    
-                    String id = userJson.getString("id");
-                    String displayName = userJson.getString("displayName");
-                    
-                    // Extract the first profile from the list or empty string if none
-                    String profile = "";
-                    JsonArray profilesArray = userJson.getJsonArray("profiles");
-                    if (profilesArray != null && profilesArray.size() > 0) {
-                        profile = profilesArray.getString(0);
-                    }
-                    
-                    // Handle functions - convert Neo4j array format to map
-                    Map<String, List<String>> functions = new HashMap<>();
-                    JsonArray functionsArray = userJson.getJsonArray("functions");
-                    if (functionsArray != null) {
-                        for (int j = 0; j < functionsArray.size(); j++) {
-                            JsonArray functionEntry = functionsArray.getJsonArray(j);
-                            if (functionEntry != null && functionEntry.size() >= 2) {
-                                String functionCode = functionEntry.getString(0);
-                                if (functionCode != null) {
-                                    // Extract scope from the second element
-                                    List<String> scope = new ArrayList<>();
-                                    Object scopeObj = functionEntry.getValue(1);
-                                    
-                                    if (scopeObj instanceof JsonArray) {
-                                        JsonArray scopeArray = (JsonArray) scopeObj;
-                                        for (int k = 0; k < scopeArray.size(); k++) {
-                                            String scopeItem = scopeArray.getString(k);
-                                            if (scopeItem != null) {
-                                                scope.add(scopeItem);
-                                            }
-                                        }
-                                    } else if (scopeObj instanceof String) {
-                                        scope.add((String) scopeObj);
-                                    }
-                                    
-                                    functions.put(functionCode, scope);
-                                }
-                            }
-                        }
-                    }
-                    
-                    usersList.add(new UserDTO(id, displayName, profile, functions));
-                }
-                
-                // Return the response DTO with the list of users
-                promise.complete(new GetUsersByIdsResponseDTO(usersList));
-            })
-            .onFailure(error -> {
-                log.error("Error retrieving users by IDs: ", error);
-                promise.fail(error);
-            });
-
-        return promise.future();
-    }
-
-
-    @Override
-    public Future<GetUsersFromGroupsResponseDTO> getUsersFromGroups(GetUsersFromGroupsRequestDTO request) {
-        final Promise<GetUsersFromGroupsResponseDTO> promise = Promise.promise();
-
-        // Check if the request is valid
-        if (request == null || !request.isValid()) {
-            log.error("Invalid request for getUsersFromGroups: {}", request);
-            promise.fail("request.parameters.invalid");
-            return promise.future();
-        }
-
-        // Convert list of group IDs to JsonArray
-        final JsonArray groupIdsArray = new JsonArray(request.getGroupIds());
-
-        userService.list(groupIdsArray, new JsonArray(), true, null, event -> {
-            if(event.isRight()) {
-                JsonArray usersArray = event.right().getValue();
-                try {
-                    // Transform JsonArray of users to List<UserDTO> (using util method)
-                    List<UserDTO> usersList = new ArrayList<>();
-                    for (int i = 0; i < usersArray.size(); i++) {
-                        JsonObject userJson = usersArray.getJsonObject(i);
-
-                        String id = userJson.getString("id");
-                        String displayName = userJson.getString("username");
-                        String profile = userJson.getString("type");
-
-                        // functions are not returned by the query inside "userService.list" : use empty map
-                        Map<String, List<String>> functions = new HashMap<>();
-
-                        usersList.add(new UserDTO(id, displayName, profile, functions));
-                    }
-                    promise.complete(new GetUsersFromGroupsResponseDTO(usersList));
-                } catch (Exception err) {
-                    log.error("Error while parsing user array", err);
-                    promise.fail(err);
-                }
-            } else {
-                log.error("Error getting users from groups", event.left().getValue());
-                promise.fail(event.left().getValue());
-            }
         });
 
         return promise.future();

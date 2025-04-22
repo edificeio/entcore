@@ -21,6 +21,7 @@ import javax.tools.StandardLocation;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @SupportedAnnotationTypes("org.entcore.broker.api.BrokerListener")
@@ -45,7 +46,7 @@ public class BrokerListenerProcessor extends AbstractProcessor {
 
   @Override
   public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-    System.out.println("########## Processing");
+    messager.printMessage(Diagnostic.Kind.NOTE, "Processing @BrokerListener annotations...");
     if (roundEnv.processingOver()) {
       return false;
     }
@@ -83,7 +84,6 @@ public class BrokerListenerProcessor extends AbstractProcessor {
 
     endpoint.setSubject(annotation.subject());
     endpoint.setDescription(annotation.description());
-    endpoint.setQueue(annotation.queue());
     endpoint.setProxy(annotation.proxy());
 
     // Get method information
@@ -148,7 +148,9 @@ public class BrokerListenerProcessor extends AbstractProcessor {
   }
 
   private String getServiceName() {
-    // Could be read from a project property or configuration
-    return "quarkus-nats-service";
+    // Get the artifactId from processor options
+    final Map<String, String> options = processingEnv.getOptions();
+    final String artifactId = options.get("artifactId");
+    return artifactId != null ? artifactId : "ent-nats-service"; // Fallback to default
   }
 }

@@ -22,6 +22,7 @@ package org.entcore.registry;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.Promise;
+import org.entcore.broker.api.utils.AddressParameter;
 import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.appregistry.AppRegistryEventsHandler;
 import org.entcore.common.http.BaseServer;
@@ -42,7 +43,7 @@ public class AppRegistry extends BaseServer {
 		addController(new ExternalApplicationController(config.getInteger("massAuthorizeBatchSize", 1000)));
 		addController(new WidgetController());
 		addController(new LibraryController(vertx, config()));
-		BrokerProxyUtils.addBrokerProxy(appRegistryController, vertx);
+		BrokerProxyUtils.addBrokerProxy(appRegistryController, vertx, new AddressParameter("application", "appregistry"));
 		JsonObject eduMalinConf = config.getJsonObject("edumalin-widget-config");
 		if(eduMalinConf != null)
       futures.add(addController(new EdumalinWidgetController()));

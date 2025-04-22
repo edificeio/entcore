@@ -9,14 +9,13 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.StringUtils;
 import org.entcore.broker.api.BrokerListener;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.Callable;
 
 public class BrokerProxyUtils {
@@ -27,19 +26,28 @@ public class BrokerProxyUtils {
 
   /**
    * Starts listening on the event bus for every request specified by the
-   * annotation @BrokerListener
-   * on the proxified class.
+   * annotation @BrokerListener on the proxified class.
    * 
    * @param proxyImpl Instance of events listener.
    * @param vertx     Current vertx instance.
+   * @param addressParameters List of pairs of  to be used in the address. For instance, if the proxy declared the routes
+   *                          {@code share.group.upsert.{application}.{subdomain}} and {@code export.{application}.{subresource}}
+   *                          then the {@code addressParameters} should contain exactly 3 parameters, each one containing
+   *                          the value for each parameter : {@code application} {@code subdomain} and {@code subresource}.<br />
+   *                          <u>Example</u>
+   *                          {@code addBrokerProxy(new BlogBrokerListener(), vertx, new AddressParameter("application", "blog"), new AddressParameter("subdomain", "shares"), new new AddressParameter("subresource")}</br>
+   *                          Which will be listening on the address {@code share.group.upsert.blog.shares}<br />
+   *                          If you do not provide the expected number of parameters then an exception will be raised.
    * @return A function to call to stop listening.
    */
-  public static Callable<Void> addBrokerProxy(Object proxyImpl, final Vertx vertx) {
+  public static Callable<Void> addBrokerProxy(Object proxyImpl, final Vertx vertx, final AddressParameter... addressParameters) {
+    final Map<String, String> params = getParameters(addressParameters);
     final List<Listener> listeners = getListeners(proxyImpl);
+    checkParameters(params, proxyImpl, listeners);
     final EventBus eb = vertx.eventBus();
     final List<MessageConsumer<?>> consumers = new ArrayList<>();
     for (Listener listener : listeners) {
-      consumers.add(startListening(listener, proxyImpl, eb));
+      consumers.add(startListening(listener, proxyImpl, eb, params));
     }
     return () -> {
       for (MessageConsumer<?> consumer : consumers) {
@@ -50,10 +58,60 @@ public class BrokerProxyUtils {
     };
   }
 
-  private static MessageConsumer<?> startListening(Listener listener, Object proxyImpl, EventBus eb) {
+  private static void checkParameters(final Map<String, String> params, final Object proxyImpl, final List<Listener> listeners) {
+    final Set<String> listenerParameters = getListenerParameters(listeners);
+    final Set<String> missingParameters = new HashSet<>(listenerParameters);
+    for (String parameter : listenerParameters) {
+      if (!params.containsKey(parameter) || StringUtils.isBlank(params.get(parameter))) {
+        missingParameters.add(parameter);
+      } else {
+        missingParameters.remove(parameter);
+      }
+    }
+    if(!missingParameters.isEmpty()) {
+      final StringBuilder sb = new StringBuilder();
+      sb.append("Missing parameters for listener on class ").append(proxyImpl.getClass().getName()).append(": ");
+      for (String parameter : missingParameters) {
+        sb.append(parameter).append(", ");
+      }
+      sb.delete(sb.length() - 2, sb.length());
+      throw new IllegalArgumentException(sb.toString());
+    }
+  }
+
+  private static Set<String> getListenerParameters(List<Listener> listeners) {
+    final Set<String> listenerParameters = new HashSet<>();
+    for (Listener listener : listeners) {
+      final BrokerListener annotation = listener.annotation;
+      if (annotation != null) {
+        final String[] parameters = annotation.subject().split("\\.");
+        for (String parameter : parameters) {
+          if (parameter.startsWith("{") && parameter.endsWith("}")) {
+            listenerParameters.add(parameter.substring(1, parameter.length() - 1));
+          }
+        }
+      }
+    }
+    return listenerParameters;
+  }
+
+  private static Map<String, String> getParameters(AddressParameter[] addressParameters) {
+    final Map<String, String> params;
+    if(addressParameters == null) {
+      params = Collections.emptyMap();
+    } else {
+      params = new HashMap<>();
+      for (AddressParameter addressParameter : addressParameters) {
+        params.put(addressParameter.getName(), addressParameter.getValue());
+      }
+    }
+    return params;
+  }
+
+  private static MessageConsumer<?> startListening(Listener listener, Object proxyImpl, EventBus eb, Map<String, String> params) {
     final BrokerListener annotation = listener.annotation;
     final Method method = listener.method;
-    final String address = annotation.subject();
+    final String address = replacePlaceHoldersInListeningAddress(annotation.subject(), params);
     final Class<?> requestType = method.getParameterTypes()[0];
     log.info("Start listening on address " + address);
     return eb.consumer(address, (Handler<Message<byte[]>>) message -> {
@@ -84,6 +142,16 @@ public class BrokerProxyUtils {
       }
       sendResponse(response, message, address);
     });
+  }
+
+  private static String replacePlaceHoldersInListeningAddress(final String subject, final Map<String, String> params) {
+    String address = subject;
+    for (Map.Entry<String, String> entry : params.entrySet()) {
+      final String key = entry.getKey();
+      final String value = entry.getValue();
+      address = address.replace("{" + key + "}", value);
+    }
+    return address;
   }
 
   private static void sendResponse(Object response, Message<byte[]> message, String address) {
