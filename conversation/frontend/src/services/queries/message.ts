@@ -87,17 +87,17 @@ export const useMessage = (messageId: string) => {
   const search = searchParams.get('search');
   const unreadFilter = searchParams.get('unread');
 
-  if (result.isSuccess) {
+  if (result.isSuccess && result.data) {
     queryClient.setQueryData(
       folderQueryOptions.getMessagesQuerykey(folderId, {
         search: search === '' ? undefined : search || undefined,
         unread: !unreadFilter ? undefined : true,
       }),
       (data: InfiniteData<MessageMetadata>) => {
-        if (data?.pages) {
+        if (data && data?.pages) {
           data.pages.forEach((page: any) => {
             page.forEach((message: MessageMetadata) => {
-              if (result.data.id === message.id) {
+              if (result.data?.id === message.id) {
                 message.unread = false;
               }
             });
