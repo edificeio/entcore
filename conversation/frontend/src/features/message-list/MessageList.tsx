@@ -155,8 +155,9 @@ export function MessageList() {
       visibility,
       tooltip: name,
       props: {
-        leftIcon: icon,
-        children: name,
+        'leftIcon': icon,
+        'children': label,
+        'aria-label': label,
         onClick,
       },
     }),
