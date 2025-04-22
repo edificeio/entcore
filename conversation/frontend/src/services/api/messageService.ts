@@ -38,7 +38,35 @@ export const createMessageService = (baseURL: string) => ({
     if (id) {
       return odeServices.http().get<Message>(`${baseURL}/api/messages/${id}`);
     } else {
-      return undefined;
+      const message: Message = {
+        id: '',
+        body: '',
+        language: 'fr',
+        subject: '',
+        from: {
+          id: '',
+          displayName: '',
+          profile: '',
+        },
+        to: {
+          users: [],
+          groups: [],
+        },
+        cc: {
+          users: [],
+          groups: [],
+        },
+        cci: {
+          users: [],
+          groups: [],
+        },
+        response: false,
+        forwarded: false,
+        state: 'DRAFT',
+        attachments: [],
+        original_format_exists: false,
+      };
+      return message;
     }
   },
 
