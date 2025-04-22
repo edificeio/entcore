@@ -7,13 +7,14 @@ import {
   IconPlus,
 } from '@edifice.io/react/icons';
 import clsx from 'clsx';
-import { ChangeEvent, useRef } from 'react';
+import { ChangeEvent, useRef, useState } from 'react';
 import { useI18n } from '~/hooks';
 import { useMessageAttachments } from '~/hooks/useMessageAttachments';
-import { Message } from '~/models';
+import { Attachment, Message } from '~/models';
 import { useMessageUpdated } from '~/store';
 import { MessageAttachment } from './components/MessageAttachment';
 import './MessageAttachments.css';
+import { AddMessageAttachmentToWorkspaceModal } from './components/AddMessageAttachmentToWorkspaceModal';
 
 export interface MessageAttachmentsProps {
   message: Message;
@@ -31,6 +32,8 @@ export function MessageAttachments({
     useMessageAttachments(
       editMode && messageUpdated ? messageUpdated : message,
     );
+  const [attachmentsToAddToWorkspace, setAttachmentsToAddToWorkspace] =
+    useState<Attachment[] | undefined>(undefined);
 
   if (!attachments.length && !editMode) return null;
 
@@ -47,6 +50,9 @@ export function MessageAttachments({
     editMode && 'border message-attachments-edit mx-16',
   );
 
+  const handleWantAddToWorkspace = (attachments: Attachment[]) => {
+    setAttachmentsToAddToWorkspace(attachments);
+  };
   return (
     message.state !== 'RECALL' && (
       <div
@@ -67,6 +73,7 @@ export function MessageAttachments({
                     color="tertiary"
                     type="button"
                     icon={<IconFolderAdd />}
+                    onClick={() => handleWantAddToWorkspace(attachments)}
                     variant="ghost"
                   />
                   <a href={downloadAllUrl} download>
@@ -99,6 +106,9 @@ export function MessageAttachments({
                     attachment={attachment}
                     message={message}
                     editMode={editMode}
+                    onWantAddToWorkspace={(attachment) =>
+                      handleWantAddToWorkspace([attachment])
+                    }
                   />
                 </li>
               ))}
@@ -126,6 +136,14 @@ export function MessageAttachments({
               hidden
             />
           </>
+        )}
+        {!!attachmentsToAddToWorkspace && (
+          <AddMessageAttachmentToWorkspaceModal
+            message={message}
+            isOpen={!!attachmentsToAddToWorkspace}
+            onModalClose={() => setAttachmentsToAddToWorkspace(undefined)}
+            attachments={attachmentsToAddToWorkspace}
+          />
         )}
       </div>
     )

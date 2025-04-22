@@ -54,9 +54,10 @@ export function useMessageAttachments({ id, attachments }: Message) {
   }
 
   async function copyToWorkspace(
-    attachment: Attachment,
+    attachments: Attachment[],
     selectedFolderId: string,
   ) {
+    const attachment = attachments[0];
     try {
       const attachmentBlob = await downloadAttachmentMutation.mutateAsync({
         messageId: id,
