@@ -67,6 +67,18 @@
             <version>${owaspVersion}</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>org.entcore</groupId>
+            <artifactId>broker-api</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.entcore</groupId>
+            <artifactId>broker-proxy</artifactId>
+            <version>${project.version}</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -76,7 +88,10 @@
                 <configuration>
                 <source>${java.version}</source>
                 <target>${java.version}</target>
-                <compilerArgument>-proc:none</compilerArgument>
+                    <compilerArgs>
+                        <arg>-Aartifactid=${project.artifactId}</arg>
+                        <arg>-proc:none</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
         </plugins>

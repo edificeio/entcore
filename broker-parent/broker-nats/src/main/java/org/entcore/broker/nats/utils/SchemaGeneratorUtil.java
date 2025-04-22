@@ -106,9 +106,7 @@ public class SchemaGeneratorUtil {
           schema.put("items", getElementTypeOfArrayLike(typeMirror));
         } else if (isMapLike(typeMirror)) {
           schema.put("type", "object");
-          final Map<String, Object> addProps = new LinkedHashMap<>(); // Use LinkedHashMap here just to keep the order of the fields
-          addProps.put("type", getElementTypeOfMap(typeMirror));
-          schema.put("additionalProperties", addProps);
+          schema.put("additionalProperties", getElementTypeOfMap(typeMirror));
         } else if(typeMirrorAsString.startsWith("io.vertx.core.Future<"))  {
           schema.putAll(getElementTypeOfFuture(typeMirror));
         } else {
