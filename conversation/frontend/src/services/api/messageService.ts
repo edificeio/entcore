@@ -35,7 +35,11 @@ export const createMessageService = (baseURL: string) => ({
    * Fully load a message.
    */
   getById(id: string) {
-    return odeServices.http().get<Message>(`${baseURL}/api/messages/${id}`);
+    if (id) {
+      return odeServices.http().get<Message>(`${baseURL}/api/messages/${id}`);
+    } else {
+      return undefined;
+    }
   },
 
   /**
