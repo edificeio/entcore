@@ -84,28 +84,40 @@ export const useMessage = (messageId: string) => {
   const queryClient = useQueryClient();
   const { folderId } = useParams() as { folderId: string };
   const [searchParams] = useSearchParams();
+  const { currentLanguage, user, userProfile } = useEdificeClient();
+
   const search = searchParams.get('search');
   const unreadFilter = searchParams.get('unread');
 
   if (result.isSuccess && result.data) {
-    queryClient.setQueryData(
-      folderQueryOptions.getMessagesQuerykey(folderId, {
-        search: search === '' ? undefined : search || undefined,
-        unread: !unreadFilter ? undefined : true,
-      }),
-      (data: InfiniteData<MessageMetadata>) => {
-        if (data && data?.pages) {
-          data.pages.forEach((page: any) => {
-            page.forEach((message: MessageMetadata) => {
-              if (result.data?.id === message.id) {
-                message.unread = false;
-              }
+    const message = result.data;
+    if (message.id) {
+      queryClient.setQueryData(
+        folderQueryOptions.getMessagesQuerykey(folderId, {
+          search: search === '' ? undefined : search || undefined,
+          unread: !unreadFilter ? undefined : true,
+        }),
+        (data: InfiniteData<MessageMetadata>) => {
+          if (data && data?.pages) {
+            data.pages.forEach((page: any) => {
+              page.forEach((mess: MessageMetadata) => {
+                if (result.data?.id === mess.id) {
+                  mess.unread = false;
+                }
+              });
             });
-          });
-        }
-        return data;
-      },
-    );
+          }
+          return data;
+        },
+      );
+    } else {
+      message.language = currentLanguage;
+      message.from = {
+        id: user?.userId || '',
+        displayName: user?.username || '',
+        profile: (userProfile || '') as string,
+      };
+    }
   }
   return result;
 };

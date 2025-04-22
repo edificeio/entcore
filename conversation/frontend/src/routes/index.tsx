@@ -40,9 +40,9 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
                   };
                 },
               },
-              // Create new message
+              // Displays selected message.
               {
-                path: 'create',
+                path: 'message/:messageId',
                 async lazy() {
                   const { Component, loader } = await import(
                     '~/routes/pages/Message'
@@ -53,9 +53,9 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
                   };
                 },
               },
-              // Displays selected message.
+              // Create new message
               {
-                path: 'message/:messageId',
+                path: 'create',
                 async lazy() {
                   const { Component, loader } = await import(
                     '~/routes/pages/Message'
