@@ -4,8 +4,6 @@ import {
   IconDownload,
   IconFolderAdd,
 } from '@edifice.io/react/icons';
-import { useState } from 'react';
-import { AddMessageAttachmentToWorkspaceModal } from '~/components/MessageAttachments/components/AddMessageAttachmentToWorkspaceModal';
 import { useI18n } from '~/hooks';
 import { useMessageAttachments } from '~/hooks/useMessageAttachments';
 import { Attachment as AttachmentMetaData, Message } from '~/models';
@@ -14,16 +12,17 @@ import { useMessageUpdated } from '~/store';
 export interface MessageAttachmentsProps {
   attachment: AttachmentMetaData;
   message: Message;
+  onWantAddToWorkspace: (attachment: AttachmentMetaData) => void;
   editMode?: boolean;
 }
 
 export function MessageAttachment({
   attachment,
   message,
+  onWantAddToWorkspace,
   editMode,
 }: MessageAttachmentsProps) {
   const { t } = useI18n();
-  const [showAddToWorkspaceModal, setShowAddToWorkspaceModal] = useState(false);
   const messageUpdated = useMessageUpdated();
   const { detachFile, getDownloadUrl } = useMessageAttachments(
     editMode && messageUpdated ? messageUpdated : message,
@@ -43,7 +42,7 @@ export function MessageAttachment({
               type="button"
               icon={<IconFolderAdd />}
               variant="ghost"
-              onClick={() => setShowAddToWorkspaceModal(true)}
+              onClick={() => onWantAddToWorkspace(attachment)}
             />
             <a href={downloadUrl} download>
               <IconButton
@@ -67,14 +66,6 @@ export function MessageAttachment({
           </>
         }
       />
-      {showAddToWorkspaceModal && (
-        <AddMessageAttachmentToWorkspaceModal
-          message={message}
-          isOpen={showAddToWorkspaceModal}
-          onModalClose={() => setShowAddToWorkspaceModal(false)}
-          attachment={attachment}
-        />
-      )}
     </>
   );
 }

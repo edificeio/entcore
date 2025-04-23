@@ -54,31 +54,46 @@ export function useMessageAttachments({ id, attachments }: Message) {
   }
 
   async function copyToWorkspace(
-    attachment: Attachment,
+    attachments: Attachment[],
     selectedFolderId: string,
   ) {
     try {
-      const attachmentBlob = await downloadAttachmentMutation.mutateAsync({
-        messageId: id,
-        attachmentId: attachment.id,
-      });
-      if (!attachmentBlob) return;
+      const downloadFilesPromises = attachments.map(async (attachment) => {
+        const attachmentBlob = await downloadAttachmentMutation.mutateAsync({
+          messageId: id,
+          attachmentId: attachment.id,
+        });
 
-      const file = new File([attachmentBlob], attachment.filename, {
-        type: attachment.contentType,
+        if (!attachmentBlob) return;
+
+        return new File([attachmentBlob], attachment.filename, {
+          type: attachment.contentType,
+        });
       });
-      await odeServices.workspace().saveFile(file, {
-        parentId: selectedFolderId,
+
+      const files = await Promise.all(downloadFilesPromises);
+
+      // 2 - Send files to workspace
+      const addFilesPromises = files.map((file) => {
+        if (!file) return;
+
+        return odeServices.workspace().saveFile(file, {
+          parentId: selectedFolderId,
+        });
       });
+      await Promise.all(addFilesPromises);
+
+      toast.success(
+        t('conversation.notify.copyToWorkspace', { count: files.length }),
+      );
+
+      return true;
     } catch (error) {
       let errorMessage = t('conversation.error.copyToWorkspace');
-      errorMessage += `: ${t(error as string)}`; //TODO type the error in the Ode services
+      errorMessage += `: ${t(error as string)}`; //force the type beacause the error type should be defined as string in the Ode services in the frontend-framework
       toast.error(errorMessage);
       return false;
     }
-    toast.success(t('conversation.notify.copyToWorkspace'));
-
-    return true;
   }
 
   return {

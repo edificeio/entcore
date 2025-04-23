@@ -8,13 +8,13 @@ import { Attachment, Message } from '~/models';
 
 interface AddMessageAttachmentToWorkspaceModalProps {
   message: Message;
-  attachment: Attachment;
+  attachments: Attachment[];
   onModalClose: () => void;
   isOpen?: boolean;
 }
 export function AddMessageAttachmentToWorkspaceModal({
   message,
-  attachment,
+  attachments,
   isOpen = false,
   onModalClose,
 }: AddMessageAttachmentToWorkspaceModalProps) {
@@ -34,7 +34,7 @@ export function AddMessageAttachmentToWorkspaceModal({
     if (selectedFolderIdToCopyFile === undefined) return;
     setIsLoading(true);
     const isSuccess = await copyToWorkspace(
-      attachment,
+      attachments,
       selectedFolderIdToCopyFile,
     );
     if (isSuccess) {
@@ -56,7 +56,9 @@ export function AddMessageAttachmentToWorkspaceModal({
       size="md"
     >
       <Modal.Header onModalClose={onModalClose}>
-        {common_t('attachments.add.to.folder.modal')}
+        {common_t('attachments.add.to.folder.modal', {
+          count: attachments.length,
+        })}
       </Modal.Header>
       <Modal.Body>
         <WorkspaceFolders onFolderSelected={handleFolderSelected} />
