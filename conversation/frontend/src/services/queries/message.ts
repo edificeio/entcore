@@ -390,8 +390,10 @@ export const useCreateOrUpdateDraft = () => {
   const updateDraft = useUpdateDraft();
   const createDraft = useCreateDraft();
   const messageUpdated = useMessageUpdated();
+  const toast = useToast();
+  const { t } = useI18n();
 
-  return () => {
+  return (withNotification = false) => {
     if (!messageUpdated) return;
 
     const payload = {
@@ -412,22 +414,35 @@ export const useCreateOrUpdateDraft = () => {
     };
 
     if (messageUpdated.id && messageUpdated.state === 'DRAFT') {
-      return updateDraft.mutateAsync({
-        draftId: messageUpdated.id,
-        payload,
-      });
+      return updateDraft.mutateAsync(
+        {
+          draftId: messageUpdated.id,
+          payload,
+        },
+        {
+          onSuccess: () => {
+            if (withNotification) {
+              toast.success(t('message.draft.saved'));
+            }
+          },
+        },
+      );
     } else {
       return createDraft.mutateAsync(
         { payload },
         {
-          onSuccess: ({ id }) =>
+          onSuccess: ({ id }) => {
+            if (withNotification) {
+              toast.success(t('message.draft.saved'));
+            }
             // Update the URL to point to the draft message
             // We can't use useNavigate because it will lose editor focus if there is any
             window.history.replaceState(
               null,
               '',
               `${baseUrl}/draft/message/${id}`,
-            ),
+            );
+          },
         },
       );
     }
@@ -443,8 +458,6 @@ export const useCreateDraft = () => {
   const messageUpdated = useMessageUpdated();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
   const queryClient = useQueryClient();
-  const toast = useToast();
-  const { t } = useI18n();
 
   return useMutation({
     mutationFn: ({
@@ -480,7 +493,6 @@ export const useCreateDraft = () => {
           return { ...data };
         },
       );
-      toast.success(t('message.draft.saved'));
     },
   });
 };
@@ -493,8 +505,6 @@ export const useUpdateDraft = () => {
   const { setMessageUpdated } = useAppActions();
   const queryClient = useQueryClient();
   const messageUpdated = useMessageUpdated();
-  const toast = useToast();
-  const { t } = useI18n();
 
   return useMutation({
     mutationFn: ({
@@ -512,8 +522,6 @@ export const useUpdateDraft = () => {
     }) => messageService.updateDraft(draftId, payload),
     onSuccess: (_data, { draftId }) => {
       if (!messageUpdated) return;
-
-      toast.success(t('message.draft.saved'));
       setMessageUpdated({ ...messageUpdated });
       queryClient.setQueryData(
         messageQueryOptions.getById(draftId).queryKey,
