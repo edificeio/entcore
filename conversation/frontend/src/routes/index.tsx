@@ -25,18 +25,6 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
         /* Pages */
         children: [
           {
-            path: 'draft/message/:messageId',
-            async lazy() {
-              const { Component, loader } = await import(
-                '~/routes/pages/MessageEdit'
-              );
-              return {
-                loader: loader(_queryClient),
-                Component,
-              };
-            },
-          },
-          {
             // Display messages from /inbox, /outbox, /trash, /draft
             path: ':folderId',
             children: [
@@ -44,7 +32,7 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
                 path: '',
                 async lazy() {
                   const { Component, loader } = await import(
-                    '~/routes/pages/FolderDisplay'
+                    '~/routes/pages/Folder'
                   );
                   return {
                     loader: loader(_queryClient),
@@ -57,7 +45,20 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
                 path: 'message/:messageId',
                 async lazy() {
                   const { Component, loader } = await import(
-                    '~/routes/pages/MessageDisplay'
+                    '~/routes/pages/Message'
+                  );
+                  return {
+                    loader: loader(_queryClient),
+                    Component,
+                  };
+                },
+              },
+              // Create new message
+              {
+                path: 'create',
+                async lazy() {
+                  const { Component, loader } = await import(
+                    '~/routes/pages/Message'
                   );
                   return {
                     loader: loader(_queryClient),
@@ -75,7 +76,7 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
                 path: '',
                 async lazy() {
                   const { Component, loader } = await import(
-                    '~/routes/pages/FolderDisplay'
+                    '~/routes/pages/Folder'
                   );
                   return {
                     loader: loader(_queryClient),
@@ -88,7 +89,7 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
                 path: 'message/:messageId',
                 async lazy() {
                   const { Component, loader } = await import(
-                    '~/routes/pages/MessageDisplay'
+                    '~/routes/pages/Message'
                   );
                   return {
                     loader: loader(_queryClient),
@@ -97,19 +98,6 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
                 },
               },
             ],
-          },
-          // Displays a new blank message in edit mode.
-          {
-            path: 'draft/create',
-            async lazy() {
-              const { Component, loader } = await import(
-                '~/routes/pages/MessageCreate'
-              );
-              return {
-                loader: loader(_queryClient),
-                Component,
-              };
-            },
           },
         ],
       },
