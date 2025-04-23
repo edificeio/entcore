@@ -1,7 +1,7 @@
 /// <reference types="vitest/config" />
 import react from '@vitejs/plugin-react';
 import { resolve } from 'node:path';
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig, loadEnv, ProxyOptions } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import {
   hashEdificeBootstrap,
@@ -26,12 +26,17 @@ export default ({ mode }: { mode: string }) => {
       }
     : {};
 
-  const proxyObj = hasEnvFile
+  const proxyObj: ProxyOptions = hasEnvFile
     ? {
         target: envs.VITE_RECETTE,
         changeOrigin: true,
         headers: {
           cookie: `oneSessionId=${envs.VITE_ONE_SESSION_ID};authenticated=true; XSRF-TOKEN=${envs.VITE_XSRF_TOKEN}`,
+        },
+        configure: (proxy) => {
+          proxy.on('proxyReq', (proxyReq) => {
+            proxyReq.setHeader('X-XSRF-TOKEN', envs.VITE_XSRF_TOKEN || '');
+          });
         },
       }
     : {

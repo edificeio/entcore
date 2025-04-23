@@ -4,6 +4,9 @@
 dist
 tmp
 /out-tsc
+scripts/get-tokens/config.json
+package.json
+pnpm-lock.yaml
 
 # dependencies
 node_modules
@@ -45,4 +48,3 @@ Thumbs.db
 *.tsbuildinfo
 
 .pnpm-store
-scripts/get-tokens/config.json
