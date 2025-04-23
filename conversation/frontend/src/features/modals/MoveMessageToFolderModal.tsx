@@ -120,7 +120,7 @@ export function MoveMessageToFolderModal() {
           isLoading={isActionPending === true}
           disabled={isActionPending === true || !subFolderId}
         >
-          {t('move')}
+          {t('move.first.caps')}
         </Button>
       </Modal.Footer>
     </Modal>
