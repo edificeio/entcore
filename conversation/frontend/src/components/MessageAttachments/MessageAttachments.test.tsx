@@ -11,7 +11,7 @@ describe('Message preview header component', () => {
     expect(baseElement).toBeTruthy();
   });
 
-  it('should render multiple attachements successfully', async () => {
+  it('should render multiple attachments successfully', async () => {
     render(<MessageAttachments message={message} editMode={true} />);
 
     const messageAttachmentsTitle = await screen.findByText('attachments');
@@ -50,7 +50,7 @@ describe('Message preview header component', () => {
     expect(messageAttachmentActionRemove).toHaveLength(2);
   });
 
-  it('should not render attachements', async () => {
+  it('should not render attachments', async () => {
     const messageWoAttachments = { ...message, attachments: [] };
     render(<MessageAttachments message={messageWoAttachments} />);
 
