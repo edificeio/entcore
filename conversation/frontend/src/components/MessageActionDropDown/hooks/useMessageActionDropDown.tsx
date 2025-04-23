@@ -132,7 +132,8 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
   };
 
   const handleDraftSaveClick = async () => {
-    await createOrUpdateDraft();
+    await createOrUpdateDraft(true);
+    navigate('/inbox');
   };
 
   const handleMarkAsUnreadClick = () => {
