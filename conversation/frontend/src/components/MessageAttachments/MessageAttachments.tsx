@@ -12,9 +12,9 @@ import { useI18n } from '~/hooks';
 import { useMessageAttachments } from '~/hooks/useMessageAttachments';
 import { Attachment, Message } from '~/models';
 import { useMessageUpdated } from '~/store';
+import { AddMessageAttachmentToWorkspaceModal } from './components/AddMessageAttachmentToWorkspaceModal';
 import { MessageAttachment } from './components/MessageAttachment';
 import './MessageAttachments.css';
-import { AddMessageAttachmentToWorkspaceModal } from './components/AddMessageAttachmentToWorkspaceModal';
 
 export interface MessageAttachmentsProps {
   message: Message;
@@ -140,7 +140,7 @@ export function MessageAttachments({
         {!!attachmentsToAddToWorkspace && (
           <AddMessageAttachmentToWorkspaceModal
             message={message}
-            isOpen={!!attachmentsToAddToWorkspace}
+            isOpen
             onModalClose={() => setAttachmentsToAddToWorkspace(undefined)}
             attachments={attachmentsToAddToWorkspace}
           />
