@@ -1,5 +1,5 @@
 import { QueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { LoaderFunctionArgs, useParams } from 'react-router-dom';
 import { Message } from '~/features/message';
 import { MessageEdit } from '~/features/message-edit/MessageEdit';
@@ -23,6 +23,7 @@ export const loader =
 export function Component() {
   const { messageId } = useParams();
   const { folderId } = useSelectedFolder();
+  const [currentKey, setCurrentKey] = useState(0);
 
   const { data: message } = useMessage(messageId!);
 
@@ -31,17 +32,22 @@ export function Component() {
     window.scrollTo(0, 0);
   }, []);
 
+  useEffect(() => {
+    // Update the current key to trigger a re-render
+    setCurrentKey((prev) => prev + 1);
+  }, [messageId]);
+
   if (!message) {
     return null;
   }
 
   return (
-    <>
+    <Fragment key={currentKey}>
       {folderId === 'draft' && message?.state === 'DRAFT' ? (
         <MessageEdit message={message} />
       ) : (
         <Message message={message} />
       )}
-    </>
+    </Fragment>
   );
 }
