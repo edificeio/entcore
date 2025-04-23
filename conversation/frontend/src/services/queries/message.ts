@@ -522,6 +522,7 @@ export const useUpdateDraft = () => {
     }) => messageService.updateDraft(draftId, payload),
     onSuccess: (_data, { draftId }) => {
       if (!messageUpdated) return;
+      messageUpdated.date = new Date().getTime();
       setMessageUpdated({ ...messageUpdated });
       queryClient.setQueryData(
         messageQueryOptions.getById(draftId).queryKey,
