@@ -119,8 +119,14 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
       koText: t('cancel'),
       size: 'sm',
       onSuccess: () => {
-        deleteMessage.mutate({ id: message.id });
-        navigate('/trash');
+        deleteMessage.mutate(
+          { id: message.id },
+          {
+            onSuccess: () => {
+              navigate('/trash');
+            },
+          },
+        );
       },
     });
   };
@@ -314,7 +320,7 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
       icon: <IconDelete />,
       action: () => {
         moveToTrashQuery.mutate({ id: message.id });
-        navigate(`../..`, { relative: 'path' });
+        navigate(`/${folderId}`, { relative: 'path' });
       },
       hidden: !hasActionsList('trash') || message.trashed,
     },
