@@ -105,6 +105,10 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
     return !actions || actions.includes(idAction);
   };
 
+  const fromMe = useMemo(() => {
+    return message.from.id === user?.userId;
+  }, [message, user]);
+
   // Handlers
   const handleDeleteClick = () => {
     openModal({
@@ -187,7 +191,7 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
         alert('reply');
       },
       hidden:
-        message.state === 'SENT' ||
+        (message.state === 'SENT' && fromMe) ||
         message.state === 'DRAFT' ||
         message.trashed,
     },
@@ -216,7 +220,7 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
       action: () => {
         alert('transfer');
       },
-      hidden: message.state !== 'SENT' || message.trashed,
+      hidden: message.state !== 'SENT' || !fromMe || message.trashed,
     },
   ];
 
