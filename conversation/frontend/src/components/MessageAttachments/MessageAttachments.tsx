@@ -46,7 +46,7 @@ export function MessageAttachments({
   const handleDetachAllClick = () => detachFiles(attachments);
 
   const className = clsx(
-    'bg-gray-300 rounded-2 px-12 py-8 message-attachments align-self-start gap-8 d-flex flex-column',
+    'bg-gray-200 rounded-2 px-12 py-8 message-attachments align-self-start gap-8 d-flex flex-column',
     editMode && 'border message-attachments-edit mx-16',
   );
 
@@ -99,7 +99,7 @@ export function MessageAttachments({
                 </div>
               )}
             </div>
-            <ul className="d-flex gap-8 flex-wrap list-unstyled m-0">
+            <ul className="d-flex gap-8 flex-column list-unstyled m-0">
               {attachments.map((attachment) => (
                 <li key={attachment.id} className="mw-100">
                   <MessageAttachment
@@ -123,6 +123,7 @@ export function MessageAttachments({
               leftIcon={isMutating ? <IconLoader /> : <IconPlus />}
               onClick={handleAttachClick}
               disabled={isMutating}
+              className="align-self-start"
             >
               {t('add.attachment')}
             </Button>
