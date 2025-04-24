@@ -28,6 +28,7 @@ export function useRecall() {
   const handleRecall = (message: MessageBase) => {
     openModal({
       id: 'recall-message-modal',
+      size: 'sm',
       header: t('recall'),
       body: createElement('p', {}, t('conversation.recall.mail')),
       okText: t('conversation.recall.ok'),
