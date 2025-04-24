@@ -11,7 +11,7 @@ import {
 } from '~/services/queries/attachment';
 import { useI18n } from './useI18n';
 
-export function useMessageAttachments({ id, attachments }: Message) {
+export function useMessageAttachments({ id }: Message) {
   const attachFileMutation = useAttachFiles();
   const detachFileMutation = useDetachFile();
   const downloadAttachmentMutation = useDownloadAttachment();
@@ -52,11 +52,6 @@ export function useMessageAttachments({ id, attachments }: Message) {
         attachmentId,
       },
       {
-        onSuccess: () => {
-          attachments = attachments.filter(
-            (attachment) => attachment.id !== attachmentId,
-          );
-        },
         onError: () => {
           setDetachInProgress((prev) => {
             const newSet = new Set(prev);
@@ -117,7 +112,6 @@ export function useMessageAttachments({ id, attachments }: Message) {
 
   return {
     attachFiles,
-    attachments,
     copyToWorkspace,
     detachFile,
     detachFiles,
