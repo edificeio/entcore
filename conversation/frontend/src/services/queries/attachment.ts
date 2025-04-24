@@ -1,8 +1,12 @@
 import { useToast } from '@edifice.io/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useI18n } from '~/hooks';
-import { useAppActions } from '~/store';
-import { attachmentService, messageQueryOptions } from '..';
+import { useAppActions, useMessageUpdated } from '~/store';
+import {
+  attachmentService,
+  messageQueryOptions,
+  useCreateOrUpdateDraft,
+} from '..';
 
 /**
  * Hook to attach many Files to a draft message.
@@ -10,7 +14,9 @@ import { attachmentService, messageQueryOptions } from '..';
  */
 export const useAttachFiles = () => {
   const queryClient = useQueryClient();
+  const updateDraft = useCreateOrUpdateDraft();
   const { setMessageUpdated } = useAppActions();
+  const messageUpdated = useMessageUpdated();
 
   const toast = useToast();
   const { t } = useI18n();
@@ -19,24 +25,26 @@ export const useAttachFiles = () => {
     mutationFn: ({ draftId, files }: { draftId: string; files: File[] }) =>
       Promise.all(files.map((file) => attachmentService.attach(draftId, file))),
     onSuccess(_ids, { draftId }) {
-      queryClient
-        .invalidateQueries({
-          queryKey: messageQueryOptions.getById(draftId).queryKey,
-        })
-        .then(() => {
-          // Refresh the message data after attaching files to the draft message
-          // This is necessary to update the message state in the store
-          queryClient
-            .ensureQueryData(messageQueryOptions.getById(draftId))
-            .then((message) => {
-              if (message) {
-                setMessageUpdated({
-                  ...message,
-                });
-              }
-            });
-        });
-      toast.success(t('attachments.loaded'));
+      updateDraft()?.then(() => {
+        queryClient
+          .invalidateQueries({
+            queryKey: messageQueryOptions.getById(draftId).queryKey,
+          })
+          .then(() => {
+            // Refresh the message data after attaching files to the draft message
+            // This is necessary to update the message state in the store
+            queryClient
+              .ensureQueryData(messageQueryOptions.getById(draftId))
+              .then((message) => {
+                if (message) {
+                  setMessageUpdated({
+                    ...message,
+                  });
+                }
+              });
+          });
+        toast.success(t('attachments.loaded'));
+      });
     },
     onError(error, { draftId }) {
       queryClient.invalidateQueries({
