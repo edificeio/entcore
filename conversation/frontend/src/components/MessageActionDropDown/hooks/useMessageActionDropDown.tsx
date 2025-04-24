@@ -34,13 +34,17 @@ export interface MessageActionDropDownProps {
   message: Message;
   actions?: string[];
   setInactiveUsers: (inactiveUsers: string[]) => void;
+  setUndeliveredUsers: (undeliveredUsers: string[]) => void;
   setOpenedInactiveUsersModal: (opened: boolean) => void;
+  setOpenedUndeliveredUsersModal: (opened: boolean) => void;
 }
 
 export function useMessageActionDropDown({
   message,
   setInactiveUsers,
+  setUndeliveredUsers,
   setOpenedInactiveUsersModal,
+  setOpenedUndeliveredUsersModal,
   actions,
 }: MessageActionDropDownProps) {
   const { t } = useI18n();
@@ -176,9 +180,15 @@ export function useMessageActionDropDown({
       },
       {
         onSuccess: (response) => {
-          if (response.inactive.length > 0) {
-            setInactiveUsers(response.inactive);
-            setOpenedInactiveUsersModal(true);
+          if (response.inactive.length > 0 || response.undelivered.length > 0) {
+            if (response.inactive.length > 0) {
+              setInactiveUsers(response.inactive);
+              setOpenedInactiveUsersModal(true);
+            }
+            if (response.undelivered.length > 0) {
+              setUndeliveredUsers(response.undelivered);
+              setOpenedUndeliveredUsersModal(response.inactive.length < 0);
+            }
           } else {
             navigate(`/inbox`);
           }

@@ -1,17 +1,17 @@
 import { Button, Modal } from '@edifice.io/react';
 import { useI18n } from '~/hooks';
 
-export interface SentToInactiveUsersModalProps {
+export interface UndeliveredUsersModalProps {
   open: boolean;
   users: string[];
   onModalClose: () => void;
 }
 
-export function SentToInactiveUsersModal({
+export function UndeliveredUsersModal({
   open,
   users,
   onModalClose,
-}: SentToInactiveUsersModalProps) {
+}: UndeliveredUsersModalProps) {
   const { t } = useI18n();
 
   return (
@@ -22,14 +22,14 @@ export function SentToInactiveUsersModal({
       onModalClose={onModalClose}
     >
       <Modal.Header onModalClose={onModalClose}>
-        {t('warning.inactive.title')}
+        {t('warning.undelivered.title')}
       </Modal.Header>
       <Modal.Body>
         <div>
-          <div>{t('warning.inactive.text')}</div>
+          <div>{t('warning.undelivered.text')}</div>
           <div>
             <div>
-              <strong>{t('warning.inactive.users')}</strong>
+              <strong>{t('warning.undelivered.users')}</strong>
             </div>
             <li className="list-group">
               {users.map((user) => (
@@ -48,7 +48,7 @@ export function SentToInactiveUsersModal({
           variant="filled"
           onClick={onModalClose}
         >
-          {t('warning.inactive.action')}
+          {t('warning.undelivered.action')}
         </Button>
       </Modal.Footer>
     </Modal>

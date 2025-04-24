@@ -10,6 +10,7 @@ import { IconOptions } from '@edifice.io/react/icons';
 import { RefAttributes, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SentToInactiveUsersModal } from '~/features/message-edit/components/SentToInactiveUsersModal';
+import { UndeliveredUsersModal } from '~/features/message-edit/components/UndeliveredUsersModal';
 import { Message } from '~/models';
 import { useMessageActionDropDown } from './hooks/useMessageActionDropDown';
 
@@ -33,22 +34,39 @@ export function MessageActionDropDown({
   },
 }: MessageActionDropDownProps) {
   const [inactiveUsers, setInactiveUsers] = useState<string[]>([]);
+  const [undeliveredUsers, setUndeliveredUsers] = useState<string[]>([]);
   const [openedIncativeUsersModal, setOpenedInactiveUsersModal] =
+    useState(false);
+  const [openedUndeliveredUsersModal, setOpenedUndeliveredUsersModal] =
     useState(false);
   const { actionButtons, dropdownOptions } = useMessageActionDropDown({
     message,
     actions,
     setInactiveUsers,
+    setUndeliveredUsers,
     setOpenedInactiveUsersModal,
+    setOpenedUndeliveredUsersModal,
   });
   const navigate = useNavigate();
 
   const visibleOptions = dropdownOptions.filter((o) => !o.hidden);
 
-  const handleCloseModal = () => {
+  const handleCloseInactiveUsersModal = () => {
     setOpenedInactiveUsersModal(false);
     setInactiveUsers([]);
-    navigate(`/inbox`);
+    if (!undeliveredUsers) {
+      navigate(`/inbox`);
+    } else {
+      setOpenedUndeliveredUsersModal(true);
+    }
+  };
+
+  const handleCloseUndeliveredUsersModal = () => {
+    setOpenedUndeliveredUsersModal(false);
+    setUndeliveredUsers([]);
+    if (!inactiveUsers) {
+      navigate(`/inbox`);
+    }
   };
 
   return (
@@ -118,8 +136,15 @@ export function MessageActionDropDown({
       {openedIncativeUsersModal && (
         <SentToInactiveUsersModal
           open={openedIncativeUsersModal}
-          onModalClose={handleCloseModal}
+          onModalClose={handleCloseInactiveUsersModal}
           users={inactiveUsers}
+        />
+      )}
+      {openedUndeliveredUsersModal && (
+        <UndeliveredUsersModal
+          open={openedUndeliveredUsersModal}
+          onModalClose={handleCloseUndeliveredUsersModal}
+          users={undeliveredUsers}
         />
       )}
     </div>
