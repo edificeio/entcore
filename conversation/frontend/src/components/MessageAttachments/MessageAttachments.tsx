@@ -28,14 +28,13 @@ export function MessageAttachments({
   const { common_t, t } = useI18n();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const messageUpdated = useMessageUpdated();
-  const { attachments, downloadAllUrl, attachFiles, detachFiles, isMutating } =
-    useMessageAttachments(
-      editMode && messageUpdated ? messageUpdated : message,
-    );
+  const { downloadAllUrl, attachFiles, detachFiles, isMutating } =
+    useMessageAttachments(editMode ? messageUpdated! : message);
   const [attachmentsToAddToWorkspace, setAttachmentsToAddToWorkspace] =
     useState<Attachment[] | undefined>(undefined);
+  const attachments = messageUpdated?.attachments || message.attachments || [];
 
-  if (!attachments.length && !editMode) return null;
+  if (!editMode && !attachments) return null;
 
   const handleAttachClick = () => inputRef?.current?.click();
 

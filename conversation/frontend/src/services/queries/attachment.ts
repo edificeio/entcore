@@ -1,6 +1,7 @@
 import { useToast } from '@edifice.io/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useI18n } from '~/hooks';
+import { Message } from '~/models';
 import { useAppActions } from '~/store';
 import {
   attachmentService,
@@ -61,6 +62,7 @@ export const useAttachFiles = () => {
 export const useDetachFile = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
+  const { setMessageUpdated } = useAppActions();
 
   return useMutation({
     mutationFn: ({
@@ -70,10 +72,21 @@ export const useDetachFile = () => {
       draftId: string;
       attachmentId: string;
     }) => attachmentService.detach(draftId, attachmentId),
-    onSuccess(_ids, { draftId }) {
-      queryClient.invalidateQueries({
-        queryKey: messageQueryOptions.getById(draftId).queryKey,
-      });
+    onSuccess(_ids, { draftId, attachmentId }) {
+      queryClient.setQueryData(
+        messageQueryOptions.getById(draftId).queryKey,
+        (oldData: Message | undefined) => {
+          if (!oldData) return undefined;
+          const updatedMessage = {
+            ...oldData,
+            attachments: oldData.attachments.filter(
+              (attachment) => attachment.id !== attachmentId,
+            ),
+          };
+          setMessageUpdated(updatedMessage);
+          return updatedMessage;
+        },
+      );
     },
     onError(error, { draftId }) {
       queryClient.invalidateQueries({
