@@ -30,7 +30,19 @@ import {
 } from '~/services';
 import { useAppActions, useConfirmModalStore } from '~/store';
 
-export function useMessageActionDropDown(message: Message, actions?: string[]) {
+export interface MessageActionDropDownProps {
+  message: Message;
+  actions?: string[];
+  setInactiveUsers: (inactiveUsers: string[]) => void;
+  setOpenedInactiveUsersModal: (opened: boolean) => void;
+}
+
+export function useMessageActionDropDown({
+  message,
+  setInactiveUsers,
+  setOpenedInactiveUsersModal,
+  actions,
+}: MessageActionDropDownProps) {
   const { t } = useI18n();
   const markAsUnreadQuery = useMarkUnread();
   const navigate = useNavigate();
@@ -151,17 +163,28 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
   };
 
   const handleSendClick = () => {
-    sendDraftQuery.mutate({
-      draftId: message.id,
-      payload: {
-        subject: message.subject,
-        body: message.body,
-        to: recipientToIds(message.to),
-        cc: recipientToIds(message.cc),
-        cci: message.cci ? recipientToIds(message.cci) : undefined,
+    sendDraftQuery.mutate(
+      {
+        draftId: message.id,
+        payload: {
+          subject: message.subject,
+          body: message.body,
+          to: recipientToIds(message.to),
+          cc: recipientToIds(message.cc),
+          cci: message.cci ? recipientToIds(message.cci) : undefined,
+        },
       },
-    });
-    navigate(`/inbox`);
+      {
+        onSuccess: (response) => {
+          if (response.inactive.length > 0) {
+            setInactiveUsers(response.inactive);
+            setOpenedInactiveUsersModal(true);
+          } else {
+            navigate(`/inbox`);
+          }
+        },
+      },
+    );
   };
 
   const handleRemoveFromFolder = () => {
