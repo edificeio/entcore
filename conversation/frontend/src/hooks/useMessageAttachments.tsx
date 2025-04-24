@@ -3,6 +3,7 @@ import { odeServices } from 'edifice-ts-client';
 import { Attachment, Message } from '~/models';
 import { baseUrl, useCreateOrUpdateDraft } from '~/services';
 
+import { useState } from 'react';
 import {
   useAttachFiles,
   useDetachFile,
@@ -14,6 +15,7 @@ export function useMessageAttachments({ id, attachments }: Message) {
   const attachFileMutation = useAttachFiles();
   const detachFileMutation = useDetachFile();
   const downloadAttachmentMutation = useDownloadAttachment();
+  const [detachInProgress, setDetachInProgress] = useState(new Set<string>());
   const toast = useToast();
   const { t } = useI18n();
 
@@ -43,10 +45,27 @@ export function useMessageAttachments({ id, attachments }: Message) {
   }
 
   function detachFile(attachmentId: string) {
-    return detachFileMutation.mutateAsync({
-      draftId: id,
-      attachmentId,
-    });
+    setDetachInProgress((prev) => new Set(prev).add(attachmentId));
+    return detachFileMutation.mutateAsync(
+      {
+        draftId: id,
+        attachmentId,
+      },
+      {
+        onSuccess: () => {
+          attachments = attachments.filter(
+            (attachment) => attachment.id !== attachmentId,
+          );
+        },
+        onError: () => {
+          setDetachInProgress((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(attachmentId);
+            return newSet;
+          });
+        },
+      },
+    );
   }
 
   function detachFiles(attachments: Attachment[]) {
@@ -102,6 +121,7 @@ export function useMessageAttachments({ id, attachments }: Message) {
     copyToWorkspace,
     detachFile,
     detachFiles,
+    detachInProgress,
     downloadAllUrl,
     getDownloadUrl,
     isMutating: attachFileMutation.isPending || detachFileMutation.isPending,
