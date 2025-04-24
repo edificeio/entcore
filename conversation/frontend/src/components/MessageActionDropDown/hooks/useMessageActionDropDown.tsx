@@ -88,7 +88,6 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
   const isMessageValid = useMemo(() => {
     return (
       !message.trashed &&
-      !['draft', 'outbox', 'trash'].includes(folderId!) &&
       (message.subject.length > 0 ||
         message.body.length > 0 ||
         message.attachments.length > 0) &&
@@ -99,7 +98,7 @@ export function useMessageActionDropDown(message: Message, actions?: string[]) {
         (message.cci &&
           (message.cci.users.length > 0 || message.cci.groups.length > 0)))
     );
-  }, [message, folderId]);
+  }, [message]);
 
   const hasActionsList = (idAction: string) => {
     return !actions || actions.includes(idAction);
