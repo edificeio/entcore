@@ -181,7 +181,8 @@ export function RecipientListEdit({
         }
         renderInputGroup={head}
         renderSelectedItems={recipientArray.map((recipient) => {
-          const type = 'size' in recipient ? 'group' : 'user';
+          const type =
+            'size' in recipient || 'nbUsers' in recipient ? 'group' : 'user';
           return (
             <li key={recipient.id} className="d-inline">
               <RecipientListSelectedItem

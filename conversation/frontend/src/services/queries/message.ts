@@ -400,16 +400,22 @@ export const useCreateOrUpdateDraft = () => {
       subject: messageUpdated.subject,
       body: messageUpdated.body,
       to: [
-        ...messageUpdated.to.users.map((u) => u.id),
-        ...messageUpdated.to.groups.map((g) => g.id),
+        ...new Set([
+          ...messageUpdated.to.users.map((u) => u.id),
+          ...messageUpdated.to.groups.map((g) => g.id),
+        ]),
       ],
       cc: [
-        ...messageUpdated.cc.users.map((u) => u.id),
-        ...messageUpdated.cc.groups.map((g) => g.id),
+        ...new Set([
+          ...messageUpdated.cc.users.map((u) => u.id),
+          ...messageUpdated.cc.groups.map((g) => g.id),
+        ]),
       ],
       cci: [
-        ...(messageUpdated.cci?.users.map((u) => u.id) ?? []),
-        ...(messageUpdated.cci?.groups?.map((g) => g.id) ?? []),
+        ...new Set([
+          ...(messageUpdated.cci?.users.map((u) => u.id) ?? []),
+          ...(messageUpdated.cci?.groups?.map((g) => g.id) ?? []),
+        ]),
       ],
     };
 
@@ -594,8 +600,6 @@ export const useSendDraft = () => {
       queryClient.invalidateQueries({
         queryKey: ['folder', 'draft', 'messages'],
       });
-
-      return response;
     },
   });
 };
