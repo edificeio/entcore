@@ -24,9 +24,10 @@ export function MessageAttachment({
 }: MessageAttachmentsProps) {
   const { t } = useI18n();
   const messageUpdated = useMessageUpdated();
-  const { detachFile, getDownloadUrl } = useMessageAttachments(
-    editMode && messageUpdated ? messageUpdated : message,
-  );
+  const { detachFile, detachInProgress, getDownloadUrl } =
+    useMessageAttachments(
+      editMode && messageUpdated ? messageUpdated : message,
+    );
 
   const downloadUrl = getDownloadUrl(attachment.id);
 
@@ -61,6 +62,7 @@ export function MessageAttachment({
                 icon={<IconDelete />}
                 variant="ghost"
                 onClick={() => detachFile(attachment.id)}
+                disabled={detachInProgress.has(attachment.id)}
               />
             )}
           </>
