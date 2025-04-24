@@ -691,15 +691,22 @@ public class SqlConversationService implements ConversationService{
 					"JOIN conversation.messages m on um.message_id = m.id " +
 					"WHERE um.user_id = ? AND um.message_id = ? AND um.unread = true) " +
 				"AND nb_unread > 0 ";
-
+		final JsonArray tValues = new fr.wseduc.webutils.collections.JsonArray()
+			.add(user.getUserId())
+			.add(user.getUserId())
+			.add(messageId);
+	
 		String updateQuery = "UPDATE " + userMessageTable + " " +
 			"SET unread = false " +
 			"WHERE user_id = ? AND message_id = ? ";
+		JsonArray updValues = new fr.wseduc.webutils.collections.JsonArray()
+			.add(user.getUserId())
+			.add(messageId);
 
 		String selectQuery =
 			"SELECT " +
 				"m.id, m.parent_id, m.subject, " +
-				"CASE WHEN m.state='"+State.RECALL.name()+"' THEN '' ELSE m.body END as body, " +
+				"CASE WHEN m.state='"+State.RECALL.name()+"' AND m.from <> ? THEN '' ELSE m.body END as body, " +
 				"m.from as \"from\", m.\"fromName\" as \"fromName\",  m.\"to\" as \"to\", m.\"toName\" as \"toName\", " +
 				"m.cc, m.\"ccName\" as \"ccName\", m.cci, m.\"cciName\" as \"cciName\", " +
 				"m.\"displayNames\" as \"displayNames\", m.state, m.date, m.language, m.thread_id, " + 
@@ -718,19 +725,14 @@ public class SqlConversationService implements ConversationService{
 				"ON m.id = om.message_id " +
 			"WHERE um.user_id = ? AND m.id = ?  " +
 			(apiVersion>0 ? "GROUP BY m.id, um.folder_id, um.trashed, um.unread, om.message_id" : "GROUP BY m.id");
-
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
-			.add(user.getUserId())
-			.add(messageId);
-
-		final JsonArray tValues = new fr.wseduc.webutils.collections.JsonArray()
-			.add(user.getUserId())
+		JsonArray selValues = new fr.wseduc.webutils.collections.JsonArray()
+			.add(user.getUserId())	
 			.add(user.getUserId())
 			.add(messageId);
 
 		builder.prepared(decrUnreadThread, tValues);
-		builder.prepared(updateQuery, values);
-		builder.prepared(selectQuery, values);
+		builder.prepared(updateQuery, updValues);
+		builder.prepared(selectQuery, selValues);
 
 		sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(2, result, "attachments", "to", "toName", "cc", "ccName", "displayNames", "cci", "cciName"));
 	}
