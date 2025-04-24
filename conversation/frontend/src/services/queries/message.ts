@@ -580,7 +580,7 @@ export const useSendDraft = () => {
         cci?: string[];
       };
     }) => messageService.send(draftId, payload),
-    onSuccess: (response, { payload }) => {
+    onSuccess: (_response, { payload }) => {
       toast.success(t('message.sent'));
       updateFolderBadgeCountLocal('draft', -1);
       if (
