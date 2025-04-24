@@ -2,13 +2,11 @@ import { Button, Modal } from '@edifice.io/react';
 import { useI18n } from '~/hooks';
 
 export interface UndeliveredUsersModalProps {
-  open: boolean;
   users: string[];
   onModalClose: () => void;
 }
 
 export function UndeliveredUsersModal({
-  open,
   users,
   onModalClose,
 }: UndeliveredUsersModalProps) {
@@ -18,7 +16,7 @@ export function UndeliveredUsersModal({
     <Modal
       size="sm"
       id="modalSentToInactiveUsers"
-      isOpen={open}
+      isOpen={true}
       onModalClose={onModalClose}
     >
       <Modal.Header onModalClose={onModalClose}>

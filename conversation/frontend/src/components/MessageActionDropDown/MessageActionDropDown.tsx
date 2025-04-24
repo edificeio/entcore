@@ -33,37 +33,29 @@ export function MessageActionDropDown({
     buttonColor: 'primary',
   },
 }: MessageActionDropDownProps) {
-  const [inactiveUsers, setInactiveUsers] = useState<string[]>([]);
-  const [undeliveredUsers, setUndeliveredUsers] = useState<string[]>([]);
-  const [openedIncativeUsersModal, setOpenedInactiveUsersModal] =
-    useState(false);
-  const [openedUndeliveredUsersModal, setOpenedUndeliveredUsersModal] =
-    useState(false);
+  const [inactiveUsers, setInactiveUsers] = useState<string[] | undefined>();
+  const [undeliveredUsers, setUndeliveredUsers] = useState<
+    string[] | undefined
+  >();
   const { actionButtons, dropdownOptions } = useMessageActionDropDown({
     message,
     actions,
     setInactiveUsers,
     setUndeliveredUsers,
-    setOpenedInactiveUsersModal,
-    setOpenedUndeliveredUsersModal,
   });
   const navigate = useNavigate();
 
   const visibleOptions = dropdownOptions.filter((o) => !o.hidden);
 
   const handleCloseInactiveUsersModal = () => {
-    setOpenedInactiveUsersModal(false);
-    setInactiveUsers([]);
+    setInactiveUsers(undefined);
     if (!undeliveredUsers) {
       navigate(`/inbox`);
-    } else {
-      setOpenedUndeliveredUsersModal(true);
     }
   };
 
   const handleCloseUndeliveredUsersModal = () => {
-    setOpenedUndeliveredUsersModal(false);
-    setUndeliveredUsers([]);
+    setUndeliveredUsers(undefined);
     if (!inactiveUsers) {
       navigate(`/inbox`);
     }
@@ -133,16 +125,14 @@ export function MessageActionDropDown({
           );
         }}
       </Dropdown>
-      {openedIncativeUsersModal && (
+      {inactiveUsers?.length && (
         <SentToInactiveUsersModal
-          open={openedIncativeUsersModal}
           onModalClose={handleCloseInactiveUsersModal}
           users={inactiveUsers}
         />
       )}
-      {openedUndeliveredUsersModal && (
+      {undeliveredUsers?.length && !inactiveUsers && (
         <UndeliveredUsersModal
-          open={openedUndeliveredUsersModal}
           onModalClose={handleCloseUndeliveredUsersModal}
           users={undeliveredUsers}
         />

@@ -33,18 +33,14 @@ import { useAppActions, useConfirmModalStore } from '~/store';
 export interface MessageActionDropDownProps {
   message: Message;
   actions?: string[];
-  setInactiveUsers: (inactiveUsers: string[]) => void;
-  setUndeliveredUsers: (undeliveredUsers: string[]) => void;
-  setOpenedInactiveUsersModal: (opened: boolean) => void;
-  setOpenedUndeliveredUsersModal: (opened: boolean) => void;
+  setInactiveUsers: (inactiveUsers: string[] | undefined) => void;
+  setUndeliveredUsers: (undeliveredUsers: string[] | undefined) => void;
 }
 
 export function useMessageActionDropDown({
   message,
   setInactiveUsers,
   setUndeliveredUsers,
-  setOpenedInactiveUsersModal,
-  setOpenedUndeliveredUsersModal,
   actions,
 }: MessageActionDropDownProps) {
   const { t } = useI18n();
@@ -183,11 +179,13 @@ export function useMessageActionDropDown({
           if (response.inactive.length > 0 || response.undelivered.length > 0) {
             if (response.inactive.length > 0) {
               setInactiveUsers(response.inactive);
-              setOpenedInactiveUsersModal(true);
+            } else {
+              setInactiveUsers(undefined);
             }
             if (response.undelivered.length > 0) {
               setUndeliveredUsers(response.undelivered);
-              setOpenedUndeliveredUsersModal(response.inactive.length < 0);
+            } else {
+              setUndeliveredUsers(undefined);
             }
           } else {
             navigate(`/inbox`);
