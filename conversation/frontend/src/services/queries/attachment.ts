@@ -1,7 +1,7 @@
 import { useToast } from '@edifice.io/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useI18n } from '~/hooks';
-import { useAppActions, useMessageUpdated } from '~/store';
+import { useAppActions } from '~/store';
 import {
   attachmentService,
   messageQueryOptions,
@@ -16,7 +16,6 @@ export const useAttachFiles = () => {
   const queryClient = useQueryClient();
   const updateDraft = useCreateOrUpdateDraft();
   const { setMessageUpdated } = useAppActions();
-  const messageUpdated = useMessageUpdated();
 
   const toast = useToast();
   const { t } = useI18n();
