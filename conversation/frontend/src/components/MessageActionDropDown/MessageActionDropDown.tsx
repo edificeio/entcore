@@ -9,8 +9,7 @@ import {
 import { IconOptions } from '@edifice.io/react/icons';
 import { RefAttributes, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SentToInactiveUsersModal } from '~/features/message-edit/components/SentToInactiveUsersModal';
-import { UndeliveredUsersModal } from '~/features/message-edit/components/UndeliveredUsersModal';
+import { SentToInactiveUsersModal } from '~/components/MessageActionDropDown/modals/SentToInactiveUsersModal';
 import { Message } from '~/models';
 import { useMessageActionDropDown } from './hooks/useMessageActionDropDown';
 
@@ -34,14 +33,10 @@ export function MessageActionDropDown({
   },
 }: MessageActionDropDownProps) {
   const [inactiveUsers, setInactiveUsers] = useState<string[] | undefined>();
-  const [undeliveredUsers, setUndeliveredUsers] = useState<
-    string[] | undefined
-  >();
   const { actionButtons, dropdownOptions } = useMessageActionDropDown({
     message,
     actions,
     setInactiveUsers,
-    setUndeliveredUsers,
   });
   const navigate = useNavigate();
 
@@ -49,16 +44,7 @@ export function MessageActionDropDown({
 
   const handleCloseInactiveUsersModal = () => {
     setInactiveUsers(undefined);
-    if (!undeliveredUsers) {
-      navigate(`/inbox`);
-    }
-  };
-
-  const handleCloseUndeliveredUsersModal = () => {
-    setUndeliveredUsers(undefined);
-    if (!inactiveUsers) {
-      navigate(`/inbox`);
-    }
+    navigate(`/inbox`);
   };
 
   return (
@@ -129,12 +115,6 @@ export function MessageActionDropDown({
         <SentToInactiveUsersModal
           onModalClose={handleCloseInactiveUsersModal}
           users={inactiveUsers}
-        />
-      )}
-      {undeliveredUsers?.length && !inactiveUsers && (
-        <UndeliveredUsersModal
-          onModalClose={handleCloseUndeliveredUsersModal}
-          users={undeliveredUsers}
         />
       )}
     </div>
