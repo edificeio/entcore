@@ -28,22 +28,26 @@ export interface SignatureEditorProps {
   mode: 'edit' | 'read';
   placeholder: string;
   maxLength?: number;
+  onLengthChange?: (isValid: boolean, newLength: number) => void;
 }
 
 export const SignatureEditor = forwardRef(
   (
-    { content, mode = 'read', maxLength = 800 }: SignatureEditorProps,
+    {
+      content,
+      mode = 'read',
+      maxLength = 800,
+      onLengthChange,
+    }: SignatureEditorProps,
     ref: Ref<SignatureEditorRef>,
   ) => {
     const id = useId();
-
-    const [size, setSize] = useState<number>(0);
+    const [length, setLength] = useState<number>(0);
 
     function updateCounter(editor: EditorInstance) {
       const text = editor.getText({ blockSeparator: '' });
       if (typeof text === 'string') {
-        // Check if maxLength is reached
-        setSize(text.length);
+        setLength(text.length);
       }
     }
 
@@ -63,21 +67,6 @@ export const SignatureEditor = forwardRef(
       content,
       editable: true,
       onUpdate: (props) => updateCounter(props.editor),
-      editorProps: {
-        handleTextInput: (view) => {
-          if (
-            view.state.doc.textContent.length >= maxLength &&
-            view.state.selection.empty
-          ) {
-            return true;
-          }
-        },
-        handlePaste: (view, _event, slice) => {
-          if (view.state.doc.textContent.length + slice.size > maxLength) {
-            return true;
-          }
-        },
-      },
     });
 
     useImperativeHandle(ref, () => ({
@@ -96,10 +85,18 @@ export const SignatureEditor = forwardRef(
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [content]);
 
+    useEffect(() => {
+      onLengthChange?.(length <= maxLength, length);
+    }, [length, maxLength, onLengthChange]);
+
     if (editor === null) return null;
 
-    const borderClass = clsx('border rounded-3');
-    const contentClass = clsx('py-12 px-16');
+    const borderClass = 'border rounded-3';
+    const contentClass = 'py-12 px-16';
+    const counterClass = clsx(
+      'small p-2 text-end',
+      length > maxLength ? 'text-danger' : 'text-gray-700',
+    );
 
     return (
       <>
@@ -107,8 +104,8 @@ export const SignatureEditor = forwardRef(
           <SignatureEditorToolbar editorId={id} editor={editor} />
           <EditorContent id={id} editor={editor} className={contentClass} />
         </div>
-        <p className="small text-gray-700 p-2 text-end">
-          <i>{`${size} / ${maxLength}`}</i>
+        <p className={counterClass}>
+          <i>{`${length} / ${maxLength}`}</i>
         </p>
       </>
     );

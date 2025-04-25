@@ -22,18 +22,19 @@ export function SignatureModal() {
   const [useSignature, setUseSignature] = useState(
     preferencesQuery.data?.useSignature ?? false,
   );
+  const [isLengthValid, setIsLengthValid] = useState(true);
 
   useEffect(() => {
     if (typeof preferencesQuery.data?.useSignature !== 'undefined')
       setUseSignature(preferencesQuery.data.useSignature);
   }, [preferencesQuery.data]);
 
-  const lockSaveButton = preferencesQuery.isPending || isSaving;
-  const lockEditor = lockSaveButton || !useSignature;
-
   function handleToggleChange() {
     setUseSignature((previousState) => !previousState);
   }
+
+  const lockSaveButton =
+    !isLengthValid || preferencesQuery.isPending || isSaving;
 
   const handleSaveClick = useCallback(() => {
     async function handleSave() {
@@ -72,8 +73,9 @@ export function SignatureModal() {
           <SignatureEditor
             ref={editor}
             content={preferencesQuery.data?.signature ?? ''}
-            mode={lockEditor ? 'read' : 'edit'}
+            mode={'edit'}
             placeholder={t('signature.modal.editor.placeholder')}
+            onLengthChange={setIsLengthValid}
           />
         </Suspense>
       </Modal.Body>
