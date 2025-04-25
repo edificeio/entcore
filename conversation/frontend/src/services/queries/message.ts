@@ -93,6 +93,15 @@ export const useMessage = (messageId: string) => {
   if (result.isSuccess && result.data) {
     const message = result.data;
     if (message.id) {
+      // Fix issue when back retrun sbuject and body to null
+      if (message.subject === null) {
+        message.subject = '';
+      }
+      if (message.body === null) {
+        message.body = '';
+      }
+
+      // Update the message unread status in the list
       queryClient.setQueryData(
         folderQueryOptions.getMessagesQuerykey(folderId, {
           search: search === '' ? undefined : search || undefined,
