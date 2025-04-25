@@ -30,3 +30,16 @@ export interface Message extends MessageBase {
   thread_id?: string;
   original_format_exists: boolean;
 }
+
+export interface MessageSentResponse {
+  id: string;
+  subject: string;
+  body: string;
+  thread_id: string;
+  /** Number of reached recipients. */
+  sent: number;
+  /** IDs of unreachable recipients. */
+  undelivered: [];
+  /** IDs of inactive recipients. */
+  inactive: string[];
+}
