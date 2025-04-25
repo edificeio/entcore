@@ -78,15 +78,23 @@ infra/src/main/resources/public/js/pixi.min.js
 **/.vertx
 admin/src/main/ts/.angular
 *.lock
-**/pnpm-lock.yaml
 tests/src/test/resources/data/thumbnails/image.jpg
 admin/src/main/ts/.proxyRemoteConfig.js
-# Ignore some JS and HTML files in "backend/resources" folder
-**/backend/**/resources/public/*.js
-**/backend/**/resources/public/*.css
-**/backend/**/resources/view/*.html
-# Ignore package.json in "frontend" folder (where a template exists)
+
+# Ignore some files in React-based frontends
+.pnpm-store
+**/pnpm-lock.yaml
+**/*.tsbuildinfo
+**/.nx
+**/frontend/.env*
+*.tsbuildinfo
+# Ignore package.json in "frontend" folders (where a template exists)
 **/frontend/package.json
+
+# Ignore resources files in "backend/public" folders
+**/backend/**/resources/public/*.*
+# Ignore HTML files in "backend/view" folders
+**/backend/**/resources/view/*.html
 
 .env
 dependency-reduced-pom.xml
