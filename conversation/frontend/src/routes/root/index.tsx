@@ -9,16 +9,16 @@ import {
 import { QueryClient } from '@tanstack/react-query';
 import { Outlet, useLoaderData } from 'react-router-dom';
 import { Config, existingActions } from '~/config';
-import { AppActionHeader } from '~/features/app/Action/AppActionHeader';
 import {
+  CreateFolderModal,
   DesktopMenu,
   MobileMenu,
-  TrashFolderModal,
-  CreateFolderModal,
-  RenameFolderModal,
   MoveMessageToFolderModal,
+  RenameFolderModal,
   SignatureModal,
+  TrashFolderModal,
 } from '~/features';
+import { AppActionHeader } from '~/features/app/Action/AppActionHeader';
 import {
   actionsQueryOptions,
   configQueryOptions,
