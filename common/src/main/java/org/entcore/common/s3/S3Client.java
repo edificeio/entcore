@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
+import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -366,11 +367,17 @@ public class S3Client {
 				}
 
 				if (response.statusCode() == 200) {
-//					resp.setChunked(true);
 					response.pipeTo(resp).onComplete(aVoid -> {
 						if (resultHandler != null) {
 							if(aVoid.failed()) {
-								log.error("An error occurred while piping an s3 file with id=" + id, aVoid.cause());
+								Throwable cause = aVoid.cause();
+								if (cause instanceof ClosedChannelException) {
+									log.debug("Client closed the connection downloading file " + id);
+								}
+								else {
+									log.error("An error occurred while piping an s3 file with id=" + id, cause);
+									resp.setStatusCode(500).setStatusMessage("Error downloading file").end();
+								}
 							}
 							resultHandler.handle(new DefaultAsyncResult<>((Void) null));
 						}
