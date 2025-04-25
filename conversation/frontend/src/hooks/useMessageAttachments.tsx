@@ -101,23 +101,20 @@ export function useMessageAttachments({ id }: Message) {
 
   async function sendFilesToWorkspace(files: File[], selectedFolderId: string) {
     try {
-      const addFilesPromises = files.map((file) => {
-        return odeServices.workspace().saveFile(file, {
+      const addFilesPromises = files.map((file) =>
+        odeServices.workspace().saveFile(file, {
           parentId: selectedFolderId,
-        });
-      });
+        }),
+      );
       await Promise.all(addFilesPromises);
       toast.success(
         t('conversation.notify.copyToWorkspace', { count: files.length }),
       );
       return true;
-    } catch (error: string | any) {
-      let errorMessage;
-      if (error?.error) {
-        errorMessage = t(error.error);
-      } else {
-        errorMessage = t('conversation.error.copyToWorkspace');
-      }
+    } catch (error: any) {
+      const errorMessage = t(
+        error?.error ?? 'conversation.error.copyToWorkspace',
+      );
       toast.error(errorMessage);
       return false;
     }
