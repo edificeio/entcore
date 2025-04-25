@@ -220,7 +220,7 @@ export const useTrashMessage = () => {
   const { t } = useTranslation(appCodeName);
   const toast = useToast();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
-  const { messages, fetchNextPage } = useFolderMessages(folderId!);
+  const { messages, fetchNextPage } = useFolderMessages(folderId);
 
   return useMutation({
     mutationFn: ({ id }: { id: string | string[] }) =>
