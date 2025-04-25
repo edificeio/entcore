@@ -19,6 +19,7 @@ interface State {
   openedModal: OpenedModal;
   messageUpdated?: Message;
   messageUpdatedNeedToSave: boolean;
+  inactiveUsers: string[];
 }
 
 type Action = {
@@ -28,6 +29,7 @@ type Action = {
     setSelectedMessageIds: (value: string[]) => void;
     setSelectedFolders: (value: Folder[]) => void;
     setOpenedModal: (value: OpenedModal) => void;
+    setInactiveUsers: (value: string[]) => void;
     setMessageUpdated: (value: Message) => void;
     setMessageUpdatedNeedToSave: (value: boolean) => void;
   };
@@ -53,6 +55,7 @@ const initialState: State = {
   openedModal: undefined,
   messageUpdated: undefined,
   messageUpdatedNeedToSave: false,
+  inactiveUsers: [],
 };
 
 const store = createStore<State & Action>()((set) => ({
@@ -68,6 +71,9 @@ const store = createStore<State & Action>()((set) => ({
     setMessageUpdated: (message: Message) => set({ messageUpdated: message }),
     setMessageUpdatedNeedToSave: (messageUpdatedNeedToSave: boolean) =>
       set({ messageUpdatedNeedToSave }),
+    setInactiveUsers: (inactiveUsers: string[]) => {
+      set({ inactiveUsers });
+    },
   },
 }));
 
@@ -83,6 +89,8 @@ const setMessageUpdated = (state: ExtractState<typeof store>) =>
   state.messageUpdated;
 const setMessageUpdatedNeedToSave = (state: ExtractState<typeof store>) =>
   state.messageUpdatedNeedToSave;
+const setInactiveUsers = (state: ExtractState<typeof store>) =>
+  state.inactiveUsers;
 const actionsSelector = (state: ExtractState<typeof store>) => state.actions;
 
 // Getters
@@ -94,6 +102,7 @@ export const getOpenedModal = () => setOpenedModal(store.getState());
 export const getMessageUpdated = () => setMessageUpdated(store.getState());
 export const getMessageUpdatedNeedToSave = () =>
   setMessageUpdatedNeedToSave(store.getState());
+export const getInactiveUsers = () => setInactiveUsers(store.getState());
 
 // Some Setters, for direct use outside of hooks
 export const { setWorkflows } = actionsSelector(store.getState());
@@ -113,4 +122,5 @@ export const useOpenedModal = () => useAppStore(setOpenedModal);
 export const useMessageUpdated = () => useAppStore(setMessageUpdated);
 export const useMessageUpdatedNeedToSave = () =>
   useAppStore(setMessageUpdatedNeedToSave);
+export const useInactiveUsers = () => useAppStore(setInactiveUsers);
 export const useAppActions = () => useAppStore(actionsSelector);
