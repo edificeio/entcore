@@ -15,6 +15,7 @@ import {
   baseUrl,
   folderQueryOptions,
   messageService,
+  useFolderMessages,
   useUpdateFolderBadgeCountLocal,
 } from '~/services';
 import { useAppActions, useMessageUpdated } from '~/store';
@@ -219,10 +220,17 @@ export const useTrashMessage = () => {
   const { t } = useTranslation(appCodeName);
   const toast = useToast();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
+  const { messages, fetchNextPage } = useFolderMessages(folderId);
 
   return useMutation({
     mutationFn: ({ id }: { id: string | string[] }) =>
       messageService.moveToFolder('trash', id),
+    onMutate: async ({ id }: { id: string | string[] }) => {
+      // avoid to display placeholder if have next page
+      if (messages.length === id.length) {
+        await fetchNextPage();
+      }
+    },
     onSuccess: (_data, { id }) => {
       const messageIds = typeof id === 'string' ? [id] : id;
 
@@ -345,7 +353,6 @@ export const useDeleteMessage = () => {
       queryClient.invalidateQueries({
         queryKey: ['folder', 'trash'],
       });
-
       toast.success(
         t(messageIds.length > 1 ? 'messages.delete' : 'message.delete'),
       );
