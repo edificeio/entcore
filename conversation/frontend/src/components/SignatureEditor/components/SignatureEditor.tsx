@@ -91,8 +91,6 @@ export const SignatureEditor = forwardRef(
 
     if (editor === null) return null;
 
-    const borderClass = 'border rounded-3';
-    const contentClass = 'py-12 px-16';
     const counterClass = clsx(
       'small p-2 text-end',
       length > maxLength ? 'text-danger' : 'text-gray-700',
@@ -100,9 +98,9 @@ export const SignatureEditor = forwardRef(
 
     return (
       <>
-        <div className={borderClass}>
+        <div className={'border rounded-3'}>
           <SignatureEditorToolbar editorId={id} editor={editor} />
-          <EditorContent id={id} editor={editor} className={contentClass} />
+          <EditorContent id={id} editor={editor} className={'py-12 px-16'} />
         </div>
         <p className={counterClass}>
           <i>{`${length} / ${maxLength}`}</i>
