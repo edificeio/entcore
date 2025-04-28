@@ -247,6 +247,7 @@
   "conversation.recall.ok": "Rappeler le message",
   "conversation.recall.mail": "Les destinataires ne pourront plus voir le contenu du message, mais ils verront que vous l'avez rappelé. Êtes-vous sûr de vouloir rappeler ce message ?",
   "conversation.recall.mail.subject": "Message rappelé",
+  "conversation.recall.mail.subject.details": "Ce message a été rappelé",
   "conversation.recall.mail.content": "L’expéditeur a rappelé ce message, son contenu n’est donc plus visible.",
   "conversation.success.recall.mail": "Message rappelé avec succès.",
   "conversation.error.recall.mail": "Le message n'a pas pu être rappelé.",

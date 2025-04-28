@@ -1,4 +1,9 @@
-import { Alert, Button, EmptyScreen } from '@edifice.io/react';
+import {
+  Alert,
+  Button,
+  EmptyScreen,
+  useEdificeClient,
+} from '@edifice.io/react';
 import {
   ConversationHistoryNodeView,
   ConversationHistoryRenderer,
@@ -25,6 +30,7 @@ export function MessageBody({
   onMessageChange,
 }: MessageBodyProps) {
   const { t } = useI18n();
+  const { user } = useEdificeClient();
   const [content, setContent] = useState('');
   const extensions = [ConversationHistoryNodeView(ConversationHistoryRenderer)];
   const [isOriginalFormatOpen, setOriginalFormatOpen] = useState(false);
@@ -40,7 +46,7 @@ export function MessageBody({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return message.state === 'RECALL' ? (
+  return message.state === 'RECALL' && message.from.id !== user?.userId ? (
     <div className="d-flex flex-column gap-16 align-items-center justify-content-center">
       <EmptyScreen
         imageSrc={illuRecall}
