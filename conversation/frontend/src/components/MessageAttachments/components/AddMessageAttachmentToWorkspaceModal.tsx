@@ -18,7 +18,7 @@ export function AddMessageAttachmentToWorkspaceModal({
   isOpen = false,
   onModalClose,
 }: AddMessageAttachmentToWorkspaceModalProps) {
-  const { t, common_t } = useI18n();
+  const { t } = useI18n();
   const { copyToWorkspace } = useMessageAttachments(message);
   const [selectedFolderIdToCopyFile, setSelectedFolderIdToCopyFile] = useState<
     string | undefined
@@ -56,12 +56,18 @@ export function AddMessageAttachmentToWorkspaceModal({
       size="md"
     >
       <Modal.Header onModalClose={onModalClose}>
-        {common_t('attachments.add.to.folder.modal', {
-          count: attachments.length,
-        })}
+        {t('attachments.add.to.folder.modal.title')}
       </Modal.Header>
       <Modal.Body>
-        <WorkspaceFolders onFolderSelected={handleFolderSelected} />
+        <div className="d-flex flex-column gap-12">
+          <p>
+            {t('attachments.add.to.folder.modal.description', {
+              count: attachments.length,
+            })}
+          </p>
+
+          <WorkspaceFolders onFolderSelected={handleFolderSelected} />
+        </div>
       </Modal.Body>
       <Modal.Footer>
         <Button
@@ -70,7 +76,7 @@ export function AddMessageAttachmentToWorkspaceModal({
           variant="ghost"
           onClick={onModalClose}
         >
-          {t('cancel')}
+          {t('attachments.add.to.folder.modal.cancel')}
         </Button>
         <Button
           type="submit"
@@ -80,7 +86,7 @@ export function AddMessageAttachmentToWorkspaceModal({
           disabled={isLoading || disabled}
           isLoading={isLoading}
         >
-          {t('add')}
+          {t('attachments.add.to.folder.modal.add')}
         </Button>
       </Modal.Footer>
     </Modal>,
