@@ -927,6 +927,7 @@
   "workspace.empty.docSpace": "Aucune ressource dans l'espace documentaire pour le moment.",
   "workspace.folder.create": "Créer un dossier",
   "workspace.folder.new.placeholder": "Nom du dossier",
+  "workspace.folder.new.create": "Créer le dossier",
   "write.file.error": "Votre enregistrement audio n'a pas pu être sauvegardé",
   "zh_CN": "Mandarin (Chinois)",
   "folderpicker.move.empty.text": "Le déplacement a échoué. Les fichiers ou dossiers sources n'existent plus",
