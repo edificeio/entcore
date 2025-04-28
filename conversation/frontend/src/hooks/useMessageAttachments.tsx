@@ -100,6 +100,7 @@ export function useMessageAttachments({ id }: Message) {
   }
 
   async function sendFilesToWorkspace(files: File[], selectedFolderId: string) {
+    const count = files.length;
     try {
       const addFilesPromises = files.map((file) =>
         odeServices.workspace().saveFile(file, {
@@ -107,13 +108,11 @@ export function useMessageAttachments({ id }: Message) {
         }),
       );
       await Promise.all(addFilesPromises);
-      toast.success(
-        t('conversation.notify.copyToWorkspace', { count: files.length }),
-      );
+      toast.success(t('conversation.notify.copyToWorkspace', { count }));
       return true;
     } catch (error: any) {
       const errorMessage = t(
-        error?.error ?? 'conversation.error.copyToWorkspace',
+        error?.error ?? t('conversation.error.copyToWorkspace', { count }),
       );
       toast.error(errorMessage);
       return false;
