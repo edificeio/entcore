@@ -30,7 +30,6 @@ export const SignatureEditorToolbar = ({ editorId, editor }: Props) => {
           'aria-label': common_t('tiptap.toolbar.bold'),
           'className': editor?.isActive('bold') ? 'is-selected' : '',
           'onClick': () => editor?.chain().focus().toggleBold().run(),
-          'disabled': editor?.isActive('heading'),
         },
         name: 'bold',
         visibility: showIf(hasMark('bold', editor)),
@@ -62,7 +61,8 @@ export const SignatureEditorToolbar = ({ editorId, editor }: Props) => {
         tooltip: common_t('tiptap.toolbar.removeFormat'),
       },
     ];
-  }, [common_t, editor]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editor.state]);
 
   return (
     <div className="sticky-top z-1 editor-toolbar rounded-3">
