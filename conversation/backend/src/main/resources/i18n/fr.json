@@ -229,8 +229,6 @@
   "you.answered": "Vous avez répondu à ce message",
   "conversation.copy.toworkspace": "Copier la pièce jointe dans l'espace documentaire",
   "conversation.copy.all.toworkspace": "Copier toutes les pièces jointes dans l'espace documentaire",
-  "conversation.copyToWorkspace.notify_one": "Le document a été copié dans l'espace documentaire",
-  "conversation.copyToWorkspace.notify_other": "Les documents ont été copiés dans l'espace documentaire",
   "conversation.copyToWorkspace.error.details": "[[files]] : [[error]]",
   "conversation.copyToWorkspace.notify.allFailed_one": "Échec de la copie du document :\n[[details]]",
   "conversation.copyToWorkspace.notify.allFailed_other": "Échec de la copie des [[count]] documents.\nDétails:\n[[details]]",

@@ -165,7 +165,7 @@ interface GroupedError {
   files: string[];
 }
 
-export function groupFileErrors(
+function groupFileErrors(
   files: File[],
   results: PromiseSettledResult<unknown>[],
 ): GroupedError[] {
@@ -188,7 +188,7 @@ export function groupFileErrors(
   }));
 }
 
-export function formatMultiErrorMessage(
+function formatMultiErrorMessage(
   groupedErrors: GroupedError[],
   t: (key: string, params?: any) => string,
 ): string {
