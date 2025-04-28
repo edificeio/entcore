@@ -100,20 +100,49 @@ export function useMessageAttachments({ id }: Message) {
   }
 
   async function sendFilesToWorkspace(files: File[], selectedFolderId: string) {
-    const count = files.length;
+    const total = files.length;
     try {
       const addFilesPromises = files.map((file) =>
         odeServices.workspace().saveFile(file, {
           parentId: selectedFolderId,
         }),
       );
-      await Promise.all(addFilesPromises);
-      toast.success(t('conversation.notify.copyToWorkspace', { count }));
-      return true;
+      const results = await Promise.allSettled(addFilesPromises);
+      const succeeded = results.filter((r) => r.status === 'fulfilled').length;
+      const failed = total - succeeded;
+
+      const groupedErrors = groupFileErrors(files, results);
+      const errorMessage = formatMultiErrorMessage(groupedErrors, t);
+
+      if (succeeded === 0) {
+        toast.error(
+          t('conversation.copyToWorkspace.notify.allFailed', {
+            count: total,
+            details: errorMessage,
+          }),
+        );
+        return false;
+      }
+
+      if (failed > 0) {
+        toast.warning(
+          t('conversation.copyToWorkspace.notify.partialFailed', {
+            succeeded,
+            failed,
+            count: total,
+            details: errorMessage,
+          }),
+        );
+      } else {
+        toast.success(
+          t('conversation.copyToWorkspace.notify.success', { count: total }),
+        );
+      }
+      return succeeded > 0;
     } catch (error: any) {
-      const errorMessage = t(
-        error?.error ?? t('conversation.error.copyToWorkspace', { count }),
-      );
+      const errorMessage = t('conversation.copyToWorkspace.notify.error', {
+        count: total,
+      });
       toast.error(errorMessage);
       return false;
     }
@@ -129,4 +158,49 @@ export function useMessageAttachments({ id }: Message) {
     getDownloadUrl,
     isMutating: attachFileMutation.isPending || detachFileMutation.isPending,
   };
+}
+
+interface GroupedError {
+  error: string;
+  files: string[];
+}
+
+export function groupFileErrors(
+  files: File[],
+  results: PromiseSettledResult<unknown>[],
+): GroupedError[] {
+  const errorMap = new Map<string, string[]>();
+
+  results.forEach((result, index) => {
+    if (result.status === 'rejected') {
+      const error = result.reason?.error || 'e400';
+      const filename = files[index].name;
+      if (!errorMap.has(error)) {
+        errorMap.set(error, []);
+      }
+      errorMap.get(error)?.push(filename);
+    }
+  });
+
+  return Array.from(errorMap.entries()).map(([error, files]) => ({
+    error,
+    files,
+  }));
+}
+
+export function formatMultiErrorMessage(
+  groupedErrors: GroupedError[],
+  t: (key: string, params?: any) => string,
+): string {
+  return groupedErrors
+    .map(({ error, files }) => {
+      const filesCount = files.length;
+      const filesList = files.join(', ');
+      return t('conversation.copyToWorkspace.error.details', {
+        count: filesCount,
+        files: filesList,
+        error: t(error),
+      });
+    })
+    .join('\n');
 }
