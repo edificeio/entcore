@@ -507,14 +507,11 @@ export const useCreateDraft = () => {
           return message ? { ...message, ...messageUpdated } : undefined;
         },
       );
-      queryClient.setQueryData(
-        [...folderQueryOptions.base, 'draft', 'messages'],
-        (data: InfiniteData<Message[]>) => {
-          if (!data) return data;
-          data.pages[0] = [messageUpdated, ...data.pages[0]];
-          return { ...data };
-        },
-      );
+
+      // Update de draft list (we can setData because we don't know if the filtre set will display it or not).
+      queryClient.invalidateQueries({
+        queryKey: [...folderQueryOptions.base, 'draft', 'messages'],
+      });
     },
   });
 };
