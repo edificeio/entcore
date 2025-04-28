@@ -21,6 +21,7 @@ package org.entcore.conversation.service;
 
 
 import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -94,8 +95,9 @@ public interface ConversationService {
 	 * @param page page number
 	 * @param page_size number of messages per page
 	 * @param searchWords optional text filter
+	 * @param states List messages having this state. Not applied when `folder` is either DRAFT or TRASH.
 	 */
-	void list(String folder, Boolean unread, UserInfos user, int page, int page_size, String searchWords, Handler<Either<String, JsonArray>> results);
+	void list(String folder, Boolean unread, UserInfos user, int page, int page_size, String searchWords, EnumSet<State> states, Handler<Either<String, JsonArray>> results);
 	/** Legacy */
 	void list(String folder, String restrain, Boolean unread, UserInfos user, int page, String searchWords, Handler<Either<String, JsonArray>> results);
 

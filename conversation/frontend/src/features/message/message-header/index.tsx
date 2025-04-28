@@ -18,7 +18,11 @@ export function MessageHeader({ message }: MessageHeaderProps) {
     <header>
       {message && (
         <>
-          <h4>{subject}</h4>
+          <h4>
+            {message.state === 'RECALL'
+              ? t('conversation.recall.mail.subject.details')
+              : subject}
+          </h4>
           <div className="d-flex align-items-center mt-16 gap-12 small">
             <Avatar
               alt={t('author.avatar')}
