@@ -366,10 +366,10 @@ public class SqlConversationService implements ConversationService{
 	}
 
 	@Override
-	public void list(String folder, Boolean unread, UserInfos user, int page, int pageSize, final String searchText, Handler<Either<String, JsonArray>> results) {
+	public void list(String folder, Boolean unread, UserInfos user, int page, int pageSize, final String searchText, EnumSet<State> states, Handler<Either<String, JsonArray>> results) {
 		list(folder,
 			ConversationService.isSystemFolder(folder) ? null : "", // `restrain` can only applies to user's folders.
-			unread, user, page, pageSize, searchText, results
+			unread, user, page, pageSize, searchText, states, results
 		);
 	}
 
@@ -378,7 +378,11 @@ public class SqlConversationService implements ConversationService{
 		list(folder, restrain, unread, user, page, LIST_LIMIT, searchText, results);
 	}
 
-	protected void list(String folder, String restrain, Boolean unread, UserInfos user, int page, int pageSize, final String searchText, Handler<Either<String, JsonArray>> results)
+	protected void list(String folder, String restrain, Boolean unread, UserInfos user, int page, int pageSize, final String searchText, Handler<Either<String, JsonArray>> results) {
+		list(folder, restrain, unread, user, page, pageSize, searchText, EnumSet.of(State.SENT), results);
+	}
+
+	protected void list(String folder, String restrain, Boolean unread, UserInfos user, int page, int pageSize, final String searchText, EnumSet<State> states, Handler<Either<String, JsonArray>> results)
 	{
 		if(page < 0)
 		{
@@ -392,8 +396,8 @@ public class SqlConversationService implements ConversationService{
 		String messageConditionUnread = addMessageConditionUnread(folder, values, unread, user);
 		String messagesFields = "m.id, m.subject, m.from, m.state, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.cci, m.\"cciName\", m.\"displayNames\", m.date ";
 
-		values.add(State.SENT.name()).add(user.getUserId());
-		String additionalWhere = addCompleteFolderCondition(values, restrain, unread, folder, user);
+		values.add(State.SENT.name()).add(State.RECALL.name()).add(user.getUserId());
+		String additionalWhere = addCompleteFolderCondition(values, restrain, unread, folder, user, states);
 
 		if(searchText != null){
 			additionalWhere += " AND m.text_searchable  @@ to_tsquery(m.language::regconfig, unaccent(?)) ";
@@ -405,7 +409,7 @@ public class SqlConversationService implements ConversationService{
 				"FROM " + userMessageTable + " um LEFT JOIN " +
 				userMessageAttachmentTable + " uma ON um.user_id = uma.user_id AND um.message_id = uma.message_id JOIN " +
 				messageTable + " m ON (um.message_id = m.id" + messageConditionUnread + ") LEFT JOIN " +
-				messageTable + " r ON um.message_id = r.parent_id AND r.from = um.user_id AND r.state= ? " +
+				messageTable + " r ON um.message_id = r.parent_id AND r.from = um.user_id AND r.state IN (?,?) " +
 				"WHERE um.user_id = ? " + additionalWhere + " " +
 				"GROUP BY m.id, unread " +
 				"ORDER BY m.date DESC LIMIT " + pageSize + " OFFSET " + skip;
@@ -445,7 +449,7 @@ public class SqlConversationService implements ConversationService{
 		final Promise<JsonArray> promise = Promise.promise();
 		final JsonObject userIndex = new JsonObject();
 		final JsonObject groupIndex = new JsonObject();
-		this.list(folderId, unread, userInfos, page, pageSize, search, either -> {
+		this.list(folderId, unread, userInfos, page, pageSize, search, EnumSet.of(State.SENT, State.RECALL), either -> {
 			if (either.isRight()) {
 				final JsonArray messages = either.right().getValue();
 				for (Object message : messages) {
@@ -941,7 +945,7 @@ public class SqlConversationService implements ConversationService{
 			messageTable + " m ON (um.message_id = m.id" + messageConditionUnread + ") " +
 			"WHERE user_id = ? ";
 
-		query += addCompleteFolderCondition(values, restrain, unread, folder, user);
+		query += addCompleteFolderCondition(values, restrain, unread, folder, user, EnumSet.of(State.SENT));
 
 		if(restrain != null && unread){
 			query += " AND (m.from <> ? OR m.to @> ?::jsonb OR m.cc @> ?::jsonb) ";
@@ -1808,22 +1812,24 @@ public class SqlConversationService implements ConversationService{
 		return builder.toString();
 	}
 
-	private String addFolderCondition(String folder, JsonArray values, String userId){
+	private String addFolderCondition(String folder, JsonArray values, String userId, EnumSet<State> states){
 		String additionalWhere = "";
 		switch(folder.toUpperCase()){
 			case "INBOX":
-				additionalWhere = "AND (m.from <> ? OR m.to @> ?::jsonb OR m.cc @> ?::jsonb) AND m.state = ? AND um.trashed = false";
-				additionalWhere += " AND um.folder_id IS NULL";
+				additionalWhere = "AND (m.from <> ? OR m.to @> ?::jsonb OR m.cc @> ?::jsonb) AND m.state IN ("
+					+ states.stream().map(state->"?").collect(Collectors.joining(","))
+					+") AND um.trashed = false AND um.folder_id IS NULL";
 				values.add(userId);
 				values.add(new fr.wseduc.webutils.collections.JsonArray().add(userId).toString());
 				values.add(new fr.wseduc.webutils.collections.JsonArray().add(userId).toString());
-				values.add(State.SENT.name());
+				states.stream().forEach(state-> values.add(state.name()));
 				break;
 			case "OUTBOX":
-				additionalWhere = "AND m.from = ? AND m.state = ? AND um.trashed = false";
-				additionalWhere += " AND um.folder_id IS NULL";
+				additionalWhere = "AND m.from = ? AND m.state IN ("
+					+ states.stream().map(state->"?").collect(Collectors.joining(","))
+					+") AND um.trashed = false AND um.folder_id IS NULL";
 				values.add(userId);
-				values.add(State.SENT.name());
+				states.stream().forEach(state-> values.add(state.name()));
 				break;
 			case "DRAFT":
 				additionalWhere = "AND m.from = ? AND m.state = ? AND um.trashed = false";
@@ -1838,7 +1844,7 @@ public class SqlConversationService implements ConversationService{
 		return additionalWhere;
 	}
 
-	private String addCompleteFolderCondition(JsonArray values, String restrain, Boolean unread, String folder, UserInfos user) {
+	private String addCompleteFolderCondition(JsonArray values, String restrain, Boolean unread, String folder, UserInfos user, EnumSet<State> states) {
 		String additionalWhere = "";
 		if(unread != null && unread){
 			additionalWhere += "AND unread = ? ";
@@ -1848,7 +1854,7 @@ public class SqlConversationService implements ConversationService{
 			additionalWhere += "AND um.folder_id = ? AND um.trashed = false";
 			values.add(folder);
 		} else {
-			additionalWhere += addFolderCondition(folder, values, user.getUserId());
+			additionalWhere += addFolderCondition(folder, values, user.getUserId(), states);
 		}
 
 		return additionalWhere;
