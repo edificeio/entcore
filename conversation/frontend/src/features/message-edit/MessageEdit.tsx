@@ -103,7 +103,7 @@ export function MessageEdit({ message }: MessageEditProps) {
               />
               {messageUpdated?.date && (
                 <div className="caption fst-italic" key={dateKey}>
-                  {fromNow(messageUpdated.date)}
+                  {t('message.saved') + ' ' + fromNow(messageUpdated.date)}
                 </div>
               )}
             </div>

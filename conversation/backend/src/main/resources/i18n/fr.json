@@ -124,6 +124,7 @@
   "message.history.show": "Afficher l'historique des messages",
   "message.history.hide": "Masquer l'historique des messages",
   "message.sent": "Le message a bien été envoyé",
+  "message.saved": "Enregistré",
   "message.save.fail": "Erreur : le message n'a pas pu être enregistré",
   "message.remove.from.folder": "Le message a été correctement retiré du dossier",
   "messages.remove.from.folder": "Les messages ont été correctement retirés du dossier",
