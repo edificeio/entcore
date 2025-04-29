@@ -5,7 +5,7 @@ import {
   QueryClientProvider,
 } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { ERROR_CODE } from 'edifice-ts-client';
+import { ERROR_CODE } from '@edifice.io/client';
 import { ReactNode } from 'react';
 import { useConfirmModalStore } from '~/store';
 

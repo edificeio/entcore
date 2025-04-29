@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 import { baseUrl, attachmentService } from '.';
-import { odeServices } from 'edifice-ts-client';
+import { odeServices } from '@edifice.io/client';
 
 describe('Conversation Attachment Mutation Methods', () => {
   test('makes a POST request to attach a file or blob to a draft message', async () => {
