@@ -37,7 +37,7 @@ export function MessageNavigation({ message }: MessageProps) {
   };
 
   return (
-    <nav className="border-bottom px-16 py-4 d-flex d-flex align-items-center justify-content-between w-100">
+    <nav className="border-bottom px-16 py-4 d-flex align-items-center justify-content-between w-100">
       <Button
         color="tertiary"
         variant="ghost"
