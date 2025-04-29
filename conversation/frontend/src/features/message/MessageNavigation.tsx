@@ -8,14 +8,14 @@ import { IconArrowLeft } from '@edifice.io/react/icons';
 import { useI18n, useSelectedFolder } from '~/hooks';
 import { useNavigate } from 'react-router-dom';
 import Pagination from './components/Pagination';
-import { useMessagePagination } from './hooks/useMessagePagination';
+import { useMessageNavigation } from './hooks/useMessagePagination';
 
 export function MessageNavigation({ message }: MessageProps) {
   const navigate = useNavigate();
   const { common_t } = useI18n();
   const { folderId } = useSelectedFolder();
   const { currentMessagePosition, totalMessagesCount, getMessageIdAtPosition } =
-    useMessagePagination(message.id);
+    useMessageNavigation(message.id);
 
   const actionDropDownProps: MessageActionDropDownProps = {
     message,

@@ -1,7 +1,7 @@
 import { useSelectedFolder } from '~/hooks';
 import { useFolderMessages } from '~/services';
 
-export const useMessagePagination = (messageId: string) => {
+export const useMessageNavigation = (messageId: string) => {
   const { folderId } = useSelectedFolder();
   const { messages, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useFolderMessages(folderId!);
