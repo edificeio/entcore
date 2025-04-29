@@ -19,39 +19,21 @@
 
 package org.entcore.cas.services;
 
-import fr.wseduc.cas.async.Handler;
-import fr.wseduc.cas.entities.AuthCas;
 import fr.wseduc.cas.entities.User;
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
-import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.entcore.common.user.position.UserPosition;
-import org.entcore.common.user.position.UserPositionService;
-import org.entcore.common.user.position.impl.DefaultUserPositionService;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
-
 public class OdeRegisteredService extends AbstractCas20ExtensionRegisteredService {
-	UserPositionService userPositionService = new DefaultUserPositionService(eb, false);
 
 	private static final Logger log = LoggerFactory.getLogger(OdeRegisteredService.class);
-	private static final String ACTION = "action";
 	private static final String ATTRIBUTES = "attributes";
-	private static final String CAS_NAMESPACE = "http://www.yale.edu/tp/cas";
-	private static final String CAS_PREFIX = "cas";
-	private static final String DIRECTORY = "directory";
 	private static final String DOLLAR = "$";
 	private static final String EMAIL = "email";
 	private static final String EMAIL_ACADEMY = "emailAcademy";
@@ -71,12 +53,9 @@ public class OdeRegisteredService extends AbstractCas20ExtensionRegisteredServic
 	private static final String NATIONAL_4 = "National_4";
 	private static final String NOMS = "Nom";
 	private static final String NAME = "name";
-	private static final String OK = "ok";
 	private static final String PERSONNEL = "Personnel";
 	private static final String PRENOMS = "Prenoms";
 	private static final String RELATIVE = "Relative";
-	private static final String RESULT = "result";
-	private static final String STATUS = "status";
 	private static final String STRUCTURE_ID = "structureId";
 	private static final String STRUCTURES = "structures";
 	private static final String STRUCTURE_NODES = "structureNodes";
@@ -85,8 +64,6 @@ public class OdeRegisteredService extends AbstractCas20ExtensionRegisteredServic
 	private static final String TEACHER = "Teacher";
 	private static final String TYPE = "type";
 	private static final String UAI = "UAI";
-	private static final String UFUNCTIONS = "ufunctions";
-	private static final String USERID = "userId";
 	private static final String USER_POSITIONS = "userPositions";
 
 	@Override
