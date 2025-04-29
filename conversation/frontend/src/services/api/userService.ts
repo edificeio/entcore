@@ -1,5 +1,4 @@
-import { BookmarkWithDetails } from '@edifice.io/client';
-import { odeServices } from '@edifice.io/client';
+import { BookmarkWithDetails, odeServices } from '@edifice.io/client';
 import { Visible } from '~/models/visible';
 
 /**
