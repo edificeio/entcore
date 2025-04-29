@@ -1,4 +1,4 @@
-import { odeServices } from 'edifice-ts-client';
+import { odeServices } from '@edifice.io/client';
 
 /**
  * Creates a message attachment service with the specified base URL.
