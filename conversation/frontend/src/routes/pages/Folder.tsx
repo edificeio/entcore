@@ -15,12 +15,14 @@ export const loader =
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search');
     const unread = searchParams.get('unread');
-    const messagesQuery = folderQueryOptions.getMessages(params.folderId!, {
-      search: search && search !== '' ? search : undefined,
-      unread: unread === 'true' ? true : undefined,
-    });
-    const messages = await queryClient.ensureInfiniteQueryData(messagesQuery);
-    return { messages };
+    if (params.folderId) {
+      const messagesQuery = folderQueryOptions.getMessages(params.folderId!, {
+        search: search && search !== '' ? search : undefined,
+        unread: unread === 'true' ? true : undefined,
+      });
+      const messages = await queryClient.ensureInfiniteQueryData(messagesQuery);
+      return { messages };
+    }
   };
 
 export function Component() {

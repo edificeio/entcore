@@ -1,5 +1,5 @@
 import { TreeItem } from '@edifice.io/react';
-import { Folder, MessageBase } from '~/models';
+import { Folder, Message, MessageBase } from '~/models';
 
 /** Search for a folder in a tree of Folders */
 export function searchFolder(
@@ -65,3 +65,32 @@ export function isInRecipient(message: MessageBase, userId: string) {
     ...(message.cci?.users ?? []),
   ].some((u) => u.id === userId);
 }
+
+export const DEFAULT_MESSAGE: Message = {
+  id: '',
+  body: '',
+  language: 'fr',
+  subject: '',
+  from: {
+    id: '',
+    displayName: '',
+    profile: '',
+  },
+  to: {
+    users: [],
+    groups: [],
+  },
+  cc: {
+    users: [],
+    groups: [],
+  },
+  cci: {
+    users: [],
+    groups: [],
+  },
+  response: false,
+  forwarded: false,
+  state: 'DRAFT',
+  attachments: [],
+  original_format_exists: false,
+};

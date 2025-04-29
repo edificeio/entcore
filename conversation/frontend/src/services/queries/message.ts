@@ -13,6 +13,7 @@ import { useI18n, useSelectedFolder } from '~/hooks';
 import { Message, MessageBase } from '~/models';
 import {
   baseUrl,
+  DEFAULT_MESSAGE,
   folderQueryOptions,
   messageService,
   useFolderMessages,
@@ -81,16 +82,16 @@ export const useConversationConfig = () => {
  * @param messageId - The ID of the message to fetch.
  * @returns Query result for the message.
  */
-export const useMessage = (messageId: string) => {
+export const useMessage = ({ messageId }: { messageId: string }) => {
   const result = useQuery(messageQueryOptions.getById(messageId));
   const { folderId } = useSelectedFolder();
   const { updateFolderMessagesQueryData } = useFolderUtils();
   const { currentLanguage, user, userProfile } = useEdificeClient();
 
   if (result.isSuccess && result.data) {
-    const message = result.data;
+    let message: Message = result.data;
     if (message.id) {
-      // Fix issue when back retrun sbuject and body to null
+      // Fix issue when back retrun subject and body to null
       if (message.subject === null) {
         message.subject = '';
       }
@@ -107,20 +108,21 @@ export const useMessage = (messageId: string) => {
         );
       }
     } else {
-      message.language = currentLanguage;
-      message.from = {
-        id: user?.userId || '',
-        displayName: user?.username || '',
-        profile: (userProfile || '') as string,
+      message = {
+        ...DEFAULT_MESSAGE,
+        language: currentLanguage,
+        from: {
+          id: user?.userId || '',
+          displayName: user?.username || '',
+          profile: (userProfile || '') as string,
+        },
       };
     }
   }
   return result;
 };
 
-export const useOriginalMessage = (messageId: string) => {
-  return useQuery(messageQueryOptions.getOriginalFormat(messageId));
-};
+export const useOriginalMessage = (messageId: string) => {};
 
 /**
  * Hook to toggle the unread status of a message.
@@ -479,6 +481,7 @@ export const useCreateDraft = () => {
       setMessageUpdated({ ...messageUpdated });
       updateFolderBadgeCountLocal('draft', 1);
       // Update the message unread status in the list
+      console.log('update store create');
       queryClient.setQueryData(
         messageQueryOptions.getById(id).queryKey,
         (message: Message | undefined) => {
@@ -521,6 +524,7 @@ export const useUpdateDraft = () => {
       if (!messageUpdated) return;
       messageUpdated.date = new Date().getTime();
       setMessageUpdated({ ...messageUpdated });
+      console.log('update store draft up');
       queryClient.setQueryData(
         messageQueryOptions.getById(draftId).queryKey,
         (message: Message | undefined) => {
