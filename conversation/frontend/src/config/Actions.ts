@@ -1,4 +1,4 @@
-import { ACTION, ActionType, IAction } from 'edifice-ts-client';
+import { ACTION, ActionType, IAction } from '@edifice.io/client';
 
 export const existingActions: IAction[] = [
   {

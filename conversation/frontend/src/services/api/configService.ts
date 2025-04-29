@@ -1,5 +1,5 @@
 import { APP } from '@edifice.io/client';
-import { odeServices } from 'edifice-ts-client';
+import { odeServices } from '@edifice.io/client';
 import { SignaturePreferences } from '~/models/signature';
 
 /**

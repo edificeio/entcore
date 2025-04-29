@@ -1,4 +1,4 @@
-import { odeServices } from 'edifice-ts-client';
+import { odeServices } from '@edifice.io/client';
 
 import { Folder, MessageMetadata, SYSTEM_FOLDER_IDS } from '~/models';
 

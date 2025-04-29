@@ -105,12 +105,8 @@ export default ({ mode }: { mode: string }) => {
       assetsDir: 'public',
       chunkSizeWarningLimit: 4000,
       rollupOptions: {
-        external: ['edifice-ts-client'],
         output: {
           inlineDynamicImports: true,
-          paths: {
-            'edifice-ts-client': `/assets/js/edifice-ts-client/index.js?${queryHashVersion}`,
-          },
         },
       },
     },

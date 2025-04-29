@@ -1,5 +1,5 @@
 import { useToast } from '@edifice.io/react';
-import { odeServices } from 'edifice-ts-client';
+import { odeServices } from '@edifice.io/client';
 import { Attachment, Message } from '~/models';
 import { baseUrl, useCreateOrUpdateDraft } from '~/services';
 
