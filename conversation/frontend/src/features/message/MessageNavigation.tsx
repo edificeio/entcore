@@ -8,11 +8,14 @@ import { IconArrowLeft } from '@edifice.io/react/icons';
 import { useI18n, useSelectedFolder } from '~/hooks';
 import { useNavigate } from 'react-router-dom';
 import Pagination from './components/Pagination';
+import { useMessagePagination } from './hooks/useMessagePagination';
 
 export function MessageNavigation({ message }: MessageProps) {
   const navigate = useNavigate();
   const { common_t } = useI18n();
   const { folderId } = useSelectedFolder();
+  const { currentMessagePosition, totalMessagesCount, getMessageIdAtPosition } =
+    useMessagePagination(message.id);
 
   const actionDropDownProps: MessageActionDropDownProps = {
     message,
@@ -27,8 +30,10 @@ export function MessageNavigation({ message }: MessageProps) {
     navigate(`/folder/${folderId}`);
   };
 
-  const handleMessageChange = (index: number) => {
-    console.log('index:', index);
+  const handleMessageChange = async (nextPosition: number) => {
+    const messageId = getMessageIdAtPosition?.(nextPosition);
+    if (!messageId) return;
+    navigate(`/${folderId}/message/${messageId}`);
   };
 
   return (
@@ -42,7 +47,13 @@ export function MessageNavigation({ message }: MessageProps) {
       >
         {common_t('back')}
       </Button>
-      <Pagination current={2} total={5} onChange={handleMessageChange} />
+      {!!currentMessagePosition && (
+        <Pagination
+          current={currentMessagePosition}
+          total={totalMessagesCount}
+          onChange={handleMessageChange}
+        />
+      )}
       <MessageActionDropDown {...actionDropDownProps} />
     </nav>
   );

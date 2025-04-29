@@ -3,7 +3,10 @@ import { IconRafterLeft, IconRafterRight } from '@edifice.io/react/icons';
 import { useI18n } from '~/hooks';
 
 interface PaginationProps {
-  onChange: (index: number) => void;
+  onChange: (page: number) => void;
+  /**
+   * The current page number starting from 1
+   */
   current: number;
   total: number;
 }
