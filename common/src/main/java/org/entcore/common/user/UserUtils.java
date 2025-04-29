@@ -49,6 +49,7 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.session.SessionRecreationRequest;
 import org.entcore.common.utils.HostUtils;
 import org.entcore.common.utils.StringUtils;
+import org.entcore.common.validation.StringValidation;
 
 import java.io.IOException;
 import java.util.*;
@@ -345,9 +346,15 @@ public class UserUtils {
 	}
 
 	public static JsonArray mapObjectToContact(final String profile, final JsonArray shareBookmarks,
-																						 final JsonArray visible, final String acceptLanguage) {
+			final JsonArray visible, final String acceptLanguage) {
+		return mapObjectToContact(profile, shareBookmarks, visible, acceptLanguage, Optional.empty());
+	}
+
+	public static JsonArray mapObjectToContact(final String profile, final JsonArray shareBookmarks,
+			final JsonArray visible, final String acceptLanguage, final Optional<String> postFilter) {
 		final List<String> usedInAll = Arrays.asList("TO", "CC", "CCI");
 		final List<String> usedInCCI = Collections.singletonList("CCI");
+		final String filterOnGroupName = postFilter.isPresent() ? StringValidation.sanitize(postFilter.get()) : null;
 
 		/*
 		final JsonArray sb = new JsonArray();
@@ -407,7 +414,12 @@ public class UserUtils {
 				}
 
 				UserUtils.groupDisplayName(j, acceptLanguage);
-				j.put("displayName", j.getString("name"));
+				String displayName = j.getString("name");
+				j.put("displayName", displayName);
+
+				// Skip groups that do not match the name filter
+				if(filterOnGroupName!=null && !StringValidation.sanitize(displayName).contains(filterOnGroupName))
+					continue;
 
 				if ("ManualGroup".equals(j.getString("groupType")) && "BroadcastGroup".equals(j.getString("subType")))  {
 					j.put("type", "BroadcastGroup");
