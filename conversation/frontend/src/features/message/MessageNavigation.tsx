@@ -1,12 +1,12 @@
+import { Button } from '@edifice.io/react';
+import { IconArrowLeft } from '@edifice.io/react/icons';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   MessageActionDropDown,
   MessageActionDropDownProps,
 } from '~/components/MessageActionDropDown/MessageActionDropDown';
-import { MessageProps } from '.';
-import { Button } from '@edifice.io/react';
-import { IconArrowLeft } from '@edifice.io/react/icons';
 import { useI18n, useSelectedFolder } from '~/hooks';
-import { useNavigate } from 'react-router-dom';
+import { MessageProps } from '.';
 import Pagination from './components/Pagination';
 import { useMessageNavigation } from './hooks/useMessagePagination';
 
@@ -16,6 +16,7 @@ export function MessageNavigation({ message }: MessageProps) {
   const { folderId } = useSelectedFolder();
   const { currentMessagePosition, totalMessagesCount, getMessageIdAtPosition } =
     useMessageNavigation(message.id);
+  const [searchParams] = useSearchParams();
 
   const actionDropDownProps: MessageActionDropDownProps = {
     message,
@@ -27,13 +28,16 @@ export function MessageNavigation({ message }: MessageProps) {
   };
 
   const handleGoBack = () => {
-    navigate(`/folder/${folderId}`);
+    navigate(-1);
   };
 
   const handleMessageChange = async (nextPosition: number) => {
     const messageId = getMessageIdAtPosition?.(nextPosition);
     if (!messageId) return;
-    navigate(`/${folderId}/message/${messageId}`);
+    navigate({
+      pathname: `/${folderId}/message/${messageId}`,
+      search: searchParams.toString(),
+    });
   };
 
   return (
