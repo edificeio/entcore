@@ -1635,7 +1635,7 @@ public class DefaultCommunicationService implements CommunicationService {
 		JsonObject params = new JsonObject();
 
 		if (!StringUtils.isEmpty(search)) {
-			preFilter = "AND m.displayNameSearchField CONTAINS {search} ";
+			preFilter = "AND (m:Group OR m.displayNameSearchField CONTAINS {search}) ";
 			String sanitizedSearch = StringValidation.sanitize(search);
 			params.put("search", sanitizedSearch);
 		}
@@ -1747,7 +1747,7 @@ public class DefaultCommunicationService implements CommunicationService {
 		JsonObject params = new JsonObject();
 
 		if (!StringUtils.isEmpty(search)) {
-			preFilter = "AND m.displayNameSearchField CONTAINS {search} ";
+			preFilter = "AND (m:Group OR m.displayNameSearchField CONTAINS {search}) ";
 			String sanitizedSearch = StringValidation.sanitize(search);
 			params.put("search", sanitizedSearch);
 		}
@@ -1812,7 +1812,8 @@ public class DefaultCommunicationService implements CommunicationService {
 							user.getType(),
 							shareBookmarks,
 							visible,
-							language
+							language,
+							StringUtils.isEmpty(search) ? null : search
 						)
 					);
 				}
@@ -1856,7 +1857,7 @@ public class DefaultCommunicationService implements CommunicationService {
 		JsonObject params = new JsonObject();
 
 		if (!StringUtils.isEmpty(search)) {
-			preFilter = "AND m.displayNameSearchField CONTAINS {search} ";
+			preFilter = "AND (m:Group OR m.displayNameSearchField CONTAINS {search}) ";
 			String sanitizedSearch = StringValidation.sanitize(search);
 			params.put("search", sanitizedSearch);
 		}
