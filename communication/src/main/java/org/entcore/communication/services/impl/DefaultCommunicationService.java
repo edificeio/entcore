@@ -46,7 +46,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -1814,7 +1813,7 @@ public class DefaultCommunicationService implements CommunicationService {
 							shareBookmarks,
 							visible,
 							language,
-							StringUtils.isEmpty(search) ? Optional.empty() : Optional.of(search)
+							StringUtils.isEmpty(search) ? null : search
 						)
 					);
 				}

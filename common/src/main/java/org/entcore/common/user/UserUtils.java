@@ -347,14 +347,15 @@ public class UserUtils {
 
 	public static JsonArray mapObjectToContact(final String profile, final JsonArray shareBookmarks,
 			final JsonArray visible, final String acceptLanguage) {
-		return mapObjectToContact(profile, shareBookmarks, visible, acceptLanguage, Optional.empty());
+		return mapObjectToContact(profile, shareBookmarks, visible, acceptLanguage, null);
 	}
 
 	public static JsonArray mapObjectToContact(final String profile, final JsonArray shareBookmarks,
-			final JsonArray visible, final String acceptLanguage, final Optional<String> postFilter) {
+			final JsonArray visible, final String acceptLanguage, String filterOnGroupName) {
 		final List<String> usedInAll = Arrays.asList("TO", "CC", "CCI");
 		final List<String> usedInCCI = Collections.singletonList("CCI");
-		final String filterOnGroupName = postFilter.isPresent() ? StringValidation.sanitize(postFilter.get()) : null;
+		if( filterOnGroupName != null )
+			filterOnGroupName = StringValidation.sanitize(filterOnGroupName);
 
 		/*
 		final JsonArray sb = new JsonArray();
@@ -392,6 +393,15 @@ public class UserUtils {
 			if (!(o instanceof JsonObject)) continue;
 			JsonObject j = (JsonObject) o;
 			if (j.getString("name") != null) {
+				// Interpolate group display name from name or type, and i18n.
+				UserUtils.groupDisplayName(j, acceptLanguage);
+
+				String displayName = j.getString("name");
+				// Skip groups that do not match the name filter.
+				if(filterOnGroupName!=null && !StringValidation.sanitize(displayName).contains(filterOnGroupName))
+					continue;
+				j.put("displayName", displayName);
+
 				j.remove("profile");
 				j.remove("children");
 				j.remove("classrooms");
@@ -412,14 +422,6 @@ public class UserUtils {
 						}
 					}
 				}
-
-				UserUtils.groupDisplayName(j, acceptLanguage);
-				String displayName = j.getString("name");
-				j.put("displayName", displayName);
-
-				// Skip groups that do not match the name filter
-				if(filterOnGroupName!=null && !StringValidation.sanitize(displayName).contains(filterOnGroupName))
-					continue;
 
 				if ("ManualGroup".equals(j.getString("groupType")) && "BroadcastGroup".equals(j.getString("subType")))  {
 					j.put("type", "BroadcastGroup");
