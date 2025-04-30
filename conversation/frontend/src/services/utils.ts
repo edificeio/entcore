@@ -1,5 +1,12 @@
 import { TreeItem } from '@edifice.io/react';
-import { Folder, Message, MessageBase } from '~/models';
+import {
+  Attachment,
+  Folder,
+  Group,
+  Message,
+  MessageBase,
+  User,
+} from '~/models';
 
 /** Search for a folder in a tree of Folders */
 export function searchFolder(
@@ -77,20 +84,20 @@ export const DEFAULT_MESSAGE: Message = {
     profile: '',
   },
   to: {
-    users: [],
-    groups: [],
+    users: new Array<User>(),
+    groups: new Array<Group>(),
   },
   cc: {
-    users: [],
-    groups: [],
+    users: new Array<User>(),
+    groups: new Array<Group>(),
   },
   cci: {
-    users: [],
-    groups: [],
+    users: new Array<User>(),
+    groups: new Array<Group>(),
   },
   response: false,
   forwarded: false,
   state: 'DRAFT',
-  attachments: [],
+  attachments: new Array<Attachment>(),
   original_format_exists: false,
 };

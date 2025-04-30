@@ -122,8 +122,6 @@ export const useMessage = ({ messageId }: { messageId: string }) => {
   return result;
 };
 
-export const useOriginalMessage = (messageId: string) => {};
-
 /**
  * Hook to toggle the unread status of a message.
  * @param unread - The unread status to set.

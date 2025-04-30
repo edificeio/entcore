@@ -35,11 +35,11 @@ export const createMessageService = (baseURL: string) => ({
   /**
    * Fully load a message.
    */
-  getById(id: string): Message {
+  getById(id: string): Promise<Message> {
     if (id) {
       return odeServices.http().get<Message>(`${baseURL}/api/messages/${id}`);
     } else {
-      return { ...DEFAULT_MESSAGE };
+      return Promise.resolve({ ...DEFAULT_MESSAGE });
     }
   },
 

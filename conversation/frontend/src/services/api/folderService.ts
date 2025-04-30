@@ -43,7 +43,7 @@ export const createFolderService = (baseURL: string) => ({
    * Load paginated list of messages from a folder.
    */
   getMessages(
-    folderId: string,
+    folderId?: string,
     options?: {
       /** (optional) Search string */
       search?: string;
