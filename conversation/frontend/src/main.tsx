@@ -18,6 +18,10 @@ if (process.env.NODE_ENV !== 'production') {
     axe.default(React, root, 1000);
   });
 }
+if (process.env.NODE_ENV === 'development') {
+  const { worker } = await import('./mocks/browser');
+  await worker.start();
+}
 
 root.render(
   <StrictMode>
