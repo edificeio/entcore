@@ -5,7 +5,7 @@ import { useFolderMessages } from '~/services';
 export const useMessageNavigation = (messageId: string) => {
   const { folderId } = useSelectedFolder();
   const { messages, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useFolderMessages(folderId!);
+    useFolderMessages(folderId!, false);
 
   if (!messages) {
     return { currentMessagePosition: undefined, totalMessagesCount: undefined };

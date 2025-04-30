@@ -153,19 +153,22 @@ export const useFolderUtils = () => {
  * Hook to fetch messages from a specific folder with pagination support.
  *
  * @param folderId - The ID of the folder.
+ * @param enabled - If false, only returns cached data without triggering a new request
  * @returns Query result for fetching messages with pagination.
  */
-export const useFolderMessages = (folderId: string) => {
+export const useFolderMessages = (folderId: string, enabled = true) => {
   const [searchParams] = useSearchParams();
   const search = searchParams.get('search');
   const filterUnread = searchParams.get('unread');
 
-  const query = useInfiniteQuery(
-    folderQueryOptions.getMessages(folderId, {
-      search: search && search !== '' ? search : undefined,
-      unread: filterUnread ? true : undefined,
-    }),
-  );
+  const queryOptions = folderQueryOptions.getMessages(folderId, {
+    search: search && search !== '' ? search : undefined,
+    unread: filterUnread ? true : undefined,
+  });
+  queryOptions.enabled = enabled;
+
+  const query = useInfiniteQuery(queryOptions);
+
   return {
     ...query,
     messages: query.data?.pages.flatMap((page) => page) as MessageMetadata[],
