@@ -1,4 +1,5 @@
 import { useSelectedFolder } from '~/hooks';
+import { MessageMetadata } from '~/models';
 import { useFolderMessages } from '~/services';
 
 export const useMessageNavigation = (messageId: string) => {
@@ -14,23 +15,28 @@ export const useMessageNavigation = (messageId: string) => {
     (msg) => msg.id === messageId,
   );
   const currentMessagePreview = messages[currentMessageIndex];
-  if (
-    currentMessageIndex === messages.length - 1 &&
-    hasNextPage &&
-    !isFetchingNextPage
-  ) {
-    fetchNextPage();
-  }
 
   const currentMessagePosition =
     currentMessageIndex > -1 ? currentMessageIndex + 1 : undefined;
   const totalMessagesCount = currentMessagePreview?.count;
 
-  const getMessageIdAtPosition = (position: number) => {
-    if (position < 1 || position > messages.length) {
+  const getMessageIdAtPosition = async (position: number) => {
+    let messageList: MessageMetadata[] = messages;
+    if (position < 1 || position > totalMessagesCount) {
       return;
     }
-    const message = messages[position - 1];
+    if (
+      position === messages.length + 1 &&
+      hasNextPage &&
+      !isFetchingNextPage
+    ) {
+      const result = await fetchNextPage();
+      messageList = result.data?.pages.flatMap(
+        (page) => page,
+      ) as MessageMetadata[];
+    }
+
+    const message = messageList[position - 1];
     return message.id;
   };
 

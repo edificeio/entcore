@@ -28,11 +28,14 @@ export function MessageNavigation({ message }: MessageProps) {
   };
 
   const handleGoBack = () => {
-    navigate(-1);
+    navigate({
+      pathname: `/${folderId}`,
+      search: searchParams.toString(),
+    });
   };
 
   const handleMessageChange = async (nextPosition: number) => {
-    const messageId = getMessageIdAtPosition?.(nextPosition);
+    const messageId = await getMessageIdAtPosition?.(nextPosition);
     if (!messageId) return;
     navigate({
       pathname: `/${folderId}/message/${messageId}`,
