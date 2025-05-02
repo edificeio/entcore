@@ -1,4 +1,5 @@
 import {
+  InfiniteData,
   infiniteQueryOptions,
   queryOptions,
   useInfiniteQuery,
@@ -23,7 +24,7 @@ export const folderQueryOptions = {
 
   getMessagesQuerykey(
     folderId: string,
-    options?: { search?: string; unread?: boolean },
+    options: { search?: string; unread?: boolean },
   ) {
     return [...folderQueryOptions.base, folderId, 'messages', options] as const;
   },
@@ -82,7 +83,7 @@ export const folderQueryOptions = {
    */
   getMessages(
     folderId: string,
-    options?: {
+    options: {
       /** (optional) Search string */
       search?: string;
       /** (optional) Load un/read message only ? */
@@ -129,13 +130,15 @@ export const useFoldersTree = () => {
  * Hook providing utility functions for working with folders.
  *
  * This hook offers helper functions related to folder operations, such as
- * retrieving a folder name based on its ID.
+ * retrieving a folder name based on its ID, or updating its date in queries data.
  *
  * @returns An object containing folder utility methods.
  */
 export const useFolderUtils = () => {
   const { data: foldersTree } = useFoldersTree();
+  const queryClient = useQueryClient();
 
+  /** Recursively search the folders tree for a folder's name, knowing its id. */
   const getFolderNameById = useCallback(
     (id: string) => {
       if (!foldersTree) return 'Unknown';
@@ -146,7 +149,24 @@ export const useFolderUtils = () => {
     [foldersTree],
   );
 
-  return { getFolderNameById };
+  /** Update some messages metadata in the list of a folder's messages. */
+  function updateFolderMessagesQueryData(
+    folderId: string,
+    updater: (oldMessage: MessageMetadata) => MessageMetadata,
+  ) {
+    queryClient.setQueriesData<InfiniteData<MessageMetadata[]>>(
+      { queryKey: folderQueryOptions.getMessagesQuerykey(folderId, {}) },
+      (oldData) => {
+        if (!oldData?.pages) return undefined;
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page) => page.map(updater)),
+        };
+      },
+    );
+  }
+
+  return { getFolderNameById, updateFolderMessagesQueryData };
 };
 
 /**

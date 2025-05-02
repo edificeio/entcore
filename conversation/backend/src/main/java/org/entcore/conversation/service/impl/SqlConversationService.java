@@ -1661,7 +1661,19 @@ public class SqlConversationService implements ConversationService{
 
 		builder.prepared(query, values);
 
+		buildUpdateDate(builder, messageId);
+
 		sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(0, result));
+	}
+
+	private void buildUpdateDate(SqlStatementsBuilder builder, String messageId) {
+		builder.prepared(
+			"UPDATE "+ messageTable +" AS m SET \"date\" = ? WHERE m.id = ? AND m.state = ?",
+			new fr.wseduc.webutils.collections.JsonArray()
+				.add(System.currentTimeMillis())
+				.add(messageId)
+				.add(State.DRAFT.name())
+		);
 	}
 
 	@Override
@@ -1738,6 +1750,9 @@ public class SqlConversationService implements ConversationService{
 			"DELETE FROM " + userMessageAttachmentTable + " WHERE " +
 			"message_id = ? AND user_id = ? AND attachment_id = ?";
 		builder.prepared(query4, values);
+
+		// query5
+		buildUpdateDate(builder, messageId);		
 
 		sql.transaction(builder.build(), SqlResult.validResultsHandler(new Handler<Either<String,JsonArray>>() {
 			public void handle(Either<String, JsonArray> event) {
