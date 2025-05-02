@@ -726,6 +726,7 @@
   "options": "Options",
   "owner": "Propriétaire",
   "pages": "Pages",
+  "pagination.on":"[[current]] on [[total]]",
   "parcours": "Parcours",
   "paths": "Parcours",
   "personnel": "Personnel",
