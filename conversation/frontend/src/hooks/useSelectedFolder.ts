@@ -18,10 +18,6 @@ export function useSelectedFolder(): {
   const foldersTreeQuery = useFoldersTree();
   const foldersTree = foldersTreeQuery.data;
 
-  if (!folderId || !foldersTree) return {};
-
-  const found = searchFolder(folderId, foldersTree);
-
   switch (folderId.toLowerCase()) {
     case 'inbox':
     case 'outbox':
@@ -31,6 +27,10 @@ export function useSelectedFolder(): {
     default:
       break;
   }
+
+  if (!foldersTree) return { folderId };
+
+  const found = searchFolder(folderId, foldersTree);
 
   return {
     folderId,
