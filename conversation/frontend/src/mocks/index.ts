@@ -103,6 +103,7 @@ export const mockMessagesOfInbox: MessageMetadata[] = [
       users: [],
       groups: [],
     },
+    count: 4,
   },
   {
     id: '4d14920b',
@@ -139,6 +140,7 @@ export const mockMessagesOfInbox: MessageMetadata[] = [
       users: [],
       groups: [],
     },
+    count: 4,
   },
   {
     id: '3245678965',
@@ -171,6 +173,7 @@ export const mockMessagesOfInbox: MessageMetadata[] = [
       users: [mockCurrentUserPreview],
       groups: [],
     },
+    count: 4,
   },
   {
     id: '567890',
@@ -203,6 +206,7 @@ export const mockMessagesOfInbox: MessageMetadata[] = [
       users: [],
       groups: [],
     },
+    count: 4,
   },
 ];
 
@@ -258,6 +262,7 @@ export const mockMessageOfOutbox: MessageMetadata = {
       },
     ],
   },
+  count: 1,
 };
 
 export const mockMessageOfDraft: MessageMetadata[] = [...mockMessagesOfInbox];
@@ -397,6 +402,7 @@ export const mockMessageFromMeToMe: MessageMetadata = {
   },
   trashed: false,
   forwarded: false,
+  count: 1,
 };
 
 export const signaturePreferences = {
