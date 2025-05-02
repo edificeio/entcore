@@ -19,6 +19,7 @@ export interface MessageBase {
 
 export interface MessageMetadata extends MessageBase {
   hasAttachment: boolean;
+  count: number;
 }
 
 export interface Message extends MessageBase {
