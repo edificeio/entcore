@@ -8,7 +8,7 @@ import {
 import { useI18n, useSelectedFolder } from '~/hooks';
 import { MessageProps } from '.';
 import Pagination from './components/Pagination';
-import { useMessageNavigation } from './hooks/useMessagePagination';
+import { useMessageNavigation } from './hooks/useMessageNavigation';
 
 export function MessageNavigation({ message }: MessageProps) {
   const navigate = useNavigate();
