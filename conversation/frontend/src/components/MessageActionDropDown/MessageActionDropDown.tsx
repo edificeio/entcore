@@ -48,7 +48,7 @@ export function MessageActionDropDown({
   };
 
   return (
-    <div className="d-flex align-items-center gap-12">
+    <div className="d-flex">
       {actionButtons
         .filter((o) => !o.hidden)
         .map((option) => (

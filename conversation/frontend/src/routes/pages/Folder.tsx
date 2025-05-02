@@ -26,7 +26,6 @@ export const loader =
 export function Component() {
   const { folderId } = useParams();
   const [searchParams] = useSearchParams();
-
   const { messages, isPending: isLoadingMessage } = useFolderMessages(
     folderId!,
   );

@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSelectedFolder } from '~/hooks';
 import { MessageMetadata } from '~/models';
 import { useUpdateFolderBadgeCountLocal } from '~/services';
@@ -14,6 +14,7 @@ interface MessageItemProps {
 export function MessageItem({ message, checked, checkbox }: MessageItemProps) {
   const navigate = useNavigate();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
+  const [searchParams] = useSearchParams();
   const { folderId } = useSelectedFolder();
 
   const handleMessageKeyUp = (
@@ -29,7 +30,10 @@ export function MessageItem({ message, checked, checkbox }: MessageItemProps) {
     if (message.unread && folderId !== 'draft') {
       updateFolderBadgeCountLocal(folderId!, -1);
     }
-    navigate(`message/${message.id}`);
+    navigate({
+      pathname: `message/${message.id}`,
+      search: searchParams.toString(),
+    });
   };
 
   return (

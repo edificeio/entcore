@@ -38,7 +38,7 @@ export function MessageListHeader() {
       setSearchText('');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchParams]);
 
   const handleSearchTextChange = (
     event: React.ChangeEvent<HTMLInputElement>,

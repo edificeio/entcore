@@ -204,14 +204,17 @@ export const useTrashMessage = () => {
   const { t } = useTranslation(appCodeName);
   const toast = useToast();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
-  const { messages, fetchNextPage } = useFolderMessages(folderId);
+  const { messages, fetchNextPage, hasNextPage } = useFolderMessages(
+    folderId,
+    false,
+  );
 
   return useMutation({
     mutationFn: ({ id }: { id: string | string[] }) =>
       messageService.moveToFolder('trash', id),
     onMutate: async ({ id }: { id: string | string[] }) => {
       // avoid to display placeholder if have next page
-      if (messages.length === id.length) {
+      if (messages.length === id.length && hasNextPage) {
         await fetchNextPage();
       }
     },
