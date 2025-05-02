@@ -9,13 +9,14 @@ import {
 } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { useI18n } from '~/hooks';
-import { Message, MessageBase, MessageMetadata } from '~/models';
+import { useI18n, useSelectedFolder } from '~/hooks';
+import { Message, MessageBase } from '~/models';
 import {
   baseUrl,
   folderQueryOptions,
   messageService,
   useFolderMessages,
+  useFolderUtils,
   useUpdateFolderBadgeCountLocal,
 } from '~/services';
 import { useAppActions, useMessageUpdated } from '~/store';
@@ -82,13 +83,9 @@ export const useConversationConfig = () => {
  */
 export const useMessage = (messageId: string) => {
   const result = useQuery(messageQueryOptions.getById(messageId));
-  const queryClient = useQueryClient();
-  const { folderId } = useParams() as { folderId: string };
-  const [searchParams] = useSearchParams();
+  const { folderId } = useSelectedFolder();
+  const { updateFolderMessagesQueryData } = useFolderUtils();
   const { currentLanguage, user, userProfile } = useEdificeClient();
-
-  const search = searchParams.get('search');
-  const unreadFilter = searchParams.get('unread');
 
   if (result.isSuccess && result.data) {
     const message = result.data;
@@ -102,24 +99,13 @@ export const useMessage = (messageId: string) => {
       }
 
       // Update the message unread status in the list
-      queryClient.setQueryData(
-        folderQueryOptions.getMessagesQuerykey(folderId, {
-          search: search === '' ? undefined : search || undefined,
-          unread: !unreadFilter ? undefined : true,
-        }),
-        (data: InfiniteData<MessageMetadata>) => {
-          if (data && data?.pages) {
-            data.pages.forEach((page: any) => {
-              page.forEach((mess: MessageMetadata) => {
-                if (result.data?.id === mess.id) {
-                  mess.unread = false;
-                }
-              });
-            });
-          }
-          return data;
-        },
-      );
+      if (folderId) {
+        updateFolderMessagesQueryData(folderId, (oldMessage) =>
+          oldMessage.id === message.id
+            ? { ...oldMessage, unread: false }
+            : oldMessage,
+        );
+      }
     } else {
       message.language = currentLanguage;
       message.from = {
@@ -142,10 +128,8 @@ export const useOriginalMessage = (messageId: string) => {
  * @returns Mutation result for toggling the unread status.
  */
 const useToggleUnread = (unread: boolean) => {
-  const { folderId } = useParams() as { folderId: string };
-  const [searchParams] = useSearchParams();
-  const search = searchParams.get('search');
-  const unreadFilter = searchParams.get('unread');
+  const { folderId } = useSelectedFolder();
+  const { updateFolderMessagesQueryData } = useFolderUtils();
   const queryClient = useQueryClient();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
 
@@ -158,34 +142,25 @@ const useToggleUnread = (unread: boolean) => {
     onSuccess: (_data, { messages }) => {
       const messageIds = messages.map((m) => m.id);
 
-      if (folderId !== 'draft') {
-        const countMessageUpdated = messages.filter(
-          (m) => m.unread !== unread,
-        ).length;
-        // Update the unread count in the folder except for the draft folder wich count all messages and not only unread
-        updateFolderBadgeCountLocal(
-          folderId,
-          unread ? countMessageUpdated : -countMessageUpdated,
+      if (folderId) {
+        if (folderId !== 'draft') {
+          const countMessageUpdated = messages.filter(
+            (m) => m.unread !== unread,
+          ).length;
+          // Update the unread count in the folder except for the draft folder wich count all messages and not only unread
+          updateFolderBadgeCountLocal(
+            folderId,
+            unread ? countMessageUpdated : -countMessageUpdated,
+          );
+        }
+
+        // Update the message unread status in the list
+        updateFolderMessagesQueryData(folderId, (oldMessage) =>
+          messageIds.includes(oldMessage.id)
+            ? { ...oldMessage, unread }
+            : oldMessage,
         );
       }
-
-      // Update the message unread status in the list
-      queryClient.setQueryData(
-        folderQueryOptions.getMessagesQuerykey(folderId, {
-          search: search === '' ? undefined : search || undefined,
-          unread: !unreadFilter ? undefined : true,
-        }),
-        (data: InfiniteData<MessageMetadata>) => {
-          data.pages.forEach((page: any) => {
-            page.forEach((message: MessageMetadata) => {
-              if (messageIds.includes(message.id)) {
-                message.unread = unread;
-              }
-            });
-          });
-          return data;
-        },
-      );
 
       // Update the message unread status in the message details
       messageIds.map((messageId) => {

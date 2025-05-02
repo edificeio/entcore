@@ -3,11 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useI18n } from '~/hooks';
 import { Message } from '~/models';
 import { useAppActions } from '~/store';
-import {
-  attachmentService,
-  messageQueryOptions,
-  useCreateOrUpdateDraft,
-} from '..';
+import { attachmentService, messageQueryOptions, useFolderUtils } from '..';
 
 /**
  * Hook to attach many Files to a draft message.
@@ -15,8 +11,8 @@ import {
  */
 export const useAttachFiles = () => {
   const queryClient = useQueryClient();
-  const updateDraft = useCreateOrUpdateDraft();
   const { setMessageUpdated } = useAppActions();
+  const { updateFolderMessagesQueryData } = useFolderUtils();
 
   const toast = useToast();
   const { t } = useI18n();
@@ -24,27 +20,27 @@ export const useAttachFiles = () => {
   return useMutation({
     mutationFn: ({ draftId, files }: { draftId: string; files: File[] }) =>
       Promise.all(files.map((file) => attachmentService.attach(draftId, file))),
-    onSuccess(_ids, { draftId }) {
-      updateDraft()?.then(() => {
-        queryClient
-          .invalidateQueries({
-            queryKey: messageQueryOptions.getById(draftId).queryKey,
-          })
-          .then(() => {
-            // Refresh the message data after attaching files to the draft message
-            // This is necessary to update the message state in the store
-            queryClient
-              .ensureQueryData(messageQueryOptions.getById(draftId))
-              .then((message) => {
-                if (message) {
-                  setMessageUpdated({
-                    ...message,
-                  });
-                }
-              });
-          });
-        toast.success(t('attachments.loaded'));
+    async onSuccess(_ids, { draftId }) {
+      await queryClient.invalidateQueries({
+        queryKey: messageQueryOptions.getById(draftId).queryKey,
       });
+
+      // Refresh the message data after attaching files to the draft message
+      // This is necessary to update the message state in the store
+      const message = await queryClient.ensureQueryData(
+        messageQueryOptions.getById(draftId),
+      );
+      if (message) {
+        setMessageUpdated({
+          ...message,
+        });
+      }
+      updateFolderMessagesQueryData('draft', (oldMessage) =>
+        oldMessage.id === draftId
+          ? { ...oldMessage, date: Date.now() }
+          : oldMessage,
+      );
+      toast.success(t('attachments.loaded'));
     },
     onError(error, { draftId }) {
       queryClient.invalidateQueries({
@@ -63,6 +59,7 @@ export const useDetachFile = () => {
   const queryClient = useQueryClient();
   const toast = useToast();
   const { setMessageUpdated } = useAppActions();
+  const { updateFolderMessagesQueryData } = useFolderUtils();
 
   return useMutation({
     mutationFn: ({
@@ -82,10 +79,16 @@ export const useDetachFile = () => {
             attachments: oldData.attachments.filter(
               (attachment) => attachment.id !== attachmentId,
             ),
+            date: Date.now(),
           };
           setMessageUpdated(updatedMessage);
           return updatedMessage;
         },
+      );
+      updateFolderMessagesQueryData('draft', (oldMessage) =>
+        oldMessage.id === draftId
+          ? { ...oldMessage, date: Date.now() }
+          : oldMessage,
       );
     },
     onError(error, { draftId }) {
