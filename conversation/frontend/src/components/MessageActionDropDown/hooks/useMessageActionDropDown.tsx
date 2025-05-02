@@ -59,11 +59,23 @@ export function useMessageActionDropDown({
   const { user } = useEdificeClient();
   const { success } = useToast();
 
+  const fromMe = useMemo(() => {
+    return message.from.id === user?.userId;
+  }, [message, user]);
+
   // Hidden condition's
   const isInFolder = useMemo(() => {
     if (folderId && ['trash', 'inbox', 'outbox'].includes(folderId)) return;
     return true;
   }, [folderId]);
+
+  const canTransfer = useMemo(() => {
+    return message.state !== 'DRAFT' && fromMe && message.trashed !== true;
+  }, [fromMe, message.state, message.trashed]);
+
+  const canReply = useMemo(() => {
+    return message.state === 'SENT' && !fromMe && message.trashed !== true;
+  }, [fromMe, message.state, message.trashed]);
 
   const canReplyAll = useMemo(() => {
     const { to, cc, cci } = message;
@@ -113,10 +125,6 @@ export function useMessageActionDropDown({
   const hasActionsList = (idAction: string) => {
     return !actions || actions.includes(idAction);
   };
-
-  const fromMe = useMemo(() => {
-    return message.from.id === user?.userId;
-  }, [message, user]);
 
   // Handlers
   const handleDeleteClick = () => {
@@ -220,10 +228,7 @@ export function useMessageActionDropDown({
       action: () => {
         alert('reply');
       },
-      hidden:
-        (message.state === 'SENT' && fromMe) ||
-        message.state === 'DRAFT' ||
-        message.trashed,
+      hidden: !canReply,
     },
     {
       label: t('submit'),
@@ -250,7 +255,7 @@ export function useMessageActionDropDown({
       action: () => {
         alert('transfer');
       },
-      hidden: message.state !== 'SENT' || !fromMe || message.trashed,
+      hidden: !canTransfer,
     },
   ];
 
@@ -262,7 +267,7 @@ export function useMessageActionDropDown({
       action: () => {
         alert('reply');
       },
-      hidden: message.state === 'DRAFT' || message.trashed,
+      hidden: !canReply,
     },
     {
       label: t('replyall'),
@@ -280,10 +285,7 @@ export function useMessageActionDropDown({
       action: () => {
         alert('transfer');
       },
-      hidden:
-        !hasActionsList('transfer') ||
-        message.state === 'DRAFT' ||
-        message.trashed,
+      hidden: !hasActionsList('transfer') || !canTransfer,
     },
     {
       label: t('recall'),
@@ -359,6 +361,7 @@ export function useMessageActionDropDown({
 
   return {
     isInFolder,
+    canReply,
     canReplyAll,
     canMarkUnread,
     actionButtons,
