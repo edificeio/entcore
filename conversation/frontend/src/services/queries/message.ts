@@ -82,7 +82,7 @@ export const useConversationConfig = () => {
  * @param messageId - The ID of the message to fetch.
  * @returns Query result for the message.
  */
-export const useMessage = ({ messageId }: { messageId: string }) => {
+export const useMessage = (messageId: string) => {
   const result = useQuery(messageQueryOptions.getById(messageId));
   const { folderId } = useSelectedFolder();
   const { updateFolderMessagesQueryData } = useFolderUtils();
@@ -479,7 +479,6 @@ export const useCreateDraft = () => {
       setMessageUpdated({ ...messageUpdated });
       updateFolderBadgeCountLocal('draft', 1);
       // Update the message unread status in the list
-      console.log('update store create');
       queryClient.setQueryData(
         messageQueryOptions.getById(id).queryKey,
         (message: Message | undefined) => {
@@ -522,7 +521,6 @@ export const useUpdateDraft = () => {
       if (!messageUpdated) return;
       messageUpdated.date = new Date().getTime();
       setMessageUpdated({ ...messageUpdated });
-      console.log('update store draft up');
       queryClient.setQueryData(
         messageQueryOptions.getById(draftId).queryKey,
         (message: Message | undefined) => {
