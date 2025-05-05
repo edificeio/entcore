@@ -13,6 +13,7 @@ import { useI18n, useSelectedFolder } from '~/hooks';
 import { Message, MessageBase } from '~/models';
 import {
   baseUrl,
+  DEFAULT_MESSAGE,
   folderQueryOptions,
   messageService,
   useFolderMessages,
@@ -88,9 +89,9 @@ export const useMessage = (messageId: string) => {
   const { currentLanguage, user, userProfile } = useEdificeClient();
 
   if (result.isSuccess && result.data) {
-    const message = result.data;
+    let message: Message = result.data;
     if (message.id) {
-      // Fix issue when back retrun sbuject and body to null
+      // Fix issue when back retrun subject and body to null
       if (message.subject === null) {
         message.subject = '';
       }
@@ -107,19 +108,18 @@ export const useMessage = (messageId: string) => {
         );
       }
     } else {
-      message.language = currentLanguage;
-      message.from = {
-        id: user?.userId || '',
-        displayName: user?.username || '',
-        profile: (userProfile || '') as string,
+      message = {
+        ...DEFAULT_MESSAGE,
+        language: currentLanguage,
+        from: {
+          id: user?.userId || '',
+          displayName: user?.username || '',
+          profile: (userProfile || '') as string,
+        },
       };
     }
   }
   return result;
-};
-
-export const useOriginalMessage = (messageId: string) => {
-  return useQuery(messageQueryOptions.getOriginalFormat(messageId));
 };
 
 /**
