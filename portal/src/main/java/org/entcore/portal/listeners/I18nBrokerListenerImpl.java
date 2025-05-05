@@ -1,57 +1,311 @@
 package org.entcore.portal.listeners;
 
 import fr.wseduc.webutils.I18n;
-import io.vertx.core.Future;
-import io.vertx.core.MultiMap;
-import io.vertx.core.Promise;
+import io.vertx.core.*;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import org.entcore.broker.api.dto.i18n.FetchTranslationsRequestDTO;
 import org.entcore.broker.api.dto.i18n.FetchTranslationsResponseDTO;
 import org.entcore.broker.api.dto.i18n.LangAndDomain;
+import org.entcore.broker.api.dto.i18n.RegisterI18nFilesRequestDTO;
+import org.entcore.broker.api.dto.i18n.RegisterI18nFilesResponseDTO;
 import org.entcore.broker.proxy.I18nBrokerListener;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
  * Implementation of the I18nBrokerListener interface.
  * This class handles internationalization operations received through the message broker.
+ * It maintains a separate I18n instance for each application.
  */
 public class I18nBrokerListenerImpl implements I18nBrokerListener {
 
     private static final Logger log = LoggerFactory.getLogger(I18nBrokerListenerImpl.class);
-    private final I18n i18n;
+    private final Map<String, I18n> i18nInstances = new HashMap<>();
+    private final Vertx vertx;
+    private final String assetsPath;
 
     /**
      * Constructor for I18nBrokerListenerImpl.
      */
     public I18nBrokerListenerImpl() {
-        this(I18n.getInstance());
+        this(Vertx.currentContext().owner(), "../..");
     }
 
     /**
-     * Constructor for I18nBrokerListenerImpl with I18n dependency.
+     * Constructor for I18nBrokerListenerImpl with dependencies.
      *
-     * @param i18n The I18n instance
+     * @param vertx The Vertx instance
+     * @param assetsPath Path to the assets folder
      */
-    public I18nBrokerListenerImpl(I18n i18n) {
-        this.i18n = i18n;
+    public I18nBrokerListenerImpl(final Vertx vertx, final String assetsPath) {
+        this(I18n.getInstance(), vertx, assetsPath);
+    }
+
+    /**
+     * Constructor for I18nBrokerListenerImpl with dependencies.
+     *
+     * @param defaultI18n The default I18n instance
+     * @param vertx The Vertx instance
+     * @param assetsPath Path to the assets folder
+     */
+    public I18nBrokerListenerImpl(final I18n defaultI18n, final Vertx vertx, final String assetsPath) {
+        this.i18nInstances.put("default", defaultI18n);
+        this.vertx = vertx;
+        this.assetsPath = assetsPath;
+    }
+
+    /**
+     * Loads I18n assets files for the specified application.
+     * Uses a list of futures instead of a counter for better reliability.
+     *
+     * @param i18n The I18n instance to load files into
+     * @param application The application name
+     * @return Future that completes when loading is done
+     */
+    private Future<I18n> loadI18nAssetsFiles(final I18n i18n, final String application) {
+        final Promise<I18n> promise = Promise.promise();
+        final String i18nDirectory = assetsPath + File.separator + "i18n" + File.separator + application;
+
+        // Check if the directory exists
+        vertx.fileSystem().exists(i18nDirectory, existsResult -> {
+            if (existsResult.succeeded() && existsResult.result()) {
+                // List files in the directory
+                vertx.fileSystem().readDir(i18nDirectory, readResult -> {
+                    if (readResult.succeeded()) {
+                        List<String> files = readResult.result();
+                        if (files.isEmpty()) {
+                            // No files to process, complete with current i18n
+                            promise.complete(i18n);
+                            return;
+                        }
+
+                        // Create a list of futures to track completion
+                        final List<Future> fileFutures = new ArrayList<>();
+
+                        for (String path : files) {
+                            if (path.endsWith(".json")) {
+                                // Create a promise for each file operation
+                                Promise<Void> filePromise = Promise.promise();
+                                fileFutures.add(filePromise.future());
+
+                                // Read and load each JSON file
+                                vertx.fileSystem().readFile(path, fileResult -> {
+                                    if (fileResult.succeeded()) {
+                                        try {
+                                            final JsonObject i18nObject = new JsonObject(fileResult.result().toString());
+                                            final String fileName = path.substring(path.lastIndexOf(File.separator) + 1);
+                                            final String langCode = fileName.substring(0, fileName.lastIndexOf('.'));
+                                            final Locale language = Locale.forLanguageTag(langCode);
+
+                                            i18n.add(I18n.DEFAULT_DOMAIN, language, i18nObject);
+                                            log.debug("Loaded I18n file for application {}, language: {}", application, language);
+                                            filePromise.complete();
+                                        } catch (Exception e) {
+                                            log.error("Error loading I18n file: " + path, e);
+                                            // Complete anyway but log the error
+                                            filePromise.complete();
+                                        }
+                                    } else {
+                                        log.error("Could not read I18n file: " + path, fileResult.cause());
+                                        // Complete anyway but log the error
+                                        filePromise.complete();
+                                    }
+                                });
+                            }
+                        }
+
+                        // When all files are processed, complete the main promise
+                        if (fileFutures.isEmpty()) {
+                            promise.complete(i18n);
+                        } else {
+                            CompositeFuture.join(fileFutures)
+                                .onComplete(ar -> promise.complete(i18n));
+                        }
+                    } else {
+                        log.error("Could not read I18n directory: " + i18nDirectory, readResult.cause());
+                        promise.fail(readResult.cause());
+                    }
+                });
+            } else {
+                if (existsResult.failed()) {
+                    log.error("Error checking I18n directory: " + i18nDirectory, existsResult.cause());
+                } else {
+                    log.warn("I18n directory does not exist for application {}: {}", application, i18nDirectory);
+                }
+                promise.complete(i18n);
+            }
+        });
+
+        return promise.future();
+    }
+
+    /**
+     * Loads I18n theme files for the specified application.
+     * Returns a Future that completes when loading is done.
+     *
+     * @param i18n The I18n instance to load files into
+     * @param application The application name
+     * @return Future that completes when loading is done
+     */
+    private Future<I18n> loadI18nThemesFiles(final I18n i18n, final String application) {
+        final Promise<I18n> promise = Promise.promise();
+        final String themesDirectory = assetsPath + File.separator + "themes";
+        final Map<String, String> skins = vertx.sharedData().getLocalMap("skins");
+        final Map<String, String> reverseSkins = new HashMap<>();
+
+        // Create reverse mapping of skins
+        for (Map.Entry<String, String> e : skins.entrySet()) {
+            reverseSkins.put(e.getValue(), e.getKey());
+        }
+
+        vertx.fileSystem().exists(themesDirectory, event -> {
+            if (event.succeeded() && event.result()) {
+                vertx.fileSystem().readDir(themesDirectory, themes -> {
+                    if (themes.succeeded()) {
+                        List<String> themesList = themes.result();
+                        if (themesList.isEmpty()) {
+                            // No themes to process, complete successfully
+                            promise.complete(i18n);
+                            return;
+                        }
+
+                        // Track completion of all theme processing
+                        final List<Future<Void>> themeFutures = new ArrayList<>();
+
+                        for (String theme : themesList) {
+                            final String themeName = theme.substring(theme.lastIndexOf(File.separator) + 1);
+                            final String domain = reverseSkins.get(themeName);
+
+                            if (domain == null) {
+                                log.debug("Missing domain for theme: {}", themeName);
+                                continue;
+                            }
+
+                            final String i18nDirectory = theme + File.separator + "i18n" + File.separator + application;
+                            themeFutures.add(readI18nForTheme(i18n, domain, i18nDirectory, themeName));
+                        }
+
+                        // When all themes are processed, complete the promise
+                        CompositeFuture.all(new ArrayList<>(themeFutures))
+                            .onComplete(ar -> {
+                                if (ar.succeeded()) {
+                                    promise.complete(i18n);
+                                } else {
+                                    log.error("Error processing themes", ar.cause());
+                                    // Still complete with i18n instance, even if some themes failed
+                                    promise.complete(i18n);
+                                }
+                            });
+                    } else {
+                        log.error("Error listing themes directory", themes.cause());
+                        promise.complete(i18n); // Still return i18n instance
+                    }
+                });
+            } else {
+                log.debug("Themes directory does not exist: {}", themesDirectory);
+                promise.complete(i18n); // Still return i18n instance
+            }
+        });
+
+        return promise.future();
+    }
+
+    /**
+     * Reads and loads I18n files for a specific theme.
+     * Uses a list of futures instead of a counter.
+     *
+     * @param i18n The I18n instance to load files into
+     * @param domain The domain for the I18n files
+     * @param i18nDirectory The directory containing I18n files
+     * @param themeName The name of the theme
+     * @return Future that completes when loading is done
+     */
+    private Future<Void> readI18nForTheme(final I18n i18n, final String domain, final String i18nDirectory, final String themeName) {
+        Promise<Void> promise = Promise.promise();
+
+        vertx.fileSystem().exists(i18nDirectory, ar -> {
+            if (ar.succeeded() && ar.result()) {
+                vertx.fileSystem().readDir(i18nDirectory, asyncResult -> {
+                    if (asyncResult.succeeded()) {
+                        List<String> files = asyncResult.result();
+                        if (files.isEmpty()) {
+                            promise.complete(); // No files to process
+                            return;
+                        }
+
+                        // Create a list of futures to track completion
+                        final List<Future<?>> fileFutures = new ArrayList<>();
+
+                        for (final String s : files) {
+                            if (s.endsWith(".json")) {
+                                // Create a promise for each file operation
+                                Promise<Void> filePromise = Promise.promise();
+                                fileFutures.add(filePromise.future());
+
+                                final String fileName = s.substring(s.lastIndexOf(File.separator) + 1);
+                                final String langCode = fileName.substring(0, fileName.lastIndexOf('.'));
+                                final Locale locale = Locale.forLanguageTag(langCode);
+
+                                vertx.fileSystem().readFile(s, fileResult -> {
+                                    if (fileResult.succeeded()) {
+                                        try {
+                                            final JsonObject i18nObject = new JsonObject(fileResult.result().toString());
+                                            i18n.add(domain, locale, i18nObject);
+                                            // Also add under theme name for compatibility
+                                            i18n.add(themeName, locale, i18nObject, true);
+                                            log.debug("Loaded theme I18n file: {} for theme: {}, locale: {}", s, themeName, locale);
+                                        } catch (Exception e) {
+                                            log.error("Error loading theme I18n file: " + s, e);
+                                        }
+                                        filePromise.complete();
+                                    } else {
+                                        log.error("Could not read theme I18n file: " + s, fileResult.cause());
+                                        filePromise.complete();
+                                    }
+                                });
+                            }
+                        }
+
+                        // When all files are processed, complete the main promise
+                        if (fileFutures.isEmpty()) {
+                            promise.complete();
+                        } else {
+                            Future.join(fileFutures)
+                                .onComplete(onComplete -> promise.complete());
+                        }
+                    } else {
+                        log.error("Error reading theme I18n directory: " + i18nDirectory, asyncResult.cause());
+                        promise.fail(asyncResult.cause());
+                    }
+                });
+            } else {
+                log.debug("Theme I18n directory does not exist: {}", i18nDirectory);
+                promise.complete(); // Nothing to do, complete successfully
+            }
+        });
+
+        return promise.future();
     }
 
     /**
      * Fetches translations based on the provided request.
-     * The request can either contain HTTP headers or explicit language and domain information.
+     * Uses application-specific I18n instances for better organization and performance.
      *
-     * @param request The request containing either headers or language and domain
+     * @param request The request containing application, headers or language and domain
      * @return A Future containing the response with translations
      */
     @Override
-    public Future<FetchTranslationsResponseDTO> fetchTranslations(FetchTranslationsRequestDTO request) {
-        Promise<FetchTranslationsResponseDTO> promise = Promise.promise();
+    public Future<FetchTranslationsResponseDTO> fetchTranslations(final FetchTranslationsRequestDTO request) {
+        final Promise<FetchTranslationsResponseDTO> promise = Promise.promise();
 
         // Validate the request
         if (request == null || !request.isValid()) {
@@ -60,25 +314,63 @@ public class I18nBrokerListenerImpl implements I18nBrokerListener {
         }
 
         try {
-            final JsonObject translations =  new JsonObject();
+            // Get the application from the request, or use "default" if not specified
+            final String application = (request.getApplication() == null || request.getApplication().isEmpty())
+                    ? "default"
+                    : request.getApplication();
 
+            // Just get the I18n instance, don't create if it doesn't exist
+            final I18n appI18n = i18nInstances.get(application);
+
+            if (appI18n == null) {
+                log.warn("No I18n instance found for application: {}. Using default instance.", application);
+                // Fall back to default instance
+                final I18n defaultI18n = i18nInstances.get("default");
+                if (defaultI18n == null) {
+                    return Future.failedFuture("i18n.application.not.registered");
+                }
+                // Continue with default instance
+                return getTranslations(request, defaultI18n, "default", promise);
+            }
+
+            // Use the found instance
+            return getTranslations(request, appI18n, application, promise);
+        } catch (Exception e) {
+            log.error("Error fetching translations", e);
+            promise.fail("i18n.fetch.error");
+        }
+
+        return promise.future();
+    }
+
+    /**
+     * Helper method to extract translations from I18n instance based on the request
+     */
+    private Future<FetchTranslationsResponseDTO> getTranslations(
+            final FetchTranslationsRequestDTO request,
+            final I18n i18n,
+            final String application,
+            final Promise<FetchTranslationsResponseDTO> promise) {
+
+        final JsonObject translations = new JsonObject();
+
+        try {
             // Use headers or explicit language and domain
             if (request.getHeaders() != null) {
                 // Create a simulated HttpServerRequest with the provided headers
                 final MultiMap headers = MultiMap.caseInsensitiveMultiMap();
-                for (Map.Entry<String, String> entry : request.getHeaders().entrySet()) {
-                    headers.add(entry.getKey(), entry.getValue());
-                }
+                request.getHeaders().forEach((key, value) -> {
+                    if (value != null) {
+                        headers.add(key, value.toString());
+                    }
+                });
 
                 final HttpServerRequest httpRequest = new JsonHttpServerRequest(new JsonObject(), headers);
-                // Use I18n to load translations based on headers
                 translations.mergeIn(i18n.load(httpRequest));
             } else {
                 // Use explicit language and domain
                 final LangAndDomain langAndDomain = request.getLangAndDomain();
-                // Use I18n to load translations based on language and domain
-                //noinspection deprecation
-                translations.mergeIn(langAndDomain.getDomain() ==  null ?
+                translations.mergeIn(langAndDomain.getDomain() == null ?
                         i18n.load(langAndDomain.getLang()) :
                         i18n.load(langAndDomain.getLang(), langAndDomain.getDomain())
                 );
@@ -97,9 +389,101 @@ public class I18nBrokerListenerImpl implements I18nBrokerListener {
             // Create and complete the response
             final FetchTranslationsResponseDTO response = new FetchTranslationsResponseDTO(translationsMap);
             promise.complete(response);
+
+            log.debug("Successfully fetched {} translations for application: {}",
+                    translationsMap.size(), application);
         } catch (Exception e) {
-            log.error("Error fetching translations", e);
-            promise.fail("i18n.fetch.error");
+            log.error("Error processing translations for application: {}", application, e);
+            promise.fail("i18n.processing.error");
+        }
+
+        return promise.future();
+    }
+
+    /**
+     * Registers I18n files based on the provided request.
+     * Handles chaining with proper error handling.
+     *
+     * @param request The request containing application and dictionaries
+     * @return A Future containing the response with registration details
+     */
+    @Override
+    public Future<RegisterI18nFilesResponseDTO> registerI18nFiles(final RegisterI18nFilesRequestDTO request) {
+        final Promise<RegisterI18nFilesResponseDTO> promise = Promise.promise();
+
+        // Validate request
+        if (request == null || !request.isValid()) {
+            log.error("Invalid registerI18nFiles request: {}", request);
+            return Future.failedFuture("i18n.register.invalid.request");
+        }
+
+        try {
+            final String application = request.getApplication();
+            final Map<String, Map<String, String>> translationsByLanguage = request.getTranslationsByLanguage();
+
+            log.info("Registering I18n dictionaries for application: {}", application);
+
+            // Create a new I18n instance
+            final I18n i18n = new I18n();
+
+            int translationsCount = 0;
+
+            // Register translations from the map
+            for (Map.Entry<String, Map<String, String>> entry : translationsByLanguage.entrySet()) {
+                final String filename = entry.getKey();
+                final Map<String, String> translations = entry.getValue();
+
+                // Extract language code from filename (e.g. "fr.json" -> "fr")
+                final String langCode = filename.substring(0, filename.lastIndexOf('.'));
+                final Locale locale = Locale.forLanguageTag(langCode);
+
+                // Convert Map to JsonObject
+                final JsonObject i18nObject = new JsonObject();
+                translations.forEach(i18nObject::put);
+
+                // Add translations to the I18n instance
+                i18n.add(I18n.DEFAULT_DOMAIN, locale, i18nObject);
+                translationsCount += translations.size();
+
+                log.debug("Registered {} translations for language {} in application {}",
+                        translations.size(), langCode, application);
+            }
+
+            // Final count for the response
+            final int finalTranslationsCount = translationsCount;
+
+            // Chain loading of assets files and then theme files with proper error handling
+            Future<I18n> assetsFuture = loadI18nAssetsFiles(i18n, application);
+
+            assetsFuture.compose(
+                // Si loadI18nAssetsFiles réussit, alors exécuter loadI18nThemesFiles
+                updatedI18n -> loadI18nThemesFiles(updatedI18n, application),
+                // Si loadI18nAssetsFiles échoue, propager l'erreur
+                cause -> Future.failedFuture(cause)
+            ).onComplete(ar -> {
+                if (ar.succeeded()) {
+                    // Store the fully loaded instance
+                    i18nInstances.put(application, ar.result());
+
+                    // Create and return response
+                    final RegisterI18nFilesResponseDTO response = new RegisterI18nFilesResponseDTO(
+                            application,
+                            translationsByLanguage.size(),
+                            finalTranslationsCount);
+
+                    log.info("Successfully registered I18n for application {}: {} languages, {} translations",
+                            application, translationsByLanguage.size(), finalTranslationsCount);
+
+                    promise.complete(response);
+                } else {
+                    log.error("Error loading I18n files for application: " + application, ar.cause());
+                    promise.fail("i18n.files.load.error: " + ar.cause().getMessage());
+                }
+            });
+
+        } catch (Exception e) {
+            log.error("Error registering I18n files", e);
+            promise.fail("i18n.register.error: " + e.getMessage());
         }
 
         return promise.future();
