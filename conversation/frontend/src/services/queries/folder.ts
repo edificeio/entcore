@@ -7,11 +7,11 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
+import { useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Folder, MessageMetadata } from '~/models';
-import { folderService, searchFolder } from '..';
-import { useCallback } from 'react';
 import { useConfig } from '~/store';
+import { folderService, searchFolder } from '..';
 
 /**
  * Provides query options for folder-related operations.

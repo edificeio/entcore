@@ -9,7 +9,7 @@ import {
   ConversationHistoryRenderer,
   Editor,
 } from '@edifice.io/react/editor';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useLayoutEffect, useState } from 'react';
 import illuRecall from '~/assets/illu-messageRecalled.svg';
 import { MessageAttachments } from '~/components/MessageAttachments/MessageAttachments';
 import { useI18n } from '~/hooks';
@@ -40,7 +40,7 @@ export function MessageBody({
     if (!editMode) return;
     onMessageChange?.({ ...message, body: editor?.getHTML() });
   };
-  useEffect(() => {
+  useLayoutEffect(() => {
     // Set the content of the editor to the message body only on the first render
     setContent(message.body);
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -226,7 +226,7 @@ export function useMessageActionDropDown({
       id: 'reply',
       icon: <IconUndo />,
       action: () => {
-        alert('reply');
+        navigate(`/draft/create?reply=${message.id}`);
       },
       hidden: !canReply,
     },
@@ -253,7 +253,7 @@ export function useMessageActionDropDown({
       id: 'transfer',
       icon: <IconRedo />,
       action: () => {
-        alert('transfer');
+        navigate(`/draft/create?transfer=${message.id}`);
       },
       hidden: !canTransfer,
     },
@@ -265,7 +265,7 @@ export function useMessageActionDropDown({
       id: 'reply',
       icon: <IconUndo />,
       action: () => {
-        alert('reply');
+        navigate(`/draft/create?reply=${message.id}`);
       },
       hidden: !canReply,
     },
@@ -274,7 +274,7 @@ export function useMessageActionDropDown({
       id: 'replyall',
       icon: <IconUndoAll />,
       action: () => {
-        alert('reply all');
+        navigate(`/draft/create?replyall=${message.id}`);
       },
       hidden: !hasActionsList('replyall') || !canReplyAll,
     },
@@ -283,7 +283,7 @@ export function useMessageActionDropDown({
       id: 'transfer',
       icon: <IconRedo />,
       action: () => {
-        alert('transfer');
+        navigate(`/draft/create?transfer=${message.id}`);
       },
       hidden: !hasActionsList('transfer') || !canTransfer,
     },

@@ -55,6 +55,9 @@ export const createFolderService = (baseURL: string) => ({
       unread?: boolean;
     },
   ) {
+    if (!folderId) {
+      return Promise.resolve([] as MessageMetadata[]);
+    }
     return odeServices
       .http()
       .get<
