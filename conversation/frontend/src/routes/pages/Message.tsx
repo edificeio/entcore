@@ -35,10 +35,19 @@ export function Component() {
   const replyAllMessageId = searchParams.get('replyall');
   const transferMessageId = searchParams.get('transfer');
   const { message } = useMessageReplyOrTransfer({
-    messageId,
-    replyMessageId,
-    replyAllMessageId,
-    transferMessageId,
+    messageId:
+      messageId ||
+      replyMessageId ||
+      replyAllMessageId ||
+      transferMessageId ||
+      '',
+    action: replyMessageId
+      ? 'reply'
+      : replyAllMessageId
+        ? 'replyAll'
+        : transferMessageId
+          ? 'transfer'
+          : undefined,
   });
 
   useEffect(() => {
