@@ -1,6 +1,6 @@
 {
   "name": "@edifice.io/edifice-ent-client",
-  "version": "1.0.1-develop",
+  "version": "1.0.1-develop.20250505172218",
   "description": "Clients to interact with ENT service",
   "scripts": {
     "dev": "vite",
@@ -37,7 +37,7 @@
     "dist"
   ],
   "devDependencies": {
-    "@edifice.io/edifice-clients-generator": "1.0.0-develop",
+    "@edifice.io/edifice-clients-generator": "latest",
     "@nestjs/common": "^11.0.1",
     "@nestjs/microservices": "^11.0.11",
     "husky": "^9.0.11",
