@@ -21,6 +21,7 @@ export interface MessageActionDropDownProps {
     buttonColor?: ButtonColors;
   };
   actions?: string[];
+  className?: string;
 }
 
 export function MessageActionDropDown({
@@ -31,6 +32,7 @@ export function MessageActionDropDown({
     dropdownVariant: 'outline',
     buttonColor: 'primary',
   },
+  className,
 }: MessageActionDropDownProps) {
   const [inactiveUsers, setInactiveUsers] = useState<string[] | undefined>();
   const { actionButtons, dropdownOptions } = useMessageActionDropDown({
@@ -40,15 +42,19 @@ export function MessageActionDropDown({
   });
   const navigate = useNavigate();
 
-  const visibleOptions = dropdownOptions.filter((o) => !o.hidden);
+  const visibleOptions = dropdownOptions.filter(
+    (o) => !o.hidden && !actionButtons.some((a) => !a.hidden && a.id === o.id),
+  );
 
   const handleCloseInactiveUsersModal = () => {
     setInactiveUsers(undefined);
     navigate(`/inbox`);
   };
 
+  const classNameContainer = `d-flex ${className}`;
+
   return (
-    <div className="d-flex">
+    <div className={classNameContainer}>
       {actionButtons
         .filter((o) => !o.hidden)
         .map((option) => (
