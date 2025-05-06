@@ -7,19 +7,15 @@ import io.vertx.core.json.JsonObject;
 import org.entcore.broker.api.dto.i18n.FetchTranslationsRequestDTO;
 import org.entcore.broker.api.dto.i18n.FetchTranslationsResponseDTO;
 import org.entcore.broker.api.dto.i18n.LangAndDomain;
-import org.entcore.broker.api.dto.i18n.RegisterI18nFilesRequestDTO;
-import org.entcore.broker.api.dto.i18n.RegisterI18nFilesResponseDTO;
+import org.entcore.broker.api.dto.i18n.RegisterTranslationFilesRequestDTO;
+import org.entcore.broker.api.dto.i18n.RegisterTranslationFilesResponseDTO;
 import org.entcore.broker.proxy.I18nBrokerListener;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Implementation of the I18nBrokerListener interface.
@@ -408,8 +404,8 @@ public class I18nBrokerListenerImpl implements I18nBrokerListener {
      * @return A Future containing the response with registration details
      */
     @Override
-    public Future<RegisterI18nFilesResponseDTO> registerI18nFiles(final RegisterI18nFilesRequestDTO request) {
-        final Promise<RegisterI18nFilesResponseDTO> promise = Promise.promise();
+    public Future<RegisterTranslationFilesResponseDTO> registerI18nFiles(final RegisterTranslationFilesRequestDTO request) {
+        final Promise<RegisterTranslationFilesResponseDTO> promise = Promise.promise();
 
         // Validate request
         if (request == null || !request.isValid()) {
@@ -424,7 +420,7 @@ public class I18nBrokerListenerImpl implements I18nBrokerListener {
             log.info("Registering I18n dictionaries for application: {}", application);
 
             // Create a new I18n instance
-            final I18n i18n = new I18n();
+            final I18n i18n = new I18n().initializeMessages(Collections.emptyMap());
 
             int translationsCount = 0;
 
@@ -466,7 +462,7 @@ public class I18nBrokerListenerImpl implements I18nBrokerListener {
                     i18nInstances.put(application, ar.result());
 
                     // Create and return response
-                    final RegisterI18nFilesResponseDTO response = new RegisterI18nFilesResponseDTO(
+                    final RegisterTranslationFilesResponseDTO response = new RegisterTranslationFilesResponseDTO(
                             application,
                             translationsByLanguage.size(),
                             finalTranslationsCount);

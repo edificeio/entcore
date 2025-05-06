@@ -9,8 +9,8 @@ importers:
   .:
     devDependencies:
       '@edifice.io/edifice-clients-generator':
-        specifier: 1.0.0-develop
-        version: 1.0.0-develop
+        specifier: latest
+        version: 1.0.0-develop.20250505100954
       '@nestjs/common':
         specifier: ^11.0.1
         version: 11.0.12(reflect-metadata@0.2.2)(rxjs@7.8.2)
@@ -70,8 +70,8 @@ packages:
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
     engines: {node: '>=0.1.90'}
 
-  '@edifice.io/edifice-clients-generator@1.0.0-develop':
-    resolution: {integrity: sha512-Pq9d6CbKggQsxKHAOHZJOLyp0kI/IlPK/q2Xm3WlmucnneQ1BIkA5V+OP214QredhdkXYixrpVNOor0wyxGJdw==}
+  '@edifice.io/edifice-clients-generator@1.0.0-develop.20250505100954':
+    resolution: {integrity: sha512-FcVkuWCuSXld+TSszGl8BwYri8EakC9JmfJxTaTUlLQj2z0Cyb4ty2hb7dh8YtHbrx5VFajkj6B4z/+Qv/j9VQ==}
     hasBin: true
 
   '@esbuild/aix-ppc64@0.21.5':
@@ -1986,7 +1986,7 @@ snapshots:
   '@colors/colors@1.5.0':
     optional: true
 
-  '@edifice.io/edifice-clients-generator@1.0.0-develop':
+  '@edifice.io/edifice-clients-generator@1.0.0-develop.20250505100954':
     dependencies:
       json-schema-to-typescript: 15.0.4
       typescript: 5.8.2
