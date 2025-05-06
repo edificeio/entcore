@@ -13,7 +13,6 @@ export const useAttachFiles = () => {
   const queryClient = useQueryClient();
   const { setMessageUpdated } = useAppActions();
   const { updateFolderMessagesQueryData } = useFolderUtils();
-
   const toast = useToast();
   const { t } = useI18n();
 
@@ -42,11 +41,10 @@ export const useAttachFiles = () => {
       );
       toast.success(t('attachments.loaded'));
     },
-    onError(error, { draftId }) {
+    onError(_error, { draftId }) {
       queryClient.invalidateQueries({
         queryKey: messageQueryOptions.getById(draftId).queryKey,
       });
-      toast.error(error.message);
     },
   });
 };
@@ -57,7 +55,6 @@ export const useAttachFiles = () => {
  */
 export const useDetachFile = () => {
   const queryClient = useQueryClient();
-  const toast = useToast();
   const { setMessageUpdated } = useAppActions();
   const { updateFolderMessagesQueryData } = useFolderUtils();
 
@@ -91,11 +88,10 @@ export const useDetachFile = () => {
           : oldMessage,
       );
     },
-    onError(error, { draftId }) {
+    onError(_error, { draftId }) {
       queryClient.invalidateQueries({
         queryKey: messageQueryOptions.getById(draftId).queryKey,
       });
-      toast.error(error.message);
     },
   });
 };
