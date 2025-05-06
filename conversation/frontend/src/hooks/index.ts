@@ -3,3 +3,5 @@ export * from './useSelectedFolder';
 export * from './useRecall';
 export * from './useRights';
 export * from './useUsedSpace';
+export * from './useMessageReplyOrTransfer';
+export * from './useAdditionalRecipients';

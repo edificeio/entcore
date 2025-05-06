@@ -7,8 +7,11 @@ import {
 } from 'react-router-dom';
 import { Message } from '~/features/message';
 import { MessageEdit } from '~/features/message-edit/MessageEdit';
-import { useSelectedFolder } from '~/hooks';
-import { useMessageReplyOrTransfer } from '~/hooks/useMessageReplyOrTransfer';
+import {
+  useSelectedFolder,
+  useAdditionalRecipients,
+  useMessageReplyOrTransfer,
+} from '~/hooks';
 
 import { messageQueryOptions } from '~/services';
 
@@ -31,10 +34,21 @@ export function Component() {
   const { folderId } = useSelectedFolder();
   const [currentKey, setCurrentKey] = useState(0);
 
+  // Get IDs of users and groups/favorites to add as recipients.
+  const toUsers = searchParams.getAll('user');
+  const toGroups = searchParams.getAll('group');
+  const toFavorites = searchParams.getAll('favorite');
+  const { addRecipientsById } = useAdditionalRecipients(
+    'to',
+    toUsers,
+    toGroups,
+    toFavorites,
+  );
+
   const replyMessageId = searchParams.get('reply');
   const replyAllMessageId = searchParams.get('replyall');
   const transferMessageId = searchParams.get('transfer');
-  const { message } = useMessageReplyOrTransfer({
+  const { message: baseMessage } = useMessageReplyOrTransfer({
     messageId:
       messageId ||
       replyMessageId ||
@@ -60,9 +74,11 @@ export function Component() {
     setCurrentKey((prev) => prev + 1);
   }, [messageId]);
 
-  if (!message) {
+  if (!baseMessage) {
     return null;
   }
+
+  const message = addRecipientsById(baseMessage);
 
   return (
     <Fragment key={currentKey}>

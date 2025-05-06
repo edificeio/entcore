@@ -1,6 +1,9 @@
 import { BookmarkWithDetails, odeServices } from '@edifice.io/client';
 import { Visible } from '~/models/visible';
 
+type VisibleData = { id: string; displayName: string };
+type VisibleUserData = VisibleData & { profile: string };
+
 /**
  * User service to manage user/group/bookmark.
  * This service is used to search for users/groups/bookmarks.
@@ -17,39 +20,85 @@ import { Visible } from '~/models/visible';
  * });
  * });
  */
-export const createUserService = () => ({
-  /**
-   * Search for user/group/bookmark.
-   * @param search search string
-   * @returns a list of Visible objects
-   */
-  searchVisible(search: string) {
-    return odeServices.http().get<Visible[]>(`/communication/visible/search`, {
-      queryParams: { query: search },
-    });
-  },
+export const createUserService = () => {
+  // Locally define a function with multiple signatures and return types.
+  function getVisibleById(id: string, type: 'User'): Promise<VisibleUserData>;
+  function getVisibleById(id: string, type: 'Group'): Promise<VisibleData>;
+  function getVisibleById(
+    id: string,
+    type: 'User' | 'Group',
+  ): Promise<VisibleData | VisibleUserData> {
+    switch (type) {
+      case 'User':
+        return odeServices
+          .http()
+          .get<{
+            id: string;
+            displayName: string;
+            profiles: Array<string>;
+          }>(`/directory/user/${id}`)
+          .then(({ id, displayName, ...result }) => ({
+            id,
+            displayName,
+            profile: result.profiles[0],
+          }));
 
-  /**
-   * Get the list of bookmarks.
-   * @returns a list of Visible objects
-   */
-  getBookmarks(): Promise<Visible[]> {
-    return odeServices
-      .directory()
-      .getBookMarks()
-      .then((bookmarks) => {
-        return bookmarks.map(
-          (bookmark): Visible => ({
-            id: bookmark.id,
-            displayName: bookmark.displayName,
-            usedIn: ['TO', 'CC', 'CCI'],
-            type: 'ShareBookmark',
-          }),
-        );
-      });
-  },
+      case 'Group':
+        return odeServices
+          .http()
+          .get<{
+            id: string;
+            name: string;
+            nbUsers: number;
+          }>(`/directory/group/${id}`)
+          .then(({ id, ...result }) => ({
+            id,
+            displayName: result.name,
+          }));
+    }
+  }
 
-  getBookMarkById(id: string): Promise<BookmarkWithDetails> {
-    return odeServices.directory().getBookMarkById(id);
-  },
-});
+  return {
+    /**
+     * Search for user/group/bookmark.
+     * @param search search string
+     * @returns a list of Visible objects
+     */
+    searchVisible(search: string) {
+      return odeServices
+        .http()
+        .get<Visible[]>(`/communication/visible/search`, {
+          queryParams: { query: search },
+        });
+    },
+
+    /**
+     * Search by ID for a visible user or group.
+     */
+    getVisibleById,
+
+    /**
+     * Get the list of bookmarks.
+     * @returns a list of Visible objects
+     */
+    getBookmarks(): Promise<Visible[]> {
+      return odeServices
+        .directory()
+        .getBookMarks()
+        .then((bookmarks) => {
+          return bookmarks.map(
+            (bookmark): Visible => ({
+              id: bookmark.id,
+              displayName: bookmark.displayName,
+              usedIn: ['TO', 'CC', 'CCI'],
+              type: 'ShareBookmark',
+            }),
+          );
+        });
+    },
+
+    getBookMarkById(id: string): Promise<BookmarkWithDetails> {
+      return odeServices.directory().getBookMarkById(id);
+    },
+  };
+};
