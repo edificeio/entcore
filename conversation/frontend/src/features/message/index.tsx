@@ -21,6 +21,7 @@ export function Message({ message }: MessageProps) {
           <MessageActionDropDown
             message={message}
             actions={['reply', 'replyall', 'transfer']}
+            className="gap-12"
           />
         </footer>
       </div>
