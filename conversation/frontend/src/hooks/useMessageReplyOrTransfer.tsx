@@ -28,7 +28,7 @@ export function useMessageReplyOrTransfer({
     return { message: undefined };
   }
 
-  if (messageOrigin?.id && action) {
+  if (messageOrigin.id && action) {
     const messageTmp: Message = {
       ...DEFAULT_MESSAGE,
       language: currentLanguage,
