@@ -3,6 +3,7 @@ import { ConfirmModal } from '@edifice.io/react';
 import { useEffect } from 'react';
 import { useI18n } from '~/hooks';
 import { useFolderActions } from './hooks';
+import { createPortal } from 'react-dom';
 
 export function TrashFolderModal() {
   const { t } = useI18n();
@@ -16,16 +17,18 @@ export function TrashFolderModal() {
 
   const handleCancelClick = () => setOpenedModal(undefined);
 
-  return (
+  return createPortal(
     <ConfirmModal
       id="modalFolderTrash"
       variant="ok/cancel"
       header={t('folder.trash.title')}
       body={t('folder.trash.body')}
       okText={t('delete')}
+      size="sm"
       onCancel={handleCancelClick}
       onSuccess={handleTrashClick}
       isOpen={true}
-    ></ConfirmModal>
+    ></ConfirmModal>,
+    document.getElementById('portal') as HTMLElement,
   );
 }

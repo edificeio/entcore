@@ -2,3 +2,7 @@
   min-width: 300px;
   width: 300px;
 }
+#portal {
+  position: relative;
+  z-index: 9999;
+}
