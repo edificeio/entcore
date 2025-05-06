@@ -36,7 +36,7 @@ export function MessageList() {
     isFetchingNextPage: isLoadingNextPage,
     hasNextPage,
     fetchNextPage,
-  } = useFolderMessages(folderId);
+  } = useFolderMessages(folderId!);
   const {
     handleDelete,
     handleEmptyTrash,
