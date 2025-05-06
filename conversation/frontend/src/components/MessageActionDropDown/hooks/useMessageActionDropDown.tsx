@@ -224,7 +224,7 @@ export function useMessageActionDropDown({
       action: () => {
         navigate(`/draft/create?reply=${message.id}`);
       },
-      hidden: !canReply,
+      hidden: folderId === 'outbox' || !canReply,
     },
     {
       label: t('submit'),
