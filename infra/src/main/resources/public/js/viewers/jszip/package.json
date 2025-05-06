@@ -46,7 +46,7 @@
     "grunt-contrib-uglify": "~0.4.0",
     "jszip-utils": "~0.0.2"
   },
-  "dependencies":{
+  "dependencies": {
     "pako": "~0.2.5"
   },
   "license": "MIT or GPLv3"

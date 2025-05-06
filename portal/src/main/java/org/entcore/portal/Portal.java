@@ -20,6 +20,7 @@
 package org.entcore.portal;
 
 import io.vertx.core.Promise;
+import org.entcore.broker.api.utils.AddressParameter;
 import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.http.BaseServer;
 import org.entcore.portal.controllers.PortalController;
@@ -30,7 +31,9 @@ public class Portal extends BaseServer {
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
 		super.start(startPromise);
-		BrokerProxyUtils.addBrokerProxy(new I18nBrokerListenerImpl(), vertx);
+		final String assetPath = config.getString("assets-path", "../..");
+		final AddressParameter parameter = new AddressParameter("application", "portal");
+		BrokerProxyUtils.addBrokerProxy(new I18nBrokerListenerImpl(vertx, assetPath), vertx, parameter);
 		
 		addController(new PortalController());
 	}
