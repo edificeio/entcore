@@ -865,8 +865,6 @@
   "unlock": "Débloquer",
   "unpublish": "Dépublier",
   "upload.forbidden": "Vous ne pouvez pas importer de fichiers pour le moment",
-  "uploadcard.error": "",
-  "uploadcard.retry": "",
   "video.embed.invalid": "Le format du lien est invalide",
   "video.embed.pickOther": "Collez votre propre code",
   "video.embed.pickProvider": "Sélectionnez un type de contenu multimédia",
