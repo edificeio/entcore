@@ -61,7 +61,7 @@ export function MessageNavigation({ message }: MessageProps) {
           onChange={handleMessageChange}
         />
       )}
-      <MessageActionDropDown {...actionDropDownProps} />
+      <MessageActionDropDown {...actionDropDownProps} className="gap-8" />
     </nav>
   );
 }

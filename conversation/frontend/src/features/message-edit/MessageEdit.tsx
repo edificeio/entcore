@@ -100,6 +100,7 @@ export function MessageEdit({ message }: MessageEditProps) {
                   mainButtonVariant: 'filled',
                   buttonColor: 'primary',
                 }}
+                className="gap-12"
               />
               {messageUpdated?.date && (
                 <div className="caption fst-italic" key={dateKey}>
