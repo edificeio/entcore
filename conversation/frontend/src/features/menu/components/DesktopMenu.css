@@ -1,0 +1,20 @@
+.folder-item .unread-badge {
+  opacity: 1;
+  position: absolute;
+  transition: opacity 0.4s ease-in-out;
+}
+
+.folder-item .actions-button button {
+  position: relative;
+  opacity: 0;
+  transition: opacity 0.4s ease-in-out;
+  background: transparent;
+}
+
+.folder-item:hover .unread-badge {
+  opacity: 0;
+}
+
+.folder-item:hover .actions-button button {
+  opacity: 1;
+}
