@@ -47,7 +47,7 @@ publish () {
     # Mettre à jour la version dans tous les packages avec la version exacte
     NEW_VERSION="$LATEST_TAG-$LOCAL_BRANCH.$TIMESTAMP"
     echo "[publish] Update version in all packages with the exact version"
-    docker-compose run -e NPM_TOKEN=$NPM_TOKEN --rm -u "$USER_UID:$GROUP_GID" node sh -c "pnpm -r exec npm version $NEW_VERSION --no-git-tag-version"
+    docker compose run -e NPM_TOKEN=$NPM_TOKEN --rm -u "$USER_UID:$GROUP_GID" node sh -c "pnpm -r exec npm version $NEW_VERSION --no-git-tag-version"
   fi
 
   # Publier avec le tag de la branche
@@ -56,9 +56,9 @@ publish () {
   DRY_RUN=${DRY_RUN:-true}
   
   if [ "$DRY_RUN" = "true" ]; then
-    docker-compose run -e NPM_TOKEN=$NPM_TOKEN --rm -u "$USER_UID:$GROUP_GID" node sh -c "pnpm publish -r --no-git-checks --tag $TAG_BRANCH --access=public --dry-run"
+    docker compose run -e NPM_TOKEN=$NPM_TOKEN --rm -u "$USER_UID:$GROUP_GID" node sh -c "pnpm publish -r --no-git-checks --tag $TAG_BRANCH --access=public --dry-run"
   else
-    docker-compose run -e NPM_TOKEN=$NPM_TOKEN --rm -u "$USER_UID:$GROUP_GID" node sh -c "pnpm publish -r --no-git-checks --tag $TAG_BRANCH --access=public"
+    docker compose run -e NPM_TOKEN=$NPM_TOKEN --rm -u "$USER_UID:$GROUP_GID" node sh -c "pnpm publish -r --no-git-checks --tag $TAG_BRANCH --access=public"
   fi
 }
 

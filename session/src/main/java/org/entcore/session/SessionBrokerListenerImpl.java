@@ -1,8 +1,10 @@
 package org.entcore.session;
 
+import fr.wseduc.webutils.request.CookieHelper;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import org.entcore.broker.api.dto.session.*;
@@ -34,6 +36,12 @@ public class SessionBrokerListenerImpl implements SessionBrokerListener {
      */
     public SessionBrokerListenerImpl(AuthManager authManager) {
         this.authManager = authManager;
+        final Vertx vertx = authManager.getVertx();
+        // init cookie helper
+        CookieHelper.getInstance().init((String) vertx
+                        .sharedData().getLocalMap("server").get("signKey"),
+                (String) vertx.sharedData().getLocalMap("server").get("sameSiteValue"),
+                io.vertx.core.logging.LoggerFactory.getLogger(getClass()));
     }
     
     /**
