@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * This class represents a response to a request to register I18n files.
  */
-public class RegisterI18nFilesResponseDTO {
+public class RegisterTranslationFilesResponseDTO {
     
     /**
      * The application name for which translations were registered.
@@ -31,7 +31,7 @@ public class RegisterI18nFilesResponseDTO {
      * @param translationsCount The number of translation keys registered
      */
     @JsonCreator
-    public RegisterI18nFilesResponseDTO(
+    public RegisterTranslationFilesResponseDTO(
             @JsonProperty("application") String application,
             @JsonProperty("languagesCount") int languagesCount,
             @JsonProperty("translationsCount") int translationsCount) {

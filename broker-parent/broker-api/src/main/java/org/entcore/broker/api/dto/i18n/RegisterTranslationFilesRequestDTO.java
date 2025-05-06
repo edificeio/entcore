@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * This class represents a request to register I18n files for an application.
  */
-public class RegisterI18nFilesRequestDTO {
+public class RegisterTranslationFilesRequestDTO {
     
     /**
      * The application name for which to register translations.
@@ -28,7 +28,7 @@ public class RegisterI18nFilesRequestDTO {
      * @param translationsByLanguage A map of language files to their key-value translation pairs
      */
     @JsonCreator
-    public RegisterI18nFilesRequestDTO(
+    public RegisterTranslationFilesRequestDTO(
             @JsonProperty("application") String application,
             @JsonProperty("translationsByLanguage") Map<String, Map<String, String>> translationsByLanguage) {
         this.application = application;
