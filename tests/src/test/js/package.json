@@ -2,5 +2,6 @@
   "devDependencies": {
     "@types/k6": "^0.54.2",
     "edifice-k6-commons": "develop"
-  }
+  },
+  "version": "4.12.12--.20250505172216"
 }
