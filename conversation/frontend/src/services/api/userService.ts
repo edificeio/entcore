@@ -1,7 +1,8 @@
 import { BookmarkWithDetails, odeServices } from '@edifice.io/client';
 import { Visible } from '~/models/visible';
 
-export type VisibleData = { id: string; displayName: string };
+type VisibleData = { id: string; displayName: string };
+export type VisibleGroupData = VisibleData & { nbUsers: number };
 export type VisibleUserData = VisibleData & { profile: string };
 
 /**
@@ -23,11 +24,11 @@ export type VisibleUserData = VisibleData & { profile: string };
 export const createUserService = () => {
   // Locally define a function with multiple signatures and return types.
   function getVisibleById(id: string, type: 'User'): Promise<VisibleUserData>;
-  function getVisibleById(id: string, type: 'Group'): Promise<VisibleData>;
+  function getVisibleById(id: string, type: 'Group'): Promise<VisibleGroupData>;
   function getVisibleById(
     id: string,
     type: 'User' | 'Group',
-  ): Promise<VisibleData | VisibleUserData> {
+  ): Promise<VisibleGroupData | VisibleUserData> {
     switch (type) {
       case 'User':
         return odeServices
@@ -51,9 +52,10 @@ export const createUserService = () => {
             name: string;
             nbUsers: number;
           }>(`/directory/group/${id}`)
-          .then(({ id, ...result }) => ({
+          .then(({ id, nbUsers, ...result }) => ({
             id,
             displayName: result.name,
+            nbUsers,
           }));
     }
   }

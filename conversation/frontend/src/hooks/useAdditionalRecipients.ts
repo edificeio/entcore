@@ -1,9 +1,9 @@
 import { BookmarkWithDetails } from '@edifice.io/client';
 import { useCallback, useEffect, useState } from 'react';
 import { RecipientType } from '~/features/message-edit/components/RecipientListEdit';
-import { Message, Recipients } from '~/models';
+import { Message } from '~/models';
 import {
-  type VisibleData,
+  type VisibleGroupData,
   type VisibleUserData,
 } from '~/services/api/userService';
 import { useBookmarkById, useSearchVisible } from '~/services/queries/user';
@@ -18,27 +18,30 @@ export function useAdditionalRecipients(
   const { getBookmarkById } = useBookmarkById();
 
   const [recipients, setRecipients] = useState<
-    [VisibleUserData[], VisibleData[], BookmarkWithDetails[]] | undefined
+    [VisibleUserData[], VisibleGroupData[], BookmarkWithDetails[]] | undefined
   >();
 
   const addRecipientsToMessage = useCallback(
     (message: Message) => {
       if (recipients) {
-        const sets = {
-          users: new Set(message[recipientType]?.users),
-          groups: new Set(message[recipientType]?.groups),
-        };
-        const addToUsers = (user: VisibleUserData) => sets.users.add(user);
-        const addToGroups = (group: VisibleData) => sets.groups.add(group);
+        const users = new Map<string, VisibleUserData>(),
+          groups = new Map<string, VisibleGroupData>(),
+          addToUsers = (user: any) => users.set(user.id, user),
+          addToGroups = (group: any) => groups.set(group.id, group);
+
+        message[recipientType]?.users.forEach(addToUsers);
+        message[recipientType]?.groups.forEach(addToGroups);
         recipients[0].forEach(addToUsers);
         recipients[1].forEach(addToGroups);
         recipients[2].forEach((bookmark) => {
           bookmark.users.forEach(addToUsers);
-          bookmark.groups.forEach(addToGroups);
+          bookmark.groups
+            .map((group) => ({ ...group, nbUsers: 0 }))
+            .forEach(addToGroups);
         });
         message[recipientType] = {
-          users: [...sets.users],
-          groups: [...sets.groups],
+          users: [...users.values()],
+          groups: [...groups.values()],
         };
       }
       return message;

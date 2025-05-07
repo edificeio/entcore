@@ -66,7 +66,10 @@ export function Component() {
   );
   useEffect(() => {
     if (templateMessage) {
-      setMessage(addRecipientsToMessage(templateMessage));
+      setMessage((msg) => ({
+        ...msg,
+        ...addRecipientsToMessage(templateMessage),
+      }));
     }
   }, [templateMessage, addRecipientsToMessage]);
 
