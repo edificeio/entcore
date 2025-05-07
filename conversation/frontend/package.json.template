@@ -23,13 +23,14 @@
     "lint": "eslint .",
     "pre-commit": "lint-staged",
     "predev": "pnpm get-tokens",
-    "prepare": "cd .. && husky frontend/.husky || true",
     "preview": "vite preview",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "test:watch": "vitest --watch",
     "test": "vitest",
-    "typecheck": "tsc -b --noEmit"
+    "typecheck": "tsc -b --noEmit --pretty",
+    "prepush": "pnpm run typecheck"
+
   },
   "husky": {
     "hooks": {
