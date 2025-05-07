@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -184,6 +185,21 @@ public class SessionBrokerListenerImpl implements SessionBrokerListener {
             }
         }
 
+        // Convert functions
+        final List<UserFunctionDto> functionDtos = new ArrayList<>();
+        if (userInfos.getFunctions() != null) {
+            for (Map.Entry<String, UserInfos.Function> entry : userInfos.getFunctions().entrySet()) {
+                UserInfos.Function function = entry.getValue();
+                functionDtos.add(new UserFunctionDto(
+                    function.getScope(),
+                    function.getCode()
+                ));
+            }
+        }
+
+        // Determine if user is a super admin using UserUtils
+        boolean isSuperAdmin = UserUtils.isSuperAdmin(userInfos);
+
         // Create and return the SessionDto
         return new SessionDto(
                 userInfos.getUserId(),
@@ -200,7 +216,9 @@ public class SessionBrokerListenerImpl implements SessionBrokerListener {
                 actionDtos,
                 classDtos,
                 groupDtos,
-                structureDtos
+                structureDtos,
+                functionDtos,
+                isSuperAdmin
         );
     }
 }
