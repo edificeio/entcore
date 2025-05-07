@@ -1,6 +1,7 @@
 import { useDirectory } from '@edifice.io/react';
 import { useMessageUserDisplayName } from '~/hooks/useUserDisplayName';
 import { Group, User } from '~/models';
+import './MessageRecipientListItem.css';
 
 interface RecipientItemProps {
   recipient: User | Group;
@@ -22,7 +23,7 @@ export function MessageRecipientListItem({
   ) : (
     <a
       href={getUserbookURL(recipient.id, type)}
-      className={color}
+      className={`recipient-link ${color}`}
       target="_blank"
       rel="noopener noreferrer nofollow"
     >
