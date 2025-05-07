@@ -34,21 +34,10 @@ export function Component() {
   const { folderId } = useSelectedFolder();
   const [currentKey, setCurrentKey] = useState(0);
 
-  // Get IDs of users and groups/favorites to add as recipients.
-  const toUsers = searchParams.getAll('user');
-  const toGroups = searchParams.getAll('group');
-  const toFavorites = searchParams.getAll('favorite');
-  const { addRecipientsById } = useAdditionalRecipients(
-    'to',
-    toUsers,
-    toGroups,
-    toFavorites,
-  );
-
   const replyMessageId = searchParams.get('reply');
   const replyAllMessageId = searchParams.get('replyall');
   const transferMessageId = searchParams.get('transfer');
-  const { message: baseMessage } = useMessageReplyOrTransfer({
+  const { message: templateMessage } = useMessageReplyOrTransfer({
     messageId:
       messageId ||
       replyMessageId ||
@@ -63,6 +52,23 @@ export function Component() {
           ? 'transfer'
           : undefined,
   });
+  const [message, setMessage] = useState(templateMessage);
+
+  // Get IDs of users and groups/favorites to add as recipients.
+  const toUsers = searchParams.getAll('user');
+  const toGroups = searchParams.getAll('group');
+  const toFavorites = searchParams.getAll('favorite');
+  const { addRecipientsToMessage } = useAdditionalRecipients(
+    'to',
+    toUsers,
+    toGroups,
+    toFavorites,
+  );
+  useEffect(() => {
+    if (templateMessage) {
+      setMessage(addRecipientsToMessage(templateMessage));
+    }
+  }, [templateMessage, addRecipientsToMessage]);
 
   useEffect(() => {
     // Scroll to the top of the page
@@ -74,11 +80,9 @@ export function Component() {
     setCurrentKey((prev) => prev + 1);
   }, [messageId]);
 
-  if (!baseMessage) {
+  if (!message) {
     return null;
   }
-
-  const message = addRecipientsById(baseMessage);
 
   return (
     <Fragment key={currentKey}>

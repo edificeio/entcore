@@ -1,8 +1,8 @@
 import { BookmarkWithDetails, odeServices } from '@edifice.io/client';
 import { Visible } from '~/models/visible';
 
-type VisibleData = { id: string; displayName: string };
-type VisibleUserData = VisibleData & { profile: string };
+export type VisibleData = { id: string; displayName: string };
+export type VisibleUserData = VisibleData & { profile: string };
 
 /**
  * User service to manage user/group/bookmark.
