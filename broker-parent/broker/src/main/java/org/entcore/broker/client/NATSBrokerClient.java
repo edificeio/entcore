@@ -75,10 +75,11 @@ public class NATSBrokerClient implements BrokerClient {
         continue;
       }
       try {
-        this.natsClient.subscribe(endpoint.getSubject(), msg -> {
+        this.natsClient.subscribe(transformToWildcard(endpoint.getSubject()), msg -> {
           final Promise<Object> promise = Promise.promise();
             try {
-              eb.request(endpoint.getSubject(), getDataFromMessage(msg))
+              // call the real subject without wildcard
+              eb.request(msg.getSubject(), getDataFromMessage(msg))
                 .onSuccess(response -> {
                   try {
                     promise.tryComplete(response.body());
@@ -265,7 +266,7 @@ public class NATSBrokerClient implements BrokerClient {
     if (subscriptions.contains(subject)) {
       throw new IllegalStateException("already.listening.on.subject." + subject);
     }
-    return natsClient.subscribe(subject, msg -> {
+    return natsClient.subscribe(transformToWildcard(subject), msg -> {
       try {
         final K request = mapper.readValue(new String(msg.getData(), charset), listener.getRequestType());
         final Future<V> futureResponse = listener.onMessage(request, msg.getSubject());
@@ -339,6 +340,21 @@ public class NATSBrokerClient implements BrokerClient {
         return Future.failedFuture(e);
       }
     }
+  }
+
+  /**
+   * Transforms a subject pattern with {param} placeholders to a NATS wildcard pattern
+   * Example: "users.{id}.profile" -> "users.*.profile"
+   * 
+   * @param subject The original subject pattern with {param} placeholders
+   * @return A NATS-compatible wildcard pattern
+   */
+  private String transformToWildcard(String subject) {
+    if (subject == null || !subject.contains("{")) {
+        return subject;
+    }
+    // Simple regex to replace all {param} patterns with NATS wildcards (*)
+    return subject.replaceAll("\\{[^}]+\\}", "*");
   }
 
 }

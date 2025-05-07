@@ -1,6 +1,6 @@
 {
   "name": "jszip",
-  "version": "2.5.0",
+  "version": "4.12.12--.20250505172216",
   "author": "Stuart Knightley <stuart@stuartk.com>",
   "description": "Create, read and edit .zip files with Javascript http://stuartk.com/jszip",
   "scripts": {
@@ -46,7 +46,7 @@
     "grunt-contrib-uglify": "~0.4.0",
     "jszip-utils": "~0.0.2"
   },
-  "dependencies":{
+  "dependencies": {
     "pako": "~0.2.5"
   },
   "license": "MIT or GPLv3"
