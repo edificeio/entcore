@@ -78,7 +78,7 @@ export function Component() {
   useEffect(() => {
     // Update the current key to trigger a re-render
     setCurrentKey((prev) => prev + 1);
-  }, [messageId]);
+  }, [message]);
 
   if (!message) {
     return null;
