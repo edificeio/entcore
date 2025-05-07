@@ -1,10 +1,10 @@
-import { useAppActions, useSelectedFolders } from '~/store';
 import { Button, FormControl, Input, Label, Modal } from '@edifice.io/react';
 import { useCallback, useEffect, useRef } from 'react';
 import { useI18n } from '~/hooks';
 import { searchFolder } from '~/services';
+import { useAppActions, useSelectedFolders } from '~/store';
 import { useFolderActions } from './hooks';
-import { createPortal } from 'react-dom';
+import './FolderModalInDropdown.css';
 
 export function RenameFolderModal() {
   const { t, common_t } = useI18n();
@@ -45,7 +45,7 @@ export function RenameFolderModal() {
 
   const handleCloseFolderModal = () => setOpenedModal(undefined);
 
-  return createPortal(
+  return (
     <Modal
       size="sm"
       id="modalFolderRename"
@@ -91,7 +91,6 @@ export function RenameFolderModal() {
           {common_t('save')}
         </Button>
       </Modal.Footer>
-    </Modal>,
-    document.getElementById('portal') as HTMLElement,
+    </Modal>
   );
 }
