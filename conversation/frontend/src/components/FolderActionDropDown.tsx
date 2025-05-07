@@ -12,14 +12,15 @@ import { Folder } from '~/models';
 
 export function FolderActionDropDown({ folder }: { folder: Folder }) {
   const { common_t, t } = useI18n();
-  const { handleMove, handleRename, handleTrash } = useFolderHandlers();
+  const { handleRename, handleTrash } = useFolderHandlers();
 
   const options = [
-    {
-      label: t('move.first.caps'),
-      icon: <IconFolderMove />,
-      action: handleMove,
-    },
+    // TODO: Uncomment when the action is implemented
+    // {
+    //   label: t('move.first.caps'),
+    //   icon: <IconFolderMove />,
+    //   action: handleMove,
+    // },
     {
       label: t('rename'),
       icon: <IconEdit />,
