@@ -1,3 +1,0 @@
-# .husky/pre-commit
-
-cd frontend && pnpm run pre-commit && pnpm run build
