@@ -3,5 +3,8 @@
 
 if git diff --name-only origin/HEAD | grep -q '^conversation/'; then
   echo "🔍 Changes detected in the conversation module..."
-  pnpm --filter conversation run prepush
+  pnpm --filter conversation run prepush || {
+    echo "❌ Type checking failed. Fix errors before pushing."
+    exit 1
+  }
 fi
