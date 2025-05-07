@@ -1,6 +1,14 @@
-import { Button, Modal, Tree, TreeItem, useToast } from '@edifice.io/react';
+import {
+  Button,
+  EmptyScreen,
+  Modal,
+  Tree,
+  TreeItem,
+  useToast,
+} from '@edifice.io/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import illuFolder from '~/assets/illu-folder.svg';
 import { useI18n } from '~/hooks';
 import { buildTree, useFolderUtils, useMoveMessage } from '~/services';
 import { useAppActions, useSelectedMessageIds } from '~/store';
@@ -51,6 +59,10 @@ export function MoveMessageToFolderModal() {
     );
   };
 
+  const handleNewFolderClick = () => {
+    setOpenedModal('create');
+  };
+
   const userFolders = useMemo(() => {
     return foldersTree ? buildTree(foldersTree, 2) : null;
   }, [foldersTree]);
@@ -89,7 +101,7 @@ export function MoveMessageToFolderModal() {
       </Modal.Header>
 
       <Modal.Body>
-        {userFolders.length > 0 && (
+        {userFolders.length > 0 ? (
           <>
             <Tree
               nodes={userFolders}
@@ -100,6 +112,13 @@ export function MoveMessageToFolderModal() {
               showIcon={false}
             />
           </>
+        ) : (
+          <EmptyScreen
+            imageSrc={illuFolder}
+            imageAlt={t('no.folder')}
+            title={t('no.folder')}
+            text={t('no.folder')}
+          />
         )}
       </Modal.Body>
 
@@ -112,16 +131,27 @@ export function MoveMessageToFolderModal() {
         >
           {common_t('cancel')}
         </Button>
-        <Button
-          type="submit"
-          color="primary"
-          variant="filled"
-          onClick={handleMoveToFolderClick}
-          isLoading={isActionPending === true}
-          disabled={isActionPending === true || !subFolderId}
-        >
-          {t('move.first.caps')}
-        </Button>
+        {userFolders.length > 0 ? (
+          <Button
+            type="submit"
+            color="primary"
+            variant="filled"
+            onClick={handleMoveToFolderClick}
+            isLoading={isActionPending === true}
+            disabled={isActionPending === true || !subFolderId}
+          >
+            {t('move.first.caps')}
+          </Button>
+        ) : (
+          <Button
+            type="submit"
+            color="primary"
+            variant="filled"
+            onClick={handleNewFolderClick}
+          >
+            {common_t('workspace.folder.create')}
+          </Button>
+        )}
       </Modal.Footer>
     </Modal>
   );
