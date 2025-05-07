@@ -21,52 +21,54 @@ export function MessageEditHeader({ message }: MessageHeaderProps) {
   );
 
   return (
-    <div className="d-flex flex-fill flex-column overflow-hidden">
-      <div className="d-flex align-items-center justify-content-between gap-12 border-bottom pe-16">
-        <RecipientListEdit
-          head={<span className="me-4">{t('at')} :</span>}
-          recipients={to}
-          recipientType="to"
-        />
-        <div className="d-flex align-items-center">
-          <Button
-            onClick={() => setShowCC((prev) => !prev)}
-            variant="ghost"
-            size="sm"
-            color="secondary"
-            hidden={showCC}
-          >
-            {t('button.cc')}
-          </Button>
-          <Button
-            onClick={() => setShowCCI((prev) => !prev)}
-            variant="ghost"
-            size="sm"
-            color="secondary"
-            hidden={showCCI}
-          >
-            {t('button.cci')}
-          </Button>
+    <>
+      <div className="d-flex flex-fill flex-column overflow-hidden">
+        <div className="d-flex align-items-center justify-content-between gap-12 border-bottom pe-16">
+          <RecipientListEdit
+            head={<span className="me-4">{t('at')} :</span>}
+            recipients={to}
+            recipientType="to"
+          />
+          <div className="d-flex align-items-center">
+            <Button
+              onClick={() => setShowCC((prev) => !prev)}
+              variant="ghost"
+              size="sm"
+              color="secondary"
+              hidden={showCC}
+            >
+              {t('button.cc')}
+            </Button>
+            <Button
+              onClick={() => setShowCCI((prev) => !prev)}
+              variant="ghost"
+              size="sm"
+              color="secondary"
+              hidden={showCCI}
+            >
+              {t('button.cci')}
+            </Button>
+          </div>
         </div>
+        {showCC && (
+          <div className="border-bottom">
+            <RecipientListEdit
+              head={<span className="me-4">{t('cc')} :</span>}
+              recipients={cc}
+              recipientType="cc"
+            />
+          </div>
+        )}
+        {showCCI && (
+          <div className="border-bottom">
+            <RecipientListEdit
+              head={<span className="me-4">{t('cci')} :</span>}
+              recipients={cci || { groups: [], users: [] }}
+              recipientType="cci"
+            />
+          </div>
+        )}
       </div>
-      {showCC && (
-        <div className="border-bottom">
-          <RecipientListEdit
-            head={<span className="me-4">{t('cc')} :</span>}
-            recipients={cc}
-            recipientType="cc"
-          />
-        </div>
-      )}
-      {showCCI && (
-        <div className="border-bottom">
-          <RecipientListEdit
-            head={<span className="me-4">{t('cci')} :</span>}
-            recipients={cci || { groups: [], users: [] }}
-            recipientType="cci"
-          />
-        </div>
-      )}
-    </div>
+    </>
   );
 }
