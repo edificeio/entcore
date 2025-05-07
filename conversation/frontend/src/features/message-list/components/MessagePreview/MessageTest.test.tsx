@@ -1,6 +1,6 @@
 import { render, screen } from '~/mocks/setup';
-import { useTest } from '~/hooks/useTest';
-// import { useTest } from '~/hooks';
+// import { useTest } from '~/hooks/useTest';
+import { useTest } from '~/hooks';
 
 export function MessageTest() {
   const { folderId } = useTest();
