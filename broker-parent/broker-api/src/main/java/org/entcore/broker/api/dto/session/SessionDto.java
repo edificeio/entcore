@@ -87,6 +87,18 @@ public class SessionDto {
      * A list of structures the user is associated with.
      */
     private final List<StructureDto> structures;
+    
+    /**
+     * Specific functions assigned to the user.
+     * Functions represent special roles or capabilities in the system.
+     */
+    private final List<UserFunctionDto> functions;
+    
+    /**
+     * Indicates if the user has super administrator privileges.
+     * Super administrators have full access to all system features.
+     */
+    private final boolean superAdmin;
 
     /**
      * Creates a new instance of SessionDto with all user information.
@@ -106,6 +118,8 @@ public class SessionDto {
      * @param classes The list of classes the user belongs to.
      * @param groups The list of groups the user belongs to.
      * @param structures The list of structures the user is associated with.
+     * @param functions Map of functions assigned to the user.
+     * @param isSuperAdmin Whether the user is a super administrator.
      */
     @JsonCreator
     public SessionDto(
@@ -123,7 +137,9 @@ public class SessionDto {
             @JsonProperty("authorizedActions") List<ActionDto> authorizedActions,
             @JsonProperty("classes") List<ClassDto> classes,
             @JsonProperty("groups") List<GroupDto> groups,
-            @JsonProperty("structures") List<StructureDto> structures) {
+            @JsonProperty("structures") List<StructureDto> structures,
+            @JsonProperty("functions") List<UserFunctionDto> functions,
+            @JsonProperty("superAdmin") boolean isSuperAdmin) {
         this.userId = userId;
         this.externalId = externalId;
         this.firstName = firstName;
@@ -139,6 +155,8 @@ public class SessionDto {
         this.classes = classes;
         this.groups = groups;
         this.structures = structures;
+        this.functions = functions;
+        this.superAdmin = isSuperAdmin;
     }
 
     /**
@@ -245,5 +263,18 @@ public class SessionDto {
      * @return The list of structures associated with the user.
      */
     public List<StructureDto> getStructures() { return structures; }
-    
+
+    /**
+     * Gets the map of functions assigned to the user.
+     *
+     * @return Map of functions with their identifiers as keys.
+     */
+    public List<UserFunctionDto> getFunctions() { return functions; }
+
+    /**
+     * Checks if the user has super administrator privileges.
+     *
+     * @return true if the user is a super administrator, false otherwise.
+     */
+    public boolean isSuperAdmin() { return superAdmin; }
 }

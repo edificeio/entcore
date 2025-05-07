@@ -88,6 +88,8 @@ public class Directory extends BaseServer {
 
 	public Future<Void> initDirectory(final StorageFactory storageFactory, final Map<String, Object> serverMap) {
 		final EventBus eb = getEventBus(vertx);
+		super.start(startPromise);
+		BrokerProxyUtils.addBrokerProxy(new DirectoryBrokerListenerImpl(vertx), vertx);
 		MongoDbConf.getInstance().setCollection(SLOTPROFILE_COLLECTION);
 		setDefaultResourceFilter(new DirectoryResourcesProvider());
 

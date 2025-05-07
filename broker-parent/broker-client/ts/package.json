@@ -1,6 +1,6 @@
 {
   "name": "@edifice.io/edifice-ent-client",
-  "version": "1.0.1-develop.20250505172218",
+  "version": "1.0.1-develop.20250505172229",
   "description": "Clients to interact with ENT service",
   "scripts": {
     "dev": "vite",
@@ -38,15 +38,15 @@
   ],
   "devDependencies": {
     "@edifice.io/edifice-clients-generator": "latest",
-    "@nestjs/common": "^11.0.1",
-    "@nestjs/microservices": "^11.0.11",
-    "husky": "^9.0.11",
-    "prettier": "^3.2.5",
-    "rxjs": "^7.8.1",
-    "semantic-release": "^23.0.2",
-    "typescript": "^5.2.2",
-    "vite": "^5.1.4",
-    "vite-plugin-dts": "^4.3.0"
+    "@nestjs/common": "^11.1.0",
+    "@nestjs/microservices": "^11.1.0",
+    "husky": "^9.1.7",
+    "prettier": "^3.5.3",
+    "rxjs": "^7.8.2",
+    "semantic-release": "^23.1.1",
+    "typescript": "^5.8.3",
+    "vite": "^5.4.19",
+    "vite-plugin-dts": "^4.5.3"
   },
   "lint-staged": {
     "*.{js,ts,jsx,tsx,json,css,md}": "pnpm format"
