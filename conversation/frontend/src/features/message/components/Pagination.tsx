@@ -32,7 +32,7 @@ export default function Pagination({
     }
   };
   return (
-    <div>
+    <div className="d-flex align-items-center gap-4">
       <IconButton
         color="tertiary"
         variant="ghost"
