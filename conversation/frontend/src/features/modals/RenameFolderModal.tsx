@@ -1,9 +1,10 @@
-import { useAppActions, useSelectedFolders } from '~/store';
 import { Button, FormControl, Input, Label, Modal } from '@edifice.io/react';
 import { useCallback, useEffect, useRef } from 'react';
 import { useI18n } from '~/hooks';
 import { searchFolder } from '~/services';
+import { useAppActions, useSelectedFolders } from '~/store';
 import { useFolderActions } from './hooks';
+import './FolderModalInDropdown.css';
 
 export function RenameFolderModal() {
   const { t, common_t } = useI18n();
@@ -47,7 +48,7 @@ export function RenameFolderModal() {
   return (
     <Modal
       size="sm"
-      id="modalFolderNew"
+      id="modalFolderRename"
       isOpen={true}
       onModalClose={handleCloseFolderModal}
     >
