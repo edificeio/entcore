@@ -92,7 +92,7 @@ export function MoveMessageToFolderModal() {
   return (
     <Modal
       size="sm"
-      id="modalFolderNew"
+      id="modalFolderMoveMessage"
       isOpen={true}
       onModalClose={handleCloseFolderModal}
     >

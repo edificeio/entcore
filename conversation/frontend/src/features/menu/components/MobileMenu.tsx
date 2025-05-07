@@ -14,6 +14,7 @@ import { Folder, SystemFolder } from '~/models';
 import { useFoldersTree } from '~/services';
 import { useFolderHandlers } from '../hooks/useFolderHandlers';
 import { useMenuData } from '../hooks/useMenuData';
+import { FolderActionDropDown } from '~/components';
 
 type FolderItem = { name: string; folder: Folder };
 
@@ -122,13 +123,20 @@ export function MobileMenu() {
     )?.[0];
   }
 
-  function renderFolderItem(item: FolderItem) {
+  function renderFolderItem(item: FolderItem, isUserFolder = false) {
     return (
       <div className="w-100 d-flex justify-content-between align-content-center align-items-center">
         <div className="overflow-x-hidden text-no-wrap text-truncate">
           {item.name}
         </div>
-        {renderBadge(item.folder.nbUnread)}
+        {isUserFolder ? (
+          <div className="d-flex align-items-center gap-4">
+            {renderBadge(item.folder.nbUnread)}
+            <FolderActionDropDown folder={item.folder} />
+          </div>
+        ) : (
+          renderBadge(item.folder.nbUnread)
+        )}
       </div>
     );
   }
@@ -158,7 +166,7 @@ export function MobileMenu() {
               onClick={() => handleItemClick(item, true)}
               icon={<IconFolder />}
             >
-              {renderFolderItem(item)}
+              {renderFolderItem(item, true)}
             </Dropdown.Item>
           ))}
           <Dropdown.Item

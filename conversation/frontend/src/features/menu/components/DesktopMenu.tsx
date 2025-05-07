@@ -24,6 +24,7 @@ import { useUsedSpace } from '~/hooks';
 import { buildTree, useFoldersTree } from '~/services';
 import { useFolderHandlers } from '../hooks/useFolderHandlers';
 import { useMenuData } from '../hooks/useMenuData';
+import './DesktopMenu.css';
 
 /** Converts a value in bytes to mega-bytes (rounded) */
 const bytesToMegabytes = (bytes: number) => Math.round(bytes / (1024 * 1024));
@@ -84,13 +85,17 @@ export function DesktopMenu() {
     isChild?: boolean;
   }) {
     return (
-      <div className="my-n8 py-2 w-100 d-flex justify-content-between align-content-center align-items-center">
+      <div className="folder-item my-n8 py-2 w-100 d-flex justify-content-between align-content-center align-items-center">
         <div className="overflow-x-hidden text-no-wrap text-truncate">
           {node.name}
         </div>
-        <div className="d-flex align-items-center text-dark fw-normal">
-          {renderBadge(node.folder)}
-          <FolderActionDropDown folder={node.folder} />
+        <div className="d-flex align-items-center text-dark fw-normal justify-content-center">
+          <div className="unread-badge">
+            {renderBadge(node.folder.nbUnread)}
+          </div>
+          <div className="actions-button">
+            <FolderActionDropDown folder={node.folder} />
+          </div>
         </div>
       </div>
     );
