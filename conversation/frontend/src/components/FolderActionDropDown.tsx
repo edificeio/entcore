@@ -1,10 +1,5 @@
 import { Dropdown, IconButton, IconButtonProps } from '@edifice.io/react';
-import {
-  IconDelete,
-  IconEdit,
-  IconFolderMove,
-  IconOptions,
-} from '@edifice.io/react/icons';
+import { IconDelete, IconEdit, IconOptions } from '@edifice.io/react/icons';
 import { RefAttributes } from 'react';
 import { useFolderHandlers } from '~/features/menu/hooks/useFolderHandlers';
 import { useI18n } from '~/hooks';
@@ -13,7 +8,7 @@ import { Folder } from '~/models';
 export function FolderActionDropDown({ folder }: { folder: Folder }) {
   const { common_t, t } = useI18n();
   const { handleRename, handleTrash } = useFolderHandlers();
- console.log('folder', folder);
+  console.log('folder', folder);
   const options = [
     // TODO: Uncomment when the action is implemented
     // {
