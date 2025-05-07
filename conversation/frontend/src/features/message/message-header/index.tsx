@@ -2,6 +2,7 @@ import { Avatar, useDate, useDirectory } from '@edifice.io/react';
 import { MessageRecipientList } from '~/components/MessageRecipientList/MessageRecipientList';
 import { useI18n } from '~/hooks';
 import { Message } from '~/models';
+import './index.css';
 
 export interface MessageHeaderProps {
   message: Message;
@@ -35,7 +36,7 @@ export function MessageHeader({ message }: MessageHeaderProps) {
               <div className="d-flex flex-wrap column-gap-8">
                 <a
                   href={getUserbookURL(from.id, 'user')}
-                  className="fw-bold text-blue"
+                  className="fw-bold text-blue sender-link"
                 >
                   {from.displayName}
                 </a>
