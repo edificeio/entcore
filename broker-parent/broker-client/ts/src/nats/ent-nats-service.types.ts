@@ -61,6 +61,8 @@ export interface SessionDto {
   classes?: ClassDto[];
   groups?: GroupDto[];
   structures?: StructureDto[];
+  functions?: UserFunctionDto[];
+  superAdmin?: boolean;
 }
 export interface ActionDto {
   type?: string;
@@ -78,6 +80,10 @@ export interface GroupDto {
 export interface StructureDto {
   id?: string;
   name?: string;
+}
+export interface UserFunctionDto {
+  scope?: string[];
+  code?: string;
 }
 
 export interface CreateGroupRequestDTO {
