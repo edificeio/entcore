@@ -1,4 +1,4 @@
-import { useDate, useBreakpoint } from '@edifice.io/react';
+import { useDate, useBreakpoint, useBrowserInfo } from '@edifice.io/react';
 import {
   IconMailRecall,
   IconPaperclip,
