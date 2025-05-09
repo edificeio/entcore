@@ -7,8 +7,11 @@ import {
 } from 'react-router-dom';
 import { Message } from '~/features/message';
 import { MessageEdit } from '~/features/message-edit/MessageEdit';
-import { useSelectedFolder } from '~/hooks';
-import { useMessageReplyOrTransfer } from '~/hooks/useMessageReplyOrTransfer';
+import {
+  useSelectedFolder,
+  useAdditionalRecipients,
+  useMessageReplyOrTransfer,
+} from '~/hooks';
 
 import { messageQueryOptions } from '~/services';
 
@@ -34,7 +37,7 @@ export function Component() {
   const replyMessageId = searchParams.get('reply');
   const replyAllMessageId = searchParams.get('replyall');
   const transferMessageId = searchParams.get('transfer');
-  const { message } = useMessageReplyOrTransfer({
+  const { message: templateMessage } = useMessageReplyOrTransfer({
     messageId:
       messageId ||
       replyMessageId ||
@@ -49,6 +52,26 @@ export function Component() {
           ? 'transfer'
           : undefined,
   });
+  const [message, setMessage] = useState(templateMessage);
+
+  // Get IDs of users and groups/favorites to add as recipients.
+  const toUsers = searchParams.getAll('user');
+  const toGroups = searchParams.getAll('group');
+  const toFavorites = searchParams.getAll('favorite');
+  const { addRecipientsToMessage } = useAdditionalRecipients(
+    'to',
+    toUsers,
+    toGroups,
+    toFavorites,
+  );
+  useEffect(() => {
+    if (templateMessage) {
+      setMessage((msg) => ({
+        ...msg,
+        ...addRecipientsToMessage(templateMessage),
+      }));
+    }
+  }, [templateMessage, addRecipientsToMessage]);
 
   useEffect(() => {
     // Scroll to the top of the page
@@ -58,7 +81,7 @@ export function Component() {
   useEffect(() => {
     // Update the current key to trigger a re-render
     setCurrentKey((prev) => prev + 1);
-  }, [messageId]);
+  }, [message]);
 
   if (!message) {
     return null;
