@@ -32,12 +32,7 @@
     "prepush": "pnpm run typecheck"
 
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged",
-      "pre-push": "pnpm test"
-    }
-  },
+
   "lint-staged": {
     "**/*.{ts,tsx}": [
       "pnpm run format",
