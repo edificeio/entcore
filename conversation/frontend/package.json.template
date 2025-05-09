@@ -18,10 +18,9 @@
     "clean": "rm pnpm-lock.yaml && rm -rf node_modules && pnpm i",
     "dev:fast": "pnpm get-tokens --auto && vite",
     "dev": "vite",
-    "format": "prettier --write .",
+    "format": "prettier --write \"**/*.{ts,tsx,css}\"",
     "get-tokens": "node scripts/get-tokens/index.cjs",
     "lint": "eslint .",
-    "pre-commit": "lint-staged",
     "pre-push": "pnpm run typecheck"
     "predev": "pnpm get-tokens",
     "preview": "vite preview",
@@ -30,12 +29,6 @@
     "test:watch": "vitest --watch",
     "test": "vitest",
     "typecheck": "tsc -b --noEmit --pretty",
-  },
-  "lint-staged": {
-    "**/*.{ts,tsx}": [
-      "pnpm run format",
-      "pnpm run lint"
-    ]
   },
   "dependencies": {
     "@edifice.io/react": "%packageVersion%",
