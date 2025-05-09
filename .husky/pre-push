@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+if git diff --name-only origin/HEAD | grep -q '^conversation/'; then
+  echo "🔍 Changes detected in the conversation module..."
+  pnpm --filter conversation run pre-push
+fi

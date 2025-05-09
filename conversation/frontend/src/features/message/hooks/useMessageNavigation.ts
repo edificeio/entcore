@@ -11,9 +11,7 @@ export const useMessageNavigation = (messageId: string) => {
     return { currentMessagePosition: undefined, totalMessagesCount: undefined };
   }
 
-  const currentMessageIndex = messages.findIndex(
-    (msg) => msg.id === messageId,
-  );
+  const currentMessageIndex = messages.findIndex((msg) => msg.id === messageId);
   const currentMessagePreview = messages[currentMessageIndex];
 
   const currentMessagePosition =
