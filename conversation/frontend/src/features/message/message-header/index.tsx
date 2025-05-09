@@ -10,7 +10,7 @@ export interface MessageHeaderProps {
 
 export function MessageHeader({ message }: MessageHeaderProps) {
   const { t } = useI18n();
-  const { fromNow } = useDate();
+  const { formatTimeAgo } = useDate();
   const { getAvatarURL, getUserbookURL } = useDirectory();
 
   const { subject, from, date } = message;
@@ -42,7 +42,7 @@ export function MessageHeader({ message }: MessageHeaderProps) {
                 </a>
                 {date && (
                   <span className="text-gray-700 fst-italic">
-                    {fromNow(date)}
+                    {formatTimeAgo(date)}
                   </span>
                 )}
               </div>
