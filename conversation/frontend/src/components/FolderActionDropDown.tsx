@@ -8,7 +8,6 @@ import { Folder } from '~/models';
 export function FolderActionDropDown({ folder }: { folder: Folder }) {
   const { common_t, t } = useI18n();
   const { handleRename, handleTrash } = useFolderHandlers();
-
   const options = [
     // TODO: Uncomment when the action is implemented
     // {

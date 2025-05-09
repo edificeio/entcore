@@ -18,30 +18,17 @@
     "clean": "rm pnpm-lock.yaml && rm -rf node_modules && pnpm i",
     "dev:fast": "pnpm get-tokens --auto && vite",
     "dev": "vite",
-    "format": "prettier --write .",
+    "format": "prettier --write \"**/*.{ts,tsx,css}\"",
     "get-tokens": "node scripts/get-tokens/index.cjs",
     "lint": "eslint .",
-    "pre-commit": "lint-staged",
+    "pre-push": "pnpm run typecheck"
     "predev": "pnpm get-tokens",
-    "prepare": "cd .. && husky frontend/.husky || true",
     "preview": "vite preview",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "test:watch": "vitest --watch",
     "test": "vitest",
-    "typecheck": "tsc -b --noEmit"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged",
-      "pre-push": "pnpm test"
-    }
-  },
-  "lint-staged": {
-    "**/*.{ts,tsx}": [
-      "pnpm run format",
-      "pnpm run lint"
-    ]
+    "typecheck": "tsc -b --noEmit --pretty",
   },
   "dependencies": {
     "@edifice.io/react": "%packageVersion%",

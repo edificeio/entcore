@@ -67,7 +67,9 @@ describe('CreateFolderModal component', () => {
     );
     expect(checkParentFolder).not.toBeChecked();
 
-    const dropdownParentFolder = await screen.findByText<HTMLButtonElement>('folder.new.subfolder.placeholder');
+    const dropdownParentFolder = await screen.findByText<HTMLButtonElement>(
+      'folder.new.subfolder.placeholder',
+    );
     expect(dropdownParentFolder).toBeInTheDocument();
     expect(dropdownParentFolder).toBeDisabled();
   });
