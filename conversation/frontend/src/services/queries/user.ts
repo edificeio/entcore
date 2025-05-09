@@ -11,8 +11,41 @@ export const userQueryOptions = {
    */
   searchVisible(search: string) {
     return queryOptions({
-      queryKey: [...userQueryOptions.base, search] as const,
+      queryKey: [...userQueryOptions.base, 'search', { search }] as const,
       queryFn: () => userService.searchVisible(search),
+    });
+  },
+
+  /**
+   * Get visible information about a user
+   * @param id ID of the user
+   * @returns The query options for the get visible by ID
+   */
+  getVisibleUserById(id: string) {
+    return queryOptions({
+      queryKey: [
+        ...userQueryOptions.base,
+        'get',
+        { id, type: 'User' },
+      ] as const,
+      queryFn: () => userService.getVisibleById(id, 'User'),
+    });
+  },
+
+  /**
+   * Get visible information about a group
+   * @param id ID of the group
+   * @param type Type of ID
+   * @returns The query options for the get visible by ID
+   */
+  getVisibleGroupById(id: string) {
+    return queryOptions({
+      queryKey: [
+        ...userQueryOptions.base,
+        'get',
+        { id, type: 'Group' },
+      ] as const,
+      queryFn: () => userService.getVisibleById(id, 'Group'),
     });
   },
 
@@ -47,11 +80,22 @@ export const userQueryOptions = {
  */
 export const useSearchVisible = () => {
   const queryClient = useQueryClient();
+
   const searchVisible = (search: string) => {
     return queryClient.ensureQueryData(userQueryOptions.searchVisible(search));
   };
 
-  return { searchVisible };
+  const getVisibleUserById = (id: string) => {
+    return queryClient.ensureQueryData(userQueryOptions.getVisibleUserById(id));
+  };
+
+  const getVisibleGroupById = (id: string) => {
+    return queryClient.ensureQueryData(
+      userQueryOptions.getVisibleGroupById(id),
+    );
+  };
+
+  return { searchVisible, getVisibleUserById, getVisibleGroupById };
 };
 
 /**

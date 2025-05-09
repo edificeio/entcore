@@ -62,9 +62,30 @@ export const manageRedirections = async () => {
       return;
     }
 
-    const isEditMessage = matchPath('/write-mail/:mailId', hashLocation);
-    if (isEditMessage?.params.mailId) {
-      redirectTo(asSubPath('draft', 'message', isEditMessage.params.mailId));
+    const isWriteToRecipient = matchPath(
+      '/write-mail/:recipientId/:recipientType',
+      hashLocation,
+    );
+    if (
+      isWriteToRecipient?.params.recipientId &&
+      isWriteToRecipient.params.recipientType
+    ) {
+      // eslint-disable-next-line prefer-const
+      let { recipientId, recipientType } = isWriteToRecipient.params;
+      recipientType = recipientType.toLowerCase();
+      if (['user', 'group', 'favorite'].includes(recipientType)) {
+        redirectTo(
+          `${asSubPath('draft', 'create')}?${recipientType}=${recipientId}`,
+        );
+        return;
+      }
+    }
+
+    const isWriteToUser = matchPath('/write-mail/:userId', hashLocation);
+    if (isWriteToUser?.params.userId) {
+      redirectTo(
+        `${asSubPath('draft', 'create')}?user=${isWriteToUser.params.userId}`,
+      );
       return;
     }
 
