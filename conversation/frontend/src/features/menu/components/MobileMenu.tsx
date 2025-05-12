@@ -14,7 +14,7 @@ import { Folder, SystemFolder } from '~/models';
 import { useFoldersTree } from '~/services';
 import { useFolderHandlers } from '../hooks/useFolderHandlers';
 import { useMenuData } from '../hooks/useMenuData';
-import { FolderActionDropDown } from '~/components';
+import { FolderActionDropdown } from '~/components';
 
 type FolderItem = { name: string; folder: Folder };
 
@@ -132,7 +132,7 @@ export function MobileMenu() {
         {isUserFolder ? (
           <div className="d-flex align-items-center gap-4">
             {renderBadge(item.folder.nbUnread)}
-            <FolderActionDropDown folder={item.folder} />
+            <FolderActionDropdown folder={item.folder} />
           </div>
         ) : (
           renderBadge(item.folder.nbUnread)

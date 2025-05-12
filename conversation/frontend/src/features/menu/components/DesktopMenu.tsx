@@ -12,11 +12,11 @@ import {
   IconSend,
   IconWrite,
 } from '@edifice.io/react/icons';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import {
-  FolderActionDropDown,
+  FolderActionDropdown,
   ProgressBar,
   ProgressBarProps,
 } from '~/components';
@@ -25,6 +25,7 @@ import { buildTree, useFoldersTree } from '~/services';
 import { useFolderHandlers } from '../hooks/useFolderHandlers';
 import { useMenuData } from '../hooks/useMenuData';
 import './DesktopMenu.css';
+import clsx from 'clsx';
 
 /** Converts a value in bytes to mega-bytes (rounded) */
 const bytesToMegabytes = (bytes: number) => Math.round(bytes / (1024 * 1024));
@@ -77,15 +78,19 @@ export function DesktopMenu() {
   };
 
   // Render a user's folder, to be used in a Tree or SortableTree
-  function renderUserFolder({
-    node,
-  }: {
-    node: TreeItem;
-    hasChildren?: boolean;
-    isChild?: boolean;
-  }) {
+  function renderUserFolder({ node }: { node: TreeItem }) {
+    const [dropdownOpened, setDropdownOpened] = useState(false);
+    const handleDropdownOpened = (visible: boolean) => {
+      setDropdownOpened(visible);
+    };
+
     return (
-      <div className="folder-item my-n8 py-2 w-100 d-flex justify-content-between align-content-center align-items-center">
+      <div
+        className={clsx(
+          'folder-item my-n8 py-2 w-100 d-flex justify-content-between align-content-center align-items-center',
+          { 'dropdown-opened': dropdownOpened },
+        )}
+      >
         <div className="overflow-x-hidden text-no-wrap text-truncate">
           {node.name}
         </div>
@@ -94,7 +99,10 @@ export function DesktopMenu() {
             {renderBadge(node.folder.nbUnread)}
           </div>
           <div className="actions-button">
-            <FolderActionDropDown folder={node.folder} />
+            <FolderActionDropdown
+              folder={node.folder}
+              onDropdownOpened={handleDropdownOpened}
+            />
           </div>
         </div>
       </div>
@@ -172,3 +180,7 @@ export function DesktopMenu() {
     </Menu>
   );
 }
+
+const Ok = () => {
+  return <div>OK</div>;
+};
