@@ -21,14 +21,15 @@
     "format": "prettier --write \"**/*.{ts,tsx,css}\"",
     "get-tokens": "node scripts/get-tokens/index.cjs",
     "lint": "eslint .",
-    "pre-push": "pnpm run typecheck"
+    "pre-commit": "pnpm run format",
+    "pre-push": "pnpm run typecheck",
     "predev": "pnpm get-tokens",
     "preview": "vite preview",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "test:watch": "vitest --watch",
     "test": "vitest",
-    "typecheck": "tsc -b --noEmit --pretty",
+    "typecheck": "tsc -b --noEmit --pretty"
   },
   "dependencies": {
     "@edifice.io/react": "%packageVersion%",
