@@ -87,6 +87,7 @@ export const useMessage = (messageId: string) => {
   const { folderId } = useSelectedFolder();
   const { updateFolderMessagesQueryData } = useFolderUtils();
   const { currentLanguage, user, userProfile } = useEdificeClient();
+  const { setMessageUpdated } = useAppActions();
 
   if (result.isSuccess && result.data) {
     let message: Message = result.data;
@@ -118,6 +119,7 @@ export const useMessage = (messageId: string) => {
         },
       };
     }
+    setMessageUpdated(message);
   }
   return result;
 };
