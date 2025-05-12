@@ -1,6 +1,6 @@
 import { FormControl, Input, useDate, useDebounce } from '@edifice.io/react';
 import { useEffect, useRef, useState } from 'react';
-import { MessageActionDropDown } from '~/components/MessageActionDropDown/MessageActionDropDown';
+import { MessageActionDropdown } from '~/components/MessageActionDropdown/MessageActionDropdown';
 import { MessageBody } from '~/components/MessageBody';
 import { useI18n } from '~/hooks';
 import { Message } from '~/models';
@@ -93,7 +93,7 @@ export function MessageEdit({ message }: MessageEditProps) {
           />
           <div className="d-flex justify-content-end gap-12 pt-24 pe-16">
             <div className="d-flex align-items-end flex-column gap-16">
-              <MessageActionDropDown
+              <MessageActionDropdown
                 message={messageUpdated}
                 appearance={{
                   dropdownVariant: 'outline',
