@@ -2,9 +2,9 @@ import { Button } from '@edifice.io/react';
 import { IconArrowLeft } from '@edifice.io/react/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
-  MessageActionDropDown,
-  MessageActionDropDownProps,
-} from '~/components/MessageActionDropDown/MessageActionDropDown';
+  MessageActionDropdown,
+  MessageActionDropdownProps,
+} from '~/components/MessageActionDropdown/MessageActionDropdown';
 import { useI18n, useSelectedFolder } from '~/hooks';
 import { MessageProps } from '.';
 import Pagination from './components/Pagination';
@@ -18,7 +18,7 @@ export function MessageNavigation({ message }: MessageProps) {
     useMessageNavigation(message.id);
   const [searchParams] = useSearchParams();
 
-  const actionDropDownProps: MessageActionDropDownProps = {
+  const actionDropdownProps: MessageActionDropdownProps = {
     message,
     appearance: {
       dropdownVariant: 'ghost',
@@ -61,7 +61,7 @@ export function MessageNavigation({ message }: MessageProps) {
           onChange={handleMessageChange}
         />
       )}
-      <MessageActionDropDown {...actionDropDownProps} className="gap-8" />
+      <MessageActionDropdown {...actionDropdownProps} className="gap-8" />
     </nav>
   );
 }

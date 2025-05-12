@@ -9,11 +9,11 @@ import {
 import { IconOptions } from '@edifice.io/react/icons';
 import { RefAttributes, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { SentToInactiveUsersModal } from '~/components/MessageActionDropDown/modals/SentToInactiveUsersModal';
+import { SentToInactiveUsersModal } from '~/components/MessageActionDropdown/modals/SentToInactiveUsersModal';
 import { Message } from '~/models';
-import { useMessageActionDropDown } from './hooks/useMessageActionDropDown';
+import { useMessageActionDropdown } from './hooks/useMessageActionDropdown';
 
-export interface MessageActionDropDownProps {
+export interface MessageActionDropdownProps {
   message: Message;
   appearance?: {
     mainButtonVariant?: ButtonVariants;
@@ -24,7 +24,7 @@ export interface MessageActionDropDownProps {
   className?: string;
 }
 
-export function MessageActionDropDown({
+export function MessageActionDropdown({
   message,
   actions,
   appearance = {
@@ -33,9 +33,9 @@ export function MessageActionDropDown({
     buttonColor: 'primary',
   },
   className,
-}: MessageActionDropDownProps) {
+}: MessageActionDropdownProps) {
   const [inactiveUsers, setInactiveUsers] = useState<string[] | undefined>();
-  const { actionButtons, dropdownOptions } = useMessageActionDropDown({
+  const { actionButtons, dropdownOptions } = useMessageActionDropdown({
     message,
     actions,
     setInactiveUsers,

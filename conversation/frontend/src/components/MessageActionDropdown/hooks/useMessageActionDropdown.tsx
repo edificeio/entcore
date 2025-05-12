@@ -30,17 +30,17 @@ import {
 } from '~/services';
 import { useAppActions, useConfirmModalStore } from '~/store';
 
-export interface MessageActionDropDownProps {
+export interface MessageActionDropdownProps {
   message: Message;
   actions?: string[];
   setInactiveUsers: (inactiveUsers: string[] | undefined) => void;
 }
 
-export function useMessageActionDropDown({
+export function useMessageActionDropdown({
   message,
   setInactiveUsers,
   actions,
-}: MessageActionDropDownProps) {
+}: MessageActionDropdownProps) {
   const { t } = useI18n();
   const markAsUnreadQuery = useMarkUnread();
   const navigate = useNavigate();

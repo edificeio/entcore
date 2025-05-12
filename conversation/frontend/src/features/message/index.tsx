@@ -1,4 +1,4 @@
-import { MessageActionDropDown } from '~/components/MessageActionDropDown/MessageActionDropDown';
+import { MessageActionDropdown } from '~/components/MessageActionDropdown/MessageActionDropdown';
 import { MessageBody } from '~/components/MessageBody';
 import { MessageHeader } from '~/features/message/message-header';
 import { Message as MessageData } from '~/models';
@@ -18,7 +18,7 @@ export function Message({ message }: MessageProps) {
           <MessageBody message={message} editMode={false} />
         </div>
         <footer className="d-flex justify-content-end gap-12 pt-24 border-top">
-          <MessageActionDropDown
+          <MessageActionDropdown
             message={message}
             actions={['reply', 'replyall', 'transfer']}
             className="gap-12"
