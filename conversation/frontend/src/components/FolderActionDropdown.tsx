@@ -5,7 +5,15 @@ import { useFolderHandlers } from '~/features/menu/hooks/useFolderHandlers';
 import { useI18n } from '~/hooks';
 import { Folder } from '~/models';
 
-export function FolderActionDropDown({ folder }: { folder: Folder }) {
+interface FolderActionDropdownProps {
+  folder: Folder;
+  onDropdownOpened?: (visible: boolean) => void;
+}
+
+export function FolderActionDropdown({
+  folder,
+  onDropdownOpened,
+}: FolderActionDropdownProps) {
   const { common_t, t } = useI18n();
   const { handleRename, handleTrash } = useFolderHandlers();
   const options = [
@@ -28,7 +36,7 @@ export function FolderActionDropDown({ folder }: { folder: Folder }) {
   ];
 
   return (
-    <Dropdown>
+    <Dropdown onToggle={onDropdownOpened}>
       {(
         triggerProps: JSX.IntrinsicAttributes &
           Omit<IconButtonProps, 'ref'> &
