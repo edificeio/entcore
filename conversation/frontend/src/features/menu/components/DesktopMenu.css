@@ -10,10 +10,12 @@
   transition: opacity 0.4s ease-in-out;
 }
 
-.folder-item:hover .unread-badge {
+.folder-item:hover .unread-badge,
+.folder-item.dropdown-opened .unread-badge {
   opacity: 0;
 }
 
-.folder-item:hover .actions-button button {
+.folder-item:hover .actions-button button,
+.folder-item.dropdown-opened .actions-button button {
   opacity: 1;
 }
