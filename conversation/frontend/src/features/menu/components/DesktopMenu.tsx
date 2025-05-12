@@ -12,6 +12,7 @@ import {
   IconSend,
   IconWrite,
 } from '@edifice.io/react/icons';
+import clsx from 'clsx';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -25,7 +26,6 @@ import { buildTree, useFoldersTree } from '~/services';
 import { useFolderHandlers } from '../hooks/useFolderHandlers';
 import { useMenuData } from '../hooks/useMenuData';
 import './DesktopMenu.css';
-import clsx from 'clsx';
 
 /** Converts a value in bytes to mega-bytes (rounded) */
 const bytesToMegabytes = (bytes: number) => Math.round(bytes / (1024 * 1024));
@@ -180,7 +180,3 @@ export function DesktopMenu() {
     </Menu>
   );
 }
-
-const Ok = () => {
-  return <div>OK</div>;
-};
