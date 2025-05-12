@@ -194,7 +194,7 @@ public class Importer {
 		final Promise<Void> promise = Promise.promise();
 		final String query =
 			"MATCH (s:Structure {source:'AAF'})<-[:DEPENDS]-(pg:ProfileGroup)<-[r:IN]-(u:User) " +
-			"WHERE u.source = 'AAF' and pg.filter IN ['Personnel','Teacher'] and not(has(r.source)) " +
+			"WHERE u.source = 'AAF' and pg.filter IN ['Personnel','Teacher'] and (not(has(r.source)) OR r.source = 'AAF') " +
 			"RETURN DISTINCT u.externalId as externalId, u.source as source, head(u.profiles) as profile, " +
 			"u.functions as functions, COLLECT(distinct s.externalId) as structuresExternalIds";
 		Neo4j.getInstance().execute(query, new JsonObject(), event -> {
