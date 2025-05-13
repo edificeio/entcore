@@ -42,7 +42,7 @@ export function MessageHeader({ message }: MessageHeaderProps) {
                 </a>
                 {date && (
                   <span className="text-gray-700 fst-italic">
-                    {formatDate(date, 'long')}
+                    {formatDate(date, t('date.format.message'))}
                   </span>
                 )}
               </div>
