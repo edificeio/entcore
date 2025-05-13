@@ -91,7 +91,10 @@ export function DesktopMenu() {
           { 'dropdown-opened': dropdownOpened },
         )}
       >
-        <div className="overflow-x-hidden text-no-wrap text-truncate">
+        <div
+          className="overflow-x-hidden text-no-wrap text-truncate"
+          title={node.name}
+        >
           {node.name}
         </div>
         <div className="d-flex align-items-center text-dark fw-normal justify-content-center">
