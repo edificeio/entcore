@@ -61,12 +61,12 @@ export function RenameFolderModal() {
       isOpen={true}
       onModalClose={handleCloseFolderModal}
     >
-      <Modal.Header onModalClose={handleCloseFolderModal}>
-        {t('folder.rename.title')}
-      </Modal.Header>
+      <form id="modalFolderNewNameForm" onSubmit={handleRenameClick}>
+        <Modal.Header onModalClose={handleCloseFolderModal}>
+          {t('folder.rename.title')}
+        </Modal.Header>
 
-      <Modal.Body>
-        <form id="modalFolderNewNameForm" onSubmit={handleRenameClick}>
+        <Modal.Body>
           <FormControl id="modalFolderNewName" isRequired={true}>
             <Label>{t('folder.rename.name.label')}</Label>
             <Input
@@ -80,28 +80,28 @@ export function RenameFolderModal() {
               data-testid="inputNewName"
             />
           </FormControl>
-        </form>
-      </Modal.Body>
+        </Modal.Body>
 
-      <Modal.Footer>
-        <Button
-          type="button"
-          color="tertiary"
-          variant="ghost"
-          onClick={handleCloseFolderModal}
-        >
-          {common_t('cancel')}
-        </Button>
-        <Button
-          type="submit"
-          color="primary"
-          variant="filled"
-          isLoading={isActionPending === true}
-          disabled={isActionPending === true || !newFolderName}
-        >
-          {common_t('save')}
-        </Button>
-      </Modal.Footer>
+        <Modal.Footer>
+          <Button
+            type="button"
+            color="tertiary"
+            variant="ghost"
+            onClick={handleCloseFolderModal}
+          >
+            {common_t('cancel')}
+          </Button>
+          <Button
+            type="submit"
+            color="primary"
+            variant="filled"
+            isLoading={isActionPending === true}
+            disabled={isActionPending === true || !newFolderName}
+          >
+            {common_t('save')}
+          </Button>
+        </Modal.Footer>
+      </form>
     </Modal>
   );
 }
