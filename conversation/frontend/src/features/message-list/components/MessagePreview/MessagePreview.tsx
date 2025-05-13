@@ -20,7 +20,7 @@ export interface MessagePreviewProps {
 
 export function MessagePreview({ message }: MessagePreviewProps) {
   const { t } = useTranslation('conversation');
-  const { formatTimeAgo } = useDate();
+  const { formatTimeAgo, formatDate } = useDate();
   const senderDisplayName = useMessageUserDisplayName(message.from);
   const { messageFolderId, isInUserFolderOrTrash } =
     useMessageFolderId(message);
@@ -79,7 +79,10 @@ export function MessagePreview({ message }: MessagePreviewProps) {
           </div>
 
           {message.date && (
-            <span className="text-nowrap caption fw-bold gray-800">
+            <span
+              className="text-nowrap caption fw-bold gray-800"
+              title={formatDate(message.date, 'LLL')}
+            >
               {formatTimeAgo(message.date)}
             </span>
           )}
