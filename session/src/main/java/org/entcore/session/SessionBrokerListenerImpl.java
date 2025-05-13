@@ -1,14 +1,21 @@
 package org.entcore.session;
 
 import fr.wseduc.webutils.request.CookieHelper;
+import fr.wseduc.webutils.request.filter.UserAuthFilter;
+import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.shareddata.LocalMap;
 import org.entcore.broker.api.dto.session.*;
 import org.entcore.broker.proxy.SessionBrokerListener;
+import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.http.BasicFilter;
+import org.entcore.common.http.QueryParamTokenFilter;
+import org.entcore.common.http.UserAuthWithQueryParamFilter;
+import org.entcore.common.http.filter.AppOAuthResourceProvider;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -29,7 +36,7 @@ public class SessionBrokerListenerImpl implements SessionBrokerListener {
     
     private static final Logger log = LoggerFactory.getLogger(SessionBrokerListenerImpl.class);
     private final AuthManager authManager;
-    
+    private final LocalMap<Object, Object> serverConfig;
     /**
      * Constructor for SessionBrokerListenerImpl with AuthManager dependency.
      *
@@ -38,19 +45,23 @@ public class SessionBrokerListenerImpl implements SessionBrokerListener {
     public SessionBrokerListenerImpl(AuthManager authManager) {
         this.authManager = authManager;
         final Vertx vertx = authManager.getVertx();
+        this.serverConfig = authManager.getVertx().sharedData().getLocalMap("server");
         // init cookie helper
-        CookieHelper.getInstance().init((String) vertx
-                        .sharedData().getLocalMap("server").get("signKey"),
-                (String) vertx.sharedData().getLocalMap("server").get("sameSiteValue"),
+        CookieHelper.getInstance().init((String) serverConfig.get("signKey"),
+                (String) serverConfig.get("sameSiteValue"),
                 io.vertx.core.logging.LoggerFactory.getLogger(getClass()));
+        // init needed by OAuthResourceProvider
+        EventStoreFactory.getFactory().setVertx(vertx);
     }
     
     /**
-     * Finds a session by its ID using the AuthManager and returns session information.
-     * Uses UserUtils to convert the session JSON to UserInfos and then to SessionDto.
-     * The session ID can be provided directly in the request or extracted from cookies.
+     * Finds a session using multiple authentication methods through UserAuthWithQueryParamFilter:
+     * - Direct sessionId
+     * - JWT token (from headers or query params)
+     * - OAuth Bearer token
+     * - Cookie-based session
      * 
-     * @param request The request containing either the session ID or cookies to extract it
+     * @param request The request containing authentication information
      * @return A Future containing the session response or an error
      */
     @Override
@@ -61,56 +72,130 @@ public class SessionBrokerListenerImpl implements SessionBrokerListener {
             return Future.failedFuture("request.parameters.invalid");
         }
         
-        // Determine the session ID
-        final String sessionId;
+        // Direct sessionId check first (highest priority)
+        if (request.getSessionId() != null && !request.getSessionId().isEmpty()) {
+            return getSessionById(request.getSessionId());
+        }
         
-        // Try to use the explicit sessionId if provided
-        if (request.getSessionId() != null) {
-            sessionId = request.getSessionId();
-            log.debug("Using explicit sessionId: {}", sessionId);
-        } 
-        // Otherwise, try to extract it from cookies if provided
-        else {
-            // Create a simulated HttpServerRequest with the cookies
-            final MultiMap headers = MultiMap.caseInsensitiveMultiMap().add("Cookie", request.getCookies());
-            final HttpServerRequest httpRequest = new JsonHttpServerRequest(new JsonObject(), headers);
-            // Extract sessionId from signed cookies
-            final Optional<String> maybeSessionId = UserUtils.getSessionId(httpRequest);
-            if (maybeSessionId.isPresent()) {
-                sessionId = maybeSessionId.get();
-                log.debug("Extracted sessionId from cookies: {}", sessionId);
-            } else {
-                log.error("No sessionId found - explicit sessionId and cookies were missing or invalid");
-                return Future.failedFuture("session.id.notfound");
+        // Create a request that can be used with the filter
+        final SecureHttpServerRequest secureRequest = createSecureRequest(request);
+        
+        // Use UserAuthWithQueryParamFilter to get session
+        return getSessionWithFilter(secureRequest, request.getPathPrefix());
+    }
+
+    /**
+     * Creates a SecureHttpServerRequest from the FindSessionRequestDTO
+     * This encapsulates all HTTP request simulation logic
+     * 
+     * @param request The FindSessionRequestDTO with authentication data
+     * @return A SecureHttpServerRequest that can be used with filters
+     */
+    private SecureHttpServerRequest createSecureRequest(FindSessionRequestDTO request) {
+        final JsonObject jsonRequest = new JsonObject();
+        final MultiMap headers = MultiMap.caseInsensitiveMultiMap();
+        
+        // Add cookies if available
+        if (request.getCookies() != null && !request.getCookies().isEmpty()) {
+            headers.add("Cookie", request.getCookies());
+        }
+        
+        // Add any other headers from the request (Authorization, etc.)
+        if (request.getHeaders() != null && !request.getHeaders().isEmpty()) {
+            for (Map.Entry<String, String> header : request.getHeaders().entrySet()) {
+                headers.add(header.getKey(), header.getValue());
             }
         }
+        
+        // Add query parameters
+        if (request.getParams() != null && !request.getParams().isEmpty()) {
+            JsonObject params = new JsonObject();
+            for (Map.Entry<String, String> param : request.getParams().entrySet()) {
+                params.put(param.getKey(), param.getValue());
+            }
+            jsonRequest.put("params", params);
+        }
+        jsonRequest.put("path", request.getPath());
+        return new SecureHttpServerRequest(new JsonHttpServerRequest(jsonRequest, headers));
+    }
 
+    /**
+     * Gets a session using UserAuthWithQueryParamFilter for authentication
+     * This handles OAuth, JWT and cookie authentication
+     * 
+     * @param secureRequest The SecureHttpServerRequest with auth data
+     * @param pathPrefix The path prefix for OAuth scope verification
+     * @return A Future with the session response or error
+     */
+    private Future<FindSessionResponseDTO> getSessionWithFilter(SecureHttpServerRequest secureRequest, String pathPrefix) {
+        // Initialize the filter with all required components
+        final Optional<Object> oauthCache = Optional.ofNullable(serverConfig.get("oauthCache"));
+        final Optional<JsonObject> oauthConfigJson = oauthCache.map(e-> new JsonObject((String)e));
+        final Optional<Integer> oauthTtl = oauthConfigJson.map(e -> e.getInteger("ttlSeconds"));
+        // Create the filter with the path prefix and OAuth TTL
+        // Note: oauthTtl is optional, if not present, it will be set to default value in AppOAuthResourceProvider
+        final UserAuthFilter userAuth = new UserAuthWithQueryParamFilter(
+            new AppOAuthResourceProvider(
+                authManager.getVertx().eventBus(),
+                pathPrefix,
+                // we dont need to cache "oauth sessions"
+                Optional::empty,
+                oauthTtl
+            ),
+            new BasicFilter(),
+            new QueryParamTokenFilter(),
+            authManager.getVertx(),
+            authManager.config()
+        );
+        
         final Promise<FindSessionResponseDTO> promise = Promise.promise();
-        // Use AuthManager to get session data
-        authManager.findBySessionId(sessionId).onSuccess(sessionData -> {
-            if (sessionData != null) {
-                try {
-                    // Use UserUtils to convert the session data to UserInfos
-                    final UserInfos userInfos = UserUtils.sessionToUserInfos(sessionData);
+        
+        // Use the filter to check if the request can access
+        userAuth.canAccess(secureRequest, canAccess -> {
+            if (Boolean.TRUE.equals(canAccess)) {
+                // Authentication successful, get the session
+                UserUtils.getUserInfos(authManager.getVertx().eventBus(), secureRequest, userInfos -> {
                     if (userInfos != null) {
-                        // Convert from UserInfos to SessionDTO
+                        final SessionDto sessionDto = fromUserInfos(userInfos);
+                        promise.complete(new FindSessionResponseDTO(sessionDto));
+                    } else {
+                        log.warn("Failed to convert session data to UserInfos");
+                        promise.fail("session.conversion.error");
+                    }
+                });
+            } else {
+                log.debug("Authentication failed with all methods");
+                promise.fail("authentication.failed");
+            }
+        });
+        
+        return promise.future();
+    }
+
+    /**
+     * Gets a session directly by its ID
+     */
+    private Future<FindSessionResponseDTO> getSessionById(String sessionId) {
+        log.debug("Getting session with direct sessionId: {}", sessionId);
+        final Promise<FindSessionResponseDTO> promise = Promise.promise();
+        
+        authManager.findBySessionId(sessionId).onComplete(ar -> {
+            if (ar.succeeded() && ar.result() != null) {
+                try {
+                    final UserInfos userInfos = UserUtils.sessionToUserInfos(ar.result());
+                    if (userInfos != null) {
                         SessionDto sessionDto = fromUserInfos(userInfos);
                         promise.complete(new FindSessionResponseDTO(sessionDto));
                     } else {
-                        log.warn("Failed to convert session data to UserInfos for session ID: {}", sessionId);
-                        promise.fail("session.conversion.error");
+                        promise.fail("invalid.session.data");
                     }
                 } catch (Exception e) {
-                    log.error("Error processing session data", e);
-                    promise.fail("session.processing.error");
+                    log.error("Error processing session data from sessionId", e);
+                    promise.fail(e);
                 }
             } else {
-                log.warn("Session not found for ID: {}", sessionId);
                 promise.fail("session.not.found");
             }
-        }).onFailure(error -> {
-            log.error("Session not found for ID: {}. Because of error: {}", sessionId, error);
-            promise.fail("session.not.found");
         });
         
         return promise.future();
