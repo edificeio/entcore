@@ -1,5 +1,6 @@
 {
   "_from": "mathjax@3.1.2",
+  "_id": "mathjax@3.1.2",
   "_inBundle": false,
   "_integrity": "sha512-BojKspBv4nNWzO1wC6VEI+g9gHDOhkaGHGgLxXkasdU4pwjdO5AXD5M/wcLPkXYPjZ/N+6sU8rjQTlyvN2cWiQ==",
   "_location": "/mathjax",
@@ -84,5 +85,5 @@
     "test": "echo 'No tests defined'",
     "title": "npm run --silent line && npm run --silent message --mathjax:message=\"${npm_package_config_title}\""
   },
-  "version": "4.12.12--.20250505172216"
+  "version": "3.1.2"
 }
