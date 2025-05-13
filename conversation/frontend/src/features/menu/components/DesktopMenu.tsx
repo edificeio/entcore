@@ -77,41 +77,6 @@ export function DesktopMenu() {
     navigate((isUserFolder ? '/folder/' : '/') + folderId);
   };
 
-  // Render a user's folder, to be used in a Tree or SortableTree
-  function renderUserFolder({ node }: { node: TreeItem }) {
-    const [dropdownOpened, setDropdownOpened] = useState(false);
-    const handleDropdownOpened = (visible: boolean) => {
-      setDropdownOpened(visible);
-    };
-
-    return (
-      <div
-        className={clsx(
-          'folder-item my-n8 py-2 w-100 d-flex justify-content-between align-content-center align-items-center',
-          { 'dropdown-opened': dropdownOpened },
-        )}
-      >
-        <div
-          className="overflow-x-hidden text-no-wrap text-truncate"
-          title={node.name}
-        >
-          {node.name}
-        </div>
-        <div className="d-flex align-items-center text-dark fw-normal justify-content-center">
-          <div className="unread-badge">
-            {renderBadge(node.folder.nbUnread)}
-          </div>
-          <div className="actions-button">
-            <FolderActionDropdown
-              folder={node.folder}
-              onDropdownOpened={handleDropdownOpened}
-            />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <Menu label={t('generic.folders')}>
       <Menu.Item>
@@ -155,7 +120,7 @@ export function DesktopMenu() {
           <Tree
             nodes={userFolders}
             onTreeItemClick={(folderId) => navigateTo(folderId, true)}
-            renderNode={renderUserFolder}
+            renderNode={UserFolderItem}
             selectedNodeId={selectedUserFolderId}
           />
           <Button
@@ -181,5 +146,38 @@ export function DesktopMenu() {
         </div>
       </Menu.Item>
     </Menu>
+  );
+}
+
+function UserFolderItem({ node }: { node: TreeItem }) {
+  const { renderBadge } = useMenuData();
+  const [dropdownOpened, setDropdownOpened] = useState(false);
+  const handleDropdownOpened = (visible: boolean) => {
+    setDropdownOpened(visible);
+  };
+
+  return (
+    <div
+      className={clsx(
+        'folder-item my-n8 py-2 w-100 d-flex justify-content-between align-content-center align-items-center',
+        { 'dropdown-opened': dropdownOpened },
+      )}
+    >
+      <div
+        className="overflow-x-hidden text-no-wrap text-truncate"
+        title={node.name}
+      >
+        {node.name}
+      </div>
+      <div className="d-flex align-items-center text-dark fw-normal justify-content-center">
+        <div className="unread-badge">{renderBadge(node.folder.nbUnread)}</div>
+        <div className="actions-button">
+          <FolderActionDropdown
+            folder={node.folder}
+            onDropdownOpened={handleDropdownOpened}
+          />
+        </div>
+      </div>
+    </div>
   );
 }
