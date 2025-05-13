@@ -39,6 +39,14 @@ export interface Kind {}
 export interface FindSessionRequestDTO {
   sessionId?: string;
   cookies?: string;
+  headers?: {
+    [k: string]: string;
+  };
+  params?: {
+    [k: string]: string;
+  };
+  pathPrefix?: string;
+  path?: string;
 }
 
 

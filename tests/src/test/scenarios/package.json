@@ -1,6 +1,6 @@
 {
   "name": "entcore-scenarios",
-  "version": "4.12.12--.20250505172216",
+  "version": "1.0.0",
   "description": "Functional tests on ENTCORE",
   "main": "index.js",
   "scripts": {

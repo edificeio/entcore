@@ -189,7 +189,8 @@ public abstract class BaseServer extends Server {
 			}, oauthTtl), 
 			new BasicFilter(),
 			new QueryParamTokenFilter(),
-			this
+			this.vertx,
+			this.config
 		);
 		addFilter(userAuth);
 
