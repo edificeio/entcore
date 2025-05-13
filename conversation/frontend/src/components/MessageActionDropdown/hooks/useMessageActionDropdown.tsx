@@ -303,6 +303,7 @@ export function useMessageActionDropdown({
       icon: <IconSave />,
       action: handleDraftSaveClick,
       hidden:
+        folderId === 'trash' ||
         !hasActionsList('save') ||
         (message.state !== 'DRAFT' && !message.trashed),
     },
