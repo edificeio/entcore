@@ -81,7 +81,7 @@ export function MessagePreview({ message }: MessagePreviewProps) {
           {message.date && (
             <span
               className="text-nowrap caption fw-bold gray-800"
-              title={formatDate(message.date, 'long', true)}
+              title={formatDate(message.date, 'LLL')}
             >
               {formatTimeAgo(message.date)}
             </span>
