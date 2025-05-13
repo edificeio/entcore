@@ -357,6 +357,15 @@ public class CommunicationController extends BaseController {
 				JsonObject pa = message.body().getJsonObject("additionnalParams");
 				communicationService.visibleManualGroups(userId, cr, pa, responseHandler);
 				break;
+			case "areVisible":
+				final JsonArray checkIds = message.body().getJsonArray("checkIds");
+				communicationService.areVisible(userId, checkIds)
+					.onSuccess( message::reply )
+					.onFailure( throwable -> {
+						log.warn(throwable.getMessage());
+						message.reply(new JsonArray());
+					});
+				break;
 			default:
 				message.reply(new JsonArray());
 				break;

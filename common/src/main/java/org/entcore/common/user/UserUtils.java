@@ -603,6 +603,22 @@ public class UserUtils {
 		findUsers(eb, request, m, handler);
 	}
 
+	public static Future<JsonArray> areVisible(EventBus eb, String userId, JsonArray checkIds) {
+		final Promise<JsonArray> promise = Promise.promise();
+		JsonObject query = new JsonObject()
+				.put("action", "areVisible")
+				.put("userId", userId)
+				.put("checkIds", checkIds);
+		eb.request(COMMUNICATION_USERS, query, (final AsyncResult<Message<JsonArray>> ar) -> {
+			if (ar.succeeded()) {
+				promise.complete(ar.result().body());
+			} else {
+				promise.fail(ar.cause());
+			}
+		});
+		return promise.future();
+	};
+
 	public static void getSession(EventBus eb, final HttpServerRequest request,
 								  final Handler<JsonObject> handler) {
 		getSession(eb, request, false, handler);

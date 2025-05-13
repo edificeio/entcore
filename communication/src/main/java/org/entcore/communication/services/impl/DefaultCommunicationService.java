@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static io.vertx.core.json.JsonObject.mapFrom;
@@ -1179,6 +1180,37 @@ public class DefaultCommunicationService implements CommunicationService {
 
 	}
 
+	@Override
+	public Future<JsonArray> areVisible(String senderId, JsonArray checkIds) {
+		if(senderId == null || checkIds == null || checkIds.isEmpty()) {
+			return Future.succeededFuture(new JsonArray());
+		} else {
+			Promise<Either<String, JsonArray>> getVisiblePromise = Promise.promise();
+			visibleUsers(
+				senderId,
+				null,
+				null,
+				false,
+				true,
+				false,
+				" AND m.id IN {checkIds} ",
+				" MATCH (visibles) RETURN DISTINCT visibles.id as id ",
+				new JsonObject().put("checkIds", checkIds),
+				null,
+				true,
+				getVisiblePromise::complete
+			);
+			return getVisiblePromise.future()
+				.map((Either<String, JsonArray> either) -> {
+					if (either.isLeft()) {
+						log.error(either.left().getValue());
+					}
+					return either.isLeft() ? new JsonArray() : either.right().getValue();
+				});
+		}
+	}
+
+
 	/**
 	 * Return the list of users, with filtering on the structures, profiles and search
 	 * */
@@ -1959,6 +1991,4 @@ public class DefaultCommunicationService implements CommunicationService {
 		Neo4j.getInstance().execute(queryShareBookmarks, sbParams, validResultHandler(getShareBookmarksPromise::complete));
 		return getShareBookmarksPromise.future();
 	}
-
-
 }
