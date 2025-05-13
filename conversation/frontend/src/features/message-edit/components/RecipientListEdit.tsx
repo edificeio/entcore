@@ -1,4 +1,9 @@
-import { Combobox, Dropdown, OptionListItemType } from '@edifice.io/react';
+import {
+  Combobox,
+  Dropdown,
+  OptionListItemType,
+  useIsAdml,
+} from '@edifice.io/react';
 import { Fragment, ReactNode, useEffect, useState } from 'react';
 import { useSearchRecipients } from '~/features/message-edit/hooks/useSearchRecipients';
 import { useI18n } from '~/hooks';
@@ -25,6 +30,7 @@ export function RecipientListEdit({
 }: RecipientListProps) {
   const { t } = useI18n();
   const [recipientArray, setRecipientArray] = useState<(User | Group)[]>([]);
+  const { isAdml } = useIsAdml();
 
   const { getBookmarkById } = useBookmarkById();
   const messageUpdated = useMessageUpdated();
@@ -161,7 +167,11 @@ export function RecipientListEdit({
     <div className="d-flex align-items-center flex-fill ps-8 pe-16 py-8">
       <Combobox
         value={searchInputValue}
-        placeholder={t('conversation.users.search.placeholder')}
+        placeholder={
+          isAdml
+            ? t('conversation.users.search.placeholder.adml')
+            : t('conversation.users.search.placeholder')
+        }
         isLoading={isSearchLoading}
         noResult={hasSearchNoResults}
         options={searchResults}
