@@ -34,6 +34,7 @@
   "create.folder": "Créer un dossier",
   "new.folder": "Nouveau dossier",
   "date": "Date",
+  "date.format.message": "D MMMM YYYY [à] HH[h]mm",
   "delete": "Supprimer",
   "delete.definitely": "Supprimer définitivement",
   "delete.definitely.confirm": "Le ou les messages que vous avez sélectionnés vont être définitivement supprimés.",
