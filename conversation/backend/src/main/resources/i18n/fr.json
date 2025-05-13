@@ -81,7 +81,7 @@
   "folder.new.subfolder.label": "Créer en tant que sous-dossier",
   "folder.new.subfolder.placeholder": "Sélectionner un dossier parent",
   "folder.trash.title": "Suppression du dossier",
-  "folder.trash.body": "Êtes-vous sûr de vouloir supprimer ce dossier ? Le dossier sera définitivement supprimé et les messages qu’il contient seront placés à la corbeille.",
+  "folder.trash.body": "Êtes-vous sûr de vouloir supprimer ce dossier ? Le dossier et les sous-dossiers seront définitivement supprimés et les messages qu’ils contiennent seront placés à la corbeille.",
   "folder.title": "Titre du dossier",
   "folder.rename": "Renommer le dossier",
   "folder.rename.title": "Renommer",
