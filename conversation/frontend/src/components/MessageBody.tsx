@@ -68,6 +68,7 @@ export function MessageBody({
           id="messageBody"
           content={content}
           mode={editMode ? 'edit' : 'read'}
+          focus={null}
           variant="ghost"
           extensions={extensions}
           onContentChange={handleContentChange}
