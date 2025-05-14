@@ -116,7 +116,6 @@ export function MoveMessageToFolderModal() {
           <EmptyScreen
             imageSrc={illuFolder}
             imageAlt={t('no.folder')}
-            title={t('no.folder')}
             text={t('no.folder')}
           />
         )}
