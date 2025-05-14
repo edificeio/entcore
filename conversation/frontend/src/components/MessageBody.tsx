@@ -9,6 +9,8 @@ import {
   ConversationHistoryRenderer,
   Editor,
 } from '@edifice.io/react/editor';
+import { ConversationHistory } from '@edifice.io/tiptap-extensions/conversation-history';
+import { ConversationHistoryBody } from '@edifice.io/tiptap-extensions/conversation-history-body';
 import { Suspense, useLayoutEffect, useState } from 'react';
 import illuRecall from '~/assets/illu-messageRecalled.svg';
 import { MessageAttachments } from '~/components/MessageAttachments/MessageAttachments';
@@ -32,7 +34,11 @@ export function MessageBody({
   const { t } = useI18n();
   const { user } = useEdificeClient();
   const [content, setContent] = useState('');
-  const extensions = [ConversationHistoryNodeView(ConversationHistoryRenderer)];
+  const extensions = [
+    ConversationHistoryBody,
+    ConversationHistory,
+    ConversationHistoryNodeView(ConversationHistoryRenderer),
+  ];
   const [isOriginalFormatOpen, setOriginalFormatOpen] = useState(false);
   const messageUpdated = useMessageUpdated();
 
