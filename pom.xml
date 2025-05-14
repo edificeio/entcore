@@ -62,7 +62,7 @@
         <testContainerVersion>1.19.3</testContainerVersion>
         <modPostgresVersion>2.0-SNAPSHOT</modPostgresVersion>
         <modMongoVersion>4.0-develop-pedago-SNAPSHOT</modMongoVersion>
-        <webUtilsVersion>3.1-SNAPSHOT</webUtilsVersion>
+        <webUtilsVersion>3.1-develop-pedago-SNAPSHOT</webUtilsVersion>
         <mongodbHelperVersion>3.0-develop-pedago-SNAPSHOT</mongodbHelperVersion>
         <jodaTimeVersion>2.9.4</jodaTimeVersion>
         <scramVersion>2.1</scramVersion>
