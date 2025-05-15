@@ -57,15 +57,14 @@ export function useMessageReplyOrTransfer({
         body =
           body +
           `<div>
-            <p><span style="font-size: 14px; font-weight:400;">${t('transfer.title')}</span></p>
+            ${signatureData?.useSignature ? `<p></p>` : ''}
+            <p><span style="font-size: 14px; font-weight:400;">--------- ${t('transfer.title')} ---------</span></p>
             <p><span style="font-size: 14px; font-weight:400;">${t('transfer.from') + messageOrigin.from?.displayName}</span></p>
             <p><span style="font-size: 14px; font-weight:400;">${t('transfer.date') + (messageOrigin.date ? formatDate(messageOrigin.date, 'LLL') : '')}</span></p>
             <p><span style="font-size: 14px; font-weight:400;">${t('transfer.subject') + messageOrigin.subject}</span></p>
             <p><span style="font-size: 14px; font-weight:400;">${t('transfer.to') + displayRecipient(messageOrigin.to)}</span></p>
             ${messageOrigin.cc.users.length || messageOrigin.cc.groups.length ? '<p><span style="font-size: 14px; font-weight:400;">' + t('transfer.cc') + displayRecipient(messageOrigin.cc) + '</span></p>' : ''}
-          <p>
             ${messageOrigin.body}
-          </p>
         </div>`;
         messageTmp.to.users = [];
         messageTmp.to.groups = [];
