@@ -162,6 +162,13 @@ const useToggleUnread = (unread: boolean) => {
             ? { ...oldMessage, unread }
             : oldMessage,
         );
+
+        // force refetch of the folder messages with filter unread
+        queryClient.invalidateQueries({
+          queryKey: folderQueryOptions.getMessagesQuerykey(folderId, {
+            unread: true,
+          }),
+        });
       }
 
       // Update the message unread status in the message details
@@ -504,6 +511,7 @@ export const useUpdateDraft = () => {
   const { setMessageUpdated } = useAppActions();
   const queryClient = useQueryClient();
   const messageUpdated = useMessageUpdated();
+  const { updateFolderMessagesQueryData } = useFolderUtils();
 
   return useMutation({
     mutationFn: ({
@@ -529,20 +537,11 @@ export const useUpdateDraft = () => {
           return message ? { ...message, ...messageUpdated } : undefined;
         },
       );
-      queryClient.setQueryData(
-        [...folderQueryOptions.base, 'draft', 'messages'],
-        (data: InfiniteData<Message[]>) => {
-          if (!data) return data;
-          const pages = data.pages.map((page: Message[]) =>
-            page.map((message: Message) => {
-              if (message.id === draftId) {
-                return { ...message, ...messageUpdated };
-              }
-              return message;
-            }),
-          );
-          return { ...data, pages };
-        },
+
+      updateFolderMessagesQueryData('draft', (oldMessage) =>
+        oldMessage.id === draftId
+          ? { ...oldMessage, ...messageUpdated }
+          : oldMessage,
       );
     },
   });
@@ -592,6 +591,9 @@ export const useSendDraft = () => {
       }
       queryClient.invalidateQueries({
         queryKey: ['folder', 'draft', 'messages'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['folder', 'outbox', 'messages'],
       });
     },
   });
