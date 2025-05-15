@@ -17,30 +17,19 @@
  */
 package org.entcore.conversation.util;
 
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
+import java.util.stream.Collectors;
 
-import static fr.wseduc.webutils.Utils.getOrElse;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 
 public class FolderUtil {
-    final static public String ID           = "id";
-    final static public String PARENT_ID    = "parent_id";
-    final static public String DEPTH        = "depth";
-    final static public String SUB_FOLDERS  = "subFolders";
 
-    final static private Comparator<JsonObject> compareOnIdAsc = (JsonObject o1, JsonObject o2) -> {
-        return getId(o1).compareTo(getId(o2));
-    };
-
-    final static private Comparator<JsonObject> compareOnParentThenIdAsc = (JsonObject o1, JsonObject o2) -> {
-        int parentCompared = getParentId(o1).compareTo(getParentId(o2));
-        return parentCompared != 0 ? parentCompared : FolderUtil.compareOnIdAsc.compare(o1, o2);
-    };
+    final static public String ID          = "id";
+    final static public String PARENT_ID   = "parent_id";
+    final static public String NAME        = "name";
+    final static public String SUB_FOLDERS = "subFolders";
 
     /**
      * Converts a flat list of folders into a hierarchical tree structure based on their depth and parent-child relationships.
@@ -50,72 +39,63 @@ public class FolderUtil {
      * @return a JsonArray representing the root folders of the hierarchical tree structure.
      */
     static public JsonArray listToTree(final JsonArray list, final int depth) {
-        // Sort root folders (with depth=1) by ID
-        SortedSet<JsonObject> rootFolders =  new TreeSet<>(compareOnIdAsc);
-        // Sort children folders (with depth=2+) by ID.
-        SortedSet<JsonObject>[] folderLevelById = new SortedSet[depth];
-        // Also sort children folders (with depth=2+) by parent folder ID
-        SortedSet<JsonObject>[] folderLevelByParentId = new SortedSet[depth];
+        // Sort the list, case-insensitive, but capitals are prioritized
+        List<JsonObject> sortedList = list.stream()
+            .map(obj -> (JsonObject) obj)
+            .sorted(Comparator.comparing(
+                o -> o.getString(NAME),
+                (s1, s2) -> {
+                    int compare = s1.compareToIgnoreCase(s2);
+                    return compare != 0 ? compare : s1.compareTo(s2);
+                }
+            ))
+            .collect(Collectors.toList());
 
-        // Sets of level 0 (for depth=1) are not initialized, because only `rootFolders` will be used for level 0.        
-        for( int level=1; level<depth; level++ ) {
-            folderLevelById[level] = new TreeSet<>(compareOnIdAsc);
-            folderLevelByParentId[level] = new TreeSet<>(compareOnParentThenIdAsc);
+        // Indexing by id
+        Map<String, JsonObject> itemsById = new HashMap<>();
+        for (JsonObject item: sortedList) {
+            itemsById.put(item.getString(ID), item.copy());
         }
-        // Put every folder in the SortedSet dedicated to its depth.
-        list.stream().forEach((item) -> {
-            if( ! (item instanceof JsonObject) ) return;
-            final JsonObject folder = (JsonObject) item;
-            final int folderLevel = (int) (getDepth(folder) - 1);
-            if(folderLevel==0) {
-                rootFolders.add(folder);
-            } else if(0<folderLevel && folderLevel<depth) {
-                folderLevelById[folderLevel].add(folder);
-                folderLevelByParentId[folderLevel].add(folder);
-            }
-        });
 
-        // Insert every folder of depth 2 or more in its parent folder.
-        for(int level=1; level<depth; level++ ) {
-            final int parentLevel = level - 1;
-            Iterator<JsonObject> parentsIterator = (parentLevel==0 ? rootFolders : folderLevelById[parentLevel]).iterator();
-            Iterator<JsonObject> levelIterator = folderLevelByParentId[level].iterator();
-            JsonObject root = parentsIterator.hasNext() ? parentsIterator.next() : null;
-            while(root!=null && levelIterator.hasNext()) {
-                JsonObject sub = levelIterator.next();
-                int compared = getId(root).compareTo(getParentId(sub));
-                while( compared < 0 && parentsIterator.hasNext() ) {
-                    root = parentsIterator.next();
-                    compared = getId(root).compareTo(getParentId(sub));
-                }
-                if( compared == 0 ) {
-                    addSubFolder(root, sub);
-                }
+        // Indexing children
+        Map<String, List<JsonObject>> childrenMap = new HashMap<>();
+        for (JsonObject item: sortedList) {
+            String parentId = item.getString(PARENT_ID);
+            if (parentId != null && !parentId.isEmpty()) {
+                childrenMap.computeIfAbsent(parentId, k -> new ArrayList<>()).add(item);
             }
         }
 
-        return JsonArray.of(rootFolders.toArray());
-    }
-
-    static public String getId(JsonObject o) {
-        return o.getString(ID);
-    }
-
-    static public String getParentId(JsonObject o) {
-        return getOrElse(o.getString(PARENT_ID), "");
-    }
-
-    static public long getDepth(JsonObject o) {
-        return o.getLong(DEPTH, 0L);
-    }
-
-    static public void addSubFolder(JsonObject parent, JsonObject child) {
-        if(parent == null) return;
-        JsonArray subFolders = parent.getJsonArray(SUB_FOLDERS);
-        if( subFolders == null) {
-            subFolders = new JsonArray();
-            parent.put(SUB_FOLDERS, subFolders);
+        // Build the tree, start by the bottom
+        JsonArray result = new JsonArray();
+        for (JsonObject item: sortedList) {
+            String parentId = item.getString(PARENT_ID);
+            if (parentId == null || parentId.isEmpty()) {
+                JsonObject node = buildNodeWithDepth(item.copy(), childrenMap, itemsById, 1, depth);
+                result.add(node);
+            }
         }
-        subFolders.add(child);
+
+        return result;
     }
+
+    private static JsonObject buildNodeWithDepth(JsonObject node, Map<String, List<JsonObject>> childrenMap, Map<String, JsonObject> byId, int depth, int maxDepth) {
+        if (depth >= maxDepth) {
+            return node;
+        }
+
+        String nodeId = node.getString(ID);
+        List<JsonObject> children = childrenMap.get(nodeId);
+        if (children != null && !children.isEmpty()) {
+            JsonArray childArray = new JsonArray();
+            for (JsonObject child: children) {
+                JsonObject childCopy = byId.get(child.getString(ID)).copy();
+                childArray.add(buildNodeWithDepth(childCopy, childrenMap, byId, depth + 1, maxDepth));
+            }
+            node.put(SUB_FOLDERS, childArray);
+        }
+
+        return node;
+    }
+
 }
