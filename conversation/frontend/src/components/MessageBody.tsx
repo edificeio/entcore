@@ -8,10 +8,11 @@ import {
   ConversationHistoryNodeView,
   ConversationHistoryRenderer,
   Editor,
+  EditorRef,
 } from '@edifice.io/react/editor';
 import { ConversationHistory } from '@edifice.io/tiptap-extensions/conversation-history';
 import { ConversationHistoryBody } from '@edifice.io/tiptap-extensions/conversation-history-body';
-import { Suspense, useLayoutEffect, useState } from 'react';
+import { Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import illuRecall from '~/assets/illu-messageRecalled.svg';
 import { MessageAttachments } from '~/components/MessageAttachments/MessageAttachments';
 import { useI18n } from '~/hooks';
@@ -34,6 +35,7 @@ export function MessageBody({
   const { t } = useI18n();
   const { user } = useEdificeClient();
   const [content, setContent] = useState('');
+  const editorRef = useRef<EditorRef>(null);
   const extensions = [
     ConversationHistoryBody,
     ConversationHistory,
@@ -52,6 +54,11 @@ export function MessageBody({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    // Force the editor to set the focus on the start of the content
+    editorRef.current?.setFocus('start');
+  }, [content]);
+
   return message.state === 'RECALL' && message.from.id !== user?.userId ? (
     <div className="d-flex flex-column gap-16 align-items-center justify-content-center">
       <EmptyScreen
@@ -65,10 +72,11 @@ export function MessageBody({
     <>
       <section className="d-flex flex-column gap-16">
         <Editor
+          ref={editorRef}
           id="messageBody"
           content={content}
           mode={editMode ? 'edit' : 'read'}
-          focus={null}
+          focus={'start'}
           variant="ghost"
           extensions={extensions}
           onContentChange={handleContentChange}
