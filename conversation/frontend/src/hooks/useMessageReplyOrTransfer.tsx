@@ -34,6 +34,14 @@ export function useMessageReplyOrTransfer({
       const messageTmp: Message = {
         ...DEFAULT_MESSAGE,
         language: currentLanguage,
+        date: undefined,
+        parent_id: messageOrigin.id,
+        thread_id: messageOrigin.id,
+        from: {
+          id: user?.userId || '',
+          displayName: user?.username || '',
+          profile: (userProfile || '') as string,
+        },
       };
       const displayRecipient = (recipients: Recipients) => {
         const usersDisplayName = recipients.users
@@ -71,6 +79,7 @@ export function useMessageReplyOrTransfer({
         messageTmp.cc.users = [];
         messageTmp.cc.groups = [];
         messageTmp.cci = undefined;
+        messageTmp.attachments = messageOrigin.attachments;
       } else {
         body =
           body +
@@ -110,13 +119,6 @@ export function useMessageReplyOrTransfer({
       }
 
       messageTmp.body = body;
-      messageTmp.attachments = messageOrigin.attachments;
-
-      messageTmp.from = {
-        id: user?.userId || '',
-        displayName: user?.username || '',
-        profile: (userProfile || '') as string,
-      };
 
       const prefixSubject =
         action === 'transfer'

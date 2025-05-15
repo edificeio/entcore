@@ -174,6 +174,8 @@ export function useMessageActionDropdown({
           cc: recipientToIds(message.cc),
           cci: message.cci ? recipientToIds(message.cci) : undefined,
         },
+        inReplyToId:
+          message.id !== message.parent_id ? message.parent_id : undefined,
       },
       {
         onSuccess: (response) => {

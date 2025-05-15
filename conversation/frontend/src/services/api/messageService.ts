@@ -121,10 +121,14 @@ export const createMessageService = (baseURL: string) => ({
       /** IDs of recipients in "copie-carbone-invisible" */
       cci?: string[];
     },
+    inReplyToId?: string,
   ) {
     return odeServices
       .http()
-      .post<MessageSentResponse>(`${baseURL}/send?id=${draftId}`, payload);
+      .post<MessageSentResponse>(
+        `${baseURL}/send?id=${draftId}${inReplyToId ? '&In-Reply-To=' + inReplyToId : ''}`,
+        payload,
+      );
   },
 
   recall(messageId: string) {
@@ -133,14 +137,19 @@ export const createMessageService = (baseURL: string) => ({
       .post<void>(`${baseURL}/api/messages/${messageId}/recall`);
   },
 
-  createDraft(payload: {
-    subject?: string;
-    body?: string;
-    to?: string[];
-    cc?: string[];
-    cci?: string[];
-  }) {
-    return odeServices.http().post<{ id: string }>(`${baseURL}/draft`, payload);
+  createDraft(
+    payload: {
+      subject?: string;
+      body?: string;
+      to?: string[];
+      cc?: string[];
+      cci?: string[];
+    },
+    inReplyToId?: string,
+  ) {
+    return odeServices.http().post<{
+      id: string;
+    }>(`${baseURL}/draft${inReplyToId ? '?In-Reply-To=' + inReplyToId : ''}`, payload);
   },
 
   updateDraft(
@@ -154,5 +163,11 @@ export const createMessageService = (baseURL: string) => ({
     },
   ) {
     return putThenVoid(`${baseURL}/draft/${draftId}`, payload);
+  },
+
+  forward(messageId: string, originalMessageId: string) {
+    return putThenVoid(
+      `${baseURL}/message/${messageId}/forward/${originalMessageId}`,
+    );
   },
 });
