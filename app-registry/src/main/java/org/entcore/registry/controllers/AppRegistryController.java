@@ -726,6 +726,11 @@ public class AppRegistryController extends BaseController implements AppRegistry
 		final Promise<AppRegistrationResponseDTO> promise = Promise.promise();
 		final JsonObject jsonRequest = mapFrom(request);
 		try {
+			JsonObject application = jsonRequest.getJsonObject("application");
+			Object customProps = application.remove("customProperties");
+			if(customProps != null) {
+				application.mergeIn(((JsonObject)customProps));
+			}
 			appRegistryService.createApplication(null, jsonRequest.getJsonObject("application"), jsonRequest.getJsonArray("actions"), e -> {
 				final AppRegistrationResponseDTO response;
 				if (e.isLeft()) {
