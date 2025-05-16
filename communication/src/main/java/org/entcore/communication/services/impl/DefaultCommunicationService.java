@@ -1203,9 +1203,11 @@ public class DefaultCommunicationService implements CommunicationService {
 			return getVisiblePromise.future()
 				.map((Either<String, JsonArray> either) -> {
 					if (either.isLeft()) {
-						log.error(either.left().getValue());
+						String cause = either.left().getValue();
+						log.error(cause);
+						throw new RuntimeException(cause);
 					}
-					return either.isLeft() ? new JsonArray() : either.right().getValue();
+					return either.right().getValue();
 				});
 		}
 	}
