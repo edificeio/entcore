@@ -116,19 +116,21 @@ public class BrokerProxyUtils {
     log.info("Start listening on address " + address);
     return eb.consumer(address, (Handler<Message<byte[]>>) message -> {
       log.debug("Received message on address " + address);
-      Object response;
+      Object response = null;
       if (method.getParameterCount() == 1) {
         final byte[] rawRequest = message.body();
         Object request = null;
         try {
           request = mapper.readValue(rawRequest, requestType);
         } catch (IOException e) {
+          log.error("Error while deserializing request" , e);
+          response = e;
         }
         if (request == null) {
-          log.error("Error while deserializing request: " + rawRequest);
-          response = new IllegalArgumentException("Invalid request: " + rawRequest);
+          log.error("Error while deserializing request : " + new String(rawRequest));
+          response = response == null ? new IllegalArgumentException("Invalid request") : response;
         } else {
-          log.debug("Calling method " + method.getName() + " with request: " + rawRequest);
+          log.debug("Calling method " + method.getName() + " with request: " + new String(rawRequest));
           try {
             response = method.invoke(proxyImpl, request);
           } catch (Exception e) {
