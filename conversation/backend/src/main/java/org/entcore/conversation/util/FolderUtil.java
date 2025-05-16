@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.utils.StringUtils;
 
 
 public class FolderUtil {
@@ -41,7 +42,7 @@ public class FolderUtil {
     static public JsonArray listToTree(final JsonArray list, final int depth) {
         // Sort the list, case-insensitive, but capitals are prioritized
         List<JsonObject> sortedList = list.stream()
-            .map(obj -> (JsonObject) obj)
+            .map(JsonObject.class::cast)
             .sorted(Comparator.comparing(
                 o -> o.getString(NAME),
                 (s1, s2) -> {
@@ -51,17 +52,15 @@ public class FolderUtil {
             ))
             .collect(Collectors.toList());
 
-        // Indexing by id
+        // Indexing
         Map<String, JsonObject> itemsById = new HashMap<>();
+        Map<String, List<JsonObject>> childrenMap = new HashMap<>();
+
         for (JsonObject item: sortedList) {
             itemsById.put(item.getString(ID), item.copy());
-        }
 
-        // Indexing children
-        Map<String, List<JsonObject>> childrenMap = new HashMap<>();
-        for (JsonObject item: sortedList) {
             String parentId = item.getString(PARENT_ID);
-            if (parentId != null && !parentId.isEmpty()) {
+            if (!StringUtils.isEmpty(parentId)) {
                 childrenMap.computeIfAbsent(parentId, k -> new ArrayList<>()).add(item);
             }
         }
@@ -70,7 +69,7 @@ public class FolderUtil {
         JsonArray result = new JsonArray();
         for (JsonObject item: sortedList) {
             String parentId = item.getString(PARENT_ID);
-            if (parentId == null || parentId.isEmpty()) {
+            if (StringUtils.isEmpty(parentId)) {
                 JsonObject node = buildNodeWithDepth(item.copy(), childrenMap, itemsById, 1, depth);
                 result.add(node);
             }
