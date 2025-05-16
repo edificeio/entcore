@@ -217,7 +217,13 @@ public class SessionBrokerListenerImpl implements SessionBrokerListener {
         final List<ActionDto> actionDtos = new ArrayList<>();
         if (userInfos.getAuthorizedActions() != null) {
             for (Object actionObj : userInfos.getAuthorizedActions()) {
-                if (actionObj instanceof JsonObject) {
+                if (actionObj instanceof UserInfos.Action) {
+                    final UserInfos.Action action = (UserInfos.Action) actionObj;
+                    actionDtos.add(new ActionDto(
+                      action.getName(),
+                      action.getDisplayName(),
+                      action.getType()));
+                } else if (actionObj instanceof JsonObject) {
                     final JsonObject action = (JsonObject) actionObj;
                     actionDtos.add(new ActionDto(
                             action.getString("name"),
