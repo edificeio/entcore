@@ -540,7 +540,11 @@ export const useUpdateDraft = () => {
 
       updateFolderMessagesQueryData('draft', (oldMessage) =>
         oldMessage.id === draftId
-          ? { ...oldMessage, ...messageUpdated }
+          ? {
+              ...oldMessage,
+              ...messageUpdated,
+              hasAttachment: messageUpdated.attachments?.length > 0,
+            }
           : oldMessage,
       );
     },

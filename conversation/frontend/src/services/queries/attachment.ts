@@ -36,7 +36,7 @@ export const useAttachFiles = () => {
       }
       updateFolderMessagesQueryData('draft', (oldMessage) =>
         oldMessage.id === draftId
-          ? { ...oldMessage, date: Date.now() }
+          ? { ...oldMessage, date: Date.now(), hasAttachment: true }
           : oldMessage,
       );
       toast.success(t('attachments.loaded'));
