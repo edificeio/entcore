@@ -87,7 +87,6 @@ export const useMessage = (messageId: string) => {
   const { folderId } = useSelectedFolder();
   const { updateFolderMessagesQueryData } = useFolderUtils();
   const { currentLanguage, user, userProfile } = useEdificeClient();
-  const { setMessageUpdated } = useAppActions();
 
   if (result.isSuccess && result.data) {
     let message: Message = result.data;
@@ -119,7 +118,6 @@ export const useMessage = (messageId: string) => {
         },
       };
     }
-    setMessageUpdated(message);
   }
   return result;
 };
@@ -395,6 +393,8 @@ export const useCreateOrUpdateDraft = () => {
   const messageUpdated = useMessageUpdated();
   const toast = useToast();
   const { t } = useI18n();
+  const [searchParams] = useSearchParams();
+  const transferMessageId = searchParams.get('transfer');
 
   return (withNotification = false) => {
     if (!messageUpdated) return;
@@ -438,9 +438,16 @@ export const useCreateOrUpdateDraft = () => {
       );
     } else {
       return createDraft.mutateAsync(
-        { payload },
         {
-          onSuccess: ({ id }) => {
+          payload,
+          inReplyToId: messageUpdated.parent_id,
+        },
+        {
+          onSuccess: async ({ id }) => {
+            if (transferMessageId) {
+              // Forward the message to the new draft (copy attachments)
+              await messageService.forward(id, transferMessageId);
+            }
             if (withNotification) {
               toast.success(t('message.draft.saved'));
             }
@@ -471,6 +478,7 @@ export const useCreateDraft = () => {
   return useMutation({
     mutationFn: ({
       payload,
+      inReplyToId,
     }: {
       payload: {
         subject?: string;
@@ -479,7 +487,8 @@ export const useCreateDraft = () => {
         cc?: string[];
         cci?: string[];
       };
-    }) => messageService.createDraft(payload),
+      inReplyToId?: string;
+    }) => messageService.createDraft(payload, inReplyToId),
     onSuccess: ({ id }) => {
       if (!messageUpdated) return;
 
@@ -566,6 +575,7 @@ export const useSendDraft = () => {
     mutationFn: ({
       draftId,
       payload,
+      inReplyToId,
     }: {
       draftId: string;
       payload?: {
@@ -575,7 +585,8 @@ export const useSendDraft = () => {
         cc?: string[];
         cci?: string[];
       };
-    }) => messageService.send(draftId, payload),
+      inReplyToId?: string;
+    }) => messageService.send(draftId, payload, inReplyToId),
     onSuccess: (_response, { payload }) => {
       toast.success(t('message.sent'));
       updateFolderBadgeCountLocal('draft', -1);
