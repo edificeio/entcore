@@ -30,12 +30,20 @@ import fr.wseduc.webutils.http.BaseController;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserUtils;
 import org.entcore.directory.services.ShareBookmarkService;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
+
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 public class ShareBookmarkController extends BaseController {
@@ -77,25 +85,62 @@ public class ShareBookmarkController extends BaseController {
 					shareBookmarkService.list(user.getUserId(), arrayResponseHandler(request));
 				} else {
 					shareBookmarkService.get(user.getUserId(), id, r -> {
-						if (r.isRight()) {
-							final JsonObject res = r.right().getValue();
-							JsonArray members = res.getJsonArray("members");
-							if (members == null || members.isEmpty()) {
-								shareBookmarkService.delete(user.getUserId(), id, dres -> {
-									if (dres.isLeft()) {
-										log.error("Error deleting sharebookmark " + id + " : " + dres.left().getValue());
-									}
-								});
-								notFound(request, "empty.sharebookmark");
-								return;
-							}
-							res.mergeIn(UserUtils.translateAndGroupVisible(
-									members, I18n.acceptLanguage(request), true)
-							);
-							res.remove("members");
-							renderJson(request, res);
-						} else {
+						if (r.isLeft()) {
 							leftToResponse(request, r.left());
+							return;
+						}
+
+						final JsonObject res = r.right().getValue();
+						final JsonArray members = res.getJsonArray("members");
+
+						if (members == null || members.isEmpty()) {
+							// Clean empty Bookmark
+							shareBookmarkService.delete(user.getUserId(), id, dres -> {
+								if (dres.isLeft()) {
+									log.error("Error deleting sharebookmark " + id + " : " + dres.left().getValue());
+								}
+							});
+							notFound(request, "empty.sharebookmark");
+						} else {
+							// Map members by their ID
+							Map<String, JsonObject> membersMap = new HashMap(members.size());
+							members.stream()
+								.map(JsonObject.class::cast)
+								.forEach(member -> membersMap.put(member.getString("id"), member));
+
+							// Check bookmarked members' visibility
+							final Set<String> membersMapIds = membersMap.keySet();
+							UserUtils.areVisible(
+								eb, 
+								user.getUserId(),
+								new JsonArray( membersMapIds.stream().collect(Collectors.toList()) )
+							)
+							.onSuccess( visibleInfos -> {
+								List<String> visibleIds = visibleInfos.stream()
+									.map(JsonObject.class::cast)
+									.map(jo -> jo.getString("id"))
+									.collect(Collectors.toList());
+								// Keep only visible users, in the *membersMap*
+								membersMapIds.retainAll(visibleIds);
+								// Update members array
+								members.clear();
+								membersMap.values().stream().forEach( member -> members.add(member) );
+							})
+							.onComplete( ar -> {
+								if (members.isEmpty()) {
+									// Clean empty Bookmark
+									shareBookmarkService.delete(user.getUserId(), id, dres -> {
+										if (dres.isLeft()) {
+											log.error("Error deleting sharebookmark " + id + " : " + dres.left().getValue());
+										}
+									});
+									notFound(request, "empty.sharebookmark");
+								} else {
+									res.mergeIn(UserUtils.translateAndGroupVisible(members, I18n.acceptLanguage(request), true));
+									res.remove("members");
+									renderJson(request, res);
+								}
+							});
 						}
 					});
 				}
