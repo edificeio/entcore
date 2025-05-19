@@ -129,9 +129,7 @@ export function MobileMenu() {
   function renderFolderItem(item: FolderItem, isUserFolder = false) {
     return (
       <div className="w-100 d-flex justify-content-between align-content-center align-items-center">
-        <div className="overflow-x-hidden text-no-wrap text-truncate">
-          {t(item.name)}
-        </div>
+        <div>{t(item.name)}</div>
         {isUserFolder ? (
           <div className="d-flex align-items-center gap-4">
             {renderBadge(item.folder.nbUnread)}
