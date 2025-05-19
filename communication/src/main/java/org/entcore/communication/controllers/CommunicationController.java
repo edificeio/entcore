@@ -340,8 +340,10 @@ public class CommunicationController extends BaseController {
 				boolean myGroup = communicationService instanceof DefaultCommunicationService ? true :
 						message.body().getBoolean("mygroup", false);
 				boolean profile = message.body().getBoolean("profile", true);
+				String userProfile = message.body().getString("userProfile", null);
+				boolean reverseUnion = message.body().getBoolean("reverseUnion", false);
 				communicationService.visibleUsers(userId, schoolId, expectedTypes, itSelf, myGroup,
-						profile, preFilter, customReturn, ap, responseHandler);
+						profile, preFilter, customReturn, ap, userProfile, reverseUnion, responseHandler);
 				break;
 			case "usersCanSeeMe":
 				communicationService.usersCanSeeMe(userId, responseHandler);
@@ -356,15 +358,6 @@ public class CommunicationController extends BaseController {
 				String cr = message.body().getString("customReturn");
 				JsonObject pa = message.body().getJsonObject("additionnalParams");
 				communicationService.visibleManualGroups(userId, cr, pa, responseHandler);
-				break;
-			case "areVisible":
-				final JsonArray checkIds = message.body().getJsonArray("checkIds");
-				communicationService.areVisible(userId, checkIds)
-					.onSuccess( message::reply )
-					.onFailure( throwable -> {
-						log.warn(throwable.getMessage());
-						message.reply(new JsonArray());
-					});
 				break;
 			default:
 				message.reply(new JsonArray());

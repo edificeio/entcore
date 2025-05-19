@@ -179,16 +179,5 @@ public interface CommunicationService {
 	 */
 	Future<JsonArray> searchVisibles(UserInfos user, String search, String language);
 
-	/**
-	 * Check if a sender (user) can communicate with some other (visible) recipients.
-	 * @param senderId  id of the sender
-	 * @param checkIds	ids of the recipients to check
-	 * @return JsonArray of JsonObjects:
-	 * {
-	 *   id: recipient ID which the sender can communicate with
-	 * }
-	 */
-	Future<JsonArray> areVisible(String senderId, JsonArray checkIds);
-
 }
 

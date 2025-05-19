@@ -1180,39 +1180,6 @@ public class DefaultCommunicationService implements CommunicationService {
 
 	}
 
-	@Override
-	public Future<JsonArray> areVisible(String senderId, JsonArray checkIds) {
-		if(senderId == null || checkIds == null || checkIds.isEmpty()) {
-			return Future.succeededFuture(new JsonArray());
-		} else {
-			Promise<Either<String, JsonArray>> getVisiblePromise = Promise.promise();
-			visibleUsers(
-				senderId,
-				null,
-				null,
-				false,
-				true,
-				false,
-				" AND m.id IN {checkIds} ",
-				" MATCH (visibles) RETURN DISTINCT visibles.id as id ",
-				new JsonObject().put("checkIds", checkIds),
-				null,
-				true,
-				getVisiblePromise::complete
-			);
-			return getVisiblePromise.future()
-				.map((Either<String, JsonArray> either) -> {
-					if (either.isLeft()) {
-						String cause = either.left().getValue();
-						log.error(cause);
-						throw new RuntimeException(cause);
-					}
-					return either.right().getValue();
-				});
-		}
-	}
-
-
 	/**
 	 * Return the list of users, with filtering on the structures, profiles and search
 	 * */

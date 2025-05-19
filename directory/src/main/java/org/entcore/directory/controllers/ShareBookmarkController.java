@@ -110,7 +110,7 @@ public class ShareBookmarkController extends BaseController {
 
 							// Check bookmarked members' visibility
 							final Set<String> membersMapIds = membersMap.keySet();
-							UserUtils.areVisible(
+							UserUtils.filterVisibles(
 								eb, 
 								user.getUserId(),
 								new JsonArray( membersMapIds.stream().collect(Collectors.toList()) )
