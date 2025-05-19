@@ -60,8 +60,10 @@ export function useMessageReplyOrTransfer({
         );
       };
 
-      let body = `<p></p><p></p>
-      ${signatureData?.useSignature ? signatureData.signature : ''}`;
+      let body = '';
+      if (signatureData?.useSignature && signatureData.signature) {
+        body = `<p></p><p></p>${signatureData.signature}`;
+      }
       if (action === 'transfer') {
         body =
           body +
@@ -137,17 +139,6 @@ export function useMessageReplyOrTransfer({
           displayName: user?.username || '',
           profile: (userProfile || '') as string,
         };
-        messageOrigin.to = {
-          users: [],
-          groups: [],
-        };
-        messageOrigin.cc = {
-          users: [],
-          groups: [],
-        };
-        messageOrigin.cci = undefined;
-        messageOrigin.subject = '';
-
         if (signatureData?.useSignature && signatureData.signature) {
           messageOrigin.body = `<p></p><p></p>${signatureData.signature}`;
         }

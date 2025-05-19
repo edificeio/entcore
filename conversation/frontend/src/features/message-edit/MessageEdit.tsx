@@ -38,7 +38,7 @@ export function MessageEdit({ message }: MessageEditProps) {
   };
 
   const handleMessageChange = (message: Message) => {
-    setMessageUpdated({ ...(messageUpdated || message), body: message.body });
+    setMessageUpdated(message);
     setMessageUpdatedNeedToSave(true);
   };
 

@@ -10,9 +10,7 @@ import {
   Editor,
   EditorRef,
 } from '@edifice.io/react/editor';
-import { ConversationHistory } from '@edifice.io/tiptap-extensions/conversation-history';
-import { ConversationHistoryBody } from '@edifice.io/tiptap-extensions/conversation-history-body';
-import { Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 import illuRecall from '~/assets/illu-messageRecalled.svg';
 import { MessageAttachments } from '~/components/MessageAttachments/MessageAttachments';
 import { useI18n } from '~/hooks';
@@ -36,11 +34,7 @@ export function MessageBody({
   const { user } = useEdificeClient();
   const [content, setContent] = useState('');
   const editorRef = useRef<EditorRef>(null);
-  const extensions = [
-    ConversationHistoryBody,
-    ConversationHistory,
-    ConversationHistoryNodeView(ConversationHistoryRenderer),
-  ];
+  const extensions = [ConversationHistoryNodeView(ConversationHistoryRenderer)];
   const [isOriginalFormatOpen, setOriginalFormatOpen] = useState(false);
   const messageUpdated = useMessageUpdated();
 
@@ -48,7 +42,8 @@ export function MessageBody({
     if (!editMode) return;
     onMessageChange?.({ ...message, body: editor?.getHTML() });
   };
-  useLayoutEffect(() => {
+
+  useEffect(() => {
     // Set the content of the editor to the message body only on the first render
     setContent(message.body);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -76,7 +71,6 @@ export function MessageBody({
           id="messageBody"
           content={content}
           mode={editMode ? 'edit' : 'read'}
-          focus={'start'}
           variant="ghost"
           extensions={extensions}
           onContentChange={handleContentChange}
