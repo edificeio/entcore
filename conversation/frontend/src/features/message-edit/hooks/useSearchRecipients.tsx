@@ -81,6 +81,7 @@ export const useSearchRecipients = ({
       payload: visibles,
     });
 
+    // TODO JCBE : ce adaptedResults n'est ni un USer, ni un Group, ni un Visible !?
     const adaptedResults: OptionListItemType[] = visibles.map(
       (searchResult: Visible) => {
         return {
