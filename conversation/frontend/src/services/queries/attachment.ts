@@ -1,8 +1,8 @@
 import { useToast } from '@edifice.io/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useI18n } from '~/hooks';
-import { Message } from '~/models';
-import { useAppActions } from '~/store';
+import { Attachment, Message } from '~/models';
+import { useAppActions, useMessageUpdated } from '~/store';
 import { attachmentService, messageQueryOptions, useFolderUtils } from '..';
 
 /**
@@ -12,6 +12,7 @@ import { attachmentService, messageQueryOptions, useFolderUtils } from '..';
 export const useAttachFiles = () => {
   const queryClient = useQueryClient();
   const { setMessageUpdated } = useAppActions();
+  const messageUpdated = useMessageUpdated();
   const { updateFolderMessagesQueryData } = useFolderUtils();
   const toast = useToast();
   const { t } = useI18n();
@@ -19,21 +20,36 @@ export const useAttachFiles = () => {
   return useMutation({
     mutationFn: ({ draftId, files }: { draftId: string; files: File[] }) =>
       Promise.all(files.map((file) => attachmentService.attach(draftId, file))),
-    async onSuccess(_ids, { draftId }) {
-      await queryClient.invalidateQueries({
-        queryKey: messageQueryOptions.getById(draftId).queryKey,
-      });
+    async onSuccess(ids, { draftId, files }) {
+      const attachments = files.map(
+        (file, index): Attachment => ({
+          id: ids[index].id,
+          size: file.size,
+          name: file.name,
+          charset: '',
+          contentTransferEncoding: '',
+          contentType: file.type,
+          filename: file.name,
+        }),
+      );
 
       // Refresh the message data after attaching files to the draft message
       // This is necessary to update the message state in the store
-      const message = await queryClient.ensureQueryData(
-        messageQueryOptions.getById(draftId),
+      await queryClient.setQueryData(
+        messageQueryOptions.getById(draftId).queryKey,
+        () => {
+          if (!messageUpdated) return undefined;
+          const message = {
+            ...messageUpdated,
+            attachments: [...messageUpdated.attachments, ...attachments],
+          };
+          setMessageUpdated({
+            ...message,
+          });
+          return message;
+        },
       );
-      if (message) {
-        setMessageUpdated({
-          ...message,
-        });
-      }
+
       updateFolderMessagesQueryData('draft', (oldMessage) =>
         oldMessage.id === draftId
           ? { ...oldMessage, date: Date.now(), hasAttachment: true }

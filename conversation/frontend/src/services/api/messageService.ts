@@ -147,7 +147,7 @@ export const createMessageService = (baseURL: string) => ({
     },
     inReplyToId?: string,
   ) {
-    let postUrl = `${baseURL}/draft}`;
+    let postUrl = `${baseURL}/draft`;
     if (inReplyToId) {
       postUrl += '?In-Reply-To=' + inReplyToId;
     }
