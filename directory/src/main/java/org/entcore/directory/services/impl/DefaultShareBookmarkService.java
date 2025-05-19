@@ -25,20 +25,35 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.directory.services.ShareBookmarkService;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.UUID;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
+
 import static org.entcore.common.neo4j.Neo4jResult.*;
+import org.entcore.common.user.UserUtils;
 import static org.entcore.common.validation.StringValidation.cleanId;
+
+import io.vertx.core.eventbus.EventBus;
 
 
 public class DefaultShareBookmarkService implements ShareBookmarkService {
 
+	private final EventBus eb;
 	private static final Neo4j neo4j = Neo4j.getInstance();
 	private static final Logger log = LoggerFactory.getLogger(DefaultShareBookmarkService.class);
+
+	public DefaultShareBookmarkService(EventBus eb) {
+		this.eb = eb;
+	}
 
 	@Override
 	public void create(String userId, JsonObject bookmark, Handler<Either<String, JsonObject>> handler) {
@@ -76,8 +91,7 @@ public class DefaultShareBookmarkService implements ShareBookmarkService {
 		neo4j.execute(query, params, validEmptyHandler(handler));
 	}
 
-	@Override
-	public void get(String userId, String id, Handler<Either<String, JsonObject>> handler) {
+	private void get(String userId, String id, Handler<Either<String, JsonObject>> handler) {
 		final String cleanId = cleanId(id);
 		final String query =
 				"MATCH (:User {id:{userId}})-[:HAS_SB]->(sb:ShareBookmark) " +
@@ -90,6 +104,52 @@ public class DefaultShareBookmarkService implements ShareBookmarkService {
 		JsonObject params = new JsonObject();
 		params.put("userId", userId);
 		neo4j.execute(query, params, validUniqueResultHandler(handler));
+	}
+
+	@Override
+	public void get(String userId, String id, boolean onlyVisibles, Handler<Either<String, JsonObject>> handler) {
+		get(userId, id, r -> {
+			if (r.isLeft()) {
+				handler.handle(r);
+				return;
+			}
+
+			final JsonObject res = r.right().getValue();
+			final JsonArray members = res.getJsonArray("members");
+			if (members == null || members.isEmpty()) {
+				handler.handle(r);
+				return;
+			}
+
+			// Map members by their ID
+			Map<String, JsonObject> membersMap = new HashMap(members.size());
+			members.stream()
+				.map(JsonObject.class::cast)
+				.forEach(member -> membersMap.put(member.getString("id"), member));
+
+			// Check bookmarked members' visibility
+			final Set<String> membersMapIds = membersMap.keySet();
+			UserUtils.filterVisibles(
+				eb, 
+				userId,
+				new JsonArray( membersMapIds.stream().collect(Collectors.toList()) )
+			)
+			.onSuccess( visibleInfos -> {
+				List<String> visibleIds = visibleInfos.stream()
+					.map(JsonObject.class::cast)
+					.map(jo -> jo.getString("id"))
+					.collect(Collectors.toList());
+				// Keep only visible users, in the *membersMap*
+				membersMapIds.retainAll(visibleIds);
+				// Update members array
+				members.clear();
+				membersMap.values().stream().forEach( member -> members.add(member) );
+			})
+			.onComplete( ar -> {
+				// Filtered or not, handle the results anyway.
+				handler.handle(r);
+			});
+		});
 	}
 
 	@Override

@@ -340,8 +340,10 @@ public class CommunicationController extends BaseController {
 				boolean myGroup = communicationService instanceof DefaultCommunicationService ? true :
 						message.body().getBoolean("mygroup", false);
 				boolean profile = message.body().getBoolean("profile", true);
+				String userProfile = message.body().getString("userProfile", null);
+				boolean reverseUnion = message.body().getBoolean("reverseUnion", false);
 				communicationService.visibleUsers(userId, schoolId, expectedTypes, itSelf, myGroup,
-						profile, preFilter, customReturn, ap, responseHandler);
+						profile, preFilter, customReturn, ap, userProfile, reverseUnion, responseHandler);
 				break;
 			case "usersCanSeeMe":
 				communicationService.usersCanSeeMe(userId, responseHandler);
