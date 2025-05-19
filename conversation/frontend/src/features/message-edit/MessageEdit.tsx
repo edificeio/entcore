@@ -1,9 +1,9 @@
 import { FormControl, Input, useDate, useDebounce } from '@edifice.io/react';
 import { useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
 import { MessageActionDropdown } from '~/components/MessageActionDropdown/MessageActionDropdown';
 import { MessageBody } from '~/components/MessageBody';
 import { useI18n } from '~/hooks';
+import { useMessageIdAndAction } from '~/hooks/useMessageIdAndAction';
 import { Message } from '~/models';
 import { useConversationConfig, useCreateOrUpdateDraft } from '~/services';
 import {
@@ -28,8 +28,8 @@ export function MessageEdit({ message }: MessageEditProps) {
   const createOrUpdateDraft = useCreateOrUpdateDraft();
   const [dateKey, setDateKey] = useState(0);
   const { data: publicConfig } = useConversationConfig();
-  const [searchParams] = useSearchParams();
-  const transferMessageId = searchParams.get('transfer');
+  const { action } = useMessageIdAndAction(message.id);
+  const isTransferAction = action === 'transfer';
 
   const handleSubjectChange = (subject: string) => {
     setSubject(subject);
@@ -50,7 +50,7 @@ export function MessageEdit({ message }: MessageEditProps) {
   useEffect(() => {
     setMessageUpdated(message);
 
-    if (message && !message.id && transferMessageId) {
+    if (message && !message.id && isTransferAction) {
       createOrUpdateDraft();
     }
 

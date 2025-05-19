@@ -147,9 +147,13 @@ export const createMessageService = (baseURL: string) => ({
     },
     inReplyToId?: string,
   ) {
+    let postUrl = `${baseURL}/draft}`;
+    if (inReplyToId) {
+      postUrl += '?In-Reply-To=' + inReplyToId;
+    }
     return odeServices.http().post<{
       id: string;
-    }>(`${baseURL}/draft${inReplyToId ? '?In-Reply-To=' + inReplyToId : ''}`, payload);
+    }>(postUrl, payload);
   },
 
   updateDraft(

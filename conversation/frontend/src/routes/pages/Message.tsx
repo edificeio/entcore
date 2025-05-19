@@ -12,6 +12,7 @@ import {
   useMessageReplyOrTransfer,
   useSelectedFolder,
 } from '~/hooks';
+import { useMessageIdAndAction } from '~/hooks/useMessageIdAndAction';
 
 import { messageQueryOptions } from '~/services';
 
@@ -29,28 +30,15 @@ export const loader =
   };
 
 export function Component() {
-  const { messageId } = useParams();
-  const [searchParams] = useSearchParams();
+  const { messageId: messageIdParam } = useParams();
   const { folderId } = useSelectedFolder();
   const [currentKey, setCurrentKey] = useState(0);
+  const [searchParams] = useSearchParams();
 
-  const replyMessageId = searchParams.get('reply');
-  const replyAllMessageId = searchParams.get('replyall');
-  const transferMessageId = searchParams.get('transfer');
+  const { messageId, action } = useMessageIdAndAction(messageIdParam);
   const { message: templateMessage } = useMessageReplyOrTransfer({
-    messageId:
-      messageId ||
-      replyMessageId ||
-      replyAllMessageId ||
-      transferMessageId ||
-      '',
-    action: replyMessageId
-      ? 'reply'
-      : replyAllMessageId
-        ? 'replyAll'
-        : transferMessageId
-          ? 'transfer'
-          : undefined,
+    messageId,
+    action,
   });
   const [message, setMessage] = useState(templateMessage);
 

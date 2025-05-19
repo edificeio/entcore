@@ -8,9 +8,10 @@ import {
 } from '~/services';
 import { useI18n } from './useI18n';
 
+export type UserAction = 'reply' | 'replyAll' | 'transfer';
 export interface MessageReplyOrTransferProps {
   messageId: string | undefined;
-  action?: 'reply' | 'replyAll' | 'transfer';
+  action?: UserAction;
 }
 
 export function useMessageReplyOrTransfer({
