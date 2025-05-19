@@ -192,7 +192,7 @@ public class Directory extends BaseServer {
 		addController(timetableController);
 
         ShareBookmarkController shareBookmarkController = new ShareBookmarkController();
-        shareBookmarkController.setShareBookmarkService(new DefaultShareBookmarkService());
+        shareBookmarkController.setShareBookmarkService(new DefaultShareBookmarkService(eb));
         addController(shareBookmarkController);
 
         SlotProfileController slotProfileController = new SlotProfileController(SLOTPROFILE_COLLECTION);
