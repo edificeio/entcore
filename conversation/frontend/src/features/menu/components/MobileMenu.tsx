@@ -48,7 +48,7 @@ function buildMenuItemsWithSelection(
         const subs = buildMenuItemsWithSelection(
           selectedFolderId,
           folder.subFolders,
-          `${name}/`,
+          `${name} / `,
         );
         items.push(...subs.menuItems);
         if (subs.selectedItem) {
