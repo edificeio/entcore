@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static io.vertx.core.json.JsonObject.mapFrom;
@@ -1959,6 +1960,4 @@ public class DefaultCommunicationService implements CommunicationService {
 		Neo4j.getInstance().execute(queryShareBookmarks, sbParams, validResultHandler(getShareBookmarksPromise::complete));
 		return getShareBookmarksPromise.future();
 	}
-
-
 }

@@ -188,21 +188,32 @@ public class UserUtils {
 		return m;
 	}
 
+	/* On error, handler will receive an empty JsonArray (legacy behavior) */
 	public static void findVisibles(EventBus eb, String userId, String customReturn,
 		JsonObject additionnalParams, boolean itSelf, boolean myGroup, boolean profile,
 		final Handler<JsonArray> handler) {
 		findVisibles(eb, userId, customReturn, additionnalParams, itSelf, myGroup, profile, null, handler);
 	}
 
+	/* On error, handler will receive an empty JsonArray (legacy behavior) */
 	public static void findVisibles(EventBus eb, String userId, String customReturn,
 		JsonObject additionnalParams, boolean itSelf, boolean myGroup, boolean profile,
 		final String acceptLanguage, final Handler<JsonArray> handler) {
 		findVisibles(eb, userId, customReturn, additionnalParams, itSelf, myGroup, profile, acceptLanguage, null, handler);
 	}
 
+	/* On error, handler will receive an empty JsonArray (legacy behavior) */
 	public static void findVisibles(EventBus eb, String userId, String customReturn,
 			JsonObject additionnalParams, boolean itSelf, boolean myGroup, boolean profile,
 			final String acceptLanguage, String preFilter, final Handler<JsonArray> handler) {
+		findVisibles(eb, userId, customReturn, additionnalParams, itSelf, myGroup, profile, acceptLanguage, preFilter, null, false)
+		.onSuccess( results -> handler.handle(results) )
+		.onFailure( throwable -> handler.handle(new fr.wseduc.webutils.collections.JsonArray()) );
+	}
+
+	public static Future<JsonArray> findVisibles(EventBus eb, String userId, String customReturn,
+			JsonObject additionnalParams, boolean itSelf, boolean myGroup, boolean profile,
+			final String acceptLanguage, String preFilter, String userProfile, boolean reverseUnion) {
 		JsonObject m = new JsonObject()
 				.put("itself", itSelf)
 				.put("mygroup", myGroup)
@@ -217,6 +228,10 @@ public class UserUtils {
 		if (additionnalParams != null) {
 			m.put("additionnalParams", additionnalParams);
 		}
+		if (userProfile != null) {
+			m.put("userProfile", userProfile);
+		}
+		m.put("reverseUnion", reverseUnion);
 		m.put("userId", userId);
 		LocalMap<Object, Object> serverConfig = vertx.sharedData().getLocalMap("server");
 		final int timeout;
@@ -225,8 +240,9 @@ public class UserUtils {
 		} else {
 			timeout = DEFAULT_VISIBLES_TIMEOUT;
 		}
-		eb.request(COMMUNICATION_USERS, m, new DeliveryOptions().setSendTimeout(timeout), new Handler<AsyncResult<Message<JsonArray>>>() {
 
+		Promise<JsonArray> promise = Promise.promise();
+		eb.request(COMMUNICATION_USERS, m, new DeliveryOptions().setSendTimeout(timeout), new Handler<AsyncResult<Message<JsonArray>>>() {
 			@Override
 			public void handle(AsyncResult<Message<JsonArray>> res) {
 				if (res.succeeded()) {
@@ -235,13 +251,14 @@ public class UserUtils {
 					if (acceptLanguage != null) {
 						translateGroupsNames(r, acceptLanguage);
 					}
-					handler.handle(r);
+					promise.complete(r);
 				} else {
 					log.error("An error occurred while fetching visible users for user " + userId, res.cause());
-					handler.handle(new fr.wseduc.webutils.collections.JsonArray());
+					promise.fail(res.cause());
 				}
 			}
 		});
+		return promise.future();
 	}
 
 	public static void translateGroupsNames(JsonArray groups, String acceptLanguage) {
@@ -602,6 +619,32 @@ public class UserUtils {
 				.put("additionnalParams", additionnalParams);
 		findUsers(eb, request, m, handler);
 	}
+
+	/**
+	 * Check if a user can communicate with some other (visible) users or groups.
+	 * @param userId  id of the sender
+	 * @param checkIds	ids of the users or groups to check
+	 * @return JsonArray of JsonObjects:
+	 * {
+	 *   id: recipient ID which the sender can communicate with
+	 * }
+	 */
+	public static Future<JsonArray> filterVisibles(EventBus eb, String userId, JsonArray checkIds) {
+		return  (userId == null || checkIds == null || checkIds.isEmpty())
+		  ? Future.succeededFuture(new JsonArray())
+		  : findVisibles(eb, 
+				userId, 
+				" MATCH (visibles) RETURN DISTINCT visibles.id as id ",
+				new JsonObject().put("checkIds", checkIds),
+				false, 
+				true, 
+				false,
+				null, 
+				"AND (m.id IN {checkIds}) ",
+				null,
+				true
+			);
+	};
 
 	public static void getSession(EventBus eb, final HttpServerRequest request,
 								  final Handler<JsonObject> handler) {

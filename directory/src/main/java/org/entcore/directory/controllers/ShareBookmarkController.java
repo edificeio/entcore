@@ -30,12 +30,14 @@ import fr.wseduc.webutils.http.BaseController;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserUtils;
 import org.entcore.directory.services.ShareBookmarkService;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
+
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 public class ShareBookmarkController extends BaseController {
@@ -76,7 +78,7 @@ public class ShareBookmarkController extends BaseController {
 				if ("all".equals(id)) {
 					shareBookmarkService.list(user.getUserId(), arrayResponseHandler(request));
 				} else {
-					shareBookmarkService.get(user.getUserId(), id, r -> {
+					shareBookmarkService.get(user.getUserId(), id, true, r -> {
 						if (r.isRight()) {
 							final JsonObject res = r.right().getValue();
 							JsonArray members = res.getJsonArray("members");
@@ -120,7 +122,7 @@ public class ShareBookmarkController extends BaseController {
 		if ("all".equals(id)) {
 			shareBookmarkService.list(userId, arrayResponseHandler(request));
 		} else {
-			shareBookmarkService.get(userId, id, r -> {
+			shareBookmarkService.get(userId, id, false, r -> {
 				if (r.isRight()) {
 					final JsonObject res = r.right().getValue();
 					JsonArray members = res.getJsonArray("members");
