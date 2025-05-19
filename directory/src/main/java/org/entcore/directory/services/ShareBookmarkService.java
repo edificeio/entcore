@@ -32,7 +32,7 @@ public interface ShareBookmarkService {
 
 	void delete(String userId, String id, Handler<Either<String, JsonObject>> handler);
 
-	void get(String userId, String id, Handler<Either<String, JsonObject>> handler);
+	void get(String userId, String id, boolean onlyVisibles, Handler<Either<String, JsonObject>> handler);
 
 	void list(String userId, Handler<Either<String, JsonArray>> handler);
 
