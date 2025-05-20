@@ -17,7 +17,7 @@ import { useFolderActions } from './hooks';
 type FolderItem = { name: string; folder: Folder; canHaveChildren?: boolean };
 
 function flatFolders(folders: Folder[], prefix?: string) {
-  const SUB_FOLDER_INDICATOR = '>\u00A0\u00A0\u00A0\u00A0\u00A0';
+  const SUB_FOLDER_INDICATOR = '•\u00A0\u00A0\u00A0\u00A0\u00A0';
   const items: FolderItem[] = [];
   folders.forEach((folder) => {
     const name = `${prefix || ''}${folder.name}`;
