@@ -7,6 +7,7 @@ import {
   Modal,
   Switch,
 } from '@edifice.io/react';
+import { IconFolder } from '@edifice.io/react/icons';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useI18n } from '~/hooks';
 import { Folder } from '~/models';
@@ -14,27 +15,24 @@ import { buildTree, searchFolder } from '~/services';
 import { useAppActions } from '~/store';
 import { useFolderActions } from './hooks';
 
-type FolderItem = { name: string; folder: Folder; canHaveChildren?: boolean };
+/**
+ * Custom typing of a TreeItem exposing a user folder
+ * @param name The name of the folder
+ * @param folder The folder
+ * @returns FolderItem[]
+ */
+type FolderItem = { name: string; folder: Folder };
 
 function flatFolders(folders: Folder[], prefix?: string) {
-  const SUB_FOLDER_INDICATOR = '•\u00A0\u00A0\u00A0\u00A0\u00A0';
   const items: FolderItem[] = [];
   folders.forEach((folder) => {
     const name = `${prefix || ''}${folder.name}`;
-    const item: FolderItem = {
-      name,
-      folder,
-      //Not more than 3 levels of folders
-      canHaveChildren:
-        prefix !== `${SUB_FOLDER_INDICATOR}${SUB_FOLDER_INDICATOR}`,
-    };
+    const item: FolderItem = { name, folder };
     items.push(item);
-
-    if (folder.subFolders) {
-      const subItems = flatFolders(
-        folder.subFolders,
-        `${prefix || ''}${SUB_FOLDER_INDICATOR}`,
-      );
+    const isOnSecondFolderLevel = !!prefix;
+    if (folder.subFolders && !isOnSecondFolderLevel) {
+      const parentFolderIndicator = `${name || ''} / `;
+      const subItems = flatFolders(folder.subFolders, parentFolderIndicator);
       items.push(...subItems);
     }
   });
@@ -117,7 +115,7 @@ export function CreateFolderModal() {
           {t('folder.new.title')}
         </Modal.Header>
 
-        <Modal.Body>
+        <Modal.Body className={'d-flex flex-column gap-24'}>
           <FormControl id="modalFolderNew" isRequired={true}>
             <Label>{t('folder.new.name.label')}</Label>
             <Input
@@ -131,15 +129,12 @@ export function CreateFolderModal() {
             />
           </FormControl>
           {userFolders.length > 0 && (
-            <>
-              <div className="mt-24"></div>
-
+            <div className="d-flex flex-column gap-8">
               <Switch
                 checked={checked}
                 label={t('folder.new.subfolder.label')}
                 onChange={handleSubfolderCheckChange}
               />
-              <div className="mt-8"></div>
               <Dropdown block>
                 <Dropdown.Trigger
                   disabled={!checked}
@@ -150,14 +145,14 @@ export function CreateFolderModal() {
                     <Dropdown.Item
                       key={item.name + index}
                       onClick={() => handleItemClick(item)}
-                      disabled={!item.canHaveChildren}
+                      icon={<IconFolder />}
                     >
                       {item.name}
                     </Dropdown.Item>
                   ))}
                 </Dropdown.Menu>
               </Dropdown>
-            </>
+            </div>
           )}
         </Modal.Body>
 

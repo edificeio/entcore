@@ -43,9 +43,7 @@ export function DesktopMenu() {
     selectedSystemFolderId,
     selectedUserFolderId,
   } = useMenuData();
-
   const { usage, quota } = useUsedSpace();
-
   const { handleCreate: handleNewFolderClick } = useFolderHandlers();
 
   const userFolders = useMemo(() => {
