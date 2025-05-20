@@ -1756,6 +1756,7 @@ public class DefaultCommunicationService implements CommunicationService {
 		final String customReturn = match +
 			"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
 			"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
+			"visibles.structureName as structureName, " +
 			"HEAD(visibles.profiles) as profile, visibles.nbUsers as nbUsers, " +
 			"labels(visibles) as groupType, visibles.filter as groupProfile, visibles.subType as subType, " +
 			"filter(x IN coalesce(children, []) WHERE x.id IS NOT NULL) as children, " +
