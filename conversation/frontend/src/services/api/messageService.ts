@@ -123,12 +123,11 @@ export const createMessageService = (baseURL: string) => ({
     },
     inReplyToId?: string,
   ) {
-    return odeServices
-      .http()
-      .post<MessageSentResponse>(
-        `${baseURL}/send?id=${draftId}${inReplyToId ? '&In-Reply-To=' + inReplyToId : ''}`,
-        payload,
-      );
+    let postUrl = `${baseURL}/send?id=${draftId}`;
+    if (inReplyToId) {
+      postUrl += '&In-Reply-To=' + inReplyToId;
+    }
+    return odeServices.http().post<MessageSentResponse>(postUrl, payload);
   },
 
   recall(messageId: string) {

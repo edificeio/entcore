@@ -35,7 +35,6 @@ export function useMessageReplyOrTransfer({
       const messageTmp: Message = {
         ...DEFAULT_MESSAGE,
         language: currentLanguage,
-        date: undefined,
         parent_id: messageOrigin.id,
         thread_id: messageOrigin.id,
         from: {
@@ -131,6 +130,7 @@ export function useMessageReplyOrTransfer({
       if (!messageOrigin.subject.startsWith(prefixSubject)) {
         messageTmp.subject = `${prefixSubject}${messageOrigin.subject}`;
       }
+
       return messageTmp;
     } else {
       if (!messageOrigin.id) {
@@ -143,6 +143,7 @@ export function useMessageReplyOrTransfer({
           messageOrigin.body = `<p></p><p></p>${signatureData.signature}`;
         }
       }
+
       return messageOrigin;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

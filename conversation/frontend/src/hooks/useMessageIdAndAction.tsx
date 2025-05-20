@@ -1,14 +1,14 @@
-import { useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { UserAction } from './useMessageReplyOrTransfer';
 
 export interface MessageIdAndActionReturn {
   messageId: string | undefined;
   action?: UserAction;
+  transferMessageId?: string;
 }
 
-export function useMessageIdAndAction(
-  messageId: string | undefined,
-): MessageIdAndActionReturn {
+export function useMessageIdAndAction(): MessageIdAndActionReturn {
+  const { messageId } = useParams();
   const [searchParams] = useSearchParams();
   const replyMessageId = searchParams.get('reply');
   const replyAllMessageId = searchParams.get('replyall');
@@ -28,5 +28,6 @@ export function useMessageIdAndAction(
         : transferMessageId
           ? 'transfer'
           : undefined,
+    transferMessageId: transferMessageId || undefined,
   };
 }

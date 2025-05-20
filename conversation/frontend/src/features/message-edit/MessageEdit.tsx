@@ -28,7 +28,7 @@ export function MessageEdit({ message }: MessageEditProps) {
   const createOrUpdateDraft = useCreateOrUpdateDraft();
   const [dateKey, setDateKey] = useState(0);
   const { data: publicConfig } = useConversationConfig();
-  const { action } = useMessageIdAndAction(message.id);
+  const { action } = useMessageIdAndAction();
   const isTransferAction = action === 'transfer';
 
   const handleSubjectChange = (subject: string) => {

@@ -1,10 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 import { Fragment, useEffect, useState } from 'react';
-import {
-  LoaderFunctionArgs,
-  useParams,
-  useSearchParams,
-} from 'react-router-dom';
+import { LoaderFunctionArgs, useSearchParams } from 'react-router-dom';
 import { Message } from '~/features/message';
 import { MessageEdit } from '~/features/message-edit/MessageEdit';
 import {
@@ -30,12 +26,11 @@ export const loader =
   };
 
 export function Component() {
-  const { messageId: messageIdParam } = useParams();
   const { folderId } = useSelectedFolder();
   const [currentKey, setCurrentKey] = useState(0);
   const [searchParams] = useSearchParams();
 
-  const { messageId, action } = useMessageIdAndAction(messageIdParam);
+  const { messageId, action } = useMessageIdAndAction();
   const { message: templateMessage } = useMessageReplyOrTransfer({
     messageId,
     action,

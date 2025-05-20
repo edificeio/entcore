@@ -10,6 +10,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useI18n, useSelectedFolder } from '~/hooks';
+import { useMessageIdAndAction } from '~/hooks/useMessageIdAndAction';
 import { Message, MessageBase } from '~/models';
 import {
   baseUrl,
@@ -393,8 +394,7 @@ export const useCreateOrUpdateDraft = () => {
   const messageUpdated = useMessageUpdated();
   const toast = useToast();
   const { t } = useI18n();
-  const [searchParams] = useSearchParams();
-  const transferMessageId = searchParams.get('transfer');
+  const { transferMessageId } = useMessageIdAndAction();
 
   return (withNotification = false) => {
     if (!messageUpdated) return;
