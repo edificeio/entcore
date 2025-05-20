@@ -414,7 +414,9 @@ public class SqlConversationService implements ConversationService{
 				"GROUP BY m.id, unread " +
 				"ORDER BY m.date DESC LIMIT " + pageSize + " OFFSET " + skip;
 
-		sql.prepared(query, values, SqlResult.validResultHandler(results, "attachments", "to", "toName", "cc", "ccName", "cci", "cciName", "displayNames"));
+		sql.prepared(query, values, SqlResult.validResultHandler(
+			hideSensitiveDataFromRecalled(user.getUserId(), results), 
+			"attachments", "to", "toName", "cc", "ccName", "cci", "cciName", "displayNames"));
 	}
 
 	//TODO : add to utils (similar function in SearchEngineController)
@@ -518,10 +520,10 @@ public class SqlConversationService implements ConversationService{
 	public void listThreadMessages(String threadId, int page, UserInfos user, Handler<Either<String, JsonArray>> results) {
 		int skip = page * LIST_LIMIT;
 		String messagesFields = 
-			"m.id, m.parent_id, m.subject, CASE WHEN m.state='"+State.RECALL.name()+"' THEN '' ELSE m.body END as body, " +
+			"m.id, m.parent_id, m.subject, m.body, " +
 			"m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\",  m.cci, m.\"cciName\", m.\"displayNames\", m.date, m.thread_id ";
-		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 		values.add(user.getUserId());
 		values.add(threadId);
 
@@ -538,14 +540,66 @@ public class SqlConversationService implements ConversationService{
 				" GROUP BY m.id, um.unread " +
 				" ORDER BY m.date DESC LIMIT " + LIST_LIMIT + " OFFSET " + skip;
 
-		sql.prepared(query, values, SqlResult.validResultHandler(results, "to", "toName", "cc", "ccName", "cci", "cciName", "displayNames", "attachments"));
+		sql.prepared(
+			query, values,
+			SqlResult.validResultHandler(
+				hideSensitiveDataFromRecalled(user.getUserId(), results), 
+				"to", "toName", "cc", "ccName", "cci", "cciName", "displayNames", "attachments"
+			)
+		);
+	}
+
+	private <T> Handler<Either<String, T>> hideSensitiveDataFromRecalled(final String userId, final Handler<Either<String, T>> handler) {
+		return new Handler<Either<String, T>>() {
+			@Override
+			public void handle(Either<String, T> either) {
+				if(either.isRight()) {
+					T value = either.right().getValue();
+
+					if(value instanceof JsonArray) {
+						JsonArray messages = (JsonArray) value;
+						if( !(messages == null || messages.isEmpty()) ) {
+							//FIXME itérer sur tous les messages du tableau, really ?
+							messages.stream()
+								.map(JsonObject.class::cast)
+								.forEach(message -> hideSensitiveDataFromRecalled(userId, message));
+						}
+					} else if(value instanceof JsonObject) {
+						hideSensitiveDataFromRecalled(userId, (JsonObject) value);
+					}
+				}
+				handler.handle(either);
+			}
+		};
+	}
+
+	private void hideSensitiveDataFromRecalled(final String userId, final JsonObject message) {
+		// No-op if message is invalid, or has not been recalled
+		if (message == null || !State.RECALL.name().equals(message.getString("state"))) return;
+
+		// No-op if sender is the current user
+		String senderId = message.getString("from");
+		if(senderId == null || senderId.equals(userId)) return;
+
+		// Hide subject and body
+		message.put("subject", "");
+		message.put("body", "");
+
+		// Hide other recipients
+		final JsonArray to = message.getJsonArray("to");
+		if(to!=null) to.getList().removeIf(id -> !userId.equals(id));
+		final JsonArray cc = message.getJsonArray("cc");
+		if(cc!=null) cc.getList().removeIf(id -> !userId.equals(id));
+
+		// Hide attachments
+		message.put("attachments", new JsonArray());
 	}
 
 	@Override
 	public void listThreadMessagesNavigation(String messageId, boolean previous, UserInfos user, Handler<Either<String, JsonArray>> results) {
 		int maxMessageInThread = 15;
 		String messagesFields = 
-			"m.id, m.parent_id, m.subject, CASE WHEN m.state='"+State.RECALL.name()+"' THEN '' ELSE m.body END as body, " +
+			"m.id, m.parent_id, m.subject, m.body, " +
 			"m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.cci, m.\"cciName\", m.\"displayNames\", m.date, m.thread_id ";
 		String condition, limit;
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
@@ -575,7 +629,13 @@ public class SqlConversationService implements ConversationService{
 				" GROUP BY m.id, um.unread " +
 				" ORDER BY m.date DESC" + limit;
 
-		sql.prepared(query, values, SqlResult.validResultHandler(results, "to", "toName", "cc", "ccName", "cci", "cciName", "displayNames", "attachments"));
+		sql.prepared(
+			query, values, 
+			SqlResult.validResultHandler(
+				hideSensitiveDataFromRecalled(user.getUserId(), results), 
+				"to", "toName", "cc", "ccName", "cci", "cciName", "displayNames", "attachments"
+			)
+		);
 	}
 
 
@@ -709,8 +769,7 @@ public class SqlConversationService implements ConversationService{
 
 		String selectQuery =
 			"SELECT " +
-				"m.id, m.parent_id, m.subject, " +
-				"CASE WHEN m.state='"+State.RECALL.name()+"' AND m.from <> ? THEN '' ELSE m.body END as body, " +
+				"m.id, m.parent_id, m.subject, m.body, " +
 				"m.from as \"from\", m.\"fromName\" as \"fromName\",  m.\"to\" as \"to\", m.\"toName\" as \"toName\", " +
 				"m.cc, m.\"ccName\" as \"ccName\", m.cci, m.\"cciName\" as \"cciName\", " +
 				"m.\"displayNames\" as \"displayNames\", m.state, m.date, m.language, m.thread_id, " + 
@@ -730,7 +789,6 @@ public class SqlConversationService implements ConversationService{
 			"WHERE um.user_id = ? AND m.id = ?  " +
 			(apiVersion>0 ? "GROUP BY m.id, um.folder_id, um.trashed, um.unread, om.message_id" : "GROUP BY m.id");
 		JsonArray selValues = new fr.wseduc.webutils.collections.JsonArray()
-			.add(user.getUserId())	
 			.add(user.getUserId())
 			.add(messageId);
 
@@ -738,7 +796,14 @@ public class SqlConversationService implements ConversationService{
 		builder.prepared(updateQuery, updValues);
 		builder.prepared(selectQuery, selValues);
 
-		sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(2, result, "attachments", "to", "toName", "cc", "ccName", "displayNames", "cci", "cciName"));
+		sql.transaction(
+			builder.build(), 
+			SqlResult.validUniqueResultHandler(
+				2, 
+				hideSensitiveDataFromRecalled(user.getUserId(), result), 
+				"attachments", "to", "toName", "cc", "ccName", "displayNames", "cci", "cciName"
+			)
+		);
 	}
 
 	/**
