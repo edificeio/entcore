@@ -14,6 +14,26 @@ import { useI18n } from '~/hooks';
 import { buildTree, searchFolder } from '~/services';
 import { useAppActions } from '~/store';
 import { useFolderActions } from './hooks';
+import { Folder } from '~/models';
+
+type FolderItem = { name: string; folder: Folder };
+
+function flatFolders(folders: Folder[], prefix?: string) {
+  const items: FolderItem[] = [];
+  folders.forEach((folder) => {
+    // Build an item representing this folder
+    const name = `${prefix ? prefix : ''}${folder.name}`;
+    const item = { name, folder };
+    items.push(item);
+
+    // Recursively build items for subFolders
+    if (folder.subFolders) {
+      const subs = flatFolders(folder.subFolders, `${name} / `);
+      items.push(...subs);
+    }
+  });
+  return items;
+}
 
 export function CreateFolderModal() {
   const { t, common_t } = useI18n();
@@ -22,7 +42,6 @@ export function CreateFolderModal() {
   const [checked, setChecked] = useState(false);
   const [subFolderId, setSubfolderId] = useState<string | undefined>(undefined);
   const refInputName = useRef<HTMLInputElement>(null);
-  const refDropdownTrigger = useRef<HTMLButtonElement>(null);
   const [newFolderName, setNewFolderName] = useState('');
 
   useEffect(() => {
@@ -69,25 +88,16 @@ export function CreateFolderModal() {
 
   if (!userFolders) return null;
 
-  // Render a user's folder, to be used in a Tree
-  const renderFolderTreeItem = ({
-    node,
-  }: {
-    node: TreeItem;
-    hasChildren?: boolean;
-    isChild?: boolean;
-  }) => <span>{node.name}</span>;
-
   const handleCloseFolderModal = () => setOpenedModal(undefined);
-  const handleTreeItemClick = (folderId: string) => {
+  const handleItemClick = (folderId: string) => {
     setSubfolderId(folderId);
-    // Close dropdown
-    refDropdownTrigger.current?.click();
   };
 
   const handleNameChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewFolderName(e.target.value);
   };
+
+  const menu = foldersTree ? flatFolders(foldersTree) : [];
 
   return (
     <Modal
@@ -126,19 +136,18 @@ export function CreateFolderModal() {
               <div className="mt-8"></div>
               <Dropdown block>
                 <Dropdown.Trigger
-                  ref={refDropdownTrigger}
                   disabled={!checked}
                   label={dropdownLabel}
                 ></Dropdown.Trigger>
                 <Dropdown.Menu>
-                  <Tree
-                    nodes={userFolders}
-                    onTreeItemClick={handleTreeItemClick}
-                    renderNode={renderFolderTreeItem}
-                    selectedNodeId={subFolderId}
-                    shouldExpandAllNodes={true}
-                    showIcon={false}
-                  />
+                  {menu.map((item) => (
+                    <Dropdown.Item
+                      key={item.name}
+                      onClick={() => handleItemClick(item.folder.id)}
+                    >
+                      {item.name}
+                    </Dropdown.Item>
+                  ))}
                 </Dropdown.Menu>
               </Dropdown>
             </>

@@ -30,32 +30,30 @@ function buildMenuItemsWithSelection(
 ) {
   const items: FolderItem[] = [];
   let selectedItem: FolderItem | undefined;
-  folders
-    .sort((a, b) => (a.name < b.name ? -1 : a.name == b.name ? 0 : 1))
-    .forEach((folder) => {
-      // Build an item representing this folder
-      const name = `${prefix ? prefix : ''}${folder.name}`;
-      const item = { name, folder };
-      items.push(item);
+  folders.forEach((folder) => {
+    // Build an item representing this folder
+    const name = `${prefix ? prefix : ''}${folder.name}`;
+    const item = { name, folder };
+    items.push(item);
 
-      // Is this the selected folder ?
-      if (selectedFolderId === folder.id) {
-        selectedItem = item;
-      }
+    // Is this the selected folder ?
+    if (selectedFolderId === folder.id) {
+      selectedItem = item;
+    }
 
-      // Recursively build items for subFolders
-      if (folder.subFolders) {
-        const subs = buildMenuItemsWithSelection(
-          selectedFolderId,
-          folder.subFolders,
-          `${name} / `,
-        );
-        items.push(...subs.menuItems);
-        if (subs.selectedItem) {
-          selectedItem = subs.selectedItem;
-        }
+    // Recursively build items for subFolders
+    if (folder.subFolders) {
+      const subs = buildMenuItemsWithSelection(
+        selectedFolderId,
+        folder.subFolders,
+        `${name} / `,
+      );
+      items.push(...subs.menuItems);
+      if (subs.selectedItem) {
+        selectedItem = subs.selectedItem;
       }
-    });
+    }
+  });
   return { menuItems: items, selectedItem };
 }
 
