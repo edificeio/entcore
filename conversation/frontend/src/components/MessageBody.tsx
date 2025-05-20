@@ -10,7 +10,7 @@ import {
   Editor,
   EditorRef,
 } from '@edifice.io/react/editor';
-import { Suspense, useEffect, useRef, useState } from 'react';
+import { Suspense, useRef, useState } from 'react';
 import illuRecall from '~/assets/illu-messageRecalled.svg';
 import { MessageAttachments } from '~/components/MessageAttachments/MessageAttachments';
 import { useI18n } from '~/hooks';
@@ -32,7 +32,7 @@ export function MessageBody({
 }: MessageBodyProps) {
   const { t } = useI18n();
   const { user } = useEdificeClient();
-  const [content, setContent] = useState('');
+  const [content] = useState(message.body);
   const editorRef = useRef<EditorRef>(null);
   const extensions = [ConversationHistoryNodeView(ConversationHistoryRenderer)];
   const [isOriginalFormatOpen, setOriginalFormatOpen] = useState(false);
@@ -42,17 +42,6 @@ export function MessageBody({
     if (!editMode) return;
     onMessageChange?.({ ...message, body: editor?.getHTML() });
   };
-
-  useEffect(() => {
-    // Set the content of the editor to the message body only on the first render
-    setContent(message.body);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    // Force the editor to set the focus on the start of the content
-    editorRef.current?.setFocus('start');
-  }, [content]);
 
   return message.state === 'RECALL' && message.from.id !== user?.userId ? (
     <div className="d-flex flex-column gap-16 align-items-center justify-content-center">
@@ -70,6 +59,7 @@ export function MessageBody({
           ref={editorRef}
           id="messageBody"
           content={content}
+          focus={'start'}
           mode={editMode ? 'edit' : 'read'}
           variant="ghost"
           extensions={extensions}

@@ -6,6 +6,7 @@ import {
   useMessage,
   useSignaturePreferences,
 } from '~/services';
+import { useAppActions } from '~/store';
 import { useI18n } from './useI18n';
 
 export type UserAction = 'reply' | 'replyAll' | 'transfer';
@@ -24,7 +25,29 @@ export function useMessageReplyOrTransfer({
   const { formatDate } = useDate();
   const { data: signatureData, isPending: getSignatureIsPending } =
     useSignaturePreferences();
+  const { setMessageUpdated } = useAppActions();
 
+  /**
+   * Creates and formats a message based on the action type (reply, replyAll, or transfer) and original message.
+   *
+   * @returns {Message | undefined} A formatted message object with appropriate recipients, body content and subject
+   * based on the action type. Returns undefined if signature is pending or no message origin exists.
+   *
+   * The returned message includes:
+   * - Signature (if enabled in settings)
+   * - Original message content formatted according to action type
+   * - Recipients set based on action:
+   *   - reply: only original sender
+   *   - replyAll: original sender + all recipients except current user
+   *   - transfer: empty recipients list but keeps attachments
+   * - Subject prefixed with appropriate text based on action type
+   * - Thread/parent IDs linked to original message
+   *
+   * @remarks
+   * - For transfers: includes detailed original message metadata (sender, date, subject, recipients)
+   * - For replies: includes quoted original message with sender info and timestamp
+   * - Handles CCI recipients only for reply-all when user was original sender
+   */
   const message = useMemo(() => {
     // If the configuration for the signature is pending, we return an empty message
     if (getSignatureIsPending || !messageOrigin) {
@@ -131,6 +154,8 @@ export function useMessageReplyOrTransfer({
         messageTmp.subject = `${prefixSubject}${messageOrigin.subject}`;
       }
 
+      // We are in the case of a new message we store the message in the store it will be update after
+      setMessageUpdated(messageTmp);
       return messageTmp;
     } else {
       if (!messageOrigin.id) {
@@ -142,6 +167,9 @@ export function useMessageReplyOrTransfer({
         if (signatureData?.useSignature && signatureData.signature) {
           messageOrigin.body = `<p></p><p></p>${signatureData.signature}`;
         }
+
+        // We are in the case of a new message we store the message in the store it will be update after
+        setMessageUpdated(messageOrigin);
       }
 
       return messageOrigin;

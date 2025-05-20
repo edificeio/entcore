@@ -48,8 +48,6 @@ export function MessageEdit({ message }: MessageEditProps) {
   );
 
   useEffect(() => {
-    setMessageUpdated(message);
-
     if (message && !message.id && isTransferAction) {
       createOrUpdateDraft();
     }

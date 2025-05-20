@@ -451,6 +451,7 @@ export const useCreateOrUpdateDraft = () => {
             if (withNotification) {
               toast.success(t('message.draft.saved'));
             }
+
             // Update the URL to point to the draft message
             // We can't use useNavigate because it will lose editor focus if there is any
             window.history.replaceState(
