@@ -13,7 +13,7 @@ export function Message({ message }: { message: MessageData }) {
         <div className="ms-md-48">
           <MessageBody editMode={false} message={message} />
         </div>
-        <footer className="d-flex justify-content-end gap-12 pt-24 border-top">
+        <footer className="d-print-none d-flex justify-content-end gap-12 pt-24 border-top ">
           <MessageActionDropdown
             message={message}
             actions={['reply', 'replyall', 'transfer']}

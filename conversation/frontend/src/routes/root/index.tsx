@@ -75,19 +75,21 @@ export function Component() {
 
   return (
     <Layout>
-      <AppHeader render={AppActionHeader}>
-        <Breadcrumb app={currentApp!} />
-      </AppHeader>
+      <div className="d-print-none">
+        <AppHeader render={AppActionHeader}>
+          <Breadcrumb app={currentApp!} />
+        </AppHeader>
+      </div>
 
       <div className="d-md-flex">
         {!md && (
-          <div className="d-block d-md-none px-0 py-12 border-bottom bg-white">
+          <div className="d-print-none d-block d-md-none px-0 py-12 border-bottom bg-white">
             <MobileMenu />
           </div>
         )}
 
         {md && (
-          <div className="desktop-menu d-none d-md-flex flex-column overflow-x-hidden p-16 ps-0 gap-16 border-end bg-white">
+          <div className="d-print-none desktop-menu d-none d-md-flex flex-column overflow-x-hidden p-16 ps-0 gap-16 border-end bg-white">
             <DesktopMenu />
           </div>
         )}
