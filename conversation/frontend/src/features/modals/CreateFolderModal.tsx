@@ -6,15 +6,13 @@ import {
   Label,
   Modal,
   Switch,
-  Tree,
-  TreeItem,
 } from '@edifice.io/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useI18n } from '~/hooks';
+import { Folder } from '~/models';
 import { buildTree, searchFolder } from '~/services';
 import { useAppActions } from '~/store';
 import { useFolderActions } from './hooks';
-import { Folder } from '~/models';
 
 type FolderItem = { name: string; folder: Folder };
 
