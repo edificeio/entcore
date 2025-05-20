@@ -48,6 +48,9 @@ export function MessageEdit({ message }: MessageEditProps) {
   );
 
   useEffect(() => {
+    // Automatically create draft when this is a transfer action
+    // so the attachments are transferred to the new message
+    // and the user can edit the message
     if (message && !message.id && isTransferAction) {
       createOrUpdateDraft();
     }
