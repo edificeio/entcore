@@ -14,20 +14,28 @@ import { buildTree, searchFolder } from '~/services';
 import { useAppActions } from '~/store';
 import { useFolderActions } from './hooks';
 
-type FolderItem = { name: string; folder: Folder };
+type FolderItem = { name: string; folder: Folder; canHaveChildren?: boolean };
 
 function flatFolders(folders: Folder[], prefix?: string) {
+  const SUB_FOLDER_INDICATOR = '>\u00A0\u00A0\u00A0\u00A0\u00A0';
   const items: FolderItem[] = [];
   folders.forEach((folder) => {
-    // Build an item representing this folder
-    const name = `${prefix ? prefix : ''}${folder.name}`;
-    const item = { name, folder };
+    const name = `${prefix || ''}${folder.name}`;
+    const item: FolderItem = {
+      name,
+      folder,
+      //Not more than 3 levels of folders
+      canHaveChildren:
+        prefix !== `${SUB_FOLDER_INDICATOR}${SUB_FOLDER_INDICATOR}`,
+    };
     items.push(item);
 
-    // Recursively build items for subFolders
     if (folder.subFolders) {
-      const subs = flatFolders(folder.subFolders, `${name} / `);
-      items.push(...subs);
+      const subItems = flatFolders(
+        folder.subFolders,
+        `${prefix || ''}${SUB_FOLDER_INDICATOR}`,
+      );
+      items.push(...subItems);
     }
   });
   return items;
@@ -87,8 +95,8 @@ export function CreateFolderModal() {
   if (!userFolders) return null;
 
   const handleCloseFolderModal = () => setOpenedModal(undefined);
-  const handleItemClick = (folderId: string) => {
-    setSubfolderId(folderId);
+  const handleItemClick = (folderItem: FolderItem) => {
+    setSubfolderId(folderItem.folder.id);
   };
 
   const handleNameChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -138,10 +146,11 @@ export function CreateFolderModal() {
                   label={dropdownLabel}
                 ></Dropdown.Trigger>
                 <Dropdown.Menu>
-                  {menu.map((item) => (
+                  {menu.map((item, index) => (
                     <Dropdown.Item
-                      key={item.name}
-                      onClick={() => handleItemClick(item.folder.id)}
+                      key={item.name + index}
+                      onClick={() => handleItemClick(item)}
+                      disabled={!item.canHaveChildren}
                     >
                       {item.name}
                     </Dropdown.Item>
@@ -166,7 +175,11 @@ export function CreateFolderModal() {
             color="primary"
             variant="filled"
             isLoading={isActionPending === true}
-            disabled={isActionPending === true || !newFolderName}
+            disabled={
+              isActionPending === true ||
+              !newFolderName ||
+              (checked && !subFolderId)
+            }
           >
             {common_t('create')}
           </Button>
