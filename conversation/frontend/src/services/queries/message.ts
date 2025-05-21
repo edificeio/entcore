@@ -14,7 +14,7 @@ import { useMessageIdAndAction } from '~/hooks/useMessageIdAndAction';
 import { Message, MessageBase } from '~/models';
 import {
   baseUrl,
-  DEFAULT_MESSAGE,
+  createDefaultMessage,
   folderQueryOptions,
   messageService,
   useFolderMessages,
@@ -110,7 +110,7 @@ export const useMessage = (messageId: string) => {
       }
     } else {
       message = {
-        ...DEFAULT_MESSAGE,
+        ...createDefaultMessage(),
         language: currentLanguage,
         from: {
           id: user?.userId || '',

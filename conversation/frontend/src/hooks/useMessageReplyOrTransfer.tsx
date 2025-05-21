@@ -1,12 +1,13 @@
 import { useDate, useEdificeClient } from '@edifice.io/react';
-import { useMemo } from 'react';
-import { Message, Recipients, User } from '~/models';
+import { useEffect, useMemo } from 'react';
+import { Group, Message, Recipients, User } from '~/models';
 import {
-  DEFAULT_MESSAGE,
+  createDefaultMessage,
   useMessage,
   useSignaturePreferences,
 } from '~/services';
 import { useAppActions } from '~/store';
+import { useAdditionalRecipients } from './useAdditionalRecipients';
 import { useI18n } from './useI18n';
 
 export type UserAction = 'reply' | 'replyAll' | 'transfer';
@@ -26,6 +27,14 @@ export function useMessageReplyOrTransfer({
   const { data: signatureData, isPending: getSignatureIsPending } =
     useSignaturePreferences();
   const { setMessageUpdated } = useAppActions();
+
+  // Get IDs of users and groups/favorites to add as recipients.
+  const { recipients: recipientsToAddToMessage } = useAdditionalRecipients();
+
+  const signature =
+    signatureData?.useSignature && signatureData.signature
+      ? `<p></p><p></p>${signatureData.signature}`
+      : '';
 
   /**
    * Creates and formats a message based on the action type (reply, replyAll, or transfer) and original message.
@@ -53,10 +62,11 @@ export function useMessageReplyOrTransfer({
     if (getSignatureIsPending || !messageOrigin) {
       return undefined;
     }
+    let messageTmp = messageOrigin;
 
     if (messageOrigin.id && action) {
-      const messageTmp: Message = {
-        ...DEFAULT_MESSAGE,
+      messageTmp = {
+        ...createDefaultMessage(signature),
         language: currentLanguage,
         parent_id: messageOrigin.id,
         thread_id: messageOrigin.id,
@@ -154,28 +164,62 @@ export function useMessageReplyOrTransfer({
         messageTmp.subject = `${prefixSubject}${messageOrigin.subject}`;
       }
 
-      // We are in the case of a new message we store the message in the store it will be update after
-      setMessageUpdated(messageTmp);
-      return messageTmp;
+      if (recipientsToAddToMessage) {
+        messageTmp.to.users = [
+          ...recipientsToAddToMessage.users,
+          ...messageTmp.to.users.filter((user: User) =>
+            recipientsToAddToMessage.users.some((u) => u.id === user.id),
+          ),
+        ];
+        messageTmp.to.groups = [
+          ...recipientsToAddToMessage.groups,
+          ...messageOrigin.to.groups.filter((group: Group) =>
+            recipientsToAddToMessage.groups.some((g) => g.id === group.id),
+          ),
+        ];
+      }
     } else {
       if (!messageOrigin.id) {
-        messageOrigin.from = {
-          id: user?.userId || '',
-          displayName: user?.username || '',
-          profile: (userProfile || '') as string,
+        // We are in the case of a new message
+        // We are in the case of a reply, replayAll or transfer
+        messageTmp = {
+          ...createDefaultMessage(signature),
+          language: currentLanguage,
+          from: {
+            id: user?.userId || '',
+            displayName: user?.username || '',
+            profile: (userProfile || '') as string,
+          },
         };
         if (signatureData?.useSignature && signatureData.signature) {
-          messageOrigin.body = `<p></p><p></p>${signatureData.signature}`;
+          messageTmp.body = `${signature}`;
+        } else {
+          messageTmp.body = '';
         }
 
-        // We are in the case of a new message we store the message in the store it will be update after
-        setMessageUpdated(messageOrigin);
+        if (
+          recipientsToAddToMessage?.groups.length ||
+          recipientsToAddToMessage?.users.length
+        ) {
+          messageTmp.to = {
+            users: [...(recipientsToAddToMessage?.users || [])],
+            groups: [...(recipientsToAddToMessage?.groups || [])],
+          };
+        }
       }
-
-      return messageOrigin;
     }
+
+    return messageTmp;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [getSignatureIsPending, messageOrigin, messageId, action]);
+
+  useEffect(() => {
+    if (message) {
+      // We are in the case of a new message we store the message in the store it will be update after
+      setMessageUpdated(message);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [message]);
 
   return { message };
 }

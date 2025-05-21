@@ -1,13 +1,9 @@
 import { QueryClient } from '@tanstack/react-query';
 import { Fragment, useEffect, useState } from 'react';
-import { LoaderFunctionArgs, useSearchParams } from 'react-router-dom';
+import { LoaderFunctionArgs } from 'react-router-dom';
 import { Message } from '~/features/message';
 import { MessageEdit } from '~/features/message-edit/MessageEdit';
-import {
-  useAdditionalRecipients,
-  useMessageReplyOrTransfer,
-  useSelectedFolder,
-} from '~/hooks';
+import { useMessageReplyOrTransfer, useSelectedFolder } from '~/hooks';
 import { useMessageIdAndAction } from '~/hooks/useMessageIdAndAction';
 
 import { messageQueryOptions } from '~/services';
@@ -28,33 +24,12 @@ export const loader =
 export function Component() {
   const { folderId } = useSelectedFolder();
   const [currentKey, setCurrentKey] = useState(0);
-  const [searchParams] = useSearchParams();
 
   const { messageId, action } = useMessageIdAndAction();
-  const { message: templateMessage } = useMessageReplyOrTransfer({
+  const { message } = useMessageReplyOrTransfer({
     messageId,
     action,
   });
-  const [message, setMessage] = useState(templateMessage);
-
-  // Get IDs of users and groups/favorites to add as recipients.
-  const toUsers = searchParams.getAll('user');
-  const toGroups = searchParams.getAll('group');
-  const toFavorites = searchParams.getAll('favorite');
-  const { addRecipientsToMessage } = useAdditionalRecipients(
-    'to',
-    toUsers,
-    toGroups,
-    toFavorites,
-  );
-  useEffect(() => {
-    if (templateMessage) {
-      setMessage((msg) => ({
-        ...msg,
-        ...addRecipientsToMessage(templateMessage),
-      }));
-    }
-  }, [templateMessage, addRecipientsToMessage]);
 
   useEffect(() => {
     // Scroll to the top of the page

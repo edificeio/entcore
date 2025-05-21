@@ -2,7 +2,7 @@ import { odeServices } from '@edifice.io/client';
 import { NOOP } from '@edifice.io/utilities';
 
 import { Message, MessageSentResponse } from '~/models';
-import { DEFAULT_MESSAGE } from '../utils';
+import { createDefaultMessage } from '../utils';
 
 /** Utility function to map one or more IDs to an array of IDs */
 function asArray(ids: string | string[]): string[] {
@@ -39,7 +39,7 @@ export const createMessageService = (baseURL: string) => ({
     if (id) {
       return odeServices.http().get<Message>(`${baseURL}/api/messages/${id}`);
     } else {
-      return Promise.resolve({ ...DEFAULT_MESSAGE });
+      return Promise.resolve({ ...createDefaultMessage() });
     }
   },
 

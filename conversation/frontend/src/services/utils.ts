@@ -73,31 +73,34 @@ export function isInRecipient(message: MessageBase, userId: string) {
   ].some((u) => u.id === userId);
 }
 
-export const DEFAULT_MESSAGE: Message = {
-  id: '',
-  body: '',
-  language: 'fr',
-  subject: '',
-  from: {
+// Must be a function to make a deep copy of the object
+export function createDefaultMessage(signature?: string): Message {
+  return {
     id: '',
-    displayName: '',
-    profile: '',
-  },
-  to: {
-    users: new Array<User>(),
-    groups: new Array<Group>(),
-  },
-  cc: {
-    users: new Array<User>(),
-    groups: new Array<Group>(),
-  },
-  cci: {
-    users: new Array<User>(),
-    groups: new Array<Group>(),
-  },
-  response: false,
-  forwarded: false,
-  state: 'DRAFT',
-  attachments: new Array<Attachment>(),
-  original_format_exists: false,
-};
+    body: signature || '',
+    language: 'fr',
+    subject: '',
+    from: {
+      id: '',
+      displayName: '',
+      profile: '',
+    },
+    to: {
+      users: new Array<User>(),
+      groups: new Array<Group>(),
+    },
+    cc: {
+      users: new Array<User>(),
+      groups: new Array<Group>(),
+    },
+    cci: {
+      users: new Array<User>(),
+      groups: new Array<Group>(),
+    },
+    response: false,
+    forwarded: false,
+    state: 'DRAFT',
+    attachments: new Array<Attachment>(),
+    original_format_exists: false,
+  };
+}
