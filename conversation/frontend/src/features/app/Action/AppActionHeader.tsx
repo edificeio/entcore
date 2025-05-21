@@ -3,7 +3,7 @@ import { IconOptions, IconSignature } from '@edifice.io/react/icons';
 import { Fragment, RefAttributes } from 'react';
 import { useLocation } from 'react-router-dom';
 import { NewMessageButton } from '~/components/NewMessageButton';
-import { useI18n } from '~/hooks';
+import { useI18n } from '~/hooks/useI18n';
 import { useAppActions } from '~/store';
 import { AppActionMenuOptions } from './AppActionMenuOptions';
 

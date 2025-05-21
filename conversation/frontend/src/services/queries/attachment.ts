@@ -1,6 +1,6 @@
 import { useToast } from '@edifice.io/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useI18n } from '~/hooks';
+import { useI18n } from '~/hooks/useI18n';
 import { Message } from '~/models';
 import { useAppActions } from '~/store';
 import { attachmentService, messageQueryOptions, useFolderUtils } from '..';

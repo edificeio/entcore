@@ -15,7 +15,7 @@ import { ConversationHistoryBody } from '@edifice.io/tiptap-extensions/conversat
 import { Suspense, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import illuRecall from '~/assets/illu-messageRecalled.svg';
 import { MessageAttachments } from '~/components/MessageAttachments/MessageAttachments';
-import { useI18n } from '~/hooks';
+import { useI18n } from '~/hooks/useI18n';
 import { Message } from '~/models';
 import { useMessageUpdated } from '~/store';
 import './MessageBody.css';

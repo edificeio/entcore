@@ -4,7 +4,7 @@ import {
   IconDownload,
   IconFolderAdd,
 } from '@edifice.io/react/icons';
-import { useI18n } from '~/hooks';
+import { useI18n } from '~/hooks/useI18n';
 import { useMessageAttachments } from '~/hooks/useMessageAttachments';
 import { Attachment as AttachmentMetaData, Message } from '~/models';
 import { useMessageUpdated } from '~/store';

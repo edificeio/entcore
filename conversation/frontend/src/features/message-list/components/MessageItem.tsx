@@ -1,7 +1,8 @@
 import clsx from 'clsx';
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useSelectedFolder } from '~/hooks';
+import { useSelectedFolder } from '~/hooks/useSelectedFolder';
+
 import { MessageMetadata } from '~/models';
 import { useUpdateFolderBadgeCountLocal } from '~/services';
 import { MessagePreview } from './MessagePreview/MessagePreview';

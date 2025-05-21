@@ -15,7 +15,8 @@ import {
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { useSelectedFolder } from '~/hooks';
+import { useSelectedFolder } from '~/hooks/useSelectedFolder';
+
 import { useFolderMessages } from '~/services';
 import { useAppActions } from '~/store/actions';
 import { MessageItem } from './components/MessageItem';

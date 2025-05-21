@@ -5,7 +5,9 @@ import {
   MessageActionDropdown,
   MessageActionDropdownProps,
 } from '~/components/MessageActionDropdown/MessageActionDropdown';
-import { useI18n, useSelectedFolder } from '~/hooks';
+import { useSelectedFolder } from '~/hooks/useSelectedFolder';
+import { useI18n } from '~/hooks/useI18n';
+
 import { MessageProps } from '.';
 import Pagination from './components/Pagination';
 import { useMessageNavigation } from './hooks/useMessageNavigation';

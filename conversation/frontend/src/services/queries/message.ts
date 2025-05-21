@@ -9,7 +9,9 @@ import {
 } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { useI18n, useSelectedFolder } from '~/hooks';
+import { useSelectedFolder } from '~/hooks/useSelectedFolder';
+import { useI18n } from '~/hooks/useI18n';
+
 import { Message, MessageBase } from '~/models';
 import {
   baseUrl,

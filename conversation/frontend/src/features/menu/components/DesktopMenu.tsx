@@ -21,7 +21,8 @@ import {
   ProgressBar,
   ProgressBarProps,
 } from '~/components';
-import { useUsedSpace } from '~/hooks';
+import { useUsedSpace } from '~/hooks/useUsedSpace';
+
 import { buildTree, useFoldersTree } from '~/services';
 import { useFolderHandlers } from '../hooks/useFolderHandlers';
 import { useMenuData } from '../hooks/useMenuData';

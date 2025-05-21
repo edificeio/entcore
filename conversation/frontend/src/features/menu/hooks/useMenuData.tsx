@@ -1,5 +1,6 @@
 import { Badge } from '@edifice.io/react';
-import { useSelectedFolder } from '~/hooks';
+import { useSelectedFolder } from '~/hooks/useSelectedFolder';
+
 import { SystemFolder } from '~/models';
 import { useMessagesCount } from '~/services';
 
