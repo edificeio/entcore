@@ -35,6 +35,7 @@ export function RecipientListEdit({
   const { getBookmarkById } = useBookmarkById();
   const messageUpdated = useMessageUpdated();
   const { setMessageUpdated, setMessageUpdatedNeedToSave } = useAppActions();
+  const [isComboboxFocused, setIsComboboxFocused] = useState(false);
 
   const handleRecipientClick = async (recipient: Visible) => {
     let recipientToAdd: User | Group;
@@ -163,15 +164,16 @@ export function RecipientListEdit({
     });
   };
 
+  const placeholder =
+    isComboboxFocused && isAdml
+      ? t('conversation.users.search.placeholder.adml')
+      : t('conversation.users.search.placeholder');
+
   return (
     <div className="d-flex align-items-center flex-fill ps-8 pe-16 py-8">
       <Combobox
         value={searchInputValue}
-        placeholder={
-          isAdml
-            ? t('conversation.users.search.placeholder.adml')
-            : t('conversation.users.search.placeholder')
-        }
+        placeholder={placeholder}
         isLoading={isSearchLoading}
         noResult={hasSearchNoResults}
         options={searchResults}
@@ -179,6 +181,8 @@ export function RecipientListEdit({
         onSearchInputChange={handleSearchInputChange}
         onSearchInputKeyUp={handleSearchInputKeyUp}
         variant="ghost"
+        onFocus={() => setIsComboboxFocused(true)}
+        onBlur={() => setIsComboboxFocused(false)}
         renderNoResult={
           <div className="p-8">
             <h4>
