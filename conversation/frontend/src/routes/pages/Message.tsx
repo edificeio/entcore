@@ -7,11 +7,9 @@ import {
 } from 'react-router-dom';
 import { Message } from '~/features/message';
 import { MessageEdit } from '~/features/message-edit/MessageEdit';
-import {
-  useSelectedFolder,
-  useAdditionalRecipients,
-  useMessageReplyOrTransfer,
-} from '~/hooks';
+import { useSelectedFolder } from '~/hooks/useSelectedFolder';
+import { useAdditionalRecipients } from '~/hooks/useAdditionalRecipients';
+import { useMessageReplyOrTransfer } from '~/hooks/useMessageReplyOrTransfer';
 
 import { messageQueryOptions } from '~/services';
 
