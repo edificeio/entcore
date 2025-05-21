@@ -80,13 +80,17 @@ export function Component() {
       </AppHeader>
 
       <div className="d-md-flex">
-        <div className="d-block d-md-none px-0 py-12 border-bottom bg-white">
-          {!md && <MobileMenu />}
-        </div>
+        {!md && (
+          <div className="d-block d-md-none px-0 py-12 border-bottom bg-white">
+            <MobileMenu />
+          </div>
+        )}
 
-        <div className="desktop-menu d-none d-md-flex flex-column overflow-x-hidden p-16 ps-0 gap-16 border-end bg-white">
-          {md && <DesktopMenu />}
-        </div>
+        {md && (
+          <div className="desktop-menu d-none d-md-flex flex-column overflow-x-hidden p-16 ps-0 gap-16 border-end bg-white">
+            <DesktopMenu />
+          </div>
+        )}
 
         <div className="align-self-md-stretch flex-fill mx-n16 ms-md-0 overflow-hidden">
           <Outlet />
