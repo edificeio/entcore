@@ -1,12 +1,13 @@
 import { QueryClient } from '@tanstack/react-query';
 import { Fragment, useEffect, useState } from 'react';
 import { LoaderFunctionArgs } from 'react-router-dom';
-import { Message } from '~/features/message';
 import { MessageEdit } from '~/features/message-edit/MessageEdit';
-import { useMessageReplyOrTransfer, useSelectedFolder } from '~/hooks';
+import { Message } from '~/features/message/Message';
+import { useInitMessage, useSelectedFolder } from '~/hooks';
 import { useMessageIdAndAction } from '~/hooks/useMessageIdAndAction';
 
 import { messageQueryOptions } from '~/services';
+import { useMessage } from '~/store/messageStore';
 
 export const loader =
   (queryClient: QueryClient) =>
@@ -26,10 +27,13 @@ export function Component() {
   const [currentKey, setCurrentKey] = useState(0);
 
   const { messageId, action } = useMessageIdAndAction();
-  const { message } = useMessageReplyOrTransfer({
+
+  // Init message depending on the action
+  useInitMessage({
     messageId,
     action,
   });
+  const message = useMessage();
 
   useEffect(() => {
     // Scroll to the top of the page
@@ -37,9 +41,11 @@ export function Component() {
   }, []);
 
   useEffect(() => {
-    // Update the current key to trigger a re-render
-    setCurrentKey((prev) => prev + 1);
-  }, [messageId]);
+    if (messageId === message?.id) {
+      // Update the current key to trigger a re-render
+      setCurrentKey((prev) => prev + 1);
+    }
+  }, [messageId, message]);
 
   if (!message) {
     return null;
@@ -47,7 +53,7 @@ export function Component() {
 
   return (
     <Fragment key={currentKey}>
-      {folderId === 'draft' && message?.state === 'DRAFT' ? (
+      {folderId === 'draft' && message.state === 'DRAFT' ? (
         <MessageEdit message={message} />
       ) : (
         <Message message={message} />

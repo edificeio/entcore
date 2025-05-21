@@ -21,7 +21,7 @@ import {
   useFolderUtils,
   useUpdateFolderBadgeCountLocal,
 } from '~/services';
-import { useAppActions, useMessageUpdated } from '~/store';
+import { useMessage, useMessageActions } from '~/store/messageStore';
 const appCodeName = 'conversation';
 /**
  * Message Query Options Factory.
@@ -83,7 +83,7 @@ export const useConversationConfig = () => {
  * @param messageId - The ID of the message to fetch.
  * @returns Query result for the message.
  */
-export const useMessage = (messageId: string) => {
+export const useMessageQuery = (messageId: string) => {
   const result = useQuery(messageQueryOptions.getById(messageId));
   const { folderId } = useSelectedFolder();
   const { updateFolderMessagesQueryData } = useFolderUtils();
@@ -391,7 +391,7 @@ export const useMoveMessage = () => {
 export const useCreateOrUpdateDraft = () => {
   const updateDraft = useUpdateDraft();
   const createDraft = useCreateDraft();
-  const messageUpdated = useMessageUpdated();
+  const messageUpdated = useMessage();
   const toast = useToast();
   const { t } = useI18n();
   const { transferMessageId } = useMessageIdAndAction();
@@ -471,8 +471,8 @@ export const useCreateOrUpdateDraft = () => {
  * @returns Mutation result for creating the draft.
  */
 export const useCreateDraft = () => {
-  const { setMessageUpdated } = useAppActions();
-  const messageUpdated = useMessageUpdated();
+  const { setMessage } = useMessageActions();
+  const message = useMessage();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
   const queryClient = useQueryClient();
 
@@ -491,17 +491,17 @@ export const useCreateDraft = () => {
       inReplyToId?: string;
     }) => messageService.createDraft(payload, inReplyToId),
     onSuccess: ({ id }) => {
-      if (!messageUpdated) return;
+      if (!message) return;
 
-      messageUpdated.date = new Date().getTime();
-      messageUpdated.id = id;
-      setMessageUpdated({ ...messageUpdated });
+      message.date = new Date().getTime();
+      message.id = id;
+      setMessage({ ...message });
       updateFolderBadgeCountLocal('draft', 1);
       // Update the message unread status in the list
       queryClient.setQueryData(
         messageQueryOptions.getById(id).queryKey,
         (message: Message | undefined) => {
-          return message ? { ...message, ...messageUpdated } : undefined;
+          return message ? { ...message, ...message } : undefined;
         },
       );
 
@@ -518,9 +518,9 @@ export const useCreateDraft = () => {
  * @returns Mutation result for updating the draft.
  */
 export const useUpdateDraft = () => {
-  const { setMessageUpdated } = useAppActions();
+  const { setMessage } = useMessageActions();
   const queryClient = useQueryClient();
-  const messageUpdated = useMessageUpdated();
+  const messageUpdated = useMessage();
   const { updateFolderMessagesQueryData } = useFolderUtils();
 
   return useMutation({
@@ -540,7 +540,7 @@ export const useUpdateDraft = () => {
     onSuccess: (_data, { draftId }) => {
       if (!messageUpdated) return;
       messageUpdated.date = new Date().getTime();
-      setMessageUpdated({ ...messageUpdated });
+      setMessage({ ...messageUpdated });
       queryClient.setQueryData(
         messageQueryOptions.getById(draftId).queryKey,
         (message: Message | undefined) => {

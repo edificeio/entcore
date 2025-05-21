@@ -1,12 +1,12 @@
 import { useDate, useEdificeClient } from '@edifice.io/react';
-import { useEffect, useMemo } from 'react';
-import { Group, Recipients, User } from '~/models';
+import { useLayoutEffect, useMemo } from 'react';
+import { Group, Message, Recipients, User } from '~/models';
 import {
   createDefaultMessage,
-  useMessage,
+  useMessageQuery,
   useSignaturePreferences,
 } from '~/services';
-import { useAppActions } from '~/store';
+import { useMessageActions } from '~/store/messageStore';
 import { useAdditionalRecipients } from './useAdditionalRecipients';
 import { useI18n } from './useI18n';
 
@@ -16,17 +16,17 @@ export interface MessageReplyOrTransferProps {
   action?: UserAction;
 }
 
-export function useMessageReplyOrTransfer({
+export function useInitMessage({
   messageId,
   action,
 }: MessageReplyOrTransferProps) {
-  const { data: messageOrigin } = useMessage(messageId || '');
+  const { data: messageOrigin } = useMessageQuery(messageId || '');
   const { currentLanguage, user, userProfile } = useEdificeClient();
   const { t, common_t } = useI18n();
   const { formatDate } = useDate();
   const { data: signatureData, isPending: getSignatureIsPending } =
     useSignaturePreferences();
-  const { setMessageUpdated } = useAppActions();
+  const { setMessage } = useMessageActions();
 
   // Get IDs of users and groups/favorites to add as recipients.
   const { recipients: recipientsToAddToMessage } = useAdditionalRecipients();
@@ -62,9 +62,10 @@ export function useMessageReplyOrTransfer({
     if (getSignatureIsPending || !messageOrigin) {
       return undefined;
     }
-    let messageTmp = messageOrigin;
+    let messageTmp: Message = messageOrigin;
 
     if (messageOrigin.id && action) {
+      // We are in the case of a reply, replayAll or transfer
       messageTmp = {
         ...createDefaultMessage(signature),
         language: currentLanguage,
@@ -92,10 +93,7 @@ export function useMessageReplyOrTransfer({
         );
       };
 
-      let body = '';
-      if (signatureData?.useSignature && signatureData.signature) {
-        body = `<p></p><p></p>${signatureData.signature}`;
-      }
+      let body = `${signature}`;
       if (action === 'transfer') {
         body =
           body +
@@ -211,15 +209,22 @@ export function useMessageReplyOrTransfer({
 
     return messageTmp;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [getSignatureIsPending, messageOrigin, messageId, action]);
+  }, [
+    getSignatureIsPending,
+    messageOrigin,
+    messageId,
+    action,
+    recipientsToAddToMessage,
+  ]);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (message) {
-      // We are in the case of a new message we store the message in the store it will be update after
-      setMessageUpdated(message);
+      setMessage({ ...message });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [message]);
 
-  return { message };
+    return () => {
+      setMessage(createDefaultMessage(signature));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [message, getSignatureIsPending, signatureData]);
 }

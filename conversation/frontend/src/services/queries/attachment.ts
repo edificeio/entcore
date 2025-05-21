@@ -2,7 +2,7 @@ import { useToast } from '@edifice.io/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useI18n } from '~/hooks';
 import { Attachment, Message } from '~/models';
-import { useAppActions, useMessageUpdated } from '~/store';
+import { useMessage, useMessageActions } from '~/store/messageStore';
 import { attachmentService, messageQueryOptions, useFolderUtils } from '..';
 
 /**
@@ -11,8 +11,8 @@ import { attachmentService, messageQueryOptions, useFolderUtils } from '..';
  */
 export const useAttachFiles = () => {
   const queryClient = useQueryClient();
-  const { setMessageUpdated } = useAppActions();
-  const messageUpdated = useMessageUpdated();
+  const { setMessage } = useMessageActions();
+  const message = useMessage();
   const { updateFolderMessagesQueryData } = useFolderUtils();
   const toast = useToast();
   const { t } = useI18n();
@@ -38,15 +38,15 @@ export const useAttachFiles = () => {
       await queryClient.setQueryData(
         messageQueryOptions.getById(draftId).queryKey,
         () => {
-          if (!messageUpdated) return undefined;
-          const message = {
-            ...messageUpdated,
-            attachments: [...messageUpdated.attachments, ...attachments],
+          if (!message) return undefined;
+          const messageTmp = {
+            ...message,
+            attachments: [...message.attachments, ...attachments],
           };
-          setMessageUpdated({
+          setMessage({
             ...message,
           });
-          return message;
+          return messageTmp;
         },
       );
 
@@ -71,7 +71,7 @@ export const useAttachFiles = () => {
  */
 export const useDetachFile = () => {
   const queryClient = useQueryClient();
-  const { setMessageUpdated } = useAppActions();
+  const { setMessage } = useMessageActions();
   const { updateFolderMessagesQueryData } = useFolderUtils();
 
   return useMutation({
@@ -94,7 +94,7 @@ export const useDetachFile = () => {
             ),
             date: Date.now(),
           };
-          setMessageUpdated(updatedMessage);
+          setMessage(updatedMessage);
           return updatedMessage;
         },
       );

@@ -6,23 +6,14 @@ import { useI18n } from '~/hooks';
 import { useMessageIdAndAction } from '~/hooks/useMessageIdAndAction';
 import { Message } from '~/models';
 import { useConversationConfig, useCreateOrUpdateDraft } from '~/services';
-import {
-  useAppActions,
-  useMessageUpdated,
-  useMessageUpdatedNeedToSave,
-} from '~/store';
+import { useMessageActions, useMessageNeedToSave } from '~/store/messageStore';
 import { MessageEditHeader } from './components/MessageEditHeader';
 
-export interface MessageEditProps {
-  message: Message;
-}
-
-export function MessageEdit({ message }: MessageEditProps) {
+export function MessageEdit({ message }: { message?: Message }) {
   const { t } = useI18n();
-  const [subject, setSubject] = useState(message.subject);
-  const messageUpdated = useMessageUpdated();
-  const messageUpdatedNeedSave = useMessageUpdatedNeedToSave();
-  const { setMessageUpdated, setMessageUpdatedNeedToSave } = useAppActions();
+  const [subject, setSubject] = useState(message?.subject);
+  const messageUpdatedNeedSave = useMessageNeedToSave();
+  const { setMessage, setMessageNeedToSave } = useMessageActions();
   const { fromNow } = useDate();
   const debounceTimeToSave = useRef(3000);
   const createOrUpdateDraft = useCreateOrUpdateDraft();
@@ -32,18 +23,19 @@ export function MessageEdit({ message }: MessageEditProps) {
   const isTransferAction = action === 'transfer';
 
   const handleSubjectChange = (subject: string) => {
+    if (!message) return null;
     setSubject(subject);
-    setMessageUpdated({ ...(messageUpdated || message), subject });
-    setMessageUpdatedNeedToSave(true);
+    setMessage({ ...message, subject });
+    setMessageNeedToSave(true);
   };
 
   const handleMessageChange = (message: Message) => {
-    setMessageUpdated(message);
-    setMessageUpdatedNeedToSave(true);
+    setMessage(message);
+    setMessageNeedToSave(true);
   };
 
   const messageUpdatedDebounced = useDebounce(
-    messageUpdated,
+    message,
     debounceTimeToSave.current,
   );
 
@@ -68,20 +60,16 @@ export function MessageEdit({ message }: MessageEditProps) {
   }, [publicConfig]);
 
   useEffect(() => {
-    setMessageUpdated(message);
-  }, [message, setMessageUpdated]);
-
-  useEffect(() => {
     if (messageUpdatedDebounced && messageUpdatedNeedSave) {
       createOrUpdateDraft();
-      setMessageUpdatedNeedToSave(false);
+      setMessageNeedToSave(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messageUpdatedDebounced]);
 
   return (
     <>
-      {messageUpdated && (
+      {message && (
         <div>
           <MessageEditHeader message={message} />
           <FormControl id="messageSubject" isRequired className="border-bottom">
@@ -102,7 +90,7 @@ export function MessageEdit({ message }: MessageEditProps) {
           <div className="d-flex justify-content-end gap-12 pt-24 pe-16">
             <div className="d-flex align-items-end flex-column gap-16">
               <MessageActionDropdown
-                message={messageUpdated}
+                message={message}
                 appearance={{
                   dropdownVariant: 'outline',
                   mainButtonVariant: 'filled',
@@ -110,9 +98,9 @@ export function MessageEdit({ message }: MessageEditProps) {
                 }}
                 className="gap-12"
               />
-              {messageUpdated?.date && (
+              {message?.date && (
                 <div className="caption fst-italic" key={dateKey}>
-                  {t('message.saved') + ' ' + fromNow(messageUpdated.date)}
+                  {t('message.saved') + ' ' + fromNow(message.date)}
                 </div>
               )}
             </div>
