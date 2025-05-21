@@ -227,7 +227,7 @@
   "used.space": "Espace utilisé",
   "user.folders": "Dossiers",
   "generic.folders": "Dossiers généraux",
-  "pagination.on": "[[current]] on [[total]]",
+  "pagination.on": "[[current]] sur [[total]]",
   "warning.close": "J'ai compris",
   "warning.inactive.title": "Utilisateurs inactifs",
   "warning.inactive.text": "Certains destinataires que vous avez ajoutés n’ont pas activé leur compte. Ils pourront consulter votre mail qu’une fois l’activation faite.",
