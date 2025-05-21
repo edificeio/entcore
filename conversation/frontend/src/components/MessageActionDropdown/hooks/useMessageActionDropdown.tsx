@@ -59,6 +59,8 @@ export function useMessageActionDropdown({
   const { user } = useEdificeClient();
   const { success } = useToast();
 
+  const isFromMe = message.from.id === user?.userId;
+
   // Hidden condition's
   const isInFolder = useMemo(() => {
     if (folderId && ['trash', 'inbox', 'outbox'].includes(folderId)) return;
@@ -66,8 +68,11 @@ export function useMessageActionDropdown({
   }, [folderId]);
 
   const canTransfer = useMemo(() => {
-    return message.state !== 'DRAFT' && message.trashed !== true;
-  }, [message.state, message.trashed]);
+    return (
+      (message.state === 'SENT' || (message.state === 'RECALL' && isFromMe)) &&
+      message.trashed !== true
+    );
+  }, [isFromMe, message.state, message.trashed]);
 
   const canReply = useMemo(() => {
     return message.state === 'SENT' && message.trashed !== true;
