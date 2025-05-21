@@ -10,11 +10,12 @@ import {
 import { t } from 'i18next';
 import { ReactElement } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FolderActionDropdown } from '~/components';
+import { useI18n } from '~/hooks';
 import { Folder, SystemFolder } from '~/models';
 import { useFoldersTree } from '~/services';
 import { useFolderHandlers } from '../hooks/useFolderHandlers';
 import { useMenuData } from '../hooks/useMenuData';
-import { FolderActionDropdown } from '~/components';
 
 type FolderItem = { name: string; folder: Folder };
 
@@ -29,32 +30,30 @@ function buildMenuItemsWithSelection(
 ) {
   const items: FolderItem[] = [];
   let selectedItem: FolderItem | undefined;
-  folders
-    .sort((a, b) => (a.name < b.name ? -1 : a.name == b.name ? 0 : 1))
-    .forEach((folder) => {
-      // Build an item representing this folder
-      const name = `${prefix ? prefix : ''}${folder.name}`;
-      const item = { name, folder };
-      items.push(item);
+  folders.forEach((folder) => {
+    // Build an item representing this folder
+    const name = `${prefix ? prefix : ''}${folder.name}`;
+    const item = { name, folder };
+    items.push(item);
 
-      // Is this the selected folder ?
-      if (selectedFolderId === folder.id) {
-        selectedItem = item;
-      }
+    // Is this the selected folder ?
+    if (selectedFolderId === folder.id) {
+      selectedItem = item;
+    }
 
-      // Recursively build items for subFolders
-      if (folder.subFolders) {
-        const subs = buildMenuItemsWithSelection(
-          selectedFolderId,
-          folder.subFolders,
-          `${name}/`,
-        );
-        items.push(...subs.menuItems);
-        if (subs.selectedItem) {
-          selectedItem = subs.selectedItem;
-        }
+    // Recursively build items for subFolders
+    if (folder.subFolders) {
+      const subs = buildMenuItemsWithSelection(
+        selectedFolderId,
+        folder.subFolders,
+        `${name} / `,
+      );
+      items.push(...subs.menuItems);
+      if (subs.selectedItem) {
+        selectedItem = subs.selectedItem;
       }
-    });
+    }
+  });
   return { menuItems: items, selectedItem };
 }
 
@@ -85,6 +84,8 @@ function asFolderItem(
 export function MobileMenu() {
   const navigate = useNavigate();
   const foldersTreeQuery = useFoldersTree();
+  const { t } = useI18n();
+
   const {
     counters,
     renderBadge,
@@ -126,9 +127,7 @@ export function MobileMenu() {
   function renderFolderItem(item: FolderItem, isUserFolder = false) {
     return (
       <div className="w-100 d-flex justify-content-between align-content-center align-items-center">
-        <div className="overflow-x-hidden text-no-wrap text-truncate">
-          {item.name}
-        </div>
+        <div>{t(item.name)}</div>
         {isUserFolder ? (
           <div className="d-flex align-items-center gap-4">
             {renderBadge(item.folder.nbUnread)}
@@ -147,7 +146,9 @@ export function MobileMenu() {
 
   return (
     <Dropdown block>
-      <Dropdown.Trigger label={selectedItem?.name || selectedUserFolderId} />
+      <Dropdown.Trigger
+        label={(selectedItem && t(selectedItem.name)) || selectedUserFolderId}
+      />
       <Dropdown.Menu>
         {systemFolderItems.map((item) => (
           <Dropdown.Item
