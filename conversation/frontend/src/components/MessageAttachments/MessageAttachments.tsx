@@ -30,8 +30,7 @@ export function MessageAttachments({
     useState<Attachment[] | undefined>(undefined);
   const attachments = message.attachments;
 
-  if ((!editMode && !attachments.length) || message.state === 'RECALL')
-    return null;
+  if (!editMode && !attachments.length) return null;
 
   const handleAttachClick = () => inputRef?.current?.click();
 
