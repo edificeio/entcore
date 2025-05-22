@@ -25,9 +25,10 @@ export function MessageAttachments({
   const { common_t, t } = useI18n();
   const inputRef = useRef<HTMLInputElement | null>(null);
   const { downloadAllUrl, attachFiles, detachFiles, isMutating } =
-    useMessageAttachments(message);
+    useMessageAttachments();
   const [attachmentsToAddToWorkspace, setAttachmentsToAddToWorkspace] =
     useState<Attachment[] | undefined>(undefined);
+
   const attachments = message.attachments;
 
   if (!editMode && !attachments.length) return null;
@@ -98,7 +99,6 @@ export function MessageAttachments({
               <li key={attachment.id} className="mw-100">
                 <MessageAttachment
                   attachment={attachment}
-                  message={message}
                   editMode={editMode}
                   onWantAddToWorkspace={(attachment) =>
                     handleWantAddToWorkspace([attachment])
@@ -134,7 +134,6 @@ export function MessageAttachments({
       )}
       {!!attachmentsToAddToWorkspace && (
         <AddMessageAttachmentToWorkspaceModal
-          message={message}
           isOpen
           onModalClose={() => setAttachmentsToAddToWorkspace(undefined)}
           attachments={attachmentsToAddToWorkspace}
