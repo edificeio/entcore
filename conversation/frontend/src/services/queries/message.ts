@@ -500,8 +500,8 @@ export const useCreateDraft = () => {
       // Update the message unread status in the list
       queryClient.setQueryData(
         messageQueryOptions.getById(id).queryKey,
-        (message: Message | undefined) => {
-          return message ? { ...message, ...message } : undefined;
+        (messageTmp: Message | undefined) => {
+          return messageTmp ? { ...messageTmp, ...message } : undefined;
         },
       );
 
