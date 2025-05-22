@@ -6,11 +6,11 @@ import {
   MessageActionDropdownProps,
 } from '~/components/MessageActionDropdown/MessageActionDropdown';
 import { useI18n, useSelectedFolder } from '~/hooks';
-import { MessageProps } from '.';
+import { Message } from '~/models';
 import Pagination from './components/Pagination';
 import { useMessageNavigation } from './hooks/useMessageNavigation';
 
-export function MessageNavigation({ message }: MessageProps) {
+export function MessageNavigation({ message }: { message: Message }) {
   const navigate = useNavigate();
   const { common_t } = useI18n();
   const { folderId } = useSelectedFolder();
