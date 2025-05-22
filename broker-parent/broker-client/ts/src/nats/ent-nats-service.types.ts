@@ -162,9 +162,20 @@ export interface GroupDTO {
   name?: string;
 }
 
+export interface GetUserDisplayNamesRequestDTO {
+  userIds?: string[];
+}
+
+
+export interface GetUserDisplayNamesResponseDTO {
+  userDisplayNames?: {
+    [k: string]: string;
+  };
+}
+
 export interface AppRegistrationRequestDTO {
   application?: AppRegistrationDTO;
-  actions?: SecuredAction[];
+  actions?: SecuredActionDTO[];
 }
 export interface AppRegistrationDTO {
   name?: string;
@@ -178,7 +189,7 @@ export interface AppRegistrationDTO {
     [k: string]: {};
   };
 }
-export interface SecuredAction {
+export interface SecuredActionDTO {
   name?: string;
   displayName?: string;
   type?: string;
@@ -192,7 +203,7 @@ export interface AppRegistrationResponseDTO {
 
 export interface AppRegistrationRequestDTO {
   application?: AppRegistrationDTO;
-  actions?: SecuredAction[];
+  actions?: SecuredActionDTO[];
 }
 export interface AppRegistrationDTO {
   name?: string;
@@ -206,7 +217,7 @@ export interface AppRegistrationDTO {
     [k: string]: {};
   };
 }
-export interface SecuredAction {
+export interface SecuredActionDTO {
   name?: string;
   displayName?: string;
   type?: string;

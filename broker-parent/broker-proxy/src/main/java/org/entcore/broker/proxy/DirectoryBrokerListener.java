@@ -54,4 +54,12 @@ public interface DirectoryBrokerListener {
    */
   @BrokerListener(subject = "directory.group.find.byexternalid", proxy = true)
   Future<FindGroupByExternalIdResponseDTO> findGroupByExternalId(FindGroupByExternalIdRequestDTO request);
+
+  /**
+   * This method retrieves display names for multiple users by their ENT IDs.
+   * @param request The request object containing the list of user IDs to look up.
+   * @return A response object containing a map of user IDs to their display names.
+   */
+  @BrokerListener(subject = "directory.users.get.displaynames", proxy = true)
+  Future<GetUserDisplayNamesResponseDTO> getUserDisplayNames(GetUserDisplayNamesRequestDTO request);
 }
