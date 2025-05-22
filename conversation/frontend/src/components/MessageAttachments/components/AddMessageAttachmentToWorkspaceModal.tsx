@@ -4,22 +4,20 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useI18n } from '~/hooks';
 import { useMessageAttachments } from '~/hooks/useMessageAttachments';
-import { Attachment, Message } from '~/models';
+import { Attachment } from '~/models';
 
 interface AddMessageAttachmentToWorkspaceModalProps {
-  message: Message;
   attachments: Attachment[];
   onModalClose: () => void;
   isOpen?: boolean;
 }
 export function AddMessageAttachmentToWorkspaceModal({
-  message,
   attachments,
   isOpen = false,
   onModalClose,
 }: AddMessageAttachmentToWorkspaceModalProps) {
   const { t } = useI18n();
-  const { copyToWorkspace } = useMessageAttachments(message);
+  const { copyToWorkspace } = useMessageAttachments();
   const [selectedFolderIdToCopyFile, setSelectedFolderIdToCopyFile] = useState<
     string | undefined
   >(undefined);

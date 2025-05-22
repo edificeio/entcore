@@ -1,6 +1,6 @@
 import { createStore, useStore } from 'zustand';
 import { Config } from '~/config';
-import { Folder, Message } from '~/models';
+import { Folder } from '~/models';
 
 type OpenedModal =
   | undefined
@@ -17,8 +17,6 @@ interface State {
   selectedMessageIds: string[];
   selectedFolders: Folder[];
   openedModal: OpenedModal;
-  messageUpdated?: Message;
-  messageUpdatedNeedToSave: boolean;
   inactiveUsers: string[];
 }
 
@@ -30,8 +28,6 @@ type Action = {
     setSelectedFolders: (value: Folder[]) => void;
     setOpenedModal: (value: OpenedModal) => void;
     setInactiveUsers: (value: string[]) => void;
-    setMessageUpdated: (value: Message) => void;
-    setMessageUpdatedNeedToSave: (value: boolean) => void;
   };
 };
 
@@ -53,8 +49,6 @@ const initialState: State = {
   selectedMessageIds: [],
   selectedFolders: [],
   openedModal: undefined,
-  messageUpdated: undefined,
-  messageUpdatedNeedToSave: false,
   inactiveUsers: [],
 };
 
@@ -68,9 +62,6 @@ const store = createStore<State & Action>()((set) => ({
     setSelectedFolders: (selectedFolders: Folder[]) => set({ selectedFolders }),
     setOpenedModal: (openedModal: OpenedModal) =>
       set({ openedModal: openedModal }),
-    setMessageUpdated: (message: Message) => set({ messageUpdated: message }),
-    setMessageUpdatedNeedToSave: (messageUpdatedNeedToSave: boolean) =>
-      set({ messageUpdatedNeedToSave }),
     setInactiveUsers: (inactiveUsers: string[]) => {
       set({ inactiveUsers });
     },
@@ -85,10 +76,6 @@ const selectedMessageIds = (state: ExtractState<typeof store>) =>
 const selectedFolders = (state: ExtractState<typeof store>) =>
   state.selectedFolders;
 const setOpenedModal = (state: ExtractState<typeof store>) => state.openedModal;
-const setMessageUpdated = (state: ExtractState<typeof store>) =>
-  state.messageUpdated;
-const setMessageUpdatedNeedToSave = (state: ExtractState<typeof store>) =>
-  state.messageUpdatedNeedToSave;
 const setInactiveUsers = (state: ExtractState<typeof store>) =>
   state.inactiveUsers;
 const actionsSelector = (state: ExtractState<typeof store>) => state.actions;
@@ -99,9 +86,6 @@ export const getConfig = () => config(store.getState());
 export const getSelectedMessageIds = () => selectedMessageIds(store.getState());
 export const getSelectedFolders = () => selectedFolders(store.getState());
 export const getOpenedModal = () => setOpenedModal(store.getState());
-export const getMessageUpdated = () => setMessageUpdated(store.getState());
-export const getMessageUpdatedNeedToSave = () =>
-  setMessageUpdatedNeedToSave(store.getState());
 export const getInactiveUsers = () => setInactiveUsers(store.getState());
 
 // Some Setters, for direct use outside of hooks
@@ -119,8 +103,5 @@ export const useConfig = () => useAppStore(config);
 export const useSelectedMessageIds = () => useAppStore(selectedMessageIds);
 export const useSelectedFolders = () => useAppStore(selectedFolders);
 export const useOpenedModal = () => useAppStore(setOpenedModal);
-export const useMessageUpdated = () => useAppStore(setMessageUpdated);
-export const useMessageUpdatedNeedToSave = () =>
-  useAppStore(setMessageUpdatedNeedToSave);
 export const useInactiveUsers = () => useAppStore(setInactiveUsers);
 export const useAppActions = () => useAppStore(actionsSelector);

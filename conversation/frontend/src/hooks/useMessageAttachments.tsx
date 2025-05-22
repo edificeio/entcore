@@ -1,6 +1,6 @@
 import { odeServices } from '@edifice.io/client';
 import { useToast } from '@edifice.io/react';
-import { Attachment, Message } from '~/models';
+import { Attachment } from '~/models';
 import { baseUrl, useCreateOrUpdateDraft } from '~/services';
 
 import { useState } from 'react';
@@ -9,15 +9,18 @@ import {
   useDetachFile,
   useDownloadAttachment,
 } from '~/services/queries/attachment';
+import { useMessage } from '~/store/messageStore';
 import { useI18n } from './useI18n';
 
-export function useMessageAttachments({ id }: Message) {
+export function useMessageAttachments() {
   const attachFileMutation = useAttachFiles();
   const detachFileMutation = useDetachFile();
   const downloadAttachmentMutation = useDownloadAttachment();
   const [detachInProgress, setDetachInProgress] = useState(new Set<string>());
   const toast = useToast();
   const { t } = useI18n();
+  const message = useMessage();
+  let id = message?.id || '';
 
   // These hooks is required when attaching files to a blank new draft, without id.
   const createOrUpdateDraft = useCreateOrUpdateDraft();

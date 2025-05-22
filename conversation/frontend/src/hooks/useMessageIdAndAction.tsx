@@ -1,5 +1,5 @@
 import { useParams, useSearchParams } from 'react-router-dom';
-import { UserAction } from './useMessageReplyOrTransfer';
+import { UserAction } from './useInitMessage';
 
 export interface MessageIdAndActionReturn {
   messageId: string | undefined;
