@@ -181,3 +181,13 @@ i.mediacentre {
     color: #2029b6;
   }
 }
+
+i.cantine-large
+i.cantine {
+  @include fonticon;
+
+  &::before {
+    content: '\e969';
+    color: $green;
+  }
+}
