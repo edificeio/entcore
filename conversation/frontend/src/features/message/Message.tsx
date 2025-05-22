@@ -5,7 +5,6 @@ import { Message as MessageData } from '~/models';
 import { MessageNavigation } from './MessageNavigation';
 
 export function Message({ message }: { message: MessageData }) {
-  console.log('Message', message);
   return (
     <article className="d-flex flex-column gap-16">
       <MessageNavigation message={message} />
