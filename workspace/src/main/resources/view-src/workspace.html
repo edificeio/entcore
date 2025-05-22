@@ -109,9 +109,8 @@
 				<!--IMPORT DESKTOP-->
 				<nav class="vertical nav-droppable mobile-navigation" side-nav>
 					<div data-ng-repeat="folder in wrapperTrees" data-ng-include="'folder-content'" class="folder-tree maxheight-minus350 maxheight-minus370-1d overflowx-hd maxheight-minus200-mobile minheight-100"></div>
-					<!-- nextcloud sniplet folder tree -->
 					<div ng-if="ENABLE_NEXTCLOUD">
-						<sniplet template="nextcloud-folder/workspace-nextcloud-folder" application="nextcloud"></sniplet>
+						<workspace-nextcloud-folder application="nextcloud"></workspace-nextcloud-folder>
 					</div>
 
 					<a ng-click="openNewFolderView()" ng-if="canCreateNewFolder()" class="classic-link centered-bloc-text vertical-spacing-twice-1d"><i18n>folder.new</i18n></a>

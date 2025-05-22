@@ -15,18 +15,27 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-import { ng, template, idiom as lang, notify, idiom, moment, workspace } from 'entcore';
-import { NavigationDelegateScope, NavigationDelegate } from './delegates/navigation';
-import { ActionDelegate, ActionDelegateScope } from './delegates/actions';
-import { TreeDelegate, TreeDelegateScope } from './delegates/tree';
-import { CommentDelegate, CommentDelegateScope } from './delegates/comments';
-import { DragDelegate, DragDelegateScope } from './delegates/drag';
-import { SearchDelegate, SearchDelegateScope } from './delegates/search';
-import { RevisionDelegateScope, RevisionDelegate } from './delegates/revisions';
-import { KeyboardDelegate, KeyboardDelegateScope } from './delegates/keyboard';
-import { LoolDelegateScope, LoolDelegate } from './delegates/lool';
-import { models, workspaceService, DocumentCursor, Document, DocumentCursorParams, CursorUpdate } from "./services";
-import { DocumentActionType } from 'entcore/types/src/ts/workspace/services';
+import { idiom as lang, idiom, moment, ng, notify, template } from "entcore";
+import {
+  NavigationDelegate,
+  NavigationDelegateScope,
+} from "./delegates/navigation";
+import { ActionDelegate, ActionDelegateScope } from "./delegates/actions";
+import { TreeDelegate, TreeDelegateScope } from "./delegates/tree";
+import { CommentDelegate, CommentDelegateScope } from "./delegates/comments";
+import { DragDelegate, DragDelegateScope } from "./delegates/drag";
+import { SearchDelegate, SearchDelegateScope } from "./delegates/search";
+import { RevisionDelegate, RevisionDelegateScope } from "./delegates/revisions";
+import { KeyboardDelegate, KeyboardDelegateScope } from "./delegates/keyboard";
+import { LoolDelegate, LoolDelegateScope } from "./delegates/lool";
+import {
+  CursorUpdate,
+  DocumentCursor,
+  DocumentCursorParams,
+  models,
+  workspaceService,
+} from "./services";
+import { DocumentActionType } from "entcore/types/src/ts/workspace/services";
 import {ScratchDelegate, ScratchDelegateScope} from "./delegates/scratch";
 import {GeogebraDelegate, GeogebraDelegateScope} from "./delegates/geogebra";
 
@@ -184,87 +193,171 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	const shouldCache = workspaceService.isLazyMode();
 	$scope.documentList = new models.DocumentsListModel($filter).watch($scope,{documents:'openedFolder.documents'});
 	$scope.documentListSorted = new models.DocumentsListModel($filter).watch($scope,{documents:'openedFolder.sortedDocuments'});
-	$scope.trees = [new models.ElementTree(shouldCache,{
-		name: lang.translate('documents'),
-		filter: 'owner',
-		hierarchical: true,
-		hidden: false,
-		children: [],
-		buttons: [
-			{ text: lang.translate('workspace.add.document'), action: () => $scope.display.importFiles = true, icon: true, workflow: 'workspace.create', disabled() { return false } }
-		],
-		contextualButtons: [
-			{ text: lang.translate('workspace.move'), action: $scope.openMoveView, right: "manager", allow: allowAction("move") },
-			{ text: lang.translate('workspace.copy'), action: $scope.openCopyView, right: "read", allow: allowAction("copy") },
-			{ text: lang.translate('workspace.move.trash'), action: $scope.toTrashConfirm, right: "manager" }
-		]
-	}), new models.ElementTree(shouldCache,{
-		name: lang.translate('shared_tree'),
-		filter: 'shared',
-		hierarchical: true,
-		hidden: false,
-		buttons: [
-			{
-				text: lang.translate('workspace.add.document'), action: () => $scope.display.importFiles = true, icon: true, workflow: 'workspace.create', disabled() {
-					if($scope.currentTree.filter == "shared" && $scope.currentTree===$scope.openedFolder.folder){
-						return false;
-					}
-					let isFolder = ($scope.openedFolder.folder instanceof models.Element);
-					return isFolder && !$scope.openedFolder.folder.canWriteOnFolder
-				}
-			}
-		],
-		children: [],
-		contextualButtons: [
-			{ text: lang.translate('workspace.move'), action: $scope.openMoveView, right: "manager", allow: allowAction("move") },
-			{ text: lang.translate('workspace.copy'), action: $scope.openCopyView, right: "read", allow: allowAction("copy") },
-			{ text: lang.translate('workspace.move.trash'), action: $scope.toTrashConfirm, right: "manager" }
-		]
-	}),new models.ElementTree(shouldCache,{
-		name: lang.translate('externalDocs'),
-		filter: 'external',
-		get hidden() {
-			const tree = $scope.trees.find(e => e.filter == "external");
-			return !tree || tree.children.length == 0;
-		},
-		buttons: [],
-		hierarchical: true,
-		children: [],
-		contextualButtons: [
-			{
-				text: lang.translate('workspace.move.trash'), action: $scope.toTrashConfirm, allow() {
-					//trash only files
-					return $scope.selectedFolders().length == 0;
-				}
-			}
-		]
-	}), new models.ElementTree(shouldCache,{
-		name: lang.translate('appDocuments'),
-		filter: 'protected',
-		hidden: false,
-		buttons: [
-			{ text: lang.translate('workspace.add.document'), action: () => { }, icon: true, workflow: 'workspace.create', disabled() { return true } }
-		],
-		hierarchical: true,
-		children: [],
-		contextualButtons: [
-			{ text: lang.translate('workspace.copy'), action: $scope.openCopyView, right: "read", allow: allowAction("copy") },
-			{ text: lang.translate('workspace.move.trash'), action: $scope.toTrashConfirm, right: "manager" }
-		]
-	}), new models.ElementTree(shouldCache,{
-		name: lang.translate('trash'),
-		hidden: false,
-		buttons: [
-			{ text: lang.translate('workspace.add.document'), action: () => { }, icon: true, workflow: 'workspace.create', disabled() { return true } }
-		],
-		filter: 'trash',
-		hierarchical: true,
-		children: [],
-		contextualButtons: [
-			{ text: lang.translate('workspace.trash.restore'), action: $scope.restore, right: "manager" },
-			{ text: lang.translate('workspace.move.trash'), action: $scope.deleteConfirm, right: "manager" }
-		]
-	})];
+	$scope.trees = [
+    new models.ElementTree(shouldCache, {
+      name: lang.translate("documents"),
+      filter: "owner",
+      hierarchical: true,
+      hidden: false,
+      children: [],
+      buttons: [
+        {
+          text: lang.translate("workspace.add.document"),
+          action: () => ($scope.display.importFiles = true),
+          icon: true,
+          workflow: "workspace.create",
+          disabled() {
+            return false;
+          },
+        },
+      ],
+      contextualButtons: [
+        {
+          text: lang.translate("workspace.move"),
+          action: $scope.openMoveView,
+          right: "manager",
+          allow: allowAction("move"),
+        },
+        {
+          text: lang.translate("workspace.copy"),
+          action: $scope.openCopyView,
+          right: "read",
+          allow: allowAction("copy"),
+        },
+        {
+          text: lang.translate("workspace.move.trash"),
+          action: $scope.toTrashConfirm,
+          right: "manager",
+        },
+      ],
+    }),
+    new models.ElementTree(shouldCache, {
+      name: lang.translate("shared_tree"),
+      filter: "shared",
+      hierarchical: true,
+      hidden: false,
+      buttons: [
+        {
+          text: lang.translate("workspace.add.document"),
+          action: () => ($scope.display.importFiles = true),
+          icon: true,
+          workflow: "workspace.create",
+          disabled() {
+            if (
+              $scope.currentTree.filter == "shared" &&
+              $scope.currentTree === $scope.openedFolder.folder
+            ) {
+              return false;
+            }
+            let isFolder = $scope.openedFolder.folder instanceof models.Element;
+            return isFolder && !$scope.openedFolder.folder.canWriteOnFolder;
+          },
+        },
+      ],
+      children: [],
+      contextualButtons: [
+        {
+          text: lang.translate("workspace.move"),
+          action: $scope.openMoveView,
+          right: "manager",
+          allow: allowAction("move"),
+        },
+        {
+          text: lang.translate("workspace.copy"),
+          action: $scope.openCopyView,
+          right: "read",
+          allow: allowAction("copy"),
+        },
+        {
+          text: lang.translate("workspace.move.trash"),
+          action: $scope.toTrashConfirm,
+          right: "manager",
+        },
+      ],
+    }),
+    new models.ElementTree(shouldCache, {
+      name: lang.translate("externalDocs"),
+      filter: "external",
+      get hidden() {
+        const tree = $scope.trees.find((e) => e.filter == "external");
+        return !tree || tree.children.length == 0;
+      },
+      buttons: [],
+      hierarchical: true,
+      children: [],
+      contextualButtons: [
+        {
+          text: lang.translate("workspace.move.trash"),
+          action: $scope.toTrashConfirm,
+          allow() {
+            //trash only files
+            return $scope.selectedFolders().length == 0;
+          },
+        },
+      ],
+    }),
+    new models.ElementTree(shouldCache, {
+      name: lang.translate("appDocuments"),
+      filter: "protected",
+      hidden: false,
+      buttons: [
+        {
+          text: lang.translate("workspace.add.document"),
+          action: () => {},
+          icon: true,
+          workflow: "workspace.create",
+          disabled() {
+            return true;
+          },
+        },
+      ],
+      hierarchical: true,
+      children: [],
+      contextualButtons: [
+        {
+          text: lang.translate("workspace.copy"),
+          action: $scope.openCopyView,
+          right: "read",
+          allow: allowAction("copy"),
+        },
+        {
+          text: lang.translate("workspace.move.trash"),
+          action: $scope.toTrashConfirm,
+          right: "manager",
+        },
+      ],
+    }),
+    new models.ElementTree(shouldCache, {
+      name: lang.translate("trash"),
+      hidden: false,
+      buttons: [
+        {
+          text: lang.translate("workspace.add.document"),
+          action: () => {},
+          icon: true,
+          workflow: "workspace.create",
+          disabled() {
+            return true;
+          },
+        },
+      ],
+      filter: "trash",
+      hierarchical: true,
+      children: [],
+      contextualButtons: [
+        {
+          text: lang.translate("workspace.trash.restore"),
+          action: $scope.restore,
+          right: "manager",
+        },
+        {
+          text: lang.translate("workspace.move.trash"),
+          action: $scope.deleteConfirm,
+          right: "manager",
+        },
+      ],
+    }),
+  ];
 	$scope.display = {
 		nbFiles: 50
 	};

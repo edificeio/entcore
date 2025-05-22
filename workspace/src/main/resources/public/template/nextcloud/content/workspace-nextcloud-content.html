@@ -1,0 +1,72 @@
+<div
+    id="nextcloud-content"
+    class="sniplet nextcloud nextcloud-content"
+    ng-controller="NextcloudContentController"
+>
+    <div class="row">
+        <!-- url connect -->
+        <div ng-if="nextcloudUrl && !isNextcloudUrlHidden" class="cell">
+            <i18n>nextcloud.url.connect</i18n> &#58;
+            <a target="_blank" ng-href="[[nextcloudUrl]]">[[nextcloudUrl]]</a>
+        </div>
+
+        <!-- view mode -->
+        <div class="cell right-magnet">
+            <div class="choice-view">
+                <i
+                    class="show-icons"
+                    ng-class="{ selected: isViewMode('icons') }"
+                    ng-click="changeViewMode('icons')"
+                ></i>
+                <i
+                    class="show-list"
+                    ng-class="{ selected: isViewMode('list') }"
+                    ng-click="changeViewMode('list')"
+                ></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- dropzone action file -->
+    <dropzone-overlay
+        ng-if="isDropzoneEnabled()"
+        on-import="upload.onImportFiles($event)"
+        can-drop="canDropOnFolder()"
+        on-cannot-drop="onCannotDropFile()"
+    >
+    </dropzone-overlay>
+
+    <!-- view content -->
+    <container template="documents-content"></container>
+
+    <!-- empty state -->
+    <div
+        class="emptyscreen-nextcloud"
+        ng-if="isLoaded"
+        ng-show="!documents.length"
+    >
+        <h2 class="emptyscreen-header">
+            <i18n>empty.workspace.subfolder.title</i18n>
+        </h2>
+
+        <img
+            class="emptyscreen-image__mini"
+            src="/workspace/public/img/empty-workspace.svg"
+            alt=""
+        />
+
+        <p class="emptyscreen-footer">
+            <i18n>empty.workspace</i18n>
+        </p>
+    </div>
+
+    <!-- toolbar -->
+    <div
+        ng-include="'/workspace/public/template/nextcloud/toolbar/workspace-nextcloud-toolbar.html'"
+    ></div>
+
+    <!-- upload file popup -->
+    <div
+        ng-include="'/workspace/public/template/nextcloud/content/workspace-nextcloud-upload-file.html'"
+    ></div>
+</div>

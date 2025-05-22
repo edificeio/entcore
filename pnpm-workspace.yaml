@@ -1,0 +1,5 @@
+onlyBuiltDependencies:
+  - core-js
+  - es5-ext
+  - fsevents
+  - uglifyjs-webpack-plugin

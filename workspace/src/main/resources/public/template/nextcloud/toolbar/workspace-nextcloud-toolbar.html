@@ -1,0 +1,108 @@
+<section
+    class="nextcloud-content-toolbar toggle-buttons hide"
+    ng-class="{'toolbar-display': selectedDocuments && selectedDocuments.length > 0}"
+>
+    <div class="toggle">
+        <div class="row">
+            <!-- open file -->
+            <div
+                id="nextcloud-toolbar-open"
+                ng-if="toolbar.hasOneDocumentSelected(selectedDocuments)"
+            >
+                <button>
+                    <i18n>workspace.open</i18n>
+                </button>
+            </div>
+
+            <!-- download file(s) -->
+            <button ng-click="toolbar.downloadFiles(selectedDocuments)">
+                <i18n>workspace.download</i18n>
+            </button>
+
+            <!-- properties file -->
+            <div
+                id="nextcloud-toolbar-properties"
+                ng-if="toolbar.hasOneDocumentSelected(selectedDocuments)"
+            >
+                <button
+                    ng-click="toolbar.toggleRenameView(true, selectedDocuments)"
+                    class="cell"
+                >
+                    <i18n>workspace.properties</i18n>
+                </button>
+
+                <!-- popup -->
+                <div
+                    ng-if="toolbar.copyProps"
+                    ng-include="'/workspace/public/template/nextcloud/toolbar/workspace-nextcloud-toolbar-properties.html'"
+                ></div>
+            </div>
+
+            <!-- move file(s) -->
+            <div id="nextcloud-toolbar-move">
+                <button
+                    ng-click="toolbar.toggleMoveView(true, selectedDocuments)"
+                >
+                    <i18n>workspace.move</i18n>
+                </button>
+
+                <!-- popup -->
+                <div
+                    ng-if="toolbar.lightbox.copy"
+                    ng-include="'/workspace/public/template/nextcloud/toolbar/workspace-nextcloud-toolbar-copy.html'"
+                ></div>
+            </div>
+
+            <!-- copy -->
+            <div id="nextcloud-toolbar-copy">
+                <button
+                    ng-click="toolbar.toggleCopyView(true, selectedDocuments)"
+                >
+                    <i18n>workspace.copy</i18n>
+                </button>
+
+                <!-- popup -->
+                <div
+                    ng-if="toolbar.lightbox.copy"
+                    ng-include="'/workspace/public/template/nextcloud/toolbar/workspace-nextcloud-toolbar-copy.html'"
+                ></div>
+            </div>
+
+            <!-- delete document(s) -->
+            <div id="nextcloud-toolbar-delete">
+                <button ng-click="toolbar.toggleDeleteView(true)">
+                    <i18n>workspace.delete</i18n>
+                </button>
+
+                <!-- popup -->
+                <div
+                    ng-include="'/workspace/public/template/nextcloud/toolbar/workspace-nextcloud-toolbar-delete.html'"
+                ></div>
+            </div>
+
+            <!-- edit document(s) -->
+            <div
+                id="nextcloud-toolbar-edit"
+                ng-if="toolbar.hasOneDocumentSelected(selectedDocuments) && toolbar.isSelectedEditable(selectedDocuments)"
+            >
+                <button ng-click="toolbar.toggleEdit()">
+                    <i18n>workspace.external.open</i18n>
+                </button>
+            </div>
+
+            <!-- share document(s) -->
+            <div id="nextcloud-toolbar-share">
+                <button
+                    ng-click="toolbar.share.toggleShareView(true, selectedDocuments)"
+                >
+                    <i18n>workspace.share</i18n>
+                </button>
+
+                <!-- popup -->
+                <div
+                    ng-include="'/workspace/public/template/nextcloud/toolbar/share/workspace-nextcloud-toolbar-share.html'"
+                ></div>
+            </div>
+        </div>
+    </div>
+</section>
