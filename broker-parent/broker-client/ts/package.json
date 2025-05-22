@@ -1,6 +1,6 @@
 {
   "name": "@edifice.io/edifice-ent-client",
-  "version": "1.0.1-develop.20250512172231",
+  "version": "1.0.1-develop.20250522172231",
   "description": "Clients to interact with ENT service",
   "scripts": {
     "dev": "vite",
