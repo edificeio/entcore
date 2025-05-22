@@ -14,31 +14,29 @@ export default function MessageOnboardingModal() {
       items={[
         {
           src: illuOnboardingNew,
+          title: t('onboarding.modal.screen1.title'),
           alt: t('onboarding.modal.screen1.alt'),
           text: t('onboarding.modal.screen1.text'),
         },
         {
           src: illuOnboardingSearch,
+          title: t('onboarding.modal.screen2.title'),
           alt: t('onboarding.modal.screen2.alt'),
           text: t('onboarding.modal.screen2.text'),
         },
         {
           src: illuOnboardingRecall,
+          title: t('onboarding.modal.screen3.title'),
           alt: t('onboarding.modal.screen3.alt'),
           text: t('onboarding.modal.screen3.text'),
         },
         {
           src: illuOnboardingIncoming,
+          title: t('onboarding.modal.screen4.title'),
           alt: t('onboarding.modal.screen4.alt'),
           text: t('onboarding.modal.screen4.text'),
         },
       ]}
-      modalOptions={{
-        title: t('onboarding.modal.title'),
-        prevText: 'explorer.modal.onboarding.trash.prev', // to remove because optional
-        nextText: 'explorer.modal.onboarding.trash.next', // to remove because optional
-        closeText: 'explorer.modal.onboarding.trash.close', // to remove because optional
-      }}
     />
   );
 }
