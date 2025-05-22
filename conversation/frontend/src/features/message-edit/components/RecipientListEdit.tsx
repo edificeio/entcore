@@ -10,7 +10,7 @@ import { useI18n } from '~/hooks';
 import { Group, Recipients, User } from '~/models';
 import { Visible } from '~/models/visible';
 import { useBookmarkById } from '~/services/queries/user';
-import { useAppActions, useMessageUpdated } from '~/store';
+import { useMessage, useMessageActions } from '~/store/messageStore';
 import { RecipientListItem } from './RecipientListItem';
 import { RecipientListSelectedItem } from './RecipientListSelectedItem';
 
@@ -33,8 +33,8 @@ export function RecipientListEdit({
   const { isAdml } = useIsAdml();
 
   const { getBookmarkById } = useBookmarkById();
-  const messageUpdated = useMessageUpdated();
-  const { setMessageUpdated, setMessageUpdatedNeedToSave } = useAppActions();
+  const message = useMessage();
+  const { setMessage, setMessageNeedToSave } = useMessageActions();
   const [isComboboxFocused, setIsComboboxFocused] = useState(false);
 
   const handleRecipientClick = async (recipient: Visible) => {
@@ -103,12 +103,12 @@ export function RecipientListEdit({
   };
 
   const updateMessage = () => {
-    if (!messageUpdated) {
+    if (!message) {
       return;
     }
-    messageUpdated[recipientType] = recipients;
-    setMessageUpdated({ ...messageUpdated });
-    setMessageUpdatedNeedToSave(true);
+    message[recipientType] = recipients;
+    setMessage({ ...message });
+    setMessageNeedToSave(true);
   };
 
   const {
