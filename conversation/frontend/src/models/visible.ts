@@ -5,6 +5,7 @@ export type Visible = {
   displayName: string;
   profile?: string;
   nbUsers?: number;
+  structureName?: string;
   groupType?: string;
   usedIn: ('TO' | 'CC' | 'CCI')[];
   type: VisibleType;
