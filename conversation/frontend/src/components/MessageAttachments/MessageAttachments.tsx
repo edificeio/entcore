@@ -9,7 +9,6 @@ import { ChangeEvent, useRef, useState } from 'react';
 import { useI18n } from '~/hooks';
 import { useMessageAttachments } from '~/hooks/useMessageAttachments';
 import { Attachment, Message } from '~/models';
-import { useMessageUpdated } from '~/store';
 import { AddMessageAttachmentToWorkspaceModal } from './components/AddMessageAttachmentToWorkspaceModal';
 import { MessageAttachment } from './components/MessageAttachment';
 import './MessageAttachments.css';
@@ -25,12 +24,11 @@ export function MessageAttachments({
 }: MessageAttachmentsProps) {
   const { common_t, t } = useI18n();
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const messageUpdated = useMessageUpdated();
   const { downloadAllUrl, attachFiles, detachFiles, isMutating } =
-    useMessageAttachments(editMode ? messageUpdated! : message);
+    useMessageAttachments(message);
   const [attachmentsToAddToWorkspace, setAttachmentsToAddToWorkspace] =
     useState<Attachment[] | undefined>(undefined);
-  const attachments = messageUpdated?.attachments || message.attachments || [];
+  const attachments = message.attachments;
 
   if ((!editMode && !attachments.length) || message.state === 'RECALL')
     return null;
