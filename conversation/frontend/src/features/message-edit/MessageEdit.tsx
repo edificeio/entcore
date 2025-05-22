@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { MessageActionDropdown } from '~/components/MessageActionDropdown/MessageActionDropdown';
 import { MessageBody } from '~/components/MessageBody';
 import { useI18n } from '~/hooks';
+import { useMessageIdAndAction } from '~/hooks/useMessageIdAndAction';
 import { Message } from '~/models';
 import { useConversationConfig, useCreateOrUpdateDraft } from '~/services';
 import {
@@ -27,6 +28,8 @@ export function MessageEdit({ message }: MessageEditProps) {
   const createOrUpdateDraft = useCreateOrUpdateDraft();
   const [dateKey, setDateKey] = useState(0);
   const { data: publicConfig } = useConversationConfig();
+  const { action } = useMessageIdAndAction();
+  const isTransferAction = action === 'transfer';
 
   const handleSubjectChange = (subject: string) => {
     setSubject(subject);
@@ -35,7 +38,7 @@ export function MessageEdit({ message }: MessageEditProps) {
   };
 
   const handleMessageChange = (message: Message) => {
-    setMessageUpdated({ ...(messageUpdated || message), body: message.body });
+    setMessageUpdated(message);
     setMessageUpdatedNeedToSave(true);
   };
 
@@ -45,7 +48,12 @@ export function MessageEdit({ message }: MessageEditProps) {
   );
 
   useEffect(() => {
-    setMessageUpdated(message);
+    // Automatically create draft when this is a transfer action
+    // so the attachments are transferred to the new message
+    // and the user can edit the message
+    if (message && !message.id && isTransferAction) {
+      createOrUpdateDraft();
+    }
 
     const interval = setInterval(() => setDateKey((prev) => ++prev), 6000);
 
