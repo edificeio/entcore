@@ -1,17 +1,10 @@
 import { QueryClient } from '@tanstack/react-query';
 import { Fragment, useEffect, useState } from 'react';
-import {
-  LoaderFunctionArgs,
-  useParams,
-  useSearchParams,
-} from 'react-router-dom';
+import { LoaderFunctionArgs } from 'react-router-dom';
 import { Message } from '~/features/message';
 import { MessageEdit } from '~/features/message-edit/MessageEdit';
-import {
-  useSelectedFolder,
-  useAdditionalRecipients,
-  useMessageReplyOrTransfer,
-} from '~/hooks';
+import { useMessageReplyOrTransfer, useSelectedFolder } from '~/hooks';
+import { useMessageIdAndAction } from '~/hooks/useMessageIdAndAction';
 
 import { messageQueryOptions } from '~/services';
 
@@ -29,49 +22,14 @@ export const loader =
   };
 
 export function Component() {
-  const { messageId } = useParams();
-  const [searchParams] = useSearchParams();
   const { folderId } = useSelectedFolder();
   const [currentKey, setCurrentKey] = useState(0);
 
-  const replyMessageId = searchParams.get('reply');
-  const replyAllMessageId = searchParams.get('replyall');
-  const transferMessageId = searchParams.get('transfer');
-  const { message: templateMessage } = useMessageReplyOrTransfer({
-    messageId:
-      messageId ||
-      replyMessageId ||
-      replyAllMessageId ||
-      transferMessageId ||
-      '',
-    action: replyMessageId
-      ? 'reply'
-      : replyAllMessageId
-        ? 'replyAll'
-        : transferMessageId
-          ? 'transfer'
-          : undefined,
+  const { messageId, action } = useMessageIdAndAction();
+  const { message } = useMessageReplyOrTransfer({
+    messageId,
+    action,
   });
-  const [message, setMessage] = useState(templateMessage);
-
-  // Get IDs of users and groups/favorites to add as recipients.
-  const toUsers = searchParams.getAll('user');
-  const toGroups = searchParams.getAll('group');
-  const toFavorites = searchParams.getAll('favorite');
-  const { addRecipientsToMessage } = useAdditionalRecipients(
-    'to',
-    toUsers,
-    toGroups,
-    toFavorites,
-  );
-  useEffect(() => {
-    if (templateMessage) {
-      setMessage((msg) => ({
-        ...msg,
-        ...addRecipientsToMessage(templateMessage),
-      }));
-    }
-  }, [templateMessage, addRecipientsToMessage]);
 
   useEffect(() => {
     // Scroll to the top of the page
@@ -81,7 +39,7 @@ export function Component() {
   useEffect(() => {
     // Update the current key to trigger a re-render
     setCurrentKey((prev) => prev + 1);
-  }, [message]);
+  }, [messageId]);
 
   if (!message) {
     return null;
