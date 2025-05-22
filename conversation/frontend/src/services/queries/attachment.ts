@@ -33,7 +33,6 @@ export const useAttachFiles = () => {
         }),
       );
 
-      console.log('attachments', attachments);
       // Refresh the message data after attaching files to the draft message
       // This is necessary to update the message state in the store
       await queryClient.setQueryData(

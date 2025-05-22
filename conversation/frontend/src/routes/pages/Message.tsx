@@ -7,7 +7,6 @@ import { useInitMessage, useSelectedFolder } from '~/hooks';
 import { useMessageIdAndAction } from '~/hooks/useMessageIdAndAction';
 
 import { messageQueryOptions } from '~/services';
-import { useMessage } from '~/store/messageStore';
 
 export const loader =
   (queryClient: QueryClient) =>
@@ -29,11 +28,11 @@ export function Component() {
   const { messageId, action } = useMessageIdAndAction();
 
   // Init message depending on the action
-  useInitMessage({
+
+  const message = useInitMessage({
     messageId,
     action,
   });
-  const message = useMessage();
 
   useEffect(() => {
     // Scroll to the top of the page
@@ -45,7 +44,7 @@ export function Component() {
       // Update the current key to trigger a re-render
       setCurrentKey((prev) => prev + 1);
     }
-  }, [messageId, message]);
+  }, [messageId, message?.id]);
 
   if (!message) {
     return null;

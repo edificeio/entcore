@@ -34,8 +34,8 @@ export function MessageEdit({ message }: { message?: Message }) {
     setMessageNeedToSave(true);
   };
 
-  const messageUpdatedDebounced = useDebounce(
-    message,
+  const messageUpdatedNeedSaveDebounced = useDebounce(
+    messageUpdatedNeedSave,
     debounceTimeToSave.current,
   );
 
@@ -60,12 +60,12 @@ export function MessageEdit({ message }: { message?: Message }) {
   }, [publicConfig]);
 
   useEffect(() => {
-    if (messageUpdatedDebounced && messageUpdatedNeedSave) {
+    if (messageUpdatedNeedSaveDebounced) {
       createOrUpdateDraft();
       setMessageNeedToSave(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [messageUpdatedDebounced]);
+  }, [messageUpdatedNeedSaveDebounced]);
 
   return (
     <>
