@@ -1,6 +1,6 @@
 import { useDate, useEdificeClient } from '@edifice.io/react';
 import { useEffect, useMemo } from 'react';
-import { Group, Message, Recipients, User } from '~/models';
+import { Group, Recipients, User } from '~/models';
 import {
   createDefaultMessage,
   useMessage,
