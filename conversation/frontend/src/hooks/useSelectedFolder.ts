@@ -18,7 +18,7 @@ export function useSelectedFolder(): {
   const foldersTreeQuery = useFoldersTree();
   const foldersTree = foldersTreeQuery.data;
 
-  switch (folderId.toLowerCase()) {
+  switch (folderId?.toLowerCase()) {
     case 'inbox':
     case 'outbox':
     case 'draft':

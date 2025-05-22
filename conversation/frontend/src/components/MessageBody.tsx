@@ -21,12 +21,14 @@ import OriginalFormatModal from './OriginalFormatModal';
 export interface MessageBodyProps {
   message: Message;
   editMode?: boolean;
+  isPrint?: boolean;
   onMessageChange?: (message: Message) => void;
 }
 
 export function MessageBody({
   message,
   editMode,
+  isPrint,
   onMessageChange,
 }: MessageBodyProps) {
   const { t } = useI18n();
@@ -66,7 +68,7 @@ export function MessageBody({
         <MessageAttachments message={message} editMode={editMode} />
       </section>
 
-      {message.original_format_exists && !editMode && (
+      {!isPrint && message.original_format_exists && !editMode && (
         <Alert
           type="warning"
           className="my-24"
