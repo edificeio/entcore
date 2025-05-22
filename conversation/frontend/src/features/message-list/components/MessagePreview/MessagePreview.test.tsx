@@ -9,7 +9,7 @@ import { MessageMetadata } from '~/models';
 import { MessagePreview } from './MessagePreview';
 
 const inboxMessage = mockMessagesOfInbox[0];
-const userFolderId = '23785dbc-dc2e-4f66-95a4-23f587d65008';
+// const userFolderId = '23785dbc-dc2e-4f66-95a4-23f587d65008';
 
 const mocks = vi.hoisted(() => ({
   useMessageFolderId: vi.fn(),
