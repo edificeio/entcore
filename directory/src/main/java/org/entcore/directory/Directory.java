@@ -67,7 +67,6 @@ public class Directory extends BaseServer {
 	public void start(final Promise<Void> startPromise) throws Exception {
 		final EventBus eb = getEventBus(vertx);
 		super.start(startPromise);
-		BrokerProxyUtils.addBrokerProxy(new DirectoryBrokerListenerImpl(vertx), vertx);
 		MongoDbConf.getInstance().setCollection(SLOTPROFILE_COLLECTION);
 		setDefaultResourceFilter(new DirectoryResourcesProvider());
 
@@ -210,7 +209,7 @@ public class Directory extends BaseServer {
 			addController(remoteUserController);
 		}
 		// add the directory broker listener
-		BrokerProxyUtils.addBrokerProxy(new DirectoryBrokerListenerImpl(vertx), vertx);
+		BrokerProxyUtils.addBrokerProxy(new DirectoryBrokerListenerImpl(vertx, userService), vertx);
 
 	}
 
