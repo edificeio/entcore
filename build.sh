@@ -1,40 +1,52 @@
 #!/bin/bash
 
-MVN_OPTS="-Duser.home=/var/maven"
-
 if [ ! -e node_modules ]
 then
   mkdir node_modules
 fi
 
-case `uname -s` in
-  MINGW* | Darwin*)
-    USER_UID=1000
-    GROUP_UID=1000
-    ;;
-  *)
-    if [ -z ${USER_UID:+x} ]
-    then
-      USER_UID=`id -u`
-      GROUP_GID=`id -g`
-    fi
-esac
+# user options
+if [[ "$*" == *"--no-user"* ]]
+then
+  USER_OPTION=""
+else
+  case `uname -s` in
+    MINGW* | Darwin*)
+      USER_UID=1000
+      GROUP_UID=1000
+      ;;
+    *)
+      if [ -z ${USER_UID:+x} ]
+      then
+        USER_UID=`id -u`
+        GROUP_GID=`id -g`
+      fi
+  esac
+  USER_OPTION="-u $USER_UID:$GROUP_GID"
+fi
 
-# options
+# build options
+NO_DOCKER=""
 SPRINGBOARD="recette"
 MODULE=""
+MVN_OPTS="-Duser.home=/var/maven"
 for i in "$@"
 do
 case $i in
-    -s=*|--springboard=*)
+  --no-docker*)
+    NO_DOCKER="true"
+    MVN_OPTS=""
+    shift
+    ;;
+  -s=*|--springboard=*)
     SPRINGBOARD="${i#*=}"
     shift
     ;;
-    -m=*|--module=*)
+  -m=*|--module=*)
     MODULE="${i#*=}"
     shift
     ;;
-    *)
+  *)
     ;;
 esac
 done
@@ -45,6 +57,12 @@ if [ "$MODULE" = "" ]; then
 else
   GRADLE_OPTION=":$MODULE:"
   NODE_OPTION="--module $MODULE"
+  if [ -e "$MODULE/backend" ]; then
+    echo "BACKEND SUB-PROJECT $MODULE/backend DETECTED"
+    MVN_OPTS="$MVN_OPTS --projects $MODULE/backend -am"
+  else
+    MVN_OPTS="$MVN_OPTS --projects $MODULE -am"
+  fi
 fi
 
 #try jenkins branch name => then local git branch name => then jenkins params
@@ -73,11 +91,16 @@ init() {
 }
 
 clean () {
-  docker compose run --rm maven mvn $MVN_OPTS clean
+  if [ "$NO_DOCKER" = "true" ] ; then
+    mvn $MVN_OPTS clean
+  else
+    docker compose run --rm $USER_OPTION maven mvn $MVN_OPTS clean
+  fi
 }
 
-buildNode () {
-  if [ "$MODULE" = "" ] || [ ! "$MODULE" = "admin" ]; then
+buildFrontend () {
+  # --- Build angularJS-based frontends
+  if [ "$MODULE" = "" ] || [ ! "$MODULE" = "admin" ] && [ ! -e ./"$MODULE"/frontend ]; then
     #try jenkins branch name => then local git branch name => then jenkins params
     echo "[buildNode] Get branch name from jenkins env..."
     BRANCH_NAME=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
@@ -98,39 +121,78 @@ buildNode () {
         echo "[buildNode] Use entcore version from package.json ($BRANCH_NAME)"
         case `uname -s` in
           MINGW*)
-            docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links --legacy-peer-deps && npm update --legacy-peer-deps entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
+            docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links --legacy-peer-deps && npm update --legacy-peer-deps entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
             ;;
           *)
-            docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --legacy-peer-deps && npm update --legacy-peer-deps entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
+            docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --legacy-peer-deps && npm update --legacy-peer-deps entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
         esac
     else
         echo "[buildNode] Use entcore tag $BRANCH_NAME"
-        docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm rm --no-save entcore ode-ts-client ode-ngjs-front && npm install --no-save entcore@$BRANCH_NAME ode-ts-client@$BRANCH_NAME ode-ngjs-front@$BRANCH_NAME"
+        docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm rm --no-save entcore ode-ts-client ode-ngjs-front && npm install --no-save entcore@$BRANCH_NAME ode-ts-client@$BRANCH_NAME ode-ngjs-front@$BRANCH_NAME"
         case `uname -s` in
           MINGW*)
-            docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links --legacy-peer-deps && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
+            docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-bin-links --legacy-peer-deps && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
             ;;
           *)
-            docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --legacy-peer-deps && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
+            docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --legacy-peer-deps && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
         esac
     fi
   fi
-}
 
-buildAdminNode() {
+  # --- Build react-based frontends
+  local modules
+  if [ "$MODULE" = "" ]; then
+    modules=($(ls -d */ | cut -f1 -d'/'))
+  else 
+    modules=($MODULE)
+  fi
+  
+  for module in "${modules[@]}"; do
+    if [ -e ./"$module"/frontend ]; then
+      echo -e "[Build React] Build react frontend for module $module"
+      cd ./"$module"/frontend
+      if [ "$NO_DOCKER" = "true" ] ; then
+        ./build.sh --no-docker clean init build
+      else 
+        ./build.sh clean init build
+      fi
+      if [ $? -ne 0 ]; then
+        echo "Error while building React frontend for module $module"
+        exit 1
+      fi
+
+      # Create directory structure and copy frontend build files to backend
+      rm -rf ../backend/src/main/resources/public/*.js
+      rm -rf ../backend/src/main/resources/public/*.css
+      cp -R ./dist/* ../backend/src/main/resources/
+
+      # Create view directory and copy HTML files
+      mv ../backend/src/main/resources/*.html ../backend/src/main/resources/view
+
+      # Clean up
+      rm -rf ./dist
+      cd ../..
+    fi
+  done
+
+  # --- Build angular-based frontends
   if [ "$MODULE" = "" ] || [ "$MODULE" = "admin" ]; then
     case `uname -s` in
       MINGW*)
-        docker-compose run --rm -u "$USER_UID:$GROUP_GID" node16 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
+        docker compose run --rm $USER_OPTION node16 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
         ;;
       *)
-        docker-compose run --rm -u "$USER_UID:$GROUP_GID" node16 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
+        docker compose run --rm $USER_OPTION node16 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
     esac
   fi
 }
 
-install () {
-  docker compose run --rm maven mvn $MVN_OPTS install -DskipTests
+buildBackend () {
+  if [ "$NO_DOCKER" = "true" ] ; then
+    mvn $MVN_OPTS install -DskipTests
+  else
+    docker compose run --rm $USER_OPTION maven mvn $MVN_OPTS install -DskipTests
+  fi
 }
 
 test () {
@@ -149,17 +211,19 @@ localDep () {
       mkdir $dep.tar && mkdir $dep.tar/dist \
         && cp -R $PWD/../$dep/dist $PWD/../$dep/package.json $dep.tar
       tar cfzh $dep.tar.gz $dep.tar
-      docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-save $dep.tar.gz"
+      docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install --no-save $dep.tar.gz"
       rm -rf $dep.tar $dep.tar.gz
     fi
   done
 }
 
 watch () {
-  docker-compose run --rm \
-    -u "$USER_UID:$GROUP_GID" \
+  docker compose run --rm maven sh -c "mvn $MVN_OPTS help:evaluate -Dexpression=project.groupId -q -DforceStdout -pl $MODULE && echo -n '~$MODULE~' &&  mvn $MVN_OPTS help:evaluate -Dexpression=project.version -pl $MODULE -q -DforceStdout" > .version.properties
+  docker compose run --rm \
+    $USER_OPTION \
     -v $PWD/../$SPRINGBOARD:/home/node/$SPRINGBOARD \
     node sh -c "npx gulp watch-$MODULE $NODE_OPTION --springboard=../$SPRINGBOARD 2>/dev/null"
+  rm -f .version.properties
 }
 
 # ex: ./build.sh -m=workspace -s=paris watch
@@ -169,18 +233,18 @@ ngWatch () {
 }
 
 infra () {
-  docker-compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install /home/node/infra-front"
+  docker compose run --rm -u "$USER_UID:$GROUP_GID" node sh -c "npm install /home/node/infra-front"
 }
 
 publish() {
-  version=`docker-compose run --rm maven mvn $MVN_OPTS help:evaluate -Dexpression=project.version -q -DforceStdout`
+  version=`docker compose run --rm $USER_OPTION maven mvn $MVN_OPTS help:evaluate -Dexpression=project.version -q -DforceStdout`
   level=`echo $version | cut -d'-' -f3`
   case "$level" in
     *SNAPSHOT) export nexusRepository='snapshots' ;;
     *)         export nexusRepository='releases' ;;
   esac
 
-  docker compose run --rm  maven mvn -DrepositoryId=ode-$nexusRepository -DskipTests --settings /var/maven/.m2/settings.xml deploy
+  docker compose run --rm $USER_OPTION maven mvn -DrepositoryId=ode-$nexusRepository -DskipTests --settings /var/maven/.m2/settings.xml deploy
 }
 
 check_prefix_sh_file() {
@@ -252,6 +316,12 @@ itTests() {
   exit $exit_code
 }
 
+if [ "$#" -lt 1 ]; then
+  echo "Usage: $0 <clean|buildFrontend|buildBackend|install|watch>"
+  echo "Example: $0 clean install"
+  exit 1
+fi
+
 for param in "$@"
 do
   case $param in
@@ -263,14 +333,14 @@ do
     clean)
       clean
       ;;
-    buildAdminNode)
-      buildAdminNode
+    buildFrontend)
+      buildFrontend
       ;;
-    buildNode)
-      buildNode
+    buildBackend)
+      buildBackend
       ;;
     install)
-      buildNode && buildAdminNode && install
+      buildFrontend && buildBackend
       ;;
     localDep)
       localDep

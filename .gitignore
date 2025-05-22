@@ -37,11 +37,6 @@ node_modules
 auth/src/main/resources/view/*
 auth/src/main/resources/public/js
 auth/src/main/resources/public/temp
-conversation/src/main/resources/view/*
-conversation/src/main/resources/public/js
-conversation/src/main/resources/public/ts/entcore
-conversation/src/main/resources/public/temp
-conversation/src/main/resources/public/template/entcore
 workspace/src/main/resources/view/*
 workspace/src/main/resources/public/js
 workspace/src/main/resources/public/temp
@@ -86,6 +81,23 @@ admin/src/main/ts/.angular
 tests/src/test/resources/data/thumbnails/image.jpg
 admin/src/main/ts/.proxyRemoteConfig.js
 
+# Ignore some files in React-based frontends
+.pnpm-store
+**/pnpm-lock.yaml
+**/*.tsbuildinfo
+**/.nx
+**/frontend/.env*
+*.tsbuildinfo
+# Ignore package.json in "frontend" folders (where a template exists)
+**/frontend/package.json
+**/frontend/scripts/get-tokens/config.json
+
+# Ignore resources files in "backend/public" folders
+**/backend/**/resources/public/*.*
+# Ignore HTML files in "backend/view" folders
+**/backend/**/resources/view/*.html
+
 .env
 dependency-reduced-pom.xml
 .flattened-pom.xml
+.version.properties
