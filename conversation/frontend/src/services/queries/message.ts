@@ -10,10 +10,11 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useI18n, useSelectedFolder } from '~/hooks';
+import { useMessageIdAndAction } from '~/hooks/useMessageIdAndAction';
 import { Message, MessageBase } from '~/models';
 import {
   baseUrl,
-  DEFAULT_MESSAGE,
+  createDefaultMessage,
   folderQueryOptions,
   messageService,
   useFolderMessages,
@@ -87,7 +88,6 @@ export const useMessage = (messageId: string) => {
   const { folderId } = useSelectedFolder();
   const { updateFolderMessagesQueryData } = useFolderUtils();
   const { currentLanguage, user, userProfile } = useEdificeClient();
-  const { setMessageUpdated } = useAppActions();
 
   if (result.isSuccess && result.data) {
     let message: Message = result.data;
@@ -110,7 +110,7 @@ export const useMessage = (messageId: string) => {
       }
     } else {
       message = {
-        ...DEFAULT_MESSAGE,
+        ...createDefaultMessage(),
         language: currentLanguage,
         from: {
           id: user?.userId || '',
@@ -119,7 +119,6 @@ export const useMessage = (messageId: string) => {
         },
       };
     }
-    setMessageUpdated(message);
   }
   return result;
 };
@@ -395,6 +394,7 @@ export const useCreateOrUpdateDraft = () => {
   const messageUpdated = useMessageUpdated();
   const toast = useToast();
   const { t } = useI18n();
+  const { transferMessageId } = useMessageIdAndAction();
 
   return (withNotification = false) => {
     if (!messageUpdated) return;
@@ -438,12 +438,20 @@ export const useCreateOrUpdateDraft = () => {
       );
     } else {
       return createDraft.mutateAsync(
-        { payload },
         {
-          onSuccess: ({ id }) => {
+          payload,
+          inReplyToId: messageUpdated.parent_id,
+        },
+        {
+          onSuccess: async ({ id }) => {
+            if (transferMessageId) {
+              // Forward the message to the new draft (copy attachments)
+              await messageService.forward(id, transferMessageId);
+            }
             if (withNotification) {
               toast.success(t('message.draft.saved'));
             }
+
             // Update the URL to point to the draft message
             // We can't use useNavigate because it will lose editor focus if there is any
             window.history.replaceState(
@@ -471,6 +479,7 @@ export const useCreateDraft = () => {
   return useMutation({
     mutationFn: ({
       payload,
+      inReplyToId,
     }: {
       payload: {
         subject?: string;
@@ -479,7 +488,8 @@ export const useCreateDraft = () => {
         cc?: string[];
         cci?: string[];
       };
-    }) => messageService.createDraft(payload),
+      inReplyToId?: string;
+    }) => messageService.createDraft(payload, inReplyToId),
     onSuccess: ({ id }) => {
       if (!messageUpdated) return;
 
@@ -566,6 +576,7 @@ export const useSendDraft = () => {
     mutationFn: ({
       draftId,
       payload,
+      inReplyToId,
     }: {
       draftId: string;
       payload?: {
@@ -575,7 +586,8 @@ export const useSendDraft = () => {
         cc?: string[];
         cci?: string[];
       };
-    }) => messageService.send(draftId, payload),
+      inReplyToId?: string;
+    }) => messageService.send(draftId, payload, inReplyToId),
     onSuccess: (_response, { payload }) => {
       toast.success(t('message.sent'));
       updateFolderBadgeCountLocal('draft', -1);

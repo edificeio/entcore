@@ -2,7 +2,7 @@ import { odeServices } from '@edifice.io/client';
 import { NOOP } from '@edifice.io/utilities';
 
 import { Message, MessageSentResponse } from '~/models';
-import { DEFAULT_MESSAGE } from '../utils';
+import { createDefaultMessage } from '../utils';
 
 /** Utility function to map one or more IDs to an array of IDs */
 function asArray(ids: string | string[]): string[] {
@@ -39,7 +39,7 @@ export const createMessageService = (baseURL: string) => ({
     if (id) {
       return odeServices.http().get<Message>(`${baseURL}/api/messages/${id}`);
     } else {
-      return Promise.resolve({ ...DEFAULT_MESSAGE });
+      return Promise.resolve({ ...createDefaultMessage() });
     }
   },
 
@@ -121,10 +121,13 @@ export const createMessageService = (baseURL: string) => ({
       /** IDs of recipients in "copie-carbone-invisible" */
       cci?: string[];
     },
+    inReplyToId?: string,
   ) {
-    return odeServices
-      .http()
-      .post<MessageSentResponse>(`${baseURL}/send?id=${draftId}`, payload);
+    let postUrl = `${baseURL}/send?id=${draftId}`;
+    if (inReplyToId) {
+      postUrl += '&In-Reply-To=' + inReplyToId;
+    }
+    return odeServices.http().post<MessageSentResponse>(postUrl, payload);
   },
 
   recall(messageId: string) {
@@ -133,14 +136,23 @@ export const createMessageService = (baseURL: string) => ({
       .post<void>(`${baseURL}/api/messages/${messageId}/recall`);
   },
 
-  createDraft(payload: {
-    subject?: string;
-    body?: string;
-    to?: string[];
-    cc?: string[];
-    cci?: string[];
-  }) {
-    return odeServices.http().post<{ id: string }>(`${baseURL}/draft`, payload);
+  createDraft(
+    payload: {
+      subject?: string;
+      body?: string;
+      to?: string[];
+      cc?: string[];
+      cci?: string[];
+    },
+    inReplyToId?: string,
+  ) {
+    let postUrl = `${baseURL}/draft`;
+    if (inReplyToId) {
+      postUrl += '?In-Reply-To=' + inReplyToId;
+    }
+    return odeServices.http().post<{
+      id: string;
+    }>(postUrl, payload);
   },
 
   updateDraft(
@@ -154,5 +166,11 @@ export const createMessageService = (baseURL: string) => ({
     },
   ) {
     return putThenVoid(`${baseURL}/draft/${draftId}`, payload);
+  },
+
+  forward(messageId: string, originalMessageId: string) {
+    return putThenVoid(
+      `${baseURL}/message/${messageId}/forward/${originalMessageId}`,
+    );
   },
 });

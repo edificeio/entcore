@@ -1,54 +1,21 @@
-import { BookmarkWithDetails } from '@edifice.io/client';
-import { useCallback, useEffect, useState } from 'react';
-import { RecipientType } from '~/features/message-edit/components/RecipientListEdit';
-import { Message } from '~/models';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Recipients } from '~/models';
 import {
   type VisibleGroupData,
   type VisibleUserData,
 } from '~/services/api/userService';
 import { useBookmarkById, useSearchVisible } from '~/services/queries/user';
 
-export function useAdditionalRecipients(
-  recipientType: RecipientType,
-  userIds: string[],
-  groupIds: string[],
-  bookmarkIds: string[],
-) {
+export function useAdditionalRecipients() {
   const { getVisibleUserById, getVisibleGroupById } = useSearchVisible();
   const { getBookmarkById } = useBookmarkById();
+  const [searchParams] = useSearchParams();
 
-  const [recipients, setRecipients] = useState<
-    [VisibleUserData[], VisibleGroupData[], BookmarkWithDetails[]] | undefined
-  >();
-
-  const addRecipientsToMessage = useCallback(
-    (message: Message) => {
-      if (recipients) {
-        const users = new Map<string, VisibleUserData>(),
-          groups = new Map<string, VisibleGroupData>(),
-          addToUsers = (user: any) => users.set(user.id, user),
-          addToGroups = (group: any) => groups.set(group.id, group);
-
-        message[recipientType]?.users.forEach(addToUsers);
-        message[recipientType]?.groups.forEach(addToGroups);
-        recipients[0].forEach(addToUsers);
-        recipients[1].forEach(addToGroups);
-        recipients[2].forEach((bookmark) => {
-          bookmark.users.forEach(addToUsers);
-          bookmark.groups
-            .map((group) => ({ ...group, nbUsers: 0 }))
-            .forEach(addToGroups);
-        });
-        message[recipientType] = {
-          users: [...users.values()],
-          groups: [...groups.values()],
-        };
-      }
-      return message;
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [recipients],
-  );
+  const [recipients, setRecipients] = useState<Recipients | undefined>();
+  const userIds = searchParams.getAll('user');
+  const groupIds = searchParams.getAll('group');
+  const bookmarkIds = searchParams.getAll('favorite');
 
   // Get recipients data from their ID
   useEffect(() => {
@@ -76,13 +43,29 @@ export function useAdditionalRecipients(
 
     Promise.all([allUsersPromise, allGroupsPromise, allBookmarksPromise]).then(
       (recipients) => {
-        setRecipients(recipients);
+        const users = new Map<string, VisibleUserData>(),
+          groups = new Map<string, VisibleGroupData>(),
+          addToUsers = (user: any) => users.set(user.id, user),
+          addToGroups = (group: any) => groups.set(group.id, group);
+
+        recipients[0].forEach(addToUsers);
+        recipients[1].forEach(addToGroups);
+        recipients[2].forEach((bookmark) => {
+          bookmark.users.forEach(addToUsers);
+          bookmark.groups
+            .map((group) => ({ ...group, nbUsers: 0 }))
+            .forEach(addToGroups);
+        });
+        setRecipients({
+          users: [...users.values()],
+          groups: [...groups.values()],
+        });
       },
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return {
-    addRecipientsToMessage,
+    recipients,
   };
 }
