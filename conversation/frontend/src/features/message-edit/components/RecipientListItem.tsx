@@ -74,11 +74,14 @@ export function RecipientListItem({
             <strong className={classNameTextDisabled}>{recipientName}</strong>
             {(visible.nbUsers || !canBeUsedAsRecipient) && (
               <span className={'text-gray-700' + classNameTextDisabled}>
-                {visible.nbUsers &&
-                  canBeUsedAsRecipient &&
+                {canBeUsedAsRecipient &&
+                  visible.nbUsers &&
                   t('members', {
                     count: visible.nbUsers,
                   })}
+                {canBeUsedAsRecipient &&
+                  visible.structureName &&
+                  ` - ${visible.structureName}`}
                 {!canBeUsedAsRecipient &&
                   t('visible.usedIn.errorExplanation', {
                     recipientTypes: visible.usedIn.join(', '),
