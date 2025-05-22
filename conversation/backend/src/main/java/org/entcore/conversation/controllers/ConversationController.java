@@ -79,6 +79,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.Deflater;
 
@@ -1310,7 +1311,8 @@ public class ConversationController extends BaseController {
 		});
 	}
 
-	//Move messages into a system folder
+	// Move messages into a system folder
+	@Deprecated // Use POST method instead, who take JSON list
 	@Put("move/root")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(MessageUserFilter.class)
@@ -1333,6 +1335,32 @@ public class ConversationController extends BaseController {
 		};
 
 		UserUtils.getUserInfos(eb, request, userInfosHandler);
+	}
+
+	// Move messages into a system folder
+	@Post("move/root")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(MultipleMessageUserFilter.class)
+	public void rootMoveList(final HttpServerRequest request) {
+		bodyToJson(request, body -> {
+			final JsonArray messageIds = body.getJsonArray("id");
+			if(messageIds == null || messageIds.size() == 0){
+				badRequest(request);
+				return;
+			}
+
+			UserUtils.getUserInfos(eb, request, user -> {
+				if(user == null){
+					unauthorized(request);
+					return;
+				}
+
+				List<String> messageIdsList = messageIds.stream()
+					.map(Object::toString)
+					.collect(Collectors.toList());
+				conversationService.backToSystemFolder(messageIdsList, user, defaultResponseHandler(request));
+			});
+		});
 	}
 
 	//Trash a folder
