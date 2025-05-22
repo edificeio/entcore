@@ -10,34 +10,40 @@ import org.slf4j.LoggerFactory;
 import org.entcore.broker.api.dto.directory.*;
 import org.entcore.broker.proxy.DirectoryBrokerListener;
 import org.entcore.directory.services.GroupService;
+import org.entcore.directory.services.UserService;
 import org.entcore.directory.services.impl.DefaultGroupService;
 
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Implementation of the DirectoryBrokerListener interface.
- * This class handles group management operations received through the message broker.
+ * This class handles directory operations received through the message broker.
  */
 public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
     
     private static final Logger log = LoggerFactory.getLogger(DirectoryBrokerListenerImpl.class);
     private final GroupService groupService;
+    private final UserService userService;
 
     /**
      * Constructor for DirectoryBrokerListenerImpl.
      *
      * @param vertx The Vertx instance
      */
-    public DirectoryBrokerListenerImpl(Vertx vertx) {
-        this(new DefaultGroupService(vertx.eventBus()));
+    public DirectoryBrokerListenerImpl(Vertx vertx, UserService userService) {
+        this(new DefaultGroupService(vertx.eventBus()), userService);
     }
-
+    
     /**
      * Constructor for DirectoryBrokerListenerImpl.
      *
      * @param groupService The group service to handle group operations
+     * @param userService The user service to handle user operations
      */
-    public DirectoryBrokerListenerImpl(GroupService groupService) {
+    public DirectoryBrokerListenerImpl(GroupService groupService, UserService userService) {
         this.groupService = groupService;
+        this.userService = userService;
     }
 
     /**
@@ -249,6 +255,46 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
             promise.fail(error);
         });
 
+        return promise.future();
+    }
+
+    /**
+     * Retrieves display names for multiple users by their ENT IDs.
+     *
+     * @param request The request containing a list of user IDs
+     * @return Response with a map of user IDs to their display names
+     */
+    @Override
+    public Future<GetUserDisplayNamesResponseDTO> getUserDisplayNames(GetUserDisplayNamesRequestDTO request) {
+        final Promise<GetUserDisplayNamesResponseDTO> promise = Promise.promise();
+        
+        // Check if the request is valid
+        if (request == null || !request.isValid()) {
+            log.error("Invalid request for getUserDisplayNames: {}", request);
+            promise.fail("request.parameters.invalid");
+            return promise.future();
+        }
+        
+        // Convert list of user IDs to JsonArray
+        final JsonArray userIdsArray = new JsonArray(request.getUserIds());
+        
+        // Use the UserService to get display names
+        userService.getUsersDisplayNames(userIdsArray)
+            .onSuccess(result -> {
+                // Convert JsonObject to Map<String, String>
+                final Map<String, String> displayNamesMap = new HashMap<>();
+                for (String userId : result.fieldNames()) {
+                    displayNamesMap.put(userId, result.getString(userId));
+                }
+                
+                // Return response DTO with the map
+                promise.complete(new GetUserDisplayNamesResponseDTO(displayNamesMap));
+            })
+            .onFailure(error -> {
+                log.error("Error retrieving user display names: ", error);
+                promise.fail(error);
+            });
+        
         return promise.future();
     }
 }
