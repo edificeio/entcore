@@ -57,7 +57,7 @@ export function useInitMessage({
    * - For replies: includes quoted original message with sender info and timestamp
    * - Handles CCI recipients only for reply-all when user was original sender
    */
-  const message = useMemo(() => {
+  const message = useMemo<Message | undefined>(() => {
     // If the configuration for the signature is pending, we return an empty message
     if (getSignatureIsPending || !messageOrigin) {
       return undefined;
@@ -67,7 +67,6 @@ export function useInitMessage({
       // We are in case of a read message
       return messageOrigin;
     }
-
     // We are in the case of a new message or a reply, replayAll or transfer
     const messageTmp: Message = {
       ...createDefaultMessage(signature),
@@ -98,24 +97,12 @@ export function useInitMessage({
     };
 
     let body = `${signature}`;
-    if (!messageOrigin.id) {
-      // We are in the case of a new message
-      if (
-        recipientsToAddToMessage?.groups.length ||
-        recipientsToAddToMessage?.users.length
-      ) {
-        messageTmp.to = {
-          users: [...(recipientsToAddToMessage?.users || [])],
-          groups: [...(recipientsToAddToMessage?.groups || [])],
-        };
-      }
-      return messageTmp;
-    }
-
-    if (action === 'transfer') {
-      body =
-        body +
-        `<div>
+    if (messageOrigin.id && action) {
+      if (action === 'transfer') {
+        // We are in the case of a transfer
+        body =
+          body +
+          `<div>
             ${signatureData?.useSignature ? `<p></p>` : ''}
             <p><span style="font-size: 14px; font-weight:400;">--------- ${t('transfer.title')} ---------</span></p>
             <p><span style="font-size: 14px; font-weight:400;">${t('transfer.from') + messageOrigin.from?.displayName}</span></p>
@@ -125,16 +112,17 @@ export function useInitMessage({
             ${messageOrigin.cc.users.length || messageOrigin.cc.groups.length ? '<p><span style="font-size: 14px; font-weight:400;">' + t('transfer.cc') + displayRecipient(messageOrigin.cc) + '</span></p>' : ''}
             ${messageOrigin.body}
         </div>`;
-      messageTmp.to.users = [];
-      messageTmp.to.groups = [];
-      messageTmp.cc.users = [];
-      messageTmp.cc.groups = [];
-      messageTmp.cci = undefined;
-      messageTmp.attachments = messageOrigin.attachments;
-    } else {
-      body =
-        body +
-        `<div class="conversation-history">
+        messageTmp.to.users = [];
+        messageTmp.to.groups = [];
+        messageTmp.cc.users = [];
+        messageTmp.cc.groups = [];
+        messageTmp.cci = undefined;
+        messageTmp.attachments = messageOrigin.attachments;
+      } else {
+        // We are in the case of a reply or replyAll
+        body =
+          body +
+          `<div class="conversation-history">
           <p><span style="font-size: 14px; font-weight:400;"><em>${t('from') + ' ' + messageOrigin.from?.displayName + (messageOrigin.date ? ', ' + common_t('date.format.pretty', { date: formatDate(messageOrigin.date, 'LL'), time: formatDate(messageOrigin.date, 'LT') }) : '')}</em></span></p>
           <p><span style="font-size: 14px; font-weight:400; color: #909090;"><em>${t('transfer.to') + displayRecipient(messageOrigin.to)}</em></span></p>
           ${messageOrigin.cc.users.length || messageOrigin.cc.groups.length ? '<p><span style="font-size: 14px; font-weight:400;color: #909090;"><em>' + t('transfer.cc') + displayRecipient(messageOrigin.cc) + '</em></span></p>' : ''}
@@ -143,41 +131,42 @@ export function useInitMessage({
           </div>
         </div>`;
 
-      switch (action) {
-        case 'reply':
-          messageTmp.to.users = [messageOrigin.from];
-          messageTmp.to.groups = [];
-          messageTmp.cc.users = [];
-          messageTmp.cc.groups = [];
-          messageTmp.cci = undefined;
-          break;
-        case 'replyAll':
-          messageTmp.to = {
-            ...messageOrigin.to,
-            users: [
-              ...messageOrigin.to.users.filter(
-                (user: User) => user.id !== messageOrigin.from.id,
-              ),
-              messageOrigin.from,
-            ],
-          };
-          messageTmp.cc = { ...messageOrigin.cc };
-          if (messageOrigin.from.id === user?.userId && messageOrigin.cci) {
-            messageTmp.cci = { ...messageOrigin.cci };
-          }
-          break;
+        switch (action) {
+          case 'reply':
+            messageTmp.to.users = [messageOrigin.from];
+            messageTmp.to.groups = [];
+            messageTmp.cc.users = [];
+            messageTmp.cc.groups = [];
+            messageTmp.cci = undefined;
+            break;
+          case 'replyAll':
+            messageTmp.to = {
+              ...messageOrigin.to,
+              users: [
+                ...messageOrigin.to.users.filter(
+                  (user: User) => user.id !== messageOrigin.from.id,
+                ),
+                messageOrigin.from,
+              ],
+            };
+            messageTmp.cc = { ...messageOrigin.cc };
+            if (messageOrigin.from.id === user?.userId && messageOrigin.cci) {
+              messageTmp.cci = { ...messageOrigin.cci };
+            }
+            break;
+        }
       }
-    }
 
-    messageTmp.body = body;
+      messageTmp.body = body;
 
-    const prefixSubject =
-      action === 'transfer'
-        ? t('message.transfer.subject')
-        : t('message.reply.subject');
+      const prefixSubject =
+        action === 'transfer'
+          ? t('message.transfer.subject')
+          : t('message.reply.subject');
 
-    if (!messageOrigin.subject.startsWith(prefixSubject)) {
-      messageTmp.subject = `${prefixSubject}${messageOrigin.subject}`;
+      if (!messageOrigin.subject.startsWith(prefixSubject)) {
+        messageTmp.subject = `${prefixSubject}${messageOrigin.subject}`;
+      }
     }
 
     if (recipientsToAddToMessage) {
@@ -196,6 +185,7 @@ export function useInitMessage({
     }
 
     return messageTmp;
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     getSignatureIsPending,
@@ -207,12 +197,16 @@ export function useInitMessage({
 
   useLayoutEffect(() => {
     if (message) {
-      setMessage({ ...message });
+      setMessage({
+        ...message,
+      });
     }
 
     return () => {
       setMessage(createDefaultMessage(signature));
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [message, getSignatureIsPending, signatureData]);
+  }, [message, signature]);
+
+  return message;
 }

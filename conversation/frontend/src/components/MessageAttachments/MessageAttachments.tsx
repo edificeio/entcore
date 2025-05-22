@@ -30,6 +30,7 @@ export function MessageAttachments({
     useState<Attachment[] | undefined>(undefined);
 
   const attachments = message.attachments;
+  console.log('attachments', attachments);
 
   if (!editMode && !attachments.length) return null;
 
