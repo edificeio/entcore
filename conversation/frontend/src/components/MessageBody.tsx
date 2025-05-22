@@ -15,7 +15,6 @@ import illuRecall from '~/assets/illu-messageRecalled.svg';
 import { MessageAttachments } from '~/components/MessageAttachments/MessageAttachments';
 import { useI18n } from '~/hooks';
 import { Message } from '~/models';
-import { useMessageUpdated } from '~/store';
 import './MessageBody.css';
 import OriginalFormatModal from './OriginalFormatModal';
 
@@ -36,7 +35,6 @@ export function MessageBody({
   const editorRef = useRef<EditorRef>(null);
   const extensions = [ConversationHistoryNodeView(ConversationHistoryRenderer)];
   const [isOriginalFormatOpen, setOriginalFormatOpen] = useState(false);
-  const messageUpdated = useMessageUpdated();
 
   const handleContentChange = ({ editor }: { editor: any }) => {
     if (!editMode) return;
@@ -65,10 +63,7 @@ export function MessageBody({
           extensions={extensions}
           onContentChange={handleContentChange}
         />
-        <MessageAttachments
-          message={editMode && messageUpdated ? messageUpdated : message}
-          editMode={editMode}
-        />
+        <MessageAttachments message={message} editMode={editMode} />
       </section>
 
       {message.original_format_exists && !editMode && (

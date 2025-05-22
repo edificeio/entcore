@@ -4,16 +4,10 @@ import { useI18n } from '~/hooks';
 import { Message } from '~/models';
 import './index.css';
 
-export interface MessageHeaderProps {
-  message: Message;
-}
-
-export function MessageHeader({ message }: MessageHeaderProps) {
+export function MessageHeader({ message }: { message: Message }) {
   const { t } = useI18n();
   const { formatDate } = useDate();
   const { getAvatarURL, getUserbookURL } = useDirectory();
-
-  const { subject, from, date } = message;
 
   return (
     <header>
@@ -22,27 +16,27 @@ export function MessageHeader({ message }: MessageHeaderProps) {
           <h4>
             {message.state === 'RECALL'
               ? t('conversation.recall.mail.subject.details')
-              : subject}
+              : message.subject}
           </h4>
           <div className="d-flex align-items-center mt-16 gap-12 small">
             <Avatar
               alt={t('author.avatar')}
               size="sm"
-              src={getAvatarURL(from!.id, 'user')}
+              src={getAvatarURL(message.from!.id, 'user')}
               variant="circle"
               className="align-self-start mt-4"
             />
             <div className="d-flex flex-fill flex-column overflow-hidden">
               <div className="d-flex flex-wrap column-gap-8">
                 <a
-                  href={getUserbookURL(from.id, 'user')}
+                  href={getUserbookURL(message.from.id, 'user')}
                   className="fw-bold text-blue sender-link"
                 >
-                  {from.displayName}
+                  {message.from.displayName}
                 </a>
-                {date && (
+                {message.date && (
                   <span className="text-gray-700 fst-italic">
-                    {formatDate(date, t('date.format.message'))}
+                    {formatDate(message.date, t('date.format.message'))}
                   </span>
                 )}
               </div>
