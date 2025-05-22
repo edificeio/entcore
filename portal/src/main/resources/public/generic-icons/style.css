@@ -1,9 +1,9 @@
 @font-face {
   font-family: 'generic-icons';
   src:
-    url('fonts/generic-icons.ttf?px5f2n') format('truetype'),
-    url('fonts/generic-icons.woff?px5f2n') format('woff'),
-    url('fonts/generic-icons.svg?px5f2n#generic-icons') format('svg');
+    url('fonts/generic-icons.ttf?jsr39h') format('truetype'),
+    url('fonts/generic-icons.woff?jsr39h') format('woff'),
+    url('fonts/generic-icons.svg?jsr39h#generic-icons') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -24,6 +24,10 @@ i {
   -moz-osx-font-smoothing: grayscale;
 }
 
+.cantine:before {
+  content: "\e96c";
+  color: #46bfaf;
+}
 .nabook:before {
   content: "\e96b";
 }
