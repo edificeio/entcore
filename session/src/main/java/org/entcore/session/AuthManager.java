@@ -97,7 +97,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		}
 
 		final String address = getOptionalStringConfig("address", "wse.session");
-		eb.localConsumer(address, this);
+		eb.consumer(address, this);
 	}
 
 	@Override

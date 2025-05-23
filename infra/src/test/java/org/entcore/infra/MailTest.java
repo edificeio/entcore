@@ -61,7 +61,7 @@ public class MailTest {
     //sender = new PostgresEmailSender(null, test.vertx(), moduleConfig, config, 0);
     helper = PostgresEmailHelper.create(test.vertx(), postgresql);
     test.vertx().sharedData().getLocalMap("server").put("event-store", config.toString());
-    test.vertx().eventBus().localConsumer(PostgresEmailHelper.MAILER_ADDRESS, new MailController(test.vertx(), config));
+    test.vertx().eventBus().consumer(PostgresEmailHelper.MAILER_ADDRESS, new MailController(test.vertx(), config));
   }
 
   PostgresEmailBuilder.EmailBuilder mail() {
