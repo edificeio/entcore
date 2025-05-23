@@ -9,7 +9,7 @@ import {
 } from '@edifice.io/react';
 import { IconFolder } from '@edifice.io/react/icons';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useI18n } from '~/hooks';
+import { useI18n } from '~/hooks/useI18n';
 import { Folder } from '~/models';
 import { buildTree, searchFolder } from '~/services';
 import { useAppActions } from '~/store';

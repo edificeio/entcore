@@ -15,7 +15,7 @@ import {
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { useSelectedFolder } from '~/hooks';
+import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { useFolderMessages } from '~/services';
 import { useAppActions } from '~/store/actions';
 import { MessageItem } from './components/MessageItem';
@@ -24,6 +24,7 @@ import useToolbarVisibility from './hooks/useToolbarVisibility';
 
 export function MessageList() {
   const { folderId } = useSelectedFolder();
+  console.log('===folderId:', folderId);
   const [searchParams] = useSearchParams();
 
   const { appCode } = useEdificeClient();
@@ -85,14 +86,12 @@ export function MessageList() {
 
   const toolbarItemsData = [
     {
-      name: 'read',
       visibility: showMarkAsReadMessages,
       label: t('tag.read'),
       icon: <IconReadMail />,
       onClick: handleMarkAsReadClick,
     },
     {
-      name: 'unread',
       visibility: showMarkAsUnReadMessages,
       label: t('tag.unread'),
       icon: <IconUnreadMail />,
@@ -100,42 +99,36 @@ export function MessageList() {
     },
 
     {
-      name: 'restore',
       visibility: showTrashActions,
       label: t('restore'),
       icon: <IconRestore />,
       onClick: handleRestore,
     },
     {
-      name: 'move',
       visibility: showMoveToFolder,
       label: t('move.first.caps'),
       icon: <IconFolderMove />,
       onClick: handleMoveToFolder,
     },
     {
-      name: 'delete-definitely',
       visibility: showTrashActions,
       label: t('delete.definitely'),
       icon: <IconDelete />,
       onClick: handleDelete,
     },
     {
-      name: 'remove-from-folder',
       visibility: showFolderActions,
       label: t('remove.from.folder'),
       icon: <IconFolderDelete />,
       onClick: handleRemoveFromFolder,
     },
     {
-      name: 'empty-trash',
       visibility: showEmptyTrash,
       label: t('empty.trash'),
       icon: <IconDelete />,
       onClick: handleEmptyTrash,
     },
     {
-      name: 'delete',
       visibility: showMoveToTrash,
       label: t('delete'),
       icon: <IconDelete />,
@@ -144,9 +137,9 @@ export function MessageList() {
   ];
 
   const toolbar: ToolbarButtonItem[] = toolbarItemsData.map(
-    ({ name, label, visibility, icon, onClick }) => ({
+    ({ label, visibility, icon, onClick }) => ({
       type: 'button',
-      name,
+      name: label,
       visibility,
       tooltip: label,
       props: {
