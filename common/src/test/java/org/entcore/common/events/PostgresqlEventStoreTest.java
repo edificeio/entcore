@@ -86,7 +86,7 @@ public class PostgresqlEventStoreTest {
         final LocalMap<Object, Object> serverMap = vertx.sharedData().getLocalMap("server");
         serverMap.put("event-store", eventStoreTestConfigJson.encode());
         this.vertx = vertx;
-        vertx.eventBus().localConsumer("event.blacklist", ar -> {
+        vertx.eventBus().consumer("event.blacklist", ar -> {
             ar.reply(new JsonArray());
         });
     }

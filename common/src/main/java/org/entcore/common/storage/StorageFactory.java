@@ -84,7 +84,7 @@ public class StorageFactory {
 
 		if (applicationStorage != null) {
 			applicationStorage.setVertx(vertx);
-			vertx.eventBus().localConsumer("storage", applicationStorage);
+			vertx.eventBus().consumer("storage", applicationStorage);
 		}
 
 		if(config == null) {

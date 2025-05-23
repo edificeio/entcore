@@ -21,16 +21,17 @@ package org.entcore.infra;
 
 import fr.wseduc.cron.CronTrigger;
 import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.filter.SecurityHandler;
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.metrics.MetricsOptions;
 import io.vertx.core.shareddata.AsyncMap;
-import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.notification.TimelineHelper;
@@ -52,7 +53,10 @@ import io.vertx.core.json.JsonObject;
 
 import java.io.File;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
@@ -60,10 +64,22 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 public class Starter extends BaseServer {
 
 	@Override
-	public void start(Promise<Void> startPromise) {
+	public void start(Promise<Void> startPromise) throws Exception {
+		final Promise<Void> initInfraPromise = Promise.promise();
+		super.start(initInfraPromise);
+		initInfraPromise.future().onSuccess(x -> {
+			try {
+				initInfra();
+			} catch (Exception e) {
+				log.error("Error when start Infra", e);
+			}
+		}).onFailure(ex -> log.error("Error when start Infra server super classes", ex));
+	}
+
+	public void initInfra() {
 		try {
-			super.start(startPromise);
-			final LocalMap<Object, Object> serverMap = vertx.sharedData().getLocalMap("server");
+			log.info(config.encodePrettily());
+			final Map<String, Object> serverMap = new HashMap<>();
 			serverMap.put("signKey", config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK" + Math.random()));
 
 			serverMap.put("sameSiteValue", config.getString("sameSiteValue", "Strict"));
@@ -79,9 +95,8 @@ public class Starter extends BaseServer {
 			}
 			serverMap.put("encoding-available", safeEncondigs.encode());
 			//
-			CookieHelper.getInstance().init((String) vertx
-					.sharedData().getLocalMap("server").get("signKey"),
-					(String) vertx.sharedData().getLocalMap("server").get("sameSiteValue"),
+			CookieHelper.getInstance().init((String) serverMap.get("signKey"),
+					(String) serverMap.get("sameSiteValue"),
 					log);
 
 			JsonObject swift = config.getJsonObject("swift");
@@ -174,20 +189,19 @@ public class Starter extends BaseServer {
 				serverMap.put(field, sharedConf.getValue(field));
 			}
 
-			vertx.sharedData().getLocalMap("skins").putAll(config.getJsonObject("skins", new JsonObject()).getMap());
+			serverMap.put("skins", config.getJsonObject("skins", new JsonObject()));
 
 			log.info("config skin-levels = " + config.getJsonObject("skin-levels", new JsonObject()));
+			serverMap.put("skin-levels", config.getJsonObject("skin-levels", new JsonObject()));
 
-			vertx.sharedData().getLocalMap("skin-levels").putAll(config.getJsonObject("skin-levels", new JsonObject()).getMap());
+			SharedDataHelper.getInstance().getAsyncMap("server").onSuccess(asyncServerMap -> {
+				final List<Future<Void>> futures = new ArrayList<>();
+				serverMap.entrySet().stream().forEach(entry -> futures.add(asyncServerMap.put(entry.getKey(), entry.getValue())));
+				Future.all(futures).onFailure(ex -> log.error("Error putting values in config server map", ex));
+			}).onFailure(ex -> log.error("Error getting server map", ex));
 
-			log.info("localMap skin-levels = " + vertx.sharedData().getLocalMap("skin-levels"));
-
-			final MessageConsumer<JsonObject> messageConsumer = vertx.eventBus().localConsumer("app-registry.loaded");
+			final MessageConsumer<JsonObject> messageConsumer = vertx.eventBus().consumer("app-registry.loaded");
 			messageConsumer.handler(message -> {
-//				JsonSchemaValidator validator = JsonSchemaValidator.getInstance();
-//				validator.setEventBus(getEventBus(vertx));
-//				validator.setAddress(node + "json.schema.validator");
-//				validator.loadJsonSchema(getPathPrefix(config), vertx);
 				registerGlobalWidgets(config.getString("widgets-path", config.getString("assets-path", ".") + "/assets/widgets"));
 				loadInvalidEmails();
 				messageConsumer.unregister();
@@ -232,18 +246,13 @@ public class Starter extends BaseServer {
 			);
 			vertx.setPeriodic(checkMonitoringEvents.getLong("period", 300000L), monitoringEventsChecker);
 		}
-		final boolean metricsActivated;
 		if(config.getJsonObject("metricsOptions") == null) {
-			final String metricsOptions = (String) vertx.sharedData().getLocalMap("server").get("metricsOptions");
-			if(metricsOptions == null){
-				metricsActivated = false;
-			}else{
-				metricsActivated = new MetricsOptions(new JsonObject(metricsOptions)).isEnabled();
-			}
-		} else {
-			metricsActivated = new MetricsOptions(config.getJsonObject("metricsOptions")).isEnabled();
-		}
-		if(metricsActivated) {
+			SharedDataHelper.getInstance().<String, String>get("server", "metricsOptions").onSuccess(metricsOptions -> {
+				if(isNotEmpty(metricsOptions) && new MetricsOptions(new JsonObject(metricsOptions)).isEnabled()){
+					new MicrometerInfraMetricsRecorder(vertx);
+				}
+			}).onFailure(ex -> log.error("Error getting metrics options", ex));
+		} else if (new MetricsOptions(config.getJsonObject("metricsOptions")).isEnabled()) {
 			new MicrometerInfraMetricsRecorder(vertx);
 		}
 	}

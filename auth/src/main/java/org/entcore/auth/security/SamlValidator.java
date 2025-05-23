@@ -163,7 +163,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 				loadSignatureTrustEngine(f);
 			}
 			loadPrivateKey(config.getString("saml-private-key"));
-			vertx.eventBus().localConsumer("saml", this);
+			vertx.eventBus().consumer("saml", this);
 		} catch (ConfigurationException | MetadataProviderException | InvalidKeySpecException
 				| NoSuchAlgorithmException e) {
 			logger.error("Error loading SamlValidator.", e);

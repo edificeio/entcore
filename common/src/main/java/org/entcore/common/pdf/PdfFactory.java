@@ -21,39 +21,44 @@ package org.entcore.common.pdf;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.shareddata.LocalMap;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import fr.wseduc.webutils.collections.SharedDataHelper;
+
+import java.net.URISyntaxException;
+
 import org.entcore.common.pdf.metrics.PdfMetricsRecorderFactory;
 
 public class PdfFactory {
 
-	private final Vertx vertx;
-	private JsonObject node;
+	private static final Logger log = LoggerFactory.getLogger(PdfFactory.class);
+	private final PdfGenerator pdfGenerator;
 
 	public PdfFactory(Vertx vertx) {
 		this(vertx, null);
 	}
 
 	public PdfFactory(Vertx vertx, JsonObject config) {
-		this.vertx = vertx;
-		LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
-		String s = (String) server.get("node-pdf-generator");
-		if (s != null) {
-			this.node = new JsonObject(s);
-		}
+		this.pdfGenerator = new NodePdfClient();
+		SharedDataHelper.getInstance().<String, String>get("server", "node-pdf-generator").onSuccess(nodePdfConfig -> {
+			JsonObject node = null;
+			if (nodePdfConfig != null) {
+				node = new JsonObject(nodePdfConfig);
+			}
 
-		if (config != null && config.getJsonObject("node-pdf-generator") != null) {
-			this.node = config.getJsonObject("node-pdf-generator");
-		}
-		PdfMetricsRecorderFactory.init(vertx, config);
+			if (config != null && config.getJsonObject("node-pdf-generator") != null) {
+				node = config.getJsonObject("node-pdf-generator");
+			}
+			try {
+				((NodePdfClient) pdfGenerator).init(vertx, node);
+			} catch (URISyntaxException e) {
+				log.error("Error when init node pdf generator client", e);
+			}
+			PdfMetricsRecorderFactory.init(vertx, config);
+		}).onFailure(ex -> log.error("Error getting node-pdf-generator config in server map", ex));
 	}
 
-	public PdfGenerator getPdfGenerator() throws Exception {
-		PdfGenerator pdfGenerator = null;
-		if (node != null) {
-			pdfGenerator = new NodePdfClient(vertx, node);
-		} else {
-			throw new PdfException("no.pdf.generator.found");
-		}
+	public PdfGenerator getPdfGenerator() {
 		return pdfGenerator;
 	}
 

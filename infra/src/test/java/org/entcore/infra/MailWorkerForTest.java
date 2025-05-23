@@ -22,7 +22,7 @@ public class MailWorkerForTest extends BusModBase implements Handler<Message<Jso
     @Override
     public void start() {
         super.start();
-        vertx.eventBus().localConsumer(MailWorkerForTest.class.getSimpleName(), this);
+        vertx.eventBus().consumer(MailWorkerForTest.class.getSimpleName(), this);
     }
 
     @Override

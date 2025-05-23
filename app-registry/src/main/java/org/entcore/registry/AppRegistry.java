@@ -31,7 +31,18 @@ public class AppRegistry extends BaseServer {
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
-		super.start(startPromise);
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future().onSuccess(x -> {
+			try {
+				initAppRegistry(startPromise);
+			} catch (Exception e) {
+				log.error("Error when start AppRegistry", e);
+			}
+		}).onFailure(ex -> log.error("Error when start AppRegistry server super classes", ex));
+	}
+
+	public void initAppRegistry(final Promise<Void> startPromise) throws Exception {
 		addController(new AppRegistryController());
 		addController(new ExternalApplicationController(config.getInteger("massAuthorizeBatchSize", 1000)));
 		addController(new WidgetController());
@@ -42,6 +53,7 @@ public class AppRegistry extends BaseServer {
 		setDefaultResourceFilter(new AppRegistryFilter());
 		new AppRegistryEventsHandler(vertx, new NopAppRegistryEventService());
 		vertx.eventBus().publish("app-registry.loaded", new JsonObject());
+		startPromise.tryComplete();
 	}
 
 }

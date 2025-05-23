@@ -30,6 +30,7 @@ import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.http.BaseController;
 
 import fr.wseduc.webutils.http.Renders;
@@ -73,7 +74,9 @@ public class AppRegistryController extends BaseController {
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 					 Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
-		this.skinLevels = new JsonObject(vertx.sharedData().getLocalMap("skin-levels"));
+		SharedDataHelper.getInstance().<String, JsonObject>get("server", "skin-levels")
+			.onSuccess(skinLevels -> AppRegistryController.this.skinLevels = skinLevels)
+			.onFailure(ex -> log.error("Error getting skin-levels", ex));
 	}
 
 	@Get("/admin-console")

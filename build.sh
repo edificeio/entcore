@@ -269,6 +269,9 @@ do
     buildNode)
       buildNode
       ;;
+    buildMvn)
+      install
+      ;;
     install)
       buildNode && buildAdminNode && install
       ;;

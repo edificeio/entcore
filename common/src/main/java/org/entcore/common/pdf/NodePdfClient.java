@@ -47,13 +47,13 @@ import static fr.wseduc.webutils.Utils.isEmpty;
 public class NodePdfClient implements PdfGenerator {
 
 	private static final Logger log = LoggerFactory.getLogger(NodePdfClient.class);
-	private final Vertx vertx;
-	private final HttpClient client;
-	private final String authHeader;
-	private final String clientId;
-	private final PdfMetricsRecorder metricsRecorder;
+	private Vertx vertx;
+	private HttpClient client;
+	private String authHeader;
+	private String clientId;
+	private PdfMetricsRecorder metricsRecorder;
 
-	public NodePdfClient(Vertx vertx, JsonObject conf) throws URISyntaxException {
+	public void init(Vertx vertx, JsonObject conf) throws URISyntaxException {
 		this.vertx = vertx;
 		this.authHeader = "Basic " + conf.getString("auth");
 		this.clientId = conf.getString("pdf-connector-id");

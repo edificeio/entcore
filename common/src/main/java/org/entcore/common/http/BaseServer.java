@@ -22,6 +22,7 @@ package org.entcore.common.http;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.data.FileResolver;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
@@ -37,7 +38,6 @@ import io.vertx.core.Promise;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.cache.CacheFilter;
 import org.entcore.common.cache.CacheService;
-import org.entcore.common.cache.RedisCacheService;
 import org.entcore.common.controller.ConfController;
 import org.entcore.common.controller.RightsController;
 import org.entcore.common.datavalidation.utils.UserValidationFactory;
@@ -68,6 +68,8 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
+
 import java.io.File;
 import java.util.*;
 
@@ -92,8 +94,32 @@ public abstract class BaseServer extends Server {
 		if (resourceProvider == null) {
 			setResourceProvider(new ResourceProviderFilter());
 		}
-		super.start(startPromise);
+		final Promise<Void> baseServerPromise = Promise.promise();
+		super.start(baseServerPromise);
+		baseServerPromise.future().onSuccess(x -> {
+			SharedDataHelper.getInstance().<String, Object>getMulti("server",
+				"node", "contentSecurityPolicy", "cache-filter", "skins", "oauthCache",
+				"neo4jConfig", "elasticsearchConfig", "redisConfig"
+			).onSuccess(baseServerMap -> {
+				try {
+					initBaseServer(startPromise, baseServerMap);
+				} catch (Exception e) {
+					log.error("Error when initialing BaseServer on module " + moduleName, e);
+					if (vertx.isClustered()) {
+						try {
+							Promise<Void> stopPromise = Promise.promise();
+							super.stop(stopPromise);
+							stopPromise.future().onComplete(r -> vertx.close());
+						} catch (Exception e1) {
+							log.error("Error when stop module " + moduleName, e1);
+						}
+					}
+				}
+			}).onFailure(ex -> log.error("Error when load server map values in BaseServer.", ex));
+		}).onFailure(ex -> log.error("Error when initialing Server on module " + moduleName, ex));
+	}
 
+	public void initBaseServer(final Promise<Void> startPromise, final Map<String, Object> baseServerMap) throws Exception {
 		accessLogger = new EntAccessLogger(getEventBus(vertx));
 
 		EventStoreFactory eventStoreFactory = EventStoreFactory.getFactory();
@@ -101,11 +127,11 @@ public abstract class BaseServer extends Server {
 
 		Mfa.Factory.getFactory().init(vertx, config);
 
-		initFilters();
+		initFilters(baseServerMap);
 
-		String node = (String) vertx.sharedData().getLocalMap("server").get("node");
+		final String node = (String) baseServerMap.get("node");
 
-		contentSecurityPolicy = (String) vertx.sharedData().getLocalMap("server").get("contentSecurityPolicy");
+		contentSecurityPolicy = (String) baseServerMap.get("contentSecurityPolicy");
 
 		repositoryHandler = new RepositoryHandler(getEventBus(vertx));
 		searchingHandler = new SearchingHandler(getEventBus(vertx));
@@ -114,7 +140,7 @@ public abstract class BaseServer extends Server {
 		Config.getInstance().setConfig(config);
 
 		if (node != null) {
-			initModulesHelpers(node);
+			initModulesHelpers(node, baseServerMap);
 		}
 
 		if (config.getBoolean("csrf-token", false)) {
@@ -130,8 +156,7 @@ public abstract class BaseServer extends Server {
 		UserValidationFactory userValidationFactory = UserValidationFactory.getFactory();
 		userValidationFactory.init(vertx, config);
 
-		final LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
-		final Boolean cacheEnabled = (Boolean) server.getOrDefault("cache-filter", false);
+		final Boolean cacheEnabled = (Boolean) baseServerMap.getOrDefault("cache-filter", false);
 		if(Boolean.TRUE.equals(cacheEnabled)){
 			final CacheService cacheService = CacheService.create(vertx);
 			addFilter(new CacheFilter(getEventBus(vertx),securedUriBinding, cacheService));
@@ -144,9 +169,9 @@ public abstract class BaseServer extends Server {
 		} else {
 			addFilter(new ActionFilter(securedUriBinding, vertx, resourceProvider));
 		}
-		vertx.eventBus().localConsumer("user.repository", repositoryHandler);
-		vertx.eventBus().localConsumer("search.searching", this.searchingHandler);
-		vertx.eventBus().localConsumer(moduleName.toLowerCase()+".i18n", this.i18nHandler);
+		vertx.eventBus().consumer("user.repository", repositoryHandler);
+		vertx.eventBus().consumer("search.searching", this.searchingHandler);
+		vertx.eventBus().consumer(moduleName.toLowerCase()+".i18n", this.i18nHandler);
 
 		loadI18nAssetsFiles();
 
@@ -154,18 +179,19 @@ public abstract class BaseServer extends Server {
 		addController(new ConfController());
 		SecurityHandler.setVertx(vertx);
 
-		final Map<String, String> skins = vertx.sharedData().getLocalMap("skins");
+		final Map<String, Object> skins = getOrElse((JsonObject) baseServerMap.get("skins"), new JsonObject()).getMap();
 		Renders.getAllowedHosts().addAll(skins.keySet());
 		//listen for i18n deploy
 		vertx.eventBus().consumer(ONDEPLOY_I18N, message ->{
 			log.info("Received "+ONDEPLOY_I18N+" update i18n override");
 			this.loadI18nAssetsFiles();
 		});
+		startPromise.tryComplete();
 	}
 
-	protected void initFilters() {
+	protected void initFilters(final Map<String, Object> baseServerMap) {
 		//prepare cache if needed
-		final LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
+		final Map<String, Object> server = baseServerMap;
 		final Optional<Object> oauthCache = Optional.ofNullable(server.get("oauthCache"));
 		final Optional<JsonObject> oauthConfigJson = oauthCache.map(e-> new JsonObject((String)e));
 		final Optional<Integer> oauthTtl = oauthConfigJson.map( e -> e.getInteger("ttlSeconds"));
@@ -221,14 +247,14 @@ public abstract class BaseServer extends Server {
 		}
 	}
 
-	protected void initModulesHelpers(String node) {
+	protected void initModulesHelpers(String node, final Map<String, Object> baseServerMap) {
 		if (config.getBoolean("neo4j", true)) {
 			if (config.getJsonObject("neo4jConfig") != null) {
 				final JsonObject neo4jConfigJson = config.getJsonObject("neo4jConfig").copy();
 				final JsonObject neo4jConfigOverride = config.getJsonObject("neo4jConfigOverride", new JsonObject());
 				Neo4j.getInstance().init(vertx, neo4jConfigJson.mergeIn(neo4jConfigOverride));
 			} else {
-				final String neo4jConfig = (String) vertx.sharedData().getLocalMap("server").get("neo4jConfig");
+				final String neo4jConfig = (String) baseServerMap.get("neo4jConfig");
 				final JsonObject neo4jConfigJson = new JsonObject(neo4jConfig);
 				final JsonObject neo4jConfigOverride = config.getJsonObject("neo4jConfigOverride", new JsonObject());
 				Neo4j.getInstance().init(vertx, neo4jConfigJson.mergeIn(neo4jConfigOverride));
@@ -261,7 +287,7 @@ public abstract class BaseServer extends Server {
 			if (config.getJsonObject("elasticsearchConfig") != null) {
 				ElasticSearch.getInstance().init(vertx, config.getJsonObject("elasticsearchConfig"));
 			} else {
-				String elasticsearchConfig = (String) vertx.sharedData().getLocalMap("server").get("elasticsearchConfig");
+				String elasticsearchConfig = (String) baseServerMap.get("elasticsearchConfig");
 				ElasticSearch.getInstance().init(vertx, new JsonObject(elasticsearchConfig));
 			}
 		}
@@ -269,7 +295,7 @@ public abstract class BaseServer extends Server {
 			if (config.getJsonObject("redisConfig") != null) {
 				Redis.getInstance().init(vertx, config.getJsonObject("redisConfig"));
 			}else{
-				final String redisConf = (String) vertx.sharedData().getLocalMap("server").get("redisConfig");
+				final String redisConf = (String) baseServerMap.get("redisConfig");
 				if(redisConf!=null){
 					Redis.getInstance().init(vertx, new JsonObject(redisConf));
 				}
@@ -278,7 +304,6 @@ public abstract class BaseServer extends Server {
 		if (config.getBoolean("explorer", true)) {
 			ExplorerPluginFactory.init(vertx, config);
 		}
-		//
 
 		JsonSchemaValidator validator = JsonSchemaValidator.getInstance();
 		validator.setEventBus(getEventBus(vertx));

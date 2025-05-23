@@ -58,7 +58,7 @@ public abstract class AbstractAntivirusService implements AntivirusService, Hand
 	public void init() {
 		this.queue = new HashMap<>();
 		this.storage = new StorageFactory(vertx).getStorage();
-		vertx.eventBus().localConsumer("antivirus", this);
+		vertx.eventBus().consumer("antivirus", this);
 	}
 
 	protected abstract void parseScanReport(String path, Handler<AsyncResult<List<InfectedFile>>> handler);

@@ -136,13 +136,13 @@
 //		config.put("initDefaultCommunicationRules", new JsonObject(json));
 //		communicationController = new CommunicationController();
 //		communicationController.init(vertx, container, null, null);
-//		vertx.eventBus().localConsumer(ENTCORE_COMMUNICATION, new Handler<Message<JsonObject>>() {
+//		vertx.eventBus().consumer(ENTCORE_COMMUNICATION, new Handler<Message<JsonObject>>() {
 //			@Override
 //			public void handle(Message<JsonObject> message) {
 //				communicationController.communicationEventBusHandler(message);
 //			}
 //		});
-//		vertx.eventBus().localConsumer(ENTCORE_COMMUNICATION_USERS, new Handler<Message<JsonObject>>() {
+//		vertx.eventBus().consumer(ENTCORE_COMMUNICATION_USERS, new Handler<Message<JsonObject>>() {
 //			@Override
 //			public void handle(Message<JsonObject> message) {
 //				communicationController.visibleUsers(message);
