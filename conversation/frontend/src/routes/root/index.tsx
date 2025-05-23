@@ -26,6 +26,8 @@ import {
 } from '~/services/queries';
 import { setConfig, setWorkflows, useOpenedModal } from '~/store';
 import './index.css';
+import MessageOnboardingModal from './components/MessageOnboardingModal';
+import { Suspense } from 'react';
 
 // Typing for the root route loader.
 export interface RootLoaderData {
@@ -78,6 +80,10 @@ export function Component() {
       <AppHeader render={AppActionHeader}>
         <Breadcrumb app={currentApp!} />
       </AppHeader>
+
+      <Suspense fallback={<LoadingScreen />}>
+        <MessageOnboardingModal />
+      </Suspense>
 
       <div className="d-md-flex">
         {!md && (
