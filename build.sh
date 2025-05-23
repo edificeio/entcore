@@ -379,6 +379,9 @@ do
     buildBackend)
       buildBackend
       ;;
+    buildMvn)
+      install
+      ;;
     install)
       buildFrontend && buildBackend && install
       ;;
