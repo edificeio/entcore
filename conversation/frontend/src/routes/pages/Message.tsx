@@ -37,8 +37,15 @@ export function Component() {
   });
 
   useEffect(() => {
-    // Scroll to the top of the page
-    window.scrollTo(0, 0);
+    if (isPrint) {
+      const timeoutId = setTimeout(() => window.print(), 1000);
+
+      return () => clearTimeout(timeoutId);
+    } else {
+      // Scroll to the top of the page
+      window.scrollTo(0, 0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
