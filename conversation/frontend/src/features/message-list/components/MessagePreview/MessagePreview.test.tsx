@@ -9,10 +9,10 @@ import { MessageMetadata } from '~/models';
 import { MessagePreview } from './MessagePreview';
 
 const inboxMessage = mockMessagesOfInbox[0];
-// const userFolderId = '23785dbc-dc2e-4f66-95a4-23f587d65008';
+const userFolderId = '23785dbc-dc2e-4f66-95a4-23f587d65008';
 
 const mocks = vi.hoisted(() => ({
-  useMessageFolderId: vi.fn(),
+  useSelectedFolder: vi.fn(),
   useEdificeTheme: vi.fn(),
   useEdificeClient: vi.fn(),
 }));
@@ -29,8 +29,8 @@ vi.mock('@edifice.io/react', async () => {
   };
 });
 
-vi.mock('~/hooks/useMessageFolderId', () => ({
-  useMessageFolderId: mocks.useMessageFolderId,
+vi.mock('~/hooks/useSelectedFolder', () => ({
+  useSelectedFolder: mocks.useSelectedFolder,
 }));
 
 describe('Message preview header component', () => {
@@ -39,7 +39,7 @@ describe('Message preview header component', () => {
     mocks.useEdificeClient.mockReturnValue({
       user: { userId: mockCurrentUserPreview.id },
     });
-    mocks.useMessageFolderId.mockReturnValue({ messageFolderId: 'inbox' });
+    mocks.useSelectedFolder.mockReturnValue({ folderId: 'inbox' });
   });
 
   afterAll(() => {
@@ -132,7 +132,7 @@ describe('Message preview header component', () => {
   });
 
   it('should display "to" label and recipient name when in outbox', async () => {
-    mocks.useMessageFolderId.mockReturnValue({ messageFolderId: 'outbox' });
+    mocks.useSelectedFolder.mockReturnValue({ folderId: 'outbox' });
 
     render(<MessagePreview message={inboxMessage} />);
 
@@ -146,7 +146,7 @@ describe('Message preview header component', () => {
   });
 
   it('should display the recipient avatar when in outbox', async () => {
-    mocks.useMessageFolderId.mockReturnValue({ messageFolderId: 'outbox' });
+    mocks.useSelectedFolder.mockReturnValue({ folderId: 'outbox' });
 
     const messageWithOneRecipient = mockMessagesOfInbox[1];
     render(<MessagePreview message={messageWithOneRecipient} />);
@@ -158,7 +158,7 @@ describe('Message preview header component', () => {
   });
 
   it('should display group avatar icon when more than one recipient when in outbox', async () => {
-    mocks.useMessageFolderId.mockReturnValue({ messageFolderId: 'outbox' });
+    mocks.useSelectedFolder.mockReturnValue({ folderId: 'outbox' });
     render(<MessagePreview message={inboxMessage} />);
 
     expect(inboxMessage.to.groups.length).toBeGreaterThan(1);
@@ -168,7 +168,7 @@ describe('Message preview header component', () => {
   });
 
   it('should display all recipients after "to" label when in outbox', async () => {
-    mocks.useMessageFolderId.mockReturnValue({ messageFolderId: 'outbox' });
+    mocks.useSelectedFolder.mockReturnValue({ folderId: 'outbox' });
     render(<MessagePreview message={mockMessageOfOutbox} />);
 
     const atLabel = await screen.findByText('at');
@@ -183,13 +183,13 @@ describe('Message preview header component', () => {
   });
 
   it('should display a "draft" label when in draft', async () => {
-    mocks.useMessageFolderId.mockReturnValue({ messageFolderId: 'draft' });
+    mocks.useSelectedFolder.mockReturnValue({ folderId: 'draft' });
     render(<MessagePreview message={mockMessageOfOutbox} />);
     screen.getByText('draft');
   });
 
   it('should not display any recipients if there are none when in draft', async () => {
-    mocks.useMessageFolderId.mockReturnValue({ messageFolderId: 'draft' });
+    mocks.useSelectedFolder.mockReturnValue({ folderId: 'draft' });
     const message = { ...mockMessageOfOutbox };
     message.to = { users: [], groups: [] };
     message.cc = { users: [], groups: [] };
@@ -202,28 +202,21 @@ describe('Message preview header component', () => {
   });
 
   it('should display inbox icon when message come from inbox in user folder', async () => {
-    mocks.useMessageFolderId.mockReturnValue({
-      messageFolderId: 'inbox',
-      isInUserFolderOrTrash: true,
-    });
+    mocks.useSelectedFolder.mockReturnValue({ folderId: userFolderId });
+
     render(<MessagePreview message={inboxMessage} />);
     await screen.findByTitle('mail-in');
   });
 
   it('should display outbox icon when message come from inbox in user folder', async () => {
-    mocks.useMessageFolderId.mockReturnValue({
-      messageFolderId: 'outbox',
-      isInUserFolderOrTrash: true,
-    });
+    mocks.useSelectedFolder.mockReturnValue({ folderId: userFolderId });
+
     render(<MessagePreview message={mockMessageOfOutbox} />);
     await screen.findByTitle('mail-out');
   });
 
   it('should display inbox icon when current user send the message to himself in user folder', async () => {
-    mocks.useMessageFolderId.mockReturnValue({
-      messageFolderId: 'inbox',
-      isInUserFolderOrTrash: true,
-    });
+    mocks.useSelectedFolder.mockReturnValue({ folderId: userFolderId });
 
     render(<MessagePreview message={mockMessageFromMeToMe} />);
 
