@@ -66,7 +66,8 @@ public class DefaultOpenIdServiceProviderFactory implements OpenIdServiceProvide
 						c.getString("redirectUri"),
 						vertx,
 						16,
-						c.getString("certsUri")
+						c.getString("certsUri"),
+						c.getBoolean("noCertCache", false)
 				);
 				oic.setUserInfoUrn(c.getString("userInfoUrn"));
 				oic.setLogoutUri(c.getString("logoutUri"));
