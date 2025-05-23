@@ -68,7 +68,7 @@ public class SafeRedirectionTest {
         final Async async = context.async();
         CompositeFuture.all(futures).onComplete(res -> {
             context.assertTrue(res.succeeded());
-            redirectionService.init(test.vertx(), redirectConfig);
+            redirectionService.init(test.vertx(), redirectConfig, new JsonObject().put(entUri.getHost(), "default"));
             async.complete();
         });
 

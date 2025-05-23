@@ -19,7 +19,9 @@
 
 package org.entcore.directory;
 
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.email.EmailSender;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
@@ -30,7 +32,9 @@ import io.vertx.core.json.JsonObject;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.email.EmailFactory;
@@ -63,15 +67,25 @@ public class Directory extends BaseServer {
 	public static final String SLOTPROFILE_COLLECTION = "slotprofile";
 
 	@Override
-	protected void initFilters() {
-		super.initFilters();
+	protected void initFilters(Map<String, Object> baseServerMap) {
+		super.initFilters(baseServerMap);
 		addFilter(new UserbookCsrfFilter(getEventBus(vertx), securedUriBinding));
 	}
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future()
+				.compose(init -> StorageFactory.build(vertx, config, new MongoDBApplicationStorage("documents", Directory.class.getSimpleName())))
+				.compose(storageFactory -> SharedDataHelper.getInstance().<String, Object>getLocalMulti("server", "skins", "assetPath", "hidePersonalData")
+						.map(directoryConfigMap -> Pair.of(storageFactory, directoryConfigMap)))
+				.compose(configPair -> initDirectory(configPair.getLeft(), configPair.getRight()))
+				.onComplete(startPromise);
+	}
+
+	public Future<Void> initDirectory(final StorageFactory storageFactory, final Map<String, Object> serverMap) {
 		final EventBus eb = getEventBus(vertx);
-		super.start(startPromise);
 		MongoDbConf.getInstance().setCollection(SLOTPROFILE_COLLECTION);
 		setDefaultResourceFilter(new DirectoryResourcesProvider());
 
@@ -81,8 +95,6 @@ public class Directory extends BaseServer {
 				i18nMessages(request);
 			}
 		});
-		final StorageFactory storageFactory = new StorageFactory(vertx, config,
-				new MongoDBApplicationStorage("documents", Directory.class.getSimpleName()));
 
 		Storage storageAvatar = null;
 		if (config != null && config.getJsonObject("s3avatars") != null) {
@@ -114,7 +126,7 @@ public class Directory extends BaseServer {
 		final Storage defaulStorage = storageFactory.getStorage();
 		WorkspaceHelper wsHelper = new WorkspaceHelper(vertx.eventBus(), defaulStorage);
 
-		EmailFactory emailFactory = new EmailFactory(vertx, config);
+		EmailFactory emailFactory = EmailFactory.getInstance();
 		EmailSender emailSender = emailFactory.getSender();
 		SmsSenderFactory.getInstance().init(vertx, config);
 		final JsonObject userBookData = config.getJsonObject("user-book-data");
@@ -125,6 +137,8 @@ public class Directory extends BaseServer {
 		SchoolService schoolService = new DefaultSchoolService(eb).setListUserMode(config.getString("listUserMode", "multi"));
 		GroupService groupService = new DefaultGroupService(eb);
 		SubjectService subjectService = new DefaultSubjectService(eb);
+		ImportService importService = new DefaultImportService(vertx, eb, defaulStorage, config);
+		MassMessagingService massMessagingService = new DefaultMassMessagingService(vertx, eb, defaulStorage);
 		final JsonObject emptyJsonObject = new JsonObject();
 		UserPositionService userPositionService = new DefaultUserPositionService(eb, config
 			.getJsonObject("publicConf", emptyJsonObject)
@@ -139,21 +153,23 @@ public class Directory extends BaseServer {
 		directoryController.setUserService(userService);
 		directoryController.setGroupService(groupService);
 		directoryController.setSlotProfileService(new DefaultSlotProfileService(SLOTPROFILE_COLLECTION));
-		addController(directoryController);
-		vertx.setTimer(5000l, event -> directoryController.createSuperAdmin());
+		addController(directoryController)
+      .onSuccess(e -> vertx.setTimer(5000l, event -> directoryController.createSuperAdmin()));
 
 
-		UserBookController userBookController = new UserBookController();
+		UserBookController userBookController = new UserBookController(serverMap);
 		userBookController.setSchoolService(schoolService);
 		userBookController.setUserBookService(userBookService);
 		userBookController.setUserPositionService(userPositionService);
 		userBookController.setConversationNotification(conversationNotification);
 		addController(userBookController);
 
-		StructureController structureController = new StructureController();
+		StructureController structureController = new StructureController(
+				(JsonObject) serverMap.get("skins"), (String) serverMap.get("assetPath"));
 		structureController.setStructureService(schoolService);
 		structureController.setNotifHelper(emailSender);
-		structureController.setMassMailService(new DefaultMassMailService(vertx,eb,emailSender,config));
+		structureController.setMassMailService(new DefaultMassMailService(
+				vertx,eb,emailSender,config, (String) serverMap.get("node")));
 		addController(structureController);
 
 		ClassController classController = new ClassController();
@@ -181,17 +197,13 @@ public class Directory extends BaseServer {
 		tenantController.setTenantService(new DefaultTenantService(eb));
 		addController(tenantController);
 
-		ImportController importController = new ImportController();
-		importController.setImportService(new DefaultImportService(vertx, eb));
-		importController.setSchoolService(schoolService);
+		ImportController importController = new ImportController(importService, schoolService, defaulStorage);
 		addController(importController);
 
-		MassMessagingController massMessagingController = new MassMessagingController();
-		massMessagingController.setMassMesssagingService(new DefaultMassMessagingService(vertx, eb));
+		MassMessagingController massMessagingController = new MassMessagingController(massMessagingService, importService, defaulStorage);
 		addController(massMessagingController);
 
-		TimetableController timetableController = new TimetableController();
-		timetableController.setTimetableService(new DefaultTimetableService(eb));
+		TimetableController timetableController = new TimetableController(new DefaultTimetableService(eb), defaulStorage);
 		addController(timetableController);
 
         ShareBookmarkController shareBookmarkController = new ShareBookmarkController();
@@ -211,8 +223,8 @@ public class Directory extends BaseServer {
 		UserPositionController userPositionController = new UserPositionController(userPositionService);
 		addController(userPositionController);
 
-        vertx.eventBus().localConsumer("user.repository",
-                new RepositoryHandler(new UserbookRepositoryEvents(userBookService), eb));
+        vertx.eventBus().consumer("user.repository",
+                new RepositoryHandler(new UserbookRepositoryEvents(userBookService), eb, storageFactory.getStorage()));
 
 		MessageConsumer<JsonObject> consumer = eb.consumer(DIRECTORY_ADDRESS);
 		consumer.handler(message -> {
@@ -232,8 +244,13 @@ public class Directory extends BaseServer {
 
         final JsonObject remoteNodes = config.getJsonObject("remote-nodes");
         if (remoteNodes != null) {
-			final RemoteClientCluster remoteClientCluster = new RemoteClientCluster(vertx, remoteNodes);
-			final RemoteUserService remoteUserService = new DefaultRemoteUserService(emailSender);
+	        final RemoteClientCluster remoteClientCluster;
+	        try {
+		        remoteClientCluster = new RemoteClientCluster(vertx, remoteNodes);
+	        } catch (URISyntaxException e) {
+		        return Future.failedFuture(e);
+	        }
+	        final RemoteUserService remoteUserService = new DefaultRemoteUserService(emailSender);
 			((DefaultRemoteUserService) remoteUserService).setRemoteClientCluster(remoteClientCluster);
 			final RemoteUserController remoteUserController = new RemoteUserController();
 			remoteUserController.setRemoteUserService(remoteUserService);
@@ -242,6 +259,7 @@ public class Directory extends BaseServer {
 		// add the directory broker listener
 		BrokerProxyUtils.addBrokerProxy(new DirectoryBrokerListenerImpl(vertx, userService), vertx);
 		BrokerProxyUtils.addBrokerProxy(new LoadTestProxyImpl(vertx), vertx);
+		return Future.succeededFuture();
 	}
 
 }

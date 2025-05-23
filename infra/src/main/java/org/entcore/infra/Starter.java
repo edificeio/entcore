@@ -21,16 +21,17 @@ package org.entcore.infra;
 
 import fr.wseduc.cron.CronTrigger;
 import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.filter.SecurityHandler;
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.metrics.MetricsOptions;
 import io.vertx.core.shareddata.AsyncMap;
-import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.notification.TimelineHelper;
@@ -52,7 +53,10 @@ import io.vertx.core.json.JsonObject;
 
 import java.io.File;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
@@ -60,136 +64,32 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 public class Starter extends BaseServer {
 
 	@Override
-	public void start(Promise<Void> startPromise) {
+	public void start(Promise<Void> startPromise) throws Exception {
+		final Promise<Void> initInfraPromise = Promise.promise();
+		super.start(initInfraPromise);
+		initInfraPromise.future().compose(init -> initInfra()).onComplete(startPromise);
+	}
+
+	public Future<Void> initInfra() {
+		Promise<Void> returnPromise = Promise.promise();
 		try {
-			super.start(startPromise);
-			final LocalMap<Object, Object> serverMap = vertx.sharedData().getLocalMap("server");
-			serverMap.put("signKey", config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK" + Math.random()));
+			vertx.sharedData().getLocalAsyncMap("server").onSuccess(asyncServerMap -> {
+				asyncServerMap.get("emailConfig")
+						.map(config -> (String) config)
+						.compose(emailConfigStr -> {
+							if (isNotEmpty(emailConfigStr)) {
+								JsonObject emailConfig = new JsonObject(emailConfigStr);
+								if(emailConfig.containsKey("postgresql")) {
+									addController(new MailController(vertx, emailConfig));
+								}
+							}
+							return Future.succeededFuture();
+						});
+			}).onFailure(th -> log.error("Error getting server map", th));
 
-			serverMap.put("sameSiteValue", config.getString("sameSiteValue", "Strict"));
-			serverMap.put("hidePersonalData", config.getBoolean("hidePersonalData", false));
-
-			//JWT need signKey
-			SecurityHandler.setVertx(vertx);
-			//encoding
-			final JsonArray encondings = config.getJsonArray("encoding-available", new JsonArray());
-			final JsonArray safeEncondigs = new JsonArray();
-			for(final Object o : encondings){
-				safeEncondigs.add(o.toString());
-			}
-			serverMap.put("encoding-available", safeEncondigs.encode());
-			//
-			CookieHelper.getInstance().init((String) vertx
-					.sharedData().getLocalMap("server").get("signKey"),
-					(String) vertx.sharedData().getLocalMap("server").get("sameSiteValue"),
-					log);
-
-			JsonObject swift = config.getJsonObject("swift");
-			if (swift != null) {
-				serverMap.put("swift", swift.encode());
-			}
-			JsonObject s3 = config.getJsonObject("s3");
-			if (s3 != null) {
-				serverMap.put("s3", s3.encode());
-			}
-			JsonObject emailConfig = config.getJsonObject("emailConfig");
-			if (emailConfig != null) {
-				serverMap.put("emailConfig", emailConfig.encode());
-				if(emailConfig.containsKey("postgresql")){
-					addController(new MailController(vertx, emailConfig));
-				}
-			}
-			JsonObject dataValidationConfig = config.getJsonObject("emailValidationConfig");
-			if (dataValidationConfig != null) {
-				serverMap.put("emailValidationConfig", dataValidationConfig.encode());
-			}
-			JsonObject mfaConfig = config.getJsonObject("mfaConfig");
-			if (mfaConfig != null) {
-				serverMap.put("mfaConfig", mfaConfig.encode());
-			}
-			final JsonObject webviewConfig = config.getJsonObject("webviewConfig");
-			if (webviewConfig != null) {
-				serverMap.put("webviewConfig", webviewConfig.encode());
-			}
-			JsonObject filesystem = config.getJsonObject("file-system");
-			if (filesystem != null) {
-				serverMap.put("file-system", filesystem.encode());
-			}
-			JsonObject neo4jConfig = config.getJsonObject("neo4jConfig");
-			if (neo4jConfig != null) {
-				serverMap.put("neo4jConfig", neo4jConfig.encode());
-			}
-			JsonObject mongoConfig = config.getJsonObject("mongoConfig");
-			if (mongoConfig != null) {
-				serverMap.put("mongoConfig", mongoConfig.encode());
-			}
-			JsonObject postgresConfig = config.getJsonObject("postgresConfig");
-			if (postgresConfig != null) {
-				serverMap.put("postgresConfig", postgresConfig.encode());
-			}
-			JsonObject explorerConfig = config.getJsonObject("explorerConfig");
-			if (explorerConfig != null) {
-				serverMap.put("explorerConfig", explorerConfig.encode());
-			}
-			JsonObject redisConfig = config.getJsonObject("redisConfig");
-			if (redisConfig != null) {
-				serverMap.put("redisConfig", redisConfig.encode());
-			}
-			JsonObject oauthCache = config.getJsonObject("oauthCache");
-			if (oauthCache != null) {
-				serverMap.put("oauthCache", oauthCache.encode());
-			}
-			serverMap.put("cache-enabled", config.getBoolean("cache-enabled", false));
-			final String csp = config.getString("content-security-policy");
-			if (isNotEmpty(csp)) {
-				serverMap.put("contentSecurityPolicy", csp);
-			}
-			JsonObject nodePdfGenerator = config.getJsonObject("node-pdf-generator");
-			if (nodePdfGenerator != null) {
-				serverMap.put("node-pdf-generator", nodePdfGenerator.encode());
-			}
-			final String staticHost = config.getString("static-host");
-			if(staticHost != null)
-			{
-				serverMap.put("static-host", staticHost);
-			}
-			JsonObject eventStoreConfig = config.getJsonObject("event-store");
-			if (eventStoreConfig != null) {
-				serverMap.put("event-store", eventStoreConfig.encode());
-			}
-			serverMap.put("gridfsAddress", config.getString("gridfs-address", "wse.gridfs.persistor"));
-			final JsonObject metricsOptions = config.getJsonObject("metricsOptions");
-			if(metricsOptions != null) {
-				serverMap.put("metricsOptions", metricsOptions.encode());
-			}
-			final JsonObject contentTransformer = config.getJsonObject("content-transformer");
-			if (contentTransformer != null) {
-				serverMap.put("content-transformer", contentTransformer.encode());
-			}
-			//initModulesHelpers(node);
-
-			/* sharedConf sub-object */
-			JsonObject sharedConf = config.getJsonObject("sharedConf", new JsonObject());
-			for(String field : sharedConf.fieldNames()){
-				serverMap.put(field, sharedConf.getValue(field));
-			}
-
-			vertx.sharedData().getLocalMap("skins").putAll(config.getJsonObject("skins", new JsonObject()).getMap());
-
-			log.info("config skin-levels = " + config.getJsonObject("skin-levels", new JsonObject()));
-
-			vertx.sharedData().getLocalMap("skin-levels").putAll(config.getJsonObject("skin-levels", new JsonObject()).getMap());
-
-			log.info("localMap skin-levels = " + vertx.sharedData().getLocalMap("skin-levels"));
-
-			final MessageConsumer<JsonObject> messageConsumer = vertx.eventBus().localConsumer("app-registry.loaded");
+			final MessageConsumer<JsonObject> messageConsumer = vertx.eventBus().consumer("app-registry.loaded");
 			messageConsumer.handler(message -> {
-//				JsonSchemaValidator validator = JsonSchemaValidator.getInstance();
-//				validator.setEventBus(getEventBus(vertx));
-//				validator.setAddress(node + "json.schema.validator");
-//				validator.loadJsonSchema(getPathPrefix(config), vertx);
-				registerGlobalWidgets(config.getString("widgets-path", config.getString("assets-path", ".") + "/assets/widgets"));
-				loadInvalidEmails();
+				loadInvalidEmails(); // TODO change map loadding if needed
 				messageConsumer.unregister();
 			});
 		} catch (Exception ex) {
@@ -232,20 +132,17 @@ public class Starter extends BaseServer {
 			);
 			vertx.setPeriodic(checkMonitoringEvents.getLong("period", 300000L), monitoringEventsChecker);
 		}
-		final boolean metricsActivated;
 		if(config.getJsonObject("metricsOptions") == null) {
-			final String metricsOptions = (String) vertx.sharedData().getLocalMap("server").get("metricsOptions");
-			if(metricsOptions == null){
-				metricsActivated = false;
-			}else{
-				metricsActivated = new MetricsOptions(new JsonObject(metricsOptions)).isEnabled();
-			}
-		} else {
-			metricsActivated = new MetricsOptions(config.getJsonObject("metricsOptions")).isEnabled();
-		}
-		if(metricsActivated) {
+			SharedDataHelper.getInstance().<String, String>getLocal("server", "metricsOptions").onSuccess(metricsOptions -> {
+				if(isNotEmpty(metricsOptions) && new MetricsOptions(new JsonObject(metricsOptions)).isEnabled()){
+					new MicrometerInfraMetricsRecorder(vertx);
+				}
+			}).onFailure(ex -> log.error("Error getting metrics options", ex));
+		} else if (new MetricsOptions(config.getJsonObject("metricsOptions")).isEnabled()) {
 			new MicrometerInfraMetricsRecorder(vertx);
 		}
+		returnPromise.complete();
+		return returnPromise.future();
 	}
 
 	private void loadInvalidEmails() {
@@ -282,7 +179,7 @@ public class Starter extends BaseServer {
 						}
 					});
 				}
-				EmailFactory emailFactory = new EmailFactory(vertx, config);
+				EmailFactory emailFactory = EmailFactory.getInstance();
 				try {
 					new CronTrigger(vertx, config.getString("hard-bounces-cron", "0 0 7 * * ? *"))
 							.schedule(new HardBounceTask(emailFactory.getSender(), config.getInteger("hard-bounces-day", -1),
@@ -290,55 +187,6 @@ public class Starter extends BaseServer {
 				} catch (ParseException e) {
 					log.error(e.getMessage(), e);
 					vertx.close();
-				}
-			}
-		});
-	}
-
-	private void registerWidget(final String widgetPath){
-		final String widgetName = new File(widgetPath).getName();
-		JsonObject widget = new JsonObject()
-				.put("name", widgetName)
-				.put("js", "/assets/widgets/"+widgetName+"/"+widgetName+".js")
-				.put("path", "/assets/widgets/"+widgetName+"/"+widgetName+".html");
-
-		if(vertx.fileSystem().existsBlocking(widgetPath + "/i18n")){
-			widget.put("i18n", "/assets/widgets/"+widgetName+"/i18n");
-		}
-
-		JsonObject message = new JsonObject()
-				.put("widget", widget);
-		vertx.eventBus().request("wse.app.registry.widgets", message, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
-			public void handle(Message<JsonObject> event) {
-				if("error".equals(event.body().getString("status"))){
-					log.error("Error while registering widget "+widgetName+". "+event.body().getJsonArray("errors"));
-					return;
-				}
-				log.info("Successfully registered widget "+widgetName);
-			}
-		}));
-	}
-
-	private void registerGlobalWidgets(String widgetsPath) {
-		vertx.fileSystem().readDir(widgetsPath, new Handler<AsyncResult<List<String>>>() {
-			public void handle(AsyncResult<List<String>> asyn) {
-				if(asyn.failed()){
-					log.error("Error while registering global widgets.", asyn.cause());
-					return;
-				}
-				final List<String> paths = asyn.result();
-				for(final String path: paths){
-					vertx.fileSystem().props(path, new Handler<AsyncResult<FileProps>>() {
-						public void handle(AsyncResult<FileProps> asyn) {
-							if(asyn.failed()){
-								log.error("Error while registering global widget " + path, asyn.cause());
-								return;
-							}
-							if(asyn.result().isDirectory()){
-								registerWidget(path);
-							}
-						}
-					});
 				}
 			}
 		});

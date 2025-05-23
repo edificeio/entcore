@@ -17,6 +17,7 @@ import io.vertx.core.http.RequestOptions;
 import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.net.QuotedPrintableCodec;
 
+import org.entcore.common.s3.S3Client;
 import org.entcore.common.s3.dataclasses.CompleteMultipartUpload;
 import org.entcore.common.s3.dataclasses.CompletePart;
 import org.entcore.common.s3.dataclasses.InitiateMultipartUploadResult;
@@ -58,7 +59,8 @@ public class MultipartUpload {
         this.ssec = ssec;
     }
 
-    public void upload(final String filepath, final String id, final Handler<JsonObject> handler) {
+
+  public void upload(final String filepath, final String id, final Handler<JsonObject> handler) {
         init(id, Paths.get(filepath).getFileName().toString(), AwsUtils.getContentType(filepath), uploadId -> {
             if (uploadId == null) {
                 handler.handle(
@@ -103,7 +105,7 @@ public class MultipartUpload {
         RequestOptions requestOptions = new RequestOptions()
             .setMethod(HttpMethod.POST)
             .setHost(endPoint)
-            .setURI("/" + bucket + "/" + id + "?uploads=");
+            .setURI("/" + bucket + "/" + S3Client.encodeUrlPath(id) + "?uploads=");
 
         httpClient.request(requestOptions)
             .flatMap(req -> {
@@ -138,20 +140,24 @@ public class MultipartUpload {
 
                             initiateMultipartUploadResult = (InitiateMultipartUploadResult) unmarshaller.unmarshal(stringReader);
                         } catch (JAXBException e) {
+                            log.error("An error occurred while deserializing the response body of the upload of file id="+id + " filename=" + filename + ":" + bodyBuffer);
                             handler.handle(null);
                             return;
                         }
 
                         if (initiateMultipartUploadResult.getUploadId() == null) {
+                            log.error("No uploadId received for the upload of file id="+id + " filename=" + filename + ":" + bodyBuffer);
                             handler.handle(null);
                             return;
                         }
 
                         handler.handle(initiateMultipartUploadResult.getUploadId());
                     });
-                }
-                else {
-                    handler.handle(null);
+                } else {
+                  response.bodyHandler(bodyBuffer -> {
+                      log.error("An error occurred while upload file id=" + id + " filename=" + filename + " HTTP code=" + response.statusCode() + " body=" + bodyBuffer.toString());
+                  });
+                  handler.handle(null);
                 }
             })
             .onFailure(exception -> {
@@ -228,7 +234,7 @@ public class MultipartUpload {
         RequestOptions requestOptions = new RequestOptions()
             .setMethod(HttpMethod.PUT)
             .setHost(endPoint)
-            .setURI("/" + bucket + "/" + id + "?partNumber=" + chunk.getChunkNumber() + "&uploadId=" + uploadId);
+            .setURI("/" + bucket + "/" + S3Client.encodeUrlPath(id) + "?partNumber=" + chunk.getChunkNumber() + "&uploadId=" + uploadId);
 
         httpClient.request(requestOptions)
             .flatMap(req -> {
@@ -278,7 +284,7 @@ public class MultipartUpload {
         RequestOptions requestOptions = new RequestOptions()
             .setMethod(HttpMethod.POST)
             .setHost(endPoint)
-            .setURI("/" + bucket + "/" + id + "?uploadId=" + uploadId);
+            .setURI("/" + bucket + "/" + S3Client.encodeUrlPath(id) + "?uploadId=" + uploadId);
 
         httpClient.request(requestOptions)
             .flatMap(req -> {
@@ -325,7 +331,7 @@ public class MultipartUpload {
         RequestOptions requestOptions = new RequestOptions()
                 .setMethod(HttpMethod.DELETE)
                 .setHost(endPoint)
-                .setURI("/" + bucket + "/" + id + "?uploadId=" + uploadId);
+                .setURI("/" + bucket + "/" + S3Client.encodeUrlPath(id) + "?uploadId=" + uploadId);
 
         httpClient.request(requestOptions).flatMap(req -> {
             if (!sign(req, null)) {

@@ -33,12 +33,11 @@ public class DefaultSafeRedirectionService implements SafeRedirectionService {
     private final Neo4j neo = Neo4j.getInstance();
     private boolean inited = false;
 
-    public void init(Vertx vertx, JsonObject config) {
+    public void init(Vertx vertx, JsonObject config, JsonObject skins) {
         if (inited)
             return;
         final long delay = config.getLong("delayInMinutes", 30l);
-        final Map<String, String> skins = vertx.sharedData().getLocalMap("skins");
-        internalHosts.addAll(skins.keySet());
+        internalHosts.addAll(skins.fieldNames());
         defaultDomainsWhiteList.addAll(config.getJsonArray("defaultDomains", new JsonArray()).stream()
                 .map(String.class::cast).collect(Collectors.toSet()));
         loadDomains();

@@ -33,18 +33,24 @@ public class MongoDbEventStoreFactory extends EventStoreFactory {
 		eventStore.setEventBus(Server.getEventBus(vertx));
 		eventStore.setModule(module);
 		eventStore.setVertx(vertx);
-		final String eventStoreConf = (String) vertx.sharedData().getLocalMap("server").get("event-store");
-		if (eventStoreConf != null) {
-			final JsonObject eventStoreConfig = new JsonObject(eventStoreConf);
-			if (eventStoreConfig.containsKey("postgresql")) {
-				final PostgresqlEventStore pgEventStore =  new PostgresqlEventStore();
-				pgEventStore.setEventBus(Server.getEventBus(vertx));
-				pgEventStore.setModule(module);
-				pgEventStore.setVertx(vertx);
-				pgEventStore.init();
-				eventStore.setPostgresqlEventStore(pgEventStore);
-			}
-		}
+
+		vertx.sharedData().<String, String>getLocalAsyncMap("server")
+            .compose(serverMap -> serverMap.get("event-store"))
+            .onSuccess(eventStoreConf -> {
+                if (eventStoreConf != null) {
+					final JsonObject eventStoreConfig = new JsonObject(eventStoreConf);
+					if (eventStoreConfig.containsKey("postgresql")) {
+						final PostgresqlEventStore pgEventStore =  new PostgresqlEventStore();
+						pgEventStore.setEventBus(Server.getEventBus(vertx));
+						pgEventStore.setModule(module);
+						pgEventStore.setVertx(vertx);
+						pgEventStore.init();
+						eventStore.setPostgresqlEventStore(pgEventStore);
+					}
+				}
+            })
+            .onFailure(ex -> logger.error("Error when set pg event-store", ex));
+
 		return eventStore;
 	}
 

@@ -40,7 +40,7 @@ public class Neo4jRestClientCheckNotifier implements  Neo4jRestClientCheck{
         final EventStoreFactory eventFac = EventStoreFactory.getFactory();
         eventFac.setVertx(vertx);
         eventStore = eventFac.getEventStore(BaseServer.getModuleName());
-        emailSender = new EmailFactory(vertx).getSenderWithPriority(EmailFactory.PRIORITY_VERY_HIGH);
+        emailSender = EmailFactory.getInstance().getSenderWithPriority(EmailFactory.PRIORITY_VERY_HIGH);
         //mails
         this.emailAlertSubject = neo4jConfig.getString("email-alerts-subject", "[NEO4J] Noeuds down: ");
         this.emailAlertMinDown = neo4jConfig.getInteger("email-alerts-mindown", 2);

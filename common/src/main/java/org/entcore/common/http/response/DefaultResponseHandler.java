@@ -32,6 +32,8 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import static org.entcore.common.http.filter.AppOAuthResourceProvider.getTokenHeader;
+
+import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import static org.entcore.common.user.UserUtils.getSessionIdOrTokenId;
@@ -287,8 +289,7 @@ public class DefaultResponseHandler {
 		};
 	}
 
-	public static Handler<Either<JsonObject, JsonObject>> reportResponseHandler(final Vertx vertx, final String path,
-			final HttpServerRequest request) {
+	public static Handler<Either<JsonObject, JsonObject>> reportResponseHandler(final Vertx vertx, Storage storage, final String path, final HttpServerRequest request) {
 		return new Handler<Either<JsonObject, JsonObject>>() {
 			@Override
 			public void handle(Either<JsonObject, JsonObject> event) {
@@ -298,7 +299,7 @@ public class DefaultResponseHandler {
 					JsonObject error = new JsonObject().put("errors", event.left().getValue());
 					Renders.renderJson(request, error, 400);
 				}
-				deleteImportPath(vertx, path);
+				deleteImportPath(vertx, storage, path);
 			}
 		};
 	}

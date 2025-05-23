@@ -26,18 +26,13 @@ import fr.wseduc.rs.Post;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
-import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
-import io.vertx.core.Promise;
+import io.vertx.core.Future;
 import io.vertx.core.eventbus.MessageConsumer;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.ext.web.client.HttpRequest;
-import io.vertx.ext.web.client.HttpResponse;
-import io.vertx.ext.web.client.WebClientOptions;
 import org.entcore.archive.Archive;
 import org.entcore.archive.services.ExportService;
 import org.entcore.archive.services.impl.FileSystemExportService;
@@ -49,25 +44,22 @@ import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.storage.Storage;
-import org.entcore.common.utils.StringUtils;
 import org.entcore.common.user.UserUtils;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.entcore.common.utils.StringUtils;
 import org.vertx.java.core.http.RouteMatcher;
-import io.vertx.ext.web.client.WebClient;
 
 
 import java.security.PrivateKey;
 import java.util.*;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
+import static io.vertx.core.Future.succeededFuture;
 
 public class ArchiveController extends BaseController {
 
@@ -76,15 +68,13 @@ public class ArchiveController extends BaseController {
 	private ExportService exportService;
 	private EventStore eventStore;
 	private Storage storage;
-	private Map<String, Long> archiveInProgress;
 	private PrivateKey signKey;
 	private boolean forceEncryption;
 
 	private enum ArchiveEvent { ACCESS }
 
-	public ArchiveController(Storage storage, Map<String, Long> archiveInProgress, PrivateKey signKey, boolean forceEncryption) {
+	public ArchiveController(Storage storage, PrivateKey signKey, boolean forceEncryption) {
 		this.storage = storage;
-		this.archiveInProgress = archiveInProgress;
 		this.signKey = signKey;
 		this.forceEncryption = forceEncryption;
 	}
@@ -97,12 +87,12 @@ public class ArchiveController extends BaseController {
 
 		String exportPath = config.getString("export-path", System.getProperty("java.io.tmpdir"));
 
-		EmailFactory emailFactory = new EmailFactory(vertx, config);
+		EmailFactory emailFactory = EmailFactory.getInstance();
 		EmailSender notification = config.getBoolean("send.export.email", false) ?
 				emailFactory.getSender() : null;
 
 		exportService = new FileSystemExportService(vertx, vertx.fileSystem(),
-				eb, exportPath, null, notification, storage, archiveInProgress, new TimelineHelper(vertx, eb, config),
+				eb, exportPath, null, notification, storage, new TimelineHelper(vertx, eb, config),
 				signKey, forceEncryption);
 		eventStore = EventStoreFactory.getFactory().getEventStore(Archive.class.getSimpleName());
 
@@ -116,15 +106,17 @@ public class ArchiveController extends BaseController {
 				public void handle(Long event)
 				{
 					final long limit = System.currentTimeMillis() - config.getLong("userClearDelay", 3600000l);
-					Set<Map.Entry<String, Long>> entries = new HashSet<>(archiveInProgress.entrySet());
-
-					for (Map.Entry<String, Long> e : entries)
-					{
-						if (e.getValue() == null || e.getValue() < limit)
-						{
-							archiveInProgress.remove(e.getKey());
-						}
-					}
+          exportService.getUserExportInProgress().onFailure(th -> {
+            log.error("An error occurred while fetching user exports in progress", th);
+          }).onSuccess(entries -> {
+            for (Map.Entry<String, Long> e : entries.entrySet())
+            {
+              if (e.getValue() == null || e.getValue() < limit)
+              {
+                exportService.removeUserExportInProgress(e.getKey());
+              }
+            }
+          });
 				}
 			});
 		}
@@ -267,14 +259,20 @@ public class ArchiveController extends BaseController {
 	}
 
 	private void verifyExport(final HttpServerRequest request, final String exportId) {
-		exportService.setDownloadInProgress(exportId);
-		storage.fileStats(exportId, ar -> {
-			if (ar.succeeded() && ar.result().getSizeInBytes() > 0 && request.response().getStatusCode() == 200) {
-				renderJson(request, new JsonObject().put("status", "ok"));
-			} else if (!request.response().ended()) {
-				notFound(request);
-			}
-		});
+		exportService.setDownloadInProgress(exportId)
+        .onSuccess(e -> {
+          storage.fileStats(exportId, ar -> {
+            if (ar.succeeded() && ar.result().getSizeInBytes() > 0 && request.response().getStatusCode() == 200) {
+              renderJson(request, new JsonObject().put("status", "ok"));
+            } else if (!request.response().ended()) {
+              notFound(request);
+            }
+          });
+        })
+      .onFailure(th -> {
+        log.error("An error occurred while verifying download in progress", th);
+        renderError(request);
+      });
 	}
 
 	@Get("/export/:exportId")
@@ -298,6 +296,22 @@ public class ArchiveController extends BaseController {
 			}
 		});
 	}
+
+  @Get("/export/clear")
+  @ResourceFilter(SuperAdminFilter.class)
+  @SecuredAction(value = "", type = ActionType.RESOURCE)
+  @MfaProtected()
+  public void clearUserExports(final HttpServerRequest request)
+  {
+    exportService.getUserExportInProgress()
+      .map(Map::keySet)
+      .onSuccess(keys -> {
+        for (String key : keys) {
+          exportService.clearUserExport(key);
+        }
+      });
+    Renders.ok(request);
+  }
 
 	@Delete("/export/clear/user/:userId")
 	@ResourceFilter(SuperAdminFilter.class)
@@ -336,57 +350,50 @@ public class ArchiveController extends BaseController {
 
 				UserUtils.getUserInfos(eb, userId, user ->
 				{
+          final Future<Void> future;
 					if(Boolean.TRUE.equals(force)){
-						archiveInProgress.remove(userId);
-					}
-					exportService.export(user, locale, apps, resourcesIds, exportDocuments.booleanValue(), exportSharedResources.booleanValue(), request,
-						new Handler<Either<String, String>>()
-					{
-						@Override
-						public void handle(Either<String, String> event)
-						{
-							if (event.isRight() == true)
-							{
-								String exportId = event.right().getValue();
+						future = exportService.removeUserExportInProgress(userId);
+					} else {
+            future = succeededFuture();
+          }
+          future.onFailure(th -> {
+            log.error("An error occurred while remove user export in progress: " + userId, th);
+              message.reply(new JsonObject().put("status", "error").put("message", "internal error"));
+            })
+            .onSuccess(e -> {
+              exportService.export(user, locale, apps, resourcesIds, exportDocuments.booleanValue(), exportSharedResources.booleanValue(), request,
+                event -> {
+                  if (event.isRight()) {
+                    String exportId = event.right().getValue();
 
-								if(Boolean.TRUE.equals(synchroniseReply) == false)
-								{
-									message.reply(
-										new JsonObject()
-											.put("status", "ok")
-											.put("exportId", exportId)
-											.put("exportPath", exportId + ".zip")
-									);
-								}
-								else
-								{
-									final String address = exportService.getExportBusAddress(exportId);
+                    if (!Boolean.TRUE.equals(synchroniseReply)) {
+                      message.reply(
+                        new JsonObject()
+                          .put("status", "ok")
+                          .put("exportId", exportId)
+                          .put("exportPath", exportId + ".zip")
+                      );
+                    } else {
+                      final String address = exportService.getExportBusAddress(exportId);
 
-									final MessageConsumer<JsonObject> consumer = eb.consumer(address);
-									consumer.handler(new Handler<Message<JsonObject>>()
-									{
-										@Override
-										public void handle(Message<JsonObject> event)
-										{
-											event.reply(new JsonObject().put("status", "ok").put("sendNotifications", false));
-											consumer.unregister();
+                      final MessageConsumer<JsonObject> consumer = eb.consumer(address);
+                      consumer.handler(event1 -> {
+                        event1.reply(new JsonObject().put("status", "ok").put("sendNotifications", false));
+                        consumer.unregister();
 
-											message.reply(
-												new JsonObject()
-													.put("status", "ok")
-													.put("exportId", exportId)
-													.put("exportPath", exportId + ".zip")
-											);
-										}
-									});
-								}
-							}
-							else
-							{
-								message.reply(new JsonObject().put("status", "error").put("message", event.left().getValue()));
-							}
-						}
-					});
+                        message.reply(
+                          new JsonObject()
+                            .put("status", "ok")
+                            .put("exportId", exportId)
+                            .put("exportPath", exportId + ".zip")
+                        );
+                      });
+                    }
+                  } else {
+                    message.reply(new JsonObject().put("status", "error").put("message", event.left().getValue()));
+                  }
+                });
+            });
 				});
 				break;
 			case "delete":
@@ -401,11 +408,12 @@ public class ArchiveController extends BaseController {
 				}
 				break;
 			case "exported" :
-				exportService.exported(
+				exportService.onExportDone(
 						message.body().getString("exportId"),
 						message.body().getString("status"),
 						message.body().getString("locale", "fr"),
-						message.body().getString("host", config.getString("host", ""))
+						message.body().getString("host", config.getString("host", "")),
+                        message.body().getString("app")
 				);
 				break;
 			default: log.error("Archive : invalid action " + action);

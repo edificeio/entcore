@@ -20,17 +20,16 @@
 package org.entcore.auth;
 
 import fr.wseduc.cron.CronTrigger;
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.security.JWT;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
+import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.shareddata.LocalMap;
+import io.vertx.core.shareddata.AsyncMap;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.auth.controllers.*;
 import org.entcore.auth.controllers.AuthController.AuthEvent;
 import org.entcore.auth.oauth.HttpServerRequestAdapter;
@@ -55,9 +54,11 @@ import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.sms.SmsSenderFactory;
-import org.opensaml.xml.ConfigurationException;
 
+import java.security.InvalidKeyException;
+import java.text.ParseException;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
@@ -67,19 +68,36 @@ public class Auth extends BaseServer {
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future()
+				.compose(init -> SharedDataHelper.getInstance().<String, Object>getLocalMulti(
+						"server", "signKey", "smsProvider", "node", "emailValidationConfig", "skins", "event-store"))
+				.compose(authMap -> SharedDataHelper.getInstance().<String, Object>getLocalAsyncMap("server")
+						.map(asyncServerMap -> Pair.of(authMap, asyncServerMap)))
+				.compose(configPair -> initAuth(configPair.getLeft(), configPair.getRight()))
+				.onComplete(startPromise);
+	}
+
+	public Future<Void> initAuth(final Map<String, Object> authMap, final AsyncMap<String, Object> asyncAuthMap) {
 		final EventBus eb = getEventBus(vertx);
-		super.start(startPromise);
 		setDefaultResourceFilter(new AuthResourcesProvider(new Neo(vertx, eb, null)));
 		final String JWT_PERIOD_CRON = "jwt-bearer-authorization-periodic";
 		final String JWT_PERIOD = "jwt-bearer-authorization";
 
 		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Auth.class.getSimpleName());
-		final UserAuthAccount userAuthAccount = new DefaultUserAuthAccount(vertx, config, eventStore);
-		SafeRedirectionService.getInstance().init(vertx, config.getJsonObject("safeRedirect", new JsonObject()));
+		final UserAuthAccount userAuthAccount = new DefaultUserAuthAccount(vertx, config, eventStore, authMap);
+		SafeRedirectionService.getInstance().init(vertx, config.getJsonObject("safeRedirect", new JsonObject()),
+				(JsonObject) authMap.get("skins"));
 
 		SmsSenderFactory.getInstance().init(vertx, config);
 		UserValidationFactory.getFactory().setEventStore(eventStore, AuthEvent.SMS.name());
-		final MfaService mfaService = new DefaultMfaService(vertx, config).setEventStore(eventStore);
+		final MfaService mfaService;
+		try {
+			mfaService = new DefaultMfaService(vertx, config, authMap).setEventStore(eventStore);
+		} catch (InvalidKeyException e) {
+			return Future.failedFuture(e);
+		}
 
 		final JsonObject oic = config.getJsonObject("openid-connect");
 		final OpenIdConnectService openIdConnectService = (oic != null)
@@ -92,7 +110,7 @@ public class Auth extends BaseServer {
 				config.getJsonArray("oauth2-pw-client-enable-saml2"), eventStore,
 				config.getBoolean("otp-disabled", false), config.getInteger("oauth2-token-expiration-time-seconds", 3600));
 
-		AuthController authController = new AuthController();
+		AuthController authController = new AuthController(authMap);
 		authController.setEventStore(eventStore);
 		authController.setUserAuthAccount(userAuthAccount);
 		authController.setOauthDataFactory(oauthDataFactory);
@@ -112,7 +130,7 @@ public class Auth extends BaseServer {
 		}
 
 		final String customTokenEncryptKey = config.getString("custom-token-encrypt-key", UUID.randomUUID().toString());
-		final String signKey = (String) vertx.sharedData().getLocalMap("server").get("signKey");
+		final String signKey = (String) authMap.get("signKey");
 
 		CustomTokenHelper.setEncryptKey(customTokenEncryptKey);
 		CustomTokenHelper.setSignKey(signKey);
@@ -130,7 +148,7 @@ public class Auth extends BaseServer {
 							);
 							oauthDataFactory.setSamlHelper(samlHelper);
 
-							SamlController samlController = new SamlController();
+							SamlController samlController = new SamlController((JsonObject) authMap.get("skins"));
 							JsonObject conf = config;
 
 							vertx.deployVerticle(SamlValidator.class,
@@ -142,22 +160,24 @@ public class Auth extends BaseServer {
 							samlController.setSamlWayfParams(config.getJsonObject("saml-wayf"));
 							samlController.setIgnoreCallBackPattern(config.getString("ignoreCallBackPattern"));
 							addController(samlController);
-							LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
-							if (server != null) {
+							if (asyncAuthMap != null) {
 								String loginUri = config.getString("loginUri");
 								String callbackParam = config.getString("callbackParam");
 								if (loginUri != null && !loginUri.trim().isEmpty()) {
-									server.putIfAbsent("loginUri", loginUri);
+									asyncAuthMap.putIfAbsent("loginUri", loginUri)
+										.onFailure(ex -> log.error("Error when put loginUri", ex));
 								}
 								if (callbackParam != null && !callbackParam.trim().isEmpty()) {
-									server.putIfAbsent("callbackParam", callbackParam);
+									asyncAuthMap.putIfAbsent("callbackParam", callbackParam)
+										.onFailure(ex -> log.error("Error when put callbackParam", ex));
 								}
 								final JsonObject authLocations = config.getJsonObject("authLocations");
 								if (authLocations != null && authLocations.size() > 0) {
-									server.putIfAbsent("authLocations", authLocations.encode());
+									asyncAuthMap.putIfAbsent("authLocations", authLocations.encode())
+										.onFailure(ex -> log.error("Error when put authLocations", ex));
 								}
 							}
-						} catch (ConfigurationException e) {
+						} catch (Exception e) {
 							log.error("Saml loading error.", e);
 						}
 					}
@@ -206,7 +226,7 @@ public class Auth extends BaseServer {
 			String cron = NDWConf.getString("cron");
 			if(cron != null)
 			{
-				EmailFactory emailFactory = new EmailFactory(vertx, config);
+				EmailFactory emailFactory = EmailFactory.getInstance();
 				boolean warnADMC = NDWConf.getBoolean("warn-admc", false);
 				boolean warnADML = NDWConf.getBoolean("warn-adml", false);
 				boolean warnUsers = NDWConf.getBoolean("warn-users", false);
@@ -214,8 +234,13 @@ public class Auth extends BaseServer {
 				int batchLimit = NDWConf.getInteger("batch-limit", 4000).intValue();
 				String processInterval = NDWConf.getString("process-interval");
 				NDWTask = new NewDeviceWarningTask(vertx, config, emailFactory.getSender(), config.getString("email"),
-													warnADMC, warnADML, warnUsers, scoreThreshold, batchLimit, processInterval);
-				new CronTrigger(vertx, cron).schedule(NDWTask);
+						warnADMC, warnADML, warnUsers, scoreThreshold, batchLimit, processInterval,
+						(String) authMap.get("event-store"));
+				try {
+					new CronTrigger(vertx, cron).schedule(NDWTask);
+				} catch (ParseException e) {
+					return Future.failedFuture(e);
+				}
 			}
 		}
 
@@ -246,6 +271,7 @@ public class Auth extends BaseServer {
 				}
 			});
 		}
+		return Future.succeededFuture();
 	}
 
 }

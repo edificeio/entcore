@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
 import com.google.common.collect.Lists;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
-import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.request.JsonHttpServerRequest;
@@ -99,6 +98,12 @@ public class UserBookController extends BaseController {
 		this.userPositionService = userPositionService;
 	}
 
+	private final Map<String, Object> serverMap;
+
+	public UserBookController(Map<String, Object> serverMap) {
+		this.serverMap = serverMap;
+	}
+
 	@Override
 	public void init(final Vertx vertx, JsonObject config, RouteMatcher rm,
 					 Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -117,11 +122,11 @@ public class UserBookController extends BaseController {
 		eventStore = EventStoreFactory.getFactory().getEventStore(ANNUAIRE_MODULE);
 		if (config.getBoolean("activation-welcome-message", false)) {
 			activationWelcomeMessage = new HashMap<>();
-			String assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath");
-			Map<String, String> skins = vertx.sharedData().getLocalMap("skins");
+			String assetsPath = (String) serverMap.get("assetPath");
+			Map<String, Object> skins = getOrElse((JsonObject) serverMap.get("skins"), new JsonObject()).getMap();
 			if (skins != null) {
 				activationWelcomeMessage = new HashMap<>();
-				for (final Map.Entry<String, String> e: skins.entrySet()) {
+				for (final Map.Entry<String, Object> e: skins.entrySet()) {
 					String path = assetsPath + "/assets/themes/" + e.getValue() + "/template/directory/welcome/";
 					vertx.fileSystem().readDir(path, new Handler<AsyncResult<List<String>>>() {
 						@Override
@@ -155,7 +160,6 @@ public class UserBookController extends BaseController {
 	@Get("/mon-compte")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void monCompte(HttpServerRequest request) {
-		LocalMap<Object, Object> serverMap = vertx.sharedData().getLocalMap("server");
 		JsonObject configuration = new JsonObject().put("hidePersonalData", serverMap.get("hidePersonalData"));
 		renderView(request, configuration, "mon-compte.html", null);
 		eventStore.createAndStoreEvent(DirectoryEvent.ACCESS.name(), request, new JsonObject().put("override-module", "MyAccount"));

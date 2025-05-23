@@ -1,5 +1,6 @@
 package org.entcore.common.messaging;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import static org.apache.commons.lang3.StringUtils.isEmpty;
@@ -63,20 +64,21 @@ public class RedisStreamClientFactory implements IMessagingClientFactory {
     }
 
     @Override
-    public IMessagingClient create() {
-        final RedisClient redis;
+    public Future<IMessagingClient> create() {
         try {
-            redis = RedisClient.create(vertx, config);
+            return RedisClient.create(vertx, config)
+              .map(redis -> {
+                final String stream = config.getString("stream");
+                if(isEmpty(stream)) {
+                  throw new MessagingException("missing stream name in redis stream configuration");
+                }
+                final int consumerBlockMs = config.getInteger("consumer-block-ms", DEFAULT_BLOCK_MS);
+                final String consumerName = config.getString("consumer-name");
+                final String consumerGroup = config.getString("consumer-group");
+                return new RedisMessagingClient(vertx, redis, stream, consumerGroup, consumerName, consumerBlockMs);
+              });
         } catch (Exception e) {
             throw new MessagingException("redis.client.creation.error", e);
         }
-        final String stream = config.getString("stream");
-        if(isEmpty(stream)) {
-            throw new MessagingException("missing stream name in redis stream configuration");
-        }
-        final int consumerBlockMs = config.getInteger("consumer-block-ms", DEFAULT_BLOCK_MS);
-        final String consumerName = config.getString("consumer-name");
-        final String consumerGroup = config.getString("consumer-group");
-        return new RedisMessagingClient(vertx, redis, stream, consumerGroup, consumerName, consumerBlockMs);
     }
 }

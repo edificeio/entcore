@@ -38,7 +38,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.shareddata.LocalMap;
 import org.apache.commons.collections4.CollectionUtils;
 import org.entcore.auth.pojo.SendPasswordDestination;
 import org.entcore.common.email.EmailFactory;
@@ -94,16 +93,15 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 
 	private final boolean sendForgotPasswordEmailWithResetCode;
 
-	public DefaultUserAuthAccount(Vertx vertx, JsonObject config, EventStore eventStore) {
+	public DefaultUserAuthAccount(Vertx vertx, JsonObject config, EventStore eventStore, Map<String, Object> server) {
 		super(vertx, config);
 		this.eb = Server.getEventBus(vertx);
 		this.neo = new Neo(vertx, eb, null);
 		this.vertx = vertx;
 		this.config = config;
-		EmailFactory emailFactory = new EmailFactory(vertx, config);
+		EmailFactory emailFactory = EmailFactory.getInstance();
 		notification = emailFactory.getSender();
 		render = new Renders(vertx, config);
-		LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
 		if(server != null && server.get("smsProvider") != null) {
 			smsProvider = (String) server.get("smsProvider");
 			final String node = (String) server.get("node");

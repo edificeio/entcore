@@ -14,6 +14,6 @@ public interface DuplicationService
   void duplicateSingleResource(final UserInfos user, final HttpServerRequest request, JsonArray apps, JsonArray resourcesIds,
 		JsonObject config, Handler<Either<String, String>> handler);
 
-  void exported(final String exportId, String status, final String locale, final String host);
+  void onExportDone(final String exportId, String status, final String locale, final String host, final String app);
   void imported(String importId, String app, JsonObject importRapport);
 }

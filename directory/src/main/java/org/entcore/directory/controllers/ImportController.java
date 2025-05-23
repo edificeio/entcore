@@ -38,6 +38,7 @@ import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.storage.Storage;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -60,6 +61,13 @@ public class ImportController extends BaseController {
 
 	private ImportService importService;
 	private SchoolService schoolService;
+	private Storage storage;
+
+	public ImportController(ImportService importService, SchoolService schoolService, Storage storage) {
+		this.importService = importService;
+		this.schoolService = schoolService;
+		this.storage = storage;
+	}
 
 	@Get("/wizard")
 	@ResourceFilter(AdminFilter.class)
@@ -74,11 +82,11 @@ public class ImportController extends BaseController {
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @MfaProtected()
     public void columnsMapping(final HttpServerRequest request) {
-        uploadImport(request, new Handler<AsyncResult<ImportInfos>>() {
+        importService.uploadImport(request, new Handler<AsyncResult<ImportInfos>>() {
             @Override
             public void handle(AsyncResult<ImportInfos> event) {
                 if (event.succeeded()) {
-                    importService.columnsMapping(event.result(), reportResponseHandler(vertx, event.result().getPath(), request));
+                    importService.columnsMapping(event.result(), reportResponseHandler(vertx, storage, event.result().getPath(), request));
                 } else {
                     badRequest(request, event.cause().getMessage());
                 }
@@ -91,11 +99,11 @@ public class ImportController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
 	public void classesMapping(final HttpServerRequest request) {
-		uploadImport(request, new Handler<AsyncResult<ImportInfos>>() {
+		importService.uploadImport(request, new Handler<AsyncResult<ImportInfos>>() {
 			@Override
 			public void handle(AsyncResult<ImportInfos> event) {
 				if (event.succeeded()) {
-					importService.classesMapping(event.result(), reportResponseHandler(vertx, event.result().getPath(), request));
+					importService.classesMapping(event.result(), reportResponseHandler(vertx, storage, event.result().getPath(), request));
 				} else {
 					badRequest(request, event.cause().getMessage());
 				}
@@ -109,14 +117,14 @@ public class ImportController extends BaseController {
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @MfaProtected()
     public void validateImport(final HttpServerRequest request) {
-        uploadImport(request, new Handler<AsyncResult<ImportInfos>>() {
+        importService.uploadImport(request, new Handler<AsyncResult<ImportInfos>>() {
             @Override
             public void handle(AsyncResult<ImportInfos> event) {
                 if (event.succeeded()) {
                     UserUtils.getUserInfos(eb, request, user -> {
                         if (user != null) {
                             importService.validate(event.result(), user,
-                                    reportResponseHandler(vertx, event.result().getPath(), request));
+                                    reportResponseHandler(vertx, storage, event.result().getPath(), request));
                         } else {
                             unauthorized(request, "invalid.user");
                         }
@@ -136,128 +144,12 @@ public class ImportController extends BaseController {
 		String importId = request.params().get("id");
 		UserUtils.getUserInfos(eb, request, user -> {
 			if (user != null) {
-				importService.validate(importId, user, reportResponseHandler(vertx,
+				importService.validate(importId, user, reportResponseHandler(vertx, storage,
 						config.getString("wizard-path", "/tmp") + File.separator + importId, request));
 			} else {
 				unauthorized(request, "invalid.user");
 			}
 		});
-	}
-
-	private void uploadImport(final HttpServerRequest request, final Handler<AsyncResult<ImportInfos>> handler) {
-		request.pause();
-		final String importId = UUID.randomUUID().toString();
-		final String path = config.getString("wizard-path", "/tmp") + File.separator + importId;
-		request.setExpectMultipart(true);
-		request.endHandler(new Handler<Void>() {
-			@Override
-			public void handle(Void v) {
-				final ImportInfos importInfos = new ImportInfos();
-				importInfos.setId(importId);
-				importInfos.setPath(path);
-				importInfos.setStructureId(request.formAttributes().get("structureId"));
-				importInfos.setStructureExternalId(request.formAttributes().get("structureExternalId"));
-				importInfos.setPreDelete(paramToBoolean(request.formAttributes().get("predelete")));
-				importInfos.setTransition(paramToBoolean(request.formAttributes().get("transition")));
-				importInfos.setStructureName(request.formAttributes().get("structureName"));
-				importInfos.setUAI(request.formAttributes().get("UAI"));
-				importInfos.setLanguage(I18n.acceptLanguage(request));
-				if (isNotEmpty(request.formAttributes().get("classExternalId"))) {
-					importInfos.setOverrideClass(request.formAttributes().get("classExternalId"));
-				}
-
-				if (isNotEmpty(request.formAttributes().get("columnsMapping")) ||
-						isNotEmpty(request.formAttributes().get("classesMapping"))) {
-					try {
-						if (isNotEmpty(request.formAttributes().get("columnsMapping"))) {
-							importInfos.setMappings(new JsonObject(request.formAttributes().get("columnsMapping")));
-						}
-						if (isNotEmpty(request.formAttributes().get("classesMapping"))) {
-							importInfos.setClassesMapping(new JsonObject(request.formAttributes().get("classesMapping")));
-						}
-					} catch (DecodeException e) {
-						handler.handle(new DefaultAsyncResult<ImportInfos>(new ImportException("invalid.columns.mapping", e)));
-						deleteImportPath(vertx, path);
-						deleteImportPath(vertx, path);
-						return;
-					}
-				}
-				try {
-					importInfos.setFeeder(request.formAttributes().get("type"));
-				} catch (IllegalArgumentException | NullPointerException e) {
-					handler.handle(new DefaultAsyncResult<ImportInfos>(new ImportException("invalid.import.type", e)));
-					deleteImportPath(vertx, path);
-					return;
-				}
-				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-					@Override
-					public void handle(UserInfos user) {
-						if (user == null) {
-							handler.handle(new DefaultAsyncResult<ImportInfos>(new ImportException("invalid.admin")));
-							deleteImportPath(vertx, path);
-							return;
-						}
-						importInfos.validate(user.getFunctions() != null && user.getFunctions()
-								.containsKey(DefaultFunctions.SUPER_ADMIN), vertx, new Handler<AsyncResult<String>>() {
-							@Override
-							public void handle(AsyncResult<String> validate) {
-								if (validate.succeeded()) {
-									if (validate.result() == null) {
-										handler.handle(new DefaultAsyncResult<>(importInfos));
-									} else {
-										handler.handle(new DefaultAsyncResult<ImportInfos>(new ImportException(validate.result())));
-										deleteImportPath(vertx, path);
-									}
-								} else {
-									handler.handle(new DefaultAsyncResult<ImportInfos>(validate.cause()));
-									log.error("Validate error", validate.cause());
-									deleteImportPath(vertx, path);
-								}
-							}
-						});
-					}
-				});
-			}
-		});
-		request.exceptionHandler(new Handler<Throwable>() {
-			@Override
-			public void handle(Throwable event) {
-				handler.handle(new DefaultAsyncResult<ImportInfos>(event));
-				deleteImportPath(vertx, path);
-			}
-		});
-		request.uploadHandler(new Handler<HttpServerFileUpload>() {
-			@Override
-			public void handle(final HttpServerFileUpload upload) {
-				if (!upload.filename().toLowerCase().endsWith(".csv")) {
-					handler.handle(new DefaultAsyncResult<ImportInfos>(
-							new ImportException("invalid.file.extension")));
-					return;
-				}
-				final String filename = path + File.separator + upload.name();
-				upload.streamToFileSystem(filename)
-						.onSuccess(event -> log.info("File " + upload.filename() + " uploaded as " + upload.name()))
-						.onFailure(th -> log.error("Cannot import " + upload.filename(), th));
-				request.resume();
-			}
-		});
-		deleteImportPath(vertx, path,res->{
-			vertx.fileSystem().mkdir(path, new Handler<AsyncResult<Void>>() {
-				@Override
-				public void handle(AsyncResult<Void> event) {
-					if (event.succeeded()) {
-						request.resume();
-					} else {
-						handler.handle(new DefaultAsyncResult<ImportInfos>(
-								new ImportException("mkdir.error", event.cause())));
-					}
-				}
-			});
-		});
-	}
-
-	private boolean paramToBoolean(String param) {
-		return "true".equalsIgnoreCase(param);
 	}
 
 	@Get("/wizard/import/:id")
@@ -273,11 +165,11 @@ public class ImportController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
 	public void doImport(final HttpServerRequest request) {
-		uploadImport(request, new Handler<AsyncResult<ImportInfos>>() {
+		importService.uploadImport(request, new Handler<AsyncResult<ImportInfos>>() {
 			@Override
 			public void handle(final AsyncResult<ImportInfos> event) {
 				if (event.succeeded()) {
-					importService.doImport(event.result(), reportResponseHandler(vertx, event.result().getPath(), request));
+					importService.doImport(event.result(), reportResponseHandler(vertx, storage, event.result().getPath(), request));
 				} else {
 					badRequest(request, event.cause().getMessage());
 				}
@@ -310,11 +202,11 @@ public class ImportController extends BaseController {
 						request.formAttributes().add("UAI", structure.getString("UAI"));
 					request.formAttributes().add("type", "CSV");
 					request.resume();
-					uploadImport(request, new Handler<AsyncResult<ImportInfos>>() {
+					importService.uploadImport(request, new Handler<AsyncResult<ImportInfos>>() {
 						@Override
 						public void handle(final AsyncResult<ImportInfos> event) {
 							if (event.succeeded()) {
-								importService.doImport(event.result(), reportResponseHandler(vertx, event.result().getPath(), request));
+								importService.doImport(event.result(), reportResponseHandler(vertx, storage, event.result().getPath(), request));
 							} else {
 								badRequest(request, event.cause().getMessage());
 							}
@@ -333,7 +225,7 @@ public class ImportController extends BaseController {
 	@MfaProtected()
 	public void launchImport(final HttpServerRequest request) {
 		String importId = request.params().get("id");
-		importService.doImport(importId, reportResponseHandler(vertx,
+		importService.doImport(importId, reportResponseHandler(vertx, storage,
 				config.getString("wizard-path", "/tmp") + File.separator + importId, request));
 	}
 

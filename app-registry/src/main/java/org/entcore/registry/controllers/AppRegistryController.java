@@ -30,11 +30,13 @@ import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.http.BaseController;
 
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import org.apache.commons.lang3.NotImplementedException;
 import org.entcore.broker.api.appregistry.AppRegistrationRequestDTO;
@@ -77,10 +79,13 @@ public class AppRegistryController extends BaseController implements AppRegistry
 	private final AppRegistryService appRegistryService = new DefaultAppRegistryService();
 	private JsonObject skinLevels;
 
-	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
-					 Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
+	public Future<Void> initAsync(Vertx vertx, JsonObject config, RouteMatcher rm,
+                          Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
-		this.skinLevels = new JsonObject(vertx.sharedData().getLocalMap("skin-levels"));
+		return SharedDataHelper.getInstance().<String, JsonObject>getLocal("server", "skin-levels")
+			.onSuccess(skinLevels -> AppRegistryController.this.skinLevels = skinLevels)
+			.onFailure(ex -> log.error("Error getting skin-levels", ex))
+      .mapEmpty();
 	}
 
 	@Get("/admin-console")
@@ -532,7 +537,7 @@ public class AppRegistryController extends BaseController implements AppRegistry
     @Put("/structures/:structureId/roles")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(AdminFilter.class)
-		@MfaProtected()
+	@MfaProtected()
     public void authorizeProfiles(final HttpServerRequest request) {
         bodyToJson(request, new Handler<JsonObject>() {
             @Override

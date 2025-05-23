@@ -30,7 +30,7 @@ public class Exporter extends BusModBase implements Handler<Message<JsonObject>>
 	@Override
 	public void start() {
 		super.start();
-		vertx.eventBus().localConsumer(config.getString("address", "entcore.exporter"), this);
+		vertx.eventBus().consumer(config.getString("address", "entcore.exporter"), this);
 	}
 
 

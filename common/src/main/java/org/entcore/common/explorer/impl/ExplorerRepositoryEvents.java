@@ -22,7 +22,6 @@ import fr.wseduc.webutils.DefaultAsyncResult;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -31,6 +30,7 @@ import org.entcore.common.explorer.IExplorerPluginClient;
 import org.entcore.common.explorer.to.ExplorerReindexResourcesRequest;
 import org.entcore.common.user.RepositoryEvents;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.ExportResourceResult;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -91,13 +91,13 @@ public class ExplorerRepositoryEvents implements RepositoryEvents {
 
     @Override
     public void exportResources(boolean exportDocuments, boolean exportSharedResources, String exportId, String userId, JsonArray groups, String exportPath,
-                                String locale, String host, Handler<Boolean> handler) {
+                                String locale, String host, Handler<ExportResourceResult> handler) {
         realRepositoryEvents.exportResources(exportDocuments, exportSharedResources, exportId, userId, groups, exportPath, locale, host, handler);
     }
 
     @Override
     public void exportResources(JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources, String exportId, String userId,
-                                JsonArray groups, String exportPath, String locale, String host, Handler<Boolean> handler) {
+                                JsonArray groups, String exportPath, String locale, String host, Handler<ExportResourceResult> handler) {
         realRepositoryEvents.exportResources(resourcesIds, exportDocuments, exportSharedResources, exportId, userId, groups, exportPath, locale, host, handler);
     }
 

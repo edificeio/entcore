@@ -29,7 +29,7 @@ public class LogRepositoryEvents implements RepositoryEvents {
 
 	@Override
 	public void exportResources(JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources, String exportId, String userId,
-			JsonArray groups, String exportPath, String locale, String host, Handler<Boolean> handler) {
+			JsonArray groups, String exportPath, String locale, String host, Handler<ExportResourceResult> handler) {
 		log.info("Export " + userId + " resources on path " + exportPath);
 
 	}

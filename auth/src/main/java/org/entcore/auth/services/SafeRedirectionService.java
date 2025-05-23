@@ -36,7 +36,7 @@ public interface SafeRedirectionService {
         return SafeRedirectionServiceHolder.instance;
     }
 
-    void init(Vertx vertx, JsonObject config);
+    void init(Vertx vertx, JsonObject config, JsonObject skins);
 
     void canRedirectTo(String uri, Handler<Boolean> handler);
 

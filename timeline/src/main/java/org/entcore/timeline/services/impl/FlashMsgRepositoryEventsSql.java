@@ -28,6 +28,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import fr.wseduc.webutils.Either;
+import org.entcore.common.user.ExportResourceResult;
 
 public class FlashMsgRepositoryEventsSql implements RepositoryEvents {
 
@@ -37,7 +38,7 @@ public class FlashMsgRepositoryEventsSql implements RepositoryEvents {
 	@Override
 	public void exportResources(JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources, String exportId, String userId,
 			JsonArray groups, String exportPath, String locale, String host,
-			Handler<Boolean> handler) {}
+			Handler<ExportResourceResult> handler) {}
 
 	@Override
 	public void removeShareGroups(JsonArray oldGroups) {

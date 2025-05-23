@@ -1,5 +1,6 @@
 package org.entcore.common.messaging.impl;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import org.entcore.common.messaging.IMessagingClient;
 import org.entcore.common.messaging.IMessagingClientFactory;
@@ -25,7 +26,7 @@ public class MonitoredMessagingClientFactory implements IMessagingClientFactory 
     }
 
     @Override
-    public IMessagingClient create() {
-        return new MessagingClientWithMetrics(factory.create(), metricsRecorder);
+    public Future<IMessagingClient> create() {
+      return factory.create().map(client -> new MessagingClientWithMetrics(client, metricsRecorder));
     }
 }

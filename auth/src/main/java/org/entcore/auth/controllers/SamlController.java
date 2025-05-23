@@ -95,6 +95,12 @@ public class SamlController extends AbstractFederateController {
 
 	private static final String SESSIONS_COLLECTION = "sessions";
 
+	private JsonObject skins;
+
+	public SamlController(JsonObject skins) {
+		this.skins = skins;
+	}
+
 	@Override
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -217,7 +223,6 @@ public class SamlController extends AbstractFederateController {
 			}
 
 			// get theme for logo image src
-			JsonObject skins = new JsonObject(vertx.sharedData().<String, Object>getLocalMap("skins"));
 			String skin = skins.getString(getHost(request));
 			if (swmf != null) {
 				swmf.put("childTheme", (skin != null && !skin.trim().isEmpty()) ? skin : "raw");

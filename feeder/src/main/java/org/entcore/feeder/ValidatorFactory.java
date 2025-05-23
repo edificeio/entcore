@@ -21,6 +21,7 @@ package org.entcore.feeder;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.DefaultAsyncResult;
+import org.entcore.common.storage.Storage;
 import org.entcore.feeder.csv.CsvValidator;
 import org.entcore.feeder.exceptions.ValidationException;
 import io.vertx.core.AsyncResult;
@@ -32,9 +33,11 @@ import io.vertx.core.json.JsonObject;
 public class ValidatorFactory {
 
 	private final Vertx vertx;
+	private final Storage storage;
 
-	public ValidatorFactory(Vertx vertx) {
+	public ValidatorFactory(Vertx vertx, Storage storage) {
 		this.vertx = vertx;
+		this.storage = storage;
 	}
 
 	public void validator(String importId, final Handler<AsyncResult<ImportValidator>> handler) {
@@ -45,7 +48,7 @@ public class ValidatorFactory {
 				if ("ok".equals(event.body().getString("status")) && result != null) {
 					switch (result.getString("source")) {
 						case "CSV" :
-							handler.handle(new DefaultAsyncResult<ImportValidator>(new CsvValidator(vertx, event.body().getString("language", "fr"), result)));
+							handler.handle(new DefaultAsyncResult<ImportValidator>(new CsvValidator(vertx, event.body().getString("language", "fr"), result, storage)));
 							break;
 						default:
 							handler.handle(new DefaultAsyncResult<ImportValidator>(

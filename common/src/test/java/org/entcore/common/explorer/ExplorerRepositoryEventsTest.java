@@ -11,6 +11,7 @@ import org.entcore.common.explorer.impl.ExplorerRepositoryEvents;
 import org.entcore.common.explorer.to.ExplorerReindexResourcesRequest;
 import org.entcore.common.user.RepositoryEvents;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.ExportResourceResult;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -165,13 +166,13 @@ public class ExplorerRepositoryEventsTest {
             this.report = report;
         }
         @Override
-        public void exportResources(final boolean exportDocuments, final boolean exportSharedResources, final String exportId, final String userId, final JsonArray groups, final String exportPath, final String locale, final String host, final Handler<Boolean> handler) {
-            handler.handle(true);
+        public void exportResources(final boolean exportDocuments, final boolean exportSharedResources, final String exportId, final String userId, final JsonArray groups, final String exportPath, final String locale, final String host, final Handler<ExportResourceResult> handler) {
+            handler.handle(new ExportResourceResult(true, null));
         }
 
         @Override
-        public void exportResources(final JsonArray resourcesIds, final boolean exportDocuments, final boolean exportSharedResources, final String exportId, final String userId, final JsonArray groups, final String exportPath, final String locale, final String host, final Handler<Boolean> handler) {
-            handler.handle(true);
+        public void exportResources(final JsonArray resourcesIds, final boolean exportDocuments, final boolean exportSharedResources, final String exportId, final String userId, final JsonArray groups, final String exportPath, final String locale, final String host, final Handler<ExportResourceResult> handler) {
+            handler.handle(new ExportResourceResult(true, null));
         }
 
         @Override

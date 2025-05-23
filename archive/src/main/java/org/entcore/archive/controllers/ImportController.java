@@ -7,10 +7,8 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
-import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.HttpServerRequest;
@@ -19,44 +17,52 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import org.entcore.archive.services.ImportService;
-import org.entcore.archive.services.impl.DefaultImportService;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserUtils;
-import org.vertx.java.core.http.RouteMatcher;
-
-import java.io.File;
-import java.util.Map;
 
 public class ImportController extends BaseController {
     private static final Logger log = LoggerFactory.getLogger(ImportController.class);
 
     private ImportService importService;
     private Storage storage;
-    private Map<String, Long> archiveInProgress;
 
-    public ImportController(ImportService importService, Storage storage, Map<String, Long> archiveInProgress) {
+    public ImportController(ImportService importService, Storage storage) {
         this.importService = importService;
         this.storage = storage;
-        this.archiveInProgress = archiveInProgress;
+    }
+
+    @Get("/import/clear")
+    public void clear(final HttpServerRequest request) {
+        importService.clear();
+        renderJson(request, new JsonObject().put("ok", true));
     }
 
     @Post("/import/upload")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     public void upload(final HttpServerRequest request) {
         UserUtils.getUserInfos(eb, request, user -> {
-            if (importService.isUserAlreadyImporting(user.getUserId())) {
+            request.pause();
+            importService.isUserAlreadyImporting(user.getUserId())
+            .onSuccess(isAlreadyImported -> {
+                request.resume();
+                if (isAlreadyImported) {
+                    renderError(request);
+                    log.error("[upload] User is already importing " + user.getUsername());
+                } else {
+                    importService.uploadArchive(request, user, handler -> {
+                        if (handler.isLeft()) {
+                            badRequest(request, handler.left().getValue());
+                            log.error("[upload] User import failed " + user.getUsername() + " - " + handler.left().getValue());
+                        } else {
+                            renderJson(request, new JsonObject().put("importId", handler.right().getValue()));
+                        }
+                    });
+                }
+            })
+            .onFailure(th -> {
+                log.error("An error occurred while checking if user import is already running", th);
                 renderError(request);
-                log.error("[upload] User is already importing " + user.getUsername());
-            } else {
-                importService.uploadArchive(request, user, handler -> {
-                    if (handler.isLeft()) {
-                        badRequest(request, handler.left().getValue());
-                        log.error("[upload] User import failed " + user.getUsername()+" - "+handler.left().getValue());
-                    } else {
-                        renderJson(request, new JsonObject().put("importId", handler.right().getValue()));
-                    }
-                });
-            }
+            });
         });
     }
 

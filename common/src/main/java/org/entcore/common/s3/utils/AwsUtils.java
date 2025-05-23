@@ -9,6 +9,8 @@ import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.s3.exception.SignatureException;
 import org.entcore.common.s3.storage.StorageObject;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.Files;
@@ -21,6 +23,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 public class AwsUtils {
 
     private static final Logger log = LoggerFactory.getLogger(AwsUtils.class);
@@ -100,9 +103,11 @@ public class AwsUtils {
   }
 
     public static void setSSEC(HttpClientRequest request, String ssec) {
-      request.putHeader("x-amz-server-side-encryption-customer-algorithm", "AES256");
-      request.putHeader("x-amz-server-side-encryption-customer-key", ssec);
-      request.putHeader("x-amz-server-side-encryption-customer-key-MD5", getOrComputeSSECKeyMD5Sum(ssec));
+      if (isNotEmpty(ssec)) {
+        request.putHeader("x-amz-server-side-encryption-customer-algorithm", "AES256");
+        request.putHeader("x-amz-server-side-encryption-customer-key", ssec);
+        request.putHeader("x-amz-server-side-encryption-customer-key-MD5", getOrComputeSSECKeyMD5Sum(ssec));
+      }
     }
 
     public static void setSSECCopy(HttpClientRequest request, String ssec) {

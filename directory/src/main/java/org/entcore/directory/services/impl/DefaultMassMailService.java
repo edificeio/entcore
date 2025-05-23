@@ -39,13 +39,12 @@ public class DefaultMassMailService extends Renders implements MassMailService {
     private final String node;
     private final Neo4j neo = Neo4j.getInstance();
 
-    public DefaultMassMailService(Vertx vertx, EventBus eb, EmailSender notifHelper, JsonObject config) {
+    public DefaultMassMailService(Vertx vertx, EventBus eb, EmailSender notifHelper, JsonObject config, String node) {
         super(vertx, config);
         this.notifHelper = notifHelper;
         this.vertx = vertx;
         this.eb = eb;
-        String n = (String) vertx.sharedData().getLocalMap("server").get("node");
-        this.node = n == null ? "" : n;
+        this.node = node == null ? "" : node;
     }
 
     public void massMailTypePdf(UserInfos userInfos, final HttpServerRequest request, final String templatePath, final String baseUrl, final String filename, final String type, final JsonArray users) {

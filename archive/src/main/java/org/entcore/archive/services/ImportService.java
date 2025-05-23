@@ -1,10 +1,9 @@
 package org.entcore.archive.services;
 
 import fr.wseduc.webutils.Either;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 
@@ -24,7 +23,9 @@ public interface ImportService {
 
     void imported(String importId, String app, JsonObject importRapport);
 
-    boolean isUserAlreadyImporting(String userId);
+    Future<Boolean> isUserAlreadyImporting(String userId);
 
     String getImportBusAddress(String exportId);
+
+    void clear();
 }
