@@ -26,10 +26,15 @@ import { useAppActions } from '~/store';
  * Mock `success` and `error` functions from useToast hook.
  */
 const mocks = vi.hoisted(() => ({
+  useSelectedFolder: vi.fn(),
   useToast: {
     success: vi.fn(),
     error: vi.fn(),
   },
+}));
+
+vi.mock('~/hooks/useSelectedFolder', () => ({
+  useSelectedFolder: mocks.useSelectedFolder,
 }));
 
 vi.mock('@edifice.io/react', async () => {
@@ -52,6 +57,7 @@ vi.mock('@edifice.io/react', async () => {
 
 describe('RenameFolderModal component', () => {
   beforeEach(async () => {
+    mocks.useSelectedFolder.mockReturnValue({ folderId: 'inbox' });
     const { result } = renderHook(useAppActions);
     const setSelectedFolders = await waitFor(() => {
       expect(result.current.setSelectedFolders).toBeDefined();
