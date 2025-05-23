@@ -8,7 +8,7 @@ import {
   useQueryClient,
 } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useI18n } from '~/hooks/useI18n';
 import { useMessageIdAndAction } from '~/hooks/useMessageIdAndAction';
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
@@ -131,7 +131,6 @@ export const useMessageQuery = (messageId: string) => {
  */
 const useToggleUnread = (unread: boolean) => {
   const { folderId } = useSelectedFolder();
-  console.log('??folderId:', folderId);
   const { updateFolderMessagesQueryData } = useFolderUtils();
   const queryClient = useQueryClient();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
@@ -206,7 +205,7 @@ export const useMarkUnread = () => {
  * @returns Mutation result for moving the message to the trash.
  */
 export const useTrashMessage = () => {
-  const { folderId } = useSelectedFolder();
+  const { folderId } = useParams() as { folderId: string };
   const [searchParams] = useSearchParams();
   const search = searchParams.get('search');
   const unreadFilter = searchParams.get('unread');
@@ -215,7 +214,7 @@ export const useTrashMessage = () => {
   const toast = useToast();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
   const { messages, fetchNextPage, hasNextPage } = useFolderMessages(
-    folderId!,
+    folderId,
     false,
   );
 
