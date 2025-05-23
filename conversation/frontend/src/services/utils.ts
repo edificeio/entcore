@@ -40,23 +40,21 @@ export type FolderTreeItem = TreeItem & { folder: Folder };
  * @return a tree of custom TreeItems.
  */
 export function buildTree(folders: Folder[], maxDepth?: number) {
-  return folders
-    .sort((a, b) => (a.name < b.name ? -1 : a.name == b.name ? 0 : 1))
-    .map((folder) => {
-      const item = {
-        id: folder.id,
-        name: folder.name,
-        folder,
-      } as FolderTreeItem;
-      if (
-        folder.subFolders &&
-        (typeof maxDepth === 'undefined' || folder.depth < maxDepth)
-      ) {
-        item.section = true;
-        item.children = buildTree(folder.subFolders, maxDepth);
-      }
-      return item;
-    });
+  return folders.map((folder) => {
+    const item = {
+      id: folder.id,
+      name: folder.name,
+      folder,
+    } as FolderTreeItem;
+    if (
+      folder.subFolders &&
+      (typeof maxDepth === 'undefined' || folder.depth < maxDepth)
+    ) {
+      item.section = true;
+      item.children = buildTree(folder.subFolders, maxDepth);
+    }
+    return item;
+  });
 }
 
 /**
