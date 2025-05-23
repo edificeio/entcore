@@ -1,5 +1,7 @@
 package org.entcore.common.folders;
 
+import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
+
 import java.io.File;
 import java.util.Map;
 import java.util.HashMap;
@@ -137,16 +139,18 @@ public class FolderImporter
 		this.fs = fs;
 		this.eb = eb;
 		this.throwErrors = throwErrors;
-		try{
-			final LocalMap<Object, Object> serverMap = vertx.sharedData().getLocalMap("server");
-			if(serverMap.containsKey("archiveConfig")){
-				final String archiveConfig = serverMap.get("archiveConfig").toString();
-				final JsonObject archiveConfigJson = new JsonObject(archiveConfig);				
-				this.busTimeoutSec = archiveConfigJson.getInteger("storageTimeout", 600);
-			}
-		}catch(Exception e){
-			log.error("Could not read archive config:", e);
-		}
+		vertx.sharedData().<String, String>getLocalAsyncMap("server")
+			.compose(serverMap -> serverMap.get("archiveConfig"))
+			.onSuccess(archiveConfig -> {
+				try {
+					if (isNotEmpty(archiveConfig)){
+						final JsonObject archiveConfigJson = new JsonObject(archiveConfig);
+						this.busTimeoutSec = archiveConfigJson.getInteger("storageTimeout", 600);
+					}
+				}catch(Exception e){
+					log.error("Could not read archive config:", e);
+				}
+            }).onFailure(ex -> log.error("Error when get FolderImporter config", ex));
 	}
 
 	public void setBusTimeoutSec(Integer busTimeoutSec) {
@@ -236,7 +240,9 @@ public class FolderImporter
 																	.put("oldFileId", fileId)
 																	.put("filePath", filePath)
 																	.put("userId", context.userId);
-		final DeliveryOptions options = new DeliveryOptions().setSendTimeout(this.busTimeoutSec * 1000);
+		final DeliveryOptions options = new DeliveryOptions()
+                .setSendTimeout(this.busTimeoutSec * 1000)
+                .setLocalOnly(true);
 		this.eb.request("org.entcore.workspace", importParams, options, new Handler<AsyncResult<Message<JsonObject>>>()
 		{
 			@Override
@@ -376,17 +382,20 @@ public class FolderImporter
 			{
 				if(result.succeeded() == false)
 				{
+                    log.error("An error occurred while reading " + context.basePath, result.cause());
 					context.addError(null, null, "Failed to read document folder", result.cause().getMessage());
 					throw new RuntimeException(result.cause());
 				}
 				else
 				{
 					List<String> filesInDir = result.result();
+                    log.debug("Read files from " + context.basePath + " : " + filesInDir);
 
 					LinkedList<Future> futures = new LinkedList<Future>();
 
 					fileFor: for(String filePath : filesInDir)
 					{
+                        log.debug("Reading file " + filePath);
 						Promise<Void> future = Promise.promise();
 						futures.add(future.future());
 
@@ -399,6 +408,7 @@ public class FolderImporter
 							if(m.find() == false)
 							{
 								String error = "Filename " + fileTrunc + "does not contain the file id";
+                                log.debug(error);
 								context.addError(null, null, error, null);
 								future.fail(new RuntimeException(error));
 

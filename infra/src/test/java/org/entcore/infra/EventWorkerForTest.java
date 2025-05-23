@@ -19,7 +19,7 @@ public class EventWorkerForTest extends BusModBase implements Handler<Message<Js
     @Override
     public void start() {
         super.start();
-        vertx.eventBus().localConsumer(EventWorkerForTest.class.getSimpleName(), this);
+        vertx.eventBus().consumer(EventWorkerForTest.class.getSimpleName(), this);
     }
 
     @Override

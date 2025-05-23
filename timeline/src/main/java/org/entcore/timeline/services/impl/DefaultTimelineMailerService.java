@@ -29,7 +29,6 @@ import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.neo4j.Neo4j;
@@ -68,7 +67,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 	private final EventBus eb;
 	private Map<String, String> registeredNotifications;
 	private TimelineConfigService configService;
-	private LocalMap<String, String> eventsI18n;
+	private Map<String, String> eventsI18n;
 	private HashMap<String, JsonObject> lazyEventsI18n;
 	private final EmailSender emailSender;
 	private final int USERS_LIMIT;
@@ -79,7 +78,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 	public DefaultTimelineMailerService(Vertx vertx, JsonObject config) {
 		super(vertx, config);
 		eb = Server.getEventBus(vertx);
-		EmailFactory emailFactory = new EmailFactory(this.vertx, config);
+		EmailFactory emailFactory = EmailFactory.getInstance();
 		emailSender = emailFactory.getSenderWithPriority(EmailFactory.PRIORITY_VERY_LOW);
 		USERS_LIMIT = config.getInteger("users-loop-limit", 25);
 		QUERY_TIMEOUT = config.getLong("query-timeout", 300000L);
@@ -916,7 +915,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 		this.registeredNotifications = registeredNotifications;
 	}
 
-	public void setEventsI18n(LocalMap<String, String> eventsI18n) {
+	public void setEventsI18n(Map<String, String> eventsI18n) {
 		this.eventsI18n = eventsI18n;
 	}
 

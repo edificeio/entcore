@@ -20,7 +20,9 @@
 package org.entcore.directory.services;
 
 import fr.wseduc.webutils.Either;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 import org.entcore.directory.pojo.ImportInfos;
@@ -46,4 +48,7 @@ public interface ImportService {
 	void deleteLine(String importId, String profile, Integer line, Handler<Either<String,JsonObject>> handler);
 
 	void findById(String importId,  Handler<Either<String,JsonObject>> handler);
-}
+
+	void uploadImport(final HttpServerRequest request, final Handler<AsyncResult<ImportInfos>> handler);
+
+	}

@@ -27,6 +27,7 @@ import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.storage.Storage;
 
 import java.io.File;
 import java.util.*;
@@ -156,7 +157,7 @@ public class ImportInfos {
 		this.classesMapping = (classesMapping != null) ? classesMapping.getMap() : null;
 	}
 
-	public void validate(final boolean isAdmc, final Vertx vertx, final Handler<AsyncResult<String>> handler) {
+	public void validate(final boolean isAdmc, final Vertx vertx, Storage storage, final Handler<AsyncResult<String>> handler) {
 		if (isAdmc && isEmpty(structureExternalId)) {
 			structureExternalId = UUID.randomUUID().toString();
 		}
@@ -178,7 +179,7 @@ public class ImportInfos {
 							CompositeFuture.all(futures).onComplete(ar -> {
 								if (ar.succeeded()) {
 									if (ar.result().list().stream().allMatch(size -> ((Long) size) < MAX_FILE_SIZE)) {
-										moveFiles(list.result(), fs, handler);
+										moveFiles(path, storage, handler);
 									} else {
 										handler.handle(new DefaultAsyncResult<>("csv.file.too.long"));
 									}
@@ -212,35 +213,13 @@ public class ImportInfos {
 		return future.future();
 	}
 
-	private void moveFiles(final List<String> l, final FileSystem fs, final Handler<AsyncResult<String>> handler) {
-		final String p = path + File.separator + structureName +
-				(isNotEmpty(structureExternalId) ? "@" + structureExternalId: "") + "_" +
-				(isNotEmpty(UAI) ? UAI : "") + "_" + (isNotEmpty(overrideClass) ? overrideClass : "");
-		fs.mkdir(p, new Handler<AsyncResult<Void>>() {
-			@Override
-			public void handle(AsyncResult<Void> event) {
-				if (event.succeeded()) {
-					final AtomicInteger count = new AtomicInteger(l.size());
-					for (String f: l) {
-						fs.move(f, p + File.separator + f.substring(path.length() + 1), new Handler<AsyncResult<Void>>() {
-							@Override
-							public void handle(AsyncResult<Void> event2) {
-								if (event2.succeeded()) {
-									if (count.decrementAndGet() == 0) {
-										handler.handle(new DefaultAsyncResult<>((String) null));
-									}
-								} else {
-									count.set(-1);
-									handler.handle(new DefaultAsyncResult<String>(event2.cause()));
-								}
-							}
-						});
-					}
-				} else {
-					handler.handle(new DefaultAsyncResult<String>(event.cause()));
-				}
-			}
-		});
+	private void moveFiles(final String directoryToMove, final Storage storage, final Handler<AsyncResult<String>> handler) {
+		final String targetPath = path + File.separator + structureName +
+				(isNotEmpty(structureExternalId) ? "@" + structureExternalId: "") +
+				(isNotEmpty(UAI) ? "_" + UAI : "") + (isNotEmpty(overrideClass) ? "_" + overrideClass : "");
+		storage.moveFsDirectory(directoryToMove, targetPath)
+				.onSuccess(event -> handler.handle(new DefaultAsyncResult<>((String) null)))
+				.onFailure(th -> handler.handle(new DefaultAsyncResult<>(th.getCause())));
 	}
 
 }

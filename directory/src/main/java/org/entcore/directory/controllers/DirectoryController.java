@@ -26,9 +26,11 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.data.FileResolver;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.security.BCrypt;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -44,7 +46,6 @@ import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.neo4j.Neo;
-import org.entcore.common.user.position.UserPositionService;
 import org.entcore.directory.security.AdmlOfStructuresByExternalId;
 import org.entcore.directory.services.*;
 import org.vertx.java.core.http.RouteMatcher;
@@ -74,13 +75,16 @@ public class DirectoryController extends BaseController {
 	private SlotProfileService slotProfileService;
 	private EventStore eventStore;
 
-	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
-			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
+	public Future<Void> initAsync(Vertx vertx, JsonObject config, RouteMatcher rm,
+                                Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
 		this.neo = new Neo(vertx, eb,log);
 		this.config = config;
-		this.admin = new JsonObject(vertx.fileSystem().readFileBlocking("super-admin.json").toString());
-		eventStore = EventStoreFactory.getFactory().getEventStore(UserBookController.ANNUAIRE_MODULE);
+    eventStore = EventStoreFactory.getFactory().getEventStore(UserBookController.ANNUAIRE_MODULE);
+    return vertx.fileSystem().readFile(FileResolver.absolutePath("super-admin.json"))
+      .onSuccess(buffer -> {
+        this.admin = buffer.toJsonObject();
+      }).mapEmpty();
 	}
 
 	@Get("/admin-console")

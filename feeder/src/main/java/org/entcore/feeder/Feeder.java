@@ -22,12 +22,17 @@ package org.entcore.feeder;
 import fr.wseduc.cron.CronTrigger;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.common.bus.MessageReplyNotifier;
+import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.notification.TimelineHelper;
@@ -102,19 +107,29 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	private EDTUtils edtUtils;
 	private ValidatorFactory validatorFactory;
 
-	@Override
-	public void start() {
+	public void start(Promise<Void> startPromise) {
 		super.start();
-		storage = new StorageFactory(vertx, config).getStorage();
+		final SharedDataHelper sharedDataHelper = SharedDataHelper.getInstance();
+		sharedDataHelper.init(vertx);
+		sharedDataHelper.<String, Object>getLocalMulti("server", "neo4jConfig", "node")
+				.compose(feederConfigMap -> StorageFactory.build(vertx, config)
+						.map(storageFactory -> Pair.of(feederConfigMap, storageFactory)))
+				.compose(configPair -> initFeeder(configPair.getLeft(), configPair.getRight()))
+				.onComplete(startPromise);
+	}
+
+	public Future<Void> initFeeder(Map<String,Object> feederMap, StorageFactory storageFactory) {
+		storage = storageFactory.getStorage();
+		EmailFactory.build(vertx, config);
 		FeederLogger.init(config);
-		String node = (String) vertx.sharedData().getLocalMap("server").get("node");
+		String node = (String) feederMap.get("node");
 		if (node == null) {
 			node = "";
 		}
-		String neo4jConfig = (String) vertx.sharedData().getLocalMap("server").get("neo4jConfig");
+		JsonObject neo4jConfig = config.getJsonObject("neo4jConfig");
 		if (neo4jConfig != null) {
 			neo4j = Neo4j.getInstance();
-			neo4j.init(vertx, new JsonObject(neo4jConfig).put("ignore-empty-statements-error", config.getBoolean("ignore-empty-statements-error", false)));
+			neo4j.init(vertx, neo4jConfig.put("ignore-empty-statements-error", config.getBoolean("ignore-empty-statements-error", false)));
 		}
 		MongoDb.getInstance().init(vertx.eventBus(), node + "wse.mongodb.persistor");
 		TransactionManager.getInstance().setNeo4j(neo4j);
@@ -174,7 +189,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		} catch (ParseException e) {
 			logger.fatal(e.getMessage(), e);
 			vertx.close();
-			return;
+			return Future.failedFuture(e);
 		}
 		final String reinitLoginCron = config.getString("reinit-login-cron", null);
 		Validator.initLogin(neo4j, vertx);
@@ -250,7 +265,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			}
 		}
 		I18n.getInstance().init(vertx);
-		validatorFactory = new ValidatorFactory(vertx);
+		validatorFactory = new ValidatorFactory(vertx, storage);
+		return Future.succeededFuture();
 	}
 
 	private void setupImportCron(JsonObject cronConf, ImportsLauncher launcher)
@@ -516,7 +532,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	}
 
 	private void csvClassesMapping(final Message<JsonObject> message) {
-		final CsvValidator v = new CsvValidator(vertx, message.body().getString("langage"),message.body());
+		final CsvValidator v = new CsvValidator(vertx, message.body().getString("langage"),message.body(), storage);
 		String path = message.body().getString("path");
 		v.classesMapping(path, new Handler<JsonObject>() {
 			@Override
@@ -590,7 +606,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	private void csvColumnMapping(final Message<JsonObject> message) {
 		final String acceptLanguage = message.body().getString("language", "fr");
 		final CsvValidator v = new CsvValidator(vertx, acceptLanguage,
-				this.config.getJsonObject("csvMappings", new JsonObject()));
+				this.config.getJsonObject("csvMappings", new JsonObject()), storage);
 		String path = message.body().getString("path");
 		v.columnsMapping(path, new Handler<JsonObject>() {
 			@Override
@@ -613,7 +629,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		final ImportValidator v;
 		switch (source) {
 			case "CSV":
-				v = new CsvValidator(vertx, acceptLanguage, message.body());
+				v = new CsvValidator(vertx, acceptLanguage, message.body(), storage);
 				break;
 			case "AAF":
 			case "AAF1D":

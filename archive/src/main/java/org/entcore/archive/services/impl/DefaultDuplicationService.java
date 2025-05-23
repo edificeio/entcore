@@ -3,6 +3,7 @@ package org.entcore.archive.services.impl;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
@@ -30,7 +31,6 @@ import org.entcore.common.user.UserInfos;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.util.Map;
-import java.util.Optional;
 
 import static io.vertx.core.json.JsonObject.mapFrom;
 import static java.lang.System.currentTimeMillis;
@@ -44,19 +44,25 @@ public class DefaultDuplicationService implements DuplicationService
 
     private final ExportService exportService;
     private final ImportService importService;
-    private final IExplorerPluginCommunication explorerPluginCommunication;
+    private IExplorerPluginCommunication explorerPluginCommunication;
 
-    public DefaultDuplicationService(Vertx vertx, JsonObject config, Storage storage, String importPath, PrivateKey signKey, PublicKey verifyKey, boolean forceEncryption)
+    public DefaultDuplicationService(Vertx vertx, JsonObject config, Storage storage, String importPath, PrivateKey signKey,
+                                     PublicKey verifyKey, boolean forceEncryption, final Promise<Void> startPromise)
     {
       this.eb = vertx.eventBus();
       this.fs = vertx.fileSystem();
 
       String tmpDir = System.getProperty("java.io.tmpdir");
       this.exportService = new FileSystemExportService(vertx, vertx.fileSystem(), vertx.eventBus(), tmpDir, "duplicate:export", null,
-              storage, null, null, signKey, forceEncryption);
+              storage, null, signKey, forceEncryption);
       this.importService = new DefaultImportService(vertx, config, storage, importPath, "duplicate:import", verifyKey, forceEncryption);
       try {
-        this.explorerPluginCommunication = ExplorerPluginFactory.getCommunication();
+        ExplorerPluginFactory.getCommunication()
+          .onSuccess(communication -> {
+            this.explorerPluginCommunication = communication;
+            startPromise.complete();
+          })
+          .onFailure(startPromise::fail);
       } catch (Exception e) {
         throw new IllegalStateException("explorer plugin communication could not be started", e);
       }
@@ -194,9 +200,9 @@ public class DefaultDuplicationService implements DuplicationService
   }
 
   @Override
-  public void exported(final String exportId, String status, final String locale, final String host)
+  public void onExportDone(final String exportId, String status, final String locale, final String host, final String app)
   {
-    this.exportService.exported(exportId, status, locale, host);
+    this.exportService.onExportDone(exportId, status, locale, host, app);
   }
 
   @Override

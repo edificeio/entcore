@@ -2,6 +2,8 @@ package org.entcore.common.datavalidation.metrics;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.metrics.MetricsOptions;
 import io.vertx.micrometer.MicrometerMetricsOptions;
 
@@ -14,6 +16,9 @@ import java.util.Map;
  * configured then it creates a dummy recorder that records nothing.
  */
  public class DataValidationMetricsFactory {
+
+    private static final Logger log = LoggerFactory.getLogger(DataValidationMetricsFactory.class);
+
     private static MetricsOptions metricsOptions;
     private static DataValidationMetricsRecorder metricsRecorder;
     private static JsonObject config;
@@ -21,12 +26,19 @@ import java.util.Map;
     public static void init(final Vertx vertx, final JsonObject config){
         DataValidationMetricsFactory.config = config;
         if(config.getJsonObject("metricsOptions") == null) {
-            final String metricsOptions = (String) vertx.sharedData().getLocalMap("server").get("metricsOptions");
-            if(metricsOptions == null){
+            vertx.sharedData().<String, String>getLocalAsyncMap("server")
+            .compose(serverMap -> serverMap.get("metricsOptions"))
+            .onSuccess(metricsOptions -> {
+                if(metricsOptions == null){
+                    DataValidationMetricsFactory.metricsOptions = new MetricsOptions().setEnabled(false);
+                }else{
+                    DataValidationMetricsFactory.metricsOptions = new MetricsOptions(new JsonObject(metricsOptions));
+                }
+            })
+            .onFailure(ex -> {
+                log.error("Error get metricsOptions in server map.", ex);
                 DataValidationMetricsFactory.metricsOptions = new MetricsOptions().setEnabled(false);
-            }else{
-                DataValidationMetricsFactory.metricsOptions = new MetricsOptions(new JsonObject(metricsOptions));
-            }
+            });
         } else {
             metricsOptions = new MetricsOptions(config.getJsonObject("metricsOptions"));
         }

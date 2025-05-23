@@ -103,10 +103,9 @@ public class NewDeviceWarningTask extends TemplatedEmailRenders implements Handl
 
     private static final Logger log = LoggerFactory.getLogger(NewDeviceWarningTask.class);
 
-	public NewDeviceWarningTask(Vertx vertx, JsonObject config, EmailSender sender, String mailFrom, boolean includeADMC, boolean includeADML, boolean includeUsers, int scoreThreshold, int batchLimit, String processInterval)
+	public NewDeviceWarningTask(Vertx vertx, JsonObject config, EmailSender sender, String mailFrom, boolean includeADMC, boolean includeADML, boolean includeUsers, int scoreThreshold, int batchLimit, String processInterval, String eventStoreConf)
     {
         super(vertx, config);
-		final String eventStoreConf = (String) vertx.sharedData().getLocalMap("server").get("event-store");
 		if (eventStoreConf != null)
         {
 			final JsonObject eventStoreConfig = new JsonObject(eventStoreConf);
