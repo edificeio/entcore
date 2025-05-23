@@ -52,7 +52,8 @@ export function RecipientListEdit({
         id: recipient.id,
         displayName: recipient.displayName,
         size: recipient.nbUsers || 0,
-        subType: recipient.type,
+        type: recipient.groupType,
+        subType: recipient.profile,
       };
       recipients.groups.push(recipientToAdd);
       setRecipientArray((prev) => [...prev, recipientToAdd]);

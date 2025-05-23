@@ -21,8 +21,9 @@ export function MessageEditHeader({ message }: MessageHeaderProps) {
   );
 
   const alertOnGroupsFilter = (group: Group) =>
-    group.type === 'Profile' &&
-    (group.subType === 'Student' || group.subType === 'Relative');
+    group.subType &&
+    group.type == 'ProfileGroup' &&
+    ['Student', 'Relative', 'ClassGroup'].includes(group.subType);
   const alertOnGroups =
     to.groups.findIndex(alertOnGroupsFilter) >= 0 ||
     cc.groups.findIndex(alertOnGroupsFilter) >= 0;
