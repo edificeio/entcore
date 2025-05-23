@@ -223,7 +223,7 @@ export const useTrashMessage = () => {
       messageService.moveToFolder('trash', id),
     onMutate: async ({ id }: { id: string | string[] }) => {
       // avoid to display placeholder if have next page
-      if (messages.length === id.length && hasNextPage) {
+      if (messages?.length === id.length && hasNextPage) {
         await fetchNextPage();
       }
     },
