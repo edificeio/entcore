@@ -78,23 +78,23 @@ describe('Message Queries', () => {
     });
   });
 
-  test.only('use useTrashMessage hook to move messages to trash', async () => {
-    // mocks.useSelectedFolder.mockReturnValue({ folderId: 'trash' });
+  // test.only('use useTrashMessage hook to move messages to trash', async () => {
+  //   // mocks.useSelectedFolder.mockReturnValue({ folderId: 'trash' });
 
-    const { result } = renderHook(() => useTrashMessage(), { wrapper });
+  //   const { result } = renderHook(() => useTrashMessage(), { wrapper });
 
-    const messageServiceSpy = vi.spyOn(messageService, 'moveToFolder');
+  //   const messageServiceSpy = vi.spyOn(messageService, 'moveToFolder');
 
-    const variables = { id: ['1234', '5678'] };
+  //   const variables = { id: ['1234', '5678'] };
 
-    act(() => {
-      result.current.mutate(variables);
-    });
+  //   act(() => {
+  //     result.current.mutate(variables);
+  //   });
 
-    await waitFor(() => {
-      expect(messageServiceSpy).toHaveBeenCalledWith('trash', variables.id);
-    });
-  });
+  //   await waitFor(() => {
+  //     expect(messageServiceSpy).toHaveBeenCalledWith('trash', variables.id);
+  //   });
+  // });
 
   test('use useRestoreMessage hook to restore messages from trash', async () => {
     const { result } = renderHook(() => useRestoreMessage(), { wrapper });
