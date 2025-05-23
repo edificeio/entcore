@@ -22,7 +22,12 @@ package org.entcore.session;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.collections.SharedDataHelper;
+
 import static fr.wseduc.webutils.Utils.getOrElse;
+import static io.vertx.core.Future.failedFuture;
+
+import fr.wseduc.webutils.request.CookieHelper;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -31,7 +36,9 @@ import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.shareddata.LocalMap;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.cache.CacheService;
@@ -44,11 +51,14 @@ import org.vertx.java.busmods.BusModBase;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 public class AuthManager extends BusModBase implements Handler<Message<JsonObject>> {
+
+	private Logger log = LoggerFactory.getLogger(AuthManager.class);
 
 	public static final String SESSIONS_COLLECTION = "sessions";
 	public static final String OAUTH_AUTH_INFO_COLLECTION = "authorizations";
@@ -62,32 +72,40 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	protected Boolean cluster;
 	protected boolean xsrfOnAuth;
 
-	public void start() {
+	public void start(Promise<Void> startPromise) {
 		super.start();
-		BrokerProxyUtils.addBrokerProxy(new SessionBrokerListenerImpl(this), vertx);
+		final SharedDataHelper sharedDataHelper = SharedDataHelper.getInstance();
+		sharedDataHelper.init(vertx);
+		sharedDataHelper.<String, String>getLocalMulti("server", "signKey", "sameSiteValue")
+			.compose(serverConfig -> {
+				CookieHelper.getInstance().init(
+						serverConfig.get("signKey"), serverConfig.get("sameSiteValue"), log);
+				return initSession(config.getMap())
+						.onComplete(startPromise);
+			})
+			.onComplete(startPromise);
+	}
 
-		LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
-
-		String neo4jConfig = (String) server.get("neo4jConfig");
+	public Future<Void> initSession(Map<String, Object> sessionMap) {
+        BrokerProxyUtils.addBrokerProxy(new SessionBrokerListenerImpl(this), vertx);
+        final JsonObject neo4jConfig = (JsonObject) sessionMap.get("neo4jConfig");
 		neo4j = Neo4j.getInstance();
-		neo4j.init(vertx, new JsonObject(neo4jConfig));
+		neo4j.init(vertx, neo4jConfig);
 
-		cluster = (Boolean) server.get("cluster");
-		String node = (String) server.get("node");
+		cluster = vertx.isClustered();
+		String node = (String) sessionMap.get("node");
 		mongo = MongoDb.getInstance();
 		mongo.init(vertx.eventBus(), node + config.getString("mongo-address", "wse.mongodb.persistor"));
-
-		sessionStore = new MapSessionStore(vertx, cluster, config);
 
 		this.xsrfOnAuth = config.getBoolean("xsrfOnAuth", true);
 
 		try
 		{
-			Object oauthCacheConf = server.get("oauthCache");
+            JsonObject oauthCacheConf = (JsonObject) sessionMap.get("oauthCache");
 			if(oauthCacheConf != null)
 			{
-				JsonObject redisConfig = new JsonObject((String) server.get("redisConfig"));
-				if(new JsonObject((String)oauthCacheConf).getBoolean("enabled", false) == true)
+				JsonObject redisConfig = (JsonObject)sessionMap.get("redisConfig");
+				if(oauthCacheConf.getBoolean("enabled", false) == true)
 				{
 					Redis.getInstance().init(vertx, redisConfig);
 					this.OAuthCacheService = CacheService.create(vertx);
@@ -97,10 +115,15 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		catch(Exception e)
 		{
 			logger.error("Failed to create OAuthCacheService: " + e.getMessage());
+			return failedFuture(e);
 		}
 
-		final String address = getOptionalStringConfig("address", "wse.session");
-		eb.localConsumer(address, this);
+		if (AuthManager.class.getName().equals(this.getClass().getName())) {
+			sessionStore = new MapSessionStore(vertx, cluster, config);
+			final String address = getOptionalStringConfig("address", "wse.session");
+			eb.consumer(address, this);
+		}
+		return Future.succeededFuture();
 	}
 
 	@Override

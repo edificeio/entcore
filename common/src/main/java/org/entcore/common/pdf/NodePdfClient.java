@@ -47,13 +47,14 @@ import static fr.wseduc.webutils.Utils.isEmpty;
 public class NodePdfClient implements PdfGenerator {
 
 	private static final Logger log = LoggerFactory.getLogger(NodePdfClient.class);
-	private final Vertx vertx;
-	private final HttpClient client;
-	private final String authHeader;
-	private final String clientId;
-	private final PdfMetricsRecorder metricsRecorder;
+	private Vertx vertx;
+	private HttpClient client;
+	private String authHeader;
+	private String clientId;
+	private PdfMetricsRecorder metricsRecorder;
+	private String signKey;
 
-	public NodePdfClient(Vertx vertx, JsonObject conf) throws URISyntaxException {
+	public void init(Vertx vertx, JsonObject conf, String signKey, String metricsOptions) throws URISyntaxException {
 		this.vertx = vertx;
 		this.authHeader = "Basic " + conf.getString("auth");
 		this.clientId = conf.getString("pdf-connector-id");
@@ -67,8 +68,9 @@ public class NodePdfClient implements PdfGenerator {
 				.setHttp2KeepAliveTimeout(conf.getInteger("pdf-keepalive-timeout", HttpClientOptions.DEFAULT_HTTP2_KEEP_ALIVE_TIMEOUT))
 				.setDefaultHost(uri.getHost()).setDefaultPort(uri.getPort()).setSsl("https".equals(uri.getScheme()));
 		this.client = vertx.createHttpClient(options);
-		PdfMetricsRecorderFactory.init(vertx, conf);
+		PdfMetricsRecorderFactory.init(vertx, conf, metricsOptions);
 		this.metricsRecorder = PdfMetricsRecorderFactory.getPdfMetricsRecorder();
+		this.signKey = signKey;
 	}
 
 	@Override
@@ -230,7 +232,7 @@ public class NodePdfClient implements PdfGenerator {
 
 	@Override
 	public String createToken(UserInfos user) throws Exception {
-		final String token = UserUtils.createJWTToken(vertx, user, clientId, null);
+		final String token = UserUtils.createJWTToken(vertx, user, clientId, null, signKey);
 		if (isEmpty(token)) {
 			throw new PdfException("invalid.token");
 		}

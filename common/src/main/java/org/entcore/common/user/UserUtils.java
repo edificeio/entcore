@@ -38,8 +38,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.neo4j.Neo4j;
+import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.session.SessionRecreationRequest;
 import org.entcore.common.utils.HostUtils;
 import org.entcore.common.utils.StringUtils;
@@ -242,6 +242,13 @@ public class UserUtils {
 		}
 		m.put("reverseUnion", reverseUnion);
 		m.put("userId", userId);
+		// LocalMap<Object, Object> serverConfig = vertx.sharedData().getLocalMap("server");
+		// final int timeout;
+		// if (serverConfig != null) {
+		// 	timeout = (int) serverConfig.getOrDefault("findVisiblesTimeout", DEFAULT_VISIBLES_TIMEOUT);
+		// } else {
+		// 	timeout = DEFAULT_VISIBLES_TIMEOUT;
+		// }
 
 		Promise<JsonArray> promise = Promise.promise();
 		eb.request(COMMUNICATION_USERS, m, new DeliveryOptions().setSendTimeout(getFindVisiblesTimeout()), new Handler<AsyncResult<Message<JsonArray>>>() {
@@ -1059,6 +1066,7 @@ public class UserUtils {
 					if (res.succeeded() && "ok".equals(res.result().body().getString("status"))) {
 						handler.handle(res.result().body().getString("sessionId"));
 					} else {
+                        log.error("An error occurred while creating session for user " + userId, res.cause());
 						handler.handle(null);
 					}
 				}
@@ -1223,8 +1231,9 @@ public class UserUtils {
 		});
 	}
 
-	public static String createJWTToken(Vertx vertx, UserInfos user, String clientId, HttpServerRequest request) throws Exception {
-		final JWT jwt = new JWT(vertx, (String) vertx.sharedData().getLocalMap("server").get("signKey"), null);
+	public static String createJWTToken(Vertx vertx, UserInfos user, String clientId,
+			HttpServerRequest request, String signKey) throws Exception {
+		final JWT jwt = new JWT(vertx, signKey, null);
 		final JsonObject payload = createJWTClaim(
 			user.getUserId(), clientId, JWT_TOKEN_EXPIRATION_TIME,
 			(request != null) ? Renders.getHost(request) : null
@@ -1245,9 +1254,10 @@ public class UserUtils {
 	 * @throws Exception
 	 */
 	public static String createJWTForQueryParam(
-				Vertx vertx, String userId, String clientId, long ttlInSeconds, HttpServerRequest request
+				Vertx vertx, String userId, String clientId, long ttlInSeconds,
+				HttpServerRequest request, String signKey
 			) throws Exception {
-		final JWT jwt = new JWT(vertx, (String) vertx.sharedData().getLocalMap("server").get("signKey"), null);
+		final JWT jwt = new JWT(vertx, signKey, null);
 		final JsonObject payload = createJWTClaim(userId, clientId,
 			(0>=ttlInSeconds || ttlInSeconds>JWT_TOKEN_EXPIRATION_TIME) ? JWT_TOKEN_EXPIRATION_TIME : ttlInSeconds,
 			(request != null) ? Renders.getHost(request) : null

@@ -20,8 +20,11 @@
 package org.entcore.workspace;
 
 import java.util.HashMap;
+import java.util.Map;
 
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.broker.api.utils.AddressParameter;
 import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.folders.FolderManager;
@@ -46,6 +49,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.http.HttpServerOptions;
 
@@ -53,20 +57,31 @@ public class Workspace extends BaseServer {
 
 	public static final String REVISIONS_COLLECTION = "documentsRevisions";
 	private static final Logger log = LoggerFactory.getLogger(Workspace.class);
+
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
-		WorkspaceResourcesProvider resourceProvider = new WorkspaceResourcesProvider();
-		setResourceProvider(resourceProvider);
-		super.start(startPromise);
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future()
+				.compose(init -> SharedDataHelper.getInstance().<String, Object>getLocalMulti("server", "node"))
+				.compose(workspaceConfigMap ->
+						StorageFactory.build(vertx, config, new MongoDBApplicationStorage(DocumentDao.DOCUMENTS_COLLECTION, Workspace.class.getSimpleName()))
+								.map(storageFactory -> Pair.of(workspaceConfigMap, storageFactory)))
+				.compose(configPair -> initWorkspace(configPair.getLeft(), configPair.getRight()))
+				.onComplete(startPromise);
+	}
 
-		Storage storage = new StorageFactory(vertx, config,
-				new MongoDBApplicationStorage(DocumentDao.DOCUMENTS_COLLECTION, Workspace.class.getSimpleName())).getStorage();
+	public Future<Void> initWorkspace(final Map<String, Object> workspaceMap, StorageFactory storageFactory) {
+		WorkspaceResourcesProvider resourceProvider = new WorkspaceResourcesProvider();
+		setDefaultResourceFilter(resourceProvider);
+
+		Storage storage = storageFactory.getStorage();
 
 		final boolean neo4jPlugin = config.getBoolean("neo4jPlugin", false);
 		final QuotaService quotaService = new DefaultQuotaService(neo4jPlugin,
 				new TimelineHelper(vertx, vertx.eventBus(), config));
 
-		String node = (String) vertx.sharedData().getLocalMap("server").get("node");
+		String node = (String) workspaceMap.get("node");
 		if (node == null) {
 			node = "";
 		}
@@ -134,6 +149,7 @@ public class Workspace extends BaseServer {
 		// add broker listener for workspace resources
 		BrokerProxyUtils.addBrokerProxy(new ResourceBrokerListenerImpl(), vertx, new AddressParameter("application", "workspace"));
 
+		return Future.succeededFuture();
 	}
 
 }

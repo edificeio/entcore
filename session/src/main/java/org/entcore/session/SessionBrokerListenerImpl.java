@@ -1,6 +1,5 @@
 package org.entcore.session;
 
-import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import io.vertx.core.Future;
@@ -47,10 +46,10 @@ public class SessionBrokerListenerImpl implements SessionBrokerListener {
         this.authManager = authManager;
         final Vertx vertx = authManager.getVertx();
         this.serverConfig = authManager.getVertx().sharedData().getLocalMap("server");
-        // init cookie helper
-        CookieHelper.getInstance().init((String) serverConfig.get("signKey"),
-                (String) serverConfig.get("sameSiteValue"),
-                io.vertx.core.logging.LoggerFactory.getLogger(getClass()));
+        // Do not initialize it here because it was already initialized in AuthManager
+        //CookieHelper.getInstance().init((String) serverConfig.get("signKey"),
+        //        (String) serverConfig.get("sameSiteValue"),
+        //        io.vertx.core.logging.LoggerFactory.getLogger(getClass()));
         // init needed by OAuthResourceProvider
         EventStoreFactory.getFactory().setVertx(vertx);
     }

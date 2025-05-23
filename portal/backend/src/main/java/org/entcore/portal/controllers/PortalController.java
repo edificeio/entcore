@@ -23,13 +23,13 @@ import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Put;
 import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.StaticResource;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.RequestUtils;
-import fr.wseduc.webutils.security.SecureHttpServerRequest;
+import io.vertx.core.Future;
 import io.vertx.core.file.FileSystemException;
-import io.vertx.core.shareddata.LocalMap;
 
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
@@ -55,18 +55,18 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.file.FileProps;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.vertx.java.core.http.RouteMatcher;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static io.vertx.core.Future.succeededFuture;
 import static org.entcore.common.user.SessionAttributes.*;
 
 public class PortalController extends BaseController {
 
-	private LocalMap<String, String> staticRessources;
+	private Map<String, String> staticRessources;
 	private Map<String, String> fixResources = new HashMap<>();
 	private boolean dev;
 	private Map<String, List<String>> themes;
@@ -78,59 +78,70 @@ public class PortalController extends BaseController {
 	private String defaultSkin;
 	private JsonObject defaultTracker;
 	private EventHelper eventHelper;
+	private JsonObject skins;
+
+	public PortalController(JsonObject skins) {
+		this.skins = skins;
+	}
 
 	@Override
-	public void init(final Vertx vertx, JsonObject config, RouteMatcher rm,
-			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
+	public Future<Void> initAsync(final Vertx vertx, JsonObject config, RouteMatcher rm,
+                          Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
-		this.staticRessources = vertx.sharedData().getLocalMap("staticRessources");
-		dev = "dev".equals(config.getString("mode"));
-		assetsPath = config.getString("assets-path", ".");
-		JsonObject skins = new JsonObject(vertx.sharedData().<String, Object>getLocalMap("skins"));
-		defaultSkin = config.getString("skin", "raw");
-		themes = new HashMap<>();
-		themesDetails = new HashMap<>();
-		this.hostSkin = new HashMap<>();
-		for (final String domain: skins.fieldNames()) {
-			final String skin = skins.getString(domain);
-			this.hostSkin.put(domain, skin);
-			ThemeUtils.availableThemes(vertx, assetsPath + "/assets/themes/" + skin + "/skins", false, new Handler<List<String>>() {
-				@Override
-				public void handle(List<String> event) {
-					themes.put(skin, event);
-					JsonArray a = new JsonArray();
-					for (final String s : event) {
-						String path = assetsPath + "/assets/themes/" + skin + "/skins/" + s + "/";
-						final JsonObject j = new JsonObject()
-								.put("_id", s)
-								.put("path", path.substring(assetsPath.length()));
-						if ("default".equals(s)) {
-							vertx.fileSystem().readFile(path + "/details.json", new Handler<AsyncResult<Buffer>>() {
-								@Override
-								public void handle(AsyncResult<Buffer> event) {
-									if (event.succeeded()) {
-										JsonObject d = new JsonObject(event.result().toString());
-										j.put("displayName", d.getString("displayName"));
-									} else {
-										j.put("displayName", s);
-									}
-								}
-							});
-						} else {
-							j.put("displayName", s);
-						}
-						a.add(j);
-					}
-					themesDetails.put(skin, a);
-				}
-			});
-		}
-		defaultTracker = config.getJsonObject( "tracker", new JsonObject().put("type", "none") );
-		eventStore = EventStoreFactory.getFactory().getEventStore(Portal.class.getSimpleName());
-		vertx.sharedData().getLocalMap("server").put("assetPath", assetsPath);
+    return vertx.sharedData().<String, String>getAsyncMap("staticRessources")
+      .compose(map -> map.entries())
+      .compose(resources -> {
+        this.staticRessources = resources;
+        dev = "dev".equals(config.getString("mode"));
+        assetsPath = config.getString("assets-path", ".");
+        defaultSkin = config.getString("skin", "raw");
+        themes = new HashMap<>();
+        themesDetails = new HashMap<>();
+        this.hostSkin = new HashMap<>();
+        for (final String domain: skins.fieldNames()) {
+          final String skin = skins.getString(domain);
+          this.hostSkin.put(domain, skin);
+          ThemeUtils.availableThemes(vertx, assetsPath + "/assets/themes/" + skin + "/skins", false, new Handler<List<String>>() {
+            @Override
+            public void handle(List<String> event) {
+              themes.put(skin, event);
+              JsonArray a = new JsonArray();
+              for (final String s : event) {
+                String path = assetsPath + "/assets/themes/" + skin + "/skins/" + s + "/";
+                final JsonObject j = new JsonObject()
+                  .put("_id", s)
+                  .put("path", path.substring(assetsPath.length()));
+                if ("default".equals(s)) {
+                  vertx.fileSystem().readFile(path + "/details.json", new Handler<AsyncResult<Buffer>>() {
+                    @Override
+                    public void handle(AsyncResult<Buffer> event) {
+                      if (event.succeeded()) {
+                        JsonObject d = new JsonObject(event.result().toString());
+                        j.put("displayName", d.getString("displayName"));
+                      } else {
+                        j.put("displayName", s);
+                      }
+                    }
+                  });
+                } else {
+                  j.put("displayName", s);
+                }
+                a.add(j);
+              }
+              themesDetails.put(skin, a);
+            }
+          });
+        }
+        defaultTracker = config.getJsonObject( "tracker", new JsonObject().put("type", "none") );
+        eventStore = EventStoreFactory.getFactory().getEventStore(Portal.class.getSimpleName());
+        SharedDataHelper.getInstance().getLocalAsyncMap("server")
+          .compose(serverMap -> serverMap.put("assetPath", assetsPath))
+          .onFailure(ex -> log.error("Error when put assetPath", ex));
 
-		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Portal.class.getSimpleName());
-		this.eventHelper =  new EventHelper(eventStore);
+        final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Portal.class.getSimpleName());
+        this.eventHelper =  new EventHelper(eventStore);
+        return succeededFuture();
+      });
 	}
 
 	@Get("/welcome")

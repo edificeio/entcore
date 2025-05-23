@@ -29,6 +29,7 @@ import io.vertx.core.http.HttpServerFileUpload;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.storage.Storage;
 
 import java.io.File;
 import java.io.IOException;
@@ -80,8 +81,8 @@ public final class FileUtils {
 		return metadata;
 	}
 
-	public static void deleteImportPath(final Vertx vertx, final String path) {
-		deleteImportPath(vertx, path, new Handler<AsyncResult<Void>>() {
+	public static void deleteImportPath(final Vertx vertx, Storage storage, final String path) {
+		deleteImportPath(vertx, storage, path, new Handler<AsyncResult<Void>>() {
 			@Override
 			public void handle(AsyncResult<Void> event) {
 				if (event.failed()) {
@@ -91,7 +92,27 @@ public final class FileUtils {
 		});
 	}
 
-	public static void deleteImportPath(final Vertx vertx, final String path, final Handler<AsyncResult<Void>> handler) {
+	public static void deleteImportPath(final Vertx vertx, Storage storage, final String path, final Handler<AsyncResult<Void>> handler) {
+		storage.deleteRecursive(path).onComplete(event -> {
+			if (event.failed()) {
+				log.error("Error deleting import files in storage at : " + path, event.cause());
+			}
+			deleteFSImportPath(vertx, path, handler);
+		});
+	}
+
+	public static void deleteFSImportPath(final Vertx vertx, final String path) {
+		deleteFSImportPath(vertx, path, new Handler<AsyncResult<Void>>() {
+			@Override
+			public void handle(AsyncResult<Void> event) {
+				if (event.failed()) {
+					log.error("Error deleting import files in filesystem at : " + path, event.cause());
+				}
+			}
+		});
+	}
+
+	public static void deleteFSImportPath(Vertx vertx, String path, Handler<AsyncResult<Void>> handler) {
 		vertx.fileSystem().exists(path, new Handler<AsyncResult<Boolean>>() {
 			@Override
 			public void handle(AsyncResult<Boolean> event) {
@@ -116,7 +137,7 @@ public final class FileUtils {
 		final Path path = Paths.get(zipFilename);
 		final URI uri = URI.create("jar:file:" + path.toUri().getPath());
 
-		final Map<String, String> env = new HashMap<>();
+		Map<String, String> env = new HashMap<>();
 		if(encoding.isPresent()){
 			env.put("encoding", encoding.get());
 		}

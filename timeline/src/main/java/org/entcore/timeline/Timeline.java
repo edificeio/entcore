@@ -28,14 +28,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.shareddata.LocalMap;
+import io.vertx.core.shareddata.AsyncMap;
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.http.oauth.OAuth2Client;
 import org.entcore.broker.api.publisher.BrokerPublisherFactory;
 import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.broker.proxy.ApplicationStatusBrokerPublisher;
 import org.entcore.common.http.BaseServer;
-import org.entcore.common.utils.MapFactory;
 import org.entcore.timeline.controllers.helper.NotificationHelper;
 import org.entcore.timeline.listeners.TimelineBrokerListenerImpl;
 import org.entcore.timeline.services.FlashMsgService;
@@ -53,32 +54,47 @@ import io.vertx.core.json.JsonObject;
 
 public class Timeline extends BaseServer {
 
+	private static final long DELAY_REFRESH_NOTIFICATION_CACHE = 60_000L;
+
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
-		super.start(startPromise);
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future()
+				.compose(init -> SharedDataHelper.getInstance().<String, Object>getLocalMulti("server", "skins", "skin-levels"))
+				.compose(timelineConfigMap -> initTimeline(timelineConfigMap))
+				.onComplete(startPromise);
+	}
 
-		final Map<String, String> registeredNotifications = MapFactory.getSyncClusterMap("notificationsMap", vertx);
-		final LocalMap<String,String> eventsI18n = vertx.sharedData().getLocalMap("timelineEventsI18n");
+	public Future<Void> initTimeline(final Map<String, Object> timelineMap) {
+		final Map<String, String> registeredNotificationsCache = new HashMap<>();
+		final Map<String, String> eventsI18n = new HashMap<>();
+		updateRegisteredNotificationsCache(registeredNotificationsCache);
+		updateEventsI18nCache(eventsI18n);
+		vertx.setPeriodic(DELAY_REFRESH_NOTIFICATION_CACHE, h -> {
+			updateRegisteredNotificationsCache(registeredNotificationsCache);
+			updateEventsI18nCache(eventsI18n);
+		});
+
 		final HashMap<String, JsonObject> lazyEventsI18n = new HashMap<>();
 
 		final DefaultTimelineConfigService configService = new DefaultTimelineConfigService("timeline.config");
-		configService.setRegisteredNotifications(registeredNotifications);
+		configService.setRegisteredNotifications(registeredNotificationsCache);
 		final DefaultTimelineMailerService mailerService = new DefaultTimelineMailerService(vertx, config);
 		mailerService.setConfigService(configService);
-		mailerService.setRegisteredNotifications(registeredNotifications);
+		mailerService.setRegisteredNotifications(registeredNotificationsCache);
 		mailerService.setEventsI18n(eventsI18n);
 		mailerService.setLazyEventsI18n(lazyEventsI18n);
 
 		final NotificationHelper notificationHelper = new NotificationHelper(vertx, configService);
 		notificationHelper.setMailerService(mailerService);
 
-		final TimelineController timelineController = new TimelineController();
+		final TimelineController timelineController = new TimelineController(timelineMap);
 		timelineController.setConfigService(configService);
 		timelineController.setMailerService(mailerService);
-		timelineController.setRegisteredNotifications(registeredNotifications);
+		timelineController.setRegisteredNotifications(registeredNotificationsCache);
 		timelineController.setEventsI18n(eventsI18n);
 		timelineController.setLazyEventsI18n(lazyEventsI18n);
-
 
 		final List<TimelinePushNotifService> pushNotifServices = startPushNotifServices(
 				eventsI18n,configService,
@@ -90,7 +106,8 @@ public class Timeline extends BaseServer {
 		timelineController.setNotificationHelper(notificationHelper);
 
 		final FlashMsgService flashMsgService = new FlashMsgServiceSqlImpl("flashmsg", "messages");
-		final FlashMsgController flashMsgController = new FlashMsgController();
+		final FlashMsgController flashMsgController = new FlashMsgController(
+				(JsonObject) timelineMap.get("skins"), (JsonObject) timelineMap.get("skin-levels"));
 		flashMsgController.setFlashMessagesService(flashMsgService);
 		addController(flashMsgController);
 
@@ -127,6 +144,21 @@ public class Timeline extends BaseServer {
 				log.error("Invalid cron expression.", e);
 			}
 		}
+		return Future.succeededFuture();
+	}
+
+	private void updateRegisteredNotificationsCache(final Map<String, String> registeredNotificationsCache) {
+		SharedDataHelper.getInstance().<String, String>getAsyncMap("notificationsMap")
+			.compose(AsyncMap::entries)
+			.onSuccess(registeredNotificationsCache::putAll)
+			.onFailure(ex -> log.error("Error when update registeredNotifications", ex));
+	}
+
+	private void updateEventsI18nCache(final Map<String, String> eventsI18n) {
+		SharedDataHelper.getInstance().<String, String>getAsyncMap("timelineEventsI18n")
+			.compose(AsyncMap::entries)
+			.onSuccess(eventsI18n::putAll)
+			.onFailure(ex -> log.error("Error when update eventsI18n", ex));
 	}
 
 	/**
@@ -135,7 +167,7 @@ public class Timeline extends BaseServer {
 	 * @see pushNotifServiceFactory() below
 	 */
 	protected List<TimelinePushNotifService> startPushNotifServices(
-			final LocalMap<String,String> eventsI18n,
+			final Map<String,String> eventsI18n,
 			final TimelineConfigService configService,
 			final boolean logPushNotifs,
 			final boolean removeTokenIf404
@@ -194,7 +226,7 @@ public class Timeline extends BaseServer {
 	 */
 	protected TimelinePushNotifService pushNotifServiceFactory(
 			final JsonObject pushNotif,
-			final LocalMap<String,String> eventsI18n,
+			final Map<String,String> eventsI18n,
 			final TimelineConfigService configService,
 			final boolean logPushNotifs,
 			final boolean removeTokenIf404

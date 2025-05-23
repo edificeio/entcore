@@ -43,7 +43,6 @@ import io.vertx.core.http.*;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.shareddata.LocalMap;
 import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.data.DataHandlerFactory;
@@ -134,6 +133,11 @@ public class AuthController extends BaseController {
 	private List<String> internalAddress;
 	private boolean checkFederatedLogin = false;
 	private long jwtTtlSeconds;
+	private final Map<String, Object> server;
+
+	public AuthController(Map<String, Object> server) {
+		this.server = server;
+	}
 
 	@Override
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
@@ -150,7 +154,6 @@ public class AuthController extends BaseController {
 		protectedResource.setDataHandlerFactory(oauthDataFactory);
 		protectedResource.setAccessTokenFetcherProvider(accessTokenFetcherProvider);
 		passwordPattern = Pattern.compile(config.getString("passwordRegex", ".{8}.*"));
-		LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
 		JsonArray authorizedSessions = getOrElse(config.getJsonArray("authorize-mobile-session"), new JsonArray());
 		authorizedSessions.forEach(session -> clientIdsAuthorized.add((String) session));
 		if (server != null && server.get("smsProvider") != null)
@@ -202,15 +205,6 @@ public class AuthController extends BaseController {
 		}
 		ipAllowedByPassLimit = getOrElse(config.getJsonArray("ip-allowed-by-pass-limit"), new JsonArray());
 
-//		if (server != null) {
-//			Boolean cluster = (Boolean) server.get("cluster");
-//			if (Boolean.TRUE.equals(cluster)) {
-//				ClusterManager cm = ((VertxInternal) vertx).clusterManager();
-//				invalidEmails = cm.getSyncMap("invalidEmails");
-//			} else {
-//				invalidEmails = vertx.sharedData().getMap("invalidEmails");
-//			}
-//		} else {
 		invalidEmails = MapFactory.getSyncClusterMap("invalidEmails", vertx);
 		internalAddress = config.getJsonArray("internalAddress",
 				new JsonArray().add("localhost").add("127.0.0.1")).getList();
@@ -406,7 +400,7 @@ public class AuthController extends BaseController {
 			.put("token_type", "QueryParam");
 		try {
 			return result
-				.put("access_token", UserUtils.createJWTForQueryParam(vertx, userId, clientId, ttlInSeconds, request))
+				.put("access_token", UserUtils.createJWTForQueryParam(vertx, userId, clientId, ttlInSeconds, request, (String) server.get("signKey")))
 				.put("expires_in", ttlInSeconds);
 		} catch(Exception e) {
 			return result.put("expires_in", 0).putNull( "access_token" );
@@ -638,14 +632,14 @@ public class AuthController extends BaseController {
 					pwdResetFormatByLang.put(lang, i18n.translate("password.rules.reset", Renders.getHost(request), lang));
 				} catch (Exception e) {
 					pwdResetFormatByLang.put(lang, "");
-					log.error("error when translating password.rules.reset in {0} : {1}", lang, e);
+					log.error(String.format("error when translating password.rules.reset in %s : ", lang), e);
 				}
 
 				try {
 					pwdActivationFormatByLang.put(lang, i18n.translate("password.rules.activation", Renders.getHost(request), lang));
 				} catch (Exception e) {
 					pwdActivationFormatByLang.put(lang, "");
-					log.error("error when translating password.rules.activation in {0} : {1}", lang, e);
+					log.error(String.format("error when translating password.rules.activation in %s : ", lang), e);
 				}
 			}
 		});
