@@ -340,7 +340,7 @@ export function useMessageActionDropdown({
       id: 'print',
       icon: <IconPrint />,
       action: () => {
-        alert('print');
+        print();
       },
       hidden: !hasActionsList('print') || message.state === 'DRAFT',
     },
