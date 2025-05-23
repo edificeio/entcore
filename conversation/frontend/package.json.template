@@ -22,7 +22,7 @@
     "get-tokens": "node scripts/get-tokens/index.cjs",
     "lint": "eslint .",
     "pre-commit": "pnpm run format",
-    "pre-push": "pnpm run typecheck",
+    "pre-push": "pnpm run typecheck && pnpm run test",
     "predev": "pnpm get-tokens",
     "preview": "vite preview",
     "test:coverage": "vitest run --coverage",
