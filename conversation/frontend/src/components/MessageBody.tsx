@@ -71,7 +71,7 @@ export function MessageBody({
       {!isPrint && message.original_format_exists && !editMode && (
         <Alert
           type="warning"
-          className="p-print-none my-24"
+          className="d-print-none my-24"
           button={
             <Button
               type="button"
