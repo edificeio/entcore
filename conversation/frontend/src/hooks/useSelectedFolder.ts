@@ -28,7 +28,7 @@ export function useSelectedFolder(): {
       break;
   }
 
-  if (!foldersTree) return { folderId };
+  if (!foldersTree || !folderId) return { folderId };
 
   const found = searchFolder(folderId, foldersTree);
 

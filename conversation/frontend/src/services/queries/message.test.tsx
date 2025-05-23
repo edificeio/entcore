@@ -9,7 +9,7 @@ import {
   useMarkRead,
   useMarkUnread,
   useRestoreMessage,
-  useTrashMessage,
+  // useTrashMessage,
 } from './message';
 
 // const mocks = vi.hoisted(() => ({

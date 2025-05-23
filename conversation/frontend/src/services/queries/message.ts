@@ -131,7 +131,6 @@ export const useMessage = (messageId: string) => {
  */
 const useToggleUnread = (unread: boolean) => {
   const { folderId } = useSelectedFolder();
-  console.log('??folderId:', folderId);
   const { updateFolderMessagesQueryData } = useFolderUtils();
   const queryClient = useQueryClient();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
@@ -206,7 +205,7 @@ export const useMarkUnread = () => {
  * @returns Mutation result for moving the message to the trash.
  */
 export const useTrashMessage = () => {
-  const { folderId } = useSelectedFolder();
+  const { folderId } = useParams() as { folderId: string };
   const [searchParams] = useSearchParams();
   const search = searchParams.get('search');
   const unreadFilter = searchParams.get('unread');
@@ -215,7 +214,7 @@ export const useTrashMessage = () => {
   const toast = useToast();
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
   const { messages, fetchNextPage, hasNextPage } = useFolderMessages(
-    folderId!,
+    folderId,
     false,
   );
 
