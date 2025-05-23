@@ -3,7 +3,7 @@ import { Fragment, useEffect, useState } from 'react';
 import { LoaderFunctionArgs } from 'react-router-dom';
 import { Message } from '~/features/message';
 import { MessageEdit } from '~/features/message-edit/MessageEdit';
-import { useMessageReplyOrTransfer } from '~/hooks';
+import { useMessageReplyOrTransfer } from '~/hooks/useMessageReplyOrTransfer';
 import { useMessageIdAndAction } from '~/hooks/useMessageIdAndAction';
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 
