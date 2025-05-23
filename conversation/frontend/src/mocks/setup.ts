@@ -7,9 +7,9 @@ import { RenderOptions, render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ReactElement } from 'react';
 import { afterAll, afterEach, beforeAll } from 'vitest';
+import { MockedProviders } from '~/mocks/mockedProvider';
 import '../i18n';
 import { server } from './server';
-import { MockedProviders } from '~/mocks/mockedProvider';
 
 // Enable API mocking before tests.
 beforeAll(() =>

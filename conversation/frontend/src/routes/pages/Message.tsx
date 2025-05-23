@@ -1,6 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
 import { Fragment, useEffect, useState } from 'react';
-import { LoaderFunctionArgs } from 'react-router-dom';
+import { LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
 import { MessageEdit } from '~/features/message-edit/MessageEdit';
 import { Message } from '~/features/message/Message';
 import { useInitMessage, useSelectedFolder } from '~/hooks';
@@ -9,19 +9,21 @@ import { useMessageIdAndAction } from '~/hooks/useMessageIdAndAction';
 import { messageQueryOptions } from '~/services';
 
 export const loader =
-  (queryClient: QueryClient) =>
+  (queryClient: QueryClient, isPrint?: boolean) =>
   async ({ params /*, request*/ }: LoaderFunctionArgs) => {
     const queryMessage = messageQueryOptions.getById(
       params.messageId as string,
     );
+
     if (params.messageId) {
       await Promise.all([queryClient.ensureQueryData(queryMessage)]);
     }
 
-    return null;
+    return { isPrint };
   };
 
 export function Component() {
+  const { isPrint } = useLoaderData() as { isPrint: boolean };
   const { folderId } = useSelectedFolder();
   const [currentKey, setCurrentKey] = useState(0);
 
@@ -35,8 +37,15 @@ export function Component() {
   });
 
   useEffect(() => {
-    // Scroll to the top of the page
-    window.scrollTo(0, 0);
+    if (isPrint) {
+      const timeoutId = setTimeout(() => window.print(), 1000);
+
+      return () => clearTimeout(timeoutId);
+    } else {
+      // Scroll to the top of the page
+      window.scrollTo(0, 0);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -52,10 +61,10 @@ export function Component() {
 
   return (
     <Fragment key={currentKey}>
-      {folderId === 'draft' && message.state === 'DRAFT' ? (
+      {!isPrint && folderId === 'draft' && message.state === 'DRAFT' ? (
         <MessageEdit message={message} />
       ) : (
-        <Message message={message} />
+        <Message message={message} isPrint={isPrint} />
       )}
     </Fragment>
   );

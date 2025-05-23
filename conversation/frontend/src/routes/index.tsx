@@ -102,6 +102,16 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
         ],
       },
       {
+        path: 'print/:messageId',
+        async lazy() {
+          const { Component, loader } = await import('~/routes/pages/Message');
+          return {
+            loader: loader(_queryClient, true),
+            Component,
+          };
+        },
+      },
+      {
         path: 'oldformat/:messageId',
         async lazy() {
           const { Component, loader } = await import(
