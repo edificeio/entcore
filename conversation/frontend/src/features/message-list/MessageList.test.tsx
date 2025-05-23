@@ -7,26 +7,19 @@ import { MessageList } from './MessageList';
  * Mock useParams
  */
 const mocks = vi.hoisted(() => ({
-  useParams: vi.fn(),
+  useSelectedFolder: vi.fn(),
 }));
 
-vi.mock('react-router-dom', async () => {
-  const actual =
-    await vi.importActual<typeof import('react-router-dom')>(
-      'react-router-dom',
-    );
-  return {
-    ...actual,
-    useParams: mocks.useParams,
-  };
-});
+vi.mock('~/hooks/useSelectedFolder', () => ({
+  useSelectedFolder: mocks.useSelectedFolder,
+}));
 
 describe('Message list component', () => {
-  beforeEach(() => {
-    mocks.useParams.mockReturnValue({ folderId: 'inbox' });
+  beforeAll(() => {
+    mocks.useSelectedFolder.mockReturnValue({ folderId: 'inbox' });
   });
 
-  afterEach(() => {
+  afterAll(() => {
     vi.clearAllMocks();
   });
 

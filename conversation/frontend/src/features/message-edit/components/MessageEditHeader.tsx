@@ -1,6 +1,6 @@
 import { Button } from '@edifice.io/react';
 import { useState } from 'react';
-import { useI18n } from '~/hooks';
+import { useI18n } from '~/hooks/useI18n';
 import { Message } from '~/models';
 import { RecipientListEdit } from './RecipientListEdit';
 

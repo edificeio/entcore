@@ -1,4 +1,4 @@
-import { useSelectedFolder } from '~/hooks';
+import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { MessageMetadata } from '~/models';
 import { useFolderMessages } from '~/services';
 

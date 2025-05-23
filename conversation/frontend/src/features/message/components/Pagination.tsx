@@ -1,6 +1,6 @@
 import { IconButton } from '@edifice.io/react';
 import { IconRafterLeft, IconRafterRight } from '@edifice.io/react/icons';
-import { useI18n } from '~/hooks';
+import { useI18n } from '~/hooks/useI18n';
 
 interface PaginationProps {
   onChange: (page: number) => void;

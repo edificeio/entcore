@@ -2,7 +2,7 @@ import { Dropdown, IconButton, IconButtonProps } from '@edifice.io/react';
 import { IconDelete, IconEdit, IconOptions } from '@edifice.io/react/icons';
 import { RefAttributes } from 'react';
 import { useFolderHandlers } from '~/features/menu/hooks/useFolderHandlers';
-import { useI18n } from '~/hooks';
+import { useI18n } from '~/hooks/useI18n';
 import { Folder } from '~/models';
 
 interface FolderActionDropdownProps {

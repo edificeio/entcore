@@ -14,11 +14,11 @@ export function useSelectedFolder(): {
   folderId?: string;
   userFolder?: Folder;
 } {
-  const { folderId } = useParams() as { folderId: string };
+  const { folderId } = useParams();
   const foldersTreeQuery = useFoldersTree();
   const foldersTree = foldersTreeQuery.data;
 
-  switch (folderId.toLowerCase()) {
+  switch (folderId?.toLowerCase()) {
     case 'inbox':
     case 'outbox':
     case 'draft':

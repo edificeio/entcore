@@ -1,6 +1,6 @@
 import { useId, useState } from 'react';
 import { Button, LoadingScreen, Modal } from '@edifice.io/react';
-import { useI18n } from '~/hooks';
+import { useI18n } from '~/hooks/useI18n';
 import { baseUrl } from '~/services';
 
 interface OriginalFormatModalProps {

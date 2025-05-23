@@ -1,6 +1,6 @@
 import { Avatar, useDate, useDirectory } from '@edifice.io/react';
 import { MessageRecipientList } from '~/components/MessageRecipientList/MessageRecipientList';
-import { useI18n } from '~/hooks';
+import { useI18n } from '~/hooks/useI18n';
 import { Message } from '~/models';
 import './index.css';
 

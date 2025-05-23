@@ -2,7 +2,7 @@ import { useEdificeTheme } from '@edifice.io/react';
 import { QueryClient } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
-import { useI18n } from '~/hooks';
+import { useI18n } from '~/hooks/useI18n';
 import { Message as MessageData } from '~/models';
 
 import { messageQueryOptions } from '~/services';

@@ -1,7 +1,7 @@
 import { Dropdown } from '@edifice.io/react';
 import { IconSuccessOutline } from '@edifice.io/react/icons';
 import clsx from 'clsx';
-import { useI18n } from '~/hooks';
+import { useI18n } from '~/hooks/useI18n';
 import { useMessageUserDisplayName } from '~/hooks/useUserDisplayName';
 import { Visible } from '~/models/visible';
 import RecipientAvatar from './RecipientAvatar';

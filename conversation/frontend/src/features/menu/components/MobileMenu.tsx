@@ -11,7 +11,7 @@ import { t } from 'i18next';
 import { ReactElement } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FolderActionDropdown } from '~/components';
-import { useI18n } from '~/hooks';
+import { useI18n } from '~/hooks/useI18n';
 import { Folder, SystemFolder } from '~/models';
 import { useFoldersTree } from '~/services';
 import { useFolderHandlers } from '../hooks/useFolderHandlers';
