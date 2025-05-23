@@ -35,7 +35,7 @@ public class ExecCommandWorker extends BusModBase implements Handler<Message<Jso
 	@Override
 	public void start() {
 		super.start();
-		vertx.eventBus().localConsumer("exec.command", this);
+		vertx.eventBus().consumer("exec.command", this);
 	}
 
 	@Override
