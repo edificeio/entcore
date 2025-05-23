@@ -151,25 +151,29 @@ export function useInitMessage({
         }
       }
 
+      console.log('recipientsToAddToMessage', recipientsToAddToMessage);
       if (
         recipientsToAddToMessage?.users.length ||
         recipientsToAddToMessage?.groups.length
       ) {
-        messageTmp.to.users = [
-          ...recipientsToAddToMessage.users,
-          ...messageTmp.to.users.filter(
-            (user: User) =>
-              !recipientsToAddToMessage.users.some((u) => u.id === user.id),
-          ),
-        ];
-        messageTmp.to.groups = [
-          ...recipientsToAddToMessage.groups,
-          ...messageOrigin.to.groups.filter(
-            (group: Group) =>
-              !recipientsToAddToMessage.groups.some((g) => g.id === group.id),
-          ),
-        ];
+        messageTmp.to = {
+          users: [
+            ...recipientsToAddToMessage.users,
+            ...(messageTmp.to.users.filter(
+              (user: User) =>
+                !recipientsToAddToMessage.users.some((u) => u.id === user.id),
+            ) || []),
+          ],
+          groups: [
+            ...recipientsToAddToMessage.groups,
+            ...(messageTmp.to.groups.filter(
+              (group: Group) =>
+                !recipientsToAddToMessage.groups.some((g) => g.id === group.id),
+            ) || []),
+          ],
+        };
       }
+      console.log('messageTmp', messageTmp);
 
       setMessage({
         ...messageTmp,
