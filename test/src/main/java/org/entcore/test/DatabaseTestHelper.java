@@ -39,6 +39,8 @@ import java.util.Map;
 
 public class DatabaseTestHelper {
 
+    private JsonObject neo4jConfig;
+
     private class PostgreSQLContainerWithParams extends PostgreSQLContainer {
 
         public PostgreSQLContainerWithParams(String dockerImageName) {
@@ -197,8 +199,15 @@ public class DatabaseTestHelper {
         final JsonObject config = new JsonObject().put("server-uri", base).put("poolSize", 1);
         final Neo4j neo4j = Neo4j.getInstance();
         neo4j.init(vertx, config);
+        this.neo4jConfig = config;
         vertx.sharedData().getLocalMap("server").put("neo4jConfig", config.encode());
+    }
 
+    public JsonObject addNeo4jConfig(final JsonObject conf) {
+        if(conf != null && neo4jConfig != null) {
+            conf.put("neo4jConfig", neo4jConfig);
+        }
+        return conf;
     }
 
     /** @return a new docker-based PostgreSQL 9.5 container. */

@@ -54,7 +54,6 @@ import fr.wseduc.cas.http.Request;
 import fr.wseduc.mongodb.MongoDb;
 
 import static com.mongodb.client.model.Filters.eq;
-import static fr.wseduc.webutils.Utils.getOrElse;
 
 public class EntCoreDataHandler extends DataHandler {
 

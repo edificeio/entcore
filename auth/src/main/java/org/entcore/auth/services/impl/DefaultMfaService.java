@@ -10,7 +10,6 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.shareddata.LocalMap;
 
 import org.entcore.auth.services.MfaService;
 import org.entcore.common.datavalidation.UserValidation;
@@ -229,10 +228,10 @@ public class DefaultMfaService implements MfaService {
     private MfaField mfaField = null;
     private EventBus eb = null;
 
-    public DefaultMfaService(final Vertx vertx, final io.vertx.core.json.JsonObject config) throws InvalidKeyException {
+    public DefaultMfaService(final Vertx vertx, final io.vertx.core.json.JsonObject config, Map<String, Object> server)
+            throws InvalidKeyException {
 		io.vertx.core.json.JsonObject params = config.getJsonObject("emailValidationConfig");
 		if (params == null ) {
-			LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
 			String s = (String) server.get("emailValidationConfig");
 			params = (s != null) ? new JsonObject(s) : new JsonObject();
 		}

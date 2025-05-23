@@ -19,6 +19,7 @@
 
 package org.entcore.registry;
 
+import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.Promise;
 import org.entcore.broker.api.utils.AddressParameter;
@@ -29,33 +30,48 @@ import org.entcore.registry.controllers.*;
 import org.entcore.registry.filters.AppRegistryFilter;
 import org.entcore.registry.services.impl.NopAppRegistryEventService;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class AppRegistry extends BaseServer {
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
-		super.start(startPromise);
-		final AppRegistryController appRegistryController = new AppRegistryController();
-		addController(appRegistryController);
-		addController(new ExternalApplicationController(config.getInteger("massAuthorizeBatchSize", 1000)));
-		addController(new WidgetController());
-		addController(new LibraryController(vertx, config()));
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future().compose(init -> initAppRegistry()).onComplete(startPromise);
+	}
+
+	public Future<Void> initAppRegistry() {
+    final List<Future<?>> futures = new ArrayList<>();
+    final AppRegistryController appRegistryController = new AppRegistryController();
+    futures.add(addController(appRegistryController));
+
+    futures.add(addController(new ExternalApplicationController(config.getInteger("massAuthorizeBatchSize", 1000))));
+    futures.add(addController(new WidgetController()));
+		try {
+      futures.add(addController(new LibraryController(vertx, config())));
+		} catch (Exception e) {
+			return Future.failedFuture(e);
+		}
 		BrokerProxyUtils.addBrokerProxy(appRegistryController, vertx, new AddressParameter("application", "appregistry"));
 		JsonObject eduMalinConf = config.getJsonObject("edumalin-widget-config");
 		if(eduMalinConf != null)
-			addController(new EdumalinWidgetController());
+      futures.add(addController(new EdumalinWidgetController()));
 
 		JsonObject webGerestEnabled = config.getJsonObject("webGerest-config");
 		if(webGerestEnabled != null) {
-			addController(new WebGerestController());
+      futures.add(addController(new WebGerestController()));
 		}
 		JsonObject screenTimeEnabled = config.getJsonObject("screen-time-config");
 		if(screenTimeEnabled != null) {
-			addController(new ScreenTimeController());
+      futures.add(addController(new ScreenTimeController()));
 		}
 
 		setDefaultResourceFilter(new AppRegistryFilter());
 		new AppRegistryEventsHandler(vertx, new NopAppRegistryEventService());
 		vertx.eventBus().publish("app-registry.loaded", new JsonObject());
+		return Future.all(futures).mapEmpty();
 	}
 
 }

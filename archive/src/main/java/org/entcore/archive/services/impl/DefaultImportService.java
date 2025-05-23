@@ -1,5 +1,7 @@
 package org.entcore.archive.services.impl;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.security.RSA;
@@ -12,6 +14,7 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.shareddata.AsyncMap;
 import org.entcore.archive.Archive;
 import org.entcore.archive.controllers.ArchiveController;
 
@@ -24,32 +27,56 @@ import org.entcore.common.utils.StringUtils;
 
 import java.io.File;
 import java.security.PublicKey;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class DefaultImportService implements ImportService {
 
-    private class UserImport {
+    private final static long GET_LOCK_IMPORT_TIMEOUT = Duration.of(10, ChronoUnit.MINUTES).toMillis();
 
+    public static class UserImport {
         private final int expectedImports;
-        private final AtomicInteger counter;
+        private int counter;
         private final JsonObject results;
-
         public UserImport(int expectedImports) {
             this.expectedImports = expectedImports;
-            this.counter = new AtomicInteger(0);
+            this.counter = 0;
             this.results = new JsonObject();
         }
 
+        @JsonCreator
+        public UserImport(@JsonProperty("expectedImports") int expectedImports,
+                          @JsonProperty("results") JsonObject results,
+                          @JsonProperty("counter") int counter) {
+            this.expectedImports = expectedImports;
+            this.results = results;
+            this.counter = counter;
+        }
+
+        /**
+         * @param app Application title which sent a new report
+         * @param importRapport Said report
+         * @return {@code true} if we have all the reports we expected
+         */
         public boolean addAppResult(String app, JsonObject importRapport)
         {
             this.results.put(app, importRapport);
-            return this.counter.incrementAndGet() == expectedImports;
+            this.counter = this.counter - 1;
+            return this.counter <= expectedImports;
         }
 
         public JsonObject getResults() {
             return results;
+        }
+
+        public int getExpectedImports() {
+            return expectedImports;
+        }
+
+        public int getCounter() {
+            return counter;
         }
     }
 
@@ -66,7 +93,7 @@ public class DefaultImportService implements ImportService {
 
     private final Neo4j neo = Neo4j.getInstance();
 
-    private final Map<String, UserImport> userImports;
+    private AsyncMap<String, JsonObject> userImports;
 
     public DefaultImportService(Vertx vertx, final JsonObject config, Storage storage, String importPath, String customHandlerActionName,
                                 PublicKey verifyKey, boolean forceEncryption) {
@@ -75,15 +102,17 @@ public class DefaultImportService implements ImportService {
         this.importPath = importPath;
         this.fs = vertx.fileSystem();
         this.eb = vertx.eventBus();
-        this.userImports = new HashMap<>();
+        vertx.sharedData().<String, JsonObject>getAsyncMap("userImports")
+                .onSuccess(m -> this.userImports = m);
         this.handlerActionName = customHandlerActionName == null ? "import" : customHandlerActionName;
         this.verifyKey = verifyKey;
         this.forceEncryption = forceEncryption;
     }
 
     @Override
-    public boolean isUserAlreadyImporting(String userId) {
-        return userImports.keySet().stream().anyMatch(id -> id.endsWith(userId));
+    public Future<Boolean> isUserAlreadyImporting(String userId) {
+        return userImports.keys()
+                .map(keys -> keys.stream().anyMatch(id -> id.endsWith(userId)));
     }
 
     @Override
@@ -189,12 +218,15 @@ public class DefaultImportService implements ImportService {
             String filePath = getImportPath(importId);
             log.debug("[Archive] - Deleting import located at " + filePath);
 
+            storage.deleteRecursive(filePath);
             fs.deleteRecursive(filePath, true, deleted -> {
                 if (deleted.failed()) {
                     log.error("[Archive] - Import could not be deleted - " + deleted.cause().getMessage());
                 }
             });
-            fs.deleteRecursive(getUnzippedImportPath(importId), true, deleted -> {
+            String unzippedPath = getUnzippedImportPath(importId);
+            storage.deleteRecursive(unzippedPath);
+            fs.deleteRecursive(unzippedPath, true, deleted -> {
                 if (deleted.failed()) {
                     log.error("[Archive] - Import could not be deleted - " + deleted.cause().getMessage());
                 }
@@ -403,23 +435,28 @@ public class DefaultImportService implements ImportService {
     public void launchImport(String userId, String userLogin, String userName, String importId,
       String locale, String host, JsonObject apps)
     {
-        userImports.put(importId, new UserImport(apps.size()));
-
+        userImports.put(importId, JsonObject.mapFrom(new UserImport(apps.size())));
         fs.readDir(getUnzippedImportPath(importId), results -> {
             if (results.succeeded()) {
                 if (results.result().size() == 1)
                 {
-                    JsonObject j = new JsonObject()
-                            .put("action", handlerActionName)
-                            .put("importId", importId)
-                            .put("userId", userId)
-                            .put("userLogin", userLogin)
-                            .put("userName", userName)
-                            .put("locale", locale)
-                            .put("host", host)
-                            .put("apps", apps)
-                            .put("path", results.result().get(0));
-                    eb.publish("user.repository", j);
+                    final String path = results.result().get(0);
+                    log.debug("Moving unzipped files to storage " + path);
+                    storage.moveFsDirectory(path, path)
+                    .onSuccess(e -> {
+                        JsonObject j = new JsonObject()
+                                .put("action", handlerActionName)
+                                .put("importId", importId)
+                                .put("userId", userId)
+                                .put("userLogin", userLogin)
+                                .put("userName", userName)
+                                .put("locale", locale)
+                                .put("host", host)
+                                .put("apps", apps)
+                                .put("path", path);
+                        eb.publish("user.repository", j);
+                    })
+                    .onFailure(th -> log.error("[Archive] Error while moving zip to storage", th));
                 }
                 else {
                     deleteArchive(importId);
@@ -474,22 +511,44 @@ public class DefaultImportService implements ImportService {
 
     @Override
     public void imported(String importId, String app, JsonObject importRapport) {
-        UserImport userImport = userImports.get(importId);
-        if (userImport == null) {
-            JsonObject jo = new JsonObject()
-                    .put("status", "error");
-            eb.request(getImportBusAddress(importId), jo);
-            deleteArchive(importId);
-        } else {
-            final boolean finished = userImport.addAppResult(app, importRapport);
-            if (finished) {
-                JsonObject jo = new JsonObject()
-                        .put("status", "ok")
-                        .put("result", userImport.getResults());
-                eb.request(getImportBusAddress(importId), jo);
+        vertx.sharedData().getLockWithTimeout("import_" + importId, GET_LOCK_IMPORT_TIMEOUT)
+        .onFailure(th -> log.error("An error occurred while getting a lock to treat the import results of import " +importId + " and app " + app, th))
+        .onSuccess(lock -> {
+            userImports.get(importId)
+            .map(rawImport -> rawImport == null ? null : rawImport.mapTo(UserImport.class))
+            .onFailure(th -> {
+                log.error("An error occurred while treating import " + importId + " for app " + app, th);
+                lock.release();
+                eb.request(getImportBusAddress(importId), new JsonObject()
+                        .put("status", "error"));
                 deleteArchive(importId);
-            }
-        }
+            })
+            .onSuccess(userImport -> {
+                if (userImport == null) {
+                    lock.release();
+                    JsonObject jo = new JsonObject()
+                            .put("status", "error");
+                    eb.request(getImportBusAddress(importId), jo);
+                    deleteArchive(importId);
+                } else {
+                    final boolean finished = userImport.addAppResult(app, importRapport);
+                    userImports.put(importId, JsonObject.mapFrom(userImport))
+                    .onFailure(th -> {
+                        log.error("Could not update remote import map for import " + importId + " and app " + app, th);
+                        lock.release();
+                    }).onSuccess(e -> {
+                        lock.release();
+                        if (finished) {
+                            JsonObject jo = new JsonObject()
+                                    .put("status", "ok")
+                                    .put("result", userImport.getResults());
+                            eb.request(getImportBusAddress(importId), jo);
+                            deleteArchive(importId);
+                        }
+                    });
+                }
+            });
+        });
     }
 
   @Override
@@ -498,7 +557,12 @@ public class DefaultImportService implements ImportService {
     return "import." + exportId;
   }
 
-  private Future<Long> recursiveSize(String path) {
+    @Override
+    public void clear() {
+        this.userImports.clear();
+    }
+
+    private Future<Long> recursiveSize(String path) {
     Promise<Long> size = Promise.promise();
         fs.props(path, handler -> {
             if (handler.succeeded()) {

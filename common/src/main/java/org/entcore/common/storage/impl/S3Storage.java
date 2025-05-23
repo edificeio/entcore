@@ -19,12 +19,14 @@
 
  package org.entcore.common.storage.impl;
 
+import com.google.common.collect.Lists;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -45,24 +47,33 @@ import org.entcore.common.validation.FileValidator;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
- 
+import java.util.stream.Collectors;
+
+import static org.entcore.common.s3.S3Client.encodeUrlPath;
+
 public class S3Storage implements Storage {
     
     private final S3Client s3Client;
     private final String bucket;
+    private final FileSystem fs;
 
     private AntivirusClient antivirus;
     private FileValidator validator;
 
     private FallbackStorage fallbackStorage;
 
+    private static final int DOWNLOAD_TO_FS_BATCH_SIZE = 10;
+
     private static final Logger log = LoggerFactory.getLogger(S3Storage.class);
     
     public S3Storage(Vertx vertx, URI uri, String accessKey, String secretKey, String region, String bucket, String ssec, boolean keepAlive, int timeout, int threshold, long openDelay, int poolSize) {
         this.bucket = bucket;
         this.s3Client = new S3Client(vertx, uri, accessKey, secretKey, region, bucket, ssec, keepAlive, timeout, threshold, openDelay, poolSize);
+        this.fs = vertx.fileSystem();
     }
 
     @Override
@@ -287,8 +298,87 @@ public class S3Storage implements Storage {
         
         return onFileRead.future();
     }
-    
+
     @Override
+    public Future<Void> deleteRecursive(String srcDir) {
+        return s3Client.listFilesByPrefix(srcDir.charAt(0) == '/' ? srcDir.replaceFirst("/", "") : srcDir)
+                .compose(s3FilePaths -> deleteFromS3(s3FilePaths, 0));
+    }
+
+    private Future<Void> deleteFromS3(List<S3Client.S3FileInfo> s3FilePaths, int index) {
+        if(index < 0 || index >= s3FilePaths.size()) {
+            return Future.succeededFuture();
+        } else {
+            final S3Client.S3FileInfo path = s3FilePaths.get(index);
+            return Future.future(p -> {
+                s3Client.deleteFileWithPath(path.getPath(), s3Client.getDefaultBucket(), e -> {
+                    deleteFromS3(s3FilePaths, index + 1).onComplete(p);
+                });
+            });
+        }
+    }
+
+    @Override
+    public Future<Void> moveDirectoryToFs(String srcDir, String targetDir) {
+      return this.fs.mkdirs(targetDir)
+        .compose(e -> s3Client.listFilesByPrefix(srcDir.charAt(0) == '/' ? srcDir.replaceFirst("/", "") : srcDir))
+        .compose(s3FilePaths -> downloadToFs(s3FilePaths, srcDir, targetDir, true));
+    }
+
+    @Override
+    public Future<Void> copyDirectoryToFs(String srcDir, String targetDir) {
+        return this.fs.mkdirs(targetDir)
+            .compose(e -> s3Client.listFilesByPrefix(encodeUrlPath(srcDir.charAt(0) == '/' ? srcDir.replaceFirst("/", "") : srcDir)))
+            .compose(s3FilePaths -> downloadToFs(s3FilePaths, srcDir, targetDir, false));
+    }
+
+    private Future<Void> downloadToFs(final List<S3Client.S3FileInfo> s3FilePaths, String srcDir, String targetDir, final boolean deleteAfterMove) {
+    final List<List<S3Client.S3FileInfo>> batches = Lists.partition(s3FilePaths, DOWNLOAD_TO_FS_BATCH_SIZE);
+    return downloadBatchToFs(srcDir, targetDir, batches, 0, deleteAfterMove);
+  }
+
+  private Future<Void> downloadBatchToFs(final String srcDir,
+                                         final String targetDir,
+                                         final List<List<S3Client.S3FileInfo>> batches,
+                                         final int batchIndex,
+                                         final boolean deleteAfterMove) {
+      if(batchIndex >= batches.size()) {
+        return Future.succeededFuture();
+      }
+      // Download all files of a batch then move on to the next
+      final List<Future<Void>> futures = batches.get(batchIndex).stream().map(fileInfo -> {
+        final Promise<Void> promise = Promise.promise();
+        final String path = fileInfo.getPath();
+        this.s3Client.writeToFileSystemWithId(path, getPathInTargetDirectory(File.separatorChar + fileInfo.getPath(), srcDir, targetDir), e -> {
+          if(e.succeeded()) {
+            log.debug("Successfully downloaded file " + path);
+            if(deleteAfterMove) {
+                this.s3Client.deleteFileWithPath(path, x -> {
+                    if(x.succeeded()) {
+                        log.debug("Successfully deleted file " + path);
+                    } else {
+                        log.warn("Could not delete file " + path);
+                    }
+                });
+            }
+            promise.complete();
+          } else {
+            log.error("could not download file " + path + ": ", e.cause());
+            promise.fail(e.cause());
+          }
+        });
+        return promise.future();
+      }).collect(Collectors.toList());
+      return Future.all(futures)
+        .flatMap(e -> downloadBatchToFs(srcDir, targetDir, batches, batchIndex + 1, deleteAfterMove));
+  }
+
+  private String getPathInTargetDirectory(final String path, final String srcDir, final String targetDir) {
+      final String src = srcDir.charAt(0) == '/' ? srcDir : '/' + srcDir;
+      return path.replaceFirst(src, targetDir);
+  }
+
+  @Override
     public void copyFile(String id, final Handler<JsonObject> handler) {
         s3Client.copyFile(id, new Handler<AsyncResult<String>>() {
             @Override
@@ -391,8 +481,51 @@ public class S3Storage implements Storage {
 		}
 	}
 
-    public void setFallbackStorage(FallbackStorage fallbackStorage) {
+  public void setFallbackStorage(FallbackStorage fallbackStorage) {
         this.fallbackStorage = fallbackStorage;
 	}
 
+
+    @Override
+  public Future<Void> moveFsDirectory(final String srcPath, final String destPath) {
+    log.debug("Copying from " + srcPath + " to " + destPath);
+    return fs.readDir(srcPath)
+      .compose(children -> {
+        final Promise<Void> promise = Promise.promise();
+        final String s3Path = destPath.charAt(0) == '/' ? destPath.substring(1) : destPath;
+        moveFsEntriesToS3(children, s3Path, 0, promise);
+        return promise.future();
+      })
+      .compose(e -> fs.deleteRecursive(srcPath, true))
+      .mapEmpty();
+  }
+
+  private void moveFsEntriesToS3(final List<String> children, final String prefix, int childIndex, final Promise<Void> promise) {
+    if(childIndex >= children.size()) {
+      promise.complete();
+    } else {
+      final String childPathOnFs = children.get(childIndex);
+      final String child = Paths.get(childPathOnFs).getFileName().toString();
+      fs.props(childPathOnFs)
+        .compose(props -> {
+          final Promise<Void> onChildCopied = Promise.promise();
+          final String s3Path = prefix + File.separatorChar + child;
+          if(props.isDirectory()) {
+            moveFsDirectory(childPathOnFs, s3Path).onComplete(onChildCopied);
+          } else {
+            log.debug("Copying " + childPathOnFs + " to s3 " + s3Path);
+            s3Client.writeFromFileSystem(s3Path, childPathOnFs).onSuccess(e -> {
+              if("ok".equals(e.getString("status"))) {
+                onChildCopied.complete();
+              } else {
+                onChildCopied.fail(e.getString("message"));
+              }
+            }).onFailure(onChildCopied::fail);
+          }
+          return onChildCopied.future();
+        })
+        .onSuccess(e -> moveFsEntriesToS3(children, prefix, childIndex + 1, promise))
+        .onFailure(promise:: fail);
+    }
+  }
 }

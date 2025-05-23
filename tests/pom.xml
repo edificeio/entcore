@@ -12,6 +12,10 @@
 
     <artifactId>tests</artifactId>
 
+    <properties>
+        <shade.minimizeJar>false</shade.minimizeJar>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>io.gatling.highcharts</groupId>
@@ -30,11 +34,143 @@
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.1</version>
+                <executions>
+                    <execution>
+                        <id>shade-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <finalName>${project.groupId}~${project.artifactId}~${project.version}-fat</finalName>
+                            <transformers>
+                              <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                              </transformer>
+                            </transformers>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>fat</shadedClassifierName>
+                            <minimizeJar>${shade.minimizeJar}</minimizeJar>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>io.vertx:mod-mongo-persistor:*:fat</exclude>
+                                    <exclude>org.entcore:workspace:*:fat</exclude>
+                                    <exclude>com.opendigitaleducation:explorer:*:fat</exclude>
+                                    <exclude>fr.wseduc:mod-zip:*:fat</exclude>
+                                    <exclude>fr.wseduc:mod-pdf-generator:*:fat</exclude>
+                                    <exclude>fr.wseduc:mod-image-resizer:*:fat</exclude>
+                                    <exclude>fr.wseduc:mod-postgresql:*:fat</exclude>
+                                    <exclude>com.opendigitaleducation:mod-json-schema-validator:*:fat</exclude>
+                                </excludes>
+                            </artifactSet>
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.entcore:common</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>commons-logging:commons-logging</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
+                                <filter>
+                                    <artifact>org.apache.xmlbeans:xmlbeans</artifact>
+                                    <includes>
+                                        <include>**</include>
+                                    </includes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.2</version>
+                <executions>
+                    <execution>
+                        <id>default-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <archive>
+                                <manifestEntries>
+                                    <Build-Time>${maven.build.timestamp}</Build-Time>
+                                    <Main-Verticle>service:mod</Main-Verticle>
+                                    <SCM-Commit-Id>${buildNumber}</SCM-Commit-Id>
+                                    <SCM-Branch>${scmBranch}</SCM-Branch>
+                                </manifestEntries>
+                            </archive>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>create-test-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>create-deployment-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>deployment</classifier>
+                            <includes>
+                                <include>${project.artifactId}/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.6</version>
+                <executions>
+                    <execution>
+                        <id>copy-resources</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${basedir}/target/classes</outputDirectory>
+                            <includeEmptyDirs>true</includeEmptyDirs>
+                            <resources>
+                                <resource>
+                                    <directory>${basedir}/deployment</directory>
+                                    <filtering>false</filtering>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>3.4.0</version>
                 <executions>
                     <execution>
-                        <id>create-it-jar</id>
+                        <id>create-test-js-jar</id>
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>
@@ -42,7 +178,7 @@
                         <configuration>
                             <descriptors>
                                 <!-- Specify a custom assembly descriptor -->
-                                <descriptor>src/assembly/it-jar.xml</descriptor>
+                                <descriptor>src/assembly/test-js-jar.xml</descriptor>
                             </descriptors>
                             <appendAssemblyId>true</appendAssemblyId>
                             <finalName>${project.artifactId}-${project.version}</finalName>
@@ -55,8 +191,8 @@
                 <artifactId>maven-deploy-plugin</artifactId>
                 <version>3.1.3</version>
                 <configuration>
-                    <file>${project.build.directory}/${project.artifactId}-${project.version}-it.jar</file>
-                    <classifier>it</classifier>
+                    <file>${project.build.directory}/${project.artifactId}-${project.version}-testJs.jar</file>
+                    <classifier>testJs</classifier>
                 </configuration>
             </plugin>
         </plugins>

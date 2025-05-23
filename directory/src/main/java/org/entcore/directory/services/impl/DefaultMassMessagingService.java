@@ -33,8 +33,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-import org.checkerframework.checker.units.qual.s;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.storage.Storage;
 import org.entcore.directory.pojo.ImportInfos;
 import org.entcore.directory.services.MassMessagingService;
 
@@ -56,51 +56,54 @@ public class DefaultMassMessagingService implements MassMessagingService {
 	private final EventBus eb;
 	private final Vertx vertx;
 	private final Neo4j neo4j = Neo4j.getInstance();
+	private final Storage storage;
 
 
-	public DefaultMassMessagingService(Vertx vertx, EventBus eb) {
+	public DefaultMassMessagingService(Vertx vertx, EventBus eb, Storage storage) {
 		this.eb = eb;
 		this.vertx = vertx;
+		this.storage = storage;
 	}
 
 	@Override
 	public void csvColumnsMapping(ImportInfos importInfos, final Handler<Either<JsonObject, JsonObject>> handler) {
+		String path = importInfos.getPath();
+		storage.copyDirectoryToFs(path, path).onSuccess(event -> {
+			vertx.fileSystem().readDir(path, new Handler<AsyncResult<List<String>>>() {
+				@Override
+				public void handle(AsyncResult<List<String>> event) {
+					if (event.succeeded() && event.result().size() == 1) {
+						final String path = event.result().get(0);
+						vertx.fileSystem().readDir(path, new Handler<AsyncResult<List<String>>>() {
+							@Override
+							public void handle(AsyncResult<List<String>> event) {
+								final List<String> importFiles = event.result();
 
-			String path = importInfos.getPath();
-		vertx.fileSystem().readDir(path, new Handler<AsyncResult<List<String>>>() {
-			@Override
-			public void handle(AsyncResult<List<String>> event) {
-				if (event.succeeded() && event.result().size() == 1) {
-					final String path = event.result().get(0);
-					vertx.fileSystem().readDir(path, new Handler<AsyncResult<List<String>>>() {
-						@Override
-						public void handle(AsyncResult<List<String>> event) {
-							final List<String> importFiles = event.result();
 
-
-							List<List<String>> records = new ArrayList<List<String>>();
-							try (CSVReader csvReader = new CSVReader(new FileReader(importFiles.get(0)));) {
-								String[] values = null;
-								while ((values = csvReader.readNext()) != null) {
-									List<String> row = Arrays.asList(values);
-									if (!row.isEmpty() && row.stream().anyMatch(value -> value != null && !value.trim().isEmpty())) {
-										records.add(Arrays.asList(values));
+								List<List<String>> records = new ArrayList<List<String>>();
+								try (CSVReader csvReader = new CSVReader(new FileReader(importFiles.get(0)));) {
+									String[] values = null;
+									while ((values = csvReader.readNext()) != null) {
+										List<String> row = Arrays.asList(values);
+										if (!row.isEmpty() && row.stream().anyMatch(value -> value != null && !value.trim().isEmpty())) {
+											records.add(Arrays.asList(values));
+										}
 									}
+								} catch (FileNotFoundException e) {
+									handler.handle(new Either.Left<>(new JsonObject().put("error", "File not found")));
+								} catch (IOException e) {
+									handler.handle(new Either.Left<>(new JsonObject().put("error", "io exception")));
 								}
-							} catch (FileNotFoundException e) {
-								handler.handle(new Either.Left<>(new JsonObject().put("error", "File not found")));
-							} catch (IOException e) {
-								handler.handle(new Either.Left<>(new JsonObject().put("error", "io exception")));
+								handler.handle(new Either.Right<>(new JsonObject().put("asmRecords", records)));
 							}
-							handler.handle(new Either.Right<>(new JsonObject().put("asmRecords", records)));
-						}
-					});
-				} else {
-					handler.handle(new Either.Left<>(new JsonObject().put("error", "Failed reading from Path")));
+						});
+					} else {
+						handler.handle(new Either.Left<>(new JsonObject().put("error", "Failed reading from Path")));
 
+					}
 				}
-			}
-		});
+			});
+		}).onFailure(th -> handler.handle(new Either.Left<>(new JsonObject().put("error", "Failed to copy import files from storage to FS"))));
 
 	}
 
