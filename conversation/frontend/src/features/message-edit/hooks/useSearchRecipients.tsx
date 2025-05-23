@@ -82,15 +82,13 @@ export const useSearchRecipients = ({
     });
 
     const adaptedResults: OptionListItemType[] = visibles.map(
-      (searchResult: Visible) => {
-        return {
-          value: searchResult.id,
-          label: searchResult.displayName,
-          disabled: !searchResult.usedIn
-            .map((ui) => ui.toLowerCase())
-            .includes(recipientType),
-        };
-      },
+      (searchResult: Visible) => ({
+        value: searchResult.id,
+        label: searchResult.displayName,
+        disabled: !searchResult.usedIn
+          .map((ui) => ui.toLowerCase())
+          .includes(recipientType),
+      }),
     );
 
     dispatch({

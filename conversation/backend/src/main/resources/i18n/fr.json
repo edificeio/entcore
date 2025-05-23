@@ -268,7 +268,7 @@
   "conversation.success.new.folder": "Le dossier a bien été créé",
   "conversation.success.rename.folder": "Le dossier a bien été renommé",
   "conversation.success.trash.folder": "Le dossier a bien été supprimé",
-  "conversation.warn.message.grouped": "Vous créez votre premier message groupé ! Attention, les destinataires pourront répondre aux autres destinataires. Si vous ne souhaitez pas ouvrir une conversation de groupe, ajoutez les utilisateurs en copie cachée.",
+  "conversation.warn.message.grouped": "Vous êtes sur le point d’envoyer un message à un groupe de parents ou d'élèves ! Attention, les destinataires pourront utiliser la fonctionnalité “répondre à tous” et répondre aux autres destinataires. Si vous ne souhaitez pas ouvrir une conversation de groupe, ajoutez les utilisateurs en copie cachée.",
   "aria.message.content": "Contenu du message",
   "conversation.notfound.or.unauthorized": "Le message demandé n'existe pas, a été supprimé, ou vous n'avez pas la possibilité d'y accéder.",
   "recall": "Rappeler le message",
