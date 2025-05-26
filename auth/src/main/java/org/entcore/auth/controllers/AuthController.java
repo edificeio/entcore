@@ -310,7 +310,10 @@ public class AuthController extends BaseController {
 			final String callback = URLEncoder.encode(pathFormated, StandardCharsets.UTF_8.toString());
 			final String cookieCallback = getScheme(request) + "://" + getHost(request) + pathFormated;
 			if (config.containsKey("oauthLoginUri")) {
-				final String authLocation = config.getString("oauthLoginUri");
+				final String authLocation;
+				final String host = Renders.getHost(request);
+				if (config.getValue("oauthLoginUri") instanceof String) authLocation = config.getString("oauthLoginUri");
+				else authLocation = config.getJsonObject("oauthLoginUri", new JsonObject()).getString(host);
 				location = extractLocation(authLocation, request, callback, cookieCallback);
 				location = String.format("%s?callback=%s", location, URLEncoder.encode(cookieCallback, StandardCharsets.UTF_8.toString()));
 			} else if (config.containsKey("authLocations")) {
