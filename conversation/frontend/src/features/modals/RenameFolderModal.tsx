@@ -1,6 +1,6 @@
 import { Button, FormControl, Input, Label, Modal } from '@edifice.io/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useI18n } from '~/hooks';
+import { useI18n } from '~/hooks/useI18n';
 import { searchFolder } from '~/services';
 import { useAppActions, useSelectedFolders } from '~/store';
 import { useFolderActions } from './hooks';

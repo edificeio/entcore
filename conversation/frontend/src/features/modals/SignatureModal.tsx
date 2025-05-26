@@ -1,5 +1,5 @@
 import { Button, Loading, Modal, Switch } from '@edifice.io/react';
-import { useI18n } from '~/hooks';
+import { useI18n } from '~/hooks/useI18n';
 import { useSignatureHandlers } from './hooks';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { useSignaturePreferences } from '~/services';

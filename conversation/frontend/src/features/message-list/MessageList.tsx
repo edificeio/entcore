@@ -15,7 +15,7 @@ import {
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { useSelectedFolder } from '~/hooks';
+import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { useFolderMessages } from '~/services';
 import { useAppActions } from '~/store/actions';
 import { MessageItem } from './components/MessageItem';
@@ -85,73 +85,65 @@ export function MessageList() {
 
   const toolbarItemsData = [
     {
-      name: 'read',
       visibility: showMarkAsReadMessages,
-      label: t('tag.read'),
+      name: t('tag.read'),
       icon: <IconReadMail />,
       onClick: handleMarkAsReadClick,
     },
     {
-      name: 'unread',
       visibility: showMarkAsUnReadMessages,
-      label: t('tag.unread'),
+      name: t('tag.unread'),
       icon: <IconUnreadMail />,
       onClick: handleMarkAsUnreadClick,
     },
 
     {
-      name: 'restore',
       visibility: showTrashActions,
-      label: t('restore'),
+      name: t('restore'),
       icon: <IconRestore />,
       onClick: handleRestore,
     },
     {
-      name: 'move',
       visibility: showMoveToFolder,
-      label: t('move.first.caps'),
+      name: t('move.first.caps'),
       icon: <IconFolderMove />,
       onClick: handleMoveToFolder,
     },
     {
-      name: 'delete-definitely',
       visibility: showTrashActions,
-      label: t('delete.definitely'),
+      name: t('delete.definitely'),
       icon: <IconDelete />,
       onClick: handleDelete,
     },
     {
-      name: 'remove-from-folder',
       visibility: showFolderActions,
-      label: t('remove.from.folder'),
+      name: t('remove.from.folder'),
       icon: <IconFolderDelete />,
       onClick: handleRemoveFromFolder,
     },
     {
-      name: 'empty-trash',
       visibility: showEmptyTrash,
-      label: t('empty.trash'),
+      name: t('empty.trash'),
       icon: <IconDelete />,
       onClick: handleEmptyTrash,
     },
     {
-      name: 'delete',
       visibility: showMoveToTrash,
-      label: t('delete'),
+      name: t('delete'),
       icon: <IconDelete />,
       onClick: handleMoveToTrash,
     },
   ];
 
   const toolbar: ToolbarButtonItem[] = toolbarItemsData.map(
-    ({ name, label, visibility, icon, onClick }) => ({
+    ({ name, visibility, icon, onClick }) => ({
       type: 'button',
       name,
       visibility,
-      tooltip: label,
+      tooltip: name,
       props: {
         leftIcon: icon,
-        children: label,
+        children: name,
         onClick,
       },
     }),
