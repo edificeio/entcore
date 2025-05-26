@@ -90,24 +90,29 @@ describe('Message list component', () => {
     render(<MessageList />, { path: '/inbox' });
 
     const checkboxList = screen.getAllByRole('checkbox');
-    act(() => {
-      checkboxList[2].click();
-      checkboxList[1].click();
-      checkboxList[3].click();
-      checkboxList[4].click();
+
+    checkboxList[2].click();
+    checkboxList[1].click();
+    checkboxList[3].click();
+    checkboxList[4].click();
+
+    await waitFor(() => {
+      expect(screen.queryByLabelText('tag.read')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('tag.unread')).not.toBeInTheDocument();
     });
 
-    expect(screen.queryByLabelText('tag.read')).not.toBeInTheDocument();
-    expect(screen.queryByLabelText('tag.unread')).not.toBeInTheDocument();
-    act(() => {
-      checkboxList[4].click();
+    checkboxList[4].click();
+
+    await waitFor(() => {
+      expect(screen.queryByLabelText('tag.read')).toBeInTheDocument();
+      expect(screen.queryByLabelText('tag.unread')).toBeInTheDocument();
     });
-    expect(screen.queryByLabelText('tag.read')).toBeInTheDocument();
-    expect(screen.queryByLabelText('tag.unread')).toBeInTheDocument();
-    act(() => {
-      checkboxList[0].click();
+
+    checkboxList[0].click();
+
+    await waitFor(() => {
+      expect(screen.queryByLabelText('tag.read')).not.toBeInTheDocument();
+      expect(screen.queryByLabelText('tag.unread')).not.toBeInTheDocument();
     });
-    expect(screen.queryByLabelText('tag.read')).not.toBeInTheDocument();
-    expect(screen.queryByLabelText('tag.unread')).not.toBeInTheDocument();
   });
 });
