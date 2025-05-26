@@ -1,0 +1,55 @@
+<lightbox show="upload.lightbox.uploadFile" class="" on-close="upload.toggleUploadFilesView(false)">
+    <div class="row media-library">
+        <h2>
+            <i18n>medialibrary.title</i18n>
+        </h2>
+
+        <div class="split-screen" ng-class="{ split: display.editedDocument !== undefined }">
+
+            <!-- list documents to be uploaded -->
+            <div class="loading-list drop-zone">
+                <ul>
+                    <li ng-repeat="doc in upload.uploadedDocuments"
+                        ng-click="openCompression(doc)"
+                        ng-class="{
+                        'image-file': doc.isEditableImage && doc.uploadStatus === 'loaded',
+                        'loading': doc.uploadStatus === 'loading',
+                        selected: doc === display.editedDocument
+                    }">
+                        <!-- file icon -->
+                        <div class="icon">
+                            <i class="unknown"></i>
+                        </div>
+
+
+                        <!-- file name -->
+                        <div class="title">[[doc.name || doc.title]]</div>
+
+                        <!-- file info -->
+                        <div class="status-infos">
+                            <span class="small-text horizontal-margin">
+                                [[upload.getSize(doc.size)]]
+                            </span>
+                            <i class="loaded"></i>
+                        </div>
+                        <!-- remove file icon -->
+                        <i class="close" ng-click="upload.abortFile(doc)"></i>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- footer / action button -->
+        <div class="row">
+            <!-- import -->
+            <button class="right-magnet" ng-click="upload.onValidImportFiles()" ng-disabled="!upload.uploadedDocuments">
+                <i18n>import</i18n>
+            </button>
+
+            <!-- cancel -->
+            <button class="right-magnet cancel" ng-click="upload.toggleUploadFilesView(false)">
+                <i18n>cancel</i18n>
+            </button>
+        </div>
+    </div>
+</lightbox>
