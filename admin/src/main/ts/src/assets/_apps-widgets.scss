@@ -4,7 +4,7 @@ i.actualites {
 
   &::before {
     content: '\e85b';
-    color: #4bafd5;
+    color: $orange;
   }
 }
 
@@ -55,7 +55,7 @@ i.calendar {
 
   &::before {
     content: '\e834';
-    color: $yellow;
+    color: $green;
   }
 }
 
@@ -148,7 +148,7 @@ i.schoolbook {
 
   &::before {
     content: '\f2bd';
-    color: $green;
+    color: $orange;
   }
 }
 
@@ -178,7 +178,7 @@ i.mediacentre {
 
   &::before {
     content: '\e968';
-    color: #2029b6;
+    color: $blue;
   }
 }
 
