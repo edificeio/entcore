@@ -1,0 +1,84 @@
+<!-- list of documents -->
+<article class="list-view no-margin-bottom height-minus210-mobile-1d"
+         ng-class="{'height-minus300 height-minus350-1d':infotipVisible,'height-minus200 height-minus270-1d':!infotipVisible}"
+         ng-if="isLoaded"
+         ng-show="documents.length > 0"
+         >
+    <p ng-if="!isLoaded" class="top-spacing-four flex-row align-start justify-center centered-text">
+        <i18n>workspace.loading</i18n>&nbsp;<i class="loading"></i>
+    </p>
+    <table class="list-view sticky-header darkgrey primary-hover" ng-if="isLoaded">
+        <!-- table header -->
+        <thead>
+        <tr id='start'>
+            <th scope="col" class="icon">
+                <input type="checkbox" ng-model="checkboxSelectAll" ng-change="onSelectAll()" id="parent-checkbox"/>
+            </th>
+            <th scope="col" class="icon zero-mobile">
+
+            </th>
+            <th scope="col" class="content" ng-click="viewList.orderByField('name')">
+					<span class="sortable">
+						<span class="icons right-spacing">
+							<i class="arrow" ng-class="{'icon-off':!isOrderedAsc('name')}"></i>
+							<i class="arrow bottom" ng-class="{'icon-off':!viewList.isOrderedDesc('name')}"></i>
+						</span>
+						<span translate content="name"></span>
+					</span>
+            </th>
+            <th scope="col" class="user" ng-click="viewList.orderByField('ownerName')">
+					<span class="sortable">
+						<span class="icons right-spacing">
+							<i class="arrow" ng-class="{'icon-off':!isOrderedAsc('ownerName')}"></i>
+							<i class="arrow bottom" ng-class="{'icon-off':!viewList.isOrderedDesc('ownerName')}"></i>
+						</span>
+						<span translate content="owner"></span>
+					</span>
+            </th>
+            <th scope="col" class="last-modified zero-mobile" ng-click="viewList.orderByField('lastModified')">
+					<span class="sortable">
+						<span class="icons right-spacing">
+							<i class="arrow " ng-class="{'icon-off':!viewList.isOrderedAsc('lastModified')}"></i>
+							<i class="arrow bottom" ng-class="{'icon-off':!viewList.isOrderedDesc('lastModified')}"></i>
+						</span>
+						<span translate content="modified"></span>
+					</span>
+            </th>
+            <th scope="col" class="size zero-mobile" ng-click="viewList.orderByField('size')">
+					<span class="sortable">
+						<span class="icons right-spacing">
+							<i class="arrow " ng-class="{'icon-off':!viewList.isOrderedAsc('size')}"></i>
+							<i class="arrow bottom" ng-class="{'icon-off':!viewList.isOrderedDesc('size')}"></i>
+						</span>
+						<span translate content="size"></span>
+					</span>
+            </th>
+        </tr>
+        </thead>
+
+        <!-- table body -->
+        <tbody>
+        <tr data-ng-repeat="document in documents"
+            ng-class="{ overline: true, checked: document.selected }"
+            dragend="draggable.dragEndHandler($originalEvent, document)"
+            dragstart="draggable.dragStartHandler($originalEvent, document)"
+            dragcondition="draggable.dropConditionHandler($originalEvent, document)">
+            <td class="icon"><input type="checkbox" ng-model="document.selected" ng-change="onSelectContent(content)"/></td>
+            <td class="icon zero-mobile" ng-switch="document.role">
+                <div class="twelve cell">
+                    <div class="img video" ng-switch-when="video">
+                        <i><svg class="icon-video" width="16" height="16"><use xlink:href="/workspace/public/img/illustrations.svg#icon-play"></use></svg></i>
+                    </div>
+                    <i ng-switch-when="presentation" class="ppt"></i>
+                    <i ng-switch-when="spreadsheet" class="xls"></i>
+                    <i ng-switch-default class="[[document.role]]"></i>
+                </div>
+            </td>
+            <td class="content"><a ng-click="onOpenContent(document)" ng-class="{ 'text-bold': document.type === 'folder' }">[[document.name]]</a></td>
+            <td class="user">[[document.ownerDisplayName]]</td>
+            <td class="date small-font zero-mobile">[[vm.viewList.displayLastModified(document)]]</td>
+            <td class="size small-font zero-mobile">[[formatDocumentSize(document.size)]]</td>
+        </tr>
+        </tbody>
+    </table>
+</article>

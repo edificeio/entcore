@@ -1,7 +1,6 @@
 import { model, template, FolderPickerProps, FolderPickerSourceFile, notify } from "entcore";
 import { models, workspaceService } from "../../services";
 
-
 export interface ActionCopyDelegateScope {
     copyProps: FolderPickerProps
     isMovingElementsMine(): boolean
@@ -24,7 +23,6 @@ export interface ActionCopyDelegateScope {
     selectedItems(): models.Element[]
     safeApply(a?)
     setHighlightTree(els: { folder: models.Node, count: number }[]);
-
 }
 
 export function ActionCopyDelegate($scope: ActionCopyDelegateScope) {

@@ -1,0 +1,91 @@
+<div
+    id="nextcloud-content"
+    class="sniplet nextcloud nextcloud-content"
+    ng-controller="NextcloudContentController"
+>
+    <div
+        style="
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        "
+    >
+        <div ng-if="nextcloudUrl && !isNextcloudUrlHidden">
+            <i18n>nextcloud.url.connect</i18n> &#58;
+            <a target="_blank" ng-href="[[nextcloudUrl]]">[[nextcloudUrl]]</a>
+        </div>
+
+        <div
+            style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 8px;
+            "
+        >
+            <button ng-if="!isTrashMode()" ng-click="upload.startImportFlow()">
+                <i18n>workspace.add.document</i18n>
+            </button>
+
+            <div class="choice-view" style="display: flex; gap: 8px">
+                <i
+                    class="show-icons"
+                    ng-class="{ selected: isViewMode('icons') }"
+                    ng-click="changeViewMode('icons')"
+                ></i>
+                <i
+                    class="show-list"
+                    ng-class="{ selected: isViewMode('list') }"
+                    ng-click="changeViewMode('list')"
+                ></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- dropzone action file -->
+    <dropzone-overlay
+        ng-if="isDropzoneEnabled()"
+        on-import="upload.onImportFiles($event)"
+        can-drop="canDropOnFolder()"
+        on-cannot-drop="onCannotDropFile()"
+    >
+    </dropzone-overlay>
+
+    <!-- view content -->
+    <container template="documents-content"></container>
+
+    <!-- empty state -->
+    <div
+        class="emptyscreen-nextcloud"
+        ng-if="isLoaded"
+        ng-show="!documents.length"
+    >
+        <h2 class="emptyscreen-header">
+            <i18n>empty.workspace.subfolder.title</i18n>
+        </h2>
+
+        <img
+            class="emptyscreen-image__mini"
+            src="/workspace/public/img/empty-workspace.svg"
+            alt=""
+        />
+
+        <p class="emptyscreen-footer">
+            <i18n>empty.workspace</i18n>
+        </p>
+    </div>
+
+    <!-- toolbar -->
+    <div
+        ng-include="'/workspace/public/template/nextcloud/toolbar/workspace-nextcloud-toolbar.html'"
+    ></div>
+
+    <!-- upload file popup -->
+    <div
+        ng-include="'/workspace/public/template/nextcloud/content/workspace-nextcloud-upload-file.html'"
+    ></div>
+
+    <div
+        ng-include="'/workspace/public/template/nextcloud/import/nextcloud-import.html'"
+    ></div>
+</div>

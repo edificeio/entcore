@@ -1,0 +1,39 @@
+<!-- list of documents -->
+<article class="icons-view no-overflow no-margin-bottom ng-scope nextcloud-article"
+         ng-if="isLoaded"
+         ng-show="documents.length > 0">
+    <explorer class="radius explorer-hover"
+              ng-repeat="content in documents"
+              ng-model="content.selected"
+              ng-change="onSelectContent(content)"
+              on-open="onOpenContent(content)"
+              dragstart="draggable.dragStartHandler($originalEvent, content)"
+              dragdrop="draggable.dragDropHandler($originalEvent, content)"
+              dragend="draggable.dragEndHandler($originalEvent, content)"
+              dropcondition="draggable.dropConditionHandler($originalEvent, content)">
+        <div ng-class="{ selected: content.selected}">
+            <legend class="no-1d">
+                <a>
+                    <span tooltip-on-ellipsis="[[content.name]]">[[content.name]]</span>
+                </a>
+            </legend>
+
+            <a class="container [[content.role]]" ng-switch="content.role">
+                <!-- img format -->
+                <div ng-switch-when="image" class="twelve cell">
+                    <div class="clip">
+                        <img ng-src="[[getFile(content)]]" alt="thumbnail" src="" width="117" height="115"/>
+                    </div>
+                </div>
+
+                <div class="img video" ng-switch-when="video">
+                    <i><svg class="icon-video" width="40" height="40"><use xlink:href="/workspace/public/img/illustrations.svg#icon-play"></use></svg></i>
+                </div>
+                <i ng-switch-when="presentation" class="ppt-large"></i>
+                <i ng-switch-when="spreadsheet" class="xls-large"></i>
+                <i ng-switch-default class="[[content.role]]-large"></i>
+            </a>
+        </div>
+
+    </explorer>
+</article>

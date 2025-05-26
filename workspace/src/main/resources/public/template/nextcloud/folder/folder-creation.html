@@ -1,0 +1,15 @@
+<lightbox show="folderCreation.lightbox.folder" class="" on-close="folderCreation.toggleCreateFolder(false, newFolder)">
+    <form ng-submit="folderCreation.createFolder(newFolder)">
+        <h2>
+            <i18n>folder.new.title</i18n>
+        </h2>
+        <div class="row top-spacing-four">
+            <label class="two cell" translate content="workspace.name"></label>
+            <input class="ten cell" type="text" ng-model="newFolder.name" autofocus />
+        </div>
+        <div class="lightbox-buttons fluid">
+            <button class="right-magnet" ng-disabled="!newFolder.name"><i18n>workspace.folder.create</i18n></button>
+            <button class="cancel right-magnet" type="button" ng-click="folderCreation.toggleCreateFolder(false, newFolder)"><i18n>cancel</i18n></button>
+        </div>
+    </form>
+</lightbox>
