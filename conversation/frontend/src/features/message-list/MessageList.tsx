@@ -24,7 +24,6 @@ import useToolbarVisibility from './hooks/useToolbarVisibility';
 
 export function MessageList() {
   const { folderId } = useSelectedFolder();
-  console.log('===folderId:', folderId);
   const [searchParams] = useSearchParams();
 
   const { appCode } = useEdificeClient();
@@ -87,64 +86,64 @@ export function MessageList() {
   const toolbarItemsData = [
     {
       visibility: showMarkAsReadMessages,
-      label: t('tag.read'),
+      name: t('tag.read'),
       icon: <IconReadMail />,
       onClick: handleMarkAsReadClick,
     },
     {
       visibility: showMarkAsUnReadMessages,
-      label: t('tag.unread'),
+      name: t('tag.unread'),
       icon: <IconUnreadMail />,
       onClick: handleMarkAsUnreadClick,
     },
 
     {
       visibility: showTrashActions,
-      label: t('restore'),
+      name: t('restore'),
       icon: <IconRestore />,
       onClick: handleRestore,
     },
     {
       visibility: showMoveToFolder,
-      label: t('move.first.caps'),
+      name: t('move.first.caps'),
       icon: <IconFolderMove />,
       onClick: handleMoveToFolder,
     },
     {
       visibility: showTrashActions,
-      label: t('delete.definitely'),
+      name: t('delete.definitely'),
       icon: <IconDelete />,
       onClick: handleDelete,
     },
     {
       visibility: showFolderActions,
-      label: t('remove.from.folder'),
+      name: t('remove.from.folder'),
       icon: <IconFolderDelete />,
       onClick: handleRemoveFromFolder,
     },
     {
       visibility: showEmptyTrash,
-      label: t('empty.trash'),
+      name: t('empty.trash'),
       icon: <IconDelete />,
       onClick: handleEmptyTrash,
     },
     {
       visibility: showMoveToTrash,
-      label: t('delete'),
+      name: t('delete'),
       icon: <IconDelete />,
       onClick: handleMoveToTrash,
     },
   ];
 
   const toolbar: ToolbarButtonItem[] = toolbarItemsData.map(
-    ({ label, visibility, icon, onClick }) => ({
+    ({ name, visibility, icon, onClick }) => ({
       type: 'button',
-      name: label,
+      name,
       visibility,
-      tooltip: label,
+      tooltip: name,
       props: {
         leftIcon: icon,
-        children: label,
+        children: name,
         onClick,
       },
     }),
