@@ -1,0 +1,53 @@
+<div class="horizontal-spacing-twice">
+    <div ng-if="!toolbar.share.copyingForShare">
+        <!-- title -->
+        <h2 translate content="workspace.files.warning.title"></h2>
+
+        <!-- description file share -->
+        <div class="row">
+            <span translate content="workspace.files.warning.content"></span>
+            <hr />
+        </div>
+
+        <div class="lightbox-buttons fluid">
+            <!-- share document -->
+            <button
+                class="nextcloud-button-confirm right-magnet"
+                ng-click="toolbar.share.onShareAndNotCopy()"
+            >
+                <i18n>workspace.warning.notcopy</i18n>
+            </button>
+
+            <!-- copy document and share -->
+            <button
+                class="nextcloud-button-cancel right-magnet"
+                ng-click="toolbar.share.onShareAndCopy()"
+            >
+                <i18n>workspace.warning.copy</i18n>
+            </button>
+
+            <!-- cancel document -->
+            <button
+                class="nextcloud-button-cancel right-magnet"
+                ng-click="toolbar.share.onCancelShareElements()"
+            >
+                <i18n>workspace.warning.cancel</i18n>
+            </button>
+        </div>
+    </div>
+
+    <!-- loading copy processing -->
+    <div ng-if="toolbar.share.copyingForShare">
+        <div class="flex-row vertical-spacing-four">
+            <div class="centered vertical-spacing-four">
+                <div class="vertical-spacing-four primary-color">
+                    <h2
+                        translate
+                        content="workspace.copy.window.processing"
+                    ></h2>
+                    <i class="loading loadingCopy"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
