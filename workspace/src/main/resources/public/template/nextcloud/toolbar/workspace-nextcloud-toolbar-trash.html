@@ -1,0 +1,37 @@
+<lightbox
+    show="toolbar.lightbox.delete"
+    class=""
+    on-close="toolbar.toggleDeleteView(false)"
+>
+    <div class="horizontal-spacing-twice">
+        <!-- Lightbox title -->
+        <h2>
+            <i18n>nextcloud.documents.trash</i18n>
+        </h2>
+
+        <!-- Confirm trash body text -->
+        <div class="row">
+            <i18n>nextcloud.documents.confirm.trash</i18n>
+            <hr />
+        </div>
+
+        <!-- Footer/buttons -->
+        <div class="lightbox-buttons fluid">
+            <!-- delete -->
+            <button
+                class="nextcloud-button-confirm right-magnet"
+                ng-click="toolbar.deleteDocuments()"
+            >
+                <i18n>nextcloud.documents.confirm.trash.action</i18n>
+            </button>
+
+            <!-- cancel -->
+            <button
+                class="nextcloud-button-cancel cancel right-magnet"
+                ng-click="toolbar.toggleDeleteView(false)"
+            >
+                <i18n>cancel</i18n>
+            </button>
+        </div>
+    </div>
+</lightbox>
