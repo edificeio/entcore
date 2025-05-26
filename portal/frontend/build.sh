@@ -55,22 +55,13 @@ init () {
     echo "[init] Get branch name from git..."
     BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
   fi
-  if [ ! -z "$FRONT_TAG" ]; then
-    echo "[buildNode] Get tag name from jenkins param... $FRONT_TAG"
-    BRANCH_NAME="$FRONT_TAG"
-  fi
 
   echo "[init] Generate package.json from package.json.template..."
   NPM_VERSION_SUFFIX=`date +"%Y%m%d%H%M"`
   cp package.json.template package.json
   sed -i "s/%branch%/${BRANCH_NAME}/" package.json
   sed -i "s/%generateVersion%/${NPM_VERSION_SUFFIX}/" package.json
-
-  if [ "$BRANCH_NAME" = "dev" ] ; then 
-    sed -i "s/%packageVersion%/develop/" package.json
-  else 
-    sed -i "s/%packageVersion%/${BRANCH_NAME}/" package.json
-  fi
+  sed -i "s/%packageVersion%/${BRANCH_NAME}/" package.json
 
   if [ "$NO_DOCKER" = "true" ] ; then
     pnpm install

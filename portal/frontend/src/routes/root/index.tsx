@@ -1,13 +1,8 @@
-import {
-  Layout,
-  LoadingScreen,
-  useEdificeClient,
-  useEdificeTheme,
-} from '@edifice.io/react';
+import { Layout, LoadingScreen, useEdificeClient } from '@edifice.io/react';
+
 import { matchPath } from 'react-router-dom';
+
 import { basename } from '..';
-import { useEffect, useState } from 'react';
-import { MyAppLayout } from '~/layouts/MyAppsLayout';
 
 /** Check old format URL and redirect if needed */
 export const loader = async () => {
@@ -31,23 +26,10 @@ export const loader = async () => {
 
 export const Root = () => {
   const { init } = useEdificeClient();
-  const { theme } = useEdificeTheme();
-  const [themeName, setThemeName] = useState('');
-
-  useEffect(() => {
-    if (!theme) return;
-    const themeName = theme.is1d ? '1d' : '2d';
-    setThemeName(themeName);
-  }, [theme]);
-  
 
   if (!init) return <LoadingScreen position={false} />;
 
-  return init ? (
-    <Layout>
-      <MyAppLayout theme={themeName} />
-    </Layout>
-  ) : null;
+  return init ? <Layout>Welcome</Layout> : null;
 };
 
 export default Root;

@@ -1,7 +1,9 @@
-import { createApplicationsService } from './applicationsService';
-import { createMyAppsPreferencesService } from './myAppsPreferencesService';
-import { createPreferencesService } from './preferencesService';
+/*
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ This is a starter file and can be deleted.
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ Delete this file and get started with your project!
+ * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+ */
 
-export const applicationsService = createApplicationsService();
-export const preferencesService = createPreferencesService();
-export const myAppsPreferencesService = createMyAppsPreferencesService();
+export const baseUrl = '/app';

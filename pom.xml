@@ -47,13 +47,15 @@
         <module>feeder</module>
         <module>infra</module>
         <module>portal/backend</module>
+        <module>session</module>
+        <module>test</module>
         <module>timeline</module>
         <module>workspace</module>
         <module>tests</module>
     </modules>
 
     <properties>
-        <revision>6.7-SNAPSHOT</revision>
+        <revision>6.6-develop-enabling-SNAPSHOT</revision>
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
         <modPostgresVersion>2.0-SNAPSHOT</modPostgresVersion>

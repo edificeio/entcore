@@ -41,7 +41,7 @@ export default ({ mode }: { mode: string }) => {
       };
 
   return defineConfig({
-    base: mode === 'production' ? '/' : '',
+    base: mode === 'production' ? '/welcome' : '',
     root: __dirname,
     cacheDir: './node_modules/.vite/welcome',
 
@@ -72,7 +72,6 @@ export default ({ mode }: { mode: string }) => {
           proxyObj,
         '/explorer': proxyObj,
         '/welcome': proxyObj,
-        '/myApps': proxyObj
       },
       port: 4200,
       headers,

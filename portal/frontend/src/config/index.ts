@@ -1,9 +1,7 @@
 /*
  * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- This is a starter file and can be modified.
+ This is a starter file and can be deleted.
  * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- Modifiy this file and get started with your project!
+ This folder should contain all config and constants
  * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
-
-export * from './actions';
