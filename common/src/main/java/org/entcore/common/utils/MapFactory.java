@@ -54,7 +54,7 @@ public class MapFactory {
 
 	public static <K,V> void getClusterMap(String name, Vertx vertx, Handler<AsyncMap<K, V>> handler) {
 		LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
-		Boolean cluster = (Boolean) server.get("cluster");
+		Boolean cluster = vertx.isClustered();
 		if (Boolean.TRUE.equals(cluster)) {
 			vertx.sharedData().getClusterWideMap(name, new Handler<AsyncResult<AsyncMap<K, V>>>() {
 				@Override
@@ -80,7 +80,7 @@ public class MapFactory {
 	@Deprecated
 	public static <K,V> Map<K,V> getSyncClusterMap(String name, Vertx vertx, boolean elseLocalMap) {
 		LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
-		Boolean cluster = (Boolean) server.get("cluster");
+		Boolean cluster = vertx.isClustered();
 		final Map<K, V> map;
 		if (Boolean.TRUE.equals(cluster)) {
 			ClusterManager cm = ((VertxInternal) vertx).getClusterManager();

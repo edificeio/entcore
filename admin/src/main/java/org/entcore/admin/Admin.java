@@ -19,6 +19,9 @@
 package org.entcore.admin;
 
 import io.vertx.core.Promise;
+
+import java.util.Map;
+
 import org.entcore.admin.controllers.AdminController;
 import org.entcore.admin.controllers.BlockProfileTraceController;
 import org.entcore.admin.controllers.PlatformInfoController;
@@ -26,58 +29,72 @@ import org.entcore.admin.controllers.ConfigController;
 import org.entcore.admin.services.BlockProfileTraceService;
 import org.entcore.admin.services.impl.DefaultBlockProfileTraceService;
 import org.entcore.common.http.BaseServer;
+
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.eventbus.DeliveryOptions;
 
 public class Admin extends BaseServer {
 
-	 @Override
-	 public void start(final Promise<Void> startPromise) throws Exception {
-		 super.start(startPromise);
-		 
-		 addController(new AdminController());
+	@Override
+	public void start(final Promise<Void> startPromise) throws Exception {
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future().compose(x ->
+			SharedDataHelper.getInstance().<String, String>getMulti("server", "smsProvider", "node")
+		).onSuccess(adminMap -> {
+			try {
+				initAdmin(startPromise, adminMap);
+			} catch (Exception e) {
+				startPromise.fail(e);
+				log.error("Error when start Admin", e);
+			}
+		}).onFailure(ex -> log.error("Error when start Admin server super classes", ex));
+	}
 
-		 BlockProfileTraceController blockProfileTraceController = new BlockProfileTraceController("adminv2");
-		 BlockProfileTraceService blockProfileTraceService = new DefaultBlockProfileTraceService("adminv2");
-		 blockProfileTraceController.setBlockProfileTraceService(blockProfileTraceService);
-		 addController(blockProfileTraceController);
-		 addController(new ConfigController());
-		 
-		 final PlatformInfoController platformInfoController = new PlatformInfoController();
+	public void initAdmin(final Promise<Void> startPromise, final Map<String, String> adminMap) throws Exception {
+		addController(new AdminController());
 
-		 // check if sms module activated
-		 String smsAddress = "";
-		 String smsProvider = "";
-		 LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
-		 if(server != null && server.get("smsProvider") != null) {
-			 smsProvider = (String) server.get("smsProvider");
-			 final String node = (String) server.get("node");
-			 smsAddress = (node != null ? node : "") + "entcore.sms";
-		 } else {
-			 smsAddress = "entcore.sms";
-		 }
+		BlockProfileTraceController blockProfileTraceController = new BlockProfileTraceController("adminv2");
+		BlockProfileTraceService blockProfileTraceService = new DefaultBlockProfileTraceService("adminv2");
+		blockProfileTraceController.setBlockProfileTraceService(blockProfileTraceService);
+		addController(blockProfileTraceController);
+		addController(new ConfigController());
+		
+		final PlatformInfoController platformInfoController = new PlatformInfoController();
 
-		 JsonObject pingAction = new JsonObject()
-				 .put("provider", smsProvider)
-				 .put("action", "ping");
+		// check if sms module activated
+		String smsAddress = "";
+		String smsProvider = "";
+		if(adminMap.get("smsProvider") != null) {
+			smsProvider = adminMap.get("smsProvider");
+			final String node = adminMap.get("node");
+			smsAddress = (node != null ? node : "") + "entcore.sms";
+		} else {
+			smsAddress = "entcore.sms";
+		}
 
-		 vertx.eventBus().request(smsAddress, pingAction, new DeliveryOptions().setSendTimeout(5000l),
-				 new Handler<AsyncResult<Message<JsonObject>>>() {
-					 @Override
-					 public void handle(AsyncResult<Message<JsonObject>> res) {
-						 if (res != null && res.succeeded()) {
-							 if ("ok".equals(res.result().body().getString("status"))) {
-								 platformInfoController.setSmsModule(true);
-							 }
-						 }
-						 addController(platformInfoController);
-					 }
-				 }
-		 );
-	 }
+		JsonObject pingAction = new JsonObject()
+				.put("provider", smsProvider)
+				.put("action", "ping");
+
+		vertx.eventBus().request(smsAddress, pingAction, new DeliveryOptions().setSendTimeout(5000l),
+				new Handler<AsyncResult<Message<JsonObject>>>() {
+					@Override
+					public void handle(AsyncResult<Message<JsonObject>> res) {
+						if (res != null && res.succeeded()) {
+							if ("ok".equals(res.result().body().getString("status"))) {
+								platformInfoController.setSmsModule(true);
+							}
+						}
+						addController(platformInfoController);
+					}
+				}
+		);
+		startPromise.complete();
+	}
 
 }

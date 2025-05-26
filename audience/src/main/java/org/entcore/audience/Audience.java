@@ -25,6 +25,19 @@ public class Audience extends BaseServer {
 
   @Override
   public void start(final Promise<Void> startPromise) throws Exception {
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future().onSuccess(x -> {
+			try {
+				initAudience(startPromise);
+			} catch (Exception e) {
+				startPromise.fail(e);
+				log.error("Error when start Audience", e);
+			}
+		}).onFailure(ex -> log.error("Error when start Audience server super classes", ex));
+	}
+
+	public void initAudience(final Promise<Void> startPromise) throws Exception {
     super.start(startPromise);
     final ISql isql = Sql.getInstance();
     final ReactionDao reactionDao = new ReactionDaoImpl(isql);

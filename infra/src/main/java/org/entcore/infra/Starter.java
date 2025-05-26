@@ -69,14 +69,14 @@ public class Starter extends BaseServer {
 		super.start(initInfraPromise);
 		initInfraPromise.future().onSuccess(x -> {
 			try {
-				initInfra();
+				initInfra(startPromise);
 			} catch (Exception e) {
 				log.error("Error when start Infra", e);
 			}
 		}).onFailure(ex -> log.error("Error when start Infra server super classes", ex));
 	}
 
-	public void initInfra() {
+	public void initInfra(Promise<Void> startPromise) {
 		try {
 			log.info(config.encodePrettily());
 			final Map<String, Object> serverMap = new HashMap<>();
@@ -197,13 +197,15 @@ public class Starter extends BaseServer {
 			SharedDataHelper.getInstance().getAsyncMap("server").onSuccess(asyncServerMap -> {
 				final List<Future<Void>> futures = new ArrayList<>();
 				serverMap.entrySet().stream().forEach(entry -> futures.add(asyncServerMap.put(entry.getKey(), entry.getValue())));
-				Future.all(futures).onFailure(ex -> log.error("Error putting values in config server map", ex));
+				Future.all(futures)
+					.onSuccess(a -> startPromise.complete())
+					.onFailure(ex -> log.error("Error putting values in config server map", ex));
 			}).onFailure(ex -> log.error("Error getting server map", ex));
 
 			final MessageConsumer<JsonObject> messageConsumer = vertx.eventBus().consumer("app-registry.loaded");
 			messageConsumer.handler(message -> {
 				registerGlobalWidgets(config.getString("widgets-path", config.getString("assets-path", ".") + "/assets/widgets"));
-				loadInvalidEmails();
+				loadInvalidEmails(); // TODO change map loadding if needed
 				messageConsumer.unregister();
 			});
 		} catch (Exception ex) {

@@ -59,6 +59,7 @@ public class Neo4j {
 	}
 
 	public void init(Vertx vertx, JsonObject config) {
+		log.info("Neo4j config : " + config.encode());
 		this.eb = Server.getEventBus(vertx);
 		JsonArray serverUris = config.getJsonArray("server-uris");
 		String serverUri = config.getString("server-uri");

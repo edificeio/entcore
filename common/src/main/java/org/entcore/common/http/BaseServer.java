@@ -96,26 +96,27 @@ public abstract class BaseServer extends Server {
 		}
 		final Promise<Void> baseServerPromise = Promise.promise();
 		super.start(baseServerPromise);
-		baseServerPromise.future().onSuccess(x -> {
+		baseServerPromise.future().compose(x ->
 			SharedDataHelper.getInstance().<String, Object>getMulti("server",
 				"node", "contentSecurityPolicy", "cache-filter", "skins", "oauthCache",
-				"neo4jConfig", "elasticsearchConfig", "redisConfig"
-			).onSuccess(baseServerMap -> {
-				try {
-					initBaseServer(startPromise, baseServerMap);
-				} catch (Exception e) {
-					log.error("Error when initialing BaseServer on module " + moduleName, e);
-					if (vertx.isClustered()) {
-						try {
-							Promise<Void> stopPromise = Promise.promise();
-							super.stop(stopPromise);
-							stopPromise.future().onComplete(r -> vertx.close());
-						} catch (Exception e1) {
-							log.error("Error when stop module " + moduleName, e1);
-						}
+				"neo4jConfig", "elasticsearchConfig", "redisConfig")
+		).compose(baseServerMap -> {
+			try {
+				initBaseServer(startPromise, baseServerMap);
+			} catch (Exception e) {
+				log.error("Error when initialing BaseServer on module " + moduleName, e);
+				startPromise.fail(e);
+				if (vertx.isClustered()) {
+					try {
+						Promise<Void> stopPromise = Promise.promise();
+						super.stop(stopPromise);
+						stopPromise.future().onComplete(r -> vertx.close());
+					} catch (Exception e1) {
+						log.error("Error when stop module " + moduleName, e1);
 					}
 				}
-			}).onFailure(ex -> log.error("Error when load server map values in BaseServer.", ex));
+			}
+			return startPromise.future();
 		}).onFailure(ex -> log.error("Error when initialing Server on module " + moduleName, ex));
 	}
 

@@ -20,10 +20,11 @@
 package org.entcore.archive;
 
 import fr.wseduc.cron.CronTrigger;
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.security.RSA;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.shareddata.LocalMap;
+import io.vertx.core.shareddata.AsyncMap;
 
 import org.entcore.archive.controllers.ArchiveController;
 import org.entcore.archive.controllers.ImportController;
@@ -52,12 +53,25 @@ public class Archive extends BaseServer {
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
 		setResourceProvider(new ArchiveFilter());
-		super.start(startPromise);
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future().compose(x ->
+			SharedDataHelper.getInstance().<String, String>getAsyncMap("server")
+		).onSuccess(archivesMap -> {
+			try {
+				initArchives(startPromise, archivesMap);
+			} catch (Exception e) {
+				startPromise.fail(e);
+				log.error("Error when start Admin", e);
+			}
+		}).onFailure(ex -> log.error("Error when start Admin server super classes", ex));
+	}
 
+	public void initArchives(final Promise<Void> startPromise, final AsyncMap<String, String> archivesMap) throws Exception {
 		Storage storage = new StorageFactory(vertx, config).getStorage();
 
+		// TODO replace with asyncMap
 		final Map<String, Long> archiveInProgress = MapFactory.getSyncClusterMap(Archive.ARCHIVES, vertx);
-		final LocalMap<Object, Object> serverMap = vertx.sharedData().getLocalMap("server");
 
 		Integer storageTimeout = config.getInteger("import-storage-timeout", 600);
 		String exportPath = config.getString("export-path", System.getProperty("java.io.tmpdir"));
@@ -65,7 +79,7 @@ public class Archive extends BaseServer {
 		String privateKeyPath = config.getString("archive-private-key", null);
 		boolean forceEncryption = config.getBoolean("force-encryption", false); //TODO: Set the default to true when it is safe to do so
 
-		serverMap.put("archiveConfig", new JsonObject().put("storageTimeout", storageTimeout).encode());
+		archivesMap.put("archiveConfig", new JsonObject().put("storageTimeout", storageTimeout).encode());
 
 		PrivateKey signKey = RSA.loadPrivateKey(vertx, privateKeyPath);
 		PublicKey verifyKey = RSA.loadPublicKey(vertx, privateKeyPath);
@@ -127,6 +141,7 @@ public class Archive extends BaseServer {
 				log.error("Invalid cron expression.", e);
 			}
 		}
+		startPromise.tryComplete();
 	}
 
 }
