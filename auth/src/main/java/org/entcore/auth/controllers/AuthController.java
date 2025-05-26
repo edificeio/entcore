@@ -202,15 +202,6 @@ public class AuthController extends BaseController {
 		}
 		ipAllowedByPassLimit = getOrElse(config.getJsonArray("ip-allowed-by-pass-limit"), new JsonArray());
 
-//		if (server != null) {
-//			Boolean cluster = (Boolean) server.get("cluster");
-//			if (Boolean.TRUE.equals(cluster)) {
-//				ClusterManager cm = ((VertxInternal) vertx).clusterManager();
-//				invalidEmails = cm.getSyncMap("invalidEmails");
-//			} else {
-//				invalidEmails = vertx.sharedData().getMap("invalidEmails");
-//			}
-//		} else {
 		invalidEmails = MapFactory.getSyncClusterMap("invalidEmails", vertx);
 		internalAddress = config.getJsonArray("internalAddress",
 				new JsonArray().add("localhost").add("127.0.0.1")).getList();
