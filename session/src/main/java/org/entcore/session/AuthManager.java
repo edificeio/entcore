@@ -69,7 +69,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		neo4j = Neo4j.getInstance();
 		neo4j.init(vertx, new JsonObject(neo4jConfig));
 
-		cluster = (Boolean) server.get("cluster");
+		cluster = vertx.isClustered();
 		String node = (String) server.get("node");
 		mongo = MongoDb.getInstance();
 		mongo.init(vertx.eventBus(), node + config.getString("mongo-address", "wse.mongodb.persistor"));

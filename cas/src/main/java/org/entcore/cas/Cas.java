@@ -39,7 +39,19 @@ public class Cas extends BaseServer {
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
-		super.start(startPromise);
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future().onSuccess(x -> {
+			try {
+				initCas(startPromise);
+			} catch (Exception e) {
+				startPromise.fail(e);
+				log.error("Error when start Cas", e);
+			}
+		}).onFailure(ex -> log.error("Error when start Cas server super classes", ex));
+	}
+
+	public void initCas(final Promise<Void> startPromise) throws Exception {
 		MappingService.getInstance().configure(config());
 		EntCoreDataHandlerFactory dataHandlerFactory = new EntCoreDataHandlerFactory(getEventBus(vertx), config);
 
@@ -82,7 +94,7 @@ public class Cas extends BaseServer {
 				configurationController.loadPatterns();
 			}
 		});
-
+		startPromise.tryComplete();
 	}
 
 }

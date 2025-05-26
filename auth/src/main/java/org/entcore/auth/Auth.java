@@ -20,6 +20,7 @@
 package org.entcore.auth;
 
 import fr.wseduc.cron.CronTrigger;
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.security.JWT;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.DeploymentOptions;
@@ -28,7 +29,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.shareddata.LocalMap;
+import io.vertx.core.shareddata.AsyncMap;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 
 import org.entcore.auth.controllers.*;
@@ -58,6 +59,7 @@ import org.entcore.common.sms.SmsSenderFactory;
 import org.opensaml.xml.ConfigurationException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
@@ -67,8 +69,26 @@ public class Auth extends BaseServer {
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future().compose(x ->
+			SharedDataHelper.getInstance().<String, Object>getMulti("server", "signKey")
+		).compose(authMap -> 
+			SharedDataHelper.getInstance().<String, Object>getAsyncMap("server").compose(asyncAuthMap -> {
+				try {
+					initAuth(startPromise, authMap, asyncAuthMap);
+				} catch (Exception e) {
+					startPromise.fail(e);
+					log.error("Error when start Auth", e);
+				}
+				return startPromise.future();
+			})
+		).onFailure(ex -> log.error("Error when start Auth server super classes", ex));
+	}
+
+	public void initAuth(final Promise<Void> startPromise, final Map<String, Object> authMap,
+			final AsyncMap<String, Object> asyncAuthMap) throws Exception {
 		final EventBus eb = getEventBus(vertx);
-		super.start(startPromise);
 		setDefaultResourceFilter(new AuthResourcesProvider(new Neo(vertx, eb, null)));
 		final String JWT_PERIOD_CRON = "jwt-bearer-authorization-periodic";
 		final String JWT_PERIOD = "jwt-bearer-authorization";
@@ -112,7 +132,7 @@ public class Auth extends BaseServer {
 		}
 
 		final String customTokenEncryptKey = config.getString("custom-token-encrypt-key", UUID.randomUUID().toString());
-		final String signKey = (String) vertx.sharedData().getLocalMap("server").get("signKey");
+		final String signKey = (String) authMap.get("signKey");
 
 		CustomTokenHelper.setEncryptKey(customTokenEncryptKey);
 		CustomTokenHelper.setSignKey(signKey);
@@ -142,19 +162,21 @@ public class Auth extends BaseServer {
 							samlController.setSamlWayfParams(config.getJsonObject("saml-wayf"));
 							samlController.setIgnoreCallBackPattern(config.getString("ignoreCallBackPattern"));
 							addController(samlController);
-							LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
-							if (server != null) {
+							if (asyncAuthMap != null) {
 								String loginUri = config.getString("loginUri");
 								String callbackParam = config.getString("callbackParam");
 								if (loginUri != null && !loginUri.trim().isEmpty()) {
-									server.putIfAbsent("loginUri", loginUri);
+									asyncAuthMap.putIfAbsent("loginUri", loginUri)
+										.onFailure(ex -> log.error("Error when put loginUri", ex));
 								}
 								if (callbackParam != null && !callbackParam.trim().isEmpty()) {
-									server.putIfAbsent("callbackParam", callbackParam);
+									asyncAuthMap.putIfAbsent("callbackParam", callbackParam)
+										.onFailure(ex -> log.error("Error when put callbackParam", ex));
 								}
 								final JsonObject authLocations = config.getJsonObject("authLocations");
 								if (authLocations != null && authLocations.size() > 0) {
-									server.putIfAbsent("authLocations", authLocations.encode());
+									asyncAuthMap.putIfAbsent("authLocations", authLocations.encode())
+										.onFailure(ex -> log.error("Error when put authLocations", ex));
 								}
 							}
 						} catch (ConfigurationException e) {
@@ -240,6 +262,7 @@ public class Auth extends BaseServer {
 				}
 			});
 		}
+		startPromise.tryComplete();
 	}
 
 }
