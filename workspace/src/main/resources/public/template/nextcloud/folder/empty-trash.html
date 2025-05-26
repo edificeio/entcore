@@ -1,0 +1,14 @@
+<lightbox
+    show="emptyTrashbin.lightbox.emptyTrash"
+    on-close="emptyTrashbin.toggleDeleteView(false)"
+>
+    <h2 translate content="workspace.delete"></h2>
+    <div class="row">
+        <span translate content="confirm.remove"></span>
+        <hr />
+    </div>
+    <div class="lightbox-buttons fluid">
+        <button class="right-magnet" ng-click="emptyTrashbin.emptyTrashbin()"><i18n>workspace.delete.confirm.action</i18n></button>
+        <button class="cancel right-magnet" ng-click="emptyTrashbin.lightbox.emptyTrash = false;"><i18n>cancel</i18n></button>
+    </div>
+</lightbox>
