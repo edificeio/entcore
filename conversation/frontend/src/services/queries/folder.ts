@@ -153,11 +153,28 @@ export const useFolderUtils = () => {
   function updateFolderMessagesQueryData(
     folderId: string,
     updater: (oldMessage: MessageMetadata) => MessageMetadata,
+    reOrder: boolean = false,
   ) {
     queryClient.setQueriesData<InfiniteData<MessageMetadata[]>>(
       { queryKey: folderQueryOptions.getMessagesQuerykey(folderId, {}) },
       (oldData) => {
         if (!oldData?.pages) return undefined;
+
+        if (reOrder) {
+          const allMessages = oldData.pages.flatMap((page) => page);
+          const updatedMessages = allMessages.map(updater);
+          updatedMessages.sort((a, b) => (b.date || 0) - (a.date || 0));
+          const pages = [],
+            pageSize = oldData?.pages[0].length || 20;
+          for (let i = 0; i < allMessages.length; i += pageSize) {
+            pages.push(updatedMessages.slice(i, i + pageSize));
+          }
+          return {
+            ...oldData,
+            pages,
+          };
+        }
+
         return {
           ...oldData,
           pages: oldData.pages.map((page) => page.map(updater)),

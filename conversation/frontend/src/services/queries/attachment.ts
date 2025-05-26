@@ -39,9 +39,10 @@ export const useAttachFiles = () => {
         messageQueryOptions.getById(draftId).queryKey,
         () => {
           if (!message) return undefined;
-          const messageTmp = {
+          const messageTmp: Message = {
             ...message,
             attachments: [...message.attachments, ...attachments],
+            date: Date.now(),
           };
           setMessage({
             ...messageTmp,
@@ -50,10 +51,13 @@ export const useAttachFiles = () => {
         },
       );
 
-      updateFolderMessagesQueryData('draft', (oldMessage) =>
-        oldMessage.id === draftId
-          ? { ...oldMessage, date: Date.now(), hasAttachment: true }
-          : oldMessage,
+      updateFolderMessagesQueryData(
+        'draft',
+        (oldMessage) =>
+          oldMessage.id === draftId
+            ? { ...oldMessage, date: Date.now(), hasAttachment: true }
+            : oldMessage,
+        true,
       );
       toast.success(t('attachments.loaded'));
     },
@@ -98,10 +102,13 @@ export const useDetachFile = () => {
           return updatedMessage;
         },
       );
-      updateFolderMessagesQueryData('draft', (oldMessage) =>
-        oldMessage.id === draftId
-          ? { ...oldMessage, date: Date.now() }
-          : oldMessage,
+      updateFolderMessagesQueryData(
+        'draft',
+        (oldMessage) =>
+          oldMessage.id === draftId
+            ? { ...oldMessage, date: Date.now() }
+            : oldMessage,
+        true,
       );
     },
     onError(_error, { draftId }) {
