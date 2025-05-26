@@ -62,7 +62,7 @@ describe('Message Queries', () => {
     });
   });
 
-  test.only('use useTrashMessage hook to move messages to trash', async () => {
+  test('use useTrashMessage hook to move messages to trash', async () => {
     const { result } = renderHook(() => useTrashMessage(), { wrapper });
 
     const messageServiceSpy = vi.spyOn(messageService, 'moveToFolder');
