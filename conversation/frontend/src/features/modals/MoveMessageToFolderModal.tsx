@@ -9,7 +9,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import illuFolder from '~/assets/illu-folder.svg';
-import { useI18n } from '~/hooks';
+import { useI18n } from '~/hooks/useI18n';
 import { buildTree, useFolderUtils, useMoveMessage } from '~/services';
 import { useAppActions, useSelectedMessageIds } from '~/store';
 import { useFolderActions } from './hooks';

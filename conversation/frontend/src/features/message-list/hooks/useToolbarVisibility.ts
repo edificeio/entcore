@@ -1,6 +1,6 @@
 import { useEdificeClient } from '@edifice.io/react';
 import { useCallback, useMemo } from 'react';
-import { useSelectedFolder } from '~/hooks';
+import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { MessageMetadata } from '~/models';
 import { isInRecipient } from '~/services';
 import useSelectedMessages from './useSelectedMessages';

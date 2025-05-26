@@ -2,7 +2,7 @@ import { Button, Modal } from '@edifice.io/react';
 import { WorkspaceFolders } from '@edifice.io/react/multimedia';
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useI18n } from '~/hooks';
+import { useI18n } from '~/hooks/useI18n';
 import { useMessageAttachments } from '~/hooks/useMessageAttachments';
 import { Attachment } from '~/models';
 

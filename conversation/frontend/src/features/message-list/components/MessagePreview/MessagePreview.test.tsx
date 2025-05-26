@@ -12,21 +12,10 @@ const inboxMessage = mockMessagesOfInbox[0];
 const userFolderId = '23785dbc-dc2e-4f66-95a4-23f587d65008';
 
 const mocks = vi.hoisted(() => ({
-  useParams: vi.fn(),
+  useSelectedFolder: vi.fn(),
   useEdificeTheme: vi.fn(),
   useEdificeClient: vi.fn(),
 }));
-
-vi.mock('react-router-dom', async () => {
-  const actual =
-    await vi.importActual<typeof import('react-router-dom')>(
-      'react-router-dom',
-    );
-  return {
-    ...actual,
-    useParams: mocks.useParams,
-  };
-});
 
 vi.mock('@edifice.io/react', async () => {
   const actual =
@@ -40,13 +29,17 @@ vi.mock('@edifice.io/react', async () => {
   };
 });
 
+vi.mock('~/hooks/useSelectedFolder', () => ({
+  useSelectedFolder: mocks.useSelectedFolder,
+}));
+
 describe('Message preview header component', () => {
   beforeAll(() => {
     mocks.useEdificeTheme.mockReturnValue({ theme: { is1d: false } });
     mocks.useEdificeClient.mockReturnValue({
       user: { userId: mockCurrentUserPreview.id },
     });
-    mocks.useParams.mockReturnValue({ folderId: 'inbox' });
+    mocks.useSelectedFolder.mockReturnValue({ folderId: 'inbox' });
   });
 
   afterAll(() => {
@@ -55,7 +48,6 @@ describe('Message preview header component', () => {
 
   it('should render successfully', async () => {
     const { baseElement } = render(<MessagePreview message={inboxMessage} />);
-
     expect(baseElement).toBeTruthy();
   });
 
@@ -140,19 +132,21 @@ describe('Message preview header component', () => {
   });
 
   it('should display "to" label and recipient name when in outbox', async () => {
-    mocks.useParams.mockReturnValue({ folderId: 'outbox' });
+    mocks.useSelectedFolder.mockReturnValue({ folderId: 'outbox' });
 
     render(<MessagePreview message={inboxMessage} />);
 
-    const toLabel = screen.getByText('at');
+    const toLabel = await screen.findByText('at');
     expect(toLabel).toBeInTheDocument();
 
-    const senderName = screen.getByText('Enseignants du groupe scolaire.');
+    const senderName = await screen.findByText(
+      'Enseignants du groupe scolaire.',
+    );
     expect(senderName).toBeInTheDocument();
   });
 
   it('should display the recipient avatar when in outbox', async () => {
-    mocks.useParams.mockReturnValue({ folderId: 'outbox' });
+    mocks.useSelectedFolder.mockReturnValue({ folderId: 'outbox' });
 
     const messageWithOneRecipient = mockMessagesOfInbox[1];
     render(<MessagePreview message={messageWithOneRecipient} />);
@@ -164,7 +158,7 @@ describe('Message preview header component', () => {
   });
 
   it('should display group avatar icon when more than one recipient when in outbox', async () => {
-    mocks.useParams.mockReturnValue({ folderId: 'outbox' });
+    mocks.useSelectedFolder.mockReturnValue({ folderId: 'outbox' });
     render(<MessagePreview message={inboxMessage} />);
 
     expect(inboxMessage.to.groups.length).toBeGreaterThan(1);
@@ -174,7 +168,7 @@ describe('Message preview header component', () => {
   });
 
   it('should display all recipients after "to" label when in outbox', async () => {
-    mocks.useParams.mockReturnValue({ folderId: 'outbox' });
+    mocks.useSelectedFolder.mockReturnValue({ folderId: 'outbox' });
     render(<MessagePreview message={mockMessageOfOutbox} />);
 
     const atLabel = await screen.findByText('at');
@@ -189,13 +183,13 @@ describe('Message preview header component', () => {
   });
 
   it('should display a "draft" label when in draft', async () => {
-    mocks.useParams.mockReturnValue({ folderId: 'draft' });
+    mocks.useSelectedFolder.mockReturnValue({ folderId: 'draft' });
     render(<MessagePreview message={mockMessageOfOutbox} />);
     screen.getByText('draft');
   });
 
   it('should not display any recipients if there are none when in draft', async () => {
-    mocks.useParams.mockReturnValue({ folderId: 'draft' });
+    mocks.useSelectedFolder.mockReturnValue({ folderId: 'draft' });
     const message = { ...mockMessageOfOutbox };
     message.to = { users: [], groups: [] };
     message.cc = { users: [], groups: [] };
@@ -208,25 +202,21 @@ describe('Message preview header component', () => {
   });
 
   it('should display inbox icon when message come from inbox in user folder', async () => {
-    mocks.useParams.mockReturnValue({
-      folderId: userFolderId,
-    });
+    mocks.useSelectedFolder.mockReturnValue({ folderId: userFolderId });
+
     render(<MessagePreview message={inboxMessage} />);
     await screen.findByTitle('mail-in');
   });
 
   it('should display outbox icon when message come from inbox in user folder', async () => {
-    mocks.useParams.mockReturnValue({
-      folderId: userFolderId,
-    });
+    mocks.useSelectedFolder.mockReturnValue({ folderId: userFolderId });
+
     render(<MessagePreview message={mockMessageOfOutbox} />);
     await screen.findByTitle('mail-out');
   });
 
   it('should display inbox icon when current user send the message to himself in user folder', async () => {
-    mocks.useParams.mockReturnValue({
-      folderId: userFolderId,
-    });
+    mocks.useSelectedFolder.mockReturnValue({ folderId: userFolderId });
 
     render(<MessagePreview message={mockMessageFromMeToMe} />);
 

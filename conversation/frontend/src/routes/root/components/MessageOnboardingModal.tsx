@@ -3,7 +3,7 @@ import illuOnboardingIncoming from '~/assets/illu-onboarding-incoming.svg';
 import illuOnboardingNew from '~/assets/illu-onboarding-new.svg';
 import illuOnboardingRecall from '~/assets/illu-onboarding-recall.svg';
 import illuOnboardingSearch from '~/assets/illu-onboarding-search.svg';
-import { useI18n } from '~/hooks';
+import { useI18n } from '~/hooks/useI18n';
 
 export default function MessageOnboardingModal() {
   const { t } = useI18n();

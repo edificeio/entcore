@@ -9,8 +9,9 @@ import {
 } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { useI18n, useSelectedFolder } from '~/hooks';
+import { useI18n } from '~/hooks/useI18n';
 import { useMessageIdAndAction } from '~/hooks/useMessageIdAndAction';
+import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { Message, MessageBase } from '~/models';
 import {
   baseUrl,
@@ -222,7 +223,7 @@ export const useTrashMessage = () => {
       messageService.moveToFolder('trash', id),
     onMutate: async ({ id }: { id: string | string[] }) => {
       // avoid to display placeholder if have next page
-      if (messages.length === id.length && hasNextPage) {
+      if (messages?.length === id.length && hasNextPage) {
         await fetchNextPage();
       }
     },
@@ -242,13 +243,13 @@ export const useTrashMessage = () => {
       let unreadTrashedCount = 0;
       // Update list message
       queryClient.setQueryData(
-        folderQueryOptions.getMessagesQuerykey(folderId, {
+        folderQueryOptions.getMessagesQuerykey(folderId!, {
           search: search === '' ? undefined : search || undefined,
           unread: !unreadFilter ? undefined : true,
         }),
         // Remove deleted message from pages
         (data: InfiniteData<Message[]>) => {
-          if (!['trash', 'draft', 'outbox'].includes(folderId)) {
+          if (!['trash', 'draft', 'outbox'].includes(folderId!)) {
             unreadTrashedCount = data.pages.reduce((count, page) => {
               return (
                 count +
@@ -274,10 +275,10 @@ export const useTrashMessage = () => {
       // Update unread inbox count
       // Update custom folder count
       if (
-        !['trash', 'draft', 'outbox'].includes(folderId) &&
+        !['trash', 'draft', 'outbox'].includes(folderId!) &&
         unreadTrashedCount
       ) {
-        updateFolderBadgeCountLocal(folderId, -unreadTrashedCount);
+        updateFolderBadgeCountLocal(folderId!, -unreadTrashedCount);
       }
 
       // Update draft count if It's a draft message

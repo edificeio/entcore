@@ -1,6 +1,6 @@
 import { ConfirmModal } from '@edifice.io/react';
 import { useEffect } from 'react';
-import { useI18n } from '~/hooks';
+import { useI18n } from '~/hooks/useI18n';
 import { useAppActions } from '~/store';
 import { useFolderActions } from './hooks';
 import './FolderModalInDropdown.css';

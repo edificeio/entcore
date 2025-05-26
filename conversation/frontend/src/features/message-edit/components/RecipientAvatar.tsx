@@ -5,7 +5,7 @@ import {
   IconGroupAvatar,
 } from '@edifice.io/react/icons';
 import clsx from 'clsx';
-import { useI18n } from '~/hooks';
+import { useI18n } from '~/hooks/useI18n';
 import { VisibleType } from '~/models/visible';
 
 interface RecipientAvatarProps {

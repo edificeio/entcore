@@ -16,7 +16,9 @@ import {
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFolderHandlers } from '~/features/menu/hooks/useFolderHandlers';
-import { useI18n, useRecall, useSelectedFolder } from '~/hooks';
+import { useI18n } from '~/hooks/useI18n';
+import { useRecall } from '~/hooks/useRecall';
+import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { Message, Recipients } from '~/models';
 import {
   isInRecipient,

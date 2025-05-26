@@ -9,7 +9,8 @@ import {
 } from '~/services';
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useI18n, useSelectedFolder } from '~/hooks';
+import { useSelectedFolder } from '~/hooks/useSelectedFolder';
+import { useI18n } from '~/hooks/useI18n';
 
 const MAX_LENGTH = 50;
 

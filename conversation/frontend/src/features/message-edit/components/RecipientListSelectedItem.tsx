@@ -1,7 +1,7 @@
 import { IconButton, useDirectory } from '@edifice.io/react';
 import { IconClose } from '@edifice.io/react/icons';
 import clsx from 'clsx';
-import { useI18n } from '~/hooks';
+import { useI18n } from '~/hooks/useI18n';
 import { useMessageUserDisplayName } from '~/hooks/useUserDisplayName';
 import { Group, User } from '~/models';
 import RecipientAvatar from './RecipientAvatar';
