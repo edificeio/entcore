@@ -6,7 +6,7 @@ import {
 } from '@edifice.io/react';
 import { Fragment, ReactNode, useEffect, useState } from 'react';
 import { useSearchRecipients } from '~/features/message-edit/hooks/useSearchRecipients';
-import { useI18n } from '~/hooks';
+import { useI18n } from '~/hooks/useI18n';
 import { Group, Recipients, User } from '~/models';
 import { Visible } from '~/models/visible';
 import { useBookmarkById } from '~/services/queries/user';

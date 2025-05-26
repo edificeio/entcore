@@ -14,7 +14,7 @@ export function useSelectedFolder(): {
   folderId?: string;
   userFolder?: Folder;
 } {
-  const { folderId } = useParams() as { folderId: string };
+  const { folderId } = useParams();
   const foldersTreeQuery = useFoldersTree();
   const foldersTree = foldersTreeQuery.data;
 
@@ -28,7 +28,7 @@ export function useSelectedFolder(): {
       break;
   }
 
-  if (!foldersTree) return { folderId };
+  if (!foldersTree || !folderId) return { folderId };
 
   const found = searchFolder(folderId, foldersTree);
 
