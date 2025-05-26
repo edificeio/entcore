@@ -2,10 +2,12 @@ import {
   Button,
   Dropdown,
   FormControl,
+  FormText,
   Input,
   Label,
   Modal,
   Switch,
+  useToast,
 } from '@edifice.io/react';
 import { IconFolder } from '@edifice.io/react/icons';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -41,12 +43,14 @@ function flatFolders(folders: Folder[], prefix?: string) {
 
 export function CreateFolderModal() {
   const { t, common_t } = useI18n();
+  const { error } = useToast();
   const { setOpenedModal } = useAppActions();
   const { createFolder, isActionPending, foldersTree } = useFolderActions();
   const [checked, setChecked] = useState(false);
   const [subFolderId, setSubfolderId] = useState<string | undefined>(undefined);
   const refInputName = useRef<HTMLInputElement>(null);
   const [newFolderName, setNewFolderName] = useState('');
+  const [nameError, setNameError] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (isActionPending === false) setOpenedModal(undefined);
@@ -58,12 +62,20 @@ export function CreateFolderModal() {
       event.preventDefault();
       if (!newFolderName) return;
 
-      const created = createFolder(
-        refInputName.current?.value,
-        checked ? subFolderId : undefined,
-      );
-      if (created === false) {
-        refInputName.current?.focus();
+      try {
+        const created = createFolder(
+          refInputName.current?.value,
+          checked ? subFolderId : undefined,
+        );
+        if (created === false) {
+          refInputName.current?.focus();
+        }
+      } catch (err) {
+        if (err instanceof Error) {
+          setNameError(err.message);
+        } else {
+          error(t('conversation.error.new.folder'));
+        }
       }
     },
     [checked, createFolder, subFolderId, newFolderName],
@@ -99,6 +111,7 @@ export function CreateFolderModal() {
 
   const handleNameChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewFolderName(e.target.value);
+    setNameError(undefined);
   };
 
   const menu = foldersTree ? flatFolders(foldersTree) : [];
@@ -116,7 +129,11 @@ export function CreateFolderModal() {
         </Modal.Header>
 
         <Modal.Body className={'d-flex flex-column gap-24'}>
-          <FormControl id="modalFolderNew" isRequired={true}>
+          <FormControl
+            id="modalFolderNew"
+            isRequired={true}
+            status={!!nameError ? 'invalid' : undefined}
+          >
             <Label>{t('folder.new.name.label')}</Label>
             <Input
               ref={refInputName}
@@ -127,6 +144,7 @@ export function CreateFolderModal() {
               maxLength={50}
               autoComplete="off"
             />
+            {nameError && <FormText>{nameError}</FormText>}
           </FormControl>
           {userFolders.length > 0 && (
             <div className="d-flex flex-column gap-8">
