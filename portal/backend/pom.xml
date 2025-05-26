@@ -8,6 +8,7 @@
         <groupId>org.entcore</groupId>
         <artifactId>ent-core</artifactId>
         <version>${revision}</version>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
 
     <artifactId>portal</artifactId>
