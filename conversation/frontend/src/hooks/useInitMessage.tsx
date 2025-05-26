@@ -151,7 +151,6 @@ export function useInitMessage({
         }
       }
 
-      console.log('recipientsToAddToMessage', recipientsToAddToMessage);
       if (
         recipientsToAddToMessage?.users.length ||
         recipientsToAddToMessage?.groups.length
@@ -173,7 +172,6 @@ export function useInitMessage({
           ],
         };
       }
-      console.log('messageTmp', messageTmp);
 
       setMessage({
         ...messageTmp,

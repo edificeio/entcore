@@ -133,12 +133,24 @@ export function RecipientListEdit({
   }, [onRecipientUpdate, recipientArray]);
 
   useEffect(() => {
-    setRecipientArray([...recipients.users, ...recipients.groups] as (
-      | User
-      | Group
-    )[]);
+    const recipientIds = [
+      ...recipients.users.map((user) => user.id),
+      ...recipients.groups.map((group) => group.id),
+    ];
+    // compare with the current recipientArray
+    const currentRecipientIds = recipientArray.map((recipient) => recipient.id);
+    if (
+      recipientIds.length !== currentRecipientIds.length ||
+      !recipientIds.every((id) => currentRecipientIds.includes(id))
+    ) {
+      setRecipientArray([...recipients.users, ...recipients.groups] as (
+        | User
+        | Group
+      )[]);
+    }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [recipients]);
 
   const renderListRecipients = (recipients: OptionListItemType[]) => {
     return recipients.map((recipient, index) => {
