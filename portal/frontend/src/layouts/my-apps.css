@@ -1,0 +1,211 @@
+html[data-skin='dyslexic'] .my-apps-layout *:not(.application-icon i) {
+  font-family: OpenDyslexic !important;
+}
+@media (hover: none) {
+  .dropdown-wrapper {
+    opacity: 1 !important;
+  }
+}
+
+body {
+  background: inherit !important;
+}
+
+.application-card {
+  box-shadow: none !important;
+  border: 1px solid transparent;
+  width: 107px;
+  height: 134px;
+  text-align: center;
+}
+
+.theme-1d .application-card {
+  width: 130px;
+  height: 150px;
+}
+.theme-1d .application-icon {
+  width: 80px;
+  height: 80px;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+.theme-1d .application-icon-app {
+  line-height: 72px !important;
+  font-size: 6rem !important;
+  width: 6rem !important;
+  height: 6rem !important;
+}
+.theme-2d .application-icon-app {
+  line-height: 67px !important;
+  font-size: 4.5rem !important;
+  width: 4.5rem !important;
+  height: 4.5rem !important;
+}
+
+.theme-1d .application-icon-src {
+  font-size: 6rem !important;
+  font-weight: bold !important;
+  line-height: 1 !important;
+}
+
+.theme-2d .application-icon-src {
+  font-size: 4.5rem !important;
+  font-weight: bold !important;
+  line-height: 1 !important;
+}
+
+.application-card .dropdown-menu {
+  display: flex !important;
+  border: none;
+}
+.dropdown-wrapper {
+  display: block;
+  opacity: 0;
+}
+.dropdown .btn-icon {
+  transform: none !important;
+}
+.application-card .dropdown-item {
+  padding: 0.8rem 1.2rem;
+  color: rgb(74, 74, 74);
+}
+.application-card:hover .dropdown-wrapper,
+.application-card.active .dropdown-wrapper,
+.application-card:focus .dropdown-wrapper,
+.application-card:focus-within .dropdown-wrapper {
+  opacity: 1;
+}
+.application-card .card-header,
+.application-card .card-header button:nth-of-type(2) {
+  padding: 0;
+  border: 0;
+}
+.application-card .card-body {
+  padding: 0;
+}
+
+.application-icon {
+  width: 62px;
+  height: 62px;
+  text-align: center;
+  line-height: 56px;
+  display: inline-block;
+  overflow: hidden;
+}
+.application-icon.application-icon-connector {
+  color: black !important;
+  border: 1px solid #c7c7c7;
+}
+.application-icon i::before {
+  color: white !important;
+  font-size: 36px;
+}
+.application-icon.application-icon-connector i::before {
+  color: black !important;
+}
+
+.application-title {
+  font-family: 'Arimo';
+  font-weight: 400;
+  text-transform: unset;
+}
+
+.toolbar-categories-wrapper {
+  display: block;
+  width: 100%;
+  text-align: center;
+}
+.toolbar-categories {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  white-space: nowrap;
+  justify-content: flex-start;
+  overflow: hidden;
+}
+.toolbar-categories[role='toolbar'] {
+  margin-left: 0 !important;
+}
+
+@media screen and (max-width: 767px) {
+  .toolbar-categories-wrapper {
+    overflow: scroll;
+    margin-left: -24px;
+    width: calc(100% + 48px);
+  }
+  .toolbar-categories {
+    overflow: unset;
+    max-width: unset;
+  }
+  .my-apps-header {
+    flex-direction: column;
+  }
+  .my-apps-search {
+    margin-top: 14px;
+    width: 100% !important;
+  }
+}
+
+.favorite-star-icon {
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  width: 24px;
+  height: 24px;
+  z-index: 2;
+}
+.theme-1d .favorite-star-icon {
+  position: absolute;
+  top: -14px;
+  left: -14px;
+  width: 28px;
+  height: 28px;
+}
+
+.ellipsis-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.my-apps-search {
+  width: 302px;
+}
+
+.my-apps-skeleton-title {
+  width: 107px;
+  height: 32px;
+  border-radius: 12px;
+}
+
+.my-apps-skeleton-searchBar {
+  width: 302px;
+  height: 48px;
+  border-radius: 12px;
+}
+
+.my-apps-skeleton-notification-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+}
+
+.my-apps-skeleton-toolbar {
+  width: 500px;
+  height: 48px;
+}
+
+.my-apps-skeleton-app-box {
+  width: 84px;
+  height: 84px;
+  border-radius: 12px;
+}
+.my-apps-skeleton-app-text {
+  width: 99px;
+  height: 22px;
+  border-radius: 12px;
+}

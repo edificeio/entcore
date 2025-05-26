@@ -1,0 +1,42 @@
+name: tests
+
+on:
+  pull_request:
+
+permissions:
+  actions: read
+  contents: read
+
+defaults:
+  run:
+    working-directory: frontend
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: "0"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - uses: pnpm/action-setup@v4
+        id: pnpm-install
+        with:
+          version: 9.4.0
+          run_install: false
+
+      - name: Generate .npmrc
+        run: |
+          pnpm config set @tiptap-pro:registry https://registry.tiptap.dev
+          pnpm config set //registry.tiptap.dev/:_authToken ${{ secrets.TIPTAP_PRO_TOKEN }}
+          pnpm config set auto-install-peers true
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec nx test
+
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TIPTAP_PRO_TOKEN: ${{ secrets.TIPTAP_PRO_TOKEN }}
