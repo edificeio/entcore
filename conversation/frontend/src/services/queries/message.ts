@@ -548,14 +548,17 @@ export const useUpdateDraft = () => {
         },
       );
 
-      updateFolderMessagesQueryData('draft', (oldMessage) =>
-        oldMessage.id === draftId
-          ? {
-              ...oldMessage,
-              ...messageUpdated,
-              hasAttachment: messageUpdated.attachments?.length > 0,
-            }
-          : oldMessage,
+      updateFolderMessagesQueryData(
+        'draft',
+        (oldMessage) =>
+          oldMessage.id === draftId
+            ? {
+                ...oldMessage,
+                ...messageUpdated,
+                hasAttachment: messageUpdated.attachments?.length > 0,
+              }
+            : oldMessage,
+        true,
       );
     },
   });
