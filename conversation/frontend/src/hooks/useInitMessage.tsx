@@ -35,7 +35,7 @@ export function useInitMessage({
   const signature =
     signatureData?.useSignature && signatureData.signature
       ? `<p></p><p></p>${signatureData.signature}`
-      : '';
+      : '<p></p>';
 
   useLayoutEffect(() => {
     // If the configuration for the signature is pending, we return an empty message
