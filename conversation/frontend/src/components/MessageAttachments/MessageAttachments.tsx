@@ -64,7 +64,7 @@ export function MessageAttachments({
             {attachments.length > 1 && (
               <div>
                 <IconButton
-                  title={common_t('conversation.copy.all.toworkspace')}
+                  title={t('conversation.copy.all.toworkspace')}
                   color="tertiary"
                   type="button"
                   icon={<IconFolderAdd />}
