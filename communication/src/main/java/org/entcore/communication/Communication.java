@@ -34,16 +34,28 @@ public class Communication extends BaseServer {
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
-		super.start(startPromise);
-    	TimelineHelper helper = new TimelineHelper(vertx, vertx.eventBus(), config);
-		CommunicationController communicationController = new CommunicationController();
-		final CommunicationService service = new DefaultCommunicationService(vertx, helper, config);
-		communicationController.setCommunicationService(service);
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future().onSuccess(x -> {
+			try {
+				initCommunication(startPromise);
+			} catch (Exception e) {
+				startPromise.fail(e);
+				log.error("Error when start Communication", e);
+			}
+		}).onFailure(ex -> log.error("Error when start Communication server super classes", ex));
+	}
+
+	public void initCommunication(final Promise<Void> startPromise) throws Exception {
+    final TimelineHelper helper = new TimelineHelper(vertx, vertx.eventBus(), config);
+		final CommunicationController communicationController = new CommunicationController();
+    final CommunicationService service = new DefaultCommunicationService(vertx, helper, config);
+    communicationController.setCommunicationService(service);
 
 		addController(communicationController);
 		setDefaultResourceFilter(new CommunicationFilter());
-
-		BrokerProxyUtils.addBrokerProxy(new CommunicationBrokerListenerImpl(service), vertx);
+    BrokerProxyUtils.addBrokerProxy(new CommunicationBrokerListenerImpl(service), vertx);
+		startPromise.tryComplete();
 	}
 
 }

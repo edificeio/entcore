@@ -32,13 +32,18 @@ public class Portal extends BaseServer {
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
-		super.start(startPromise);
-		final String assetPath = config.getString("assets-path", "../..");
-		final AddressParameter parameter = new AddressParameter("application", "portal");
-		final CacheService cacheService = CacheService.create(vertx);
-		BrokerProxyUtils.addBrokerProxy(new I18nBrokerListenerImpl(vertx, assetPath, cacheService), vertx, parameter);
-		BrokerProxyUtils.addBrokerProxy(new EventBrokerListenerImpl(), vertx);
-		addController(new PortalController());
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future()
+				.onSuccess(x -> {
+          final String assetPath = config.getString("assets-path", "../..");
+          final AddressParameter parameter = new AddressParameter("application", "portal");
+          final CacheService cacheService = CacheService.create(vertx);
+          BrokerProxyUtils.addBrokerProxy(new I18nBrokerListenerImpl(vertx, assetPath, cacheService), vertx, parameter);
+          BrokerProxyUtils.addBrokerProxy(new EventBrokerListenerImpl(), vertx);
+          addController(new PortalController());
+        })
+				.onFailure(ex -> log.error("Error when start Infra server super classes", ex));
 	}
 
 }
