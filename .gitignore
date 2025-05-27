@@ -40,9 +40,6 @@ auth/src/main/resources/public/temp
 workspace/src/main/resources/view/*
 workspace/src/main/resources/public/js
 workspace/src/main/resources/public/temp
-portal/src/main/resources/view/*
-portal/src/main/resources/public/js
-portal/src/main/resources/public/temp
 directory/src/main/resources/view/*
 directory/src/main/resources/public/js
 directory/src/main/resources/public/temp
@@ -68,7 +65,6 @@ admin/src/main/resources/public/styles/generic-icons.*.woff
 admin/src/main/resources/public/styles/icons*.svg
 archive/src/main/resources/view/*
 directory/src/main/resources/view/*
-portal/src/main/resources/view/*
 timeline/src/main/resources/view/*
 workspace/src/main/resources/view/*
 tests/.cache-main
