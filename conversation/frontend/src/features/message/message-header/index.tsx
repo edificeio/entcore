@@ -16,7 +16,7 @@ export function MessageHeader({ message }: { message: Message }) {
           <h4>
             {message.state === 'RECALL'
               ? t('conversation.recall.mail.subject.details')
-              : message.subject}
+              : message.subject || t('nosubject')}
           </h4>
           <div className="d-flex align-items-center mt-16 gap-12 small">
             <Avatar
