@@ -105,7 +105,7 @@ describe('CreateFolderModal component', () => {
     // Wait for one event loop
     await new Promise((r) => setTimeout(r, 0));
 
-    expect(mocks.useToast.error).toHaveBeenCalledTimes(1);
+    await screen.findByText('conversation.error.duplicate.folder');
   });
 
   it('should create a folder', async () => {
