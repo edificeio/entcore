@@ -142,6 +142,7 @@ export function CreateFolderModal() {
               type="text"
               onChange={handleNameChanged}
               maxLength={50}
+              showCounter
               autoComplete="off"
             />
             {nameError && <FormText>{nameError}</FormText>}
