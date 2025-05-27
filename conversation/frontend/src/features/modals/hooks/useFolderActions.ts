@@ -47,8 +47,7 @@ export function useFolderActions() {
         ? foldersTree.find((f) => f.id === parentId)?.subFolders
         : foldersTree;
       if (siblings && siblings.findIndex((f) => f.name == name) !== -1) {
-        error(t('conversation.error.duplicate.folder'));
-        return false;
+        throw new Error(t('conversation.error.duplicate.folder'));
       }
 
       // Create the folder
