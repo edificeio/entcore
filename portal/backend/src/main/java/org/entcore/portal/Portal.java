@@ -20,7 +20,7 @@
 package org.entcore.portal;
 
 import io.vertx.core.Promise;
-import java.io.File;
+
 import org.entcore.broker.api.utils.AddressParameter;
 import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.cache.CacheService;
@@ -29,17 +29,24 @@ import org.entcore.portal.controllers.PortalController;
 import org.entcore.portal.listeners.I18nBrokerListenerImpl;
 import org.entcore.common.events.EventBrokerListenerImpl;
 
+import java.io.File;
+
 public class Portal extends BaseServer {
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
-		super.start(startPromise);
-		final String assetPath = config.getString("assets-path", "../..")+ File.separator + "assets";
-		final AddressParameter parameter = new AddressParameter("application", "portal");
-		final CacheService cacheService = CacheService.create(vertx);
-		BrokerProxyUtils.addBrokerProxy(new I18nBrokerListenerImpl(vertx, assetPath, cacheService), vertx, parameter);
-		BrokerProxyUtils.addBrokerProxy(new EventBrokerListenerImpl(), vertx);
-		addController(new PortalController());
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future()
+		.onSuccess(x -> {
+          final String assetPath = config.getString("assets-path", "../..")+ File.separator + "assets";
+          final AddressParameter parameter = new AddressParameter("application", "portal");
+          final CacheService cacheService = CacheService.create(vertx);
+          BrokerProxyUtils.addBrokerProxy(new I18nBrokerListenerImpl(vertx, assetPath, cacheService), vertx, parameter);
+          BrokerProxyUtils.addBrokerProxy(new EventBrokerListenerImpl(), vertx);
+          addController(new PortalController());
+        })
+		.onFailure(ex -> log.error("Error when start Infra server super classes", ex));
 	}
 
 }
