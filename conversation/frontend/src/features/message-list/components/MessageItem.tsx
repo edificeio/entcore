@@ -51,7 +51,7 @@ export function MessageItem({ message, checked, checkbox }: MessageItemProps) {
       data-testid="message-item"
     >
       <div className="d-flex align-items-center gap-12 g-col-3 flex-fill overflow-hidden">
-        <div className="ps-md-8">{checkbox}</div>
+        <div className="ps-lg-8">{checkbox}</div>
         <MessagePreview message={message} />
       </div>
     </div>

@@ -37,7 +37,7 @@ export function MessageActionDropdown({
   className,
 }: MessageActionDropdownProps) {
   const [inactiveUsers, setInactiveUsers] = useState<string[] | undefined>();
-  const { md } = useBreakpoint();
+  const { lg } = useBreakpoint();
 
   const { actionButtons, dropdownOptions } = useMessageActionDropdown({
     message,
@@ -64,7 +64,7 @@ export function MessageActionDropdown({
         .map((option) => (
           <Tooltip
             key={option.id}
-            message={md ? undefined : option.label}
+            message={lg ? undefined : option.label}
             placement="top"
           >
             <Button
@@ -75,7 +75,7 @@ export function MessageActionDropdown({
               aria-label={option.label}
               disabled={option.disabled}
             >
-              {md && option.label}
+              {lg && option.label}
             </Button>
           </Tooltip>
         ))}

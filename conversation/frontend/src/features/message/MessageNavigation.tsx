@@ -15,7 +15,7 @@ export function MessageNavigation({ message }: { message: Message }) {
   const navigate = useNavigate();
   const { common_t } = useI18n();
   const { folderId } = useSelectedFolder();
-  const { md } = useBreakpoint();
+  const { lg } = useBreakpoint();
   const { currentMessagePosition, totalMessagesCount, getMessageIdAtPosition } =
     useMessageNavigation(message.id);
   const [searchParams] = useSearchParams();
@@ -56,7 +56,7 @@ export function MessageNavigation({ message }: { message: Message }) {
       >
         {common_t('back')}
       </Button>
-      {!!currentMessagePosition && md && (
+      {!!currentMessagePosition && lg && (
         <Pagination
           current={currentMessagePosition}
           total={totalMessagesCount}
