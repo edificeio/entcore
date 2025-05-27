@@ -55,8 +55,19 @@ public class Conversation extends BaseServer {
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
-		super.start(startPromise);
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future().onSuccess(adminMap -> {
+			try {
+				initConversation(startPromise);
+			} catch (Exception e) {
+				startPromise.fail(e);
+				log.error("Error when start Conversation", e);
+			}
+		}).onFailure(ex -> log.error("Error when start Conversation server super classes", ex));
+	}
 
+	public void initConversation(final Promise<Void> startPromise) throws Exception {
 		final Storage storage = new StorageFactory(vertx, config, new ConversationStorage()).getStorage();
 
 		ContentTransformerFactoryProvider.init(vertx);
@@ -91,6 +102,7 @@ public class Conversation extends BaseServer {
 				log.error("Invalid cron expression.", e);
 			}
 		}
+		startPromise.tryComplete();
 	}
 
 }

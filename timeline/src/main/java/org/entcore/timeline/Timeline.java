@@ -30,6 +30,7 @@ import java.util.Map;
 
 import io.vertx.core.Promise;
 import io.vertx.core.shareddata.LocalMap;
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.http.oauth.OAuth2Client;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.utils.MapFactory;
@@ -51,9 +52,21 @@ public class Timeline extends BaseServer {
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
-		super.start(startPromise);
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future().onSuccess(x -> {
+			try {
+				initTimeline(startPromise);
+			} catch (Exception e) {
+				startPromise.fail(e);
+				log.error("Error when start Timeline", e);
+			}
+		}).onFailure(ex -> log.error("Error when start Timeline server super classes", ex));
+	}
 
+	public void initTimeline(final Promise<Void> startPromise) throws Exception {
 		final Map<String, String> registeredNotifications = MapFactory.getSyncClusterMap("notificationsMap", vertx);
+		// TODO replace with async map or sync cluster map to localmap
 		final LocalMap<String,String> eventsI18n = vertx.sharedData().getLocalMap("timelineEventsI18n");
 		final HashMap<String, JsonObject> lazyEventsI18n = new HashMap<>();
 
@@ -122,6 +135,7 @@ public class Timeline extends BaseServer {
 				log.error("Invalid cron expression.", e);
 			}
 		}
+		startPromise.tryComplete();
 	}
 
 	/**
