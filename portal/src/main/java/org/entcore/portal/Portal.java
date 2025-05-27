@@ -30,7 +30,10 @@ public class Portal extends BaseServer {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
 		promise.future()
-				.onSuccess(x -> addController(new PortalController()))
+				.onSuccess(x -> {
+					addController(new PortalController());
+					startPromise.tryComplete();
+				})
 				.onFailure(ex -> log.error("Error when start Infra server super classes", ex));
 	}
 
