@@ -187,13 +187,14 @@ buildFrontend () {
         exit 1
       fi
 
-      # Create directory structure and copy frontend build files.
-      if [ "$module" = "timeline" ]; then
-        # compatibility mode : preserve legacy frontends files in ../src
-        syncReactFrontendBuildToResources ".."
-      else
-        syncReactFrontendBuildToResources "../backend"
-      fi
+      # Create directory structure and copy frontend build files to backend
+      rm -rf ../backend/src/main/resources/public/*.js
+      rm -rf ../backend/src/main/resources/public/*.css
+      cp -R ./dist/* ../backend/src/main/resources/
+
+      # Create view directory and copy HTML files
+      mkdir -p ../backend/src/main/resources/view
+      mv ../backend/src/main/resources/*.html ../backend/src/main/resources/view
 
       # Clean up
       rm -rf ./dist
