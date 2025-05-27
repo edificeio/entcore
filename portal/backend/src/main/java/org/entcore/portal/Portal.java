@@ -42,6 +42,7 @@ public class Portal extends BaseServer {
           BrokerProxyUtils.addBrokerProxy(new I18nBrokerListenerImpl(vertx, assetPath, cacheService), vertx, parameter);
           BrokerProxyUtils.addBrokerProxy(new EventBrokerListenerImpl(), vertx);
           addController(new PortalController());
+          startPromise.tryComplete();
         })
 				.onFailure(ex -> log.error("Error when start Infra server super classes", ex));
 	}
