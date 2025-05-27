@@ -7,7 +7,8 @@ import {
   useEdificeClient,
 } from '@edifice.io/react';
 import { QueryClient } from '@tanstack/react-query';
-import { Outlet, useLoaderData } from 'react-router-dom';
+import { Suspense } from 'react';
+import { Outlet, useLoaderData, useParams } from 'react-router-dom';
 import { Config, existingActions } from '~/config';
 import {
   CreateFolderModal,
@@ -25,9 +26,8 @@ import {
   folderQueryOptions,
 } from '~/services/queries';
 import { setConfig, setWorkflows, useOpenedModal } from '~/store';
-import './index.css';
 import MessageOnboardingModal from './components/MessageOnboardingModal';
-import { Suspense } from 'react';
+import './index.css';
 
 // Typing for the root route loader.
 export interface RootLoaderData {
@@ -67,6 +67,8 @@ export function Component() {
   const { actions, config } = useLoaderData() as RootLoaderData;
 
   const { md } = useBreakpoint();
+  const { messageId } = useParams();
+  const isMessageDetail = !!messageId;
   const openedModal = useOpenedModal();
 
   if (!init || !currentApp) return <LoadingScreen position={false} />;
@@ -88,7 +90,7 @@ export function Component() {
       </Suspense>
 
       <div className="d-md-flex">
-        {!md && (
+        {!md && !isMessageDetail && (
           <div className="d-print-none d-block d-md-none px-0 py-12 border-bottom bg-white">
             <MobileMenu />
           </div>
