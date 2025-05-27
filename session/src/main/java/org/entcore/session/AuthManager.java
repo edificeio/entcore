@@ -22,6 +22,8 @@ package org.entcore.session;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.collections.SharedDataHelper;
+
 import static fr.wseduc.webutils.Utils.getOrElse;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
@@ -32,6 +34,8 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
+import io.vertx.core.shareddata.SharedData;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.common.cache.CacheService;
 import org.entcore.common.neo4j.Neo4j;
@@ -43,6 +47,7 @@ import org.vertx.java.busmods.BusModBase;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -63,14 +68,21 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 
 	public void start() {
 		super.start();
-		LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
-
-		String neo4jConfig = (String) server.get("neo4jConfig");
+		final SharedDataHelper sharedDataHelper = SharedDataHelper.getInstance();
+		sharedDataHelper.init(vertx);
+		sharedDataHelper.<String, Object>getMulti(
+				"server", "neo4jConfig", "node", "oauthCache", "redisConfig"
+		).onSuccess(sessionMap -> initSession(sessionMap)
+		).onFailure(ex -> logger.error("Error when start Session server super classes", ex));
+	}
+	
+	public void initSession(Map<String, Object> sessionMap) {
+		String neo4jConfig = (String) sessionMap.get("neo4jConfig");
 		neo4j = Neo4j.getInstance();
 		neo4j.init(vertx, new JsonObject(neo4jConfig));
 
 		cluster = vertx.isClustered();
-		String node = (String) server.get("node");
+		String node = (String) sessionMap.get("node");
 		mongo = MongoDb.getInstance();
 		mongo.init(vertx.eventBus(), node + config.getString("mongo-address", "wse.mongodb.persistor"));
 
@@ -80,10 +92,10 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 
 		try
 		{
-			Object oauthCacheConf = server.get("oauthCache");
+			Object oauthCacheConf = sessionMap.get("oauthCache");
 			if(oauthCacheConf != null)
 			{
-				JsonObject redisConfig = new JsonObject((String) server.get("redisConfig"));
+				JsonObject redisConfig = new JsonObject((String) sessionMap.get("redisConfig"));
 				if(new JsonObject((String)oauthCacheConf).getBoolean("enabled", false) == true)
 				{
 					Redis.getInstance().init(vertx, redisConfig);

@@ -22,8 +22,10 @@ package org.entcore.feeder;
 import fr.wseduc.cron.CronTrigger;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -93,14 +95,26 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
 	@Override
 	public void start() {
-		super.start();
+		final SharedDataHelper sharedDataHelper = SharedDataHelper.getInstance();
+		sharedDataHelper.init(vertx);
+		sharedDataHelper.<String, Object>getMulti("server", "neo4jConfig", "node")
+		.onSuccess(feederMap -> {
+			try {
+				initFeeder(feederMap);
+			} catch (Exception e) {
+				logger.error("Error when start Feeder", e);
+			}
+		}).onFailure(ex -> logger.error("Error when start Feeder server super classes", ex));
+	}
+
+	public void initFeeder(Map<String,Object> feederMap) {
 		storage = new StorageFactory(vertx, config).getStorage();
 		FeederLogger.init(config);
-		String node = (String) vertx.sharedData().getLocalMap("server").get("node");
+		String node = (String) feederMap.get("node");
 		if (node == null) {
 			node = "";
 		}
-		String neo4jConfig = (String) vertx.sharedData().getLocalMap("server").get("neo4jConfig");
+		String neo4jConfig = (String) feederMap.get("neo4jConfig");
 		if (neo4jConfig != null) {
 			neo4j = Neo4j.getInstance();
 			neo4j.init(vertx, new JsonObject(neo4jConfig).put("ignore-empty-statements-error", config.getBoolean("ignore-empty-statements-error", false)));

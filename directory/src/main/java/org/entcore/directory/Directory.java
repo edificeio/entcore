@@ -19,6 +19,7 @@
 
 package org.entcore.directory;
 
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.email.EmailSender;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
@@ -30,6 +31,7 @@ import io.vertx.core.json.JsonObject;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Map;
 
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.email.EmailFactory;
@@ -61,13 +63,26 @@ public class Directory extends BaseServer {
 	public static final String SLOTPROFILE_COLLECTION = "slotprofile";
 
 	@Override
-	protected void initFilters() {
-		super.initFilters();
+	protected void initFilters(Map<String, Object> baseServerMap) {
+		super.initFilters(baseServerMap);
 		addFilter(new UserbookCsrfFilter(getEventBus(vertx), securedUriBinding));
 	}
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future().onSuccess(x -> {
+			try {
+				initDirectory(startPromise);
+			} catch (Exception e) {
+				startPromise.fail(e);
+				log.error("Error when start Directory", e);
+			}
+		}).onFailure(ex -> log.error("Error when start Directory server super classes", ex));
+	}
+
+	public void initDirectory(final Promise<Void> startPromise) throws Exception {
 		final EventBus eb = getEventBus(vertx);
 		super.start(startPromise);
 		MongoDbConf.getInstance().setCollection(SLOTPROFILE_COLLECTION);
@@ -236,7 +251,7 @@ public class Directory extends BaseServer {
 			remoteUserController.setRemoteUserService(remoteUserService);
 			addController(remoteUserController);
 		}
-
+		startPromise.tryComplete();
 	}
 
 }

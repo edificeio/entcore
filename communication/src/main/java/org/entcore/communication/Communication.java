@@ -21,6 +21,7 @@ package org.entcore.communication;
 
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
+
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.communication.controllers.CommunicationController;
@@ -31,14 +32,28 @@ public class Communication extends BaseServer {
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
-		super.start(startPromise);
-    TimelineHelper helper = new TimelineHelper(vertx, vertx.eventBus(), config);
-		CommunicationController communicationController = new CommunicationController();
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future().onSuccess(x -> {
+			try {
+				initCommunication(startPromise);
+			} catch (Exception e) {
+				startPromise.fail(e);
+				log.error("Error when start Communication", e);
+			}
+		}).onFailure(ex -> log.error("Error when start Communication server super classes", ex));
+	}
 
-		communicationController.setCommunicationService(new DefaultCommunicationService(helper, config.getJsonArray("discoverVisibleExpectedProfile", new JsonArray())));
+	public void initCommunication(final Promise<Void> startPromise) throws Exception {
+    	final TimelineHelper helper = new TimelineHelper(vertx, vertx.eventBus(), config);
+		final CommunicationController communicationController = new CommunicationController();
+
+		communicationController.setCommunicationService(new DefaultCommunicationService(
+				helper, config.getJsonArray("discoverVisibleExpectedProfile", new JsonArray())));
 
 		addController(communicationController);
 		setDefaultResourceFilter(new CommunicationFilter());
+		startPromise.tryComplete();
 	}
 
 }

@@ -20,6 +20,7 @@
 package org.entcore.workspace;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import io.vertx.core.Promise;
 import org.entcore.common.folders.FolderManager;
@@ -43,6 +44,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.http.HttpServerOptions;
 
@@ -50,8 +52,24 @@ public class Workspace extends BaseServer {
 
 	public static final String REVISIONS_COLLECTION = "documentsRevisions";
 	private static final Logger log = LoggerFactory.getLogger(Workspace.class);
+
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future().compose(x ->
+			SharedDataHelper.getInstance().<String, Object>getMulti("server", "node")
+		).onSuccess(workspaceMap -> {
+			try {
+				initWorkspace(startPromise, workspaceMap);
+			} catch (Exception e) {
+				startPromise.fail(e);
+				log.error("Error when start Workspace", e);
+			}
+		}).onFailure(ex -> log.error("Error when start Workspace server super classes", ex));
+	}
+
+	public void initWorkspace(final Promise<Void> startPromise, final Map<String, Object> workspaceMap) throws Exception {
 		WorkspaceResourcesProvider resourceProvider = new WorkspaceResourcesProvider();
 		setResourceProvider(resourceProvider);
 		super.start(startPromise);
@@ -63,7 +81,7 @@ public class Workspace extends BaseServer {
 		final QuotaService quotaService = new DefaultQuotaService(neo4jPlugin,
 				new TimelineHelper(vertx, vertx.eventBus(), config));
 
-		String node = (String) vertx.sharedData().getLocalMap("server").get("node");
+		String node = (String) workspaceMap.get("node");
 		if (node == null) {
 			node = "";
 		}

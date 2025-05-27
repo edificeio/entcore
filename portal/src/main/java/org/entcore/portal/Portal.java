@@ -27,8 +27,11 @@ public class Portal extends BaseServer {
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
-		super.start(startPromise);
-		addController(new PortalController());
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future()
+				.onSuccess(x -> addController(new PortalController()))
+				.onFailure(ex -> log.error("Error when start Infra server super classes", ex));
 	}
 
 }

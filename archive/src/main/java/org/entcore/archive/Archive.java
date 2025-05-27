@@ -70,7 +70,6 @@ public class Archive extends BaseServer {
 	public void initArchives(final Promise<Void> startPromise, final AsyncMap<String, String> archivesMap) throws Exception {
 		Storage storage = new StorageFactory(vertx, config).getStorage();
 
-		// TODO replace with asyncMap
 		final Map<String, Long> archiveInProgress = MapFactory.getSyncClusterMap(Archive.ARCHIVES, vertx);
 
 		Integer storageTimeout = config.getInteger("import-storage-timeout", 600);
