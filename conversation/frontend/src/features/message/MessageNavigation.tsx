@@ -1,4 +1,4 @@
-import { Button } from '@edifice.io/react';
+import { Button, useBreakpoint } from '@edifice.io/react';
 import { IconArrowLeft } from '@edifice.io/react/icons';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
@@ -15,6 +15,7 @@ export function MessageNavigation({ message }: { message: Message }) {
   const navigate = useNavigate();
   const { common_t } = useI18n();
   const { folderId } = useSelectedFolder();
+  const { md } = useBreakpoint();
   const { currentMessagePosition, totalMessagesCount, getMessageIdAtPosition } =
     useMessageNavigation(message.id);
   const [searchParams] = useSearchParams();
@@ -55,7 +56,7 @@ export function MessageNavigation({ message }: { message: Message }) {
       >
         {common_t('back')}
       </Button>
-      {!!currentMessagePosition && (
+      {!!currentMessagePosition && md && (
         <Pagination
           current={currentMessagePosition}
           total={totalMessagesCount}
