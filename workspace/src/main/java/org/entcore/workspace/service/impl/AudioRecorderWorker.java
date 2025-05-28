@@ -70,7 +70,9 @@ public class AudioRecorderWorker extends BusModBase implements Handler<Message<J
 	@Override
 	public void start() {
 		super.start();
-		storage = new StorageFactory(vertx, config).getStorage();
+		StorageFactory.build(vertx, config)
+            .onSuccess(storageFactory -> this.storage = storageFactory.getStorage())
+            .onFailure(ex -> logger.error("Error building storage factory", ex));
 		workspaceHelper = new WorkspaceHelper(vertx.eventBus(), storage);
 		vertx.eventBus().consumer(AudioRecorderWorker.class.getSimpleName(), this);
 	}
