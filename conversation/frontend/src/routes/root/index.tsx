@@ -78,40 +78,42 @@ export function Component() {
   }
 
   return (
-    <Layout>
-      <div className="d-print-none">
-        <AppHeader render={AppActionHeader}>
-          <Breadcrumb app={currentApp!} />
-        </AppHeader>
-      </div>
-
-      <Suspense fallback={<LoadingScreen />}>
-        <MessageOnboardingModal />
-      </Suspense>
-
-      <div className="d-lg-flex">
-        {!lg && !isMessageDetail && (
-          <div className="d-print-none d-block d-lg-none px-0 py-12 border-bottom bg-white">
-            <MobileMenu />
-          </div>
-        )}
-
-        {lg && (
-          <div className="d-print-none desktop-menu d-none d-lg-flex flex-column overflow-x-hidden p-16 ps-0 gap-16 border-end bg-white">
-            <DesktopMenu />
-          </div>
-        )}
-
-        <div className="align-self-lg-stretch flex-fill mx-n16 ms-lg-0 overflow-hidden">
-          <Outlet />
+    <div className="d-flex flex-column vh-100 overflow-hidden">
+      <Layout>
+        <div className="d-print-none">
+          <AppHeader render={AppActionHeader}>
+            <Breadcrumb app={currentApp!} />
+          </AppHeader>
         </div>
-      </div>
 
-      {openedModal === 'create' && <CreateFolderModal />}
-      {openedModal === 'rename' && <RenameFolderModal />}
-      {openedModal === 'trash' && <TrashFolderModal />}
-      {openedModal === 'move-message' && <MoveMessageToFolderModal />}
-      {openedModal === 'signature' && <SignatureModal />}
-    </Layout>
+        <Suspense fallback={<LoadingScreen />}>
+          <MessageOnboardingModal />
+        </Suspense>
+
+        <div className="d-lg-flex overflow-x-hidden flex-grow-1">
+          {!lg && !isMessageDetail && (
+            <div className="d-print-none d-block d-lg-none px-0 py-12 border-bottom bg-white">
+              <MobileMenu />
+            </div>
+          )}
+
+          {lg && (
+            <div className="d-print-none desktop-menu d-none d-lg-flex flex-column overflow-x-hidden p-16 ps-0 gap-16 border-end bg-white overflow-y-auto">
+              <DesktopMenu />
+            </div>
+          )}
+
+          <div className="align-self-lg-stretch flex-fill mx-n16 ms-lg-0 overflow-y-auto">
+            <Outlet />
+          </div>
+        </div>
+
+        {openedModal === 'create' && <CreateFolderModal />}
+        {openedModal === 'rename' && <RenameFolderModal />}
+        {openedModal === 'trash' && <TrashFolderModal />}
+        {openedModal === 'move-message' && <MoveMessageToFolderModal />}
+        {openedModal === 'signature' && <SignatureModal />}
+      </Layout>
+    </div>
   );
 }
