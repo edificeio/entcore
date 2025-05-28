@@ -72,19 +72,24 @@ public class Directory extends BaseServer {
 	public void start(final Promise<Void> startPromise) throws Exception {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
-		promise.future().onSuccess(x -> {
-			try {
-				initDirectory(startPromise);
-			} catch (Exception e) {
-				startPromise.fail(e);
-				log.error("Error when start Directory", e);
-			}
+		promise.future().compose(x ->
+			SharedDataHelper.getInstance().<String, Object>getMulti("server", "skins", "assetPath")
+		).onSuccess(serverMap -> {
+			StorageFactory.build(vertx, config, new MongoDBApplicationStorage("documents", Directory.class.getSimpleName()))
+            .onSuccess(storageFactory -> {
+				try {
+					initDirectory(startPromise, serverMap, storageFactory);
+				} catch (Exception e) {
+					startPromise.fail(e);
+					log.error("Error when start Directory", e);
+				}
+			}).onFailure(ex -> log.error("Error building storage factory", ex));
 		}).onFailure(ex -> log.error("Error when start Directory server super classes", ex));
 	}
 
-	public void initDirectory(final Promise<Void> startPromise) throws Exception {
+	public void initDirectory(final Promise<Void> startPromise, Map<String, Object> serverMap,
+			final StorageFactory storageFactory) throws Exception {
 		final EventBus eb = getEventBus(vertx);
-		super.start(startPromise);
 		MongoDbConf.getInstance().setCollection(SLOTPROFILE_COLLECTION);
 		setDefaultResourceFilter(new DirectoryResourcesProvider());
 
@@ -94,8 +99,6 @@ public class Directory extends BaseServer {
 				i18nMessages(request);
 			}
 		});
-		final StorageFactory storageFactory = new StorageFactory(vertx, config,
-				new MongoDBApplicationStorage("documents", Directory.class.getSimpleName()));
 
 		Storage storageAvatar = null;
 		if (config != null && config.getJsonObject("s3avatars") != null) {
@@ -155,7 +158,7 @@ public class Directory extends BaseServer {
 		vertx.setTimer(5000l, event -> directoryController.createSuperAdmin());
 
 
-		UserBookController userBookController = new UserBookController();
+		UserBookController userBookController = new UserBookController(serverMap);
 		userBookController.setSchoolService(schoolService);
 		userBookController.setUserBookService(userBookService);
 		userBookController.setUserPositionService(userPositionService);

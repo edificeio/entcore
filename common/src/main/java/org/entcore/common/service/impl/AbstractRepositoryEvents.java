@@ -35,7 +35,7 @@ public abstract class AbstractRepositoryEvents implements RepositoryEvents {
 	protected final FileSystem fs;
 	protected final EventBus eb;
 	protected final String title;
-	protected final FolderExporter exporter;
+	protected FolderExporter exporter;
 	protected final MongoDb mongo = MongoDb.getInstance();
 	private static final Pattern uuidPattern = Pattern.compile(StringUtils.UUID_REGEX);
 
@@ -49,7 +49,9 @@ public abstract class AbstractRepositoryEvents implements RepositoryEvents {
 		{
 			this.fs = vertx.fileSystem();
 			this.eb = vertx.eventBus();
-			this.exporter = new FolderExporter(new StorageFactory(vertx).getStorage(), this.fs);
+			StorageFactory.build(vertx)
+            .onSuccess(storageFactory -> this.exporter = new FolderExporter(storageFactory.getStorage(), this.fs))
+            .onFailure(ex -> log.error("Error building storage factory", ex));
 		}
 		else
 		{

@@ -42,17 +42,20 @@ public class Conversation extends BaseServer {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
 		promise.future().onSuccess(adminMap -> {
-			try {
-				initConversation(startPromise);
-			} catch (Exception e) {
-				startPromise.fail(e);
-				log.error("Error when start Conversation", e);
-			}
+			StorageFactory.build(vertx, config, new ConversationStorage())
+            .onSuccess(storageFactory -> {
+				try {
+					initConversation(startPromise, storageFactory);
+				} catch (Exception e) {
+					startPromise.fail(e);
+					log.error("Error when start Conversation", e);
+				}
+			}).onFailure(ex -> log.error("Error building storage factory", ex));
 		}).onFailure(ex -> log.error("Error when start Conversation server super classes", ex));
 	}
 
-	public void initConversation(final Promise<Void> startPromise) throws Exception {
-		final Storage storage = new StorageFactory(vertx, config, new ConversationStorage()).getStorage();
+	public void initConversation(final Promise<Void> startPromise, StorageFactory storageFactory) throws Exception {
+		final Storage storage = storageFactory.getStorage();
 
 		final String exportPath = config
 				.getString("export-path", System.getProperty("java.io.tmpdir"));

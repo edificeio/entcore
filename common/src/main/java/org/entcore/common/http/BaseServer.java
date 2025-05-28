@@ -174,18 +174,18 @@ public abstract class BaseServer extends Server {
 		vertx.eventBus().consumer("search.searching", this.searchingHandler);
 		vertx.eventBus().consumer(moduleName.toLowerCase()+".i18n", this.i18nHandler);
 
-		loadI18nAssetsFiles();
+		final Map<String, Object> skins = getOrElse((JsonObject) baseServerMap.get("skins"), new JsonObject()).getMap();
+		loadI18nAssetsFiles(skins);
 
 		addController(new RightsController());
 		addController(new ConfController());
 		SecurityHandler.setVertx(vertx);
 
-		final Map<String, Object> skins = getOrElse((JsonObject) baseServerMap.get("skins"), new JsonObject()).getMap();
 		Renders.getAllowedHosts().addAll(skins.keySet());
 		//listen for i18n deploy
 		vertx.eventBus().consumer(ONDEPLOY_I18N, message ->{
 			log.info("Received "+ONDEPLOY_I18N+" update i18n override");
-			this.loadI18nAssetsFiles();
+			this.loadI18nAssetsFiles(skins);
 		});
 		startPromise.tryComplete();
 	}
@@ -312,22 +312,21 @@ public abstract class BaseServer extends Server {
 		validator.loadJsonSchema(getPathPrefix(config), vertx);
 	}
 
-	private void loadI18nAssetsFiles() {
+	private void loadI18nAssetsFiles(Map<String, Object> skins) {
 		final String assetsDirectory = config.getString("assets-path", "../..") + File.separator + "assets";
 		final String className = this.getClass().getSimpleName();
 		readI18n(I18n.DEFAULT_DOMAIN, assetsDirectory + File.separator + "i18n" + File.separator + className, v -> {
-			this.loadI18nThemesFiles();
+			this.loadI18nThemesFiles(skins);
 		});
 	}
 
-	private void loadI18nThemesFiles(){
+	private void loadI18nThemesFiles(Map<String, Object> skins){
 		final String className = this.getClass().getSimpleName();
 		final String assetsDirectory = config.getString("assets-path", "../..") + File.separator + "assets";
 		final String themesDirectory = assetsDirectory + File.separator + "themes";
-		final Map<String, String> skins = vertx.sharedData().getLocalMap("skins");
 		final Map<String, String> reverseSkins = new HashMap<>();
-		for (Map.Entry<String, String> e: skins.entrySet()) {
-			reverseSkins.put(e.getValue(), e.getKey());
+		for (Map.Entry<String, Object> e: skins.entrySet()) {
+			reverseSkins.put((String) e.getValue(), e.getKey());
 		}
 		vertx.fileSystem().exists(themesDirectory, event -> {
 			if (event.succeeded() && event.result()) {

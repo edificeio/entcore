@@ -110,6 +110,12 @@ public class TimelineController extends BaseController {
 
 	private EventHelper eventHelper;
 
+	private final Map<String, Object> serverMap;
+
+	public TimelineController(Map<String, Object> serverMap) {
+		this.serverMap = serverMap;
+	}
+
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
@@ -135,11 +141,11 @@ public class TimelineController extends BaseController {
 		// TEMPORARY to handle both timeline and timeline2 view
 		this.defaultSkin = config.getString("skin", "raw");
 		this.hostSkin = new HashMap<>();
-		JsonObject skins = new JsonObject(vertx.sharedData().getLocalMap("skins"));
+		JsonObject skins = (JsonObject) serverMap.get("skins");
 		for (final String domain: skins.fieldNames()) {
 			this.hostSkin.put(domain, skins.getString(domain));
 		}
-		this.skinLevels = new JsonObject(vertx.sharedData().getLocalMap("skin-levels"));
+		this.skinLevels = (JsonObject) serverMap.get("skin-levels");
 
 		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Timeline.class.getSimpleName());
 		this.eventHelper =  new EventHelper(eventStore);

@@ -28,7 +28,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.shareddata.AsyncMap;
 import io.vertx.core.shareddata.LocalMap;
 import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.http.oauth.OAuth2Client;
@@ -50,13 +52,17 @@ import io.vertx.core.json.JsonObject;
 
 public class Timeline extends BaseServer {
 
+	private static final long DELAY_REFRESH_REGISTERED_NOTIFICATION_CACHE = 60_000L;
+
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
-		promise.future().onSuccess(x -> {
+		promise.future().compose(x ->
+			SharedDataHelper.getInstance().<String, Object>getMulti("server", "skins", "skin-levels")
+		).onSuccess(timelineMap -> {
 			try {
-				initTimeline(startPromise);
+				initTimeline(startPromise, timelineMap);
 			} catch (Exception e) {
 				startPromise.fail(e);
 				log.error("Error when start Timeline", e);
@@ -64,30 +70,33 @@ public class Timeline extends BaseServer {
 		}).onFailure(ex -> log.error("Error when start Timeline server super classes", ex));
 	}
 
-	public void initTimeline(final Promise<Void> startPromise) throws Exception {
-		final Map<String, String> registeredNotifications = MapFactory.getSyncClusterMap("notificationsMap", vertx);
+	public void initTimeline(final Promise<Void> startPromise, final Map<String, Object> timelineMap) throws Exception {
+		final Map<String, String> registeredNotificationsCache = new HashMap<>();
+		updateRegisteredNotificationsCache(registeredNotificationsCache);
+		vertx.setPeriodic(DELAY_REFRESH_REGISTERED_NOTIFICATION_CACHE, h ->
+			updateRegisteredNotificationsCache(registeredNotificationsCache));
+
 		// TODO replace with async map or sync cluster map to localmap
 		final LocalMap<String,String> eventsI18n = vertx.sharedData().getLocalMap("timelineEventsI18n");
 		final HashMap<String, JsonObject> lazyEventsI18n = new HashMap<>();
 
 		final DefaultTimelineConfigService configService = new DefaultTimelineConfigService("timeline.config");
-		configService.setRegisteredNotifications(registeredNotifications);
+		configService.setRegisteredNotifications(registeredNotificationsCache);
 		final DefaultTimelineMailerService mailerService = new DefaultTimelineMailerService(vertx, config);
 		mailerService.setConfigService(configService);
-		mailerService.setRegisteredNotifications(registeredNotifications);
+		mailerService.setRegisteredNotifications(registeredNotificationsCache);
 		mailerService.setEventsI18n(eventsI18n);
 		mailerService.setLazyEventsI18n(lazyEventsI18n);
 
 		final NotificationHelper notificationHelper = new NotificationHelper(vertx, configService);
 		notificationHelper.setMailerService(mailerService);
 
-		final TimelineController timelineController = new TimelineController();
+		final TimelineController timelineController = new TimelineController(timelineMap);
 		timelineController.setConfigService(configService);
 		timelineController.setMailerService(mailerService);
-		timelineController.setRegisteredNotifications(registeredNotifications);
+		timelineController.setRegisteredNotifications(registeredNotificationsCache);
 		timelineController.setEventsI18n(eventsI18n);
 		timelineController.setLazyEventsI18n(lazyEventsI18n);
-
 
 		final List<TimelinePushNotifService> pushNotifServices = startPushNotifServices(
 				eventsI18n,configService,
@@ -136,6 +145,13 @@ public class Timeline extends BaseServer {
 			}
 		}
 		startPromise.tryComplete();
+	}
+
+	private void updateRegisteredNotificationsCache(final Map<String, String> registeredNotificationsCache) {
+		SharedDataHelper.getInstance().<String, String>getAsyncMap("notificationsMap")
+		.compose(AsyncMap::entries).onSuccess(registeredNotifications -> {
+			registeredNotificationsCache.putAll(registeredNotifications);
+		}).onFailure(ex -> log.error("Error when update registeredNotifications", ex));
 	}
 
 	/**

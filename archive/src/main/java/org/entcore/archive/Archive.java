@@ -58,17 +58,20 @@ public class Archive extends BaseServer {
 		promise.future().compose(x ->
 			SharedDataHelper.getInstance().<String, String>getAsyncMap("server")
 		).onSuccess(archivesMap -> {
-			try {
-				initArchives(startPromise, archivesMap);
-			} catch (Exception e) {
-				startPromise.fail(e);
-				log.error("Error when start Admin", e);
-			}
+			StorageFactory.build(vertx, config).onSuccess(storageFactory -> {
+				try {
+					initArchives(startPromise, archivesMap, storageFactory);
+				} catch (Exception e) {
+					startPromise.fail(e);
+					log.error("Error when start Admin", e);
+				}
+			}).onFailure(ex -> log.error("Error building storage factory", ex));
 		}).onFailure(ex -> log.error("Error when start Admin server super classes", ex));
 	}
 
-	public void initArchives(final Promise<Void> startPromise, final AsyncMap<String, String> archivesMap) throws Exception {
-		Storage storage = new StorageFactory(vertx, config).getStorage();
+	public void initArchives(final Promise<Void> startPromise, final AsyncMap<String, String> archivesMap,
+			final StorageFactory storageFactory) throws Exception {
+		Storage storage = storageFactory.getStorage();
 
 		final Map<String, Long> archiveInProgress = MapFactory.getSyncClusterMap(Archive.ARCHIVES, vertx);
 
@@ -98,7 +101,7 @@ public class Archive extends BaseServer {
 			try {
 				new CronTrigger(vertx, purgeArchivesCron).schedule(
 						new DeleteOldArchives(vertx,
-								new StorageFactory(vertx, config).getStorage(),
+								storageFactory.getStorage(),
 								config.getInteger("deleteDelay", 24),
 								exportPath,
 								importService,
