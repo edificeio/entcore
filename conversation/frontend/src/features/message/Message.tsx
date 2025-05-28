@@ -17,7 +17,7 @@ export function Message({ message, isPrint }: MessageProps) {
       {!isPrint && <MessageNavigation message={message} />}
       <div className="d-flex flex-column gap-16 p-16 ps-md-24 pt-0">
         <MessageHeader message={message} />
-        <div className="ms-md-48">
+        <div className="ms-md-32">
           <MessageBody message={message} editMode={false} isPrint={isPrint} />
         </div>
         {!isPrint && (
