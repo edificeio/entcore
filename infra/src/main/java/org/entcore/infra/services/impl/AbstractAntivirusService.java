@@ -57,7 +57,9 @@ public abstract class AbstractAntivirusService implements AntivirusService, Hand
 
 	public void init() {
 		this.queue = new HashMap<>();
-		this.storage = new StorageFactory(vertx).getStorage();
+		StorageFactory.build(vertx)
+            .onSuccess(storageFactory -> this.storage = storageFactory.getStorage())
+            .onFailure(ex -> log.error("Error building storage factory", ex));
 		vertx.eventBus().consumer("antivirus", this);
 	}
 

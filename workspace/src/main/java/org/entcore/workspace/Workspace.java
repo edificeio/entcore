@@ -59,23 +59,26 @@ public class Workspace extends BaseServer {
 		super.start(promise);
 		promise.future().compose(x ->
 			SharedDataHelper.getInstance().<String, Object>getMulti("server", "node")
-		).onSuccess(workspaceMap -> {
-			try {
-				initWorkspace(startPromise, workspaceMap);
-			} catch (Exception e) {
-				startPromise.fail(e);
-				log.error("Error when start Workspace", e);
-			}
-		}).onFailure(ex -> log.error("Error when start Workspace server super classes", ex));
+		).onSuccess(workspaceMap ->
+			StorageFactory.build(vertx, config,
+				new MongoDBApplicationStorage(DocumentDao.DOCUMENTS_COLLECTION,
+				Workspace.class.getSimpleName())).onSuccess(storageFactory -> {
+				try {
+					initWorkspace(startPromise, workspaceMap, storageFactory);
+				} catch (Exception e) {
+					startPromise.fail(e);
+					log.error("Error when start Workspace", e);
+				}
+			}).onFailure(ex -> log.error("Error when init storage factory in workspace", ex))
+		).onFailure(ex -> log.error("Error when start Workspace server super classes", ex));
 	}
 
-	public void initWorkspace(final Promise<Void> startPromise, final Map<String, Object> workspaceMap) throws Exception {
+	public void initWorkspace(final Promise<Void> startPromise, final Map<String, Object> workspaceMap,
+			StorageFactory storageFactory) throws Exception {
 		WorkspaceResourcesProvider resourceProvider = new WorkspaceResourcesProvider();
 		setResourceProvider(resourceProvider);
-		super.start(startPromise);
 
-		Storage storage = new StorageFactory(vertx, config,
-				new MongoDBApplicationStorage(DocumentDao.DOCUMENTS_COLLECTION, Workspace.class.getSimpleName())).getStorage();
+		Storage storage = storageFactory.getStorage();
 
 		final boolean neo4jPlugin = config.getBoolean("neo4jPlugin", false);
 		final QuotaService quotaService = new DefaultQuotaService(neo4jPlugin,
@@ -147,6 +150,7 @@ public class Workspace extends BaseServer {
 					.listen(config.getInteger("wsPort"));
 		}
 
+		startPromise.tryComplete();
 	}
 
 }

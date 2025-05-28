@@ -29,6 +29,7 @@ import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.shareddata.AsyncMap;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.request.JsonHttpServerRequest;

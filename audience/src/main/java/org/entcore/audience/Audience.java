@@ -38,7 +38,6 @@ public class Audience extends BaseServer {
 	}
 
 	public void initAudience(final Promise<Void> startPromise) throws Exception {
-    super.start(startPromise);
     final ISql isql = Sql.getInstance();
     final ReactionDao reactionDao = new ReactionDaoImpl(isql);
     final ReactionService reactionService = new ReactionServiceImpl(vertx.eventBus(), reactionDao);
