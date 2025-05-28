@@ -36,7 +36,7 @@ export function Component() {
   };
 
   return data ? (
-    <div className="d-flex flex-column mt-24 ms-md-24 me-md-16">
+    <div className="d-flex flex-column mt-24 ms-lg-24 me-lg-16">
       <div
         style={style}
         contentEditable={false}

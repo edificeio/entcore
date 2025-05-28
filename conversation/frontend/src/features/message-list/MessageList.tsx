@@ -158,7 +158,7 @@ export function MessageList() {
         isCheckable={true}
         onSelectedItems={setSelectedMessageIds}
         toolbarOptions={{ shouldHideLabelsOnMobile: true }}
-        className="ps-16 ps-md-24"
+        className="ps-16 ps-lg-24"
         key={keyList}
         renderNode={(message, checkbox, checked) => (
           <MessageItem

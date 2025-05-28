@@ -5,6 +5,8 @@ import {
   Dropdown,
   IconButton,
   IconButtonProps,
+  Tooltip,
+  useBreakpoint,
 } from '@edifice.io/react';
 import { IconOptions } from '@edifice.io/react/icons';
 import { RefAttributes, useState } from 'react';
@@ -35,6 +37,8 @@ export function MessageActionDropdown({
   className,
 }: MessageActionDropdownProps) {
   const [inactiveUsers, setInactiveUsers] = useState<string[] | undefined>();
+  const { lg } = useBreakpoint();
+
   const { actionButtons, dropdownOptions } = useMessageActionDropdown({
     message,
     actions,
@@ -58,16 +62,22 @@ export function MessageActionDropdown({
       {actionButtons
         .filter((o) => !o.hidden)
         .map((option) => (
-          <Button
+          <Tooltip
             key={option.id}
-            color={appearance.buttonColor}
-            variant={appearance.mainButtonVariant}
-            leftIcon={option.icon}
-            onClick={option.action}
-            disabled={option.disabled}
+            message={lg ? undefined : option.label}
+            placement="top"
           >
-            {option.label}
-          </Button>
+            <Button
+              color={appearance.buttonColor}
+              variant={appearance.mainButtonVariant}
+              leftIcon={option.icon}
+              onClick={option.action}
+              aria-label={option.label}
+              disabled={option.disabled}
+            >
+              {lg && option.label}
+            </Button>
+          </Tooltip>
         ))}
       <Dropdown>
         {(
