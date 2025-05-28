@@ -92,7 +92,7 @@ export function Component() {
 
         <div className="d-lg-flex overflow-x-hidden flex-grow-1">
           {!lg && !isMessageDetail && (
-            <div className="d-print-none d-block d-lg-none px-0 py-12 border-bottom bg-white">
+            <div className="d-print-none d-block d-lg-none px-0 py-12 border-bottom bg-white sticky-top">
               <MobileMenu />
             </div>
           )}
