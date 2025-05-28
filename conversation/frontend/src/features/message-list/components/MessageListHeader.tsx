@@ -15,7 +15,7 @@ export function MessageListHeader() {
   const { theme } = useEdificeTheme();
   const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
-  const { md } = useBreakpoint();
+  const { lg } = useBreakpoint();
   const [searchParams, setSearchParams] = useSearchParams();
   const { setSelectedMessageIds } = useAppActions();
 
@@ -72,7 +72,7 @@ export function MessageListHeader() {
   }, [searchParams, setSearchParams, setSelectedMessageIds]);
 
   return (
-    <div className="d-flex gap-16 align-items-center justify-content-between px-16 px-md-24 py-16 border-bottom">
+    <div className="d-flex gap-16 align-items-center justify-content-between px-16 px-lg-24 py-16 border-bottom">
       <SearchBar
         placeholder={t('search.placeholder')}
         onChange={handleSearchTextChange}
@@ -85,7 +85,7 @@ export function MessageListHeader() {
       {!theme?.is1d && (
         <Dropdown data-testid="filter-dropdown">
           <Dropdown.Trigger
-            label={!md ? '' : t('filter')}
+            label={!lg ? '' : t('filter')}
             badgeContent={filters.length}
             variant="ghost"
             icon={<IconFilter />}
