@@ -189,7 +189,7 @@ public class Starter extends BaseServer {
 				serverMap.put(field, sharedConf.getValue(field));
 			}
 
-			serverMap.put("skins", config.getJsonObject("skins", new JsonObject()));
+			serverMap.put("skins", config.getJsonObject("skins", new JsonObject()).encode());
 
 			log.info("config skin-levels = " + config.getJsonObject("skin-levels", new JsonObject()));
 			serverMap.put("skin-levels", config.getJsonObject("skin-levels", new JsonObject()));

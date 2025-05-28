@@ -20,6 +20,8 @@
 package org.entcore.portal;
 
 import io.vertx.core.Promise;
+import io.vertx.core.json.JsonObject;
+
 import org.entcore.broker.api.utils.AddressParameter;
 import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.cache.CacheService;
@@ -28,23 +30,26 @@ import org.entcore.portal.controllers.PortalController;
 import org.entcore.portal.listeners.I18nBrokerListenerImpl;
 import org.entcore.common.events.EventBrokerListenerImpl;
 
+import fr.wseduc.webutils.collections.SharedDataHelper;
+
 public class Portal extends BaseServer {
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
-		promise.future()
-				.onSuccess(x -> {
-          final String assetPath = config.getString("assets-path", "../..");
-          final AddressParameter parameter = new AddressParameter("application", "portal");
-          final CacheService cacheService = CacheService.create(vertx);
-          BrokerProxyUtils.addBrokerProxy(new I18nBrokerListenerImpl(vertx, assetPath, cacheService), vertx, parameter);
-          BrokerProxyUtils.addBrokerProxy(new EventBrokerListenerImpl(), vertx);
-          addController(new PortalController());
-          startPromise.tryComplete();
-        })
-				.onFailure(ex -> log.error("Error when start Infra server super classes", ex));
+		promise.future().compose(x ->
+			SharedDataHelper.getInstance().<String, JsonObject>get("server", "skins")
+		).onSuccess(skins -> {
+        final String assetPath = config.getString("assets-path", "../..");
+        final AddressParameter parameter = new AddressParameter("application", "portal");
+        final CacheService cacheService = CacheService.create(vertx);
+        BrokerProxyUtils.addBrokerProxy(new I18nBrokerListenerImpl(vertx, assetPath, cacheService), vertx, parameter);
+        BrokerProxyUtils.addBrokerProxy(new EventBrokerListenerImpl(), vertx);
+        addController(new PortalController());
+        startPromise.tryComplete();
+      })
+      .onFailure(ex -> log.error("Error when start Infra server super classes", ex));
 	}
 
 }
