@@ -20,8 +20,12 @@
 package org.entcore.portal;
 
 import io.vertx.core.Promise;
+import io.vertx.core.json.JsonObject;
+
 import org.entcore.common.http.BaseServer;
 import org.entcore.portal.controllers.PortalController;
+
+import fr.wseduc.webutils.collections.SharedDataHelper;
 
 public class Portal extends BaseServer {
 
@@ -29,12 +33,13 @@ public class Portal extends BaseServer {
 	public void start(final Promise<Void> startPromise) throws Exception {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
-		promise.future()
-				.onSuccess(x -> {
-					addController(new PortalController());
-					startPromise.tryComplete();
-				})
-				.onFailure(ex -> log.error("Error when start Infra server super classes", ex));
+		promise.future().compose(x ->
+			SharedDataHelper.getInstance().<String, JsonObject>get("server", "skins")
+		).onSuccess(skins -> {
+			addController(new PortalController(skins));
+			startPromise.tryComplete();
+		})
+		.onFailure(ex -> log.error("Error when start Infra server super classes", ex));
 	}
 
 }

@@ -26,6 +26,7 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.data.FileResolver;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.security.BCrypt;
@@ -79,7 +80,7 @@ public class DirectoryController extends BaseController {
 		super.init(vertx, config, rm, securedActions);
 		this.neo = new Neo(vertx, eb,log);
 		this.config = config;
-		this.admin = new JsonObject(vertx.fileSystem().readFileBlocking("super-admin.json").toString());
+		this.admin = new JsonObject(vertx.fileSystem().readFileBlocking(FileResolver.absolutePath("super-admin.json")).toString());
 		eventStore = EventStoreFactory.getFactory().getEventStore(UserBookController.ANNUAIRE_MODULE);
 	}
 
