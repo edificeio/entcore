@@ -1008,4 +1008,49 @@ public class TimelineController extends BaseController {
 	public void setLazyEventsI18n(HashMap<String, JsonObject> lazyEventsI18n) {
 		this.lazyEventsI18n = lazyEventsI18n;
 	}
+
+
+	@Post("/send/notification")
+	@SecuredAction(value= "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void externalNotifications(final HttpServerRequest request) {
+		RequestUtils.bodyToJson(request,
+				new Handler<JsonObject>() {
+					@Override
+					public void handle(JsonObject json) {
+						final JsonArray recipientsId = json.getJsonArray("recipients", new JsonArray());
+
+						if (recipientsId == null || recipientsId.isEmpty()) {
+							badRequest(request, "Invalid sender or recipients");
+							return;
+						}
+
+						final String subject = json.getString("subject", "");
+						final String body = json.getString("body", "");
+
+						final boolean pushMobile = json.getBoolean("pushMobile", false);
+
+						final String mobileTitle = json.getString("mobileTitle", "");
+						final String mobileBody = json.getString("mobileBody", "");
+
+
+						JsonObject params = new JsonObject()
+								.put("subject", subject)
+								.put("body", body);
+
+						if(pushMobile && !mobileTitle.isEmpty()) {
+							JsonObject pushNotif = new JsonObject()
+									.put("title", mobileTitle)
+									.put("body", mobileBody);
+
+							params.put("pushNotif", pushNotif);
+						}
+
+						timelineHelper.notifyTimeline(request, "timeline.external_notification", null, recipientsId.getList(),
+								 System.currentTimeMillis() + "external_notification", params);
+
+						ok(request);
+					}
+				});
+	}
 }
