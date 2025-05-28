@@ -66,17 +66,17 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	protected Boolean cluster;
 	protected boolean xsrfOnAuth;
 
-	public void start() {
+	public void start(Promise<Void> startPromise) {
 		super.start();
 		final SharedDataHelper sharedDataHelper = SharedDataHelper.getInstance();
 		sharedDataHelper.init(vertx);
 		sharedDataHelper.<String, Object>getMulti(
 				"server", "neo4jConfig", "node", "oauthCache", "redisConfig"
-		).onSuccess(sessionMap -> initSession(sessionMap)
+		).onSuccess(sessionMap -> initSession(startPromise, sessionMap)
 		).onFailure(ex -> logger.error("Error when start Session server super classes", ex));
 	}
-	
-	public void initSession(Map<String, Object> sessionMap) {
+
+	public void initSession(Promise<Void> startPromise, Map<String, Object> sessionMap) {
 		String neo4jConfig = (String) sessionMap.get("neo4jConfig");
 		neo4j = Neo4j.getInstance();
 		neo4j.init(vertx, new JsonObject(neo4jConfig));
@@ -85,8 +85,6 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		String node = (String) sessionMap.get("node");
 		mongo = MongoDb.getInstance();
 		mongo.init(vertx.eventBus(), node + config.getString("mongo-address", "wse.mongodb.persistor"));
-
-		sessionStore = new MapSessionStore(vertx, cluster, config);
 
 		this.xsrfOnAuth = config.getBoolean("xsrfOnAuth", true);
 
@@ -108,8 +106,12 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			logger.error("Failed to create OAuthCacheService: " + e.getMessage());
 		}
 
-		final String address = getOptionalStringConfig("address", "wse.session");
-		eb.consumer(address, this);
+		if (AuthManager.class.getName().equals(this.getClass().getName())) {
+			sessionStore = new MapSessionStore(vertx, cluster, config);
+			final String address = getOptionalStringConfig("address", "wse.session");
+			eb.consumer(address, this);
+		}
+		startPromise.tryComplete();
 	}
 
 	@Override
