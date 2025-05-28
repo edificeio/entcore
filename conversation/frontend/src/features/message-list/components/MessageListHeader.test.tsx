@@ -23,7 +23,7 @@ vi.mock('@edifice.io/react', async () => {
 
 describe('Message list header component', () => {
   beforeAll(() => {
-    mocks.useBreakpoint.mockReturnValue({ md: true });
+    mocks.useBreakpoint.mockReturnValue({ lg: true });
     mocks.useEdificeTheme.mockReturnValue({ theme: { is1d: false } });
   });
 
