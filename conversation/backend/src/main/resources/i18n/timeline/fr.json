@@ -5,5 +5,6 @@
   "push.notif.new.message": "Nouveau message",
   "timeline.conversation.sent.message": "vous a envoyé un message ",
   "timeline.conversation.storage.size.alert": "Votre espace de stockage est bientôt plein.",
-  "timeline.no.subject": "aucun objet"
+  "timeline.no.subject": "aucun objet",
+  "messagerie.send-message-external": "Réception d'un message"
 }
