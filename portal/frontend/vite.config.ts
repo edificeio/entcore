@@ -3,6 +3,47 @@ import react from '@vitejs/plugin-react';
 import { resolve } from 'node:path';
 import { defineConfig, loadEnv, ProxyOptions } from 'vite';
 import tsconfigPaths from 'vite-tsconfig-paths';
+import fs from 'fs';
+import path from 'path';
+
+function renameIndexHtmlPlugin() {
+  return {
+    name: 'rename-index-html',
+    closeBundle() {
+      const distDir = path.resolve(__dirname, 'dist');
+      const indexPath = path.join(distDir, 'index.html');
+      const newPath = path.join(distDir, 'welcome.html');
+
+      if (fs.existsSync(indexPath)) {
+        fs.renameSync(indexPath, newPath);
+      }
+    },
+  };
+}
+
+function moveAssetsToPublic() {
+  return {
+    name: 'move-assets-to-public',
+    closeBundle() {
+      const dist = path.resolve(__dirname, 'dist');
+      const publicDir = path.join(dist, 'public');
+
+      // Create dist/public if it doesn't exist
+      if (!fs.existsSync(publicDir)) {
+        fs.mkdirSync(publicDir);
+      }
+
+      // Move all files except welcome.html into public/
+      const files = fs.readdirSync(dist);
+      files.forEach((file) => {
+        const fullPath = path.join(dist, file);
+        if (file !== 'welcome.html' && fs.statSync(fullPath).isFile()) {
+          fs.renameSync(fullPath, path.join(publicDir, file));
+        }
+      });
+    },
+  };
+}
 
 // https://vitejs.dev/config/
 export default ({ mode }: { mode: string }) => {
@@ -41,7 +82,7 @@ export default ({ mode }: { mode: string }) => {
       };
 
   return defineConfig({
-    base: mode === 'production' ? '/welcome' : '',
+    base: mode === 'production' ? '/public' : '',
     root: __dirname,
     cacheDir: './node_modules/.vite/welcome',
 
@@ -84,7 +125,12 @@ export default ({ mode }: { mode: string }) => {
       host: 'localhost',
     },
 
-    plugins: [react(), tsconfigPaths()],
+    plugins: [
+      react(),
+      tsconfigPaths(),
+      renameIndexHtmlPlugin(),
+      moveAssetsToPublic(),
+    ],
 
     build: {
       outDir: './dist',
@@ -97,6 +143,9 @@ export default ({ mode }: { mode: string }) => {
       chunkSizeWarningLimit: 4000,
       rollupOptions: {
         output: {
+          entryFileNames: '[name].[hash].js',
+          chunkFileNames: '[name].[hash].js',
+          assetFileNames: '[name].[hash].[ext]',
           inlineDynamicImports: true,
         },
       },
