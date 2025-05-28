@@ -46,7 +46,7 @@ export function MessageNavigation({ message }: { message: Message }) {
   };
 
   return (
-    <nav className="d-print-none border-bottom px-16 py-4 d-flex align-items-center justify-content-between w-100">
+    <nav className="d-print-none border-bottom px-lg-16 py-4 d-flex align-items-center justify-content-between w-100">
       <Button
         color="tertiary"
         variant="ghost"
