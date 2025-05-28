@@ -194,7 +194,8 @@ public class ConversationController extends BaseController {
 	@Get(value = "print(?:/(?<messageId>[^/]+))?$", regex = true)
 	@SecuredAction(value = "conversation.print", type = ActionType.AUTHENTICATED)
 	public void print(final HttpServerRequest request) {
-		renderViewWeb(request);
+		// This route does not increase access counter.
+		renderView(request, new JsonObject(), "index.html", null);
 	}
 
 	@Post("draft")
