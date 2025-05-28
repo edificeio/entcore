@@ -37,7 +37,7 @@ public class DefaultLibraryService implements LibraryService {
     private final JsonObject config;
     private final PdfGenerator pdfGenerator;
     private final EventBus eb;
-    private final Storage storage;
+    private Storage storage;
 
     public DefaultLibraryService(Vertx vertx, JsonObject config) throws Exception {
         this.config = config;
@@ -47,7 +47,9 @@ public class DefaultLibraryService implements LibraryService {
                                 .setConnectTimeout(config.getInteger("library-timeout", 45000)));
         this.pdfGenerator = new PdfFactory(vertx, config).getPdfGenerator();
         this.eb = vertx.eventBus();
-        this.storage = new StorageFactory(vertx, config).getStorage();
+        StorageFactory.build(vertx, config)
+            .onSuccess(storageFactory -> this.storage = storageFactory.getStorage())
+            .onFailure(ex -> log.error("Error building storage factory", ex));
     }
 
     private Future<Buffer> getArchive(UserInfos user, String locale, String app, String resourceId){

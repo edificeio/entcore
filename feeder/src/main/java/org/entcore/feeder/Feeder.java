@@ -99,16 +99,19 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		sharedDataHelper.init(vertx);
 		sharedDataHelper.<String, Object>getMulti("server", "neo4jConfig", "node")
 		.onSuccess(feederMap -> {
-			try {
-				initFeeder(feederMap);
-			} catch (Exception e) {
-				logger.error("Error when start Feeder", e);
-			}
+			StorageFactory.build(vertx, config)
+            .onSuccess(storageFactory -> {
+				try {
+					initFeeder(feederMap, storageFactory);
+				} catch (Exception e) {
+					logger.error("Error when start Feeder", e);
+				}
+			}).onFailure(ex -> logger.error("Error building storage factory", ex));
 		}).onFailure(ex -> logger.error("Error when start Feeder server super classes", ex));
 	}
 
-	public void initFeeder(Map<String,Object> feederMap) {
-		storage = new StorageFactory(vertx, config).getStorage();
+	public void initFeeder(Map<String,Object> feederMap, StorageFactory storageFactory) {
+		storage = storageFactory.getStorage();
 		FeederLogger.init(config);
 		String node = (String) feederMap.get("node");
 		if (node == null) {
