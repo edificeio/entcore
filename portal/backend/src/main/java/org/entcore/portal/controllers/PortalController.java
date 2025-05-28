@@ -23,11 +23,11 @@ import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Put;
 import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.StaticResource;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.RequestUtils;
-import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import io.vertx.core.file.FileSystemException;
 import io.vertx.core.shareddata.LocalMap;
 
@@ -55,7 +55,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.file.FileProps;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -78,6 +77,11 @@ public class PortalController extends BaseController {
 	private String defaultSkin;
 	private JsonObject defaultTracker;
 	private EventHelper eventHelper;
+	private JsonObject skins;
+
+	public PortalController(JsonObject skins) {
+		this.skins = skins;
+	}
 
 	@Override
 	public void init(final Vertx vertx, JsonObject config, RouteMatcher rm,
@@ -86,7 +90,6 @@ public class PortalController extends BaseController {
 		this.staticRessources = vertx.sharedData().getLocalMap("staticRessources");
 		dev = "dev".equals(config.getString("mode"));
 		assetsPath = config.getString("assets-path", ".");
-		JsonObject skins = new JsonObject(vertx.sharedData().<String, Object>getLocalMap("skins"));
 		defaultSkin = config.getString("skin", "raw");
 		themes = new HashMap<>();
 		themesDetails = new HashMap<>();
@@ -127,7 +130,9 @@ public class PortalController extends BaseController {
 		}
 		defaultTracker = config.getJsonObject( "tracker", new JsonObject().put("type", "none") );
 		eventStore = EventStoreFactory.getFactory().getEventStore(Portal.class.getSimpleName());
-		vertx.sharedData().getLocalMap("server").put("assetPath", assetsPath);
+		SharedDataHelper.getInstance().getAsyncMap("server")
+				.compose(serverMap -> serverMap.put("assetPath", assetsPath))
+				.onFailure(ex -> log.error("Error when put assetPath", ex));
 
 		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Portal.class.getSimpleName());
 		this.eventHelper =  new EventHelper(eventStore);
