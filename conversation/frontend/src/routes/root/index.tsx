@@ -7,7 +7,8 @@ import {
   useEdificeClient,
 } from '@edifice.io/react';
 import { QueryClient } from '@tanstack/react-query';
-import { Outlet, useLoaderData } from 'react-router-dom';
+import { Suspense } from 'react';
+import { Outlet, useLoaderData, useParams } from 'react-router-dom';
 import { Config, existingActions } from '~/config';
 import {
   CreateFolderModal,
@@ -25,9 +26,8 @@ import {
   folderQueryOptions,
 } from '~/services/queries';
 import { setConfig, setWorkflows, useOpenedModal } from '~/store';
-import './index.css';
 import MessageOnboardingModal from './components/MessageOnboardingModal';
-import { Suspense } from 'react';
+import './index.css';
 
 // Typing for the root route loader.
 export interface RootLoaderData {
@@ -66,7 +66,9 @@ export function Component() {
 
   const { actions, config } = useLoaderData() as RootLoaderData;
 
-  const { md } = useBreakpoint();
+  const { lg } = useBreakpoint();
+  const { messageId } = useParams();
+  const isMessageDetail = !!messageId;
   const openedModal = useOpenedModal();
 
   if (!init || !currentApp) return <LoadingScreen position={false} />;
@@ -87,20 +89,20 @@ export function Component() {
         <MessageOnboardingModal />
       </Suspense>
 
-      <div className="d-md-flex">
-        {!md && (
-          <div className="d-print-none d-block d-md-none px-0 py-12 border-bottom bg-white">
+      <div className="d-lg-flex">
+        {!lg && !isMessageDetail && (
+          <div className="d-print-none d-block d-lg-none px-0 py-12 border-bottom bg-white">
             <MobileMenu />
           </div>
         )}
 
-        {md && (
-          <div className="d-print-none desktop-menu d-none d-md-flex flex-column overflow-x-hidden p-16 ps-0 gap-16 border-end bg-white">
+        {lg && (
+          <div className="d-print-none desktop-menu d-none d-lg-flex flex-column overflow-x-hidden p-16 ps-0 gap-16 border-end bg-white">
             <DesktopMenu />
           </div>
         )}
 
-        <div className="align-self-md-stretch flex-fill mx-n16 ms-md-0 overflow-hidden">
+        <div className="align-self-lg-stretch flex-fill mx-n16 ms-lg-0 overflow-hidden">
           <Outlet />
         </div>
       </div>
