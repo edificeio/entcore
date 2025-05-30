@@ -244,10 +244,15 @@ export const useCreateFolder = () => {
       folderService.create(payload),
     onSuccess: async ({ id }, { name, parentId }) => {
       const foldersTree = foldersTreeQuery.data;
-      // Try optimistic update...
       do {
         if (!foldersTree) break;
 
+        const newFolder = {
+          id,
+          name,
+          nbMessages: 0,
+          nbUnread: 0,
+        };
         if (parentId) {
           // Look for the parent folder in the tree.
           const parent = searchFolder(parentId, foldersTree);
@@ -258,33 +263,24 @@ export const useCreateFolder = () => {
           }
           // Update parent folder data.
           parent.folder.subFolders.push({
-            id,
             parent_id: parentId,
             depth: 2,
-            name,
-            nbMessages: 0,
-            nbUnread: 0,
+            ...newFolder,
           });
         } else {
           // Push new folder at root level (depth=1)
           foldersTree.push({
-            id,
             parent_id: null,
             depth: 1,
-            name,
-            nbMessages: 0,
-            nbUnread: 0,
+            ...newFolder,
           });
-
-          // Optimistic update
-          queryClient.setQueryData(
-            folderQueryOptions.getFoldersTree().queryKey,
-            [...foldersTree],
-          );
-
-          return;
         }
-        // eslint-disable-next-line no-constant-condition
+        // sort the foldersTree by name
+        foldersTree.sort((a, b) => a.name.localeCompare(b.name));
+
+        queryClient.setQueryData(folderQueryOptions.getFoldersTree().queryKey, [
+          ...foldersTree,
+        ]);
       } while (false);
 
       // ...or full refresh the whole folders tree as a fallback.
