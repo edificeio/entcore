@@ -8,7 +8,12 @@ import {
 } from '@edifice.io/react';
 import { QueryClient } from '@tanstack/react-query';
 import { Suspense } from 'react';
-import { Outlet, useLoaderData, useParams } from 'react-router-dom';
+import {
+  Outlet,
+  useLoaderData,
+  useLocation,
+  useParams,
+} from 'react-router-dom';
 import { Config, existingActions } from '~/config';
 import {
   CreateFolderModal,
@@ -67,8 +72,12 @@ export function Component() {
   const { actions, config } = useLoaderData() as RootLoaderData;
 
   const { lg } = useBreakpoint();
-  const { messageId } = useParams();
-  const isMessageDetail = !!messageId;
+
+  const params = useParams();
+  const location = useLocation();
+  const isNewDraft = location.pathname === '/draft/create';
+  const showMobileMenu = !(isNewDraft || params.messageId);
+
   const openedModal = useOpenedModal();
 
   if (!init || !currentApp) return <LoadingScreen position={false} />;
@@ -92,7 +101,7 @@ export function Component() {
 
         {!lg && (
           <div className="d-flex flex-column mx-n16 overflow-hidden">
-            {!isMessageDetail && (
+            {showMobileMenu && (
               <div className="d-print-none d-block px-0 py-12 border-bottom bg-white px-16">
                 <MobileMenu />
               </div>
