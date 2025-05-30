@@ -3,9 +3,11 @@ import { Folder, Message, MessageMetadata, User } from '~/models';
 export const mockConfiguration: {
   'max-depth': number;
   'recall-delay-minutes': number;
+  'get-visible-strategy': 'all-at-once' | 'filtered';
 } = {
   'max-depth': 2,
   'recall-delay-minutes': 60,
+  'get-visible-strategy': 'all-at-once',
 };
 
 export const mockCurrentUserPreview: User = {

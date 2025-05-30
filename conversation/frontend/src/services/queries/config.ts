@@ -28,6 +28,7 @@ export const configQueryOptions = {
         return {
           maxDepth: data['max-depth'] ?? 2,
           recallDelayMinutes: data['recall-delay-minutes'] ?? 60,
+          getVisibleStrategy: data['get-visible-strategy'] ?? 'all-at-once',
         };
       },
       staleTime: Infinity,
