@@ -145,40 +145,42 @@ export function MobileMenu() {
   }
 
   return (
-    <Dropdown block>
-      <Dropdown.Trigger
-        label={(selectedItem && t(selectedItem.name)) || selectedUserFolderId}
-      />
-      <Dropdown.Menu>
-        {systemFolderItems.map((item) => (
-          <Dropdown.Item
-            onClick={() => item.onClick(item)}
-            key={item.name}
-            icon={item.icon}
-          >
-            {renderFolderItem(item)}
-          </Dropdown.Item>
-        ))}
-        <Dropdown.Separator />
-        <Dropdown.MenuGroup label={t('user.folders')}>
-          {menu.menuItems.map((item) => (
+    <div className="position-relative">
+      <Dropdown block>
+        <Dropdown.Trigger
+          label={(selectedItem && t(selectedItem.name)) || selectedUserFolderId}
+        />
+        <Dropdown.Menu>
+          {systemFolderItems.map((item) => (
             <Dropdown.Item
+              onClick={() => item.onClick(item)}
               key={item.name}
-              onClick={() => handleItemClick(item, true)}
-              icon={<IconFolder />}
+              icon={item.icon}
             >
-              {renderFolderItem(item, true)}
+              {renderFolderItem(item)}
             </Dropdown.Item>
           ))}
-          <Dropdown.Item
-            className="text-secondary"
-            onClick={handleNewFolderClick}
-            icon={<IconPlus />}
-          >
-            {t('new.folder')}
-          </Dropdown.Item>
-        </Dropdown.MenuGroup>
-      </Dropdown.Menu>
-    </Dropdown>
+          <Dropdown.Separator />
+          <Dropdown.MenuGroup label={t('user.folders')}>
+            {menu.menuItems.map((item) => (
+              <Dropdown.Item
+                key={item.name}
+                onClick={() => handleItemClick(item, true)}
+                icon={<IconFolder />}
+              >
+                {renderFolderItem(item, true)}
+              </Dropdown.Item>
+            ))}
+            <Dropdown.Item
+              className="text-secondary"
+              onClick={handleNewFolderClick}
+              icon={<IconPlus />}
+            >
+              {t('new.folder')}
+            </Dropdown.Item>
+          </Dropdown.MenuGroup>
+        </Dropdown.Menu>
+      </Dropdown>
+    </div>
   );
 }

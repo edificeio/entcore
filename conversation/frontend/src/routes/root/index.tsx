@@ -8,7 +8,12 @@ import {
 } from '@edifice.io/react';
 import { QueryClient } from '@tanstack/react-query';
 import { Suspense } from 'react';
-import { Outlet, useLoaderData, useParams } from 'react-router-dom';
+import {
+  Outlet,
+  useLoaderData,
+  useLocation,
+  useParams,
+} from 'react-router-dom';
 import { Config, existingActions } from '~/config';
 import {
   CreateFolderModal,
@@ -67,8 +72,12 @@ export function Component() {
   const { actions, config } = useLoaderData() as RootLoaderData;
 
   const { lg } = useBreakpoint();
-  const { messageId } = useParams();
-  const isMessageDetail = !!messageId;
+
+  const params = useParams();
+  const location = useLocation();
+  const isNewDraft = location.pathname === '/draft/create';
+  const showMobileMenu = !(isNewDraft || params.messageId);
+
   const openedModal = useOpenedModal();
 
   if (!init || !currentApp) return <LoadingScreen position={false} />;
@@ -78,40 +87,50 @@ export function Component() {
   }
 
   return (
-    <Layout>
-      <div className="d-print-none">
-        <AppHeader render={AppActionHeader}>
-          <Breadcrumb app={currentApp!} />
-        </AppHeader>
-      </div>
+    <div className="d-flex flex-column vh-100 flex-grow-1">
+      <Layout>
+        <div className="d-print-none">
+          <AppHeader render={AppActionHeader}>
+            <Breadcrumb app={currentApp!} />
+          </AppHeader>
+        </div>
 
-      <Suspense fallback={<LoadingScreen />}>
-        <MessageOnboardingModal />
-      </Suspense>
+        <Suspense fallback={<LoadingScreen />}>
+          <MessageOnboardingModal />
+        </Suspense>
 
-      <div className="d-lg-flex">
-        {!lg && !isMessageDetail && (
-          <div className="d-print-none d-block d-lg-none px-0 py-12 border-bottom bg-white">
-            <MobileMenu />
+        {!lg && (
+          <div className="d-flex flex-column mx-n16 overflow-hidden ">
+            {showMobileMenu && (
+              <div className="d-print-none d-block px-0 py-12 border-bottom bg-white px-16">
+                <MobileMenu />
+              </div>
+            )}
+
+            <div className="flex-fill overflow-y-auto position-relative">
+              <Outlet />
+            </div>
           </div>
         )}
 
         {lg && (
-          <div className="d-print-none desktop-menu d-none d-lg-flex flex-column overflow-x-hidden p-16 ps-0 gap-16 border-end bg-white">
-            <DesktopMenu />
+          <div className="d-flex overflow-x-hidden flex-grow-1 me-n16 ">
+            <div className="d-print-none desktop-menu flex-column p-16 ps-0 gap-16 border-end bg-white overflow-y-auto overflow-x-hidden">
+              <DesktopMenu />
+            </div>
+
+            <div className="flex-fill overflow-y-auto position-relative">
+              <Outlet />
+            </div>
           </div>
         )}
 
-        <div className="align-self-lg-stretch flex-fill mx-n16 ms-lg-0 overflow-hidden">
-          <Outlet />
-        </div>
-      </div>
-
-      {openedModal === 'create' && <CreateFolderModal />}
-      {openedModal === 'rename' && <RenameFolderModal />}
-      {openedModal === 'trash' && <TrashFolderModal />}
-      {openedModal === 'move-message' && <MoveMessageToFolderModal />}
-      {openedModal === 'signature' && <SignatureModal />}
-    </Layout>
+        {openedModal === 'create' && <CreateFolderModal />}
+        {openedModal === 'rename' && <RenameFolderModal />}
+        {openedModal === 'trash' && <TrashFolderModal />}
+        {openedModal === 'move-message' && <MoveMessageToFolderModal />}
+        {openedModal === 'signature' && <SignatureModal />}
+      </Layout>
+    </div>
   );
 }
