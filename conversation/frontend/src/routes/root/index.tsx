@@ -100,26 +100,26 @@ export function Component() {
         </Suspense>
 
         {!lg && (
-          <div className="d-flex flex-column mx-n16 overflow-hidden">
+          <div className="d-flex flex-column mx-n16 overflow-hidden ">
             {showMobileMenu && (
               <div className="d-print-none d-block px-0 py-12 border-bottom bg-white px-16">
                 <MobileMenu />
               </div>
             )}
 
-            <div className="flex-fill overflow-y-auto">
+            <div className="flex-fill overflow-y-auto position-relative">
               <Outlet />
             </div>
           </div>
         )}
 
         {lg && (
-          <div className="d-flex overflow-x-hidden flex-grow-1 me-n16">
+          <div className="d-flex overflow-x-hidden flex-grow-1 me-n16 ">
             <div className="d-print-none desktop-menu flex-column p-16 ps-0 gap-16 border-end bg-white overflow-y-auto overflow-x-hidden">
               <DesktopMenu />
             </div>
 
-            <div className="flex-fill overflow-y-auto">
+            <div className="flex-fill overflow-y-auto position-relative">
               <Outlet />
             </div>
           </div>
