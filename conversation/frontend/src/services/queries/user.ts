@@ -94,7 +94,7 @@ function applySearchRules(
   search: string,
 ) {
   // Do not search unless at least 3 characters are typed in.
-  if (!search || search.length < 3) {
+  if (isAdml && (!search || search.length < 3)) {
     return { triggerSearch: false };
   }
 
