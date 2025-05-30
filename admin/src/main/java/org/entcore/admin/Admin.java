@@ -44,7 +44,7 @@ public class Admin extends BaseServer {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
 		promise.future().compose(x ->
-			SharedDataHelper.getInstance().<String, String>getMulti("server", "smsProvider", "node")
+			SharedDataHelper.getInstance().<String, Object>getMulti("server", "smsProvider", "node", "hidePersonalData")
 		).onSuccess(adminMap -> {
 			try {
 				initAdmin(startPromise, adminMap);
@@ -55,7 +55,7 @@ public class Admin extends BaseServer {
 		}).onFailure(ex -> log.error("Error when start Admin server super classes", ex));
 	}
 
-	public void initAdmin(final Promise<Void> startPromise, final Map<String, String> adminMap) throws Exception {
+	public void initAdmin(final Promise<Void> startPromise, final Map<String, Object> adminMap) throws Exception {
 		addController(new AdminController());
 
 		BlockProfileTraceController blockProfileTraceController = new BlockProfileTraceController("adminv2");
@@ -65,13 +65,14 @@ public class Admin extends BaseServer {
 		addController(new ConfigController());
 		
 		final PlatformInfoController platformInfoController = new PlatformInfoController();
+		platformInfoController.setHidePersonalData((Boolean) adminMap.get("hidePersonalData"));
 
 		// check if sms module activated
 		String smsAddress = "";
 		String smsProvider = "";
 		if(adminMap.get("smsProvider") != null) {
-			smsProvider = adminMap.get("smsProvider");
-			final String node = adminMap.get("node");
+			smsProvider = (String) adminMap.get("smsProvider");
+			final String node = (String) adminMap.get("node");
 			smsAddress = (node != null ? node : "") + "entcore.sms";
 		} else {
 			smsAddress = "entcore.sms";
