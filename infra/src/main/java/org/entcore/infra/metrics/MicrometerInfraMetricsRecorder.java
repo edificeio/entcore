@@ -5,7 +5,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.shareddata.LocalMap;
 import io.vertx.micrometer.backends.BackendRegistries;
 import org.apache.commons.lang3.StringUtils;
 

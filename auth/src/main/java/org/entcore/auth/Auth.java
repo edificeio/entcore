@@ -72,7 +72,8 @@ public class Auth extends BaseServer {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
 		promise.future().compose(x ->
-			SharedDataHelper.getInstance().<String, Object>getMulti("server", "signKey")
+			SharedDataHelper.getInstance().<String, Object>getMulti(
+				"server", "signKey", "smsProvider", "node", "emailValidationConfig")
 		).compose(authMap -> 
 			SharedDataHelper.getInstance().<String, Object>getAsyncMap("server").compose(asyncAuthMap -> {
 				try {
@@ -94,12 +95,12 @@ public class Auth extends BaseServer {
 		final String JWT_PERIOD = "jwt-bearer-authorization";
 
 		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Auth.class.getSimpleName());
-		final UserAuthAccount userAuthAccount = new DefaultUserAuthAccount(vertx, config, eventStore);
+		final UserAuthAccount userAuthAccount = new DefaultUserAuthAccount(vertx, config, eventStore, authMap);
 		SafeRedirectionService.getInstance().init(vertx, config.getJsonObject("safeRedirect", new JsonObject()));
 
 		SmsSenderFactory.getInstance().init(vertx, config);
 		UserValidationFactory.getFactory().setEventStore(eventStore, AuthEvent.SMS.name());
-		final MfaService mfaService = new DefaultMfaService(vertx, config).setEventStore(eventStore);
+		final MfaService mfaService = new DefaultMfaService(vertx, config, authMap).setEventStore(eventStore);
 
 		final JsonObject oic = config.getJsonObject("openid-connect");
 		final OpenIdConnectService openIdConnectService = (oic != null)
@@ -112,7 +113,7 @@ public class Auth extends BaseServer {
 				config.getJsonArray("oauth2-pw-client-enable-saml2"), eventStore,
 				config.getBoolean("otp-disabled", false), config.getInteger("oauth2-token-expiration-time-seconds", 3600));
 
-		AuthController authController = new AuthController();
+		AuthController authController = new AuthController(authMap);
 		authController.setEventStore(eventStore);
 		authController.setUserAuthAccount(userAuthAccount);
 		authController.setOauthDataFactory(oauthDataFactory);

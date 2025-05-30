@@ -35,8 +35,6 @@ import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import fr.wseduc.webutils.validation.JsonSchemaValidator;
 
 import io.vertx.core.Promise;
-import io.vertx.core.shareddata.LocalMap;
-
 import org.entcore.common.cache.CacheFilter;
 import org.entcore.common.cache.CacheService;
 import org.entcore.common.controller.ConfController;
@@ -46,7 +44,7 @@ import org.entcore.common.elasticsearch.ElasticSearch;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.explorer.ExplorerPluginFactory;
 import org.entcore.common.http.filter.*;
-import org.entcore.common.http.i18n.I18nHandler;
+import org.entcore.common.http.iw18n.I18nHandler;
 import org.entcore.common.http.response.SecurityHookRender;
 import org.entcore.common.http.response.OverrideThemeHookRender;
 import org.entcore.common.neo4j.Neo4j;
@@ -105,33 +103,31 @@ public abstract class BaseServer extends Server {
 				"node", "contentSecurityPolicy", "cache-filter", "skins", "oauthCache",
 				"neo4jConfig", "elasticsearchConfig", "redisConfig")
 		).compose(baseServerMap -> {
-			try {
-				initBaseServer(startPromise, baseServerMap);
-			} catch (Exception e) {
-				log.error("Error when initialing BaseServer on module " + moduleName, e);
-				startPromise.fail(e);
-				if (vertx.isClustered()) {
-					try {
-						Promise<Void> stopPromise = Promise.promise();
-						super.stop(stopPromise);
-						stopPromise.future().onComplete(r -> vertx.close());
-					} catch (Exception e1) {
-						log.error("Error when stop module " + moduleName, e1);
+			accessLogger = new EntAccessLogger(getEventBus(vertx));
+			EventStoreFactory eventStoreFactory = EventStoreFactory.getFactory();
+			eventStoreFactory.setVertx(vertx);
+			return Mfa.Factory.getFactory().init(vertx, config).compose(x -> {
+				try {
+					initBaseServer(startPromise, baseServerMap);
+				} catch (Exception e) {
+					log.error("Error when initialing BaseServer on module " + moduleName, e);
+					startPromise.fail(e);
+					if (vertx.isClustered()) {
+						try {
+							Promise<Void> stopPromise = Promise.promise();
+							super.stop(stopPromise);
+							stopPromise.future().onComplete(r -> vertx.close());
+						} catch (Exception e1) {
+							log.error("Error when stop module " + moduleName, e1);
+						}
 					}
 				}
-			}
-			return startPromise.future();
+				return startPromise.future();
+			});
 		}).onFailure(ex -> log.error("Error when initialing Server on module " + moduleName, ex));
 	}
 
 	public void initBaseServer(final Promise<Void> startPromise, final Map<String, Object> baseServerMap) throws Exception {
-		accessLogger = new EntAccessLogger(getEventBus(vertx));
-
-		EventStoreFactory eventStoreFactory = EventStoreFactory.getFactory();
-		eventStoreFactory.setVertx(vertx);
-
-		Mfa.Factory.getFactory().init(vertx, config);
-
 		initFilters(baseServerMap);
 
 		final String node = (String) baseServerMap.get("node");
@@ -437,7 +433,7 @@ public abstract class BaseServer extends Server {
 		return schema;
 	}
 
-	/** 
+	/**
 	 * An overridable hook allowing additional non-sql tasks to be done
 	 * after all SQL migration scripts have been applied.
 	 * @return a future
