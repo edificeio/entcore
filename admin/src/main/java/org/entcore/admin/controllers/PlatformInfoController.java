@@ -26,7 +26,6 @@ import fr.wseduc.webutils.http.BaseController;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 
@@ -40,6 +39,7 @@ public class PlatformInfoController extends BaseController {
 
 	private boolean smsActivated;
 	private static final List<String> PROFILES = Arrays.asList("Personnel", "Teacher", "Student", "Relative", "Guest");
+	private boolean hidePersonalData;
 
 	@Get("api/platform/module/sms")
 	@SecuredAction(type = ActionType.RESOURCE, value = "")
@@ -62,15 +62,13 @@ public class PlatformInfoController extends BaseController {
 	@ResourceFilter(AdminFilter.class)
 	@MfaProtected()
 	public void readConfig(HttpServerRequest request) {
-		LocalMap<Object, Object> serverMap = vertx.sharedData().getLocalMap("server");
-
 		final JsonObject preDelete = config.getJsonObject("pre-delete");
 		final JsonObject configuration =  new JsonObject()
 				.put("delete-user-delay", config.getLong("delete-user-delay", defaultDeleteUserDelay))
 				.put("reset-code-delay", config.getLong("resetCodeDelay", 0L))
 				.put("distributions", config.getJsonArray("distributions", new JsonArray()))
 				.put("hide-adminv1-link", config.getBoolean("hide-adminv1-link", false))
-				.put("hide-personal-data", serverMap.get("hidePersonalData"))
+				.put("hide-personal-data", hidePersonalData)
 				.put("mass-messaging-enabled", config.getBoolean("mass-messaging-enabled"));
 
 		if (preDelete != null && preDelete.size() == PROFILES.size() &&
@@ -92,4 +90,9 @@ public class PlatformInfoController extends BaseController {
 
 		renderJson(request, configuration);
 	}
+
+	public void setHidePersonalData(boolean hidePersonalData) {
+		this.hidePersonalData = hidePersonalData;
+	}
+
 }

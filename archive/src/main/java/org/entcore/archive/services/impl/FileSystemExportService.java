@@ -46,7 +46,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.shareddata.LocalMap;
+import io.vertx.core.shareddata.AsyncMap;
 
 import java.io.File;
 import java.security.PrivateKey;
@@ -403,29 +403,34 @@ public class FileSystemExportService implements ExportService {
 
 	private void addManifestToExport(String exportId, String exportDirectory, String locale, Handler<AsyncResult<Void>> handler)
 	{
-		LocalMap<String, String> versionMap = vertx.sharedData().getLocalMap("versions");
 		JsonObject manifest = new JsonObject();
 		Set<String> expectedExport = this.userExport.get(getUserId(exportId)).getExpectedExport();
 
 		this.vertx.eventBus().request("portal", new JsonObject().put("action","getI18n").put("acceptLanguage",locale), json ->
 		{
-			JsonObject i18n = (JsonObject)(json.result().body());
-			versionMap.forEach((k, v) ->
-			{
-				String[] s = k.split("\\.");
-				// Removing of "-" for scrapbook
-				String app = (s[s.length - 1]).replaceAll("-", "");
-
-				if (expectedExport.contains(app))
+			vertx.sharedData().<String,String>getAsyncMap("versions")
+			.compose(AsyncMap::entries).onSuccess(versionMap -> {
+				JsonObject i18n = (JsonObject)(json.result().body());
+				versionMap.forEach((k, v) ->
 				{
-					String i = i18n.getString(app);
-					manifest.put(k, new JsonObject().put("version",v)
-							.put("folder", StringUtils.stripAccents(i == null ? app : i)));
-				}
-			});
+					String[] s = k.split("\\.");
+					// Removing of "-" for scrapbook
+					String app = (s[s.length - 1]).replaceAll("-", "");
 
-			String path = exportDirectory + File.separator + "Manifest.json";
-			fs.writeFile(path, Buffer.buffer(manifest.encodePrettily()), handler);
+					if (expectedExport.contains(app))
+					{
+						String i = i18n.getString(app);
+						manifest.put(k, new JsonObject().put("version",v)
+								.put("folder", StringUtils.stripAccents(i == null ? app : i)));
+					}
+				});
+
+				String path = exportDirectory + File.separator + "Manifest.json";
+				fs.writeFile(path, Buffer.buffer(manifest.encodePrettily()), handler);
+			}).onFailure(ex -> {
+				log.error("Error getting versions map to add export manifest", ex);
+				handler.handle(Future.failedFuture(ex.getCause()));
+			});
 		});
 	}
 
