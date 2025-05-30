@@ -119,22 +119,27 @@ public abstract class BaseServer extends Server {
 				"node", "contentSecurityPolicy", "cache-filter", "skins", "oauthCache",
 				"neo4jConfig", "elasticsearchConfig", "redisConfig")
 		).compose(baseServerMap -> {
-			try {
-				initBaseServer(startPromise, baseServerMap);
-			} catch (Exception e) {
-				log.error("Error when initialing BaseServer on module " + moduleName, e);
-				startPromise.fail(e);
-				if (vertx.isClustered()) {
-					try {
-						Promise<Void> stopPromise = Promise.promise();
-						super.stop(stopPromise);
-						stopPromise.future().onComplete(r -> vertx.close());
-					} catch (Exception e1) {
-						log.error("Error when stop module " + moduleName, e1);
+			accessLogger = new EntAccessLogger(getEventBus(vertx));
+			EventStoreFactory eventStoreFactory = EventStoreFactory.getFactory();
+			eventStoreFactory.setVertx(vertx);
+			return Mfa.Factory.getFactory().init(vertx, config).compose(x -> {
+				try {
+					initBaseServer(startPromise, baseServerMap);
+				} catch (Exception e) {
+					log.error("Error when initialing BaseServer on module " + moduleName, e);
+					startPromise.fail(e);
+					if (vertx.isClustered()) {
+						try {
+							Promise<Void> stopPromise = Promise.promise();
+							super.stop(stopPromise);
+							stopPromise.future().onComplete(r -> vertx.close());
+						} catch (Exception e1) {
+							log.error("Error when stop module " + moduleName, e1);
+						}
 					}
 				}
-			}
-			return startPromise.future();
+				return startPromise.future();
+			});
 		}).onFailure(ex -> log.error("Error when initialing Server on module " + moduleName, ex));
         startPromise.future().onComplete(result -> {
           // Wait for broker module to be deployed
@@ -147,13 +152,6 @@ public abstract class BaseServer extends Server {
 	}
 
 	public void initBaseServer(final Promise<Void> startPromise, final Map<String, Object> baseServerMap) throws Exception {
-		accessLogger = new EntAccessLogger(getEventBus(vertx));
-
-		EventStoreFactory eventStoreFactory = EventStoreFactory.getFactory();
-		eventStoreFactory.setVertx(vertx);
-
-		Mfa.Factory.getFactory().init(vertx, config);
-
 		initFilters(baseServerMap);
 
 		final String node = (String) baseServerMap.get("node");
@@ -469,7 +467,7 @@ public abstract class BaseServer extends Server {
 		return schema;
 	}
 
-	/** 
+	/**
 	 * An overridable hook allowing additional non-sql tasks to be done
 	 * after all SQL migration scripts have been applied.
 	 * @return a future

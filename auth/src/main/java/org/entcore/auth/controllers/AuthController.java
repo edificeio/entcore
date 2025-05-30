@@ -43,7 +43,6 @@ import io.vertx.core.http.*;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.shareddata.LocalMap;
 import jp.eisbahn.oauth2.server.async.Handler;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 import jp.eisbahn.oauth2.server.data.DataHandlerFactory;
@@ -134,6 +133,11 @@ public class AuthController extends BaseController {
 	private List<String> internalAddress;
 	private boolean checkFederatedLogin = false;
 	private long jwtTtlSeconds;
+	private final Map<String, Object> server;
+
+	public AuthController(Map<String, Object> server) {
+		this.server = server;
+	}
 
 	@Override
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
@@ -150,7 +154,6 @@ public class AuthController extends BaseController {
 		protectedResource.setDataHandlerFactory(oauthDataFactory);
 		protectedResource.setAccessTokenFetcherProvider(accessTokenFetcherProvider);
 		passwordPattern = Pattern.compile(config.getString("passwordRegex", ".{8}.*"));
-		LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
 		JsonArray authorizedSessions = getOrElse(config.getJsonArray("authorize-mobile-session"), new JsonArray());
 		authorizedSessions.forEach(session -> clientIdsAuthorized.add((String) session));
 		if (server != null && server.get("smsProvider") != null)

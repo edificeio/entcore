@@ -25,7 +25,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.storage.impl.HttpAntivirusClient;
 
 import java.util.Optional;

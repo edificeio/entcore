@@ -36,7 +36,6 @@ import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.collections.TTLSet;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
-import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.cache.CacheService;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
@@ -91,7 +90,7 @@ public class TimelineController extends BaseController {
 	private TimelineConfigService configService;
 	private TimelineMailerService mailerService;
 	private Map<String, String> registeredNotifications;
-	private LocalMap<String, String> eventsI18n;
+	private Map<String, String> eventsI18n;
 	private HashMap<String, JsonObject> lazyEventsI18n;
 	private Set<String> antiFlood;
 
@@ -1007,7 +1006,7 @@ public class TimelineController extends BaseController {
 		this.notificationHelper = notificationHelper;
 	}
 
-	public void setEventsI18n(LocalMap<String, String> eventsI18n) {
+	public void setEventsI18n(Map<String, String> eventsI18n) {
 		this.eventsI18n = eventsI18n;
 	}
 
