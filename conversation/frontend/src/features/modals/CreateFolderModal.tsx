@@ -154,23 +154,25 @@ export function CreateFolderModal() {
                 label={t('folder.new.subfolder.label')}
                 onChange={handleSubfolderCheckChange}
               />
-              <Dropdown block>
-                <Dropdown.Trigger
-                  disabled={!checked}
-                  label={dropdownLabel}
-                ></Dropdown.Trigger>
-                <Dropdown.Menu>
-                  {menu.map((item, index) => (
-                    <Dropdown.Item
-                      key={item.name + index}
-                      onClick={() => handleItemClick(item)}
-                      icon={<IconFolder />}
-                    >
-                      {item.name}
-                    </Dropdown.Item>
-                  ))}
-                </Dropdown.Menu>
-              </Dropdown>
+              <div className="position-relative">
+                <Dropdown block>
+                  <Dropdown.Trigger
+                    disabled={!checked}
+                    label={dropdownLabel}
+                  ></Dropdown.Trigger>
+                  <Dropdown.Menu>
+                    {menu.map((item, index) => (
+                      <Dropdown.Item
+                        key={item.name + index}
+                        onClick={() => handleItemClick(item)}
+                        icon={<IconFolder />}
+                      >
+                        {item.name}
+                      </Dropdown.Item>
+                    ))}
+                  </Dropdown.Menu>
+                </Dropdown>
+              </div>
             </div>
           )}
         </Modal.Body>
