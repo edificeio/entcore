@@ -28,7 +28,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.email.impl.PostgresEmailSender;
 
 import java.net.URISyntaxException;

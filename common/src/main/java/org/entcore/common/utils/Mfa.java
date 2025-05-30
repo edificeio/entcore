@@ -21,10 +21,12 @@ package org.entcore.common.utils;
 
 import org.entcore.common.user.UserInfos;
 
+import fr.wseduc.webutils.collections.SharedDataHelper;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
-import io.vertx.core.shareddata.LocalMap;
 
 public class Mfa {
     static public final String TYPE_SMS   = "sms";
@@ -46,16 +48,25 @@ public class Mfa {
 			return FactoryHolder.instance;
 		}
 	
-		public void init(Vertx vertx, JsonObject config) {
+		public Future<Void> init(Vertx vertx, JsonObject config) {
+			final Promise<Void> initPromise = Promise.promise();
 			this.vertx = vertx;
 			this.config = (config!=null) ? config.getJsonObject("mfaConfig") : null;
 			if( this.config == null ) {
-				LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
-				String s = (String) server.get("mfaConfig");
-				this.config = (s != null) ? new JsonObject(s) : new JsonObject();
+				SharedDataHelper sharedDataHelper = SharedDataHelper.getInstance();
+				sharedDataHelper.init(vertx);
+				sharedDataHelper.<String, String>get("server", "mfaConfig").onSuccess(mfaConfig -> {
+					this.config = (mfaConfig != null) ? new JsonObject(mfaConfig) : new JsonObject();
+					// TODO extraire la liste réelle des URLs sensibles
+					mfaProtectedUrls = this.config.getJsonArray("protectedUrls", new JsonArray());
+					initPromise.complete();
+				});
+			} else {
+				// TODO extraire la liste réelle des URLs sensibles
+				mfaProtectedUrls = this.config.getJsonArray("protectedUrls", new JsonArray());
+				initPromise.complete();
 			}
-			// TODO extraire la liste réelle des URLs sensibles
-			mfaProtectedUrls = this.config.getJsonArray("protectedUrls", new JsonArray());
+			return initPromise.future();
 		}
 	
 		public static Mfa getInstance() {

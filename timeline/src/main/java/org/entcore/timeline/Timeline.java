@@ -28,14 +28,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.shareddata.AsyncMap;
-import io.vertx.core.shareddata.LocalMap;
 import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.http.oauth.OAuth2Client;
 import org.entcore.common.http.BaseServer;
-import org.entcore.common.utils.MapFactory;
 import org.entcore.timeline.controllers.helper.NotificationHelper;
 import org.entcore.timeline.services.FlashMsgService;
 import org.entcore.timeline.services.TimelineConfigService;
@@ -52,7 +49,7 @@ import io.vertx.core.json.JsonObject;
 
 public class Timeline extends BaseServer {
 
-	private static final long DELAY_REFRESH_REGISTERED_NOTIFICATION_CACHE = 60_000L;
+	private static final long DELAY_REFRESH_NOTIFICATION_CACHE = 60_000L;
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
@@ -72,12 +69,14 @@ public class Timeline extends BaseServer {
 
 	public void initTimeline(final Promise<Void> startPromise, final Map<String, Object> timelineMap) throws Exception {
 		final Map<String, String> registeredNotificationsCache = new HashMap<>();
+		final Map<String, String> eventsI18n = new HashMap<>();
 		updateRegisteredNotificationsCache(registeredNotificationsCache);
-		vertx.setPeriodic(DELAY_REFRESH_REGISTERED_NOTIFICATION_CACHE, h ->
-			updateRegisteredNotificationsCache(registeredNotificationsCache));
+		updateEventsI18nCache(eventsI18n);
+		vertx.setPeriodic(DELAY_REFRESH_NOTIFICATION_CACHE, h -> {
+			updateRegisteredNotificationsCache(registeredNotificationsCache);
+			updateEventsI18nCache(eventsI18n);
+		});
 
-		// TODO replace with async map or sync cluster map to localmap
-		final LocalMap<String,String> eventsI18n = vertx.sharedData().getLocalMap("timelineEventsI18n");
 		final HashMap<String, JsonObject> lazyEventsI18n = new HashMap<>();
 
 		final DefaultTimelineConfigService configService = new DefaultTimelineConfigService("timeline.config");
@@ -149,9 +148,16 @@ public class Timeline extends BaseServer {
 
 	private void updateRegisteredNotificationsCache(final Map<String, String> registeredNotificationsCache) {
 		SharedDataHelper.getInstance().<String, String>getAsyncMap("notificationsMap")
-		.compose(AsyncMap::entries).onSuccess(registeredNotifications -> {
-			registeredNotificationsCache.putAll(registeredNotifications);
-		}).onFailure(ex -> log.error("Error when update registeredNotifications", ex));
+			.compose(AsyncMap::entries)
+			.onSuccess(registeredNotificationsCache::putAll)
+			.onFailure(ex -> log.error("Error when update registeredNotifications", ex));
+	}
+
+	private void updateEventsI18nCache(final Map<String, String> eventsI18n) {
+		SharedDataHelper.getInstance().<String, String>getAsyncMap("timelineEventsI18n")
+			.compose(AsyncMap::entries)
+			.onSuccess(eventsI18n::putAll)
+			.onFailure(ex -> log.error("Error when update eventsI18n", ex));
 	}
 
 	/**
@@ -160,7 +166,7 @@ public class Timeline extends BaseServer {
 	 * @see pushNotifServiceFactory() below
 	 */
 	protected List<TimelinePushNotifService> startPushNotifServices(
-			final LocalMap<String,String> eventsI18n,
+			final Map<String,String> eventsI18n,
 			final TimelineConfigService configService,
 			final boolean logPushNotifs,
 			final boolean removeTokenIf404
@@ -219,7 +225,7 @@ public class Timeline extends BaseServer {
 	 */
 	protected TimelinePushNotifService pushNotifServiceFactory(
 			final JsonObject pushNotif,
-			final LocalMap<String,String> eventsI18n,
+			final Map<String,String> eventsI18n,
 			final TimelineConfigService configService,
 			final boolean logPushNotifs,
 			final boolean removeTokenIf404

@@ -73,7 +73,7 @@ public class Directory extends BaseServer {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
 		promise.future().compose(x ->
-			SharedDataHelper.getInstance().<String, Object>getMulti("server", "skins", "assetPath")
+			SharedDataHelper.getInstance().<String, Object>getMulti("server", "skins", "assetPath", "hidePersonalData")
 		).onSuccess(serverMap -> {
 			StorageFactory.build(vertx, config, new MongoDBApplicationStorage("documents", Directory.class.getSimpleName()))
             .onSuccess(storageFactory -> {

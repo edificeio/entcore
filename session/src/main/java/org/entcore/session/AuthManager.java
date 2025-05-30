@@ -33,8 +33,6 @@ import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.shareddata.LocalMap;
-import io.vertx.core.shareddata.SharedData;
 
 import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.common.cache.CacheService;

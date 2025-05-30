@@ -22,8 +22,7 @@ package org.entcore.common.notification;
 import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.data.FileResolver;
 import fr.wseduc.webutils.http.Renders;
-
-import io.vertx.core.shareddata.LocalMap;
+import io.vertx.core.shareddata.AsyncMap;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
@@ -51,6 +50,7 @@ import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 
 public class TimelineHelper {
 
+	private static final int MAX_RETRY = 10;
 	private static final String TIMELINE_ADDRESS = "wse.timeline";
 	private final static String messagesDir = FileResolver.absolutePath("i18n/timeline");
 	private final EventBus eb;
@@ -290,24 +290,32 @@ public class TimelineHelper {
 	}
 
 	private void appendTimelineEventsI18n(Map<String, JsonObject> i18ns) {
-		LocalMap<String, String> eventsI18n = vertx.sharedData().getLocalMap("timelineEventsI18n");
-		for (Map.Entry<String, JsonObject> e: i18ns.entrySet()) {
-			String json = e.getValue().encode();
-			if (StringUtils.isEmpty(json) || "{}".equals(StringUtils.stripSpaces(json))) continue;
-			String j = json.substring(1, json.length() - 1) + ",";
-			String resJson = j;
-			String oldJson = eventsI18n.putIfAbsent(e.getKey(), j);
-			if (oldJson != null && !oldJson.equals(j)) {
-				resJson += oldJson;
-				boolean appended = eventsI18n.replace(e.getKey(), oldJson, resJson);
-				while (!appended) {
-					oldJson = eventsI18n.get(e.getKey());
-					resJson = j;
-					resJson += oldJson;
-					appended = eventsI18n.replace(e.getKey(), oldJson, resJson);
-				}
+		vertx.sharedData().<String, String>getAsyncMap("timelineEventsI18n").onSuccess(eventsI18n-> {
+			for (Map.Entry<String, JsonObject> e: i18ns.entrySet()) {
+				String json = e.getValue().encode();
+				if (StringUtils.isEmpty(json) || "{}".equals(StringUtils.stripSpaces(json))) continue;
+				final String j = json.substring(1, json.length() - 1) + ",";
+				eventsI18n.putIfAbsent(e.getKey(), j)
+					.onSuccess(oldJson -> replaceEventsI18n(eventsI18n, e.getKey(), oldJson, j, 0))
+					.onFailure(ex -> log.error("Error when try put eventsI18n on key " + e.getKey(), ex));
 			}
+		});
+	}
+
+	private void replaceEventsI18n(AsyncMap<String, String> eventsI18n, String key, String old, String append, int retry) {
+		if (old == null || old.equals(append) || retry > MAX_RETRY) {
+			if (retry > MAX_RETRY) {
+				log.warn("Replace eventi18n not updated after max retries : " + retry);
+			}
+			return;
 		}
+		eventsI18n.replaceIfPresent(key, old, (old + append)).onSuccess(updated -> {
+			if (!updated) {
+				eventsI18n.get(key)
+					.onSuccess(old2 -> replaceEventsI18n(eventsI18n, key, old2, append, retry + 1))
+					.onFailure(ex -> log.error("Error when update eventsI18n on key " + key, ex));
+			}
+		});
 	}
 
 }

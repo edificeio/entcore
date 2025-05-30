@@ -22,7 +22,6 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.notification.TimelineNotificationsLoader;
 import org.entcore.timeline.services.TimelineConfigService;
@@ -51,7 +50,7 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
     private TimelineConfigService configService;
     private final EventBus eb;
     private final OssFcm ossFcm;
-    private LocalMap<String,String> eventsI18n;
+    private Map<String,String> eventsI18n;
     private Map<String,JsonObject> cacheI18N = new HashMap<>();
 
     public DefaultPushNotifService(Vertx vertx, JsonObject config, OssFcm ossFcm) {
@@ -246,7 +245,7 @@ public class DefaultPushNotifService extends Renders implements TimelinePushNoti
         this.configService = configService;
     }
 
-    public void setEventsI18n(LocalMap<String,String> eventsI18n) {
+    public void setEventsI18n(Map<String,String> eventsI18n) {
         this.eventsI18n = eventsI18n;
     }
 

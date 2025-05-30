@@ -26,7 +26,6 @@ import org.entcore.common.events.EventStore;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.shareddata.LocalMap;
 
 import java.security.InvalidKeyException;
 

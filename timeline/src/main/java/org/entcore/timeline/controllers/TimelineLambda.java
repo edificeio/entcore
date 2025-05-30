@@ -31,14 +31,12 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.shareddata.LocalMap;
 
 import java.io.IOException;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
 
 public final class TimelineLambda {
 
@@ -47,7 +45,7 @@ public final class TimelineLambda {
 	private TimelineLambda() {}
 
 	public static void setLambdaTemplateRequest(final HttpServerRequest request, final TemplateProcessor processor,
-			final LocalMap<String, String> eventsI18n, final HashMap<String, JsonObject> lazyEventsI18n) {
+			final Map<String, String> eventsI18n, final Map<String, JsonObject> lazyEventsI18n) {
 
 		processor.setLambda("i18n", new Mustache.Lambda() {
 			@Override
