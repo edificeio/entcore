@@ -32,12 +32,7 @@ import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
-import io.vertx.core.Promise;
 import io.vertx.core.eventbus.MessageConsumer;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.ext.web.client.HttpRequest;
-import io.vertx.ext.web.client.HttpResponse;
-import io.vertx.ext.web.client.WebClientOptions;
 import org.entcore.archive.Archive;
 import org.entcore.archive.services.ExportService;
 import org.entcore.archive.services.impl.FileSystemExportService;
@@ -49,19 +44,15 @@ import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.storage.Storage;
-import org.entcore.common.utils.StringUtils;
 import org.entcore.common.user.UserUtils;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.entcore.common.utils.StringUtils;
 import org.vertx.java.core.http.RouteMatcher;
-import io.vertx.ext.web.client.WebClient;
 
 
 import java.security.PrivateKey;
@@ -97,7 +88,7 @@ public class ArchiveController extends BaseController {
 
 		String exportPath = config.getString("export-path", System.getProperty("java.io.tmpdir"));
 
-		EmailFactory emailFactory = new EmailFactory(vertx, config);
+		EmailFactory emailFactory = EmailFactory.getInstance();
 		EmailSender notification = config.getBoolean("send.export.email", false) ?
 				emailFactory.getSender() : null;
 
