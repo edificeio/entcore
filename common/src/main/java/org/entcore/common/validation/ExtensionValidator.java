@@ -29,7 +29,7 @@ public class ExtensionValidator extends FileValidator {
 
 	private final JsonArray blockedExtension;
 
-	public ExtensionValidator(JsonArray blockedExtension) {
+	protected ExtensionValidator(JsonArray blockedExtension) {
 		this.blockedExtension = blockedExtension;
 	}
 

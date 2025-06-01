@@ -78,7 +78,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 	public DefaultTimelineMailerService(Vertx vertx, JsonObject config) {
 		super(vertx, config);
 		eb = Server.getEventBus(vertx);
-		EmailFactory emailFactory = new EmailFactory(this.vertx, config);
+		EmailFactory emailFactory = EmailFactory.getInstance();
 		emailSender = emailFactory.getSenderWithPriority(EmailFactory.PRIORITY_VERY_LOW);
 		USERS_LIMIT = config.getInteger("users-loop-limit", 25);
 		QUERY_TIMEOUT = config.getLong("query-timeout", 300000L);
