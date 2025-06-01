@@ -69,7 +69,8 @@ public abstract class GenericShareService implements ShareService {
 	protected static final I18n i18n = I18n.getInstance();
 	private JsonArray resourceActions;
 	private final Vertx vertx = Vertx.currentContext().owner();
-	private final int DEFAULT_SHARES_PARTITION_SIZE = 50;
+	private static final int DEFAULT_SHARES_PARTITION_SIZE = 50;
+	private int partitionSize = DEFAULT_SHARES_PARTITION_SIZE;
 	private final EventStore eventStore;
 
 	public GenericShareService(EventBus eb, Map<String, SecuredAction> securedActions,
@@ -82,6 +83,13 @@ public abstract class GenericShareService implements ShareService {
 		final EventStoreFactory factory = EventStoreFactory.getFactory();
 		factory.setVertx(vertx);
 		this.eventStore = factory.getEventStore(module);
+		vertx.sharedData().<String, Integer>getAsyncMap("server")
+			.compose(serverMap -> serverMap.get("sharesPartitionSize"))
+			.onSuccess(partition -> {
+				if (partition != null && partition > 0) {
+					partitionSize = partition;
+				}
+			}).onFailure(ex -> log.error("Error getting shares partition size", ex));
 	}
 
 	protected Future<Set<String>> userIdsForGroupIds(Set<String> groupsIds, String currentUserId) {
@@ -482,13 +490,6 @@ public abstract class GenericShareService implements ShareService {
 		final String customReturn = "RETURN DISTINCT visibles.id as id, has(visibles.login) as isUser";
 
 		// Parallelizing the process of fetching the visibles
-		final int partitionSize;
-		LocalMap<Object, Object> serverConfig = vertx.sharedData().getLocalMap("server");
-		if (serverConfig != null) {
-			partitionSize = (int) serverConfig.getOrDefault("sharesPartitionSize", DEFAULT_SHARES_PARTITION_SIZE);
-		} else {
-			partitionSize = DEFAULT_SHARES_PARTITION_SIZE;
-		}
 		final List<List<String>> idsOfShareChunks = Lists.partition(getIdOfGroupsAndUsersConcernedByShares(originalShares, shareUpdates), partitionSize);
 		final List<Future<JsonArray>> visibleFutures = new ArrayList<>();
 		idsOfShareChunks.forEach(idsOfShareChunk -> {

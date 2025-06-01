@@ -99,7 +99,7 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 		this.neo = new Neo(vertx, eb, null);
 		this.vertx = vertx;
 		this.config = config;
-		EmailFactory emailFactory = new EmailFactory(vertx, config);
+		EmailFactory emailFactory = EmailFactory.getInstance();
 		notification = emailFactory.getSender();
 		render = new Renders(vertx, config);
 		if(server != null && server.get("smsProvider") != null) {

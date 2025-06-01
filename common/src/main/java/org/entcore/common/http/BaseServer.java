@@ -41,6 +41,7 @@ import org.entcore.common.controller.ConfController;
 import org.entcore.common.controller.RightsController;
 import org.entcore.common.datavalidation.utils.UserValidationFactory;
 import org.entcore.common.elasticsearch.ElasticSearch;
+import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.explorer.ExplorerPluginFactory;
 import org.entcore.common.http.filter.*;
@@ -62,6 +63,7 @@ import org.entcore.common.utils.Config;
 import org.entcore.common.utils.Mfa;
 import org.entcore.common.utils.Zip;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
@@ -151,8 +153,9 @@ public abstract class BaseServer extends Server {
 				config.getInteger("block-route-filter-error-status-code", 401)
 			));
 		}
-		UserValidationFactory userValidationFactory = UserValidationFactory.getFactory();
-		userValidationFactory.init(vertx, config);
+
+		final List<Future<? extends Object>> futures = new ArrayList<>();
+		futures.add(EmailFactory.build(vertx, config).compose(f -> UserValidationFactory.build(vertx, config)));
 
 		final Boolean cacheEnabled = (Boolean) baseServerMap.getOrDefault("cache-filter", false);
 		if(Boolean.TRUE.equals(cacheEnabled)){
@@ -184,7 +187,7 @@ public abstract class BaseServer extends Server {
 			log.info("Received "+ONDEPLOY_I18N+" update i18n override");
 			this.loadI18nAssetsFiles(skins);
 		});
-		startPromise.tryComplete();
+		Future.all(futures).onComplete(res -> startPromise.tryComplete());
 	}
 
 	protected void initFilters(final Map<String, Object> baseServerMap) {
@@ -412,8 +415,9 @@ public abstract class BaseServer extends Server {
 
 	protected BaseServer setSearchingEvents(final SearchingEvents searchingEvents) {
 		searchingHandler.setSearchingEvents(searchingEvents);
-		final LocalMap<String, String> set = vertx.sharedData().getLocalMap(SearchingHandler.class.getName());
-		set.putIfAbsent(searchingEvents.getClass().getSimpleName(), "");
+		vertx.sharedData().getAsyncMap(SearchingHandler.class.getName())
+				.compose(set -> set.putIfAbsent(searchingEvents.getClass().getSimpleName(), ""))
+				.onFailure(ex -> log.error("Error putting searching events", ex));
 		return this;
 	}
 

@@ -19,11 +19,6 @@
 
 package org.entcore.feeder.utils;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -386,7 +381,7 @@ public class Report {
 			return;
 		}
 		int count = sendReport.size();
-		EmailFactory emailFactory = new EmailFactory(vertx, config);
+		EmailFactory emailFactory = EmailFactory.getInstance();
 		for (Object o : sendReport) {
 			JsonObject currentSendReport = (JsonObject) o;
 			if (currentSendReport.getJsonArray("to") == null //

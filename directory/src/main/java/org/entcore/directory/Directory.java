@@ -129,7 +129,7 @@ public class Directory extends BaseServer {
 		final Storage defaulStorage = storageFactory.getStorage();
 		WorkspaceHelper wsHelper = new WorkspaceHelper(vertx.eventBus(), defaulStorage);
 
-		EmailFactory emailFactory = new EmailFactory(vertx, config);
+		EmailFactory emailFactory = EmailFactory.getInstance();
 		EmailSender emailSender = emailFactory.getSender();
 		SmsSenderFactory.getInstance().init(vertx, config);
 		final JsonObject userBookData = config.getJsonObject("user-book-data");

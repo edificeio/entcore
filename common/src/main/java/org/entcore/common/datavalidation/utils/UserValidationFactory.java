@@ -24,12 +24,19 @@ import org.entcore.common.datavalidation.impl.DefaultUserValidationService;
 import org.entcore.common.datavalidation.metrics.DataValidationMetricsFactory;
 import org.entcore.common.events.EventStore;
 
+import fr.wseduc.webutils.collections.SharedDataHelper;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.security.InvalidKeyException;
 
 public class UserValidationFactory {
+
+	private static final Logger log = LoggerFactory.getLogger(UserValidationFactory.class);
 	private Vertx vertx;
 	private JsonObject config;
 	private JsonObject moduleConfig;
@@ -51,30 +58,53 @@ public class UserValidationFactory {
 		return UserValidationFactoryHolder.instance;
 	}
 
-	public UserValidationFactory init(Vertx vertx, JsonObject moduleConfig) throws InvalidKeyException {
+	public UserValidationFactory init(Vertx vertx, JsonObject moduleConfig, Promise<UserValidationFactory> initPromise) {
 		this.vertx = vertx;
 		this.moduleConfig = moduleConfig;
 		DataValidationMetricsFactory.init(vertx, moduleConfig);
 		config = moduleConfig.getJsonObject("emailValidationConfig");
 		if (config == null ) {
-			LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
-			String s = (String) server.get("emailValidationConfig");
-			config = (s != null) ? new JsonObject(s) : new JsonObject();
+			final SharedDataHelper sharedDataHelper = SharedDataHelper.getInstance();
+			sharedDataHelper.init(vertx);
+			sharedDataHelper.<String, String>get("server", "emailValidationConfig").onSuccess(s -> {
+				config = (s != null) ? new JsonObject(s) : new JsonObject();
+				initInternal(initPromise);
+			}).onFailure(ex ->  {
+				log.error("Error when init UserValidationFactory from async map server", ex);
+				initPromise.fail(ex);
+			});
+		} else {
+			initInternal(initPromise);
 		}
-
-		// The encryptKey parameter must be defined correctly.
-		String encryptKey = config.getString("encryptKey", null);
-		if( encryptKey != null
-					&& (encryptKey.length()!=16 && encryptKey.length()!=24 && encryptKey.length()!=32) ) {
-			// An AES key has to be 16, 24 or 32 bytes long.
-			throw new InvalidKeyException("The \"encryptKey\" parameter must be 16, 24 or 32 bytes long.");
-		}
-
-		final Boolean emailValidationActive = config.getBoolean("active", true);
-		final boolean emailValidationRelativeActive = config.getBoolean("emailValidationRelativeActive", false);
-		deactivateValidationAfterLogin = Boolean.FALSE.equals(emailValidationActive);
-		activateValidationRelative = Boolean.TRUE.equals(emailValidationRelativeActive);
 		return this;
+	}
+
+	private void initInternal(Promise<UserValidationFactory> initPromise)  {
+		try {
+			// The encryptKey parameter must be defined correctly.
+			String encryptKey = config.getString("encryptKey", null);
+			if( encryptKey != null
+						&& (encryptKey.length()!=16 && encryptKey.length()!=24 && encryptKey.length()!=32) ) {
+				// An AES key has to be 16, 24 or 32 bytes long.
+				throw new InvalidKeyException("The \"encryptKey\" parameter must be 16, 24 or 32 bytes long.");
+			}
+
+			final Boolean emailValidationActive = config.getBoolean("active", true);
+			final boolean emailValidationRelativeActive = config.getBoolean("emailValidationRelativeActive", false);
+			deactivateValidationAfterLogin = Boolean.FALSE.equals(emailValidationActive);
+			activateValidationRelative = Boolean.TRUE.equals(emailValidationRelativeActive);
+			initPromise.complete(this);
+		} catch (InvalidKeyException e) {
+			log.error("Error with key format when init UserValidationFactory", e);
+			initPromise.fail(e);
+		}
+	}
+
+	public static Future<UserValidationFactory> build(Vertx vertx, JsonObject config) {
+		final Promise<UserValidationFactory> promise = Promise.promise();
+		final UserValidationFactory userValidationFactory = getFactory();
+		userValidationFactory.init(vertx, config, promise);
+		return promise.future();
 	}
 
 	public UserValidationFactory setEventStore(EventStore eventStore, String eventType) {

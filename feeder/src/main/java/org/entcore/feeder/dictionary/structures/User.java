@@ -975,7 +975,7 @@ public class User {
 		MongoDb.getInstance().find(OLD_PLATFORM_USERS, new JsonObject().put(UserDataSync.STATUS_FIELD, UserDataSync.SyncState.UNPROCESSED), null, keys, m -> {
 			if ("ok".equals(m.body().getString("status"))) {
 				final JsonArray res = m.body().getJsonArray("results");
-				EmailSender emailSender = new EmailFactory(vertx).getSender();
+				EmailSender emailSender = EmailFactory.getInstance().getSender();
 				HttpServerRequest forged = new JsonHttpServerRequest(new JsonObject());
 				if (res != null) {
 					for (Object o : res) {

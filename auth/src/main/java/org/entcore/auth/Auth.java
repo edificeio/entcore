@@ -229,7 +229,7 @@ public class Auth extends BaseServer {
 			String cron = NDWConf.getString("cron");
 			if(cron != null)
 			{
-				EmailFactory emailFactory = new EmailFactory(vertx, config);
+				EmailFactory emailFactory = EmailFactory.getInstance();
 				boolean warnADMC = NDWConf.getBoolean("warn-admc", false);
 				boolean warnADML = NDWConf.getBoolean("warn-adml", false);
 				boolean warnUsers = NDWConf.getBoolean("warn-users", false);

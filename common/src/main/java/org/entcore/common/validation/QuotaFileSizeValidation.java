@@ -26,6 +26,8 @@ import io.vertx.core.json.JsonObject;
 
 public class QuotaFileSizeValidation extends FileValidator {
 
+	protected QuotaFileSizeValidation() {}
+
 	@Override
 	protected void validate(JsonObject metadata, JsonObject context, Handler<AsyncResult<Void>> handler) {
 		Long maxSize = context.getLong("maxSize");

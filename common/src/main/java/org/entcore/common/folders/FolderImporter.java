@@ -1,5 +1,7 @@
 package org.entcore.common.folders;
 
+import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
+
 import java.io.File;
 import java.util.Map;
 import java.util.HashMap;
@@ -26,6 +28,7 @@ import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.json.JsonArray;
 
 public class FolderImporter
@@ -136,16 +139,18 @@ public class FolderImporter
 		this.fs = fs;
 		this.eb = eb;
 		this.throwErrors = throwErrors;
-		try{
-			final LocalMap<Object, Object> serverMap = vertx.sharedData().getLocalMap("server");
-			if(serverMap.containsKey("archiveConfig")){
-				final String archiveConfig = serverMap.get("archiveConfig").toString();
-				final JsonObject archiveConfigJson = new JsonObject(archiveConfig);				
-				this.busTimeoutSec = archiveConfigJson.getInteger("storageTimeout", 600);
-			}
-		}catch(Exception e){
-			log.error("Could not read archive config:", e);
-		}
+		vertx.sharedData().<String, String>getAsyncMap("server")
+			.compose(serverMap -> serverMap.get("archiveConfig"))
+			.onSuccess(archiveConfig -> {
+				try {
+					if (isNotEmpty(archiveConfig)){
+						final JsonObject archiveConfigJson = new JsonObject(archiveConfig);
+						this.busTimeoutSec = archiveConfigJson.getInteger("storageTimeout", 600);
+					}
+				}catch(Exception e){
+					log.error("Could not read archive config:", e);
+				}
+            }).onFailure(ex -> log.error("Error when get FolderImporter config", ex));
 	}
 
 	public void setBusTimeoutSec(Integer busTimeoutSec) {

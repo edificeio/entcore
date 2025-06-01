@@ -293,7 +293,7 @@ public class Starter extends BaseServer {
 						}
 					});
 				}
-				EmailFactory emailFactory = new EmailFactory(vertx, config);
+				EmailFactory emailFactory = EmailFactory.getInstance();
 				try {
 					new CronTrigger(vertx, config.getString("hard-bounces-cron", "0 0 7 * * ? *"))
 							.schedule(new HardBounceTask(emailFactory.getSender(), config.getInteger("hard-bounces-day", -1),

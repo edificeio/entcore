@@ -21,11 +21,16 @@ package org.entcore.common.storage;
 
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
+
 import org.entcore.common.storage.impl.HttpAntivirusClient;
+
+import fr.wseduc.webutils.Utils;
 
 import java.util.Optional;
 
@@ -41,12 +46,19 @@ public interface AntivirusClient {
 
 	void scanS3(String id, String bucket, Handler<AsyncResult<Void>> handler);
 
-	static Optional<AntivirusClient> create(Vertx vertx){
+	static Future<Optional<AntivirusClient>> create(Vertx vertx){
+		final Promise<Optional<AntivirusClient>> promise = Promise.promise();
+		vertx.sharedData().<String, String>getAsyncMap("server")
+			.compose(serverMap -> serverMap.get("file-system"))
+			.onSuccess(s ->
+				promise.complete(create(vertx, Utils.isNotEmpty(s) ?  new JsonObject(s) : new JsonObject()))
+			).onFailure(promise::fail);
+        return promise.future();
+	}
+
+	static Optional<AntivirusClient> create(Vertx vertx, JsonObject fs){
 		try{
-			final LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
-			final String s = (String) server.get("file-system");
-			if (s != null) {
-				final JsonObject fs = new JsonObject(s);
+			if (fs != null && !fs.isEmpty()) {
 				final JsonObject antivirus = fs.getJsonObject("antivirus");
 				if (antivirus != null) {
 					final String h = antivirus.getString("host");

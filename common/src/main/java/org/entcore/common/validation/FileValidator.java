@@ -19,32 +19,48 @@
 package org.entcore.common.validation;
 
 
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.storage.AntivirusClient;
 
+import fr.wseduc.webutils.Utils;
+
 import java.util.Optional;
 
 public abstract class FileValidator extends AbstractValidator<JsonObject, JsonObject> {
 
-    public static Optional<FileValidator> create(Vertx vertx) {
+    public static FileValidator createNullable(JsonObject fs) {
         try {
-            final LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
-            final String s = (String) server.get("file-system");
-            if (s != null) {
-                final JsonObject fs = new JsonObject(s);
+            if (fs != null && !fs.isEmpty()) {
                 final FileValidator fileValidator = new QuotaFileSizeValidation();
                 final JsonArray blockedExtensions = fs.getJsonArray("blockedExtensions");
                 if (blockedExtensions != null && blockedExtensions.size() > 0) {
                     fileValidator.setNext(new ExtensionValidator(blockedExtensions));
                 }
-                return Optional.of(fileValidator);
+                return fileValidator;
             }
         } catch (Exception e) {
-            LoggerFactory.getLogger(AntivirusClient.class).warn("Could not create file validator: ", e);
+                LoggerFactory.getLogger(FileValidator.class).warn("Could not create file validator: ", e);
         }
-        return Optional.empty();
+        return null;
     }
+
+    public static Optional<FileValidator> create(JsonObject fs) {
+        return Optional.ofNullable(createNullable(fs));
+    }
+
+    public static Future<Optional<FileValidator>> create(Vertx vertx) {
+        final Promise<Optional<FileValidator>> promise = Promise.promise();
+        vertx.sharedData().<String, String>getAsyncMap("server")
+        .compose(serverMap -> serverMap.get("file-system"))
+        .onSuccess(s ->
+            promise.complete(create(Utils.isNotEmpty(s) ?  new JsonObject(s) : new JsonObject()))
+        ).onFailure(promise::fail);
+        return promise.future();
+    }
+
 }
