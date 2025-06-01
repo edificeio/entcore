@@ -38,16 +38,15 @@ public class ValidationTest {
         JsonObject validationConfig = test.file().jsonFromResource("config/validations.json");
 
         // Setup validations factory
-		UserValidationFactory userValidationFactory = UserValidationFactory.getFactory();
-		userValidationFactory.init(test.vertx(), validationConfig);
+		UserValidationFactory.build(test.vertx(), validationConfig).onComplete(ar -> {
+            final Async async = context.async();
 
-        final Async async = context.async();
-
-        test.directory().createActiveUser("login", "password", "email@test.com")
-        .onComplete(res -> {
-            context.assertTrue(res.succeeded());
-            userId = res.result();
-            async.complete();
+            test.directory().createActiveUser("login", "password", "email@test.com")
+            .onComplete(res -> {
+                context.assertTrue(res.succeeded());
+                userId = res.result();
+                async.complete();
+            });
         });
     }
 
