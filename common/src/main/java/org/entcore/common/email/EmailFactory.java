@@ -19,15 +19,19 @@
 
 package org.entcore.common.email;
 
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.email.SMTPSender;
 import fr.wseduc.webutils.email.SendInBlueSender;
 import fr.wseduc.webutils.email.GoMailSender;
 import fr.wseduc.webutils.exception.InvalidConfigurationException;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
 import org.entcore.common.email.impl.PostgresEmailSender;
 
 import java.net.URISyntaxException;
@@ -38,31 +42,59 @@ public class EmailFactory {
 	public static final int PRIORITY_NORMAL = 0;
 	public static final int PRIORITY_HIGH = 1;
 	public static final int PRIORITY_VERY_HIGH = 2;
-	private final Vertx vertx;
-	private final JsonObject config;
-	private final JsonObject moduleConfig;
+	private Vertx vertx;
+	private JsonObject config;
+	private JsonObject moduleConfig;
 	private final Logger log = LoggerFactory.getLogger(EmailFactory.class);
 
-	public EmailFactory(Vertx vertx) {
-		this(vertx, null);
+	private static class EmailFactoryHolder {
+		private static final EmailFactory instance = new EmailFactory();
 	}
 
-	public EmailFactory(Vertx vertx, JsonObject config) {
+	private EmailFactory() {}
+
+	public void init(Vertx vertx, Promise<EmailFactory> initPromise) {
+		init(vertx, null, initPromise);
+	}
+
+	public void init(Vertx vertx, JsonObject config, Promise<EmailFactory> initPromise) {
 		this.vertx = vertx;
 		if (config != null && config.getJsonObject("emailConfig") != null) {
 			this.config = config.getJsonObject("emailConfig");
 			this.moduleConfig = config;
+			initPromise.complete(this);
 		} else {
-			LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
-			String s = (String) server.get("emailConfig");
-			if (s != null) {
-				this.config = new JsonObject(s);
-				this.moduleConfig = this.config;
-			} else {
-				this.config = null;
-				this.moduleConfig = null;
-			}
+			final SharedDataHelper sharedDataHelper = SharedDataHelper.getInstance();
+			sharedDataHelper.init(vertx);
+			sharedDataHelper.<String, String>get("server", "emailConfig").onSuccess(s -> {
+				if (s != null) {
+					this.config = new JsonObject(s);
+					this.moduleConfig = this.config;
+				} else {
+					this.config = null;
+					this.moduleConfig = null;
+				}
+				initPromise.complete(this);
+			}).onFailure(ex -> {
+				log.error("Error when init UserValidationFactory from async map server", ex);
+				initPromise.fail(ex);
+			});
 		}
+	}
+
+	public static Future<EmailFactory> build(Vertx vertx) {
+		return build(vertx, null);
+	}
+
+	public static Future<EmailFactory> build(Vertx vertx, JsonObject config) {
+		final Promise<EmailFactory> promise = Promise.promise();
+		final EmailFactory emailFactory = getInstance();
+		emailFactory.init(vertx, config, promise);
+		return promise.future();
+	}
+
+	public static EmailFactory getInstance() {
+		return EmailFactoryHolder.instance;
 	}
 
 	public EmailSender getSender() {

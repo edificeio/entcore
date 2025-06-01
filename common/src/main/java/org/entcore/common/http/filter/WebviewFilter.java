@@ -1,5 +1,6 @@
 package org.entcore.common.http.filter;
 
+import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
@@ -12,6 +13,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
 import org.entcore.common.utils.StringUtils;
 
 public class WebviewFilter implements Filter {
@@ -25,17 +27,20 @@ public class WebviewFilter implements Filter {
     private static final Logger log = LoggerFactory.getLogger(CsrfFilter.class);
     private final EventBus eb;
     private final Vertx vertx;
-    private final JsonObject config;
+    private JsonObject config;
+
     public WebviewFilter(Vertx vertx, EventBus eb) {
         this.eb = eb;
         this.vertx = vertx;
-        final LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
-        final String webviewConfig = (String) server.get("webviewConfig");
-        if (webviewConfig != null) {
-            this.config = new JsonObject(webviewConfig);
-        }else{
-            this.config = new JsonObject();
-        }
+        vertx.sharedData().<String, String>getAsyncMap("server")
+            .compose(serverMap -> serverMap.get("webviewConfig"))
+			.onSuccess(webviewConfig -> {
+				if (webviewConfig != null) {
+                    this.config = new JsonObject(webviewConfig);
+                }else{
+                    this.config = new JsonObject();
+                }
+            }).onFailure(ex -> log.error("Error when get config of WebviewFilter", ex));
     }
 
     protected String getIllegalWebpage(){

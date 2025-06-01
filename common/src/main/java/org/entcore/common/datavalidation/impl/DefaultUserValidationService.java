@@ -15,6 +15,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.datavalidation.EmailValidation;
+import org.entcore.common.datavalidation.MobileValidation;
 import org.entcore.common.datavalidation.UserValidationService;
 import org.entcore.common.datavalidation.metrics.DataValidationMetricsFactory;
 import org.entcore.common.datavalidation.utils.DataStateUtils;
@@ -54,7 +55,7 @@ public class DefaultUserValidationService implements UserValidationService {
 
         MobileField(io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config, io.vertx.core.json.JsonObject params) {
             super("mobile", "mobileState", vertx, config, params);
-            emailSender = new EmailFactory(this.vertx, config).getSenderWithPriority(EmailFactory.PRIORITY_HIGH);
+            emailSender = EmailFactory.getInstance().getSenderWithPriority(EmailFactory.PRIORITY_HIGH);
         }
 
         @Override
@@ -132,7 +133,7 @@ public class DefaultUserValidationService implements UserValidationService {
 
         EmailField(io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config, io.vertx.core.json.JsonObject params) {
             super("email", "emailState", vertx, config, params);
-            emailSender = new EmailFactory(this.vertx, config).getSenderWithPriority(EmailFactory.PRIORITY_HIGH);
+            emailSender = EmailFactory.getInstance().getSenderWithPriority(EmailFactory.PRIORITY_HIGH);
         }
 
         @Override

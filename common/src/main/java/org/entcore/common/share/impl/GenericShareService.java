@@ -85,6 +85,13 @@ public abstract class GenericShareService implements ShareService {
 		final EventStoreFactory factory = EventStoreFactory.getFactory();
 		factory.setVertx(vertx);
 		this.eventStore = factory.getEventStore(module);
+		vertx.sharedData().<String, Integer>getAsyncMap("server")
+			.compose(serverMap -> serverMap.get("sharesPartitionSize"))
+			.onSuccess(partition -> {
+				if (partition != null && partition > 0) {
+					partitionSize = partition;
+				}
+			}).onFailure(ex -> log.error("Error getting shares partition size", ex));
 	}
 
 	protected Future<Set<String>> userIdsForGroupIds(Set<String> groupsIds, String currentUserId) {
