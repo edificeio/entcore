@@ -30,6 +30,7 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.bus.MessageReplyNotifier;
+import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.notification.TimelineHelper;
@@ -112,6 +113,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
 	public void initFeeder(Map<String,Object> feederMap, StorageFactory storageFactory) {
 		storage = storageFactory.getStorage();
+		EmailFactory.build(vertx, config);
 		FeederLogger.init(config);
 		String node = (String) feederMap.get("node");
 		if (node == null) {

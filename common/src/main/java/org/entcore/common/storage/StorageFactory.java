@@ -37,7 +37,6 @@ import static org.entcore.common.storage.impl.StorageFileAnalyzer.Configuration.
 
 import org.entcore.common.validation.ExtensionValidator;
 import org.entcore.common.validation.FileValidator;
-import org.entcore.common.validation.QuotaFileSizeValidation;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -157,12 +156,7 @@ public class StorageFactory {
 				}
 			}
 
-			FileValidator fileValidator = new QuotaFileSizeValidation();
-			JsonArray blockedExtensions = s3.getJsonArray("blockedExtensions");
-			if (blockedExtensions != null && blockedExtensions.size() > 0) {
-				fileValidator.setNext(new ExtensionValidator(blockedExtensions));
-			}
-			((S3Storage) storage).setValidator(fileValidator);
+			((S3Storage) storage).setValidator(FileValidator.createNullable(s3));
 
 			JsonObject s3fallbacks3s3 = s3.getJsonObject("s3fallbacks3s3");
 			JsonObject s3fallback = s3.getJsonObject("s3fallback");
@@ -189,12 +183,7 @@ public class StorageFactory {
 					((FileStorage) storage).setAntivirus(av);
 				}
 			}
-			FileValidator fileValidator = new QuotaFileSizeValidation();
-			JsonArray blockedExtensions = fs.getJsonArray("blockedExtensions");
-			if (blockedExtensions != null && blockedExtensions.size() > 0) {
-				fileValidator.setNext(new ExtensionValidator(blockedExtensions));
-			}
-			((FileStorage) storage).setValidator(fileValidator);
+			((FileStorage) storage).setValidator(FileValidator.createNullable(fs));
 
 			JsonObject s3fallback = fs.getJsonObject("s3fallback");
 			JsonObject s3fallbacks3fs = fs.getJsonObject("s3fallbacks3fs");
