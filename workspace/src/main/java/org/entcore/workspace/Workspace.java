@@ -76,7 +76,7 @@ public class Workspace extends BaseServer {
 	public void initWorkspace(final Promise<Void> startPromise, final Map<String, Object> workspaceMap,
 			StorageFactory storageFactory) throws Exception {
 		WorkspaceResourcesProvider resourceProvider = new WorkspaceResourcesProvider();
-		setResourceProvider(resourceProvider);
+		setDefaultResourceFilter(resourceProvider);
 
 		Storage storage = storageFactory.getStorage();
 

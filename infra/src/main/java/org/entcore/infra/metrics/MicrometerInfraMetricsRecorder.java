@@ -2,6 +2,8 @@ package org.entcore.infra.metrics;
 
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -28,27 +30,33 @@ public class MicrometerInfraMetricsRecorder implements InfraMetricsRecorder {
     if(registry == null) {
       throw new IllegalStateException("micrometer.registries.empty");
     }
-    String literalVersion;
-    final AtomicLong version = new AtomicLong();
-    try {
-      literalVersion = getLiteralVersion(vertx);
-      version.set(getEntVersion(literalVersion));
-    } catch (Exception e) {
-      log.error("An error occurred while creating the metrics to expose ent version");
-      literalVersion = "error";
-      version.set(-1);
-    }
-    Gauge.builder("ent.version", version::get)
-      .tag("ent-version", literalVersion).register(registry);
+
+    getLiteralVersion(vertx).onSuccess(lVersion -> {
+      String literalVersion = lVersion;
+      final AtomicLong version = new AtomicLong();
+      try {
+        version.set(getEntVersion(literalVersion));
+      } catch (Exception e) {
+        log.error("An error occurred while creating the metrics to expose ent version");
+        literalVersion = "error";
+        version.set(-1);
+      }
+      Gauge.builder("ent.version", version::get)
+        .tag("ent-version", literalVersion).register(registry);
+    });
   }
 
-  private String getLiteralVersion(Vertx vertx) {
+  private Future<String> getLiteralVersion(Vertx vertx) {
+    final Promise<String> promise = Promise.promise();
     String entVersion = vertx.getOrCreateContext().config().getString("ent-version");
     if(org.apache.commons.lang3.StringUtils.isEmpty(entVersion)) {
-      final LocalMap<Object, Object> localMap = vertx.sharedData().getLocalMap("server");
-      entVersion = (String)localMap.get("ent-version");
+      vertx.sharedData().getAsyncMap("server").compose(server -> server.get("ent-version")).onSuccess(version ->
+        promise.complete(StringUtils.isEmpty(entVersion) ? "na" : entVersion)
+      ).onFailure(ex -> promise.fail(ex));
+    } else {
+      promise.complete(entVersion);
     }
-    return StringUtils.isEmpty(entVersion) ? "na" : entVersion;
+    return promise.future();
   }
 
   private Long getEntVersion(final String entVersion) {

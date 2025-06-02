@@ -68,7 +68,7 @@ import java.util.stream.Collectors;
 public class UserUtils {
 
 	private static final Vertx vertx = Vertx.currentContext().owner();
-	private static final int DEFAULT_VISIBLES_TIMEOUT = 60000;
+	private static final long DEFAULT_VISIBLES_TIMEOUT = 60_000L;
 	public static final String FIND_SESSION = "findSession";
 	public static final String MONITORINGEVENTS = "monitoringevents";
 	private static final String USERBOOK_ADDRESS = "userbook.preferences";
@@ -221,14 +221,14 @@ public class UserUtils {
 			m.put("additionnalParams", additionnalParams);
 		}
 		m.put("userId", userId);
-		LocalMap<Object, Object> serverConfig = vertx.sharedData().getLocalMap("server");
-		final int timeout;
-		if (serverConfig != null) {
-			timeout = (int) serverConfig.getOrDefault("findVisiblesTimeout", DEFAULT_VISIBLES_TIMEOUT);
-		} else {
-			timeout = DEFAULT_VISIBLES_TIMEOUT;
-		}
-		eb.request(COMMUNICATION_USERS, m, new DeliveryOptions().setSendTimeout(timeout), new Handler<AsyncResult<Message<JsonArray>>>() {
+		// LocalMap<Object, Object> serverConfig = vertx.sharedData().getLocalMap("server");
+		// final int timeout;
+		// if (serverConfig != null) {
+		// 	timeout = (int) serverConfig.getOrDefault("findVisiblesTimeout", DEFAULT_VISIBLES_TIMEOUT);
+		// } else {
+		// 	timeout = DEFAULT_VISIBLES_TIMEOUT;
+		// }
+		eb.request(COMMUNICATION_USERS, m, new DeliveryOptions().setSendTimeout(DEFAULT_VISIBLES_TIMEOUT), new Handler<AsyncResult<Message<JsonArray>>>() {
 
 			@Override
 			public void handle(AsyncResult<Message<JsonArray>> res) {
