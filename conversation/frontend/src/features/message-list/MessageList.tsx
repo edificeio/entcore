@@ -17,10 +17,11 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { useFolderMessages } from '~/services';
-import { useAppActions } from '~/store/actions';
+import { useAppActions, useIsLoading } from '~/store/actions';
 import { MessageItem } from './components/MessageItem';
 import useToolbarActions from './hooks/useToolbarActions';
 import useToolbarVisibility from './hooks/useToolbarVisibility';
+import { MessageListLoading } from './MessageListLoading';
 
 export function MessageList() {
   const { folderId } = useSelectedFolder();
@@ -29,6 +30,7 @@ export function MessageList() {
   const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
   const { setSelectedMessageIds } = useAppActions();
+  const isLoading = useIsLoading();
 
   const {
     messages,
@@ -150,6 +152,11 @@ export function MessageList() {
   );
 
   if (!messages?.length) return null;
+
+  if (isLoading) {
+    return <MessageListLoading />;
+  }
+
   return (
     <>
       <List

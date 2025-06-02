@@ -13,6 +13,7 @@ import { RefAttributes, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SentToInactiveUsersModal } from '~/components/MessageActionDropdown/modals/SentToInactiveUsersModal';
 import { Message } from '~/models';
+import { useIsLoading } from '~/store';
 import { useMessageActionDropdown } from './hooks/useMessageActionDropdown';
 
 export interface MessageActionDropdownProps {
@@ -45,6 +46,7 @@ export function MessageActionDropdown({
     setInactiveUsers,
   });
   const navigate = useNavigate();
+  const isLoading = useIsLoading();
 
   const visibleOptions = dropdownOptions.filter(
     (o) => !o.hidden && !actionButtons.some((a) => !a.hidden && a.id === o.id),
@@ -56,6 +58,23 @@ export function MessageActionDropdown({
   };
 
   const classNameContainer = `d-flex ${className}`;
+
+  if (isLoading) {
+    return (
+      <div className="d-print-none d-flex align-items-center justify-content-end col-9 col-md-6 gap-8">
+        <Button
+          className="placeholder col-5 col-md-3"
+          color="tertiary"
+          disabled
+        ></Button>
+        <Button
+          className="placeholder col-2 col-md-1"
+          color="tertiary"
+          disabled
+        ></Button>
+      </div>
+    );
+  }
 
   return (
     <div className={classNameContainer}>

@@ -2,12 +2,34 @@ import { Avatar, useDate, useDirectory } from '@edifice.io/react';
 import { MessageRecipientList } from '~/components/MessageRecipientList/MessageRecipientList';
 import { useI18n } from '~/hooks/useI18n';
 import { Message } from '~/models';
+import { useIsLoading } from '~/store';
 import './index.css';
 
 export function MessageHeader({ message }: { message: Message }) {
   const { t } = useI18n();
   const { formatDate } = useDate();
   const { getAvatarURL, getUserbookURL } = useDirectory();
+  const isLoading = useIsLoading();
+
+  if (isLoading) {
+    return (
+      <div>
+        <h4 className="placeholder col-7"></h4>
+        <div className="d-flex align-items-center mt-16 gap-12 small">
+          <Avatar
+            alt={t('author.avatar')}
+            size="sm"
+            variant="circle"
+            className="align-self-start mt-4 placeholder"
+          />
+          <div className="col-8">
+            <div className="d-block placeholder col-6"></div>
+            <div className="placeholder col-3"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <header>
