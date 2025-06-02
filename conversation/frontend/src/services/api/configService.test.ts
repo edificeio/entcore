@@ -8,6 +8,7 @@ describe('Conversation Configuration GET Methods', () => {
     expect(response).toBeDefined();
     expect(response).toHaveProperty('max-depth');
     expect(response).toHaveProperty('recall-delay-minutes');
+    expect(response).toHaveProperty('get-visible-strategy');
     expect(response).toStrictEqual(mockConfiguration);
   });
 

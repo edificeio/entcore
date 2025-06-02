@@ -6,6 +6,7 @@ import {
 } from '@tanstack/react-query';
 import { configService } from '..';
 import { SignaturePreferences } from '~/models/signature';
+import { Config } from '~/config';
 
 /**
  * Provides query options for config-related operations.
@@ -23,11 +24,12 @@ export const configQueryOptions = {
   getGlobalConfig() {
     return queryOptions({
       queryKey: [...configQueryOptions.base, 'global'] as const,
-      queryFn: async () => {
+      queryFn: async (): Promise<Config> => {
         const data = await configService.getGlobalConfig();
         return {
           maxDepth: data['max-depth'] ?? 2,
           recallDelayMinutes: data['recall-delay-minutes'] ?? 60,
+          getVisibleStrategy: data['get-visible-strategy'] ?? 'all-at-once',
         };
       },
       staleTime: Infinity,

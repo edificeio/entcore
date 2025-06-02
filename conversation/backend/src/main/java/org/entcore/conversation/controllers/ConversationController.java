@@ -1182,13 +1182,14 @@ public class ConversationController extends BaseController {
 		});
 	}
 
-	//Get max folder depth
+	//Get max folder depth and other parameters
 	@Get("max-depth")
 	@SecuredAction(value="conversation.max.depth", type=ActionType.AUTHENTICATED)
 	public void getMaxDepth(final HttpServerRequest request){
 		renderJson(request, new JsonObject()
 			.put("max-depth", Config.getConf().getInteger("max-folder-depth", Conversation.DEFAULT_FOLDER_DEPTH))
 			.put("recall-delay-minutes", Config.getConf().getInteger("recall-delay-minutes", Conversation.DEFAULT_RECALL_DELAY))
+			.put("get-visible-strategy", Config.getConf().getString("get-visible-strategy", Conversation.DEFAULT_GET_VISIBLE_STRATEGY))
 		);
 	}
 

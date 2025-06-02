@@ -66,12 +66,15 @@ export const createUserService = () => {
      * @param search search string
      * @returns a list of Visible objects
      */
-    searchVisible(search: string) {
-      return odeServices
-        .http()
-        .get<Visible[]>(`/communication/visible/search`, {
-          queryParams: { query: search },
-        });
+    searchVisible(search?: string) {
+      return odeServices.http().get<Visible[]>(
+        `/communication/visible/search`,
+        typeof search === 'string'
+          ? {
+              queryParams: { query: search },
+            }
+          : undefined,
+      );
     },
 
     /**
