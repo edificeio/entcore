@@ -1,9 +1,11 @@
+import { Checkbox } from '@edifice.io/react';
 import clsx from 'clsx';
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { MessageMetadata } from '~/models';
 import { useUpdateFolderBadgeCountLocal } from '~/services';
+import { useIsLoading } from '~/store';
 import { MessagePreview } from './MessagePreview/MessagePreview';
 
 interface MessageItemProps {
@@ -16,6 +18,7 @@ export function MessageItem({ message, checked, checkbox }: MessageItemProps) {
   const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
   const [searchParams] = useSearchParams();
   const { folderId } = useSelectedFolder();
+  const isLoading = useIsLoading();
 
   const handleMessageKeyUp = (
     event: React.KeyboardEvent<HTMLDivElement>,
@@ -35,6 +38,16 @@ export function MessageItem({ message, checked, checkbox }: MessageItemProps) {
       search: searchParams.toString(),
     });
   };
+  if (isLoading) {
+    return (
+      <div className="d-flex gap-24 px-16 py-12 mb-2 overflow-hidden">
+        <div className="ps-md-8">
+          <Checkbox className="placeholder" disabled></Checkbox>
+        </div>
+        <div className="flex-fill placeholder h-32"></div>
+      </div>
+    );
+  }
 
   return (
     <div

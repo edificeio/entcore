@@ -42,7 +42,7 @@ export function MessageAttachments({
   const handleDetachAllClick = () => detachFiles(attachments);
 
   const className = clsx(
-    'bg-gray-200 rounded-2 px-12 py-8 message-attachments align-self-start gap-8 d-flex flex-column',
+    'bg-gray-200 px-12 py-8 message-attachments align-self-start gap-8 d-flex flex-column',
     { 'border message-attachments-edit mx-16': editMode },
   );
 

@@ -18,6 +18,7 @@ interface State {
   selectedFolders: Folder[];
   openedModal: OpenedModal;
   inactiveUsers: string[];
+  isLoading: boolean;
 }
 
 type Action = {
@@ -28,6 +29,7 @@ type Action = {
     setSelectedFolders: (value: Folder[]) => void;
     setOpenedModal: (value: OpenedModal) => void;
     setInactiveUsers: (value: string[]) => void;
+    setIsLoading: (value: boolean) => void;
   };
 };
 
@@ -50,6 +52,7 @@ const initialState: State = {
   selectedFolders: [],
   openedModal: undefined,
   inactiveUsers: [],
+  isLoading: true,
 };
 
 const store = createStore<State & Action>()((set) => ({
@@ -62,9 +65,8 @@ const store = createStore<State & Action>()((set) => ({
     setSelectedFolders: (selectedFolders: Folder[]) => set({ selectedFolders }),
     setOpenedModal: (openedModal: OpenedModal) =>
       set({ openedModal: openedModal }),
-    setInactiveUsers: (inactiveUsers: string[]) => {
-      set({ inactiveUsers });
-    },
+    setInactiveUsers: (inactiveUsers: string[]) => set({ inactiveUsers }),
+    setIsLoading: (isLoading: boolean) => set({ isLoading }),
   },
 }));
 
@@ -78,6 +80,7 @@ const selectedFolders = (state: ExtractState<typeof store>) =>
 const setOpenedModal = (state: ExtractState<typeof store>) => state.openedModal;
 const setInactiveUsers = (state: ExtractState<typeof store>) =>
   state.inactiveUsers;
+const setIsLoading = (state: ExtractState<typeof store>) => state.isLoading;
 const actionsSelector = (state: ExtractState<typeof store>) => state.actions;
 
 // Getters
@@ -87,6 +90,7 @@ export const getSelectedMessageIds = () => selectedMessageIds(store.getState());
 export const getSelectedFolders = () => selectedFolders(store.getState());
 export const getOpenedModal = () => setOpenedModal(store.getState());
 export const getInactiveUsers = () => setInactiveUsers(store.getState());
+export const getIsLoading = () => setIsLoading(store.getState());
 
 // Some Setters, for direct use outside of hooks
 export const { setWorkflows } = actionsSelector(store.getState());
@@ -104,4 +108,5 @@ export const useSelectedMessageIds = () => useAppStore(selectedMessageIds);
 export const useSelectedFolders = () => useAppStore(selectedFolders);
 export const useOpenedModal = () => useAppStore(setOpenedModal);
 export const useInactiveUsers = () => useAppStore(setInactiveUsers);
+export const useIsLoading = () => useAppStore(setIsLoading);
 export const useAppActions = () => useAppStore(actionsSelector);
