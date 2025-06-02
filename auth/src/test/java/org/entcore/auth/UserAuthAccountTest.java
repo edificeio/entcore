@@ -1,5 +1,7 @@
 package org.entcore.auth;
 
+import java.util.HashMap;
+
 import org.entcore.auth.users.DefaultUserAuthAccount;
 import org.entcore.auth.users.UserAuthAccount;
 import org.entcore.common.events.EventStore;
@@ -32,7 +34,7 @@ public class UserAuthAccountTest {
     public static void setUp(TestContext context) throws Exception {
         EventStoreFactory.getFactory().setVertx(test.vertx());
         eStore = EventStoreFactory.getFactory().getEventStore(Auth.class.getSimpleName());
-        authAccount = new DefaultUserAuthAccount(test.vertx(), authAccountConfig, eStore);
+        authAccount = new DefaultUserAuthAccount(test.vertx(), authAccountConfig, eStore, new HashMap<>());
         test.database().initNeo4j(context, neo4jContainer);
     }
 

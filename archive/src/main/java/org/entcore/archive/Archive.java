@@ -52,7 +52,6 @@ public class Archive extends BaseServer {
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
-		setResourceProvider(new ArchiveFilter());
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
 		promise.future().compose(x ->
@@ -71,6 +70,7 @@ public class Archive extends BaseServer {
 
 	public void initArchives(final Promise<Void> startPromise, final AsyncMap<String, String> archivesMap,
 			final StorageFactory storageFactory) throws Exception {
+		setDefaultResourceFilter(new ArchiveFilter());
 		Storage storage = storageFactory.getStorage();
 
 		final Map<String, Long> archiveInProgress = MapFactory.getSyncClusterMap(Archive.ARCHIVES, vertx);
