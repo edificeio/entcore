@@ -17,6 +17,7 @@ export const createConfigService = (baseURL: string) => ({
     return odeServices.http().get<{
       'max-depth': number;
       'recall-delay-minutes': number;
+      'get-visible-strategy': 'all-at-once' | 'filtered';
     }>(`${baseURL}/max-depth`);
   },
 

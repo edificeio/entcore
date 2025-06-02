@@ -48,6 +48,8 @@ public class Conversation extends BaseServer {
 	public final static int DEFAULT_FOLDER_DEPTH = 3;
 	/** Default delay in minutes after which a message can not be recalled. */
 	public final static int DEFAULT_RECALL_DELAY = 60;
+	/** Default strategy for getting visible contacts. */
+	public final static String DEFAULT_GET_VISIBLE_STRATEGY = "all-at-once"; /* other expected value is "filtered" */
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
