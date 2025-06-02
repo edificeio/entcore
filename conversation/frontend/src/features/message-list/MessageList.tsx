@@ -17,10 +17,11 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { useFolderMessages } from '~/services';
-import { useAppActions } from '~/store/actions';
+import { useAppActions, useIsLoading } from '~/store/actions';
 import { MessageItem } from './components/MessageItem';
 import useToolbarActions from './hooks/useToolbarActions';
 import useToolbarVisibility from './hooks/useToolbarVisibility';
+import { MessageListLoading } from './MessageListLoading';
 
 export function MessageList() {
   const { folderId } = useSelectedFolder();
@@ -31,6 +32,7 @@ export function MessageList() {
   const { setSelectedMessageIds } = useAppActions();
   const location = useLocation();
   const shouldScrollToTop = location.state?.scrollToTop;
+  const isLoading = useIsLoading();
 
   const {
     messages,
@@ -77,6 +79,7 @@ export function MessageList() {
         block: 'center',
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [folderId]);
 
   useEffect(() => {
@@ -100,6 +103,7 @@ export function MessageList() {
     isLoadingMessages,
     isLoadingNextPage,
     fetchNextPage,
+    messageListItems,
   ]);
 
   useEffect(() => {
@@ -175,6 +179,11 @@ export function MessageList() {
   );
 
   if (!messages?.length) return null;
+
+  if (isLoading) {
+    return <MessageListLoading />;
+  }
+
   return (
     <div ref={listRef}>
       <List

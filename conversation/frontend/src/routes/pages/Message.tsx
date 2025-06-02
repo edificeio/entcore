@@ -4,10 +4,11 @@ import { LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
 import { MessageEdit } from '~/features/message-edit/MessageEdit';
 import { Message } from '~/features/message/Message';
 import { useInitMessage } from '~/hooks/useInitMessage';
-import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { useMessageIdAndAction } from '~/hooks/useMessageIdAndAction';
+import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 
 import { messageQueryOptions, useFolderUtils } from '~/services';
+import { useAppActions } from '~/store';
 
 export const loader =
   (queryClient: QueryClient, isPrint?: boolean) =>
@@ -17,22 +18,36 @@ export const loader =
     );
 
     if (params.messageId) {
-      await Promise.all([queryClient.ensureQueryData(queryMessage)]);
+      const loadPromise = new Promise((resolve) => {
+        setTimeout(() => {
+          resolve(true);
+        }, 2000);
+      });
+      return {
+        isPrint,
+        nonCriticalPromise: Promise.all([
+          queryClient.ensureQueryData(queryMessage),
+          loadPromise,
+        ]),
+      };
     }
 
     return { isPrint };
   };
 
 export function Component() {
-  const { isPrint } = useLoaderData() as { isPrint: boolean };
+  const { isPrint, nonCriticalPromise } = useLoaderData() as {
+    isPrint: boolean;
+    nonCriticalPromise?: Promise<void>;
+  };
   const { folderId } = useSelectedFolder();
   const [currentKey, setCurrentKey] = useState(0);
   const { updateFolderMessagesQueryCache } = useFolderUtils();
+  const { setIsLoading } = useAppActions();
 
   const { messageId, action } = useMessageIdAndAction();
 
   // Init message depending on the action
-
   const message = useInitMessage({
     messageId,
     action,
@@ -66,6 +81,13 @@ export function Component() {
       setCurrentKey((prev) => prev + 1);
     }
   }, [messageId, message?.id]);
+
+  if (nonCriticalPromise) {
+    setIsLoading(true);
+    nonCriticalPromise.then(() => {
+      // setIsLoading(false);
+    });
+  }
 
   if (!message) {
     return null;
