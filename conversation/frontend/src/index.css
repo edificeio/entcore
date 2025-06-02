@@ -4,3 +4,8 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
+
+.placeholder {
+  background: var(--edifice-gray-400) !important;
+  border-radius: var(--edifice-border-radius);
+}

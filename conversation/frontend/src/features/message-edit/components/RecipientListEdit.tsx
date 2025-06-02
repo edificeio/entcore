@@ -2,6 +2,8 @@ import {
   Combobox,
   ComboboxRef,
   Dropdown,
+  FormControl,
+  Input,
   OptionListItemType,
   useIsAdml,
 } from '@edifice.io/react';
@@ -11,6 +13,7 @@ import { useI18n } from '~/hooks/useI18n';
 import { Group, Recipients, User } from '~/models';
 import { Visible } from '~/models/visible';
 import { useBookmarkById } from '~/services/queries/user';
+import { useIsLoading } from '~/store';
 import { useMessage, useMessageActions } from '~/store/messageStore';
 import { RecipientListItem } from './RecipientListItem';
 import { RecipientListSelectedItem } from './RecipientListSelectedItem';
@@ -32,6 +35,7 @@ export function RecipientListEdit({
   const { t } = useI18n();
   const [recipientArray, setRecipientArray] = useState<(User | Group)[]>([]);
   const { isAdml } = useIsAdml();
+  const isLoading = useIsLoading();
 
   const { getBookmarkById } = useBookmarkById();
   const message = useMessage();
@@ -184,6 +188,22 @@ export function RecipientListEdit({
     isComboboxFocused && isAdml
       ? t('conversation.users.search.placeholder.adml')
       : t('conversation.users.search.placeholder');
+
+  if (isLoading) {
+    return (
+      <FormControl
+        id=""
+        className="d-flex align-items-center flex-fill ps-16 pe-16 py-8"
+      >
+        <Input
+          size="md"
+          className="border-0 placeholder"
+          type="text"
+          disabled={true}
+        />
+      </FormControl>
+    );
+  }
 
   return (
     <div className="d-flex align-items-center flex-fill ps-8 pe-16 py-8">

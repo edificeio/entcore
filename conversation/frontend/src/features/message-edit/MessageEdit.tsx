@@ -6,6 +6,7 @@ import { useI18n } from '~/hooks/useI18n';
 import { useMessageIdAndAction } from '~/hooks/useMessageIdAndAction';
 import { Message } from '~/models';
 import { useCreateOrUpdateDraft } from '~/services';
+import { useIsLoading } from '~/store';
 import { useMessageActions } from '~/store/messageStore';
 import { MessageEditHeader } from './components/MessageEditHeader';
 import { MessageSaveDate } from './components/MessageSaveDate';
@@ -19,6 +20,7 @@ export function MessageEdit({ message }: { message?: Message }) {
   useAutoSaveMessage();
   const { action } = useMessageIdAndAction();
   const isTransferAction = action === 'transfer';
+  const isLoading = useIsLoading();
 
   const handleSubjectChange = (subject: string) => {
     if (!message) return null;
@@ -46,23 +48,38 @@ export function MessageEdit({ message }: { message?: Message }) {
       {message && (
         <div>
           <MessageEditHeader message={message} />
-          <FormControl id="messageSubject" isRequired className="border-bottom">
-            <Input
-              placeholder={t('subject')}
-              value={subject}
-              size="lg"
-              className="border-0"
-              type="text"
-              onChange={(e) => handleSubjectChange(e.target.value)}
-            />
-          </FormControl>
+          {!isLoading ? (
+            <FormControl
+              id="messageSubject"
+              isRequired
+              className="border-bottom"
+            >
+              <Input
+                placeholder={t('subject')}
+                value={subject}
+                size="lg"
+                className="border-0"
+                type="text"
+                onChange={(e) => handleSubjectChange(e.target.value)}
+              />
+            </FormControl>
+          ) : (
+            <FormControl id="" className="border-bottom px-16 py-8">
+              <Input
+                size="md"
+                className="border-0 placeholder"
+                type="text"
+                disabled={true}
+              />
+            </FormControl>
+          )}
           <MessageBody
             message={message}
             editMode={true}
             onMessageChange={handleMessageChange}
           />
           <div className="d-print-none d-flex justify-content-end gap-12 pt-24 pe-16">
-            <div className="d-flex align-items-end flex-column gap-16">
+            <div className="d-flex align-items-end flex-column gap-16 col-12">
               <MessageActionDropdown
                 message={message}
                 appearance={{
