@@ -8,6 +8,7 @@ import {
 import { useI18n } from '~/hooks/useI18n';
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { Message } from '~/models';
+import { useIsLoading } from '~/store';
 import Pagination from './components/Pagination';
 import { useMessageNavigation } from './hooks/useMessageNavigation';
 
@@ -19,6 +20,7 @@ export function MessageNavigation({ message }: { message: Message }) {
   const { currentMessagePosition, totalMessagesCount, getMessageIdAtPosition } =
     useMessageNavigation(message.id);
   const [searchParams] = useSearchParams();
+  const isLoading = useIsLoading();
 
   const actionDropdownProps: MessageActionDropdownProps = {
     message,
@@ -44,6 +46,30 @@ export function MessageNavigation({ message }: { message: Message }) {
       search: searchParams.toString(),
     });
   };
+
+  if (isLoading) {
+    return (
+      <div className="d-print-none border-bottom px-16 py-4 d-flex align-items-center justify-content-between col-12">
+        <Button
+          className="placeholder col-3 col-md-2"
+          color="tertiary"
+          disabled
+        ></Button>
+        <div className="d-flex col-9 col-md-6 justify-content-end gap-8">
+          <Button
+            className="placeholder col-5 col-md-3"
+            color="tertiary"
+            disabled
+          ></Button>
+          <Button
+            className="placeholder col-2 col-md-1"
+            color="tertiary"
+            disabled
+          ></Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <nav className="d-print-none border-bottom px-lg-16 py-4 d-flex align-items-center justify-content-between w-100">

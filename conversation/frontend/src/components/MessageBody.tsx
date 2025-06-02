@@ -15,6 +15,7 @@ import illuRecall from '~/assets/illu-messageRecalled.svg';
 import { MessageAttachments } from '~/components/MessageAttachments/MessageAttachments';
 import { useI18n } from '~/hooks/useI18n';
 import { Message } from '~/models';
+import { useIsLoading } from '~/store';
 import './MessageBody.css';
 import OriginalFormatModal from './OriginalFormatModal';
 
@@ -37,11 +38,87 @@ export function MessageBody({
   const editorRef = useRef<EditorRef>(null);
   const extensions = [ConversationHistoryNodeView(ConversationHistoryRenderer)];
   const [isOriginalFormatOpen, setOriginalFormatOpen] = useState(false);
+  const isLoading = useIsLoading();
 
   const handleContentChange = ({ editor }: { editor: any }) => {
     if (!editMode) return;
     onMessageChange?.({ ...message, body: editor?.getHTML() });
   };
+
+  if (isLoading) {
+    if (editMode) {
+      return (
+        <div className="d-flex flex-column gap-16">
+          <div className="d-flex col-12 col-md-8 gap-8 py-8 px-16">
+            <Button
+              className="placeholder col-1"
+              color="tertiary"
+              disabled
+            ></Button>
+            <Button
+              className="placeholder col-1"
+              color="tertiary"
+              disabled
+            ></Button>
+            <Button
+              className="placeholder col-1"
+              color="tertiary"
+              disabled
+            ></Button>
+            <Button
+              className="placeholder col-1"
+              color="tertiary"
+              disabled
+            ></Button>
+            <Button
+              className="placeholder col-1"
+              color="tertiary"
+              disabled
+            ></Button>
+            <Button
+              className="placeholder col-1"
+              color="tertiary"
+              disabled
+            ></Button>
+            <Button
+              className="placeholder col-1"
+              color="tertiary"
+              disabled
+            ></Button>
+            <Button
+              className="placeholder col-1"
+              color="tertiary"
+              disabled
+            ></Button>
+            <Button
+              className="placeholder col-1"
+              color="tertiary"
+              disabled
+            ></Button>
+            <Button
+              className="placeholder col-1"
+              color="tertiary"
+              disabled
+            ></Button>
+          </div>
+          <div className="d-flex flex-column gap-8 px-16">
+            <span className="placeholder col-10 "></span>
+            <span className="placeholder col-7 "></span>
+            <span className="placeholder col-8 "></span>
+            <span className="placeholder col-6 "></span>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <p>
+        <span className="placeholder col-10 "></span>
+        <span className="placeholder col-7 "></span>
+        <span className="placeholder col-8 "></span>
+      </p>
+    );
+  }
 
   return message.state === 'RECALL' && message.from.id !== user?.userId ? (
     <div className="d-flex flex-column gap-16 align-items-center justify-content-center">
