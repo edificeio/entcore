@@ -136,7 +136,7 @@ public class PortalController extends BaseController {
 	@Get("/welcome")
 	@SecuredAction(value = "portal.auth",type = ActionType.AUTHENTICATED)
 	public void welcome(HttpServerRequest request) {
-		renderView(request);
+		renderView(request, new JsonObject(), "index.html", null);
 		eventHelper.onAccess(request);
 	}
 
