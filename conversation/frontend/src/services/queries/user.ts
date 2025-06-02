@@ -146,16 +146,12 @@ export const useSearchVisible = () => {
       search,
     );
 
-    if (triggerSearch) {
-      const startVisible = await queryClient.ensureQueryData(
-        userQueryOptions.searchVisible(backendFilter),
-      );
-      return frontendFilter
-        ? startVisible.filter(frontendFilter)
-        : startVisible;
-    } else {
-      return Promise.resolve([]);
-    }
+    if (!triggerSearch) return Promise.resolve([]);
+
+    const startVisible = await queryClient.ensureQueryData(
+      userQueryOptions.searchVisible(backendFilter),
+    );
+    return frontendFilter ? startVisible.filter(frontendFilter) : startVisible;
   };
 
   const getVisibleUserById = (id: string) => {
