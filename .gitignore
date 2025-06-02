@@ -76,6 +76,8 @@ admin/src/main/ts/.angular
 *.lock
 tests/src/test/resources/data/thumbnails/image.jpg
 admin/src/main/ts/.proxyRemoteConfig.js
+conversation/src/main/resources/public/js/
+conversation/src/main/resources/view/
 
 # Ignore some files in React-based frontends
 .pnpm-store
