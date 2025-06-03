@@ -400,7 +400,7 @@ public class AuthController extends BaseController {
 			.put("token_type", "QueryParam");
 		try {
 			return result
-				.put("access_token", UserUtils.createJWTForQueryParam(vertx, userId, clientId, ttlInSeconds, request))
+				.put("access_token", UserUtils.createJWTForQueryParam(vertx, userId, clientId, ttlInSeconds, request, (String) server.get("signKey")))
 				.put("expires_in", ttlInSeconds);
 		} catch(Exception e) {
 			return result.put("expires_in", 0).putNull( "access_token" );

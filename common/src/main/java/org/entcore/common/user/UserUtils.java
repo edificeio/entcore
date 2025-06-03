@@ -1230,8 +1230,9 @@ public class UserUtils {
 		});
 	}
 
-	public static String createJWTToken(Vertx vertx, UserInfos user, String clientId, HttpServerRequest request) throws Exception {
-		final JWT jwt = new JWT(vertx, (String) vertx.sharedData().getLocalMap("server").get("signKey"), null);
+	public static String createJWTToken(Vertx vertx, UserInfos user, String clientId,
+			HttpServerRequest request, String signKey) throws Exception {
+		final JWT jwt = new JWT(vertx, signKey, null);
 		final JsonObject payload = createJWTClaim(
 			user.getUserId(), clientId, JWT_TOKEN_EXPIRATION_TIME,
 			(request != null) ? Renders.getHost(request) : null
@@ -1252,9 +1253,10 @@ public class UserUtils {
 	 * @throws Exception
 	 */
 	public static String createJWTForQueryParam(
-				Vertx vertx, String userId, String clientId, long ttlInSeconds, HttpServerRequest request
+				Vertx vertx, String userId, String clientId, long ttlInSeconds,
+				HttpServerRequest request, String signKey
 			) throws Exception {
-		final JWT jwt = new JWT(vertx, (String) vertx.sharedData().getLocalMap("server").get("signKey"), null);
+		final JWT jwt = new JWT(vertx, signKey, null);
 		final JsonObject payload = createJWTClaim(userId, clientId,
 			(0>=ttlInSeconds || ttlInSeconds>JWT_TOKEN_EXPIRATION_TIME) ? JWT_TOKEN_EXPIRATION_TIME : ttlInSeconds,
 			(request != null) ? Renders.getHost(request) : null

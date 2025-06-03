@@ -40,8 +40,10 @@ public class PdfFactory {
 
 	public PdfFactory(Vertx vertx, JsonObject config) {
 		this.pdfGenerator = new NodePdfClient();
-		SharedDataHelper.getInstance().<String, String>get("server", "node-pdf-generator").onSuccess(nodePdfConfig -> {
+		SharedDataHelper.getInstance().<String, String>getMulti("server", "node-pdf-generator", "signKey").onSuccess(serverMap -> {
 			JsonObject node = null;
+			final String nodePdfConfig = serverMap.get("node-pdf-generator");
+			final String signKey = serverMap.get("signKey");
 			if (nodePdfConfig != null) {
 				node = new JsonObject(nodePdfConfig);
 			}
@@ -50,7 +52,7 @@ public class PdfFactory {
 				node = config.getJsonObject("node-pdf-generator");
 			}
 			try {
-				((NodePdfClient) pdfGenerator).init(vertx, node);
+				((NodePdfClient) pdfGenerator).init(vertx, node, signKey);
 			} catch (URISyntaxException e) {
 				log.error("Error when init node pdf generator client", e);
 			}

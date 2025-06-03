@@ -62,17 +62,20 @@ public class FlashMsgController extends BaseController {
 	private FlashMsgService service;
 	private TimelineHelper notification;
 	private final EventHelper eventHelper;
+	private final JsonObject skins;
 
-	public FlashMsgController(){
+	public FlashMsgController(JsonObject skins, JsonObject skinLevels) {
 		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Timeline.class.getSimpleName());
 		this.eventHelper = new EventHelper(eventStore);
+		this.skins = skins;
+		this.skinLevels = skinLevels;
 	}
 
 	// TEMPORARY to handle both timeline and timeline2 view
 	private String defaultSkin;
 	private Map<String, String> hostSkin;
 	private JsonObject skinLevels;
-	
+
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
@@ -81,11 +84,9 @@ public class FlashMsgController extends BaseController {
 		// TEMPORARY to handle both timeline and timeline2 view
 		this.defaultSkin = config.getString("skin", "raw");
 		this.hostSkin = new HashMap<>();
-		JsonObject skins = new JsonObject(vertx.sharedData().getLocalMap("skins"));
 		for (final String domain: skins.fieldNames()) {
 			this.hostSkin.put(domain, skins.getString(domain));
 		}
-		this.skinLevels = new JsonObject(vertx.sharedData().getLocalMap("skin-levels"));
 	}
 
 	/* User part */
