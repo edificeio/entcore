@@ -37,7 +37,7 @@ public class EntNatsServiceClient {
     }
   }
   
-  public org.entcore.broker.api.dto.DummyResponseDTO listenOnlyExample(org.entcore.broker.api.dto.ListenAndAnswerDTO request) {
+  public org.entcore.broker.api.dto.DummyResponseDTO listenAndAnswerExample(org.entcore.broker.api.dto.ListenAndAnswerDTO request) {
     String subject = "ent.test.listen.reply";
     Log.debug("Sending request to NATS subject: " + subject);
     try {
@@ -195,6 +195,21 @@ public class EntNatsServiceClient {
       
       byte[] response = connection.request(subject, payload).get().getData();
       return this.objectMapper.readValue(response, org.entcore.broker.api.dto.directory.FindGroupByExternalIdResponseDTO.class);
+      
+    } catch (Exception e) {
+      Log.error("Failed to send request to NATS", e);
+      throw new RuntimeException("Failed to send request to NATS", e);
+    }
+  }
+  
+  public org.entcore.broker.api.dto.directory.GetUserDisplayNamesResponseDTO getUserDisplayNames(org.entcore.broker.api.dto.directory.GetUserDisplayNamesRequestDTO request) {
+    String subject = "directory.users.get.displaynames";
+    Log.debug("Sending request to NATS subject: " + subject);
+    try {
+      final byte[] payload = this.objectMapper.writeValueAsBytes(request);
+      
+      byte[] response = connection.request(subject, payload).get().getData();
+      return this.objectMapper.readValue(response, org.entcore.broker.api.dto.directory.GetUserDisplayNamesResponseDTO.class);
       
     } catch (Exception e) {
       Log.error("Failed to send request to NATS", e);
