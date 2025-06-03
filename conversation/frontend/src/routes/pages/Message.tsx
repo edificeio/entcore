@@ -1,14 +1,15 @@
 import { QueryClient } from '@tanstack/react-query';
-import { Fragment, useEffect, useState } from 'react';
-import { LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
+import { Fragment, Suspense, useEffect, useState } from 'react';
+import { Await, LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
 import { MessageEdit } from '~/features/message-edit/MessageEdit';
+import { MessageEditSkeleton } from '~/features/message-edit/MessageEditSkeleton';
 import { Message } from '~/features/message/Message';
+import { MessageSkeleton } from '~/features/message/MessageSkeleton';
 import { useInitMessage } from '~/hooks/useInitMessage';
 import { useMessageIdAndAction } from '~/hooks/useMessageIdAndAction';
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 
 import { messageQueryOptions } from '~/services';
-import { useAppActions } from '~/store';
 
 export const loader =
   (queryClient: QueryClient, isPrint?: boolean) =>
@@ -17,18 +18,11 @@ export const loader =
       params.messageId as string,
     );
 
+    queryClient.ensureQueryData(queryMessage);
+
     if (params.messageId) {
-      const loadPromise = new Promise((resolve) => {
-        setTimeout(() => {
-          resolve(true);
-        }, 2000);
-      });
       return {
         isPrint,
-        nonCriticalPromise: Promise.all([
-          queryClient.ensureQueryData(queryMessage),
-          loadPromise,
-        ]),
       };
     }
 
@@ -36,13 +30,11 @@ export const loader =
   };
 
 export function Component() {
-  const { isPrint, nonCriticalPromise } = useLoaderData() as {
+  const { isPrint } = useLoaderData() as {
     isPrint: boolean;
-    nonCriticalPromise?: Promise<void>;
   };
   const { folderId } = useSelectedFolder();
   const [currentKey, setCurrentKey] = useState(0);
-  const { setIsLoading } = useAppActions();
 
   const { messageId, action } = useMessageIdAndAction();
 
@@ -71,24 +63,31 @@ export function Component() {
     }
   }, [messageId, message?.id]);
 
-  if (nonCriticalPromise) {
-    setIsLoading(true);
-    nonCriticalPromise.then(() => {
-      // setIsLoading(false);
-    });
-  }
-
-  if (!message) {
-    return null;
-  }
+  const promiseMessage = new Promise((resolve) => {
+    if (message) {
+      resolve(message);
+    }
+  });
 
   return (
-    <Fragment key={currentKey}>
-      {!isPrint && folderId === 'draft' && message.state === 'DRAFT' ? (
-        <MessageEdit message={message} />
-      ) : (
-        <Message message={message} isPrint={isPrint} />
-      )}
-    </Fragment>
+    <Suspense
+      fallback={
+        <>
+          {folderId === 'draft' ? <MessageEditSkeleton /> : <MessageSkeleton />}
+        </>
+      }
+    >
+      <Await resolve={promiseMessage}>
+        {message && (
+          <Fragment key={currentKey}>
+            {!isPrint && folderId === 'draft' && message.state === 'DRAFT' ? (
+              <MessageEdit message={message} />
+            ) : (
+              <Message message={message} isPrint={isPrint} />
+            )}
+          </Fragment>
+        )}
+      </Await>
+    </Suspense>
   );
 }

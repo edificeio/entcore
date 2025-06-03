@@ -17,11 +17,10 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { useFolderMessages } from '~/services';
-import { useAppActions, useIsLoading } from '~/store/actions';
+import { useAppActions } from '~/store/actions';
 import { MessageItem } from './components/MessageItem';
 import useToolbarActions from './hooks/useToolbarActions';
 import useToolbarVisibility from './hooks/useToolbarVisibility';
-import { MessageListLoading } from './MessageListLoading';
 
 export function MessageList() {
   const { folderId } = useSelectedFolder();
@@ -30,11 +29,10 @@ export function MessageList() {
   const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
   const { setSelectedMessageIds } = useAppActions();
-  const isLoading = useIsLoading();
 
   const {
     messages,
-    isPending: isLoadingMessage,
+    isPending: isLoadingMessages,
     isFetchingNextPage: isLoadingNextPage,
     hasNextPage,
     fetchNextPage,
@@ -72,7 +70,7 @@ export function MessageList() {
   useEffect(() => {
     const messageListItems =
       listRef.current?.getElementsByClassName('message-list-item');
-    if (isLoadingMessage || isLoadingNextPage) return;
+    if (isLoadingMessages || isLoadingNextPage) return;
     if (observer.current) observer.current.disconnect();
     observer.current = new IntersectionObserver(
       (entries) => {
@@ -87,7 +85,7 @@ export function MessageList() {
   }, [
     messages,
     hasNextPage,
-    isLoadingMessage,
+    isLoadingMessages,
     isLoadingNextPage,
     fetchNextPage,
   ]);
@@ -166,10 +164,6 @@ export function MessageList() {
 
   if (!messages?.length) return null;
 
-  if (isLoading) {
-    return <MessageListLoading />;
-  }
-
   return (
     <div ref={listRef}>
       <List
@@ -188,7 +182,7 @@ export function MessageList() {
           />
         )}
       />
-      {isLoadingMessage && (
+      {isLoadingMessages && (
         <Loading isLoading={true} className="justify-content-center my-12" />
       )}
     </div>
