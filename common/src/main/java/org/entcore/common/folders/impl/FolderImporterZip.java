@@ -2,6 +2,7 @@ package org.entcore.common.folders.impl;
 
 import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -52,20 +53,21 @@ public class FolderImporterZip {
         AntivirusClient.create(v)
             .onSuccess(antivirus -> this.antivirusClient = antivirus)
             .onFailure(ex -> logger.error("Error creating antivirus", ex));
-        try {
-            encodings.add("UTF-8");
-            final String encodingList = (String) v.sharedData().getLocalMap("server").get("encoding-available");
-            if (encodingList != null) {
-                final JsonArray encodingJson = new JsonArray(encodingList);
-                for (final Object o : encodingJson) {
-                    if (!encodings.contains(o.toString())) {
-                        encodings.add(o.toString());
+        encodings.add("UTF-8");
+        SharedDataHelper.getInstance().<String, String>get("server", "encoding-available").onSuccess(encodingList -> {
+            try {
+                if (encodingList != null) {
+                    final JsonArray encodingJson = new JsonArray(encodingList);
+                    for (final Object o : encodingJson) {
+                        if (!encodings.contains(o.toString())) {
+                            encodings.add(o.toString());
+                        }
                     }
                 }
+            } catch (Exception e) {
+                logger.warn("An error occurred while initializing importer", e);
             }
-        } catch (Exception e) {
-            logger.warn("An error occurred while initializing importer", e);
-        }
+        }).onFailure(ex -> logger.error("Error adding encodings from server map", ex));
     }
 
     public Future<Optional<String>> getGuessedEncoding(FolderImporterZipContext context) {

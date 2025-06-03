@@ -78,7 +78,6 @@ public class Starter extends BaseServer {
 
 	public void initInfra(Promise<Void> startPromise) {
 		try {
-			log.info(config.encodePrettily());
 			final Map<String, Object> serverMap = new HashMap<>();
 			serverMap.put("signKey", config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK" + Math.random()));
 
