@@ -54,7 +54,7 @@ public class NodePdfClient implements PdfGenerator {
 	private PdfMetricsRecorder metricsRecorder;
 	private String signKey;
 
-	public void init(Vertx vertx, JsonObject conf, String signKey) throws URISyntaxException {
+	public void init(Vertx vertx, JsonObject conf, String signKey, String metricsOptions) throws URISyntaxException {
 		this.vertx = vertx;
 		this.authHeader = "Basic " + conf.getString("auth");
 		this.clientId = conf.getString("pdf-connector-id");
@@ -68,7 +68,7 @@ public class NodePdfClient implements PdfGenerator {
 				.setHttp2KeepAliveTimeout(conf.getInteger("pdf-keepalive-timeout", HttpClientOptions.DEFAULT_HTTP2_KEEP_ALIVE_TIMEOUT))
 				.setDefaultHost(uri.getHost()).setDefaultPort(uri.getPort()).setSsl("https".equals(uri.getScheme()));
 		this.client = vertx.createHttpClient(options);
-		PdfMetricsRecorderFactory.init(vertx, conf);
+		PdfMetricsRecorderFactory.init(vertx, conf, metricsOptions);
 		this.metricsRecorder = PdfMetricsRecorderFactory.getPdfMetricsRecorder();
 		this.signKey = signKey;
 	}
