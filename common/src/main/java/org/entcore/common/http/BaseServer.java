@@ -116,7 +116,7 @@ public abstract class BaseServer extends Server {
 		baseServerPromise.future().compose(x ->
 			SharedDataHelper.getInstance().<String, Object>getMulti("server",
 				"node", "contentSecurityPolicy", "cache-filter", "skins", "oauthCache",
-				"neo4jConfig", "elasticsearchConfig", "redisConfig")
+				"neo4jConfig", "elasticsearchConfig", "redisConfig", "explorerConfig")
 		).compose(baseServerMap -> {
 			accessLogger = new EntAccessLogger(getEventBus(vertx));
 			EventStoreFactory eventStoreFactory = EventStoreFactory.getFactory();
@@ -338,8 +338,19 @@ public abstract class BaseServer extends Server {
 			}
 		}
 		if (config.getBoolean("explorer", true)) {
-			ExplorerPluginFactory.init(vertx, config);
+			JsonObject explorerConfig = config.getJsonObject("explorerConfig");
+			if (explorerConfig == null) {
+				final String explorerConf = (String) baseServerMap.get("explorerConfig");
+				if (explorerConf != null) {
+					explorerConfig = new JsonObject(explorerConf);
+				}
+			}
+			if (explorerConfig != null) {
+				ExplorerPluginFactory.init(vertx, new JsonObject().put("explorerConfig", explorerConfig));
+			}
 		}
+
+		// TODO add mongoConfig & postgresConfig
 
 		JsonSchemaValidator validator = JsonSchemaValidator.getInstance();
 		validator.setEventBus(getEventBus(vertx));
