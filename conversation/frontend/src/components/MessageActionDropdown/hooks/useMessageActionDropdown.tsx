@@ -233,7 +233,9 @@ export function useMessageActionDropdown({
       action: () => {
         navigate(`/draft/create?reply=${message.id}`);
       },
-      hidden: folderId === 'outbox' || !canReply,
+      hidden:
+        folderId === 'outbox' || (!canReply && message.state !== 'RECALL'),
+      disabled: message.state === 'RECALL',
     },
     {
       label: t('submit'),
