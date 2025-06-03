@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import { useI18n } from '~/hooks/useI18n';
 import { useMessageUserDisplayName } from '~/hooks/useUserDisplayName';
 import { Group, User } from '~/models';
-import RecipientAvatar from './RecipientAvatar';
+import RecipientListAvatar from './RecipientListAvatar';
 
 interface RecipientListSelectedItemProps {
   recipient: User | Group;
@@ -53,7 +53,7 @@ export function RecipientListSelectedItem({
 
   return (
     <div className="badge rounded-pill d-flex align-items-center gap-8 small fw-bold py-4 px-2 me-8 mt-4">
-      <RecipientAvatar id={recipient.id} type={visibleType} size="xs" />
+      <RecipientListAvatar id={recipient.id} type={visibleType} size="xs" />
       {!url ? (
         <span>{recipientName}</span>
       ) : (
