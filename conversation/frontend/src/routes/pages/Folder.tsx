@@ -1,10 +1,13 @@
 import { QueryClient } from '@tanstack/react-query';
+import { Suspense } from 'react';
 import {
+  Await,
   LoaderFunctionArgs,
   useParams,
   useSearchParams,
 } from 'react-router-dom';
 import { MessageList } from '~/features/message-list/MessageList';
+import { MessageListSkeleton } from '~/features/message-list/MessageListSkeleton';
 import { MessageListEmpty } from '~/features/message-list/components/MessageListEmpty';
 import { MessageListHeader } from '~/features/message-list/components/MessageListHeader';
 import { folderQueryOptions, useFolderMessages } from '~/services';
@@ -20,9 +23,9 @@ export const loader =
         search: search && search !== '' ? search : undefined,
         unread: unread === 'true' ? true : undefined,
       });
-      const messages = await queryClient.ensureInfiniteQueryData(messagesQuery);
-      return { messages };
+      queryClient.ensureInfiniteQueryData(messagesQuery);
     }
+    return null;
   };
 
 export function Component() {
@@ -31,13 +34,25 @@ export function Component() {
   const { messages, isPending: isLoadingMessage } = useFolderMessages(
     folderId!,
   );
+  const isLoadingMessagesFinishedPromise = new Promise((resolve) => {
+    if (!isLoadingMessage && messages) {
+      resolve(true);
+    }
+  });
+
   return (
-    <>
-      {(!!messages.length ||
-        searchParams.get('search') ||
-        searchParams.get('unread')) && <MessageListHeader />}
-      <MessageList />
-      {!isLoadingMessage && !messages.length && <MessageListEmpty />}
-    </>
+    <Suspense fallback={<MessageListSkeleton />}>
+      <Await resolve={isLoadingMessagesFinishedPromise}>
+        {messages && (
+          <>
+            {(!!messages.length ||
+              searchParams.get('search') ||
+              searchParams.get('unread')) && <MessageListHeader />}
+            <MessageList />
+            {!isLoadingMessage && !messages.length && <MessageListEmpty />}
+          </>
+        )}
+      </Await>
+    </Suspense>
   );
 }

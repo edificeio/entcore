@@ -1,9 +1,4 @@
-import {
-  List,
-  Loading,
-  ToolbarButtonItem,
-  useEdificeClient,
-} from '@edifice.io/react';
+import { List, ToolbarButtonItem, useEdificeClient } from '@edifice.io/react';
 import {
   IconDelete,
   IconFolderDelete,
@@ -17,11 +12,10 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { useFolderMessages } from '~/services';
-import { useAppActions, useIsLoading } from '~/store/actions';
+import { useAppActions } from '~/store/actions';
 import { MessageItem } from './components/MessageItem';
 import useToolbarActions from './hooks/useToolbarActions';
 import useToolbarVisibility from './hooks/useToolbarVisibility';
-import { MessageListLoading } from './MessageListLoading';
 
 export function MessageList() {
   const { folderId } = useSelectedFolder();
@@ -30,11 +24,10 @@ export function MessageList() {
   const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
   const { setSelectedMessageIds } = useAppActions();
-  const isLoading = useIsLoading();
 
   const {
     messages,
-    isPending: isLoadingMessage,
+    isPending: isLoadingMessages,
     isFetchingNextPage: isLoadingNextPage,
     hasNextPage,
     fetchNextPage,
@@ -71,7 +64,7 @@ export function MessageList() {
   useEffect(() => {
     const handleScroll = () => {
       if (
-        isLoadingMessage ||
+        isLoadingMessages ||
         isLoadingNextPage ||
         window.innerHeight + document.documentElement.scrollTop <
           document.documentElement.offsetHeight - 250
@@ -83,7 +76,7 @@ export function MessageList() {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [isLoadingMessage, isLoadingNextPage, fetchNextPage, hasNextPage]);
+  }, [isLoadingMessages, isLoadingNextPage, fetchNextPage, hasNextPage]);
 
   const toolbarItemsData = [
     {
@@ -153,10 +146,6 @@ export function MessageList() {
 
   if (!messages?.length) return null;
 
-  if (isLoading) {
-    return <MessageListLoading />;
-  }
-
   return (
     <>
       <List
@@ -175,9 +164,6 @@ export function MessageList() {
           />
         )}
       />
-      {isLoadingMessage && (
-        <Loading isLoading={true} className="justify-content-center my-12" />
-      )}
     </>
   );
 }
