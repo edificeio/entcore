@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import { useI18n } from '~/hooks/useI18n';
 import { useMessageUserDisplayName } from '~/hooks/useUserDisplayName';
 import { Visible } from '~/models/visible';
-import RecipientAvatar from './RecipientAvatar';
+import RecipientListAvatar from './RecipientListAvatar';
 import { RecipientType } from './RecipientListEdit';
 import './RecipientListItem.css';
 
@@ -66,7 +66,7 @@ export function RecipientListItem({
       disabled={disabled}
     >
       <div className={className}>
-        <RecipientAvatar id={visible.id} type={visible.type} />
+        <RecipientListAvatar id={visible.id} type={visible.type} />
         {(visible.type === 'Group' ||
           visible.type === 'ShareBookmark' ||
           visible.type === 'BroadcastGroup') && (
