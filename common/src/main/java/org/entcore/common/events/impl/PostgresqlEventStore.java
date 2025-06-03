@@ -81,57 +81,64 @@ public class PostgresqlEventStore extends GenericEventStore {
 			handler.handle(Future.succeededFuture());
 			return;
 		}
-		final String eventStoreConf = (String) vertx.sharedData().getLocalMap("server").get("event-store");
-		if (eventStoreConf != null) {
-			final JsonObject eventStoreConfig = new JsonObject(eventStoreConf);
-			platform = eventStoreConfig.getString("platform");
-			final JsonObject eventStorePGConfig = eventStoreConfig.getJsonObject("postgresql");
-			if (eventStorePGConfig != null) {
-				final SslMode sslMode = SslMode.valueOf(eventStorePGConfig.getString("ssl-mode", "DISABLE"));
-				final PgConnectOptions options = new PgConnectOptions()
-					.setPort(eventStorePGConfig.getInteger("port", 5432))
-					.setHost(eventStorePGConfig.getString("host"))
-					.setDatabase(eventStorePGConfig.getString("database"))
-					.setUser(eventStorePGConfig.getString("user"))
-					.setPassword(eventStorePGConfig.getString("password"))
-					.setIdleTimeout(eventStorePGConfig.getInteger("idle-timeout", 300)); // unit seconds
-				final PoolOptions poolOptions = new PoolOptions()
-						.setMaxSize(eventStorePGConfig.getInteger("pool-size", 5));
-				if (!SslMode.DISABLE.equals(sslMode)) {
-					options
-						.setSslMode(sslMode)
-						.setTrustAll(SslMode.ALLOW.equals(sslMode) || SslMode.PREFER.equals(sslMode) || SslMode.REQUIRE.equals(sslMode));
-				}
-				if (reinit && pgClient != null) {
-					pgClient.close();
-				}
-				pgClient = PgPool.pool(vertx, options, poolOptions);
-				countNoAckReceive.set(0);
+		vertx.sharedData().<String, String>getAsyncMap("server")
+            .compose(serverMap -> serverMap.get("event-store"))
+            .onSuccess(eventStoreConf -> {
+                if (eventStoreConf != null) {
+					final JsonObject eventStoreConfig = new JsonObject(eventStoreConf);
+					platform = eventStoreConfig.getString("platform");
+					final JsonObject eventStorePGConfig = eventStoreConfig.getJsonObject("postgresql");
+					if (eventStorePGConfig != null) {
+						final SslMode sslMode = SslMode.valueOf(eventStorePGConfig.getString("ssl-mode", "DISABLE"));
+						final PgConnectOptions options = new PgConnectOptions()
+							.setPort(eventStorePGConfig.getInteger("port", 5432))
+							.setHost(eventStorePGConfig.getString("host"))
+							.setDatabase(eventStorePGConfig.getString("database"))
+							.setUser(eventStorePGConfig.getString("user"))
+							.setPassword(eventStorePGConfig.getString("password"))
+							.setIdleTimeout(eventStorePGConfig.getInteger("idle-timeout", 300)); // unit seconds
+						final PoolOptions poolOptions = new PoolOptions()
+								.setMaxSize(eventStorePGConfig.getInteger("pool-size", 5));
+						if (!SslMode.DISABLE.equals(sslMode)) {
+							options
+								.setSslMode(sslMode)
+								.setTrustAll(SslMode.ALLOW.equals(sslMode) || SslMode.PREFER.equals(sslMode) || SslMode.REQUIRE.equals(sslMode));
+						}
+						if (reinit && pgClient != null) {
+							pgClient.close();
+						}
+						pgClient = PgPool.pool(vertx, options, poolOptions);
+						countNoAckReceive.set(0);
 
-				final JsonArray allowedEventsConf =  eventStorePGConfig.getJsonArray("allowed-events");
-				if (allowedEventsConf != null && !allowedEventsConf.isEmpty()) {
-					allowedEventsConf.stream().forEach(x -> allowedEvents.add(x.toString()));
-				}
-				final Integer limitNumberNoAck = eventStorePGConfig.getInteger("limit-number-no-ack");
-				if (limitNumberNoAck != null) { // set 0 to disable
-					maxNumberNoAck = limitNumberNoAck;
-				}
-				listKnownEvents(ar -> {
-					if (ar.succeeded()) {
-						knownEvents = ar.result();
-						handler.handle(Future.succeededFuture());
+						final JsonArray allowedEventsConf =  eventStorePGConfig.getJsonArray("allowed-events");
+						if (allowedEventsConf != null && !allowedEventsConf.isEmpty()) {
+							allowedEventsConf.stream().forEach(x -> allowedEvents.add(x.toString()));
+						}
+						final Integer limitNumberNoAck = eventStorePGConfig.getInteger("limit-number-no-ack");
+						if (limitNumberNoAck != null) { // set 0 to disable
+							maxNumberNoAck = limitNumberNoAck;
+						}
+						listKnownEvents(ar -> {
+							if (ar.succeeded()) {
+								knownEvents = ar.result();
+								handler.handle(Future.succeededFuture());
+							} else {
+								logger.error("Error listing known events", ar.cause());
+								handler.handle(Future.failedFuture(ar.cause()));
+							}
+						});
+						enablePersistTimer = eventStorePGConfig.getBoolean("enable-persist-fallback-timer", false);
 					} else {
-						logger.error("Error listing known events", ar.cause());
-						handler.handle(Future.failedFuture(ar.cause()));
+						handler.handle(Future.failedFuture(new ValidationException("Missing postgresql config.")));
 					}
-				});
-				enablePersistTimer = eventStorePGConfig.getBoolean("enable-persist-fallback-timer", false);
-			} else {
-				handler.handle(Future.failedFuture(new ValidationException("Missing postgresql config.")));
-			}
-		} else {
-			handler.handle(Future.failedFuture(new ValidationException("Missing event store config.")));
-		}
+				} else {
+					handler.handle(Future.failedFuture(new ValidationException("Missing event store config.")));
+				}
+            })
+            .onFailure(ex -> {
+				logger.error("Error when get platformId in event-store server map", ex);
+				handler.handle(Future.failedFuture(ex));
+			});
 	}
 
 	private void listKnownEvents(Handler<AsyncResult<Set<String>>> handler) {
