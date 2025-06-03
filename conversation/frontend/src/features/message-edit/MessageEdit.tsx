@@ -12,7 +12,6 @@ import { MessageSaveDate } from './components/MessageSaveDate';
 import { useAutoSaveMessage } from './hooks/useAutoSaveMessage';
 
 export function MessageEdit({ message }: { message?: Message }) {
-  console.log('message:', message);
   const { t } = useI18n();
   const [subject, setSubject] = useState(message?.subject);
   const { setMessage, setMessageNeedToSave } = useMessageActions();

@@ -1,4 +1,4 @@
-import { useMessageActions } from '~/store/messageStore';
+import { useMessage, useMessageActions } from '~/store/messageStore';
 import { useDebounce } from '@edifice.io/react';
 import { useEffect, useRef } from 'react';
 import { useConversationConfig, useCreateOrUpdateDraft } from '~/services';
@@ -9,10 +9,10 @@ export const useAutoSaveMessage = () => {
   const messageUpdatedNeedSave = useMessageNeedToSave();
   const createOrUpdateDraft = useCreateOrUpdateDraft();
   const { setMessageNeedToSave } = useMessageActions();
-
+  const message = useMessage();
   const debounceTimeToSave = useRef(3000);
   const messageUpdatedNeedSaveDebounced = useDebounce(
-    messageUpdatedNeedSave,
+    message,
     debounceTimeToSave.current,
   );
 
@@ -23,7 +23,7 @@ export const useAutoSaveMessage = () => {
   }, [publicConfig]);
 
   useEffect(() => {
-    if (messageUpdatedNeedSaveDebounced) {
+    if (messageUpdatedNeedSaveDebounced && messageUpdatedNeedSave) {
       createOrUpdateDraft();
       setMessageNeedToSave(false);
     }
