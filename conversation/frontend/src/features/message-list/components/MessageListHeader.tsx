@@ -1,5 +1,4 @@
 import {
-  Button,
   Dropdown,
   SearchBar,
   useBreakpoint,
@@ -10,7 +9,7 @@ import { IconFilter } from '@edifice.io/react/icons';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { useAppActions, useIsLoading } from '~/store/actions';
+import { useAppActions } from '~/store/actions';
 
 export function MessageListHeader() {
   const { theme } = useEdificeTheme();
@@ -21,7 +20,6 @@ export function MessageListHeader() {
   const { setSelectedMessageIds } = useAppActions();
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isSearchDisabled, setIsSearchDisabled] = useState(true);
-  const isLoading = useIsLoading();
 
   const filterEnum = {
     unread: 'UNREAD',
@@ -77,26 +75,13 @@ export function MessageListHeader() {
     setSearchParams(searchParams, { replace: true });
   }, [searchParams, setSearchParams, setSelectedMessageIds]);
 
-  if (isLoading) {
-    return (
-      <div className="d-flex gap-16 align-items-center justify-content-between px-16 px-md-24 py-16 border-bottom">
-        <Button
-          className="placeholder col-12 col-md-10"
-          color="tertiary"
-          size="lg"
-          disabled
-        ></Button>
-        {!theme?.is1d && (
-          <Button
-            className="d-none d-md-block placeholder col-2"
-            color="tertiary"
-            size="sm"
-            disabled
-          ></Button>
-        )}
-      </div>
-    );
-  }
+  const handleSearchFocus = () => {
+    setIsSearchFocused(true);
+  };
+
+  const handleSearchBlur = () => {
+    setIsSearchFocused(false);
+  };
 
   return (
     <div className="d-flex gap-16 align-items-center justify-content-between px-16 px-lg-24 py-16 border-bottom">

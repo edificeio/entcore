@@ -13,7 +13,6 @@ import { FolderActionDropdown } from '~/components';
 import { useI18n } from '~/hooks/useI18n';
 import { Folder, SystemFolder } from '~/models';
 import { useFoldersTree } from '~/services';
-import { useIsLoading } from '~/store';
 import { useFolderHandlers } from '../hooks/useFolderHandlers';
 import { useMenuData } from '../hooks/useMenuData';
 
@@ -87,7 +86,6 @@ export function MobileMenu() {
   const navigate = useNavigate();
   const foldersTreeQuery = useFoldersTree();
   const { t } = useI18n();
-  const isLoading = useIsLoading();
 
   const {
     counters,
@@ -96,6 +94,12 @@ export function MobileMenu() {
     selectedUserFolderId,
   } = useMenuData();
   const { handleCreate: handleNewFolderClick } = useFolderHandlers();
+
+  if (foldersTreeQuery.isPending) {
+    return (
+      <Button className="placeholder col-12" color="tertiary" disabled></Button>
+    );
+  }
 
   if (!foldersTreeQuery.data) {
     return null;
@@ -149,12 +153,6 @@ export function MobileMenu() {
 
   function handleItemClick(item: FolderItem, isUserFolder = false) {
     navigate(`${isUserFolder ? '/folder/' : '/'}${item.folder.id}`);
-  }
-
-  if (isLoading) {
-    return (
-      <Button className="placeholder col-12" color="tertiary" disabled></Button>
-    );
   }
 
   return (

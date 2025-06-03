@@ -23,10 +23,10 @@ import {
 } from '~/components';
 import { useUsedSpace } from '~/hooks/useUsedSpace';
 import { buildTree, useFoldersTree } from '~/services';
-import { useIsLoading } from '~/store';
 import { useFolderHandlers } from '../hooks/useFolderHandlers';
 import { useMenuData } from '../hooks/useMenuData';
 import './DesktopMenu.css';
+import { DesktopMenuSkeleton } from './DesktopMenuSkeleton';
 
 /** Converts a value in bytes to mega-bytes (rounded) */
 const bytesToMegabytes = (bytes: number) => Math.round(bytes / (1024 * 1024));
@@ -46,7 +46,6 @@ export function DesktopMenu() {
   } = useMenuData();
   const { usage, quota } = useUsedSpace();
   const { handleCreate: handleNewFolderClick } = useFolderHandlers();
-  const isLoading = useIsLoading();
 
   const userFolders = useMemo(() => {
     const foldersTree = foldersTreeQuery.data;
@@ -54,6 +53,10 @@ export function DesktopMenu() {
   }, [foldersTreeQuery]);
 
   const progress = quota > 0 ? (usage * 100) / quota : 0;
+
+  if (foldersTreeQuery.isPending) {
+    return <DesktopMenuSkeleton />;
+  }
 
   if (!userFolders) {
     return null;
@@ -78,39 +81,6 @@ export function DesktopMenu() {
       state: { scrollToTop: true },
     });
   };
-
-  if (isLoading) {
-    return (
-      <div className="d-flex flex-column gap-4">
-        <Button
-          className="placeholder col-12 p-4"
-          color="tertiary"
-          disabled
-        ></Button>
-        <Button
-          className="placeholder col-7 p-4"
-          color="tertiary"
-          disabled
-        ></Button>
-        <Button
-          className="placeholder col-10 p-4"
-          color="tertiary"
-          disabled
-        ></Button>
-        <Button
-          className="placeholder col-8 p-4"
-          color="tertiary"
-          disabled
-        ></Button>
-        <div className="border-bottom pt-8 mb-12"></div>
-        <Button
-          className="placeholder col-8 bg-gray-700 p-4"
-          color="tertiary"
-          disabled
-        ></Button>
-      </div>
-    );
-  }
 
   return (
     <Menu label={t('generic.folders')}>

@@ -1,8 +1,26 @@
-import { Avatar, Checkbox } from '@edifice.io/react';
+import { Avatar, Button, Checkbox, useEdificeTheme } from '@edifice.io/react';
 
-export function MessageListLoading() {
+export function MessageListSkeleton() {
+  const { theme } = useEdificeTheme();
+
   return (
     <>
+      <div className="d-flex gap-16 align-items-center justify-content-between px-16 px-md-24 py-16 border-bottom">
+        <Button
+          className="placeholder col-12 col-md-10"
+          color="tertiary"
+          size="lg"
+          disabled
+        ></Button>
+        {!theme?.is1d && (
+          <Button
+            className="d-none d-md-block placeholder col-2"
+            color="tertiary"
+            size="sm"
+            disabled
+          ></Button>
+        )}
+      </div>
       <div className="d-flex gap-16 align-items-center justify-content-between px-16 px-md-24 py-16 border-bottom">
         <Checkbox className="placeholder" disabled></Checkbox>
       </div>
