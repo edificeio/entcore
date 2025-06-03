@@ -62,10 +62,10 @@ public class Archive extends BaseServer {
 					initArchives(startPromise, archivesMap, storageFactory);
 				} catch (Exception e) {
 					startPromise.fail(e);
-					log.error("Error when start Admin", e);
+					log.error("Error when start Archive", e);
 				}
 			}).onFailure(ex -> log.error("Error building storage factory", ex));
-		}).onFailure(ex -> log.error("Error when start Admin server super classes", ex));
+		}).onFailure(ex -> log.error("Error when start Archive server super classes", ex));
 	}
 
 	public void initArchives(final Promise<Void> startPromise, final AsyncMap<String, String> archivesMap,

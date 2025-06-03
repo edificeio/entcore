@@ -56,7 +56,6 @@ import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.sms.SmsSenderFactory;
-import org.opensaml.xml.ConfigurationException;
 
 import java.util.List;
 import java.util.Map;
@@ -73,7 +72,7 @@ public class Auth extends BaseServer {
 		super.start(promise);
 		promise.future().compose(x ->
 			SharedDataHelper.getInstance().<String, Object>getMulti(
-				"server", "signKey", "smsProvider", "node", "emailValidationConfig")
+				"server", "signKey", "smsProvider", "node", "emailValidationConfig", "skins", "event-store")
 		).compose(authMap -> 
 			SharedDataHelper.getInstance().<String, Object>getAsyncMap("server").compose(asyncAuthMap -> {
 				try {
@@ -96,7 +95,8 @@ public class Auth extends BaseServer {
 
 		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Auth.class.getSimpleName());
 		final UserAuthAccount userAuthAccount = new DefaultUserAuthAccount(vertx, config, eventStore, authMap);
-		SafeRedirectionService.getInstance().init(vertx, config.getJsonObject("safeRedirect", new JsonObject()));
+		SafeRedirectionService.getInstance().init(vertx, config.getJsonObject("safeRedirect", new JsonObject()),
+				(JsonObject) authMap.get("skins"));
 
 		SmsSenderFactory.getInstance().init(vertx, config);
 		UserValidationFactory.getFactory().setEventStore(eventStore, AuthEvent.SMS.name());
@@ -151,7 +151,7 @@ public class Auth extends BaseServer {
 							);
 							oauthDataFactory.setSamlHelper(samlHelper);
 
-							SamlController samlController = new SamlController();
+							SamlController samlController = new SamlController((JsonObject) authMap.get("skins"));
 							JsonObject conf = config;
 
 							vertx.deployVerticle(SamlValidator.class,
@@ -180,7 +180,7 @@ public class Auth extends BaseServer {
 										.onFailure(ex -> log.error("Error when put authLocations", ex));
 								}
 							}
-						} catch (ConfigurationException e) {
+						} catch (Exception e) {
 							log.error("Saml loading error.", e);
 						}
 					}
@@ -237,7 +237,8 @@ public class Auth extends BaseServer {
 				int batchLimit = NDWConf.getInteger("batch-limit", 4000).intValue();
 				String processInterval = NDWConf.getString("process-interval");
 				NDWTask = new NewDeviceWarningTask(vertx, config, emailFactory.getSender(), config.getString("email"),
-													warnADMC, warnADML, warnUsers, scoreThreshold, batchLimit, processInterval);
+						warnADMC, warnADML, warnUsers, scoreThreshold, batchLimit, processInterval,
+						(String) authMap.get("event-store"));
 				new CronTrigger(vertx, cron).schedule(NDWTask);
 			}
 		}

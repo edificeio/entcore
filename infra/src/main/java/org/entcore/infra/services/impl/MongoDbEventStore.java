@@ -52,6 +52,7 @@ import org.entcore.infra.services.PartialResults;
 
 public class MongoDbEventStore implements EventStoreService {
 
+	private static final Logger log = LoggerFactory.getLogger(MongoDbEventStore.class);
 	private static final long QUERY_TIMEOUT = 90000L;
 	private MongoDb mongoDb = MongoDb.getInstance();
 	private PostgresqlEventStore pgEventStore;
@@ -61,20 +62,23 @@ public class MongoDbEventStore implements EventStoreService {
   private static final Logger log = LoggerFactory.getLogger(MongoDbEventStore.class);
 
 	public MongoDbEventStore(Vertx vertx) {
-		final String eventStoreConf = (String) vertx.sharedData().getLocalMap("server").get("event-store");
-		if (eventStoreConf != null) {
-			final JsonObject eventStoreConfig = new JsonObject(eventStoreConf);
-			if (eventStoreConfig.containsKey("postgresql")) {
-				pgEventStore =  new PostgresqlEventStore();
-				pgEventStore.setEventBus(vertx.eventBus());
-				pgEventStore.setModule("infra");
-				pgEventStore.setVertx(vertx);
-				pgEventStore.init();
-			}
-      eventsBatchSize = eventStoreConfig.getInteger("events-batch-size", DEFAULT_EVENT_BATCH_SIZE);
+		vertx.sharedData().<String, String>getAsyncMap("server")
+            .compose(serverMap -> serverMap.get("event-store"))
+            .onSuccess(eventStoreConf -> {
+                if (eventStoreConf != null) {
+					final JsonObject eventStoreConfig = new JsonObject(eventStoreConf);
+					if (eventStoreConfig.containsKey("postgresql")) {
+						pgEventStore =  new PostgresqlEventStore();
+						pgEventStore.setEventBus(vertx.eventBus());
+						pgEventStore.setModule("infra");
+						pgEventStore.setVertx(vertx);
+						pgEventStore.init();
+					}
+				eventsBatchSize = eventStoreConfig.getInteger("events-batch-size", DEFAULT_EVENT_BATCH_SIZE);
 		} else {
-      eventsBatchSize = DEFAULT_EVENT_BATCH_SIZE;
-    }
+      eventsBatchSize = DEFAULT_EVENT_BATCH_SIZE;}
+            })
+            .onFailure(ex ->log.error("Error when get platformId in event-store server map", ex));
 	}
 
 	@Override
