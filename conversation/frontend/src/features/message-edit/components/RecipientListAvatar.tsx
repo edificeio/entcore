@@ -15,7 +15,7 @@ interface RecipientAvatarProps {
   size?: AvatarSizes;
 }
 
-export function RecipientAvatar({
+export function RecipientListAvatar({
   id,
   type,
   className,
@@ -61,8 +61,9 @@ export function RecipientAvatar({
       src={avatarUrl}
       variant="circle"
       className={className}
+      loading="lazy"
     />
   );
 }
 
-export default RecipientAvatar;
+export default RecipientListAvatar;
