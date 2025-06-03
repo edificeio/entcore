@@ -166,10 +166,12 @@ public class Directory extends BaseServer {
 		userBookController.setConversationNotification(conversationNotification);
 		addController(userBookController);
 
-		StructureController structureController = new StructureController();
+		StructureController structureController = new StructureController(
+				(JsonObject) serverMap.get("skins"), (String) serverMap.get("assetPath"));
 		structureController.setStructureService(schoolService);
 		structureController.setNotifHelper(emailSender);
-		structureController.setMassMailService(new DefaultMassMailService(vertx,eb,emailSender,config));
+		structureController.setMassMailService(new DefaultMassMailService(
+				vertx,eb,emailSender,config, (String) serverMap.get("node")));
 		addController(structureController);
 
 		ClassController classController = new ClassController();

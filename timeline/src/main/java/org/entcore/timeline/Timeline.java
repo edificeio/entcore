@@ -107,7 +107,8 @@ public class Timeline extends BaseServer {
 		timelineController.setNotificationHelper(notificationHelper);
 
 		final FlashMsgService flashMsgService = new FlashMsgServiceSqlImpl("flashmsg", "messages");
-		final FlashMsgController flashMsgController = new FlashMsgController();
+		final FlashMsgController flashMsgController = new FlashMsgController(
+				(JsonObject) timelineMap.get("skins"), (JsonObject) timelineMap.get("skin-levels"));
 		flashMsgController.setFlashMessagesService(flashMsgService);
 		addController(flashMsgController);
 

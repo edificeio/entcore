@@ -84,10 +84,15 @@ public class StructureController extends BaseController {
 	private MassMailService massMailService;
 	private SchoolService structureService;
 	private EmailSender notifHelper;
-	private String assetsPath = "../..";
-	private Map<String, String> skins = new HashMap<>();
+	private final String assetsPath;
+	private final JsonObject skins;
 
 	private static final Logger log = LoggerFactory.getLogger(StructureController.class);
+
+	public StructureController(JsonObject skins, String assetsPath) {
+		this.skins = skins;
+		this.assetsPath = assetsPath;
+	}
 
 	@Override
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -374,14 +379,11 @@ public class StructureController extends BaseController {
 	public void getMassMessageTemplate(final HttpServerRequest request) {
 		FileSystem fs = vertx.fileSystem();
 
-		this.assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath");
-		this.skins = vertx.sharedData().getLocalMap("skins");
-
 		getSkin(request, res -> {
 
 			final String skin;
 			if (res.isLeft() || res.right().getValue() == null) {
-				skin = this.skins.get(Renders.getHost(request));
+				skin = this.skins.getString(Renders.getHost(request));
 			} else {
 				skin = res.right().getValue();
 			}
@@ -422,49 +424,54 @@ public class StructureController extends BaseController {
 			return;
 		}
 
-		this.assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath");
-		this.skins = vertx.sharedData().getLocalMap("skins");
+		getSkin(request, result -> {
 
-		final String skin = this.skins.get(Renders.getHost(request));
-
-		final String assetsPath = this.assetsPath + "/assets/themes/" + skin;
-		final String templatePath = assetsPath + "/template/directory/";
-		final String baseUrl = getScheme(request) + "://" + Renders.getHost(request) + "/assets/themes/" + skin + "/img/";
-
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-			public void handle(final UserInfos infos) {
-
-				//PDF
-				if("pdf".equals(type)){
-					massMailService.massMailUser(userId, infos, new Handler<Either<String,JsonArray>>() {
-						public void handle(Either<String, JsonArray> result) {
-							if(result.isLeft()){
-								forbidden(request);
-								return;
-							}
-
-							massMailService.massMailTypePdf(infos, request, templatePath, baseUrl, filename, "pdf", result.right().getValue());
-
-						}
-					});
-				}
-				//Mail
-				else if("mail".equals(type)){
-					massMailService.massMailUser(userId, infos, new Handler<Either<String,JsonArray>>() {
-						public void handle(final Either<String, JsonArray> result) {
-							if(result.isLeft()){
-								forbidden(request);
-								return;
-							}
-
-							massMailService.massMailTypeMail(infos, request, templatePath, result.right().getValue());
-						}
-					});
-				} else {
-					badRequest(request);
-				}
-
+			final String skin;
+			if (result.isLeft() || result.right().getValue() == null) {
+				skin = this.skins.getString(Renders.getHost(request));
+			} else {
+				skin = result.right().getValue();
 			}
+
+			final String assetsPath = this.assetsPath + "/assets/themes/" + skin;
+			final String templatePath = assetsPath + "/template/directory/";
+			final String baseUrl = getScheme(request) + "://" + Renders.getHost(request) + "/assets/themes/" + skin + "/img/";
+
+			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+				public void handle(final UserInfos infos) {
+
+					//PDF
+					if("pdf".equals(type)){
+						massMailService.massMailUser(userId, infos, new Handler<Either<String,JsonArray>>() {
+							public void handle(Either<String, JsonArray> result) {
+								if(result.isLeft()){
+									forbidden(request);
+									return;
+								}
+
+								massMailService.massMailTypePdf(infos, request, templatePath, baseUrl, filename, "pdf", result.right().getValue());
+
+							}
+						});
+					}
+					//Mail
+					else if("mail".equals(type)){
+						massMailService.massMailUser(userId, infos, new Handler<Either<String,JsonArray>>() {
+							public void handle(final Either<String, JsonArray> result) {
+								if(result.isLeft()){
+									forbidden(request);
+									return;
+								}
+
+								massMailService.massMailTypeMail(infos, request, templatePath, result.right().getValue());
+							}
+						});
+					} else {
+						badRequest(request);
+					}
+
+				}
+			});
 		});
 	}
 
@@ -499,48 +506,53 @@ public class StructureController extends BaseController {
             filter.put("date", request.params().get("date"));
         }
 
-		this.assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath");
-		this.skins = vertx.sharedData().getLocalMap("skins");
+		getSkin(request, result -> {
 
-		final String skin = this.skins.get(Renders.getHost(request));
-
-		final String assetsPath = this.assetsPath + "/assets/themes/" + skin;
-		final String templatePath = assetsPath + "/template/directory/";
-		final String baseUrl = getScheme(request) + "://" + Renders.getHost(request) + "/assets/themes/" + skin + "/img/";
-
-		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-			public void handle(final UserInfos infos) {
-
-				//PDF
-				if("pdf".equals(type) || "newPdf".equals(type) || "simplePdf".equals(type)){
-					massMailService.massmailUsers(structureId, filter, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
-						public void handle(Either<String, JsonArray> result) {
-							if(result.isLeft()){
-								forbidden(request);
-								return;
-							}
-
-							massMailService.massMailTypePdf(infos, request, templatePath, baseUrl, filename, type, result.right().getValue());
-						}
-					});
-				}
-				//Mail
-				else if("mail".equals(type)){
-					massMailService.massmailUsers(structureId, filter, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
-						public void handle(final Either<String, JsonArray> result) {
-							if(result.isLeft()){
-								forbidden(request);
-								return;
-							}
-
-							massMailService.massMailTypeMail(infos, request, templatePath, result.right().getValue());
-						}
-					});
-				} else {
-					badRequest(request);
-				}
-
+			final String skin;
+			if (result.isLeft() || result.right().getValue() == null) {
+				skin = this.skins.getString(Renders.getHost(request));
+			} else {
+				skin = result.right().getValue();
 			}
+
+			final String assetsPath = this.assetsPath + "/assets/themes/" + skin;
+			final String templatePath = assetsPath + "/template/directory/";
+			final String baseUrl = getScheme(request) + "://" + Renders.getHost(request) + "/assets/themes/" + skin + "/img/";
+
+			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+				public void handle(final UserInfos infos) {
+
+					//PDF
+					if("pdf".equals(type) || "newPdf".equals(type) || "simplePdf".equals(type)){
+						massMailService.massmailUsers(structureId, filter, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
+							public void handle(Either<String, JsonArray> result) {
+								if(result.isLeft()){
+									forbidden(request);
+									return;
+								}
+
+								massMailService.massMailTypePdf(infos, request, templatePath, baseUrl, filename, type, result.right().getValue());
+							}
+						});
+					}
+					//Mail
+					else if("mail".equals(type)){
+						massMailService.massmailUsers(structureId, filter, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
+							public void handle(final Either<String, JsonArray> result) {
+								if(result.isLeft()){
+									forbidden(request);
+									return;
+								}
+
+								massMailService.massMailTypeMail(infos, request, templatePath, result.right().getValue());
+							}
+						});
+					} else {
+						badRequest(request);
+					}
+
+				}
+			});
 		});
 	}
 
@@ -560,18 +572,17 @@ public class StructureController extends BaseController {
 				}
 
 				final String host = Renders.getHost(request);
-				final Map<String, String> skins = vertx.sharedData().getLocalMap("skins");
 
 				getSkin(request, result -> {
 
 					final String skin;
 					if (result.isLeft() || result.right().getValue() == null) {
-						skin = skins.get(host);
+						skin = skins.getString(host);
 					} else {
 						skin = result.right().getValue();
 					}
 
-					final String assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath") +
+					final String assetsPath = StructureController.this.assetsPath +
 							"/assets/themes/" + skin;
 					final String templatePath = assetsPath + "/template/directory/";
 					final String baseUrl = getScheme(request) + "://" + host + "/assets/themes/" + skin + "/img/";
