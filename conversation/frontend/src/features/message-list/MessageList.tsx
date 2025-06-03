@@ -17,11 +17,10 @@ import { useTranslation } from 'react-i18next';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { useFolderMessages } from '~/services';
-import { useAppActions, useIsLoading } from '~/store/actions';
+import { useAppActions } from '~/store/actions';
 import { MessageItem } from './components/MessageItem';
 import useToolbarActions from './hooks/useToolbarActions';
 import useToolbarVisibility from './hooks/useToolbarVisibility';
-import { MessageListLoading } from './MessageListLoading';
 
 export function MessageList() {
   const { folderId } = useSelectedFolder();
@@ -32,7 +31,6 @@ export function MessageList() {
   const { setSelectedMessageIds } = useAppActions();
   const location = useLocation();
   const shouldScrollToTop = location.state?.scrollToTop;
-  const isLoading = useIsLoading();
 
   const {
     messages,
@@ -85,6 +83,9 @@ export function MessageList() {
   useEffect(() => {
     if (isLoadingMessages || isLoadingNextPage) return;
     if (observer.current) observer.current.disconnect();
+
+    const messageListItems =
+      listRef.current?.getElementsByClassName('message-list-item');
     observer.current = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasNextPage) {
@@ -179,10 +180,6 @@ export function MessageList() {
   );
 
   if (!messages?.length) return null;
-
-  if (isLoading) {
-    return <MessageListLoading />;
-  }
 
   return (
     <div ref={listRef}>

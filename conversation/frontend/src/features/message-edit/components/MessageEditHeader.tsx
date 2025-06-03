@@ -2,7 +2,6 @@ import { Alert, Button } from '@edifice.io/react';
 import { useState } from 'react';
 import { useI18n } from '~/hooks/useI18n';
 import { Group, Message } from '~/models';
-import { useIsLoading } from '~/store';
 import { RecipientListEdit } from './RecipientListEdit';
 
 export interface MessageHeaderProps {
@@ -11,7 +10,6 @@ export interface MessageHeaderProps {
 
 export function MessageEditHeader({ message }: MessageHeaderProps) {
   const { t } = useI18n();
-  const isLoading = useIsLoading();
 
   const { to, cc, cci } = message;
 
@@ -52,7 +50,7 @@ export function MessageEditHeader({ message }: MessageHeaderProps) {
               variant="ghost"
               size="sm"
               color="secondary"
-              hidden={showCC || isLoading}
+              hidden={showCC}
             >
               {t('button.cc')}
             </Button>
@@ -61,7 +59,7 @@ export function MessageEditHeader({ message }: MessageHeaderProps) {
               variant="ghost"
               size="sm"
               color="secondary"
-              hidden={showCCI || isLoading}
+              hidden={showCCI}
             >
               {t('button.cci')}
             </Button>
