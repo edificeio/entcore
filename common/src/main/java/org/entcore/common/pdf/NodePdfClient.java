@@ -52,8 +52,9 @@ public class NodePdfClient implements PdfGenerator {
 	private String authHeader;
 	private String clientId;
 	private PdfMetricsRecorder metricsRecorder;
+	private String signKey;
 
-	public void init(Vertx vertx, JsonObject conf) throws URISyntaxException {
+	public void init(Vertx vertx, JsonObject conf, String signKey) throws URISyntaxException {
 		this.vertx = vertx;
 		this.authHeader = "Basic " + conf.getString("auth");
 		this.clientId = conf.getString("pdf-connector-id");
@@ -69,6 +70,7 @@ public class NodePdfClient implements PdfGenerator {
 		this.client = vertx.createHttpClient(options);
 		PdfMetricsRecorderFactory.init(vertx, conf);
 		this.metricsRecorder = PdfMetricsRecorderFactory.getPdfMetricsRecorder();
+		this.signKey = signKey;
 	}
 
 	@Override
@@ -230,7 +232,7 @@ public class NodePdfClient implements PdfGenerator {
 
 	@Override
 	public String createToken(UserInfos user) throws Exception {
-		final String token = UserUtils.createJWTToken(vertx, user, clientId, null);
+		final String token = UserUtils.createJWTToken(vertx, user, clientId, null, signKey);
 		if (isEmpty(token)) {
 			throw new PdfException("invalid.token");
 		}

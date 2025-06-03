@@ -30,7 +30,7 @@ import org.entcore.common.http.BaseServer;
 import java.util.ServiceLoader;
 
 public abstract class EventStoreFactory {
-	static final Logger logger = LoggerFactory.getLogger(EventStoreFactory.class);
+	protected static final Logger logger = LoggerFactory.getLogger(EventStoreFactory.class);
 
 	protected Vertx vertx;
 

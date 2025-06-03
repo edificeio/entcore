@@ -46,26 +46,33 @@ import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 public class MongoDbEventStore implements EventStoreService {
 
+	private static final Logger log = LoggerFactory.getLogger(MongoDbEventStore.class);
 	private static final long QUERY_TIMEOUT = 90000L;
 	private MongoDb mongoDb = MongoDb.getInstance();
 	private PostgresqlEventStore pgEventStore;
 	private static final String COLLECTION = "events";
 
 	public MongoDbEventStore(Vertx vertx) {
-		final String eventStoreConf = (String) vertx.sharedData().getLocalMap("server").get("event-store");
-		if (eventStoreConf != null) {
-			final JsonObject eventStoreConfig = new JsonObject(eventStoreConf);
-			if (eventStoreConfig.containsKey("postgresql")) {
-				pgEventStore =  new PostgresqlEventStore();
-				pgEventStore.setEventBus(vertx.eventBus());
-				pgEventStore.setModule("infra");
-				pgEventStore.setVertx(vertx);
-				pgEventStore.init();
-			}
-		}
+		vertx.sharedData().<String, String>getAsyncMap("server")
+            .compose(serverMap -> serverMap.get("event-store"))
+            .onSuccess(eventStoreConf -> {
+                if (eventStoreConf != null) {
+					final JsonObject eventStoreConfig = new JsonObject(eventStoreConf);
+					if (eventStoreConfig.containsKey("postgresql")) {
+						pgEventStore =  new PostgresqlEventStore();
+						pgEventStore.setEventBus(vertx.eventBus());
+						pgEventStore.setModule("infra");
+						pgEventStore.setVertx(vertx);
+						pgEventStore.init();
+					}
+				}
+            })
+            .onFailure(ex ->log.error("Error when get platformId in event-store server map", ex));
 	}
 
 	@Override

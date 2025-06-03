@@ -84,10 +84,15 @@ public class StructureController extends BaseController {
 	private MassMailService massMailService;
 	private SchoolService structureService;
 	private EmailSender notifHelper;
-	private String assetsPath = "../..";
-	private Map<String, String> skins = new HashMap<>();
+	private final String assetsPath;
+	private final JsonObject skins;
 
 	private static final Logger log = LoggerFactory.getLogger(StructureController.class);
+
+	public StructureController(JsonObject skins, String assetsPath) {
+		this.skins = skins;
+		this.assetsPath = assetsPath;
+	}
 
 	@Override
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -368,14 +373,11 @@ public class StructureController extends BaseController {
 	public void getMassMessageTemplate(final HttpServerRequest request) {
 		FileSystem fs = vertx.fileSystem();
 
-		this.assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath");
-		this.skins = vertx.sharedData().getLocalMap("skins");
-
 		getSkin(request, res -> {
 
 			final String skin;
 			if (res.isLeft() || res.right().getValue() == null) {
-				skin = this.skins.get(Renders.getHost(request));
+				skin = this.skins.getString(Renders.getHost(request));
 			} else {
 				skin = res.right().getValue();
 			}
@@ -416,14 +418,11 @@ public class StructureController extends BaseController {
 			return;
 		}
 
-		this.assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath");
-		this.skins = vertx.sharedData().getLocalMap("skins");
-
 		getSkin(request, result -> {
 
 			final String skin;
 			if (result.isLeft() || result.right().getValue() == null) {
-				skin = this.skins.get(Renders.getHost(request));
+				skin = this.skins.getString(Renders.getHost(request));
 			} else {
 				skin = result.right().getValue();
 			}
@@ -505,14 +504,11 @@ public class StructureController extends BaseController {
             filter.put("date", request.params().get("date"));
         }
 
-		this.assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath");
-		this.skins = vertx.sharedData().getLocalMap("skins");
-
 		getSkin(request, result -> {
 
 			final String skin;
 			if (result.isLeft() || result.right().getValue() == null) {
-				skin = this.skins.get(Renders.getHost(request));
+				skin = this.skins.getString(Renders.getHost(request));
 			} else {
 				skin = result.right().getValue();
 			}
@@ -576,18 +572,17 @@ public class StructureController extends BaseController {
 				}
 
 				final String host = Renders.getHost(request);
-				final Map<String, String> skins = vertx.sharedData().getLocalMap("skins");
 
 				getSkin(request, result -> {
 
 					final String skin;
 					if (result.isLeft() || result.right().getValue() == null) {
-						skin = skins.get(host);
+						skin = skins.getString(host);
 					} else {
 						skin = result.right().getValue();
 					}
 
-					final String assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath") +
+					final String assetsPath = StructureController.this.assetsPath +
 							"/assets/themes/" + skin;
 					final String templatePath = assetsPath + "/template/directory/";
 					final String baseUrl = getScheme(request) + "://" + host + "/assets/themes/" + skin + "/img/";
