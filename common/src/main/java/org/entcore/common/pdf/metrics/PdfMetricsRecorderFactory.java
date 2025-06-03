@@ -2,6 +2,8 @@ package org.entcore.common.pdf.metrics;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.metrics.MetricsOptions;
 /**
  * Creates the singleton that will record metrics of the pdf generator client.
@@ -9,11 +11,14 @@ import io.vertx.core.metrics.MetricsOptions;
  * configured then it creates a dummy recorder that records nothing.
  */
 public class PdfMetricsRecorderFactory {
+
+    private static final Logger log = LoggerFactory.getLogger(PdfMetricsRecorderFactory.class);
+
     private static Vertx vertx;
     private static MetricsOptions metricsOptions;
     private static PdfMetricsRecorder ingestJobMetricsRecorder;
     private static JsonObject config;
-    public static void init(final Vertx vertx, final JsonObject config){
+    public static void init(final Vertx vertx, final JsonObject config, String metricsOptions){
         if(PdfMetricsRecorderFactory.vertx != null){
             // already init
             return;
@@ -21,14 +26,13 @@ public class PdfMetricsRecorderFactory {
         PdfMetricsRecorderFactory.vertx = vertx;
         PdfMetricsRecorderFactory.config = config == null? new JsonObject() : config;
         if(PdfMetricsRecorderFactory.config.getJsonObject("metricsOptions") == null) {
-            final String metricsOptions = (String) vertx.sharedData().getLocalMap("server").get("metricsOptions");
             if(metricsOptions == null){
                 PdfMetricsRecorderFactory.metricsOptions = new MetricsOptions().setEnabled(false);
             }else{
                 PdfMetricsRecorderFactory.metricsOptions = new MetricsOptions(new JsonObject(metricsOptions));
             }
         } else {
-            metricsOptions = new MetricsOptions(PdfMetricsRecorderFactory.config.getJsonObject("metricsOptions"));
+            PdfMetricsRecorderFactory.metricsOptions = new MetricsOptions(PdfMetricsRecorderFactory.config.getJsonObject("metricsOptions"));
         }
     }
 
