@@ -9,6 +9,8 @@ import { MessageFlashStore } from '../../message-flash.store';
 import { StructureModel } from '../../../../core/store/models/structure.model';
 import { FlashMessageModel } from '../../../../core/store/models/flashmessage.model';
 import { TrumbowygOptions } from 'ngx-trumbowyg';
+import * as dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
 
 class StructureListItem {
     name: string;
@@ -58,6 +60,7 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
     }
 
     ngOnInit(): void {
+        dayjs.extend(utc);
         super.ngOnInit();
         this.subscriptions.add(routing.observe(this.route, 'data').subscribe(async (data: Data) => {
             if (data.structure) {
@@ -74,10 +77,9 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
                 }
                 this.message.id = this.originalMessage.id;
                 this.message.title = this.originalMessage.title;
-                const _startDate: Date = new Date(this.originalMessage.startDate);
-                this.message.startDate = new Date(_startDate.getTime() - (_startDate.getTimezoneOffset() * 60000)).toISOString();
-                const _endDate: Date = new Date(this.originalMessage.endDate);
-                this.message.endDate = new Date(_endDate.getTime() - (_endDate.getTimezoneOffset() * 60000)).toISOString();
+                this.message.startDate = dayjs.utc(this.originalMessage.startDate).local().format('YYYY-MM-DD');
+                this.message.endDate = dayjs.utc(this.originalMessage.endDate).local().format('YYYY-MM-DD');
+                
                 if (!!this.originalMessage.color) {
                     this.message.color = this.originalMessage.color;
                 }
@@ -261,6 +263,10 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
         let promise;
         let key: string;
         this.loadedLanguages.forEach(lang => this.message.contents[lang] = this.replaceItalicTags(this.message.contents[lang]));
+       
+        this.message.startDate = dayjs(this.message.startDate).startOf('day').toISOString();
+        this.message.endDate = dayjs(this.message.endDate).endOf('day').toISOString();
+
         if (this.action === 'edit') {
             promise = MessageFlashService.editMessage(this.message);
             key = 'edit';
