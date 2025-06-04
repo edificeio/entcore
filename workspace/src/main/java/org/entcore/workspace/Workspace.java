@@ -22,6 +22,8 @@ package org.entcore.workspace;
 import java.util.HashMap;
 
 import io.vertx.core.Promise;
+import org.entcore.broker.api.utils.AddressParameter;
+import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.folders.QuotaService;
 import org.entcore.common.http.BaseServer;
@@ -36,6 +38,7 @@ import org.entcore.workspace.controllers.AudioRecorderHandler;
 import org.entcore.workspace.controllers.QuotaController;
 import org.entcore.workspace.controllers.WorkspaceController;
 import org.entcore.workspace.dao.DocumentDao;
+import org.entcore.workspace.listeners.ResourceBrokerListenerImpl;
 import org.entcore.workspace.security.WorkspaceResourcesProvider;
 import org.entcore.workspace.service.WorkspaceService;
 import org.entcore.workspace.service.impl.*;
@@ -128,6 +131,8 @@ public class Workspace extends BaseServer {
 			vertx.createHttpServer(options).webSocketHandler(new AudioRecorderHandler(vertx))
 					.listen(config.getInteger("wsPort"));
 		}
+		// add broker listener for workspace resources
+		BrokerProxyUtils.addBrokerProxy(new ResourceBrokerListenerImpl(), vertx, new AddressParameter("application", "workspace"));
 
 	}
 

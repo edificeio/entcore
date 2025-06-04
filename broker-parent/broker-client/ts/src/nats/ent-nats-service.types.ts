@@ -281,3 +281,156 @@ export interface RegisterTranslationFilesResponseDTO {
   translationsCount?: number;
 }
 
+export interface GetResourcesRequestDTO {
+  resourceIds?: string[];
+}
+
+
+export interface GetResourcesResponseDTO {
+  resources?: ResourceInfoDTO[];
+}
+export interface ResourceInfoDTO {
+  id?: string;
+  title?: string;
+  description?: string;
+  thumbnail?: string;
+  authorName?: string;
+  authorId?: string;
+  creationDate?: Date;
+  modificationDate?: Date2;
+}
+export interface Date {
+  gcal?: BaseCalendar;
+  jcal?: BaseCalendar1;
+  fastTime?: number;
+  cdate?: Date1;
+  defaultCenturyStart?: number;
+  serialVersionUID?: number;
+  wtb?: string[];
+  ttb?: number[];
+}
+export interface BaseCalendar {
+  JANUARY?: number;
+  FEBRUARY?: number;
+  MARCH?: number;
+  APRIL?: number;
+  MAY?: number;
+  JUNE?: number;
+  JULY?: number;
+  AUGUST?: number;
+  SEPTEMBER?: number;
+  OCTOBER?: number;
+  NOVEMBER?: number;
+  DECEMBER?: number;
+  SUNDAY?: number;
+  MONDAY?: number;
+  TUESDAY?: number;
+  WEDNESDAY?: number;
+  THURSDAY?: number;
+  FRIDAY?: number;
+  SATURDAY?: number;
+  BASE_YEAR?: number;
+  FIXED_DATES?: number[];
+  DAYS_IN_MONTH?: number[];
+  ACCUMULATED_DAYS_IN_MONTH?: number[];
+  ACCUMULATED_DAYS_IN_MONTH_LEAP?: number[];
+}
+export interface BaseCalendar1 {
+  JANUARY?: number;
+  FEBRUARY?: number;
+  MARCH?: number;
+  APRIL?: number;
+  MAY?: number;
+  JUNE?: number;
+  JULY?: number;
+  AUGUST?: number;
+  SEPTEMBER?: number;
+  OCTOBER?: number;
+  NOVEMBER?: number;
+  DECEMBER?: number;
+  SUNDAY?: number;
+  MONDAY?: number;
+  TUESDAY?: number;
+  WEDNESDAY?: number;
+  THURSDAY?: number;
+  FRIDAY?: number;
+  SATURDAY?: number;
+  BASE_YEAR?: number;
+  FIXED_DATES?: number[];
+  DAYS_IN_MONTH?: number[];
+  ACCUMULATED_DAYS_IN_MONTH?: number[];
+  ACCUMULATED_DAYS_IN_MONTH_LEAP?: number[];
+}
+export interface Date1 {
+  cachedYear?: number;
+  cachedFixedDateJan1?: number;
+  cachedFixedDateNextJan1?: number;
+}
+export interface Date2 {
+  gcal?: BaseCalendar2;
+  jcal?: BaseCalendar3;
+  fastTime?: number;
+  cdate?: Date3;
+  defaultCenturyStart?: number;
+  serialVersionUID?: number;
+  wtb?: string[];
+  ttb?: number[];
+}
+export interface BaseCalendar2 {
+  JANUARY?: number;
+  FEBRUARY?: number;
+  MARCH?: number;
+  APRIL?: number;
+  MAY?: number;
+  JUNE?: number;
+  JULY?: number;
+  AUGUST?: number;
+  SEPTEMBER?: number;
+  OCTOBER?: number;
+  NOVEMBER?: number;
+  DECEMBER?: number;
+  SUNDAY?: number;
+  MONDAY?: number;
+  TUESDAY?: number;
+  WEDNESDAY?: number;
+  THURSDAY?: number;
+  FRIDAY?: number;
+  SATURDAY?: number;
+  BASE_YEAR?: number;
+  FIXED_DATES?: number[];
+  DAYS_IN_MONTH?: number[];
+  ACCUMULATED_DAYS_IN_MONTH?: number[];
+  ACCUMULATED_DAYS_IN_MONTH_LEAP?: number[];
+}
+export interface BaseCalendar3 {
+  JANUARY?: number;
+  FEBRUARY?: number;
+  MARCH?: number;
+  APRIL?: number;
+  MAY?: number;
+  JUNE?: number;
+  JULY?: number;
+  AUGUST?: number;
+  SEPTEMBER?: number;
+  OCTOBER?: number;
+  NOVEMBER?: number;
+  DECEMBER?: number;
+  SUNDAY?: number;
+  MONDAY?: number;
+  TUESDAY?: number;
+  WEDNESDAY?: number;
+  THURSDAY?: number;
+  FRIDAY?: number;
+  SATURDAY?: number;
+  BASE_YEAR?: number;
+  FIXED_DATES?: number[];
+  DAYS_IN_MONTH?: number[];
+  ACCUMULATED_DAYS_IN_MONTH?: number[];
+  ACCUMULATED_DAYS_IN_MONTH_LEAP?: number[];
+}
+export interface Date3 {
+  cachedYear?: number;
+  cachedFixedDateJan1?: number;
+  cachedFixedDateNextJan1?: number;
+}
+

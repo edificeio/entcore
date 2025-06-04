@@ -14,6 +14,7 @@ import { GetUsersByIdsRequestDTO } from './ent-nats-service.types';
 import { AppRegistrationRequestDTO } from './ent-nats-service.types';
 import { FetchTranslationsRequestDTO } from './ent-nats-service.types';
 import { RegisterTranslationFilesRequestDTO } from './ent-nats-service.types';
+import { GetResourcesRequestDTO } from './ent-nats-service.types';
 import { UpsertGroupSharesResponseDTO } from './ent-nats-service.types';
 import { RemoveGroupSharesResponseDTO } from './ent-nats-service.types';
 import { FindSessionResponseDTO } from './ent-nats-service.types';
@@ -28,6 +29,7 @@ import { GetUsersByIdsResponseDTO } from './ent-nats-service.types';
 import { AppRegistrationResponseDTO } from './ent-nats-service.types';
 import { FetchTranslationsResponseDTO } from './ent-nats-service.types';
 import { RegisterTranslationFilesResponseDTO } from './ent-nats-service.types';
+import { GetResourcesResponseDTO } from './ent-nats-service.types';
 
 
 @Injectable()
@@ -187,6 +189,16 @@ export class EntNatsServiceClient {
       throw new Error('No reply received');
     }
     return JSON.parse(reply) as RegisterTranslationFilesResponseDTO;
+  }
+        
+  
+  async resourceGetByApplication(event: GetResourcesRequestDTO): Promise<GetResourcesResponseDTO> {
+    const eventAddress = this.getSubject(`resource.get.${this.application}`);
+    const reply = await firstValueFrom(this.natsClient.send(eventAddress, event));
+    if(!reply) {
+      throw new Error('No reply received');
+    }
+    return JSON.parse(reply) as GetResourcesResponseDTO;
   }
         
 
