@@ -101,20 +101,22 @@ public interface ShareService {
 	default JsonObject sharedArrayToSharedObject(final JsonArray sharedArray){
 		// Create a new JsonObject to hold the separated data
 		final JsonObject sharePayload = new JsonObject();
-		sharePayload.put("users", new JsonArray());
-		sharePayload.put("groups", new JsonArray());
-		sharePayload.put("bookmarks", new JsonArray());
+		sharePayload.put("users", new JsonObject());
+		sharePayload.put("groups", new JsonObject());
+		sharePayload.put("bookmarks", new JsonObject());
 		// Iterate through the sharedArray and separate the data
 		for(int i = 0; i < sharedArray.size(); i++){
 			final JsonObject share = sharedArray.getJsonObject(i);
 			if (share != null) {
 				final JsonArray keys = new JsonArray(new ArrayList(share.fieldNames()));
-				if (share.getValue("userId") != null) {
-					keys.remove("userId");
-					sharePayload.getJsonArray("users").addAll(keys);
-				} else if (share.getValue("groupId") != null) {
-					keys.remove("groupId");
-					sharePayload.getJsonArray("groups").addAll(keys);
+				final Object userId = share.getValue("userId");
+				final Object groupId = share.getValue("groupId");
+				keys.remove("groupId");
+				keys.remove("userId");
+				if (userId != null) {
+					sharePayload.getJsonObject("users").put(userId.toString(), keys);
+				} else if (groupId != null) {
+					sharePayload.getJsonObject("groups").put(groupId.toString(), keys);
 				}
 			}
 		}
