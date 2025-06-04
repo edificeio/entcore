@@ -43,12 +43,14 @@ public class NATSBrokerClient implements BrokerClient {
   private final String serverId = UUID.randomUUID().toString();
   private final Set<String> subscriptions = new HashSet<>();
   private final Map<String, Object> listeners = new HashMap<>();
+  private final String queueName;
 
   public NATSBrokerClient(final Vertx vertx) {
     this.vertx = vertx;
     final JsonObject conf = vertx.getOrCreateContext().config();
     final JsonObject natsRawConf = conf.getJsonObject("nats");
     defaultTimeout = conf.getLong("request-default-imeout", 5000L);
+    queueName = conf.getString("queue-name", "entcore");
     io.nats.client.Options.Builder builder = new io.nats.client.Options.Builder(getNatsProperties(natsRawConf));
     final NatsOptions natsOptions = new NatsOptions()
       .setNatsBuilder(builder)
@@ -75,7 +77,7 @@ public class NATSBrokerClient implements BrokerClient {
         continue;
       }
       try {
-        this.natsClient.subscribe(transformToWildcard(endpoint.getSubject()), msg -> {
+        this.natsClient.subscribe(transformToWildcard(endpoint.getSubject()), this.queueName, msg -> {
           final Promise<Object> promise = Promise.promise();
             try {
               // call the real subject without wildcard
@@ -266,7 +268,7 @@ public class NATSBrokerClient implements BrokerClient {
     if (subscriptions.contains(subject)) {
       throw new IllegalStateException("already.listening.on.subject." + subject);
     }
-    return natsClient.subscribe(transformToWildcard(subject), msg -> {
+    return natsClient.subscribe(transformToWildcard(subject), this.queueName, msg -> {
       try {
         final K request = mapper.readValue(new String(msg.getData(), charset), listener.getRequestType());
         final Future<V> futureResponse = listener.onMessage(request, msg.getSubject());
