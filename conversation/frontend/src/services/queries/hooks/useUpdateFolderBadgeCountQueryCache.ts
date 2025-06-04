@@ -16,14 +16,6 @@ export const useUpdateFolderBadgeCountQueryCache = () => {
           return { count: count + countDelta };
         },
       );
-
-      // Update conversation navbar count unread
-      queryClient.setQueryData(
-        ['conversation-navbar-count'],
-        ({ count }: { count: number }) => {
-          return { count: count + countDelta };
-        },
-      );
     } else if (folderId === 'draft') {
       // Update draft count
       queryClient.setQueryData(
