@@ -50,6 +50,10 @@ import type { FindSessionRequestDTO } from './types';
 
 import type { FindSessionResponseDTO } from './types';
 
+import type { GetResourcesRequestDTO } from './types';
+
+import type { GetResourcesResponseDTO } from './types';
+
 import type { GetUserDisplayNamesRequestDTO } from './types';
 
 import type { GetUserDisplayNamesResponseDTO } from './types';
@@ -160,6 +164,18 @@ export class EntNatsServiceClient {
       throw new Error('No reply received');
     }
     return reply as FindSessionResponseDTO;
+  }
+  
+  
+  
+  async getResources(request: GetResourcesRequestDTO, application: string): Promise<GetResourcesResponseDTO> {
+    const eventAddress = "resource.get." + application + "";
+    console.debug("Sending request to NATS subject, " + eventAddress);
+    const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
+    if(!reply) {
+      throw new Error('No reply received');
+    }
+    return reply as GetResourcesResponseDTO;
   }
   
   
