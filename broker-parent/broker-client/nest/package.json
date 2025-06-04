@@ -1,5 +1,5 @@
 {
-  "name": "@edifice.io/edifice-ent-client",
+  "name": "entcore-broker-client",
   "version": "6.5-develop-community-SNAPSHOT",
   "description": "Clients to interact with ent-nats-service",
   "scripts": {
