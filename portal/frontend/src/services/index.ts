@@ -1,9 +1,5 @@
-/**
- * API
- */
+/* API */
 export * from './api';
 
-/**
- * Queries
- */
-export * from './queries/actions';
+/* Queries */
+export * from './queries';

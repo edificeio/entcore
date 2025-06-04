@@ -9,6 +9,7 @@ import { matchPath } from 'react-router-dom';
 
 import { basename } from '..';
 import { useEffect } from 'react';
+import { ApplicationList } from '~/features/application-list/ApplicationList';
 
 /** Check old format URL and redirect if needed */
 export const loader = async () => {
@@ -52,9 +53,10 @@ export const Root = () => {
 
   return init ? (
     <Layout>
-      <a title="Actualités" href="/actualites">
-        <i className="actualites-large"></i>
-      </a>
+      <header>
+        <h1>Mes applis</h1>
+      </header>
+      <ApplicationList />
     </Layout>
   ) : null;
 };
