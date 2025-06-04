@@ -164,13 +164,6 @@ const useToggleUnread = (unread: boolean) => {
             ? { ...oldMessage, unread }
             : oldMessage,
         );
-
-        // force refetch of the folder messages with filter unread
-        queryClient.invalidateQueries({
-          queryKey: folderQueryOptions.getMessagesQuerykey(folderId, {
-            unread: true,
-          }),
-        });
       }
 
       // Update the message unread status in the message details
