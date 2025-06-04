@@ -4,9 +4,9 @@ import io.vertx.core.json.JsonObject;
 import org.entcore.broker.api.dto.resources.ResourceInfoDTO;
 import org.entcore.broker.proxy.ResourceBrokerListener;
 import org.entcore.common.resources.MongoResourceBrokerListenerImpl;
-import org.entcore.common.utils.DateUtils;
-import org.entcore.common.utils.ResourceUtils;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -20,6 +20,11 @@ public class ResourceBrokerListenerImpl extends MongoResourceBrokerListenerImpl 
      * Name of the MongoDB collection containing workspace documents
      */
     private static final String DOCUMENTS_COLLECTION = "documents";
+    
+    /**
+     * Date format used in the documents collection
+     */
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm.ss.SSS");
 
     /**
      * Create a new MongoDB implementation of ResourceBrokerListener.
@@ -49,24 +54,21 @@ public class ResourceBrokerListenerImpl extends MongoResourceBrokerListenerImpl 
             final String description = "";
             
             // Get thumbnail from thumbnails object if available
-            String thumbnail =  resource.getString("thumbnail");
-            if (thumbnail == null || thumbnail.isEmpty()) {
-                final JsonObject metadata = resource.getJsonObject("metadata");
-                if (metadata != null) {
-                    final String contentType = metadata.getString("content-type", "");
-                    if (contentType.startsWith("image/")) {
-                        thumbnail = ResourceUtils.WORKSPACE_DOCUMENT_PATH + "/" + id;
-                    }
-                }
+            String thumbnail = "";
+            JsonObject thumbnails = resource.getJsonObject("thumbnails");
+            if (thumbnails != null && !thumbnails.isEmpty()) {
+                // Get the first thumbnail available (e.g. "640x480")
+                String firstKey = thumbnails.fieldNames().iterator().next();
+                thumbnail = thumbnails.getString(firstKey, "");
             }
             
             // Extract user information - different structure
             final String authorId = resource.getString("owner", "");
             final String authorName = resource.getString("ownerName", "");
             
-            // Parse dates from string format using the centralized DateUtils
-            final Date creationDate = DateUtils.parseDotSeparatedDate(resource.getString("created"));
-            final Date modificationDate = DateUtils.parseDotSeparatedDate(resource.getString("modified"));
+            // Parse dates from string format
+            final Date creationDate = parseStringDate(resource.getString("created"));
+            final Date modificationDate = parseStringDate(resource.getString("modified"));
             
             return new ResourceInfoDTO(
                 id,
@@ -81,6 +83,24 @@ public class ResourceBrokerListenerImpl extends MongoResourceBrokerListenerImpl 
         } catch (Exception e) {
             log.error("Error converting Workspace document to ResourceInfoDTO", e);
             return null;
+        }
+    }
+    
+    /**
+     * Parse date from workspace format (string) to Date object
+     * @param dateStr Date string in format "yyyy-MM-dd HH:mm.ss.SSS"
+     * @return Parsed Date or current date if parsing fails
+     */
+    private Date parseStringDate(String dateStr) {
+        if (dateStr == null || dateStr.isEmpty()) {
+            return new Date();
+        }
+        
+        try {
+            return DATE_FORMAT.parse(dateStr);
+        } catch (ParseException e) {
+            log.warn("Failed to parse date: " + dateStr, e);
+            return new Date();
         }
     }
 }

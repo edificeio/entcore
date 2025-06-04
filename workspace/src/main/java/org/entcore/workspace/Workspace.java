@@ -24,7 +24,6 @@ import java.util.Map;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.broker.api.utils.AddressParameter;
 import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.folders.FolderManager;
@@ -42,7 +41,6 @@ import org.entcore.workspace.controllers.QuotaController;
 import org.entcore.workspace.controllers.WorkspaceController;
 import org.entcore.workspace.dao.DocumentDao;
 import org.entcore.workspace.listeners.ResourceBrokerListenerImpl;
-import org.entcore.workspace.listeners.WorkspaceShareBrokerListener;
 import org.entcore.workspace.security.WorkspaceResourcesProvider;
 import org.entcore.workspace.service.WorkspaceService;
 import org.entcore.workspace.service.impl.*;
@@ -148,11 +146,7 @@ public class Workspace extends BaseServer {
 			vertx.createHttpServer(options).webSocketHandler(new AudioRecorderHandler(vertx))
 					.listen(config.getInteger("wsPort"));
 		}
-		// add broker listener for workspace resources with share support
-		WorkspaceShareBrokerListener shareBrokerListener = new WorkspaceShareBrokerListener(
-				securedActions, shareService, folderManager);
-		BrokerProxyUtils.addBrokerProxy(shareBrokerListener, vertx, new AddressParameter("application", "workspace"));
-		// add broker listener for workspace resources (for resource info queries)
+		// add broker listener for workspace resources
 		BrokerProxyUtils.addBrokerProxy(new ResourceBrokerListenerImpl(), vertx, new AddressParameter("application", "workspace"));
 
 		return Future.succeededFuture();

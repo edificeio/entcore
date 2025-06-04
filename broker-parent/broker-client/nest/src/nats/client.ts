@@ -20,9 +20,17 @@ import { Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 
+import type { AddCommunicationLinksRequestDTO } from './types';
+
+import type { AddCommunicationLinksResponseDTO } from './types';
+
 import type { AddGroupMemberRequestDTO } from './types';
 
 import type { AddGroupMemberResponseDTO } from './types';
+
+import type { AddLinkBetweenGroupsRequestDTO } from './types';
+
+import type { AddLinkBetweenGroupsResponseDTO } from './types';
 
 import type { AppRegistrationRequestDTO } from './types';
 
@@ -50,6 +58,10 @@ import type { FindSessionRequestDTO } from './types';
 
 import type { FindSessionResponseDTO } from './types';
 
+import type { GetResourcesRequestDTO } from './types';
+
+import type { GetResourcesResponseDTO } from './types';
+
 import type { GetUserDisplayNamesRequestDTO } from './types';
 
 import type { GetUserDisplayNamesResponseDTO } from './types';
@@ -62,9 +74,17 @@ import type { ListenAndAnswerDTO } from './types';
 
 import type { ListenOnlyDTO } from './types';
 
+import type { RecreateCommunicationLinksRequestDTO } from './types';
+
+import type { RecreateCommunicationLinksResponseDTO } from './types';
+
 import type { RegisterTranslationFilesRequestDTO } from './types';
 
 import type { RegisterTranslationFilesResponseDTO } from './types';
+
+import type { RemoveCommunicationLinksRequestDTO } from './types';
+
+import type { RemoveCommunicationLinksResponseDTO } from './types';
 
 import type { RemoveGroupMemberRequestDTO } from './types';
 
@@ -92,6 +112,18 @@ export class EntNatsServiceClient {
 
   
   
+  async addCommunicationLinks(request: AddCommunicationLinksRequestDTO): Promise<AddCommunicationLinksResponseDTO> {
+    const eventAddress = "communication.link.users.add";
+    console.debug("Sending request to NATS subject, " + eventAddress);
+    const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
+    if(!reply) {
+      throw new Error('No reply received');
+    }
+    return reply as AddCommunicationLinksResponseDTO;
+  }
+  
+  
+  
   async addGroupMember(request: AddGroupMemberRequestDTO): Promise<AddGroupMemberResponseDTO> {
     const eventAddress = "directory.group.member.add";
     console.debug("Sending request to NATS subject, " + eventAddress);
@@ -100,6 +132,18 @@ export class EntNatsServiceClient {
       throw new Error('No reply received');
     }
     return reply as AddGroupMemberResponseDTO;
+  }
+  
+  
+  
+  async addLinkBetweenGroups(request: AddLinkBetweenGroupsRequestDTO): Promise<AddLinkBetweenGroupsResponseDTO> {
+    const eventAddress = "communication.link.groups.add";
+    console.debug("Sending request to NATS subject, " + eventAddress);
+    const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
+    if(!reply) {
+      throw new Error('No reply received');
+    }
+    return reply as AddLinkBetweenGroupsResponseDTO;
   }
   
   
@@ -164,6 +208,18 @@ export class EntNatsServiceClient {
   
   
   
+  async getResources(request: GetResourcesRequestDTO, application: string): Promise<GetResourcesResponseDTO> {
+    const eventAddress = "resource.get." + application + "";
+    console.debug("Sending request to NATS subject, " + eventAddress);
+    const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
+    if(!reply) {
+      throw new Error('No reply received');
+    }
+    return reply as GetResourcesResponseDTO;
+  }
+  
+  
+  
   async getUserDisplayNames(request: GetUserDisplayNamesRequestDTO): Promise<GetUserDisplayNamesResponseDTO> {
     const eventAddress = "directory.users.get.displaynames";
     console.debug("Sending request to NATS subject, " + eventAddress);
@@ -207,6 +263,18 @@ export class EntNatsServiceClient {
   
   
   
+  async recreateCommunicationLinks(request: RecreateCommunicationLinksRequestDTO): Promise<RecreateCommunicationLinksResponseDTO> {
+    const eventAddress = "communication.link.users.recreate";
+    console.debug("Sending request to NATS subject, " + eventAddress);
+    const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
+    if(!reply) {
+      throw new Error('No reply received');
+    }
+    return reply as RecreateCommunicationLinksResponseDTO;
+  }
+  
+  
+  
   async registerApp(request: AppRegistrationRequestDTO): Promise<AppRegistrationResponseDTO> {
     const eventAddress = "ent.appregistry.app.register";
     console.debug("Sending request to NATS subject, " + eventAddress);
@@ -227,6 +295,18 @@ export class EntNatsServiceClient {
       throw new Error('No reply received');
     }
     return reply as RegisterTranslationFilesResponseDTO;
+  }
+  
+  
+  
+  async removeCommunicationLinks(request: RemoveCommunicationLinksRequestDTO): Promise<RemoveCommunicationLinksResponseDTO> {
+    const eventAddress = "communication.link.users.remove";
+    console.debug("Sending request to NATS subject, " + eventAddress);
+    const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
+    if(!reply) {
+      throw new Error('No reply received');
+    }
+    return reply as RemoveCommunicationLinksResponseDTO;
   }
   
   

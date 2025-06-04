@@ -1,5 +1,6 @@
 package org.entcore.common.share.impl;
 
+import fr.wseduc.webutils.security.SecuredAction;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
@@ -10,6 +11,7 @@ import org.entcore.broker.api.dto.shares.SharesResponseDTO;
 import org.entcore.broker.api.dto.shares.UpsertGroupSharesRequestDTO;
 import org.entcore.broker.api.dto.shares.UpsertGroupSharesResponseDTO;
 import org.entcore.broker.proxy.ShareBrokerListener;
+import org.entcore.common.share.ShareRoles;
 import org.entcore.common.share.ShareService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,14 +27,15 @@ public class ShareBrokerListenerImpl implements ShareBrokerListener {
 
     private static final Logger log = LoggerFactory.getLogger(ShareBrokerListenerImpl.class);
     private final ShareService shareService;
-
+    private final Map<String, SecuredAction> securedActions;
     /**
      * Creates a new ShareBrokerListenerMongo with specified resource ID field.
      * 
      * @param shareService The ShareService instance to be used for share operations
      */
-    public ShareBrokerListenerImpl(final ShareService shareService) {
+    public ShareBrokerListenerImpl(final Map<String, SecuredAction> securedActions, final ShareService shareService) {
         this.shareService = shareService;
+        this.securedActions = securedActions;
     }
 
     /**
@@ -52,9 +55,10 @@ public class ShareBrokerListenerImpl implements ShareBrokerListener {
         }
 
         // Convert permissions to JSON array format expected by MongoDbShareService
-        final JsonObject share = new JsonObject().put("groupId", request.getGroupId());
-        for (String permission : request.getPermissions()) {
-            share.put(permission, true);
+        final JsonArray shares = new JsonArray();
+        for (final String permission : request.getPermissions()) {
+            final List<String> actions = ShareRoles.getSecuredActionNameByRole(permission, this.securedActions);
+            shares.addAll(new JsonArray(actions));
         }
         
         // Call the share service to update the shares
@@ -64,12 +68,12 @@ public class ShareBrokerListenerImpl implements ShareBrokerListener {
                 final Optional<JsonObject> found = sharedArray.stream().filter(shareObj -> shareObj instanceof JsonObject)
                         .map(shareObj -> (JsonObject) shareObj)
                         .filter(shareObj -> shareObj.getString("groupId").equals(request.getGroupId())).findFirst();
-                if (found.isPresent()) {
-                    found.get().mergeIn(share);
-                } else {
-                    sharedArray.add(share);
-                }
+                // add shares to request groupId
                 final JsonObject sharedObject = shareService.sharedArrayToSharedObject(sharedArray);
+                final JsonObject groups = sharedObject.getJsonObject("groups", new JsonObject());
+                groups.put(request.getGroupId(), shares);
+                sharedObject.put("groups", groups);
+                // trigger share
                 shareService.share(request.getCurrentUserId(), request.getResourceId(), sharedObject, event -> {
                     if (event.isLeft()) {
                         log.error("Error sharing resource: {}", event.left().getValue());

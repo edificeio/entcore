@@ -28,4 +28,6 @@ export type { FetchTranslationsRequestDTO } from './ent-nats-service.types';
 export type { FetchTranslationsResponseDTO } from './ent-nats-service.types';
 export type { RegisterTranslationFilesRequestDTO } from './ent-nats-service.types';
 export type { RegisterTranslationFilesResponseDTO } from './ent-nats-service.types';
+export type { GetResourcesRequestDTO } from './ent-nats-service.types';
+export type { GetResourcesResponseDTO } from './ent-nats-service.types';
 export { EntNatsServiceClient } from './ent-nats-service.client';
