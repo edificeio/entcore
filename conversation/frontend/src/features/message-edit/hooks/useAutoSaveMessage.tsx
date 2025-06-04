@@ -24,6 +24,7 @@ export const useAutoSaveMessage = () => {
 
   useEffect(() => {
     if (messageUpdatedNeedSaveDebounced && messageUpdatedNeedSave) {
+      console.log('Will Save:');
       createOrUpdateDraft();
       setMessageNeedToSave(false);
     }

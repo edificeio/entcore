@@ -148,7 +148,7 @@ export const useFolderUtils = () => {
   );
 
   /** Update some messages metadata in the list of a folder's messages. */
-  function updateFolderMessagesQueryData(
+  function updateFolderMessagesQueryCache(
     folderId: string,
     updater: (oldMessage: MessageMetadata) => MessageMetadata,
     reOrder: boolean = false,
@@ -181,7 +181,7 @@ export const useFolderUtils = () => {
     );
   }
 
-  return { getFolderNameById, updateFolderMessagesQueryData };
+  return { getFolderNameById, updateFolderMessagesQueryCache };
 };
 
 /**
@@ -374,51 +374,4 @@ export const useTrashFolder = () => {
       });
     },
   });
-};
-
-export const useUpdateFolderBadgeCountLocal = () => {
-  const queryClient = useQueryClient();
-  const updateFolderBadgeCountLocal = (
-    folderId: string,
-    countDelta: number,
-  ) => {
-    if (folderId === 'inbox') {
-      // Update inbox count unread
-      queryClient.setQueryData(
-        ['folder', 'inbox', 'count', { unread: true }],
-        ({ count }: { count: number }) => {
-          return { count: count + countDelta };
-        },
-      );
-    } else if (folderId === 'draft') {
-      // Update draft count
-      queryClient.setQueryData(
-        ['folder', 'draft', 'count', null],
-        ({ count }: { count: number }) => {
-          return { count: count + countDelta };
-        },
-      );
-    } else if (!['inbox', 'trash', 'draft', 'outbox'].includes(folderId)) {
-      // Update custom folder count unread
-      queryClient.setQueryData(['folder', 'tree'], (folders: Folder[]) => {
-        // go trow the folder tree to find the folder to update
-        const result = searchFolder(folderId, folders);
-        if (!result?.parent) {
-          return folders.map((folder) => {
-            if (folder.id === folderId) {
-              return { ...folder, nbUnread: folder.nbUnread + countDelta };
-            }
-            return folder;
-          });
-        } else if (result?.folder) {
-          result.folder = {
-            ...result.folder,
-            nbUnread: result.folder.nbUnread + countDelta,
-          };
-          return [...folders];
-        }
-      });
-    }
-  };
-  return { updateFolderBadgeCountLocal };
 };
