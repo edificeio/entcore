@@ -27,6 +27,7 @@
     "@angular/router": "^14.1.1",
     "axios": "^0.19.0",
     "chardet": "^1.4.0",
+    "dayjs": "^1.11.13",
     "entcore-generic-icons": "https://github.com/opendigitaleducation/generic-icons.git",
     "entcore-toolkit": "^1.4.0",
     "flatpickr": "2.6.1",
