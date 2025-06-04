@@ -69,8 +69,14 @@ public interface ConversationService {
 
 	void saveDraft(String parentMessageId, String threadId, JsonObject message, UserInfos user,
 			Handler<Either<String, JsonObject>> result, HttpServerRequest request);
+	// Use before sending a draft.
+	void saveDraftAsMessage(String parentMessageId, String threadId, JsonObject message, UserInfos user,
+			Handler<Either<String, JsonObject>> result, HttpServerRequest request);
 
 	void updateDraft(String messageId, JsonObject message, UserInfos user,
+			Handler<Either<String, JsonObject>> result, HttpServerRequest request);
+	// Use before sending a draft.
+	void updateDraftAsMessage(String messageId, JsonObject message, UserInfos user,
 			Handler<Either<String, JsonObject>> result, HttpServerRequest request);
 
 	/**
@@ -125,7 +131,7 @@ public interface ConversationService {
 
 	Future<String> getOriginalMessageContent(String messageId);
 
-	Future<ContentTransformerResponse> transformMessageContent(String originalMessageContent, String messageId, HttpServerRequest request);
+	Future<ContentTransformerResponse> transformMessageContent(String originalMessageContent, String messageId, boolean isDraft, HttpServerRequest request);
 
 	Future<Void> updateMessageContent(String messageId, String body, int contentVersion);
 
