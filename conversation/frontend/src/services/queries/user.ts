@@ -93,11 +93,6 @@ function applySearchRules(
   getVisibleStrategy: Config['getVisibleStrategy'],
   search: string,
 ) {
-  // Do not search unless at least 3 characters are typed in.
-  if (isAdml && (!search || search.length < 3)) {
-    return { triggerSearch: false };
-  }
-
   const backendFiltering = 'all-at-once' !== getVisibleStrategy || isAdml;
   const startText = backendFiltering ? search.substring(0, 3) : undefined;
   const frontendFiltering = !backendFiltering || search.length > 3;
