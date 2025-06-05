@@ -1,9 +1,3 @@
-/*
- * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- This is a starter file and can be deleted.
- * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- Delete this file and get started with your project!
- * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- */
+import { createApplicationsService } from './applicationsService';
 
-export const baseUrl = '/app';
+export const applicationsService = createApplicationsService();
