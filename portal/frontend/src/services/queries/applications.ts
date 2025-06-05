@@ -8,6 +8,8 @@ export const useApplications = () => {
   });
 
   return {
-    applications: query.data?.apps
-  }
+    applications: query.data?.apps,
+    isLoading: query.isLoading,
+    isError: query.isError,
+  };
 };
