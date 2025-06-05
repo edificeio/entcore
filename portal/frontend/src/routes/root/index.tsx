@@ -4,9 +4,7 @@ import {
   useEdificeClient,
   useEdificeTheme,
 } from '@edifice.io/react';
-
 import { matchPath } from 'react-router-dom';
-
 import { basename } from '..';
 import { useEffect } from 'react';
 import { MyAppLayout } from '~/layouts/MyAppsLayout';
@@ -35,17 +33,18 @@ export const Root = () => {
   const { init } = useEdificeClient();
   const { theme } = useEdificeTheme();
 
-  // Load theme
+  // Load theme for icons
   useEffect(() => {
-    if (!theme || !theme.themeUrl) return;
-    const url = `${theme.themeUrl}theme.css`;
+    if (!theme) return;
+    const themeName = theme.is1d ? 'one' : 'neo';
+    const url = `/assets/themes/ode-bootstrap-${themeName}/skins/default/theme.css`;
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = url;
     document.head.appendChild(link);
 
     return () => {
-      document.head.removeChild(link); // Nettoyage à la désactivation du composant
+      document.head.removeChild(link);
     };
   }, [theme]);
 
