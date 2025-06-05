@@ -20,6 +20,8 @@ export type { FindGroupByExternalIdRequestDTO } from './ent-nats-service.types';
 export type { FindGroupByExternalIdResponseDTO } from './ent-nats-service.types';
 export type { GetUserDisplayNamesRequestDTO } from './ent-nats-service.types';
 export type { GetUserDisplayNamesResponseDTO } from './ent-nats-service.types';
+export type { GetUsersByIdsRequestDTO } from './ent-nats-service.types';
+export type { GetUsersByIdsResponseDTO } from './ent-nats-service.types';
 export type { AppRegistrationRequestDTO } from './ent-nats-service.types';
 export type { AppRegistrationResponseDTO } from './ent-nats-service.types';
 export type { FetchTranslationsRequestDTO } from './ent-nats-service.types';

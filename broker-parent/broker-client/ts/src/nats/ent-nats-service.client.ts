@@ -10,6 +10,7 @@ import { AddGroupMemberRequestDTO } from './ent-nats-service.types';
 import { RemoveGroupMemberRequestDTO } from './ent-nats-service.types';
 import { FindGroupByExternalIdRequestDTO } from './ent-nats-service.types';
 import { GetUserDisplayNamesRequestDTO } from './ent-nats-service.types';
+import { GetUsersByIdsRequestDTO } from './ent-nats-service.types';
 import { AppRegistrationRequestDTO } from './ent-nats-service.types';
 import { FetchTranslationsRequestDTO } from './ent-nats-service.types';
 import { RegisterTranslationFilesRequestDTO } from './ent-nats-service.types';
@@ -23,6 +24,7 @@ import { AddGroupMemberResponseDTO } from './ent-nats-service.types';
 import { RemoveGroupMemberResponseDTO } from './ent-nats-service.types';
 import { FindGroupByExternalIdResponseDTO } from './ent-nats-service.types';
 import { GetUserDisplayNamesResponseDTO } from './ent-nats-service.types';
+import { GetUsersByIdsResponseDTO } from './ent-nats-service.types';
 import { AppRegistrationResponseDTO } from './ent-nats-service.types';
 import { FetchTranslationsResponseDTO } from './ent-nats-service.types';
 import { RegisterTranslationFilesResponseDTO } from './ent-nats-service.types';
@@ -136,6 +138,16 @@ export class EntNatsServiceClient {
       throw new Error('No reply received');
     }
     return JSON.parse(reply) as GetUserDisplayNamesResponseDTO;
+  }
+        
+  
+  async directoryUsersGetByids(event: GetUsersByIdsRequestDTO): Promise<GetUsersByIdsResponseDTO> {
+    const eventAddress = this.getSubject(`directory.users.get.byids`);
+    const reply = await firstValueFrom(this.natsClient.send(eventAddress, event));
+    if(!reply) {
+      throw new Error('No reply received');
+    }
+    return JSON.parse(reply) as GetUsersByIdsResponseDTO;
   }
         
   
