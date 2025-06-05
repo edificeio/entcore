@@ -2,8 +2,7 @@ import { ApplicationIcon } from "~/components/ApplicationIcon"
 import { useApplications } from "~/services"
 
 export function ApplicationList() {
-  const { applications } = useApplications()
-  console.log(applications)
+  const { applications } = useApplications();
     return (
       <div
         className="d-flex flex-wrap gap-16 justify-content-center mx-auto"

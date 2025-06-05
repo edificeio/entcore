@@ -1,16 +1,27 @@
 import { Application } from "~/models/application";
 import './application-icon.css';
 import { useTranslation } from 'react-i18next';
+import { getIconClass } from '~/utils/icon-class-name';
 
 export function ApplicationIcon({ data }: { data: Application }) {
   const { t } = useTranslation();
+  const iconClassName = getIconClass(data);
   return (
     <div style={{ width: 107, height: 127, textAlign: 'center' }}>
-      <a href={data.address} className="application-icon rounded bg-primary">
-        <i className={`${data.icon} ${data.displayName}`} />
+      <a
+        href={data.address}
+        className="application-icon rounded bg-primary mb-8"
+      >
+        <i className={iconClassName} />
       </a>
-      <h1 className="small text-gray-900" style={{ fontFamily: 'Arimo' }}>
-        {t(data.name)}
+      <h1
+        className="small text-gray-900"
+        style={{
+          fontFamily: 'Arimo',
+          fontWeight: 400,
+        }}
+      >
+        {t(data.prefix.substring(1))}
       </h1>
     </div>
   );
