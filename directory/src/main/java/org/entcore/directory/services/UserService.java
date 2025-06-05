@@ -170,4 +170,10 @@ public interface UserService {
 
 	Future<JsonArray> getAttachmentInfos(JsonArray userIds, JsonArray structuresSources);
 
+	/**
+	 * Get users by their IDs with basic profile and function information
+	 * @param userIds List of user IDs to retrieve
+	 * @return Future with a JsonArray containing user information
+	 */
+	Future<JsonArray> getUsersByIds(JsonArray userIds);
 }
