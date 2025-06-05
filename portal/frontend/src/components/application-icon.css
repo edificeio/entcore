@@ -1,0 +1,11 @@
+.application-icon {
+    height: 56px;
+    text-align: center;
+    line-height: 56px;
+    width: 56px;
+    display: inline-block;
+}
+.application-icon i::before {
+    color: white !important;
+    font-size: 30px;
+}
