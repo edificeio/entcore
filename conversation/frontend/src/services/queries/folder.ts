@@ -13,6 +13,8 @@ import { Folder, MessageMetadata } from '~/models';
 import { useConfig } from '~/store';
 import { folderService, searchFolder } from '..';
 
+const PAGE_SIZE = 20;
+
 /**
  * Provides query options for folder-related operations.
  */
@@ -26,7 +28,13 @@ export const folderQueryOptions = {
     folderId: string,
     options: { search?: string; unread?: boolean },
   ) {
-    return [...folderQueryOptions.base, folderId, 'messages', options] as const;
+    return [
+      ...folderQueryOptions.base,
+      'messages',
+      folderId,
+      ,
+      options,
+    ] as const;
   },
 
   /**
@@ -63,8 +71,8 @@ export const folderQueryOptions = {
     return queryOptions({
       queryKey: [
         ...folderQueryOptions.base,
-        folderId,
         'count',
+        folderId,
         options,
       ] as const,
       queryFn: () => folderService.getCount(folderId, options?.unread),
@@ -90,27 +98,23 @@ export const folderQueryOptions = {
       unread?: boolean;
     },
   ) {
-    const pageSize = 20;
-
     return infiniteQueryOptions({
       queryKey: this.getMessagesQuerykey(folderId, options),
       queryFn: ({ pageParam = 0 }) => {
         return folderService.getMessages(folderId, {
           ...options,
           page: pageParam,
-          pageSize,
+          pageSize: PAGE_SIZE,
         });
       },
       staleTime: 5 * 60 * 1000, // 5 minutes
       initialPageParam: 0,
       getNextPageParam: (lastPage: any, _allPages: any, lastPageParam: any) => {
-        if (
-          (pageSize && lastPage?.length < pageSize) ||
-          (!pageSize && lastPage?.length === 0)
-        ) {
-          return undefined;
-        }
-        return lastPageParam + 1;
+        if (lastPage.length === 0) return undefined;
+        const totalItems = lastPage[0].count;
+        const totalPages = Math.ceil(totalItems / PAGE_SIZE);
+        const nextPage = lastPageParam + 1;
+        return nextPage < totalPages ? nextPage : undefined;
       },
     });
   },
