@@ -1413,7 +1413,7 @@ public class DefaultUserService implements UserService {
 		StringBuilder query = new StringBuilder();
 		JsonObject params = new JsonObject().put("uai", new JsonArray(structures));
 
-		query.append("MATCH (s:Structure)<-[:DEPENDS]-(pg:ProfileGroup)")
+		query.append("MATCH (s:Structure)<-[:DEPENDS]-(cpg:ProfileGroup)")
 				.append("<-[:IN]-(u:User) ");
 
 		String filter = "WHERE s.UAI IN {uai} ";
@@ -1476,5 +1476,37 @@ public class DefaultUserService implements UserService {
 		}));
 		return promise.future();
 	}
-
+	
+	@Override
+	public Future<JsonArray> getUsersByIds(JsonArray userIds) {
+		Promise<JsonArray> promise = Promise.promise();
+		
+		if (userIds == null || userIds.isEmpty()) {
+			promise.complete(new JsonArray());
+			return promise.future();
+		}
+		
+		String query =
+				"MATCH (u:User) " +
+				"WHERE u.id IN {userIds} " +
+				"OPTIONAL MATCH u-[rf:HAS_FUNCTION]->(f:Function) " +
+				"RETURN DISTINCT " +
+				"u.id as id, " +
+				"u.displayName as displayName, " +
+				"u.profiles as profiles, " +
+				"COLLECT(DISTINCT [f.externalId, rf.scope]) as functions ";
+		
+		JsonObject params = new JsonObject().put("userIds", userIds);
+		
+		neo.execute(query, params, validResultHandler(event -> {
+			if (event.isRight()) {
+				promise.complete(event.right().getValue());
+			} else {
+				logger.error("Error retrieving users by IDs: {}", event.left().getValue());
+				promise.fail(event.left().getValue());
+			}
+		}));
+		
+		return promise.future();
+	}
 }
