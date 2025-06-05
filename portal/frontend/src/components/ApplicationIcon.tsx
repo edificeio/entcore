@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { getIconClass } from '~/utils/icon-class-name';
 
 export function ApplicationIcon({ data }: { data: Application }) {
-  const { t } = useTranslation();
+  const { t } = useTranslation('common');
   const iconClassName = getIconClass(data);
   return (
     <div style={{ width: 107, height: 127, textAlign: 'center' }}>
