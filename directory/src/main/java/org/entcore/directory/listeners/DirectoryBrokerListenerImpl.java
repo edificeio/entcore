@@ -13,7 +13,9 @@ import org.entcore.directory.services.GroupService;
 import org.entcore.directory.services.UserService;
 import org.entcore.directory.services.impl.DefaultGroupService;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -295,6 +297,90 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
                 promise.fail(error);
             });
         
+        return promise.future();
+    }
+
+    /**
+     * Retrieves users by their ENT IDs including profile and function information
+     *
+     * @param request The request containing a list of user IDs
+     * @return Response with detailed user information
+     */
+    @Override
+    public Future<GetUsersByIdsResponseDTO> getUsersByIds(GetUsersByIdsRequestDTO request) {
+        final Promise<GetUsersByIdsResponseDTO> promise = Promise.promise();
+        
+        // Check if the request is valid
+        if (request == null || !request.isValid()) {
+            log.error("Invalid request for getUsersByIds: {}", request);
+            promise.fail("request.parameters.invalid");
+            return promise.future();
+        }
+        
+        // Convert list of user IDs to JsonArray
+        final JsonArray userIdsArray = new JsonArray(request.getUserIds());
+        
+        // Use the UserService to get users by IDs
+        userService.getUsersByIds(userIdsArray)
+            .onSuccess(usersArray -> {
+                // Transform JsonArray of users to List<UserDTO>
+                List<UserDTO> usersList = new ArrayList<>();
+                
+                for (int i = 0; i < usersArray.size(); i++) {
+                    JsonObject userJson = usersArray.getJsonObject(i);
+                    
+                    String id = userJson.getString("id");
+                    String displayName = userJson.getString("displayName");
+                    
+                    // Extract the first profile from the list or empty string if none
+                    String profile = "";
+                    JsonArray profilesArray = userJson.getJsonArray("profiles");
+                    if (profilesArray != null && profilesArray.size() > 0) {
+                        profile = profilesArray.getString(0);
+                    }
+                    
+                    // Handle functions - convert Neo4j array format to map
+                    Map<String, List<String>> functions = new HashMap<>();
+                    JsonArray functionsArray = userJson.getJsonArray("functions");
+                    if (functionsArray != null) {
+                        for (int j = 0; j < functionsArray.size(); j++) {
+                            JsonArray functionEntry = functionsArray.getJsonArray(j);
+                            if (functionEntry != null && functionEntry.size() >= 2) {
+                                String functionCode = functionEntry.getString(0);
+                                if (functionCode != null) {
+                                    // Extract scope from the second element
+                                    List<String> scope = new ArrayList<>();
+                                    Object scopeObj = functionEntry.getValue(1);
+                                    
+                                    if (scopeObj instanceof JsonArray) {
+                                        JsonArray scopeArray = (JsonArray) scopeObj;
+                                        for (int k = 0; k < scopeArray.size(); k++) {
+                                            String scopeItem = scopeArray.getString(k);
+                                            if (scopeItem != null) {
+                                                scope.add(scopeItem);
+                                            }
+                                        }
+                                    } else if (scopeObj instanceof String) {
+                                        scope.add((String) scopeObj);
+                                    }
+                                    
+                                    functions.put(functionCode, scope);
+                                }
+                            }
+                        }
+                    }
+                    
+                    usersList.add(new UserDTO(id, displayName, profile, functions));
+                }
+                
+                // Return the response DTO with the list of users
+                promise.complete(new GetUsersByIdsResponseDTO(usersList));
+            })
+            .onFailure(error -> {
+                log.error("Error retrieving users by IDs: ", error);
+                promise.fail(error);
+            });
+
         return promise.future();
     }
 }
