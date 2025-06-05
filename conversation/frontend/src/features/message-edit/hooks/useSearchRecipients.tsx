@@ -115,26 +115,21 @@ export const useSearchRecipients = ({
       type: 'isSearching',
       payload: true,
     });
-    const minSearchLength = isAdml ? 3 : 1;
-    if (
-      defaultBookmarks ||
-      debouncedSearchInputValue.length >= minSearchLength ||
-      force
-    ) {
-      let searchVisibles = defaultBookmarks || [];
-      if (
-        debouncedSearchInputValue.length >= minSearchLength ||
-        (force && debouncedSearchInputValue.length > 0)
-      ) {
-        searchVisibles = await searchVisible(debouncedSearchInputValue);
-      }
+    const minSearchLength = !isAdml || force ? 1 : 3;
+
+    let searchVisibles = defaultBookmarks ?? null;
+    if (defaultBookmarks) searchVisibles = defaultBookmarks;
+    if (debouncedSearchInputValue.length >= minSearchLength) {
+      searchVisibles = await searchVisible(debouncedSearchInputValue);
+    }
+
+    if (searchVisibles !== null) {
       updateVisiblesFound(searchVisibles);
     } else {
       dispatch({
         type: 'emptyResult',
         payload: [],
       });
-      Promise.resolve();
     }
 
     dispatch({
