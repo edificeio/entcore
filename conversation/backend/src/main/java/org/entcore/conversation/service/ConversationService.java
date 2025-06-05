@@ -67,15 +67,39 @@ public interface ConversationService {
 
 	List<String> UPDATE_DRAFT_REQUIRED_FIELDS = Arrays.asList("date");
 
+	/**
+	 * Enregistre un nouveau brouillon de message dans la base de données.
+	 *
+	 * @param parentMessageId L'identifiant du message parent, ou {@code null} si ce message n'est pas une réponse.
+	 * @param threadId        L'identifiant du fil de discussion, ou {@code null} pour en créer un nouveau.
+	 * @param message         Le contenu du message à enregistrer (sous forme de {@link JsonObject}).
+	 * @param user            Les informations de l'utilisateur courant.
+	 * @param result          Le handler appelé en retour, contenant soit le message sauvegardé, soit une erreur.
+	 * @param request         La requête HTTP associée (pour la gestion du contexte ou des permissions).
+	 */
 	void saveDraft(String parentMessageId, String threadId, JsonObject message, UserInfos user,
 			Handler<Either<String, JsonObject>> result, HttpServerRequest request);
-	// Use before sending a draft.
+
+	/**
+	 * Same as saveDraft, but to be used right before sending the draft.
+	 */
 	void saveDraftAsMessage(String parentMessageId, String threadId, JsonObject message, UserInfos user,
 			Handler<Either<String, JsonObject>> result, HttpServerRequest request);
 
+	/**
+	 * Met à jour un brouillon de message existant.
+	 *
+	 * @param messageId L'identifiant du message à mettre à jour.
+	 * @param message   Le contenu mis à jour du message (sous forme de {@link JsonObject}).
+	 * @param user      Les informations de l'utilisateur courant.
+	 * @param result    Le handler appelé en retour, contenant soit le message mis à jour, soit une erreur.
+	 * @param request   La requête HTTP associée (pour la gestion du contexte ou des permissions).
+	 */
 	void updateDraft(String messageId, JsonObject message, UserInfos user,
 			Handler<Either<String, JsonObject>> result, HttpServerRequest request);
-	// Use before sending a draft.
+	/**
+	 * Same as updateDraft, but to be used right before sending the draft.
+	 */
 	void updateDraftAsMessage(String messageId, JsonObject message, UserInfos user,
 			Handler<Either<String, JsonObject>> result, HttpServerRequest request);
 
