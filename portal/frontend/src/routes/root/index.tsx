@@ -36,8 +36,7 @@ export const Root = () => {
   // Load theme for icons
   useEffect(() => {
     if (!theme) return;
-    const themeName = theme.is1d ? 'one' : 'neo';
-    const url = `/assets/themes/ode-bootstrap-${themeName}/skins/default/theme.css`;
+    const url = `${theme.themeUrl}/theme.css`;
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = url;
