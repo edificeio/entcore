@@ -173,6 +173,23 @@ export interface GetUserDisplayNamesResponseDTO {
   };
 }
 
+export interface GetUsersByIdsRequestDTO {
+  userIds?: string[];
+}
+
+
+export interface GetUsersByIdsResponseDTO {
+  users?: UserDTO[];
+}
+export interface UserDTO {
+  id?: string;
+  displayName?: string;
+  profiles?: string[];
+  functions?: {
+    [k: string]: string[];
+  };
+}
+
 export interface AppRegistrationRequestDTO {
   application?: AppRegistrationDTO;
   actions?: SecuredActionDTO[];

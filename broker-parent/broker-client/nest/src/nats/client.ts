@@ -4,59 +4,63 @@ import { firstValueFrom } from 'rxjs';
 
 import type { CreateGroupResponseDTO } from './types';
 
-import type { GetUserDisplayNamesRequestDTO } from './types';
-
 import type { FetchTranslationsRequestDTO } from './types';
-
-import type { RegisterTranslationFilesRequestDTO } from './types';
-
-import type { RemoveGroupSharesResponseDTO } from './types';
-
-import type { RemoveGroupMemberRequestDTO } from './types';
-
-import type { FindGroupByExternalIdResponseDTO } from './types';
-
-import type { GetUserDisplayNamesResponseDTO } from './types';
-
-import type { GetResourcesResponseDTO } from './types';
-
-import type { UpsertGroupSharesResponseDTO } from './types';
-
-import type { UpdateGroupRequestDTO } from './types';
 
 import type { RemoveGroupMemberResponseDTO } from './types';
 
-import type { AppRegistrationRequestDTO } from './types';
+import type { FindGroupByExternalIdRequestDTO } from './types';
 
-import type { DeleteGroupRequestDTO } from './types';
-
-import type { AddGroupMemberResponseDTO } from './types';
-
-import type { RemoveGroupSharesRequestDTO } from './types';
+import type { GetUserDisplayNamesResponseDTO } from './types';
 
 import type { CreateGroupRequestDTO } from './types';
 
-import type { UpdateGroupResponseDTO } from './types';
+import type { UpsertGroupSharesResponseDTO } from './types';
 
-import type { FindGroupByExternalIdRequestDTO } from './types';
+import type { DeleteGroupResponseDTO } from './types';
 
-import type { RegisterTranslationFilesResponseDTO } from './types';
-
-import type { GetResourcesRequestDTO } from './types';
-
-import type { AppRegistrationResponseDTO } from './types';
-
-import type { FetchTranslationsResponseDTO } from './types';
-
-import type { UpsertGroupSharesRequestDTO } from './types';
+import type { AppRegistrationRequestDTO } from './types';
 
 import type { FindSessionRequestDTO } from './types';
 
 import type { AddGroupMemberRequestDTO } from './types';
 
+import type { FindGroupByExternalIdResponseDTO } from './types';
+
+import type { GetUsersByIdsRequestDTO } from './types';
+
+import type { RegisterTranslationFilesRequestDTO } from './types';
+
 import type { FindSessionResponseDTO } from './types';
 
-import type { DeleteGroupResponseDTO } from './types';
+import type { UpdateGroupResponseDTO } from './types';
+
+import type { RemoveGroupMemberRequestDTO } from './types';
+
+import type { GetUsersByIdsResponseDTO } from './types';
+
+import type { GetResourcesRequestDTO } from './types';
+
+import type { UpsertGroupSharesRequestDTO } from './types';
+
+import type { RemoveGroupSharesRequestDTO } from './types';
+
+import type { RemoveGroupSharesResponseDTO } from './types';
+
+import type { DeleteGroupRequestDTO } from './types';
+
+import type { GetUserDisplayNamesRequestDTO } from './types';
+
+import type { RegisterTranslationFilesResponseDTO } from './types';
+
+import type { UpdateGroupRequestDTO } from './types';
+
+import type { AddGroupMemberResponseDTO } from './types';
+
+import type { AppRegistrationResponseDTO } from './types';
+
+import type { FetchTranslationsResponseDTO } from './types';
+
+import type { GetResourcesResponseDTO } from './types';
 
 
 @Injectable()
@@ -185,6 +189,18 @@ export class EntNatsServiceClient {
       throw new Error('No reply received');
     }
     return JSON.parse(reply) as GetUserDisplayNamesResponseDTO;
+  }
+  
+  
+  
+  async getUsersByIds(request: GetUsersByIdsRequestDTO): Promise<GetUsersByIdsResponseDTO> {
+    const eventAddress = "directory.users.get.byids";
+    console.debug("Sending request to NATS subject, " + eventAddress);
+    const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
+    if(!reply) {
+      throw new Error('No reply received');
+    }
+    return JSON.parse(reply) as GetUsersByIdsResponseDTO;
   }
   
   
