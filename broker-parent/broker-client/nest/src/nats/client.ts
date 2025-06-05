@@ -36,6 +36,10 @@ import type { GetUserDisplayNamesRequestDTO } from './types';
 
 import type { GetUserDisplayNamesResponseDTO } from './types';
 
+import type { GetUsersByIdsRequestDTO } from './types';
+
+import type { GetUsersByIdsResponseDTO } from './types';
+
 import type { ListenAndAnswerDTO } from './types';
 
 import type { ListenOnlyDTO } from './types';
@@ -156,11 +160,15 @@ export class EntNatsServiceClient {
   
   
   
-  async listenOnlyExample(request: ListenOnlyDTO) {
-    const eventAddress = "ent.test.listen";
-    this.natsClient.emit(eventAddress, request);
+  async getUsersByIds(request: GetUsersByIdsRequestDTO): Promise<GetUsersByIdsResponseDTO> {
+    const eventAddress = "directory.users.get.byids";
+    console.debug("Sending request to NATS subject, " + eventAddress);
+    const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
+    if(!reply) {
+      throw new Error('No reply received');
+    }
+    return JSON.parse(reply) as GetUsersByIdsResponseDTO;
   }
-  
   
   
   async listenOnlyExample(request: ListenAndAnswerDTO): Promise<DummyResponseDTO> {
