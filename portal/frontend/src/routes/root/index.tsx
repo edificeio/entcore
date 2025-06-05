@@ -4,9 +4,7 @@ import {
   useEdificeClient,
   useEdificeTheme,
 } from '@edifice.io/react';
-
 import { matchPath } from 'react-router-dom';
-
 import { basename } from '..';
 import { useEffect } from 'react';
 import { MyAppLayout } from '~/layouts/MyAppsLayout';
