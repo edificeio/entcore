@@ -2,15 +2,18 @@ import { ApplicationIcon } from "~/components/ApplicationIcon"
 import { useApplications } from "~/services"
 
 export function ApplicationList() {
-  const { applications } = useApplications();
-    return (
-      <div
-        className="d-flex flex-wrap gap-16 justify-content-center mx-auto"
-        style={{ maxWidth: 1091 }}
-      >
-        {applications?.map((app) => (
-          <ApplicationIcon key={app.name} data={app} />
-        ))}
-      </div>
-    );
+  const { applications, isLoading, isError } = useApplications();
+
+  if (isLoading) return <div>Chargement des applications...</div>;
+  if (isError) return <div>Erreur lors du chargement des applications.</div>;
+  return (
+    <div
+      className="d-flex flex-wrap gap-16 justify-content-center mx-auto"
+      style={{ maxWidth: 1091 }}
+    >
+      {applications?.map((app) => (
+        <ApplicationIcon key={app.name} data={app} />
+      ))}
+    </div>
+  );
 }
