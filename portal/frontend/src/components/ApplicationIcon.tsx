@@ -19,6 +19,7 @@ export function ApplicationIcon({ data }: { data: Application }) {
         style={{
           fontFamily: 'Arimo',
           fontWeight: 400,
+          textTransform: 'unset',
         }}
       >
         {t(data.prefix.substring(1))}
