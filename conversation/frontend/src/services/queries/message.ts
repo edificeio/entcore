@@ -223,15 +223,21 @@ export const useTrashMessage = () => {
     onSuccess: (_data, { id }) => {
       const messageIds = typeof id === 'string' ? [id] : id;
 
+      // Invalidate message details
       messageIds.forEach((messageId) => {
         queryClient.invalidateQueries({
           queryKey: messageQueryOptions.getById(messageId).queryKey,
         });
       });
 
+      // Delete messages from query cache
       deleteMessagesFromQueryCache(folderId, messageIds);
 
-      // Toast
+      // Invalidate trash folder
+      queryClient.resetQueries({
+        queryKey: folderQueryOptions.getMessagesQuerykey('trash', {}),
+      });
+
       toast.success(
         t(messageIds.length > 1 ? 'messages.trash' : 'message.trash'),
       );
@@ -245,16 +251,41 @@ export const useTrashMessage = () => {
  */
 export const useRestoreMessage = () => {
   const queryClient = useQueryClient();
+  const { deleteMessagesFromQueryCache } = useDeleteMessagesFromQueryCache();
+  const { messages, fetchNextPage, hasNextPage } = useFolderMessages(
+    'trash',
+    false,
+  );
   const toast = useToast();
   const { t } = useTranslation(appCodeName);
+
   return useMutation({
     mutationFn: async ({ id }: { id: string | string[] }) =>
       messageService.restore(id),
-    onSuccess: (_data, { id }) => {
+    onMutate: async ({ id }: { id: string | string[] }) => {
+      if (messages?.length === id.length && hasNextPage) {
+        await fetchNextPage();
+      }
+    },
+    onSuccess: async (_data, { id }) => {
       const messageIds = typeof id === 'string' ? [id] : id;
 
+      deleteMessagesFromQueryCache('trash', messageIds);
+
+      // Reset all queries except trash folder
+      queryClient.resetQueries({
+        queryKey: ['folder', 'messages'],
+        predicate: (query) => {
+          const queryKey = query.queryKey as string[];
+          return !queryKey.includes('trash');
+        },
+      });
+      // Invalidate folder tree to update the badge count
       queryClient.invalidateQueries({
-        queryKey: ['folder'],
+        queryKey: ['folder', 'tree'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['folder', 'count'],
       });
 
       // Toast
@@ -270,8 +301,8 @@ export const useEmptyTrash = () => {
   return useMutation({
     mutationFn: () => messageService.emptyTrash(),
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ['folder', 'trash'],
+      queryClient.resetQueries({
+        queryKey: ['folder', 'messages', 'trash'],
       });
     },
   });
@@ -282,18 +313,18 @@ export const useEmptyTrash = () => {
  * @returns Mutation result for deleting the message.
  */
 export const useDeleteMessage = () => {
-  const queryClient = useQueryClient();
   const toast = useToast();
   const { t } = useTranslation(appCodeName);
+  const { deleteMessagesFromQueryCache } = useDeleteMessagesFromQueryCache();
+
   return useMutation({
     mutationFn: ({ id }: { id: string | string[] }) =>
       messageService.delete(id),
     onSuccess: (_data, { id }) => {
       const messageIds = typeof id === 'string' ? [id] : id;
 
-      queryClient.invalidateQueries({
-        queryKey: ['folder', 'trash'],
-      });
+      deleteMessagesFromQueryCache('trash', messageIds);
+
       toast.success(
         t(messageIds.length > 1 ? 'messages.delete' : 'message.delete'),
       );
@@ -584,7 +615,6 @@ export const useSendDraft = () => {
         // });
       }
 
-      console.log('draftId:', draftId);
       // Delete message from draft list in query cache
 
       // queryClient.invalidateQueries({

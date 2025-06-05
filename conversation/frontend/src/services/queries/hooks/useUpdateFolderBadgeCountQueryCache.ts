@@ -11,7 +11,7 @@ export const useUpdateFolderBadgeCountQueryCache = () => {
     if (folderId === 'inbox') {
       // Update inbox count unread
       queryClient.setQueryData(
-        ['folder', 'inbox', 'count', { unread: true }],
+        ['folder', 'count', 'inbox', { unread: true }],
         ({ count }: { count: number }) => {
           return { count: count + countDelta };
         },
@@ -19,7 +19,7 @@ export const useUpdateFolderBadgeCountQueryCache = () => {
     } else if (folderId === 'draft') {
       // Update draft count
       queryClient.setQueryData(
-        ['folder', 'draft', 'count', null],
+        ['folder', 'count', 'draft', null],
         ({ count }: { count: number }) => {
           return { count: count + countDelta };
         },
