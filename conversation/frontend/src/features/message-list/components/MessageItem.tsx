@@ -36,13 +36,18 @@ export function MessageItem({ message, checked, checkbox }: MessageItemProps) {
     });
   };
 
+  const className = clsx(
+    'd-flex message-list-item gap-24 px-16 py-12 mb-2 overflow-hidden',
+    {
+      'bg-secondary-200': checked,
+      'fw-bold bg-primary-200 gray-800':
+        message.state !== 'DRAFT' && message.unread,
+    },
+  );
+
   return (
     <div
-      className={clsx('d-flex gap-24 px-16 py-12 mb-2 overflow-hidden', {
-        'bg-secondary-200': checked,
-        'fw-bold bg-primary-200 gray-800':
-          message.state !== 'DRAFT' && message.unread,
-      })}
+      className={className}
       onClick={() => handleMessageClick(message)}
       onKeyUp={(event) => handleMessageKeyUp(event, message)}
       tabIndex={0}
