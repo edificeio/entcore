@@ -124,10 +124,14 @@ public class SqlConversationService implements ConversationService{
 
 	@Override
 	public void saveDraft(String parentMessageId, String threadId, JsonObject message, UserInfos user, Handler<Either<String, JsonObject>> result, HttpServerRequest request) {
-		save(parentMessageId, threadId, message, user, result, request);
+		save(parentMessageId, threadId, message, true, user, result, request);
 	}
 
-	private void save(String parentMessageId, String threadId, JsonObject message, UserInfos user, Handler<Either<String, JsonObject>> result, HttpServerRequest request){
+	public void saveDraftAsMessage(String parentMessageId, String threadId, JsonObject message, UserInfos user, Handler<Either<String, JsonObject>> result, HttpServerRequest request) {
+		save(parentMessageId, threadId, message, false, user, result, request);
+	}
+
+	private void save(String parentMessageId, String threadId, JsonObject message, final boolean asDraft, UserInfos user, Handler<Either<String, JsonObject>> result, HttpServerRequest request){
 		message
 			.put("id", UUID.randomUUID().toString())
 			.put("from", user.getUserId())
@@ -149,7 +153,7 @@ public class SqlConversationService implements ConversationService{
 			message.put("thread_id", message.getString("id"));
 		}
 
-		updateMessageWithTransformedContent(message, request).onSuccess(event -> {
+		updateMessageWithTransformedContent(message, !asDraft, request).onSuccess(event -> {
 			// 1 - Insert message
 			builder.insert(messageTable, message, "id");
 
@@ -168,17 +172,22 @@ public class SqlConversationService implements ConversationService{
 
 	@Override
 	public void updateDraft(String messageId, JsonObject message, UserInfos user, Handler<Either<String, JsonObject>> result, HttpServerRequest request) {
-		update(messageId, message, user, result, request);
+		update(messageId, message, true, user, result, request);
 	}
 
-	private void update(String messageId, JsonObject message, UserInfos user, Handler<Either<String, JsonObject>> result, HttpServerRequest request) {
+	@Override
+	public void updateDraftAsMessage(String messageId, JsonObject message, UserInfos user, Handler<Either<String, JsonObject>> result, HttpServerRequest request) {
+		update(messageId, message, false, user, result, request);
+	}
+
+	private void update(String messageId, JsonObject message, final boolean asDraft, UserInfos user, Handler<Either<String, JsonObject>> result, HttpServerRequest request) {
 		message.put("date", System.currentTimeMillis())
 				.put("from", user.getUserId());
 		JsonObject m = Utils.validAndGet(message, UPDATE_DRAFT_FIELDS, UPDATE_DRAFT_REQUIRED_FIELDS);
 		if (validationError(user, m, result, messageId))
 			return;
 
-		updateMessageWithTransformedContent(message, request).onSuccess(event -> {
+		updateMessageWithTransformedContent(message, !asDraft, request).onSuccess(event -> {
 			StringBuilder sb = new StringBuilder();
 			JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 
@@ -210,17 +219,18 @@ public class SqlConversationService implements ConversationService{
 	/**
 	 * Update a message content with its transformed version
 	 * @param message the message whose content must be transformed and updated
+	 * @param recordTransformation truthy when the transformation must be recorded
 	 * @param request the request
 	 * @return a future completed if the message has been updated with transformed content successfully
 	 */
-	private Future<Void> updateMessageWithTransformedContent(JsonObject message, HttpServerRequest request) {
+	private Future<Void> updateMessageWithTransformedContent(JsonObject message, final boolean recordTransformation, HttpServerRequest request) {
 		Promise<Void> updatedMessagePromise = Promise.promise();
 		Future<ContentTransformerResponse> contentTransformerResponseFuture ;
 		if (StringUtils.isEmpty(message.getString("body"))) {
 			// no content to transform
 			contentTransformerResponseFuture = Future.succeededFuture();
 		} else {
-			contentTransformerResponseFuture = transformMessageContent(message.getString("body"), message.getString("id"), request);
+			contentTransformerResponseFuture = transformMessageContent(message.getString("body"), message.getString("id"), recordTransformation, request);
 		}
 		contentTransformerResponseFuture.onSuccess(transformerResponse -> {
 			if (transformerResponse == null) {
@@ -868,44 +878,52 @@ public class SqlConversationService implements ConversationService{
 		else if (originalFormat) {
 			Future<String> originalContentFuture = this.getOriginalMessageContent(messageId);
 			originalContentFuture
-					.onSuccess(originalContent -> {
-						message.put("body", originalContent);
-						updatedMessagePromise.complete();
-					})
-					.onFailure(throwable -> {
-						log.error("Failed to retrieve original message content", throwable);
-						updatedMessagePromise.fail(throwable);
-					});
+			.onSuccess(originalContent -> {
+				message.put("body", originalContent);
+				updatedMessagePromise.complete();
+			})
+			.onFailure(throwable -> {
+				log.error("Failed to retrieve original message content", throwable);
+				updatedMessagePromise.fail(throwable);
+			});
 		}
 		// transform and persist message content if needed
 		else if (message.getInteger("content_version") == 0) {
 			if (StringUtils.isEmpty(message.getString("body"))) {
 				// no content to transform
 				updateMessageContent(messageId, "", 1)
+				.onSuccess(res -> {
+					message.put("content_version", 1);
+					updatedMessagePromise.complete();
+				})
+				.onFailure(throwable -> {
+					log.error("Failed to update message with content version", throwable);
+					updatedMessagePromise.fail(throwable);
+				});
+			} else {
+				final boolean isDraft = State.DRAFT.name().equals(message.getString("state"));
+				transformMessageContent(message.getString("body"), messageId, !isDraft, request)
+				.onSuccess(transformerResponse -> {
+					if(transformerResponse!=null) {
+						updateMessageContent(messageId, transformerResponse.getCleanHtml(), transformerResponse.getContentVersion())
 						.onSuccess(res -> {
-							message.put("content_version", 1);
+							message.put("body", transformerResponse.getCleanHtml());
+							message.put("content_version", transformerResponse.getContentVersion());
 							updatedMessagePromise.complete();
 						})
 						.onFailure(throwable -> {
-							log.error("Failed to update message with content version", throwable);
+							log.error("Failed to update message with transformed content", throwable);
 							updatedMessagePromise.fail(throwable);
 						});
-			} else {
-				transformMessageContent(message.getString("body"), messageId, request)
-						.onSuccess(transformerResponse -> updateMessageContent(messageId, transformerResponse.getCleanHtml(), transformerResponse.getContentVersion())
-								.onSuccess(res -> {
-									message.put("body", transformerResponse.getCleanHtml());
-									message.put("content_version", transformerResponse.getContentVersion());
-									updatedMessagePromise.complete();
-								})
-								.onFailure(throwable -> {
-									log.error("Failed to update message with transformed content", throwable);
-									updatedMessagePromise.fail(throwable);
-								}))
-						.onFailure(throwable -> {
-							log.error("Failed to transform message content", throwable);
-							updatedMessagePromise.fail(throwable);
-						});
+					} else {
+						// Transformer is not configured => no-op
+						updatedMessagePromise.complete();
+					}
+				})
+				.onFailure(throwable -> {
+					log.error("Failed to transform message content", throwable);
+					updatedMessagePromise.fail(throwable);
+				});
 			}
 		// message content has already been transformed
 		} else {
@@ -948,11 +966,12 @@ public class SqlConversationService implements ConversationService{
 	 * Transform the content of a message
 	 * @param originalMessageContent the content of the message to be transformed
 	 * @param messageId the id of the message to transform
+	 * @param recordTransformation whether the transformation must be recorded or not
 	 * @param request the request
 	 * @return a {@link Future} of the {@link ContentTransformerResponse} (containing the transformed content, the content version...)
 	 */
 	@Override
-	public Future<ContentTransformerResponse> transformMessageContent(String originalMessageContent, String messageId, HttpServerRequest request) {
+	public Future<ContentTransformerResponse> transformMessageContent(String originalMessageContent, String messageId, boolean recordTransformation, HttpServerRequest request) {
 		Promise<ContentTransformerResponse> transformedMessagePromise = Promise.promise();
 		contentTransformerClient.transform(new ContentTransformerRequest(
 				new HashSet<>(Arrays.asList(ContentTransformerFormat.HTML, ContentTransformerFormat.JSON)),
@@ -961,7 +980,9 @@ public class SqlConversationService implements ConversationService{
 				null,
 				CONVERSATION_TRANSFORMATION_EXTENSIONS)
 				).onSuccess(transformerResponse -> {
-					contentTransformerEventRecorder.recordTransformation(messageId, "message", transformerResponse, request);
+					if( recordTransformation ) {
+						contentTransformerEventRecorder.recordTransformation(messageId, "message", transformerResponse, request);
+					}
 					transformedMessagePromise.complete(transformerResponse);
 				})
 				.onFailure(throwable -> {
