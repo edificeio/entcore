@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next';
 import { ApplicationIcon } from '~/components/ApplicationIcon';
 import { Application } from '~/models/application';
 import { useApplications } from '~/services';
+import { getAppName } from '~/utils/get-app-name';
 
 export function ApplicationList() {
   const { applications, isLoading, isError } = useApplications();
@@ -11,10 +12,7 @@ export function ApplicationList() {
   if (isError) return <div>Erreur lors du chargement des applications.</div>;
 
   const sortedApps = [...(applications || [])].sort((a, b) => {
-    const appName = (app: Application) =>
-      app.prefix ? t(app.prefix.substring(1)) : t(app.name) || app.displayName;
-
-    return appName(a).localeCompare(appName(b));
+    return getAppName(a, t).localeCompare(getAppName(b, t));
   });
 
   const internalApps = sortedApps.filter((app) => !app.isExternal);
@@ -37,13 +35,13 @@ export function ApplicationList() {
             className="small text-center my-8"
             style={{ fontFamily: 'Arimo' }}
           >
-            Autres services connectés
+            {t('my.apps.services.title')}
           </h2>
           <div
             className="d-flex flex-wrap gap-32 justify-content-center mx-auto"
             style={{ maxWidth: 1091 }}
           >
-            {internalApps.map((app) => (
+            {externalApps.map((app) => (
               <ApplicationIcon key={app.name} data={app} />
             ))}
           </div>
