@@ -1,5 +1,4 @@
-import { InfiniteData } from '@tanstack/react-query';
-import { useQueryClient } from '@tanstack/react-query';
+import { InfiniteData, useQueryClient } from '@tanstack/react-query';
 import { Message } from '~/models';
 import { folderQueryOptions } from '~/services';
 import { useUpdateFolderBadgeCountQueryCache } from './useUpdateFolderBadgeCountQueryCache';
@@ -19,6 +18,7 @@ export const useDeleteMessagesFromQueryCache = () => {
     queryClient.setQueriesData(
       { queryKey: folderQueryOptions.getMessagesQuerykey(folderId, {}) },
       (data: InfiniteData<Message[]>) => {
+        if (!data) return;
         const countUnreadMessages = (
           messages: Message[],
           messageIds: string[],
@@ -62,18 +62,4 @@ export const useDeleteMessagesFromQueryCache = () => {
     }
   };
   return { deleteMessagesFromQueryCache };
-};
-
-const reorganizePages = (pages: Message[][]): Message[][] => {
-  // Flatten all pages and remove deleted messages
-  const pageSize = 20;
-  const allMessages = pages.flat();
-
-  // Create new pages with the specified page size
-  const newPages: Message[][] = [];
-  for (let i = 0; i < allMessages.length; i += pageSize) {
-    newPages.push(allMessages.slice(i, i + pageSize));
-  }
-
-  return newPages;
 };
