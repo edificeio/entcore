@@ -5,7 +5,7 @@ export type Application = {
   target: string | null;
   displayName: string;
   display: boolean;
-  prefix: string;
+  prefix: string | null;
   casType: string | null;
   scope: string[];
   isExternal: boolean;
