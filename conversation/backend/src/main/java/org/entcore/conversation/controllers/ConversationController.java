@@ -476,9 +476,9 @@ public class ConversationController extends BaseController {
 			}
 		};
 		if (messageId != null && !messageId.trim().isEmpty()) {
-			conversationService.updateDraft(messageId, message, user, handler, request);
+			conversationService.updateDraftAsMessage(messageId, message, user, handler, request);
 		} else {
-			conversationService.saveDraft(parentMessageId, threadId, message, user, handler, request);
+			conversationService.saveDraftAsMessage(parentMessageId, threadId, message, user, handler, request);
 		}
 	}
 
