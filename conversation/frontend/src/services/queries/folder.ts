@@ -13,6 +13,8 @@ import { Folder, MessageMetadata } from '~/models';
 import { useConfig } from '~/store';
 import { folderService, searchFolder } from '..';
 
+export const PAGE_SIZE = 20;
+
 /**
  * Provides query options for folder-related operations.
  */
@@ -26,7 +28,13 @@ export const folderQueryOptions = {
     folderId: string,
     options: { search?: string; unread?: boolean },
   ) {
-    return [...folderQueryOptions.base, folderId, 'messages', options] as const;
+    return [
+      ...folderQueryOptions.base,
+      'messages',
+      folderId,
+      ,
+      options,
+    ] as const;
   },
 
   /**
@@ -63,8 +71,8 @@ export const folderQueryOptions = {
     return queryOptions({
       queryKey: [
         ...folderQueryOptions.base,
-        folderId,
         'count',
+        folderId,
         options,
       ] as const,
       queryFn: () => folderService.getCount(folderId, options?.unread),
@@ -90,27 +98,23 @@ export const folderQueryOptions = {
       unread?: boolean;
     },
   ) {
-    const pageSize = 20;
-
     return infiniteQueryOptions({
       queryKey: this.getMessagesQuerykey(folderId, options),
       queryFn: ({ pageParam = 0 }) => {
         return folderService.getMessages(folderId, {
           ...options,
           page: pageParam,
-          pageSize,
+          pageSize: PAGE_SIZE,
         });
       },
       staleTime: 5 * 60 * 1000, // 5 minutes
       initialPageParam: 0,
       getNextPageParam: (lastPage: any, _allPages: any, lastPageParam: any) => {
-        if (
-          (pageSize && lastPage?.length < pageSize) ||
-          (!pageSize && lastPage?.length === 0)
-        ) {
-          return undefined;
-        }
-        return lastPageParam + 1;
+        if (lastPage.length === 0) return undefined;
+        const totalItems = lastPage[0].count;
+        const totalPages = Math.ceil(totalItems / PAGE_SIZE);
+        const nextPage = lastPageParam + 1;
+        return nextPage < totalPages ? nextPage : undefined;
       },
     });
   },
@@ -150,7 +154,7 @@ export const useFolderUtils = () => {
   );
 
   /** Update some messages metadata in the list of a folder's messages. */
-  function updateFolderMessagesQueryData(
+  function updateFolderMessagesQueryCache(
     folderId: string,
     updater: (oldMessage: MessageMetadata) => MessageMetadata,
     reOrder: boolean = false,
@@ -165,7 +169,7 @@ export const useFolderUtils = () => {
           const updatedMessages = allMessages.map(updater);
           updatedMessages.sort((a, b) => (b.date || 0) - (a.date || 0));
           const pages = [],
-            pageSize = oldData?.pages[0].length || 20;
+            pageSize = oldData?.pages[0].length || PAGE_SIZE;
           for (let i = 0; i < allMessages.length; i += pageSize) {
             pages.push(updatedMessages.slice(i, i + pageSize));
           }
@@ -183,7 +187,7 @@ export const useFolderUtils = () => {
     );
   }
 
-  return { getFolderNameById, updateFolderMessagesQueryData };
+  return { getFolderNameById, updateFolderMessagesQueryCache };
 };
 
 /**
@@ -376,59 +380,4 @@ export const useTrashFolder = () => {
       });
     },
   });
-};
-
-export const useUpdateFolderBadgeCountLocal = () => {
-  const queryClient = useQueryClient();
-  const updateFolderBadgeCountLocal = (
-    folderId: string,
-    countDelta: number,
-  ) => {
-    if (folderId === 'inbox') {
-      // Update inbox count unread
-      queryClient.setQueryData(
-        ['folder', 'inbox', 'count', { unread: true }],
-        ({ count }: { count: number }) => {
-          return { count: count + countDelta };
-        },
-      );
-
-      // Update conversation navbar count unread
-      queryClient.setQueryData(
-        ['conversation-navbar-count'],
-        ({ count }: { count: number }) => {
-          return { count: count + countDelta };
-        },
-      );
-    } else if (folderId === 'draft') {
-      // Update draft count
-      queryClient.setQueryData(
-        ['folder', 'draft', 'count', null],
-        ({ count }: { count: number }) => {
-          return { count: count + countDelta };
-        },
-      );
-    } else if (!['inbox', 'trash', 'draft', 'outbox'].includes(folderId)) {
-      // Update custom folder count unread
-      queryClient.setQueryData(['folder', 'tree'], (folders: Folder[]) => {
-        // go trow the folder tree to find the folder to update
-        const result = searchFolder(folderId, folders);
-        if (!result?.parent) {
-          return folders.map((folder) => {
-            if (folder.id === folderId) {
-              return { ...folder, nbUnread: folder.nbUnread + countDelta };
-            }
-            return folder;
-          });
-        } else if (result?.folder) {
-          result.folder = {
-            ...result.folder,
-            nbUnread: result.folder.nbUnread + countDelta,
-          };
-          return [...folders];
-        }
-      });
-    }
-  };
-  return { updateFolderBadgeCountLocal };
 };
