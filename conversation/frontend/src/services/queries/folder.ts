@@ -13,7 +13,7 @@ import { Folder, MessageMetadata } from '~/models';
 import { useConfig } from '~/store';
 import { folderService, searchFolder } from '..';
 
-export const PAGE_SIZE = 2;
+export const PAGE_SIZE = 20;
 
 /**
  * Provides query options for folder-related operations.
