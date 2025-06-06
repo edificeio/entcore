@@ -243,7 +243,7 @@ export function useMessageActionDropdown({
       icon: <IconSend />,
       action: handleSendClick,
       hidden: message.state !== 'DRAFT' || message.trashed,
-      disabled: !isMessageValid,
+      disabled: !isMessageValid || sendDraftQuery.isPending,
     },
     {
       label: t('restore'),
