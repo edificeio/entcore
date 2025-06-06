@@ -561,7 +561,10 @@ public class ConversationController extends BaseController {
 		log.debug(sentMessage.encode());
 		JsonArray r = sentMessage.getJsonArray("sentIds");
 		String id = sentMessage.getString("id");
-		String subject = sentMessage.getString("subject", "<span translate key=\"timeline.no.subject\"></span>");
+		String subject = sentMessage.getString("subject");
+		if(StringUtils.isEmpty(subject)) {
+			subject = "<span translate key=\"timeline.no.subject\"></span>";
+		}
 		sentMessage.remove("sentIds");
 		sentMessage.remove("id");
 		sentMessage.remove("subject");
