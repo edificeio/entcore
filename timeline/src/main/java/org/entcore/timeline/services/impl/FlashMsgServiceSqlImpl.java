@@ -154,6 +154,7 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 			isADMLOfOneStructure = false;
 		}
 		// we don't need to check if the message is in the user's language he has to see it
+		// A distinction is made on structureId to disambiguate V1 and V2 and apply domain filter only on V1
 		String query = "SELECT id, contents, color, \"customColor\", signature, \"signatureColor\" FROM " + resourceTable + " m " +
 			"WHERE (profiles ? '" + user.getType() + "' " +
 				"OR (profiles ? 'AdminLocal' AND ("+
@@ -162,7 +163,7 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 				"OR EXISTS (SELECT * FROM "+ STRUCT_JOIN_TABLE + " WHERE message_id = m.id AND structure_id IN (" + myADMLStructuresId + ")))))) " +
 			"AND \"startDate\" <= now() " +
 			"AND \"endDate\" > now() " +
-			"AND domain = '" + domain + "' " +
+			"AND ( \"structureId\" IS NOT NULL OR domain = '" + domain + "' )" +
 			"AND (\"structureId\" IS NULL " +
 				"OR (\"structureId\" IN (" + myStructuresIds + ")) " +
 				"OR EXISTS (SELECT * FROM "+ STRUCT_JOIN_TABLE + " WHERE message_id = m.id AND structure_id IN (" + myStructuresIds + "))) " +
