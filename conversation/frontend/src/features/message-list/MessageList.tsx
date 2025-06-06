@@ -12,7 +12,7 @@ import {
   IconRestore,
   IconUnreadMail,
 } from '@edifice.io/react/icons';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
@@ -59,29 +59,37 @@ export function MessageList() {
   } = useToolbarVisibility(messages);
 
   const [keyList, setKeyList] = useState(0);
+  const listRef = useRef<HTMLDivElement>(null);
 
   //handle reload list when search params change
   useEffect(() => {
     setKeyList((prev) => prev + 1);
   }, [searchParams]);
 
-  // Handle infinite scroll
-  useEffect(() => {
-    const handleScroll = () => {
-      if (
-        isLoadingMessage ||
-        isLoadingNextPage ||
-        window.innerHeight + document.documentElement.scrollTop <
-          document.documentElement.offsetHeight - 250
-      ) {
-        return;
-      }
-      fetchNextPage();
-    };
+  const observer = useRef<IntersectionObserver | null>(null);
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [isLoadingMessage, isLoadingNextPage, fetchNextPage, hasNextPage]);
+  useEffect(() => {
+    const messageListItems =
+      listRef.current?.getElementsByClassName('message-list-item');
+    if (isLoadingMessage || isLoadingNextPage) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 },
+    );
+    if (messageListItems)
+      observer.current.observe(messageListItems[messageListItems.length - 1]);
+  }, [
+    messages,
+    hasNextPage,
+    isLoadingMessage,
+    isLoadingNextPage,
+    fetchNextPage,
+  ]);
 
   const toolbarItemsData = [
     {
@@ -151,7 +159,7 @@ export function MessageList() {
 
   if (!messages?.length) return null;
   return (
-    <>
+    <div ref={listRef}>
       <List
         data={messages.map((message) => ({ ...message, _id: message.id }))}
         items={toolbar}
@@ -171,6 +179,6 @@ export function MessageList() {
       {isLoadingMessage && (
         <Loading isLoading={true} className="justify-content-center my-12" />
       )}
-    </>
+    </div>
   );
 }
