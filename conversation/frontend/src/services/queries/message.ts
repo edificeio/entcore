@@ -1,7 +1,6 @@
 import { odeServices } from '@edifice.io/client';
 import { useEdificeClient, useToast } from '@edifice.io/react';
 import {
-  InfiniteData,
   queryOptions,
   useMutation,
   useQuery,
@@ -12,7 +11,7 @@ import { useParams } from 'react-router-dom';
 import { useI18n } from '~/hooks/useI18n';
 import { useMessageIdAndAction } from '~/hooks/useMessageIdAndAction';
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
-import { Message, MessageBase, MessageMetadata } from '~/models';
+import { Message, MessageBase } from '~/models';
 import {
   baseUrl,
   createDefaultMessage,
@@ -164,9 +163,16 @@ const useToggleUnread = (unread: boolean) => {
             ? { ...oldMessage, unread }
             : oldMessage,
         );
+
+        // Update the message unread status in outbox list if from me
+        updateFolderMessagesQueryCache('outbox', (oldMessage) =>
+          messageIds.includes(oldMessage.id)
+            ? { ...oldMessage, unread }
+            : oldMessage,
+        );
       }
 
-      // Update the message unread status in the message details
+      // Update message details (unread status)
       messageIds.map((messageId) => {
         queryClient.setQueryData(
           messageQueryOptions.getById(messageId).queryKey,
@@ -477,41 +483,9 @@ export const useCreateDraft = () => {
       setMessage({ ...message });
       updateFolderBadgeCountQueryCache('draft', 1);
 
-      // Update react query cache for draft list
-      queryClient.setQueryData(
-        folderQueryOptions.getMessagesQuerykey('draft', {}),
-        (messagesData: InfiniteData<MessageMetadata[]>) => {
-          if (!messagesData.pages) return messagesData;
-
-          const count = messagesData.pages[0][0].count + 1;
-          const hasAttachment = message.attachments?.length > 0;
-          messagesData.pages[0] = [
-            {
-              ...message,
-              hasAttachment,
-              count,
-            },
-            ...messagesData.pages[0],
-          ];
-
-          // update all messages total count - to remove when api updated
-          messagesData.pages.forEach((page) => {
-            page.forEach((message) => {
-              message.count = count;
-            });
-          });
-
-          return messagesData;
-        },
-      );
-
-      // Update the message unread status in the list
-      // queryClient.setQueryData(
-      //   messageQueryOptions.getById(id).queryKey,
-      //   (messageTmp: Message | undefined) => {
-      //     return messageTmp ? { ...messageTmp, ...message } : undefined;
-      //   },
-      // );
+      queryClient.resetQueries({
+        queryKey: ['folder', 'messages', 'draft'],
+      });
     },
   });
 };
@@ -524,7 +498,6 @@ export const useUpdateDraft = () => {
   const { setMessage } = useMessageActions();
   const queryClient = useQueryClient();
   const messageUpdated = useMessage();
-  const { updateFolderMessagesQueryCache } = useFolderUtils();
 
   return useMutation({
     mutationFn: ({
@@ -553,18 +526,9 @@ export const useUpdateDraft = () => {
         },
       );
 
-      updateFolderMessagesQueryCache(
-        'draft',
-        (oldMessage) =>
-          oldMessage.id === draftId
-            ? {
-                ...oldMessage,
-                ...messageUpdated,
-                hasAttachment: messageUpdated.attachments?.length > 0,
-              }
-            : oldMessage,
-        true,
-      );
+      queryClient.resetQueries({
+        queryKey: ['folder', 'messages', 'draft'],
+      });
     },
   });
 };
@@ -576,6 +540,9 @@ export const useUpdateDraft = () => {
 export const useSendDraft = () => {
   const { updateFolderBadgeCountQueryCache } =
     useUpdateFolderBadgeCountQueryCache();
+  const { deleteMessagesFromQueryCache } = useDeleteMessagesFromQueryCache();
+  const queryClient = useQueryClient();
+
   const { user } = useEdificeClient();
   const toast = useToast();
   const { t } = useI18n();
@@ -598,7 +565,7 @@ export const useSendDraft = () => {
     }) => messageService.send(draftId, payload, inReplyToId),
     onSuccess: (_response, { payload, draftId }) => {
       toast.success(t('message.sent'));
-      updateFolderBadgeCountQueryCache('draft', -1);
+      // updateFolderBadgeCountQueryCache('draft', -1);
 
       if (
         payload &&
@@ -610,19 +577,17 @@ export const useSendDraft = () => {
         ].includes(user.userId)
       ) {
         updateFolderBadgeCountQueryCache('inbox', +1);
-        // queryClient.invalidateQueries({
-        //   queryKey: ['folder', 'inbox', 'messages'],
-        // });
+        queryClient.resetQueries({
+          queryKey: ['folder', 'messages', 'inbox'],
+        });
       }
 
-      // Delete message from draft list in query cache
+      queryClient.resetQueries({
+        queryKey: ['folder', 'messages', 'outbox'],
+      });
 
-      // queryClient.invalidateQueries({
-      //   queryKey: ['folder', 'draft', 'messages'],
-      // });
-      // queryClient.invalidateQueries({
-      //   queryKey: ['folder', 'outbox', 'messages'],
-      // });
+      // Delete message from draft list in query cache
+      deleteMessagesFromQueryCache('draft', [draftId]);
     },
   });
 };

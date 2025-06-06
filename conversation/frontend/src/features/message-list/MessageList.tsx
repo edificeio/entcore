@@ -76,7 +76,6 @@ export function MessageList() {
       ) {
         return;
       }
-      console.log('>>>fetchNextPage');
       fetchNextPage();
     };
 
