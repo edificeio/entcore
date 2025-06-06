@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { ApplicationIcon } from '~/components/ApplicationIcon';
+import { Application } from '~/models/application';
 import { useApplications } from '~/services';
 
 export function ApplicationList() {
@@ -9,9 +10,12 @@ export function ApplicationList() {
   if (isLoading) return <div>Chargement des applications...</div>;
   if (isError) return <div>Erreur lors du chargement des applications.</div>;
 
-  const sortedApps = [...(applications || [])].sort((a, b) =>
-    t(a.prefix.substring(1)).localeCompare(t(b.prefix.substring(1))),
-  );
+  const sortedApps = [...(applications || [])].sort((a, b) => {
+    const appName = (app: Application) =>
+      app.prefix ? t(app.prefix.substring(1)) : t(app.name) || app.displayName;
+
+    return appName(a).localeCompare(appName(b));
+  });
 
   const internalApps = sortedApps.filter((app) => !app.isExternal);
   const externalApps = sortedApps.filter((app) => app.isExternal);
