@@ -155,7 +155,7 @@ public interface ConversationService {
 
 	Future<String> getOriginalMessageContent(String messageId);
 
-	Future<ContentTransformerResponse> transformMessageContent(String originalMessageContent, String messageId, boolean isDraft, HttpServerRequest request);
+	Future<ContentTransformerResponse> transformMessageContent(String originalMessageContent, String messageId, boolean recordTransformation, HttpServerRequest request);
 
 	Future<Void> updateMessageContent(String messageId, String body, int contentVersion);
 
