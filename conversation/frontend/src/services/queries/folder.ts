@@ -13,7 +13,7 @@ import { Folder, MessageMetadata } from '~/models';
 import { useConfig } from '~/store';
 import { folderService, searchFolder } from '..';
 
-const PAGE_SIZE = 20;
+export const PAGE_SIZE = 2;
 
 /**
  * Provides query options for folder-related operations.
@@ -169,7 +169,7 @@ export const useFolderUtils = () => {
           const updatedMessages = allMessages.map(updater);
           updatedMessages.sort((a, b) => (b.date || 0) - (a.date || 0));
           const pages = [],
-            pageSize = oldData?.pages[0].length || 20;
+            pageSize = oldData?.pages[0].length || PAGE_SIZE;
           for (let i = 0; i < allMessages.length; i += pageSize) {
             pages.push(updatedMessages.slice(i, i + pageSize));
           }
