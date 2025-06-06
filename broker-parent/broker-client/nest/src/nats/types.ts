@@ -1,73 +1,3 @@
-export interface ListenOnlyDTO {
-  timestamp?: number;
-  userId?: string;
-}
-
-export interface FetchTranslationsRequestDTO {
-  application?: string;
-  headers?: { [key: string]: string };
-  langAndDomain?: LangAndDomain;
-}
-
-export interface UpdateGroupRequestDTO {
-  externalId?: string;
-  id?: string;
-  name?: string;
-}
-
-export interface RemoveGroupMemberResponseDTO {
-  removed?: boolean;
-}
-
-export interface GetUserDisplayNamesResponseDTO {
-  userDisplayNames?: { [key: string]: string };
-}
-
-export interface AppRegistrationDTO {
-  address?: string;
-  appType?: string;
-  customProperties?: { [key: string]: object };
-  display?: boolean;
-  displayName?: string;
-  icon?: string;
-  name?: string;
-  prefix?: string;
-}
-
-export interface ListenAndAnswerDTO {
-  jobId?: string;
-  userId?: string;
-}
-
-export interface UpsertGroupSharesRequestDTO {
-  application?: string;
-  currentUserId?: string;
-  groupId?: string;
-  permissions?: string[];
-  resourceId?: string;
-}
-
-export interface RemoveGroupSharesResponseDTO {
-  shares?: SharesResponseDTO[];
-}
-
-export interface AppRegistrationRequestDTO {
-  actions?: SecuredActionDTO[];
-  application?: AppRegistrationDTO;
-}
-
-export interface FindGroupByExternalIdRequestDTO {
-  externalId?: string;
-}
-
-export interface FindSessionResponseDTO {
-  session?: SessionDto;
-}
-
-export interface FetchTranslationsResponseDTO {
-  translations?: { [key: string]: string };
-}
-
 export interface RemoveGroupSharesRequestDTO {
   application?: string;
   currentUserId?: string;
@@ -76,8 +6,26 @@ export interface RemoveGroupSharesRequestDTO {
   resourceId?: string;
 }
 
-export interface AddGroupMemberResponseDTO {
-  added?: boolean;
+export interface ListenAndAnswerDTO {
+  jobId?: string;
+  userId?: string;
+}
+
+export interface AppRegistrationResponseDTO {
+  message?: string;
+  success?: boolean;
+}
+
+export interface UpdateGroupResponseDTO {
+  updated?: boolean;
+}
+
+export interface CreateGroupResponseDTO {
+  id?: string;
+}
+
+export interface FindGroupByExternalIdRequestDTO {
+  externalId?: string;
 }
 
 export interface DummyResponseDTO {
@@ -86,35 +34,44 @@ export interface DummyResponseDTO {
   userId?: string;
 }
 
-export interface RegisterTranslationFilesResponseDTO {
-  application?: string;
-  languagesCount?: number;
-  translationsCount?: number;
-}
-
-export interface UpsertGroupSharesResponseDTO {
-  shares?: SharesResponseDTO[];
-}
-
-export interface CreateGroupRequestDTO {
-  classId?: string;
-  externalId?: string;
-  name?: string;
-  structureId?: string;
-}
-
-export interface CreateGroupResponseDTO {
-  id?: string;
-}
-
-export interface UpdateGroupResponseDTO {
-  updated?: boolean;
-}
-
-export interface RemoveGroupMemberRequestDTO {
+export interface AddGroupMemberRequestDTO {
   groupExternalId?: string;
   groupId?: string;
   userId?: string;
+}
+
+export interface DeleteGroupRequestDTO {
+  externalId?: string;
+  id?: string;
+}
+
+export interface FindGroupByExternalIdResponseDTO {
+  group?: GroupDTO;
+}
+
+export interface GetUserDisplayNamesResponseDTO {
+  userDisplayNames?: { [key: string]: string };
+}
+
+export interface UpdateGroupRequestDTO {
+  externalId?: string;
+  id?: string;
+  name?: string;
+}
+
+export interface AddGroupMemberResponseDTO {
+  added?: boolean;
+}
+
+export interface FetchTranslationsRequestDTO {
+  application?: string;
+  headers?: { [key: string]: string };
+  langAndDomain?: LangAndDomain;
+}
+
+export interface GroupDTO {
+  id?: string;
+  name?: string;
 }
 
 export interface FindSessionRequestDTO {
@@ -126,18 +83,12 @@ export interface FindSessionRequestDTO {
   sessionId?: string;
 }
 
-export interface RegisterTranslationFilesRequestDTO {
-  application?: string;
-  translationsByLanguage?: { [key: string]: { [key: string]: string } };
+export interface FetchTranslationsResponseDTO {
+  translations?: { [key: string]: string };
 }
 
-export interface DeleteGroupResponseDTO {
-  deleted?: boolean;
-}
-
-export interface GroupDTO {
-  id?: string;
-  name?: string;
+export interface FindSessionResponseDTO {
+  session?: SessionDto;
 }
 
 export interface SessionDto {
@@ -160,18 +111,69 @@ export interface SessionDto {
   username?: string;
 }
 
-export interface AppRegistrationResponseDTO {
-  message?: string;
-  success?: boolean;
+export interface ListenOnlyDTO {
+  timestamp?: number;
+  userId?: string;
 }
 
-export interface DeleteGroupRequestDTO {
+export interface AppRegistrationDTO {
+  address?: string;
+  appType?: string;
+  customProperties?: { [key: string]: object };
+  display?: boolean;
+  displayName?: string;
+  icon?: string;
+  name?: string;
+  prefix?: string;
+}
+
+export interface DeleteGroupResponseDTO {
+  deleted?: boolean;
+}
+
+export interface AppRegistrationRequestDTO {
+  actions?: SecuredActionDTO[];
+  application?: AppRegistrationDTO;
+}
+
+export interface RegisterTranslationFilesResponseDTO {
+  application?: string;
+  languagesCount?: number;
+  translationsCount?: number;
+}
+
+export interface RemoveGroupSharesResponseDTO {
+  shares?: SharesResponseDTO[];
+}
+
+export interface UpsertGroupSharesRequestDTO {
+  application?: string;
+  currentUserId?: string;
+  groupId?: string;
+  permissions?: string[];
+  resourceId?: string;
+}
+
+export interface UpsertGroupSharesResponseDTO {
+  shares?: SharesResponseDTO[];
+}
+
+export interface RegisterTranslationFilesRequestDTO {
+  application?: string;
+  translationsByLanguage?: { [key: string]: { [key: string]: string } };
+}
+
+export interface RemoveGroupMemberRequestDTO {
+  groupExternalId?: string;
+  groupId?: string;
+  userId?: string;
+}
+
+export interface CreateGroupRequestDTO {
+  classId?: string;
   externalId?: string;
-  id?: string;
-}
-
-export interface FindGroupByExternalIdResponseDTO {
-  group?: GroupDTO;
+  name?: string;
+  structureId?: string;
 }
 
 export interface LangAndDomain {
@@ -179,12 +181,10 @@ export interface LangAndDomain {
   lang?: string;
 }
 
-export interface AddGroupMemberRequestDTO {
-  groupExternalId?: string;
-  groupId?: string;
-  userId?: string;
-}
-
 export interface GetUserDisplayNamesRequestDTO {
   userIds?: string[];
+}
+
+export interface RemoveGroupMemberResponseDTO {
+  removed?: boolean;
 }
