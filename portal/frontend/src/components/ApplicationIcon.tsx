@@ -8,7 +8,8 @@ export function ApplicationIcon({ data }: { data: Application }) {
   const iconClassName = getIconClass(data);
   const appName = data.prefix
     ? t(data.prefix.substring(1))
-    : data.displayName || '';
+    : t(data.name) || data.displayName;
+
   return (
     <div style={{ width: 107, height: 127, textAlign: 'center' }}>
       <a
