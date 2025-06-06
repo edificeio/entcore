@@ -565,7 +565,6 @@ export const useSendDraft = () => {
     }) => messageService.send(draftId, payload, inReplyToId),
     onSuccess: (_response, { payload, draftId }) => {
       toast.success(t('message.sent'));
-      // updateFolderBadgeCountQueryCache('draft', -1);
 
       if (
         payload &&
