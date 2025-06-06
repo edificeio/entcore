@@ -1,10 +1,11 @@
 import {
   Combobox,
+  ComboboxRef,
   Dropdown,
   OptionListItemType,
   useIsAdml,
 } from '@edifice.io/react';
-import { Fragment, ReactNode, useEffect, useState } from 'react';
+import { Fragment, ReactNode, useEffect, useRef, useState } from 'react';
 import { useSearchRecipients } from '~/features/message-edit/hooks/useSearchRecipients';
 import { useI18n } from '~/hooks/useI18n';
 import { Group, Recipients, User } from '~/models';
@@ -36,6 +37,7 @@ export function RecipientListEdit({
   const message = useMessage();
   const { setMessage, setMessageNeedToSave } = useMessageActions();
   const [isComboboxFocused, setIsComboboxFocused] = useState(false);
+  const comboboxRef = useRef<ComboboxRef>(null);
 
   const handleRecipientClick = async (recipient: Visible) => {
     let recipientToAdd: User | Group;
@@ -88,6 +90,7 @@ export function RecipientListEdit({
       }
     }
     updateMessage();
+    comboboxRef.current?.focus();
   };
 
   const handleRemoveRecipient = (recipient: User | Group) => {
@@ -185,6 +188,7 @@ export function RecipientListEdit({
   return (
     <div className="d-flex align-items-center flex-fill ps-8 pe-16 py-8">
       <Combobox
+        ref={comboboxRef}
         value={searchInputValue}
         placeholder={placeholder}
         isLoading={isSearchLoading}
