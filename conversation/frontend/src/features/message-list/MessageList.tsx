@@ -60,13 +60,12 @@ export function MessageList() {
 
   const [keyList, setKeyList] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
+  const observer = useRef<IntersectionObserver | null>(null);
 
   //handle reload list when search params change
   useEffect(() => {
     setKeyList((prev) => prev + 1);
   }, [searchParams]);
-
-  const observer = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
     const messageListItems =
@@ -90,6 +89,12 @@ export function MessageList() {
     isLoadingNextPage,
     fetchNextPage,
   ]);
+
+  useEffect(() => {
+    return () => {
+      if (observer.current) observer.current.disconnect();
+    };
+  }, []);
 
   const toolbarItemsData = [
     {
