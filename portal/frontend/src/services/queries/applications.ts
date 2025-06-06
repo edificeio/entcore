@@ -7,8 +7,10 @@ export const useApplications = () => {
     queryFn: () => applicationsService.getApplications(),
   });
 
+  const displayedApps = query.data?.apps.filter((app) => app.display);
+
   return {
-    applications: query.data?.apps,
+    applications: displayedApps,
     isLoading: query.isLoading,
     isError: query.isError,
   };
