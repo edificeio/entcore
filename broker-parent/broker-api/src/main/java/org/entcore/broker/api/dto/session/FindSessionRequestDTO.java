@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
 
+import java.beans.Transient;
 import java.util.Collections;
 import java.util.Map;
 
@@ -153,6 +154,7 @@ public class FindSessionRequestDTO {
    *
    * @return true if the request contains at least one form of authentication information
    */
+  @Transient
   public boolean isValid() {
     return StringUtils.isNotBlank(sessionId) || 
            StringUtils.isNotBlank(cookies) || 
