@@ -1,5 +1,5 @@
 import { InfiniteData, useQueryClient } from '@tanstack/react-query';
-import { Message } from '~/models';
+import { Message, MessageMetadata } from '~/models';
 import { folderQueryOptions } from '~/services';
 import { useUpdateFolderBadgeCountQueryCache } from './useUpdateFolderBadgeCountQueryCache';
 
@@ -17,10 +17,10 @@ export const useDeleteMessagesFromQueryCache = () => {
     // Update list message
     queryClient.setQueriesData(
       { queryKey: folderQueryOptions.getMessagesQuerykey(folderId, {}) },
-      (data: InfiniteData<Message[]>) => {
+      (data: InfiniteData<MessageMetadata[]>) => {
         if (!data) return;
         const countUnreadMessages = (
-          messages: Message[],
+          messages: MessageMetadata[],
           messageIds: string[],
         ): number => {
           return messages.filter(
@@ -35,10 +35,26 @@ export const useDeleteMessagesFromQueryCache = () => {
           );
         }
 
-        // Filter out deleted messages
-        const pages = data.pages.map((page: Message[]) =>
-          page.filter((message: Message) => !messageIds.includes(message.id)),
-        );
+        //total message count
+        const totalItems = data.pages[0][0].count;
+        const newTotalItems = totalItems - messageIds.length;
+
+        const pages = data.pages.map((page: MessageMetadata[]) => {
+          return (
+            page
+              // Filter out deleted messages
+              .filter(
+                (message: MessageMetadata) => !messageIds.includes(message.id),
+              )
+              // update count
+              .map((message: MessageMetadata) => ({
+                ...message,
+                count: newTotalItems,
+              }))
+          );
+        });
+
+        //update message count
 
         return {
           ...data,
@@ -47,7 +63,6 @@ export const useDeleteMessagesFromQueryCache = () => {
       },
     );
 
-    // Update unread inbox count
     // Update custom folder count
     if (
       !['trash', 'draft', 'outbox'].includes(folderId!) &&
