@@ -10,6 +10,12 @@ const mocks = vi.hoisted(() => ({
   useSelectedFolder: vi.fn(),
 }));
 
+const mockIntersectionObserver = vi.fn().mockReturnValue({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+});
+
 vi.mock('~/hooks/useSelectedFolder', () => ({
   useSelectedFolder: mocks.useSelectedFolder,
 }));
@@ -17,6 +23,7 @@ vi.mock('~/hooks/useSelectedFolder', () => ({
 describe('Message list component', () => {
   beforeAll(() => {
     mocks.useSelectedFolder.mockReturnValue({ folderId: 'inbox' });
+    window.IntersectionObserver = mockIntersectionObserver;
   });
 
   afterAll(() => {

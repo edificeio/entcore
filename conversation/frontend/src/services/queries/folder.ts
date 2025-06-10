@@ -103,14 +103,12 @@ export const folderQueryOptions = {
       },
       staleTime: 5 * 60 * 1000, // 5 minutes
       initialPageParam: 0,
-      getNextPageParam: (lastPage: any, _allPages: any, lastPageParam: any) => {
-        if (
-          (pageSize && lastPage?.length < pageSize) ||
-          (!pageSize && lastPage?.length === 0)
-        ) {
-          return undefined;
+      getNextPageParam: (_lastPage: any, allPages: any, lastPageParam: any) => {
+        const firstMessage: MessageMetadata = allPages[0]?.[0];
+        if (firstMessage?.count > allPages.flat().length) {
+          return lastPageParam + 1;
         }
-        return lastPageParam + 1;
+        return undefined;
       },
     });
   },
