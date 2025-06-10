@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
-import { ApplicationIcon } from '~/components/ApplicationIcon';
-import { Application } from '~/models/application';
+import { ApplicationWrapper } from '~/components/ApplicationWrapper';
 import { useApplications } from '~/services';
 import { getAppName } from '~/utils/get-app-name';
 
@@ -25,7 +24,7 @@ export function ApplicationList() {
         style={{ maxWidth: 1091 }}
       >
         {internalApps.map((app) => (
-          <ApplicationIcon key={app.name} data={app} />
+          <ApplicationWrapper key={app.name} data={app} />
         ))}
       </div>
       {(externalApps.length && (
@@ -42,7 +41,7 @@ export function ApplicationList() {
             style={{ maxWidth: 1091 }}
           >
             {externalApps.map((app) => (
-              <ApplicationIcon key={app.name} data={app} />
+              <ApplicationWrapper key={app.name} data={app} />
             ))}
           </div>
         </div>
