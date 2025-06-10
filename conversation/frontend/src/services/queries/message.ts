@@ -221,8 +221,9 @@ export const useTrashMessage = () => {
     mutationFn: ({ id }: { id: string | string[] }) =>
       messageService.moveToFolder('trash', id),
     onMutate: async ({ id }: { id: string | string[] }) => {
+      const messageIds = typeof id === 'string' ? [id] : id;
       // avoid to display placeholder if have next page
-      if (messages?.length === id.length && hasNextPage) {
+      if (messages?.length === messageIds.length && hasNextPage) {
         await fetchNextPage();
       }
     },
@@ -269,7 +270,9 @@ export const useRestoreMessage = () => {
     mutationFn: async ({ id }: { id: string | string[] }) =>
       messageService.restore(id),
     onMutate: async ({ id }: { id: string | string[] }) => {
-      if (messages?.length === id.length && hasNextPage) {
+      const messageIds = typeof id === 'string' ? [id] : id;
+
+      if (messages?.length === messageIds.length && hasNextPage) {
         await fetchNextPage();
       }
     },

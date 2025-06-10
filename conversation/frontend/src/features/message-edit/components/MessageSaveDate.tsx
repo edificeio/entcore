@@ -10,7 +10,7 @@ export const MessageSaveDate = () => {
   const [dateKey, setDateKey] = useState(0);
 
   useEffect(() => {
-    const interval = setInterval(() => setDateKey((prev) => ++prev), 60000);
+    const interval = setInterval(() => setDateKey((prev) => ++prev), 10000);
     return () => clearInterval(interval);
   }, []);
 
