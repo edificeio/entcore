@@ -1,9 +1,8 @@
 import { Layout, LoadingScreen, useEdificeClient, useEdificeTheme } from '@edifice.io/react';
 import { matchPath } from 'react-router-dom';
 import { basename } from '..';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { MyAppLayout } from '~/layouts/MyAppsLayout';
-
 
 /** Check old format URL and redirect if needed */
 export const loader = async () => {
@@ -28,7 +27,7 @@ export const loader = async () => {
 export const Root = () => {
   const { init } = useEdificeClient();
   const { theme } = useEdificeTheme();
-
+  const [themeName, setThemeName] = useState('');
   // Load theme for icons
   useEffect(() => {
     if (!theme) return;
@@ -39,6 +38,9 @@ export const Root = () => {
     link.href = url;
     document.head.appendChild(link);
 
+    const themeName = theme.is1d ? '1d' : '2d';
+    setThemeName(themeName);
+
     return () => {
       document.head.removeChild(link);
     };
@@ -46,7 +48,11 @@ export const Root = () => {
 
   if (!init) return <LoadingScreen position={false} />;
 
-  return init ? <Layout><MyAppLayout /></Layout> : null;
+  return init ? (
+    <Layout>
+      <MyAppLayout theme={themeName} />
+    </Layout>
+  ) : null;
 };
 
 export default Root;

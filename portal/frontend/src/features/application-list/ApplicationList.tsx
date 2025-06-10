@@ -14,8 +14,8 @@ export function ApplicationList() {
     return getAppName(a, t).localeCompare(getAppName(b, t));
   });
 
-  const internalApps = sortedApps.filter((app) => !app.isExternal);
-  const externalApps = sortedApps.filter((app) => app.isExternal);
+  const internalApps = sortedApps.filter((app) => app.category !== 'connector');
+  const externalApps = sortedApps.filter((app) => app.category === 'connector');
 
   return (
     <>
