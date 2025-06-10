@@ -17,11 +17,11 @@ import {
   createDefaultMessage,
   folderQueryOptions,
   messageService,
-  useFolderMessages,
   useFolderUtils,
 } from '~/services';
 import { useMessage, useMessageActions } from '~/store/messageStore';
 import { useDeleteMessagesFromQueryCache } from './hooks/useDeleteMessageFromQueryCache';
+import { useMessageListOnMutate } from './hooks/useMessageListOnMutate';
 import { useUpdateFolderBadgeCountQueryCache } from './hooks/useUpdateFolderBadgeCountQueryCache';
 const appCodeName = 'conversation';
 /**
@@ -212,21 +212,12 @@ export const useTrashMessage = () => {
   const { t } = useTranslation(appCodeName);
   const toast = useToast();
   const { deleteMessagesFromQueryCache } = useDeleteMessagesFromQueryCache();
-  const { messages, fetchNextPage, hasNextPage } = useFolderMessages(
-    folderId,
-    false,
-  );
+  const { messageListOnMutate } = useMessageListOnMutate();
 
   return useMutation({
     mutationFn: ({ id }: { id: string | string[] }) =>
       messageService.moveToFolder('trash', id),
-    onMutate: async ({ id }: { id: string | string[] }) => {
-      const messageIds = typeof id === 'string' ? [id] : id;
-      // avoid to display placeholder if have next page
-      if (messages?.length === messageIds.length && hasNextPage) {
-        await fetchNextPage();
-      }
-    },
+    onMutate: ({ id }) => messageListOnMutate(id),
     onSuccess: (_data, { id }) => {
       const messageIds = typeof id === 'string' ? [id] : id;
 
@@ -259,23 +250,14 @@ export const useTrashMessage = () => {
 export const useRestoreMessage = () => {
   const queryClient = useQueryClient();
   const { deleteMessagesFromQueryCache } = useDeleteMessagesFromQueryCache();
-  const { messages, fetchNextPage, hasNextPage } = useFolderMessages(
-    'trash',
-    false,
-  );
+  const { messageListOnMutate } = useMessageListOnMutate();
   const toast = useToast();
   const { t } = useTranslation(appCodeName);
 
   return useMutation({
     mutationFn: async ({ id }: { id: string | string[] }) =>
       messageService.restore(id),
-    onMutate: async ({ id }: { id: string | string[] }) => {
-      const messageIds = typeof id === 'string' ? [id] : id;
-
-      if (messages?.length === messageIds.length && hasNextPage) {
-        await fetchNextPage();
-      }
-    },
+    onMutate: ({ id }) => messageListOnMutate(id),
     onSuccess: async (_data, { id }) => {
       const messageIds = typeof id === 'string' ? [id] : id;
 
@@ -332,12 +314,14 @@ export const useDeleteMessage = () => {
   const toast = useToast();
   const { t } = useTranslation(appCodeName);
   const queryClient = useQueryClient();
-
   const { deleteMessagesFromQueryCache } = useDeleteMessagesFromQueryCache();
+
+  const { messageListOnMutate } = useMessageListOnMutate();
 
   return useMutation({
     mutationFn: ({ id }: { id: string | string[] }) =>
       messageService.delete(id),
+    onMutate: ({ id }) => messageListOnMutate(id),
     onSuccess: (_data, { id }) => {
       const messageIds = typeof id === 'string' ? [id] : id;
 
@@ -363,10 +347,10 @@ export const useDeleteMessage = () => {
  */
 export const useMoveMessage = () => {
   const queryClient = useQueryClient();
-  const { folderId } = useParams() as { folderId: string };
+  const { folderId: currentFolderId } = useParams() as { folderId: string };
 
   const { deleteMessagesFromQueryCache } = useDeleteMessagesFromQueryCache();
-
+  const { messageListOnMutate } = useMessageListOnMutate();
   return useMutation({
     mutationFn: ({
       folderId,
@@ -375,9 +359,10 @@ export const useMoveMessage = () => {
       folderId: string;
       id: string | string[];
     }) => messageService.moveToFolder(folderId, id),
-    onSuccess: (_data, { id }) => {
-      // invalidate messages details
+    onMutate: ({ id }) => messageListOnMutate(id),
+    onSuccess: (_data, { id, folderId }) => {
       const messageIds = typeof id === 'string' ? [id] : id;
+      // invalidate messages details
       messageIds.forEach((messageId) => {
         queryClient.invalidateQueries({
           queryKey: messageQueryOptions.getById(messageId).queryKey,
@@ -385,7 +370,19 @@ export const useMoveMessage = () => {
       });
 
       // Delete messages from query cache
-      deleteMessagesFromQueryCache(folderId, messageIds);
+      if (folderId === 'inbox') {
+        queryClient.invalidateQueries({
+          queryKey: ['folder', 'messages', currentFolderId],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ['folder', 'messages', 'inbox'],
+        });
+      } else {
+        deleteMessagesFromQueryCache(currentFolderId, messageIds);
+        queryClient.invalidateQueries({
+          queryKey: ['folder', 'messages', folderId],
+        });
+      }
 
       queryClient.invalidateQueries({
         queryKey: ['folder', 'tree'],
