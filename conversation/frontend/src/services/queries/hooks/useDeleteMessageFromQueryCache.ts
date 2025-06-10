@@ -1,5 +1,5 @@
 import { InfiniteData, useQueryClient } from '@tanstack/react-query';
-import { Message, MessageMetadata } from '~/models';
+import { MessageMetadata } from '~/models';
 import { folderQueryOptions } from '~/services';
 import { useUpdateFolderBadgeCountQueryCache } from './useUpdateFolderBadgeCountQueryCache';
 
