@@ -1,5 +1,5 @@
 import { renderHook, waitFor } from '@testing-library/react';
-import { useFolderMessages } from './folder';
+import { PAGE_SIZE, useFolderMessages } from './folder';
 import { folderService } from '../api';
 import { wrapper } from '~/mocks/setup';
 
@@ -16,7 +16,7 @@ describe('Folder Queries', () => {
         search: undefined,
         unread: undefined,
         page: 0,
-        pageSize: 20,
+        pageSize: PAGE_SIZE,
       });
     });
   });
@@ -37,7 +37,7 @@ describe('Folder Queries', () => {
         search: 'searchValue',
         unread: true,
         page: 0,
-        pageSize: 20,
+        pageSize: PAGE_SIZE,
       });
     });
   });

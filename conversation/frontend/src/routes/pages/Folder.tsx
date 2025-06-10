@@ -31,6 +31,7 @@ export function Component() {
   const { messages, isPending: isLoadingMessage } = useFolderMessages(
     folderId!,
   );
+
   return (
     <>
       {(!!messages.length ||

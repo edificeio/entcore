@@ -13,7 +13,7 @@ export const useAttachFiles = () => {
   const queryClient = useQueryClient();
   const { setMessage } = useMessageActions();
   const message = useMessage();
-  const { updateFolderMessagesQueryData } = useFolderUtils();
+  const { updateFolderMessagesQueryCache } = useFolderUtils();
   const toast = useToast();
   const { t } = useI18n();
 
@@ -51,7 +51,7 @@ export const useAttachFiles = () => {
         },
       );
 
-      updateFolderMessagesQueryData(
+      updateFolderMessagesQueryCache(
         'draft',
         (oldMessage) =>
           oldMessage.id === draftId
@@ -76,7 +76,7 @@ export const useAttachFiles = () => {
 export const useDetachFile = () => {
   const queryClient = useQueryClient();
   const { setMessage } = useMessageActions();
-  const { updateFolderMessagesQueryData } = useFolderUtils();
+  const { updateFolderMessagesQueryCache } = useFolderUtils();
 
   return useMutation({
     mutationFn: ({
@@ -102,7 +102,7 @@ export const useDetachFile = () => {
           return updatedMessage;
         },
       );
-      updateFolderMessagesQueryData(
+      updateFolderMessagesQueryCache(
         'draft',
         (oldMessage) =>
           oldMessage.id === draftId

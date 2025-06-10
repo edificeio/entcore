@@ -31,6 +31,7 @@ import {
   useTrashMessage,
 } from '~/services';
 import { useAppActions, useConfirmModalStore } from '~/store';
+import { useMessageActions } from '~/store/messageStore';
 
 export interface MessageActionDropdownProps {
   message: Message;
@@ -44,6 +45,7 @@ export function useMessageActionDropdown({
   actions,
 }: MessageActionDropdownProps) {
   const { t } = useI18n();
+  const { setMessageNeedToSave } = useMessageActions();
   const markAsUnreadQuery = useMarkUnread();
   const navigate = useNavigate();
   const { openModal } = useConfirmModalStore();
@@ -153,6 +155,7 @@ export function useMessageActionDropdown({
 
   const handleDraftSaveClick = async () => {
     await createOrUpdateDraft(true);
+    setMessageNeedToSave(false);
     navigate('/inbox');
   };
 

@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { MessageMetadata } from '~/models';
-import { useUpdateFolderBadgeCountLocal } from '~/services';
+import { useUpdateFolderBadgeCountQueryCache } from '~/services/queries/hooks/useUpdateFolderBadgeCountQueryCache';
 import { MessagePreview } from './MessagePreview/MessagePreview';
 
 interface MessageItemProps {
@@ -13,7 +13,8 @@ interface MessageItemProps {
 }
 export function MessageItem({ message, checked, checkbox }: MessageItemProps) {
   const navigate = useNavigate();
-  const { updateFolderBadgeCountLocal } = useUpdateFolderBadgeCountLocal();
+  const { updateFolderBadgeCountQueryCache } =
+    useUpdateFolderBadgeCountQueryCache();
   const [searchParams] = useSearchParams();
   const { folderId } = useSelectedFolder();
 
@@ -28,7 +29,7 @@ export function MessageItem({ message, checked, checkbox }: MessageItemProps) {
 
   const handleMessageClick = (message: MessageMetadata) => {
     if (message.unread && folderId !== 'draft') {
-      updateFolderBadgeCountLocal(folderId!, -1);
+      updateFolderBadgeCountQueryCache(folderId!, -1);
     }
     navigate({
       pathname: `message/${message.id}`,
