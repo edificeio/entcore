@@ -1,4 +1,22 @@
-import { Inject, Injectable } from '@nestjs/common';
+/*
+ * Copyright © "Edifice"
+ *
+ * This program is published by "Edifice".
+ * You must indicate the name of the software and the company in any production /contribution
+ * using the software and indicate on the home page of the software industry in question,
+ * "powered by Edifice" with a reference to the website: https://edifice.io/.
+ *
+ * This program is free software, licensed under the terms of the GNU Affero General Public License
+ * as published by the Free Software Foundation, version 3 of the License.
+ *
+ * You can redistribute this application and/or modify it since you respect the terms of the GNU Affero General Public License.
+ * If you modify the source code and then use this modified source code in your creation, you must make available the source code of your modifications.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with the software.
+ * If not, please see : <http://www.gnu.org/licenses/>. Full compliance requires reading the terms of this license and following its directives.
+ */
+
+import { Injectable } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 
@@ -68,9 +86,7 @@ import type { UpsertGroupSharesResponseDTO } from './types';
 @Injectable()
 export class EntNatsServiceClient {
 
-  constructor(
-    @Inject('NATS_CLIENT') private readonly natsClient: ClientProxy
-  ) {
+  constructor(private readonly natsClient: ClientProxy) {
     console.log('Creating events service EntNatsServiceClient')
   }
 
@@ -83,7 +99,7 @@ export class EntNatsServiceClient {
     if(!reply) {
       throw new Error('No reply received');
     }
-    return JSON.parse(reply) as AddGroupMemberResponseDTO;
+    return reply as AddGroupMemberResponseDTO;
   }
   
   
@@ -95,7 +111,7 @@ export class EntNatsServiceClient {
     if(!reply) {
       throw new Error('No reply received');
     }
-    return JSON.parse(reply) as CreateGroupResponseDTO;
+    return reply as CreateGroupResponseDTO;
   }
   
   
@@ -107,7 +123,7 @@ export class EntNatsServiceClient {
     if(!reply) {
       throw new Error('No reply received');
     }
-    return JSON.parse(reply) as DeleteGroupResponseDTO;
+    return reply as DeleteGroupResponseDTO;
   }
   
   
@@ -119,7 +135,7 @@ export class EntNatsServiceClient {
     if(!reply) {
       throw new Error('No reply received');
     }
-    return JSON.parse(reply) as FetchTranslationsResponseDTO;
+    return reply as FetchTranslationsResponseDTO;
   }
   
   
@@ -131,7 +147,7 @@ export class EntNatsServiceClient {
     if(!reply) {
       throw new Error('No reply received');
     }
-    return JSON.parse(reply) as FindGroupByExternalIdResponseDTO;
+    return reply as FindGroupByExternalIdResponseDTO;
   }
   
   
@@ -143,7 +159,7 @@ export class EntNatsServiceClient {
     if(!reply) {
       throw new Error('No reply received');
     }
-    return JSON.parse(reply) as FindSessionResponseDTO;
+    return reply as FindSessionResponseDTO;
   }
   
   
@@ -155,7 +171,7 @@ export class EntNatsServiceClient {
     if(!reply) {
       throw new Error('No reply received');
     }
-    return JSON.parse(reply) as GetUserDisplayNamesResponseDTO;
+    return reply as GetUserDisplayNamesResponseDTO;
   }
   
   
@@ -167,18 +183,26 @@ export class EntNatsServiceClient {
     if(!reply) {
       throw new Error('No reply received');
     }
-    return JSON.parse(reply) as GetUsersByIdsResponseDTO;
+    return reply as GetUsersByIdsResponseDTO;
   }
   
   
-  async listenOnlyExample(request: ListenAndAnswerDTO): Promise<DummyResponseDTO> {
+  
+  async listenAndReplyExample(request: ListenAndAnswerDTO): Promise<DummyResponseDTO> {
     const eventAddress = "ent.test.listen.reply";
     console.debug("Sending request to NATS subject, " + eventAddress);
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
     if(!reply) {
       throw new Error('No reply received');
     }
-    return JSON.parse(reply) as DummyResponseDTO;
+    return reply as DummyResponseDTO;
+  }
+  
+  
+  
+  async listenOnlyExample(request: ListenOnlyDTO) {
+    const eventAddress = "ent.test.listen";
+    this.natsClient.emit(eventAddress, request);
   }
   
   
@@ -190,7 +214,7 @@ export class EntNatsServiceClient {
     if(!reply) {
       throw new Error('No reply received');
     }
-    return JSON.parse(reply) as AppRegistrationResponseDTO;
+    return reply as AppRegistrationResponseDTO;
   }
   
   
@@ -202,7 +226,7 @@ export class EntNatsServiceClient {
     if(!reply) {
       throw new Error('No reply received');
     }
-    return JSON.parse(reply) as RegisterTranslationFilesResponseDTO;
+    return reply as RegisterTranslationFilesResponseDTO;
   }
   
   
@@ -214,7 +238,7 @@ export class EntNatsServiceClient {
     if(!reply) {
       throw new Error('No reply received');
     }
-    return JSON.parse(reply) as RemoveGroupMemberResponseDTO;
+    return reply as RemoveGroupMemberResponseDTO;
   }
   
   
@@ -226,7 +250,7 @@ export class EntNatsServiceClient {
     if(!reply) {
       throw new Error('No reply received');
     }
-    return JSON.parse(reply) as RemoveGroupSharesResponseDTO;
+    return reply as RemoveGroupSharesResponseDTO;
   }
   
   
@@ -238,7 +262,7 @@ export class EntNatsServiceClient {
     if(!reply) {
       throw new Error('No reply received');
     }
-    return JSON.parse(reply) as AppRegistrationResponseDTO;
+    return reply as AppRegistrationResponseDTO;
   }
   
   
@@ -250,7 +274,7 @@ export class EntNatsServiceClient {
     if(!reply) {
       throw new Error('No reply received');
     }
-    return JSON.parse(reply) as UpdateGroupResponseDTO;
+    return reply as UpdateGroupResponseDTO;
   }
   
   
@@ -262,7 +286,7 @@ export class EntNatsServiceClient {
     if(!reply) {
       throw new Error('No reply received');
     }
-    return JSON.parse(reply) as UpsertGroupSharesResponseDTO;
+    return reply as UpsertGroupSharesResponseDTO;
   }
   
   

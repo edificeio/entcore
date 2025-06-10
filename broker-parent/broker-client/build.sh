@@ -22,7 +22,7 @@ init() {
 }
 
 publish () {
-  cd $SCRIPT_DIR/ts
+  cd $SCRIPT_DIR/nest
   echo "[publish] Publish packages..."
   # Récupération de la branche locale
   LOCAL_BRANCH=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
