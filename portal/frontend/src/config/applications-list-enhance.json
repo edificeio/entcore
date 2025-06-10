@@ -1,0 +1,114 @@
+{
+    "apps": [
+      {
+        "name": "Actualites",
+        "category": "communication",
+        "color": "orange",
+        "libraries": false,
+        "help": {
+            "fr": "https://help.edifice.io/hc/fr/articles/360018742559-Pr%C3%A9sentation-de-l-application-Actualit%C3%A9s",
+            "en": false,
+            "es": "https://help.edifice.io/hc/es-419/articles/360018742559-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Noticias"
+        }
+      },
+      {
+        "name": "Calendar",
+        "category": "organisation",
+        "color": "green",
+        "libraries": false,
+        "help": {
+            "fr": "https://help.edifice.io/hc/fr/articles/5570293349276-Pr%C3%A9sentation-de-l-Agenda",
+            "en": false,
+            "es": "https://help.edifice.io/hc/es-419/articles/5570293349276-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Agenda"
+        }
+      },
+      {
+        "name": "Aide aux devoirs",
+        "category": "organisation",
+        "color": "green",
+        "libraries": false,
+        "help": {
+            "fr": false,
+            "en": false,
+            "es": false
+        }
+      },
+      {
+        "name": "Aide et support",
+        "category": "organisation",
+        "color": "yellow",
+        "libraries": false,
+        "help": {
+            "fr": "https://help.edifice.io/hc/fr/articles/360018743999-Pr%C3%A9sentation-de-l-application-Assistance-ENT",
+            "en": false,
+            "es": "https://help.edifice.io/hc/es-419/articles/360018743999-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Ayuda"
+        }
+      },
+      {
+        "name": "library-recette",
+        "category": "pedagogy",
+        "color": "violet",
+        "libraries": false,
+        "help": {
+            "fr": "https://help.edifice.io/hc/fr/articles/5896833929372-Pr%C3%A9sentation-de-la-Biblioth%C3%A8que",
+            "en": false,
+            "es": "https://help.edifice.io/hc/es-419/articles/5896833929372-Presentaci%C3%B3n-de-la-Biblioteca"
+        }
+      },
+      {
+        "name": "Blog",
+        "category": "communication",
+        "color": "orange",
+        "libraries": true,
+        "help": {
+            "fr": "https://help.edifice.io/hc/fr/articles/360018673880-Pr%C3%A9sentation-de-l-application-Blog",
+            "en": false,
+            "es": "https://help.edifice.io/hc/es-419/articles/360018673880-Presentaci%C3%B3n-del-Blog"
+        }
+      },
+      {
+        "name": "Cahier de texte",
+        "category": "pedagogy",
+        "color": "blue",
+        "libraries": false,
+        "help": {
+            "fr": "https://help.edifice.io/hc/fr/articles/360018701660-Pr%C3%A9sentation-de-l-application-Cahier-de-textes-Carnet-d-activit%C3%A9s",
+            "en": false,
+            "es": "https://help.edifice.io/hc/es-419/articles/360018701660-Presentaci%C3%B3n-de-la-Libreta-de-tareas"
+        }
+      },
+      {
+        "name": "Diary",
+        "category": "pedagogy",
+        "color": "green",
+        "libraries": false,
+        "help": {
+            "fr": "https://help.edifice.io/hc/fr/articles/12352333912220-Pr%C3%A9sentation-du-Cahier-de-textes-2D",
+            "en": false,
+            "es": "https://help.edifice.io/hc/es-419/articles/360018701960-Presentaci%C3%B3n-del-Cuaderno-Multimedia"
+        }
+      },
+      {
+        "name": "xxxxxxxxxxx",
+        "category": "organisation",
+        "color": "green",
+        "libraries": false,
+        "help": {
+            "fr": false,
+            "en": false,
+            "es": false
+        }
+      },
+      {
+        "name": "xxxxxxxxxxx",
+        "category": "organisation",
+        "color": "green",
+        "libraries": false,
+        "help": {
+            "fr": false,
+            "en": false,
+            "es": false
+        }
+      }
+    ]
+}

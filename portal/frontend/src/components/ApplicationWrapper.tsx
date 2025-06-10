@@ -38,7 +38,10 @@ export function ApplicationWrapper({ data }: { data: Application }) {
         className="dropdown-wrapper"
         style={{ position: 'absolute', top: 0, right: 0 }}
       >
-        <Dropdown onToggle={(active) => setDropdownActive(active)}>
+        <Dropdown
+          onToggle={(active) => setDropdownActive(active)}
+          placement="right-end"
+        >
           {(
             triggerProps: JSX.IntrinsicAttributes &
               Omit<IconButtonProps, 'ref'> &
