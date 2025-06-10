@@ -344,6 +344,10 @@ export const useDeleteMessage = () => {
  */
 export const useMoveMessage = () => {
   const queryClient = useQueryClient();
+  const { folderId } = useParams() as { folderId: string };
+
+  const { deleteMessagesFromQueryCache } = useDeleteMessagesFromQueryCache();
+
   return useMutation({
     mutationFn: ({
       folderId,
@@ -359,8 +363,15 @@ export const useMoveMessage = () => {
           queryKey: messageQueryOptions.getById(messageId).queryKey,
         });
       });
+
+      // Delete messages from query cache
+      deleteMessagesFromQueryCache(folderId, messageIds);
+
       queryClient.invalidateQueries({
-        queryKey: ['folder'],
+        queryKey: ['folder', 'tree'],
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['folder', 'count'],
       });
     },
   });
@@ -486,6 +497,8 @@ export const useCreateDraft = () => {
       queryClient.resetQueries({
         queryKey: ['folder', 'messages', 'draft'],
       });
+
+      //update message details query cache
     },
   });
 };
@@ -519,6 +532,7 @@ export const useUpdateDraft = () => {
 
       setMessage({ ...messageUpdated });
 
+      //update message details query cache
       queryClient.setQueryData(
         messageQueryOptions.getById(draftId).queryKey,
         (message: Message | undefined) => {
@@ -587,6 +601,8 @@ export const useSendDraft = () => {
 
       // Delete message from draft list in query cache
       deleteMessagesFromQueryCache('draft', [draftId]);
+
+      //update message details query cache
     },
   });
 };
