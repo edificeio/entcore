@@ -276,6 +276,13 @@ export const useRestoreMessage = () => {
     onSuccess: async (_data, { id }) => {
       const messageIds = typeof id === 'string' ? [id] : id;
 
+      // Invalidate message details
+      messageIds.forEach((messageId) => {
+        queryClient.invalidateQueries({
+          queryKey: messageQueryOptions.getById(messageId).queryKey,
+        });
+      });
+
       deleteMessagesFromQueryCache('trash', messageIds);
 
       // Reset all queries except trash folder
@@ -321,6 +328,8 @@ export const useEmptyTrash = () => {
 export const useDeleteMessage = () => {
   const toast = useToast();
   const { t } = useTranslation(appCodeName);
+  const queryClient = useQueryClient();
+
   const { deleteMessagesFromQueryCache } = useDeleteMessagesFromQueryCache();
 
   return useMutation({
@@ -328,6 +337,13 @@ export const useDeleteMessage = () => {
       messageService.delete(id),
     onSuccess: (_data, { id }) => {
       const messageIds = typeof id === 'string' ? [id] : id;
+
+      // Invalidate message details
+      messageIds.forEach((messageId) => {
+        queryClient.invalidateQueries({
+          queryKey: messageQueryOptions.getById(messageId).queryKey,
+        });
+      });
 
       deleteMessagesFromQueryCache('trash', messageIds);
 
@@ -357,6 +373,7 @@ export const useMoveMessage = () => {
       id: string | string[];
     }) => messageService.moveToFolder(folderId, id),
     onSuccess: (_data, { id }) => {
+      // invalidate messages details
       const messageIds = typeof id === 'string' ? [id] : id;
       messageIds.forEach((messageId) => {
         queryClient.invalidateQueries({
@@ -497,8 +514,6 @@ export const useCreateDraft = () => {
       queryClient.resetQueries({
         queryKey: ['folder', 'messages', 'draft'],
       });
-
-      //update message details query cache
     },
   });
 };
@@ -603,6 +618,11 @@ export const useSendDraft = () => {
       deleteMessagesFromQueryCache('draft', [draftId]);
 
       //update message details query cache
+
+      // Invalidate message details
+      queryClient.invalidateQueries({
+        queryKey: messageQueryOptions.getById(draftId).queryKey,
+      });
     },
   });
 };
@@ -617,7 +637,6 @@ export const useRecallMessage = () => {
     mutationFn: ({ messageId }: { messageId: string }) =>
       messageService.recall(messageId),
     onSuccess: (_data, { messageId }) => {
-      // TODO optimistic update ?
       queryClient.invalidateQueries({
         queryKey: messageQueryOptions.getById(messageId).queryKey,
       });
