@@ -1,3 +1,25 @@
+.application-card {
+    box-shadow: none !important;
+    border: 1px solid transparent;
+}
+.application-card .dropdown-menu {
+    display: flex !important;
+    border: none;
+}
+.dropdown-wrapper {
+    display: none;
+}
+.application-card:hover .dropdown-wrapper, .application-card.active .dropdown-wrapper {
+    display: block;
+}
+.application-card .card-header, .application-card .card-header button:nth-of-type(2) {
+    padding: 0;
+    border: 0;
+}
+.application-card .card-body {
+    padding: 0;
+}
+
 .application-icon {
     height: 56px;
     text-align: center;
