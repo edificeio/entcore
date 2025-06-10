@@ -29,4 +29,10 @@ export const useAutoSaveMessage = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messageUpdatedNeedSaveDebounced]);
+
+  useEffect(() => {
+    return () => {
+      setMessageNeedToSave(false);
+    };
+  }, []);
 };
