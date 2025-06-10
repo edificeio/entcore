@@ -11,18 +11,15 @@ export function ApplicationIcon({ data }: { data: Application }) {
   const appName = getAppName(data, t);
 
   return (
-    <a
+    <span
       className="application-icon rounded bg-primary mb-8 d-flex align-items-center justify-content-center mx-auto"
-      href={data.address}
-      rel={data.isExternal ? 'noopener noreferrer' : undefined}
       style={{ width: 64, height: 64 }}
-      target={data.isExternal ? '_blank' : undefined}
     >
       {isImage ? (
         <img src={data.icon} alt={appName} />
       ) : (
         <i className={iconClassName} />
       )}
-    </a>
+    </span>
   );
 }
