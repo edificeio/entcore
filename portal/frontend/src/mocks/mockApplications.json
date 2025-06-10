@@ -1,648 +1,652 @@
 {
     "apps": [
-        {
-            "name": "Community",
-            "address": "/community",
-            "icon": "community-large",
-            "target": "",
-            "displayName": "Communautés",
-            "display": true,
-            "prefix": "/community",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Schoolbook",
-            "address": "/schoolbook",
-            "icon": "schoolbook",
-            "target": null,
-            "displayName": "schoolbook",
-            "display": true,
-            "prefix": "/schoolbook",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Viescolaire",
-            "address": "/viescolaire",
-            "icon": "parametrage",
-            "target": "",
-            "displayName": "viescolaire",
-            "display": true,
-            "prefix": "/viescolaire",
-            "casType": "",
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Pix-Charlemagne",
-            "address": "https://support.pix.org/fr/support/solutions/articles/15000036360-pix-et-les-ent-espaces-num%C3%A9riques-de-travail-",
-            "icon": "/workspace/document/3a944f93-a2ad-42c8-b22d-8018aedb2040",
-            "target": "",
-            "displayName": "PIX",
-            "display": true,
-            "prefix": null,
-            "casType": "",
-            "scope": [
-                ""
-            ],
-            "isExternal": true
-        },
-        {
-            "name": "Video",
-            "address": "/video",
-            "icon": "video-large",
-            "target": null,
-            "displayName": "video",
-            "display": false,
-            "prefix": "/video",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Moodle",
-            "address": "/moodle",
-            "icon": "https://formationneo.opendigitaleducation.com/moodle/public/img/moodle-logo.png",
-            "target": "",
-            "displayName": "Moodle",
-            "display": true,
-            "prefix": "/moodle",
-            "casType": "",
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Formulaire",
-            "address": "/formulaire",
-            "icon": "forms",
-            "target": "",
-            "displayName": "form",
-            "display": true,
-            "prefix": "/formulaire",
-            "casType": "",
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Directory",
-            "address": "",
-            "icon": "",
-            "target": null,
-            "displayName": "directory",
-            "display": false,
-            "prefix": "/directory",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Paramétrage de la classe",
-            "address": "/directory/class-admin",
-            "icon": "settings-class-large",
-            "target": "",
-            "displayName": "classadmin",
-            "display": true,
-            "prefix": null,
-            "casType": "",
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Cahier de texte",
-            "address": "/homeworks",
-            "icon": "cahier-de-texte-large",
-            "target": null,
-            "displayName": "homeworks",
-            "display": true,
-            "prefix": "/homeworks",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Incidents",
-            "address": "/incidents",
-            "icon": "Incidents-larges",
-            "target": null,
-            "displayName": "incidents",
-            "display": false,
-            "prefix": "/incidents",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Lool",
-            "address": "/lool",
-            "icon": "Lool-large",
-            "target": null,
-            "displayName": "lool",
-            "display": false,
-            "prefix": "/lool",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Edt",
-            "address": "/edt",
-            "icon": "calendar-large",
-            "target": "",
-            "displayName": "edt",
-            "display": true,
-            "prefix": "/edt",
-            "casType": "",
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "CCN Charlemagne",
-            "address": "http://ccn71.opendigitaleducation.com/",
-            "icon": "/workspace/document/61334961-5514-4911-a54a-ee2298e94bee?thumbnail=120x120",
-            "target": "_blank",
-            "displayName": "CCN",
-            "display": true,
-            "prefix": null,
-            "casType": "",
-            "scope": [
-                ""
-            ],
-            "isExternal": true
-        },
-        {
-            "name": "Exercices et évaluations",
-            "address": "/exercizer",
-            "icon": "exercizer-large",
-            "target": "",
-            "displayName": "exercizer",
-            "display": true,
-            "prefix": "/exercizer",
-            "casType": "",
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Pronote1",
-            "address": "https://wseducation.index-education.net/pronote/",
-            "icon": "pronote-large",
-            "target": "_blank",
-            "displayName": "Pronote",
-            "display": true,
-            "prefix": null,
-            "casType": "PronoteRegisteredService",
-            "scope": [
-                ""
-            ],
-            "isExternal": true
-        },
-        {
-            "name": "Réservation de ressources",
-            "address": "/rbs",
-            "icon": "rbs-large",
-            "target": "",
-            "displayName": "rbs",
-            "display": true,
-            "prefix": "/rbs",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Mediacentre",
-            "address": "/mediacentre",
-            "icon": "/workspace/document/d63fc3e5-5302-42f4-a3a8-f43ebdca751a?thumbnail=120x120",
-            "target": "",
-            "displayName": "mediacentre",
-            "display": true,
-            "prefix": "/mediacentre",
-            "casType": "",
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Rack",
-            "address": "/rack",
-            "icon": "rack-large",
-            "target": "",
-            "displayName": "rack",
-            "display": true,
-            "prefix": "/rack",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Blog",
-            "address": "/blog",
-            "icon": "blog-large",
-            "target": "",
-            "displayName": "blog",
-            "display": true,
-            "prefix": "/blog",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Aide et support",
-            "address": "/support",
-            "icon": "support-large",
-            "target": "",
-            "displayName": "support",
-            "display": true,
-            "prefix": "/support",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Espace documentaire",
-            "address": "/workspace/workspace",
-            "icon": "workspace-large",
-            "target": "",
-            "displayName": "workspace",
-            "display": true,
-            "prefix": "/workspace",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Actualites",
-            "address": "/actualites",
-            "icon": "actualites-large",
-            "target": "",
-            "displayName": "news",
-            "display": true,
-            "prefix": "/actualites",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Searchengine",
-            "address": "/searchengine",
-            "icon": "searchengine-large",
-            "target": "",
-            "displayName": "Moteur de Recherche",
-            "display": false,
-            "prefix": "/searchengine",
-            "casType": "",
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "TimelineGenerator",
-            "address": "/timelinegenerator",
-            "icon": "timelinegenerator-large",
-            "target": "",
-            "displayName": "timelinegenerator",
-            "display": true,
-            "prefix": "/timelinegenerator",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Mindmap",
-            "address": "/mindmap",
-            "icon": "mindmap-large",
-            "target": null,
-            "displayName": "mindmap",
-            "display": true,
-            "prefix": "/mindmap",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Forum",
-            "address": "/forum",
-            "icon": "forum-large",
-            "target": "",
-            "displayName": "forum",
-            "display": true,
-            "prefix": "/forum",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "CollaborativeWall",
-            "address": "/collaborativewall",
-            "icon": "collaborative-wall-large",
-            "target": null,
-            "displayName": "collaborativewall",
-            "display": true,
-            "prefix": "/collaborativewall",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Diary",
-            "address": "/diary",
-            "icon": "cahier-textes-large",
-            "target": "",
-            "displayName": "diary",
-            "display": true,
-            "prefix": "/diary",
-            "casType": "",
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Competences",
-            "address": "/competences",
-            "icon": "competences",
-            "target": null,
-            "displayName": "competences",
-            "display": true,
-            "prefix": "/competences",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Archive",
-            "address": "/archive",
-            "icon": "archive-large",
-            "target": null,
-            "displayName": "archive",
-            "display": true,
-            "prefix": "/archive",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Cahier Multimédia",
-            "address": "/scrapbook",
-            "icon": "scrap-book-large",
-            "target": null,
-            "displayName": "scrapbook",
-            "display": true,
-            "prefix": "/scrapbook",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Timeline",
-            "address": "",
-            "icon": "",
-            "target": null,
-            "displayName": "timeline",
-            "display": false,
-            "prefix": "/timeline",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "library-departement",
-            "address": "https://formation-library.opendigitaleducation.com?platformURL=https%3A%2F%2Fdemoneo.opendigitaleducation.com",
-            "icon": "library",
-            "target": "",
-            "displayName": "Bibliothèque",
-            "display": true,
-            "prefix": null,
-            "casType": "",
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Collaborative Editor",
-            "address": "/collaborativeeditor",
-            "icon": "pad-large",
-            "target": "",
-            "displayName": "Pad",
-            "display": true,
-            "prefix": "/collaborativeeditor",
-            "casType": "",
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Presences",
-            "address": "/presences",
-            "icon": "presences",
-            "target": "",
-            "displayName": "presences",
-            "display": true,
-            "prefix": "/presences",
-            "casType": "",
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Folios",
-            "address": "/staticdemo/pagewebconnecteur.html",
-            "icon": "onisep2",
-            "target": "_blank",
-            "displayName": "Folios",
-            "display": true,
-            "prefix": null,
-            "casType": "",
-            "scope": [
-                ""
-            ],
-            "isExternal": true
-        },
-        {
-            "name": "Wiki",
-            "address": "/wiki",
-            "icon": "wiki-large",
-            "target": "",
-            "displayName": "wiki",
-            "display": true,
-            "prefix": "/wiki",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Web-conference",
-            "address": "/webconference",
-            "icon": "visioconf",
-            "target": "",
-            "displayName": "webconference",
-            "display": true,
-            "prefix": "/webconference",
-            "casType": "",
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Calendar",
-            "address": "/calendar",
-            "icon": "calendar-large",
-            "target": null,
-            "displayName": "calendar",
-            "display": true,
-            "prefix": "/calendar",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "ShareBigFiles",
-            "address": "/sharebigfiles",
-            "icon": "sharebigfiles-large",
-            "target": null,
-            "displayName": "sharebigfiles",
-            "display": true,
-            "prefix": "/sharebigfiles",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Annuaire",
-            "address": "/userbook/annuaire#/search",
-            "icon": "userbook-large",
-            "target": "",
-            "displayName": "directory.user",
-            "display": true,
-            "prefix": null,
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Site-public-etablissement",
-            "address": "https://collegeaurore.one1d.fr/",
-            "icon": "public",
-            "target": "_blank",
-            "displayName": "Site public du collège",
-            "display": true,
-            "prefix": null,
-            "casType": "",
-            "scope": [
-                ""
-            ],
-            "isExternal": true
-        },
-        {
-            "name": "Pages",
-            "address": "/pages",
-            "icon": "pages-large",
-            "target": "",
-            "displayName": "pages",
-            "display": true,
-            "prefix": "/pages",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Portal",
-            "address": "",
-            "icon": "",
-            "target": null,
-            "displayName": "portal",
-            "display": false,
-            "prefix": "",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        },
-        {
-            "name": "Messagerie",
-            "address": "/conversation/conversation",
-            "icon": "conversation-large",
-            "target": null,
-            "displayName": "messagerie",
-            "display": true,
-            "prefix": "/conversation",
-            "casType": null,
-            "scope": [
-                ""
-            ],
-            "isExternal": false
-        }
+      {
+        "name": "Presences",
+        "address": "/presences",
+        "icon": "presences-large",
+        "target": "",
+        "displayName": "presences",
+        "display": true,
+        "prefix": "/presences",
+        "casType": "",
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Directory",
+        "address": "",
+        "icon": "",
+        "target": null,
+        "displayName": "directory",
+        "display": false,
+        "prefix": "/directory",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Timeline",
+        "address": "",
+        "icon": "",
+        "target": null,
+        "displayName": "timeline",
+        "display": false,
+        "prefix": "/timeline",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Explorer",
+        "address": "/explorer",
+        "icon": "",
+        "target": null,
+        "displayName": "explorer",
+        "display": true,
+        "prefix": "/explorer",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Statistics-presences",
+        "address": "/statistics-presences",
+        "icon": "Statistics-presences-large",
+        "target": null,
+        "displayName": "statistics-presences",
+        "display": false,
+        "prefix": "/statistics-presences",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Archive",
+        "address": "/archive",
+        "icon": "archive-large",
+        "target": null,
+        "displayName": "archive",
+        "display": true,
+        "prefix": "/archive",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Massmailing",
+        "address": "/massmailing",
+        "icon": "Massmailer-large",
+        "target": null,
+        "displayName": "massmailing",
+        "display": false,
+        "prefix": "/massmailing",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Schoolbook",
+        "address": "/schoolbook",
+        "icon": "schoolbook",
+        "target": null,
+        "displayName": "schoolbook",
+        "display": true,
+        "prefix": "/schoolbook",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Calendar",
+        "address": "/calendar",
+        "icon": "calendar-large",
+        "target": null,
+        "displayName": "calendar",
+        "display": true,
+        "prefix": "/calendar",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Community",
+        "address": "/community",
+        "icon": "community-large",
+        "target": "",
+        "displayName": "Communautés",
+        "display": true,
+        "prefix": "/community",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Wiki",
+        "address": "/wiki",
+        "icon": "wiki-large",
+        "target": "",
+        "displayName": "wiki",
+        "display": true,
+        "prefix": "/wiki",
+        "casType": "",
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Cahier de texte",
+        "address": "/homeworks",
+        "icon": "cahier-de-texte-large",
+        "target": null,
+        "displayName": "homeworks",
+        "display": true,
+        "prefix": "/homeworks",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Video",
+        "address": "/video",
+        "icon": "video-large",
+        "target": null,
+        "displayName": "video",
+        "display": false,
+        "prefix": "/video",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "TimelineGenerator",
+        "address": "/timelinegenerator",
+        "icon": "timelinegenerator-large",
+        "target": "",
+        "displayName": "timelinegenerator",
+        "display": true,
+        "prefix": "/timelinegenerator",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Viescolaire",
+        "address": "/viescolaire",
+        "icon": "parametrage",
+        "target": "",
+        "displayName": "Paramétrage Vie Scolaire",
+        "display": true,
+        "prefix": "/viescolaire",
+        "casType": "",
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Statistiques",
+        "address": "/stats",
+        "icon": "stats-large",
+        "target": "",
+        "displayName": "stats",
+        "display": true,
+        "prefix": "/stats",
+        "casType": "",
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Administration",
+        "address": "/admin",
+        "icon": "admin-large",
+        "target": "_blank",
+        "displayName": "admin.title",
+        "display": true,
+        "prefix": null,
+        "casType": "",
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Formulaire",
+        "address": "/formulaire",
+        "icon": "forms",
+        "target": "",
+        "displayName": "formulaire",
+        "display": true,
+        "prefix": "/formulaire",
+        "casType": "",
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Poll",
+        "address": "/poll",
+        "icon": "support-large",
+        "target": "",
+        "displayName": "poll",
+        "display": true,
+        "prefix": "/poll",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Web-conference",
+        "address": "/webconference",
+        "icon": "visioconf",
+        "target": "",
+        "displayName": "webconference",
+        "display": true,
+        "prefix": "/webconference",
+        "casType": "",
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Lool",
+        "address": "/lool",
+        "icon": "Lool-large",
+        "target": null,
+        "displayName": "lool",
+        "display": false,
+        "prefix": "/lool",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Competences",
+        "address": "/competences",
+        "icon": "competences",
+        "target": null,
+        "displayName": "competences",
+        "display": true,
+        "prefix": "/competences",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Blog",
+        "address": "/blog",
+        "icon": "blog-large",
+        "target": "",
+        "displayName": "blog",
+        "display": true,
+        "prefix": "/blog",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "library-recette",
+        "address": "https://ppr-library.edifice.io/?platformURL=https%3A%2F%2Frecette-release.opendigitaleducation.com",
+        "icon": "library",
+        "target": "_blank",
+        "displayName": "library-recette",
+        "display": true,
+        "prefix": null,
+        "casType": "",
+        "scope": ["userinfo", "directory", "archive"],
+        "isExternal": false
+      },
+      {
+        "name": "Exercices et évaluations",
+        "address": "/exercizer",
+        "icon": "exercizer-large",
+        "target": "",
+        "displayName": "exercizer",
+        "display": true,
+        "prefix": "/exercizer",
+        "casType": "",
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Incidents",
+        "address": "/incidents",
+        "icon": "Incidents-larges",
+        "target": null,
+        "displayName": "incidents",
+        "display": false,
+        "prefix": "/incidents",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Pages",
+        "address": "/pages",
+        "icon": "pages-large",
+        "target": "",
+        "displayName": "pages",
+        "display": true,
+        "prefix": "/pages",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Paramétrage de la classe",
+        "address": "/directory/class-admin",
+        "icon": "settings-class-large",
+        "target": "",
+        "displayName": "classadmin",
+        "display": true,
+        "prefix": null,
+        "casType": "",
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Actualites",
+        "address": "/actualites",
+        "icon": "actualites-large",
+        "target": "",
+        "displayName": "news",
+        "display": true,
+        "prefix": "/actualites",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Mediacentre",
+        "address": "/mediacentre",
+        "icon": "/workspace/document/d63fc3e5-5302-42f4-a3a8-f43ebdca751a?thumbnail=120x120",
+        "target": "",
+        "displayName": "mediacentre",
+        "display": true,
+        "prefix": "/mediacentre",
+        "casType": "",
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Portal",
+        "address": "",
+        "icon": "",
+        "target": null,
+        "displayName": "portal",
+        "display": false,
+        "prefix": "",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "MiniBadge",
+        "address": "/minibadge",
+        "icon": "https://recette-release.opendigitaleducation.com/minibadge/public/img/uni-minibadge.svg",
+        "target": null,
+        "displayName": "minibadge",
+        "display": true,
+        "prefix": "/minibadge",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Réservation de ressources",
+        "address": "/rbs",
+        "icon": "rbs-large",
+        "target": "",
+        "displayName": "rbs",
+        "display": true,
+        "prefix": "/rbs",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "website",
+        "address": "/website",
+        "icon": "website-large",
+        "target": null,
+        "displayName": "website",
+        "display": true,
+        "prefix": "/website",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Diary",
+        "address": "/diary",
+        "icon": "cahier-textes-large",
+        "target": "",
+        "displayName": "Cahier de textes",
+        "display": true,
+        "prefix": "/diary",
+        "casType": "",
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Aide et support",
+        "address": "/support",
+        "icon": "support-large",
+        "target": "",
+        "displayName": "support",
+        "display": true,
+        "prefix": "/support",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Cahier Multimédia",
+        "address": "/scrapbook",
+        "icon": "scrap-book-large",
+        "target": null,
+        "displayName": "scrapbook",
+        "display": true,
+        "prefix": "/scrapbook",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Annuaire",
+        "address": "/userbook/annuaire#/search",
+        "icon": "userbook-large",
+        "target": "",
+        "displayName": "directory.user",
+        "display": true,
+        "prefix": null,
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Edt",
+        "address": "/edt",
+        "icon": "edt-large",
+        "target": "",
+        "displayName": "Emploi du temps",
+        "display": true,
+        "prefix": "/edt",
+        "casType": "",
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "le monde",
+        "address": "https://www.lemonde.fr/",
+        "icon": "/workspace/document/a58da6b5-3e32-41b3-a45c-f85fab290259",
+        "target": "_blank",
+        "displayName": "Le monde",
+        "display": true,
+        "prefix": null,
+        "casType": "",
+        "scope": [""],
+        "isExternal": true
+      },
+      {
+        "name": "Formulaire-public",
+        "address": "/formulaire-public",
+        "icon": "https://recette-release.opendigitaleducation.com/formulaire-public/public/img/logo.svg",
+        "target": null,
+        "displayName": "formulaire-public",
+        "display": true,
+        "prefix": "/formulaire-public",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Association sportive",
+        "address": "/pages#/website/9834949d-5164-43fd-b3ee-9607fc30ab78/accueil",
+        "icon": "/workspace/document/d706da70-7f1a-468d-b509-dca497663409?thumbnail=150x150",
+        "target": "",
+        "displayName": "Association sportive",
+        "display": true,
+        "prefix": null,
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Appointments",
+        "address": "/appointments",
+        "icon": "appointments-large",
+        "target": "",
+        "displayName": "appointments",
+        "display": true,
+        "prefix": "/appointments",
+        "casType": "",
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Pronote",
+        "address": "http://www.google.fr",
+        "icon": "notes",
+        "target": "_blank",
+        "displayName": "Pronote",
+        "display": true,
+        "prefix": null,
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Moodle",
+        "address": "/moodle",
+        "icon": "https://formationneo.opendigitaleducation.com/moodle/public/img/moodle-logo.png",
+        "target": "",
+        "displayName": "Moodle",
+        "display": true,
+        "prefix": "/moodle",
+        "casType": "",
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Searchengine",
+        "address": "/searchengine",
+        "icon": "searchengine-large",
+        "target": "",
+        "displayName": "Moteur de Recherche",
+        "display": false,
+        "prefix": "/searchengine",
+        "casType": "",
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Messagerie",
+        "address": "/conversation/conversation",
+        "icon": "conversation-large",
+        "target": null,
+        "displayName": "messagerie",
+        "display": true,
+        "prefix": "/conversation",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Espace documentaire",
+        "address": "/workspace/workspace",
+        "icon": "workspace-large",
+        "target": "",
+        "displayName": "workspace",
+        "display": true,
+        "prefix": "/workspace",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Collaborative Editor",
+        "address": "/collaborativeeditor",
+        "icon": "pad-large",
+        "target": "",
+        "displayName": "Pad",
+        "display": true,
+        "prefix": "/collaborativeeditor",
+        "casType": "",
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "CollaborativeWall",
+        "address": "/collaborativewall",
+        "icon": "collaborative-wall-large",
+        "target": null,
+        "displayName": "collaborativewall",
+        "display": true,
+        "prefix": "/collaborativewall",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "ShareBigFiles",
+        "address": "/sharebigfiles",
+        "icon": "sharebigfiles-large",
+        "target": null,
+        "displayName": "sharebigfiles",
+        "display": true,
+        "prefix": "/sharebigfiles",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Mindmap",
+        "address": "/mindmap",
+        "icon": "mindmap-large",
+        "target": null,
+        "displayName": "mindmap",
+        "display": true,
+        "prefix": "/mindmap",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Forum",
+        "address": "/forum",
+        "icon": "forum-large",
+        "target": "",
+        "displayName": "forum",
+        "display": true,
+        "prefix": "/forum",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      },
+      {
+        "name": "Rack",
+        "address": "/rack",
+        "icon": "rack-large",
+        "target": "",
+        "displayName": "rack",
+        "display": true,
+        "prefix": "/rack",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
+      }
     ]
 }
