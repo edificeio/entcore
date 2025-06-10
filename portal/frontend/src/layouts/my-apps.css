@@ -1,3 +1,34 @@
+.theme-2d .green {
+    background-color: #46BFAF;
+}
+.theme-1d .green {
+    background-color: #5AC235;
+}
+.theme-2d .orange {
+    background-color: #FF8D2E;
+}
+.theme-1d .orange {
+    background-color: #FF8D2E;
+}
+.theme-2d .blue {
+    background-color: #2A9CC8;
+}
+.theme-1d .blue {
+    background-color: #46AFE6;
+}
+.theme-2d .violet {
+    background-color: #823AA1;
+}
+.theme-1d .violet {
+    background-color: #A348C0;
+}
+.theme-2d .yellow {
+    background-color: #FFC403;
+}
+.theme-1d .yellow {
+    background-color: #FFC403;
+}
+
 .application-card {
     box-shadow: none !important;
     border: 1px solid transparent;

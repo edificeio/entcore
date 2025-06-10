@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { applicationsService } from "../api";
 import mockData from '~/mocks/mockApplications.json';
+import enhanceData from '~/config/applications-list-enhance.json';
 
 export const useApplications = () => {
   const query = useQuery({
@@ -13,7 +14,16 @@ export const useApplications = () => {
     },
   });
 
-  const displayedApps = query.data?.apps.filter((app) => app.display);
+  const displayedApps = query.data?.apps
+    .filter((app) => app.display !== false)
+    .map((app) => {
+      const enhancement = enhanceData.apps.find((e) => e.name === app.name);
+      return {
+        ...{ category: 'connector' },
+        ...app,
+        ...(enhancement || {}),
+      };
+    });
 
   return {
     applications: displayedApps,
