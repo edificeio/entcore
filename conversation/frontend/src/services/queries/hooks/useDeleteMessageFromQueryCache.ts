@@ -39,22 +39,24 @@ export const useDeleteMessagesFromQueryCache = () => {
         const totalItems = data.pages[0][0].count;
         const newTotalItems = totalItems - messageIds.length;
 
-        const pages = data.pages.map((page: MessageMetadata[]) => {
-          return (
-            page
-              // Filter out deleted messages
-              .filter(
-                (message: MessageMetadata) => !messageIds.includes(message.id),
-              )
-              // update count
-              .map((message: MessageMetadata) => ({
-                ...message,
-                count: newTotalItems,
-              }))
-          );
-        });
+        const pages = data.pages
+          .map((page: MessageMetadata[]) => {
+            return (
+              page
+                // Filter out deleted messages
+                .filter(
+                  (message: MessageMetadata) =>
+                    !messageIds.includes(message.id),
+                )
 
-        //update message count
+                // update message count
+                .map((message: MessageMetadata) => ({
+                  ...message,
+                  count: newTotalItems,
+                }))
+            );
+          })
+          .filter((page: MessageMetadata[]) => page.length > 0);
 
         return {
           ...data,
