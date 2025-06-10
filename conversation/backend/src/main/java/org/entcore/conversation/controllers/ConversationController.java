@@ -563,7 +563,7 @@ public class ConversationController extends BaseController {
 		String id = sentMessage.getString("id");
 		String subject = sentMessage.getString("subject");
 		if(StringUtils.isEmpty(subject)) {
-			subject = "<span translate key=\"timeline.no.subject\"></span>";
+			subject = I18n.getInstance().translate("nosubject", getHost(request), I18n.acceptLanguage(request));
 		}
 		sentMessage.remove("sentIds");
 		sentMessage.remove("id");
