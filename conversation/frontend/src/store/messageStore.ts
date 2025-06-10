@@ -41,11 +41,6 @@ const setMessageNeedToSave = (state: ExtractState<typeof store>) =>
   state.messageNeedToSave;
 const actionsSelector = (state: ExtractState<typeof store>) => state.actions;
 
-// Getters
-export const getMessage = () => setMessage(store.getState());
-export const getMessageNeedToSave = () =>
-  setMessageNeedToSave(store.getState());
-
 // React Store
 function useMessagerieStore<U>(selector: Params<U>[1]) {
   return useStore(store, selector);
