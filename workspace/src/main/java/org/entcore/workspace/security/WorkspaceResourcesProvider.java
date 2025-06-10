@@ -309,6 +309,11 @@ public class WorkspaceResourcesProvider implements ResourcesProvider {
 	private void authorizeDocumentOrFolder(HttpServerRequest request, UserInfos user, String serviceMethod, final String idParamName,
 										   Handler<Boolean> handler) {
 		String id = request.params().get(idParamName);
+		if("root".equals(id)) {
+			// Special case for root folder, always authorized
+			handler.handle(true);
+			return;
+		}
 		if (id != null && !id.trim().isEmpty()) {
 			ElementQuery query = new ElementQuery(true);
 			query.setId(id);
