@@ -99,7 +99,8 @@ public class NATSBrokerClient implements BrokerClient {
             }
             promise.future().onSuccess(response -> {
               try {
-                final byte[] payload = mapper.writeValueAsString(response).getBytes(charset);
+                // We can cast here as string because BrokerProxyUtils serialize the response as a String
+                final byte[] payload = ((String)response).getBytes(charset);
                 natsClient.publish(msg.getReplyTo(), payload);
               } catch (Exception e) {
                 sendError(msg, e);
