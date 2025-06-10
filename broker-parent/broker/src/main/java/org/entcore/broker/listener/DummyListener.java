@@ -27,7 +27,7 @@ public class DummyListener {
   }
 
   @BrokerListener(subject = "ent.test.listen.reply")
-  public Future<DummyResponseDTO> listenOnlyExample(ListenAndAnswerDTO request) {
+  public Future<DummyResponseDTO> listenAndReplyExample(ListenAndAnswerDTO request) {
     log.info("DummyListener listenOnlyExemple called with request: " + request);
     final Promise<DummyResponseDTO> promise = Promise.promise();
     vertx.setTimer(1000l, e -> {
