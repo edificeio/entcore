@@ -1,6 +1,6 @@
 {
   "name": "@edifice.io/edifice-ent-client",
-  "version": "6.5-develop-community-SNAPSHOT",
+  "version": "6.5.0-develop-community-SNAPSHOT",
   "description": "Clients to interact with ent-nats-service",
   "scripts": {
     "dev": "vite",
@@ -42,10 +42,12 @@
     "semantic-release": "^23.0.2",
     "typescript": "^5.2.2",
     "vite": "^5.1.4",
-    "vite-plugin-dts": "^4.3.0",
-    "rxjs": "^7.8.1",
+    "vite-plugin-dts": "^4.3.0"
+  },
+  "peerDependencies": {
     "@nestjs/common": "11.0.20",
-    "@nestjs/microservices": "11.0.20"
+    "@nestjs/microservices": "11.0.20",
+    "rxjs": "^7.8.1"
   },
   "lint-staged": {
     "*.{js,ts,jsx,tsx,json,css,md}": "pnpm format"
