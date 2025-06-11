@@ -99,48 +99,39 @@ function applySearchRules(
   function computeFrontendFilter() {
     const removeAccents = odeServices.idiom().removeAccents;
     const searchTerm = removeAccents(search).toLowerCase();
-    return !frontendFiltering
-      ? undefined
-      : (user: Visible) => {
-          const testDisplayNames = [],
-            testNameReverseds = [];
-          let testDisplayName = '',
-            split = [];
-          if (user.displayName) {
-            testDisplayName = removeAccents(user.displayName).toLowerCase();
-            testDisplayNames.push(testDisplayName);
-            split = testDisplayName.split(' ');
-            testNameReverseds.push(
-              split.length > 1 ? split[1] + ' ' + split[0] : testDisplayName,
-            );
-          }
-          if (user.children) {
-            user.children.forEach((child) => {
-              testDisplayName = removeAccents(child.displayName).toLowerCase();
-              testDisplayNames.push(testDisplayName);
-              split = testDisplayName.split(' ');
-              testNameReverseds.push(
-                split.length > 1 ? split[1] + ' ' + split[0] : testDisplayName,
-              );
-            });
-          }
-          if (user.relatives) {
-            user.relatives.forEach((relative) => {
-              testDisplayName = removeAccents(
-                relative.displayName,
-              ).toLowerCase();
-              testDisplayNames.push(testDisplayName);
-              split = testDisplayName.split(' ');
-              testNameReverseds.push(
-                split.length > 1 ? split[1] + ' ' + split[0] : testDisplayName,
-              );
-            });
-          }
-          return (
-            testDisplayNames.some((name) => name.indexOf(searchTerm) !== -1) ||
-            testNameReverseds.some((name) => name.indexOf(searchTerm) !== -1)
-          );
-        };
+    const testDisplayNames: string[] = [],
+      testNameReverseds: string[] = [];
+
+    function addSearchTerm(displayName: string): void {
+      const testDisplayName = removeAccents(displayName).toLowerCase();
+      testDisplayNames.push(testDisplayName);
+      const split = testDisplayName.split(' ');
+      testNameReverseds.push(
+        split.length > 1 ? split[1] + ' ' + split[0] : testDisplayName,
+      );
+    }
+
+    if (!frontendFiltering) return undefined;
+
+    return (user: Visible) => {
+      if (user.displayName) {
+        addSearchTerm(user.displayName);
+      }
+      if (user.children) {
+        user.children.forEach((child) => {
+          addSearchTerm(child.displayName);
+        });
+      }
+      if (user.relatives) {
+        user.relatives.forEach((relative) => {
+          addSearchTerm(relative.displayName);
+        });
+      }
+      return (
+        testDisplayNames.some((name) => name.indexOf(searchTerm) !== -1) ||
+        testNameReverseds.some((name) => name.indexOf(searchTerm) !== -1)
+      );
+    };
   }
 
   return {
