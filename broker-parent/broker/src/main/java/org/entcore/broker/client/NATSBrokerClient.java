@@ -14,7 +14,7 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.entcore.broker.api.dto.BaseResponseDTO;
+import org.entcore.broker.api.dto.NATSResponseDTO;
 import org.entcore.broker.listener.BrokerListener;
 import org.entcore.broker.nats.model.NATSContract;
 import org.entcore.broker.nats.model.NATSEndpoint;
@@ -99,7 +99,6 @@ public class NATSBrokerClient implements BrokerClient {
             }
             promise.future().onSuccess(response -> {
               try {
-                // We can cast here as string because BrokerProxyUtils serialize the response as a String
                 final byte[] payload = ((String)response).getBytes(charset);
                 natsClient.publish(msg.getReplyTo(), payload);
               } catch (Exception e) {
@@ -116,6 +115,8 @@ public class NATSBrokerClient implements BrokerClient {
     }
   }
 
+
+
   private @Nullable Object getDataFromMessage(Message msg) throws IOException {
     byte[] data = msg.getData();
     final JsonNode rootNode = mapper.readTree(data);
@@ -128,8 +129,9 @@ public class NATSBrokerClient implements BrokerClient {
 
   private void sendError(Message msg, Throwable e) {
     final String message = e.getMessage() == null ? String.valueOf(e) : e.getMessage();
+    final NATSResponseDTO natsResponseDTO = new NATSResponseDTO(null, message, false, null);
     try {
-      natsClient.publish(msg.getReplyTo(), mapper.writeValueAsBytes(new BaseResponseDTO(false, message)));
+      natsClient.publish(msg.getReplyTo(), mapper.writeValueAsBytes(natsResponseDTO));
     } catch (JsonProcessingException ex) {
       log.error("Cannot serialize error", ex);
       natsClient.publish(msg.getReplyTo(), message.getBytes(StandardCharsets.UTF_8));
