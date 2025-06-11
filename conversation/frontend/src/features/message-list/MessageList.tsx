@@ -84,7 +84,6 @@ export function MessageList() {
     if (messageListItems) {
       observer.current.observe(messageListItems[messageListItems.length - 1]);
 
-      // Scroll to top if shouldScrollToTop define by the query
       messageListItems[0].scrollIntoView({
         block: 'center',
       });
