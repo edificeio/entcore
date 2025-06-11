@@ -41,6 +41,7 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.Either;
 
+@Deprecated
 public class FlashMsgServiceMongoImpl extends MongoDbCrudService implements FlashMsgService {
 
 	private final DateFormat mongoFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
