@@ -1,5 +1,4 @@
 import { TreeItem } from '@edifice.io/react';
-import { InvalidateQueryFilters, QueryClient } from '@tanstack/react-query';
 import {
   Attachment,
   Folder,
