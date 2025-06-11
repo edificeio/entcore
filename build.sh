@@ -7,6 +7,12 @@ then
   mkdir node_modules
 fi
 
+# Set CI_OPTION to " -T " if running in CI environment
+CI_OPTION=""
+if [ ! -z "$CI" ] && [ "$CI" = "true" ]
+then
+  CI_OPTION=" -T "
+fi
 
 if [[ "$*" == *"--no-user"* ]]
 then
@@ -105,20 +111,20 @@ buildNode () {
         echo "[buildNode] Use entcore version from package.json ($BRANCH_NAME)"
         case `uname -s` in
           MINGW*)
-            docker compose run --rm $USER_OPTION node sh -c "npm install --no-bin-links --legacy-peer-deps && npm update --legacy-peer-deps entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
+            docker compose run --rm $USER_OPTION $CI_OPTION node sh -c "npm install --no-bin-links --legacy-peer-deps && npm update --legacy-peer-deps entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
             ;;
           *)
-            docker compose run --rm $USER_OPTION node sh -c "npm install --legacy-peer-deps && npm update --legacy-peer-deps entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
+            docker compose run --rm $USER_OPTION $CI_OPTION node sh -c "npm install --legacy-peer-deps && npm update --legacy-peer-deps entcore && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
         esac
     else
         echo "[buildNode] Use entcore tag $BRANCH_NAME"
-        docker compose run --rm $USER_OPTION node sh -c "npm rm --no-save entcore ode-ts-client ode-ngjs-front && npm install --no-save entcore@$BRANCH_NAME ode-ts-client@$BRANCH_NAME ode-ngjs-front@$BRANCH_NAME"
+        docker compose run --rm $USER_OPTION $CI_OPTION node sh -c "npm rm --no-save entcore ode-ts-client ode-ngjs-front && npm install --no-save entcore@$BRANCH_NAME ode-ts-client@$BRANCH_NAME ode-ngjs-front@$BRANCH_NAME"
         case `uname -s` in
           MINGW*)
-            docker compose run --rm $USER_OPTION node sh -c "npm install --no-bin-links --legacy-peer-deps && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
+            docker compose run --rm -T $USER_OPTION $CI_OPTION node sh -c "npm install --no-bin-links --legacy-peer-deps && node_modules/gulp/bin/gulp.js build $NODE_OPTION"
             ;;
           *)
-            docker compose run --rm $USER_OPTION node sh -c "npm install --legacy-peer-deps && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
+            docker compose run --rm -T $USER_OPTION $CI_OPTION node sh -c "npm install --legacy-peer-deps && node_modules/gulp/bin/gulp.js build $NODE_OPTION --springboard=/home/node/$SPRINGBOARD"
         esac
     fi
   fi
@@ -128,16 +134,16 @@ buildAdminNode() {
   if [ "$MODULE" = "" ] || [ "$MODULE" = "admin" ]; then
     case `uname -s` in
       MINGW*)
-        docker compose run --rm $USER_OPTION node16 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
+        docker compose run --rm $USER_OPTION $CI_OPTION node16 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
         ;;
       *)
-        docker compose run --rm $USER_OPTION node16 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
+        docker compose run --rm $USER_OPTION $CI_OPTION node16 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
     esac
   fi
 }
 
 install () {
-  docker compose run --rm maven mvn $MVN_OPTS install -DskipTests
+  docker compose run $CI_OPTION --rm maven mvn $MVN_OPTS install -DskipTests
 }
 
 test () {
@@ -156,7 +162,7 @@ localDep () {
       mkdir $dep.tar && mkdir $dep.tar/dist \
         && cp -R $PWD/../$dep/dist $PWD/../$dep/package.json $dep.tar
       tar cfzh $dep.tar.gz $dep.tar
-      docker compose run --rm $USER_OPTION node sh -c "npm install --no-save $dep.tar.gz"
+      docker compose run --rm $USER_OPTION $CI_OPTION node sh -c "npm install --no-save $dep.tar.gz"
       rm -rf $dep.tar $dep.tar.gz
     fi
   done
@@ -164,7 +170,7 @@ localDep () {
 
 watch () {
   docker compose run --rm \
-    $USER_OPTION \
+    $USER_OPTION $CI_OPTION \
     -v $PWD/../$SPRINGBOARD:/home/node/$SPRINGBOARD \
     node sh -c "npx gulp watch-$MODULE $NODE_OPTION --springboard=../$SPRINGBOARD 2>/dev/null"
 }
@@ -172,11 +178,11 @@ watch () {
 # ex: ./build.sh -m=workspace -s=paris watch
 
 ngWatch () {
-  docker compose run --rm $USER_OPTION --publish 4200:4200 node16 sh -c "npm run start"
+  docker compose run --rm $USER_OPTION $CI_OPTION --publish 4200:4200 node16 sh -c "npm run start"
 }
 
 infra () {
-  docker compose run --rm $USER_OPTION node sh -c "npm install /home/node/infra-front"
+  docker compose run --rm $USER_OPTION $CI_OPTION node sh -c "npm install /home/node/infra-front"
 }
 
 publish() {
@@ -278,6 +284,9 @@ do
       ;;
     install)
       buildNode && buildAdminNode && install
+      ;;
+    buildBack)
+      install
       ;;
     localDep)
       localDep
