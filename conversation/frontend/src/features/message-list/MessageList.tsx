@@ -36,6 +36,7 @@ export function MessageList() {
     isFetchingNextPage: isLoadingNextPage,
     hasNextPage,
     fetchNextPage,
+    shouldScrollToTop,
   } = useFolderMessages(folderId!);
   const {
     handleDelete,
@@ -83,10 +84,11 @@ export function MessageList() {
     );
     if (messageListItems) {
       observer.current.observe(messageListItems[messageListItems.length - 1]);
-
-      messageListItems[0].scrollIntoView({
-        block: 'center',
-      });
+      if (shouldScrollToTop) {
+        messageListItems[0].scrollIntoView({
+          block: 'center',
+        });
+      }
     }
   }, [
     messages,
