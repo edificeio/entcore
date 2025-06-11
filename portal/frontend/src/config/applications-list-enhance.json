@@ -6,9 +6,9 @@
         "color": "orange",
         "libraries": false,
         "help": {
-            "fr": "https://help.edifice.io/hc/fr/articles/360018742559-Pr%C3%A9sentation-de-l-application-Actualit%C3%A9s",
-            "en": false,
-            "es": "https://help.edifice.io/hc/es-419/articles/360018742559-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Noticias"
+          "fr": "https://help.edifice.io/hc/fr/articles/360018742559-Pr%C3%A9sentation-de-l-application-Actualit%C3%A9s",
+          "en": null,
+          "es": "https://help.edifice.io/hc/es-419/articles/360018742559-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Noticias"
         }
       },
       {
@@ -17,9 +17,9 @@
         "color": "green",
         "libraries": false,
         "help": {
-            "fr": "https://help.edifice.io/hc/fr/articles/5570293349276-Pr%C3%A9sentation-de-l-Agenda",
-            "en": false,
-            "es": "https://help.edifice.io/hc/es-419/articles/5570293349276-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Agenda"
+          "fr": "https://help.edifice.io/hc/fr/articles/5570293349276-Pr%C3%A9sentation-de-l-Agenda",
+          "en": null,
+          "es": "https://help.edifice.io/hc/es-419/articles/5570293349276-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Agenda"
         }
       },
       {
@@ -28,9 +28,9 @@
         "color": "green",
         "libraries": false,
         "help": {
-            "fr": false,
-            "en": false,
-            "es": false
+          "fr": null,
+          "en": null,
+          "es": null
         }
       },
       {
@@ -39,9 +39,9 @@
         "color": "yellow",
         "libraries": false,
         "help": {
-            "fr": "https://help.edifice.io/hc/fr/articles/360018743999-Pr%C3%A9sentation-de-l-application-Assistance-ENT",
-            "en": false,
-            "es": "https://help.edifice.io/hc/es-419/articles/360018743999-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Ayuda"
+          "fr": "https://help.edifice.io/hc/fr/articles/360018743999-Pr%C3%A9sentation-de-l-application-Assistance-ENT",
+          "en": null,
+          "es": "https://help.edifice.io/hc/es-419/articles/360018743999-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Ayuda"
         }
       },
       {
@@ -50,9 +50,9 @@
         "color": "violet",
         "libraries": false,
         "help": {
-            "fr": "https://help.edifice.io/hc/fr/articles/5896833929372-Pr%C3%A9sentation-de-la-Biblioth%C3%A8que",
-            "en": false,
-            "es": "https://help.edifice.io/hc/es-419/articles/5896833929372-Presentaci%C3%B3n-de-la-Biblioteca"
+          "fr": "https://help.edifice.io/hc/fr/articles/5896833929372-Pr%C3%A9sentation-de-la-Biblioth%C3%A8que",
+          "en": null,
+          "es": "https://help.edifice.io/hc/es-419/articles/5896833929372-Presentaci%C3%B3n-de-la-Biblioteca"
         }
       },
       {
@@ -61,9 +61,9 @@
         "color": "orange",
         "libraries": true,
         "help": {
-            "fr": "https://help.edifice.io/hc/fr/articles/360018673880-Pr%C3%A9sentation-de-l-application-Blog",
-            "en": false,
-            "es": "https://help.edifice.io/hc/es-419/articles/360018673880-Presentaci%C3%B3n-del-Blog"
+          "fr": "https://help.edifice.io/hc/fr/articles/360018673880-Pr%C3%A9sentation-de-l-application-Blog",
+          "en": null,
+          "es": "https://help.edifice.io/hc/es-419/articles/360018673880-Presentaci%C3%B3n-del-Blog"
         }
       },
       {
@@ -72,9 +72,9 @@
         "color": "blue",
         "libraries": false,
         "help": {
-            "fr": "https://help.edifice.io/hc/fr/articles/360018701660-Pr%C3%A9sentation-de-l-application-Cahier-de-textes-Carnet-d-activit%C3%A9s",
-            "en": false,
-            "es": "https://help.edifice.io/hc/es-419/articles/360018701660-Presentaci%C3%B3n-de-la-Libreta-de-tareas"
+          "fr": "https://help.edifice.io/hc/fr/articles/360018701660-Pr%C3%A9sentation-de-l-application-Cahier-de-textes-Carnet-d-activit%C3%A9s",
+          "en": null,
+          "es": "https://help.edifice.io/hc/es-419/articles/360018701660-Presentaci%C3%B3n-de-la-Libreta-de-tareas"
         }
       },
       {
@@ -83,31 +83,420 @@
         "color": "green",
         "libraries": false,
         "help": {
-            "fr": "https://help.edifice.io/hc/fr/articles/12352333912220-Pr%C3%A9sentation-du-Cahier-de-textes-2D",
-            "en": false,
-            "es": "https://help.edifice.io/hc/es-419/articles/360018701960-Presentaci%C3%B3n-del-Cuaderno-Multimedia"
+          "fr": "https://help.edifice.io/hc/fr/articles/12352333912220-Pr%C3%A9sentation-du-Cahier-de-textes-2D",
+          "en": null,
+          "es": "https://help.edifice.io/hc/es-419/articles/360018701960-Presentaci%C3%B3n-del-Cuaderno-Multimedia"
         }
       },
       {
-        "name": "xxxxxxxxxxx",
+        "name": "Cahier Multimédia",
+        "category": "pedagogy",
+        "color": "blue",
+        "libraries": true,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/360018701960-Pr%C3%A9sentation-du-Cahier-Multim%C3%A9dia",
+          "en": null,
+          "es": "https://help.edifice.io/hc/es-419/articles/360018701960-Presentaci%C3%B3n-del-Cuaderno-Multimedia"
+        }
+      },
+      {
+        "name": "Schoolbook",
+        "category": "communication",
+        "color": "orange",
+        "libraries": false,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/360018771239-Pr%C3%A9sentation-du-Carnet-de-liaison",
+          "en": null,
+          "es": "https://help.edifice.io/hc/es-419/articles/360018771239-Presentaci%C3%B3n-del-Cuaderno-de-correspondencia"
+        }
+      },
+      {
+        "name": "Mindmap",
+        "category": "pedagogy",
+        "color": "blue",
+        "libraries": true,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/360018771359-Pr%C3%A9sentation-de-l-application-Carte-mentale",
+          "en": null,
+          "es": "https://help.edifice.io/hc/es-419/articles/360018771359-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Mapa-Mental"
+        }
+      },
+      {
+        "name": "Rack",
         "category": "organisation",
         "color": "green",
         "libraries": false,
         "help": {
-            "fr": false,
-            "en": false,
-            "es": false
+          "fr": "https://help.edifice.io/hc/fr/articles/360018702700-Pr%C3%A9sentation-de-l-application-Casier",
+          "en": null,
+          "es": "https://help.edifice.io/hc/es-419/articles/360018702700-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Casillero"
         }
       },
       {
-        "name": "xxxxxxxxxxx",
+        "name": "Community",
+        "category": "pedagogy",
+        "color": "blue",
+        "libraries": false,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/12333891407260-Pr%C3%A9sentation-de-l-application-Communaut%C3%A9s",
+          "en": null,
+          "es": null
+        }
+      },
+      {
+        "name": "Competences",
         "category": "organisation",
         "color": "green",
         "libraries": false,
         "help": {
-            "fr": false,
-            "en": false,
-            "es": false
+          "fr": "https://help.edifice.io/hc/fr/articles/12334253934108-Pr%C3%A9sentation-de-Comp%C3%A9tences",
+          "en": null,
+          "es": null
+        }
+      },
+      {
+        "name": "Administration",
+        "category": "organisation",
+        "color": "yellow",
+        "libraries": false,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/5167202595612-A-qui-s-adresse-cette-cat%C3%A9gorie",
+          "en": null,
+          "es": null
+        }
+      },
+      {
+        "name": "Wiki",
+        "category": "pedagogy",
+        "color": "blue",
+        "libraries": true,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/17256898627484-Pr%C3%A9sentation-de-Cours-et-Wiki",
+          "en": null,
+          "es": null
+        }
+      },
+      {
+        "name": "Edt",
+        "category": "organisation",
+        "color": "green",
+        "libraries": false,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/12368734214556-Pr%C3%A9sentation-de-l-Emploi-du-temps",
+          "en": null,
+          "es": null
+        }
+      },
+      {
+        "name": "Espace documentaire",
+        "category": "communication",
+        "color": "orange",
+        "libraries": false,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/360018702820-Pr%C3%A9sentation-de-l-Espace-documentaire",
+          "en": null,
+          "es": "https://help.edifice.io/hc/es-419/articles/360018702820-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Espacio-Documental"
+        }
+      },
+      {
+        "name": "Exercices et évaluations",
+        "category": "pedagogy",
+        "color": "blue",
+        "libraries": true,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/5702650331676-Pr%C3%A9sentation-de-l-application-Exercices",
+          "en": null,
+          "es": "https://help.edifice.io/hc/es-419/articles/5702650331676-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Ejercicios"
+        }
+      },
+      {
+        "name": "Formulaire",
+        "category": "organisation",
+        "color": "green",
+        "libraries": false,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/5876062115868-Pr%C3%A9sentation-de-l-application-Formulaire",
+          "en": null,
+          "es": "https://help.edifice.io/hc/es-419/articles/5876062115868-Presentaci%C3%B3n-del-Formulario"
+        }
+      },
+      {
+        "name": "Forum",
+        "category": "communication",
+        "color": "orange",
+        "libraries": false,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/12437184364444-Pr%C3%A9sentation-de-l-application-Forum",
+          "en": null,
+          "es": null
+        }
+      },
+      {
+        "name": "TimelineGenerator",
+        "category": "pedagogy",
+        "color": "blue",
+        "libraries": true,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/360018772039-Pr%C3%A9sentation-de-l-application-Frise-Chronologique",
+          "en": null,
+          "es": "https://help.edifice.io/hc/es-419/articles/360018772039-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Barra-cronol%C3%B3gica"
+        }
+      },
+      {
+        "name": "Geogebra",
+        "category": "pedagogy",
+        "color": "blue",
+        "libraries": false,
+        "help": {
+          "fr": null,
+          "en": null,
+          "es": null
+        }
+      },
+      {
+        "name": "Magneto",
+        "category": "pedagogy",
+        "color": "blue",
+        "libraries": false,
+        "help": {
+          "fr": null,
+          "en": null,
+          "es": null
+        }
+      },
+      {
+        "name": "Mediacentre",
+        "category": "pedagogy",
+        "color": "blue",
+        "libraries": false,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/12609064528284-M%C3%A9diacentre-Pr%C3%A9sentation",
+          "en": null,
+          "es": null
+        }
+      },
+      {
+        "name": "Archive",
+        "category": "organisation",
+        "color": "yellow",
+        "libraries": false,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/360018771799-Pr%C3%A9sentation-de-l-application-Mes-donn%C3%A9es",
+          "en": null,
+          "es": "https://help.edifice.io/hc/es-419/articles/360018771799-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Mis-Datos"
+        }
+      },
+      {
+        "name": "Messagerie",
+        "category": "communication",
+        "color": "orange",
+        "libraries": false,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/360018703900-Pr%C3%A9sentation-de-l-application-Messagerie",
+          "en": null,
+          "es": "https://help.edifice.io/hc/es-419/articles/360018703900-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Correo-Electr%C3%B3nico"
+        }
+      },
+      {
+        "name": "Minetest",
+        "category": "pedagogy",
+        "color": "blue",
+        "libraries": false,
+        "help": {
+          "fr": null,
+          "en": null,
+          "es": null
+        }
+      },
+      {
+        "name": "MiniBadge",
+        "category": "organisation",
+        "color": "green",
+        "libraries": false,
+        "help": {
+          "fr": null,
+          "en": null,
+          "es": null
+        }
+      },
+      {
+        "name": "Moodle",
+        "category": "connector"
+      },
+      {
+        "name": "CollaborativeWall",
+        "category": "pedagogy",
+        "color": "blue",
+        "libraries": true,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/12243605816604-Pr%C3%A9sentation-du-Mur-collaboratif",
+          "en": null,
+          "es": "https://help.edifice.io/hc/es-419/articles/12243605816604-Presentaci%C3%B3n-del-Muro-de-colaboraci%C3%B3n"
+        }
+      },
+      {
+        "name": "Nabook",
+        "category": "pedagogy",
+        "color": "blue",
+        "libraries": false,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/19317709653660-Pr%C3%A9sentation-de-l-application-Nabook",
+          "en": null,
+          "es": null
+        }
+      },
+      {
+        "name": "Outils bureautiques",
+        "category": "pedagogy",
+        "color": "blue",
+        "libraries": false,
+        "help": {
+          "fr": null,
+          "en": null,
+          "es": null
+        }
+      },
+      {
+        "name": "Collaborative Editor",
+        "category": "pedagogy",
+        "color": "blue",
+        "libraries": false,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/360018704360-Pr%C3%A9sentation-de-l-application-Pad",
+          "en": null,
+          "es": null
+        }
+      },
+      {
+        "name": "Pages",
+        "category": "connector",
+        "color": "orange",
+        "libraries": false,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/12244538265372-Pr%C3%A9sentation-de-l-application-Pages",
+          "en": null,
+          "es": null
+        }
+      },
+      {
+        "name": "Paramétrage de la classe",
+        "category": "organisation",
+        "color": "yellow",
+        "libraries": false,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/360018772939-Pr%C3%A9sentation-de-l-application-Param%C3%A9trage-de-la-classe",
+          "en": null,
+          "es": "https://help.edifice.io/hc/es-419/articles/360018772939-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Configuraci%C3%B3n-de-la-clase"
+        }
+      },
+      {
+        "name": "Viescolaire",
+        "category": "organisation",
+        "color": "yellow",
+        "libraries": false,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/13127059434396-Param%C3%A9trages-de-Vie-scolaire",
+          "en": null,
+          "es": null
+        }
+      },
+      {
+        "name": "ShareBigFiles",
+        "category": "organisation",
+        "color": "green",
+        "libraries": false,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/13125889297948-Pr%C3%A9sentation-de-Poste-fichiers",
+          "en": null,
+          "es": null
+        }
+      },
+      {
+        "name": "Presences",
+        "category": "organisation",
+        "color": "green",
+        "libraries": false,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/8693056375580-Pr%C3%A9sentation-de-l-application-Pr%C3%A9sences",
+          "en": null,
+          "es": "https://help.edifice.io/hc/es-419/articles/8693056375580-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Asistencias"
+        }
+      },
+      {
+        "name": "Appointments",
+        "category": "organisation",
+        "color": "green",
+        "libraries": false,
+        "help": {
+          "fr": null,
+          "en": null,
+          "es": null
+        }
+      },
+      {
+        "name": "Réservation de ressources",
+        "category": "organisation",
+        "color": "green",
+        "libraries": false,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/12606134641692-Pr%C3%A9sentation-de-l-application-R%C3%A9servation-de-ressources",
+          "en": null,
+          "es": null
+        }
+      },
+      {
+        "name": "website",
+        "category": "communication",
+        "color": "orange",
+        "libraries": false,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/360018773239-Cr%C3%A9er-un-nouveau-site-web",
+          "en": null,
+          "es": "https://help.edifice.io/hc/es-419/articles/360018773239-Crear-un-nuevo-sitio-web"
+        }
+      },
+      {
+        "name": "Poll",
+        "category": "organisation",
+        "color": "green",
+        "libraries": false,
+        "help": {
+          "fr": null,
+          "en": null,
+          "es": null
+        }
+      },
+      {
+        "name": "Statistiques",
+        "category": "organisation",
+        "color": "yellow",
+        "libraries": false,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/360018773319-Pr%C3%A9sentation-de-l-application-Statistiques",
+          "en": null,
+          "es": "https://help.edifice.io/hc/es-419/articles/360018773319-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Estad%C3%ADsticas"
+        }
+      },
+      {
+        "name": "Web-conference",
+        "category": "communication",
+        "color": "orange",
+        "libraries": false,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/360018773379-Pr%C3%A9sentation-de-l-application-Web-conf%C3%A9rence",
+          "en": null,
+          "es": null
+        }
+      },
+      {
+        "name": "Zimbra",
+        "category": "communication",
+        "color": "orange",
+        "libraries": false,
+        "help": {
+          "fr": null,
+          "en": null,
+          "es": null
         }
       }
     ]

@@ -13,12 +13,13 @@ export type Application = {
   color?: string;
   libraries?: boolean;
   help?: helpType;
+  appName?: string;
 };
 
 type helpType = {
-  fr?: string | boolean;
-  en?: string | boolean;
-  es?: string | boolean;
+  fr?: string | null;
+  en?: string | null;
+  es?: string | null;
 };
 
 export type ApplicationsResponse = {
