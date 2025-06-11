@@ -11,6 +11,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.entcore.broker.api.BrokerListener;
+import org.entcore.broker.api.dto.NATSResponseDTO;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -182,7 +183,7 @@ public class BrokerProxyUtils {
 
   private static void sendSuccess(Object response, Message<byte[]> message) {
     try {
-      message.reply(mapper.writeValueAsString(response));
+      message.reply(mapper.writeValueAsString(new NATSResponseDTO(response, null, false, null)));
     } catch (Exception e) {
       log.error("Error while serializing response produced by consumer", e);
       message.fail(500, e.getMessage());
