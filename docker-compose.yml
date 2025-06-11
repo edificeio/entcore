@@ -8,6 +8,15 @@ services:
       - ~/.m2:/var/maven/.m2
     environment:
       MAVEN_CONFIG: /var/maven/.m2
+  maven21:
+    image: maven:3.9.9-eclipse-temurin-21-alpine
+    user: "$DEFAULT_DOCKER_USER"
+    working_dir: /usr/src/maven
+    volumes:
+      - ./:/usr/src/maven
+      - ~/.m2:/var/maven/.m2
+    environment:
+      MAVEN_CONFIG: /var/maven/.m2
 
   node:
     image: opendigitaleducation/node:16-alpine-pnpm
