@@ -153,7 +153,6 @@ public class ConversationController extends BaseController {
 	 */
 	@Get(value = "(?:/?(?:conversation|(?:inbox|outbox|draft|trash){1}(?:/message/[^/\\\\s]+$)?)|draft/create$)?", regex = true)
 	@SecuredAction("conversation.view")
-	@Cache(value = "/conversation/count/INBOX", useQueryParams = true, scope = CacheScope.USER, operation = CacheOperation.INVALIDATE)
 	public void view(HttpServerRequest request) {
 		renderViewWeb(request);
 	}
