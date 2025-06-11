@@ -1,10 +1,30 @@
+/*
+ * Copyright © "Edifice"
+ *
+ * This program is published by "Edifice".
+ * You must indicate the name of the software and the company in any production /contribution
+ * using the software and indicate on the home page of the software industry in question,
+ * "powered by Edifice" with a reference to the website: https://edifice.io/.
+ *
+ * This program is free software, licensed under the terms of the GNU Affero General Public License
+ * as published by the Free Software Foundation, version 3 of the License.
+ *
+ * You can redistribute this application and/or modify it since you respect the terms of the GNU Affero General Public License.
+ * If you modify the source code and then use this modified source code in your creation, you must make available the source code of your modifications.
+ *
+ * You should have received a copy of the GNU Affero General Public License along with the software.
+ * If not, please see : <http://www.gnu.org/licenses/>. Full compliance requires reading the terms of this license and following its directives.
+ */
+
 package org.entcore.broker;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.nats.client.Connection;
 import io.quarkus.logging.Log;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,8 +48,24 @@ public class EntNatsServiceClient {
     try {
       final byte[] payload = this.objectMapper.writeValueAsBytes(request);
       
-      byte[] response = connection.request(subject, payload).get().getData();
-      return this.objectMapper.readValue(response, org.entcore.broker.api.dto.directory.AddGroupMemberResponseDTO.class);
+      final byte[] response = connection.request(subject, payload).get().getData();
+      final JsonNode responseTree = this.objectMapper.readTree(response);
+      final JsonNode responseNode = responseTree.get("response");
+      if(responseNode == null) {
+        final JsonNode err = responseTree.get("err");
+        if(err == null) {
+          Log.error("Response from NATS is null or malformed");
+          throw new RuntimeException("Response from NATS is null or malformed but no error provided");
+        } else {
+          Log.error("An error occurred while requesting subject " + subject + "  " + err.asText());
+          throw new RuntimeException(err.asText());
+        }
+      } else if (!responseNode.isObject()) {
+          Log.error("Response is not a valid JSON object: " + responseNode);
+          throw new RuntimeException("Response is not a valid JSON object");
+      } else {
+        return this.objectMapper.treeToValue(responseNode, org.entcore.broker.api.dto.directory.AddGroupMemberResponseDTO.class);
+      }
       
     } catch (Exception e) {
       Log.error("Failed to send request to NATS", e);
@@ -43,8 +79,24 @@ public class EntNatsServiceClient {
     try {
       final byte[] payload = this.objectMapper.writeValueAsBytes(request);
       
-      byte[] response = connection.request(subject, payload).get().getData();
-      return this.objectMapper.readValue(response, org.entcore.broker.api.dto.directory.CreateGroupResponseDTO.class);
+      final byte[] response = connection.request(subject, payload).get().getData();
+      final JsonNode responseTree = this.objectMapper.readTree(response);
+      final JsonNode responseNode = responseTree.get("response");
+      if(responseNode == null) {
+        final JsonNode err = responseTree.get("err");
+        if(err == null) {
+          Log.error("Response from NATS is null or malformed");
+          throw new RuntimeException("Response from NATS is null or malformed but no error provided");
+        } else {
+          Log.error("An error occurred while requesting subject " + subject + "  " + err.asText());
+          throw new RuntimeException(err.asText());
+        }
+      } else if (!responseNode.isObject()) {
+          Log.error("Response is not a valid JSON object: " + responseNode);
+          throw new RuntimeException("Response is not a valid JSON object");
+      } else {
+        return this.objectMapper.treeToValue(responseNode, org.entcore.broker.api.dto.directory.CreateGroupResponseDTO.class);
+      }
       
     } catch (Exception e) {
       Log.error("Failed to send request to NATS", e);
@@ -58,8 +110,24 @@ public class EntNatsServiceClient {
     try {
       final byte[] payload = this.objectMapper.writeValueAsBytes(request);
       
-      byte[] response = connection.request(subject, payload).get().getData();
-      return this.objectMapper.readValue(response, org.entcore.broker.api.dto.directory.DeleteGroupResponseDTO.class);
+      final byte[] response = connection.request(subject, payload).get().getData();
+      final JsonNode responseTree = this.objectMapper.readTree(response);
+      final JsonNode responseNode = responseTree.get("response");
+      if(responseNode == null) {
+        final JsonNode err = responseTree.get("err");
+        if(err == null) {
+          Log.error("Response from NATS is null or malformed");
+          throw new RuntimeException("Response from NATS is null or malformed but no error provided");
+        } else {
+          Log.error("An error occurred while requesting subject " + subject + "  " + err.asText());
+          throw new RuntimeException(err.asText());
+        }
+      } else if (!responseNode.isObject()) {
+          Log.error("Response is not a valid JSON object: " + responseNode);
+          throw new RuntimeException("Response is not a valid JSON object");
+      } else {
+        return this.objectMapper.treeToValue(responseNode, org.entcore.broker.api.dto.directory.DeleteGroupResponseDTO.class);
+      }
       
     } catch (Exception e) {
       Log.error("Failed to send request to NATS", e);
@@ -73,8 +141,24 @@ public class EntNatsServiceClient {
     try {
       final byte[] payload = this.objectMapper.writeValueAsBytes(request);
       
-      byte[] response = connection.request(subject, payload).get().getData();
-      return this.objectMapper.readValue(response, org.entcore.broker.api.dto.i18n.FetchTranslationsResponseDTO.class);
+      final byte[] response = connection.request(subject, payload).get().getData();
+      final JsonNode responseTree = this.objectMapper.readTree(response);
+      final JsonNode responseNode = responseTree.get("response");
+      if(responseNode == null) {
+        final JsonNode err = responseTree.get("err");
+        if(err == null) {
+          Log.error("Response from NATS is null or malformed");
+          throw new RuntimeException("Response from NATS is null or malformed but no error provided");
+        } else {
+          Log.error("An error occurred while requesting subject " + subject + "  " + err.asText());
+          throw new RuntimeException(err.asText());
+        }
+      } else if (!responseNode.isObject()) {
+          Log.error("Response is not a valid JSON object: " + responseNode);
+          throw new RuntimeException("Response is not a valid JSON object");
+      } else {
+        return this.objectMapper.treeToValue(responseNode, org.entcore.broker.api.dto.i18n.FetchTranslationsResponseDTO.class);
+      }
       
     } catch (Exception e) {
       Log.error("Failed to send request to NATS", e);
@@ -88,8 +172,24 @@ public class EntNatsServiceClient {
     try {
       final byte[] payload = this.objectMapper.writeValueAsBytes(request);
       
-      byte[] response = connection.request(subject, payload).get().getData();
-      return this.objectMapper.readValue(response, org.entcore.broker.api.dto.directory.FindGroupByExternalIdResponseDTO.class);
+      final byte[] response = connection.request(subject, payload).get().getData();
+      final JsonNode responseTree = this.objectMapper.readTree(response);
+      final JsonNode responseNode = responseTree.get("response");
+      if(responseNode == null) {
+        final JsonNode err = responseTree.get("err");
+        if(err == null) {
+          Log.error("Response from NATS is null or malformed");
+          throw new RuntimeException("Response from NATS is null or malformed but no error provided");
+        } else {
+          Log.error("An error occurred while requesting subject " + subject + "  " + err.asText());
+          throw new RuntimeException(err.asText());
+        }
+      } else if (!responseNode.isObject()) {
+          Log.error("Response is not a valid JSON object: " + responseNode);
+          throw new RuntimeException("Response is not a valid JSON object");
+      } else {
+        return this.objectMapper.treeToValue(responseNode, org.entcore.broker.api.dto.directory.FindGroupByExternalIdResponseDTO.class);
+      }
       
     } catch (Exception e) {
       Log.error("Failed to send request to NATS", e);
@@ -103,8 +203,24 @@ public class EntNatsServiceClient {
     try {
       final byte[] payload = this.objectMapper.writeValueAsBytes(request);
       
-      byte[] response = connection.request(subject, payload).get().getData();
-      return this.objectMapper.readValue(response, org.entcore.broker.api.dto.session.FindSessionResponseDTO.class);
+      final byte[] response = connection.request(subject, payload).get().getData();
+      final JsonNode responseTree = this.objectMapper.readTree(response);
+      final JsonNode responseNode = responseTree.get("response");
+      if(responseNode == null) {
+        final JsonNode err = responseTree.get("err");
+        if(err == null) {
+          Log.error("Response from NATS is null or malformed");
+          throw new RuntimeException("Response from NATS is null or malformed but no error provided");
+        } else {
+          Log.error("An error occurred while requesting subject " + subject + "  " + err.asText());
+          throw new RuntimeException(err.asText());
+        }
+      } else if (!responseNode.isObject()) {
+          Log.error("Response is not a valid JSON object: " + responseNode);
+          throw new RuntimeException("Response is not a valid JSON object");
+      } else {
+        return this.objectMapper.treeToValue(responseNode, org.entcore.broker.api.dto.session.FindSessionResponseDTO.class);
+      }
       
     } catch (Exception e) {
       Log.error("Failed to send request to NATS", e);
@@ -118,8 +234,24 @@ public class EntNatsServiceClient {
     try {
       final byte[] payload = this.objectMapper.writeValueAsBytes(request);
       
-      byte[] response = connection.request(subject, payload).get().getData();
-      return this.objectMapper.readValue(response, org.entcore.broker.api.dto.directory.GetUserDisplayNamesResponseDTO.class);
+      final byte[] response = connection.request(subject, payload).get().getData();
+      final JsonNode responseTree = this.objectMapper.readTree(response);
+      final JsonNode responseNode = responseTree.get("response");
+      if(responseNode == null) {
+        final JsonNode err = responseTree.get("err");
+        if(err == null) {
+          Log.error("Response from NATS is null or malformed");
+          throw new RuntimeException("Response from NATS is null or malformed but no error provided");
+        } else {
+          Log.error("An error occurred while requesting subject " + subject + "  " + err.asText());
+          throw new RuntimeException(err.asText());
+        }
+      } else if (!responseNode.isObject()) {
+          Log.error("Response is not a valid JSON object: " + responseNode);
+          throw new RuntimeException("Response is not a valid JSON object");
+      } else {
+        return this.objectMapper.treeToValue(responseNode, org.entcore.broker.api.dto.directory.GetUserDisplayNamesResponseDTO.class);
+      }
       
     } catch (Exception e) {
       Log.error("Failed to send request to NATS", e);
@@ -133,8 +265,24 @@ public class EntNatsServiceClient {
     try {
       final byte[] payload = this.objectMapper.writeValueAsBytes(request);
       
-      byte[] response = connection.request(subject, payload).get().getData();
-      return this.objectMapper.readValue(response, org.entcore.broker.api.dto.directory.GetUsersByIdsResponseDTO.class);
+      final byte[] response = connection.request(subject, payload).get().getData();
+      final JsonNode responseTree = this.objectMapper.readTree(response);
+      final JsonNode responseNode = responseTree.get("response");
+      if(responseNode == null) {
+        final JsonNode err = responseTree.get("err");
+        if(err == null) {
+          Log.error("Response from NATS is null or malformed");
+          throw new RuntimeException("Response from NATS is null or malformed but no error provided");
+        } else {
+          Log.error("An error occurred while requesting subject " + subject + "  " + err.asText());
+          throw new RuntimeException(err.asText());
+        }
+      } else if (!responseNode.isObject()) {
+          Log.error("Response is not a valid JSON object: " + responseNode);
+          throw new RuntimeException("Response is not a valid JSON object");
+      } else {
+        return this.objectMapper.treeToValue(responseNode, org.entcore.broker.api.dto.directory.GetUsersByIdsResponseDTO.class);
+      }
       
     } catch (Exception e) {
       Log.error("Failed to send request to NATS", e);
@@ -148,8 +296,24 @@ public class EntNatsServiceClient {
     try {
       final byte[] payload = this.objectMapper.writeValueAsBytes(request);
       
-      byte[] response = connection.request(subject, payload).get().getData();
-      return this.objectMapper.readValue(response, org.entcore.broker.api.dto.DummyResponseDTO.class);
+      final byte[] response = connection.request(subject, payload).get().getData();
+      final JsonNode responseTree = this.objectMapper.readTree(response);
+      final JsonNode responseNode = responseTree.get("response");
+      if(responseNode == null) {
+        final JsonNode err = responseTree.get("err");
+        if(err == null) {
+          Log.error("Response from NATS is null or malformed");
+          throw new RuntimeException("Response from NATS is null or malformed but no error provided");
+        } else {
+          Log.error("An error occurred while requesting subject " + subject + "  " + err.asText());
+          throw new RuntimeException(err.asText());
+        }
+      } else if (!responseNode.isObject()) {
+          Log.error("Response is not a valid JSON object: " + responseNode);
+          throw new RuntimeException("Response is not a valid JSON object");
+      } else {
+        return this.objectMapper.treeToValue(responseNode, org.entcore.broker.api.dto.DummyResponseDTO.class);
+      }
       
     } catch (Exception e) {
       Log.error("Failed to send request to NATS", e);
@@ -178,8 +342,24 @@ public class EntNatsServiceClient {
     try {
       final byte[] payload = this.objectMapper.writeValueAsBytes(request);
       
-      byte[] response = connection.request(subject, payload).get().getData();
-      return this.objectMapper.readValue(response, org.entcore.broker.api.appregistry.AppRegistrationResponseDTO.class);
+      final byte[] response = connection.request(subject, payload).get().getData();
+      final JsonNode responseTree = this.objectMapper.readTree(response);
+      final JsonNode responseNode = responseTree.get("response");
+      if(responseNode == null) {
+        final JsonNode err = responseTree.get("err");
+        if(err == null) {
+          Log.error("Response from NATS is null or malformed");
+          throw new RuntimeException("Response from NATS is null or malformed but no error provided");
+        } else {
+          Log.error("An error occurred while requesting subject " + subject + "  " + err.asText());
+          throw new RuntimeException(err.asText());
+        }
+      } else if (!responseNode.isObject()) {
+          Log.error("Response is not a valid JSON object: " + responseNode);
+          throw new RuntimeException("Response is not a valid JSON object");
+      } else {
+        return this.objectMapper.treeToValue(responseNode, org.entcore.broker.api.appregistry.AppRegistrationResponseDTO.class);
+      }
       
     } catch (Exception e) {
       Log.error("Failed to send request to NATS", e);
@@ -193,8 +373,24 @@ public class EntNatsServiceClient {
     try {
       final byte[] payload = this.objectMapper.writeValueAsBytes(request);
       
-      byte[] response = connection.request(subject, payload).get().getData();
-      return this.objectMapper.readValue(response, org.entcore.broker.api.dto.i18n.RegisterTranslationFilesResponseDTO.class);
+      final byte[] response = connection.request(subject, payload).get().getData();
+      final JsonNode responseTree = this.objectMapper.readTree(response);
+      final JsonNode responseNode = responseTree.get("response");
+      if(responseNode == null) {
+        final JsonNode err = responseTree.get("err");
+        if(err == null) {
+          Log.error("Response from NATS is null or malformed");
+          throw new RuntimeException("Response from NATS is null or malformed but no error provided");
+        } else {
+          Log.error("An error occurred while requesting subject " + subject + "  " + err.asText());
+          throw new RuntimeException(err.asText());
+        }
+      } else if (!responseNode.isObject()) {
+          Log.error("Response is not a valid JSON object: " + responseNode);
+          throw new RuntimeException("Response is not a valid JSON object");
+      } else {
+        return this.objectMapper.treeToValue(responseNode, org.entcore.broker.api.dto.i18n.RegisterTranslationFilesResponseDTO.class);
+      }
       
     } catch (Exception e) {
       Log.error("Failed to send request to NATS", e);
@@ -208,8 +404,24 @@ public class EntNatsServiceClient {
     try {
       final byte[] payload = this.objectMapper.writeValueAsBytes(request);
       
-      byte[] response = connection.request(subject, payload).get().getData();
-      return this.objectMapper.readValue(response, org.entcore.broker.api.dto.directory.RemoveGroupMemberResponseDTO.class);
+      final byte[] response = connection.request(subject, payload).get().getData();
+      final JsonNode responseTree = this.objectMapper.readTree(response);
+      final JsonNode responseNode = responseTree.get("response");
+      if(responseNode == null) {
+        final JsonNode err = responseTree.get("err");
+        if(err == null) {
+          Log.error("Response from NATS is null or malformed");
+          throw new RuntimeException("Response from NATS is null or malformed but no error provided");
+        } else {
+          Log.error("An error occurred while requesting subject " + subject + "  " + err.asText());
+          throw new RuntimeException(err.asText());
+        }
+      } else if (!responseNode.isObject()) {
+          Log.error("Response is not a valid JSON object: " + responseNode);
+          throw new RuntimeException("Response is not a valid JSON object");
+      } else {
+        return this.objectMapper.treeToValue(responseNode, org.entcore.broker.api.dto.directory.RemoveGroupMemberResponseDTO.class);
+      }
       
     } catch (Exception e) {
       Log.error("Failed to send request to NATS", e);
@@ -223,8 +435,24 @@ public class EntNatsServiceClient {
     try {
       final byte[] payload = this.objectMapper.writeValueAsBytes(request);
       
-      byte[] response = connection.request(subject, payload).get().getData();
-      return this.objectMapper.readValue(response, org.entcore.broker.api.dto.shares.RemoveGroupSharesResponseDTO.class);
+      final byte[] response = connection.request(subject, payload).get().getData();
+      final JsonNode responseTree = this.objectMapper.readTree(response);
+      final JsonNode responseNode = responseTree.get("response");
+      if(responseNode == null) {
+        final JsonNode err = responseTree.get("err");
+        if(err == null) {
+          Log.error("Response from NATS is null or malformed");
+          throw new RuntimeException("Response from NATS is null or malformed but no error provided");
+        } else {
+          Log.error("An error occurred while requesting subject " + subject + "  " + err.asText());
+          throw new RuntimeException(err.asText());
+        }
+      } else if (!responseNode.isObject()) {
+          Log.error("Response is not a valid JSON object: " + responseNode);
+          throw new RuntimeException("Response is not a valid JSON object");
+      } else {
+        return this.objectMapper.treeToValue(responseNode, org.entcore.broker.api.dto.shares.RemoveGroupSharesResponseDTO.class);
+      }
       
     } catch (Exception e) {
       Log.error("Failed to send request to NATS", e);
@@ -238,8 +466,24 @@ public class EntNatsServiceClient {
     try {
       final byte[] payload = this.objectMapper.writeValueAsBytes(request);
       
-      byte[] response = connection.request(subject, payload).get().getData();
-      return this.objectMapper.readValue(response, org.entcore.broker.api.appregistry.AppRegistrationResponseDTO.class);
+      final byte[] response = connection.request(subject, payload).get().getData();
+      final JsonNode responseTree = this.objectMapper.readTree(response);
+      final JsonNode responseNode = responseTree.get("response");
+      if(responseNode == null) {
+        final JsonNode err = responseTree.get("err");
+        if(err == null) {
+          Log.error("Response from NATS is null or malformed");
+          throw new RuntimeException("Response from NATS is null or malformed but no error provided");
+        } else {
+          Log.error("An error occurred while requesting subject " + subject + "  " + err.asText());
+          throw new RuntimeException(err.asText());
+        }
+      } else if (!responseNode.isObject()) {
+          Log.error("Response is not a valid JSON object: " + responseNode);
+          throw new RuntimeException("Response is not a valid JSON object");
+      } else {
+        return this.objectMapper.treeToValue(responseNode, org.entcore.broker.api.appregistry.AppRegistrationResponseDTO.class);
+      }
       
     } catch (Exception e) {
       Log.error("Failed to send request to NATS", e);
@@ -253,8 +497,24 @@ public class EntNatsServiceClient {
     try {
       final byte[] payload = this.objectMapper.writeValueAsBytes(request);
       
-      byte[] response = connection.request(subject, payload).get().getData();
-      return this.objectMapper.readValue(response, org.entcore.broker.api.dto.directory.UpdateGroupResponseDTO.class);
+      final byte[] response = connection.request(subject, payload).get().getData();
+      final JsonNode responseTree = this.objectMapper.readTree(response);
+      final JsonNode responseNode = responseTree.get("response");
+      if(responseNode == null) {
+        final JsonNode err = responseTree.get("err");
+        if(err == null) {
+          Log.error("Response from NATS is null or malformed");
+          throw new RuntimeException("Response from NATS is null or malformed but no error provided");
+        } else {
+          Log.error("An error occurred while requesting subject " + subject + "  " + err.asText());
+          throw new RuntimeException(err.asText());
+        }
+      } else if (!responseNode.isObject()) {
+          Log.error("Response is not a valid JSON object: " + responseNode);
+          throw new RuntimeException("Response is not a valid JSON object");
+      } else {
+        return this.objectMapper.treeToValue(responseNode, org.entcore.broker.api.dto.directory.UpdateGroupResponseDTO.class);
+      }
       
     } catch (Exception e) {
       Log.error("Failed to send request to NATS", e);
@@ -268,8 +528,24 @@ public class EntNatsServiceClient {
     try {
       final byte[] payload = this.objectMapper.writeValueAsBytes(request);
       
-      byte[] response = connection.request(subject, payload).get().getData();
-      return this.objectMapper.readValue(response, org.entcore.broker.api.dto.shares.UpsertGroupSharesResponseDTO.class);
+      final byte[] response = connection.request(subject, payload).get().getData();
+      final JsonNode responseTree = this.objectMapper.readTree(response);
+      final JsonNode responseNode = responseTree.get("response");
+      if(responseNode == null) {
+        final JsonNode err = responseTree.get("err");
+        if(err == null) {
+          Log.error("Response from NATS is null or malformed");
+          throw new RuntimeException("Response from NATS is null or malformed but no error provided");
+        } else {
+          Log.error("An error occurred while requesting subject " + subject + "  " + err.asText());
+          throw new RuntimeException(err.asText());
+        }
+      } else if (!responseNode.isObject()) {
+          Log.error("Response is not a valid JSON object: " + responseNode);
+          throw new RuntimeException("Response is not a valid JSON object");
+      } else {
+        return this.objectMapper.treeToValue(responseNode, org.entcore.broker.api.dto.shares.UpsertGroupSharesResponseDTO.class);
+      }
       
     } catch (Exception e) {
       Log.error("Failed to send request to NATS", e);
