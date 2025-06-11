@@ -102,17 +102,43 @@ function applySearchRules(
     return !frontendFiltering
       ? undefined
       : (user: Visible) => {
+          const testDisplayNames = [],
+            testNameReverseds = [];
           let testDisplayName = '',
-            testNameReversed = '';
+            split = [];
           if (user.displayName) {
             testDisplayName = removeAccents(user.displayName).toLowerCase();
-            const split = testDisplayName.split(' ');
-            testNameReversed =
-              split.length > 1 ? split[1] + ' ' + split[0] : testDisplayName;
+            testDisplayNames.push(testDisplayName);
+            split = testDisplayName.split(' ');
+            testNameReverseds.push(
+              split.length > 1 ? split[1] + ' ' + split[0] : testDisplayName,
+            );
+          }
+          if (user.children) {
+            user.children.forEach((child) => {
+              testDisplayName = removeAccents(child.displayName).toLowerCase();
+              testDisplayNames.push(testDisplayName);
+              split = testDisplayName.split(' ');
+              testNameReverseds.push(
+                split.length > 1 ? split[1] + ' ' + split[0] : testDisplayName,
+              );
+            });
+          }
+          if (user.relatives) {
+            user.relatives.forEach((relative) => {
+              testDisplayName = removeAccents(
+                relative.displayName,
+              ).toLowerCase();
+              testDisplayNames.push(testDisplayName);
+              split = testDisplayName.split(' ');
+              testNameReverseds.push(
+                split.length > 1 ? split[1] + ' ' + split[0] : testDisplayName,
+              );
+            });
           }
           return (
-            testDisplayName.indexOf(searchTerm) !== -1 ||
-            testNameReversed.indexOf(searchTerm) !== -1
+            testDisplayNames.some((name) => name.indexOf(searchTerm) !== -1) ||
+            testNameReverseds.some((name) => name.indexOf(searchTerm) !== -1)
           );
         };
   }
