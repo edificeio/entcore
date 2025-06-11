@@ -23,6 +23,7 @@ import { useMessage, useMessageActions } from '~/store/messageStore';
 import { useDeleteMessagesFromQueryCache } from './hooks/useDeleteMessageFromQueryCache';
 import { useMessageListOnMutate } from './hooks/useMessageListOnMutate';
 import { useUpdateFolderBadgeCountQueryCache } from './hooks/useUpdateFolderBadgeCountQueryCache';
+import { invalidateQueriesWithFirstPage } from './utils';
 const appCodeName = 'conversation';
 /**
  * Message Query Options Factory.
@@ -269,16 +270,15 @@ export const useRestoreMessage = () => {
       });
 
       deleteMessagesFromQueryCache('trash', messageIds);
-
       // Reset all queries except trash folder
-      queryClient.resetQueries({
+      invalidateQueriesWithFirstPage(queryClient, {
         queryKey: ['folder', 'messages'],
         predicate: (query) => {
           const queryKey = query.queryKey as string[];
           return !queryKey.includes('trash');
         },
       });
-      // Invalidate folder tree to update the badge count
+
       queryClient.invalidateQueries({
         queryKey: ['folder', 'tree'],
       });

@@ -32,10 +32,11 @@ export function MessageList() {
 
   const {
     messages,
-    isPending: isLoadingMessage,
+    isPending: isLoadingMessages,
     isFetchingNextPage: isLoadingNextPage,
     hasNextPage,
     fetchNextPage,
+    shouldScrollToTop,
   } = useFolderMessages(folderId!);
   const {
     handleDelete,
@@ -70,7 +71,8 @@ export function MessageList() {
   useEffect(() => {
     const messageListItems =
       listRef.current?.getElementsByClassName('message-list-item');
-    if (isLoadingMessage || isLoadingNextPage) return;
+
+    if (isLoadingMessages || isLoadingNextPage) return;
     if (observer.current) observer.current.disconnect();
     observer.current = new IntersectionObserver(
       (entries) => {
@@ -80,12 +82,18 @@ export function MessageList() {
       },
       { threshold: 0.1 },
     );
-    if (messageListItems)
+    if (messageListItems) {
       observer.current.observe(messageListItems[messageListItems.length - 1]);
+
+      // Scroll to top if shouldScrollToTop define by the query
+      messageListItems[0].scrollIntoView({
+        block: 'center',
+      });
+    }
   }, [
     messages,
     hasNextPage,
-    isLoadingMessage,
+    isLoadingMessages,
     isLoadingNextPage,
     fetchNextPage,
   ]);
@@ -181,7 +189,7 @@ export function MessageList() {
           />
         )}
       />
-      {isLoadingMessage && (
+      {isLoadingMessages && (
         <Loading isLoading={true} className="justify-content-center my-12" />
       )}
     </div>
