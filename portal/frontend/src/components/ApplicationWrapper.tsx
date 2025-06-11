@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 import { Application } from '~/models/application';
-import { getAppName } from '~/utils/get-app-name';
 import { ApplicationIcon } from './ApplicationIcon';
 import { IconOptions, IconInfoCircle } from '@edifice.io/react/icons';
 import clsx from 'clsx';
@@ -9,12 +8,15 @@ import { RefAttributes, useState } from 'react';
 
 export function ApplicationWrapper({ data }: { data: Application }) {
   const { t } = useTranslation('common');
-  const appName = getAppName(data, t);
   const [dropdownActive, setDropdownActive] = useState(false);
   const [hover, setHover] = useState(false);
-  const classApplicationCard = clsx('rounded application-card position-relative py-8 px-4', (dropdownActive || hover) && 'active border border-secondary bg-gray-200');
+  const classApplicationCard = clsx(
+    'rounded application-card position-relative py-8 px-4',
+    (dropdownActive || hover) && 'active border border-secondary bg-gray-200',
+  );
   return (
     <a
+      data-id={data.name}
       href={data.address}
       rel={data.isExternal ? 'noopener noreferrer' : undefined}
       target={data.isExternal ? '_blank' : undefined}
@@ -32,7 +34,7 @@ export function ApplicationWrapper({ data }: { data: Application }) {
           textTransform: 'unset',
         }}
       >
-        {appName}
+        {data.appName}
       </h1>
       <div
         className="dropdown-wrapper"
