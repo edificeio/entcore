@@ -28,13 +28,7 @@ export const folderQueryOptions = {
     folderId: string,
     options: { search?: string; unread?: boolean },
   ) {
-    return [
-      ...folderQueryOptions.base,
-      'messages',
-      folderId,
-      ,
-      options,
-    ] as const;
+    return [...folderQueryOptions.base, 'messages', folderId, options] as const;
   },
 
   /**
