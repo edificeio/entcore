@@ -1879,6 +1879,30 @@ public class SqlConversationService implements ConversationService{
 		sql.prepared(query, values, SqlResult.validUniqueResultHandler(result));
 	}
 
+	@Override
+	public void getMessagesToPurge(Handler<Either<String, JsonArray>> result) {
+		String query =
+				"SELECT DISTINCT um.message_id " +
+						"FROM conversation.usermessages um " +
+						"JOIN conversation.messages m ON um.message_id = m.id " +
+						"WHERE um.folder_id IS NULL AND m.date > (EXTRACT(EPOCH FROM NOW())::bigint - (2 * 365 * 24 * 60 * 60));";
+
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+
+		sql.prepared(query, values, SqlResult.validResultHandler(result));
+	}
+
+	@Override
+	public void purgeMessages(final List<String> messagesId, Handler<Either<String, JsonArray>> result) {
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		String query = "DELETE FROM conversation.messages CASCADE WHERE id IN " + generateInVars(messagesId, values);
+
+		SqlStatementsBuilder builder = new SqlStatementsBuilder();
+		builder.prepared(query, values);
+
+		sql.transaction(builder.build(), SqlResult.validResultsHandler(result));
+	}
+
 	///////////
 	/* Utils */
 

@@ -198,4 +198,8 @@ public interface ConversationService {
 	void getAllAttachments(String messageId, UserInfos user, Handler<Either<String, JsonArray>> result);
 	void removeAttachment(String messageId, String attachmentId, UserInfos user, final Handler<Either<String, JsonObject>> result);
 	void forwardAttachments(String forwardId, String messageId, UserInfos user, Handler<Either<String, JsonObject>> result);
+
+	// Purge
+	void getMessagesToPurge(Handler<Either<String, JsonArray>> result);
+	void purgeMessages(final List<String> messagesId, Handler<Either<String, JsonArray>> result);
 }
