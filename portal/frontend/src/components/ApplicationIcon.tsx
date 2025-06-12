@@ -17,7 +17,7 @@ export function ApplicationIcon({ data }: { data: Application }) {
   return (
     <span className={classApplicationIcon} style={{ width: 64, height: 64 }}>
       {isImage ? (
-        <img src={data.icon} alt={appName} />
+        <img className="w-full h-full" src={data.icon} alt={appName} />
       ) : (
         <i className={iconClassName} />
       )}
