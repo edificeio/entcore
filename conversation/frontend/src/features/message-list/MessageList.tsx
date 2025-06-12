@@ -38,7 +38,6 @@ export function MessageList() {
     isFetchingNextPage: isLoadingNextPage,
     hasNextPage,
     fetchNextPage,
-    shouldScrollToTop,
   } = useFolderMessages(folderId!);
   const {
     handleDelete,

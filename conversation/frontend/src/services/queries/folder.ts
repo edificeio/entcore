@@ -207,8 +207,6 @@ export const useFolderMessages = (folderId: string, enabled = true) => {
   return {
     ...query,
     messages: query.data?.pages.flatMap((page) => page) as MessageMetadata[],
-    // @ts-ignore
-    shouldScrollToTop: query.data?.shouldScrollToTop,
   };
 };
 
