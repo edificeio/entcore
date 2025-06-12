@@ -86,8 +86,6 @@ export const useConversationConfig = () => {
  */
 export const useMessageQuery = (messageId: string) => {
   const result = useQuery(messageQueryOptions.getById(messageId));
-  const { folderId } = useSelectedFolder();
-  const { updateFolderMessagesQueryCache } = useFolderUtils();
   const { currentLanguage, user, userProfile } = useEdificeClient();
 
   if (result.isSuccess && result.data) {
@@ -99,15 +97,6 @@ export const useMessageQuery = (messageId: string) => {
       }
       if (message.body === null) {
         message.body = '';
-      }
-
-      // Update the message unread status in the list
-      if (folderId) {
-        updateFolderMessagesQueryCache(folderId, (oldMessage) =>
-          oldMessage.id === message.id
-            ? { ...oldMessage, unread: false }
-            : oldMessage,
-        );
       }
     } else {
       message = {
