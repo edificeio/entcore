@@ -1,0 +1,57 @@
+<!DOCTYPE ficAlimMENESR SYSTEM "ficAlimMENESR.dtd">
+<ficAlimMENESR>
+<!-- versionAF="AAF-VE1301" -->
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersEducNat</value></attr></operationalAttributes>
+<identifier><id>2397002</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2397002</value></attr>
+<attr name="ENTPersonDateNaissance"><value>24/11/1975</value></attr>
+<attr name="ENTPersonNomPatro"><value>CUVEILLER</value></attr>
+<attr name="sn"><value>CUVEILLER</value></attr>
+<attr name="givenName"><value>FLORENCE</value></attr>
+<attr name="personalTitle"><value>M.</value></attr>
+<attr name="mail"><value/></attr>
+<attr name="ENTPersonStructRattach"><value>1</value></attr>
+<attr name="ENTAuxEnsCategoDiscipline"><value>15$PHYSIQUE - CHIMIE</value></attr>
+<attr name="ENTAuxEnsDisciplinesPoste"><value>SCIENCES PHYSIQUES ET CHIMIQUES$15</value></attr>
+<attr name="ENTAuxEnsMEF"><value/></attr>
+<attr name="ENTAuxEnsMatiereEnseignEtab"><value/></attr>
+<attr name="ENTAuxEnsClasses"><value/></attr>
+<attr name="ENTAuxEnsGroupes"><value/></attr>
+<attr name="ENTAuxEnsClassesMatieres"><value/></attr>
+<attr name="ENTAuxEnsGroupesMatieres"><value/></attr>
+<attr name="ENTAuxEnsClassesPrincipal"><value/></attr>
+<attr name="ENTPersonFonctions"><value>1$ENS$ENSEIGNEMENT$L1500$SCIENCES PHYSIQUES ET CHIMIQUES</value></attr>
+<attr name="PersEducNatPresenceDevantEleves"><value>N</value></attr>
+</attributes>
+</addRequest>
+
+<addRequest>
+<operationalAttributes><attr name="categoriePersonne"><value>PersEducNat</value></attr></operationalAttributes>
+<identifier><id>2397004</id></identifier>
+<attributes>
+<attr name="ENTPersonJointure"><value>2397004</value></attr>
+<attr name="ENTPersonDateNaissance"><value>08/05/1968</value></attr>
+<attr name="ENTPersonNomPatro"><value>BALET</value></attr>
+<attr name="sn"><value>COUGARD</value></attr>
+<attr name="givenName"><value>LAURETTE</value></attr>
+<attr name="personalTitle"><value>Mme</value></attr>
+<attr name="mail"><value/></attr>
+<attr name="ENTPersonStructRattach"><value>1</value></attr>
+<attr name="ENTAuxEnsCategoDiscipline"><value>00$NON SPECIALISE</value></attr>
+<attr name="ENTAuxEnsDisciplinesPoste"><value>ORIENTATION$00</value></attr>
+<attr name="ENTAuxEnsMEF"><value/></attr>
+<attr name="ENTAuxEnsMatiereEnseignEtab"><value/></attr>
+<attr name="ENTAuxEnsClasses"><value/></attr>
+<attr name="ENTAuxEnsGroupes"><value/></attr>
+<attr name="ENTAuxEnsClassesMatieres"><value/></attr>
+<attr name="ENTAuxEnsGroupesMatieres"><value/></attr>
+<attr name="ENTAuxEnsClassesPrincipal"><value/></attr>
+<attr name="ENTPersonFonctions"><value>1$ORI$ORIENTATION$O0040$ORIENTATION</value><value>50194$ORI$ORIENTATION$O0040$ORIENTATION</value><value>50195$ORI$ORIENTATION$O0040$ORIENTATION</value><value>50196$ORI$ORIENTATION$O0040$ORIENTATION</value><value>50197$ORI$ORIENTATION$O0040$ORIENTATION</value><value>50198$ORI$ORIENTATION$O0040$ORIENTATION</value><value>50258$ORI$ORIENTATION$O0040$ORIENTATION</value><value>50449$ORI$ORIENTATION$O0040$ORIENTATION</value><value>50450$ORI$ORIENTATION$O0040$ORIENTATION</value><value>50453$ORI$ORIENTATION$O0040$ORIENTATION</value><value>50511$ORI$ORIENTATION$O0040$ORIENTATION</value><value>50529$ORI$ORIENTATION$O0040$ORIENTATION</value><value>50590$ORI$ORIENTATION$O0040$ORIENTATION</value><value>50637$ORI$ORIENTATION$O0040$ORIENTATION</value><value>50638$ORI$ORIENTATION$O0040$ORIENTATION</value><value>50702$ORI$ORIENTATION$O0040$ORIENTATION</value><value>50744$ORI$ORIENTATION$O0040$ORIENTATION</value><value>50769$ORI$ORIENTATION$O0040$ORIENTATION</value><value>50918$ORI$ORIENTATION$O0040$ORIENTATION</value></attr>
+<attr name="PersEducNatPresenceDevantEleves"><value>N</value></attr>
+</attributes>
+</addRequest>
+
+
+</ficAlimMENESR>
