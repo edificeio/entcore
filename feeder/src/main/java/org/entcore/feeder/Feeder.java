@@ -105,8 +105,8 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	private EDTUtils edtUtils;
 	private ValidatorFactory validatorFactory;
 
-	@Override
-	public void start() {
+	public void start(Promise<Void> startPromise) {
+		super.start();
 		final SharedDataHelper sharedDataHelper = SharedDataHelper.getInstance();
 		sharedDataHelper.init(vertx);
 		sharedDataHelper.<String, Object>getMulti("server", "neo4jConfig", "node")
@@ -114,7 +114,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			StorageFactory.build(vertx, config)
             .onSuccess(storageFactory -> {
 				try {
-					initFeeder(feederMap, storageFactory);
+					initFeeder(startPromise, feederMap, storageFactory);
 				} catch (Exception e) {
 					logger.error("Error when start Feeder", e);
 				}
@@ -122,7 +122,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		}).onFailure(ex -> logger.error("Error when start Feeder server super classes", ex));
 	}
 
-	public void initFeeder(Map<String,Object> feederMap, StorageFactory storageFactory) {
+	public void initFeeder(Promise<Void> startPromise, Map<String,Object> feederMap, StorageFactory storageFactory) {
 		storage = storageFactory.getStorage();
 		EmailFactory.build(vertx, config);
 		FeederLogger.init(config);
@@ -270,6 +270,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		}
 		I18n.getInstance().init(vertx);
 		validatorFactory = new ValidatorFactory(vertx);
+		startPromise.tryComplete();
 	}
 
 	private void setupImportCron(JsonObject cronConf, ImportsLauncher launcher)
