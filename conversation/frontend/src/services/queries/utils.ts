@@ -12,7 +12,6 @@ export function invalidateQueriesWithFirstPage(
       ...oldData,
       pages: [oldData.pages[0]],
       pageParams: [oldData.pageParams[0]],
-      shouldScrollToTop: true,
     };
   });
 

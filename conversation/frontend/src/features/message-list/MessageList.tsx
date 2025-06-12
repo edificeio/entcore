@@ -14,7 +14,7 @@ import {
 } from '@edifice.io/react/icons';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { useFolderMessages } from '~/services';
 import { useAppActions } from '~/store/actions';
@@ -29,6 +29,8 @@ export function MessageList() {
   const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
   const { setSelectedMessageIds } = useAppActions();
+  const location = useLocation();
+  const shouldScrollToTop = location.state?.scrollToTop;
 
   const {
     messages,
@@ -36,7 +38,6 @@ export function MessageList() {
     isFetchingNextPage: isLoadingNextPage,
     hasNextPage,
     fetchNextPage,
-    shouldScrollToTop,
   } = useFolderMessages(folderId!);
   const {
     handleDelete,
@@ -72,6 +73,12 @@ export function MessageList() {
     const messageListItems =
       listRef.current?.getElementsByClassName('message-list-item');
 
+    if (messageListItems && shouldScrollToTop) {
+      messageListItems[0].scrollIntoView({
+        block: 'center',
+      });
+    }
+
     if (isLoadingMessages || isLoadingNextPage) return;
     if (observer.current) observer.current.disconnect();
     observer.current = new IntersectionObserver(
@@ -84,11 +91,6 @@ export function MessageList() {
     );
     if (messageListItems) {
       observer.current.observe(messageListItems[messageListItems.length - 1]);
-      if (shouldScrollToTop) {
-        messageListItems[0].scrollIntoView({
-          block: 'center',
-        });
-      }
     }
   }, [
     messages,
