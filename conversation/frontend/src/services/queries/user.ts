@@ -93,13 +93,18 @@ function applySearchRules(
   getVisibleStrategy: Config['getVisibleStrategy'],
   search: string,
 ) {
-  const backendFiltering = 'all-at-once' !== getVisibleStrategy || isAdml;
-  const startText = backendFiltering ? search.substring(0, 3) : undefined;
+  const backendFiltering = 'all-at-once' !== getVisibleStrategy;
+  const startText =
+    backendFiltering || isAdml ? search.substring(0, 3) : undefined;
   function computeFrontendFilter() {
     const removeAccents = odeServices.idiom().removeAccents;
     const searchTerm = removeAccents(search).toLowerCase();
     let testDisplayNames: string[] = [],
       testNameReverseds: string[] = [];
+
+    if (backendFiltering) {
+      return undefined;
+    }
 
     function addSearchTerm(displayName: string): void {
       const testDisplayName = removeAccents(displayName).toLowerCase();
