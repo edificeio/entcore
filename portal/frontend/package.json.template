@@ -30,7 +30,7 @@
     ]
   },
   "dependencies": {
-    "@edifice.io/react": "2.0.0",
+    "@edifice.io/react": "develop-enabling",
     "@edifice.io/bootstrap": "2.0.0",
     "@edifice.io/client": "2.0.0",
     "@react-spring/web": "^9.7.5",
