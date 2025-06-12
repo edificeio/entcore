@@ -15,7 +15,6 @@ import { Message, MessageBase } from '~/models';
 import {
   baseUrl,
   createDefaultMessage,
-  folderQueryOptions,
   messageService,
   useFolderUtils,
 } from '~/services';
