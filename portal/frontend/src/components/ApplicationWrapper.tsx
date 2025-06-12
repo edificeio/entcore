@@ -3,11 +3,21 @@ import { Application } from '~/models/application';
 import { ApplicationIcon } from './ApplicationIcon';
 import { IconOptions, IconInfoCircle } from '@edifice.io/react/icons';
 import clsx from 'clsx';
-import { Dropdown, IconButton, IconButtonProps } from '@edifice.io/react';
+import {
+  Dropdown,
+  IconButton,
+  IconButtonProps,
+  useEdificeClient,
+  useLibraryUrl,
+} from '@edifice.io/react';
 import { RefAttributes, useState } from 'react';
 
 export function ApplicationWrapper({ data }: { data: Application }) {
   const { t } = useTranslation('common');
+  const { user } = useEdificeClient();
+  const blogUrlTest = useLibraryUrl('blog');
+  console.log('user', user);
+  console.log('blogUrlTest', blogUrlTest);
   const [dropdownActive, setDropdownActive] = useState(false);
   const [hover, setHover] = useState(false);
   const classApplicationCard = clsx(
@@ -54,7 +64,9 @@ export function ApplicationWrapper({ data }: { data: Application }) {
                 {...triggerProps}
                 type="button"
                 aria-label="label"
-                className="bg-secondary-200 border-white text-secondary"
+                color="secondary"
+                variant="ghost"
+                className="bg-secondary-200 border border-white text-secondary"
                 icon={<IconOptions />}
               />
               <Dropdown.Menu>
