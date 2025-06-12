@@ -62,3 +62,16 @@
     color: white !important;
     font-size: 30px;
 }
+
+.toolbar-categories-wrapper {
+    display: block;
+    width: 100%;
+    text-align: center;
+}
+.toolbar-categories {
+    display: inline-flex;
+    width: fit-content;
+    max-width: 100%;
+    white-space: nowrap;
+    justify-content: flex-start;
+}
