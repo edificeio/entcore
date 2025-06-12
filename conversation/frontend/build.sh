@@ -61,7 +61,12 @@ init () {
   cp package.json.template package.json
   sed -i "s/%branch%/${BRANCH_NAME}/" package.json
   sed -i "s/%generateVersion%/${NPM_VERSION_SUFFIX}/" package.json
-  sed -i "s/%packageVersion%/${BRANCH_NAME}/" package.json
+
+  if [ "$BRANCH_NAME" = "dev" ] ; then 
+    sed -i "s/%packageVersion%/develop/" package.json
+  else 
+    sed -i "s/%packageVersion%/${BRANCH_NAME}/" package.json
+  fi
 
   if [ "$NO_DOCKER" = "true" ] ; then
     pnpm install
