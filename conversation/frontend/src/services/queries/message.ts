@@ -232,9 +232,8 @@ export const useTrashMessage = () => {
       // Delete messages from query cache
       deleteMessagesFromQueryCache(folderId, messageIds);
 
-      // Invalidate trash folder
-      queryClient.resetQueries({
-        queryKey: folderQueryOptions.getMessagesQuerykey('trash', {}),
+      invalidateQueriesWithFirstPage(queryClient, {
+        queryKey: ['folder', 'messages', 'trash'],
       });
 
       toast.success(
@@ -299,7 +298,7 @@ export const useEmptyTrash = () => {
   return useMutation({
     mutationFn: () => messageService.emptyTrash(),
     onSuccess: () => {
-      queryClient.resetQueries({
+      invalidateQueriesWithFirstPage(queryClient, {
         queryKey: ['folder', 'messages', 'trash'],
       });
     },
@@ -511,7 +510,7 @@ export const useCreateDraft = () => {
       setMessage({ ...message });
       updateFolderBadgeCountQueryCache('draft', 1);
 
-      queryClient.resetQueries({
+      invalidateQueriesWithFirstPage(queryClient, {
         queryKey: ['folder', 'messages', 'draft'],
       });
     },
@@ -555,7 +554,7 @@ export const useUpdateDraft = () => {
         },
       );
 
-      queryClient.resetQueries({
+      invalidateQueriesWithFirstPage(queryClient, {
         queryKey: ['folder', 'messages', 'draft'],
       });
     },
@@ -605,12 +604,12 @@ export const useSendDraft = () => {
         ].includes(user.userId)
       ) {
         updateFolderBadgeCountQueryCache('inbox', +1);
-        queryClient.resetQueries({
+        invalidateQueriesWithFirstPage(queryClient, {
           queryKey: ['folder', 'messages', 'inbox'],
         });
       }
 
-      queryClient.resetQueries({
+      invalidateQueriesWithFirstPage(queryClient, {
         queryKey: ['folder', 'messages', 'outbox'],
       });
 
