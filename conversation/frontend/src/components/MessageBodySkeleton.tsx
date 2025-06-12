@@ -12,10 +12,25 @@ export interface MessageBodyProps {
 export function MessageBodySkeleton({ editMode }: { editMode?: boolean }) {
   if (editMode) {
     return (
-      <div className="d-flex flex-column gap-16">
-        <div className="d-flex col-12 col-md-8 gap-8 py-8 px-16">
+      <div className="d-flex flex-column gap-16 position-relative flex-fill">
+        <div className="d-flex col-12 gap-8 py-8 px-16">
           <Button
-            className="placeholder col-10"
+            className="placeholder col-2 flex-shrink-1"
+            color="tertiary"
+            disabled
+          ></Button>
+          <Button
+            className="placeholder col-4"
+            color="tertiary"
+            disabled
+          ></Button>
+          <Button
+            className="placeholder col-4"
+            color="tertiary"
+            disabled
+          ></Button>
+          <Button
+            className="placeholder col-2"
             color="tertiary"
             disabled
           ></Button>
