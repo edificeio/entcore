@@ -1,6 +1,7 @@
 import { ApplicationList } from '~/features/application-list/ApplicationList';
 import { useTranslation } from 'react-i18next';
 import './my-apps.css';
+import { ToolbarCategories } from '~/components/ToolbarCategories';
 
 export const MyAppLayout = ({ theme }: { theme: string }) => {
   const { t } = useTranslation('common');
@@ -10,6 +11,7 @@ export const MyAppLayout = ({ theme }: { theme: string }) => {
       <header>
         <h1 className="m-0 h3 text-info">{t('navbar.applications')}</h1>
       </header>
+      <ToolbarCategories />
       <ApplicationList />
     </div>
   );
