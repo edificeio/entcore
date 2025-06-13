@@ -15,7 +15,7 @@ import { Message, MessageBase } from '~/models';
 import {
   baseUrl,
   createDefaultMessage,
-  folderQueryOptions,
+  folderQueryKeys,
   messageService,
   useFolderUtils,
 } from '~/services';
@@ -23,19 +23,29 @@ import { useMessage, useMessageActions } from '~/store/messageStore';
 import { useDeleteMessagesFromQueryCache } from './hooks/useDeleteMessageFromQueryCache';
 import { useMessageListOnMutate } from './hooks/useMessageListOnMutate';
 import { useUpdateFolderBadgeCountQueryCache } from './hooks/useUpdateFolderBadgeCountQueryCache';
+import { invalidateQueriesWithFirstPage } from './utils';
 const appCodeName = 'conversation';
+
+export const messageQueryKeys = {
+  all: ['message'] as const,
+  config: () => [...messageQueryKeys.all, 'config'] as const,
+  byId: (messageId: string) =>
+    [...messageQueryKeys.all, 'byId', messageId] as const,
+  originalFormat: (messageId: string) =>
+    [...messageQueryKeys.all, 'originalFormat', messageId] as const,
+};
+
 /**
  * Message Query Options Factory.
  */
 export const messageQueryOptions = {
-  base: ['message'] as const,
   /**
    * Generates query options for fetching message application configuration.
    * @returns Query options for fetching the configuration.
    */
   getConfig() {
     return queryOptions({
-      queryKey: [messageQueryOptions.base, 'config'] as const,
+      queryKey: messageQueryKeys.config(),
       queryFn: (): Promise<{ 'debounce-time-to-auto-save'?: number }> =>
         odeServices.conf().getPublicConf('conversation'),
       staleTime: Infinity,
@@ -48,7 +58,7 @@ export const messageQueryOptions = {
    */
   getById(messageId: string) {
     return queryOptions({
-      queryKey: [...messageQueryOptions.base, messageId] as const,
+      queryKey: messageQueryKeys.byId(messageId),
       queryFn: () => messageService.getById(messageId),
       staleTime: Infinity, // The message must be invalidated by mutations, no need to reload it twice in between.
     });
@@ -60,11 +70,7 @@ export const messageQueryOptions = {
    */
   getOriginalFormat(messageId: string) {
     return queryOptions({
-      queryKey: [
-        ...messageQueryOptions.base,
-        messageId,
-        'originalFormat',
-      ] as const,
+      queryKey: messageQueryKeys.originalFormat(messageId),
       queryFn: () => messageService.getOriginalFormat(messageId),
       staleTime: Infinity,
     });
@@ -86,8 +92,6 @@ export const useConversationConfig = () => {
  */
 export const useMessageQuery = (messageId: string) => {
   const result = useQuery(messageQueryOptions.getById(messageId));
-  const { folderId } = useSelectedFolder();
-  const { updateFolderMessagesQueryCache } = useFolderUtils();
   const { currentLanguage, user, userProfile } = useEdificeClient();
 
   if (result.isSuccess && result.data) {
@@ -99,15 +103,6 @@ export const useMessageQuery = (messageId: string) => {
       }
       if (message.body === null) {
         message.body = '';
-      }
-
-      // Update the message unread status in the list
-      if (folderId) {
-        updateFolderMessagesQueryCache(folderId, (oldMessage) =>
-          oldMessage.id === message.id
-            ? { ...oldMessage, unread: false }
-            : oldMessage,
-        );
       }
     } else {
       message = {
@@ -175,7 +170,7 @@ const useToggleUnread = (unread: boolean) => {
       // Update message details (unread status)
       messageIds.map((messageId) => {
         queryClient.setQueryData(
-          messageQueryOptions.getById(messageId).queryKey,
+          messageQueryKeys.byId(messageId),
           (message: Message | undefined) => {
             return message ? { ...message, unread } : undefined;
           },
@@ -224,16 +219,15 @@ export const useTrashMessage = () => {
       // Invalidate message details
       messageIds.forEach((messageId) => {
         queryClient.invalidateQueries({
-          queryKey: messageQueryOptions.getById(messageId).queryKey,
+          queryKey: messageQueryKeys.byId(messageId),
         });
       });
 
       // Delete messages from query cache
       deleteMessagesFromQueryCache(folderId, messageIds);
 
-      // Invalidate trash folder
-      queryClient.resetQueries({
-        queryKey: folderQueryOptions.getMessagesQuerykey('trash', {}),
+      invalidateQueriesWithFirstPage(queryClient, {
+        queryKey: folderQueryKeys.messages('trash'),
       });
 
       toast.success(
@@ -264,26 +258,25 @@ export const useRestoreMessage = () => {
       // Invalidate message details
       messageIds.forEach((messageId) => {
         queryClient.invalidateQueries({
-          queryKey: messageQueryOptions.getById(messageId).queryKey,
+          queryKey: messageQueryKeys.byId(messageId),
         });
       });
 
       deleteMessagesFromQueryCache('trash', messageIds);
-
       // Reset all queries except trash folder
-      queryClient.resetQueries({
-        queryKey: ['folder', 'messages'],
+      invalidateQueriesWithFirstPage(queryClient, {
+        queryKey: folderQueryKeys.messages(),
         predicate: (query) => {
           const queryKey = query.queryKey as string[];
           return !queryKey.includes('trash');
         },
       });
-      // Invalidate folder tree to update the badge count
+
       queryClient.invalidateQueries({
-        queryKey: ['folder', 'tree'],
+        queryKey: folderQueryKeys.tree(),
       });
       queryClient.invalidateQueries({
-        queryKey: ['folder', 'count'],
+        queryKey: folderQueryKeys.count(),
       });
 
       // Toast
@@ -299,8 +292,8 @@ export const useEmptyTrash = () => {
   return useMutation({
     mutationFn: () => messageService.emptyTrash(),
     onSuccess: () => {
-      queryClient.resetQueries({
-        queryKey: ['folder', 'messages', 'trash'],
+      invalidateQueriesWithFirstPage(queryClient, {
+        queryKey: folderQueryKeys.messages('trash'),
       });
     },
   });
@@ -328,7 +321,7 @@ export const useDeleteMessage = () => {
       // Invalidate message details
       messageIds.forEach((messageId) => {
         queryClient.invalidateQueries({
-          queryKey: messageQueryOptions.getById(messageId).queryKey,
+          queryKey: messageQueryKeys.byId(messageId),
         });
       });
 
@@ -365,30 +358,30 @@ export const useMoveMessage = () => {
       // invalidate messages details
       messageIds.forEach((messageId) => {
         queryClient.invalidateQueries({
-          queryKey: messageQueryOptions.getById(messageId).queryKey,
+          queryKey: messageQueryKeys.byId(messageId),
         });
       });
 
       // Delete messages from query cache
       if (folderId === 'inbox') {
         queryClient.invalidateQueries({
-          queryKey: ['folder', 'messages', currentFolderId],
+          queryKey: folderQueryKeys.messages(currentFolderId),
         });
         queryClient.invalidateQueries({
-          queryKey: ['folder', 'messages', 'inbox'],
+          queryKey: folderQueryKeys.messages('inbox'),
         });
       } else {
         deleteMessagesFromQueryCache(currentFolderId, messageIds);
         queryClient.invalidateQueries({
-          queryKey: ['folder', 'messages', folderId],
+          queryKey: folderQueryKeys.messages(folderId),
         });
       }
 
       queryClient.invalidateQueries({
-        queryKey: ['folder', 'tree'],
+        queryKey: folderQueryKeys.tree(),
       });
       queryClient.invalidateQueries({
-        queryKey: ['folder', 'count'],
+        queryKey: folderQueryKeys.count(),
       });
     },
   });
@@ -511,8 +504,8 @@ export const useCreateDraft = () => {
       setMessage({ ...message });
       updateFolderBadgeCountQueryCache('draft', 1);
 
-      queryClient.resetQueries({
-        queryKey: ['folder', 'messages', 'draft'],
+      invalidateQueriesWithFirstPage(queryClient, {
+        queryKey: folderQueryKeys.messages('draft'),
       });
     },
   });
@@ -549,14 +542,14 @@ export const useUpdateDraft = () => {
 
       //update message details query cache
       queryClient.setQueryData(
-        messageQueryOptions.getById(draftId).queryKey,
+        messageQueryKeys.byId(draftId),
         (message: Message | undefined) => {
           return message ? { ...message, ...messageUpdated } : undefined;
         },
       );
 
-      queryClient.resetQueries({
-        queryKey: ['folder', 'messages', 'draft'],
+      invalidateQueriesWithFirstPage(queryClient, {
+        queryKey: folderQueryKeys.messages('draft'),
       });
     },
   });
@@ -605,13 +598,13 @@ export const useSendDraft = () => {
         ].includes(user.userId)
       ) {
         updateFolderBadgeCountQueryCache('inbox', +1);
-        queryClient.resetQueries({
-          queryKey: ['folder', 'messages', 'inbox'],
+        invalidateQueriesWithFirstPage(queryClient, {
+          queryKey: folderQueryKeys.messages('inbox'),
         });
       }
 
-      queryClient.resetQueries({
-        queryKey: ['folder', 'messages', 'outbox'],
+      invalidateQueriesWithFirstPage(queryClient, {
+        queryKey: folderQueryKeys.messages('outbox'),
       });
 
       // Delete message from draft list in query cache
@@ -619,7 +612,7 @@ export const useSendDraft = () => {
 
       // Invalidate message details
       queryClient.invalidateQueries({
-        queryKey: messageQueryOptions.getById(draftId).queryKey,
+        queryKey: messageQueryKeys.byId(draftId),
       });
     },
   });
@@ -636,7 +629,7 @@ export const useRecallMessage = () => {
       messageService.recall(messageId),
     onSuccess: (_data, { messageId }) => {
       queryClient.invalidateQueries({
-        queryKey: messageQueryOptions.getById(messageId).queryKey,
+        queryKey: messageQueryKeys.byId(messageId),
       });
     },
   });

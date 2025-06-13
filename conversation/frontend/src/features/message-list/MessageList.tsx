@@ -14,7 +14,7 @@ import {
 } from '@edifice.io/react/icons';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { useFolderMessages } from '~/services';
 import { useAppActions } from '~/store/actions';
@@ -29,10 +29,12 @@ export function MessageList() {
   const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
   const { setSelectedMessageIds } = useAppActions();
+  const location = useLocation();
+  const shouldScrollToTop = location.state?.scrollToTop;
 
   const {
     messages,
-    isPending: isLoadingMessage,
+    isPending: isLoadingMessages,
     isFetchingNextPage: isLoadingNextPage,
     hasNextPage,
     fetchNextPage,
@@ -70,7 +72,14 @@ export function MessageList() {
   useEffect(() => {
     const messageListItems =
       listRef.current?.getElementsByClassName('message-list-item');
-    if (isLoadingMessage || isLoadingNextPage) return;
+
+    if (messageListItems && shouldScrollToTop) {
+      messageListItems[0].scrollIntoView({
+        block: 'center',
+      });
+    }
+
+    if (isLoadingMessages || isLoadingNextPage) return;
     if (observer.current) observer.current.disconnect();
     observer.current = new IntersectionObserver(
       (entries) => {
@@ -80,12 +89,13 @@ export function MessageList() {
       },
       { threshold: 0.1 },
     );
-    if (messageListItems)
+    if (messageListItems) {
       observer.current.observe(messageListItems[messageListItems.length - 1]);
+    }
   }, [
     messages,
     hasNextPage,
-    isLoadingMessage,
+    isLoadingMessages,
     isLoadingNextPage,
     fetchNextPage,
   ]);
@@ -181,7 +191,7 @@ export function MessageList() {
           />
         )}
       />
-      {isLoadingMessage && (
+      {isLoadingMessages && (
         <Loading isLoading={true} className="justify-content-center my-12" />
       )}
     </div>

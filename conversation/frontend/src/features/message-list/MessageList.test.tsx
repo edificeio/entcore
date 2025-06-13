@@ -16,6 +16,11 @@ const mockIntersectionObserver = vi.fn().mockReturnValue({
   disconnect: vi.fn(),
 });
 
+const mockScrollIntoView = vi.fn();
+
+// Mock Element.prototype.scrollIntoView
+Element.prototype.scrollIntoView = mockScrollIntoView;
+
 vi.mock('~/hooks/useSelectedFolder', () => ({
   useSelectedFolder: mocks.useSelectedFolder,
 }));
