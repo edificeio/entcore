@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.nats.client.Message;
+import io.nats.client.impl.Headers;
 import io.nats.client.support.Status;
 import io.nats.vertx.NatsClient;
 import io.nats.vertx.NatsOptions;
@@ -13,6 +14,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -27,8 +29,9 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
@@ -227,13 +230,20 @@ public class NATSBrokerClient implements BrokerClient {
   public <K, V> Future<V> request(String subject, K message, long timeout) {
     assertNatsClient("cannot.request.message.null.client");
     try {
-      final byte[] payload = mapper.writeValueAsString(message).getBytes(charset);
-
+      final String payload;
+      if(message instanceof JsonObject) {
+        payload = ((JsonObject) message).encode();
+      } else if(message instanceof JsonArray) {
+        payload = ((JsonArray) message).encode();
+      } else if(message instanceof String) {
+        payload = (String) message;
+      } else {
+        payload = mapper.writeValueAsString(message);
+      }
       Promise<V> future = Promise.promise();
-      final String replyTo = subject + ".reply." + serverId + "." + UUID.randomUUID();
-      final AtomicLong timer = new AtomicLong(System.currentTimeMillis()); // This will be used to actually time out the request
-      // Start by creating a subscription for the reply which will be where the response will be sent
-      natsClient.subscribe(replyTo, msg -> {
+      final Duration durationTimeout = Duration.of(timeout, ChronoUnit.MILLIS);
+      natsClient.requestWithTimeout(subject, getHeaders(), payload.getBytes(charset), durationTimeout)
+      .onSuccess(msg -> {
         try {
           Status status = msg.getStatus();
           if(status == null) {
@@ -246,39 +256,22 @@ public class NATSBrokerClient implements BrokerClient {
         } catch (Exception e) {
           log.error("Error deserializing response", e);
           future.tryFail(e);
-        } finally {
-          vertx.cancelTimer(timer.get());
-          // Unsubscribe from the reply subject which was temporarily created
-          this.unsubscribe(replyTo);
         }
-      }).onFailure(th -> {
-        log.error("Failed to subscribe to reply subject", th);
-        future.tryFail(th);
-      }).onSuccess(subscription -> {
-        // Now that we're listening for the reply, we can send the request with our 
-        // temporary reply subject
-        natsClient.publish(subject, replyTo, payload)
-          .onSuccess(e -> {
-            log.debug("Message sent to subject: " + subject);
-            // Set a timeout for the request
-            long handle = vertx.setTimer(timeout, id -> {
-              log.error("Request timed out for subject: " + subject);
-              future.fail(new RuntimeException("Request timed out"));
-              this.unsubscribe(replyTo);
-            });
-            timer.set(handle);
-          })
-          .onFailure(e -> {
-            log.error("Error while sending message to NATS", e);
-            future.fail(e);
-            this.unsubscribe(replyTo);
-          });
+      }).onFailure(e -> {
+        log.error("Error while sending message to NATS", e);
+        future.fail(e);
       });
       return future.future();
     } catch (Exception e) {
       log.error("Error while serializing message to JSON", e);
       return Future.failedFuture(e);
     }
+  }
+
+  private Headers getHeaders() {
+    return new Headers()
+      .add("server-id", serverId)
+      .add("service-kind", "entcore");
   }
 
   @Override
