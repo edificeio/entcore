@@ -31,7 +31,7 @@
   },
   "dependencies": {
     "@edifice.io/react": "develop-enabling",
-    "@edifice.io/bootstrap": "2.0.0",
+    "@edifice.io/bootstrap": "develop-enabling",
     "@edifice.io/client": "2.0.0",
     "@react-spring/web": "^9.7.5",
     "@tanstack/react-query": "5.62.7",
