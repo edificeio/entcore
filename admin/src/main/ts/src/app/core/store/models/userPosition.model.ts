@@ -13,11 +13,15 @@ export interface UserPositionElementQuery {
    *  Restrict results to userPosition in existing in the structure list.
    */
   structureId?: string;
+  /**
+   * Include the hierachy when searching for userPostions on a structureId
+   */
+  includeSubStruct?: boolean;
 }
 
 export interface UserPosition {
   id?: string;
   name?: string;
   source: UserPositionSource;
-  structureId?: string;
+  structureId?: string;  
 }

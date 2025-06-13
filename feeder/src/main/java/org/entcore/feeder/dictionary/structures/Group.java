@@ -21,6 +21,7 @@ package org.entcore.feeder.dictionary.structures;
 
 import java.util.UUID;
 
+import io.vertx.core.Promise;
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.feeder.exceptions.TransactionException;
@@ -145,12 +146,14 @@ public class Group {
 		}
 	}
 
-	public static void runLinkRules() {
+	public static Future<Void> runLinkRules() {
+		Promise p = Promise.promise();
 		try {
 			final TransactionHelper tx = TransactionManager.getInstance().begin(TX_RUN_LINK_RULES);
 			final String listAutolinkGroups =
 				"MATCH (g:ManualGroup) " +
 				"WHERE EXISTS(g.autolinkUsersFromGroups) " +
+				  " OR EXISTS(g.autolinkUsersFromPositions) " +
 				"RETURN g.id as id";
 			tx.add(listAutolinkGroups, new JsonObject());
 
@@ -169,29 +172,38 @@ public class Group {
 				TransactionManager.getInstance().rollback(TX_RUN_LINK_RULES);
 				if (ar.succeeded()) {
 					log.info("PostImport | SUCCEED to manualGroupLinkUsersAuto");
+					p.complete();
 				} else {
 					log.error("PostImport | Failed to manualGroupLinkUsersAuto", ar.cause());
+					p.fail(ar.cause());
 				}
+
 			});
 		}
 		catch(TransactionException e) {
 			log.error("Error opening or running transaction in group link rules", e);
+			p.fail(e);
 		}
 		catch(Exception e) {
 			log.error("Unknown error in group link rules", e);
+			p.fail(e);
 		}
+		return p.future();
 	}
 
-	private static TransactionHelper groupLinkRules(String groupId, TransactionHelper tx) {
+	protected static TransactionHelper groupLinkRules(String groupId, TransactionHelper tx) {
 		log.info("tx groupLinkRules with groupId : " + groupId);
 		final String linkQuery =
 			"MATCH (g:ManualGroup {id: {groupId}})-[:DEPENDS]->(:Structure)<-[:HAS_ATTACHMENT*0..]-(struct:Structure) " +
-			"WHERE EXISTS(g.autolinkUsersFromGroups) " +
+			"WHERE EXISTS(g.autolinkUsersFromGroups) OR EXISTS(g.autolinkUsersFromPositions) "+
 			"WITH g, struct " +
-			"MATCH (u:User)-[:IN]->(target:Group)-[:DEPENDS]->(struct) " +
+			"MATCH (position:UserPosition)<-[:HAS_POSITION*0..]-(u:User)-[:IN]->(target:Group)-[:DEPENDS]->(struct) " +
 			"WHERE " +
-			"(g.autolinkTargetAllStructs = true OR struct.id IN g.autolinkTargetStructs) " +
-			"AND target.filter IN g.autolinkUsersFromGroups " +
+			// filter by type of auto link
+			"((g.autolinkTargetAllStructs = true OR struct.id IN g.autolinkTargetStructs ) " +
+					"AND target.filter IN g.autolinkUsersFromGroups " +
+					"OR position.name IN COALESCE(g.autolinkUsersFromPositions, [])) " +
+			// update the timestamp to remove old user
 			"WITH g, u " +
 			"MERGE (u)-[new:IN]->(g) " +
 			"ON CREATE SET new.source = 'AUTO' " +
