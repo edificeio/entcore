@@ -29,12 +29,7 @@ import fr.wseduc.webutils.security.JWT;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
 import fr.wseduc.webutils.security.oauth.OAuthResourceProvider;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
@@ -43,7 +38,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.session.SessionRecreationRequest;
@@ -53,26 +47,24 @@ import org.entcore.common.validation.StringValidation;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import static fr.wseduc.webutils.Utils.getOrElse;
-import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
-import static fr.wseduc.webutils.Utils.isEmpty;
-import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static fr.wseduc.webutils.Utils.*;
 import static fr.wseduc.webutils.http.Renders.unauthorized;
 import static org.entcore.common.http.filter.AppOAuthResourceProvider.getTokenId;
+import static org.entcore.common.share.ShareService.EXPECTED_IDS_USERS_GROUPS;
 
 public class UserUtils {
 
 	private static final Vertx vertx = Vertx.currentContext().owner();
 	private static final int DEFAULT_VISIBLES_TIMEOUT = 60000;
-	public static final String FIND_SESSION = "findSession";
-	public static final String MONITORINGEVENTS = "monitoringevents";
+	private static final int DEFAULT_MAX_CHECK_ID = 1000;
+	private static final JsonObject VISIBLE_CONFIG = new JsonObject();	// Filled just-in-time with shared configuration values
 	private static final String USERBOOK_ADDRESS = "userbook.preferences";
 	private static final Logger log = LoggerFactory.getLogger(UserUtils.class);
 	private static final String COMMUNICATION_USERS = "wse.communication.users";
 	private static final String DIRECTORY = "directory";
-	public static final String SESSION_ADDRESS = "wse.session";
 	private static final JsonArray usersTypes = new fr.wseduc.webutils.collections.JsonArray().add("User");
 	private static final JsonObject QUERY_VISIBLE_PROFILS_GROUPS = new JsonObject()
 			.put("action", "visibleProfilsGroups");
@@ -81,6 +73,11 @@ public class UserUtils {
 	private static final I18n i18n = I18n.getInstance();
 	private static final long JWT_TOKEN_EXPIRATION_TIME = 600L;
 	private static final long LOG_SESSION_DELAY = 500L;
+
+	public static final String FIND_SESSION = "findSession";
+	public static final String MONITORINGEVENTS = "monitoringevents";
+	public static final String SESSION_ADDRESS = "wse.session";
+
 
 	private static void findUsers(final EventBus eb, HttpServerRequest request,
 								  final JsonObject query, final Handler<JsonArray> handler) {
@@ -233,16 +230,9 @@ public class UserUtils {
 		}
 		m.put("reverseUnion", reverseUnion);
 		m.put("userId", userId);
-		LocalMap<Object, Object> serverConfig = vertx.sharedData().getLocalMap("server");
-		final int timeout;
-		if (serverConfig != null) {
-			timeout = (int) serverConfig.getOrDefault("findVisiblesTimeout", DEFAULT_VISIBLES_TIMEOUT);
-		} else {
-			timeout = DEFAULT_VISIBLES_TIMEOUT;
-		}
 
 		Promise<JsonArray> promise = Promise.promise();
-		eb.request(COMMUNICATION_USERS, m, new DeliveryOptions().setSendTimeout(timeout), new Handler<AsyncResult<Message<JsonArray>>>() {
+		eb.request(COMMUNICATION_USERS, m, new DeliveryOptions().setSendTimeout(getFindVisiblesTimeout()), new Handler<AsyncResult<Message<JsonArray>>>() {
 			@Override
 			public void handle(AsyncResult<Message<JsonArray>> res) {
 				if (res.succeeded()) {
@@ -259,6 +249,40 @@ public class UserUtils {
 			}
 		});
 		return promise.future();
+	}
+
+	static private int getFindVisiblesTimeout() {
+		final int timeout;
+		if( VISIBLE_CONFIG.containsKey("findVisiblesTimeout")) {
+			timeout = VISIBLE_CONFIG.getInteger("findVisiblesTimeout");
+		} else {
+			// Read value from shared data map and cache it
+			LocalMap<Object, Object> serverConfig = vertx.sharedData().getLocalMap("server");
+			if (serverConfig != null) {
+				timeout = (int) serverConfig.getOrDefault("findVisiblesTimeout", DEFAULT_VISIBLES_TIMEOUT);
+			} else {
+				timeout = DEFAULT_VISIBLES_TIMEOUT;
+			}
+			VISIBLE_CONFIG.put("findVisiblesTimeout", timeout);
+		}
+		return timeout <= 0 ? DEFAULT_VISIBLES_TIMEOUT : timeout;
+	}
+
+	static public int getMaxCheckIdsSize() {
+		final int partitionSize;
+		if( VISIBLE_CONFIG.containsKey("sharesMaxCheckSize")) {
+			partitionSize = VISIBLE_CONFIG.getInteger("sharesMaxCheckSize");
+		} else {
+			// Read value from shared data map and cache it
+			LocalMap<Object, Object> serverConfig = vertx.sharedData().getLocalMap("server");
+			if (serverConfig != null) {
+				partitionSize = (int) serverConfig.getOrDefault("sharesMaxCheckSize", DEFAULT_MAX_CHECK_ID);
+			} else {
+				partitionSize = DEFAULT_MAX_CHECK_ID;
+			}
+			VISIBLE_CONFIG.put("sharesMaxCheckSize", partitionSize);
+		}
+		return partitionSize <= 0 ? DEFAULT_MAX_CHECK_ID : partitionSize;
 	}
 
 	public static void translateGroupsNames(JsonArray groups, String acceptLanguage) {
@@ -621,30 +645,51 @@ public class UserUtils {
 	}
 
 	/**
-	 * Check if a user can communicate with some other (visible) users or groups.
+	 * Check if a user can communicate with some other (visible) users or groups. Fallback on returning all visible
+	 * if too many checkIds should be checked to avoid performance issue.
+	 * cf sharesMaxCheckSize in server configuration
 	 * @param userId  id of the sender
-	 * @param checkIds	ids of the users or groups to check
+	 * @param checkIds list of ids to check
 	 * @return JsonArray of JsonObjects:
 	 * {
-	 *   id: recipient ID which the sender can communicate with
+	 * id: recipient ID which the sender can communicate with
 	 * }
 	 */
-	public static Future<JsonArray> filterVisibles(EventBus eb, String userId, JsonArray checkIds) {
-		return  (userId == null || checkIds == null || checkIds.isEmpty())
-		  ? Future.succeededFuture(new JsonArray())
-		  : findVisibles(eb, 
-				userId, 
-				" MATCH (visibles) RETURN DISTINCT visibles.id as id ",
-				new JsonObject().put("checkIds", checkIds),
-				false, 
-				true, 
-				false,
-				null, 
-				"AND (m.id IN {checkIds}) ",
-				null,
-				true
-			);
+	public static Future<JsonArray> filterFewOrGetAllVisibles(EventBus eb, String userId, JsonArray checkIds) {
+		return filterFewOrGetAllVisibles(eb, userId, checkIds, false, null, " MATCH (visibles) RETURN DISTINCT visibles.id as id ", true);
 	};
+
+	public static Future<JsonArray> filterFewOrGetAllVisibles(EventBus eb, String userId, JsonArray checkIds,
+															  boolean itself, String language, String customReturn, boolean reverseUnion) {
+		if(StringUtils.isEmpty(userId) || checkIds == null || checkIds.isEmpty()) {
+			return Future.succeededFuture(new JsonArray());
+		}
+		final List<Future<JsonArray>> visibleFutures = new ArrayList<>();
+		final JsonObject params = new JsonObject();
+		if(checkIds.size() < getMaxCheckIdsSize()) {
+			params.put(EXPECTED_IDS_USERS_GROUPS, checkIds);
+		}
+		visibleFutures.add(findVisibles(eb,
+				userId,
+				customReturn,
+				params,
+				itself,
+				true,
+				false,
+				language,
+				null,
+				null,
+				reverseUnion
+		));
+
+		return Future.all(visibleFutures)
+				.map(futures -> {
+					return futures.list().stream()
+							.map(JsonArray.class::cast)
+							.flatMap(arr -> arr.stream().map(JsonObject.class::cast))
+							.collect(Collector.of(JsonArray::new, JsonArray::add, JsonArray::add));
+				});
+	}
 
 	public static void getSession(EventBus eb, final HttpServerRequest request,
 								  final Handler<JsonObject> handler) {
