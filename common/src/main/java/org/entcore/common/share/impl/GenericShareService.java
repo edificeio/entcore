@@ -30,8 +30,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.shareddata.LocalMap;
-
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
@@ -47,9 +45,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static fr.wseduc.webutils.Utils.getOrElse;
-import static fr.wseduc.webutils.Utils.isEmpty;
-import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static fr.wseduc.webutils.Utils.*;
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 import static org.entcore.common.user.UserUtils.findVisibleProfilsGroups;
 import static org.entcore.common.user.UserUtils.findVisibleUsers;
@@ -70,8 +66,8 @@ public abstract class GenericShareService implements ShareService {
 	protected static final I18n i18n = I18n.getInstance();
 	private JsonArray resourceActions;
 	private final Vertx vertx = Vertx.currentContext().owner();
-	private final int DEFAULT_SHARES_PARTITION_SIZE = 50;
 	private final EventStore eventStore;
+
 
 	public GenericShareService(EventBus eb, Map<String, SecuredAction> securedActions,
 			Map<String, List<String>> groupedActions) {
@@ -482,37 +478,11 @@ public abstract class GenericShareService implements ShareService {
 		final Promise<AccessibleUsersCheck> promise = Promise.promise();
 		final String customReturn = "RETURN DISTINCT visibles.id as id, has(visibles.login) as isUser";
 
-		// Parallelizing the process of fetching the visibles
-		final int partitionSize;
-		LocalMap<Object, Object> serverConfig = vertx.sharedData().getLocalMap("server");
-		if (serverConfig != null) {
-			partitionSize = (int) serverConfig.getOrDefault("sharesPartitionSize", DEFAULT_SHARES_PARTITION_SIZE);
-		} else {
-			partitionSize = DEFAULT_SHARES_PARTITION_SIZE;
-		}
-		final List<List<String>> idsOfShareChunks = Lists.partition(getIdOfGroupsAndUsersConcernedByShares(originalShares, shareUpdates), partitionSize);
-		final List<Future<JsonArray>> visibleFutures = new ArrayList<>();
-		idsOfShareChunks.forEach(idsOfShareChunk -> {
-			final Promise<JsonArray> visiblePromise = Promise.promise();
-			final JsonArray idsOfShare = new JsonArray();
-			idsOfShareChunk.forEach(idsOfShare::add);
-			final JsonObject extraParams = new JsonObject()
-					.put("expectedIdsOfUsersAndGroups", idsOfShare);
-			UserUtils.findVisibles(eb, userId, customReturn,
-					extraParams,
-					true, true, false,
-					"fr", "AND (m.id IN {expectedIdsOfUsersAndGroups}) ",
-					visiblePromise::complete);
-			visibleFutures.add(visiblePromise.future());
-		});
-		Future.all(visibleFutures)
-				.map(futures -> futures.list().stream()
-						.map(result -> (JsonArray) result)
-						.collect(Collectors.toList()))
+		final List<String> idsOfShare = getIdOfGroupsAndUsersConcernedByShares(originalShares, shareUpdates);
+
+		UserUtils.filterFewOrGetAllVisibles(eb, userId, new JsonArray(idsOfShare),	true,"fr", customReturn, false)
 				.onSuccess(visibleChunks -> {
-					final JsonArray visibleArray = new JsonArray();
-					visibleChunks.forEach(visibleArray::addAll);
-					final Set<String> seeableUsersAndGroupsFromOriginalShares = visibleArray.stream()
+					final Set<String> seeableUsersAndGroupsFromOriginalShares = visibleChunks.stream()
 							.map(entry -> ((JsonObject) entry).getString("id"))
 							.collect(Collectors.toSet());
 					// Check that original shares are untouched or that the ones that are modified, are modified accordingly to
