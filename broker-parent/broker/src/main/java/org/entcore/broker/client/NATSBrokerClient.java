@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.nats.client.Message;
+import io.nats.client.support.Status;
 import io.nats.vertx.NatsClient;
 import io.nats.vertx.NatsOptions;
 import io.vertx.codegen.annotations.Nullable;
@@ -234,9 +235,14 @@ public class NATSBrokerClient implements BrokerClient {
       // Start by creating a subscription for the reply which will be where the response will be sent
       natsClient.subscribe(replyTo, msg -> {
         try {
-          @SuppressWarnings("unchecked")
-          V response = mapper.readValue(new String(msg.getData(), charset), (Class<V>) Object.class);
-          future.tryComplete(response);
+          Status status = msg.getStatus();
+          if(status == null) {
+            @SuppressWarnings("unchecked")
+            V response = mapper.readValue(new String(msg.getData(), charset), (Class<V>) Object.class);
+            future.tryComplete(response);
+          } else {
+            future.tryFail(status.getMessageWithCode());
+          }
         } catch (Exception e) {
           log.error("Error deserializing response", e);
           future.tryFail(e);
