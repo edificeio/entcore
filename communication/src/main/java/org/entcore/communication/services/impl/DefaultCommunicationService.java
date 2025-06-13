@@ -40,23 +40,13 @@ import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.communication.services.CommunicationService;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static io.vertx.core.json.JsonObject.mapFrom;
-import static org.entcore.common.neo4j.Neo4jResult.fullNodeMergeHandler;
-import static org.entcore.common.neo4j.Neo4jResult.validEmptyHandler;
-import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
-import static org.entcore.common.neo4j.Neo4jResult.validUniqueResult;
-import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
+import static org.entcore.common.neo4j.Neo4jResult.*;
+import static org.entcore.common.share.ShareService.EXPECTED_IDS_USERS_GROUPS;
 
 public class DefaultCommunicationService implements CommunicationService {
 
@@ -611,6 +601,13 @@ public class DefaultCommunicationService implements CommunicationService {
 			query.append(" MATCH (n:User {id: {userId}})-[:COMMUNIQUE]->(g:Group) ");
 			query.append("WITH (REDUCE(acc=[], groups IN COLLECT(COALESCE(g.communiqueWith, [])) | acc+groups) + ")
 					.append(myGroupQuery).append(") as comGroups ");
+			//filter user and group with a distinction on the type to help neo4j to optimize
+			if (additionalParams.getJsonArray(EXPECTED_IDS_USERS_GROUPS) != null) {
+				query.append("OPTIONAL MATCH (u:User) WHERE u.id IN {" + EXPECTED_IDS_USERS_GROUPS + "} and u.id <> {userId} ");
+				query.append("WITH comGroups, collect(u) as cu ");
+				query.append("OPTIONAL MATCH (g:Group) WHERE g.id IN {" + EXPECTED_IDS_USERS_GROUPS + "} ");
+				query.append("WITH comGroups, cu, collect(g) as cg with comGroups, cg+cu as cug unwind cug as m ");
+			}
 			query.append("MATCH p=(g:Group)<-[:DEPENDS*0..1]-cg-[:COMMUNIQUE*0..1]->m ");
 			if (userProfile == null || "Student".equals(userProfile) || "Relative".equals(userProfile) || discoverVisibleExpectedProfile.contains(userProfile) ) {
 				union = new StringBuilder("MATCH p=(n:User)-[:COMMUNIQUE_DIRECT]->m " +

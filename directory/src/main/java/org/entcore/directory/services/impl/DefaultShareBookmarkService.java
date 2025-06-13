@@ -108,10 +108,8 @@ public class DefaultShareBookmarkService implements ShareBookmarkService {
 
 	@Override
 	public void get(String userId, String id, boolean onlyVisibles, Handler<Either<String, JsonObject>> handler) {
-		get(userId, id, handler);
-		/* REVERT COCO-4022 
 		get(userId, id, r -> {
-			if (r.isLeft()) {
+			if (r.isLeft() || !onlyVisibles) {
 				handler.handle(r);
 				return;
 			}
@@ -133,7 +131,7 @@ public class DefaultShareBookmarkService implements ShareBookmarkService {
 
 			// Check bookmarked members' visibility
 			final Set<String> membersMapIds = membersMap.keySet();
-			UserUtils.filterVisibles(
+			UserUtils.filterFewOrGetAllVisibles(
 				eb, 
 				userId,
 				new JsonArray( membersMapIds.stream().collect(Collectors.toList()) )
@@ -154,7 +152,6 @@ public class DefaultShareBookmarkService implements ShareBookmarkService {
 				handler.handle(r);
 			});
 		});
-		*/
 	}
 
 	@Override
