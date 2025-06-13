@@ -62,6 +62,8 @@ export function MessageList() {
 
   const [keyList, setKeyList] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
+  const messageListItems =
+    listRef.current?.getElementsByClassName('message-list-item');
   const observer = useRef<IntersectionObserver | null>(null);
 
   //handle reload list when search params change
@@ -70,15 +72,14 @@ export function MessageList() {
   }, [searchParams]);
 
   useEffect(() => {
-    const messageListItems =
-      listRef.current?.getElementsByClassName('message-list-item');
-
     if (messageListItems && shouldScrollToTop) {
       messageListItems[0].scrollIntoView({
         block: 'center',
       });
     }
+  }, [folderId]);
 
+  useEffect(() => {
     if (isLoadingMessages || isLoadingNextPage) return;
     if (observer.current) observer.current.disconnect();
     observer.current = new IntersectionObserver(
@@ -89,6 +90,7 @@ export function MessageList() {
       },
       { threshold: 0.1 },
     );
+
     if (messageListItems) {
       observer.current.observe(messageListItems[messageListItems.length - 1]);
     }
