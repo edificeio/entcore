@@ -40,7 +40,7 @@ export function MessageEditHeader({ message }: MessageHeaderProps) {
       <div className="d-flex flex-fill flex-column overflow-hidden">
         <div className="d-flex align-items-center justify-content-between gap-12 border-bottom pe-16">
           <RecipientListEdit
-            head={<span className="me-4">{t('at')} :</span>}
+            head={<span className="me-4">{t('at')}</span>}
             recipients={to}
             recipientType="to"
           />
@@ -68,7 +68,7 @@ export function MessageEditHeader({ message }: MessageHeaderProps) {
         {showCC && (
           <div className="border-bottom">
             <RecipientListEdit
-              head={<span className="me-4">{t('cc')} :</span>}
+              head={<span className="me-4">{t('cc')}</span>}
               recipients={cc}
               recipientType="cc"
             />
@@ -77,7 +77,7 @@ export function MessageEditHeader({ message }: MessageHeaderProps) {
         {showCCI && (
           <div className="border-bottom">
             <RecipientListEdit
-              head={<span className="me-4">{t('cci')} :</span>}
+              head={<span className="me-4">{t('cci')}</span>}
               recipients={cci || { groups: [], users: [] }}
               recipientType="cci"
             />
