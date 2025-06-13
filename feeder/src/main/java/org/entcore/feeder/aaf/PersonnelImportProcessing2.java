@@ -29,52 +29,52 @@ import java.util.*;
 
 public class PersonnelImportProcessing2 extends PersonnelImportProcessing {
 
-    protected PersonnelImportProcessing2(String path, Vertx vertx) {
-        super(path, vertx);
-    }
+	protected PersonnelImportProcessing2(String path, Vertx vertx) {
+		super(path, vertx);
+	}
 
-    @Override
-    protected void preCommit() {
-        importer.getPersEducNat().createAndLinkSubjects();
-    }
+	@Override
+	protected void preCommit() {
+		importer.getPersEducNat().createAndLinkSubjects();
+	}
 
-    @Override
-    public void start(final Handler<Message<JsonObject>> handler) {
-        if (importer.isFirstImport()) {
-            parse(handler, new StudentImportProcessing2(path, vertx));
-        } else {
-            initAcademyPrefix(path);
-            importer.markMissingUsers(null, getAcademyPrefix(), new Handler<Void>() {
-                @Override
-                public void handle(Void event) {
-                    parse(handler, new StudentImportProcessing2(path, vertx));
-                }
-            });
-        }
-    }
+	@Override
+	public void start(final Handler<Message<JsonObject>> handler) {
+		if (importer.isFirstImport()) {
+			parse(handler, new StudentImportProcessing2(path, vertx));
+		} else {
+			initAcademyPrefix(path);
+			importer.markMissingUsers(null, getAcademyPrefix(), new Handler<Void>() {
+				@Override
+				public void handle(Void event) {
+					parse(handler, new StudentImportProcessing2(path, vertx));
+				}
+			});
+		}
+	}
 
-    @Override
-    public void process(JsonObject object) {
-        List<String> c = object.getJsonArray("classes") != null ? object.getJsonArray("classes").getList() : new LinkedList<String>();
-        final List<String[]> groups = new ArrayList<>();
-        createGroups(object.getJsonArray("groups"), c, groups);
-        String[][] classes = createClasses(new JsonArray(c));
-        JsonArray functions = object.getJsonArray("functions");
-        JsonArray structuresByFunctions = null;
-        if (functions != null) {
-            Set<String> s = new HashSet<>();
-            for (Object o : functions) {
-                if (!(o instanceof String) || !o.toString().contains("$")) continue;
-                s.add(o.toString().substring(0, o.toString().indexOf('$')));
-            }
-            structuresByFunctions = new JsonArray(new ArrayList<>(s));
-        }
-        createFunctionGroups(object.getJsonArray("functions"), groups);
-        cleanAndCreatePositions(object.getJsonArray("structures"), object.getJsonArray("functions"), object.getString("externalId"));
-        createHeadTeacherGroups(object.getJsonArray("headTeacher"), groups);
-        createDirectionGroups(object.getJsonArray("direction"), groups);
-        importer.createOrUpdatePersonnel(object, detectProfile(object), structuresByFunctions,
-                classes, groups.toArray(new String[][]{}), false, true);
-    }
+	@Override
+	public void process(JsonObject object) {
+		List<String> c = object.getJsonArray("classes") != null ? object.getJsonArray("classes").getList() : new LinkedList<String>();
+		final List<String[]> groups = new ArrayList<>();
+		createGroups(object.getJsonArray("groups"), c, groups);
+		String[][] classes = createClasses(new JsonArray(c));
+		JsonArray functions = object.getJsonArray("functions");
+		JsonArray structuresByFunctions = null;
+		if (functions != null) {
+			Set<String> s = new HashSet<>();
+			for (Object o: functions) {
+				if (!(o instanceof String) || !o.toString().contains("$")) continue;
+				s.add(o.toString().substring(0, o.toString().indexOf('$')));
+			}
+			structuresByFunctions = new JsonArray(new ArrayList<>(s));
+		}
+		createFunctionGroups(object.getJsonArray("functions"), groups);
+		cleanAndCreatePositions(object.getJsonArray("structures"), object.getJsonArray("functions"), object.getString("externalId"));
+		createHeadTeacherGroups(object.getJsonArray("headTeacher"), groups);
+		createDirectionGroups(object.getJsonArray("direction"), groups);
+		importer.createOrUpdatePersonnel(object, detectProfile(object), structuresByFunctions,
+				classes, groups.toArray(new String[][]{}), false, true);
+	}
 
 }

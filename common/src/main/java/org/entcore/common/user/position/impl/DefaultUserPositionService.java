@@ -448,25 +448,17 @@ public class DefaultUserPositionService implements UserPositionService {
 	public static void createUserPosition(UserPosition userPosition, TransactionHelper transactionHelper) {
 		String query =
 				"MATCH (s:Structure {externalId : {structureExternalId}}) " +
-				"MERGE (p:UserPosition {name : {positionName}}) " +
-				"WITH s, p " +
-				"MERGE (p)-[:IN]->(s) " +
-				"WITH p " +
-				"OPTIONAL MATCH(fg:FuncGroup {externalId: {funcGroupId}}) " +
-				"WHERE fg IS NOT NULL " +
-				"MERGE (p)-[:IN]->(fg) " +
+				"MERGE (s)<-[:IN]-(p:UserPosition {name : {positionName}}) " +
 				"ON CREATE SET " +
 				"   p.id = {id}, " +
-				"   p.simplifiedName = {simplifiedName}," +
-				"   p.funcGroupId = {funcGroupId}, " +
+				"   p.simplifiedName = {simplifiedName}, " +
 				"   p.source = {source} ";
 		JsonObject params = new JsonObject()
 				.put("structureExternalId", userPosition.getStructureId())
 				.put("positionName", userPosition.getName())
 				.put("id", UUID.randomUUID().toString())
 				.put("simplifiedName", DefaultUserPositionService.getSimplifiedString(userPosition.getName()))
-				.put("source", userPosition.getSource().toString())
-				.put("funcGroupId", userPosition.getFuncGroupId());
+				.put("source", userPosition.getSource().toString());
 		transactionHelper.add(query, params);
 	}
 
@@ -492,8 +484,7 @@ public class DefaultUserPositionService implements UserPositionService {
 		return new UserPosition(jsonResult.getString("id"),
 				jsonResult.getString("name"),
 				UserPositionSource.valueOf(jsonResult.getString("source")),
-				jsonResult.getString("structureId"),
-				jsonResult.getString("funcGroupId"));
+				jsonResult.getString("structureId"));
 	}
 
 	/**

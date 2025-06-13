@@ -207,7 +207,7 @@
 //		vertx.fileSystem().deleteSync(importTmpFolder.getRoot().getAbsolutePath() + File.separator +
 //				"FULL_ENTTSSERVICES_Complet_20130117_Eleve_0000.xml");
 //		vertx.fileSystem().deleteSync(importTmpFolder.getRoot().getAbsolutePath() + File.separator +
-//				"ENT_Complet_20250612_PersEducNat_0000.xml");
+//				"FULL_ENTTSSERVICES_Complet_20130117_PersEducNat_0000.xml");
 //	}
 //
 //	private void transition(final Handler<Void> handler) {
