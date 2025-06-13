@@ -18,9 +18,10 @@ public interface UserPositionService {
 	 * @param content if present, filters the result : keeps only the user positions whose name match the content pattern
 	 * @param structureId if present, filters the result : keeps the user positions linked to the structure
 	 * @param adminInfos the current admin infos
+	 * @param includeSubStruct include Sub structure of structureId if present
 	 * @return the retrieved user positions, filtered by content or structure
 	 */
-	Future<Set<UserPosition>> getUserPositions(String content, String structureId, UserInfos adminInfos);
+	Future<Set<UserPosition>> getUserPositions(String content, String structureId, UserInfos adminInfos, boolean includeSubStruct);
 
 	/**
 	 * Retrieve a user position by its id

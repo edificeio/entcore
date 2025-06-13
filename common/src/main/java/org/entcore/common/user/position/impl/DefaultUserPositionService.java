@@ -51,18 +51,18 @@ public class DefaultUserPositionService implements UserPositionService {
 
   @Override
 	public Future<Set<UserPosition>> getUserPositions(UserInfos user) {
-		return getUserPositions(null, null, null, user);
+		return getUserPositions(null, null, null, user, false);
 	}
 
 	@Override
-	public Future<Set<UserPosition>> getUserPositions(String content, String structureId, UserInfos adminInfos) {
-		return getUserPositionsForAdmin(null, content, structureId, adminInfos);
+	public Future<Set<UserPosition>> getUserPositions(String content, String structureId, UserInfos adminInfos, boolean includeSubStruct) {
+		return getUserPositionsForAdmin(null, content, structureId, adminInfos, includeSubStruct);
 	}
 
 	@Override
 	public Future<UserPosition> getUserPosition(String userPositionId, UserInfos adminInfos) {
 		Promise<UserPosition> promise = Promise.promise();
-		getUserPositionsForAdmin(userPositionId, null, null, adminInfos)
+		getUserPositionsForAdmin(userPositionId, null, null, adminInfos, false)
 				.onSuccess(userPositions -> {
 					if (userPositions.isEmpty()) {
 						final String error = "No user position found.";
@@ -76,7 +76,7 @@ public class DefaultUserPositionService implements UserPositionService {
 		return promise.future();
 	}
 
-	private Future<Set<UserPosition>> getUserPositionsForAdmin(String positionId, String content, String structureId, UserInfos adminInfos) {
+	private Future<Set<UserPosition>> getUserPositionsForAdmin(String positionId, String content, String structureId, UserInfos adminInfos, boolean includeSubStruct) {
 		return checkCrudAccess(adminInfos)
 			.recover( throwable -> {
 				// Read access may be authorized if the structure is known.
@@ -88,27 +88,34 @@ public class DefaultUserPositionService implements UserPositionService {
 					logger.warn(ADMIN_WITHOUT_STRUCTURE);
 					return Future.failedFuture(ADMIN_WITHOUT_STRUCTURE);
 				}
-				return getUserPositions(positionId, content, structureId, new ArrayList<String>(structureIds));
+				return getUserPositions(positionId, content, structureId, new ArrayList<String>(structureIds), includeSubStruct);
 			});
 	}
 
-	private Future<Set<UserPosition>> getUserPositions(String positionId, String prefix, String structureId, UserInfos userInfos) {
+	private Future<Set<UserPosition>> getUserPositions(String positionId, String prefix, String structureId, UserInfos userInfos, boolean includeSubStruct) {
 		return getUserPositions(
 			positionId,
 			prefix,
 			structureId,
-			userInfos.getStructures() == null ? Collections.emptyList() : userInfos.getStructures()
+			userInfos.getStructures() == null ? Collections.emptyList() : userInfos.getStructures(),
+			includeSubStruct
 		);
 	}
 
-	private Future<Set<UserPosition>> getUserPositions(String positionId, String content, String structureId, List<String> structureIds) {
+	private Future<Set<UserPosition>> getUserPositions(String positionId, String content, String structureId, List<String> structureIds, boolean includeSubStruct) {
 		Promise<Set<UserPosition>> promise = Promise.promise();
 		final JsonObject params = new JsonObject()
 			.put("structureIds", new JsonArray(structureIds));
-
 		final StringBuilder query = new StringBuilder();
-		query.append("MATCH (p:UserPosition)-[:IN]->(s:Structure) ")
-				.append("WHERE s.id IN {structureIds} ");
+
+		if (!StringUtils.isEmpty(structureId) && includeSubStruct) {
+			query.append("MATCH (p:UserPosition)-[:IN]->(s:Structure)-[:HAS_ATTACHMENT*0..]->(:Structure {id: {structureId}}) ")
+					.append("WHERE s.id IN {structureIds} ");
+			params.put("structureId", structureId);
+		} else {
+			query.append("MATCH (p:UserPosition)-[:IN]->(s:Structure) ")
+					.append("WHERE s.id IN {structureIds} ");
+		}
 		//filters user positions whose id match the specified user position id
 		if (!StringUtils.isEmpty(positionId)) {
 			query.append("AND p.id = {positionId} ");
@@ -121,7 +128,7 @@ public class DefaultUserPositionService implements UserPositionService {
 			params.put("contentRegex", ".*" + simplifiedContent + ".*");
 		}
 		// filters user positions related to a specific structure
-		if (!StringUtils.isEmpty(structureId)) {
+		if (!StringUtils.isEmpty(structureId) && !includeSubStruct) {
 			query.append("AND s.id = {structureId} ");
 			params.put("structureId", structureId);
 		}
