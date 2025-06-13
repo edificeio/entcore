@@ -53,7 +53,10 @@ import org.entcore.common.validation.StringValidation;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
@@ -66,6 +69,8 @@ public class UserUtils {
 
 	private static final Vertx vertx = Vertx.currentContext().owner();
 	private static final int DEFAULT_VISIBLES_TIMEOUT = 60000;
+	private static final int DEFAULT_SHARES_PARTITION_SIZE = 50;
+	private static final JsonObject VISIBLE_CONFIG = new JsonObject();	// Filled just-in-time with shared configuration values
 	public static final String FIND_SESSION = "findSession";
 	public static final String MONITORINGEVENTS = "monitoringevents";
 	private static final String USERBOOK_ADDRESS = "userbook.preferences";
@@ -233,16 +238,9 @@ public class UserUtils {
 		}
 		m.put("reverseUnion", reverseUnion);
 		m.put("userId", userId);
-		LocalMap<Object, Object> serverConfig = vertx.sharedData().getLocalMap("server");
-		final int timeout;
-		if (serverConfig != null) {
-			timeout = (int) serverConfig.getOrDefault("findVisiblesTimeout", DEFAULT_VISIBLES_TIMEOUT);
-		} else {
-			timeout = DEFAULT_VISIBLES_TIMEOUT;
-		}
 
 		Promise<JsonArray> promise = Promise.promise();
-		eb.request(COMMUNICATION_USERS, m, new DeliveryOptions().setSendTimeout(timeout), new Handler<AsyncResult<Message<JsonArray>>>() {
+		eb.request(COMMUNICATION_USERS, m, new DeliveryOptions().setSendTimeout(getFindVisiblesTimeout()), new Handler<AsyncResult<Message<JsonArray>>>() {
 			@Override
 			public void handle(AsyncResult<Message<JsonArray>> res) {
 				if (res.succeeded()) {
@@ -259,6 +257,40 @@ public class UserUtils {
 			}
 		});
 		return promise.future();
+	}
+
+	static private int getFindVisiblesTimeout() {
+		final int timeout;
+		if( VISIBLE_CONFIG.containsKey("findVisiblesTimeout")) {
+			timeout = VISIBLE_CONFIG.getInteger("findVisiblesTimeout");
+		} else {
+			// Read value from shared data map and cache it
+			LocalMap<Object, Object> serverConfig = vertx.sharedData().getLocalMap("server");
+			if (serverConfig != null) {
+				timeout = (int) serverConfig.getOrDefault("findVisiblesTimeout", DEFAULT_VISIBLES_TIMEOUT);
+			} else {
+				timeout = DEFAULT_VISIBLES_TIMEOUT;
+			}
+			VISIBLE_CONFIG.put("findVisiblesTimeout", timeout);
+		}
+		return timeout <= 0 ? DEFAULT_VISIBLES_TIMEOUT : timeout;
+	}
+
+	static public int getSharesPartitionSize() {
+		final int partitionSize;
+		if( VISIBLE_CONFIG.containsKey("sharesPartitionSize")) {
+			partitionSize = VISIBLE_CONFIG.getInteger("sharesPartitionSize");
+		} else {
+			// Read value from shared data map and cache it
+			LocalMap<Object, Object> serverConfig = vertx.sharedData().getLocalMap("server");
+			if (serverConfig != null) {
+				partitionSize = (int) serverConfig.getOrDefault("sharesPartitionSize", DEFAULT_SHARES_PARTITION_SIZE);
+			} else {
+				partitionSize = DEFAULT_SHARES_PARTITION_SIZE;
+			}
+			VISIBLE_CONFIG.put("sharesPartitionSize", partitionSize);
+		}
+		return partitionSize <= 0 ? DEFAULT_SHARES_PARTITION_SIZE : partitionSize;
 	}
 
 	public static void translateGroupsNames(JsonArray groups, String acceptLanguage) {
@@ -630,12 +662,22 @@ public class UserUtils {
 	 * }
 	 */
 	public static Future<JsonArray> filterVisibles(EventBus eb, String userId, JsonArray checkIds) {
-		return  (userId == null || checkIds == null || checkIds.isEmpty())
-		  ? Future.succeededFuture(new JsonArray())
-		  : findVisibles(eb, 
+		if(StringUtils.isEmpty(userId) || checkIds == null || checkIds.isEmpty()) {
+			return Future.succeededFuture(new JsonArray());
+		}
+		// If checkIds is too big, it may reach a query size limit. So partition it.
+		final int partitionSize = getSharesPartitionSize();
+		final AtomicInteger counter = new AtomicInteger(0);	// streams are parallel, so we need a thread-safe counter
+		final List<Future<JsonArray>> visibleFutures = new ArrayList<>();
+        checkIds.stream()
+		.collect(Collectors.groupingBy(it -> counter.getAndIncrement() / partitionSize))
+		.values()
+		.forEach(checkIdsChunk -> {
+			final JsonArray ids = new JsonArray(checkIdsChunk);
+			visibleFutures.add(findVisibles(eb, 
 				userId, 
 				" MATCH (visibles) RETURN DISTINCT visibles.id as id ",
-				new JsonObject().put("checkIds", checkIds),
+				new JsonObject().put("checkIds", ids),
 				false, 
 				true, 
 				false,
@@ -643,7 +685,16 @@ public class UserUtils {
 				"AND (m.id IN {checkIds}) ",
 				null,
 				true
-			);
+			));
+		});
+
+		return Future.all(visibleFutures)
+			.map(futures -> {
+				return futures.list().stream()
+				.map(JsonArray.class::cast)
+				.flatMap(arr -> arr.stream().map(JsonObject.class::cast))
+				.collect(Collector.of(JsonArray::new, JsonArray::add, JsonArray::add));
+			});
 	};
 
 	public static void getSession(EventBus eb, final HttpServerRequest request,
