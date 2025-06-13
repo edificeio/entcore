@@ -15,22 +15,26 @@ import { folderService, searchFolder } from '..';
 
 export const PAGE_SIZE = 20;
 
+export const folderQueryKeys = {
+  all: ['folder'] as const,
+  messages: (
+    folderId?: string,
+    options?: { search?: string; unread?: boolean },
+  ) => {
+    const queryKey: any = [...folderQueryKeys.all, 'messages'];
+    if (folderId) queryKey.push(folderId);
+    if (options) queryKey.push(options);
+    return queryKey;
+  },
+  count: (folderId?: string) =>
+    [...folderQueryKeys.all, 'count', folderId] as const,
+  tree: () => [...folderQueryKeys.all, 'tree'] as const,
+};
+
 /**
  * Provides query options for folder-related operations.
  */
 export const folderQueryOptions = {
-  /**
-   * Base query key for folder-related queries.
-   */
-  base: ['folder'] as const,
-
-  getMessagesQuerykey(
-    folderId: string,
-    options: { search?: string; unread?: boolean },
-  ) {
-    return [...folderQueryOptions.base, 'messages', folderId, options] as const;
-  },
-
   /**
    * Retrieves the folder tree with a predefined depth.
    * Limit specified depth to 5, whatever.
@@ -41,7 +45,7 @@ export const folderQueryOptions = {
     const TREE_DEPTH =
       typeof maxDepth === 'number' ? Math.min(5, Math.round(maxDepth)) : 3;
     return queryOptions({
-      queryKey: [...folderQueryOptions.base, 'tree'] as const,
+      queryKey: folderQueryKeys.tree(),
       queryFn: () => folderService.getTree(TREE_DEPTH),
       staleTime: 5 * 60 * 1000, // 5 minutes
     });
@@ -63,12 +67,7 @@ export const folderQueryOptions = {
     },
   ) {
     return queryOptions({
-      queryKey: [
-        ...folderQueryOptions.base,
-        'count',
-        folderId,
-        options,
-      ] as const,
+      queryKey: folderQueryKeys.count(folderId),
       queryFn: () => folderService.getCount(folderId, options?.unread),
       staleTime: 5 * 60 * 1000, // 5 minutes
     });
@@ -93,7 +92,7 @@ export const folderQueryOptions = {
     },
   ) {
     return infiniteQueryOptions({
-      queryKey: this.getMessagesQuerykey(folderId, options),
+      queryKey: folderQueryKeys.messages(folderId, options),
       queryFn: ({ pageParam = 0 }) => {
         return folderService.getMessages(folderId, {
           ...options,
@@ -154,7 +153,7 @@ export const useFolderUtils = () => {
     reOrder: boolean = false,
   ) {
     queryClient.setQueriesData<InfiniteData<MessageMetadata[]>>(
-      { queryKey: folderQueryOptions.getMessagesQuerykey(folderId, {}) },
+      { queryKey: folderQueryKeys.messages(folderId) },
       (oldData) => {
         if (!oldData?.pages) return undefined;
 

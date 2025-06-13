@@ -15,6 +15,7 @@ import { Message, MessageBase } from '~/models';
 import {
   baseUrl,
   createDefaultMessage,
+  folderQueryKeys,
   messageService,
   useFolderUtils,
 } from '~/services';
@@ -221,7 +222,7 @@ export const useTrashMessage = () => {
       deleteMessagesFromQueryCache(folderId, messageIds);
 
       invalidateQueriesWithFirstPage(queryClient, {
-        queryKey: ['folder', 'messages', 'trash'],
+        queryKey: folderQueryKeys.messages('trash'),
       });
 
       toast.success(
@@ -259,7 +260,7 @@ export const useRestoreMessage = () => {
       deleteMessagesFromQueryCache('trash', messageIds);
       // Reset all queries except trash folder
       invalidateQueriesWithFirstPage(queryClient, {
-        queryKey: ['folder', 'messages'],
+        queryKey: folderQueryKeys.messages(),
         predicate: (query) => {
           const queryKey = query.queryKey as string[];
           return !queryKey.includes('trash');
@@ -267,10 +268,10 @@ export const useRestoreMessage = () => {
       });
 
       queryClient.invalidateQueries({
-        queryKey: ['folder', 'tree'],
+        queryKey: folderQueryKeys.tree(),
       });
       queryClient.invalidateQueries({
-        queryKey: ['folder', 'count'],
+        queryKey: folderQueryKeys.count(),
       });
 
       // Toast
@@ -287,7 +288,7 @@ export const useEmptyTrash = () => {
     mutationFn: () => messageService.emptyTrash(),
     onSuccess: () => {
       invalidateQueriesWithFirstPage(queryClient, {
-        queryKey: ['folder', 'messages', 'trash'],
+        queryKey: folderQueryKeys.messages('trash'),
       });
     },
   });
@@ -359,23 +360,23 @@ export const useMoveMessage = () => {
       // Delete messages from query cache
       if (folderId === 'inbox') {
         queryClient.invalidateQueries({
-          queryKey: ['folder', 'messages', currentFolderId],
+          queryKey: folderQueryKeys.messages(currentFolderId),
         });
         queryClient.invalidateQueries({
-          queryKey: ['folder', 'messages', 'inbox'],
+          queryKey: folderQueryKeys.messages('inbox'),
         });
       } else {
         deleteMessagesFromQueryCache(currentFolderId, messageIds);
         queryClient.invalidateQueries({
-          queryKey: ['folder', 'messages', folderId],
+          queryKey: folderQueryKeys.messages(folderId),
         });
       }
 
       queryClient.invalidateQueries({
-        queryKey: ['folder', 'tree'],
+        queryKey: folderQueryKeys.tree(),
       });
       queryClient.invalidateQueries({
-        queryKey: ['folder', 'count'],
+        queryKey: folderQueryKeys.count(),
       });
     },
   });
@@ -499,7 +500,7 @@ export const useCreateDraft = () => {
       updateFolderBadgeCountQueryCache('draft', 1);
 
       invalidateQueriesWithFirstPage(queryClient, {
-        queryKey: ['folder', 'messages', 'draft'],
+        queryKey: folderQueryKeys.messages('draft'),
       });
     },
   });
@@ -543,7 +544,7 @@ export const useUpdateDraft = () => {
       );
 
       invalidateQueriesWithFirstPage(queryClient, {
-        queryKey: ['folder', 'messages', 'draft'],
+        queryKey: folderQueryKeys.messages('draft'),
       });
     },
   });
@@ -593,12 +594,12 @@ export const useSendDraft = () => {
       ) {
         updateFolderBadgeCountQueryCache('inbox', +1);
         invalidateQueriesWithFirstPage(queryClient, {
-          queryKey: ['folder', 'messages', 'inbox'],
+          queryKey: folderQueryKeys.messages('inbox'),
         });
       }
 
       invalidateQueriesWithFirstPage(queryClient, {
-        queryKey: ['folder', 'messages', 'outbox'],
+        queryKey: folderQueryKeys.messages('outbox'),
       });
 
       // Delete message from draft list in query cache

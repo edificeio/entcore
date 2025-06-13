@@ -1,6 +1,6 @@
 import { InfiniteData, useQueryClient } from '@tanstack/react-query';
 import { MessageMetadata } from '~/models';
-import { folderQueryOptions } from '~/services';
+import { folderQueryKeys } from '~/services';
 import { useUpdateFolderBadgeCountQueryCache } from './useUpdateFolderBadgeCountQueryCache';
 
 export const useDeleteMessagesFromQueryCache = () => {
@@ -16,7 +16,7 @@ export const useDeleteMessagesFromQueryCache = () => {
 
     // Update list message
     queryClient.setQueriesData(
-      { queryKey: folderQueryOptions.getMessagesQuerykey(folderId, {}) },
+      { queryKey: folderQueryKeys.messages(folderId) },
       (data: InfiniteData<MessageMetadata[]>) => {
         if (!data) return;
         const countUnreadMessages = (
