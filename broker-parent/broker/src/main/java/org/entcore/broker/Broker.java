@@ -38,7 +38,7 @@ public class Broker extends BaseServer {
   private void onMigrationMessage(final Message<JsonObject> message) {
     final JsonObject payload = message.body();
     final String subject = "broker.proxy.legacy.migration." + payload.getString("service") + "." + payload.getString("action");
-    brokerClient.request(subject, payload.toString()).onSuccess(downstreamServiceResponse -> {
+    brokerClient.request(subject, payload.getJsonObject("params")).onSuccess(downstreamServiceResponse -> {
       message.reply(parseProxyfiedMigrationResponse(downstreamServiceResponse));
     }).onFailure(th -> {
       log.error("An error occurred while processing migration message: " + payload, th);
