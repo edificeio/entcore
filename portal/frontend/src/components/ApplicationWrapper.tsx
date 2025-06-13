@@ -26,6 +26,7 @@ export function ApplicationWrapper({ data }: { data: Application }) {
   );
   return (
     <a
+      tabIndex={0}
       data-id={data.name}
       href={data.address}
       rel={data.isExternal ? 'noopener noreferrer' : undefined}
@@ -62,6 +63,7 @@ export function ApplicationWrapper({ data }: { data: Application }) {
             <>
               <IconButton
                 {...triggerProps}
+                tabIndex={0}
                 type="button"
                 aria-label="label"
                 color="secondary"
