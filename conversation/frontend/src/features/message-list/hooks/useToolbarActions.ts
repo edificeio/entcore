@@ -89,11 +89,7 @@ export default function useToolbarActions(messages: MessageMetadata[]) {
             ? t('messages.remove.from.folder')
             : t('message.remove.from.folder');
 
-        await Promise.allSettled(
-          selectedIds.map((id) =>
-            moveMessage.mutateAsync({ folderId: 'inbox', id }),
-          ),
-        );
+        await moveMessage.mutateAsync({ folderId: 'inbox', id: selectedIds });
 
         success(confirmMessage);
       },
