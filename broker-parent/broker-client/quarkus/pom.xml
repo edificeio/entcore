@@ -19,7 +19,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>${groupId}</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>broker-api</artifactId>
             <version>${project.version}</version>
         </dependency>
