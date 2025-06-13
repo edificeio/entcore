@@ -1,4 +1,4 @@
-import { Dropdown } from '@edifice.io/react';
+import { Button, Dropdown } from '@edifice.io/react';
 import {
   IconDelete,
   IconDepositeInbox,
@@ -93,6 +93,12 @@ export function MobileMenu() {
     selectedUserFolderId,
   } = useMenuData();
   const { handleCreate: handleNewFolderClick } = useFolderHandlers();
+
+  if (foldersTreeQuery.isPending) {
+    return (
+      <Button className="placeholder col-12" color="tertiary" disabled></Button>
+    );
+  }
 
   if (!foldersTreeQuery.data) {
     return null;

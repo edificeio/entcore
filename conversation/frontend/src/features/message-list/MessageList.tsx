@@ -32,7 +32,7 @@ export function MessageList() {
 
   const {
     messages,
-    isPending: isLoadingMessage,
+    isPending: isLoadingMessages,
     isFetchingNextPage: isLoadingNextPage,
     hasNextPage,
     fetchNextPage,
@@ -70,7 +70,7 @@ export function MessageList() {
   useEffect(() => {
     const messageListItems =
       listRef.current?.getElementsByClassName('message-list-item');
-    if (isLoadingMessage || isLoadingNextPage) return;
+    if (isLoadingMessages || isLoadingNextPage) return;
     if (observer.current) observer.current.disconnect();
     observer.current = new IntersectionObserver(
       (entries) => {
@@ -85,7 +85,7 @@ export function MessageList() {
   }, [
     messages,
     hasNextPage,
-    isLoadingMessage,
+    isLoadingMessages,
     isLoadingNextPage,
     fetchNextPage,
   ]);
@@ -163,6 +163,7 @@ export function MessageList() {
   );
 
   if (!messages?.length) return null;
+
   return (
     <div ref={listRef}>
       <List
@@ -181,7 +182,7 @@ export function MessageList() {
           />
         )}
       />
-      {isLoadingMessage && (
+      {isLoadingMessages && (
         <Loading isLoading={true} className="justify-content-center my-12" />
       )}
     </div>
