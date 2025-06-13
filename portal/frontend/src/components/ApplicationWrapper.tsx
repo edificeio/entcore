@@ -68,7 +68,7 @@ export function ApplicationWrapper({ data }: { data: Application }) {
                 aria-label="label"
                 color="secondary"
                 variant="ghost"
-                className="block bg-secondary-200 border border-white text-secondary"
+                className="bg-secondary-200 border border-white text-secondary"
                 icon={<IconOptions />}
               />
               <Dropdown.Menu>
