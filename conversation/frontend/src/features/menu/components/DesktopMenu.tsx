@@ -72,7 +72,9 @@ export function DesktopMenu() {
   };
 
   const navigateTo = (folderId: string, isUserFolder = false) => {
-    navigate((isUserFolder ? '/folder/' : '/') + folderId);
+    navigate((isUserFolder ? '/folder/' : '/') + folderId, {
+      state: { scrollToTop: true },
+    });
   };
 
   return (
