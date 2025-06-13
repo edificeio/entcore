@@ -275,9 +275,7 @@ export const useCreateFolder = () => {
         // sort the foldersTree by name
         foldersTree.sort((a, b) => a.name.localeCompare(b.name));
 
-        queryClient.setQueryData(folderQueryOptions.getFoldersTree().queryKey, [
-          ...foldersTree,
-        ]);
+        queryClient.setQueryData(folderQueryKeys.tree(), [...foldersTree]);
       } while (false);
 
       // ...or full refresh the whole folders tree as a fallback.
@@ -310,9 +308,7 @@ export const useRenameFolder = () => {
         found.folder.name = name;
 
         // Optimistic update
-        queryClient.setQueryData(folderQueryOptions.getFoldersTree().queryKey, [
-          ...foldersTree,
-        ]);
+        queryClient.setQueryData(folderQueryKeys.tree(), [...foldersTree]);
 
         return;
         // eslint-disable-next-line no-constant-condition
@@ -351,14 +347,11 @@ export const useTrashFolder = () => {
             (f) => f.id !== id,
           );
           // Optimistic update
-          queryClient.setQueryData(
-            folderQueryOptions.getFoldersTree().queryKey,
-            [...foldersTree],
-          );
+          queryClient.setQueryData(folderQueryKeys.tree(), [...foldersTree]);
         } else {
           // Optimistic update
           queryClient.setQueryData(
-            folderQueryOptions.getFoldersTree().queryKey,
+            folderQueryKeys.tree(),
             foldersTree.filter((f) => f.id !== id),
           );
         }
@@ -369,7 +362,7 @@ export const useTrashFolder = () => {
 
       // ...or full refresh the whole folders tree as a fallback.
       return queryClient.refetchQueries({
-        queryKey: folderQueryOptions.getFoldersTree().queryKey,
+        queryKey: folderQueryKeys.tree(),
       });
     },
   });

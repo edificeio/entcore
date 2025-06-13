@@ -25,18 +25,27 @@ import { useMessageListOnMutate } from './hooks/useMessageListOnMutate';
 import { useUpdateFolderBadgeCountQueryCache } from './hooks/useUpdateFolderBadgeCountQueryCache';
 import { invalidateQueriesWithFirstPage } from './utils';
 const appCodeName = 'conversation';
+
+export const messageQueryKeys = {
+  all: ['message'] as const,
+  config: () => [...messageQueryKeys.all, 'config'] as const,
+  byId: (messageId: string) =>
+    [...messageQueryKeys.all, 'byId', messageId] as const,
+  originalFormat: (messageId: string) =>
+    [...messageQueryKeys.all, 'originalFormat', messageId] as const,
+};
+
 /**
  * Message Query Options Factory.
  */
 export const messageQueryOptions = {
-  base: ['message'] as const,
   /**
    * Generates query options for fetching message application configuration.
    * @returns Query options for fetching the configuration.
    */
   getConfig() {
     return queryOptions({
-      queryKey: [messageQueryOptions.base, 'config'] as const,
+      queryKey: messageQueryKeys.config(),
       queryFn: (): Promise<{ 'debounce-time-to-auto-save'?: number }> =>
         odeServices.conf().getPublicConf('conversation'),
       staleTime: Infinity,
@@ -49,7 +58,7 @@ export const messageQueryOptions = {
    */
   getById(messageId: string) {
     return queryOptions({
-      queryKey: [...messageQueryOptions.base, messageId] as const,
+      queryKey: messageQueryKeys.byId(messageId),
       queryFn: () => messageService.getById(messageId),
       staleTime: Infinity, // The message must be invalidated by mutations, no need to reload it twice in between.
     });
@@ -61,11 +70,7 @@ export const messageQueryOptions = {
    */
   getOriginalFormat(messageId: string) {
     return queryOptions({
-      queryKey: [
-        ...messageQueryOptions.base,
-        messageId,
-        'originalFormat',
-      ] as const,
+      queryKey: messageQueryKeys.originalFormat(messageId),
       queryFn: () => messageService.getOriginalFormat(messageId),
       staleTime: Infinity,
     });
@@ -165,7 +170,7 @@ const useToggleUnread = (unread: boolean) => {
       // Update message details (unread status)
       messageIds.map((messageId) => {
         queryClient.setQueryData(
-          messageQueryOptions.getById(messageId).queryKey,
+          messageQueryKeys.byId(messageId),
           (message: Message | undefined) => {
             return message ? { ...message, unread } : undefined;
           },
@@ -214,7 +219,7 @@ export const useTrashMessage = () => {
       // Invalidate message details
       messageIds.forEach((messageId) => {
         queryClient.invalidateQueries({
-          queryKey: messageQueryOptions.getById(messageId).queryKey,
+          queryKey: messageQueryKeys.byId(messageId),
         });
       });
 
@@ -253,7 +258,7 @@ export const useRestoreMessage = () => {
       // Invalidate message details
       messageIds.forEach((messageId) => {
         queryClient.invalidateQueries({
-          queryKey: messageQueryOptions.getById(messageId).queryKey,
+          queryKey: messageQueryKeys.byId(messageId),
         });
       });
 
@@ -316,7 +321,7 @@ export const useDeleteMessage = () => {
       // Invalidate message details
       messageIds.forEach((messageId) => {
         queryClient.invalidateQueries({
-          queryKey: messageQueryOptions.getById(messageId).queryKey,
+          queryKey: messageQueryKeys.byId(messageId),
         });
       });
 
@@ -353,7 +358,7 @@ export const useMoveMessage = () => {
       // invalidate messages details
       messageIds.forEach((messageId) => {
         queryClient.invalidateQueries({
-          queryKey: messageQueryOptions.getById(messageId).queryKey,
+          queryKey: messageQueryKeys.byId(messageId),
         });
       });
 
@@ -537,7 +542,7 @@ export const useUpdateDraft = () => {
 
       //update message details query cache
       queryClient.setQueryData(
-        messageQueryOptions.getById(draftId).queryKey,
+        messageQueryKeys.byId(draftId),
         (message: Message | undefined) => {
           return message ? { ...message, ...messageUpdated } : undefined;
         },
@@ -607,7 +612,7 @@ export const useSendDraft = () => {
 
       // Invalidate message details
       queryClient.invalidateQueries({
-        queryKey: messageQueryOptions.getById(draftId).queryKey,
+        queryKey: messageQueryKeys.byId(draftId),
       });
     },
   });
@@ -624,7 +629,7 @@ export const useRecallMessage = () => {
       messageService.recall(messageId),
     onSuccess: (_data, { messageId }) => {
       queryClient.invalidateQueries({
-        queryKey: messageQueryOptions.getById(messageId).queryKey,
+        queryKey: messageQueryKeys.byId(messageId),
       });
     },
   });
