@@ -38,10 +38,14 @@
     border: none;
 }
 .dropdown-wrapper {
-    display: none;
-}
-.application-card:hover .dropdown-wrapper, .application-card.active .dropdown-wrapper {
     display: block;
+    opacity: 0;
+}
+.application-card:hover .dropdown-wrapper,
+.application-card.active .dropdown-wrapper,
+.application-card:focus .dropdown-wrapper,
+.application-card:focus-within .dropdown-wrapper {
+  opacity: 1;
 }
 .application-card .card-header, .application-card .card-header button:nth-of-type(2) {
     padding: 0;
