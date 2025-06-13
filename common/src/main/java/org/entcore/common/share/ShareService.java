@@ -32,6 +32,13 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface ShareService {
+
+	/**
+	 * Parameter use in userUtils to add a filter on the visible query on group or ids.
+	 * This constant is used as a key in additionalParams to pass the list of ids to check
+	 */
+	String EXPECTED_IDS_USERS_GROUPS = "expectedIdsOfUsersAndGroups";
+
 	void inheritShareInfos(String userId, String resourceId, String acceptLanguage, String search,
 			Handler<Either<String, JsonObject>> handler);
 
