@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { Folder } from '~/models';
-import { searchFolder } from '~/services';
+import { folderQueryKeys, searchFolder } from '~/services';
 
 export const useUpdateFolderBadgeCountQueryCache = () => {
   const queryClient = useQueryClient();
@@ -11,7 +11,7 @@ export const useUpdateFolderBadgeCountQueryCache = () => {
     if (folderId === 'inbox') {
       // Update inbox count unread
       queryClient.setQueryData(
-        ['folder', 'count', 'inbox'],
+        folderQueryKeys.count('inbox'),
         ({ count }: { count: number }) => {
           return { count: count + countDelta };
         },
@@ -19,14 +19,14 @@ export const useUpdateFolderBadgeCountQueryCache = () => {
     } else if (folderId === 'draft') {
       // Update draft count
       queryClient.setQueryData(
-        ['folder', 'count', 'draft'],
+        folderQueryKeys.count('draft'),
         ({ count }: { count: number }) => {
           return { count: count + countDelta };
         },
       );
     } else if (!['inbox', 'trash', 'draft', 'outbox'].includes(folderId)) {
       // Update custom folder count unread
-      queryClient.setQueryData(['folder', 'tree'], (folders: Folder[]) => {
+      queryClient.setQueryData(folderQueryKeys.tree(), (folders: Folder[]) => {
         // go trow the folder tree to find the folder to update
         const result = searchFolder(folderId, folders);
         if (!result?.parent) {
