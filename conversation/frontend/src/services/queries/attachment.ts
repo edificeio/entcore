@@ -3,7 +3,12 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useI18n } from '~/hooks/useI18n';
 import { Attachment, Message } from '~/models';
 import { useMessage, useMessageActions } from '~/store/messageStore';
-import { attachmentService, messageQueryOptions, useFolderUtils } from '..';
+import {
+  attachmentService,
+  messageQueryKeys,
+  messageQueryOptions,
+  useFolderUtils,
+} from '..';
 
 /**
  * Hook to attach many Files to a draft message.
@@ -63,7 +68,7 @@ export const useAttachFiles = () => {
     },
     onError(_error, { draftId }) {
       queryClient.invalidateQueries({
-        queryKey: messageQueryOptions.getById(draftId).queryKey,
+        queryKey: messageQueryKeys.byId(draftId),
       });
     },
   });
@@ -88,7 +93,7 @@ export const useDetachFile = () => {
     }) => attachmentService.detach(draftId, attachmentId),
     onSuccess(_ids, { draftId, attachmentId }) {
       queryClient.setQueryData(
-        messageQueryOptions.getById(draftId).queryKey,
+        messageQueryKeys.byId(draftId),
         (oldData: Message | undefined) => {
           if (!oldData) return undefined;
           const updatedMessage = {
@@ -113,7 +118,7 @@ export const useDetachFile = () => {
     },
     onError(_error, { draftId }) {
       queryClient.invalidateQueries({
-        queryKey: messageQueryOptions.getById(draftId).queryKey,
+        queryKey: messageQueryKeys.byId(draftId),
       });
     },
   });
