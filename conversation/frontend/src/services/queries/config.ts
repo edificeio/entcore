@@ -8,22 +8,23 @@ import { configService } from '..';
 import { SignaturePreferences } from '~/models/signature';
 import { Config } from '~/config';
 
+export const configQueryKeys = {
+  all: ['config'] as const,
+  global: () => [...configQueryKeys.all, 'global'] as const,
+  signature: () => [...configQueryKeys.all, 'signature'] as const,
+};
+
 /**
  * Provides query options for config-related operations.
  */
 export const configQueryOptions = {
-  /**
-   * Base query key for config-related queries.
-   */
-  base: ['config'] as const,
-
   /**
    * Retrieves the global configuration.
    * @returns A configuration object.
    */
   getGlobalConfig() {
     return queryOptions({
-      queryKey: [...configQueryOptions.base, 'global'] as const,
+      queryKey: configQueryKeys.global(),
       queryFn: async (): Promise<Config> => {
         const data = await configService.getGlobalConfig();
         return {
@@ -38,7 +39,7 @@ export const configQueryOptions = {
 
   getSignaturePreferences() {
     return queryOptions({
-      queryKey: [...configQueryOptions.base, 'signature'] as const,
+      queryKey: configQueryKeys.signature(),
       queryFn: async () => {
         const data = await configService.getSignaturePreferences();
         return data;
@@ -67,10 +68,7 @@ export const useSetSignaturePreferences = () => {
       configService.setSignaturePreferences(preferences),
     onSuccess: async (_unused, preferences) => {
       // Optimistic update
-      queryClient.setQueryData(
-        configQueryOptions.getSignaturePreferences().queryKey,
-        preferences,
-      );
+      queryClient.setQueryData(configQueryKeys.signature(), preferences);
     },
   });
 };
