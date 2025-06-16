@@ -303,6 +303,6 @@
     "nextcloud.console.alert.save": "Les paramètres ont bien été sauvegardés.",
     "nextcloud.move.error": "Erreur lors du déplacement du fichier",
     "nextcloud.copy.error": "Erreur lors de la copie du fichier",
-    "nextcloud.static.trashbin": "Corbeille",
+    "nextcloud.static.trashbin": "Fichiers supprimés",
     "nextcloud.documents.restore.confirmation": "Les éléments ont été restaurés."
 }
