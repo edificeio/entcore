@@ -20,7 +20,6 @@ interface IViewModel {
     state: boolean,
     selectedDocuments?: Array<SyncDocument>,
   ): void;
-  onShareAndNotCopy(): void;
   onShareAndCopy(): void;
 
   onSubmitSharedElements(share: SharePayload): Promise<void>;
@@ -53,30 +52,6 @@ export class ToolbarShareSnipletViewModel implements IViewModel {
       template.close("workspace-nextcloud-toolbar-share");
       this.copyingForShare = true;
     }
-  }
-
-  onShareAndNotCopy(): void {
-    const paths: Array<string> = this.vm.selectedDocuments.map(
-      (document: SyncDocument) => document.path,
-    );
-    this.vm.nextcloudService
-      .moveDocumentNextcloudToWorkspace(model.me.userId, paths)
-      .then(async (workspaceDocuments: Array<models.Element>) => {
-        this.sharedElement = workspaceDocuments;
-        this.vm.updateTree();
-        const pathTemplate: string = `nextcloud/toolbar/share/share`;
-        this.vm.selectedDocuments = [];
-        template.open("workspace-nextcloud-toolbar-share", pathTemplate);
-        try {
-          this.vm.getNextcloudTreeController().userInfo = await this.vm
-            .getNextcloudTreeController()
-            .nextcloudUserService.getUserInfo(model.me.userId);
-        } catch (e) {
-          notify.error(lang.translate("error.user.info"));
-          console.error(e);
-        }
-        this.vm.safeApply();
-      });
   }
 
   onShareAndCopy(): void {
