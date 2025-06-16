@@ -96,7 +96,8 @@ export const createMessageService = (baseURL: string) => ({
       case 'trash':
         return putThenVoid(`${baseURL}/trash`, payload);
       case 'inbox':
-        return putThenVoid(`${baseURL}/move/root?id=${payload.id.join()}`);
+        const idsParams = payload.id.map((id) => `id=${id}`).join('&');
+        return putThenVoid(`${baseURL}/move/root?${idsParams}`);
       default:
         return putThenVoid(
           `${baseURL}/move/userfolder/${targetFolderId}`,
