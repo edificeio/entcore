@@ -54,6 +54,7 @@ export function Component() {
       // Scroll to the top of the page
       window.scrollTo(0, 0);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
