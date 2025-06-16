@@ -14,6 +14,7 @@ export type Application = {
   libraries?: boolean;
   help?: helpType;
   appName?: string;
+  isFavorite?: boolean;
 };
 
 type helpType = {
