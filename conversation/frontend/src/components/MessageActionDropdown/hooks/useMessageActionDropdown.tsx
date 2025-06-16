@@ -352,7 +352,7 @@ export function useMessageActionDropdown({
       hidden: !hasActionsList('print') || message.state === 'DRAFT',
     },
     {
-      label: t('trash'),
+      label: t('trash.action'),
       id: 'trash',
       icon: <IconDelete />,
       action: () => {

@@ -67,14 +67,16 @@ function asFolderItem(
     trash: number;
   },
 ) {
+  const folderName = t(`${folder}.folder`);
   return {
-    name: t(folder),
+    name: folderName,
+    key: folder,
     folder: {
       id: folder,
       parent_id: null,
       depth: 1,
       nbUnread: counters[folder],
-      name: t(folder),
+      name: folderName,
       nbMessages: 0,
     },
   };
@@ -120,14 +122,14 @@ export function MobileMenu() {
 
   if (!selectedItem && selectedSystemFolderId) {
     selectedItem = systemFolderItems.filter(
-      (item) => item.name === selectedSystemFolderId,
+      (item) => item.key === selectedSystemFolderId,
     )?.[0];
   }
 
   function renderFolderItem(item: FolderItem, isUserFolder = false) {
     return (
       <div className="w-100 d-flex justify-content-between align-content-center align-items-center">
-        <div>{t(item.name)}</div>
+        <div>{item.name}</div>
         {isUserFolder ? (
           <div className="d-flex align-items-center gap-4">
             {renderBadge(item.folder.nbUnread)}
@@ -148,7 +150,7 @@ export function MobileMenu() {
     <div className="position-relative">
       <Dropdown block>
         <Dropdown.Trigger
-          label={(selectedItem && t(selectedItem.name)) || selectedUserFolderId}
+          label={(selectedItem && selectedItem.name) || selectedUserFolderId}
         />
         <Dropdown.Menu>
           {systemFolderItems.map((item) => (
