@@ -45,6 +45,9 @@ body {
     display: block;
     opacity: 0;
 }
+.dropdown .btn:hover {
+    translate: none !important;
+}
 .application-card:hover .dropdown-wrapper,
 .application-card.active .dropdown-wrapper,
 .application-card:focus .dropdown-wrapper,
