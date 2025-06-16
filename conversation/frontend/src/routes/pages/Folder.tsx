@@ -16,11 +16,15 @@ export const loader =
     const search = searchParams.get('search');
     const unread = searchParams.get('unread');
     if (params.folderId) {
-      const messagesQuery = folderQueryOptions.getMessages(params.folderId, {
-        search: search && search !== '' ? search : undefined,
-        unread: unread === 'true' ? true : undefined,
-      });
-      const messages = await queryClient.ensureInfiniteQueryData(messagesQuery);
+      const messagesQueryOptions = folderQueryOptions.getMessages(
+        params.folderId,
+        {
+          search: search && search !== '' ? search : undefined,
+          unread: unread === 'true' ? true : undefined,
+        },
+      );
+      const messages =
+        await queryClient.ensureInfiniteQueryData(messagesQueryOptions);
       return { messages };
     }
   };
