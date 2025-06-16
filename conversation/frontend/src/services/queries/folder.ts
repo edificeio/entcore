@@ -16,19 +16,19 @@ import { folderService, searchFolder } from '..';
 export const PAGE_SIZE = 20;
 
 export const folderQueryKeys = {
-  all: ['folder'] as const,
+  all: () => ['folder'] as const,
   messages: (
     folderId?: string,
     options?: { search?: string; unread?: boolean },
   ) => {
-    const queryKey: any = [...folderQueryKeys.all, 'messages'];
+    const queryKey: any = [...folderQueryKeys.all(), 'messages'];
     if (folderId) queryKey.push(folderId);
     if (options) queryKey.push(options);
     return queryKey;
   },
   count: (folderId?: string) =>
-    [...folderQueryKeys.all, 'count', folderId] as const,
-  tree: () => [...folderQueryKeys.all, 'tree'] as const,
+    [...folderQueryKeys.all(), 'count', folderId] as const,
+  tree: () => [...folderQueryKeys.all(), 'tree'] as const,
 };
 
 /**

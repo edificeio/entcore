@@ -27,12 +27,12 @@ import { invalidateQueriesWithFirstPage } from './utils';
 const appCodeName = 'conversation';
 
 export const messageQueryKeys = {
-  all: ['message'] as const,
-  config: () => [...messageQueryKeys.all, 'config'] as const,
+  all: () => ['message'] as const,
+  config: () => [...messageQueryKeys.all(), 'config'] as const,
   byId: (messageId: string) =>
-    [...messageQueryKeys.all, 'byId', messageId] as const,
+    [...messageQueryKeys.all(), 'byId', messageId] as const,
   originalFormat: (messageId: string) =>
-    [...messageQueryKeys.all, 'originalFormat', messageId] as const,
+    [...messageQueryKeys.all(), 'originalFormat', messageId] as const,
 };
 
 /**

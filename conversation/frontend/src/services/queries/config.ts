@@ -9,9 +9,9 @@ import { SignaturePreferences } from '~/models/signature';
 import { Config } from '~/config';
 
 export const configQueryKeys = {
-  all: ['config'] as const,
-  global: () => [...configQueryKeys.all, 'global'] as const,
-  signature: () => [...configQueryKeys.all, 'signature'] as const,
+  all: () => ['config'] as const,
+  global: () => [...configQueryKeys.all(), 'global'] as const,
+  signature: () => [...configQueryKeys.all(), 'signature'] as const,
 };
 
 /**
