@@ -148,6 +148,8 @@ export function useInitMessage({
 
         if (!messageOrigin.subject.startsWith(prefixSubject)) {
           messageTmp.subject = `${prefixSubject}${messageOrigin.subject}`;
+        } else {
+          messageTmp.subject = `${messageOrigin.subject}`;
         }
       }
 
