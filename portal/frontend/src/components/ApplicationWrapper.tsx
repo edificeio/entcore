@@ -28,9 +28,8 @@ export function ApplicationWrapper({ data }: { data: Application }) {
     >
       <ApplicationIcon data={data} />
       <h1
-        className="small text-gray-900"
+        className="small text-gray-900 ellipsis-3"
         style={{
-          fontFamily: 'Arimo',
           fontWeight: 400,
           textTransform: 'unset',
         }}
