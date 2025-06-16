@@ -29,6 +29,10 @@
     background-color: #FFC403;
 }
 
+body {
+    background: inherit;
+}
+
 .application-card {
     box-shadow: none !important;
     border: 1px solid transparent;
