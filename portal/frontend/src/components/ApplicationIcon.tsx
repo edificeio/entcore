@@ -13,7 +13,7 @@ export function ApplicationIcon({ data }: { data: Application }) {
   const appName = getAppName(data, t);
   const classApplicationIcon = clsx(
     `application-icon rounded mb-8 d-flex align-items-center justify-content-center mx-auto`,
-    data.color && data.color,
+    data.color && `bg-${data.color}`,
     !data.color && 'bg-secondary',
     'text-white fw-bold fs-4',
   );
