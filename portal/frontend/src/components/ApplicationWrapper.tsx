@@ -1,29 +1,19 @@
-import { useTranslation } from 'react-i18next';
 import { Application } from '~/models/application';
 import { ApplicationIcon } from './ApplicationIcon';
-import { IconOptions, IconInfoCircle } from '@edifice.io/react/icons';
+import { IconOptions } from '@edifice.io/react/icons';
 import clsx from 'clsx';
-import {
-  Dropdown,
-  IconButton,
-  IconButtonProps,
-  useEdificeClient,
-  useLibraryUrl,
-} from '@edifice.io/react';
+import { Dropdown, IconButton, IconButtonProps } from '@edifice.io/react';
 import { RefAttributes, useState } from 'react';
+import { ApplicationMenu } from './ApplicationMenu';
 
 export function ApplicationWrapper({ data }: { data: Application }) {
-  const { t } = useTranslation('common');
-  const { user } = useEdificeClient();
-  const blogUrlTest = useLibraryUrl('blog');
-  console.log('user', user);
-  console.log('blogUrlTest', blogUrlTest);
   const [dropdownActive, setDropdownActive] = useState(false);
   const [hover, setHover] = useState(false);
   const classApplicationCard = clsx(
     'rounded application-card position-relative py-8 px-4',
     (dropdownActive || hover) && 'active border border-secondary bg-gray-200',
   );
+
   return (
     <a
       tabIndex={0}
@@ -53,7 +43,7 @@ export function ApplicationWrapper({ data }: { data: Application }) {
       >
         <Dropdown
           onToggle={(active) => setDropdownActive(active)}
-          placement="right-end"
+          placement="right-start"
         >
           {(
             triggerProps: JSX.IntrinsicAttributes &
@@ -71,23 +61,7 @@ export function ApplicationWrapper({ data }: { data: Application }) {
                 className="bg-secondary-200 border border-white text-secondary"
                 icon={<IconOptions />}
               />
-              <Dropdown.Menu>
-                <Dropdown.Item icon={<IconInfoCircle />}>
-                  {t('my.apps.open.application')}
-                </Dropdown.Item>
-                <Dropdown.Item icon={<IconInfoCircle />}>
-                  {t('my.apps.add.favorite')}
-                </Dropdown.Item>
-                <Dropdown.Item icon={<IconInfoCircle />}>
-                  {t('my.apps.remove.favorite')}
-                </Dropdown.Item>
-                <Dropdown.Item icon={<IconInfoCircle />}>
-                  {t('my.apps.examples')}
-                </Dropdown.Item>
-                <Dropdown.Item icon={<IconInfoCircle />}>
-                  {t('my.apps.infos')}
-                </Dropdown.Item>
-              </Dropdown.Menu>
+              <ApplicationMenu data={data} />
             </>
           )}
         </Dropdown>
