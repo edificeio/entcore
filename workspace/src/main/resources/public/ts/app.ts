@@ -20,6 +20,7 @@ import { NextcloudService } from "./directives/nextcloud/services/nextcloud.serv
 import { NextcloudEventService } from "./directives/nextcloud/services/nextcloudEvent.service";
 import { NextcloudUserService } from "./directives/nextcloud/services/nextcloudUser.service";
 import { pdfViewer } from "./directives/pdfViewer";
+import { syncDocumentViewer } from "./directives/syncDocumentViewer";
 import { txtViewer } from "./directives/txtViewer";
 
 routes.define(function ($routeProvider) {
@@ -53,6 +54,7 @@ routes.define(function ($routeProvider) {
 ng.controllers.push(workspaceController);
 ng.directives.push(importFiles);
 ng.directives.push(fileViewer);
+ng.directives.push(syncDocumentViewer);
 ng.directives.push(pdfViewer);
 ng.directives.push(cssTransitionEnd);
 ng.directives.push(dropzoneOverlay);
