@@ -60,7 +60,7 @@ public interface SchoolService {
 
 	void update(String structureId, JsonObject body, Handler<Either<String,JsonObject>> eitherHandler);
 
-	void getLevels(String structureId, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
+	void getLevels(String structureId, boolean inherit, UserInfos userInfos, Handler<Either<String, JsonArray>> results);
 
 	void setLevelsOfEducation(String structureId, List<Integer> levelsOfEducations, Handler<Either<String, JsonObject>> handler);
 
