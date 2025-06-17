@@ -47,7 +47,7 @@
       {
         "name": "library-recette",
         "category": "pedagogy",
-        "color": "violet",
+        "color": "purple",
         "libraries": false,
         "help": {
           "fr": "https://help.edifice.io/hc/fr/articles/5896833929372-Pr%C3%A9sentation-de-la-Biblioth%C3%A8que",
@@ -369,7 +369,7 @@
       },
       {
         "name": "Pages",
-        "category": "connector",
+        "category": "communication",
         "color": "orange",
         "libraries": false,
         "help": {

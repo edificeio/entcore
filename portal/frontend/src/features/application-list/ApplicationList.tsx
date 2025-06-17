@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next';
-import { ApplicationWrapper } from '~/components/ApplicationWrapper';
 import { useApplications } from '~/services';
 import { useCategoryStore } from '~/store/categoryStore';
 import { getAppName } from '~/utils/get-app-name';
 import { ApplicationListGrid } from './ApplicationListGrid';
+import { EmptyCategory } from '~/components/EmptyCategory';
 
 export function ApplicationList() {
   const { applications, isLoading, isError } = useApplications();
@@ -53,11 +53,7 @@ export function ApplicationList() {
   );
 
   if (filteredApps.length === 0) {
-    return (
-      <div className="empty-screen text-center">
-        Aucune application dans la catégorie {activeCategory}.
-      </div>
-    );
+    return <EmptyCategory category={activeCategory} />;
   }
 
   return <ApplicationListGrid applications={filteredApps} />;
