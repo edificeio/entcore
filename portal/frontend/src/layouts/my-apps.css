@@ -1,3 +1,7 @@
+html[data-skin="dyslexic"] .my-apps-layout *  {
+    font-family: OpenDyslexic !important;
+}
+
 body {
     background: inherit;
 }
@@ -41,6 +45,11 @@ body {
 .application-icon i::before {
     color: white !important;
     font-size: 36px;
+}
+.application-title {
+    font-family: 'Arimo';
+    font-weight: 400;
+    text-transform: unset;
 }
 
 .toolbar-categories-wrapper {
