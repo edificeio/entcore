@@ -3,6 +3,7 @@ import {
   IconDelete,
   IconDownload,
   IconFolderAdd,
+  IconPlus,
 } from '@edifice.io/react/icons';
 import clsx from 'clsx';
 import { ChangeEvent, useRef, useState } from 'react';
@@ -118,6 +119,7 @@ export function MessageAttachments({
             onClick={handleAttachClick}
             disabled={isMutating}
             className="align-self-start"
+            leftIcon={<IconPlus />}
           >
             {t('add.attachment')}
           </Button>
