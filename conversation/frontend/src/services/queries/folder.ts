@@ -1,4 +1,5 @@
 import {
+  FetchNextPageOptions,
   InfiniteData,
   infiniteQueryOptions,
   queryOptions,
@@ -12,6 +13,7 @@ import { useSearchParams } from 'react-router-dom';
 import { Folder, MessageMetadata } from '~/models';
 import { useConfig } from '~/store';
 import { folderService, searchFolder } from '..';
+import { queryClient } from '~/providers';
 
 export const PAGE_SIZE = 20;
 
@@ -109,9 +111,14 @@ export const folderQueryOptions = {
       },
       staleTime: 5 * 60 * 1000, // 5 minutes
       initialPageParam: 0,
-      getNextPageParam: (_lastPage: any, allPages: any, lastPageParam: any) => {
-        const firstMessage: MessageMetadata = allPages[0]?.[0];
-        if (firstMessage?.count > allPages.flat().length) {
+      getNextPageParam: (
+        _lastPage: MessageMetadata[],
+        allPages: MessageMetadata[][],
+        lastPageParam: number,
+      ) => {
+        const totalMessages = allPages[0]?.[0]?.count;
+        const loadedMessages = allPages.flat().length;
+        if (loadedMessages < totalMessages) {
           return lastPageParam + 1;
         }
         return undefined;
@@ -210,8 +217,32 @@ export const useFolderMessages = (folderId: string, enabled = true) => {
 
   const query = useInfiniteQuery(queryOptions);
 
+  const fetchNextPageOrInvalidateCachedPageWithDeletedMessages = useCallback(
+    async (options?: FetchNextPageOptions) => {
+      const pages = query.data?.pages;
+      const totalMessagesCount = pages?.[0]?.[0]?.count || 0;
+      const totalPageCount = Math.ceil(totalMessagesCount / PAGE_SIZE);
+      const hasDeletedMessages = pages?.some((page, index) => {
+        const pageLoadedMessagesCount = page.length;
+        const noMorePages = index >= totalPageCount - 1;
+        if (noMorePages) return false;
+        if (pageLoadedMessagesCount < PAGE_SIZE) return true;
+      });
+      if (hasDeletedMessages) {
+        await queryClient.invalidateQueries({
+          queryKey: folderQueryOptions.getMessagesQuerykey(folderId, {}),
+        });
+      } else {
+        return query.fetchNextPage(options);
+      }
+    },
+    [query],
+  );
+
   return {
     ...query,
+    fetchNextPage: fetchNextPageOrInvalidateCachedPageWithDeletedMessages,
+
     messages: query.data?.pages.flatMap((page) => page) as MessageMetadata[],
   };
 };

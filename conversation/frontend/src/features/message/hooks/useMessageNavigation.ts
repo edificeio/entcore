@@ -29,7 +29,7 @@ export const useMessageNavigation = (messageId?: string) => {
       !isFetchingNextPage
     ) {
       const result = await fetchNextPage();
-      messageList = result.data?.pages.flatMap(
+      messageList = result?.data?.pages.flatMap(
         (page) => page,
       ) as MessageMetadata[];
     }
