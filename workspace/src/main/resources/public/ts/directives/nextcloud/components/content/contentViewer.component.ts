@@ -55,6 +55,9 @@ export interface IWorkspaceNextcloudContent {
   getNextcloudTreeController(): any;
 
   isTrashMode(): boolean;
+
+  openDocument(document?: SyncDocument): any;
+  closeViewFile(): void;
 }
 
 export const workspaceNextcloudContentController = ng.controller(
@@ -453,17 +456,27 @@ export const workspaceNextcloudContentController = ng.controller(
         safeApply($scope);
       };
 
+      $scope.openDocument = function(document?: SyncDocument): any {
+        const pathTemplate: string = `nextcloud/content/views/viewer`;
+        
+        this.viewFile = document ? document : $scope.selectedDocuments[0];
+        template.open("documents-content", pathTemplate);
+        $scope.selectedDocuments = [];
+      }
+
+      $scope.closeViewFile = function(): any {
+        let preference: NextcloudPreference = Me.preferences["nextcloud"];
+        this.viewFile = null;
+        $scope.changeViewMode(preference.viewMode);
+      }
+
       $scope.onOpenContent = function (document: SyncDocument): void {
         if (document.isFolder) {
           nextcloudEventService.sendOpenFolderDocument(document);
           // reset all selected documents switch we switch folder
           $scope.selectedDocuments = [];
         } else {
-          if (document.editable) {
-            nextcloudService.openNextcloudLink(document, $scope.nextcloudUrl);
-          } else {
-            window.open($scope.getFile(document));
-          }
+            $scope.openDocument(document);
         }
       };
 

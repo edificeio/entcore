@@ -36,6 +36,8 @@ export interface IViewModel {
   // Actions
   downloadFiles(selectedDocuments: Array<SyncDocument>): void;
   openDocument(): void;
+  viewFile: SyncDocument;
+
   editDocument(): void;
 
   // Properties/Rename
@@ -67,6 +69,7 @@ export class ToolbarSnipletViewModel implements IViewModel {
 
   public lightbox: ILightbox;
   public currentDocument: SyncDocument;
+  public viewFile: SyncDocument;
 
   public share: ToolbarShareSnipletViewModel;
 
@@ -119,12 +122,8 @@ export class ToolbarSnipletViewModel implements IViewModel {
   /*** Document Actions ***/
 
   public openDocument(): void {
-    if (this.vm.selectedDocuments.length > 0) {
-      nextcloudService.openNextcloudLink(
-        this.vm.selectedDocuments[0],
-        this.vm.nextcloudUrl,
-      );
-    }
+    if (this.vm.selectedDocuments.length === 0) return;
+    this.vm.openDocument();
   }
 
   public editDocument(): void {
