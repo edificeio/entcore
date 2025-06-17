@@ -203,7 +203,6 @@ public class Starter extends BaseServer {
 
 			final MessageConsumer<JsonObject> messageConsumer = vertx.eventBus().consumer("app-registry.loaded");
 			messageConsumer.handler(message -> {
-				registerGlobalWidgets(config.getString("widgets-path", config.getString("assets-path", ".") + "/assets/widgets"));
 				loadInvalidEmails(); // TODO change map loadding if needed
 				messageConsumer.unregister();
 			});
@@ -300,55 +299,6 @@ public class Starter extends BaseServer {
 				} catch (ParseException e) {
 					log.error(e.getMessage(), e);
 					vertx.close();
-				}
-			}
-		});
-	}
-
-	private void registerWidget(final String widgetPath){
-		final String widgetName = new File(widgetPath).getName();
-		JsonObject widget = new JsonObject()
-				.put("name", widgetName)
-				.put("js", "/assets/widgets/"+widgetName+"/"+widgetName+".js")
-				.put("path", "/assets/widgets/"+widgetName+"/"+widgetName+".html");
-
-		if(vertx.fileSystem().existsBlocking(widgetPath + "/i18n")){
-			widget.put("i18n", "/assets/widgets/"+widgetName+"/i18n");
-		}
-
-		JsonObject message = new JsonObject()
-				.put("widget", widget);
-		vertx.eventBus().request("wse.app.registry.widgets", message, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
-			public void handle(Message<JsonObject> event) {
-				if("error".equals(event.body().getString("status"))){
-					log.error("Error while registering widget "+widgetName+". "+event.body().getJsonArray("errors"));
-					return;
-				}
-				log.info("Successfully registered widget "+widgetName);
-			}
-		}));
-	}
-
-	private void registerGlobalWidgets(String widgetsPath) {
-		vertx.fileSystem().readDir(widgetsPath, new Handler<AsyncResult<List<String>>>() {
-			public void handle(AsyncResult<List<String>> asyn) {
-				if(asyn.failed()){
-					log.error("Error while registering global widgets.", asyn.cause());
-					return;
-				}
-				final List<String> paths = asyn.result();
-				for(final String path: paths){
-					vertx.fileSystem().props(path, new Handler<AsyncResult<FileProps>>() {
-						public void handle(AsyncResult<FileProps> asyn) {
-							if(asyn.failed()){
-								log.error("Error while registering global widget " + path, asyn.cause());
-								return;
-							}
-							if(asyn.result().isDirectory()){
-								registerWidget(path);
-							}
-						}
-					});
 				}
 			}
 		});
