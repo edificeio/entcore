@@ -27,14 +27,7 @@ export function ApplicationWrapper({ data }: { data: Application }) {
       onMouseLeave={() => setHover(false)}
     >
       <ApplicationIcon data={data} />
-      <h1
-        className="small text-gray-900"
-        style={{
-          fontFamily: 'Arimo',
-          fontWeight: 400,
-          textTransform: 'unset',
-        }}
-      >
+      <h1 className="small text-gray-900 ellipsis-3 application-title">
         {data.appName}
       </h1>
       <div
