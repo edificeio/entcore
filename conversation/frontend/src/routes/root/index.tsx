@@ -125,7 +125,9 @@ export function Component() {
           </div>
         )}
 
-        {openedModal === 'create' && <CreateFolderModal />}
+        {(openedModal === 'create' || openedModal === 'create-then-move') && (
+          <CreateFolderModal />
+        )}
         {openedModal === 'rename' && <RenameFolderModal />}
         {openedModal === 'trash' && <TrashFolderModal />}
         {openedModal === 'move-message' && <MoveMessageToFolderModal />}
