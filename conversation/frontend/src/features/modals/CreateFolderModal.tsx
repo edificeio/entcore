@@ -14,7 +14,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useI18n } from '~/hooks/useI18n';
 import { Folder } from '~/models';
 import { buildTree, searchFolder } from '~/services';
-import { useAppActions } from '~/store';
+import { useAppActions, useConfig, useOpenedModal } from '~/store';
 import { useFolderActions } from './hooks';
 
 /**
@@ -44,6 +44,7 @@ function flatFolders(folders: Folder[], prefix?: string) {
 export function CreateFolderModal() {
   const { t, common_t } = useI18n();
   const { error } = useToast();
+  const openedModal = useOpenedModal();
   const { setOpenedModal } = useAppActions();
   const { createFolder, isActionPending, foldersTree } = useFolderActions();
   const [checked, setChecked] = useState(false);
@@ -51,11 +52,7 @@ export function CreateFolderModal() {
   const refInputName = useRef<HTMLInputElement>(null);
   const [newFolderName, setNewFolderName] = useState('');
   const [nameError, setNameError] = useState<string | undefined>(undefined);
-
-  useEffect(() => {
-    if (isActionPending === false) setOpenedModal(undefined);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isActionPending]);
+  const { maxDepth } = useConfig();
 
   const handleCreateClick = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {
@@ -95,8 +92,22 @@ export function CreateFolderModal() {
   }, [checked]);
 
   const userFolders = useMemo(() => {
-    return foldersTree ? buildTree(foldersTree, 2) : null;
-  }, [foldersTree]);
+    return foldersTree ? buildTree(foldersTree, maxDepth) : null;
+  }, [foldersTree, maxDepth]);
+
+  /**
+   * When the create action is no longer pending, close the modal.
+   * If the modal was opened from the "create-then-move" action, switch to the "move-message" modal.
+   * This is to allow the user to move a message to a newly created folder.
+   */
+  useEffect(() => {
+    if (isActionPending === false) {
+      setOpenedModal(
+        openedModal === 'create-then-move' ? 'move-message' : undefined,
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isActionPending]);
 
   useEffect(() => {
     refInputName.current?.focus();
@@ -132,7 +143,7 @@ export function CreateFolderModal() {
           <FormControl
             id="modalFolderNew"
             isRequired={true}
-            status={!!nameError ? 'invalid' : undefined}
+            status={nameError ? 'invalid' : undefined}
           >
             <Label>{t('folder.new.name.label')}</Label>
             <Input
