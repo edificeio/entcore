@@ -86,14 +86,14 @@ export function DesktopMenu() {
           onClick={() => navigateTo('inbox')}
           rightIcon={renderBadge(counters.inbox)}
         >
-          {t('inbox')}
+          {t('inbox.folder')}
         </Menu.Button>
         <Menu.Button
           selected={selectedSystemFolderId === 'outbox'}
           leftIcon={<IconSend />}
           onClick={() => navigateTo('outbox')}
         >
-          {t('outbox')}
+          {t('outbox.folder')}
         </Menu.Button>
         <Menu.Button
           selected={selectedSystemFolderId === 'draft'}
@@ -101,14 +101,14 @@ export function DesktopMenu() {
           onClick={() => navigateTo('draft')}
           rightIcon={renderBadge(counters.draft)}
         >
-          {t('draft')}
+          {t('draft.folder')}
         </Menu.Button>
         <Menu.Button
           selected={selectedSystemFolderId === 'trash'}
           leftIcon={<IconDelete />}
           onClick={() => navigateTo('trash')}
         >
-          {t('trash')}
+          {t('trash.folder')}
         </Menu.Button>
       </Menu.Item>
       <Menu.Item>
