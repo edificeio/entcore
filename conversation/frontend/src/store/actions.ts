@@ -5,6 +5,7 @@ import { Folder } from '~/models';
 type OpenedModal =
   | undefined
   | 'create'
+  | 'create-then-move'
   | 'move'
   | 'rename'
   | 'trash'
