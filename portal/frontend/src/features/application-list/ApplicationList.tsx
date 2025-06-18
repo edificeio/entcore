@@ -45,7 +45,10 @@ export function ApplicationList() {
                 {t('my.apps.services.title')}
               </h2>
             </div>
-            <ApplicationListGrid applications={externalApps} />
+            <ApplicationListGrid
+              applications={externalApps}
+              isConnectors={true}
+            />
           </>
         )}
       </>

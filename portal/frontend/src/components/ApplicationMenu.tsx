@@ -13,9 +13,17 @@ export function ApplicationMenu({ data }: { data: Application }) {
   const { t } = useTranslation('common');
   const libraryUrl = useLibraryUrl(data.displayName);
   const { currentLanguage } = useEdificeClient();
-  const helpUrl = currentLanguage ? data.help?.[currentLanguage] : undefined;
+  const helpUrl =
+    currentLanguage && data.help?.[currentLanguage]
+      ? data.help[currentLanguage]
+      : (data.help?.['en'] ?? undefined);
+  const dataIdFavorite = data.isFavorite
+    ? 'btn-remove-favorite'
+    : 'btn-add-favorite';
+
   const dropdownItems = [
     <Dropdown.Item
+      data-id="btn-open"
       key="open"
       onClick={
         data.category === 'connector'
@@ -28,6 +36,7 @@ export function ApplicationMenu({ data }: { data: Application }) {
     </Dropdown.Item>,
 
     <Dropdown.Item
+      data-id={dataIdFavorite}
       key="favorite"
       onClick={() =>
         console.log(data.isFavorite ? 'remove favorite' : 'add favorite')
@@ -41,6 +50,7 @@ export function ApplicationMenu({ data }: { data: Application }) {
 
     data.libraries && (
       <Dropdown.Item
+        data-id="btn-libraries"
         key="examples"
         onClick={openInNewTab(libraryUrl)}
         icon={<IconLibrary />}
@@ -51,6 +61,7 @@ export function ApplicationMenu({ data }: { data: Application }) {
 
     helpUrl && (
       <Dropdown.Item
+        data-id="btn-help"
         key="help"
         onClick={openInNewTab(helpUrl)}
         icon={<IconInfoCircle />}
