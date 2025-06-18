@@ -13,7 +13,11 @@ export function ApplicationMenu({ data }: { data: Application }) {
   const { t } = useTranslation('common');
   const libraryUrl = useLibraryUrl(data.displayName);
   const { currentLanguage } = useEdificeClient();
-  const helpUrl = currentLanguage ? data.help?.[currentLanguage] : undefined;
+  const helpUrl =
+    currentLanguage && data.help?.[currentLanguage]
+      ? data.help[currentLanguage]
+      : (data.help?.['en'] ?? undefined);
+
   const dropdownItems = [
     <Dropdown.Item
       key="open"
