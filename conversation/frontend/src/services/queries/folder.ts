@@ -28,8 +28,11 @@ export const folderQueryKeys = {
     if (options) queryKey.push(options);
     return queryKey;
   },
-  count: (folderId?: string) =>
-    [...folderQueryKeys.all(), 'count', folderId] as const,
+  count: (folderId?: string) => {
+    const queryKey: any = [...folderQueryKeys.all(), 'count'];
+    if (folderId) queryKey.push(folderId);
+    return queryKey;
+  },
   tree: () => [...folderQueryKeys.all(), 'tree'] as const,
 };
 
