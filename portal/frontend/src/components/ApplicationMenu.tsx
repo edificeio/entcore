@@ -7,7 +7,6 @@ import {
 } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
 import { Application } from '~/models/application';
-import { openInNewTab } from '~/utils/open-in-new-tab';
 
 export function ApplicationMenu({ data }: { data: Application }) {
   const { t } = useTranslation('common');
@@ -21,15 +20,23 @@ export function ApplicationMenu({ data }: { data: Application }) {
     ? 'btn-remove-favorite'
     : 'btn-add-favorite';
 
+  const openInNewTab = (url: string, e?: React.MouseEvent) => {
+    e?.preventDefault();
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
   const dropdownItems = [
     <Dropdown.Item
       data-id="btn-open"
       key="open"
-      onClick={
-        data.category === 'connector'
-          ? openInNewTab(data.address)
-          : () => window.open(data.address)
-      }
+      onClick={(e) => {
+        e.preventDefault();
+        if (data.category === 'connector') {
+          openInNewTab(data.address);
+        } else {
+          window.open(data.address, '_self');
+        }
+      }}
       icon={<IconExternalLink />}
     >
       {t('my.apps.open.application')}
@@ -48,11 +55,11 @@ export function ApplicationMenu({ data }: { data: Application }) {
         : t('my.apps.add.favorite')}
     </Dropdown.Item>,
 
-    data.libraries && (
+    data.libraries && libraryUrl && (
       <Dropdown.Item
         data-id="btn-libraries"
         key="examples"
-        onClick={openInNewTab(libraryUrl)}
+        onClick={(e) => openInNewTab(libraryUrl, e)}
         icon={<IconLibrary />}
       >
         {t('my.apps.examples')}
@@ -63,7 +70,7 @@ export function ApplicationMenu({ data }: { data: Application }) {
       <Dropdown.Item
         data-id="btn-help"
         key="help"
-        onClick={openInNewTab(helpUrl)}
+        onClick={(e) => openInNewTab(helpUrl, e)}
         icon={<IconInfoCircle />}
       >
         {t('my.apps.infos')}
