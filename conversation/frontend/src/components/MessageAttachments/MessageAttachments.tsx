@@ -25,7 +25,7 @@ export function MessageAttachments({
 }: MessageAttachmentsProps) {
   const { common_t, t } = useI18n();
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const { downloadAllUrl, attachFiles, detachFiles, isMutating } =
+  const { downloadAllUrl, attachFiles, detachFiles, isMutating, detachFile } =
     useMessageAttachments();
   const [attachmentsToAddToWorkspace, setAttachmentsToAddToWorkspace] =
     useState<Attachment[] | undefined>(undefined);
@@ -40,7 +40,15 @@ export function MessageAttachments({
     attachFiles(event.target.files);
   };
 
-  const handleDetachAllClick = () => detachFiles(attachments);
+  const handleDetachAll = () => {
+    detachFiles(attachments.map((attachment) => attachment.id));
+    if (inputRef.current) inputRef.current.value = '';
+  };
+
+  const handleDetach = (attachmentId: string) => {
+    detachFile(attachmentId);
+    if (inputRef.current) inputRef.current.value = '';
+  };
 
   const className = clsx(
     'bg-gray-200 rounded-2 px-12 py-8 message-attachments align-self-start gap-8 d-flex flex-column',
@@ -50,6 +58,7 @@ export function MessageAttachments({
   const handleWantAddToWorkspace = (attachments: Attachment[]) => {
     setAttachmentsToAddToWorkspace(attachments);
   };
+
   return (
     <div
       className={className}
@@ -88,7 +97,7 @@ export function MessageAttachments({
                     type="button"
                     icon={<IconDelete />}
                     variant="ghost"
-                    onClick={handleDetachAllClick}
+                    onClick={handleDetachAll}
                     disabled={isMutating}
                   />
                 )}
@@ -101,6 +110,7 @@ export function MessageAttachments({
                 <MessageAttachment
                   attachment={attachment}
                   editMode={editMode}
+                  onDelete={handleDetach}
                   onWantAddToWorkspace={(attachment) =>
                     handleWantAddToWorkspace([attachment])
                   }

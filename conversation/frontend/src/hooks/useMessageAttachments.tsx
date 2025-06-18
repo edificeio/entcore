@@ -66,8 +66,8 @@ export function useMessageAttachments() {
     );
   }
 
-  function detachFiles(attachments: Attachment[]) {
-    return Promise.all(attachments.map(({ id }) => detachFile(id)));
+  function detachFiles(attachmentIds: string[]) {
+    return Promise.all(attachmentIds.map((id) => detachFile(id)));
   }
 
   /**
