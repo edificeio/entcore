@@ -26,6 +26,7 @@ import { buildTree, useFoldersTree } from '~/services';
 import { useFolderHandlers } from '../hooks/useFolderHandlers';
 import { useMenuData } from '../hooks/useMenuData';
 import './DesktopMenu.css';
+import { DesktopMenuSkeleton } from './DesktopMenuSkeleton';
 
 /** Converts a value in bytes to mega-bytes (rounded) */
 const bytesToMegabytes = (bytes: number) => Math.round(bytes / (1024 * 1024));
@@ -52,6 +53,10 @@ export function DesktopMenu() {
   }, [foldersTreeQuery]);
 
   const progress = quota > 0 ? (usage * 100) / quota : 0;
+
+  if (foldersTreeQuery.isPending) {
+    return <DesktopMenuSkeleton />;
+  }
 
   if (!userFolders) {
     return null;

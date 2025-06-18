@@ -77,11 +77,15 @@ export function MessageList() {
         block: 'center',
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [folderId]);
 
   useEffect(() => {
     if (isLoadingMessages || isLoadingNextPage) return;
     if (observer.current) observer.current.disconnect();
+
+    const messageListItems =
+      listRef.current?.getElementsByClassName('message-list-item');
     observer.current = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasNextPage) {
@@ -100,6 +104,7 @@ export function MessageList() {
     isLoadingMessages,
     isLoadingNextPage,
     fetchNextPage,
+    messageListItems,
   ]);
 
   useEffect(() => {
@@ -175,6 +180,7 @@ export function MessageList() {
   );
 
   if (!messages?.length) return null;
+
   return (
     <div ref={listRef}>
       <List
