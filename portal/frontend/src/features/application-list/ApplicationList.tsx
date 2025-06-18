@@ -18,6 +18,11 @@ export function ApplicationList() {
     getAppName(a, t).localeCompare(getAppName(b, t)),
   );
 
+  if (activeCategory === 'none') {
+    // skeleton
+    return;
+  }
+
   if (activeCategory === 'all') {
     const internalApps = sortedApps.filter(
       (app) => app.category !== 'connector',

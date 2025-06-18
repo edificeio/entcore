@@ -42,9 +42,16 @@ body {
     width: 56px;
     display: inline-block;
 }
+.application-icon.application-icon-connector {
+    color: black !important;
+    border: 1px solid #C7C7C7;
+}
 .application-icon i::before {
     color: white !important;
     font-size: 36px;
+}
+.application-icon.application-icon-connector i::before {
+    color: black !important;
 }
 .application-title {
     font-family: 'Arimo';

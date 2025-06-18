@@ -7,6 +7,6 @@ type CategoryStore = {
 };
 
 export const useCategoryStore = create<CategoryStore>((set) => ({
-  activeCategory: 'all',
+  activeCategory: 'none',
   setActiveCategory: (category) => set({ activeCategory: category }),
 }));
