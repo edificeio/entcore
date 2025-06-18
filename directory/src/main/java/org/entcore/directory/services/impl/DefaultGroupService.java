@@ -276,4 +276,50 @@ public class DefaultGroupService implements GroupService {
 		}));
 		return promise.future();
 	}
+
+	/**
+	 * Add a label to a Group node identified by its ID
+	 * This method allows adding a specific Neo4j label to a group node,
+	 * which can be used to categorize groups for specific use cases.
+	 *
+	 * @param groupId The ID of the group to modify
+	 * @param label The label to add to the group
+	 * @return Future with the modified group information or failure
+	 */
+	@Override
+	public Future<JsonObject> addLabelToGroup(String groupId, String label) {
+		final Promise<JsonObject> promise = Promise.promise();
+		
+		if (groupId == null || groupId.trim().isEmpty()) {
+			return Future.failedFuture("invalid.group.id");
+		}
+		
+		if (label == null || label.trim().isEmpty()) {
+			return Future.failedFuture("invalid.label");
+		}
+		
+		// Sanitize label to avoid injection - remove spaces and special characters
+		String sanitizedLabel = label.replaceAll("[^a-zA-Z0-9]", "");
+		if (sanitizedLabel.isEmpty()) {
+			return Future.failedFuture("invalid.label.format");
+		}
+		
+		final String query = "MATCH (g:Group {id:{groupId}}) " +
+					 "SET g:" + sanitizedLabel + " " +
+					 "RETURN g.id as id, g.name as name, g.displayName as displayName, " +
+					 "labels(g) as labels";
+		
+		final JsonObject params = new JsonObject().put("groupId", groupId);
+		
+		neo.execute(query, params, validUniqueResultHandler(event -> {
+			if (event.isRight()) {
+				final JsonObject result = event.right().getValue();
+				promise.complete(result);
+			} else {
+				promise.fail(event.left().getValue());
+			}
+		}));
+		
+		return promise.future();
+	}
 }
