@@ -12,6 +12,17 @@
         }
       },
       {
+        "name": "Annuaire",
+        "category": "organisation",
+        "color": "green",
+        "libraries": false,
+        "help": {
+          "fr": "https://help.edifice.io/hc/fr/articles/360018743359-Pr%C3%A9sentation-de-l-application-Annuaire",
+          "en": null,
+          "es": null
+        }
+      },
+      {
         "name": "Calendar",
         "category": "organisation",
         "color": "green",

@@ -18,7 +18,7 @@ export type Application = {
 };
 
 type helpType = {
-  [lang: string]: string;
+  [lang: string]: string | null;
 };
 
 export type ApplicationsResponse = {
