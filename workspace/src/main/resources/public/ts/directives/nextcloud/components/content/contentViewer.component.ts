@@ -399,11 +399,40 @@ export const workspaceNextcloudContentController = ng.controller(
           });
       }
 
+      function deleteDocuments(
+        document: SyncDocument,
+      ): Promise<AxiosResponse> {
+        $scope.selectedDocuments.push(document);
+        const selectedSet: Set<SyncDocument> = new Set(
+          $scope.selectedDocuments,
+        );
+
+        const paths: Array<string> = Array.from(selectedSet).map(
+          (doc: SyncDocument) => doc.path
+        );
+
+        return nextcloudService.deleteDocuments(model.me.userId, paths);
+      }
+
       function processMoveToNextcloud(
         document: SyncDocument,
         target: SyncDocument,
         selectedFolderFromNextcloudTree: SyncDocument,
       ): void {
+        if(target.isStaticFolder && target.staticFolderType === "trashbin") {
+          deleteDocuments(document)
+            .then(() => {
+              updateDocList(selectedFolderFromNextcloudTree);
+            })
+            .catch((err: AxiosError) => {
+              updateDocList(selectedFolderFromNextcloudTree);
+              const message: string =
+                "Error while attempting to delete nextcloud document";
+              console.error(message + err.message);
+            })
+          return;
+        }
+
         moveAllDocuments(document, target)
           .then(() => updateDocList(selectedFolderFromNextcloudTree))
           .catch((err: AxiosError) => {
@@ -458,7 +487,7 @@ export const workspaceNextcloudContentController = ng.controller(
 
       $scope.openDocument = function(document?: SyncDocument): any {
         const pathTemplate: string = `nextcloud/content/views/viewer`;
-        
+
         this.viewFile = document ? document : $scope.selectedDocuments[0];
         template.open("documents-content", pathTemplate);
         $scope.selectedDocuments = [];

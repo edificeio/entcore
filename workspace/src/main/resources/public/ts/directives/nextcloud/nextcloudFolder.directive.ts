@@ -191,7 +191,16 @@ export const workspaceNextcloudFolderController = ng.controller(
         };
       };
 
+      function removeDropTarget(event:DragEvent) {
+        const target: HTMLElement = event.target as HTMLElement;
+        const droppableElement: HTMLElement = target.closest('.folder-list-item') || target;
+        if (droppableElement) {
+          droppableElement.classList.remove("droptarget");
+        }
+      }
+
       $scope.resolveDragTarget = async (event: DragEvent): Promise<void> => {
+        removeDropTarget(event);
         // case drop concerns nextcloud
         if (nextcloudEventService.getContentContext()) {
           //nextcloud context
