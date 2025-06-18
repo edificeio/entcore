@@ -70,6 +70,7 @@ body {
     max-width: 100%;
     white-space: nowrap;
     justify-content: flex-start;
+    overflow: scroll;
 }
 
 .ellipsis-3 {

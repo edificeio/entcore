@@ -37,6 +37,7 @@ export function ApplicationWrapper({ data }: { data: Application }) {
         <Dropdown
           onToggle={(active) => setDropdownActive(active)}
           placement="right-start"
+          data-id="menu-dropdown"
         >
           {(
             triggerProps: JSX.IntrinsicAttributes &
@@ -46,6 +47,7 @@ export function ApplicationWrapper({ data }: { data: Application }) {
             <>
               <IconButton
                 {...triggerProps}
+                data-id="btn-application-menu"
                 tabIndex={0}
                 type="button"
                 aria-label="label"

@@ -73,7 +73,9 @@ export const ToolbarCategories = () => {
           className: clsx('fw-normal', {
             'bg-secondary-200 fw-bold': isActive,
           }),
-          children: <span>{t(categoryDisplay)}</span>,
+          children: (
+            <span data-id={`tab-${category}`}>{t(categoryDisplay)}</span>
+          ),
           onClick: () => {
             setActiveCategory(category);
             updateMyAppsPreferences.mutate({ tab: category });
@@ -85,6 +87,7 @@ export const ToolbarCategories = () => {
   return (
     <div className="toolbar-categories-wrapper">
       <Toolbar
+        data-id="tabs-categories"
         variant="no-shadow"
         className="toolbar-categories px-4 py-2 ms-md-16 border border-secondary-300 rounded-3"
         items={filterToolbar}
