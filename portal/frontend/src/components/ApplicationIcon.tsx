@@ -15,6 +15,7 @@ export function ApplicationIcon({ data }: { data: Application }) {
     `application-icon rounded mb-8 d-flex align-items-center justify-content-center mx-auto`,
     data.color && `bg-${data.color}`,
     !data.color && 'bg-secondary',
+    data.category === 'connector' && 'application-icon-connector bg-white',
     'text-white fw-bold fs-4',
   );
 
