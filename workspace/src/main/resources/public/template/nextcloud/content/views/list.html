@@ -76,7 +76,7 @@
             </td>
             <td class="content"><a ng-click="onOpenContent(document)" ng-class="{ 'text-bold': document.type === 'folder' }">[[document.name]]</a></td>
             <td class="user">[[document.ownerDisplayName]]</td>
-            <td class="date small-font zero-mobile">[[vm.viewList.displayLastModified(document)]]</td>
+            <td class="date small-font zero-mobile">[[viewList.displayLastModified(document)]]</td>
             <td class="size small-font zero-mobile">[[formatDocumentSize(document.size)]]</td>
         </tr>
         </tbody>
