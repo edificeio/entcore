@@ -76,13 +76,30 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
         // an empty structureId means no structure
         final String structureId = request.getStructureId() != null ? request.getStructureId(): "";
         // an empty classId means no class
-        final String classId = request.getClassId() != null ? request.getStructureId(): "";
+        final String classId = request.getClassId() != null ? request.getClassId(): "";
 
         // Create group using existing service
         groupService.createOrUpdateManual(group, structureId, classId, event -> {
             if (event.isRight()) {
                 final String id = event.right().getValue().getString("id");
-                promise.complete(new CreateGroupResponseDTO(id));
+                
+                // Check if label is provided in the request
+                if (request.getLabel() != null && !request.getLabel().trim().isEmpty()) {
+                    // Add the label to the created group
+                    groupService.addLabelToGroup(id, request.getLabel())
+                        .onSuccess(labelResult -> {
+                            log.debug("Successfully added label {} to group {}", request.getLabel(), id);
+                            promise.complete(new CreateGroupResponseDTO(id));
+                        })
+                        .onFailure(error -> {
+                            log.error("Failed to add label {} to group {}: {}", request.getLabel(), id, error.getMessage());
+                            // We still consider the group creation as successful even if label addition fails
+                            promise.complete(new CreateGroupResponseDTO(id));
+                        });
+                } else {
+                    // No label to add, complete directly
+                    promise.complete(new CreateGroupResponseDTO(id));
+                }
             } else {
                 log.error("Error creating group: {}", event.left().getValue());
                 promise.fail(event.left().getValue());
