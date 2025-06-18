@@ -1,12 +1,9 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
-BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+MODIFIED_FILES=$(git diff --cached --name-only)
 
-git ls-remote --exit-code --heads origin $BRANCH >/dev/null 2>&1
-EXIT_CODE=$?
-
-if [ $EXIT_CODE = "0" ] && git diff --name-only @{upstream} | grep -q '^conversation/frontend'; then
+if echo "$MODIFIED_FILES" | grep -q '^conversation/frontend'; then
   echo "🔍 Changes detected in the conversation module..."
   pnpm --filter conversation run pre-commit
 fi
