@@ -223,7 +223,7 @@ export const useFolderMessages = (folderId: string, enabled = true) => {
       });
       if (hasDeletedMessages) {
         await queryClient.invalidateQueries({
-          queryKey: folderQueryOptions.getMessagesQuerykey(folderId, {}),
+          queryKey: folderQueryKeys.messages(folderId),
         });
       } else {
         return query.fetchNextPage(options);
