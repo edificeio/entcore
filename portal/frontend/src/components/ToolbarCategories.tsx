@@ -12,10 +12,14 @@ import { useCategoryStore } from '~/store/categoryStore';
 
 export const ToolbarCategories = () => {
   const { applications, isLoading, isError } = useApplications();
-  const { t } = useTranslation('common');
   const { setActiveCategory, activeCategory } = useCategoryStore();
+  const { t } = useTranslation('common');
 
-  const { data: myAppsPreferences } = useMyAppsPreferences();
+  const {
+    data: myAppsPreferences,
+    isError: isErrorMyApps,
+    isLoading: isLoadingMyApps,
+  } = useMyAppsPreferences();
   const updateMyAppsPreferences = useUpdateMyAppsPreferences();
 
   const hasConnectors = applications?.some(
@@ -23,11 +27,24 @@ export const ToolbarCategories = () => {
   );
 
   useEffect(() => {
-    if (myAppsPreferences?.tab) {
-      if (myAppsPreferences.tab === 'connector' && !hasConnectors) return;
-      setActiveCategory(myAppsPreferences.tab as Category);
+    if (isLoadingMyApps) return; // skeleton
+
+    if (
+      isErrorMyApps ||
+      !myAppsPreferences ||
+      (myAppsPreferences.tab === 'connector' && !hasConnectors)
+    ) {
+      setActiveCategory('all');
+    } else {
+      setActiveCategory((myAppsPreferences.tab ?? 'all') as Category);
     }
-  }, [myAppsPreferences?.tab, setActiveCategory, hasConnectors]);
+  }, [
+    myAppsPreferences,
+    isErrorMyApps,
+    isLoadingMyApps,
+    setActiveCategory,
+    hasConnectors,
+  ]);
 
   if (isLoading) return <div>Chargement des applications...</div>;
   if (isError) return <div>Erreur lors du chargement des applications.</div>;
