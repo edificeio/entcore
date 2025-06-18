@@ -107,9 +107,7 @@ export function Component() {
               </div>
             )}
 
-            <div className="flex-fill overflow-y-auto position-relative">
-              <Outlet />
-            </div>
+            <MainContent />
           </div>
         )}
 
@@ -119,9 +117,7 @@ export function Component() {
               <DesktopMenu />
             </div>
 
-            <div className="flex-fill overflow-y-auto position-relative">
-              <Outlet />
-            </div>
+            <MainContent />
           </div>
         )}
 
@@ -136,3 +132,9 @@ export function Component() {
     </div>
   );
 }
+
+const MainContent = () => (
+  <div className="flex-fill overflow-y-auto position-relative pb-64">
+    <Outlet />
+  </div>
+);
