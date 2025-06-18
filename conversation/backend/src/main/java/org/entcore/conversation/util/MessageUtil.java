@@ -33,6 +33,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.utils.StringUtils;
 
 /**
  * Utility class for handling messages, particularly for decoding display names stored in the database,
@@ -45,9 +46,11 @@ public class MessageUtil {
     final static public String RECIPIENT_ID = "id";
     final static public String RECIPIENT_NAME = "displayName";
     final static public String MSG_FROM = "from";
+    final static public String MSG_FROM_NAME = "fromName";
     final static public String MSG_TO = "to";
     final static public String MSG_CC = "cc";
     final static public String MSG_CCI = "cci";
+    final static public String FROM_DELETED_ID = "FROM_DELETED_ID";
 
     /**
      * Extracts users and groups from a message loaded from the database and populates the user and group indices.
@@ -63,6 +66,14 @@ public class MessageUtil {
         final String userId = userInfos.getUserId();
 		final Boolean notIsSender = (!userId.equals(message.getString(MSG_FROM)));
 		final List<String> userGroups = getOrElse(userInfos.getGroupsIds(), new ArrayList<>());
+
+        if(StringUtils.isEmpty(message.getString(MSG_FROM))) {
+            userIndex.put(
+                    FROM_DELETED_ID,
+                    JsonObject.of(RECIPIENT_ID, FROM_DELETED_ID, RECIPIENT_NAME, message.getString(MSG_FROM_NAME))
+            );
+            message.put(MSG_FROM, FROM_DELETED_ID);
+        }
 
         // Add connected user to index
         userIndex.put(
@@ -131,7 +142,13 @@ public class MessageUtil {
      */
     static public void formatRecipients(JsonObject message, final JsonObject userIndex, final JsonObject groupIndex) {
         final String from = message.getString(MSG_FROM);
+        boolean isDeleted = message.getString(MSG_FROM).equals(FROM_DELETED_ID);
         message.put(MSG_FROM, userIndex.getJsonObject(from));
+        if(isDeleted) {
+            JsonObject fromUser = userIndex.getJsonObject(from);
+            fromUser.put(RECIPIENT_ID, "");
+            message.put(MSG_FROM, fromUser);
+        }
 
         Stream.of(MSG_TO, MSG_CC, MSG_CCI).forEach(key -> {
             JsonArray recipients = (JsonArray) message.remove(key);
