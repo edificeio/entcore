@@ -1,6 +1,7 @@
 {
-  "bookmarks": ["Annuaire"],
+  "bookmarks": ["Annuaire", "Wiki"],
   "applications": [
+    "Annuaire",
     "Presences",
     "Directory",
     "Timeline",

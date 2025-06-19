@@ -5,18 +5,30 @@ import clsx from 'clsx';
 import { Dropdown, IconButton, IconButtonProps } from '@edifice.io/react';
 import { RefAttributes, useState } from 'react';
 import { ApplicationMenu } from './ApplicationMenu';
+import { useUserPreferencesStore } from '~/store/userPreferencesStore';
+import { useUpdateUserPreferences } from '~/services/queries/preferences';
 
 export function ApplicationWrapper({ data }: { data: Application }) {
   const [dropdownActive, setDropdownActive] = useState(false);
   const [hover, setHover] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(data.isFavorite);
   const classApplicationCard = clsx(
     'rounded application-card position-relative py-8 px-4',
     (dropdownActive || hover) && 'active border border-secondary bg-gray-200',
   );
+  const { bookmarks, toggleBookmark, applications, isHydrated } =
+    useUserPreferencesStore();
+  const isFavorite = isHydrated
+    ? bookmarks.includes(data.name)
+    : data.isFavorite;
+  const updatePreferences = useUpdateUserPreferences();
 
   const handleToggleFavorite = () => {
-    setIsFavorite(!isFavorite);
+    toggleBookmark(data.name);
+
+    updatePreferences.mutate({
+      bookmarks: useUserPreferencesStore.getState().bookmarks,
+      applications,
+    });
   };
 
   return (

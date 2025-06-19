@@ -54,7 +54,6 @@ export function ApplicationMenu({
       onClick={(e) => {
         e.preventDefault();
         onToggleFavorite();
-        console.log(data.isFavorite ? 'remove favorite' : 'add favorite');
       }}
       icon={<IconStar />}
     >

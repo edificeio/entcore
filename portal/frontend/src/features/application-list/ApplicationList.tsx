@@ -1,18 +1,17 @@
 import { useTranslation } from 'react-i18next';
-import { useApplications } from '~/services';
 import { useCategoryStore } from '~/store/categoryStore';
 import { getAppName } from '~/utils/get-app-name';
 import { ApplicationListGrid } from './ApplicationListGrid';
 import { EmptyCategory } from '~/components/EmptyCategory';
+import { Application } from '~/models/application';
 
-export function ApplicationList() {
-  const { applications, isLoading, isError } = useApplications();
+export function ApplicationList({
+  applications,
+}: {
+  applications: Application[];
+}) {
   const { t } = useTranslation('common');
   const { activeCategory } = useCategoryStore();
-
-  if (isLoading) return <div>Chargement des applications...</div>;
-  if (isError || !applications)
-    return <div>Erreur lors du chargement des applications.</div>;
 
   const sortedApps = [...applications].sort((a, b) =>
     getAppName(a, t).localeCompare(getAppName(b, t)),
