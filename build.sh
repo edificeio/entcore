@@ -12,22 +12,18 @@ then
   CI_OPTION=" -T "
 fi
 
-if [[ "$*" == *"--no-user"* ]]
-then
-  USER_OPTION=""
-else
-  case `uname -s` in
-    MINGW* | Darwin*)
-      USER_UID=1000
-      GROUP_UID=1000
-      ;;
-    *)
-      if [ -z ${USER_UID:+x} ]
-      then
-        USER_UID=`id -u`
-        GROUP_GID=`id -g`
-      fi
-  esac
+case `uname -s` in
+  MINGW* | Darwin*)
+    USER_UID=1000
+    GROUP_UID=1000
+    ;;
+  *)
+    if [ -z ${USER_UID:+x} ]
+    then
+      USER_UID=`id -u`
+      GROUP_GID=`id -g`
+    fi
+esac
   USER_OPTION="-u $USER_UID:$GROUP_GID"
 fi
 
@@ -186,10 +182,10 @@ buildFrontend () {
   if [ "$MODULE" = "" ] || [ "$MODULE" = "admin" ]; then
     case `uname -s` in
       MINGW*)
-        docker compose run --rm $USER_OPTION $CI_OPTION node16 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
+        docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node16 sh -c "npm install --no-bin-links && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
         ;;
       *)
-        docker compose run --rm $USER_OPTION $CI_OPTION node16 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
+        docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node16 sh -c "npm install && npm rm --no-save ngx-ode-core ngx-ode-sijil ngx-ode-ui && npm install --no-save ngx-ode-core@$BRANCH_NAME ngx-ode-sijil@$BRANCH_NAME ngx-ode-ui@$BRANCH_NAME && npm run build-docker-prod"
     esac
   fi
 }
@@ -218,7 +214,7 @@ localDep () {
       mkdir $dep.tar && mkdir $dep.tar/dist \
         && cp -R $PWD/../$dep/dist $PWD/../$dep/package.json $dep.tar
       tar cfzh $dep.tar.gz $dep.tar
-      docker-compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm install --no-save $dep.tar.gz"
+      docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION node sh -c "npm install --no-save $dep.tar.gz"
       rm -rf $dep.tar $dep.tar.gz
     fi
   done
@@ -227,7 +223,7 @@ localDep () {
 watch () {
   docker compose run $USER_OPTION $CI_OPTION --rm maven sh -c "mvn $MVN_OPTS help:evaluate -Dexpression=project.groupId -q -DforceStdout -pl $MODULE && echo -n '~$MODULE~' &&  mvn $MVN_OPTS help:evaluate -Dexpression=project.version -pl $MODULE -q -DforceStdout" > .version.properties
   docker compose run --rm \
-    $USER_OPTION $CI_OPTION \
+    -u "$USER_UID:$GROUP_GID" $CI_OPTION \
     -v $PWD/../$SPRINGBOARD:/home/node/$SPRINGBOARD \
     node sh -c "npx gulp watch-$MODULE $NODE_OPTION --springboard=../$SPRINGBOARD 2>/dev/null"
   rm -f .version.properties
@@ -236,7 +232,7 @@ watch () {
 # ex: ./build.sh -m=workspace -s=paris watch
 
 ngWatch () {
-  docker compose run --rm $USER_OPTION $CI_OPTION --publish 4200:4200 node16 sh -c "npm run start"
+  docker compose run --rm -u "$USER_UID:$GROUP_GID" $CI_OPTION --publish 4200:4200 node16 sh -c "npm run start"
 }
 
 infra () {
