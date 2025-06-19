@@ -12,8 +12,9 @@ export const useHydrateUserPreferences = () => {
   const { isHydrated, setPreferences } = useUserPreferencesStore();
 
   useEffect(() => {
-    if (preferences && !isHydrated) {
-      setPreferences(preferences);
+    if (!isHydrated && preferences !== undefined) {
+      const parsed = preferences ?? { applications: [], bookmarks: [] };
+      setPreferences(parsed);
     }
   }, [preferences, isHydrated, setPreferences]);
 
