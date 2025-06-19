@@ -347,7 +347,7 @@
         "casType": null,
         "scope": [""],
         "isExternal": false,
-        "isFavorite": true
+        "isFavorite": false
       },
       {
         "name": "Mediacentre",
