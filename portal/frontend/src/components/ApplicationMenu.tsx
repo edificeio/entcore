@@ -11,9 +11,11 @@ import { Application } from '~/models/application';
 export function ApplicationMenu({
   data,
   onToggleFavorite,
+  onActionDone,
 }: {
   data: Application;
   onToggleFavorite: () => void;
+  onActionDone: () => void;
 }) {
   const { t } = useTranslation('common');
   const libraryUrl = useLibraryUrl(data.displayName);
@@ -28,6 +30,7 @@ export function ApplicationMenu({
 
   const openInNewTab = (url: string, e?: React.MouseEvent) => {
     e?.preventDefault();
+    onActionDone();
     window.open(url, '_blank', 'noopener,noreferrer');
   };
 
@@ -35,8 +38,9 @@ export function ApplicationMenu({
     <Dropdown.Item
       data-id="btn-open"
       key="open"
-      onClick={(e) => {
-        e.preventDefault();
+      onClick={(e?: React.MouseEvent) => {
+        e?.preventDefault();
+        onActionDone();
         if (data.category === 'connector') {
           openInNewTab(data.address);
         } else {
@@ -47,12 +51,12 @@ export function ApplicationMenu({
     >
       {t('my.apps.open.application')}
     </Dropdown.Item>,
-
     <Dropdown.Item
       data-id={dataIdFavorite}
       key="favorite"
-      onClick={(e) => {
-        e.preventDefault();
+      onClick={(e?: React.MouseEvent) => {
+        e?.preventDefault();
+        onActionDone();
         onToggleFavorite();
       }}
       icon={<IconStar />}
