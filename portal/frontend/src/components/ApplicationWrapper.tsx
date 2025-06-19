@@ -3,20 +3,56 @@ import { ApplicationIcon } from './ApplicationIcon';
 import { IconOptions } from '@edifice.io/react/icons';
 import clsx from 'clsx';
 import { Dropdown, IconButton, IconButtonProps } from '@edifice.io/react';
-import { RefAttributes, useState } from 'react';
+import { RefAttributes, useRef, useState } from 'react';
 import { ApplicationMenu } from './ApplicationMenu';
+import { useUserPreferencesStore } from '~/store/userPreferencesStore';
+import { useUpdateUserPreferences } from '~/services/queries/preferences';
+
+function combineRefs<T>(
+  ...refs: (React.Ref<T> | undefined)[]
+): React.RefCallback<T> {
+  return (node: T) => {
+    for (const ref of refs) {
+      if (!ref) continue;
+      if (typeof ref === 'function') {
+        ref(node);
+      } else if (typeof ref === 'object' && 'current' in ref) {
+        (ref as React.MutableRefObject<T | null>).current = node;
+      }
+    }
+  };
+}
 
 export function ApplicationWrapper({ data }: { data: Application }) {
+  const buttonRef = useRef<HTMLButtonElement>(null);
   const [dropdownActive, setDropdownActive] = useState(false);
   const [hover, setHover] = useState(false);
-  const [isFavorite, setIsFavorite] = useState(data.isFavorite);
   const classApplicationCard = clsx(
     'rounded application-card position-relative py-8 px-4',
     (dropdownActive || hover) && 'active border border-secondary bg-gray-200',
   );
+  const { bookmarks, toggleBookmark, applications, isHydrated } =
+    useUserPreferencesStore();
+  const isFavorite = isHydrated
+    ? bookmarks.includes(data.name)
+    : data.isFavorite;
+  const updatePreferences = useUpdateUserPreferences();
+
+  const handleActionDone = () => {
+    setHover(false);
+    setDropdownActive(false);
+    setTimeout(() => {
+      buttonRef.current?.blur();
+    }, 0);
+  };
 
   const handleToggleFavorite = () => {
-    setIsFavorite(!isFavorite);
+    toggleBookmark(data.name);
+
+    updatePreferences.mutate({
+      bookmarks: useUserPreferencesStore.getState().bookmarks,
+      applications,
+    });
   };
 
   return (
@@ -53,6 +89,10 @@ export function ApplicationWrapper({ data }: { data: Application }) {
             <>
               <IconButton
                 {...triggerProps}
+                ref={combineRefs(
+                  triggerProps.ref as React.Ref<HTMLButtonElement>,
+                  buttonRef,
+                )}
                 data-id="btn-application-menu"
                 tabIndex={0}
                 type="button"
@@ -65,6 +105,7 @@ export function ApplicationWrapper({ data }: { data: Application }) {
               <ApplicationMenu
                 data={{ ...data, isFavorite }}
                 onToggleFavorite={handleToggleFavorite}
+                onActionDone={handleActionDone}
               />
             </>
           )}
