@@ -346,7 +346,8 @@
         "prefix": "/actualites",
         "casType": null,
         "scope": [""],
-        "isExternal": false
+        "isExternal": false,
+        "isFavorite": true
       },
       {
         "name": "Mediacentre",

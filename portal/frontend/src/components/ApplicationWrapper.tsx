@@ -9,10 +9,15 @@ import { ApplicationMenu } from './ApplicationMenu';
 export function ApplicationWrapper({ data }: { data: Application }) {
   const [dropdownActive, setDropdownActive] = useState(false);
   const [hover, setHover] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(data.isFavorite);
   const classApplicationCard = clsx(
     'rounded application-card position-relative py-8 px-4',
     (dropdownActive || hover) && 'active border border-secondary bg-gray-200',
   );
+
+  const handleToggleFavorite = () => {
+    setIsFavorite(!isFavorite);
+  };
 
   return (
     <a
@@ -26,7 +31,8 @@ export function ApplicationWrapper({ data }: { data: Application }) {
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
-      <ApplicationIcon data={data} />
+      <ApplicationIcon data={{ ...data, isFavorite }} isFavorite={isFavorite} />
+
       <h1 className="small text-gray-900 ellipsis-3 application-title">
         {data.appName}
       </h1>
@@ -56,7 +62,10 @@ export function ApplicationWrapper({ data }: { data: Application }) {
                 className="bg-secondary-200 border border-white text-secondary"
                 icon={<IconOptions />}
               />
-              <ApplicationMenu data={data} />
+              <ApplicationMenu
+                data={{ ...data, isFavorite }}
+                onToggleFavorite={handleToggleFavorite}
+              />
             </>
           )}
         </Dropdown>
