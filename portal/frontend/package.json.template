@@ -39,6 +39,7 @@
     "clsx": "^2.1.1",
     "i18next": "23.8.1",
     "i18next-http-backend": "2.4.2",
+    "framer-motion": "^12.18.1",
     "ode-explorer": "develop-pedago",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
