@@ -41,6 +41,7 @@ body {
     line-height: 56px;
     width: 56px;
     display: inline-block;
+    overflow: hidden;
 }
 .application-icon.application-icon-connector {
     color: black !important;
