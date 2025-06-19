@@ -7,6 +7,7 @@ import { RefAttributes, useRef, useState } from 'react';
 import { ApplicationMenu } from './ApplicationMenu';
 import { useUserPreferencesStore } from '~/store/userPreferencesStore';
 import { useUpdateUserPreferences } from '~/services/queries/preferences';
+import { useApplications } from '~/services';
 
 function combineRefs<T>(
   ...refs: (React.Ref<T> | undefined)[]
@@ -24,6 +25,7 @@ function combineRefs<T>(
 }
 
 export function ApplicationWrapper({ data }: { data: Application }) {
+  const { applications: displayedApps } = useApplications();
   const buttonRef = useRef<HTMLButtonElement>(null);
   const [dropdownActive, setDropdownActive] = useState(false);
   const [hover, setHover] = useState(false);
@@ -51,7 +53,7 @@ export function ApplicationWrapper({ data }: { data: Application }) {
 
     updatePreferences.mutate({
       bookmarks: useUserPreferencesStore.getState().bookmarks,
-      applications,
+      applications: displayedApps?.map((app) => app.name) ?? [],
     });
   };
 
