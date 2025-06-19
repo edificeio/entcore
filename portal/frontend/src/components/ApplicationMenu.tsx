@@ -8,7 +8,13 @@ import {
 import { useTranslation } from 'react-i18next';
 import { Application } from '~/models/application';
 
-export function ApplicationMenu({ data }: { data: Application }) {
+export function ApplicationMenu({
+  data,
+  onToggleFavorite,
+}: {
+  data: Application;
+  onToggleFavorite: () => void;
+}) {
   const { t } = useTranslation('common');
   const libraryUrl = useLibraryUrl(data.displayName);
   const { currentLanguage } = useEdificeClient();
@@ -45,9 +51,11 @@ export function ApplicationMenu({ data }: { data: Application }) {
     <Dropdown.Item
       data-id={dataIdFavorite}
       key="favorite"
-      onClick={() =>
-        console.log(data.isFavorite ? 'remove favorite' : 'add favorite')
-      }
+      onClick={(e) => {
+        e.preventDefault();
+        onToggleFavorite();
+        console.log(data.isFavorite ? 'remove favorite' : 'add favorite');
+      }}
       icon={<IconStar />}
     >
       {data.isFavorite
