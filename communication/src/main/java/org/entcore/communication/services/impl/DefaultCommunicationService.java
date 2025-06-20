@@ -611,6 +611,13 @@ public class DefaultCommunicationService implements CommunicationService {
 			query.append(" MATCH (n:User {id: {userId}})-[:COMMUNIQUE]->(g:Group) ");
 			query.append("WITH (REDUCE(acc=[], groups IN COLLECT(COALESCE(g.communiqueWith, [])) | acc+groups) + ")
 					.append(myGroupQuery).append(") as comGroups ");
+			//filter user and group with a distinction on the type to help neo4j to optimize
+			if (additionalParams.getJsonArray("expectedIdsOfUsersAndGroups") != null) {
+				query.append("OPTIONAL MATCH (u:User) WHERE u.id IN {expectedIdsOfUsersAndGroups} and u.id <> {userId} ");
+				query.append("WITH comGroups, collect(u) as cu ");
+				query.append("OPTIONAL MATCH (g:Group) WHERE g.id IN {expectedIdsOfUsersAndGroups} ");
+				query.append("WITH comGroups, cu, collect(g) as cg with comGroups, cg+cu as cug unwind cug as m ");
+			}
 			query.append("MATCH p=(g:Group)<-[:DEPENDS*0..1]-cg-[:COMMUNIQUE*0..1]->m ");
 			if (userProfile == null || "Student".equals(userProfile) || "Relative".equals(userProfile) || discoverVisibleExpectedProfile.contains(userProfile) ) {
 				union = new StringBuilder("MATCH p=(n:User)-[:COMMUNIQUE_DIRECT]->m " +
