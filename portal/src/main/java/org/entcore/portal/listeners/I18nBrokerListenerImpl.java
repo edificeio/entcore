@@ -362,7 +362,12 @@ public class I18nBrokerListenerImpl implements I18nBrokerListener {
                 });
 
                 final HttpServerRequest httpRequest = new JsonHttpServerRequest(new JsonObject(), headers);
-                translations.mergeIn(i18n.load(httpRequest));
+                final JsonObject translationsForRequest = i18n.load(httpRequest);
+                if(translationsForRequest != null) {
+                    translations.mergeIn(translationsForRequest);
+                } else {
+                    log.debug("No translations found for headers in application " + application);
+                }
             } else {
                 // Use explicit language and domain
                 final LangAndDomain langAndDomain = request.getLangAndDomain();
@@ -386,10 +391,9 @@ public class I18nBrokerListenerImpl implements I18nBrokerListener {
             final FetchTranslationsResponseDTO response = new FetchTranslationsResponseDTO(translationsMap);
             promise.complete(response);
 
-            log.debug("Successfully fetched {} translations for application: {}",
-                    translationsMap.size(), application);
+            log.debug("Successfully fetched " + translationsMap.size() + " translations for application " + application);
         } catch (Exception e) {
-            log.error("Error processing translations for application: {}", application, e);
+            log.error("Error processing translations for application: " + application, e);
             promise.fail("i18n.processing.error");
         }
 
