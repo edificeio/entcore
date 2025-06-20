@@ -242,14 +242,14 @@
           <s5l>group.details.broadcast.autoLink.profilesSection.include.personnels</s5l>
         </label>
       </div>
-
       <div *ngIf="showPersonnelSubSection || form.profile === 'Personnel'" class="bordered-section">
         <!-- Functions -->
         <div class="is-display-flex has-vertical-padding-10">
           <input
-            type="checkbox"
-            [(ngModel)]="form.personnelSubSectionCheckbox"
-            name="personnelSubSectionCheckbox"
+            type="radio"
+            [(ngModel)]="form.personnelSubSectionRadio"
+            value="functionGroups"
+            name="personnelSubSectionRadio"
             id="autolinkFunctions"
             (click)="handleFunctionsClick($event)"
           />
@@ -257,7 +257,7 @@
             <s5l>group.details.broadcast.autoLink.profilesSection.include.teachers.functions</s5l>
           </label>
         </div>
-        <div *ngIf="showFunctionsPicker || form.personnelSubSectionCheckbox">
+        <div *ngIf="showFunctionsPicker || form.personnelSubSectionRadio === 'functionGroups'">
           <ode-multi-combo
             [comboModel]="functionOptions"
             [(outputModel)]="form.selectedFunctions"
@@ -269,6 +269,39 @@
             <div
               *ngFor="let item of form.selectedFunctions"
               (click)="unselectFunction(item)"
+            >
+              <s5l>{{ item }}</s5l>
+              <i class="fa fa-trash is-size-5" *ngIf="showActions"></i>
+            </div>
+          </div>
+        </div>
+
+         <!-- UserPosition -->
+        <div class="is-display-flex has-vertical-padding-10">
+          <input
+            type="radio"
+            [(ngModel)]="form.personnelSubSectionRadio"
+            value="usersPositions"
+            name="personnelSubSectionRadio"
+            id="autolinkUsersPosition"
+            (click)="handleUsersPositionsClick($event)"
+          />
+          <label for="autolinkUsersPosition" class="has-left-padding-10">
+            <s5l>group.details.broadcast.autoLink.profilesSection.include.teachers.usersPositions</s5l>
+          </label>
+        </div>
+        <div *ngIf="showUsersPositionsPicker || form.personnelSubSectionRadio === 'usersPositions'">
+          <ode-multi-combo
+            [comboModel]="usersPositionsOptions"
+            [(outputModel)]="form.selectedUsersPositions"
+            [title]="'functionsgroup.multi.combo.title' | translate"
+            *ngIf="showActions"
+          >
+          </ode-multi-combo>
+          <div class="multi-combo-companion">
+            <div
+              *ngFor="let item of form.selectedUsersPositions"
+              (click)="unselectUsersPositions(item)"
             >
               <s5l>{{ item }}</s5l>
               <i class="fa fa-trash is-size-5" *ngIf="showActions"></i>

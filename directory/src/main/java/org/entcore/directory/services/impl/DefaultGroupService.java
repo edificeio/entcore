@@ -102,7 +102,7 @@ public class DefaultGroupService implements GroupService {
 				"g.createdAt as createdAt, g.createdByName as createdByName, g.modifiedAt as modifiedAt, g.modifiedByName as modifiedByName, " +
 				"g.autolinkTargetAllStructs as autolinkTargetAllStructs, g.autolinkTargetStructs as autolinkTargetStructs," +
 				"g.autolinkUsersFromGroups as autolinkUsersFromGroups, type, g.users as internalCommunicationRule, "+
-				"g.lockDelete AS lockDelete, coalesce(g.nbUsers,0) as nbUsers, " +
+				"g.lockDelete AS lockDelete, coalesce(g.nbUsers,0) as nbUsers, g.autolinkUsersFromPositions as autolinkUsersFromPositions, " +
 				"CASE WHEN any(x in classes where x <> {name: null, id: null}) THEN classes END as classes," +
 				"CASE WHEN any(x in structures where x <> {name: null, id: null}) THEN structures END as structures, " +
 				"CASE WHEN (g: ProfileGroup)-[:DEPENDS]-(:Structure) THEN 'StructureGroup' " +
@@ -112,6 +112,7 @@ public class DefaultGroupService implements GroupService {
 						" g.autolinkTargetAllStructs = true " +
 						" OR size(coalesce(g.autolinkUsersFromGroups, [])) > 0 " +
 						" OR size(coalesce(g.autolinkTargetStructs, [])) > 0 " +
+						" OR size(coalesce(g.autolinkUsersFromPositions, [])) > 0 " +
 				 	") THEN 'BroadcastGroup' " +
 				"END as subType";
 		neo.execute(query, params, validResultHandler(results));
@@ -208,6 +209,7 @@ public class DefaultGroupService implements GroupService {
 					" g.autolinkTargetAllStructs = true " +
 					" OR size(coalesce(g.autolinkUsersFromGroups, [])) > 0 " +
 					" OR size(coalesce(g.autolinkTargetStructs, [])) > 0 " +
+					" OR size(coalesce(g.autolinkUsersFromPositions, [])) > 0 " +
 				") THEN 'BroadcastGroup' END as subType" : "");
 
 		final JsonObject params = new JsonObject().put("groupIds", getOrElse(groupIds, new JsonArray()));

@@ -11,9 +11,10 @@ class AutolinkFormModel {
     subStructuresIds: Array<string> = [];
     profile: string;
     teacherSubSectionRadio: string;
-    personnelSubSectionCheckbox: boolean;
+    personnelSubSectionRadio: string;
     selectedDisciplines: Array<string> = [];
     selectedFunctions: Array<string> = [];
+    selectedUsersPositions: Array<string> = [];
 }
 
 type StructureListItem = {
@@ -44,6 +45,9 @@ export class GroupAutolinkComponent extends OdeComponent {
     @Input()
     showActions: boolean;
 
+    @Input()
+    usersPositionsOptions: Array<string>;
+
     public form: AutolinkFormModel;
 
     public lightboxSubStructureIds: Array<string> = [];
@@ -53,6 +57,7 @@ export class GroupAutolinkComponent extends OdeComponent {
     public showPersonnelSubSection: boolean;
     public showDisciplinesPicker: boolean;
     public showFunctionsPicker: boolean;
+    public showUsersPositionsPicker: boolean;
     // hack for AOT build (used for this.checked on radio onclick)
     public checked: boolean;
     public structureTreeItems: Array<StructureListItem>;
@@ -77,6 +82,8 @@ export class GroupAutolinkComponent extends OdeComponent {
         this.form = new AutolinkFormModel();
 
         this.form.teacherSubSectionRadio = 'all';
+        this.showPersonnelSubSection = false;
+        this.showTeachersSubSection = false;
 
         if (this.group.autolinkTargetAllStructs) {
             this.form.subStructuresRadio = 'all';
@@ -110,12 +117,20 @@ export class GroupAutolinkComponent extends OdeComponent {
 
             this.functionOptions.forEach(f => {
                 if (this.group.autolinkUsersFromGroups.includes(f)) {
-                    this.form.personnelSubSectionCheckbox = true;
+                    this.form.personnelSubSectionRadio = 'functionGroups';
                     this.form.selectedFunctions.push(f);
                     this.form.profile = 'Personnel';
                 }
-            });
+            });          
         }
+
+        this.usersPositionsOptions.forEach(f => {
+            if (this.group.autolinkUsersFromPositions.includes(f)) {
+                this.form.personnelSubSectionRadio = 'usersPositions';
+                this.form.selectedUsersPositions.push(f);
+                this.form.profile = 'Personnel';
+            }
+        });
         this.structureTreeItems = this.getSubStructuresTreeItems();
     }
 
@@ -127,7 +142,8 @@ export class GroupAutolinkComponent extends OdeComponent {
             name: this.group.name,
             autolinkTargetAllStructs: false,
             autolinkTargetStructs: [],
-            autolinkUsersFromGroups: []
+            autolinkUsersFromGroups: [],
+            autolinkUsersFromPositions: []
         };
 
         // populate subStructures information
@@ -151,10 +167,14 @@ export class GroupAutolinkComponent extends OdeComponent {
                 groupUpdatePayload.autolinkUsersFromGroups.push('Teacher');
             }
         } else if (this.form.profile === 'Personnel') {
-            if (this.form.personnelSubSectionCheckbox &&
+            if (this.form.personnelSubSectionRadio === 'functionGroups' &&
                 this.form.selectedFunctions && 
                 this.form.selectedFunctions.length > 0) {
                 groupUpdatePayload.autolinkUsersFromGroups = groupUpdatePayload.autolinkUsersFromGroups.concat(this.form.selectedFunctions);
+            } else if(this.form.personnelSubSectionRadio === 'usersPositions' &&
+                this.form.selectedUsersPositions && 
+                this.form.selectedUsersPositions.length > 0) {
+                groupUpdatePayload.autolinkUsersFromPositions = groupUpdatePayload.autolinkUsersFromGroups.concat(this.form.selectedUsersPositions);
             } else {
                 groupUpdatePayload.autolinkUsersFromGroups.push('Personnel');
             }
@@ -231,12 +251,27 @@ export class GroupAutolinkComponent extends OdeComponent {
       }
     }
 
+    public unselectUsersPositions(item: string): void {
+      if (this.showActions) {
+        this.form.selectedUsersPositions.splice(this.form.selectedUsersPositions.indexOf(item), 1);
+      } 
+    }
+
     public handleFunctionsClick($event): void {
-        if ($event.target.checked) {
+        if (this.form.personnelSubSectionRadio === 'functionGroups') {
             this.showFunctionsPicker = true;
         } else {
             this.form.selectedFunctions = [];
             this.showFunctionsPicker = false;
+        }
+    }
+
+    public handleUsersPositionsClick($event): void {
+        if (this.form.personnelSubSectionRadio === 'usersPositions') {
+            this.showUsersPositionsPicker = true;
+        } else {
+            this.form.selectedUsersPositions = [];
+            this.showUsersPositionsPicker = false;
         }
     }
 

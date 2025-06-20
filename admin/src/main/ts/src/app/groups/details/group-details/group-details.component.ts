@@ -13,6 +13,7 @@ import { CommunicationRulesService } from '../../../communication/communication-
 import { GroupsService } from '../../groups.service';
 import { GroupsStore } from '../../groups.store';
 import { GroupIdAndInternalCommunicationRule } from '../group-internal-communication-rule.resolver';
+import { UserPositionService } from 'src/app/core/services/user-position.service';
 
 @Component({
     selector: 'ode-group-detail',
@@ -39,6 +40,7 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
 
     public autolinkFunctionOptions: Array<string> = [];
     public autolinkDisciplineOptions: Array<string> = [];
+    public usersPositionsOptions: Array<string> = [];
 
     public showActions: boolean;
     
@@ -48,6 +50,7 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
                 public groupNameService: GroupNameService,
                 private groupsService: GroupsService,
                 private spinnerService: SpinnerService,
+                private usersPositionService: UserPositionService,
                 injector: Injector) {
                 super(injector);
     }
@@ -120,6 +123,20 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
                             resolve();
                         }, reject);
                 })
+            );
+
+            this.spinnerService.perform('portal-content',
+                new Promise<void>((resolve) => {
+                    this.usersPositionService.searchUserPositions({
+                    structureId: this.groupsStore.structure.id,
+                    includeSubStruct: true
+                    }).then((usersPosition) => {  
+                        this.usersPositionsOptions = Array.from(new Set(usersPosition.map(userP => userP.name)));
+                        this.usersPositionsOptions.sort();                   
+                        this.changeDetector.markForCheck();
+                        resolve();
+                    });
+                })                
             );
         }
 

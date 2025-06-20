@@ -36,6 +36,7 @@ import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
 
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
@@ -140,6 +141,7 @@ public class Structure {
 				struct.put("joinKey", joinKey);
 			}
 			joinKey.add(externalId);
+			joinKey = new JsonArray(joinKey.stream().distinct().collect(Collectors.toList()));
 			String query =
 					"MATCH (s:Structure {externalId: {externalId}}) " +
 					"SET s.joinKey = {joinKey} ";

@@ -6,13 +6,14 @@ import static io.vertx.core.impl.ConversionHelper.toJsonArray;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
+import org.apache.commons.collections4.CollectionUtils;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.test.TestHelper;
 import org.testcontainers.containers.Neo4jContainer;
 
-import java.util.Arrays;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * <p>
@@ -119,6 +120,15 @@ public class DataHelper {
                         .put("fgExtId", UUID.randomUUID().toString())
                         .put("fgName", structure.getName() + "-AdminLocal")
                         .put("fgId", UUID.randomUUID().toString()));
+        return this;
+    }
+
+    public DataHelper withStructureLink(String parentStructId, String childStructId) {
+        sb.add("MATCH(parent:Structure {id: {parentStructId}}),  (child:Structure {id: {childStructId}}) " +
+               " MERGE (parent)<-[:HAS_ATTACHMENT]-(child)",
+                new JsonObject()
+                        .put("parentStructId", parentStructId)
+                        .put("childStructId", childStructId));
         return this;
     }
 
@@ -266,6 +276,38 @@ public class DataHelper {
         return this;
     }
 
+    /**
+     * With UserPosition :
+     * <ul>is linked to a UserPosition </ul>
+     * @param userPosition simpleName of the user position
+     * @param userId id of the user
+     * @param structureId Id of the structure related to the user position
+     * @return This helper
+     */
+    public DataHelper withUserPosition(final String userPosition, final String userId,  final String structureId) {
+        sb.add("MATCH (s:Structure {id: {structureId}}) " +
+                " MERGE (s)<-[:IN]-(p:UserPosition {name : {name}}) " +
+                " ON CREATE SET " +
+                        "   p.id = {id}, " +
+                        "   p.simplifiedName = {simplifiedName}," +
+                        "   p.name = {name}," +
+                        "   p.source = \"MANUAL\" ",
+                new JsonObject()
+                        .put("structureId", structureId)
+                        .put("id", UUID.randomUUID().toString())
+                        .put("name", userPosition.toUpperCase(Locale.ROOT))
+                        .put("simplifiedName", userPosition.toLowerCase()));
+
+        sb.add("MATCH (p:UserPosition {name: {positionName}})-[:IN]->(s:Structure {id : {structureId}})," +
+                        " (u:User {id : {userId}}) " +
+                        "MERGE (u)-[:HAS_POSITION]->(p) ",
+                new JsonObject()
+                    .put("structureId", structureId)
+                    .put("userId", userId)
+                    .put("positionName", userPosition.toUpperCase()));
+        return this;
+    }
+
 
     private DataHelper withClassGroup(final GroupTest group, final String classId, final Profile profile) {
         sb.add("MATCH (c:Class{id: {classId}})-[:BELONGS]->(s:Structure)<-[:DEPENDS]-(spg:ProfileGroup)-[:HAS_PROFILE]->(:Profile{id: {profileId}}) " +
@@ -276,6 +318,21 @@ public class DataHelper {
                         .put("groupName", group.getName())
                         .put("profileId", profile.id)
                         .put("spgFilter", profile.name));
+        return this;
+    }
+
+    public DataHelper withManualGroup(final GroupTest group, final String structureId, final String subType, final List<Object> autolinkUsersFromPositions) {
+        sb.add("MATCH(s:Structure {id: {structureId}}) " +
+                "MERGE (t:Group:ManualGroup:Visible { id : {groupId}}) " +
+                "MERGE (t)-[:DEPENDS]->(s) " +
+                "SET t.name = {groupName}, t.subType = {subType}, t.autolinkUsersFromPositions= {autolinkUsersFromPositions}" +
+                "RETURN t.id as id, t.createdAt as createdAt, t.createdByName as createdByName, t.modifiedAt as modifiedAt, t.modifiedByName as modifiedByName ",
+                new JsonObject()
+                        .put("groupId", group.getId())
+                        .put("structureId", structureId)
+                        .put("groupName", group.getName())
+                        .put("subType", subType)
+                        .put("autolinkUsersFromPositions",toJsonArray(autolinkUsersFromPositions)));
         return this;
     }
 
