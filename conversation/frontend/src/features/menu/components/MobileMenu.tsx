@@ -7,7 +7,6 @@ import {
   IconSend,
   IconWrite,
 } from '@edifice.io/react/icons';
-import { t } from 'i18next';
 import { ReactElement } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FolderActionDropdown } from '~/components';
@@ -67,7 +66,7 @@ function asFolderItem(
     trash: number;
   },
 ) {
-  const folderName = t(`${folder}.folder`);
+  const folderName = folder;
   return {
     name: folderName,
     key: folder,
@@ -114,11 +113,15 @@ export function MobileMenu() {
     { name: 'outbox', icon: <IconSend /> },
     { name: 'draft', icon: <IconWrite /> },
     { name: 'trash', icon: <IconDelete /> },
-  ).map((item) => ({
-    ...item,
-    ...asFolderItem(item.name, counters),
-    onClick: handleItemClick,
-  }));
+  ).map((item) => {
+    const folderItem = asFolderItem(item.name, counters);
+    folderItem.name = t(`${folderItem.name}.folder`);
+    return {
+      ...item,
+      ...folderItem,
+      onClick: handleItemClick,
+    };
+  });
 
   if (!selectedItem && selectedSystemFolderId) {
     selectedItem = systemFolderItems.filter(
