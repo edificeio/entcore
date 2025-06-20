@@ -31,8 +31,10 @@ public class UserPositionController extends BaseController {
 	public void getPositions(HttpServerRequest request) {
 		final String content = request.getParam("content");
 		final String structureId = request.getParam("structureId");
+		final boolean includeSubStruct = Boolean.parseBoolean(request.getParam("includeSubStruct", "FALSE"));
+
 		UserUtils.getAuthenticatedUserInfos(eb, request).onSuccess(adminInfos -> {
-			userPositionService.getUserPositions(content, structureId, adminInfos)
+			userPositionService.getUserPositions(content, structureId, adminInfos, includeSubStruct)
 					.onSuccess(userPositions -> Renders.render(request, userPositions))
 					.onFailure(th -> {
 						Renders.log.warn("An error occurred while fetching user positions", th);

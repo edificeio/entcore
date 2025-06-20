@@ -21,6 +21,12 @@
       "items": {
         "type": "string"
       }
+    },
+    "autolinkUsersFromPositions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
     }
   },
   "required": [
