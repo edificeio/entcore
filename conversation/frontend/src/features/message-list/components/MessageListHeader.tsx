@@ -18,6 +18,8 @@ export function MessageListHeader() {
   const { lg } = useBreakpoint();
   const [searchParams, setSearchParams] = useSearchParams();
   const { setSelectedMessageIds } = useAppActions();
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [isSearchDisabled, setIsSearchDisabled] = useState(true);
 
   const filterEnum = {
     unread: 'UNREAD',
@@ -43,12 +45,15 @@ export function MessageListHeader() {
   const handleSearchTextChange = (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
-    setSearchText(event.target.value);
+    const value = event.target.value;
+    setSearchText(value);
 
-    if (event.target.value === '') {
+    if (value === '') {
       searchParams.delete('search');
       setSearchParams(searchParams, { replace: true });
     }
+
+    setIsSearchDisabled(value.length < 3);
   };
 
   const handleSearchClick = () => {
@@ -71,16 +76,31 @@ export function MessageListHeader() {
     setSearchParams(searchParams, { replace: true });
   }, [searchParams, setSearchParams, setSelectedMessageIds]);
 
+  const handleSearchFocus = () => {
+    setIsSearchFocused(true);
+  };
+
+  const handleSearchBlur = () => {
+    setIsSearchFocused(false);
+  };
+
   return (
     <div className="d-flex gap-16 align-items-center justify-content-between px-16 px-lg-24 py-16 border-bottom">
       <SearchBar
-        placeholder={t('search.placeholder')}
+        placeholder={
+          isSearchFocused
+            ? t('search.placeholder.focused')
+            : t('search.placeholder')
+        }
         onChange={handleSearchTextChange}
         onClick={handleSearchClick}
         isVariant={false}
         size="lg"
         value={searchText}
         data-testid="search-bar"
+        onFocus={handleSearchFocus}
+        onBlur={handleSearchBlur}
+        buttonDisabled={isSearchDisabled}
       />
       {!theme?.is1d && (
         <Dropdown data-testid="filter-dropdown">
