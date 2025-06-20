@@ -55,9 +55,18 @@ export function ApplicationList({ applications }: Props) {
     );
   }
 
-  const filteredApps = sortedApps.filter(
-    (app) => app.category === activeCategory,
-  );
+  const filteredApps =
+    activeCategory === 'favorites'
+      ? sortedApps
+          .filter((app) => app.isFavorite === true)
+          .sort((a, b) => {
+            if (a.category === 'connector' && b.category !== 'connector')
+              return 1;
+            if (a.category !== 'connector' && b.category === 'connector')
+              return -1;
+            return 0;
+          })
+      : sortedApps.filter((app) => app.category === activeCategory);
 
   return filteredApps.length > 0 ? (
     <ApplicationListGrid applications={filteredApps} />

@@ -33,8 +33,7 @@ export function ApplicationWrapper({ data }: { data: Application }) {
     'rounded application-card position-relative py-8 px-4',
     (dropdownActive || hover) && 'active border border-secondary bg-gray-200',
   );
-  const { bookmarks, toggleBookmark, applications, isHydrated } =
-    useUserPreferencesStore();
+  const { bookmarks, toggleBookmark, isHydrated } = useUserPreferencesStore();
   const isFavorite = isHydrated
     ? bookmarks.includes(data.name)
     : data.isFavorite;
