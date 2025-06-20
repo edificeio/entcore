@@ -11,17 +11,18 @@ import { Attachment as AttachmentMetaData } from '~/models';
 export interface MessageAttachmentsProps {
   attachment: AttachmentMetaData;
   onWantAddToWorkspace: (attachment: AttachmentMetaData) => void;
+  onDelete: (attachmentId: string) => void;
   editMode?: boolean;
 }
 
 export function MessageAttachment({
   attachment,
   onWantAddToWorkspace,
+  onDelete,
   editMode,
 }: MessageAttachmentsProps) {
   const { t } = useI18n();
-  const { detachFile, detachInProgress, getDownloadUrl } =
-    useMessageAttachments();
+  const { detachInProgress, getDownloadUrl } = useMessageAttachments();
 
   const downloadUrl = getDownloadUrl(attachment.id);
 
@@ -54,7 +55,7 @@ export function MessageAttachment({
               type="button"
               icon={<IconDelete />}
               variant="ghost"
-              onClick={() => detachFile(attachment.id)}
+              onClick={() => onDelete(attachment.id)}
               disabled={detachInProgress.has(attachment.id)}
             />
           )}
