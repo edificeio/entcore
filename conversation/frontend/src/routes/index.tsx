@@ -7,9 +7,7 @@ import { PageError } from './errors/page-error';
 
 const routes = (_queryClient: QueryClient): RouteObject[] => [
   {
-    // Manage redirections before resolving to the final route.
-    loader: manageRedirections,
-    element: <Outlet></Outlet>,
+    element: <Outlet />,
     children: [
       /* Main route */
       {
@@ -31,11 +29,11 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
               {
                 path: '',
                 async lazy() {
-                  const { Component, loader } = await import(
+                  const { Component, loaderForSystemFolders } = await import(
                     '~/routes/pages/Folder'
                   );
                   return {
-                    loader: loader(_queryClient),
+                    loader: loaderForSystemFolders(_queryClient),
                     Component,
                   };
                 },
@@ -134,7 +132,15 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
 
 export const basename = import.meta.env.PROD ? '/conversation' : '/';
 
-export const router = (queryClient: QueryClient) =>
-  createBrowserRouter(routes(queryClient), {
+export const router = (queryClient: QueryClient) => {
+  const redirectPath = manageRedirections();
+
+  if (redirectPath) {
+    const newUrl =
+      window.location.origin + basename.replace(/\/$/g, '') + redirectPath;
+    window.history.replaceState(null, '', newUrl);
+  }
+  return createBrowserRouter(routes(queryClient), {
     basename,
   });
+};
