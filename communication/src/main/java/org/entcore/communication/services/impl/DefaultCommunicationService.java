@@ -40,23 +40,12 @@ import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.communication.services.CommunicationService;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import static io.vertx.core.json.JsonObject.mapFrom;
-import static org.entcore.common.neo4j.Neo4jResult.fullNodeMergeHandler;
-import static org.entcore.common.neo4j.Neo4jResult.validEmptyHandler;
-import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
-import static org.entcore.common.neo4j.Neo4jResult.validUniqueResult;
-import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
+import static org.entcore.common.neo4j.Neo4jResult.*;
 
 public class DefaultCommunicationService implements CommunicationService {
 
