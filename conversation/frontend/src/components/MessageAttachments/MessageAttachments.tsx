@@ -40,12 +40,12 @@ export function MessageAttachments({
     attachFiles(event.target.files);
   };
 
-  const handleDetachAll = () => {
+  const handleDetachAllClick = () => {
     detachFiles(attachments.map((attachment) => attachment.id));
     if (inputRef.current) inputRef.current.value = '';
   };
 
-  const handleDetach = (attachmentId: string) => {
+  const handleDetachClick = (attachmentId: string) => {
     detachFile(attachmentId);
     if (inputRef.current) inputRef.current.value = '';
   };
@@ -97,7 +97,7 @@ export function MessageAttachments({
                     type="button"
                     icon={<IconDelete />}
                     variant="ghost"
-                    onClick={handleDetachAll}
+                    onClick={handleDetachAllClick}
                     disabled={isMutating}
                   />
                 )}
@@ -110,7 +110,7 @@ export function MessageAttachments({
                 <MessageAttachment
                   attachment={attachment}
                   editMode={editMode}
-                  onDelete={handleDetach}
+                  onDelete={handleDetachClick}
                   onWantAddToWorkspace={(attachment) =>
                     handleWantAddToWorkspace([attachment])
                   }
