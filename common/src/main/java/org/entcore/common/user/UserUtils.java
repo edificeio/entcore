@@ -29,12 +29,7 @@ import fr.wseduc.webutils.security.JWT;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
 import fr.wseduc.webutils.security.oauth.OAuthResourceProvider;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
@@ -43,8 +38,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
 import io.vertx.core.shareddata.LocalMap;
+import org.apache.commons.collections4.CollectionUtils;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.session.SessionRecreationRequest;
 import org.entcore.common.utils.HostUtils;
@@ -53,15 +48,10 @@ import org.entcore.common.validation.StringValidation;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static fr.wseduc.webutils.Utils.getOrElse;
-import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
-import static fr.wseduc.webutils.Utils.isEmpty;
-import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static fr.wseduc.webutils.Utils.*;
 import static fr.wseduc.webutils.http.Renders.unauthorized;
 import static org.entcore.common.http.filter.AppOAuthResourceProvider.getTokenId;
 
@@ -654,39 +644,33 @@ public class UserUtils {
 
 	/**
 	 * Check if a user can communicate with some other (visible) users or groups.
+	 *
 	 * @param userId  id of the sender
-	 * @param checkIds	ids of the users or groups to check
+	 * @param checkIds list of ids to check
 	 * @return JsonArray of JsonObjects:
 	 * {
-	 *   id: recipient ID which the sender can communicate with
+	 * id: recipient ID which the sender can communicate with
 	 * }
 	 */
 	public static Future<JsonArray> filterVisibles(EventBus eb, String userId, JsonArray checkIds) {
 		if(StringUtils.isEmpty(userId) || checkIds == null || checkIds.isEmpty()) {
 			return Future.succeededFuture(new JsonArray());
 		}
-		// If checkIds is too big, it may reach a query size limit. So partition it.
-		final int partitionSize = getSharesPartitionSize();
-		final AtomicInteger counter = new AtomicInteger(0);	// streams are parallel, so we need a thread-safe counter
 		final List<Future<JsonArray>> visibleFutures = new ArrayList<>();
-        checkIds.stream()
-		.collect(Collectors.groupingBy(it -> counter.getAndIncrement() / partitionSize))
-		.values()
-		.forEach(checkIdsChunk -> {
-			final JsonArray ids = new JsonArray(checkIdsChunk);
-			visibleFutures.add(findVisibles(eb, 
-				userId, 
-				" MATCH (visibles) RETURN DISTINCT visibles.id as id ",
-				new JsonObject().put("checkIds", ids),
-				false, 
-				true, 
-				false,
-				null, 
-				"AND (m.id IN {checkIds}) ",
-				null,
-				true
-			));
-		});
+		final JsonObject params = new JsonObject();
+		params.put("expectedIdsOfUsersAndGroups", checkIds);
+		visibleFutures.add(findVisibles(eb,
+			userId,
+			" MATCH (visibles) RETURN DISTINCT visibles.id as id ",
+			params,
+			false,
+			true,
+			false,
+			null,
+			null,
+			null,
+			true
+		));
 
 		return Future.all(visibleFutures)
 			.map(futures -> {
