@@ -1,11 +1,4 @@
 import { matchPath } from 'react-router-dom';
-import { basename } from '..';
-
-function redirectTo(redirectPath: string) {
-  window.location.replace(
-    window.location.origin + basename.replace(/\/$/g, '') + redirectPath,
-  );
-}
 
 function asSubPath(folderId: string, ...segments: string[]) {
   if (!folderId) return '/inbox';
@@ -27,39 +20,34 @@ function asSubPath(folderId: string, ...segments: string[]) {
 }
 
 /** Check old format URL and redirect if needed */
-export const manageRedirections = async () => {
+export const manageRedirections = (): string | null => {
   const pathLocation = window.location.pathname;
   const hashLocation = window.location.hash.substring(1);
 
   if (!hashLocation) {
-    // Check if the URL is an old route without a hash and then redirect to the inbox folder
     if (
+      pathLocation === '/' ||
       pathLocation === '/conversation' ||
       pathLocation === '/conversation/' ||
       pathLocation === '/conversation/conversation'
     ) {
-      // Redirect to inbox
-      redirectTo(asSubPath('inbox'));
-      return;
+      return '/inbox';
     }
   } else {
     // Check if the URL is an old format (angular root with hash) and redirect to the new format
     const isFolder = matchPath('/:folderId', hashLocation);
     if (isFolder?.params.folderId) {
-      redirectTo(asSubPath(isFolder.params.folderId));
-      return;
+      return asSubPath(isFolder.params.folderId);
     }
 
     const isReadMessage = matchPath('/read-mail/:mailId', hashLocation);
     if (isReadMessage?.params.mailId) {
-      redirectTo(asSubPath('inbox', 'message', isReadMessage.params.mailId));
-      return;
+      return asSubPath('inbox', 'message', isReadMessage.params.mailId);
     }
 
     const isWriteMessage = matchPath('/write-mail', hashLocation);
     if (isWriteMessage) {
-      redirectTo(asSubPath('draft'));
-      return;
+      return asSubPath('draft');
     }
 
     const isWriteToRecipient = matchPath(
@@ -74,27 +62,21 @@ export const manageRedirections = async () => {
       let { recipientId, recipientType } = isWriteToRecipient.params;
       recipientType = recipientType.toLowerCase();
       if (['user', 'group', 'favorite'].includes(recipientType)) {
-        redirectTo(
-          `${asSubPath('draft', 'create')}?${recipientType}=${recipientId}`,
-        );
-        return;
+        return `${asSubPath('draft', 'create')}?${recipientType}=${recipientId}`;
       }
     }
 
     const isWriteToUser = matchPath('/write-mail/:userId', hashLocation);
     if (isWriteToUser?.params.userId) {
-      redirectTo(
-        `${asSubPath('draft', 'create')}?user=${isWriteToUser.params.userId}`,
-      );
-      return;
+      return `${asSubPath('draft', 'create')}?user=${isWriteToUser.params.userId}`;
     }
 
     const isPrintMessage = matchPath('/printMail/:mailId', hashLocation);
     if (isPrintMessage?.params.mailId) {
-      redirectTo(`/print/${isPrintMessage.params.mailId})`);
-      return;
+      return `/print/${isPrintMessage.params.mailId}`;
     }
   }
 
+  // No redirection needed
   return null;
 };
