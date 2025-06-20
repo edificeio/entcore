@@ -238,8 +238,9 @@ export const useFolderMessages = (folderId: string, enabled = true) => {
   return {
     ...query,
     fetchNextPage: fetchNextPageOrInvalidateCachedPageWithDeletedMessages,
-
-    messages: query.data?.pages.flatMap((page) => page) as MessageMetadata[],
+    messages: query.data?.pages?.flatMap(
+      (page) => page || [],
+    ) as MessageMetadata[],
   };
 };
 
