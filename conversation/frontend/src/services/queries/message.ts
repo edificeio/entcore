@@ -289,12 +289,17 @@ export const useRestoreMessage = () => {
 
 export const useEmptyTrash = () => {
   const queryClient = useQueryClient();
+  const toast = useToast();
+  const { t } = useTranslation(appCodeName);
+
   return useMutation({
     mutationFn: () => messageService.emptyTrash(),
     onSuccess: () => {
       invalidateQueriesWithFirstPage(queryClient, {
         queryKey: folderQueryKeys.messages('trash'),
       });
+
+      toast.success(t('trash.empty.success'));
     },
   });
 };

@@ -51,7 +51,7 @@ export function MessageListEmpty() {
   };
 
   return (
-    <div className="d-flex flex-column gap-24 align-items-center justify-content-center">
+    <div className="d-flex flex-column gap-24 align-items-center justify-content-center pt-24">
       <EmptyScreen
         imageSrc={getEmptyScreenData().illu}
         imageAlt={t(getEmptyScreenData().title)}
