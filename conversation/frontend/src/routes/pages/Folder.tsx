@@ -9,6 +9,18 @@ import { MessageListEmpty } from '~/features/message-list/components/MessageList
 import { MessageListHeader } from '~/features/message-list/components/MessageListHeader';
 import { folderQueryOptions, useFolderMessages } from '~/services';
 
+export const loaderForSystemFolders =
+  (queryClient: QueryClient) => async (args: LoaderFunctionArgs) => {
+    const { params } = args;
+    const validSystemFolders = ['inbox', 'outbox', 'draft', 'trash'];
+
+    if (!params.folderId || !validSystemFolders.includes(params.folderId)) {
+      throw new Response('Folder not found', { status: 404 });
+    }
+
+    return loader(queryClient)(args);
+  };
+
 export const loader =
   (queryClient: QueryClient) =>
   async ({ params, request }: LoaderFunctionArgs) => {
