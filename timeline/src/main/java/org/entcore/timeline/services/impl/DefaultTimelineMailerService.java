@@ -766,13 +766,12 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 	 * @param handler : Handles the notifications
 	 */
 	private void getUserNotifications(String userId, Date from, Date to, final Handler<JsonArray> handler){
-		JsonObject matcher = MongoQueryBuilder.build(
-				and(
-						Filters.elemMatch("recipients", Filters.eq("userId", userId)),
-						gte("date", from),
-						lt("date",to)
-						));
-
+		final JsonObject matcher = new JsonObject()
+			.put("$and", new JsonArray()
+				.add(new JsonObject().put("recipients", new JsonObject()
+					.put("$elemMatch", new JsonObject().put("userId", userId))))
+				.add(new JsonObject().put("date", new JsonObject().put("$gte", new JsonObject().put("$date", formatUtcDateTime(from)))))
+				.add(new JsonObject().put("date", new JsonObject().put("$lt", new JsonObject().put("$date", formatUtcDateTime(to))))));
 		JsonObject keys = new JsonObject()
 				.put("_id", 0)
 				.put("type", 1)
@@ -810,10 +809,10 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 				.put("allowDiskUse", true)
 				.put("pipeline", pipeline)
 				.put("cursor", new JsonObject().put("batchSize", Integer.MAX_VALUE));
-		final String fromTs = from == null ? null : formatUtcDateTime(from);
-		final String toTs = to == null ? null : formatUtcDateTime(to);
-		JsonObject matcher = MongoQueryBuilder.build(and(gte("date", fromTs), lt("date", toTs)));
-
+		JsonObject matcher = new JsonObject().put("$and", new JsonArray()
+			.add(new JsonObject().put("date", new JsonObject().put("$gte", new JsonObject().put("$date", formatUtcDateTime(from)))))
+			.add(new JsonObject().put("date", new JsonObject().put("$lt", new JsonObject().put("$date", formatUtcDateTime(to)))))
+		);
 		pipeline.add(new JsonObject().put("$match", matcher));
 		pipeline.add(new JsonObject().put("$unwind", "$recipients"));
 		pipeline.add(new JsonObject().put("$group", new JsonObject().put("_id", "$recipients.userId")));
@@ -879,12 +878,13 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 				.put("pipeline", pipeline)
 				.put("cursor", new JsonObject().put("batchSize", Integer.MAX_VALUE));
 
-		JsonObject matcher = MongoQueryBuilder.build(
-				and(
-						Filters.elemMatch("recipients", Filters.eq("userId", userId)),
-						gte("date", from),
-						lt("date", to)
-						));
+		final JsonObject matcher = new JsonObject()
+			.put("$and", new JsonArray()
+				.add(new JsonObject().put("recipients", new JsonObject()
+					.put("$elemMatch", new JsonObject().put("userId", userId))))
+				.add(new JsonObject().put("date", new JsonObject().put("$gte", new JsonObject().put("$date", formatUtcDateTime(from)))))
+				.add(new JsonObject().put("date", new JsonObject().put("$lt", new JsonObject().put("$date", formatUtcDateTime(to))))));
+
 		JsonObject grouper = new JsonObject("{ \"_id\" : { \"type\": \"$type\", \"event-type\": \"$event-type\"}, \"count\": { \"$sum\": 1 } }");
 		JsonObject transformer = new JsonObject("{ \"type\": \"$_id.type\", \"event-type\": \"$_id.event-type\", \"count\": 1, \"_id\": 0 }");
 
