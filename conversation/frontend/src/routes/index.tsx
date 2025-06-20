@@ -29,11 +29,11 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
               {
                 path: '',
                 async lazy() {
-                  const { Component, loader } = await import(
+                  const { Component, loaderForSystemFolders } = await import(
                     '~/routes/pages/Folder'
                   );
                   return {
-                    loader: loader(_queryClient),
+                    loader: loaderForSystemFolders(_queryClient),
                     Component,
                   };
                 },
