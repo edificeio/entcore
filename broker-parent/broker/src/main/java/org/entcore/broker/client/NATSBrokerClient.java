@@ -91,7 +91,7 @@ public class NATSBrokerClient implements BrokerClient {
                   }
                 })
                 .onFailure(th -> {
-                  log.error("Error calling subject " + msg.getSubject());
+                  log.error("Error calling subject " + msg.getSubject(), th);
                   promise.tryFail(th);
                 });
             } catch (IOException e) {
