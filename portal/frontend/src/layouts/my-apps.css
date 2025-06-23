@@ -1,4 +1,4 @@
-html[data-skin="dyslexic"] .my-apps-layout *  {
+html[data-skin="dyslexic"] .my-apps-layout *:not(.application-icon i)  {
     font-family: OpenDyslexic !important;
 }
 
