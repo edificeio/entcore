@@ -23,8 +23,8 @@ body {
     display: block;
     opacity: 0;
 }
-.dropdown .btn:hover {
-    translate: none !important;
+.dropdown .btn-icon {
+    transform: none !important;
 }
 .application-card:hover .dropdown-wrapper,
 .application-card.active .dropdown-wrapper,
