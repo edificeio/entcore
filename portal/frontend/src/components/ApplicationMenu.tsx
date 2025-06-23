@@ -41,7 +41,7 @@ export function ApplicationMenu({
       onClick={(e?: React.MouseEvent) => {
         e?.preventDefault();
         onActionDone();
-        if (data.category === 'connector') {
+        if (data.category === 'connector' || data.isExternal) {
           openInNewTab(data.address);
         } else {
           window.open(data.address, '_self');
