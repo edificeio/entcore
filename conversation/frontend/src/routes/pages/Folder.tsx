@@ -15,7 +15,7 @@ export const loaderForSystemFolders =
     const validSystemFolders = ['inbox', 'outbox', 'draft', 'trash'];
 
     if (!params.folderId || !validSystemFolders.includes(params.folderId)) {
-      throw new Response('Folder not found', { status: 404 });
+      return null;
     }
 
     return loader(queryClient)(args);
