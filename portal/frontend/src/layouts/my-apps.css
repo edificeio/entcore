@@ -1,5 +1,10 @@
-html[data-skin="dyslexic"] .my-apps-layout *  {
+html[data-skin="dyslexic"] .my-apps-layout *:not(.application-icon i)  {
     font-family: OpenDyslexic !important;
+}
+@media (hover: none) {
+    .dropdown-wrapper {
+        opacity: 1 !important;
+    }
 }
 
 body {
@@ -18,8 +23,12 @@ body {
     display: block;
     opacity: 0;
 }
-.dropdown .btn:hover {
-    translate: none !important;
+.dropdown .btn-icon {
+    transform: none !important;
+}
+.application-card .dropdown-item {
+    padding: .8rem 1.2rem;
+    color: rgb(74, 74, 74);
 }
 .application-card:hover .dropdown-wrapper,
 .application-card.active .dropdown-wrapper,
@@ -36,6 +45,8 @@ body {
 }
 
 .application-icon {
+    width: 64px;
+    height: 64px;
     height: 56px;
     text-align: center;
     line-height: 56px;
@@ -72,6 +83,18 @@ body {
     white-space: nowrap;
     justify-content: flex-start;
     overflow: scroll;
+}
+
+@media screen and (max-width: 767px) {
+    .toolbar-categories-wrapper {
+        overflow: scroll;
+        margin-left: -24px;
+        width: calc(100% + 48px);
+    }
+    .toolbar-categories {
+        overflow: unset;
+        max-width: unset;
+    }
 }
 
 .ellipsis-3 {
