@@ -490,11 +490,11 @@ public abstract class GenericShareService implements ShareService {
 			final JsonArray idsOfShare = new JsonArray();
 			idsOfShareChunk.forEach(idsOfShare::add);
 			final JsonObject extraParams = new JsonObject()
-					.put("expectedIdsOfUsersAndGroups", idsOfShare);
+					.put(UserUtils.EXPECTED_IDS_USERS_GROUPS, idsOfShare);
 			UserUtils.findVisibles(eb, userId, customReturn,
 					extraParams,
 					true, true, false,
-					"fr", "AND (m.id IN {expectedIdsOfUsersAndGroups}) ",
+					"fr", "AND (m.id IN {" + UserUtils.EXPECTED_IDS_USERS_GROUPS + "}) ",
 					visiblePromise::complete);
 			visibleFutures.add(visiblePromise.future());
 		});
