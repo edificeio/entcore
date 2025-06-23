@@ -26,6 +26,10 @@ body {
 .dropdown .btn-icon {
     transform: none !important;
 }
+.application-card .dropdown-item {
+    padding: .8rem 1.2rem;
+    color: rgb(74, 74, 74);
+}
 .application-card:hover .dropdown-wrapper,
 .application-card.active .dropdown-wrapper,
 .application-card:focus .dropdown-wrapper,
