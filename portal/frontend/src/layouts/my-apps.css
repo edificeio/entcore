@@ -85,6 +85,18 @@ body {
     overflow: scroll;
 }
 
+@media screen and (max-width: 767px) {
+    .toolbar-categories-wrapper {
+        overflow: scroll;
+        margin-left: -24px;
+        width: calc(100% + 48px);
+    }
+    .toolbar-categories {
+        overflow: unset;
+        max-width: unset;
+    }
+}
+
 .ellipsis-3 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
