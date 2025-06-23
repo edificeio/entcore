@@ -86,12 +86,14 @@ export const ToolbarCategories = () => {
   );
   return (
     <div className="toolbar-categories-wrapper">
-      <Toolbar
-        data-id="tabs-categories"
-        variant="no-shadow"
-        className="toolbar-categories px-4 py-2 ms-md-16 border border-secondary-300 rounded-3"
-        items={filterToolbar}
-      />
+      <div className="toolbar-categories">
+        <Toolbar
+          data-id="tabs-categories"
+          variant="no-shadow"
+          className="toolbar-categories px-4 py-2 ms-md-16 border border-secondary-300 rounded-3"
+          items={filterToolbar}
+        />
+      </div>
     </div>
   );
 };
