@@ -2,6 +2,7 @@
     "apps": [
       {
         "name": "Presences",
+        "appName": "Présences",
         "address": "/presences",
         "icon": "presences-large",
         "target": "",
