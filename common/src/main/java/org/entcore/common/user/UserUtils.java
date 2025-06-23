@@ -59,15 +59,12 @@ public class UserUtils {
 
 	private static final Vertx vertx = Vertx.currentContext().owner();
 	private static final int DEFAULT_VISIBLES_TIMEOUT = 60000;
-	private static final int DEFAULT_SHARES_PARTITION_SIZE = 50;
+	private static final int DEFAULT_MAX_CHECK_ID = 1000;
 	private static final JsonObject VISIBLE_CONFIG = new JsonObject();	// Filled just-in-time with shared configuration values
-	public static final String FIND_SESSION = "findSession";
-	public static final String MONITORINGEVENTS = "monitoringevents";
 	private static final String USERBOOK_ADDRESS = "userbook.preferences";
 	private static final Logger log = LoggerFactory.getLogger(UserUtils.class);
 	private static final String COMMUNICATION_USERS = "wse.communication.users";
 	private static final String DIRECTORY = "directory";
-	public static final String SESSION_ADDRESS = "wse.session";
 	private static final JsonArray usersTypes = new fr.wseduc.webutils.collections.JsonArray().add("User");
 	private static final JsonObject QUERY_VISIBLE_PROFILS_GROUPS = new JsonObject()
 			.put("action", "visibleProfilsGroups");
@@ -76,6 +73,11 @@ public class UserUtils {
 	private static final I18n i18n = I18n.getInstance();
 	private static final long JWT_TOKEN_EXPIRATION_TIME = 600L;
 	private static final long LOG_SESSION_DELAY = 500L;
+
+	public static final String FIND_SESSION = "findSession";
+	public static final String MONITORINGEVENTS = "monitoringevents";
+	public static final String SESSION_ADDRESS = "wse.session";
+	public static final String EXPECTED_IDS_USERS_GROUPS = "expectedIdsOfUsersAndGroups";
 
 	private static void findUsers(final EventBus eb, HttpServerRequest request,
 								  final JsonObject query, final Handler<JsonArray> handler) {
@@ -268,19 +270,19 @@ public class UserUtils {
 
 	static public int getSharesPartitionSize() {
 		final int partitionSize;
-		if( VISIBLE_CONFIG.containsKey("sharesPartitionSize")) {
-			partitionSize = VISIBLE_CONFIG.getInteger("sharesPartitionSize");
+		if( VISIBLE_CONFIG.containsKey("sharesMaxCheckSize")) {
+			partitionSize = VISIBLE_CONFIG.getInteger("sharesMaxCheckSize");
 		} else {
 			// Read value from shared data map and cache it
 			LocalMap<Object, Object> serverConfig = vertx.sharedData().getLocalMap("server");
 			if (serverConfig != null) {
-				partitionSize = (int) serverConfig.getOrDefault("sharesPartitionSize", DEFAULT_SHARES_PARTITION_SIZE);
+				partitionSize = (int) serverConfig.getOrDefault("sharesMaxCheckSize", DEFAULT_MAX_CHECK_ID);
 			} else {
-				partitionSize = DEFAULT_SHARES_PARTITION_SIZE;
+				partitionSize = DEFAULT_MAX_CHECK_ID;
 			}
 			VISIBLE_CONFIG.put("sharesPartitionSize", partitionSize);
 		}
-		return partitionSize <= 0 ? DEFAULT_SHARES_PARTITION_SIZE : partitionSize;
+		return partitionSize <= 0 ? DEFAULT_MAX_CHECK_ID : partitionSize;
 	}
 
 	public static void translateGroupsNames(JsonArray groups, String acceptLanguage) {
@@ -658,7 +660,9 @@ public class UserUtils {
 		}
 		final List<Future<JsonArray>> visibleFutures = new ArrayList<>();
 		final JsonObject params = new JsonObject();
-		params.put("expectedIdsOfUsersAndGroups", checkIds);
+		if(checkIds.size() < DEFAULT_MAX_CHECK_ID) {
+			params.put(EXPECTED_IDS_USERS_GROUPS, checkIds);
+		}
 		visibleFutures.add(findVisibles(eb,
 			userId,
 			" MATCH (visibles) RETURN DISTINCT visibles.id as id ",
