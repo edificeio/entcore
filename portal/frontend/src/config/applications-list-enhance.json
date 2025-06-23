@@ -60,6 +60,7 @@
         "category": "pedagogy",
         "color": "purple",
         "libraries": false,
+        "isExternal": true,
         "help": {
           "fr": "https://help.edifice.io/hc/fr/articles/5896833929372-Pr%C3%A9sentation-de-la-Biblioth%C3%A8que",
           "en": null,
@@ -170,6 +171,7 @@
         "category": "organisation",
         "color": "yellow",
         "libraries": false,
+        "isExternal": true,
         "help": {
           "fr": "https://help.edifice.io/hc/fr/articles/5167202595612-A-qui-s-adresse-cette-cat%C3%A9gorie",
           "en": null,
