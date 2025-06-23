@@ -65,6 +65,7 @@ export function ApplicationWrapper({ data }: { data: Application }) {
       target={data.isExternal ? '_blank' : undefined}
       className={classApplicationCard}
       style={{ width: 107, height: 127, textAlign: 'center' }}
+      title={data.appName}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
