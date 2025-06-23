@@ -1,5 +1,6 @@
 package org.entcore.portal.listeners;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.wseduc.webutils.I18n;
 import io.vertx.core.*;
 import io.vertx.core.http.HttpServerRequest;
@@ -10,6 +11,7 @@ import org.entcore.broker.api.dto.i18n.LangAndDomain;
 import org.entcore.broker.api.dto.i18n.RegisterTranslationFilesRequestDTO;
 import org.entcore.broker.api.dto.i18n.RegisterTranslationFilesResponseDTO;
 import org.entcore.broker.proxy.I18nBrokerListener;
+import org.entcore.common.cache.CacheService;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,17 +25,31 @@ import java.util.*;
  * It maintains a separate I18n instance for each application.
  */
 public class I18nBrokerListenerImpl implements I18nBrokerListener {
+    /**
+     * Cache key format for storing i18n registration data
+     */
+    private static final String I18N_REGISTRATION_CACHE_KEY = "i18n:registration:%s";
 
+    /**
+     * Default application name used as fallback
+     */
+    private static final String DEFAULT_APPLICATION = "default";
+    
+    /**
+     * Default TTL for cached i18n registration data (24 hours in seconds)
+     */
+    private static final int I18N_CACHE_TTL = 86400;
     private static final Logger log = LoggerFactory.getLogger(I18nBrokerListenerImpl.class);
     private final Map<String, I18n> i18nInstances = new HashMap<>();
     private final Vertx vertx;
     private final String assetsPath;
+    private final CacheService cacheService;
 
     /**
      * Constructor for I18nBrokerListenerImpl.
      */
     public I18nBrokerListenerImpl() {
-        this(Vertx.currentContext().owner(), "../..");
+        this(Vertx.currentContext().owner(), "../..", CacheService.create(Vertx.currentContext().owner()));
     }
 
     /**
@@ -42,8 +58,8 @@ public class I18nBrokerListenerImpl implements I18nBrokerListener {
      * @param vertx The Vertx instance
      * @param assetsPath Path to the assets folder
      */
-    public I18nBrokerListenerImpl(final Vertx vertx, final String assetsPath) {
-        this(I18n.getInstance(), vertx, assetsPath);
+    public I18nBrokerListenerImpl(final Vertx vertx, final String assetsPath, final CacheService cacheService) {
+        this(I18n.getInstance(), vertx, assetsPath, cacheService);
     }
 
     /**
@@ -53,10 +69,11 @@ public class I18nBrokerListenerImpl implements I18nBrokerListener {
      * @param vertx The Vertx instance
      * @param assetsPath Path to the assets folder
      */
-    public I18nBrokerListenerImpl(final I18n defaultI18n, final Vertx vertx, final String assetsPath) {
-        this.i18nInstances.put("default", defaultI18n);
+    public I18nBrokerListenerImpl(final I18n defaultI18n, final Vertx vertx, final String assetsPath, final CacheService cacheService) {
+        this.i18nInstances.put(DEFAULT_APPLICATION, defaultI18n);
         this.vertx = vertx;
         this.assetsPath = assetsPath;
+        this.cacheService = cacheService;
     }
 
     /**
@@ -193,13 +210,11 @@ public class I18nBrokerListenerImpl implements I18nBrokerListener {
                         // When all themes are processed, complete the promise
                         CompositeFuture.all(new ArrayList<>(themeFutures))
                             .onComplete(ar -> {
-                                if (ar.succeeded()) {
-                                    promise.complete(i18n);
-                                } else {
+                                if (!ar.succeeded()) {
                                     log.error("Error processing themes", ar.cause());
                                     // Still complete with i18n instance, even if some themes failed
-                                    promise.complete(i18n);
                                 }
+                                promise.complete(i18n);
                             });
                     } else {
                         log.error("Error listing themes directory", themes.cause());
@@ -262,11 +277,10 @@ public class I18nBrokerListenerImpl implements I18nBrokerListener {
                                         } catch (Exception e) {
                                             log.error("Error loading theme I18n file: " + s, e);
                                         }
-                                        filePromise.complete();
                                     } else {
                                         log.error("Could not read theme I18n file: " + s, fileResult.cause());
-                                        filePromise.complete();
                                     }
+                                    filePromise.complete();
                                 });
                             }
                         }
@@ -294,15 +308,13 @@ public class I18nBrokerListenerImpl implements I18nBrokerListener {
 
     /**
      * Fetches translations based on the provided request.
-     * Uses application-specific I18n instances for better organization and performance.
+     * If the application's translations are not loaded, attempts to recover from cache.
      *
      * @param request The request containing application, headers or language and domain
      * @return A Future containing the response with translations
      */
     @Override
     public Future<FetchTranslationsResponseDTO> fetchTranslations(final FetchTranslationsRequestDTO request) {
-        final Promise<FetchTranslationsResponseDTO> promise = Promise.promise();
-
         // Validate the request
         if (request == null || !request.isValid()) {
             log.error("Invalid fetchTranslations request: request is null or invalid {}", request);
@@ -312,41 +324,132 @@ public class I18nBrokerListenerImpl implements I18nBrokerListener {
         try {
             // Get the application from the request, or use "default" if not specified
             final String application = (request.getApplication() == null || request.getApplication().isEmpty())
-                    ? "default"
+                    ? DEFAULT_APPLICATION
                     : request.getApplication();
 
-            // Just get the I18n instance, don't create if it doesn't exist
+            // Check if the application's I18n instance is already loaded
             final I18n appI18n = i18nInstances.get(application);
 
-            if (appI18n == null) {
-                log.warn("No I18n instance found for application: {}. Using default instance.", application);
-                // Fall back to default instance
-                final I18n defaultI18n = i18nInstances.get("default");
-                if (defaultI18n == null) {
-                    return Future.failedFuture("i18n.application.not.registered");
-                }
-                // Continue with default instance
-                return getTranslations(request, defaultI18n, "default", promise);
+            if (appI18n != null) {
+                // Application already loaded, proceed with fetching
+                log.debug("Using existing I18n instance for application: {}", application);
+                return getTranslations(request, appI18n, application);
             }
 
-            // Use the found instance
-            return getTranslations(request, appI18n, application, promise);
+            // Application not loaded, try to recover from cache
+            log.debug("Application {} not loaded, attempting to recover from cache", application);
+            
+            // Attempt to restore from cache and then fetch translations
+            return tryRestoreFromCache(application)
+                    .compose(restored -> {
+                        if (restored) {
+                            // Successfully restored, try fetching again
+                            log.debug("Successfully restored {} from cache, fetching translations", application);
+                            return fetchTranslations(request);
+                        } else {
+                            // Failed to restore, fall back to default
+                            log.warn("Could not restore {} from cache, falling back to default", application);
+                            return fallbackToDefaultInstance(request, application);
+                        }
+                    });
+                    
         } catch (Exception e) {
             log.error("Error fetching translations", e);
-            promise.fail("i18n.fetch.error");
+            return Future.failedFuture("i18n.fetch.error");
         }
+    }
+
+    /**
+     * Attempts to restore application translations from cache
+     * 
+     * @param application The application name to restore
+     * @return Future with boolean indicating success (true) or failure (false)
+     */
+    private Future<Boolean> tryRestoreFromCache(String application) {
+        Promise<Boolean> promise = Promise.promise();
+        final String cacheKey = String.format(I18N_REGISTRATION_CACHE_KEY, application);
+        
+        // First, retrieve data from cache
+        retrieveRegistrationDataFromCache(cacheKey)
+            .onComplete(ar -> {
+                if (ar.succeeded() && ar.result() != null) {
+                    // Found data in cache, try to restore it
+                    RegisterTranslationFilesRequestDTO cachedRequest = ar.result();
+                    registerI18nFiles(cachedRequest)
+                        .onComplete(registerAr -> {
+                            if (registerAr.succeeded()) {
+                                log.info("Successfully restored I18n from cache for application: {}", application);
+                                promise.complete(true);
+                            } else {
+                                log.error("Failed to restore I18n from cache for application: {}", application, registerAr.cause());
+                                promise.complete(false);
+                            }
+                        });
+                } else {
+                    // No data in cache or error retrieving
+                    log.debug("No cached registration data found for application: {}", application);
+                    promise.complete(false);
+                }
+            });
 
         return promise.future();
     }
 
     /**
-     * Helper method to extract translations from I18n instance based on the request
+     * Retrieves registration data from cache
+     * 
+     * @param cacheKey The cache key to retrieve data from
+     * @return Future with RegisterTranslationFilesRequestDTO if found, or null if not found
+     */
+    private Future<RegisterTranslationFilesRequestDTO> retrieveRegistrationDataFromCache(String cacheKey) {
+        Promise<RegisterTranslationFilesRequestDTO> promise = Promise.promise();
+        
+        cacheService.get(cacheKey, cacheResult -> {
+            if (cacheResult.succeeded() && cacheResult.result().isPresent()) {
+                try {
+                    // Use ObjectMapper through RegisterTranslationFilesRequestDTO.fromJSON
+                    RegisterTranslationFilesRequestDTO cachedRequest = 
+                            RegisterTranslationFilesRequestDTO.fromJSON(cacheResult.result().get());
+                    promise.complete(cachedRequest);
+                } catch (Exception e) {
+                    log.error("Error deserializing cached registration data", e);
+                    promise.complete(null);
+                }
+            } else {
+                // Not found in cache
+                promise.complete(null);
+            }
+        });
+        
+        return promise.future();
+    }
+
+    /**
+     * Fall back to default I18n instance for translations
+     * 
+     * @param request The original request
+     * @param application The application that was not found
+     * @return Future with the translations response
+     */
+    private Future<FetchTranslationsResponseDTO> fallbackToDefaultInstance(FetchTranslationsRequestDTO request, String application) {
+        // Fall back to default instance
+        final I18n defaultI18n = i18nInstances.get(DEFAULT_APPLICATION);
+        if (defaultI18n == null) {
+            return Future.failedFuture("i18n.application.not.registered");
+        }
+        
+        log.warn("Using default I18n instance as fallback for application: {}", application);
+        return getTranslations(request, defaultI18n, DEFAULT_APPLICATION);
+    }
+
+    /**
+     * Helper method for getting translations - overloaded without promise parameter
      */
     private Future<FetchTranslationsResponseDTO> getTranslations(
             final FetchTranslationsRequestDTO request,
             final I18n i18n,
-            final String application,
-            final Promise<FetchTranslationsResponseDTO> promise) {
+            final String application) {
+        final Promise<FetchTranslationsResponseDTO> promise = Promise.promise();
 
         final JsonObject translations = new JsonObject();
 
@@ -357,7 +460,7 @@ public class I18nBrokerListenerImpl implements I18nBrokerListener {
                 final MultiMap headers = MultiMap.caseInsensitiveMultiMap();
                 request.getHeaders().forEach((key, value) -> {
                     if (value != null) {
-                        headers.add(key, value.toString());
+                        headers.add(key, value);
                     }
                 });
 
@@ -401,16 +504,10 @@ public class I18nBrokerListenerImpl implements I18nBrokerListener {
     }
 
     /**
-     * Registers I18n files based on the provided request.
-     * Handles chaining with proper error handling.
-     *
-     * @param request The request containing application and dictionaries
-     * @return A Future containing the response with registration details
+     * Registers I18n files and stores them in cache for recovery
      */
     @Override
     public Future<RegisterTranslationFilesResponseDTO> registerI18nFiles(final RegisterTranslationFilesRequestDTO request) {
-        final Promise<RegisterTranslationFilesResponseDTO> promise = Promise.promise();
-
         // Validate request
         if (request == null || !request.isValid()) {
             log.error("Invalid registerI18nFiles request: {}", request);
@@ -419,73 +516,134 @@ public class I18nBrokerListenerImpl implements I18nBrokerListener {
 
         try {
             final String application = request.getApplication();
-            final Map<String, Map<String, String>> translationsByLanguage = request.getTranslationsByLanguage();
-
-            log.info("Registering I18n dictionaries for application: {}", application);
-
-            // Create a new I18n instance
-            final I18n i18n = new I18n().initializeMessages(Collections.emptyMap());
-
-            int translationsCount = 0;
-
-            // Register translations from the map
-            for (Map.Entry<String, Map<String, String>> entry : translationsByLanguage.entrySet()) {
-                final String filename = entry.getKey();
-                final Map<String, String> translations = entry.getValue();
-
-                // Extract language code from filename (e.g. "fr.json" -> "fr")
-                final String langCode = filename.substring(0, filename.lastIndexOf('.'));
-                final Locale locale = Locale.forLanguageTag(langCode);
-
-                // Convert Map to JsonObject
-                final JsonObject i18nObject = new JsonObject();
-                translations.forEach(i18nObject::put);
-
-                // Add translations to the I18n instance
-                i18n.add(I18n.DEFAULT_DOMAIN, locale, i18nObject);
-                translationsCount += translations.size();
-
-                log.debug("Registered {} translations for language {} in application {}",
-                        translations.size(), langCode, application);
-            }
-
-            // Final count for the response
-            final int finalTranslationsCount = translationsCount;
-
-            // Chain loading of assets files and then theme files with proper error handling
-            Future<I18n> assetsFuture = loadI18nAssetsFiles(i18n, application);
-
-            assetsFuture.compose(
-                // Si loadI18nAssetsFiles réussit, alors exécuter loadI18nThemesFiles
-                updatedI18n -> loadI18nThemesFiles(updatedI18n, application),
-                // Si loadI18nAssetsFiles échoue, propager l'erreur
-                cause -> Future.failedFuture(cause)
-            ).onComplete(ar -> {
-                if (ar.succeeded()) {
-                    // Store the fully loaded instance
-                    i18nInstances.put(application, ar.result());
-
-                    // Create and return response
-                    final RegisterTranslationFilesResponseDTO response = new RegisterTranslationFilesResponseDTO(
-                            application,
-                            translationsByLanguage.size(),
-                            finalTranslationsCount);
-
-                    log.info("Successfully registered I18n for application {}: {} languages, {} translations",
-                            application, translationsByLanguage.size(), finalTranslationsCount);
-
-                    promise.complete(response);
-                } else {
-                    log.error("Error loading I18n files for application: " + application, ar.cause());
-                    promise.fail("i18n.files.load.error: " + ar.cause().getMessage());
-                }
-            });
-
+            
+            // Process registration
+            Future<RegisterTranslationFilesResponseDTO> registrationFuture = processI18nRegistration(request);
+            
+            // Store in cache after successful registration
+            registrationFuture.onSuccess(response -> 
+                storeRegistrationDataInCache(request)
+                    .onFailure(err -> log.warn("Failed to cache registration data for {}, but registration succeeded", application, err))
+            );
+            
+            return registrationFuture;
         } catch (Exception e) {
             log.error("Error registering I18n files", e);
-            promise.fail("i18n.register.error: " + e.getMessage());
+            return Future.failedFuture("i18n.register.error: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Process the I18n registration without cache operations
+     * 
+     * @param request The registration request
+     * @return Future with the registration response
+     */
+    private Future<RegisterTranslationFilesResponseDTO> processI18nRegistration(RegisterTranslationFilesRequestDTO request) {
+        Promise<RegisterTranslationFilesResponseDTO> promise = Promise.promise();
+        
+        final String application = request.getApplication();
+        final Map<String, Map<String, String>> translationsByLanguage = request.getTranslationsByLanguage();
+
+        log.info("Registering I18n dictionaries for application: {}", application);
+
+        // Create a new I18n instance
+        final I18n i18n = new I18n().initializeMessages(Collections.emptyMap());
+
+        int translationsCount = 0;
+
+        // Register translations from the map
+        for (Map.Entry<String, Map<String, String>> entry : translationsByLanguage.entrySet()) {
+            final String filename = entry.getKey();
+            final Map<String, String> translations = entry.getValue();
+
+            // Extract language code from filename (e.g. "fr.json" -> "fr")
+            final String langCode = filename.substring(0, filename.lastIndexOf('.'));
+            final Locale locale = Locale.forLanguageTag(langCode);
+
+            // Convert Map to JsonObject
+            final JsonObject i18nObject = new JsonObject();
+            translations.forEach(i18nObject::put);
+
+            // Add translations to the I18n instance
+            i18n.add(I18n.DEFAULT_DOMAIN, locale, i18nObject);
+            translationsCount += translations.size();
+
+            log.debug("Registered {} translations for language {} in application {}",
+                    translations.size(), langCode, application);
         }
 
+        // Final count for the response
+        final int finalTranslationsCount = translationsCount;
+
+        // Chain loading of assets files and then theme files with proper error handling
+        Future<I18n> assetsFuture = loadI18nAssetsFiles(i18n, application);
+
+        assetsFuture.compose(
+                updatedI18n -> loadI18nThemesFiles(updatedI18n, application),
+                Future::failedFuture
+        ).onComplete(ar -> {
+            if (ar.succeeded()) {
+                // Store the fully loaded instance
+                i18nInstances.put(application, ar.result());
+
+                // Create and return response
+                final RegisterTranslationFilesResponseDTO response = new RegisterTranslationFilesResponseDTO(
+                        application,
+                        translationsByLanguage.size(),
+                        finalTranslationsCount);
+
+                log.info("Successfully registered I18n for application {}: {} languages, {} translations",
+                        application, translationsByLanguage.size(), finalTranslationsCount);
+
+                promise.complete(response);
+            } else {
+                log.error("Error loading I18n files for application: " + application, ar.cause());
+                promise.fail("i18n.files.load.error: " + ar.cause().getMessage());
+            }
+        });
+        
+        return promise.future();
+    }
+
+    /**
+     * Stores the registration data in cache for potential recovery
+     * 
+     * @param request The registration request to store
+     * @return Future that completes when caching is done
+     */
+    private Future<Void> storeRegistrationDataInCache(RegisterTranslationFilesRequestDTO request) {
+        Promise<Void> promise = Promise.promise();
+        
+        try {
+            final String application = request.getApplication();
+            final String cacheKey = String.format(I18N_REGISTRATION_CACHE_KEY, application);
+            
+            // Serialize using RegisterTranslationFilesRequestDTO.toJSON
+            String jsonData;
+            try {
+                jsonData = request.toJSON();
+            } catch (JsonProcessingException e) {
+                log.error("Error serializing registration data for application: {}", application, e);
+                promise.fail(e);
+                return promise.future();
+            }
+            
+            // Store in cache with TTL
+            cacheService.upsert(cacheKey, jsonData, I18N_CACHE_TTL, result -> {
+                if (result.succeeded()) {
+                    log.debug("Successfully cached registration data for application: {}", application);
+                    promise.complete();
+                } else {
+                    log.warn("Failed to cache registration data for application: {}", application, result.cause());
+                    promise.fail(result.cause());
+                }
+            });
+        } catch (Exception e) {
+            log.error("Error storing registration data in cache", e);
+            promise.fail(e);
+        }
+        
         return promise.future();
     }
 }
