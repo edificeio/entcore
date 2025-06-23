@@ -29,7 +29,7 @@ export function ApplicationIcon({
   return (
     <span className="position-relative" style={{ display: 'inline-block' }}>
       <FavoriteStarIcon isFavorite={isFavorite} />
-      <span className={classApplicationIcon} style={{ width: 64, height: 64 }}>
+      <span className={classApplicationIcon}>
         {isImage && !hasError ? (
           <img
             className="w-full h-full"
