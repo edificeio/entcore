@@ -30,7 +30,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
@@ -46,9 +45,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static fr.wseduc.webutils.Utils.getOrElse;
-import static fr.wseduc.webutils.Utils.isEmpty;
-import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static fr.wseduc.webutils.Utils.*;
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 import static org.entcore.common.user.UserUtils.findVisibleProfilsGroups;
 import static org.entcore.common.user.UserUtils.findVisibleUsers;
@@ -70,6 +67,7 @@ public abstract class GenericShareService implements ShareService {
 	private JsonArray resourceActions;
 	private final Vertx vertx = Vertx.currentContext().owner();
 	private final EventStore eventStore;
+
 
 	public GenericShareService(EventBus eb, Map<String, SecuredAction> securedActions,
 			Map<String, List<String>> groupedActions) {
@@ -489,11 +487,11 @@ public abstract class GenericShareService implements ShareService {
 			final JsonArray idsOfShare = new JsonArray();
 			idsOfShareChunk.forEach(idsOfShare::add);
 			final JsonObject extraParams = new JsonObject()
-					.put(UserUtils.EXPECTED_IDS_USERS_GROUPS, idsOfShare);
+					.put(EXPECTED_IDS_USERS_GROUPS, idsOfShare);
 			UserUtils.findVisibles(eb, userId, customReturn,
 					extraParams,
 					true, true, false,
-					"fr", "AND (m.id IN {" + UserUtils.EXPECTED_IDS_USERS_GROUPS + "}) ",
+					"fr", "AND (m.id IN {" + EXPECTED_IDS_USERS_GROUPS + "}) ",
 					visiblePromise::complete);
 			visibleFutures.add(visiblePromise.future());
 		});

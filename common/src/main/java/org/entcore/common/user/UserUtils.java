@@ -53,6 +53,7 @@ import java.util.stream.Collectors;
 import static fr.wseduc.webutils.Utils.*;
 import static fr.wseduc.webutils.http.Renders.unauthorized;
 import static org.entcore.common.http.filter.AppOAuthResourceProvider.getTokenId;
+import static org.entcore.common.share.ShareService.EXPECTED_IDS_USERS_GROUPS;
 
 public class UserUtils {
 
@@ -76,7 +77,7 @@ public class UserUtils {
 	public static final String FIND_SESSION = "findSession";
 	public static final String MONITORINGEVENTS = "monitoringevents";
 	public static final String SESSION_ADDRESS = "wse.session";
-	public static final String EXPECTED_IDS_USERS_GROUPS = "expectedIdsOfUsersAndGroups";
+
 
 	private static void findUsers(final EventBus eb, HttpServerRequest request,
 								  final JsonObject query, final Handler<JsonArray> handler) {
