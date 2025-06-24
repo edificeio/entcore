@@ -39,7 +39,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
-import org.apache.commons.collections4.CollectionUtils;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.session.SessionRecreationRequest;
 import org.entcore.common.utils.HostUtils;
@@ -268,7 +267,7 @@ public class UserUtils {
 		return timeout <= 0 ? DEFAULT_VISIBLES_TIMEOUT : timeout;
 	}
 
-	static public int getSharesPartitionSize() {
+	static public int getMaxCheckIdsSize() {
 		final int partitionSize;
 		if( VISIBLE_CONFIG.containsKey("sharesMaxCheckSize")) {
 			partitionSize = VISIBLE_CONFIG.getInteger("sharesMaxCheckSize");
@@ -660,7 +659,7 @@ public class UserUtils {
 		}
 		final List<Future<JsonArray>> visibleFutures = new ArrayList<>();
 		final JsonObject params = new JsonObject();
-		if(checkIds.size() < DEFAULT_MAX_CHECK_ID) {
+		if(checkIds.size() < getMaxCheckIdsSize()) {
 			params.put(EXPECTED_IDS_USERS_GROUPS, checkIds);
 		}
 		visibleFutures.add(findVisibles(eb,

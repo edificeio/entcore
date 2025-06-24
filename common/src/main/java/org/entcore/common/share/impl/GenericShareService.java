@@ -30,7 +30,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.shareddata.LocalMap;
 
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
@@ -482,7 +481,7 @@ public abstract class GenericShareService implements ShareService {
 		final String customReturn = "RETURN DISTINCT visibles.id as id, has(visibles.login) as isUser";
 
 		// Parallelizing the process of fetching the visibles
-		final int partitionSize = UserUtils.getSharesPartitionSize();
+		final int partitionSize = UserUtils.getMaxCheckIdsSize();
 		final List<List<String>> idsOfShareChunks = Lists.partition(getIdOfGroupsAndUsersConcernedByShares(originalShares, shareUpdates), partitionSize);
 		final List<Future<JsonArray>> visibleFutures = new ArrayList<>();
 		idsOfShareChunks.forEach(idsOfShareChunk -> {
