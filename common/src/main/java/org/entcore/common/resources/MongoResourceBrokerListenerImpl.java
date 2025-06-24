@@ -17,7 +17,7 @@ import java.util.*;
  * MongoDB implementation of ResourceBrokerListener.
  * Retrieves resource information from MongoDB collection.
  */
-public class MongoResourceBrokerListenerImpl extends AbstractResourceBrokerListener {
+public abstract class MongoResourceBrokerListenerImpl extends AbstractResourceBrokerListener {
     
     private final String collection;
     private final MongoDb mongo;
@@ -63,7 +63,7 @@ public class MongoResourceBrokerListenerImpl extends AbstractResourceBrokerListe
                     
                     promise.complete(resources);
                 } else {
-                    log.error("Error fetching resources from MongoDB: {}", result.body().getString("message", "Unknown error"));
+                    log.error("Error fetching resources from MongoDB: {0}", result.body().getString("message", "Unknown error"));
                     promise.fail(result.body().getString("message", "db.query.error"));
                 }
             });
@@ -76,58 +76,9 @@ public class MongoResourceBrokerListenerImpl extends AbstractResourceBrokerListe
     }
     
     /**
-     * Convert MongoDB document to ResourceInfoDTO.
-     *
-     * @param resource The MongoDB document
-     * @return ResourceInfoDTO with extracted information
+     * This method can be used by subclasses to parse data from MongoDB documents
      */
-    @Override
-    protected ResourceInfoDTO convertToResourceInfoDTO(JsonObject resource) {
-        if (resource == null) {
-            return null;
-        }
-        
-        try {
-            final String id = resource.getString("_id");
-            final String title = resource.getString("title", "");
-            final String description = resource.getString("description", "");
-            final String thumbnail = resource.getString("thumbnail", "");
-            
-            // Extract user information
-            final JsonObject owner = resource.getJsonObject("owner", new JsonObject());
-            final String authorId = owner.getString("userId", "");
-            final String authorName = owner.getString("displayName", "");
-            
-            // Extract dates
-            final Date creationDate = parseDate(resource.getValue("created"));
-            final Date modificationDate = parseDate(resource.getValue("modified"));
-            
-            return new ResourceInfoDTO(
-                id,
-                title,
-                description,
-                thumbnail,
-                authorName,
-                authorId,
-                creationDate,
-                modificationDate
-            );
-        } catch (Exception e) {
-            log.error("Error converting MongoDB document to ResourceInfoDTO", e);
-            return null;
-        }
-    }
-    
     protected Date parseDate(Object date) {
-        if(date instanceof Long){
-            return new Date((Long)date);
-        }
-        if(date instanceof String){
-            return DateUtils.parseDateTime((String)date);
-        }
-        if(date instanceof JsonObject){
-            return DateUtils.parseDateTime(((JsonObject)date).getValue("$date").toString());
-        }
-        return null;
+        return DateUtils.parseDate(date);
     }
 }

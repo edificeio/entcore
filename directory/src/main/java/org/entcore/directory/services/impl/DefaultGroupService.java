@@ -299,7 +299,7 @@ public class DefaultGroupService implements GroupService {
 		}
 		
 		// Sanitize label to avoid injection - remove spaces and special characters
-		String sanitizedLabel = label.replaceAll("[^a-zA-Z0-9]", "");
+		String sanitizedLabel = label.replaceAll("[^a-zA-Z0-9_]", "");
 		if (sanitizedLabel.isEmpty()) {
 			return Future.failedFuture("invalid.label.format");
 		}

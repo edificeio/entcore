@@ -3,6 +3,7 @@ package org.entcore.broker.api.dto.shares;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
+import java.beans.Transient;
 
 import java.util.List;
 
@@ -86,6 +87,7 @@ public class UpsertGroupSharesRequestDTO {
     return currentUserId;
   }
 
+  @Transient()
   public boolean isValid() {
     if(StringUtils.isEmpty(groupId)) {
       return false;
