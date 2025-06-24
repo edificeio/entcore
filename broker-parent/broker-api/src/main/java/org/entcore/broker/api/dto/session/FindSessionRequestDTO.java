@@ -154,7 +154,7 @@ public class FindSessionRequestDTO {
    *
    * @return true if the request contains at least one form of authentication information
    */
-  @Transient
+  @Transient()
   public boolean isValid() {
     return StringUtils.isNotBlank(sessionId) || 
            StringUtils.isNotBlank(cookies) || 

@@ -83,7 +83,7 @@ public class CommunicationBrokerListenerImpl implements CommunicationBrokerListe
         
         // Extract parameters
         final String groupId = request.getGroupId();
-        final Direction direction = parseDirectionOrDefault(request.getDirection());
+        final Direction direction = Direction.fromString(request.getDirection());
         
         log.debug("Adding communication links for group {} with direction {}", groupId, direction);
         
@@ -120,7 +120,7 @@ public class CommunicationBrokerListenerImpl implements CommunicationBrokerListe
         
         // Extract parameters
         final String groupId = request.getGroupId();
-        final Direction direction = parseDirectionOrDefault(request.getDirection());
+        final Direction direction = Direction.fromString(request.getDirection());
         
         log.debug("Removing communication links for group {} with direction {}", groupId, direction);
         
@@ -158,7 +158,7 @@ public class CommunicationBrokerListenerImpl implements CommunicationBrokerListe
         
         // Extract parameters
         final String groupId = request.getGroupId();
-        final Direction direction = parseDirectionOrDefault(request.getDirection());
+        final Direction direction = Direction.fromString(request.getDirection());
         
         log.debug("Recreating communication links for group {} with direction {}", groupId, direction);
         
@@ -197,26 +197,5 @@ public class CommunicationBrokerListenerImpl implements CommunicationBrokerListe
                     groupId, error.getMessage());
             return new RecreateCommunicationLinksResponseDTO(false);
         });
-    }
-    
-    /**
-     * Parses a string value into a Direction enum from CommunicationService
-     * Uses BOTH as default if the provided value is invalid
-     *
-     * @param directionValue String representation of the direction
-     * @return The corresponding Direction enum value
-     */
-    private Direction parseDirectionOrDefault(String directionValue) {
-        if (directionValue == null) {
-            return Direction.BOTH;
-        }
-        
-        try {
-            return Direction.valueOf(directionValue.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            log.warn("Invalid communication direction: {}. Using BOTH as default.", 
-                    directionValue);
-            return Direction.BOTH;
-        }
     }
 }

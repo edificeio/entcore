@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
 
+import java.beans.Transient;
+
 /**
  * This class represents a request to add communication links between a group and its users.
  * It contains the group ID and the direction of communication to establish.
@@ -41,6 +43,7 @@ public class AddCommunicationLinksRequestDTO {
    * 
    * @return true if the request is valid, false otherwise
    */
+  @Transient()
   public boolean isValid() {
     return !StringUtils.isBlank(groupId);
   }

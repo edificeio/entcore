@@ -3,6 +3,7 @@ package org.entcore.broker.api.dto.shares;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
+import java.beans.Transient;
 
 /**
  * This class represents a request to remove shares from a group.
@@ -86,7 +87,8 @@ public class RemoveGroupSharesRequestDTO {
   public String getCurrentUserId() {
     return currentUserId;
   }
-
+  
+  @Transient()
   public boolean isValid() {
     if(StringUtils.isEmpty(groupId)) {
       return false;
