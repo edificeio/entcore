@@ -131,7 +131,7 @@ public class DefaultShareBookmarkService implements ShareBookmarkService {
 
 			// Check bookmarked members' visibility
 			final Set<String> membersMapIds = membersMap.keySet();
-			UserUtils.filterVisibles(
+			UserUtils.filterFewOrGetAllVisibles(
 				eb, 
 				userId,
 				new JsonArray( membersMapIds.stream().collect(Collectors.toList()) )
