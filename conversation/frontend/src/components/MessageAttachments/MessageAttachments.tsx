@@ -6,7 +6,7 @@ import {
   IconPlus,
 } from '@edifice.io/react/icons';
 import clsx from 'clsx';
-import { ChangeEvent, useRef, useState } from 'react';
+import { ChangeEvent, useCallback, useRef, useState } from 'react';
 import { useI18n } from '~/hooks/useI18n';
 import { useMessageAttachments } from '~/hooks/useMessageAttachments';
 import { Attachment, Message } from '~/models';
@@ -35,24 +35,26 @@ export function MessageAttachments({
 
   if (!editMode && !attachments.length) return null;
 
+  const resetInputValue = useCallback(() => {
+    if (inputRef.current) {
+      inputRef.current.value = '';
+    }
+  }, [inputRef]);
+
   const handleAttachClick = () => inputRef?.current?.click();
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    attachFiles(event.target.files, (error) => {
-      if (error.error === 'file.too.large') {
-        if (inputRef.current) inputRef.current.value = '';
-      }
-    });
+    attachFiles(event.target.files, resetInputValue);
   };
 
   const handleDetachAllClick = () => {
     detachFiles(attachments.map((attachment) => attachment.id));
-    if (inputRef.current) inputRef.current.value = '';
+    resetInputValue();
   };
 
   const handleDetachClick = (attachmentId: string) => {
     detachFile(attachmentId);
-    if (inputRef.current) inputRef.current.value = '';
+    resetInputValue();
   };
 
   const className = clsx(
