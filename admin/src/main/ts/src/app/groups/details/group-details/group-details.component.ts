@@ -100,14 +100,13 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
         this.groupNewName = this.groupsStore.group.name;
 
         if (this.groupsStore.group.subType === 'BroadcastGroup') {
-            // remove duplicates and sort levels
-            this.autolinkLevelOptions = Array.from(new Set(this.groupsStore.structure.levels.map(d => d.name))).sort();
-            
-            this.spinnerService.perform('portal-content',
-                new Promise<void>((resolve, reject) => {
-                    this.groupsService.
-                    getFuncAndDisciplines(this.groupsStore.structure).
-                        subscribe((data: Array<GroupModel>) => {
+            // Load additional options
+            this.spinnerService.perform('portal-content', 
+                Promise.all([
+                    new Promise<void>((resolve, reject) => {
+                        this.groupsService
+                        .getFuncAndDisciplines(this.groupsStore.structure)
+                        .subscribe((data: Array<GroupModel>) => {
                             const disciplineGroups = data.filter(group => group.labels && group.labels.includes('DisciplineGroup'));
                             if (disciplineGroups) {
                                 this.autolinkDisciplineOptions = disciplineGroups.map(d => d.filter);
@@ -123,22 +122,30 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
                                 this.autolinkFunctionOptions = Array.from(new Set(this.autolinkFunctionOptions));
                                 this.autolinkFunctionOptions.sort();
                             }                        
-                            this.changeDetector.markForCheck();
                             resolve();
                         }, reject);
-                })
-            );
+                    }),
+                    
+                    new Promise<void>((resolve, reject) => {
+                        this.groupsService
+                        .getLevels(this.groupsStore.structure)
+                        .then(levels => {
+                            // remove duplicates and sort levels
+                            this.autolinkLevelOptions = Array.from(new Set(levels.map(d => d.name)));
+                            this.autolinkLevelOptions.sort();
+                            resolve();
+                        }, reject);
+                    }),
 
-            this.spinnerService.perform('portal-content',
-                this.usersPositionService.searchUserPositions({
-                    structureId: this.groupsStore.structure.id,
-                    includeSubStruct: true
-                })
-                .then((usersPosition) => {  
-                    this.autolinkUserPositionOptions = Array.from(new Set(usersPosition.map(userP => userP.name)));
-                    this.autolinkUserPositionOptions.sort();
-                    this.changeDetector.markForCheck();
-                })
+                    this.usersPositionService.searchUserPositions({
+                        structureId: this.groupsStore.structure.id,
+                        includeSubStruct: true
+                    }).then((usersPosition) => {  
+                        this.autolinkUserPositionOptions = Array.from(new Set(usersPosition.map(userP => userP.name)));
+                        this.autolinkUserPositionOptions.sort();
+                    })
+                ])
+                .then(() => this.changeDetector.markForCheck())
             );
         }
 

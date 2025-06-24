@@ -5,6 +5,7 @@ import { tap } from 'rxjs/operators';
 import { GroupModel } from '../core/store/models/group.model';
 import { StructureModel } from '../core/store/models/structure.model';
 import { GroupsStore } from './groups.store';
+import { Level } from '../core/store/models/level.model';
 
 export type GroupUpdatePayload = {
   name?: string;
@@ -46,6 +47,7 @@ export class GroupsService {
                     sGroup.autolinkTargetStructs = groupUpdatePayload.autolinkTargetStructs;
                     sGroup.autolinkUsersFromGroups = groupUpdatePayload.autolinkUsersFromGroups;
                     sGroup.autolinkUsersFromLevels = groupUpdatePayload.autolinkUsersFromLevels;
+                    sGroup.autolinkUsersFromPositions = groupUpdatePayload.autolinkUsersFromPositions;
                 }
                 this.groupsStore.group.name = groupUpdatePayload.name;
                 this.groupsStore.group.modifiedAt = group.modifiedAt;
@@ -54,6 +56,7 @@ export class GroupsService {
                 this.groupsStore.group.autolinkTargetStructs = groupUpdatePayload.autolinkTargetStructs;
                 this.groupsStore.group.autolinkUsersFromGroups = groupUpdatePayload.autolinkUsersFromGroups;
                 this.groupsStore.group.autolinkUsersFromLevels = groupUpdatePayload.autolinkUsersFromLevels;
+                this.groupsStore.group.autolinkUsersFromPositions = groupUpdatePayload.autolinkUsersFromPositions;
             })
         );
     }
@@ -68,5 +71,10 @@ export class GroupsService {
                 }
             }
         );
+    }
+
+    public async getLevels(structure: StructureModel): Promise<Level[]> {
+        await structure.syncLevels();
+        return structure.levels;
     }
 }

@@ -32,6 +32,9 @@ export function sync(structure: StructureModel, force?: boolean): Promise<Struct
         structure.syncAafFunctions(force), 
         ProfilesService.getProfiles().then(p => structure.profiles = p), 
         structure.syncPositions(force), 
+        /* COCO-3782 this sync is too eager for high-level structures. 
+         * Instead, it is synced where required => in BroadcastGroup tab for now.
         structure.syncLevels(force),
+        */
     ]).then(() => Promise.resolve(structure));
 }
