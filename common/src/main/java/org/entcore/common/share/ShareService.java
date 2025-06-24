@@ -32,6 +32,9 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface ShareService {
+
+	String EXPECTED_IDS_USERS_GROUPS = "expectedIdsOfUsersAndGroups";
+
 	void inheritShareInfos(String userId, String resourceId, String acceptLanguage, String search,
 			Handler<Either<String, JsonObject>> handler);
 
