@@ -40,7 +40,7 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
 
     public autolinkFunctionOptions: Array<string> = [];
     public autolinkDisciplineOptions: Array<string> = [];
-    public usersPositionsOptions: Array<string> = [];
+    public autolinkUserPositionOptions: Array<string> = [];
     public autolinkLevelOptions: Array<string> = [];
 
     public showActions: boolean;
@@ -102,6 +102,7 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
         if (this.groupsStore.group.subType === 'BroadcastGroup') {
             // remove duplicates and sort levels
             this.autolinkLevelOptions = Array.from(new Set(this.groupsStore.structure.levels.map(d => d.name))).sort();
+            
             this.spinnerService.perform('portal-content',
                 new Promise<void>((resolve, reject) => {
                     this.groupsService.
@@ -129,17 +130,15 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
             );
 
             this.spinnerService.perform('portal-content',
-                new Promise<void>((resolve) => {
-                    this.usersPositionService.searchUserPositions({
+                this.usersPositionService.searchUserPositions({
                     structureId: this.groupsStore.structure.id,
                     includeSubStruct: true
-                    }).then((usersPosition) => {  
-                        this.usersPositionsOptions = Array.from(new Set(usersPosition.map(userP => userP.name)));
-                        this.usersPositionsOptions.sort();                   
-                        this.changeDetector.markForCheck();
-                        resolve();
-                    });
-                })                
+                })
+                .then((usersPosition) => {  
+                    this.autolinkUserPositionOptions = Array.from(new Set(usersPosition.map(userP => userP.name)));
+                    this.autolinkUserPositionOptions.sort();
+                    this.changeDetector.markForCheck();
+                })
             );
         }
 

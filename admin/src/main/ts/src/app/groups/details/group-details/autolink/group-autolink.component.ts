@@ -57,7 +57,7 @@ export class GroupAutolinkComponent extends OdeComponent {
     public form: AutolinkFormModel;
 
     public lightboxSubStructureIds: Array<string> = [];
-    public showSubStructutresPickerButton: boolean;
+    public showSubStructuresPickerButton: boolean;
     public showSubStructuresLightbox: boolean;
     public showTeachersSubSection: boolean;
     public showPersonnelSubSection: boolean;
@@ -153,15 +153,16 @@ export class GroupAutolinkComponent extends OdeComponent {
                     }
                 }
             });
-
-            this.usersPositionsOptions.forEach(f => {
-                if (this.group.autolinkUsersFromPositions.includes(f)) {
-                    this.form.personnelSubSectionRadio = 'usersPositions';
-                    this.form.selectedUsersPositions.push(f);
-                    this.form.profile = 'Personnel';
-                }
-            });
         }
+
+        this.usersPositionsOptions.forEach(f => {
+            if (this.group.autolinkUsersFromPositions && this.group.autolinkUsersFromPositions.includes(f)) {
+                this.form.personnelSubSectionRadio = 'usersPositions';
+                this.form.selectedUsersPositions.push(f);
+                this.form.profile = 'Personnel';
+                this.showPersonnelSubSection = true;
+            }
+        });
 
         this.structureTreeItems = this.getSubStructuresTreeItems();
     }
