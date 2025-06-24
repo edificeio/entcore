@@ -14,7 +14,26 @@ body {
 .application-card {
     box-shadow: none !important;
     border: 1px solid transparent;
+    width: 107px;
+    height: 134px;
+    text-align: center;
 }
+.theme-1d .application-card {
+    width: 130px;
+    height: 150px;
+}
+.theme-1d .application-icon {
+    width: 80px;
+    height: 80px;
+    font-size: 46px;
+}
+.theme-1d .application-icon i {
+    line-height: 72px !important;
+}
+.theme-1d .application-icon i::before {
+    font-size: 46px;
+}
+
 .application-card .dropdown-menu {
     display: flex !important;
     border: none;
@@ -45,12 +64,10 @@ body {
 }
 
 .application-icon {
-    width: 64px;
-    height: 64px;
-    height: 56px;
+    width: 62px;
+    height: 62px;
     text-align: center;
     line-height: 56px;
-    width: 56px;
     display: inline-block;
     overflow: hidden;
 }
@@ -97,9 +114,26 @@ body {
     }
 }
 
+.favorite-star-icon {
+    position: absolute;
+    top: -12px;
+    left: -12px;
+    width: 24px;
+    height: 24px;
+    z-index: 2;
+}
+.theme-1d .favorite-star-icon {
+    position: absolute;
+    top: -14px;
+    left: -14px;
+    width: 28px;
+    height: 28px;
+}
+
 .ellipsis-3 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

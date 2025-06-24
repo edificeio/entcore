@@ -30,7 +30,7 @@ export function ApplicationWrapper({ data }: { data: Application }) {
   const [dropdownActive, setDropdownActive] = useState(false);
   const [hover, setHover] = useState(false);
   const classApplicationCard = clsx(
-    'rounded application-card position-relative py-8 px-4',
+    'rounded application-card position-relative py-12 px-4',
     (dropdownActive || hover) && 'active border border-secondary bg-gray-200',
   );
   const { bookmarks, toggleBookmark, isHydrated } = useUserPreferencesStore();
@@ -64,7 +64,6 @@ export function ApplicationWrapper({ data }: { data: Application }) {
       rel={data.isExternal ? 'noopener noreferrer' : undefined}
       target={data.isExternal ? '_blank' : undefined}
       className={classApplicationCard}
-      style={{ width: 107, height: 127, textAlign: 'center' }}
       title={data.appName}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
