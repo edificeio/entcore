@@ -645,8 +645,9 @@ public class UserUtils {
 	}
 
 	/**
-	 * Check if a user can communicate with some other (visible) users or groups.
-	 *
+	 * Check if a user can communicate with some other (visible) users or groups. Fallback on returning all visible
+	 * if too many checkIds should be checked to avoid performance issue.
+	 * cf sharesMaxCheckSize in server configuration
 	 * @param userId  id of the sender
 	 * @param checkIds list of ids to check
 	 * @return JsonArray of JsonObjects:
@@ -654,7 +655,7 @@ public class UserUtils {
 	 * id: recipient ID which the sender can communicate with
 	 * }
 	 */
-	public static Future<JsonArray> filterVisibles(EventBus eb, String userId, JsonArray checkIds) {
+	public static Future<JsonArray> filterFewOrGetAllVisibles(EventBus eb, String userId, JsonArray checkIds) {
 		if(StringUtils.isEmpty(userId) || checkIds == null || checkIds.isEmpty()) {
 			return Future.succeededFuture(new JsonArray());
 		}
