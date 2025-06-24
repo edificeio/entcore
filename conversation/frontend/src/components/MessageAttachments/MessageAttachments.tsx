@@ -27,6 +27,7 @@ export function MessageAttachments({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const { downloadAllUrl, attachFiles, detachFiles, isMutating, detachFile } =
     useMessageAttachments();
+
   const [attachmentsToAddToWorkspace, setAttachmentsToAddToWorkspace] =
     useState<Attachment[] | undefined>(undefined);
 
@@ -37,7 +38,11 @@ export function MessageAttachments({
   const handleAttachClick = () => inputRef?.current?.click();
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    attachFiles(event.target.files);
+    attachFiles(event.target.files, (error) => {
+      if (error.error === 'file.too.large') {
+        if (inputRef.current) inputRef.current.value = '';
+      }
+    });
   };
 
   const handleDetachAllClick = () => {

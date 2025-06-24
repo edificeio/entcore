@@ -30,9 +30,11 @@ export function useMessageAttachments() {
   const getDownloadUrl = (attachementId: string) =>
     `${baseUrl}/message/${id}/attachment/${attachementId}`;
 
-  async function attachFiles(files: FileList | null) {
+  async function attachFiles(
+    files: FileList | null,
+    onError?: (error: any) => void,
+  ) {
     if (!id) {
-      // Save this new draft to get its id
       const promise = await createOrUpdateDraft();
       if (promise) id = promise.id;
     }
@@ -44,7 +46,12 @@ export function useMessageAttachments() {
       const file = files.item(i);
       if (file) mutateVars.files.push(file);
     }
-    attachFileMutation.mutateAsync(mutateVars);
+
+    try {
+      await attachFileMutation.mutateAsync(mutateVars);
+    } catch (error) {
+      onError?.(error);
+    }
   }
 
   function detachFile(attachmentId: string) {
