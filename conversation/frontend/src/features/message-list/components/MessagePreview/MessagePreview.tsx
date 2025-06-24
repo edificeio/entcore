@@ -57,7 +57,7 @@ export function MessagePreview({ message }: MessagePreviewProps) {
       {['outbox', 'draft'].includes(messageFolderId) ? (
         <RecipientAvatar recipients={message.to} />
       ) : (
-        <SenderAvatar authorId={message.from.id} />
+        <SenderAvatar authorId={message.from?.id || ''} />
       )}
 
       <div
