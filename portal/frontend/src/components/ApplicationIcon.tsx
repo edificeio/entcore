@@ -16,7 +16,7 @@ export function ApplicationIcon({
   const { t } = useTranslation('common');
   const [hasError, setHasError] = useState(false);
   const isImage = data.icon.includes('/');
-  const iconClassName = getIconClass(data);
+  const iconClassName = `${getIconClass(data)} application-font-icon`;
   const appName = getAppName(data, t);
   const classApplicationIcon = clsx(
     `application-icon rounded mb-8 d-flex align-items-center justify-content-center mx-auto`,

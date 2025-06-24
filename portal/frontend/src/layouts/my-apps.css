@@ -25,13 +25,13 @@ body {
 .theme-1d .application-icon {
     width: 80px;
     height: 80px;
-    font-size: 46px;
-}
-.theme-1d .application-icon i {
-    line-height: 72px !important;
 }
 .theme-1d .application-icon i::before {
+    line-height: 72px !important;
     font-size: 46px;
+}
+.theme-2d .application-icon i::before {
+    line-height: 67px !important;
 }
 
 .application-card .dropdown-menu {
@@ -82,6 +82,7 @@ body {
 .application-icon.application-icon-connector i::before {
     color: black !important;
 }
+
 .application-title {
     font-family: 'Arimo';
     font-weight: 400;
