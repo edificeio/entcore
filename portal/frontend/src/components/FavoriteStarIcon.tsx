@@ -16,17 +16,8 @@ export function FavoriteStarIcon({ isFavorite }: { isFavorite: boolean }) {
           key="favorite-star"
           src={StarIcon}
           alt="star"
-          style={{
-            position: 'absolute',
-            top: -10,
-            left: -10,
-            width: 20,
-            height: 20,
-            zIndex: 2,
-          }}
-          initial={
-            hasMounted ? { scale: 0, rotate: 0, opacity: 0 } : false
-          }
+          className="favorite-star-icon"
+          initial={hasMounted ? { scale: 0, rotate: 0, opacity: 0 } : false}
           animate={{
             scale: [0, 1.5, 1],
             rotate: 360,
