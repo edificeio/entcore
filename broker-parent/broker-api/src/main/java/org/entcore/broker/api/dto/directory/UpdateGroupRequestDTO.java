@@ -3,6 +3,7 @@ package org.entcore.broker.api.dto.directory;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
+import java.beans.Transient;
 
 /**
  * This class represents a request to update an existing group in the directory.
@@ -64,6 +65,7 @@ public class UpdateGroupRequestDTO {
    * Validates the request to ensure that at least one of id or externalId is provided.
    * @return true if the request is valid, false otherwise.
    */
+  @Transient()
   public boolean isValid() {
     if (StringUtils.isBlank(id) && StringUtils.isBlank(externalId)) {
       return false;
