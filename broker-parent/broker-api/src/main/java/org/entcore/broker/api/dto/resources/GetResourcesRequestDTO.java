@@ -3,6 +3,7 @@ package org.entcore.broker.api.dto.resources;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
+import java.beans.Transient;
 
 import java.util.List;
 
@@ -42,6 +43,7 @@ public class GetResourcesRequestDTO {
    * 
    * @return True if the request is valid, false otherwise.
    */
+  @Transient()
   public boolean isValid() {
     if (resourceIds == null || resourceIds.isEmpty()) {
       return false;

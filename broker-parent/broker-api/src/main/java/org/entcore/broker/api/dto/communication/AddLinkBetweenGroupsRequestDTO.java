@@ -3,6 +3,7 @@ package org.entcore.broker.api.dto.communication;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
+import java.beans.Transient;
 
 /**
  * This class represents a request to create a communication link between two groups.
@@ -40,6 +41,7 @@ public class AddLinkBetweenGroupsRequestDTO {
    * 
    * @return true if the request is valid, false otherwise
    */
+  @Transient()
   public boolean isValid() {
     return !StringUtils.isBlank(startGroupId) && !StringUtils.isBlank(endGroupId);
   }

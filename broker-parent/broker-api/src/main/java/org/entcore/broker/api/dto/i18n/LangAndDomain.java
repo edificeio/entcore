@@ -3,6 +3,7 @@ package org.entcore.broker.api.dto.i18n;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
+import java.beans.Transient;
 
 /**
  * This class represents language and domain information.
@@ -53,6 +54,7 @@ public class LangAndDomain {
    * Checks if the object is valid by verifying that lang is provided.
    * @return true if both lang is not blank, false otherwise.
    */
+  @Transient()
   public boolean isValid() {
     return !StringUtils.isBlank(lang);
   }

@@ -3,6 +3,7 @@ package org.entcore.broker.api.dto.directory;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
+import java.beans.Transient;
 
 /**
  * This class represents a request to add a member to a group in the directory.
@@ -58,6 +59,7 @@ public class AddGroupMemberRequestDTO {
    * Validates the request to ensure that at least one of groupId or groupExternalId is provided, and userId is not blank.
    * @return true if the request is valid, false otherwise.
    */
+  @Transient()
   public boolean isValid() {
     if(StringUtils.isBlank(userId)) {
       return false;

@@ -2,6 +2,7 @@ package org.entcore.broker.api.dto.i18n;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.beans.Transient;
 
 import java.util.Map;
 
@@ -76,6 +77,7 @@ public class FetchTranslationsRequestDTO {
      * 
      * @return true if the request is valid, false otherwise.
      */
+    @Transient()
     public boolean isValid() {
         // Either headers or langAndDomain must be provided
         if (headers == null && langAndDomain == null) {

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.beans.Transient;
 
 import java.util.Map;
 import java.io.IOException;
@@ -59,6 +60,7 @@ public class RegisterTranslationFilesRequestDTO {
      * Validates the request.
      * @return true if the request is valid, false otherwise
      */
+    @Transient()
     public boolean isValid() {
         return application != null && !application.isEmpty() && 
                translationsByLanguage != null && !translationsByLanguage.isEmpty();

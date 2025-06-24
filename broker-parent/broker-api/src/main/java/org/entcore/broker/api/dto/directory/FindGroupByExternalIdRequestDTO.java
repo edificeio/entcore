@@ -3,6 +3,7 @@ package org.entcore.broker.api.dto.directory;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.apache.commons.lang3.StringUtils;
+import java.beans.Transient;
 
 /**
  * This class represents a request to find a group by its external ID in the directory.
@@ -38,6 +39,7 @@ public class FindGroupByExternalIdRequestDTO {
    * Validates the request to ensure that the externalId is not blank.
    * @return true if the request is valid, false otherwise.
    */
+  @Transient()
   public boolean isValid() {
     return !StringUtils.isBlank(externalId);
   }
