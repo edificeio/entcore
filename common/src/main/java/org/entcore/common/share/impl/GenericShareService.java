@@ -478,31 +478,11 @@ public abstract class GenericShareService implements ShareService {
 		final Promise<AccessibleUsersCheck> promise = Promise.promise();
 		final String customReturn = "RETURN DISTINCT visibles.id as id, has(visibles.login) as isUser";
 
-		// Parallelizing the process of fetching the visibles
-		final int partitionSize = UserUtils.getMaxCheckIdsSize();
-		final List<List<String>> idsOfShareChunks = Lists.partition(getIdOfGroupsAndUsersConcernedByShares(originalShares, shareUpdates), partitionSize);
-		final List<Future<JsonArray>> visibleFutures = new ArrayList<>();
-		idsOfShareChunks.forEach(idsOfShareChunk -> {
-			final Promise<JsonArray> visiblePromise = Promise.promise();
-			final JsonArray idsOfShare = new JsonArray();
-			idsOfShareChunk.forEach(idsOfShare::add);
-			final JsonObject extraParams = new JsonObject()
-					.put(EXPECTED_IDS_USERS_GROUPS, idsOfShare);
-			UserUtils.findVisibles(eb, userId, customReturn,
-					extraParams,
-					true, true, false,
-					"fr", "AND (m.id IN {" + EXPECTED_IDS_USERS_GROUPS + "}) ",
-					visiblePromise::complete);
-			visibleFutures.add(visiblePromise.future());
-		});
-		Future.all(visibleFutures)
-				.map(futures -> futures.list().stream()
-						.map(result -> (JsonArray) result)
-						.collect(Collectors.toList()))
+		final List<String> idsOfShare = getIdOfGroupsAndUsersConcernedByShares(originalShares, shareUpdates);
+
+		UserUtils.filterFewOrGetAllVisibles(eb, userId, new JsonArray(idsOfShare),	true,"fr", customReturn, false)
 				.onSuccess(visibleChunks -> {
-					final JsonArray visibleArray = new JsonArray();
-					visibleChunks.forEach(visibleArray::addAll);
-					final Set<String> seeableUsersAndGroupsFromOriginalShares = visibleArray.stream()
+					final Set<String> seeableUsersAndGroupsFromOriginalShares = visibleChunks.stream()
 							.map(entry -> ((JsonObject) entry).getString("id"))
 							.collect(Collectors.toSet());
 					// Check that original shares are untouched or that the ones that are modified, are modified accordingly to

@@ -656,6 +656,11 @@ public class UserUtils {
 	 * }
 	 */
 	public static Future<JsonArray> filterFewOrGetAllVisibles(EventBus eb, String userId, JsonArray checkIds) {
+		return filterFewOrGetAllVisibles(eb, userId, checkIds, false, null, " MATCH (visibles) RETURN DISTINCT visibles.id as id ", true);
+	};
+
+	public static Future<JsonArray> filterFewOrGetAllVisibles(EventBus eb, String userId, JsonArray checkIds,
+															  boolean itself, String language, String customReturn, boolean reverseUnion) {
 		if(StringUtils.isEmpty(userId) || checkIds == null || checkIds.isEmpty()) {
 			return Future.succeededFuture(new JsonArray());
 		}
@@ -665,26 +670,26 @@ public class UserUtils {
 			params.put(EXPECTED_IDS_USERS_GROUPS, checkIds);
 		}
 		visibleFutures.add(findVisibles(eb,
-			userId,
-			" MATCH (visibles) RETURN DISTINCT visibles.id as id ",
-			params,
-			false,
-			true,
-			false,
-			null,
-			null,
-			null,
-			true
+				userId,
+				customReturn,
+				params,
+				itself,
+				true,
+				false,
+				language,
+				null,
+				null,
+				reverseUnion
 		));
 
 		return Future.all(visibleFutures)
-			.map(futures -> {
-				return futures.list().stream()
-				.map(JsonArray.class::cast)
-				.flatMap(arr -> arr.stream().map(JsonObject.class::cast))
-				.collect(Collector.of(JsonArray::new, JsonArray::add, JsonArray::add));
-			});
-	};
+				.map(futures -> {
+					return futures.list().stream()
+							.map(JsonArray.class::cast)
+							.flatMap(arr -> arr.stream().map(JsonObject.class::cast))
+							.collect(Collector.of(JsonArray::new, JsonArray::add, JsonArray::add));
+				});
+	}
 
 	public static void getSession(EventBus eb, final HttpServerRequest request,
 								  final Handler<JsonObject> handler) {
