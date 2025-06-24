@@ -22,18 +22,24 @@ export function MessageHeader({ message }: { message: Message }) {
             <Avatar
               alt={t('author.avatar')}
               size="sm"
-              src={getAvatarURL(message.from!.id, 'user')}
+              src={getAvatarURL(message.from?.id || '', 'user')}
               variant="circle"
               className="align-self-start mt-4"
             />
             <div className="d-flex flex-fill flex-column overflow-hidden">
               <div className="d-flex flex-wrap column-gap-8">
-                <a
-                  href={getUserbookURL(message.from.id, 'user')}
-                  className="fw-bold text-blue sender-link"
-                >
-                  {message.from.displayName}
-                </a>
+                {message.from?.id ? (
+                  <a
+                    href={getUserbookURL(message.from.id, 'user')}
+                    className="fw-bold text-blue sender-link"
+                  >
+                    {message.from.displayName}
+                  </a>
+                ) : (
+                  <span className="fw-bold text-blue">
+                    {message.from?.displayName || ''}
+                  </span>
+                )}
                 {message.date && (
                   <span className="text-gray-700 fst-italic">
                     {formatDate(message.date, t('date.format.message'))}

@@ -87,7 +87,7 @@ export function useInitMessage({
             `<div>
             ${signatureData?.useSignature ? `<p></p>` : ''}
             <p><span style="font-size: 14px; font-weight:400;">--------- ${t('transfer.title')} ---------</span></p>
-            <p><span style="font-size: 14px; font-weight:400;">${t('transfer.from') + messageOrigin.from?.displayName}</span></p>
+            <p><span style="font-size: 14px; font-weight:400;">${t('transfer.from') + (messageOrigin.from?.displayName || '')}</span></p>
             <p><span style="font-size: 14px; font-weight:400;">${t('transfer.date') + (messageOrigin.date ? formatDate(messageOrigin.date, 'LLL') : '')}</span></p>
             <p><span style="font-size: 14px; font-weight:400;">${t('transfer.subject') + messageOrigin.subject}</span></p>
             <p><span style="font-size: 14px; font-weight:400;">${t('transfer.to') + displayRecipient(messageOrigin.to)}</span></p>
@@ -105,7 +105,7 @@ export function useInitMessage({
           body =
             body +
             `<div class="conversation-history">
-          <p><span style="font-size: 14px; font-weight:400;"><em>${t('from') + ' ' + messageOrigin.from?.displayName + (messageOrigin.date ? ', ' + common_t('date.format.pretty', { date: formatDate(messageOrigin.date, 'LL'), time: formatDate(messageOrigin.date, 'LT') }) : '')}</em></span></p>
+          <p><span style="font-size: 14px; font-weight:400;"><em>${t('from') + ' ' + (messageOrigin.from?.displayName || '') + (messageOrigin.date ? ', ' + common_t('date.format.pretty', { date: formatDate(messageOrigin.date, 'LL'), time: formatDate(messageOrigin.date, 'LT') }) : '')}</em></span></p>
           <p><span style="font-size: 14px; font-weight:400; color: #909090;"><em>${t('transfer.to') + displayRecipient(messageOrigin.to)}</em></span></p>
           ${messageOrigin.cc.users.length || messageOrigin.cc.groups.length ? '<p><span style="font-size: 14px; font-weight:400;color: #909090;"><em>' + t('transfer.cc') + displayRecipient(messageOrigin.cc) + '</em></span></p>' : ''}
           <div class="conversation-history-body">
@@ -115,7 +115,9 @@ export function useInitMessage({
 
           switch (action) {
             case 'reply':
-              messageTmp.to.users = [messageOrigin.from];
+              messageTmp.to.users = messageOrigin.from
+                ? [messageOrigin.from]
+                : [];
               messageTmp.to.groups = [];
               messageTmp.cc.users = [];
               messageTmp.cc.groups = [];
@@ -126,13 +128,16 @@ export function useInitMessage({
                 ...messageOrigin.to,
                 users: [
                   ...messageOrigin.to.users.filter(
-                    (user: User) => user.id !== messageOrigin.from.id,
+                    (user: User) => messageOrigin.from?.id !== user.id,
                   ),
-                  messageOrigin.from,
+                  ...(messageOrigin.from ? [messageOrigin.from] : []),
                 ],
               };
               messageTmp.cc = { ...messageOrigin.cc };
-              if (messageOrigin.from.id === user?.userId && messageOrigin.cci) {
+              if (
+                messageOrigin.from?.id === user?.userId &&
+                messageOrigin.cci
+              ) {
                 messageTmp.cci = { ...messageOrigin.cci };
               }
               break;
