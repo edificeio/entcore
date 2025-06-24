@@ -280,7 +280,7 @@ public class UserUtils {
 			} else {
 				partitionSize = DEFAULT_MAX_CHECK_ID;
 			}
-			VISIBLE_CONFIG.put("sharesPartitionSize", partitionSize);
+			VISIBLE_CONFIG.put("sharesMaxCheckSize", partitionSize);
 		}
 		return partitionSize <= 0 ? DEFAULT_MAX_CHECK_ID : partitionSize;
 	}
