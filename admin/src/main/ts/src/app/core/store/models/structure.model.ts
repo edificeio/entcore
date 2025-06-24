@@ -7,6 +7,7 @@ import { ConnectorCollection } from '../collections/connector.collection';
 import { WidgetCollection } from '../collections/widget.collection';
 import { UserPosition } from './userPosition.model';
 import { UserPositionService } from '../../services/user-position.service';
+import { Level } from './level.model';
 
 export type ClassModel = { id: string, name: string };
 
@@ -29,6 +30,7 @@ export class StructureModel extends Model<StructureModel> {
     profiles: { name: string, blocked: any }[] = [];
     aafFunctions: Array<Array<Array<string>>> = [];
     userPositions: Array<UserPosition> = [];
+    levels: Array<Level> = [];
     levelsOfEducation: number[] = [];
     distributions: string[];
     timetable: string;
@@ -130,6 +132,18 @@ export class StructureModel extends Model<StructureModel> {
             return userPositionServices.searchUserPositions({structureId: this.id})
                 .then(res => {
                     this.userPositions = res;
+                });
+        }
+        return Promise.resolve();
+    }
+
+    syncLevels(force?: boolean) {
+        if (this.levels.length < 1 || force === true) {
+            return this.http.get(`/directory/structure/${this.id}/levels?inherit=true`)
+                .then(res => {
+                    if (res.data && res.data.length > 0) {
+                        this.levels = res.data;
+                    }
                 });
         }
         return Promise.resolve();
