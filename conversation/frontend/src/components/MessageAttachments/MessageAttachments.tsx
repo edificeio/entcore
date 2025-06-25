@@ -27,6 +27,7 @@ export function MessageAttachments({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const { downloadAllUrl, attachFiles, detachFiles, isMutating, detachFile } =
     useMessageAttachments();
+
   const [attachmentsToAddToWorkspace, setAttachmentsToAddToWorkspace] =
     useState<Attachment[] | undefined>(undefined);
 
@@ -34,20 +35,26 @@ export function MessageAttachments({
 
   if (!editMode && !attachments.length) return null;
 
+  const resetInputValue = () => {
+    if (inputRef.current) {
+      inputRef.current.value = '';
+    }
+  };
+
   const handleAttachClick = () => inputRef?.current?.click();
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-    attachFiles(event.target.files);
+    attachFiles(event.target.files, resetInputValue);
   };
 
   const handleDetachAllClick = () => {
     detachFiles(attachments.map((attachment) => attachment.id));
-    if (inputRef.current) inputRef.current.value = '';
+    resetInputValue();
   };
 
   const handleDetachClick = (attachmentId: string) => {
     detachFile(attachmentId);
-    if (inputRef.current) inputRef.current.value = '';
+    resetInputValue();
   };
 
   const className = clsx(
