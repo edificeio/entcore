@@ -42,8 +42,7 @@ type Params<U> = Parameters<typeof useStore<typeof store, U>>;
 
 const initialState: State = {
   workflows: {
-    'org.entcore.conversation.controllers.ConversationController|createDraft':
-      false,
+    'org.entcore.conversation.controllers.ConversationController|createDraft': false,
     'org.entcore.conversation.controllers.ApiController|recallMessage': false,
   } as Record<string, boolean>,
   config: { maxDepth: 3, recallDelayMinutes: 60 } as Config,
