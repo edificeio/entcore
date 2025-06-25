@@ -1,6 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
-import { Fragment, Suspense, useEffect, useState } from 'react';
-import { Await, LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
+import { Fragment, useEffect, useState } from 'react';
+import { LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
 import { MessageEdit } from '~/features/message-edit/MessageEdit';
 import { MessageEditSkeleton } from '~/features/message-edit/MessageEditSkeleton';
 import { Message } from '~/features/message/Message';
@@ -76,31 +76,21 @@ export function Component() {
     }
   }, [messageId, message?.id]);
 
-  const promiseMessage = new Promise((resolve) => {
-    if (message) {
-      resolve(message);
-    }
-  });
+  if (!message) {
+    return (
+      <>
+        {folderId === 'draft' ? <MessageEditSkeleton /> : <MessageSkeleton />}
+      </>
+    );
+  }
 
   return (
-    <Suspense
-      fallback={
-        <>
-          {folderId === 'draft' ? <MessageEditSkeleton /> : <MessageSkeleton />}
-        </>
-      }
-    >
-      <Await resolve={promiseMessage}>
-        {message && (
-          <Fragment key={currentKey}>
-            {!isPrint && folderId === 'draft' && message.state === 'DRAFT' ? (
-              <MessageEdit message={message} />
-            ) : (
-              <Message message={message} isPrint={isPrint} />
-            )}
-          </Fragment>
-        )}
-      </Await>
-    </Suspense>
+    <Fragment key={currentKey}>
+      {!isPrint && folderId === 'draft' && message.state === 'DRAFT' ? (
+        <MessageEdit message={message} />
+      ) : (
+        <Message message={message} isPrint={isPrint} />
+      )}
+    </Fragment>
   );
 }

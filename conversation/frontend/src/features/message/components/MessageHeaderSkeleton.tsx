@@ -1,9 +1,9 @@
-import { Avatar } from '@edifice.io/react';
+import { Avatar, TextSkeleton } from '@edifice.io/react';
 
 export function MessageHeaderSkeleton() {
   return (
     <div>
-      <h4 className="placeholder col-7"></h4>
+      <TextSkeleton className="placeholder col-7" size="lg"></TextSkeleton>
       <div className="d-flex align-items-center mt-16 gap-12 small">
         <Avatar
           alt=""
@@ -12,8 +12,8 @@ export function MessageHeaderSkeleton() {
           className="align-self-start mt-4 placeholder"
         />
         <div className="col-8">
-          <div className="d-block placeholder col-6"></div>
-          <div className="placeholder col-3"></div>
+          <TextSkeleton className="d-block col-6"></TextSkeleton>
+          <TextSkeleton className="col-3"></TextSkeleton>
         </div>
       </div>
     </div>

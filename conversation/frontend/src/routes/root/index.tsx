@@ -87,7 +87,7 @@ export function Component() {
   }
 
   return (
-    <div className="d-print-block d-flex flex-column vh-100 flex-grow-1 placeholder-glow">
+    <div className="d-print-block d-flex flex-column vh-100 flex-grow-1">
       <Layout>
         <div className="d-print-none">
           <AppHeader render={AppActionHeader}>

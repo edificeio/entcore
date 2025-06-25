@@ -1,7 +1,5 @@
 import { QueryClient } from '@tanstack/react-query';
-import { Suspense } from 'react';
 import {
-  Await,
   LoaderFunctionArgs,
   useParams,
   useSearchParams,
@@ -43,28 +41,25 @@ export const loader =
 export function Component() {
   const { folderId } = useParams();
   const [searchParams] = useSearchParams();
-  const { messages, isPending: isLoadingMessage } = useFolderMessages(
-    folderId!,
-  );
-  const isLoadingMessagesFinishedPromise = new Promise((resolve) => {
-    if (!isLoadingMessage && messages) {
-      resolve(true);
-    }
-  });
+  const {
+    messages,
+    isPending: isLoadingMessage,
+    isFetchingNextPage,
+  } = useFolderMessages(folderId!);
+
+  if (isLoadingMessage && messages === undefined) {
+    // If messages are still loading and not yet defined, we return a skeleton.
+    return <MessageListSkeleton />;
+  }
 
   return (
-    <Suspense fallback={<MessageListSkeleton />}>
-      <Await resolve={isLoadingMessagesFinishedPromise}>
-        {messages && (
-          <>
-            {(!!messages.length ||
-              searchParams.get('search') ||
-              searchParams.get('unread')) && <MessageListHeader />}
-            <MessageList />
-            {!isLoadingMessage && !messages.length && <MessageListEmpty />}
-          </>
-        )}
-      </Await>
-    </Suspense>
+    <>
+      {(!!messages.length ||
+        searchParams.get('search') ||
+        searchParams.get('unread')) && <MessageListHeader />}
+      <MessageList />
+      {!isLoadingMessage && !messages.length && <MessageListEmpty />}
+      {isFetchingNextPage && <MessageListSkeleton withHeader={false} />}
+    </>
   );
 }
