@@ -815,8 +815,6 @@ public class DefaultUserService implements UserService {
 		return str;
 	}
 
-
-
 	private boolean isValidSortField(final String sortingField) {
 		return sortingField!=null && VALID_SORT_FIELDS.contains(sortingField);
 	}
