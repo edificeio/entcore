@@ -425,60 +425,48 @@ public class StructureController extends BaseController {
 		this.assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath");
 		this.skins = vertx.sharedData().getLocalMap("skins");
 
-		getSkin(request, result -> {
+		final String skin = this.skins.get(Renders.getHost(request));
 
-			final String skin;
-			if (result.isLeft() || result.right().getValue() == null) {
-				skin = this.skins.get(Renders.getHost(request));
-			} else {
-				skin = result.right().getValue();
-			}
+		final String assetsPath = this.assetsPath + "/assets/themes/" + skin;
+		final String templatePath = assetsPath + "/template/directory/";
+		final String baseUrl = getScheme(request) + "://" + Renders.getHost(request) + "/assets/themes/" + skin + "/img/";
 
-			final String assetsPath = this.assetsPath + "/assets/themes/" + skin;
-			final String templatePath = assetsPath + "/template/directory/";
-			final String baseUrl = getScheme(request) + "://" + Renders.getHost(request) + "/assets/themes/" + skin + "/img/";
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			public void handle(final UserInfos infos) {
 
-
-			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-				public void handle(final UserInfos infos) {
-
-					//PDF
-					if("pdf".equals(type)){
-						massMailService.massMailUser(userId, infos, new Handler<Either<String,JsonArray>>() {
-							public void handle(Either<String, JsonArray> result) {
-								if(result.isLeft()){
-									forbidden(request);
-									return;
-								}
-
-								massMailService.massMailTypePdf(infos, request, templatePath, baseUrl, filename, "pdf", result.right().getValue());
-
+				//PDF
+				if("pdf".equals(type)){
+					massMailService.massMailUser(userId, infos, new Handler<Either<String,JsonArray>>() {
+						public void handle(Either<String, JsonArray> result) {
+							if(result.isLeft()){
+								forbidden(request);
+								return;
 							}
-						});
-					}
-					//Mail
-					else if("mail".equals(type)){
-						massMailService.massMailUser(userId, infos, new Handler<Either<String,JsonArray>>() {
-							public void handle(final Either<String, JsonArray> result) {
-								if(result.isLeft()){
-									forbidden(request);
-									return;
-								}
 
-								massMailService.massMailTypeMail(infos, request, templatePath, result.right().getValue());
-							}
-						});
-					} else {
-						badRequest(request);
-					}
+							massMailService.massMailTypePdf(infos, request, templatePath, baseUrl, filename, "pdf", result.right().getValue());
 
+						}
+					});
 				}
-			});
+				//Mail
+				else if("mail".equals(type)){
+					massMailService.massMailUser(userId, infos, new Handler<Either<String,JsonArray>>() {
+						public void handle(final Either<String, JsonArray> result) {
+							if(result.isLeft()){
+								forbidden(request);
+								return;
+							}
 
+							massMailService.massMailTypeMail(infos, request, templatePath, result.right().getValue());
+						}
+					});
+				} else {
+					badRequest(request);
+				}
+
+			}
 		});
-
 	}
-
 
 	@Get("/structure/:structureId/massMail/process/:type")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
@@ -514,56 +502,46 @@ public class StructureController extends BaseController {
 		this.assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath");
 		this.skins = vertx.sharedData().getLocalMap("skins");
 
-		getSkin(request, result -> {
+		final String skin = this.skins.get(Renders.getHost(request));
 
-			final String skin;
-			if (result.isLeft() || result.right().getValue() == null) {
-				skin = this.skins.get(Renders.getHost(request));
-			} else {
-				skin = result.right().getValue();
-			}
+		final String assetsPath = this.assetsPath + "/assets/themes/" + skin;
+		final String templatePath = assetsPath + "/template/directory/";
+		final String baseUrl = getScheme(request) + "://" + Renders.getHost(request) + "/assets/themes/" + skin + "/img/";
 
-			final String assetsPath = this.assetsPath + "/assets/themes/" + skin;
-			final String templatePath = assetsPath + "/template/directory/";
-			final String baseUrl = getScheme(request) + "://" + Renders.getHost(request) + "/assets/themes/" + skin + "/img/";
+		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+			public void handle(final UserInfos infos) {
 
-			UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-				public void handle(final UserInfos infos) {
-
-					//PDF
-					if("pdf".equals(type) || "newPdf".equals(type) || "simplePdf".equals(type)){
-						massMailService.massmailUsers(structureId, filter, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
-							public void handle(Either<String, JsonArray> result) {
-								if(result.isLeft()){
-									forbidden(request);
-									return;
-								}
-
-								massMailService.massMailTypePdf(infos, request, templatePath, baseUrl, filename, type, result.right().getValue());
+				//PDF
+				if("pdf".equals(type) || "newPdf".equals(type) || "simplePdf".equals(type)){
+					massMailService.massmailUsers(structureId, filter, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
+						public void handle(Either<String, JsonArray> result) {
+							if(result.isLeft()){
+								forbidden(request);
+								return;
 							}
-						});
-					}
-					//Mail
-					else if("mail".equals(type)){
-						massMailService.massmailUsers(structureId, filter, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
-							public void handle(final Either<String, JsonArray> result) {
-								if(result.isLeft()){
-									forbidden(request);
-									return;
-								}
 
-								massMailService.massMailTypeMail(infos, request, templatePath, result.right().getValue());
-							}
-						});
-					} else {
-						badRequest(request);
-					}
-
+							massMailService.massMailTypePdf(infos, request, templatePath, baseUrl, filename, type, result.right().getValue());
+						}
+					});
 				}
-			});
+				//Mail
+				else if("mail".equals(type)){
+					massMailService.massmailUsers(structureId, filter, filterMail, true, infos, new Handler<Either<String,JsonArray>>() {
+						public void handle(final Either<String, JsonArray> result) {
+							if(result.isLeft()){
+								forbidden(request);
+								return;
+							}
 
+							massMailService.massMailTypeMail(infos, request, templatePath, result.right().getValue());
+						}
+					});
+				} else {
+					badRequest(request);
+				}
+
+			}
 		});
-
 	}
 
 	@Post("/class-admin/massmail")
