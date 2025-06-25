@@ -19,7 +19,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>${groupId}</groupId>
+            <groupId>${project.groupId}</groupId>
             <artifactId>broker-api</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -29,6 +29,38 @@
             <version>${jnats.version}</version>
         </dependency>
     </dependencies>
+
+    <repositories>
+        <repository>
+            <id>vertx</id>
+            <name>sonatype-vertx-repository</name>
+            <url>https://oss.sonatype.org/content/repositories/iovertx-3720/</url>
+        </repository>
+        <repository>
+            <id>snapshots</id>
+            <name>sonatype-snapshots-repository</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
+        <repository>
+            <id>ode</id>
+            <name>ODE Repository</name>
+            <url>https://maven.opendigitaleducation.com/nexus/content/groups/public</url>
+        </repository>
+    </repositories>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>ode-snapshots</id>
+            <name>ODE Snapshots</name>
+            <url>https://maven.opendigitaleducation.com/nexus/content/repositories/snapshots/</url>
+        </snapshotRepository>
+        <repository>
+            <id>ode-releases</id>
+            <name>ODE Releases</name>
+            <url>https://maven.opendigitaleducation.com/nexus/content/repositories/releases/</url>
+        </repository>
+    </distributionManagement>
+
     <build>
         <plugins>
             <plugin>

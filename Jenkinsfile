@@ -9,6 +9,7 @@ pipeline {
         }
         steps {
           script {
+            sh './build.sh $BUILD_SH_EXTRA_PARAM init'
             def version = sh(returnStdout: true, script: 'docker-compose run --rm maven mvn $MVN_OPTS help:evaluate -Dexpression=project.version -q -DforceStdout')
             buildName "${env.GIT_BRANCH.replace("origin/", "")}@${version}"
           }
@@ -23,11 +24,11 @@ pipeline {
       stage('Test') {
         steps {
           script {
-            sh 'sleep 6'
-            //try {
-            //  sh 'GIT_BRANCH=develop-b2school ./build.sh $BUILD_SH_EXTRA_PARAM test'
-            //} catch (err) {
-            //}
+//            sh 'sleep 6'
+            try {
+              sh './build.sh $BUILD_SH_EXTRA_PARAM test'
+            } catch (err) {
+            }
           }
         }
       }
