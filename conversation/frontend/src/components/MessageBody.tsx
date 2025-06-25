@@ -43,7 +43,8 @@ export function MessageBody({
     onMessageChange?.({ ...message, body: editor?.getHTML() });
   };
 
-  return message.state === 'RECALL' && message.from.id !== user?.userId ? (
+  return message.state === 'RECALL' &&
+    (!message.from || message.from.id !== user?.userId) ? (
     <div className="d-flex flex-column gap-16 align-items-center justify-content-center">
       <EmptyScreen
         imageSrc={illuRecall}
