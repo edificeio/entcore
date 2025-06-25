@@ -1,6 +1,6 @@
 services:
   maven:
-    image: maven:3.8.6-jdk-8
+    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/mvn-java8-node22:1.2.5
     user: "$DEFAULT_DOCKER_USER"
     working_dir: /usr/src/maven
     volumes:
@@ -33,6 +33,16 @@ services:
     volumes:
       - ./admin/src/main/ts:/home/node/app
       - ./admin:/home/node/base
+      - ~/.npm:/.npm
+      - ../recette:/home/node/recette # TODO : rendre générique pour appliquer à tous les springboards
+    environment:
+      - NG_CLI_ANALYTICS=false
+
+  node22:
+    image: opendigitaleducation/node:22-alpine-pnpm
+    working_dir: /home/node/app
+    volumes:
+      - ./broker-parent/broker-client/nest:/home/node/app
       - ~/.npm:/.npm
       - ../recette:/home/node/recette # TODO : rendre générique pour appliquer à tous les springboards
     environment:
