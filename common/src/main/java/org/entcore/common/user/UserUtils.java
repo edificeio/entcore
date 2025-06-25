@@ -67,7 +67,9 @@ import static org.entcore.common.http.filter.AppOAuthResourceProvider.getTokenId
 
 public class UserUtils {
 
-	private static final Vertx vertx = Vertx.currentContext().owner();
+	private static final Vertx vertx = Vertx.currentContext() != null ?
+									   Vertx.currentContext().owner() :
+									   Vertx.vertx();
 	private static final int DEFAULT_VISIBLES_TIMEOUT = 60000;
 	private static final int DEFAULT_SHARES_PARTITION_SIZE = 50;
 	private static final JsonObject VISIBLE_CONFIG = new JsonObject();	// Filled just-in-time with shared configuration values
