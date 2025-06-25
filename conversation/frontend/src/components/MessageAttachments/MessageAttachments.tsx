@@ -35,11 +35,11 @@ export function MessageAttachments({
 
   if (!editMode && !attachments.length) return null;
 
-  const resetInputValue = useCallback(() => {
+  const resetInputValue = () => {
     if (inputRef.current) {
       inputRef.current.value = '';
     }
-  }, [inputRef]);
+  };
 
   const handleAttachClick = () => inputRef?.current?.click();
 
