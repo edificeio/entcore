@@ -137,7 +137,10 @@ buildAdminNode() {
 }
 
 install () {
-  docker compose run $CI_OPTION --rm maven mvn $MVN_OPTS install -DskipTests
+  docker compose run $CI_OPTION --rm maven mvn $MVN_OPTS clean install -DskipTests
+  cd broker-parent/broker-client/quarkus
+  ./build.sh install
+  cd -
 }
 
 test () {
@@ -188,6 +191,42 @@ publish() {
   esac
 
   docker compose run --rm  maven mvn -DrepositoryId=ode-$nexusRepository -DskipTests --settings /var/maven/.m2/settings.xml deploy
+  cd broker-parent/broker-client/quarkus
+  ./build.sh publish
+  cd -
+  publishBrokerNpmLib
+}
+
+publishBrokerNpmLib() {
+  # Set GIT_BRANCH to the current branch if not set
+  if [ -z "$GIT_BRANCH" ]; then
+    GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+  fi
+  echo "[publish] Publish packages..."
+  # Récupération de la branche locale
+  LOCAL_BRANCH=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
+  # Récupération de la date et du timestamp
+  # Récupération du dernier tag stable
+  LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "1.0.0")
+  LATEST_TAG=${LATEST_TAG#v}
+
+  # Définition du tag de la branche
+  if [ "$LOCAL_BRANCH" = "main" ]; then
+    TAG_BRANCH="latest"
+  else
+    TAG_BRANCH=$LOCAL_BRANCH
+  fi
+
+  # Publier avec le tag de la branche
+  echo "[publish] Publish with the branch tag"
+  # Default to dry run if not specified
+  DRY_RUN=${DRY_RUN:-true}
+
+  if [ "$DRY_RUN" = "true" ]; then
+    docker compose run -e NPM_TOKEN=$NPM_TOKEN --rm -u "$USER_UID:$GROUP_GID" node22 sh -c "pnpm publish -r --no-git-checks --tag $TAG_BRANCH --dry-run"
+  else
+    docker compose run -e NPM_TOKEN=$NPM_TOKEN --rm -u "$USER_UID:$GROUP_GID" node22 sh -c "pnpm publish -r --no-git-checks --tag $TAG_BRANCH"
+  fi
 }
 
 check_prefix_sh_file() {
@@ -258,6 +297,10 @@ itTests() {
   echo "|-------------------------|"
   exit $exit_code
 }
+
+if [ ! -e .env ]; then
+  init
+fi
 
 for param in "$@"
 do
