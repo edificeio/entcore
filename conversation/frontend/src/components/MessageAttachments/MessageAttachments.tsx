@@ -6,7 +6,7 @@ import {
   IconPlus,
 } from '@edifice.io/react/icons';
 import clsx from 'clsx';
-import { ChangeEvent, useCallback, useRef, useState } from 'react';
+import { ChangeEvent, useRef, useState } from 'react';
 import { useI18n } from '~/hooks/useI18n';
 import { useMessageAttachments } from '~/hooks/useMessageAttachments';
 import { Attachment, Message } from '~/models';
