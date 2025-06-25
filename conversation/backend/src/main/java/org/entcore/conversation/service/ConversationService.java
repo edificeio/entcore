@@ -200,6 +200,6 @@ public interface ConversationService {
 	void forwardAttachments(String forwardId, String messageId, UserInfos user, Handler<Either<String, JsonObject>> result);
 
 	// Purge
-	void getMessagesToPurge(Handler<Either<String, JsonArray>> result);
-	void purgeMessages(final List<String> messagesId, Handler<Either<String, JsonArray>> result);
+	Future<JsonArray> getMessagesToPurge();
+	Future<JsonArray> purgeMessages(final List<String> messagesId);
 }

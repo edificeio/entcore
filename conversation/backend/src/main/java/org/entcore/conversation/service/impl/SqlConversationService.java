@@ -1879,28 +1879,49 @@ public class SqlConversationService implements ConversationService{
 		sql.prepared(query, values, SqlResult.validUniqueResultHandler(result));
 	}
 
+	///////////
+	/* Purge */
+
 	@Override
-	public void getMessagesToPurge(Handler<Either<String, JsonArray>> result) {
+	public Future<JsonArray> getMessagesToPurge() {
+		final int months = Math.max(24, Config.getConf().getInteger("purge-grace-period", 0));
 		String query =
-				"SELECT DISTINCT um.message_id " +
-						"FROM conversation.usermessages um " +
-						"JOIN conversation.messages m ON um.message_id = m.id " +
-						"WHERE um.folder_id IS NULL AND m.date > (EXTRACT(EPOCH FROM NOW())::bigint - (2 * 365 * 24 * 60 * 60));";
+			"SELECT DISTINCT um.message_id " +
+			"FROM conversation.usermessages um " +
+			"JOIN conversation.messages m ON um.message_id = m.id " +
+			"WHERE um.folder_id IS NULL AND m.date > (EXTRACT(EPOCH FROM NOW())::bigint - (" + months + " * 31 * 86400));";
 
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 
-		sql.prepared(query, values, SqlResult.validResultHandler(result));
+		Promise<JsonArray> promise = Promise.promise();
+		sql.prepared(query, values, SqlResult.validResultHandler(result -> {
+			if (result.isRight() && result.right().getValue() != null) {
+				promise.complete(result.right().getValue());
+			} else {
+				promise.fail(result.left().getValue());
+			}
+		}));
+
+		return promise.future();
 	}
 
 	@Override
-	public void purgeMessages(final List<String> messagesId, Handler<Either<String, JsonArray>> result) {
+	public Future<JsonArray> purgeMessages(final List<String> messagesId) {
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 		String query = "DELETE FROM conversation.messages CASCADE WHERE id IN " + generateInVars(messagesId, values);
 
 		SqlStatementsBuilder builder = new SqlStatementsBuilder();
 		builder.prepared(query, values);
 
-		sql.transaction(builder.build(), SqlResult.validResultsHandler(result));
+		Promise<JsonArray> promise = Promise.promise();
+		sql.transaction(builder.build(), SqlResult.validResultsHandler(event -> {
+			if (event.isRight() && event.right().getValue() != null) {
+				promise.complete(event.right().getValue());
+			} else {
+				promise.fail(event.left().getValue());
+			}
+		}));
+		return promise.future();
 	}
 
 	///////////
