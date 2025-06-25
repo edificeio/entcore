@@ -16,7 +16,7 @@
  * If not, please see : <http://www.gnu.org/licenses/>. Full compliance requires reading the terms of this license and following its directives.
  */
 
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 
@@ -106,17 +106,20 @@ import type { UpsertGroupSharesResponseDTO } from './types';
 @Injectable()
 export class EntNatsServiceClient {
 
+  private readonly logger = new Logger(EntNatsServiceClient.name);
+
   constructor(private readonly natsClient: ClientProxy) {
-    console.log('Creating events service EntNatsServiceClient')
+    this.logger.log('Creating events service EntNatsServiceClient')
   }
 
   
   
   async addCommunicationLinks(request: AddCommunicationLinksRequestDTO): Promise<AddCommunicationLinksResponseDTO> {
     const eventAddress = "communication.link.users.add";
-    console.debug("Sending request to NATS subject, " + eventAddress);
+    this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
     if(!reply) {
+      this.logger.warn("No reply received for subject", {messageAddress: eventAddress});
       throw new Error('No reply received');
     }
     return reply as AddCommunicationLinksResponseDTO;
@@ -126,9 +129,10 @@ export class EntNatsServiceClient {
   
   async addGroupMember(request: AddGroupMemberRequestDTO): Promise<AddGroupMemberResponseDTO> {
     const eventAddress = "directory.group.member.add";
-    console.debug("Sending request to NATS subject, " + eventAddress);
+    this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
     if(!reply) {
+      this.logger.warn("No reply received for subject", {messageAddress: eventAddress});
       throw new Error('No reply received');
     }
     return reply as AddGroupMemberResponseDTO;
@@ -138,9 +142,10 @@ export class EntNatsServiceClient {
   
   async addLinkBetweenGroups(request: AddLinkBetweenGroupsRequestDTO): Promise<AddLinkBetweenGroupsResponseDTO> {
     const eventAddress = "communication.link.groups.add";
-    console.debug("Sending request to NATS subject, " + eventAddress);
+    this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
     if(!reply) {
+      this.logger.warn("No reply received for subject", {messageAddress: eventAddress});
       throw new Error('No reply received');
     }
     return reply as AddLinkBetweenGroupsResponseDTO;
@@ -150,9 +155,10 @@ export class EntNatsServiceClient {
   
   async createManualGroup(request: CreateGroupRequestDTO): Promise<CreateGroupResponseDTO> {
     const eventAddress = "directory.group.manual.create";
-    console.debug("Sending request to NATS subject, " + eventAddress);
+    this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
     if(!reply) {
+      this.logger.warn("No reply received for subject", {messageAddress: eventAddress});
       throw new Error('No reply received');
     }
     return reply as CreateGroupResponseDTO;
@@ -162,9 +168,10 @@ export class EntNatsServiceClient {
   
   async deleteManualGroup(request: DeleteGroupRequestDTO): Promise<DeleteGroupResponseDTO> {
     const eventAddress = "directory.group.manual.delete";
-    console.debug("Sending request to NATS subject, " + eventAddress);
+    this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
     if(!reply) {
+      this.logger.warn("No reply received for subject", {messageAddress: eventAddress});
       throw new Error('No reply received');
     }
     return reply as DeleteGroupResponseDTO;
@@ -174,9 +181,10 @@ export class EntNatsServiceClient {
   
   async fetchTranslations(request: FetchTranslationsRequestDTO, application: string): Promise<FetchTranslationsResponseDTO> {
     const eventAddress = "i18n." + application + ".fetch";
-    console.debug("Sending request to NATS subject, " + eventAddress);
+    this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
     if(!reply) {
+      this.logger.warn("No reply received for subject", {messageAddress: eventAddress});
       throw new Error('No reply received');
     }
     return reply as FetchTranslationsResponseDTO;
@@ -186,9 +194,10 @@ export class EntNatsServiceClient {
   
   async findGroupByExternalId(request: FindGroupByExternalIdRequestDTO): Promise<FindGroupByExternalIdResponseDTO> {
     const eventAddress = "directory.group.find.byexternalid";
-    console.debug("Sending request to NATS subject, " + eventAddress);
+    this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
     if(!reply) {
+      this.logger.warn("No reply received for subject", {messageAddress: eventAddress});
       throw new Error('No reply received');
     }
     return reply as FindGroupByExternalIdResponseDTO;
@@ -198,9 +207,10 @@ export class EntNatsServiceClient {
   
   async findSession(request: FindSessionRequestDTO): Promise<FindSessionResponseDTO> {
     const eventAddress = "session.find";
-    console.debug("Sending request to NATS subject, " + eventAddress);
+    this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
     if(!reply) {
+      this.logger.warn("No reply received for subject", {messageAddress: eventAddress});
       throw new Error('No reply received');
     }
     return reply as FindSessionResponseDTO;
@@ -210,9 +220,10 @@ export class EntNatsServiceClient {
   
   async getResources(request: GetResourcesRequestDTO, application: string): Promise<GetResourcesResponseDTO> {
     const eventAddress = "resource.get." + application + "";
-    console.debug("Sending request to NATS subject, " + eventAddress);
+    this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
     if(!reply) {
+      this.logger.warn("No reply received for subject", {messageAddress: eventAddress});
       throw new Error('No reply received');
     }
     return reply as GetResourcesResponseDTO;
@@ -222,9 +233,10 @@ export class EntNatsServiceClient {
   
   async getUserDisplayNames(request: GetUserDisplayNamesRequestDTO): Promise<GetUserDisplayNamesResponseDTO> {
     const eventAddress = "directory.users.get.displaynames";
-    console.debug("Sending request to NATS subject, " + eventAddress);
+    this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
     if(!reply) {
+      this.logger.warn("No reply received for subject", {messageAddress: eventAddress});
       throw new Error('No reply received');
     }
     return reply as GetUserDisplayNamesResponseDTO;
@@ -234,9 +246,10 @@ export class EntNatsServiceClient {
   
   async getUsersByIds(request: GetUsersByIdsRequestDTO): Promise<GetUsersByIdsResponseDTO> {
     const eventAddress = "directory.users.get.byids";
-    console.debug("Sending request to NATS subject, " + eventAddress);
+    this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
     if(!reply) {
+      this.logger.warn("No reply received for subject", {messageAddress: eventAddress});
       throw new Error('No reply received');
     }
     return reply as GetUsersByIdsResponseDTO;
@@ -246,9 +259,10 @@ export class EntNatsServiceClient {
   
   async listenAndReplyExample(request: ListenAndAnswerDTO): Promise<DummyResponseDTO> {
     const eventAddress = "ent.test.listen.reply";
-    console.debug("Sending request to NATS subject, " + eventAddress);
+    this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
     if(!reply) {
+      this.logger.warn("No reply received for subject", {messageAddress: eventAddress});
       throw new Error('No reply received');
     }
     return reply as DummyResponseDTO;
@@ -265,9 +279,10 @@ export class EntNatsServiceClient {
   
   async recreateCommunicationLinks(request: RecreateCommunicationLinksRequestDTO): Promise<RecreateCommunicationLinksResponseDTO> {
     const eventAddress = "communication.link.users.recreate";
-    console.debug("Sending request to NATS subject, " + eventAddress);
+    this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
     if(!reply) {
+      this.logger.warn("No reply received for subject", {messageAddress: eventAddress});
       throw new Error('No reply received');
     }
     return reply as RecreateCommunicationLinksResponseDTO;
@@ -277,9 +292,10 @@ export class EntNatsServiceClient {
   
   async registerApp(request: AppRegistrationRequestDTO): Promise<AppRegistrationResponseDTO> {
     const eventAddress = "ent.appregistry.app.register";
-    console.debug("Sending request to NATS subject, " + eventAddress);
+    this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
     if(!reply) {
+      this.logger.warn("No reply received for subject", {messageAddress: eventAddress});
       throw new Error('No reply received');
     }
     return reply as AppRegistrationResponseDTO;
@@ -289,9 +305,10 @@ export class EntNatsServiceClient {
   
   async registerI18nFiles(request: RegisterTranslationFilesRequestDTO, application: string): Promise<RegisterTranslationFilesResponseDTO> {
     const eventAddress = "i18n." + application + ".register";
-    console.debug("Sending request to NATS subject, " + eventAddress);
+    this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
     if(!reply) {
+      this.logger.warn("No reply received for subject", {messageAddress: eventAddress});
       throw new Error('No reply received');
     }
     return reply as RegisterTranslationFilesResponseDTO;
@@ -301,9 +318,10 @@ export class EntNatsServiceClient {
   
   async removeCommunicationLinks(request: RemoveCommunicationLinksRequestDTO): Promise<RemoveCommunicationLinksResponseDTO> {
     const eventAddress = "communication.link.users.remove";
-    console.debug("Sending request to NATS subject, " + eventAddress);
+    this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
     if(!reply) {
+      this.logger.warn("No reply received for subject", {messageAddress: eventAddress});
       throw new Error('No reply received');
     }
     return reply as RemoveCommunicationLinksResponseDTO;
@@ -313,9 +331,10 @@ export class EntNatsServiceClient {
   
   async removeGroupMember(request: RemoveGroupMemberRequestDTO): Promise<RemoveGroupMemberResponseDTO> {
     const eventAddress = "directory.group.member.delete";
-    console.debug("Sending request to NATS subject, " + eventAddress);
+    this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
     if(!reply) {
+      this.logger.warn("No reply received for subject", {messageAddress: eventAddress});
       throw new Error('No reply received');
     }
     return reply as RemoveGroupMemberResponseDTO;
@@ -325,9 +344,10 @@ export class EntNatsServiceClient {
   
   async removeGroupShares(request: RemoveGroupSharesRequestDTO, application: string): Promise<RemoveGroupSharesResponseDTO> {
     const eventAddress = "share.group.remove." + application + "";
-    console.debug("Sending request to NATS subject, " + eventAddress);
+    this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
     if(!reply) {
+      this.logger.warn("No reply received for subject", {messageAddress: eventAddress});
       throw new Error('No reply received');
     }
     return reply as RemoveGroupSharesResponseDTO;
@@ -337,9 +357,10 @@ export class EntNatsServiceClient {
   
   async testApplication(request: AppRegistrationRequestDTO, application: string): Promise<AppRegistrationResponseDTO> {
     const eventAddress = "ent." + application + ".test";
-    console.debug("Sending request to NATS subject, " + eventAddress);
+    this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
     if(!reply) {
+      this.logger.warn("No reply received for subject", {messageAddress: eventAddress});
       throw new Error('No reply received');
     }
     return reply as AppRegistrationResponseDTO;
@@ -349,9 +370,10 @@ export class EntNatsServiceClient {
   
   async updateManualGroup(request: UpdateGroupRequestDTO): Promise<UpdateGroupResponseDTO> {
     const eventAddress = "directory.group.manual.update";
-    console.debug("Sending request to NATS subject, " + eventAddress);
+    this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
     if(!reply) {
+      this.logger.warn("No reply received for subject", {messageAddress: eventAddress});
       throw new Error('No reply received');
     }
     return reply as UpdateGroupResponseDTO;
@@ -361,9 +383,10 @@ export class EntNatsServiceClient {
   
   async upsertGroupShares(request: UpsertGroupSharesRequestDTO, application: string): Promise<UpsertGroupSharesResponseDTO> {
     const eventAddress = "share.group.upsert." + application + "";
-    console.debug("Sending request to NATS subject, " + eventAddress);
+    this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
     if(!reply) {
+      this.logger.warn("No reply received for subject", {messageAddress: eventAddress});
       throw new Error('No reply received');
     }
     return reply as UpsertGroupSharesResponseDTO;

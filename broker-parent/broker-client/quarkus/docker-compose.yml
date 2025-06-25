@@ -1,0 +1,10 @@
+services:
+  maven:
+    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/mvn-java-21:1.2.5
+    user: "$DEFAULT_DOCKER_USER"
+    working_dir: /usr/src/maven
+    volumes:
+      - ./:/usr/src/maven
+      - ~/.m2:/var/maven/.m2
+    environment:
+      MAVEN_CONFIG: /var/maven/.m2
