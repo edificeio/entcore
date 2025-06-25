@@ -138,6 +138,9 @@ buildAdminNode() {
 
 install () {
   docker compose run $CI_OPTION --rm maven mvn $MVN_OPTS install -DskipTests
+  cd broker-parent/broker-client/quarkus
+  ./build.sh install
+  cd -
 }
 
 test () {
@@ -188,6 +191,9 @@ publish() {
   esac
 
   docker compose run --rm  maven mvn -DrepositoryId=ode-$nexusRepository -DskipTests --settings /var/maven/.m2/settings.xml deploy
+  cd broker-parent/broker-client/quarkus
+  ./build.sh publish
+  cd -
 }
 
 check_prefix_sh_file() {
@@ -258,6 +264,10 @@ itTests() {
   echo "|-------------------------|"
   exit $exit_code
 }
+
+if [ ! -e .env ]; then
+  init
+fi
 
 for param in "$@"
 do
