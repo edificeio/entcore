@@ -702,8 +702,8 @@ public class DefaultUserService implements UserService {
 		} else if(TransversalSearchType.FULL_NAME.equals(searchQuery.getSearchType())
 				&& (isNotEmpty(searchQuery.getFirstName()) || isNotEmpty(searchQuery.getLastName())) 
 				) {
-			final String firstNameSearchTerm = StringUtils.stripAccentsAndNotChar(searchQuery.getFirstName());
-			final String lastNameSearchTerm = StringUtils.stripAccentsAndNotChar(searchQuery.getLastName());
+			final String firstNameSearchTerm = StringUtils.stripAccentsAndNotCharToLowerCase(searchQuery.getFirstName());
+			final String lastNameSearchTerm = StringUtils.stripAccentsAndNotCharToLowerCase(searchQuery.getLastName());
 
 			final StringBuilder sbuilder = new StringBuilder();
 			sbuilder.append(" AND ");
@@ -726,7 +726,7 @@ public class DefaultUserService implements UserService {
 		} else if(TransversalSearchType.DISPLAY_NAME.equals(searchQuery.getSearchType()) 
 				&& isNotEmpty(searchQuery.getDisplayName())
 				) {
-			final String searchTerm = StringUtils.stripAccentsAndNotChar(searchQuery.getDisplayName());
+			final String searchTerm = StringUtils.stripAccentsAndNotCharToLowerCase(searchQuery.getDisplayName());
 			conditionUser += " AND u.displayNameSearchField CONTAINS {displayName} ";
 			params.put("displayName", searchTerm);
 		}

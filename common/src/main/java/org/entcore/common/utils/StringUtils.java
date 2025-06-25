@@ -386,8 +386,8 @@ public final class StringUtils {
      *
      * @return a string without accents.
      */
-    public static String stripAccentsAndNotChar(String str) {
-        return stripAccents(str).replaceAll("\\W+", "");
+    public static String stripAccentsAndNotCharToLowerCase(String str) {
+        return stripAccentsToLowerCase(str).replaceAll("\\W+", "");
     }
 
     /**
