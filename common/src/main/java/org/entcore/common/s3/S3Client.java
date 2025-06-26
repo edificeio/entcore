@@ -368,17 +368,24 @@ public class S3Client {
 
 				if (response.statusCode() == 200) {
 					response.pipeTo(resp).onComplete(aVoid -> {
-						if (resultHandler != null) {
-							if(aVoid.failed()) {
-								Throwable cause = aVoid.cause();
-								if (cause instanceof ClosedChannelException) {
-									log.debug("Client closed the connection downloading file " + id);
-								}
-								else {
-									log.error("An error occurred while piping an s3 file with id=" + id, cause);
-									resp.setStatusCode(500).setStatusMessage("Error downloading file").end();
-								}
+						if(aVoid.failed()) {
+							Throwable cause = aVoid.cause();
+							if (cause instanceof ClosedChannelException) {
+								log.debug("Client closed the connection downloading file " + id);
 							}
+							else {
+								log.error("An error occurred while piping an s3 file with id=" + id, cause);
+								resp.setStatusCode(500).setStatusMessage("Error downloading file").end();
+							}
+
+							try {
+								response.request().connection().close();
+							} catch (Exception e) {
+								log.warn("Failed to close S3 connection for file id=" + id, e);
+							}
+						}
+
+						if (resultHandler != null) {
 							resultHandler.handle(new DefaultAsyncResult<>((Void) null));
 						}
 					});
