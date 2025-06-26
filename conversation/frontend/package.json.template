@@ -32,11 +32,11 @@
     "typecheck": "tsc -b --noEmit --pretty"
   },
   "dependencies": {
-    "@edifice.io/react": "%packageVersion%",
-    "@edifice.io/bootstrap": "%packageVersion%",
-    "@edifice.io/client": "%packageVersion%",
-    "@edifice.io/utilities": "%packageVersion%",
-    "@edifice.io/tiptap-extensions": "%packageVersion%",
+    "@edifice.io/react": "2.2.11",
+    "@edifice.io/bootstrap": "2.2.11",
+    "@edifice.io/client": "2.2.11",
+    "@edifice.io/utilities": "2.2.11",
+    "@edifice.io/tiptap-extensions": "2.2.11",
     "@react-spring/web": "^9.7.5",
     "@tanstack/react-query": "^5.59.13",
     "clsx": "^2.1.1",
