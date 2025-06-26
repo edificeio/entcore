@@ -3,6 +3,7 @@ import {
   IconInfoCircle,
   IconExternalLink,
   IconStar,
+  IconStarFull,
   IconLibrary,
 } from '@edifice.io/react/icons';
 import { useTranslation } from 'react-i18next';
@@ -59,7 +60,7 @@ export function ApplicationMenu({
         onActionDone();
         onToggleFavorite();
       }}
-      icon={<IconStar />}
+      icon={data.isFavorite ? <IconStar /> : <IconStarFull />}
     >
       {data.isFavorite
         ? t('my.apps.remove.favorite')
