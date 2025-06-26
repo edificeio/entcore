@@ -77,6 +77,7 @@ export function ApplicationWrapper({ data }: { data: Application }) {
       </h1>
       <div
         className="dropdown-wrapper"
+        title=""
         style={{ position: 'absolute', top: 0, right: 0 }}
       >
         <Dropdown
