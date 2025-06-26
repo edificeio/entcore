@@ -14,6 +14,16 @@ export function EmptyCategory({ category }: { category: Category}) {
 		/>
 	}
 
+	if (category === 'search') {
+    return (
+      <EmptyScreen
+        imageSrc={emptyFavoritesImage}
+        text={t('my.apps.empty.favorite.text')}
+        title={t('my.apps.empty.favorite.title')}
+      />
+    );
+  }
+
 	return <EmptyScreen
 		imageSrc="https://edificeio.github.io/edifice-frontend-framework/assets/illu-search-DLlTIc41.svg"
 		text={t('my.apps.empty.apps.text')}

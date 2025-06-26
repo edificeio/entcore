@@ -5,4 +5,5 @@ export type Category =
   | 'pedagogy'
   | 'organisation'
   | 'connector'
+  | 'search'
   | 'none';
