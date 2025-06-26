@@ -274,7 +274,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         String filter =
                 " MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User), " +
                         "(g)-[:HAS_PROFILE]-(p: Profile) ";
-        String condition = "WHERE (NOT(HAS(u.federated)) OR u.federated = false) ";
+        String condition = "WHERE NOT(HAS(u.federatedIDP) AND NOT(u.federatedIDP IS NULL) AND HAS(u.federated) AND u.federated = true) ";
         String optional =
                 " OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) " +
                         "OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) ";
@@ -424,7 +424,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         String filter =
                 "MATCH (s:Structure)<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User {id: {userId}}), " +
                         "(g)-[:HAS_PROFILE]-(p: Profile) ";
-        String condition = "WHERE (NOT(HAS(u.federated)) OR u.federated = false) ";
+        String condition = "WHERE NOT(HAS(u.federatedIDP) AND NOT(u.federatedIDP IS NULL) AND HAS(u.federated) AND u.federated = true) ";
         if (!userInfos.getFunctions().containsKey(SUPER_ADMIN)) {
             condition = "AND " + DefaultSchoolService.EXCLUDE_ADMC_QUERY_FILTER;
         }
@@ -462,7 +462,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         String filter =
                 "MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User), " +
                         "(g)-[:HAS_PROFILE]-(p: Profile) ";
-        String condition = "WHERE (NOT(HAS(u.federated)) OR u.federated = false) ";
+        String condition = "WHERE NOT(HAS(u.federatedIDP) AND NOT(u.federatedIDP IS NULL) AND HAS(u.federated) AND u.federated = true) ";
         String optional =
                 "OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) " +
                         "OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) " +

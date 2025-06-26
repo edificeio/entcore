@@ -347,7 +347,9 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 		boolean setStructure = structure != null && !structure.trim().isEmpty();
 
 		String query = "MATCH (u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) WHERE u.emailSearchField = {mail} " +
-				(checkFederatedLogin ? "AND (NOT(HAS(u.federated)) OR u.federated = false) " : "") +
+				(checkFederatedLogin 
+					? "AND NOT(HAS(u.federatedIDP) AND NOT(u.federatedIDP IS NULL) AND HAS(u.federated) AND u.federated = true) " 
+					: "") +
 				(setFirstname ? " AND u.firstNameSearchField = {firstName}" : "") +
 				(setStructure ? " AND s.id = {structure}" : "") +
 				" RETURN DISTINCT u.login as login, u.activationCode as activationCode, u.mobile as mobile, s.name as structureName, s.id as structureId";
@@ -367,7 +369,9 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 		final String baseQuery =
 				//"WHERE n.activationCode IS NULL " +
 				"WHERE 1=1 " +
-				(checkFederatedLogin ? "AND (NOT(HAS(n.federated)) OR n.federated = false) " : "") +
+				(checkFederatedLogin 
+					? "AND NOT(HAS(n.federatedIDP) AND NOT(n.federatedIDP IS NULL) AND HAS(n.federated) AND n.federated = true) " 
+					: "") +
 				(setResetCode ? "SET n.resetCode = {resetCode}, n.resetDate = {today} " : "") +
 				"RETURN n.email as email, n.mobile as mobile, n.displayName as displayName, n.activationCode as activationCode";
 		final String basicQuery = "MATCH (n:User {login:{login}}) " + baseQuery;
@@ -407,7 +411,7 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 					"tg-[:DEPENDS]->(ptg:ProfileGroup)-[:HAS_PROFILE]->(tp:Profile {name:'Teacher'}) " +
 					//"WHERE NOT(p.email IS NULL) AND n.activationCode IS NULL AND " +
 					"WHERE NOT(p.email IS NULL) AND " +
-					"(NOT(HAS(n.federated)) OR n.federated = false) " +
+					"NOT(HAS(n.federatedIDP) AND NOT(n.federatedIDP IS NULL) AND HAS(n.federated) AND n.federated = true) " +
 					(setResetCode ? "SET n.resetCode = {resetCode}, n.resetDate = {today} " : "") +
 					"RETURN p.email as email";
 			neo.execute(teacherQuery, params, Neo4jResult.validUniqueResultHandler(new Handler<Either<String,JsonObject>>() {
@@ -753,7 +757,7 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 		String query =
 				"MATCH (n:User) " +
 						"WHERE n.login={login} AND n.activationCode IS NULL " +
-						(checkFederatedLogin ? "AND (NOT(HAS(n.federated)) OR n.federated = false) " : "") +
+						(checkFederatedLogin ? "AND NOT(HAS(n.federatedIDP) AND NOT(n.federatedIDP IS NULL) AND HAS(n.federated) AND n.federated = true) " : "") +
 						"SET n.resetCode = {resetCode}, n.resetDate = {today} " +
 						"RETURN count(n) as nb, n.displayName as displayName";
 		JsonObject params = new JsonObject().put("login", login).put("resetCode", code).put("today", new Date().getTime());

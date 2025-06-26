@@ -53,7 +53,7 @@ export function ActionsDelegate($scope: ActionsDelegateScope) {
         return selection.findIndex((u) => !u.blocked) == -1;
     }
     $scope.selectedUsersAreFederated = function () {
-        return selection.findIndex((u) => u.federated!==true) === -1;
+        return selection.findIndex((u) => !(u.federatedIDP && u.federated === true)) === -1;
     }
     $scope.canRemoveSelection = function () {
         return selection.filter((user) => {

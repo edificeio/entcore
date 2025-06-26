@@ -299,7 +299,7 @@ export class UserConnectionSectionComponent
 
   /* WB-3778 disable connection info of federated users. */
   get disabledFlag(): string|undefined {
-    return this.details?.federated === true ? "disabled" : undefined;
+    return this.details?.federatedIDP && this.details?.federated === true ? "disabled" : undefined;
   }
 
   get isMyAdmlAccount(): boolean {

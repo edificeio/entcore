@@ -140,7 +140,7 @@ export function ExportDelegate($scope: ExportDelegateScope) {
             });
         }
         // Filter federated users out of massmailing reports.
-        _usersForMailing = _usersForMailing.filter(u => u.federated !== true);
+        _usersForMailing = _usersForMailing.filter(u => !(u.federatedIDP && u.federated === true));
         _usersWithoutMails = _usersForMailing.filter(s => !s.safeHasEmail);
         _usersWithMails = _usersForMailing.filter(s => s.safeHasEmail);
     }
