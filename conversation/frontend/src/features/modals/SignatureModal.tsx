@@ -7,8 +7,8 @@ import {
   SignatureEditor,
   SignatureEditorRef,
 } from '~/components/SignatureEditor/components/SignatureEditor';
+import { SIGNATURE_EMPTY_CONTENT } from '~/components/SignatureEditor';
 
-const EMPTY_SIGNATURE_LENGTH = 7;
 export function SignatureModal() {
   const { t, common_t } = useI18n();
   const preferencesQuery = useSignaturePreferences();
@@ -24,7 +24,7 @@ export function SignatureModal() {
     preferencesQuery.data?.useSignature ?? false,
   );
   const [isLengthValid, setIsLengthValid] = useState(true);
-  const initialSignatureLength = useRef(0);
+  const initialSignatureContent = useRef(SIGNATURE_EMPTY_CONTENT);
   const [hasContentChanged, setHasContentChanged] = useState(false);
 
   useEffect(() => {
@@ -56,19 +56,22 @@ export function SignatureModal() {
     handleSave();
   }, [handleCloseModal, save, useSignature]);
 
-  const handleLengthChange = (isValid: boolean, newLength: number) => {
-    const needSignatureLenghtInitialisation =
-      !initialSignatureLength.current && newLength > 0;
-    if (needSignatureLenghtInitialisation) {
+  const handleLengthChange = (isValid: boolean) => {
+    const currentContent = editor?.current?.getHtmlContent() as string;
+    const needSignatureContentInitialization =
+      initialSignatureContent.current === SIGNATURE_EMPTY_CONTENT &&
+      currentContent !== SIGNATURE_EMPTY_CONTENT;
+
+    if (needSignatureContentInitialization) {
       const isOriginalSignatureEmpty =
-        preferencesQuery.data?.signature?.length === EMPTY_SIGNATURE_LENGTH;
+        preferencesQuery.data?.signature === SIGNATURE_EMPTY_CONTENT;
       if (isOriginalSignatureEmpty) {
-        initialSignatureLength.current = 0;
+        initialSignatureContent.current = SIGNATURE_EMPTY_CONTENT;
       } else {
-        initialSignatureLength.current = newLength;
+        initialSignatureContent.current = currentContent;
       }
     }
-    setHasContentChanged(initialSignatureLength.current !== newLength);
+    setHasContentChanged(initialSignatureContent.current !== currentContent);
     setIsLengthValid(isValid);
   };
 

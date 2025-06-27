@@ -18,6 +18,8 @@ import {
 import { SignatureEditorToolbar } from './SignatureEditorToolbar';
 import clsx from 'clsx';
 
+export const SIGNATURE_EMPTY_CONTENT = '<p></p>';
+
 export interface SignatureEditorRef {
   /** Get the current content as HTML. */
   getHtmlContent: () => undefined | string;
