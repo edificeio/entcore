@@ -93,8 +93,9 @@ export function useMessageActionDropdown({
 
     // Count number of recipients
     const hasRecipients =
-      to.users.length + to.groups.length + cc.users.length + cc.groups.length >
-      1;
+      to.users.length + cc.users.length > 1 ||
+      to.groups.length ||
+      cc.groups.length;
 
     return (
       (isMeWithCci || hasRecipients) &&
