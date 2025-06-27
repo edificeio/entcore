@@ -8,6 +8,7 @@ import {
   SignatureEditorRef,
 } from '~/components/SignatureEditor/components/SignatureEditor';
 
+const EMPTY_SIGNATURE_LENGTH = 7;
 export function SignatureModal() {
   const { t, common_t } = useI18n();
   const preferencesQuery = useSignaturePreferences();
@@ -23,6 +24,8 @@ export function SignatureModal() {
     preferencesQuery.data?.useSignature ?? false,
   );
   const [isLengthValid, setIsLengthValid] = useState(true);
+  const initialSignatureLength = useRef(0);
+  const [hasContentChanged, setHasContentChanged] = useState(false);
 
   useEffect(() => {
     if (typeof preferencesQuery.data?.useSignature !== 'undefined')
@@ -33,8 +36,14 @@ export function SignatureModal() {
     setUseSignature((previousState) => !previousState);
   }
 
+  // Vérifier si des modifications ont été apportées
+  const hasChanged = () => {
+    const originalUseSignature = !!preferencesQuery.data?.useSignature;
+    return useSignature !== originalUseSignature || hasContentChanged;
+  };
+
   const lockSaveButton =
-    !isLengthValid || preferencesQuery.isPending || isSaving;
+    !isLengthValid || preferencesQuery.isPending || isSaving || !hasChanged();
 
   const handleSaveClick = useCallback(() => {
     async function handleSave() {
@@ -46,6 +55,22 @@ export function SignatureModal() {
     }
     handleSave();
   }, [handleCloseModal, save, useSignature]);
+
+  const handleLengthChange = (isValid: boolean, newLength: number) => {
+    const needSignatureLenghtInitialisation =
+      !initialSignatureLength.current && newLength > 0;
+    if (needSignatureLenghtInitialisation) {
+      const isOriginalSignatureEmpty =
+        preferencesQuery.data?.signature?.length === EMPTY_SIGNATURE_LENGTH;
+      if (isOriginalSignatureEmpty) {
+        initialSignatureLength.current = 0;
+      } else {
+        initialSignatureLength.current = newLength;
+      }
+    }
+    setHasContentChanged(initialSignatureLength.current !== newLength);
+    setIsLengthValid(isValid);
+  };
 
   return (
     <Modal
@@ -75,7 +100,7 @@ export function SignatureModal() {
             content={preferencesQuery.data?.signature ?? ''}
             mode={'edit'}
             placeholder={t('signature.modal.editor.placeholder')}
-            onLengthChange={setIsLengthValid}
+            onLengthChange={handleLengthChange}
           />
         </Suspense>
       </Modal.Body>
