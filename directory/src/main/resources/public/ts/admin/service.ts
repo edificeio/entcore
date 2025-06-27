@@ -171,7 +171,7 @@ export const directoryService = {
         return schoolClass;
     },
     async fetchUsersForClass(classId: string, { collectRelative } = { collectRelative: true }): Promise<User[]> {
-        const resHttp = await http.get(`/directory/class/${classId}/users?collectRelative=${collectRelative}`);
+        const resHttp = await http.get(`/directory/class/${classId}/users?withFederated=true&collectRelative=${collectRelative}`);
         const res: User[] = resHttp.data;
         const sorted = res.map(r => new User(r)).sort(User.sortByLastname());
         return sorted;

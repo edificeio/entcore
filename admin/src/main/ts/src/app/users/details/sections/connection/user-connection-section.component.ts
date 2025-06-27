@@ -297,6 +297,11 @@ export class UserConnectionSectionComponent
     return this.isAdml && this.details && (this.details.isAdmc() || this.details.isAdml()) && this.details.id != this.myID;
   }
 
+  /* WB-3778 disable connection info of federated users. */
+  get disabledFlag(): string|undefined {
+    return this.details?.federatedIDP && this.details?.federated === true ? "disabled" : undefined;
+  }
+
   get isMyAdmlAccount(): boolean {
     return this.isAdml && this.details.id === this.myID;
   }
