@@ -8,7 +8,7 @@ interface State {
 
 type Action = {
   actions: {
-    setMessage: (value: Message) => void;
+    setMessage: (value: Message | undefined) => void;
     setMessageNeedToSave: (value: boolean) => void;
   };
 };
@@ -29,9 +29,9 @@ const initialState: State = {
 const store = createStore<State & Action>()((set) => ({
   ...initialState,
   actions: {
-    setMessage: (message: Message) => set({ message: message }),
+    setMessage: (message: Message | undefined) => set({ message }),
     setMessageNeedToSave: (messageNeedToSave: boolean) =>
-      set({ messageNeedToSave: messageNeedToSave }),
+      set({ messageNeedToSave }),
   },
 }));
 

@@ -62,9 +62,7 @@ const store = createStore<State & Action>()((set) => ({
     setSelectedFolders: (selectedFolders: Folder[]) => set({ selectedFolders }),
     setOpenedModal: (openedModal: OpenedModal) =>
       set({ openedModal: openedModal }),
-    setInactiveUsers: (inactiveUsers: string[]) => {
-      set({ inactiveUsers });
-    },
+    setInactiveUsers: (inactiveUsers: string[]) => set({ inactiveUsers }),
   },
 }));
 
