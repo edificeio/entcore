@@ -10,12 +10,14 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { useAppActions } from '~/store/actions';
+import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 
 export function MessageListHeader() {
   const { theme } = useEdificeTheme();
   const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
   const { lg } = useBreakpoint();
+  const { folderId } = useSelectedFolder();
   const [searchParams, setSearchParams] = useSearchParams();
   const { setSelectedMessageIds } = useAppActions();
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -101,7 +103,7 @@ export function MessageListHeader() {
         onBlur={handleSearchBlur}
         buttonDisabled={isSearchDisabled}
       />
-      {!theme?.is1d && (
+      {!theme?.is1d && !['outbox', 'draft'].includes(folderId!) && (
         <Dropdown data-testid="filter-dropdown">
           <Dropdown.Trigger
             label={!lg ? '' : t('filter')}
