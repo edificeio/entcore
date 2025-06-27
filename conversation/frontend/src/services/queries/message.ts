@@ -132,8 +132,11 @@ const useToggleUnread = (unread: boolean) => {
         messages.map((m) => m.id),
         unread,
       ),
-    onSuccess: (_data, { messages }) => {
+    onMutate: ({ messages }) => {
       toggleUnreadMessagesFromQueryCache(messages, unread);
+    },
+    onError: (_error, { messages }) => {
+      toggleUnreadMessagesFromQueryCache(messages, !unread);
     },
   });
 };
