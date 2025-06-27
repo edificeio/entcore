@@ -22,10 +22,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import io.vertx.core.json.JsonArray;
 import org.entcore.common.http.filter.ResourceFilter;
+
+import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static org.entcore.common.user.UserUtils.getAuthenticatedUserInfos;
 import static org.entcore.common.utils.StringUtils.isEmpty;
+
+import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.conversation.filters.FoldersFilter;
 import org.entcore.conversation.filters.MessageUserFilter;
 import org.entcore.conversation.filters.SystemOrUserFolderFilter;
@@ -165,6 +170,32 @@ public class ApiController extends BaseController {
 	private Future<JsonObject> deleteFolders(final HttpServerRequest request, final List<String> folderIds) {
 		return getAuthenticatedUserInfos(eb, request)
 			.compose( user -> conversationService.deleteFoldersAndTrashMessages(folderIds, user) );
+	}
+
+	@Get("api/purge/list")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void purgeList(final HttpServerRequest request) {
+		conversationService.getMessagesToPurge()
+			.onSuccess( messages -> renderJson(request, messages))
+			.onFailure( throwable -> renderJson(request, new JsonObject().put("error", "Bad return !"), 400));
+	}
+
+	@Post("api/purge/messages")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	public void purgeMessages(final HttpServerRequest request) {
+		bodyToJson(request, body -> {
+			JsonArray ids = body.getJsonArray("id");
+			if (ids == null || ids.isEmpty()) {
+				badRequest(request);
+				return;
+			}
+
+			conversationService.purgeMessages(ids.getList())
+				.onSuccess(unused1 -> renderJson(request, new JsonObject().put("status", "ok")))
+				.onFailure(unused2 -> renderJson(request, new JsonObject().put("error", "An error occurred !"), 500));
+		});
 	}
 	
 	/** Utility method to read a query param and convert it to an Integer. */
