@@ -62,7 +62,7 @@ export function MessageEdit({ message }: { message?: Message }) {
             onMessageChange={handleMessageChange}
           />
           <div className="d-print-none d-flex justify-content-end gap-12 pt-24 pe-16">
-            <div className="d-flex align-items-end flex-column gap-16">
+            <div className="d-flex align-items-end flex-column gap-16 col-12">
               <MessageActionDropdown
                 message={message}
                 appearance={{

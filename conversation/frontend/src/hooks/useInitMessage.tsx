@@ -20,7 +20,7 @@ export function useInitMessage({
   messageId,
   action,
 }: MessageReplyOrTransferProps) {
-  const { data: messageOrigin } = useMessageQuery(messageId || '');
+  const { data: messageOrigin, isFetching } = useMessageQuery(messageId || '');
   const { currentLanguage, user, userProfile } = useEdificeClient();
   const { t, common_t } = useI18n();
   const { formatDate } = useDate();
@@ -39,7 +39,7 @@ export function useInitMessage({
 
   useLayoutEffect(() => {
     // If the configuration for the signature is pending, we return an empty message
-    if (getSignatureIsPending || !messageOrigin) {
+    if (getSignatureIsPending || !messageOrigin || isFetching) {
       return undefined;
     }
 
@@ -181,11 +181,12 @@ export function useInitMessage({
     }
 
     return () => {
-      setMessage(createDefaultMessage(signature));
+      setMessage(undefined);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     getSignatureIsPending,
+    isFetching,
     messageOrigin,
     messageId,
     action,

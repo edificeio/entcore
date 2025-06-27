@@ -9,6 +9,7 @@ import { Providers, queryClient } from './providers';
 import { router } from './routes';
 
 import '@edifice.io/bootstrap/dist/index.css';
+import './index.css';
 
 const rootElement = document.getElementById('root');
 const root = createRoot(rootElement!);

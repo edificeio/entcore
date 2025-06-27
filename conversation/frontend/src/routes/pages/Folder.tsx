@@ -5,6 +5,7 @@ import {
   useSearchParams,
 } from 'react-router-dom';
 import { MessageList } from '~/features/message-list/MessageList';
+import { MessageListSkeleton } from '~/features/message-list/MessageListSkeleton';
 import { MessageListEmpty } from '~/features/message-list/components/MessageListEmpty';
 import { MessageListHeader } from '~/features/message-list/components/MessageListHeader';
 import { folderQueryOptions, useFolderMessages } from '~/services';
@@ -28,25 +29,28 @@ export const loader =
     const search = searchParams.get('search');
     const unread = searchParams.get('unread');
     if (params.folderId) {
-      const messagesQueryOptions = folderQueryOptions.getMessages(
-        params.folderId,
-        {
-          search: search && search !== '' ? search : undefined,
-          unread: unread === 'true' ? true : undefined,
-        },
-      );
-      const messages =
-        await queryClient.ensureInfiniteQueryData(messagesQueryOptions);
-      return { messages };
+      const messagesQuery = folderQueryOptions.getMessages(params.folderId, {
+        search: search && search !== '' ? search : undefined,
+        unread: unread === 'true' ? true : undefined,
+      });
+      queryClient.ensureInfiniteQueryData(messagesQuery);
     }
+    return null;
   };
 
 export function Component() {
   const { folderId } = useParams();
   const [searchParams] = useSearchParams();
-  const { messages, isPending: isLoadingMessage } = useFolderMessages(
-    folderId!,
-  );
+  const {
+    messages,
+    isPending: isLoadingMessage,
+    isFetchingNextPage,
+  } = useFolderMessages(folderId!);
+
+  if (isLoadingMessage && messages === undefined) {
+    // If messages are still loading and not yet defined, we return a skeleton.
+    return <MessageListSkeleton />;
+  }
 
   return (
     <>
@@ -55,6 +59,7 @@ export function Component() {
         searchParams.get('unread')) && <MessageListHeader />}
       <MessageList />
       {!isLoadingMessage && !messages.length && <MessageListEmpty />}
+      {isFetchingNextPage && <MessageListSkeleton withHeader={false} />}
     </>
   );
 }

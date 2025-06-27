@@ -77,6 +77,7 @@ export function MessageList() {
         block: 'center',
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [folderId]);
 
   useEffect(() => {
@@ -94,6 +95,7 @@ export function MessageList() {
     if (messageListItems) {
       observer.current.observe(messageListItems[messageListItems.length - 1]);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     messages,
     hasNextPage,

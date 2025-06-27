@@ -1,6 +1,6 @@
 import { mockFullMessage } from '~/mocks';
 import { render, screen } from '~/mocks/setup';
-import { MessageHeader } from '.';
+import { MessageHeader } from './MessageHeader';
 
 const mocks = vi.hoisted(() => ({
   useEdificeTheme: vi.fn(),

@@ -1,7 +1,7 @@
 import { Alert, Button } from '@edifice.io/react';
 import { useState } from 'react';
-import { Group, Message } from '~/models';
 import { useI18n } from '~/hooks/useI18n';
+import { Group, Message } from '~/models';
 import { RecipientListEdit } from './RecipientListEdit';
 
 export interface MessageHeaderProps {
