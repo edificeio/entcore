@@ -1,9 +1,8 @@
 import clsx from 'clsx';
 import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { MessageMetadata } from '~/models';
-import { useUpdateFolderBadgeCountQueryCache } from '~/services/queries/hooks/useUpdateFolderBadgeCountQueryCache';
+import { useToggleUnreadMessagesFromQueryCache } from '~/services/queries/hooks/useToggleUnreadMessageFromQueryCache';
 import { MessagePreview } from './MessagePreview/MessagePreview';
 
 interface MessageItemProps {
@@ -13,10 +12,9 @@ interface MessageItemProps {
 }
 export function MessageItem({ message, checked, checkbox }: MessageItemProps) {
   const navigate = useNavigate();
-  const { updateFolderBadgeCountQueryCache } =
-    useUpdateFolderBadgeCountQueryCache();
   const [searchParams] = useSearchParams();
-  const { folderId } = useSelectedFolder();
+  const { toggleUnreadMessagesFromQueryCache } =
+    useToggleUnreadMessagesFromQueryCache();
 
   const handleMessageKeyUp = (
     event: React.KeyboardEvent<HTMLDivElement>,
@@ -28,9 +26,8 @@ export function MessageItem({ message, checked, checkbox }: MessageItemProps) {
   };
 
   const handleMessageClick = (message: MessageMetadata) => {
-    if (message.unread && folderId !== 'draft') {
-      updateFolderBadgeCountQueryCache(folderId!, -1);
-    }
+    toggleUnreadMessagesFromQueryCache([message], false);
+
     navigate({
       pathname: `message/${message.id}`,
       search: searchParams.toString(),

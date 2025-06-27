@@ -10,18 +10,17 @@ import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 import { useI18n } from '~/hooks/useI18n';
 import { useMessageIdAndAction } from '~/hooks/useMessageIdAndAction';
-import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { Message, MessageBase } from '~/models';
 import {
   baseUrl,
   createDefaultMessage,
   folderQueryKeys,
   messageService,
-  useFolderUtils,
 } from '~/services';
 import { useMessage, useMessageActions } from '~/store/messageStore';
 import { useDeleteMessagesFromQueryCache } from './hooks/useDeleteMessageFromQueryCache';
 import { useMessageListOnMutate } from './hooks/useMessageListOnMutate';
+import { useToggleUnreadMessagesFromQueryCache } from './hooks/useToggleUnreadMessageFromQueryCache';
 import { useUpdateFolderBadgeCountQueryCache } from './hooks/useUpdateFolderBadgeCountQueryCache';
 import { invalidateQueriesWithFirstPage } from './utils';
 const appCodeName = 'conversation';
@@ -125,12 +124,8 @@ export const useMessageQuery = (messageId: string) => {
  * @returns Mutation result for toggling the unread status.
  */
 const useToggleUnread = (unread: boolean) => {
-  const { folderId } = useSelectedFolder();
-  const { updateFolderMessagesQueryCache } = useFolderUtils();
-  const queryClient = useQueryClient();
-  const { updateFolderBadgeCountQueryCache } =
-    useUpdateFolderBadgeCountQueryCache();
-
+  const { toggleUnreadMessagesFromQueryCache } =
+    useToggleUnreadMessagesFromQueryCache();
   return useMutation({
     mutationFn: ({ messages }: { messages: MessageBase[] }) =>
       messageService.toggleUnread(
@@ -138,44 +133,7 @@ const useToggleUnread = (unread: boolean) => {
         unread,
       ),
     onSuccess: (_data, { messages }) => {
-      const messageIds = messages.map((m) => m.id);
-
-      if (folderId) {
-        if (folderId !== 'draft') {
-          const countMessageUpdated = messages.filter(
-            (m) => m.unread !== unread,
-          ).length;
-          // Update the unread count in the folder except for the draft folder wich count all messages and not only unread
-          updateFolderBadgeCountQueryCache(
-            folderId,
-            unread ? countMessageUpdated : -countMessageUpdated,
-          );
-        }
-
-        // Update the message unread status in the list
-        updateFolderMessagesQueryCache(folderId, (oldMessage) =>
-          messageIds.includes(oldMessage.id)
-            ? { ...oldMessage, unread }
-            : oldMessage,
-        );
-
-        // Update the message unread status in outbox list if from me
-        updateFolderMessagesQueryCache('outbox', (oldMessage) =>
-          messageIds.includes(oldMessage.id)
-            ? { ...oldMessage, unread }
-            : oldMessage,
-        );
-      }
-
-      // Update message details (unread status)
-      messageIds.map((messageId) => {
-        queryClient.setQueryData(
-          messageQueryKeys.byId(messageId),
-          (message: Message | undefined) => {
-            return message ? { ...message, unread } : undefined;
-          },
-        );
-      });
+      toggleUnreadMessagesFromQueryCache(messages, unread);
     },
   });
 };
