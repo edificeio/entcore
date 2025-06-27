@@ -36,10 +36,12 @@ export const useToggleUnreadMessagesFromQueryCache = () => {
       );
 
       // Update the message unread status in outbox list if from me
-      updateFolderMessagesQueryCache('outbox', (oldMessage) =>
-        messageIds.includes(oldMessage.id)
-          ? { ...oldMessage, unread }
-          : oldMessage,
+      updateFolderMessagesQueryCache(
+        folderId === 'outbox' ? 'inbox' : 'outbox',
+        (oldMessage) =>
+          messageIds.includes(oldMessage.id)
+            ? { ...oldMessage, unread }
+            : oldMessage,
       );
     }
     // Update message details (unread status)
