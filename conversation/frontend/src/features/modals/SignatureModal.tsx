@@ -1,13 +1,12 @@
 import { Button, Loading, Modal, Switch } from '@edifice.io/react';
-import { useI18n } from '~/hooks/useI18n';
-import { useSignatureHandlers } from './hooks';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
-import { useSignaturePreferences } from '~/services';
 import {
   SignatureEditor,
   SignatureEditorRef,
 } from '~/components/SignatureEditor/components/SignatureEditor';
-import { SIGNATURE_EMPTY_CONTENT } from '~/components/SignatureEditor';
+import { useI18n } from '~/hooks/useI18n';
+import { useSignaturePreferences } from '~/services';
+import { useSignatureHandlers } from './hooks';
 
 export function SignatureModal() {
   const { t, common_t } = useI18n();
@@ -24,7 +23,6 @@ export function SignatureModal() {
     preferencesQuery.data?.useSignature ?? false,
   );
   const [isLengthValid, setIsLengthValid] = useState(true);
-  const initialSignatureContent = useRef(SIGNATURE_EMPTY_CONTENT);
   const [hasContentChanged, setHasContentChanged] = useState(false);
 
   useEffect(() => {
@@ -57,22 +55,11 @@ export function SignatureModal() {
   }, [handleCloseModal, save, useSignature]);
 
   const handleLengthChange = (isValid: boolean) => {
-    const currentContent = editor?.current?.getHtmlContent() as string;
-    const needSignatureContentInitialization =
-      initialSignatureContent.current === SIGNATURE_EMPTY_CONTENT &&
-      currentContent !== SIGNATURE_EMPTY_CONTENT;
-
-    if (needSignatureContentInitialization) {
-      const isOriginalSignatureEmpty =
-        preferencesQuery.data?.signature === SIGNATURE_EMPTY_CONTENT;
-      if (isOriginalSignatureEmpty) {
-        initialSignatureContent.current = SIGNATURE_EMPTY_CONTENT;
-      } else {
-        initialSignatureContent.current = currentContent;
-      }
-    }
-    setHasContentChanged(initialSignatureContent.current !== currentContent);
     setIsLengthValid(isValid);
+  };
+
+  const handleContentChange = () => {
+    setHasContentChanged(true);
   };
 
   return (
@@ -104,6 +91,7 @@ export function SignatureModal() {
             mode={'edit'}
             placeholder={t('signature.modal.editor.placeholder')}
             onLengthChange={handleLengthChange}
+            onContentChange={handleContentChange}
           />
         </Suspense>
       </Modal.Body>
