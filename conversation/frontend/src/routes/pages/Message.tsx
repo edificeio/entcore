@@ -2,10 +2,12 @@ import { QueryClient } from '@tanstack/react-query';
 import { Fragment, useEffect, useState } from 'react';
 import { LoaderFunctionArgs, useLoaderData } from 'react-router-dom';
 import { MessageEdit } from '~/features/message-edit/MessageEdit';
+import { MessageEditSkeleton } from '~/features/message-edit/MessageEditSkeleton';
 import { Message } from '~/features/message/Message';
+import { MessageSkeleton } from '~/features/message/MessageSkeleton';
 import { useInitMessage } from '~/hooks/useInitMessage';
-import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { useMessageIdAndAction } from '~/hooks/useMessageIdAndAction';
+import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 
 import { messageQueryOptions, useFolderUtils } from '~/services';
 
@@ -16,15 +18,21 @@ export const loader =
       params.messageId as string,
     );
 
+    queryClient.ensureQueryData(queryMessage);
+
     if (params.messageId) {
-      await Promise.all([queryClient.ensureQueryData(queryMessage)]);
+      return {
+        isPrint,
+      };
     }
 
     return { isPrint };
   };
 
 export function Component() {
-  const { isPrint } = useLoaderData() as { isPrint: boolean };
+  const { isPrint } = useLoaderData() as {
+    isPrint: boolean;
+  };
   const { folderId } = useSelectedFolder();
   const [currentKey, setCurrentKey] = useState(0);
   const { updateFolderMessagesQueryCache } = useFolderUtils();
@@ -32,7 +40,6 @@ export function Component() {
   const { messageId, action } = useMessageIdAndAction();
 
   // Init message depending on the action
-
   const message = useInitMessage({
     messageId,
     action,
@@ -47,6 +54,7 @@ export function Component() {
       // Scroll to the top of the page
       window.scrollTo(0, 0);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -58,6 +66,7 @@ export function Component() {
           : oldMessage;
       });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [folderId]);
 
   useEffect(() => {
@@ -68,7 +77,11 @@ export function Component() {
   }, [messageId, message?.id]);
 
   if (!message) {
-    return null;
+    return (
+      <>
+        {folderId === 'draft' ? <MessageEditSkeleton /> : <MessageSkeleton />}
+      </>
+    );
   }
 
   return (

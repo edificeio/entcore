@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import { MessageActionDropdown } from '~/components/MessageActionDropdown/MessageActionDropdown';
 import { MessageBody } from '~/components/MessageBody';
-import { MessageHeader } from '~/features/message/message-header';
+import { MessageHeader } from '~/features/message/components/MessageHeader';
 import { Message as MessageData } from '~/models';
 import { MessageNavigation } from './MessageNavigation';
 
