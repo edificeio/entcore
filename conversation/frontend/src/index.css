@@ -9,3 +9,8 @@
   background: var(--edifice-gray-400) !important;
   border-radius: var(--edifice-border-radius);
 }
+
+#root {
+  z-index: 0;
+  position: relative;
+}
