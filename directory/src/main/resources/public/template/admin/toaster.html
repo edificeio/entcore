@@ -1,8 +1,14 @@
 <section class="toggle-buttons" ng-class="{ hide: !hasSelectedUsers() }">
     <div class="toggle block-container">
         <div class="row">
-            <button workflow="directory.allowClassAdminResetPassword" translate content="directory.resetPassword" ng-click="resetPasswords()" ng-if="selectedUsersAreActivated()"></button>
-            <button workflow="directory.allowClassAdminResetPassword" translate content="directory.temporaryPassword" ng-click="generateTemporaryPasswords()"></button>
+            <button workflow="directory.allowClassAdminResetPassword" translate content="directory.resetPassword" 
+                    ng-disabled="selectedUsersAreFederated()"
+                    ng-click="resetPasswords()" 
+                    ng-if="selectedUsersAreActivated()">
+            </button>
+            <button workflow="directory.allowClassAdminResetPassword" translate content="directory.temporaryPassword" 
+                    ng-disabled="selectedUsersAreFederated()"
+                    ng-click="generateTemporaryPasswords()"></button>
             <button workflow="directory.allowClassAdminBlockUsers" ng-click="openLightbox('admin/actions/block')" ng-if="selectedUsersAreNotBlocked()" translate
                 content="admin.block">
             </button>
@@ -12,7 +18,7 @@
             <button workflow="directory.allowClassAdminDeleteUsers" ng-if="canRemoveSelection()" ng-click="openLightbox('admin/actions/delete')">
                 <i18n>remove</i18n>
             </button>
-            <button ng-click="goToExport(true)">
+            <button ng-click="goToExport(true)" ng-disabled="selectedUsersAreFederated()">
                 <i18n>classAdmin.export.toaster</i18n>
             </button>
             <button workflow="directory.allowClassAdminUnlinkUsers" ng-click="onToasterUnlinkUsers()">

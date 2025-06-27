@@ -1406,6 +1406,7 @@ public class AuthController extends BaseController {
 					return;
 				}
 				userAuthAccount.findByMailAndFirstNameAndStructure(mail, firstName, structure,
+						checkFederatedLogin,
 						new io.vertx.core.Handler<Either<String, JsonArray>>() {
 							@Override
 							public void handle(Either<String, JsonArray> event) {
