@@ -8,7 +8,7 @@ html[data-skin="dyslexic"] .my-apps-layout *:not(.application-icon i)  {
 }
 
 body {
-    background: inherit;
+    background: inherit !important;
 }
 
 .application-card {
