@@ -9,7 +9,8 @@ pipeline {
         }
         steps {
           script {
-            def version = sh(returnStdout: true, script: './build.sh $BUILD_SH_EXTRA_PARAM init && docker-compose run --rm maven mvn $MVN_OPTS help:evaluate -Dexpression=project.version -q -DforceStdout')
+            sh './build.sh $BUILD_SH_EXTRA_PARAM init'
+            def version = sh(returnStdout: true, script: 'docker-compose run --rm maven mvn $MVN_OPTS help:evaluate -Dexpression=project.version -q -DforceStdout')
             buildName "${env.GIT_BRANCH.replace("origin/", "")}@${version}"
           }
         }
