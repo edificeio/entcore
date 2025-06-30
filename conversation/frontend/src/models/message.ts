@@ -6,7 +6,7 @@ export interface MessageBase {
   id: string;
   date?: number;
   subject: string;
-  from: User;
+  from?: User;
   to: Recipients;
   cc: Recipients;
   cci?: Recipients;

@@ -55,7 +55,7 @@ describe('Message preview header component', () => {
     render(<MessagePreview message={inboxMessage} />);
 
     const messagePreview = await screen.findByText(
-      inboxMessage.from.displayName,
+      inboxMessage.from?.displayName || '',
     );
     const messageSubject = await screen.findByText(inboxMessage.subject);
     const messageResponse = screen.queryByTestId('message-response');
@@ -73,7 +73,7 @@ describe('Message preview header component', () => {
     render(<MessagePreview message={inboxMessage} />);
 
     const messagePreview = await screen.findByText(
-      inboxMessage.from.displayName,
+      inboxMessage.from?.displayName || '',
     );
     const messageSubject = await screen.findByText(inboxMessage.subject);
     const messageResponse = screen.queryByTitle('message-response');
@@ -95,7 +95,7 @@ describe('Message preview header component', () => {
     render(<MessagePreview message={messageWithAttachment} />);
 
     const messagePreview = await screen.findByText(
-      inboxMessage.from.displayName,
+      inboxMessage.from?.displayName || '',
     );
     const messageSubject = await screen.findByText(inboxMessage.subject);
     const messageResponse = screen.queryByTitle('message.replied');
@@ -117,7 +117,7 @@ describe('Message preview header component', () => {
     render(<MessagePreview message={messageWithResponse} />);
 
     const messagePreview = await screen.findByText(
-      inboxMessage.from.displayName,
+      inboxMessage.from?.displayName || '',
     );
     const messageSubject = await screen.findByText(inboxMessage.subject);
     const messageResponse = screen.queryByTitle('message.replied');
