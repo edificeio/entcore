@@ -8,9 +8,10 @@ import {
 import { useI18n } from '~/hooks/useI18n';
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { Message } from '~/models';
+import { useToggleUnreadMessagesFromQueryCache } from '~/services/queries/hooks/useToggleUnreadMessageFromQueryCache';
+import { useScrollStore } from '~/store/scrollStore';
 import Pagination from './components/Pagination';
 import { useMessageNavigation } from './hooks/useMessageNavigation';
-import { useToggleUnreadMessagesFromQueryCache } from '~/services/queries/hooks/useToggleUnreadMessageFromQueryCache';
 
 export function MessageNavigation({ message }: { message: Message }) {
   const navigate = useNavigate();
@@ -20,6 +21,7 @@ export function MessageNavigation({ message }: { message: Message }) {
   const { currentMessagePosition, totalMessagesCount, getMessageAtPosition } =
     useMessageNavigation(message.id);
   const [searchParams] = useSearchParams();
+  const savedScrollPosition = useScrollStore.use.savedScrollPosition();
   const { toggleUnreadMessagesFromQueryCache } =
     useToggleUnreadMessagesFromQueryCache();
   const actionDropdownProps: MessageActionDropdownProps = {
@@ -32,10 +34,17 @@ export function MessageNavigation({ message }: { message: Message }) {
   };
 
   const handleGoBack = () => {
-    navigate({
-      pathname: `/${folderId}`,
-      search: searchParams.toString(),
-    });
+    navigate(
+      {
+        pathname: `/${folderId}`,
+        search: searchParams.toString(),
+      },
+      {
+        state: {
+          savedScrollPosition,
+        },
+      },
+    );
   };
 
   const handleMessageChange = async (nextPosition: number) => {
