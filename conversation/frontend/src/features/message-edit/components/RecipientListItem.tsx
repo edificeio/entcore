@@ -26,24 +26,12 @@ export function RecipientListItem({
   const { t, common_t } = useI18n();
   const recipientName = useMessageUserDisplayName(visible);
 
-  const classNameProfile = clsx({
-    'text-orange-300': visible.profile === 'Student' && disabled,
-    'text-orange-500': visible.profile === 'Student' && !disabled,
-    'text-blue-300': visible.profile === 'Relative' && disabled,
-    'text-blue-500': visible.profile === 'Relative' && !disabled,
-    'text-purple-300': visible.profile === 'Teacher' && disabled,
-    'text-purple-500': visible.profile === 'Teacher' && !disabled,
-    'text-green-300': visible.profile === 'Personnel' && disabled,
-    'text-green-500': visible.profile === 'Personnel' && !disabled,
-    'text-red-300':
-      !['Student', 'Relative', 'Teacher', 'Personnel'].includes(
-        visible.profile || '',
-      ) && disabled,
-    'text-red-500':
-      !['Student', 'Relative', 'Teacher', 'Personnel'].includes(
-        visible.profile || '',
-      ) && !disabled,
-  });
+  const classNameProfile = clsx(
+    `user-profile-${visible.profile?.toLowerCase()}`,
+    {
+      disabled,
+    },
+  );
 
   const className = clsx(
     'recipient-list-item d-flex flex-fill align-items-center gap-8',
