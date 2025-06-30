@@ -55,10 +55,12 @@ export function MessageBody({
     </div>
   ) : (
     <>
-      <section className="d-flex flex-column gap-16">
+      <section
+        className={`d-flex flex-column gap-16 ${editMode ? 'message-body-edit' : ''}`}
+      >
         <Editor
           ref={editorRef}
-          id="messageBody"
+          id="message-body"
           content={content}
           focus={'start'}
           mode={editMode ? 'edit' : 'read'}
