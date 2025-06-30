@@ -1,12 +1,12 @@
 import { Button, Loading, Modal, Switch } from '@edifice.io/react';
-import { useI18n } from '~/hooks/useI18n';
-import { useSignatureHandlers } from './hooks';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
-import { useSignaturePreferences } from '~/services';
 import {
   SignatureEditor,
   SignatureEditorRef,
 } from '~/components/SignatureEditor/components/SignatureEditor';
+import { useI18n } from '~/hooks/useI18n';
+import { useSignaturePreferences } from '~/services';
+import { useSignatureHandlers } from './hooks';
 
 export function SignatureModal() {
   const { t, common_t } = useI18n();
@@ -23,6 +23,7 @@ export function SignatureModal() {
     preferencesQuery.data?.useSignature ?? false,
   );
   const [isLengthValid, setIsLengthValid] = useState(true);
+  const [hasContentChanged, setHasContentChanged] = useState(false);
 
   useEffect(() => {
     if (typeof preferencesQuery.data?.useSignature !== 'undefined')
@@ -33,8 +34,14 @@ export function SignatureModal() {
     setUseSignature((previousState) => !previousState);
   }
 
+  // Vérifier si des modifications ont été apportées
+  const hasChanged = () => {
+    const originalUseSignature = !!preferencesQuery.data?.useSignature;
+    return useSignature !== originalUseSignature || hasContentChanged;
+  };
+
   const lockSaveButton =
-    !isLengthValid || preferencesQuery.isPending || isSaving;
+    !isLengthValid || preferencesQuery.isPending || isSaving || !hasChanged();
 
   const handleSaveClick = useCallback(() => {
     async function handleSave() {
@@ -46,6 +53,14 @@ export function SignatureModal() {
     }
     handleSave();
   }, [handleCloseModal, save, useSignature]);
+
+  const handleLengthChange = (isValid: boolean) => {
+    setIsLengthValid(isValid);
+  };
+
+  const handleContentChange = () => {
+    setHasContentChanged(true);
+  };
 
   return (
     <Modal
@@ -75,7 +90,8 @@ export function SignatureModal() {
             content={preferencesQuery.data?.signature ?? ''}
             mode={'edit'}
             placeholder={t('signature.modal.editor.placeholder')}
-            onLengthChange={setIsLengthValid}
+            onLengthChange={handleLengthChange}
+            onContentChange={handleContentChange}
           />
         </Suspense>
       </Modal.Body>
