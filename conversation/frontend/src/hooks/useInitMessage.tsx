@@ -9,6 +9,7 @@ import {
 import { useMessage, useMessageActions } from '~/store/messageStore';
 import { useAdditionalRecipients } from './useAdditionalRecipients';
 import { useI18n } from './useI18n';
+import { SIGNATURE_EMPTY_CONTENT } from '~/components/SignatureEditor';
 
 export type UserAction = 'reply' | 'replyAll' | 'transfer';
 export interface MessageReplyOrTransferProps {
@@ -34,8 +35,8 @@ export function useInitMessage({
 
   const signature =
     signatureData?.useSignature && signatureData.signature
-      ? `<p></p><p></p>${signatureData.signature}`
-      : '<p></p>';
+      ? `${SIGNATURE_EMPTY_CONTENT}${SIGNATURE_EMPTY_CONTENT}${signatureData.signature}`
+      : SIGNATURE_EMPTY_CONTENT;
 
   useLayoutEffect(() => {
     // If the configuration for the signature is pending, we return an empty message
@@ -85,7 +86,7 @@ export function useInitMessage({
           body =
             body +
             `<div>
-            ${signatureData?.useSignature ? `<p></p>` : ''}
+            ${signatureData?.useSignature ? SIGNATURE_EMPTY_CONTENT : ''}
             <p><span style="font-size: 14px; font-weight:400;">--------- ${t('transfer.title')} ---------</span></p>
             <p><span style="font-size: 14px; font-weight:400;">${t('transfer.from') + (messageOrigin.from?.displayName || '')}</span></p>
             <p><span style="font-size: 14px; font-weight:400;">${t('transfer.date') + (messageOrigin.date ? formatDate(messageOrigin.date, 'LLL') : '')}</span></p>
