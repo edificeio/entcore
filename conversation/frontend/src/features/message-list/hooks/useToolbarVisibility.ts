@@ -26,8 +26,8 @@ export default function useToolbarVisibility(
         // Check if the selected messages are not sent by the user
         !selectedMessages.some(
           (message) =>
-            message.from.id === user?.userId &&
-            !isInRecipient(message, user.userId),
+            message.from?.id === user?.userId &&
+            !isInRecipient(message, user ? user.userId : ''),
         )
       );
     },
@@ -37,6 +37,7 @@ export default function useToolbarVisibility(
   const canEmptyTrash = useMemo(() => {
     if (!isInTrash) return false;
     return messages.length > 0 && selectedMessages.length === 0;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [folderId, messages]);
 
   const isInFolder = useMemo(() => {

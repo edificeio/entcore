@@ -1,7 +1,7 @@
 import { useEdificeClient } from '@edifice.io/react';
 import { MessageMetadata } from '~/models';
-import { useSelectedFolder } from './useSelectedFolder';
 import { isInRecipient } from '~/services';
+import { useSelectedFolder } from './useSelectedFolder';
 
 export function useMessageFolderId(message: MessageMetadata) {
   const { folderId } = useSelectedFolder();
@@ -17,7 +17,7 @@ export function useMessageFolderId(message: MessageMetadata) {
     };
   }
 
-  const isUserAuthor = message.from.id === user.userId;
+  const isUserAuthor = message.from?.id === user.userId;
   const isCurrentUserInRecipient = isInRecipient(message, user.userId);
 
   const originFolderId =
