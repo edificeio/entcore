@@ -41,7 +41,7 @@ export function MessageNavigation({ message }: { message: Message }) {
       },
       {
         state: {
-          savedScrollPosition,
+          scrollPositionToRestore: savedScrollPosition,
         },
       },
     );
