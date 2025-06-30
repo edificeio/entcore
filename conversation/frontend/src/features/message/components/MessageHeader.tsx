@@ -1,5 +1,6 @@
-import { Avatar, useDate, useDirectory } from '@edifice.io/react';
+import { useDate, useDirectory } from '@edifice.io/react';
 import { MessageRecipientList } from '~/components/MessageRecipientList/MessageRecipientList';
+import { SenderAvatar } from '~/features/message-list/components/MessagePreview/components/SenderAvatar';
 import { useI18n } from '~/hooks/useI18n';
 import { Message } from '~/models';
 import './MessageHeader.css';
@@ -7,7 +8,7 @@ import './MessageHeader.css';
 export function MessageHeader({ message }: { message: Message }) {
   const { t } = useI18n();
   const { formatDate } = useDate();
-  const { getAvatarURL, getUserbookURL } = useDirectory();
+  const { getUserbookURL } = useDirectory();
 
   return (
     <header>
@@ -19,11 +20,8 @@ export function MessageHeader({ message }: { message: Message }) {
               : message.subject || t('nosubject')}
           </h4>
           <div className="d-flex align-items-center mt-16 gap-12 small">
-            <Avatar
-              alt={t('author.avatar')}
-              size="sm"
-              src={getAvatarURL(message.from?.id || '', 'user')}
-              variant="circle"
+            <SenderAvatar
+              authorId={message.from?.id}
               className="align-self-start mt-4"
             />
             <div className="d-flex flex-fill flex-column overflow-hidden">
