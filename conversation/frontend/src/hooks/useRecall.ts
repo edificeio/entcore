@@ -1,10 +1,10 @@
 import { useEdificeClient, useToast } from '@edifice.io/react';
+import { createElement } from 'react';
 import { MessageBase } from '~/models';
+import { useRecallMessage } from '~/services';
 import { useConfig, useConfirmModalStore } from '~/store';
 import { useI18n } from './useI18n';
 import { useRights } from './useRights';
-import { useRecallMessage } from '~/services';
-import { createElement } from 'react';
 
 export function useRecall() {
   const { t } = useI18n();
@@ -20,7 +20,7 @@ export function useRecall() {
       canRecallMessages &&
       message.date &&
       message.state === 'SENT' &&
-      message.from.id === user?.userId &&
+      message.from?.id === user?.userId &&
       message.date >= Date.now() - recallDelayMinutes * 60 * 1000
     );
   };
