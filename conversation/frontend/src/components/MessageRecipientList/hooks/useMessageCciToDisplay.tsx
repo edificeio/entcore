@@ -6,7 +6,7 @@ export default function useMessageCciToDisplay(
 ): Recipients | null {
   const { user } = useEdificeClient();
   const cci = message.cci;
-  const isFromCurrentUser = user?.userId === message.from.id;
+  const isFromCurrentUser = user?.userId === message.from?.id;
   const hasCci = cci && (cci.users.length > 0 || cci.groups.length > 0);
 
   if (!hasCci) return null;

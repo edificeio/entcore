@@ -63,7 +63,7 @@ export function useMessageActionDropdown({
   const { user } = useEdificeClient();
   const { success } = useToast();
 
-  const isFromMe = message.from.id === user?.userId;
+  const isFromMe = message.from?.id === user?.userId;
 
   // Hidden condition's
   const isInFolder = useMemo(() => {
