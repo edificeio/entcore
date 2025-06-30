@@ -22,7 +22,6 @@ export const useApplications = () => {
   const bookmarks = useUserPreferencesStore((s) => s.bookmarks ?? []);
 
   const displayedApps = query.data?.apps
-    .filter((app) => app.display !== false)
     .map((app) => {
       const enhancement = enhanceData.apps.find((e) => e.name === app.name);
       const isFavorite = bookmarks.includes(app.name);
@@ -32,7 +31,8 @@ export const useApplications = () => {
         ...(enhancement || {}),
         isFavorite,
       };
-    });
+    })
+    .filter((app) => app.display !== false);
 
   return {
     applications: displayedApps,
