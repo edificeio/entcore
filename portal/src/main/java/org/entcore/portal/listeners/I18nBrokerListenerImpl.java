@@ -36,9 +36,9 @@ public class I18nBrokerListenerImpl implements I18nBrokerListener {
     private static final String DEFAULT_APPLICATION = "default";
     
     /**
-     * Default TTL for cached i18n registration data (24 hours in seconds)
+     * Default TTL for cached i18n registration data (1 year in seconds)
      */
-    private static final int I18N_CACHE_TTL = 86400;
+    private static final int I18N_CACHE_TTL = 365 * 86400;
     private static final Logger log = LoggerFactory.getLogger(I18nBrokerListenerImpl.class);
     private final Map<String, I18n> i18nInstances = new HashMap<>();
     private final Vertx vertx;
