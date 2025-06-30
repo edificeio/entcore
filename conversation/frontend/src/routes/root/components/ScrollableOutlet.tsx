@@ -11,12 +11,18 @@ export function ScrollableOutlet() {
   const { state } = useLocation();
   const setCurrentScrollPosition =
     useScrollStore.use.setCurrentScrollPosition();
+  const savedScrollPosition = useScrollStore.use.savedScrollPosition();
 
-  const saveScroll = () => {
-    if (scrollRef.current) {
-      setCurrentScrollPosition(scrollRef.current.scrollTop);
-    }
-  };
+  useEffect(() => {
+    const handlePopState = () => {
+      restoreScroll(savedScrollPosition);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [savedScrollPosition]);
+
   useEffect(() => {
     const scrollElement = scrollRef.current;
     if (scrollElement) {
@@ -27,18 +33,23 @@ export function ScrollableOutlet() {
     }
   }, []);
 
-  const restoreScroll = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTo({
-        top: state?.savedScrollPosition || 0,
-      });
-    }
-  };
   useEffect(() => {
     if (folderId && !isPending) {
-      restoreScroll();
+      restoreScroll(state?.savedScrollPosition || 0);
     }
   }, [folderId, isPending, state?.savedScrollPosition]);
+
+  const restoreScroll = (scrollPosition: number) => {
+    scrollRef.current?.scrollTo({
+      top: scrollPosition || 0,
+    });
+  };
+
+  const saveScroll = () => {
+    if (scrollRef.current) {
+      setCurrentScrollPosition(scrollRef.current.scrollTop);
+    }
+  };
 
   return (
     <div
