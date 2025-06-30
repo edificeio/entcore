@@ -10,12 +10,17 @@ import {
   Session,
   searchVisibles,
   Structure,
+  getTeacherRole,
   getProfileGroupOfStructureByType,
+  getRolesOfStructure,
   UserProfileType,
   ShareBookMarkCreationRequest,
   createShareBookMarkOrFail,
   UserInfo
 } from "../../../node_modules/edifice-k6-commons/dist/index.js";
+import {
+  checkNbBookmarkVisible
+} from "./_sharebookmark-utils.ts";
 
 const maxDuration = __ENV.MAX_DURATION || "5m";
 const schoolName = __ENV.DATA_SCHOOL_NAME || "Maxi Users";
@@ -24,7 +29,7 @@ const gracefulStop = parseInt(__ENV.GRACEFUL_STOP || "2s");
 export const options = {
   setupTimeout: "1h",
   thresholds: {
-    checks: ["rate == 3.00"],
+    checks: ["rate == 1.00"],
   },
   scenarios: {
     testCanSeeUsersFromBookMark: {
@@ -49,18 +54,18 @@ export function setup() {
   describe("[Bookmark-Init] Initialize data", () => {
     <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
     head = initStructure(`${schoolName} - Head`)
-    const teacherProfileGroup = getProfileGroupOfStructureByType('Teacher', head)
+    const teacherProfileGroup = getTeacherRole(head);
     const attachedStructuresGroups: string[] = []
     for(let i=0; i < 10; i++) {
       const school = initStructure(`${schoolName} - School ${i}`);
       structures.push(school);
       attachStructureAsChild(head, school)
-      for(let profile of profiles) {
-        const schoolProfileGroup = getProfileGroupOfStructureByType(profile, school);
-        attachedStructuresGroups.push(schoolProfileGroup.id);
-      }
+      const schoolProfileGroup = getRolesOfStructure(school.id);
+      attachedStructuresGroups.push(...schoolProfileGroup.map((s) => s.id));
     }
-    addCommRuleToGroup(teacherProfileGroup.id, attachedStructuresGroups);    
+    for(let group of attachedStructuresGroups) {
+      addCommRuleToGroup(group, [teacherProfileGroup.id]);
+    }
   });
   return { head, structures};
 }
@@ -80,13 +85,35 @@ export function testCanSeeUsersFromBookMark(data: InitData){
     members.push(...users);      
 
     const shareBookmarkRequest: ShareBookMarkCreationRequest = {
-      name: 'test-share-bookmark-' + new Date().getDate(),
+      name: 'test-share-bookmark-' + new Date().getTime(),
       members: members
     };
     //now call create bookmark that call get bookmark that check visible
-    console.log("Authenticate heade teacher " + headTeacher.login);
+    console.log("Authenticate head teacher " + headTeacher.login);
     authenticateWeb(headTeacher.login);
     console.log("Creating and check share bookmark");
-    const shareBookMark = createShareBookMarkOrFail(shareBookmarkRequest);
+    const bookmark = createShareBookMarkOrFail(shareBookmarkRequest);
+    checkNbBookmarkVisible(bookmark, members.length - 1, "Head bookmark");
+
+    //try to create a bookmark on all the hierarchy
+    <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+
+    for(let structure of data.structures) {
+      const schoolUsers = getUsersOfSchool(structure).map((u) => u.id);
+      members.push(...schoolUsers);
+    }
+
+    const shareBookMarkAllStruct: ShareBookMarkCreationRequest = {
+      name: 'test-share-bookmark-all-' + new Date().getTime(),
+      members: members
+    };
+
+     //now call create bookmark that call get bookmark that check visible
+    console.log("Authenticate head teacher " + headTeacher.login);
+    authenticateWeb(headTeacher.login);
+    console.log("Creating and check share bookmark on all struct");
+    const allStructBookmark = createShareBookMarkOrFail(shareBookMarkAllStruct);
+
+    checkNbBookmarkVisible(allStructBookmark, members.length - 1, "All struct bookmark");
   });
 };
