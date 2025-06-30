@@ -7,16 +7,18 @@ import {
   useState,
 } from 'react';
 
-import { FontSize } from '@edifice.io/tiptap-extensions/font-size';
 import {
-  EditorContent,
   Content,
-  useEditor,
-  StarterKit,
+  EditorContent,
   EditorInstance,
+  StarterKit,
+  useEditor,
 } from '@edifice.io/react/editor';
-import { SignatureEditorToolbar } from './SignatureEditorToolbar';
+import { FontSize } from '@edifice.io/tiptap-extensions/font-size';
 import clsx from 'clsx';
+import { SignatureEditorToolbar } from './SignatureEditorToolbar';
+
+export const SIGNATURE_EMPTY_CONTENT = '<p></p>';
 
 export interface SignatureEditorRef {
   /** Get the current content as HTML. */
@@ -29,6 +31,7 @@ export interface SignatureEditorProps {
   placeholder: string;
   maxLength?: number;
   onLengthChange?: (isValid: boolean, newLength: number) => void;
+  onContentChange?: () => void;
 }
 
 export const SignatureEditor = forwardRef(
@@ -38,6 +41,7 @@ export const SignatureEditor = forwardRef(
       mode = 'read',
       maxLength = 800,
       onLengthChange,
+      onContentChange,
     }: SignatureEditorProps,
     ref: Ref<SignatureEditorRef>,
   ) => {
@@ -66,7 +70,10 @@ export const SignatureEditor = forwardRef(
       ],
       content,
       editable: true,
-      onUpdate: (props) => updateCounter(props.editor),
+      onUpdate: (props) => {
+        updateCounter(props.editor);
+        onContentChange?.();
+      },
     });
 
     useImperativeHandle(ref, () => ({
