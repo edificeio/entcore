@@ -18,7 +18,7 @@ export const useMessageNavigation = (messageId?: string) => {
     currentMessageIndex > -1 ? currentMessageIndex + 1 : undefined;
   const totalMessagesCount = currentMessagePreview?.count;
 
-  const getMessageIdAtPosition = async (position: number) => {
+  const getMessageAtPosition = async (position: number) => {
     let messageList: MessageMetadata[] = messages;
     if (position < 1 || position > totalMessagesCount) {
       return;
@@ -35,12 +35,12 @@ export const useMessageNavigation = (messageId?: string) => {
     }
 
     const message = messageList[position - 1];
-    return message.id;
+    return message;
   };
 
   return {
     currentMessagePosition,
     totalMessagesCount,
-    getMessageIdAtPosition,
+    getMessageAtPosition,
   };
 };

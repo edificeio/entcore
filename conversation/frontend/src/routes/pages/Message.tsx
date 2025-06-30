@@ -8,8 +8,7 @@ import { MessageSkeleton } from '~/features/message/MessageSkeleton';
 import { useInitMessage } from '~/hooks/useInitMessage';
 import { useMessageIdAndAction } from '~/hooks/useMessageIdAndAction';
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
-
-import { messageQueryOptions, useFolderUtils } from '~/services';
+import { messageQueryOptions } from '~/services';
 
 export const loader =
   (queryClient: QueryClient, isPrint?: boolean) =>
@@ -35,7 +34,6 @@ export function Component() {
   };
   const { folderId } = useSelectedFolder();
   const [currentKey, setCurrentKey] = useState(0);
-  const { updateFolderMessagesQueryCache } = useFolderUtils();
 
   const { messageId, action } = useMessageIdAndAction();
 
@@ -54,20 +52,7 @@ export function Component() {
       // Scroll to the top of the page
       window.scrollTo(0, 0);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    // Update the message unread status in the list
-    if (folderId) {
-      updateFolderMessagesQueryCache(folderId, (oldMessage) => {
-        return oldMessage.id === messageId
-          ? { ...oldMessage, unread: false }
-          : oldMessage;
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [folderId]);
 
   useEffect(() => {
     if (messageId === message?.id) {

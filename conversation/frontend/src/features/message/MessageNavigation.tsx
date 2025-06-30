@@ -10,16 +10,18 @@ import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { Message } from '~/models';
 import Pagination from './components/Pagination';
 import { useMessageNavigation } from './hooks/useMessageNavigation';
+import { useToggleUnreadMessagesFromQueryCache } from '~/services/queries/hooks/useToggleUnreadMessageFromQueryCache';
 
 export function MessageNavigation({ message }: { message: Message }) {
   const navigate = useNavigate();
   const { common_t } = useI18n();
   const { folderId } = useSelectedFolder();
   const { lg } = useBreakpoint();
-  const { currentMessagePosition, totalMessagesCount, getMessageIdAtPosition } =
+  const { currentMessagePosition, totalMessagesCount, getMessageAtPosition } =
     useMessageNavigation(message.id);
   const [searchParams] = useSearchParams();
-
+  const { toggleUnreadMessagesFromQueryCache } =
+    useToggleUnreadMessagesFromQueryCache();
   const actionDropdownProps: MessageActionDropdownProps = {
     message,
     appearance: {
@@ -37,10 +39,11 @@ export function MessageNavigation({ message }: { message: Message }) {
   };
 
   const handleMessageChange = async (nextPosition: number) => {
-    const messageId = await getMessageIdAtPosition?.(nextPosition);
-    if (!messageId) return;
+    const message = await getMessageAtPosition?.(nextPosition);
+    if (!message) return;
+    toggleUnreadMessagesFromQueryCache([message], false);
     navigate({
-      pathname: `/${folderId}/message/${messageId}`,
+      pathname: `/${folderId}/message/${message.id}`,
       search: searchParams.toString(),
     });
   };
