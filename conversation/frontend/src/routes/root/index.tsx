@@ -8,12 +8,7 @@ import {
 } from '@edifice.io/react';
 import { QueryClient } from '@tanstack/react-query';
 import { Suspense } from 'react';
-import {
-  Outlet,
-  useLoaderData,
-  useLocation,
-  useParams,
-} from 'react-router-dom';
+import { useLoaderData, useLocation, useParams } from 'react-router-dom';
 import { Config, existingActions } from '~/config';
 import {
   CreateFolderModal,
@@ -32,6 +27,7 @@ import {
 } from '~/services/queries';
 import { setConfig, setWorkflows, useOpenedModal } from '~/store';
 import MessageOnboardingModal from './components/MessageOnboardingModal';
+import { ScrollableOutlet } from './components/ScrollableOutlet';
 import './index.css';
 
 // Typing for the root route loader.
@@ -107,7 +103,7 @@ export function Component() {
               </div>
             )}
 
-            <MainContent />
+            <ScrollableOutlet />
           </div>
         )}
 
@@ -117,7 +113,7 @@ export function Component() {
               <DesktopMenu />
             </div>
 
-            <MainContent />
+            <ScrollableOutlet />
           </div>
         )}
 
@@ -132,9 +128,3 @@ export function Component() {
     </div>
   );
 }
-
-const MainContent = () => (
-  <div className="flex-fill overflow-y-auto position-relative pb-64">
-    <Outlet />
-  </div>
-);
