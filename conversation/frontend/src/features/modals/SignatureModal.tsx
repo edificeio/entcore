@@ -1,4 +1,4 @@
-import { Button, Loading, Modal, Switch } from '@edifice.io/react';
+import { Button, Loading, Modal, Switch, useToast } from '@edifice.io/react';
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import {
   SignatureEditor,
@@ -11,6 +11,8 @@ import { useSignatureHandlers } from './hooks';
 export function SignatureModal() {
   const { t, common_t } = useI18n();
   const preferencesQuery = useSignaturePreferences();
+  const toast = useToast();
+
   const {
     isSaving,
     closeModal: handleCloseModal,
@@ -45,11 +47,17 @@ export function SignatureModal() {
 
   const handleSaveClick = useCallback(() => {
     async function handleSave() {
-      await save({
-        useSignature,
-        signature: editor?.current?.getHtmlContent() as string,
-      });
-      handleCloseModal();
+      try {
+        await save({
+          useSignature,
+          signature: editor?.current?.getHtmlContent() as string,
+        });
+        toast.success(t('signature.notify.saved'));
+        handleCloseModal();
+      } catch (error) {
+        toast.error(t('signature.notify.error'));
+        console.error('error:', error);
+      }
     }
     handleSave();
   }, [handleCloseModal, save, useSignature]);
