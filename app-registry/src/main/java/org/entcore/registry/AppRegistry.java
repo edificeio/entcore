@@ -49,7 +49,6 @@ public class AppRegistry extends BaseServer {
 		if(screenTimeEnabled != null) {
 			addController(new ScreenTimeController());
 		}
-
 		
 		JsonObject ptitObservatoireConf = config.getJsonObject("ptit-observatoire-widget-config");
 		if (ptitObservatoireConf != null) {
