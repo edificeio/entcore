@@ -66,18 +66,19 @@ export function ApplicationWrapper({ data }: { data: Application }) {
         data.isExternal || data.category === 'connector' ? '_blank' : undefined
       }
       className={classApplicationCard}
-      title={data.appName}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
       <ApplicationIcon data={{ ...data, isFavorite }} isFavorite={isFavorite} />
 
-      <h1 className="small text-gray-900 ellipsis-3 application-title">
+      <h1
+        className="small text-gray-900 ellipsis-3 application-title"
+        title={data.appName}
+      >
         {data.appName}
       </h1>
       <div
         className="dropdown-wrapper"
-        title=""
         style={{ position: 'absolute', top: 0, right: 0 }}
       >
         <Dropdown
