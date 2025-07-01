@@ -13,10 +13,17 @@ type Props = {
 export function ApplicationList({ applications, isSearch }: Props) {
   const { t } = useTranslation('common');
   const { activeCategory } = useCategoryStore();
+  const sortAppsAndConnectors = (apps: Application[]) =>
+    apps.sort((a, b) => {
+      if (a.category === 'connector' && b.category !== 'connector') return 1;
+      if (a.category !== 'connector' && b.category === 'connector') return -1;
+      return 0;
+    });
 
   if (isSearch) {
     if (applications.length) {
-      return <ApplicationListGrid applications={applications} />;
+      const searchApplications = sortAppsAndConnectors(applications);
+      return <ApplicationListGrid applications={searchApplications} />;
     } else {
       return <EmptyCategory category="search" />;
     }
@@ -66,15 +73,9 @@ export function ApplicationList({ applications, isSearch }: Props) {
 
   const filteredApps =
     activeCategory === 'favorites'
-      ? sortedApps
-          .filter((app) => app.isFavorite === true)
-          .sort((a, b) => {
-            if (a.category === 'connector' && b.category !== 'connector')
-              return 1;
-            if (a.category !== 'connector' && b.category === 'connector')
-              return -1;
-            return 0;
-          })
+      ? sortAppsAndConnectors(sortedApps).filter(
+          (app) => app.isFavorite === true,
+        )
       : sortedApps.filter((app) => app.category === activeCategory);
 
   return filteredApps.length > 0 ? (
