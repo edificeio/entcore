@@ -191,3 +191,13 @@ i.cantine {
     color: $green;
   }
 }
+
+i.screen-time-large
+i.screen-time {
+    @include fonticon;
+    
+    &::before {
+        content: "\e96e";
+        color:#ecbe30;
+    }
+}
