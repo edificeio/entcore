@@ -3,6 +3,7 @@ import React from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { MessageMetadata } from '~/models';
 import { useToggleUnreadMessagesFromQueryCache } from '~/services/queries/hooks/useToggleUnreadMessageFromQueryCache';
+import { useScrollStore } from '~/store/scrollStore';
 import { MessagePreview } from './MessagePreview/MessagePreview';
 
 interface MessageItemProps {
@@ -16,6 +17,8 @@ export function MessageItem({ message, checked, checkbox }: MessageItemProps) {
   const { toggleUnreadMessagesFromQueryCache } =
     useToggleUnreadMessagesFromQueryCache();
 
+  const currentScrollPosition = useScrollStore.use.currentScrollPosition();
+  const setSavedScrollPosition = useScrollStore.use.setSavedScrollPosition();
   const handleMessageKeyUp = (
     event: React.KeyboardEvent<HTMLDivElement>,
     message: MessageMetadata,
@@ -27,7 +30,7 @@ export function MessageItem({ message, checked, checkbox }: MessageItemProps) {
 
   const handleMessageClick = (message: MessageMetadata) => {
     toggleUnreadMessagesFromQueryCache([message], false);
-
+    setSavedScrollPosition(currentScrollPosition);
     navigate({
       pathname: `message/${message.id}`,
       search: searchParams.toString(),

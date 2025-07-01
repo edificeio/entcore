@@ -14,7 +14,7 @@ import {
 } from '@edifice.io/react/icons';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useLocation, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { useFolderMessages } from '~/services';
 import { useAppActions } from '~/store/actions';
@@ -29,8 +29,6 @@ export function MessageList() {
   const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
   const { setSelectedMessageIds } = useAppActions();
-  const location = useLocation();
-  const shouldScrollToTop = location.state?.scrollToTop;
 
   const {
     messages,
@@ -70,15 +68,6 @@ export function MessageList() {
   useEffect(() => {
     setKeyList((prev) => prev + 1);
   }, [searchParams]);
-
-  useEffect(() => {
-    if (messageListItems && shouldScrollToTop) {
-      messageListItems[0].scrollIntoView({
-        block: 'center',
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [folderId]);
 
   useEffect(() => {
     if (isLoadingMessages || isLoadingNextPage) return;
