@@ -6,12 +6,21 @@ import { EmptyCategory } from '~/components/EmptyCategory';
 import { Application } from '~/models/application';
 
 type Props = {
+  isSearch?: boolean;
   applications: Application[];
 };
 
-export function ApplicationList({ applications }: Props) {
+export function ApplicationList({ applications, isSearch }: Props) {
   const { t } = useTranslation('common');
   const { activeCategory } = useCategoryStore();
+
+  if (isSearch) {
+    if (applications.length) {
+      return <ApplicationListGrid applications={applications} />;
+    } else {
+      return <EmptyCategory category="search" />;
+    }
+  }
 
   if (activeCategory === 'none') return null;
 
