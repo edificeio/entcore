@@ -9,6 +9,10 @@ import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.apache.commons.lang3.StringUtils;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.user.DefaultFunctions;
+import org.entcore.common.user.UserInfos;
+import org.entcore.directory.pojo.TransversalSearchQuery;
 import org.entcore.directory.services.impl.DefaultUserService;
 import org.entcore.test.TestHelper;
 import org.entcore.test.preparation.ClassTest;
@@ -23,6 +27,7 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.testcontainers.containers.Neo4jContainer;
+import org.testcontainers.shaded.com.google.common.collect.ImmutableMap;
 
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -78,6 +83,28 @@ public class DefaultUserServiceTest {
                         .put("hobbies", new JsonArray().add("cinema").add("sport")));
         dataHelper = DataHelper.init(context, neo4jContainer);
         prepareData().onComplete(context.asyncAssertSuccess());
+    }
+
+
+
+    @Test
+    public void testListAdmin_inStructureWithAccentAndDash_shouldFindADML(final TestContext testContext) {
+        final Async async = testContext.async();
+
+        UserInfos userInfos = new UserInfos();
+        userInfos.setFunctions(ImmutableMap.of(DefaultFunctions.SUPER_ADMIN, new UserInfos.Function()));
+
+        TransversalSearchQuery  query = TransversalSearchQuery.searchByFullName("e-m", "aD-é");
+
+        defaultUserService.listAdmin("my-structure-01", true,
+                null, null, null, null, query, userInfos, h -> {
+                    testContext.assertTrue(h.isRight(), "Failed to search a user " + h);
+                    final JsonArray users = h.right().getValue();
+                    testContext.assertEquals(users.size(), 1, "We should find only one user");
+                    final JsonObject user = (JsonObject) users.getList().get(0);
+                    testContext.assertEquals(user.getString("firstName"), adml.getFirstName() , "We should find ADML user");
+                    async.complete();
+                });
     }
 
     /**

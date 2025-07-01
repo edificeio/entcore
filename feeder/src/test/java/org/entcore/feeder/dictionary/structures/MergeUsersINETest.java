@@ -63,7 +63,7 @@ public class MergeUsersINETest {
                             final JsonArray users = result.body().getJsonArray("result");
                             testContext.assertEquals(1, users.size(), "There should be only one user left");
                             final JsonObject principalUser = users.getJsonObject(0);
-                            testContext.assertEquals("userToKeep", principalUser.getString("id"), "The remaining user is not the expected one. Have source priorities changed ?");
+                            testContext.assertEquals("userToRemove", principalUser.getString("id"), "The remaining user is not the expected one. Have source priorities changed ?");
                             testContext.assertEquals(ine, principalUser.getString("ub_ine"), "The ine is not the expected one. Has INE handling changed ?");
                             testContext.assertEquals("userToKeep", principalUser.getString("ub_user_id"), "The connected userbook is not the one that we should have. Has anything changed regarding the userbook policy ?");
                             async.countDown();
@@ -131,7 +131,7 @@ public class MergeUsersINETest {
         try {
             txl = TransactionManager.getTransaction();
             txl.add("match (u) detach delete u", new JsonObject());
-            txl.add("create (u1:User{id: 'userToKeep', source: 'AAF', activationCode: 'toto', ine: {ine}, tag: 'unitTest'})-[:USERBOOK]->(:UserBook{tag: 'unitTest', userid: 'userToKeep'})", params);
+            txl.add("create (u1:User{id: 'userToKeep', source: 'AAF', activationCode: 'toto', ine: {ine}, tag: 'unitTest', activated:true})-[:USERBOOK]->(:UserBook{tag: 'unitTest', userid: 'userToKeep'})", params);
             txl.add("create (u2:User{id: 'userToRemove', source: 'MANUAL', ine: {ine}, tag: 'unitTest'})-[:USERBOOK]->(:UserBook{tag: 'unitTest2', userid: 'userToRemove'})", params);
             txl.commit(event -> {
                 if ("ok".equals(event.body().getString("status"))) {

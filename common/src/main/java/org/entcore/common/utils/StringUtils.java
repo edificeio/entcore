@@ -380,6 +380,17 @@ public final class StringUtils {
     }
 
     /**
+     * Remove all accents in the string provided and remove no letter char.
+     *
+     * @param str the string
+     *
+     * @return a string without accents.
+     */
+    public static String stripAccentsAndNotCharToLowerCase(String str) {
+        return stripAccentsToLowerCase(str).replaceAll("\\W+", "");
+    }
+
+    /**
      * Remove all html tag in the string provided.
      *
      * @param str the string

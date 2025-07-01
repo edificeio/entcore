@@ -689,7 +689,7 @@ public class DefaultUserService implements UserService {
 		}
 
 		String conditionUser = "WHERE 1=1 ";
-		if (expectedProfiles != null && expectedProfiles.size() > 0) {
+		if (expectedProfiles != null && !expectedProfiles.isEmpty()) {
 			conditionUser += "AND head(u.profiles) IN {expectedProfiles} ";
 			params.put("expectedProfiles", expectedProfiles);
 		}
@@ -702,8 +702,9 @@ public class DefaultUserService implements UserService {
 		} else if(TransversalSearchType.FULL_NAME.equals(searchQuery.getSearchType())
 				&& (isNotEmpty(searchQuery.getFirstName()) || isNotEmpty(searchQuery.getLastName())) 
 				) {
-			final String firstNameSearchTerm = normalize(searchQuery.getFirstName());
-			final String lastNameSearchTerm = normalize(searchQuery.getLastName());
+			final String firstNameSearchTerm = StringUtils.stripAccentsAndNotCharToLowerCase(searchQuery.getFirstName());
+			final String lastNameSearchTerm = StringUtils.stripAccentsAndNotCharToLowerCase(searchQuery.getLastName());
+
 			final StringBuilder sbuilder = new StringBuilder();
 			sbuilder.append(" AND ");
 			final boolean hasLastName;
@@ -725,7 +726,7 @@ public class DefaultUserService implements UserService {
 		} else if(TransversalSearchType.DISPLAY_NAME.equals(searchQuery.getSearchType()) 
 				&& isNotEmpty(searchQuery.getDisplayName())
 				) {
-			final String searchTerm = normalize(searchQuery.getDisplayName());
+			final String searchTerm = StringUtils.stripAccentsAndNotCharToLowerCase(searchQuery.getDisplayName());
 			conditionUser += " AND u.displayNameSearchField CONTAINS {displayName} ";
 			params.put("displayName", searchTerm);
 		}
@@ -803,7 +804,7 @@ public class DefaultUserService implements UserService {
 		neo.execute(query, params, validResultHandler(results));
 	}
 
-	
+
 	private String normalize(String str) {
 		if (str != null ) {
 			str = str.toLowerCase().replaceAll("\\s+", "").trim();
