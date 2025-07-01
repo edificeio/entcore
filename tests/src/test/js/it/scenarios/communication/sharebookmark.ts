@@ -8,15 +8,12 @@ import {
   initStructure,
   getRandomUserWithProfile,
   Session,
-  searchVisibles,
   Structure,
   getTeacherRole,
-  getProfileGroupOfStructureByType,
   getRolesOfStructure,
   UserProfileType,
   ShareBookMarkCreationRequest,
-  createShareBookMarkOrFail,
-  UserInfo
+  createShareBookMarkOrFail
 } from "../../../node_modules/edifice-k6-commons/dist/index.js";
 import {
   checkNbBookmarkVisible
