@@ -864,3 +864,9 @@ i.votil::before {
   content:'\e96d';
   color:#ecbe30;
 }
+
+i.screen-time-large,
+i.type.screen-time,
+i.screen-time {
+  @include fonticon;
+}
