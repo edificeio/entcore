@@ -45,6 +45,10 @@ public class AppRegistry extends BaseServer {
 		if(webGerestEnabled != null) {
 			addController(new WebGerestController());
 		}
+		JsonObject screenTimeEnabled = config.getJsonObject("screen-time-config");
+		if(screenTimeEnabled != null) {
+			addController(new ScreenTimeController());
+		}
 		
 		JsonObject ptitObservatoireConf = config.getJsonObject("ptit-observatoire-widget-config");
 		if (ptitObservatoireConf != null) {
