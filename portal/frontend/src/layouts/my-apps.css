@@ -102,6 +102,9 @@ body {
     justify-content: flex-start;
     overflow: scroll;
 }
+.toolbar-categories[role=toolbar] {
+    margin-left: 0 !important;
+}
 
 @media screen and (max-width: 767px) {
     .toolbar-categories-wrapper {
@@ -112,6 +115,13 @@ body {
     .toolbar-categories {
         overflow: unset;
         max-width: unset;
+    }
+    .my-apps-header {
+        flex-direction: column;
+    }
+    .my-apps-search {
+        margin-top: 14px;
+        width: 100% !important;
     }
 }
 
@@ -137,4 +147,8 @@ body {
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.my-apps-search {
+    width: 302px;
 }
