@@ -65,7 +65,7 @@ public abstract class GenericShareService implements ShareService {
 	protected final Map<String, List<String>> groupedActions;
 	protected static final I18n i18n = I18n.getInstance();
 	private JsonArray resourceActions;
-	private final Vertx vertx = Vertx.currentContext().owner();
+	private final Vertx vertx = Vertx.currentContext() != null ? Vertx.currentContext().owner() : Vertx.vertx();
 	private final EventStore eventStore;
 
 
