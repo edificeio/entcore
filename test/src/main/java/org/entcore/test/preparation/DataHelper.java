@@ -13,6 +13,7 @@ import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.test.TestHelper;
 import org.testcontainers.containers.Neo4jContainer;
 
+import java.text.Normalizer;
 import java.util.*;
 
 /**
@@ -138,13 +139,18 @@ public class DataHelper {
      * @return This helper
      */
     public DataHelper withUser(final UserTest user) {
-        sb.add("CREATE (u:User{id: {id}, login: {login}, lastName:{lastName}, firstName: {firstName}, displayName: {displayName}, profiles: {profiles}})",
+        sb.add("CREATE (u:User{id: {id}, login: {login}, lastName:{lastName}, lastNameSearchField:{lastNameSearchField}, " +
+                        " firstName: {firstName}, firstNameSearchField: {firstNameSearchField}, " +
+                        " displayName: {displayName}, displayNameSearchField: {displayNameSearchField}, profiles: {profiles}})",
                 new JsonObject()
                         .put("id", user.getId())
                         .put("login", user.getLogin())
                         .put("firstName", user.getFirstName())
+                        .put("firstNameSearchField", sanitize(user.getFirstName()))
                         .put("lastName", user.getLastName())
+                        .put("lastNameSearchField", sanitize(user.getLastName()))
                         .put("displayName", user.getDisplayName())
+                        .put("displayNameSearchField", sanitize(user.getDisplayName()))
                         .put("profiles", user.getProfile() == null ? null : new JsonArray().add(user.getProfile().name)));
         if(user.getUserBook() != null) {
             final UserBookTest ub = user.getUserBook();
@@ -266,7 +272,8 @@ public class DataHelper {
                         "         WHERE s.id in {structureId}" +
                       "WITH adml, s, fg " +
                       "MATCH (s)<-[:DEPENDS]-(spg:ProfileGroup{filter: {personnelFilter}})-[:HAS_PROFILE]->(:Profile)<-[:COMPOSE]-(function:Function{name: {adminLocalFilter}})" +
-                      "MERGE (function)<-[:HAS_FUNCTION{scope: {scope}}]-(adml)-[:IN{source: 'MANUAL'}]->(fg)",
+                      "MERGE (function)<-[:HAS_FUNCTION{scope: {scope}}]-(adml)-[:IN{source: 'MANUAL'}]->(fg) " +
+                      "MERGE (spg)<-[:IN]-(adml)",
                 new JsonObject()
                         .put("admlId", admlId)
                         .put("structureId", toJsonArray(Arrays.asList(structureId)))
@@ -379,6 +386,16 @@ public class DataHelper {
     }
     private static String idOfStudentClassGroup(final String classId) {
         return classId + "-student";
+    }
+
+
+    private static String sanitize(String str) {
+        if(str == null) {
+            return "";
+        }
+        return Normalizer.normalize(str, Normalizer.Form.NFD)
+                .toLowerCase()
+                .replaceAll("\\W+", "");
     }
 
 }
