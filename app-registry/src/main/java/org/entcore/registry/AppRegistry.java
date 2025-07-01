@@ -45,6 +45,11 @@ public class AppRegistry extends BaseServer {
 		if(webGerestEnabled != null) {
 			addController(new WebGerestController());
 		}
+		JsonObject screenTimeEnabled = config.getJsonObject("screen-time-config");
+		if(screenTimeEnabled != null) {
+			addController(new ScreenTimeController());
+		}
+
 		setDefaultResourceFilter(new AppRegistryFilter());
 		new AppRegistryEventsHandler(vertx, new NopAppRegistryEventService());
 		vertx.eventBus().publish("app-registry.loaded", new JsonObject());
