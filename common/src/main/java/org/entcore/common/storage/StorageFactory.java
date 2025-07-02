@@ -27,17 +27,10 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.messaging.IMessagingClient;
 import org.entcore.common.messaging.MessagingClientFactoryProvider;
-import org.entcore.common.storage.impl.AbstractApplicationStorage;
-import org.entcore.common.storage.impl.FileStorage;
-import org.entcore.common.storage.impl.GridfsStorage;
-import org.entcore.common.storage.impl.HttpAntivirusClient;
-import org.entcore.common.storage.impl.S3FallbackStorage;
-import org.entcore.common.storage.impl.S3FallbackS3FSStorage;
-import org.entcore.common.storage.impl.S3FallbackS3S3Storage;
-import org.entcore.common.storage.impl.StorageFileAnalyzer;
+import org.entcore.common.storage.impl.*;
 
 import static org.entcore.common.storage.impl.StorageFileAnalyzer.Configuration.DEFAULT_CONTENT;
-import org.entcore.common.storage.impl.S3Storage;
+
 import org.entcore.common.validation.ExtensionValidator;
 import org.entcore.common.validation.FileValidator;
 import org.entcore.common.validation.QuotaFileSizeValidation;
@@ -150,9 +143,14 @@ public class StorageFactory {
 			((S3Storage) storage).setValidator(fileValidator);
 
 			JsonObject s3fallbacks3s3 = s3.getJsonObject("s3fallbacks3s3");
+			JsonObject s3fallback = s3.getJsonObject("s3fallback");
 			if (s3fallbacks3s3 != null) {
-					S3FallbackS3S3Storage s3FallbackS3FSStorage = new S3FallbackS3S3Storage(vertx, s3, s3fallbacks3s3);
-					((S3Storage) storage).setFallbackStorage(s3FallbackS3FSStorage);
+				S3FallbackS3S3Storage s3FallbackS3FSStorage = new S3FallbackS3S3Storage(vertx, s3, s3fallbacks3s3);
+				((S3Storage) storage).setFallbackStorage(s3FallbackS3FSStorage);
+			}
+			else if (s3fallback != null) {
+				S3FallbackS3LegacyStorage s3FallbackS3LegacyStorage = new S3FallbackS3LegacyStorage(vertx, s3, s3fallback);
+				((S3Storage) storage).setFallbackStorage(s3FallbackS3LegacyStorage);
 			}
 		} else if (fs != null) {
 			if (fs.containsKey("paths")) {
