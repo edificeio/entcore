@@ -175,6 +175,7 @@ public class MultipartUpload {
 
                         uploadPart(id, uploadId, chunk, eTag -> {
                             if (eTag == null) {
+                                asyncFile.close();
                                 cancel(id, uploadId);
                                 handler.handle(new ArrayList<>());
                                 return;
@@ -191,18 +192,29 @@ public class MultipartUpload {
                     if (chunk.getChunkSize() > 0) {
                         uploadPart(id, uploadId, chunk, eTag -> {
                             if (eTag == null) {
+                                asyncFile.close();
                                 cancel(id, uploadId);
                                 handler.handle(new ArrayList<>());
                                 return;
                             }
+                            asyncFile.close();
                             eTags.add(eTag);
 
                             handler.handle(eTags);
                         });
                     }
                     else {
+                        asyncFile.close();
                         handler.handle(eTags);
                     }
+                });
+
+                asyncFile.exceptionHandler(exception -> {
+                    asyncFile.close();
+                    cancel(id, uploadId);
+                    handler.handle(new ArrayList<>());
+
+                    log.error("MultipartUpload failed with exception:", exception);
                 });
             }
             else {
