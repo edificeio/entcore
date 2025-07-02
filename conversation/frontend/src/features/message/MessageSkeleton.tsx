@@ -1,6 +1,6 @@
 import { MessageActionDropdownSkeleton } from '~/components/MessageActionDropdown/MessageActionDropdownSkeleton';
 import { MessageBodySkeleton } from '~/components/MessageBodySkeleton';
-import { MessageNavigationSkeleton } from './MessageNavigationSkeleton';
+import { MessageNavigationSkeleton } from './components/MessageNavigationSkeleton';
 import { MessageHeaderSkeleton } from './components/MessageHeaderSkeleton';
 
 export function MessageSkeleton() {

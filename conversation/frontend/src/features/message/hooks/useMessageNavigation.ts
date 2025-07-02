@@ -1,11 +1,16 @@
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { MessageMetadata } from '~/models';
 import { useFolderMessages } from '~/services';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useScrollStore } from '~/store/scrollStore';
 
 export const useMessageNavigation = (messageId?: string) => {
+  const navigate = useNavigate();
   const { folderId } = useSelectedFolder();
   const { messages, hasNextPage, fetchNextPage, isFetchingNextPage } =
     useFolderMessages(folderId!, false);
+  const savedScrollPosition = useScrollStore.use.savedScrollPosition();
+  const [searchParams] = useSearchParams();
 
   if (!messages) {
     return { currentMessagePosition: undefined, totalMessagesCount: undefined };
@@ -38,9 +43,25 @@ export const useMessageNavigation = (messageId?: string) => {
     return message;
   };
 
+  const goBackToList = () => {
+    navigate(
+      {
+        pathname: `../..`,
+        search: searchParams.toString(),
+      },
+      {
+        relative: 'path',
+        state: {
+          scrollPositionToRestore: savedScrollPosition,
+        },
+      },
+    );
+  };
+
   return {
     currentMessagePosition,
     totalMessagesCount,
     getMessageAtPosition,
+    goBackToList,
   };
 };

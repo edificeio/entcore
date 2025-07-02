@@ -3,7 +3,7 @@ import { MessageActionDropdown } from '~/components/MessageActionDropdown/Messag
 import { MessageBody } from '~/components/MessageBody';
 import { MessageHeader } from '~/features/message/components/MessageHeader';
 import { Message as MessageData } from '~/models';
-import { MessageNavigation } from './MessageNavigation';
+import { MessageNavigation } from './components/MessageNavigation';
 
 export interface MessageProps {
   message: MessageData;
