@@ -32,6 +32,7 @@ import {
 } from '~/services';
 import { useAppActions, useConfirmModalStore } from '~/store';
 import { useMessageActions } from '~/store/messageStore';
+import { useGoBackToList } from '~/features/message/hooks/useGoBackToList';
 
 export interface MessageActionDropdownProps {
   message: Message;
@@ -58,7 +59,7 @@ export function useMessageActionDropdown({
   const { handleMoveMessage } = useFolderHandlers();
   const { setSelectedMessageIds } = useAppActions();
   const sendDraftQuery = useSendDraft();
-
+  const { goBackToList } = useGoBackToList();
   const { folderId } = useSelectedFolder();
   const { user } = useEdificeClient();
   const { success } = useToast();
@@ -109,7 +110,8 @@ export function useMessageActionDropdown({
       message.state !== 'DRAFT' &&
       !message.trashed &&
       !['draft', 'outbox', 'trash'].includes(folderId!) &&
-      isInRecipient(message, user!.userId)
+      (message.from?.id !== user?.userId ||
+        isInRecipient(message, user!.userId))
     );
   }, [message, folderId, user]);
 
@@ -162,7 +164,7 @@ export function useMessageActionDropdown({
 
   const handleMarkAsUnreadClick = () => {
     markAsUnreadQuery.mutate({ messages: [message] });
-    navigate(`../..`, { relative: 'path' });
+    goBackToList();
   };
 
   const recipientToIds = (recipients: Recipients): string[] => {

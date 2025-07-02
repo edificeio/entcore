@@ -9,9 +9,9 @@ import { useI18n } from '~/hooks/useI18n';
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { Message } from '~/models';
 import { useToggleUnreadMessagesFromQueryCache } from '~/services/queries/hooks/useToggleUnreadMessageFromQueryCache';
-import { useScrollStore } from '~/store/scrollStore';
-import Pagination from './components/Pagination';
-import { useMessageNavigation } from './hooks/useMessageNavigation';
+import { useGoBackToList } from '../hooks/useGoBackToList';
+import { useMessageNavigation } from '../hooks/useMessageNavigation';
+import Pagination from './Pagination';
 
 export function MessageNavigation({ message }: { message: Message }) {
   const navigate = useNavigate();
@@ -20,8 +20,8 @@ export function MessageNavigation({ message }: { message: Message }) {
   const { lg } = useBreakpoint();
   const { currentMessagePosition, totalMessagesCount, getMessageAtPosition } =
     useMessageNavigation(message.id);
+  const { goBackToList } = useGoBackToList();
   const [searchParams] = useSearchParams();
-  const savedScrollPosition = useScrollStore.use.savedScrollPosition();
   const { toggleUnreadMessagesFromQueryCache } =
     useToggleUnreadMessagesFromQueryCache();
   const actionDropdownProps: MessageActionDropdownProps = {
@@ -31,20 +31,6 @@ export function MessageNavigation({ message }: { message: Message }) {
       mainButtonVariant: 'ghost',
       buttonColor: 'tertiary',
     },
-  };
-
-  const handleGoBack = () => {
-    navigate(
-      {
-        pathname: `/${folderId}`,
-        search: searchParams.toString(),
-      },
-      {
-        state: {
-          scrollPositionToRestore: savedScrollPosition,
-        },
-      },
-    );
   };
 
   const handleMessageChange = async (nextPosition: number) => {
@@ -63,7 +49,7 @@ export function MessageNavigation({ message }: { message: Message }) {
         color="tertiary"
         variant="ghost"
         leftIcon={<IconArrowLeft />}
-        onClick={handleGoBack}
+        onClick={goBackToList}
         disabled={false}
       >
         {common_t('back')}
