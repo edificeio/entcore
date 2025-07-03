@@ -41,7 +41,9 @@ export const MyAppLayout = ({ theme }: { theme: string }) => {
       <header className="d-flex justify-content-between align-items-center my-apps-header">
         <h1 className="m-0 h3 text-info">{t('navbar.applications')}</h1>
         <SearchBar
+          clearable
           isVariant
+          value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t('my.apps.search')}
           className="my-apps-search"
