@@ -240,7 +240,7 @@ public class Directory extends BaseServer {
 		}
 		// add the directory broker listener
 		BrokerProxyUtils.addBrokerProxy(new DirectoryBrokerListenerImpl(vertx, userService), vertx);
-
+		BrokerProxyUtils.addBrokerProxy(new LoadTestProxyImpl(vertx), vertx);
 	}
 
 }

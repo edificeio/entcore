@@ -206,6 +206,19 @@ export interface ListenOnlyDTO {
   userId?: string;
 }
 
+export interface LoadTestRequestDTO {
+  delay?: number;
+  payload?: string;
+  responseSize?: number;
+}
+
+export interface LoadTestResponseDTO {
+  elapsedTime?: number;
+  payload?: string;
+  startProcessingAt?: number;
+  startWaitingAt?: number;
+}
+
 export interface RecreateCommunicationLinksRequestDTO {
   direction?: string;
   groupId?: string;
