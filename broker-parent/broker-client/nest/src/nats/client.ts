@@ -74,6 +74,10 @@ import type { ListenAndAnswerDTO } from './types';
 
 import type { ListenOnlyDTO } from './types';
 
+import type { LoadTestRequestDTO } from './types';
+
+import type { LoadTestResponseDTO } from './types';
+
 import type { RecreateCommunicationLinksRequestDTO } from './types';
 
 import type { RecreateCommunicationLinksResponseDTO } from './types';
@@ -277,6 +281,19 @@ export class EntNatsServiceClient {
   
   
   
+  async loadTest(request: LoadTestRequestDTO): Promise<LoadTestResponseDTO> {
+    const eventAddress = "ent.loadtest";
+    this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
+    const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
+    if(!reply) {
+      this.logger.warn("No reply received for subject", {messageAddress: eventAddress});
+      throw new Error('No reply received');
+    }
+    return reply as LoadTestResponseDTO;
+  }
+  
+  
+  
   async recreateCommunicationLinks(request: RecreateCommunicationLinksRequestDTO): Promise<RecreateCommunicationLinksResponseDTO> {
     const eventAddress = "communication.link.users.recreate";
     this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
@@ -351,19 +368,6 @@ export class EntNatsServiceClient {
       throw new Error('No reply received');
     }
     return reply as RemoveGroupSharesResponseDTO;
-  }
-  
-  
-  
-  async testApplication(request: AppRegistrationRequestDTO, application: string): Promise<AppRegistrationResponseDTO> {
-    const eventAddress = "ent." + application + ".test";
-    this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
-    const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
-    if(!reply) {
-      this.logger.warn("No reply received for subject", {messageAddress: eventAddress});
-      throw new Error('No reply received');
-    }
-    return reply as AppRegistrationResponseDTO;
   }
   
   

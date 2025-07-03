@@ -34,7 +34,7 @@ pipeline {
       }
       stage('Publish') {
         steps {
-          sh './build.sh $BUILD_SH_EXTRA_PARAM publish'
+          sh 'DRY_RUN=false ./build.sh $BUILD_SH_EXTRA_PARAM publish'
         }
       }
     }

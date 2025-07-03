@@ -794,8 +794,4 @@ public class AppRegistryController extends BaseController implements AppRegistry
 		return promise.future();
 	}
 
-	@Override
-	public Future<AppRegistrationResponseDTO> testApplication(AppRegistrationRequestDTO request) {
-		return Future.failedFuture(new NotImplementedException());
-	}
 }
