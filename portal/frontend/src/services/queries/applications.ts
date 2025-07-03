@@ -24,11 +24,15 @@ export const useApplications = () => {
   const displayedApps = query.data?.apps
     .map((app) => {
       const enhancement = enhanceData.apps.find((e) => e.name === app.name);
+      const shouldBePedagogy =
+        app.address?.includes('library.edifice.io') && !enhancement?.category;
       const isFavorite = bookmarks.includes(app.name);
+
       return {
         ...{ appName: getAppName(app, t), category: 'connector' },
         ...app,
         ...(enhancement || {}),
+        ...(shouldBePedagogy ? { category: 'pedagogy', isExternal: true } : {}),
         isFavorite,
       };
     })
