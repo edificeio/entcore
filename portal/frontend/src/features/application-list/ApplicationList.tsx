@@ -19,10 +19,13 @@ export function ApplicationList({ applications, isSearch }: Props) {
       if (a.category !== 'connector' && b.category === 'connector') return -1;
       return 0;
     });
+  const sortedApps = [...applications].sort((a, b) =>
+    getAppName(a, t).localeCompare(getAppName(b, t)),
+  );
 
   if (isSearch) {
     if (applications.length) {
-      const searchApplications = sortAppsAndConnectors(applications);
+      const searchApplications = sortAppsAndConnectors(sortedApps);
       return <ApplicationListGrid applications={searchApplications} />;
     } else {
       return <EmptyCategory category="search" />;
@@ -30,10 +33,6 @@ export function ApplicationList({ applications, isSearch }: Props) {
   }
 
   if (activeCategory === 'none') return null;
-
-  const sortedApps = [...applications].sort((a, b) =>
-    getAppName(a, t).localeCompare(getAppName(b, t)),
-  );
 
   if (activeCategory === 'all') {
     if (!applications.length) {
