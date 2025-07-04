@@ -1880,6 +1880,54 @@ public class SqlConversationService implements ConversationService{
 	}
 
 	///////////
+	/* Purge */
+
+	@Override
+	public Future<JsonArray> getMessagesToPurge() {
+		final int months = Math.max(24, Config.getConf().getInteger("purge-grace-period", 0));
+		String query =
+			"SELECT DISTINCT um.message_id " +
+			"FROM conversation.usermessages um " +
+			"JOIN conversation.messages m ON um.message_id = m.id " +
+			"WHERE um.folder_id IS NULL AND m.date > (EXTRACT(EPOCH FROM NOW())::bigint - (" + months + " * 31 * 86400));";
+
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+
+		Promise<JsonArray> promise = Promise.promise();
+		sql.prepared(query, values, SqlResult.validResultHandler(result -> {
+			if (result.isRight() && result.right().getValue() != null) {
+				promise.complete(result.right().getValue());
+			} else {
+				log.error("An error occurred getting messages list to purge:", result.left().getValue());
+				promise.fail("conversation.purge.list.error");
+			}
+		}));
+
+		return promise.future();
+	}
+
+	@Override
+	public Future<JsonArray> purgeMessages(final List<String> messagesId) {
+		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
+		String query = "DELETE FROM conversation.messages CASCADE WHERE id IN " + generateInVars(messagesId, values);
+
+		SqlStatementsBuilder builder = new SqlStatementsBuilder();
+		builder.prepared(query, values);
+
+		Promise<JsonArray> promise = Promise.promise();
+		sql.transaction(builder.build(), SqlResult.validResultsHandler(result -> {
+			if (result.isRight() && result.right().getValue() != null) {
+				promise.complete(result.right().getValue());
+			} else {
+				log.error("An error occurred purging messages:", result.left().getValue());
+				promise.fail("conversation.purge.error");
+			}
+		}));
+
+		return promise.future();
+	}
+
+	///////////
 	/* Utils */
 
 	private String formatArray(JsonArray array){
