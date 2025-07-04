@@ -297,6 +297,8 @@
   "group.details.broadcast.autoLink.mainSection.title": "Voir les paramètres de la liste",
   "group.details.broadcast.autoLink.profilesSection.include.personnels": "Inclure les personnels",
   "group.details.broadcast.autoLink.profilesSection.include.relatives": "Inclure les parents",
+  "group.details.broadcast.autoLink.profilesSection.include.relatives.all": "Tous les élèves",
+  "group.details.broadcast.autoLink.profilesSection.include.relatives.levels": "Filtrer par niveau",
   "group.details.broadcast.autoLink.profilesSection.include.students": "Inclure les élèves",
   "group.details.broadcast.autoLink.profilesSection.include.teachers": "Inclure les enseignants",
   "group.details.broadcast.autoLink.profilesSection.include.teachers.all": "Tous les enseignants",
