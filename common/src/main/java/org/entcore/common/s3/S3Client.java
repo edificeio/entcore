@@ -523,7 +523,7 @@ public class S3Client {
 			})
 			.onSuccess(response -> {
 				if (response.statusCode() == 200) {
-					handler.handle(new DefaultAsyncResult<>(id));
+					handler.handle(new DefaultAsyncResult<>(getUuid(id)));
 				} else {
 					handler.handle(new DefaultAsyncResult<>(new StorageException(response.statusMessage())));
 				}
@@ -876,7 +876,7 @@ public class S3Client {
 				List<String> matchingObjects = new ArrayList<>();
 				for(String objectId: results.result()) {
 					if (objectId.endsWith(endsWith)) {
-						matchingObjects.add(objectId);
+						matchingObjects.add(getUuid(objectId));
 					}
 				}
 
@@ -884,7 +884,6 @@ public class S3Client {
 			}
 			else {
 				handler.handle(results);
-				return;
 			}
 		});
 	}
@@ -919,6 +918,16 @@ public class S3Client {
 		}
 
 		return path;
+	}
+
+	public static String getUuid(final String path) {
+		final String separator = "/";
+		if (path.contains(separator)) {
+			return path.substring(path.lastIndexOf(separator));
+		}
+		else {
+			return path;
+		}
 	}
 
 }
