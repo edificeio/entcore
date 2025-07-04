@@ -31,7 +31,7 @@ import {
   useTrashMessage,
 } from '~/services';
 import { useAppActions, useConfirmModalStore } from '~/store';
-import { useMessageActions } from '~/store/messageStore';
+import { useMessageStore } from '~/store/messageStore';
 import { useGoBackToList } from '~/features/message/hooks/useGoBackToList';
 
 export interface MessageActionDropdownProps {
@@ -46,7 +46,7 @@ export function useMessageActionDropdown({
   actions,
 }: MessageActionDropdownProps) {
   const { t } = useI18n();
-  const { setMessageNeedToSave } = useMessageActions();
+  const setMessageNeedToSave = useMessageStore.getState().setMessageNeedToSave;
   const markAsUnreadQuery = useMarkUnread();
   const navigate = useNavigate();
   const { openModal } = useConfirmModalStore();

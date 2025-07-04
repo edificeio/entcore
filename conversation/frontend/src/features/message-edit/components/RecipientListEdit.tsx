@@ -11,7 +11,7 @@ import { useI18n } from '~/hooks/useI18n';
 import { Group, Recipients, User } from '~/models';
 import { Visible } from '~/models/visible';
 import { useBookmarkById } from '~/services/queries/user';
-import { useMessage, useMessageActions } from '~/store/messageStore';
+import { useMessageStore } from '~/store/messageStore';
 import { RecipientListItem } from './RecipientListItem';
 import { RecipientListSelectedItem } from './RecipientListSelectedItem';
 
@@ -34,8 +34,9 @@ export function RecipientListEdit({
   const { isAdml } = useIsAdml();
 
   const { getBookmarkById } = useBookmarkById();
-  const message = useMessage();
-  const { setMessage, setMessageNeedToSave } = useMessageActions();
+  const message = useMessageStore.use.message();
+  const setMessage = useMessageStore.getState().setMessage;
+  const setMessageNeedToSave = useMessageStore.getState().setMessageNeedToSave;
   const [isComboboxFocused, setIsComboboxFocused] = useState(false);
   const [selectedBookmarkIds, setSelectedBookmarkIds] = useState<string[]>([]);
   const comboboxRef = useRef<ComboboxRef>(null);

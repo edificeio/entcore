@@ -6,7 +6,7 @@ import {
   useMessageQuery,
   useSignaturePreferences,
 } from '~/services';
-import { useMessage, useMessageActions } from '~/store/messageStore';
+import { useMessageStore } from '~/store/messageStore';
 import { useAdditionalRecipients } from './useAdditionalRecipients';
 import { useI18n } from './useI18n';
 import { SIGNATURE_EMPTY_CONTENT } from '~/components/SignatureEditor';
@@ -27,8 +27,8 @@ export function useInitMessage({
   const { formatDate } = useDate();
   const { data: signatureData, isPending: getSignatureIsPending } =
     useSignaturePreferences();
-  const { setMessage } = useMessageActions();
-  const message = useMessage();
+  const message = useMessageStore.use.message();
+  const setMessage = useMessageStore.getState().setMessage;
 
   // Get IDs of users and groups/favorites to add as recipients.
   const { recipients: recipientsToAddToMessage } = useAdditionalRecipients();

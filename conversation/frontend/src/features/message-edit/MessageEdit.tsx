@@ -6,7 +6,7 @@ import { useI18n } from '~/hooks/useI18n';
 import { useMessageIdAndAction } from '~/hooks/useMessageIdAndAction';
 import { Message } from '~/models';
 import { useCreateOrUpdateDraft } from '~/services';
-import { useMessageActions } from '~/store/messageStore';
+import { useMessageStore } from '~/store/messageStore';
 import { MessageEditHeader } from './components/MessageEditHeader';
 import { MessageSaveDate } from './components/MessageSaveDate';
 import { useAutoSaveMessage } from './hooks/useAutoSaveMessage';
@@ -14,7 +14,8 @@ import { useAutoSaveMessage } from './hooks/useAutoSaveMessage';
 export function MessageEdit({ message }: { message?: Message }) {
   const { t } = useI18n();
   const [subject, setSubject] = useState(message?.subject);
-  const { setMessage, setMessageNeedToSave } = useMessageActions();
+  const setMessage = useMessageStore.getState().setMessage;
+  const setMessageNeedToSave = useMessageStore.getState().setMessageNeedToSave;
   const createOrUpdateDraft = useCreateOrUpdateDraft();
   useAutoSaveMessage();
   const { action } = useMessageIdAndAction();
