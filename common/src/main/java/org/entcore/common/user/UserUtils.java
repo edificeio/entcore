@@ -39,6 +39,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
+import org.entcore.common.migration.AppMigrationConfiguration;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.session.SessionRecreationRequest;
 import org.entcore.common.utils.HostUtils;
@@ -72,7 +73,7 @@ public class UserUtils {
 	private static final JsonObject QUERY_VISIBLE_PROFILS_GROUPS = new JsonObject()
 			.put("action", "visibleProfilsGroups");
 	private static final JsonObject QUERY_VISIBLE_MANUAL_GROUPS = new JsonObject()
-	.put("action", "visibleManualGroups");
+	.put("action", "visibleManualGrou ps");
 	private static final I18n i18n = I18n.getInstance();
 	private static final long JWT_TOKEN_EXPIRATION_TIME = 600L;
 	private static final long LOG_SESSION_DELAY = 500L;

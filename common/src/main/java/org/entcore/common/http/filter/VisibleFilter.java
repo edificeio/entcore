@@ -23,16 +23,27 @@
 package org.entcore.common.http.filter;
 
 import fr.wseduc.webutils.http.Binding;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import org.entcore.broker.api.dto.communication.CheckCommunicationExistsResponseDTO;
+import org.entcore.common.migration.AppMigrationConfiguration;
+import org.entcore.common.migration.BrokerSwitchConfiguration;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.utils.StringUtils;
 
 public class VisibleFilter implements ResourcesProvider {
+	private static final Logger log = LoggerFactory.getLogger(VisibleFilter.class);
 
 	private final Neo4j neo4j = Neo4j.getInstance();
+	private AppMigrationConfiguration appMigrationConfiguration;
 	private static final String query =
 			"MATCH p=(n:User {id: {userId}})<-[:COMMUNIQUE*0..2]-t<-[r:COMMUNIQUE|COMMUNIQUE_DIRECT]-(m:User {id: {queryUserId}}) " +
 			"WHERE ((type(r) = 'COMMUNIQUE_DIRECT' AND length(p) = 1) XOR (type(r) = 'COMMUNIQUE' AND length(p) >= 2)) " +
@@ -45,11 +56,45 @@ public class VisibleFilter implements ResourcesProvider {
 			handler.handle(false);
 			return;
 		}
-		neo4j.execute(query, new JsonObject().put("queryUserId", user.getUserId()).put("userId", userId), event -> {
-			final JsonArray res = event.body().getJsonArray("result");
-			handler.handle("ok".equals(event.body().getString("status")) && res != null && res.size() == 1 &&
+		final JsonObject payload = new JsonObject().put("queryUserId", user.getUserId()).put("userId", userId);
+		if(isReadAvailable()) {
+			switchAuthorization(payload).onSuccess(handler::handle).onFailure(th -> {
+				log.warn("An error occurred while authorizing a call : " + payload.encode(), th);
+				handler.handle(false);
+			});
+		} else {
+			neo4j.execute(query, payload, event -> {
+				final JsonArray res = event.body().getJsonArray("result");
+				handler.handle("ok".equals(event.body().getString("status")) && res != null && res.size() == 1 &&
 					res.getJsonObject(0).getBoolean("exists", false));
-		});
+			});
+		}
+	}
+
+	private Future<Boolean> switchAuthorization(final JsonObject params) {
+		final Promise<Boolean> promise = Promise.promise();
+		final JsonObject payload = new JsonObject()
+			.put("action", "visibleFilter")
+			.put("service", "referential")
+			.put("params", params);
+
+		Vertx.currentContext().owner().eventBus().request(BrokerSwitchConfiguration.LEGACY_MIGRATION_ADDRESS, payload)
+			.onSuccess(response -> promise.complete(StringUtils.parseJson((String) response.body(), CheckCommunicationExistsResponseDTO.class).isExists()))
+			.onFailure(promise::fail);
+		return promise.future();
+	}
+
+	private boolean isReadAvailable() {
+		final AppMigrationConfiguration appMigration = getAppMigration();
+		return appMigration.isEnabled() && appMigration.getAvailableReadActions().contains("visibleFilter");
+	}
+
+
+	private AppMigrationConfiguration getAppMigration() {
+		if (appMigrationConfiguration == null) {
+			appMigrationConfiguration = AppMigrationConfiguration.fromVertx("referential");
+		}
+		return appMigrationConfiguration;
 	}
 
 }

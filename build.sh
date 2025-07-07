@@ -12,18 +12,22 @@ then
   CI_OPTION=" -T "
 fi
 
-case `uname -s` in
-  MINGW* | Darwin*)
-    USER_UID=1000
-    GROUP_UID=1000
-    ;;
-  *)
-    if [ -z ${USER_UID:+x} ]
-    then
-      USER_UID=`id -u`
-      GROUP_GID=`id -g`
-    fi
-esac
+if [[ "$*" == *"--no-user"* ]]
+then
+  USER_OPTION=""
+else
+  case `uname -s` in
+    MINGW* | Darwin*)
+      USER_UID=1000
+      GROUP_UID=1000
+      ;;
+    *)
+      if [ -z ${USER_UID:+x} ]
+      then
+        USER_UID=`id -u`
+        GROUP_GID=`id -g`
+      fi
+  esac
   USER_OPTION="-u $USER_UID:$GROUP_GID"
 fi
 
@@ -283,9 +287,9 @@ publishBrokerNpmLib() {
   DRY_RUN=${DRY_RUN:-true}
 
   if [ "$DRY_RUN" = "true" ]; then
-    docker compose run -e NPM_TOKEN=$NPM_TOKEN --rm -u "$USER_UID:$GROUP_GID" node22 sh -c "pnpm publish -r --no-git-checks --tag $TAG_BRANCH --dry-run"
+    docker compose run -e NPM_TOKEN=$X_DOCKER_NPM_TOKEN --rm -u "$USER_UID:$GROUP_GID" node22 sh -c "pnpm publish -r --no-git-checks --tag $TAG_BRANCH --dry-run"
   else
-    docker compose run -e NPM_TOKEN=$NPM_TOKEN --rm -u "$USER_UID:$GROUP_GID" node22 sh -c "pnpm publish -r --no-git-checks --tag $TAG_BRANCH"
+    docker compose run -e NPM_TOKEN=$X_DOCKER_NPM_TOKEN --rm -u "$USER_UID:$GROUP_GID" node22 sh -c "pnpm publish -r --no-git-checks --tag $TAG_BRANCH"
   fi
 }
 
@@ -387,9 +391,6 @@ do
       ;;
     install)
       buildFrontend && buildBackend
-      ;;
-    buildBack)
-      install
       ;;
     localDep)
       localDep

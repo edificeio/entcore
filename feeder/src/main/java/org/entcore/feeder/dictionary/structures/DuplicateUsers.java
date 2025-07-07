@@ -27,6 +27,9 @@ import io.vertx.core.Promise;
 import org.apache.commons.lang3.StringUtils;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.migration.AppMigrationConfiguration;
+import org.entcore.common.migration.BrokerSwitchConfiguration;
+import org.entcore.common.migration.BrokerSwitchType;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.validation.StringValidation;
@@ -107,17 +110,19 @@ public class DuplicateUsers {
 	private final Map<String, Integer> sourcePriority = new HashMap<>();
 	private final boolean updateCourses;
 	private final boolean autoMergeOnlyInSameStructure;
+	private final AppMigrationConfiguration appMigrationConfiguration;
 	private final EventBus eb;
 	private EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Feeder.class.getSimpleName());
 	public static final JsonArray defaultSourcesOrder = new JsonArray()
 			.add("AAF").add("AAF1D").add("CSV").add("EDT").add("UDT").add("SSO").add("MANUAL");
 
-	public DuplicateUsers(boolean updateCourses, boolean autoMergeOnlyInSameStructure, EventBus eb) {
-		this(null, updateCourses, autoMergeOnlyInSameStructure, eb);
+	public DuplicateUsers(boolean updateCourses, boolean autoMergeOnlyInSameStructure,
+												final AppMigrationConfiguration appMigrationConfiguration, final EventBus eb) {
+		this(null, updateCourses, autoMergeOnlyInSameStructure, appMigrationConfiguration, eb);
 	}
 
 	public DuplicateUsers(JsonArray sourcesPriority, boolean updateCourses, boolean autoMergeOnlyInSameStructure,
-						  EventBus eb) {
+												final AppMigrationConfiguration appMigrationConfiguration, final EventBus eb) {
 		if (sourcesPriority == null) {
 			sourcesPriority = defaultSourcesOrder;
 		}
@@ -128,6 +133,7 @@ public class DuplicateUsers {
 		this.eb = eb;
 		this.updateCourses = updateCourses;
 		this.autoMergeOnlyInSameStructure = autoMergeOnlyInSameStructure;
+		this.appMigrationConfiguration = appMigrationConfiguration;
 	}
 
 	public void markDuplicates(Handler<JsonObject> handler) {
@@ -592,6 +598,7 @@ public class DuplicateUsers {
 							} else {
 								params.put("mergeKeys", mergeKeys);
 							}
+							final Promise<Void> promise = Promise.promise();
 							try {
 								TransactionHelper tx = TransactionManager.getTransaction();
 
@@ -606,18 +613,34 @@ public class DuplicateUsers {
 												"MERGE u-[r:IN]->gin " +
 												"SET r.source = rin.source " +
 												"DELETE rin ", params);
-								tx.add(
+								if(appMigrationConfiguration.isWriteLegacy()) {
+									tx.add(
 										"MATCH (u:User {id: {userId}}), (mu:User)-[rcom:COMMUNIQUE]->(gcom:Group) " +
-												"WHERE mu.id IN {mergeUserIds} AND mu.mergeKey IN {mergeKeys} " +
-												"MERGE  u-[r:COMMUNIQUE]->gcom " +
-												"SET r.source = rcom.source " +
-												"DELETE rcom ", params);
-								tx.add(
+											"WHERE mu.id IN {mergeUserIds} AND mu.mergeKey IN {mergeKeys} " +
+											"MERGE  u-[r:COMMUNIQUE]->gcom " +
+											"SET r.source = rcom.source " +
+											"DELETE rcom ", params);
+									tx.add(
 										"MATCH (u:User {id: {userId}}), (mu:User)<-[rcomr:COMMUNIQUE]-(gcomr:Group) " +
-												"WHERE mu.id IN {mergeUserIds} AND mu.mergeKey IN {mergeKeys} " +
-												"MERGE u<-[r:COMMUNIQUE]-gcomr " +
-												"SET r.source = rcomr.source " +
-												"DELETE rcomr ", params);
+											"WHERE mu.id IN {mergeUserIds} AND mu.mergeKey IN {mergeKeys} " +
+											"MERGE u<-[r:COMMUNIQUE]-gcomr " +
+											"SET r.source = rcomr.source " +
+											"DELETE rcomr ", params);
+									promise.complete();
+								} else {
+									sendToBroker(
+											"mergeUserGroups",
+											new JsonObject()
+													.put("userId", originalUserId)
+													.put("mergeUserIds", mergeUserIds)
+													.put("mergeKeys", mergeKeys), e -> {
+										if (e.isRight()) {
+											promise.complete();
+										} else {
+											promise.fail(e.left().getValue());
+										}
+									});
+								}
 								tx.add(
 										"MATCH (u:User {id: {userId}}), (mu:User)-[rr:RELATED]->(ur:User) " +
 												"WHERE mu.id IN {mergeUserIds} AND mu.mergeKey IN {mergeKeys} " +
@@ -653,6 +676,27 @@ public class DuplicateUsers {
 					}
 				});
 
+	}
+
+	private <T> void sendToBroker(String action, JsonObject params, final Handler<Either<String, T>> handler) {
+		final JsonObject payload = new JsonObject()
+			.put("action", action)
+			.put("service", "referential")
+			.put("params", params);
+		final String address = BrokerSwitchConfiguration.LEGACY_MIGRATION_ADDRESS;
+		if(handler == null) {
+			eb.send(address, payload);
+		} else {
+			eb.request(address, payload, reply -> {
+				if (reply.succeeded()) {
+					final Either<String, T> result = new Either.Right<>((T) reply.result().body());
+					handler.handle(result);
+				} else {
+					final Either<String, T> error = new Either.Left<>(reply.cause().getMessage());
+					handler.handle(error);
+				}
+			});
+		}
 	}
 
 	public void unmergeByLogins(final Message<JsonObject> message) {

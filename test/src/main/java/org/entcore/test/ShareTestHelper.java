@@ -8,13 +8,15 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
+import org.entcore.common.migration.AppMigrationConfiguration;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
 import org.entcore.common.share.impl.SqlShareService;
 
 import java.net.URL;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 public class ShareTestHelper {
     private final Vertx vertx;
@@ -44,7 +46,9 @@ public class ShareTestHelper {
                 FileResolver.getInstance().setBasePath(parent);
                 final JsonArray actions = StartupUtils.loadSecuredActions(vertx);
                 final Map<String, SecuredAction> mapActions = StartupUtils.securedActionsToMap(actions);
-                return new SqlShareService(schema, table, vertx.eventBus(), mapActions, null);
+
+                final AppMigrationConfiguration migrationConf = AppMigrationConfiguration.fromVertx("referential", this.vertx, null);
+                return new SqlShareService(schema, table, vertx.eventBus(), mapActions, null, migrationConf);
             } finally {
                 FileResolver.getInstance().setBasePath(oldValue);
             }
@@ -66,7 +70,7 @@ public class ShareTestHelper {
                 FileResolver.getInstance().setBasePath(parent);
                 final JsonArray actions = StartupUtils.loadSecuredActions(vertx);
                 final Map<String, SecuredAction> mapActions = StartupUtils.securedActionsToMap(actions);
-                return new MongoDbShareService(vertx.eventBus(), MongoDb.getInstance(), collection, mapActions, null);
+                return new MongoDbShareService(vertx.eventBus(), MongoDb.getInstance(), collection, mapActions, null, AppMigrationConfiguration.fromVertx("referential", this.vertx, null));
             } finally {
                 FileResolver.getInstance().setBasePath(oldValue);
             }

@@ -99,3 +99,4 @@ conversation/src/main/resources/view/
 dependency-reduced-pom.xml
 .flattened-pom.xml
 .version.properties
+.pnpm-store

@@ -6,6 +6,7 @@ import fr.wseduc.webutils.security.SecuredAction;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
@@ -36,6 +37,7 @@ import org.entcore.common.explorer.to.FolderDeleteResponse;
 import org.entcore.common.explorer.to.FolderListRequest;
 import org.entcore.common.explorer.to.FolderResponse;
 import org.entcore.common.explorer.to.FolderUpsertRequest;
+import org.entcore.common.migration.AppMigrationConfiguration;
 import org.entcore.common.share.ShareModel;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.MongoDbShareService;
@@ -50,6 +52,8 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
     public static final String RESOURCES_ADDRESS = "explorer.resources";
     public static final String FOLDERS_ADDRESS = "explorer.folders";
     public static final String INGEST_JOB_STATE = "ingest_job_state";
+    private final AppMigrationConfiguration migrationConf;
+
     public enum ResourceActions{
         GetShares,
     }
@@ -70,6 +74,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
 
     protected ExplorerPlugin(final IExplorerPluginCommunication communication) {
         this.communication = communication;
+        this.migrationConf = AppMigrationConfiguration.fromVertx("referential", Vertx.currentContext().owner(), null);
     }
 
     public void setFolderTree(final IExplorerFolderTree folderTree) {
@@ -619,14 +624,14 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
 
     @Override
     public ShareService createMongoShareService(EventBus eb, MongoDb mongo, String collection, Map<String, SecuredAction> securedActions, Map<String, List<String>> groupedActions) {
-        final ShareService inner = new MongoDbShareService(eb , mongo, collection, securedActions, groupedActions);
-        return new ExplorerShareService(inner, this, eb, securedActions, groupedActions);
+        final ShareService inner = new MongoDbShareService(eb , mongo, collection, securedActions, groupedActions, migrationConf);
+        return new ExplorerShareService(inner, this, eb, securedActions, groupedActions, migrationConf);
     }
 
     @Override
     public ShareService createPostgresShareService(String schema, String shareTable, EventBus eb, Map<String, SecuredAction> securedActions, Map<String, List<String>> groupedActions){
-        final ShareService inner = new SqlShareService(schema, shareTable, eb, securedActions, groupedActions);
-        return new ExplorerShareService(inner, this, eb, securedActions, groupedActions);
+        final ShareService inner = new SqlShareService(schema, shareTable, eb, securedActions, groupedActions, migrationConf);
+        return new ExplorerShareService(inner, this, eb, securedActions, groupedActions, migrationConf);
     }
 
     @Override
@@ -636,8 +641,8 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
 
     @Override
     public ShareService createPostgresShareService(EventBus eb, Map<String, SecuredAction> securedActions, Map<String, List<String>> groupedActions) {
-        final ShareService inner = new SqlShareService(eb , securedActions, groupedActions);
-        return new ExplorerShareService(inner, this, eb, securedActions, groupedActions);
+        final ShareService inner = new SqlShareService(eb , securedActions, groupedActions, migrationConf);
+        return new ExplorerShareService(inner, this, eb, securedActions, groupedActions, migrationConf);
     }
 
     //abstract

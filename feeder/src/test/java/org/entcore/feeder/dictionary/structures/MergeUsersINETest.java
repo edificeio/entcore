@@ -8,6 +8,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.migration.AppMigrationConfiguration;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.feeder.exceptions.TransactionException;
@@ -32,7 +33,7 @@ public class MergeUsersINETest {
     @BeforeClass
     public static void setUp(TestContext context) throws Exception {
         EventStoreFactory.getFactory().setVertx(test.vertx());
-        duplicateUsers = new DuplicateUsers(false, false, test.vertx().eventBus());
+        duplicateUsers = new DuplicateUsers(false, false, AppMigrationConfiguration.DISABLED, test.vertx().eventBus());
         test.database().initNeo4j(context, neo4jContainer);
         final String base = neo4jContainer.getHttpUrl() + "/db/data/";
         final JsonObject neo4jConfig = new JsonObject()

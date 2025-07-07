@@ -29,6 +29,7 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.migration.AppMigrationConfiguration;
 import org.entcore.common.share.ShareInfosQuery;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
@@ -50,13 +51,13 @@ public class SqlShareService extends GenericShareService {
 	private final String shareTable;
 
 	public SqlShareService(EventBus eb, Map<String, SecuredAction> securedActions,
-			Map<String, List<String>> groupedActions) {
-		this(null, null, eb, securedActions, groupedActions);
+			Map<String, List<String>> groupedActions, final AppMigrationConfiguration appMigrationConfiguration) {
+		this(null, null, eb, securedActions, groupedActions, appMigrationConfiguration);
 	}
 
 	public SqlShareService(String schema, String shareTable, EventBus eb, Map<String, SecuredAction> securedActions,
-			Map<String, List<String>> groupedActions) {
-		super(eb, securedActions, groupedActions);
+			Map<String, List<String>> groupedActions, final AppMigrationConfiguration appMigrationConfiguration) {
+		super(eb, securedActions, groupedActions, appMigrationConfiguration);
 		sql = Sql.getInstance();
 		this.schema = (schema != null && !schema.trim().isEmpty()) ? schema + "." : "";
 		this.shareTable = this.schema + ((shareTable != null && !shareTable.trim().isEmpty()) ? shareTable : "shares");

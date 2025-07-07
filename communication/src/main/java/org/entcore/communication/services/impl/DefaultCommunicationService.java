@@ -602,7 +602,7 @@ public class DefaultCommunicationService implements CommunicationService {
 			query.append("WITH (REDUCE(acc=[], groups IN COLLECT(COALESCE(g.communiqueWith, [])) | acc+groups) + ")
 					.append(myGroupQuery).append(") as comGroups ");
 			//filter user and group with a distinction on the type to help neo4j to optimize
-			if (additionalParams.getJsonArray(EXPECTED_IDS_USERS_GROUPS) != null) {
+			if (additionalParams != null && additionalParams.getJsonArray(EXPECTED_IDS_USERS_GROUPS) != null) {
 				query.append("OPTIONAL MATCH (u:User) WHERE u.id IN {" + EXPECTED_IDS_USERS_GROUPS + "} and u.id <> {userId} ");
 				query.append("WITH comGroups, collect(u) as cu ");
 				query.append("OPTIONAL MATCH (g:Group) WHERE g.id IN {" + EXPECTED_IDS_USERS_GROUPS + "} ");

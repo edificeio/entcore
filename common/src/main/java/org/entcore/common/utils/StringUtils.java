@@ -19,6 +19,8 @@
 
 package org.entcore.common.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import java.text.Normalizer;
 import java.util.*;
 import java.lang.Integer;
@@ -32,7 +34,7 @@ public final class StringUtils {
     /** Empty string constant. */
     public static final String EMPTY_STRING = "";
     public static final String UUID_REGEX = "[0-9a-f]{8}-[0-9a-f]{4}-[4][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}";
-
+    private static final ObjectMapper MAPPER = new ObjectMapper();
     /**
      * The Constructor.
      */
@@ -489,4 +491,12 @@ public final class StringUtils {
             return 0;
         }
     };
+
+    public static <T> T parseJson(String json, Class<T> clazz) {
+        try {
+            return MAPPER.readValue(json, clazz);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid JSON: " + json, e);
+        }
+    }
 }

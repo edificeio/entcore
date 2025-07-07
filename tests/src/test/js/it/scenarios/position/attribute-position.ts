@@ -59,27 +59,30 @@ export function setup() {
     const chapeau = initStructure(`Chapeau-${schoolName}`, 'tiny')
     const structure1 = initStructure(`1 - ${schoolName}`, 'tiny')
     const structure2 = initStructure(`2 - ${schoolName}`, 'tiny')
-    attachStructureAsChild(chapeau, structure1, session)
-    attachStructureAsChild(chapeau, structure2, session)
+    attachStructureAsChild(chapeau, structure1)
+    attachStructureAsChild(chapeau, structure2)
     ////////////////////////////////////////
     // Create ADMLs
-    const megaAdml = getAdmlsOrMakThem(chapeau, 'Teacher', 1, [], session)[0]
-    const adml1 = getAdmlsOrMakThem(structure1, 'Teacher', 1, [megaAdml], session)[0]
-    const adml2 = getAdmlsOrMakThem(structure2, 'Teacher', 1, [megaAdml], session)[0]
+    const megaAdml = getAdmlsOrMakThem(chapeau, 'Teacher', 1, [])[0]
+    const adml1 = getAdmlsOrMakThem(structure1, 'Teacher', 1, [megaAdml])[0]
+    const adml2 = getAdmlsOrMakThem(structure2, 'Teacher', 1, [megaAdml])[0]
 
     const multiEtabUser = getOrCreateMultiEtabUser([structure1, structure2], 'Teacher', [megaAdml])
 
-    attachUserToStructures(megaAdml, [structure1, structure2], session)
+    attachUserToStructures(megaAdml, [structure1, structure2])
     ////////////////////////////////////////
     // Create 1 ADML for each structure
     structureTree = { head: chapeau, structures: [structure1, structure2], admls: [adml1, adml2], headAdml: megaAdml}
     ////////////////////////////////////
     // Create 1 position for each structure
     const now = Date.now()
-    const position1 = createPositionOrFail(`IT - Position Attribute - 1 - ${now}`, structure1, session);
-    const position2 = createPositionOrFail(`IT - Position Attribute - 2 - ${now}`, structure2, session);
+    const position1 = createPositionOrFail(`IT - Position Attribute - 1 - ${now}`, structure1);
+    const position2 = createPositionOrFail(`IT - Position Attribute - 2 - ${now}`, structure2);
 
     cleanUsersPositions([structure1, structure2])
+    console.log("adml1", adml1.login)
+    console.log("adml2", adml2.login)
+    console.log("multiEtabUser", multiEtabUser.login)
 
     structureTree = { 
         head: chapeau, 
@@ -107,16 +110,16 @@ export function testAttributePositions({structures, admls, positions, headAdml, 
   describe("[Position-Attribute] Attribute positions to users", () => {
     const admcSession = <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD)
     let session;
-    const users1 = getUsersOfSchool(structure1, session)
+    const users1 = getUsersOfSchool(structure1)
     const teacher1 = getRandomUserWithProfile(users1, 'Teacher', [adml1, headAdml, multiEtabUser]);
     const relative1 = getRandomUserWithProfile(users1, 'Relative', [adml1, headAdml, multiEtabUser]);
     const student1 = getRandomUserWithProfile(users1, 'Student', [adml1, headAdml, multiEtabUser]);
-    const users2 = getUsersOfSchool(structure2, session)
+    const users2 = getUsersOfSchool(structure2)
     const teacher2 = getRandomUserWithProfile(users2, 'Teacher', [adml2, headAdml, multiEtabUser]);
     const relative2 = getRandomUserWithProfile(users2, 'Relative', [adml2, headAdml, multiEtabUser]);
     const student2 = getRandomUserWithProfile(users2, 'Student', [adml2, headAdml, multiEtabUser]);
 
-    logout(session)
+    logout()
     
     ////////////////////////////
     // Check that non ADML users

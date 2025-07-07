@@ -23,6 +23,7 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.security.SecuredAction;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.controller.ControllerHelper;
+import org.entcore.common.migration.AppMigrationConfiguration;
 import org.entcore.common.service.impl.MongoDbCrudService;
 import org.entcore.common.share.impl.MongoDbShareService;
 import io.vertx.core.Vertx;
@@ -55,8 +56,9 @@ public abstract class MongoDbControllerHelper extends ControllerHelper {
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm, Map<String, SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
 		this.mongo = MongoDb.getInstance();
+		final AppMigrationConfiguration migrationConfig = AppMigrationConfiguration.fromVertx("referential", vertx, config);
 		setShareService(new MongoDbShareService(eb, this.mongo,
-				sharedCollection, securedActions, groupedActions));
+				sharedCollection, securedActions, groupedActions, migrationConfig));
 		setCrudService(new MongoDbCrudService(sharedCollection));
 	}
 

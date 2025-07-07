@@ -35,6 +35,7 @@ import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.BaseServer;
+import org.entcore.common.migration.AppMigrationConfiguration;
 import org.entcore.common.mongodb.MongoDbConf;
 import org.entcore.common.notification.ConversationNotification;
 import org.entcore.common.notification.TimelineHelper;
@@ -120,7 +121,7 @@ public class Directory extends BaseServer {
 		UserService userService = new DefaultUserService(emailSender, eb, userBookData);
 		UserBookService userBookService = new DefaultUserBookService(vertx, eb, storageAvatar, wsHelper, userBookData);
 		TimelineHelper timeline = new TimelineHelper(vertx, eb, config);
-		ClassService classService = new DefaultClassService(eb);
+		final ClassService classService = getClassService(eb);
 		SchoolService schoolService = new DefaultSchoolService(eb).setListUserMode(config.getString("listUserMode", "multi"));
 		GroupService groupService = new DefaultGroupService(eb);
 		SubjectService subjectService = new DefaultSubjectService(eb);
@@ -242,5 +243,9 @@ public class Directory extends BaseServer {
 		BrokerProxyUtils.addBrokerProxy(new DirectoryBrokerListenerImpl(vertx, userService), vertx);
 		BrokerProxyUtils.addBrokerProxy(new LoadTestProxyImpl(vertx), vertx);
 	}
-
+	private ClassService getClassService(final EventBus eb) {
+		final ClassService classService = new DefaultClassService(eb);
+		final AppMigrationConfiguration migrationConfig = AppMigrationConfiguration.fromVertx("referential", vertx, config);
+		return new BrokerSwitchClassService(eb, classService, migrationConfig);
+	}
 }

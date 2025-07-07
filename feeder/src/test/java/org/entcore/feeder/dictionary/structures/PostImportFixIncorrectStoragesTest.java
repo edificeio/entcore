@@ -8,6 +8,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.migration.AppMigrationConfiguration;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.feeder.exceptions.TransactionException;
@@ -54,7 +55,7 @@ public class PostImportFixIncorrectStoragesTest {
         Validator.initLogin(neo4j, test.vertx());
         TransactionManager.getInstance().setNeo4j(neo4j);
 
-        mockDuplicateUsers = new DuplicateUsers(false, true, test.vertx().eventBus());
+        mockDuplicateUsers = new DuplicateUsers(false, true, AppMigrationConfiguration.DISABLED, test.vertx().eventBus());
     }
 
     @AfterClass
