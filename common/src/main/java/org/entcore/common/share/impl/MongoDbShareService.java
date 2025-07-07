@@ -32,6 +32,7 @@ import com.mongodb.client.model.Filters;
 import io.vertx.core.Promise;
 import com.mongodb.ReadPreference;
 import org.bson.conversions.Bson;
+import org.entcore.common.migration.AppMigrationConfiguration;
 import org.entcore.common.share.ShareInfosQuery;
 import org.entcore.common.share.ShareModel;
 
@@ -55,8 +56,8 @@ public class MongoDbShareService extends GenericShareService {
 	protected final MongoDb mongo;
 
 	public MongoDbShareService(EventBus eb, MongoDb mongo, String collection, Map<String, SecuredAction> securedActions,
-			Map<String, List<String>> groupedActions) {
-		super(eb, securedActions, groupedActions);
+			Map<String, List<String>> groupedActions, final AppMigrationConfiguration appMigrationConfiguration) {
+		super(eb, securedActions, groupedActions, appMigrationConfiguration);
 		this.mongo = mongo;
 		this.collection = collection;
 	}

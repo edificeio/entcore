@@ -76,7 +76,7 @@ public class Workspace extends BaseServer {
 		 * SHare Service
 		 */
 		final MongoDb mongo = MongoDb.getInstance();
-		final ShareService shareService = new WorkspaceShareService(vertx.eventBus(), mongo,
+		final ShareService shareService = new WorkspaceShareService(vertx, vertx.eventBus(), mongo,
 				DocumentDao.DOCUMENTS_COLLECTION, securedActions, new HashMap<>());
 		final int threshold = config.getInteger("alertStorage", 80);
 		/**

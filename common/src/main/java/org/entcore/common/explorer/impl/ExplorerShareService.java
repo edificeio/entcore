@@ -10,6 +10,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.explorer.IExplorerPlugin;
 import org.entcore.common.explorer.IdAndVersion;
+import org.entcore.common.migration.AppMigrationConfiguration;
 import org.entcore.common.share.ShareInfosQuery;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.share.impl.GenericShareService;
@@ -28,8 +29,9 @@ public class ExplorerShareService extends GenericShareService implements ShareSe
     private final IExplorerPlugin plugin;
 
     public ExplorerShareService(final ShareService shareService, final IExplorerPlugin plugin, final EventBus eb,
-                                final Map<String, SecuredAction> securedActions, Map<String, List<String>> groupedActions) {
-        super(eb, securedActions, groupedActions);
+                                final Map<String, SecuredAction> securedActions, Map<String, List<String>> groupedActions,
+                                final AppMigrationConfiguration appMigrationConfiguration) {
+        super(eb, securedActions, groupedActions, appMigrationConfiguration);
         this.plugin = plugin;
         this.shareService = shareService;
     }
