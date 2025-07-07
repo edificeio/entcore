@@ -60,7 +60,7 @@ export function ApplicationList({ applications, isSearch }: Props) {
                 className="small text-center my-8"
                 style={{ fontFamily: 'Arimo' }}
               >
-                {t('my.apps.services.title')}
+                {t('my.apps.connector.title')}
               </h2>
             </div>
             <ApplicationListGrid applications={externalApps} isConnectors />

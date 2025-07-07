@@ -1,4 +1,9 @@
-import { Layout, LoadingScreen, useEdificeClient, useEdificeTheme } from '@edifice.io/react';
+import {
+  Layout,
+  LoadingScreen,
+  useEdificeClient,
+  useEdificeTheme,
+} from '@edifice.io/react';
 import { matchPath } from 'react-router-dom';
 import { basename } from '..';
 import { useEffect, useState } from 'react';

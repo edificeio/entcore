@@ -1,53 +1,42 @@
-html[data-skin="dyslexic"] .my-apps-layout *:not(.application-icon i)  {
-    font-family: OpenDyslexic !important;
+html[data-skin='dyslexic'] .my-apps-layout *:not(.application-icon i) {
+  font-family: OpenDyslexic !important;
 }
 @media (hover: none) {
-    .dropdown-wrapper {
-        opacity: 1 !important;
-    }
+  .dropdown-wrapper {
+    opacity: 1 !important;
+  }
 }
 
 body {
-    background: inherit !important;
+  background: inherit !important;
 }
 
 .application-card {
-    box-shadow: none !important;
-    border: 1px solid transparent;
-    width: 107px;
-    height: 134px;
-    text-align: center;
+  box-shadow: none !important;
+  border: 1px solid transparent;
+  width: 107px;
+  height: 134px;
+  text-align: center;
 }
-.theme-1d .application-card {
-    width: 130px;
-    height: 150px;
-}
-.theme-1d .application-icon {
-    width: 80px;
-    height: 80px;
-}
-.theme-1d .application-icon i::before {
-    line-height: 72px !important;
-    font-size: 46px;
-}
-.theme-2d .application-icon i::before {
-    line-height: 67px !important;
+
+.application-icon i::before {
+  line-height: 67px !important;
 }
 
 .application-card .dropdown-menu {
-    display: flex !important;
-    border: none;
+  display: flex !important;
+  border: none;
 }
 .dropdown-wrapper {
-    display: block;
-    opacity: 0;
+  display: block;
+  opacity: 0;
 }
 .dropdown .btn-icon {
-    transform: none !important;
+  transform: none !important;
 }
 .application-card .dropdown-item {
-    padding: .8rem 1.2rem;
-    color: rgb(74, 74, 74);
+  padding: 0.8rem 1.2rem;
+  color: rgb(74, 74, 74);
 }
 .application-card:hover .dropdown-wrapper,
 .application-card.active .dropdown-wrapper,
@@ -55,90 +44,91 @@ body {
 .application-card:focus-within .dropdown-wrapper {
   opacity: 1;
 }
-.application-card .card-header, .application-card .card-header button:nth-of-type(2) {
-    padding: 0;
-    border: 0;
+.application-card .card-header,
+.application-card .card-header button:nth-of-type(2) {
+  padding: 0;
+  border: 0;
 }
 .application-card .card-body {
-    padding: 0;
+  padding: 0;
 }
 
 .application-icon {
-    width: 62px;
-    height: 62px;
-    text-align: center;
-    line-height: 56px;
-    display: inline-block;
-    overflow: hidden;
+  width: 62px;
+  height: 62px;
+  text-align: center;
+  line-height: 56px;
+  display: inline-block;
+  overflow: hidden;
 }
 .application-icon.application-icon-connector {
-    color: black !important;
-    border: 1px solid #C7C7C7;
+  color: black !important;
+  border: 1px solid #c7c7c7;
 }
 .application-icon i::before {
-    color: white !important;
-    font-size: 36px;
+  color: white !important;
+  font-size: 36px;
 }
 .application-icon.application-icon-connector i::before {
-    color: black !important;
+  color: black !important;
 }
 
 .application-title {
-    font-family: 'Arimo';
-    font-weight: 400;
-    text-transform: unset;
+  font-family: 'Arimo';
+  font-weight: 400;
+  text-transform: unset;
 }
 
 .toolbar-categories-wrapper {
-    display: block;
-    width: 100%;
-    text-align: center;
+  display: block;
+  width: 100%;
+  text-align: center;
 }
 .toolbar-categories {
-    display: inline-flex;
-    width: fit-content;
-    max-width: 100%;
-    white-space: nowrap;
-    justify-content: flex-start;
-    overflow: scroll;
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  white-space: nowrap;
+  justify-content: flex-start;
+  overflow: scroll;
 }
-.toolbar-categories[role=toolbar] {
-    margin-left: 0 !important;
+.toolbar-categories[role='toolbar'] {
+  margin-left: 0 !important;
 }
 
 @media screen and (max-width: 767px) {
-    .toolbar-categories-wrapper {
-        overflow: scroll;
-        margin-left: -24px;
-        width: calc(100% + 48px);
-    }
-    .toolbar-categories {
-        overflow: unset;
-        max-width: unset;
-    }
-    .my-apps-header {
-        flex-direction: column;
-    }
-    .my-apps-search {
-        margin-top: 14px;
-        width: 100% !important;
-    }
+  .toolbar-categories-wrapper {
+    overflow: scroll;
+    margin-left: -24px;
+    width: calc(100% + 48px);
+  }
+  .toolbar-categories {
+    overflow: unset;
+    max-width: unset;
+  }
+  .my-apps-header {
+    flex-direction: column;
+  }
+  .my-apps-search {
+    margin-top: 14px;
+    width: 100% !important;
+  }
 }
 
 .favorite-star-icon {
-    position: absolute;
-    top: -12px;
-    left: -12px;
-    width: 24px;
-    height: 24px;
-    z-index: 2;
+  position: absolute;
+  top: -12px;
+  left: -12px;
+  width: 24px;
+  height: 24px;
+  z-index: 2;
 }
 .theme-1d .favorite-star-icon {
-    position: absolute;
-    top: -14px;
-    left: -14px;
-    width: 28px;
-    height: 28px;
+  position: absolute;
+  top: -14px;
+  left: -14px;
+  width: 28px;
+  height: 28px;
 }
 
 .ellipsis-3 {
@@ -150,5 +140,10 @@ body {
 }
 
 .my-apps-search {
-    width: 302px;
+  width: 302px;
+}
+
+.my-apps-body-skeleton {
+  height: 75vh;
+  gap: 16px;
 }

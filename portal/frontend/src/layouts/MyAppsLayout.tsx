@@ -4,8 +4,15 @@ import { ToolbarCategories } from '~/components/ToolbarCategories';
 import { useHydrateUserPreferences } from '~/hooks/useHydrateUserPreferences';
 import './my-apps.css';
 import { useApplications } from '~/services';
-import { SearchBar } from '@edifice.io/react';
+import {
+  ButtonSkeleton,
+  Flex,
+  SearchBar,
+  TextSkeleton,
+} from '@edifice.io/react';
+
 import { useMemo, useState } from 'react';
+import MyAppOnboardingModal from '~/components/MyAppOnboardingModal';
 
 export const MyAppLayout = ({ theme }: { theme: string }) => {
   const { t } = useTranslation('common');
@@ -34,27 +41,49 @@ export const MyAppLayout = ({ theme }: { theme: string }) => {
     );
   }, [applications, search]);
 
-  if (!isReady) return <div>skeleton</div>;
+  if (!isReady)
+    //Skeleton
+    return (
+      <div className={classLayout}>
+        <header className="d-flex justify-content-between align-items-center my-apps-header">
+          <TextSkeleton className="col-3" />
+          <ButtonSkeleton className="my-apps-search" />
+        </header>
+        <ButtonSkeleton />
+
+        <TextSkeleton className="col-12 my-apps-body-skeleton" />
+      </div>
+    );
 
   return (
-    <div className={classLayout}>
-      <header className="d-flex justify-content-between align-items-center my-apps-header">
-        <h1 className="m-0 h3 text-info">{t('navbar.applications')}</h1>
-        <SearchBar
-          clearable
-          isVariant
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t('my.apps.search')}
-          className="my-apps-search"
-          size="md"
+    <>
+      <div className={classLayout}>
+        <header className="d-flex justify-content-between align-items-center my-apps-header">
+          <h1 className="m-0 h3 text-info">{t('navbar.applications')}</h1>
+          <SearchBar
+            clearable
+            isVariant
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t('my.apps.search')}
+            className="my-apps-search"
+            size="md"
+          />
+        </header>
+        <Flex className="p-3 border" align="end">
+          <div className="flex-grow-1 p-2">
+            {!search.length && <ToolbarCategories />}
+          </div>
+          <div className="flex-grow-3 p-2 mb-2">
+            <MyAppOnboardingModal />
+          </div>
+        </Flex>
+
+        <ApplicationList
+          applications={filteredApps}
+          isSearch={search.length ? true : false}
         />
-      </header>
-      {!search.length && <ToolbarCategories />}
-      <ApplicationList
-        applications={filteredApps}
-        isSearch={search.length ? true : false}
-      />
-    </div>
+      </div>
+    </>
   );
 };
