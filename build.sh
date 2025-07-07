@@ -167,6 +167,7 @@ buildFrontend () {
       cp -R ./dist/* ../backend/src/main/resources/
 
       # Create view directory and copy HTML files
+      mkdir -p ../backend/src/main/resources/view
       mv ../backend/src/main/resources/*.html ../backend/src/main/resources/view
 
       # Clean up
