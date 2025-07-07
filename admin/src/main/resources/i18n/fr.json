@@ -476,6 +476,7 @@
   "lastName": "Nom de famille",
   "letters.add.subject.code": "Vous ne pouvez pas avoir de lettres dans le code de la matière",
   "level": "Niveau",
+  "levels.multi.combo.title": "Choisir un ou plusieurs niveaux",
   "line": "N°",
   "link": "Lien",
   "list.placeholder": "Recherchez facilement des utilisateurs à travers votre ENT",
