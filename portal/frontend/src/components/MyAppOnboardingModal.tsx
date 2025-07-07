@@ -3,7 +3,8 @@ import { IconNotification } from '@edifice.io/react/icons';
 import { OnboardingModal, OnboardingModalRef } from '@edifice.io/react/modals';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import illuOnboardingActu from '~/assets/illu-onboarding-actu.svg';
+import illuOnboardingIncoming from '~/assets/illu-onboarding-incoming.svg';
+import illuOnboardingNew from '~/assets/illu-onboarding-new.svg';
 
 export default function MyAppOnboardingModal() {
   const { t } = useTranslation();
@@ -17,9 +18,10 @@ export default function MyAppOnboardingModal() {
         <IconButton
           aria-label={t('my.app.notification')}
           className="bg-secondary-200 fw-bold"
-          icon={<IconNotification color="black" />}
+          color="black"
+          icon={<IconNotification />}
           type="button"
-          variant="ghost"
+          variant="filled"
           onClick={() => {
             onboardingModalRef.current?.setIsOpen(true);
           }}
@@ -45,16 +47,22 @@ export default function MyAppOnboardingModal() {
       </div>
       <OnboardingModal
         ref={onboardingModalRef}
-        // If this id need to be changed, please clean de database for the old id (in the userPreferences table)
-        id="showOnboardingMyAppsActualitessss"
+        id="showOnboardingMyApps0"
         items={[
           {
-            src: illuOnboardingActu,
-            title: 'my.apps.onboarding.modal.actu.title',
-            alt: 'my.apps.onboarding.modal.actu.alt',
-            text: 'my.apps.onboarding.modal.actu.text',
+            src: illuOnboardingNew,
+            title: t('my.apps.onboarding.modal.screen1.title'),
+            alt: t('my.apps.onboarding.modal.screen1.alt'),
+            text: t('my.apps.onboarding.modal.screen1.text'),
+          },
+          {
+            src: illuOnboardingIncoming,
+            title: t('my.apps.onboarding.modal.screen2.title'),
+            alt: t('my.apps.onboarding.modal.screen2.alt'),
+            text: t('my.apps.onboarding.modal.screen2.text'),
           },
         ]}
+        defaultOpen={false}
         isOnboardingChange={(isOnboarding) => {
           setIsOnboarding(isOnboarding);
         }}

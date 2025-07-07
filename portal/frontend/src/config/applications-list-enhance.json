@@ -348,7 +348,7 @@
         }
       },
       {
-        "name": "Nabook",
+        "name": "nabook",
         "category": "pedagogy",
         "color": "blue",
         "libraries": false,

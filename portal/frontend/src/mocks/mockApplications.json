@@ -649,6 +649,18 @@
         "casType": null,
         "scope": [""],
         "isExternal": false
+      },
+       {
+        "name": "Nabook",
+        "address": "",
+        "icon": "",
+        "target": null,
+        "displayName": "Nabook",
+        "display": false,
+        "prefix": "/nabook",
+        "casType": null,
+        "scope": [""],
+        "isExternal": false
       }
     ]
 }
