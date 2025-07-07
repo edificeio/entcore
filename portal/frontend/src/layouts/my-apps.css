@@ -90,7 +90,6 @@ body {
   max-width: 100%;
   white-space: nowrap;
   justify-content: flex-start;
-  overflow: scroll;
 }
 .toolbar-categories[role='toolbar'] {
   margin-left: 0 !important;
