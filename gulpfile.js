@@ -10,14 +10,8 @@ const replace = require('gulp-replace');
 
 // const adminBuild = require('./gulpfile-admin').adminBuild;
 
-let apps = [
-  "archive",
-  "auth",
-  "conversation",
-  "directory",
-  "timeline",
-  "workspace",
-];
+let apps = ['archive', 'auth', 'directory', 'timeline', 'workspace'];
+
 let i = process.argv.indexOf("--module");
 // check if a module is specified and if it matches one of apps
 if (i > -1 && process.argv.length > (i+1) && apps.indexOf(process.argv[i+1]) > -1) {

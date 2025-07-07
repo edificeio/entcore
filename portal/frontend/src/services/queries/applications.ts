@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { applicationsService } from '../api';
-import mockData from '~/mocks/mockApplications.json';
+// import mockData from '~/mocks/mockApplications.json';
 import enhanceData from '~/config/applications-list-enhance.json';
 import { getAppName } from '~/utils/get-app-name';
 import { useTranslation } from 'react-i18next';
@@ -12,9 +12,9 @@ export const useApplications = () => {
   const query = useQuery({
     queryKey: ['applications'],
     queryFn: async () => {
-      if (import.meta.env.DEV) {
-        return mockData;
-      }
+      // if (import.meta.env.DEV) {
+      //   return mockData;
+      // }
       return applicationsService.getApplications();
     },
   });

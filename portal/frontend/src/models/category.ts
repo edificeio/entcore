@@ -1,4 +1,10 @@
-export type Category =
+export interface Category {
+  id: CategoryId;
+  name: string;
+  icon: JSX.Element | string;
+}
+
+export type CategoryId =
   | 'all'
   | 'favorites'
   | 'communication'

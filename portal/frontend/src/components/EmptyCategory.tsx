@@ -1,10 +1,10 @@
 import { EmptyScreen } from "@edifice.io/react";
 import { useTranslation } from "react-i18next";
-import { Category } from "~/models/category";
+import { CategoryId } from "~/models/category";
 import emptyFavoritesImage from '~/assets/illu-empty-apps-favorite.svg';
 import emptyImage from '~/assets/illu-empty-apps.svg';
 
-export function EmptyCategory({ category }: { category: Category }) {
+export function EmptyCategory({ category }: { category: CategoryId }) {
   const { t } = useTranslation('common');
 
   if (category === 'favorites') {

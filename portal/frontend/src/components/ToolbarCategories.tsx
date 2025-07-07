@@ -1,8 +1,16 @@
 import { Toolbar, ToolbarItem } from '@edifice.io/react';
+import {
+  IconCheck,
+  IconClock,
+  IconExternalLink,
+  IconStar,
+} from '@edifice.io/react/icons';
+import { IconBlog } from '@edifice.io/react/icons/apps';
+import { IconTeacher } from '@edifice.io/react/icons/audience';
 import clsx from 'clsx';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Category } from '~/models/category';
+import { Category, CategoryId } from '~/models/category';
 import { useApplications } from '~/services';
 import {
   useMyAppsPreferences,
@@ -14,6 +22,8 @@ export const ToolbarCategories = () => {
   const { applications, isLoading, isError } = useApplications();
   const { setActiveCategory, activeCategory } = useCategoryStore();
   const { t } = useTranslation('common');
+
+  const isMobileView = window.innerWidth <= 768;
 
   const {
     data: myAppsPreferences,
@@ -36,7 +46,7 @@ export const ToolbarCategories = () => {
     ) {
       setActiveCategory('all');
     } else {
-      setActiveCategory((myAppsPreferences.tab ?? 'all') as Category);
+      setActiveCategory((myAppsPreferences.tab ?? 'all') as CategoryId);
     }
   }, [
     myAppsPreferences,
@@ -50,38 +60,67 @@ export const ToolbarCategories = () => {
   if (isError) return <div>Erreur lors du chargement des applications.</div>;
 
   const baseCategories: Category[] = [
-    'all',
-    'favorites',
-    'communication',
-    'pedagogy',
-    'organisation',
+    { id: 'all', name: 'my.apps.tabs.all', icon: <IconCheck /> },
+    { id: 'favorites', name: 'my.apps.tabs.favorites', icon: <IconStar /> },
+    {
+      id: 'communication',
+      name: 'my.apps.tabs.communication',
+      icon: <IconBlog />,
+    },
+    { id: 'pedagogy', name: 'my.apps.tabs.pedagogy', icon: <IconTeacher /> },
+    {
+      id: 'organisation',
+      name: 'my.apps.tabs.organisation',
+      icon: <IconClock />,
+    },
   ];
 
   const categories: Category[] = hasConnectors
-    ? [...baseCategories, 'connector']
+    ? [
+        ...baseCategories,
+        {
+          id: 'connector',
+          name: 'my.apps.tabs.connector',
+          icon: <IconExternalLink />,
+        },
+      ]
     : baseCategories;
 
   const filterToolbar: ToolbarItem[] = categories.map<ToolbarItem>(
     (category) => {
-      const isActive = activeCategory === category;
-      const categoryDisplay = `tabs.${category}`;
+      const isActive = activeCategory === category.id;
 
-      return {
-        type: 'button',
-        name: category,
-        props: {
-          className: clsx('fw-normal', {
-            'bg-secondary-200 fw-bold': isActive,
-          }),
-          children: (
-            <span data-id={`tab-${category}`}>{t(categoryDisplay)}</span>
-          ),
-          onClick: () => {
-            setActiveCategory(category);
-            updateMyAppsPreferences.mutate({ tab: category });
-          },
-        },
-      };
+      return isMobileView
+        ? {
+            type: 'icon',
+            name: category.id,
+            props: {
+              className: clsx('fw-normal', {
+                'bg-secondary-200 fw-bold': isActive,
+              }),
+              icon: category.icon,
+              onClick: () => {
+                setActiveCategory(category.id);
+                updateMyAppsPreferences.mutate({ tab: category.id });
+              },
+            },
+          }
+        : {
+            type: 'button',
+            name: category.id,
+            props: {
+              className: clsx('fw-normal', {
+                'bg-secondary-200 fw-bold': isActive,
+              }),
+              children: (
+                <span data-id={`tab-${category.id}`}>{t(category.name)}</span>
+              ),
+              onClick: () => {
+                setActiveCategory(category.id);
+                updateMyAppsPreferences.mutate({ tab: category.id });
+              },
+            },
+          };
     },
   );
   return (

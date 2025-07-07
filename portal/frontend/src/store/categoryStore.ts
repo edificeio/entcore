@@ -1,9 +1,9 @@
 import { create } from 'zustand';
-import { Category } from '~/models/category';
+import { CategoryId } from '~/models/category';
 
 type CategoryStore = {
-  activeCategory: Category;
-  setActiveCategory: (category: Category) => void;
+  activeCategory: CategoryId;
+  setActiveCategory: (category: CategoryId) => void;
 };
 
 export const useCategoryStore = create<CategoryStore>((set) => ({
