@@ -6,9 +6,11 @@ import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.security.SecuredAction;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
 import org.bson.conversions.Bson;
+import org.entcore.common.migration.AppMigrationConfiguration;
 import org.entcore.common.share.impl.MongoDbShareService;
 import org.entcore.workspace.dao.DocumentDao;
 
@@ -19,8 +21,8 @@ import static fr.wseduc.webutils.Utils.isEmpty;
 
 public class WorkspaceShareService extends MongoDbShareService {
 
-  public WorkspaceShareService(EventBus eb, MongoDb mongo, String collection, Map<String, SecuredAction> securedActions, Map<String, List<String>> groupedActions) {
-    super(eb, mongo, collection, securedActions, groupedActions);
+  public WorkspaceShareService(final Vertx vertx, EventBus eb, MongoDb mongo, String collection, Map<String, SecuredAction> securedActions, Map<String, List<String>> groupedActions) {
+    super(eb, mongo, collection, securedActions, groupedActions,  AppMigrationConfiguration.fromVertx("referential", vertx, null));
   }
   @Override
   public Future<String> getResourceOwnerUserId(String resourceId) {

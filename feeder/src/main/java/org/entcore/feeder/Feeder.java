@@ -32,10 +32,12 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.apache.commons.lang3.tuple.Pair;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.bus.MessageReplyNotifier;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.migration.AppMigrationConfiguration;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.storage.Storage;
@@ -92,6 +94,8 @@ import static org.entcore.feeder.csv.CsvReport.MAPPINGS;
 import static org.entcore.feeder.utils.Report.log;
 
 public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
+
+	public static Logger log = LoggerFactory.getLogger(Feeder.class);
 
 	public static final String USER_REPOSITORY = "user.repository";
 	public static final String FEEDER_ADDRESS = "entcore.feeder";
@@ -228,8 +232,9 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
 		manual = new ManualFeeder(neo4j, eb, new DefaultUserPositionService(eb, false));
 		manual.setLoginAliasValidatorForAD(config.getBoolean("ad-login-alias-validator", false));
+		final AppMigrationConfiguration appMigrationConfiguration = AppMigrationConfiguration.fromVertx("referential", vertx, null);
 		duplicateUsers = new DuplicateUsers(config.getBoolean("timetable", true),
-				config.getBoolean("autoMergeOnlyInSameStructure", true), vertx.eventBus());
+			config.getBoolean("autoMergeOnlyInSameStructure", true), appMigrationConfiguration, vertx.eventBus());
 		postImport = new PostImport(vertx, duplicateUsers, config);
 		vertx.eventBus().consumer(
 				config.getString("address", FEEDER_ADDRESS), this);

@@ -122,7 +122,11 @@ function checkMessageOk(res, senderId, recipientId, body, hasOriginal, checkName
   }
   checks[`${checkName} - Body is correct`] = (r) => {
     const message = JSON.parse(r.body)
-    return message.body === body
+    const ok = message.body === body
+    if (!ok) {
+      console.error(`${checkName} - Body is incorrect: expected "${body}", got "${message.body}"`)
+    }
+    return ok
   }
   checks[`${checkName} - Check original format`] = (r) => {
     const message = JSON.parse(r.body)

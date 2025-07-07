@@ -1,11 +1,16 @@
 package org.entcore.communication.services.impl;
 
 import fr.wseduc.webutils.Either;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.migration.AppMigrationConfiguration;
+import org.entcore.common.migration.BrokerSwitchConfiguration;
+import org.entcore.common.migration.BrokerSwitchType;
 import org.entcore.common.user.UserInfos;
 import org.entcore.communication.services.CommunicationService;
 
@@ -20,12 +25,8 @@ import java.util.Set;
  */
 public class BrokerSwitchCommunicationService implements CommunicationService {
   private final CommunicationService delegate;
-  private final boolean writeNew;
-  private final boolean writeLegacy;
-  private final boolean readNew;
-  private final boolean readLegacy;
   private final EventBus eventBus;
-  private final Set<String> availableReadActionsNewService;
+  private final AppMigrationConfiguration appMigrationConfiguration;
 
   /**
    * Constructor for the service switch.
@@ -35,107 +36,70 @@ public class BrokerSwitchCommunicationService implements CommunicationService {
    * Finally, when all actions have been migrated, use the policy {@code READ_NEW_WRITE_NEW} to only use the new service for both reads and writes.
    *
    * @param delegate The inner communication service to delegate calls to.
-   * @param brokerSwitchType The type of broker switch to determine read/write behavior. Dependiong on the supplied value, it will :<ul>
-   *                         <li>READ_LEGACY_WRITE_BOTH: Read from legacy, write to both new and legacy.</li>
-   *                         <li>READ_LEGACY_WRITE_LEGACY: Read from legacy, write to legacy only.</li>
-   *                         <li>READ_NEW_WRITE_BOTH: Read from new service iff the action is in {@code availableReadActionsNewService} otherwise read from legacy, write to both new and legacy.</li>
-   *                         <li>READ_NEW_WRITE_NEW: Read from new service and never from legacy, write to new service only.</li>
-   * </ul>
-   *
-   * @param availableReadActionsNewService Set of read only actions for which the new service is available.
    * @param eventBus The Vert.x EventBus for sending messages to the broker.
    */
   public BrokerSwitchCommunicationService(
     final CommunicationService delegate,
-    final BrokerSwitchType brokerSwitchType,
-    final Set<String> availableReadActionsNewService,
+    final AppMigrationConfiguration appMigrationConfiguration,
     final EventBus eventBus) {
     this.delegate = delegate;
     this.eventBus = eventBus;
-    this.availableReadActionsNewService = availableReadActionsNewService;
-    switch (brokerSwitchType) {
-      case READ_LEGACY_WRITE_BOTH:
-        this.writeNew = true;
-        this.writeLegacy = true;
-        this.readNew = false;
-        this.readLegacy = true;
-        break;
-      case READ_LEGACY_WRITE_LEGACY:
-        this.writeNew = false;
-        this.writeLegacy = true;
-        this.readNew = false;
-        this.readLegacy = true;
-        break;
-      case READ_NEW_WRITE_BOTH:
-        this.writeNew = true;
-        this.writeLegacy = true;
-        this.readNew = true;
-        this.readLegacy = false;
-        break;
-      case READ_NEW_WRITE_NEW:
-        this.writeNew = true;
-        this.writeLegacy = false;
-        this.readNew = true;
-        this.readLegacy = false;
-        break;
-      default:
-        throw new IllegalArgumentException("Invalid BrokerSwitchType: " + brokerSwitchType);
-    }
+    this.appMigrationConfiguration = appMigrationConfiguration;
   }
 
   @Override
   public void addLink(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler) {
-    if(writeNew) {
-      sendToBroker("addLink", new JsonObject().put("startGroupId", startGroupId).put("endGroupId", endGroupId), readNew ? handler : null);
+    if(appMigrationConfiguration.isWriteNew()) {
+      sendToBroker("addLink", new JsonObject().put("startGroupId", startGroupId).put("endGroupId", endGroupId), appMigrationConfiguration.isReadNew() ? handler : null);
     }
-    if(writeLegacy) {
-      delegate.addLink(startGroupId, endGroupId, readLegacy ? handler : e -> {
+    if(appMigrationConfiguration.isWriteLegacy()) {
+      delegate.addLink(startGroupId, endGroupId, appMigrationConfiguration.isReadLegacy() ? handler : e -> {
       });
     }
   }
 
   @Override
   public void removeLink(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler) {
-    if(writeNew) {
-      sendToBroker("removeLink", new JsonObject().put("startGroupId", startGroupId).put("endGroupId", endGroupId), readNew ? handler : null);
+    if(appMigrationConfiguration.isWriteNew()) {
+      sendToBroker("removeLink", new JsonObject().put("startGroupId", startGroupId).put("endGroupId", endGroupId), (appMigrationConfiguration.isReadNew()) ? handler : null);
     }
-    if(writeLegacy) {
-      delegate.removeLink(startGroupId, endGroupId, readLegacy ? handler : e -> {
+    if(appMigrationConfiguration.isWriteLegacy()) {
+      delegate.removeLink(startGroupId, endGroupId, (appMigrationConfiguration.isReadLegacy()) ? handler : e -> {
       });
     }
   }
 
   @Override
   public void addLinkWithUsers(String groupId, Direction direction, Handler<Either<String, JsonObject>> handler) {
-    if(writeNew) {
-      sendToBroker("addLinkWithUsers", new JsonObject().put("groupId", groupId).put("direction", direction.name()), readNew ? handler : null);
+    if(appMigrationConfiguration.isWriteNew()) {
+      sendToBroker("addLinkWithUsers", new JsonObject().put("groupId", groupId).put("direction", direction.name()), (appMigrationConfiguration.isReadNew()) ? handler : null);
     }
-    if(writeLegacy) {
-      delegate.addLinkWithUsers(groupId, direction, readLegacy ? handler : e -> {
+    if(appMigrationConfiguration.isWriteLegacy()) {
+      delegate.addLinkWithUsers(groupId, direction, (appMigrationConfiguration.isReadLegacy()) ? handler : e -> {
       });
     }
   }
 
   @Override
   public void addLinkWithUsers(Map<String, Direction> params, Handler<Either<String, JsonObject>> handler) {
-    if(writeNew) {
+    if(appMigrationConfiguration.isWriteNew()) {
       final JsonObject jsonParams = new JsonObject();
       params.forEach((key, value) -> jsonParams.put(key, value.name()));
-      sendToBroker("addLinkWithUsers", new JsonObject().put("params", jsonParams), readNew ? handler : null);
+      sendToBroker("addLinkWithUsers", new JsonObject().put("params", jsonParams), (appMigrationConfiguration.isReadNew()) ? handler : null);
     }
-    if(writeLegacy) {
-      delegate.addLinkWithUsers(params, readLegacy ? handler : e -> {
+    if(appMigrationConfiguration.isWriteLegacy()) {
+      delegate.addLinkWithUsers(params, (appMigrationConfiguration.isReadLegacy()) ? handler : e -> {
       });
     }
   }
 
   @Override
   public void removeLinkWithUsers(String groupId, Direction direction, Handler<Either<String, JsonObject>> handler) {
-    if(writeNew) {
-      sendToBroker("removeLinkWithUsers", new JsonObject().put("groupId", groupId).put("direction", direction.name()), readNew ? handler : null);
+    if(appMigrationConfiguration.isWriteNew()) {
+      sendToBroker("removeLinkWithUsers", new JsonObject().put("groupId", groupId).put("direction", direction.name()), (appMigrationConfiguration.isReadNew()) ? handler : null);
     }
-    if(writeLegacy) {
-      delegate.removeLinkWithUsers(groupId, direction, readLegacy ? handler : e -> {
+    if(appMigrationConfiguration.isWriteLegacy()) {
+      delegate.removeLinkWithUsers(groupId, direction, (appMigrationConfiguration.isReadLegacy()) ? handler : e -> {
       });
     }
   }
@@ -145,132 +109,136 @@ public class BrokerSwitchCommunicationService implements CommunicationService {
     if(isReadReadyForNewService("communiqueWith")) {
       sendToBroker("communiqueWith", new JsonObject().put("groupId", groupId), handler);
     } else {
-      delegate.communiqueWith(groupId, readLegacy ? handler : e -> {
+      delegate.communiqueWith(groupId, (appMigrationConfiguration.isReadLegacy()) ? handler : e -> {
       });
     }
   }
 
   @Override
   public void addLinkBetweenRelativeAndStudent(String groupId, Direction direction, Handler<Either<String, JsonObject>> handler) {
-    if(writeNew) {
-      sendToBroker("addLinkBetweenRelativeAndStudent", new JsonObject().put("groupId", groupId).put("direction", direction.name()), readNew ? handler : null);
+    if(appMigrationConfiguration.isWriteNew()) {
+      sendToBroker("addLinkBetweenRelativeAndStudent", new JsonObject().put("groupId", groupId).put("direction", direction.name()), (appMigrationConfiguration.isReadNew()) ? handler : null);
     }
-    if(writeLegacy) {
-      delegate.addLinkBetweenRelativeAndStudent(groupId, direction, readLegacy ? handler : e -> {
+    if(appMigrationConfiguration.isWriteLegacy()) {
+      delegate.addLinkBetweenRelativeAndStudent(groupId, direction, (appMigrationConfiguration.isReadLegacy()) ? handler : e -> {
       });
     }
   }
 
   @Override
   public void removeLinkBetweenRelativeAndStudent(String groupId, Direction direction, Handler<Either<String, JsonObject>> handler) {
-    if(writeNew) {
-      sendToBroker("removeLinkBetweenRelativeAndStudent", new JsonObject().put("groupId", groupId).put("direction", direction.name()), readNew ? handler : null);
+    if(appMigrationConfiguration.isWriteNew()) {
+      sendToBroker("removeLinkBetweenRelativeAndStudent", new JsonObject().put("groupId", groupId).put("direction", direction.name()), (appMigrationConfiguration.isReadNew()) ? handler : null);
     }
-    if(writeLegacy) {
-      delegate.removeLinkBetweenRelativeAndStudent(groupId, direction, readLegacy ? handler : e -> {
+    if(appMigrationConfiguration.isWriteLegacy()) {
+      delegate.removeLinkBetweenRelativeAndStudent(groupId, direction, (appMigrationConfiguration.isReadLegacy()) ? handler : e -> {
       });
     }
   }
 
   @Override
   public void initDefaultRules(JsonArray structureIds, JsonObject defaultRules, Integer transactionId, Boolean commit, Handler<Either<String, JsonObject>> handler) {
-    if(writeNew) {
+    if(appMigrationConfiguration.isWriteNew()) {
       sendToBroker("initDefaultRules", new JsonObject()
         .put("structureIds", structureIds)
         .put("defaultRules", defaultRules)
         .put("transactionId", transactionId)
-        .put("commit", commit), readNew ? handler : null);
+        .put("commit", commit), (appMigrationConfiguration.isReadNew()) ? handler : null);
     }
-    if(writeLegacy) {
-      delegate.initDefaultRules(structureIds, defaultRules, transactionId, commit, readLegacy ? handler : e -> {
+    if(appMigrationConfiguration.isWriteLegacy()) {
+      delegate.initDefaultRules(structureIds, defaultRules, transactionId, commit, (appMigrationConfiguration.isReadLegacy()) ? handler : e -> {
       });
     }
   }
 
   @Override
   public void initDefaultRules(JsonArray structureIds, JsonObject defaultRules, Handler<Either<String, JsonObject>> handler) {
-    if(writeNew) {
+    if(appMigrationConfiguration.isWriteNew()) {
       sendToBroker("initDefaultRules", new JsonObject()
         .put("structureIds", structureIds)
-        .put("defaultRules", defaultRules), readNew ? handler : null);
+        .put("defaultRules", defaultRules), (appMigrationConfiguration.isReadNew()) ? handler : null);
     }
-    if(writeLegacy) {
-      delegate.initDefaultRules(structureIds, defaultRules, readLegacy ? handler : e -> {
+    if(appMigrationConfiguration.isWriteLegacy()) {
+      delegate.initDefaultRules(structureIds, defaultRules, (appMigrationConfiguration.isReadLegacy()) ? handler : e -> {
       });
     }
   }
 
   @Override
   public void applyDefaultRules(JsonArray structureIds, Integer transactionId, Boolean commit, Handler<Either<String, JsonObject>> handler) {
-    if(writeNew) {
+    if(appMigrationConfiguration.isWriteNew()) {
       sendToBroker("applyDefaultRules", new JsonObject()
         .put("structureIds", structureIds)
         .put("transactionId", transactionId)
-        .put("commit", commit), readNew ? handler : null);
+        .put("commit", commit), (appMigrationConfiguration.isReadNew()) ? handler : null);
     }
-    if(writeLegacy) {
-      delegate.applyDefaultRules(structureIds, transactionId, commit, readLegacy ? handler : e -> {
+    if(appMigrationConfiguration.isWriteLegacy()) {
+      delegate.applyDefaultRules(structureIds, transactionId, commit, (appMigrationConfiguration.isReadLegacy()) ? handler : e -> {
       });
     }
   }
 
   @Override
   public void applyDefaultRules(JsonArray structureIds, Handler<Either<String, JsonObject>> handler) {
-    if(writeNew) {
-      sendToBroker("applyDefaultRules", new JsonObject().put("structureIds", structureIds), readNew ? handler : null);
+    if(appMigrationConfiguration.isWriteNew()) {
+      sendToBroker("applyDefaultRules", new JsonObject().put("structureIds", structureIds), (appMigrationConfiguration.isReadNew()) ? handler : null);
     }
-    if(writeLegacy) {
-      delegate.applyDefaultRules(structureIds, readLegacy ? handler : e -> {
+    if(appMigrationConfiguration.isWriteLegacy()) {
+      delegate.applyDefaultRules(structureIds, (appMigrationConfiguration.isReadLegacy()) ? handler : e -> {
       });
     }
   }
 
   @Override
   public void applyRules(String groupId, Handler<Either<String, JsonObject>> responseHandler) {
-    if(writeNew) {
-      sendToBroker("applyRules", new JsonObject().put("groupId", groupId), readNew ? responseHandler : null);
+    if(appMigrationConfiguration.isWriteNew()) {
+      sendToBroker("applyRules", new JsonObject().put("groupId", groupId), (appMigrationConfiguration.isReadNew()) ? responseHandler : null);
     }
-    if(writeLegacy) {
-      delegate.applyRules(groupId, readLegacy ? responseHandler : e -> {
+    if(appMigrationConfiguration.isWriteLegacy()) {
+      delegate.applyRules(groupId, (appMigrationConfiguration.isReadLegacy()) ? responseHandler : e -> {
       });
     }
   }
 
   @Override
   public void removeRules(String structureId, Handler<Either<String, JsonObject>> handler) {
-    if(writeNew) {
-      sendToBroker("removeRules", new JsonObject().put("structureId", structureId), readNew ? handler : null);
+    if(appMigrationConfiguration.isWriteNew()) {
+      sendToBroker("removeRules", new JsonObject().put("structureId", structureId), (appMigrationConfiguration.isReadNew()) ? handler : null);
     }
-    if(writeLegacy) {
-      delegate.removeRules(structureId, readLegacy ? handler : e -> {
+    if(appMigrationConfiguration.isWriteLegacy()) {
+      delegate.removeRules(structureId, (appMigrationConfiguration.isReadLegacy()) ? handler : e -> {
       });
     }
   }
 
+
   @Override
-  public void visibleUsers(String userId, String structureId, JsonArray expectedTypes,
-                           boolean itSelf, boolean myGroup, boolean profile,
-                           String preFilter, String customReturn, JsonObject additionnalParams, Handler<Either<String, JsonArray>> handler) {
+  public void visibleUsers(String userId, String structureId, JsonArray expectedTypes, boolean itSelf, boolean myGroup,
+                           boolean profile, String preFilter, String customReturn, JsonObject additionalParams,
+                           String userProfile, boolean reverseUnion, Handler<Either<String, JsonArray>> handler) {
     if(isReadReadyForNewService("visibleUsers")) {
       sendToBroker("visibleUsers", new JsonObject()
-        .put("userId", userId)
-        .put("structureId", structureId)
-        .put("expectedTypes", expectedTypes)
-        .put("itSelf", itSelf)
-        .put("myGroup", myGroup)
-        .put("profile", profile)
-        .put("preFilter", preFilter)
-        .put("customReturn", customReturn)
-        .put("additionnalParams", additionnalParams), handler);
+          .put("userId", userId)
+          .put("structureId", structureId)
+          .put("expectedTypes", expectedTypes)
+          .put("itSelf", itSelf)
+          .put("myGroup", myGroup)
+          .put("profile", profile)
+          .put("preFilter", preFilter)
+          .put("customReturn", customReturn)
+          .put("reverseUnion", reverseUnion)
+          .put("userProfile", userProfile)
+          .put("additionnalParams", additionalParams),
+        handler);
     } else {
-      delegate.visibleUsers(userId, structureId, expectedTypes, itSelf, myGroup, profile, preFilter, customReturn, additionnalParams, handler);
+      delegate.visibleUsers(userId, structureId, expectedTypes, itSelf, myGroup, profile, preFilter, customReturn, additionalParams, userProfile, reverseUnion, handler);
     }
   }
 
   @Override
   public void visibleUsers(String userId, String structureId, JsonArray expectedTypes, boolean itSelf, boolean myGroup,
                            boolean profile, String preFilter, String customReturn, JsonObject additionnalParams,
-                           String userProfile, Handler<Either<String, JsonArray>> handler) {
+                           Handler<Either<String, JsonArray>> handler) {
     if(isReadReadyForNewService("visibleUsers")) {
       sendToBroker("visibleUsers", new JsonObject()
         .put("userId", userId)
@@ -281,10 +249,10 @@ public class BrokerSwitchCommunicationService implements CommunicationService {
         .put("profile", profile)
         .put("preFilter", preFilter)
         .put("customReturn", customReturn)
-        .put("additionnalParams", additionnalParams)
-        .put("userProfile", userProfile), handler);
+        .put("additionnalParams", additionnalParams),
+        handler);
     } else {
-      delegate.visibleUsers(userId, structureId, expectedTypes, itSelf, myGroup, profile, preFilter, customReturn, additionnalParams, userProfile, handler);
+      delegate.visibleUsers(userId, structureId, expectedTypes, itSelf, myGroup, profile, preFilter, customReturn, additionnalParams, handler);
     }
   }
 
@@ -342,11 +310,11 @@ public class BrokerSwitchCommunicationService implements CommunicationService {
 
   @Override
   public void safelyRemoveLinkWithUsers(String groupId, Handler<Either<String, JsonObject>> handler) {
-    if(writeNew) {
-      sendToBroker("safelyRemoveLinkWithUsers", new JsonObject().put("groupId", groupId), readNew ? handler : null);
+    if(appMigrationConfiguration.isWriteNew()) {
+      sendToBroker("safelyRemoveLinkWithUsers", new JsonObject().put("groupId", groupId), (appMigrationConfiguration.isReadNew()) ? handler : null);
     }
-    if(writeLegacy) {
-      delegate.safelyRemoveLinkWithUsers(groupId, readLegacy ? handler : e -> {
+    if(appMigrationConfiguration.isWriteLegacy()) {
+      delegate.safelyRemoveLinkWithUsers(groupId, (appMigrationConfiguration.isReadLegacy()) ? handler : e -> {
       });
     }
   }
@@ -362,37 +330,39 @@ public class BrokerSwitchCommunicationService implements CommunicationService {
 
   @Override
   public void addLinkCheckOnly(String startGroupId, String endGroupId, UserInfos userInfos, Handler<Either<String, JsonObject>> handler) {
-    if(writeNew) {
+    if(appMigrationConfiguration.isWriteNew()) {
       sendToBroker("addLinkCheckOnly", new JsonObject()
         .put("startGroupId", startGroupId)
         .put("endGroupId", endGroupId)
-        .put("userInfos", JsonObject.mapFrom(userInfos)), readNew ? handler : null);
-    } else if(writeLegacy) {
-      delegate.addLinkCheckOnly(startGroupId, endGroupId, userInfos, readLegacy ? handler : e -> {
+        .put("userInfos", JsonObject.mapFrom(userInfos)), (appMigrationConfiguration.isReadNew()) ? handler : null);
+    }
+    if(appMigrationConfiguration.isWriteLegacy()) {
+      delegate.addLinkCheckOnly(startGroupId, endGroupId, userInfos, (appMigrationConfiguration.isReadLegacy()) ? handler : e -> {
       });
     }
   }
 
   @Override
   public void processChangeDirectionAfterAddingLink(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler) {
-    if(writeNew) {
+    if(appMigrationConfiguration.isWriteNew()) {
       sendToBroker("processChangeDirectionAfterAddingLink", new JsonObject()
         .put("startGroupId", startGroupId)
-        .put("endGroupId", endGroupId), readNew ? handler : null);
-    } else if(writeLegacy) {
-      delegate.processChangeDirectionAfterAddingLink(startGroupId, endGroupId, readLegacy ? handler : e -> {
+        .put("endGroupId", endGroupId), (appMigrationConfiguration.isReadNew()) ? handler : null);
+    }
+    if(appMigrationConfiguration.isWriteLegacy()) {
+      delegate.processChangeDirectionAfterAddingLink(startGroupId, endGroupId, (appMigrationConfiguration.isReadLegacy()) ? handler : e -> {
       });
     }
   }
 
   @Override
   public void removeRelations(String startGroupId, String endGroupId, Handler<Either<String, JsonObject>> handler) {
-    if(writeNew) {
+    if(appMigrationConfiguration.isWriteNew()) {
       sendToBroker("removeRelations", new JsonObject()
         .put("startGroupId", startGroupId)
-        .put("endGroupId", endGroupId), readNew ? handler : null);
+        .put("endGroupId", endGroupId), (appMigrationConfiguration.isReadNew()) ? handler : null);
     }
-    if(writeLegacy) {
+    if(appMigrationConfiguration.isWriteLegacy()) {
       delegate.removeRelations(startGroupId, endGroupId, handler);
     }
   }
@@ -404,7 +374,7 @@ public class BrokerSwitchCommunicationService implements CommunicationService {
         .put("senderId", senderId)
         .put("recipientId", recipientId), handler);
     } else {
-      delegate.verify(senderId, recipientId, readLegacy ? handler : e -> {
+      delegate.verify(senderId, recipientId, (appMigrationConfiguration.isReadLegacy()) ? handler : e -> {
       });
     }
   }
@@ -431,27 +401,27 @@ public class BrokerSwitchCommunicationService implements CommunicationService {
 
   @Override
   public void discoverVisibleAddCommuteUsers(UserInfos user, String recipientId, HttpServerRequest request, Handler<Either<String, JsonObject>> handler) {
-    if(writeNew) {
+    if(appMigrationConfiguration.isWriteNew()) {
       sendToBroker("discoverVisibleAddCommuteUsers", new JsonObject()
         .put("user", JsonObject.mapFrom(user))
         .put("recipientId", recipientId)
-        .put("request", getRequestInformation(request)), readNew ? handler : null);
+        .put("request", getRequestInformation(request)), (appMigrationConfiguration.isReadNew()) ? handler : null);
     }
-    if(writeLegacy) {
-      delegate.discoverVisibleAddCommuteUsers(user, recipientId, request, readLegacy ? handler : e -> {
+    if(appMigrationConfiguration.isWriteLegacy()) {
+      delegate.discoverVisibleAddCommuteUsers(user, recipientId, request, (appMigrationConfiguration.isReadLegacy()) ? handler : e -> {
       });
     }
   }
 
   @Override
   public void discoverVisibleRemoveCommuteUsers(String senderId, String recipientId, Handler<Either<String, JsonObject>> handler) {
-    if(writeNew) {
+    if(appMigrationConfiguration.isWriteNew()) {
       sendToBroker("discoverVisibleRemoveCommuteUsers", new JsonObject()
         .put("senderId", senderId)
-        .put("recipientId", recipientId), readNew ? handler : null);
+        .put("recipientId", recipientId), (appMigrationConfiguration.isReadNew()) ? handler : null);
     }
-    if(writeLegacy) {
-      delegate.discoverVisibleRemoveCommuteUsers(senderId, recipientId, readLegacy ? handler : e -> {
+    if(appMigrationConfiguration.isWriteLegacy()) {
+      delegate.discoverVisibleRemoveCommuteUsers(senderId, recipientId, (appMigrationConfiguration.isReadLegacy()) ? handler : e -> {
       });
     }
   }
@@ -478,42 +448,42 @@ public class BrokerSwitchCommunicationService implements CommunicationService {
 
   @Override
   public void createDiscoverVisibleGroup(String userId, JsonObject body, Handler<Either<String, JsonObject>> handler) {
-    if(writeNew) {
+    if(appMigrationConfiguration.isWriteNew()) {
       sendToBroker("createDiscoverVisibleGroup", new JsonObject()
         .put("userId", userId)
-        .put("body", body), readNew ? handler : null);
+        .put("body", body), (appMigrationConfiguration.isReadNew()) ? handler : null);
     }
-    if(writeLegacy) {
-      delegate.createDiscoverVisibleGroup(userId, body, readLegacy ? handler : e -> {
+    if(appMigrationConfiguration.isWriteLegacy()) {
+      delegate.createDiscoverVisibleGroup(userId, body, (appMigrationConfiguration.isReadLegacy()) ? handler : e -> {
       });
     }
   }
 
   @Override
   public void updateDiscoverVisibleGroup(String userId, String groupId, JsonObject body, Handler<Either<String, JsonObject>> handler) {
-    if(writeNew) {
+    if(appMigrationConfiguration.isWriteNew()) {
       sendToBroker("updateDiscoverVisibleGroup", new JsonObject()
         .put("userId", userId)
         .put("groupId", groupId)
-        .put("body", body), readNew ? handler : null);
+        .put("body", body), (appMigrationConfiguration.isReadNew()) ? handler : null);
     }
-    if(writeLegacy) {
-      delegate.updateDiscoverVisibleGroup(userId, groupId, body, readLegacy ? handler : e -> {
+    if(appMigrationConfiguration.isWriteLegacy()) {
+      delegate.updateDiscoverVisibleGroup(userId, groupId, body, (appMigrationConfiguration.isReadLegacy()) ? handler : e -> {
       });
     }
   }
 
   @Override
   public void addDiscoverVisibleGroupUsers(UserInfos user, String groupId, JsonObject body, HttpServerRequest request, Handler<Either<String, JsonObject>> handler) {
-    if(writeNew) {
+    if(appMigrationConfiguration.isWriteNew()) {
       sendToBroker("addDiscoverVisibleGroupUsers", new JsonObject()
         .put("user", JsonObject.mapFrom(user))
         .put("groupId", groupId)
         .put("body", body)
-        .put("request", getRequestInformation(request)), readNew ? handler : null);
+        .put("request", getRequestInformation(request)), (appMigrationConfiguration.isReadNew()) ? handler : null);
     }
-    if(writeLegacy) {
-      delegate.addDiscoverVisibleGroupUsers(user, groupId, body, request, readLegacy ? handler : e -> {
+    if(appMigrationConfiguration.isWriteLegacy()) {
+      delegate.addDiscoverVisibleGroupUsers(user, groupId, body, request, (appMigrationConfiguration.isReadLegacy()) ? handler : e -> {
       });
     }
   }
@@ -523,12 +493,28 @@ public class BrokerSwitchCommunicationService implements CommunicationService {
     delegate.getDiscoverVisibleAcceptedProfile(handler);
   }
 
+  @Override
+  public Future<JsonArray> searchVisibles(UserInfos user, String search, String language) {
+    final Future<JsonArray> future;
+    if(appMigrationConfiguration.isReadEnabled("searchVisibles")) {
+      final Promise<JsonArray> promise = Promise.promise();
+      sendToBroker("searchVisibles", new JsonObject()
+        .put("user", JsonObject.mapFrom(user))
+        .put("search", search)
+        .put("language", language), promise);
+      future = promise.future();
+    } else {
+      future = delegate.searchVisibles(user, search, language);
+    }
+    return future;
+  }
+
   private <T> void sendToBroker(final String action, final JsonObject params, final Handler handler) {
     final JsonObject payload = new JsonObject()
       .put("action", action)
-      .put("service", "communication")
+      .put("service", "referential")
       .put("params", params);
-    final String address = "broker.proxy.legacy.migration";
+    final String address = BrokerSwitchConfiguration.LEGACY_MIGRATION_ADDRESS;
     if(handler == null) {
       eventBus.send(address, payload);
     } else {
@@ -545,7 +531,7 @@ public class BrokerSwitchCommunicationService implements CommunicationService {
   }
 
   private boolean isReadReadyForNewService(final String action) {
-    return readNew && availableReadActionsNewService.contains(action);
+    return (appMigrationConfiguration.isReadNew()) && appMigrationConfiguration.getAvailableReadActions().contains(action);
   }
 
   private JsonObject getRequestInformation(final HttpServerRequest request) {
