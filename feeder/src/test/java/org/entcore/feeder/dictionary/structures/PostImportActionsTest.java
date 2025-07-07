@@ -6,6 +6,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.migration.AppMigrationConfiguration;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.test.TestHelper;
@@ -41,7 +42,7 @@ public class PostImportActionsTest {
         staticMockTransactionManager = Mockito.mockStatic(TransactionManager.class);
         staticMockTransactionManager.when(TransactionManager::getNeo4jHelper).thenReturn(mockNeo4J);
 
-        mockDuplicateUsers = new DuplicateUsers(false, true, test.vertx().eventBus());
+        mockDuplicateUsers = new DuplicateUsers(false, true, AppMigrationConfiguration.DISABLED, test.vertx().eventBus());
     }
 
     @AfterClass

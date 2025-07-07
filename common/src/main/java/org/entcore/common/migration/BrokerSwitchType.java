@@ -1,4 +1,4 @@
-package org.entcore.communication.services.impl;
+package org.entcore.common.migration;
 
 public enum BrokerSwitchType {
   READ_LEGACY_WRITE_LEGACY,
