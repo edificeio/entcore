@@ -56,4 +56,10 @@ public @interface BrokerListener {
    * @return true if is a proxy
    */
   boolean proxy() default false;
+
+  /**
+   * Set this to {@code true} if the method is intended to be used as a broadcast listener.
+   * @return true if is a broadcast listener
+   */
+  boolean broadcast() default false;
 }

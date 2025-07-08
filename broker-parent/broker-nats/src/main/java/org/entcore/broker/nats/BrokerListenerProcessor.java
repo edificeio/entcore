@@ -85,6 +85,7 @@ public class BrokerListenerProcessor extends AbstractProcessor {
     endpoint.setSubject(annotation.subject());
     endpoint.setDescription(annotation.description());
     endpoint.setProxy(annotation.proxy());
+    endpoint.setBroadcast(annotation.broadcast());
 
     // Get method information
     endpoint.setMethodName(method.getSimpleName().toString());

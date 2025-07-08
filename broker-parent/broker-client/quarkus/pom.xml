@@ -4,7 +4,7 @@
 
     <groupId>org.entcore</groupId>
     <artifactId>edifice-ent-client</artifactId>
-    <version>6.5-develop-community-SNAPSHOT</version>
+    <version>6.6-develop-community-SNAPSHOT</version>
 
     <parent>
         <groupId>io.edifice</groupId>
@@ -19,7 +19,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>${project.groupId}</groupId>
+            <groupId>${groupId}</groupId>
             <artifactId>broker-api</artifactId>
             <version>${project.version}</version>
         </dependency>
