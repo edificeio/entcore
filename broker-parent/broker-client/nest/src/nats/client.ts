@@ -36,6 +36,10 @@ import type { AppRegistrationRequestDTO } from './types';
 
 import type { AppRegistrationResponseDTO } from './types';
 
+import type { CreateEventRequestDTO } from './types';
+
+import type { CreateEventResponseDTO } from './types';
+
 import type { CreateGroupRequestDTO } from './types';
 
 import type { CreateGroupResponseDTO } from './types';
@@ -153,6 +157,19 @@ export class EntNatsServiceClient {
       throw new Error('No reply received');
     }
     return reply as AddLinkBetweenGroupsResponseDTO;
+  }
+  
+  
+  
+  async createAndStoreEvent(request: CreateEventRequestDTO): Promise<CreateEventResponseDTO> {
+    const eventAddress = "event.store";
+    this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
+    const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
+    if(!reply) {
+      this.logger.warn("No reply received for subject", {messageAddress: eventAddress});
+      throw new Error('No reply received');
+    }
+    return reply as CreateEventResponseDTO;
   }
   
   

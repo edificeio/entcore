@@ -85,6 +85,23 @@ export interface ClassDto {
   name?: string;
 }
 
+export interface CreateEventRequestDTO {
+  clientId?: string;
+  customAttributes?: JsonObject;
+  eventType?: string;
+  headers?: { [key: string]: string };
+  ip?: string;
+  login?: string;
+  module?: string;
+  path?: string;
+  userAgent?: string;
+  userId?: string;
+}
+
+export interface CreateEventResponseDTO {
+  eventId?: string;
+}
+
 export interface CreateGroupRequestDTO {
   classId?: string;
   externalId?: string;
@@ -186,6 +203,10 @@ export interface GroupDTO {
 export interface GroupDto {
   id?: string;
   name?: string;
+}
+
+export interface JsonObject {
+  map?: { [key: string]: object };
 }
 
 export interface Kind {
