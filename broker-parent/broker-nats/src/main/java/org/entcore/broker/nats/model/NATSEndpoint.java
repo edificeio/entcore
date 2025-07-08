@@ -13,6 +13,7 @@ public class NATSEndpoint {
   private String methodName;
   private String className;
   private boolean proxy;
+  private boolean broadcast;
 
   public String getSubject() {
     return subject;
@@ -86,6 +87,14 @@ public class NATSEndpoint {
     this.proxy = proxy;
   }
 
+  public boolean isBroadcast() {
+    return broadcast;
+  }
+
+  public void setBroadcast(boolean broadcast) {
+    this.broadcast = broadcast;
+  }
+
   @Override
   public String toString() {
     return "NATSEndpoint{" +
@@ -98,6 +107,7 @@ public class NATSEndpoint {
       ", methodName='" + methodName + '\'' +
       ", className='" + className + '\'' +
       ", proxy=" + proxy +
+      ", broadcast=" + broadcast +
       '}';
   }
 }

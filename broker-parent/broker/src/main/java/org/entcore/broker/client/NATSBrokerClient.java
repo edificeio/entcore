@@ -8,6 +8,7 @@ import io.nats.vertx.NatsClient;
 import io.nats.vertx.NatsOptions;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
@@ -77,37 +78,14 @@ public class NATSBrokerClient implements BrokerClient {
         continue;
       }
       try {
-        this.natsClient.subscribe(transformToWildcard(endpoint.getSubject()), this.queueName, msg -> {
-          final Promise<Object> promise = Promise.promise();
-            try {
-              // call the real subject without wildcard
-              eb.request(msg.getSubject(), getDataFromMessage(msg))
-                .onSuccess(response -> {
-                  try {
-                    promise.tryComplete(response.body());
-                  } catch (Exception e) {
-                    log.error("Error serializing response to JSON", e);
-                    promise.tryFail(e);
-                  }
-                })
-                .onFailure(th -> {
-                  log.error("Error calling subject " + msg.getSubject(), th);
-                  promise.tryFail(th);
-                });
-            } catch (IOException e) {
-              promise.tryFail(e);
-            }
-            promise.future().onSuccess(response -> {
-              try {
-                final byte[] payload = ((String)response).getBytes(charset);
-                natsClient.publish(msg.getReplyTo(), payload);
-              } catch (Exception e) {
-                sendError(msg, e);
-              }
-            }).onFailure(th -> {
-              sendError(msg, th);
-            });
-          }).onSuccess(e -> log.info("Registered proxy for subject: " + endpoint.getSubject()))
+        final Handler<Message> messageHandler = getProxyMessageHandler(eb);
+        final Future<Void> future;
+        if(endpoint.isBroadcast()) {
+          future = this.natsClient.subscribe(transformToWildcard(endpoint.getSubject()), messageHandler);
+        } else {
+          future = this.natsClient.subscribe(transformToWildcard(endpoint.getSubject()), this.queueName, messageHandler);
+        }
+        future.onSuccess(e -> log.info("Registered proxy for subject: " + endpoint.getSubject()))
           .onFailure(th -> log.error("Error while registering proxy for subject: " + endpoint.getSubject(), th));
       } catch (Exception e) {
         throw new RuntimeException("Error while registering listener for subject: " + endpoint, e);
@@ -115,6 +93,38 @@ public class NATSBrokerClient implements BrokerClient {
     }
   }
 
+  private Handler<Message> getProxyMessageHandler(final EventBus eb) {
+    return  msg -> {
+      final Promise<Object> promise = Promise.promise();
+      try {
+        eb.request(msg.getSubject(), getDataFromMessage(msg))
+          .onSuccess(response -> {
+            try {
+              promise.tryComplete(response.body());
+            } catch (Exception e) {
+              log.error("Error serializing response to JSON", e);
+              promise.tryFail(e);
+            }
+          })
+          .onFailure(th -> {
+            log.error("Error calling subject " + msg.getSubject(), th);
+            promise.tryFail(th);
+          });
+      } catch (IOException e) {
+        promise.tryFail(e);
+      }
+      promise.future().onSuccess(response -> {
+        try {
+          final byte[] payload = ((String) response).getBytes(charset);
+          natsClient.publish(msg.getReplyTo(), payload);
+        } catch (Exception e) {
+          sendError(msg, e);
+        }
+      }).onFailure(th -> {
+        sendError(msg, th);
+      });
+    };
+  }
 
 
   private @Nullable Object getDataFromMessage(Message msg) throws IOException {

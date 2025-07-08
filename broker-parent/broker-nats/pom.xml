@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>broker-nats</artifactId>
-    <name>VertX NATS Contract - API</name>
+    <name>ENTCore NATS Contract - API</name>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
