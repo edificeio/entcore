@@ -135,6 +135,37 @@ public class EntNatsServiceClient {
     }
   }
   
+  public org.entcore.broker.api.dto.event.CreateEventResponseDTO createAndStoreEvent(org.entcore.broker.api.dto.event.CreateEventRequestDTO request) {
+    String subject = "event.store";
+    Log.debug("Sending request to NATS subject: " + subject);
+    try {
+      final byte[] payload = this.objectMapper.writeValueAsBytes(request);
+      
+      final byte[] response = connection.request(subject, payload).get().getData();
+      final JsonNode responseTree = this.objectMapper.readTree(response);
+      final JsonNode responseNode = responseTree.get("response");
+      if(responseNode == null) {
+        final JsonNode err = responseTree.get("err");
+        if(err == null) {
+          Log.error("Response from NATS is null or malformed");
+          throw new RuntimeException("Response from NATS is null or malformed but no error provided");
+        } else {
+          Log.error("An error occurred while requesting subject " + subject + "  " + err.asText());
+          throw new RuntimeException(err.asText());
+        }
+      } else if (!responseNode.isObject()) {
+          Log.error("Response is not a valid JSON object: " + responseNode);
+          throw new RuntimeException("Response is not a valid JSON object");
+      } else {
+        return this.objectMapper.treeToValue(responseNode, org.entcore.broker.api.dto.event.CreateEventResponseDTO.class);
+      }
+      
+    } catch (Exception e) {
+      Log.error("Failed to send request to NATS", e);
+      throw new RuntimeException("Failed to send request to NATS", e);
+    }
+  }
+  
   public org.entcore.broker.api.dto.directory.CreateGroupResponseDTO createManualGroup(org.entcore.broker.api.dto.directory.CreateGroupRequestDTO request) {
     String subject = "directory.group.manual.create";
     Log.debug("Sending request to NATS subject: " + subject);

@@ -26,6 +26,7 @@ import org.entcore.common.cache.CacheService;
 import org.entcore.common.http.BaseServer;
 import org.entcore.portal.controllers.PortalController;
 import org.entcore.portal.listeners.I18nBrokerListenerImpl;
+import org.entcore.common.events.EventBrokerListenerImpl;
 
 public class Portal extends BaseServer {
 
@@ -36,7 +37,7 @@ public class Portal extends BaseServer {
 		final AddressParameter parameter = new AddressParameter("application", "portal");
 		final CacheService cacheService = CacheService.create(vertx);
 		BrokerProxyUtils.addBrokerProxy(new I18nBrokerListenerImpl(vertx, assetPath, cacheService), vertx, parameter);
-		
+		BrokerProxyUtils.addBrokerProxy(new EventBrokerListenerImpl(), vertx);
 		addController(new PortalController());
 	}
 
