@@ -67,7 +67,7 @@ public class ShareBrokerListenerImpl implements ShareBrokerListener {
                 final JsonArray sharedArray = shareEvent.right().getValue();
                 final Optional<JsonObject> found = sharedArray.stream().filter(shareObj -> shareObj instanceof JsonObject)
                         .map(shareObj -> (JsonObject) shareObj)
-                        .filter(shareObj -> shareObj.getString("groupId").equals(request.getGroupId())).findFirst();
+                        .filter(shareObj -> shareObj.getString("groupId") != null && shareObj.getString("groupId").equals(request.getGroupId())).findFirst();
                 // add shares to request groupId
                 final JsonObject sharedObject = shareService.sharedArrayToSharedObject(sharedArray);
                 final JsonObject groups = sharedObject.getJsonObject("groups", new JsonObject());
