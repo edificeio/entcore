@@ -78,17 +78,30 @@ export const workspaceNextcloudFolderController = ng.controller(
 
       let subscriptions: Subscription = new Subscription();
 
+      // Resolve user has the following actions:
+      // 1. Fetch user info
+      // 1.a) If user exists, fetch user info
+      // 1.b) If user does not exist, it will create its nextcloud user
       nextcloudUserService
-        .getUserInfo(model.me.userId)
-        .then((nextcloudUserInfo: UserNextcloud) => {
-          $scope.userInfo = nextcloudUserInfo;
-          $scope.documents = [new SyncDocument().initParent()];
-          $scope.initTree($scope.documents);
-          $scope.initDraggable();
-          safeApply($scope);
+        .resolveUser(model.me.userId)
+        .then((user) => {
+          nextcloudUserService
+            .getUserInfo(model.me.userId)
+            .then((nextcloudUserInfo: UserNextcloud) => {
+              $scope.userInfo = nextcloudUserInfo;
+              $scope.documents = [new SyncDocument().initParent()];
+              $scope.initTree($scope.documents);
+              $scope.initDraggable();
+              safeApply($scope);
+            })
+            .catch((err: Error) => {
+              const message: string =
+                "Error while attempting to fetch user info";
+              console.error(message + err.message);
+            });
         })
         .catch((err: Error) => {
-          const message: string = "Error while attempting to fetch user info";
+          const message: string = "Error while attempting to resolve user";
           console.error(message + err.message);
         });
 
