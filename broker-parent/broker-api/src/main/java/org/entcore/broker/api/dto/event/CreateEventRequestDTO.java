@@ -58,13 +58,9 @@ public class CreateEventRequestDTO {
      */
     @Transient
     public boolean isValid() {
-        // At minimum, an event type and module are required, and one of:
-        // - userId
-        // - login
+        // At minimum, an event type and module are required
         return eventType != null && !eventType.isEmpty() && 
-               module != null && !module.isEmpty() &&
-               ((userId != null && !userId.isEmpty()) || 
-               (login != null && !login.isEmpty()));
+               module != null && !module.isEmpty();
     }
 
     // Getters only, with JsonProperty annotations

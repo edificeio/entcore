@@ -18,6 +18,6 @@ public interface EventBrokerListener {
    * @param request The request object containing event details (type, user info, custom attributes)
    * @return A Future containing the response with the event ID
    */
-  @BrokerListener(subject = "event.store", proxy = true)
+  @BrokerListener(subject = "event.store.create", proxy = true)
   Future<CreateEventResponseDTO> createAndStoreEvent(CreateEventRequestDTO request);
 }

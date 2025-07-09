@@ -136,7 +136,7 @@ public class EntNatsServiceClient {
   }
   
   public org.entcore.broker.api.dto.event.CreateEventResponseDTO createAndStoreEvent(org.entcore.broker.api.dto.event.CreateEventRequestDTO request) {
-    String subject = "event.store";
+    String subject = "event.store.create";
     Log.debug("Sending request to NATS subject: " + subject);
     try {
       final byte[] payload = this.objectMapper.writeValueAsBytes(request);

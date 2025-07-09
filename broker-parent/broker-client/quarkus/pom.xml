@@ -17,18 +17,6 @@
         <jandex.version>3.2.1</jandex.version>
     </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>${groupId}</groupId>
-            <artifactId>broker-api</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.nats</groupId>
-            <artifactId>jnats</artifactId>
-            <version>${jnats.version}</version>
-        </dependency>
-    </dependencies>
 
     <repositories>
         <repository>
@@ -60,6 +48,19 @@
             <url>https://maven.opendigitaleducation.com/nexus/content/repositories/releases/</url>
         </repository>
     </distributionManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>broker-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.nats</groupId>
+            <artifactId>jnats</artifactId>
+            <version>${jnats.version}</version>
+        </dependency>
+    </dependencies>
 
     <build>
         <plugins>
