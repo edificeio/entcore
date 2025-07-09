@@ -515,6 +515,7 @@ public class I18nBrokerListenerImpl implements I18nBrokerListener {
         }
 
         try {
+            log.info("Registering I18n files for application: {}", request.getApplication());
             final String application = request.getApplication();
             
             // Process registration

@@ -25,6 +25,6 @@ public interface I18nBrokerListener {
    * @param request The request object containing the details of the i18n files to register.
    * @return A response object indicating the success or failure of the registration process.
    */
-  @BrokerListener(subject = "i18n.{application}.register", proxy = true)
+  @BrokerListener(subject = "i18n.{application}.register", proxy = true, broadcast = true)
   Future<RegisterTranslationFilesResponseDTO> registerI18nFiles(RegisterTranslationFilesRequestDTO request);
 }
