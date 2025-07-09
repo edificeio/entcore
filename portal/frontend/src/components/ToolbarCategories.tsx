@@ -1,12 +1,4 @@
 import { Toolbar, ToolbarItem } from '@edifice.io/react';
-import {
-  IconCheck,
-  IconClock,
-  IconExternalLink,
-  IconStar,
-} from '@edifice.io/react/icons';
-import { IconBlog } from '@edifice.io/react/icons/apps';
-import { IconTeacher } from '@edifice.io/react/icons/audience';
 import clsx from 'clsx';
 import { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -22,8 +14,6 @@ export const ToolbarCategories = () => {
   const { applications, isLoading, isError } = useApplications();
   const { setActiveCategory, activeCategory } = useCategoryStore();
   const { t } = useTranslation('common');
-
-  const isMobileView = window.innerWidth <= 768;
 
   const {
     data: myAppsPreferences,
@@ -60,18 +50,16 @@ export const ToolbarCategories = () => {
   if (isError) return <div>Erreur lors du chargement des applications.</div>;
 
   const baseCategories: Category[] = [
-    { id: 'all', name: 'my.apps.tabs.all', icon: <IconCheck /> },
-    { id: 'favorites', name: 'my.apps.tabs.favorites', icon: <IconStar /> },
+    { id: 'all', name: 'my.apps.tabs.all' },
+    { id: 'favorites', name: 'my.apps.tabs.favorites' },
     {
       id: 'communication',
       name: 'my.apps.tabs.communication',
-      icon: <IconBlog />,
     },
-    { id: 'pedagogy', name: 'my.apps.tabs.pedagogy', icon: <IconTeacher /> },
+    { id: 'pedagogy', name: 'my.apps.tabs.pedagogy' },
     {
       id: 'organisation',
       name: 'my.apps.tabs.organisation',
-      icon: <IconClock />,
     },
   ];
 
@@ -81,7 +69,6 @@ export const ToolbarCategories = () => {
         {
           id: 'connector',
           name: 'my.apps.tabs.connector',
-          icon: <IconExternalLink />,
         },
       ]
     : baseCategories;
@@ -90,37 +77,22 @@ export const ToolbarCategories = () => {
     (category) => {
       const isActive = activeCategory === category.id;
 
-      return isMobileView
-        ? {
-            type: 'icon',
-            name: category.id,
-            props: {
-              className: clsx('fw-normal', {
-                'bg-secondary-200 fw-bold': isActive,
-              }),
-              icon: category.icon,
-              onClick: () => {
-                setActiveCategory(category.id);
-                updateMyAppsPreferences.mutate({ tab: category.id });
-              },
-            },
-          }
-        : {
-            type: 'button',
-            name: category.id,
-            props: {
-              className: clsx('fw-normal', {
-                'bg-secondary-200 fw-bold': isActive,
-              }),
-              children: (
-                <span data-id={`tab-${category.id}`}>{t(category.name)}</span>
-              ),
-              onClick: () => {
-                setActiveCategory(category.id);
-                updateMyAppsPreferences.mutate({ tab: category.id });
-              },
-            },
-          };
+      return {
+        type: 'button',
+        name: category.id,
+        props: {
+          className: clsx('fw-normal', {
+            'bg-secondary-200 fw-bold': isActive,
+          }),
+          children: (
+            <span data-id={`tab-${category.id}`}>{t(category.name)}</span>
+          ),
+          onClick: () => {
+            setActiveCategory(category.id);
+            updateMyAppsPreferences.mutate({ tab: category.id });
+          },
+        },
+      };
     },
   );
   return (
