@@ -19,8 +19,42 @@ body {
   text-align: center;
 }
 
-.application-icon i::before {
+.theme-1d .application-card {
+  width: 130px;
+  height: 150px;
+}
+.theme-1d .application-icon {
+  width: 80px;
+  height: 80px;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+.theme-1d .application-icon-app {
+  line-height: 72px !important;
+  font-size: 6rem !important;
+  width: 6rem !important;
+  height: 6rem !important;
+}
+.theme-2d .application-icon-app {
   line-height: 67px !important;
+  font-size: 4.5rem !important;
+  width: 4.5rem !important;
+  height: 4.5rem !important;
+}
+
+
+.theme-1d .application-icon-src {
+  font-size: 6rem !important;
+  font-weight: bold !important;
+  line-height: 1 !important;
+}
+
+.theme-2d .application-icon-src {
+  font-size: 4.5rem !important;
+  font-weight: bold !important;
+  line-height: 1 !important;
 }
 
 .application-card .dropdown-menu {
@@ -90,6 +124,7 @@ body {
   max-width: 100%;
   white-space: nowrap;
   justify-content: flex-start;
+  overflow: hidden;
 }
 .toolbar-categories[role='toolbar'] {
   margin-left: 0 !important;
