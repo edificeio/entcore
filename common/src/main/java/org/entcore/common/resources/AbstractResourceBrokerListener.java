@@ -7,8 +7,8 @@ import org.entcore.broker.api.dto.resources.GetResourcesRequestDTO;
 import org.entcore.broker.api.dto.resources.GetResourcesResponseDTO;
 import org.entcore.broker.api.dto.resources.ResourceInfoDTO;
 import org.entcore.broker.proxy.ResourceBrokerListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.util.List;
 import java.util.stream.Collectors;

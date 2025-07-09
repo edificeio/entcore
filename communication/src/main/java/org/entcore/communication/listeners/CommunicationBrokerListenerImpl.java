@@ -10,8 +10,8 @@ import org.entcore.broker.api.dto.communication.*;
 import org.entcore.broker.proxy.CommunicationBrokerListener;
 import org.entcore.communication.services.CommunicationService;
 import org.entcore.communication.services.CommunicationService.Direction;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Implementation of the CommunicationBrokerListener interface.
