@@ -350,7 +350,7 @@
       {
         "name": "nabook",
         "category": "pedagogy",
-        "color": "blue",
+        "color": "nabook-color",
         "libraries": false,
         "help": {
           "fr": "https://help.edifice.io/hc/fr/articles/19317709653660-Pr%C3%A9sentation-de-l-application-Nabook",
