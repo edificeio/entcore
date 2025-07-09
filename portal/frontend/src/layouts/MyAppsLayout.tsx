@@ -60,24 +60,24 @@ export const MyAppLayout = ({ theme }: { theme: string }) => {
       <div className={classLayout}>
         <header className="d-flex justify-content-between align-items-center my-apps-header">
           <h1 className="m-0 h3 text-info">{t('navbar.applications')}</h1>
-          <SearchBar
-            clearable
-            isVariant
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder={t('my.apps.search')}
-            className="my-apps-search"
-            size="md"
-          />
+          <Flex gap="4" className="p-3" align="end">
+            <div>
+              <SearchBar
+                clearable
+                isVariant
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={t('my.apps.search')}
+                className="my-apps-search"
+                size="md"
+              />
+            </div>
+            <div>
+              <MyAppOnboardingModal />
+            </div>
+          </Flex>
         </header>
-        <Flex className="p-3 border" align="end">
-          <div className="flex-grow-1 p-2">
-            {!search.length && <ToolbarCategories />}
-          </div>
-          <div className="flex-grow-3 p-2 mb-2">
-            <MyAppOnboardingModal />
-          </div>
-        </Flex>
+        {!search.length && <ToolbarCategories />}
 
         <ApplicationList
           applications={filteredApps}
