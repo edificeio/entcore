@@ -162,7 +162,7 @@ export class EntNatsServiceClient {
   
   
   async createAndStoreEvent(request: CreateEventRequestDTO): Promise<CreateEventResponseDTO> {
-    const eventAddress = "event.store";
+    const eventAddress = "event.store.create";
     this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
     const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
     if(!reply) {
