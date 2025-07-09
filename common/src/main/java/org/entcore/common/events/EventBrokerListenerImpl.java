@@ -4,13 +4,11 @@ import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
-import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import org.entcore.broker.api.dto.event.CreateEventRequestDTO;
 import org.entcore.broker.api.dto.event.CreateEventResponseDTO;
 import org.entcore.broker.proxy.EventBrokerListener;
 import org.entcore.common.http.request.JsonHttpServerRequest;
-import org.entcore.common.user.UserInfos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,48 +47,19 @@ public class EventBrokerListenerImpl implements EventBrokerListener {
             }
             
             final String eventType = request.getEventType();
-            final JsonObject customAttributes = request.getCustomAttributes();
             
             // Get the EventStore using the module parameter
             final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(request.getModule());
             
-            // Determine which method to use based on available information
-            if (request.getUserId() != null) {
-                // Use userId-based event creation
-                UserInfos user = new UserInfos();
-                user.setUserId(request.getUserId());
-                
-                // Store the event
-                eventStore.createAndStoreEvent(eventType, user, customAttributes);
-                
-                // Return success response
-                promise.complete(new CreateEventResponseDTO(""));
-            } else if (request.getLogin() != null) {
-                if (request.getHeaders() != null || request.getPath() != null) {
-                    // Create a simulated HttpServerRequest
-                    HttpServerRequest httpRequest = createSimulatedHttpRequest(request);
-                    
-                    // Store the event
-                    if (request.getClientId() != null) {
-                        eventStore.createAndStoreEvent(eventType, request.getLogin(), request.getClientId(), httpRequest);
-                    } else {
-                        eventStore.createAndStoreEvent(eventType, request.getLogin(), httpRequest);
-                    }
-                } else {
-                    // Use login-based event creation without HttpServerRequest
-                    if (request.getClientId() != null) {
-                        eventStore.createAndStoreEventByUserId(eventType, request.getLogin(), request.getClientId(), null);
-                    } else {
-                        eventStore.createAndStoreEvent(eventType, request.getLogin());
-                    }
-                }
-                
-                // Return success response
-                promise.complete(new CreateEventResponseDTO(""));
-            } else {
-                // This should not happen if isValid() is properly implemented
-                return Future.failedFuture("request.missing.user.information");
-            }
+            // Always create a simulated HttpServerRequest with all available information
+            SecureHttpServerRequest httpRequest = createSimulatedHttpRequest(request);
+            
+            // Always use the same method to store the event
+            eventStore.createAndStoreEvent(eventType, httpRequest);
+            
+            // Return success response
+            promise.complete(new CreateEventResponseDTO(""));
+            
         } catch (Exception e) {
             log.error("Error while creating and storing event", e);
             return Future.failedFuture("event.creation.error");
@@ -112,7 +81,8 @@ public class EventBrokerListenerImpl implements EventBrokerListener {
         
         // Set up headers
         final MultiMap headers = MultiMap.caseInsensitiveMultiMap();
-        
+        // force IP
+        headers.add("X-Forwarded-For", request.getIp());
         // Add provided headers
         if (request.getHeaders() != null) {
             for (Map.Entry<String, String> header : request.getHeaders().entrySet()) {

@@ -28,6 +28,26 @@ export default defineConfig({
       name: '@edifice.io/edifice-ent-client',
       fileName: 'index',
     },
+    rollupOptions: {
+      // theses are external dependencies that should not be bundled
+      external: [
+        '@nestjs/common',
+        '@nestjs/microservices',
+        'rxjs',
+        'util',
+        'node:util'
+      ],
+      output: {
+        // Provide global variables to use in the UMD build
+        globals: {
+          '@nestjs/common': 'NestjsCommon',
+          '@nestjs/microservices': 'NestjsMicroservices',
+          'rxjs': 'rxjs',
+          'util': 'util',
+          'node:util': 'util'
+        }
+      }
+    }
   },
   plugins: [
     dts({
