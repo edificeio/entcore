@@ -35,8 +35,8 @@ export function RecipientListEdit({
 
   const { getBookmarkById } = useBookmarkById();
   const message = useMessageStore.use.message();
-  const setMessage = useMessageStore.getState().setMessage;
-  const setMessageNeedToSave = useMessageStore.getState().setMessageNeedToSave;
+  const setMessage = useMessageStore.use.setMessage();
+  const setMessageNeedToSave = useMessageStore.use.setMessageNeedToSave();
   const [isComboboxFocused, setIsComboboxFocused] = useState(false);
   const [selectedBookmarkIds, setSelectedBookmarkIds] = useState<string[]>([]);
   const comboboxRef = useRef<ComboboxRef>(null);

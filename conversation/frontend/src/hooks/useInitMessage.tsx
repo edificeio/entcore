@@ -28,7 +28,7 @@ export function useInitMessage({
   const { data: signatureData, isPending: getSignatureIsPending } =
     useSignaturePreferences();
   const message = useMessageStore.use.message();
-  const setMessage = useMessageStore.getState().setMessage;
+  const setMessage = useMessageStore.use.setMessage();
 
   // Get IDs of users and groups/favorites to add as recipients.
   const { recipients: recipientsToAddToMessage } = useAdditionalRecipients();

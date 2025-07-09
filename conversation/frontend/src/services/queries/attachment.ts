@@ -16,7 +16,7 @@ import {
  */
 export const useAttachFiles = () => {
   const queryClient = useQueryClient();
-  const setMessage = useMessageStore.getState().setMessage;
+  const setMessage = useMessageStore.use.setMessage();
   const message = useMessageStore.use.message();
   const { updateFolderMessagesQueryCache } = useFolderUtils();
   const toast = useToast();
@@ -80,7 +80,7 @@ export const useAttachFiles = () => {
  */
 export const useDetachFile = () => {
   const queryClient = useQueryClient();
-  const setMessage = useMessageStore.getState().setMessage;
+  const setMessage = useMessageStore.use.setMessage();
   const { updateFolderMessagesQueryCache } = useFolderUtils();
 
   return useMutation({

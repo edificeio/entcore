@@ -7,7 +7,7 @@ export const useAutoSaveMessage = () => {
   const { data: publicConfig } = useConversationConfig();
   const messageUpdatedNeedSave = useMessageStore.use.messageNeedToSave();
   const createOrUpdateDraft = useCreateOrUpdateDraft();
-  const setMessageNeedToSave = useMessageStore.getState().setMessageNeedToSave;
+  const setMessageNeedToSave = useMessageStore.use.setMessageNeedToSave();
   const message = useMessageStore.use.message();
   const debounceTimeToSave = useRef(3000);
   const messageUpdatedNeedSaveDebounced = useDebounce(

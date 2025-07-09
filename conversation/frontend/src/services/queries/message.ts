@@ -441,7 +441,7 @@ export const useCreateOrUpdateDraft = () => {
  * @returns Mutation result for creating the draft.
  */
 export const useCreateDraft = () => {
-  const setMessage = useMessageStore.getState().setMessage;
+  const setMessage = useMessageStore.use.setMessage();
   const message = useMessageStore.use.message();
   const { updateFolderBadgeCountQueryCache } =
     useUpdateFolderBadgeCountQueryCache();
@@ -482,7 +482,7 @@ export const useCreateDraft = () => {
  * @returns Mutation result for updating the draft.
  */
 export const useUpdateDraft = () => {
-  const setMessage = useMessageStore.getState().setMessage;
+  const setMessage = useMessageStore.use.setMessage();
   const queryClient = useQueryClient();
   const messageUpdated = useMessageStore.use.message();
 

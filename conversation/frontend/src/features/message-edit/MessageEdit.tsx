@@ -14,8 +14,8 @@ import { useAutoSaveMessage } from './hooks/useAutoSaveMessage';
 export function MessageEdit({ message }: { message?: Message }) {
   const { t } = useI18n();
   const [subject, setSubject] = useState(message?.subject);
-  const setMessage = useMessageStore.getState().setMessage;
-  const setMessageNeedToSave = useMessageStore.getState().setMessageNeedToSave;
+  const setMessage = useMessageStore.use.setMessage();
+  const setMessageNeedToSave = useMessageStore.use.setMessageNeedToSave();
   const createOrUpdateDraft = useCreateOrUpdateDraft();
   useAutoSaveMessage();
   const { action } = useMessageIdAndAction();
