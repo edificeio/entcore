@@ -91,7 +91,7 @@ export function ApplicationWrapper({ data }: { data: Application }) {
               Omit<IconButtonProps, 'ref'> &
               RefAttributes<HTMLButtonElement>,
           ) => (
-            <>
+            <div data-testid="dropdown">
               <IconButton
                 {...triggerProps}
                 ref={combineRefs(
@@ -104,7 +104,7 @@ export function ApplicationWrapper({ data }: { data: Application }) {
                 aria-label="label"
                 color="secondary"
                 variant="ghost"
-                className="bg-secondary-200 border border-white text-secondary"
+                className="bg-white border border-white"
                 icon={<IconOptions />}
               />
               <ApplicationMenu
@@ -112,7 +112,7 @@ export function ApplicationWrapper({ data }: { data: Application }) {
                 onToggleFavorite={handleToggleFavorite}
                 onActionDone={handleActionDone}
               />
-            </>
+            </div>
           )}
         </Dropdown>
       </div>
