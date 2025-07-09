@@ -1,5 +1,5 @@
 import { Folder } from '~/models';
-import { useAppActions } from '~/store';
+import { useActionsStore } from '~/store/actions';
 
 /**
  * Custom hook that provides handlers for folder-related actions.
@@ -10,8 +10,9 @@ import { useAppActions } from '~/store';
  * - `handleRename`: Opens the folder rename modal and sets the selected folder.
  * - `handleTrash`: Opens the folder trash modal and sets the selected folder.
  */
-export function useFolderHandlers() {
-  const { setOpenedModal, setSelectedFolders } = useAppActions();
+export const useFolderHandlers = () => {
+  const setOpenedModal = useActionsStore.use.setOpenedModal();
+  const setSelectedFolders = useActionsStore.use.setSelectedFolders();
 
   const handleCreate = () => {
     setOpenedModal('create');
@@ -48,4 +49,4 @@ export function useFolderHandlers() {
     /** Opens the message to move modal and sets the selected folder. */
     handleMoveMessage,
   };
-}
+};

@@ -1,13 +1,13 @@
 import { ConfirmModal } from '@edifice.io/react';
 import { useEffect } from 'react';
 import { useI18n } from '~/hooks/useI18n';
-import { useAppActions } from '~/store';
+import { useActionsStore } from '~/store/actions';
 import { useFolderActions } from './hooks';
 import './FolderModalInDropdown.css';
 
 export function TrashFolderModal() {
   const { t } = useI18n();
-  const { setOpenedModal } = useAppActions();
+  const setOpenedModal = useActionsStore.use.setOpenedModal();
   const { trashFolder: handleTrashClick, isActionPending } = useFolderActions();
 
   useEffect(() => {

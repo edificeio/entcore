@@ -1,12 +1,12 @@
 import { SignaturePreferences } from '~/models/signature';
 import { useSetSignaturePreferences } from '~/services';
-import { useAppActions } from '~/store';
+import { useActionsStore } from '~/store/actions';
 
 /**
  * Custom hook that provides logic for signature-related actions.
  */
-export function useSignatureHandlers() {
-  const { setOpenedModal } = useAppActions();
+export const useSignatureHandlers = () => {
+  const setOpenedModal = useActionsStore.use.setOpenedModal();
   const mutation = useSetSignaturePreferences();
 
   const closeModal = () => setOpenedModal(undefined);
@@ -22,4 +22,4 @@ export function useSignatureHandlers() {
     /** Save the signature. */
     save,
   };
-}
+};

@@ -9,7 +9,7 @@ import { IconFilter } from '@edifice.io/react/icons';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { useAppActions } from '~/store/actions';
+import { useActionsStore } from '~/store/actions';
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 
 export function MessageListHeader() {
@@ -19,7 +19,7 @@ export function MessageListHeader() {
   const { lg } = useBreakpoint();
   const { folderId } = useSelectedFolder();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { setSelectedMessageIds } = useAppActions();
+  const setSelectedMessageIds = useActionsStore.use.setSelectedMessageIds();
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isSearchDisabled, setIsSearchDisabled] = useState(true);
 

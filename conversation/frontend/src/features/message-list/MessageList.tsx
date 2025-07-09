@@ -17,7 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { useFolderMessages } from '~/services';
-import { useAppActions } from '~/store/actions';
+import { useActionsStore } from '~/store/actions';
 import { MessageItem } from './components/MessageItem';
 import useToolbarActions from './hooks/useToolbarActions';
 import useToolbarVisibility from './hooks/useToolbarVisibility';
@@ -28,7 +28,7 @@ export function MessageList() {
 
   const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
-  const { setSelectedMessageIds } = useAppActions();
+  const setSelectedMessageIds = useActionsStore.use.setSelectedMessageIds();
 
   const {
     messages,
