@@ -54,12 +54,12 @@ export function ApplicationIcon({
               onError={() => setHasError(true)}
             />
           ) : (
-            <span style={{ fontSize: '4.5rem', fontWeight: 'bold', lineHeight: 1 }}>
+            <span className='application-icon-src'>
               {appName.charAt(0).toUpperCase()}
             </span>
           )
         ) : (
-          <IconComponent style={{ width: '4.5rem', height: '4.5rem' }} />
+          <IconComponent className='application-icon-app' />
         )}
       </span>
     </span>
