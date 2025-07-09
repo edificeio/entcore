@@ -13,8 +13,8 @@ import org.entcore.broker.api.dto.shares.UpsertGroupSharesResponseDTO;
 import org.entcore.broker.proxy.ShareBrokerListener;
 import org.entcore.common.share.ShareRoles;
 import org.entcore.common.share.ShareService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;
