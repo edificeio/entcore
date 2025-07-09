@@ -47,22 +47,27 @@ export default function MyAppOnboardingModal() {
       </div>
       <OnboardingModal
         ref={onboardingModalRef}
-        id="showOnboardingMyApps0"
+        id="showOnboardingMyApps52"
         items={[
           {
             src: illuOnboardingNew,
-            title: t('my.apps.onboarding.modal.screen1.title'),
-            alt: t('my.apps.onboarding.modal.screen1.alt'),
-            text: t('my.apps.onboarding.modal.screen1.text'),
+            title: 'my.apps.onboarding.modal.screen1.title',
+            alt: 'my.apps.onboarding.modal.screen1.alt',
+            text: 'my.apps.onboarding.modal.screen1.text',
           },
           {
             src: illuOnboardingIncoming,
-            title: t('my.apps.onboarding.modal.screen2.title'),
-            alt: t('my.apps.onboarding.modal.screen2.alt'),
-            text: t('my.apps.onboarding.modal.screen2.text'),
+            title: 'my.apps.onboarding.modal.screen2.title',
+            alt: 'my.apps.onboarding.modal.screen2.alt',
+            text: 'my.apps.onboarding.modal.screen2.text',
+          },
+          {
+            src: illuOnboardingNew,
+            title: 'my.apps.onboarding.modal.screen3.title',
+            alt: 'my.apps.onboarding.modal.screen3.alt',
+            text: 'my.apps.onboarding.modal.screen3.text',
           },
         ]}
-        defaultOpen={false}
         isOnboardingChange={(isOnboarding) => {
           setIsOnboarding(isOnboarding);
         }}
