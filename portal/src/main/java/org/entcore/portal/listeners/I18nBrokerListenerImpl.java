@@ -13,8 +13,8 @@ import org.entcore.broker.api.dto.i18n.RegisterTranslationFilesResponseDTO;
 import org.entcore.broker.proxy.I18nBrokerListener;
 import org.entcore.common.cache.CacheService;
 import org.entcore.common.http.request.JsonHttpServerRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.io.File;
 import java.util.*;

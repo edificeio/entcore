@@ -9,8 +9,8 @@ import org.entcore.broker.api.dto.event.CreateEventRequestDTO;
 import org.entcore.broker.api.dto.event.CreateEventResponseDTO;
 import org.entcore.broker.proxy.EventBrokerListener;
 import org.entcore.common.http.request.JsonHttpServerRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.util.Map;
 

@@ -19,8 +19,8 @@ import org.entcore.common.http.filter.AppOAuthResourceProvider;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
