@@ -23,16 +23,25 @@ export const useApplications = () => {
 
   const displayedApps = query.data?.apps
     .map((app) => {
-      const enhancement = enhanceData.apps.find((e) => e.name === app.name);
-      const shouldBePedagogy =
+      var enhancement = enhanceData.apps.find((e) => e.name === app.name);
+
+      const isLibrary =
         app.address?.includes('library.edifice.io') && !enhancement?.category;
+
+      if (isLibrary) {
+        enhancement = enhanceData.apps.find((e) => e.name === 'library-info');
+
+        if (enhancement) {
+          enhancement.name = app.name;
+        }
+      }
+
       const isFavorite = bookmarks.includes(app.name);
 
       return {
-        ...{ appName: getAppName(app, t), category: 'connector' },
         ...app,
+        ...{ appName: getAppName(app, t), category: 'connector' },
         ...(enhancement || {}),
-        ...(shouldBePedagogy ? { category: 'pedagogy', isExternal: true } : {}),
         isFavorite,
       };
     })
