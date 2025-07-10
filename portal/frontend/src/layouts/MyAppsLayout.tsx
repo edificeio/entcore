@@ -45,7 +45,7 @@ export const MyAppLayout = ({ theme }: { theme: string }) => {
     //Skeleton
     return (
       <div className={classLayout}>
-        <header className="d-flex justify-content-between align-items-center my-apps-header">
+        <header className="d-flex justify-content-between my-apps-header">
           <TextSkeleton className="col-3" />
           <ButtonSkeleton className="my-apps-search" />
         </header>
@@ -58,9 +58,9 @@ export const MyAppLayout = ({ theme }: { theme: string }) => {
   return (
     <>
       <div className={classLayout}>
-        <header className="d-flex justify-content-between align-items-center my-apps-header">
+        <header className="d-flex justify-content-between my-apps-header">
           <h1 className="m-0 h3 text-info">{t('navbar.applications')}</h1>
-          <Flex gap="4" className="p-3" align="end">
+          <Flex gap="16" className="p-3" align="end">
             <div>
               <SearchBar
                 clearable
