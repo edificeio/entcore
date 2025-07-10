@@ -563,6 +563,11 @@ public class UserBookController extends BaseController {
 
 	}
 
+	@Get("/avatar/")
+	public void getAvatarNotFound(final HttpServerRequest request) {
+		Renders.notFound(request, "avatar.not.found");
+	}
+
 	@Get("/avatar/:id")
 	public void getAvatar(final HttpServerRequest request) {
 		String id = request.params().get("id");
