@@ -1,11 +1,11 @@
-import { useWorkflows } from '~/store';
+import { useActionsStore } from '~/store/actions';
 
 /**
  * This hook checks the workflows rights the current user may have.
  * Workflow rights are always loaded by the root loader.
  */
 export function useRights() {
-  const actions = useWorkflows();
+  const actions = useActionsStore.use.workflows();
   const canCreateDraft =
     actions?.[
       'org.entcore.conversation.controllers.ConversationController|createDraft'

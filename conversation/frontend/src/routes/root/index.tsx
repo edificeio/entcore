@@ -25,7 +25,7 @@ import {
   configQueryOptions,
   folderQueryOptions,
 } from '~/services/queries';
-import { setConfig, setWorkflows, useOpenedModal } from '~/store';
+import { useActionsStore } from '~/store/actions';
 import MessageOnboardingModal from './components/MessageOnboardingModal';
 import { ScrollableOutlet } from './components/ScrollableOutlet';
 import './index.css';
@@ -45,6 +45,8 @@ export function loader(queryClient: QueryClient) {
       ]);
 
       // Store those constant values.
+      const setWorkflows = useActionsStore.getState().setWorkflows;
+      const setConfig = useActionsStore.getState().setConfig;
       if (actions) setWorkflows(actions);
       if (config) setConfig(config);
 
@@ -74,7 +76,7 @@ export function Component() {
   const isNewDraft = location.pathname === '/draft/create';
   const showMobileMenu = !(isNewDraft || params.messageId);
 
-  const openedModal = useOpenedModal();
+  const openedModal = useActionsStore.use.openedModal();
 
   if (!init || !currentApp) return <LoadingScreen position={false} />;
 

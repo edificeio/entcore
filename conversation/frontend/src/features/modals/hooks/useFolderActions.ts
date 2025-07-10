@@ -1,4 +1,4 @@
-import { useAppActions, useSelectedFolders } from '~/store';
+import { useActionsStore } from '~/store/actions';
 import { useToast } from '@edifice.io/react';
 import {
   searchFolder,
@@ -20,8 +20,8 @@ export function useFolderActions() {
   const navigate = useNavigate();
   const currentFolder = useSelectedFolder();
   const foldersTreeQuery = useFoldersTree();
-  const selectedFolders = useSelectedFolders();
-  const { setSelectedFolders } = useAppActions();
+  const selectedFolders = useActionsStore.use.selectedFolders();
+  const setSelectedFolders = useActionsStore.use.setSelectedFolders();
   const createMutation = useCreateFolder();
   const trashMutation = useTrashFolder();
   const renameMutation = useRenameFolder();

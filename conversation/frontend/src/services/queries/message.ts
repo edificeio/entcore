@@ -17,7 +17,7 @@ import {
   folderQueryKeys,
   messageService,
 } from '~/services';
-import { useMessage, useMessageActions } from '~/store/messageStore';
+import { useMessageStore } from '~/store/messageStore';
 import { useDeleteMessagesFromQueryCache } from './hooks/useDeleteMessageFromQueryCache';
 import { useMessageListOnMutate } from './hooks/useMessageListOnMutate';
 import { useToggleUnreadMessagesFromQueryCache } from './hooks/useToggleUnreadMessageFromQueryCache';
@@ -361,7 +361,7 @@ export const useMoveMessage = () => {
 export const useCreateOrUpdateDraft = () => {
   const updateDraft = useUpdateDraft();
   const createDraft = useCreateDraft();
-  const messageUpdated = useMessage();
+  const messageUpdated = useMessageStore.use.message();
   const toast = useToast();
   const { t } = useI18n();
   const { transferMessageId } = useMessageIdAndAction();
@@ -441,8 +441,8 @@ export const useCreateOrUpdateDraft = () => {
  * @returns Mutation result for creating the draft.
  */
 export const useCreateDraft = () => {
-  const { setMessage } = useMessageActions();
-  const message = useMessage();
+  const setMessage = useMessageStore.use.setMessage();
+  const message = useMessageStore.use.message();
   const { updateFolderBadgeCountQueryCache } =
     useUpdateFolderBadgeCountQueryCache();
 
@@ -482,9 +482,9 @@ export const useCreateDraft = () => {
  * @returns Mutation result for updating the draft.
  */
 export const useUpdateDraft = () => {
-  const { setMessage } = useMessageActions();
+  const setMessage = useMessageStore.use.setMessage();
   const queryClient = useQueryClient();
-  const messageUpdated = useMessage();
+  const messageUpdated = useMessageStore.use.message();
 
   return useMutation({
     mutationFn: ({

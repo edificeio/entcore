@@ -1,12 +1,12 @@
 import { useDate } from '@edifice.io/react';
 import { useEffect, useState } from 'react';
 import { useI18n } from '~/hooks/useI18n';
-import { useMessage } from '~/store/messageStore';
+import { useMessageStore } from '~/store/messageStore';
 
-export const MessageSaveDate = () => {
+export function MessageSaveDate() {
   const { fromNow } = useDate();
   const { t } = useI18n();
-  const message = useMessage();
+  const message = useMessageStore.use.message();
   const [dateKey, setDateKey] = useState(0);
 
   useEffect(() => {
@@ -21,6 +21,6 @@ export const MessageSaveDate = () => {
       </div>
     )
   );
-};
+}
 
 export default MessageSaveDate;

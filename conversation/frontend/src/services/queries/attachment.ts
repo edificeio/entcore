@@ -2,7 +2,7 @@ import { useToast } from '@edifice.io/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useI18n } from '~/hooks/useI18n';
 import { Attachment, Message } from '~/models';
-import { useMessage, useMessageActions } from '~/store/messageStore';
+import { useMessageStore } from '~/store/messageStore';
 import {
   attachmentService,
   messageQueryKeys,
@@ -16,8 +16,8 @@ import {
  */
 export const useAttachFiles = () => {
   const queryClient = useQueryClient();
-  const { setMessage } = useMessageActions();
-  const message = useMessage();
+  const setMessage = useMessageStore.use.setMessage();
+  const message = useMessageStore.use.message();
   const { updateFolderMessagesQueryCache } = useFolderUtils();
   const toast = useToast();
   const { t } = useI18n();
@@ -80,7 +80,7 @@ export const useAttachFiles = () => {
  */
 export const useDetachFile = () => {
   const queryClient = useQueryClient();
-  const { setMessage } = useMessageActions();
+  const setMessage = useMessageStore.use.setMessage();
   const { updateFolderMessagesQueryCache } = useFolderUtils();
 
   return useMutation({

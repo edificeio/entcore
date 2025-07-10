@@ -4,7 +4,7 @@ import { queryOptions, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Config } from '~/config';
 import { Visible } from '~/models/visible';
 import { userService } from '~/services';
-import { useConfig } from '~/store';
+import { useActionsStore } from '~/store/actions';
 
 export const userQueryOptions = {
   base: ['user'] as const,
@@ -153,7 +153,7 @@ function applySearchRules(
  */
 export const useSearchVisible = () => {
   const queryClient = useQueryClient();
-  const { getVisibleStrategy } = useConfig();
+  const { getVisibleStrategy } = useActionsStore.use.config();
   const { isAdml } = useIsAdml();
 
   const searchVisible = async (search: string) => {

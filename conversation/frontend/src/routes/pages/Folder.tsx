@@ -54,11 +54,11 @@ export function Component() {
 
   return (
     <>
-      {(!!messages.length ||
+      {(!!messages?.length ||
         searchParams.get('search') ||
         searchParams.get('unread')) && <MessageListHeader />}
       <MessageList />
-      {!isLoadingMessage && !messages.length && <MessageListEmpty />}
+      {!isLoadingMessage && !messages?.length && <MessageListEmpty />}
       {isFetchingNextPage && <MessageListSkeleton withHeader={false} />}
     </>
   );

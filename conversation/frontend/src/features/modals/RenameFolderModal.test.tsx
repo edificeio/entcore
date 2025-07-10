@@ -17,10 +17,10 @@
  * - `should rename a folder`: Ensures that creating a folder with a valid name triggers a success toast.
  */
 import { describe, expect, it } from 'vitest';
-import { fireEvent, render, renderHook, screen, waitFor } from '~/mocks/setup';
-import { RenameFolderModal } from './RenameFolderModal';
 import { mockFolderTree } from '~/mocks';
-import { useAppActions } from '~/store';
+import { fireEvent, render, screen } from '~/mocks/setup';
+import { useActionsStore } from '~/store';
+import { RenameFolderModal } from './RenameFolderModal';
 
 /**
  * Mock `success` and `error` functions from useToast hook.
@@ -58,20 +58,15 @@ vi.mock('@edifice.io/react', async () => {
 describe('RenameFolderModal component', () => {
   beforeEach(async () => {
     mocks.useSelectedFolder.mockReturnValue({ folderId: 'inbox' });
-    const { result } = renderHook(useAppActions);
-    const setSelectedFolders = await waitFor(() => {
-      expect(result.current.setSelectedFolders).toBeDefined();
-      return result.current.setSelectedFolders;
-    });
+
+    const setSelectedFolders = useActionsStore.getState().setSelectedFolders;
+
     setSelectedFolders([mockFolderTree[1]]); // Select folder_B to rename it
   });
 
   afterEach(async () => {
-    const { result } = renderHook(useAppActions);
-    const setSelectedFolders = await waitFor(() => {
-      expect(result.current.setSelectedFolders).toBeDefined();
-      return result.current.setSelectedFolders;
-    });
+    const setSelectedFolders = useActionsStore.getState().setSelectedFolders;
+
     setSelectedFolders([]);
     vi.clearAllMocks();
   });

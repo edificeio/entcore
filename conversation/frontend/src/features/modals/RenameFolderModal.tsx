@@ -2,14 +2,14 @@ import { Button, FormControl, Input, Label, Modal } from '@edifice.io/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useI18n } from '~/hooks/useI18n';
 import { searchFolder } from '~/services';
-import { useAppActions, useSelectedFolders } from '~/store';
+import { useActionsStore } from '~/store/actions';
 import { useFolderActions } from './hooks';
 import './FolderModalInDropdown.css';
 
 export function RenameFolderModal() {
   const { t, common_t } = useI18n();
-  const { setOpenedModal } = useAppActions();
-  const selectedFolders = useSelectedFolders();
+  const setOpenedModal = useActionsStore.use.setOpenedModal();
+  const selectedFolders = useActionsStore.use.selectedFolders();
   const { renameFolder, isActionPending, foldersTree } = useFolderActions();
   const refInputName = useRef<HTMLInputElement>(null);
 

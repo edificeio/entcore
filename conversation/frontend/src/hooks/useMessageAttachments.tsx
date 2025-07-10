@@ -9,7 +9,7 @@ import {
   useDetachFile,
   useDownloadAttachment,
 } from '~/services/queries/attachment';
-import { useMessage } from '~/store/messageStore';
+import { useMessageStore } from '~/store/messageStore';
 import { useI18n } from './useI18n';
 
 export function useMessageAttachments() {
@@ -19,7 +19,7 @@ export function useMessageAttachments() {
   const [detachInProgress, setDetachInProgress] = useState(new Set<string>());
   const toast = useToast();
   const { t } = useI18n();
-  const message = useMessage();
+  const message = useMessageStore.use.message();
   let id = message?.id || '';
 
   // These hooks is required when attaching files to a blank new draft, without id.
