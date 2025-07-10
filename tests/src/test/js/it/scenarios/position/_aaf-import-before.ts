@@ -43,10 +43,11 @@ export function testImportUserWithFunctionsInAAF() {
     console.log("Launching import....")
     triggerImport(session)
     console.log("....waiting for import to be done....")
-    sleep(3)
+    sleep(5)
     console.log("....stopped waiting")
     const importedStructure = getSchoolByName("CLG-CLG INTEGRATION-PARIS", session)
     const structurePositions = getPositionsOfStructure(importedStructure, session)
+
     describe("Imported structure", () => {
       check(structurePositions, {
         'all created positions are typed AAF' : positions => positions.filter(p => p.source !== 'AAF').length === 0,
