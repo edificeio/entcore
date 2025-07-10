@@ -1,7 +1,7 @@
 import { MessageMetadata } from '~/models';
-import { useSelectedMessageIds } from '~/store';
+import { useActionsStore } from '~/store/actions';
 
 export default function useSelectedMessages(messages: MessageMetadata[]) {
-  const selectedIds = useSelectedMessageIds();
+  const selectedIds = useActionsStore.use.selectedMessageIds();
   return messages?.filter((message) => selectedIds.includes(message.id)) || [];
 }

@@ -14,7 +14,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useI18n } from '~/hooks/useI18n';
 import { Folder } from '~/models';
 import { buildTree, searchFolder } from '~/services';
-import { useAppActions, useConfig, useOpenedModal } from '~/store';
+import { useActionsStore } from '~/store/actions';
 import { useFolderActions } from './hooks';
 
 /**
@@ -44,15 +44,15 @@ function flatFolders(folders: Folder[], prefix?: string) {
 export function CreateFolderModal() {
   const { t, common_t } = useI18n();
   const { error } = useToast();
-  const openedModal = useOpenedModal();
-  const { setOpenedModal } = useAppActions();
+  const setOpenedModal = useActionsStore.use.setOpenedModal();
+  const openedModal = useActionsStore.use.openedModal();
   const { createFolder, isActionPending, foldersTree } = useFolderActions();
   const [checked, setChecked] = useState(false);
   const [subFolderId, setSubfolderId] = useState<string | undefined>(undefined);
   const refInputName = useRef<HTMLInputElement>(null);
   const [newFolderName, setNewFolderName] = useState('');
   const [nameError, setNameError] = useState<string | undefined>(undefined);
-  const { maxDepth } = useConfig();
+  const { maxDepth } = useActionsStore.use.config();
 
   const handleCreateClick = useCallback(
     (event: React.FormEvent<HTMLFormElement>) => {

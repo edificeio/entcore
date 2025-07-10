@@ -11,9 +11,9 @@ import {
 import { useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Folder, MessageMetadata } from '~/models';
-import { useConfig } from '~/store';
 import { folderService, searchFolder } from '..';
 import { queryClient } from '~/providers';
+import { useActionsStore } from '~/store/actions';
 
 export const PAGE_SIZE = 20;
 
@@ -129,7 +129,7 @@ export const folderQueryOptions = {
  * @returns Query result for fetching the folder tree.
  */
 export const useFoldersTree = () => {
-  const { maxDepth } = useConfig();
+  const { maxDepth } = useActionsStore.use.config();
   return useQuery(folderQueryOptions.getFoldersTree(maxDepth));
 };
 

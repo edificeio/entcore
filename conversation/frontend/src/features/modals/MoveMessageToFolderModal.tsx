@@ -11,22 +11,22 @@ import { useNavigate } from 'react-router-dom';
 import illuFolder from '~/assets/illu-folder.svg';
 import { useI18n } from '~/hooks/useI18n';
 import { buildTree, useFolderUtils, useMoveMessage } from '~/services';
-import { useAppActions, useConfig, useSelectedMessageIds } from '~/store';
+import { useActionsStore } from '~/store/actions';
 import { useFolderActions } from './hooks';
 
 export function MoveMessageToFolderModal() {
   const { t, common_t } = useI18n();
-  const { setOpenedModal } = useAppActions();
+  const setOpenedModal = useActionsStore.use.setOpenedModal();
   const { isActionPending, foldersTree } = useFolderActions();
   const [subFolderId, setSubfolderId] = useState<string | undefined>(undefined);
   const refInputName = useRef<HTMLInputElement>(null);
   const refDropdownTrigger = useRef<HTMLButtonElement>(null);
-  const selectedIds = useSelectedMessageIds();
+  const selectedIds = useActionsStore.use.selectedMessageIds();
   const moveMessage = useMoveMessage();
   const { getFolderNameById } = useFolderUtils();
   const toast = useToast();
   const navigate = useNavigate();
-  const { maxDepth } = useConfig();
+  const { maxDepth } = useActionsStore.use.config();
 
   const userFolders = useMemo(() => {
     return foldersTree ? buildTree(foldersTree, maxDepth) : null;

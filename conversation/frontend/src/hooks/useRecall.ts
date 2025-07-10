@@ -2,16 +2,16 @@ import { useEdificeClient, useToast } from '@edifice.io/react';
 import { createElement } from 'react';
 import { MessageBase } from '~/models';
 import { useRecallMessage } from '~/services';
-import { useConfig, useConfirmModalStore } from '~/store';
+import { useConfirmModalStore, useActionsStore } from '~/store';
 import { useI18n } from './useI18n';
 import { useRights } from './useRights';
 
-export function useRecall() {
+export const useRecall = () => {
   const { t } = useI18n();
   const { success } = useToast();
   const { user } = useEdificeClient();
   const { canRecallMessages } = useRights();
-  const { recallDelayMinutes } = useConfig();
+  const { recallDelayMinutes } = useActionsStore.use.config();
   const { openModal } = useConfirmModalStore();
   const recallMessage = useRecallMessage();
 
@@ -49,4 +49,4 @@ export function useRecall() {
   };
 
   return { canRecall, handleRecall };
-}
+};

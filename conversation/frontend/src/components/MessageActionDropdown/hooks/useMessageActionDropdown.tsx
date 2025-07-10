@@ -30,9 +30,10 @@ import {
   useSendDraft,
   useTrashMessage,
 } from '~/services';
-import { useAppActions, useConfirmModalStore } from '~/store';
-import { useMessageActions } from '~/store/messageStore';
+import { useConfirmModalStore } from '~/store';
+import { useMessageStore } from '~/store/messageStore';
 import { useGoBackToList } from '~/features/message/hooks/useGoBackToList';
+import { useActionsStore } from '~/store/actions';
 
 export interface MessageActionDropdownProps {
   message: Message;
@@ -46,7 +47,7 @@ export function useMessageActionDropdown({
   actions,
 }: MessageActionDropdownProps) {
   const { t } = useI18n();
-  const { setMessageNeedToSave } = useMessageActions();
+  const setMessageNeedToSave = useMessageStore.use.setMessageNeedToSave();
   const markAsUnreadQuery = useMarkUnread();
   const navigate = useNavigate();
   const { openModal } = useConfirmModalStore();
@@ -57,7 +58,7 @@ export function useMessageActionDropdown({
   const createOrUpdateDraft = useCreateOrUpdateDraft();
   const moveMessage = useMoveMessage();
   const { handleMoveMessage } = useFolderHandlers();
-  const { setSelectedMessageIds } = useAppActions();
+  const setSelectedMessageIds = useActionsStore.use.setSelectedMessageIds();
   const sendDraftQuery = useSendDraft();
   const { goBackToList } = useGoBackToList();
   const { folderId } = useSelectedFolder();

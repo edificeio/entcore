@@ -10,14 +10,13 @@ import {
   useRestoreMessage,
   useTrashMessage,
 } from '~/services';
-import { useConfirmModalStore, useSelectedMessageIds } from '~/store';
+import { useConfirmModalStore, useActionsStore } from '~/store';
 import { useFolderHandlers } from '../../menu/hooks/useFolderHandlers';
-import useSelectedMessages from './useSelectedMessages';
 
 export default function useToolbarActions(messages: MessageMetadata[]) {
-  const selectedMessages = useSelectedMessages(messages);
-
-  const selectedIds = useSelectedMessageIds();
+  const selectedIds = useActionsStore.use.selectedMessageIds();
+  const selectedMessages =
+    messages?.filter((message) => selectedIds.includes(message.id)) || [];
   const { openModal } = useConfirmModalStore();
   const { t } = useTranslation('conversation');
   const { success } = useToast();

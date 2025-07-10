@@ -4,12 +4,12 @@ import { Fragment, RefAttributes } from 'react';
 import { useLocation } from 'react-router-dom';
 import { NewMessageButton } from '~/components/NewMessageButton';
 import { useI18n } from '~/hooks/useI18n';
-import { useAppActions } from '~/store';
+import { useActionsStore } from '~/store/actions';
 import { AppActionMenuOptions } from './AppActionMenuOptions';
 
-export const AppActionHeader = () => {
+export function AppActionHeader() {
   const { t, common_t } = useI18n();
-  const { setOpenedModal } = useAppActions();
+  const setOpenedModal = useActionsStore.use.setOpenedModal();
   const location = useLocation();
   const draftRoute = '/draft/create';
 
@@ -72,4 +72,4 @@ export const AppActionHeader = () => {
       )}
     </>
   );
-};
+}
