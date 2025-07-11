@@ -37,6 +37,7 @@ import org.entcore.broker.api.dto.directory.GetGroupsResponseDTO;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.migration.AppMigrationConfiguration;
+import org.entcore.common.migration.BrokerSwitchConfiguration;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.neo4j.StatementsBuilder;
@@ -269,7 +270,7 @@ public abstract class GenericShareService implements ShareService {
 						visibleUsers = event.right().getValue();
 					} else {
 						visibleUsers = new JsonArray();
-					}w
+					}
 					JsonObject users = new JsonObject();
 					users.put("visibles", visibleUsers);
 					users.put("checked", userCheckedActions);
@@ -864,8 +865,7 @@ public abstract class GenericShareService implements ShareService {
 			.put("action", action)
 			.put("service", "communication")
 			.put("params", request);
-		final String address = "broker.proxy.legacy.migration";
-		eb.request(address, payload)
+		eb.request(BrokerSwitchConfiguration.LEGACY_MIGRATION_ADDRESS, payload)
 			.onSuccess(response -> promise.complete(StringUtils.parseJson((String) response.body(), responseType)))
 			.onFailure(promise::fail);
 		return promise.future();

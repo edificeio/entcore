@@ -28,6 +28,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.migration.AppMigrationConfiguration;
+import org.entcore.common.migration.BrokerSwitchConfiguration;
 import org.entcore.common.migration.BrokerSwitchType;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
@@ -682,7 +683,7 @@ public class DuplicateUsers {
 			.put("action", action)
 			.put("service", "communication")
 			.put("params", params);
-		final String address = "broker.proxy.legacy.migration";
+		final String address = BrokerSwitchConfiguration.LEGACY_MIGRATION_ADDRESS;
 		if(handler == null) {
 			eb.send(address, payload);
 		} else {
