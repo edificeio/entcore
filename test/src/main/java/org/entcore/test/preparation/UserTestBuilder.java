@@ -6,6 +6,8 @@ public final class UserTestBuilder {
     private String firstName;
     private String lastName;
     private String displayName;
+    private String email;
+    private String birthdate;
     private Profile profile;
     private UserBookTest userBook;
 
@@ -41,6 +43,16 @@ public final class UserTestBuilder {
         return this;
     }
 
+    public UserTestBuilder email(String email) {
+        this.email = email;
+        return this;
+    }
+
+    public UserTestBuilder birthdate(String birthdate) {
+        this.birthdate = birthdate;
+        return this;
+    }
+
     public UserTestBuilder profile(Profile profile) {
         this.profile = profile;
         return this;
@@ -52,6 +64,6 @@ public final class UserTestBuilder {
     }
 
     public UserTest build() {
-        return new UserTest(id, login, firstName, lastName, displayName, profile, userBook);
+        return new UserTest(id, login, firstName, lastName, displayName, profile, userBook, email, birthdate);
     }
 }

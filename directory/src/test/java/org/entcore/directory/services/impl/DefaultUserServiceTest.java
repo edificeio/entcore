@@ -1,4 +1,4 @@
-package org.entcore.directory.org.entcore.directory.services.impl;
+package org.entcore.directory.services.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
