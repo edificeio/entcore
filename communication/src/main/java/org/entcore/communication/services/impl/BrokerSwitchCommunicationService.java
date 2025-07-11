@@ -7,6 +7,7 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.migration.AppMigrationConfiguration;
+import org.entcore.common.migration.BrokerSwitchConfiguration;
 import org.entcore.common.migration.BrokerSwitchType;
 import org.entcore.common.user.UserInfos;
 import org.entcore.communication.services.CommunicationService;
@@ -489,7 +490,7 @@ public class BrokerSwitchCommunicationService implements CommunicationService {
       .put("action", action)
       .put("service", "communication")
       .put("params", params);
-    final String address = "broker.proxy.legacy.migration";
+    final String address = BrokerSwitchConfiguration.LEGACY_MIGRATION_ADDRESS;
     if(handler == null) {
       eventBus.send(address, payload);
     } else {

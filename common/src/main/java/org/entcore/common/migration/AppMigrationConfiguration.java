@@ -1,9 +1,12 @@
 package org.entcore.common.migration;
 
+import io.vertx.codegen.annotations.Nullable;
+import io.vertx.core.Context;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.beans.Transient;
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -75,6 +78,17 @@ public class AppMigrationConfiguration {
     }
   }
 
+  public static AppMigrationConfiguration fromVertx(final String migrationName) {
+    Context context = Vertx.currentContext();
+    final Vertx vertx;
+    if(context == null) {
+      vertx = context.owner();
+    } else {
+      vertx = Vertx.vertx();
+    }
+    return fromVertx(migrationName, vertx, null);
+  }
+
   public static AppMigrationConfiguration fromVertx(final String migrationName, final Vertx vertx, final JsonObject defaultConfiguration) {
     JsonObject config = (JsonObject) vertx.sharedData().getLocalMap("server").get(migrationName);
     if(config == null) {
@@ -108,5 +122,10 @@ public class AppMigrationConfiguration {
 
   public boolean isEnabled() {
     return enabled;
+  }
+
+  @Transient
+  public boolean isReadEnabled(String actionName) {
+    return enabled && readNew && availableReadActions != null && availableReadActions.contains(actionName);
   }
 }
