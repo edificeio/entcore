@@ -535,34 +535,13 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		template.open('main', 'mono-class');
 	};
 
-	const privateInfosMapping = {
-		'SHOW_EMAIL': 'email',
-		// 'SHOW_MAIL': 'email', unused field at this time
-		'SHOW_PHONE': 'homePhone',
-		'SHOW_BIRTHDATE': 'birthdate',
-		'SHOW_HEALTH': 'health',
-		'SHOW_MOBILE': 'mobile',
-	}
-
-	$scope.removePrivateInfos = function() {
-		const infoToBeRemoved = {};
-		Object.entries(privateInfosMapping).forEach(([k, v]) => {
-			if (!$scope.currentUser.visibleInfos?.includes(k)) {
-				infoToBeRemoved[v] = undefined;
-			}
-		});
-		$scope.currentUser.updateData(infoToBeRemoved);
-	}
-
 	$scope.selectUser = async function(user){
 		if(!$scope.$$phase){
 			$scope.$apply('search');
 		}
-
-		if(typeof user == "string")
+		if(typeof user == "string") {
 			user = new directory.User({ id: user });
-
-		user.open();
+		}
 		user.one('sync', async function(){
 			$scope.currentUser = user;
 
@@ -580,12 +559,17 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			if($scope.currentUser !== undefined){
 				$scope.scroolTop();
 			}
-			$scope.removePrivateInfos(); // Tmp fix: MOZO-77 prevent display of private data on this screen until backend removes them from the response.
 			$scope.$apply('currentUser');
 		});
+		await user.open();
 
 		template.open('details', 'user-infos');
 		$scope.search.text = '';
+        setTimeout(function(){
+                if(!$scope.$$phase){
+            	    $scope.$apply();
+            	}
+            }, 100);
 	};
 
 	$scope.hasSubject = function(user): boolean {
@@ -774,7 +758,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	};
 
 	$scope.displayRelatives = function(currentUser) {
-		return currentUser && currentUser.relatives.length && (currentUser.type[0] === 'Student') && (model.me.type === 'ENSEIGNANT' || model.me.type === 'PERSEDUCNAT');
+		return currentUser && currentUser.relatives && currentUser.relatives.length && (currentUser.type[0] === 'Student') && (model.me.type === 'ENSEIGNANT' || model.me.type === 'PERSEDUCNAT');
 	};
 
 

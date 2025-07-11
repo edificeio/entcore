@@ -1,4 +1,4 @@
-package org.entcore.directory.org.entcore.directory.services.impl;
+package org.entcore.directory.services.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -13,6 +13,7 @@ import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.directory.services.impl.DefaultUserBookService;
 import org.entcore.test.TestHelper;
+import org.entcore.test.preparation.*;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -25,6 +26,26 @@ public class DefaultUserBookServiceTest {
     @ClassRule
     public static Neo4jContainer<?> neo4jContainer = test.database().createNeo4jContainer();
     private static Neo4j neo4j;
+    private static DataHelper dataHelper;
+    static final UserTest parent = UserTestBuilder.anUserTest().id("user.one")
+            .login("user-one")
+            .firstName("User")
+            .lastName("one")
+            .displayName("user one")
+            .birthdate("25/11/2000")
+            .email("user.one@edifice.io")
+            .profile(Profile.Relative)
+            .userBook(new UserBookTest("user.one", new String[] {"SHOW_EMAIL", "SHOW_BIRTHDATE"}))
+            .build();
+    static final UserTest parent2 = UserTestBuilder.anUserTest().id("user.two")
+            .login("user-two")
+            .firstName("User")
+            .lastName("two")
+            .displayName("user two")
+            .birthdate("12/06/2000")
+            .email("user.two@edifice.io")
+            .profile(Profile.Relative)
+            .build();
 
     private static DefaultUserBookService defaultUserBookService;
 
@@ -49,6 +70,7 @@ public class DefaultUserBookServiceTest {
         neo4j.init(test.vertx(), neo4jConfig
                 .put("server-uri", base)
                 .put("ignore-empty-statements-error", false));
+        dataHelper = DataHelper.init(context, neo4jContainer);
     }
 
     /**
@@ -101,6 +123,52 @@ public class DefaultUserBookServiceTest {
         }));
     }
 
+    /**
+     * <h1>Goal</h1>
+     * <p>Test that we can retrieve a user and see all their field if filter is disabled
+     * @param testContext Test context
+     */
+    @Test
+    public void testGetPersonInfos_withoutFilter(final TestContext testContext) {
+        final Async async = testContext.async(2);
+        prepareData().onComplete(testContext.asyncAssertSuccess(h -> {
+            defaultUserBookService.getPersonInfos(parent.getId(), false, h2 -> {
+                testContext.assertTrue(h2.isRight(), "Failed to search a user " + h);
+                final JsonArray users = h2.right().getValue().getJsonArray("result");
+                testContext.assertEquals(users.size(), 1, "We should find only one user");
+                final JsonObject user = (JsonObject) users.getList().get(0);
+                testContext.assertEquals(user.getString("displayName"), parent.getDisplayName() , "Field must be equals");
+                testContext.assertEquals(user.getString("email"), parent.getEmail() , "Field must be equals");
+                testContext.assertEquals(user.getString("birthdate"), parent.getBirthdate() , "Field must be equals");
+                async.complete();
+            });
+
+        }));
+    }
+
+    /**
+     * <h1>Goal</h1>
+     * <p>Test that we can retrieve a user and not see fields other than display name id or profile if filter is enabled
+     * @param testContext Test context
+     */
+    @Test
+    public void testGetPersonInfos_withFilter(final TestContext testContext) {
+        final Async async = testContext.async(2);
+        prepareData().onComplete(testContext.asyncAssertSuccess(h -> {
+            defaultUserBookService.getPersonInfos(parent.getId(), true, h2 -> {
+                testContext.assertTrue(h2.isRight(), "Failed to search a user " + h);
+                final JsonArray users = h2.right().getValue().getJsonArray("result");
+                testContext.assertEquals(users.size(), 1, "We should find only one user");
+                final JsonObject user = (JsonObject) users.getList().get(0);
+                testContext.assertNotNull(user.getString("displayName") , "Field must be not null");
+                testContext.assertNull(user.getString("email"), "Field must be null");
+                testContext.assertNull(user.getString("birthdate") , "Field must be null");
+                async.complete();
+            });
+
+        }));
+    }
+
 
     private void assertUserHasOnlyOneUserBook(final String userId, final TestContext testContext, final Async async) {
         neo4j.execute(
@@ -143,6 +211,15 @@ public class DefaultUserBookServiceTest {
             }
         });
         return promise.future();
+    }
+
+    public static Future<Void> prepareData() {
+        dataHelper
+                .start()
+                .withStructure(new StructureTest("my-structure-01", "my structure 01"))
+                .withUser(parent)
+                .withUser(parent2);
+        return dataHelper.execute();
     }
 
 }
