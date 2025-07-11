@@ -4,12 +4,7 @@ import { ToolbarCategories } from '~/components/ToolbarCategories';
 import { useHydrateUserPreferences } from '~/hooks/useHydrateUserPreferences';
 import './my-apps.css';
 import { useApplications } from '~/services';
-import {
-  ButtonSkeleton,
-  Flex,
-  SearchBar,
-  TextSkeleton,
-} from '@edifice.io/react';
+import { Flex, SearchBar, TextSkeleton } from '@edifice.io/react';
 
 import { useMemo, useState } from 'react';
 import MyAppOnboardingModal from '~/components/MyAppOnboardingModal';
@@ -46,12 +41,41 @@ export const MyAppLayout = ({ theme }: { theme: string }) => {
     return (
       <div className={classLayout}>
         <header className="d-flex justify-content-between my-apps-header">
-          <TextSkeleton className="col-3" />
-          <ButtonSkeleton className="my-apps-search" />
+          <div>
+            <TextSkeleton className="my-apps-skeleton-title mb-4" />
+          </div>
+          <Flex gap="16" className="p-3 align-items-center" align="end">
+            <div>
+              <TextSkeleton className="my-apps-skeleton-searchBar" />
+            </div>
+            <div>
+              <TextSkeleton className="d-inline-block my-apps-skeleton-notification-btn" />
+            </div>
+          </Flex>
         </header>
-        <ButtonSkeleton />
+        <div
+          className="d-flex flex-wrap gap-16 justify-content-center align-items-center mx-auto col"
+          style={{ maxWidth: 1091 }}
+        >
+          <TextSkeleton className="my-apps-skeleton-toolbar" />
+        </div>
 
-        <TextSkeleton className="col-12 my-apps-body-skeleton" />
+        <div
+          className="d-flex flex-wrap gap-16 justify-content-center align-items-center mx-auto col"
+          style={{ maxWidth: 1091 }}
+        >
+          {Array.from({ length: 12 }).map((_, idx) => (
+            <Flex
+              key={idx}
+              direction="column"
+              className="justify-content-center align-items-center"
+              gap="16"
+            >
+              <TextSkeleton className="my-apps-skeleton-app-box" />
+              <TextSkeleton className="my-apps-skeleton-app-text" />
+            </Flex>
+          ))}
+        </div>
       </div>
     );
 
