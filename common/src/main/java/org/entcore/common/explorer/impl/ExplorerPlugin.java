@@ -74,7 +74,7 @@ public abstract class ExplorerPlugin implements IExplorerPlugin {
 
     protected ExplorerPlugin(final IExplorerPluginCommunication communication) {
         this.communication = communication;
-        this.migrationConf = AppMigrationConfiguration.fromVertx("communication-migration", Vertx.currentContext().owner(), null);
+        this.migrationConf = AppMigrationConfiguration.fromVertx("communication", Vertx.currentContext().owner(), null);
     }
 
     public void setFolderTree(final IExplorerFolderTree folderTree) {
