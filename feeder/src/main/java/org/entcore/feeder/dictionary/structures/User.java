@@ -26,6 +26,7 @@ import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.email.EmailSender;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
@@ -35,10 +36,16 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.broker.api.dto.directory.BackupRelationhipResponseDTO;
+import org.entcore.broker.api.dto.directory.BackupRelationshipRequestDTO;
+import org.entcore.broker.api.dto.directory.RestoreRelationhipResponseDTO;
+import org.entcore.broker.api.dto.directory.RestoreRelationshipRequestDTO;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.request.JsonHttpServerRequest;
+import org.entcore.common.migration.AppMigrationConfiguration;
+import org.entcore.common.migration.BrokerSwitchConfiguration;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.neo4j.TransactionHelper;
@@ -78,6 +85,7 @@ public class User {
 			"CASE WHEN s IS NULL THEN [] ELSE collect(distinct s.id) END as structureIds ";
 
 	private static final String OLD_PLATFORM_USERS = "oldplatformusers";
+	private static AppMigrationConfiguration appMigrationConfiguration = AppMigrationConfiguration.DISABLED;
 
 	public static class DeleteTask implements Handler<Long> {
 
@@ -382,107 +390,130 @@ public class User {
 	public static void backupRelationship(final String userId,
 																				final boolean backupAdmlGroups,
 																				final TransactionHelper transaction) {
-		JsonObject params = new JsonObject().put("userId", userId);
-		final String filterGroupsToBeBackedUp;
-		if(backupAdmlGroups) {
-			filterGroupsToBeBackedUp = "";
-		} else {
-			filterGroupsToBeBackedUp = " AND NOT n.filter ='AdminLocal' ";
+		final AppMigrationConfiguration conf = getAppMigrationConfiguration();
+		if(conf.isEnabled() && conf.isWriteNew()) {
+			transaction.addAdditionalAction(e ->
+				BrokerSwitchConfiguration.sendToBroker(
+					"backupRelationship",
+					"referential",
+					new BackupRelationshipRequestDTO(userId, backupAdmlGroups), BackupRelationhipResponseDTO.class, getEventBus())
+			);
 		}
-		String query =
+		if(!conf.isEnabled() || conf.isWriteLegacy()) {
+			JsonObject params = new JsonObject().put("userId", userId);
+			final String filterGroupsToBeBackedUp;
+			if (backupAdmlGroups) {
+				filterGroupsToBeBackedUp = "";
+			} else {
+				filterGroupsToBeBackedUp = " AND NOT n.filter ='AdminLocal' ";
+			}
+			String query =
 				"MATCH (u:User { id : {userId}})-[r:IN]->(n) " +
-				"WHERE HAS(n.id) AND NOT(n:DeleteGroup) " + filterGroupsToBeBackedUp +
-				"WITH u, COLLECT(n.id) as ids " +
-				"MERGE u-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
-				"SET b.IN_OUTGOING = coalesce(b.IN_OUTGOING, []) + ids ";
-		transaction.add(query, params);
-		query =
+					"WHERE HAS(n.id) AND NOT(n:DeleteGroup) " + filterGroupsToBeBackedUp +
+					"WITH u, COLLECT(n.id) as ids " +
+					"MERGE u-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
+					"SET b.IN_OUTGOING = coalesce(b.IN_OUTGOING, []) + ids ";
+			transaction.add(query, params);
+			query =
 				"MATCH (u:User { id : {userId}})-[r:COMMUNIQUE]->(n) " +
-				"WHERE HAS(n.id) AND NOT(n:DeleteGroup) " + filterGroupsToBeBackedUp +
-				"WITH u, COLLECT(n.id) as ids " +
-				"MERGE u-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
-				"SET b.COMMUNIQUE_OUTGOING = ids ";
-		transaction.add(query, params);
-		query =
+					"WHERE HAS(n.id) AND NOT(n:DeleteGroup) " + filterGroupsToBeBackedUp +
+					"WITH u, COLLECT(n.id) as ids " +
+					"MERGE u-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
+					"SET b.COMMUNIQUE_OUTGOING = ids ";
+			transaction.add(query, params);
+			query =
 				"MATCH (u:User { id : {userId}})<-[r:COMMUNIQUE]-(n) " +
-				"WHERE HAS(n.id) AND NOT(n:DeleteGroup) " + filterGroupsToBeBackedUp +
-				"WITH u, COLLECT(n.id) as ids " +
-				"MERGE u-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
-				"SET b.COMMUNIQUE_INCOMING = ids ";
-		transaction.add(query, params);
-		query =
+					"WHERE HAS(n.id) AND NOT(n:DeleteGroup) " + filterGroupsToBeBackedUp +
+					"WITH u, COLLECT(n.id) as ids " +
+					"MERGE u-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
+					"SET b.COMMUNIQUE_INCOMING = ids ";
+			transaction.add(query, params);
+			query =
 				"MATCH (u:User { id : {userId}})-[r:COMMUNIQUE_DIRECT]->(n) " +
-				"WHERE HAS(n.id) " +
-				"WITH u, COLLECT(n.id) as ids " +
-				"MERGE u-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
-				"SET b.COMMUNIQUE_DIRECT_OUTGOING = ids ";
-		transaction.add(query, params);
-		query =
+					"WHERE HAS(n.id) " +
+					"WITH u, COLLECT(n.id) as ids " +
+					"MERGE u-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
+					"SET b.COMMUNIQUE_DIRECT_OUTGOING = ids ";
+			transaction.add(query, params);
+			query =
 				"MATCH (u:User { id : {userId}})<-[r:COMMUNIQUE_DIRECT]-(n) " +
-				"WHERE HAS(n.id) " +
-				"WITH u, COLLECT(n.id) as ids " +
-				"MERGE u-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
-				"SET b.COMMUNIQUE_DIRECT_INCOMING = ids ";
-		transaction.add(query, params);
-		query =
+					"WHERE HAS(n.id) " +
+					"WITH u, COLLECT(n.id) as ids " +
+					"MERGE u-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
+					"SET b.COMMUNIQUE_DIRECT_INCOMING = ids ";
+			transaction.add(query, params);
+			query =
 				"MATCH (u:User { id : {userId}})-[r:RELATED]->(n) " +
-				"WHERE HAS(n.id) " +
-				"WITH u, COLLECT(n.id) as ids " +
-				"MERGE u-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
-				"SET b.RELATED_OUTGOING = ids ";
-		transaction.add(query, params);
-		query =
+					"WHERE HAS(n.id) " +
+					"WITH u, COLLECT(n.id) as ids " +
+					"MERGE u-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
+					"SET b.RELATED_OUTGOING = ids ";
+			transaction.add(query, params);
+			query =
 				"MATCH (u:User { id : {userId}})<-[r:RELATED]-(n) " +
-				"WHERE HAS(n.id) " +
-				"WITH u, COLLECT(n.id) as ids " +
-				"MERGE u-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
-				"SET b.RELATED_INCOMING = ids ";
-		transaction.add(query, params);
-		query =
+					"WHERE HAS(n.id) " +
+					"WITH u, COLLECT(n.id) as ids " +
+					"MERGE u-[:HAS_RELATIONSHIPS]->(b:Backup {userId: {userId}}) " +
+					"SET b.RELATED_INCOMING = ids ";
+			transaction.add(query, params);
+			query =
 				"MATCH (u:User { id : {userId}})-[:IN]->(pg: ProfileGroup)-[:DEPENDS]->(s: Structure), " +
-				" (u)-[:HAS_RELATIONSHIPS]->(b: Backup) " +
-				"WITH b, COLLECT(s.id) as sIds " +
-				"SET b.structureIds = sIds";
-		transaction.add(query, params);
+					" (u)-[:HAS_RELATIONSHIPS]->(b: Backup) " +
+					"WITH b, COLLECT(s.id) as sIds " +
+					"SET b.structureIds = sIds";
+			transaction.add(query, params);
+		}
 	}
 
 	public static void restoreRelationship(String mergedUserLogin, TransactionHelper transaction) {
-		JsonObject params = new JsonObject().put("mergedUserLogin", mergedUserLogin);
 
-		String query =
-			"MATCH (u:User {login: {mergedUserLogin}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
-			"MATCH (g:Group) WHERE g.id IN b.IN_OUTGOING MERGE (u)-[:IN]->(g)";
-		transaction.add(query, params);
+		final AppMigrationConfiguration conf = getAppMigrationConfiguration();
+		if(conf.isEnabled() && conf.isWriteNew()) {
+			transaction.addAdditionalAction(e ->
+				BrokerSwitchConfiguration.sendToBroker(
+					"restoreRelationship",
+					"referential",
+					new RestoreRelationshipRequestDTO(mergedUserLogin), RestoreRelationhipResponseDTO.class, getEventBus())
+			);
+		}
+		if(!conf.isEnabled() || conf.isWriteLegacy()) {
+			JsonObject params = new JsonObject().put("mergedUserLogin", mergedUserLogin);
 
-		query =
-			"MATCH (u:User {login: {mergedUserLogin}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
-			"MATCH (g:Group) WHERE g.id IN b.COMMUNIQUE_OUTGOING MERGE (u)-[:COMMUNIQUE]->(g)";
-		transaction.add(query, params);
+			String query =
+				"MATCH (u:User {login: {mergedUserLogin}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
+					"MATCH (g:Group) WHERE g.id IN b.IN_OUTGOING MERGE (u)-[:IN]->(g)";
+			transaction.add(query, params);
 
-		query =
-			"MATCH (u:User {login: {mergedUserLogin}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
-			"MATCH (g:Group) WHERE g.id IN b.COMMUNIQUE_INCOMING MERGE (u)<-[:COMMUNIQUE]-(g)";
-		transaction.add(query, params);
+			query =
+				"MATCH (u:User {login: {mergedUserLogin}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
+					"MATCH (g:Group) WHERE g.id IN b.COMMUNIQUE_OUTGOING MERGE (u)-[:COMMUNIQUE]->(g)";
+			transaction.add(query, params);
 
-		query =
-			"MATCH (u:User {login: {mergedUserLogin}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
-			"MATCH (n:User) WHERE n.id IN b.COMMUNIQUE_DIRECT_OUTGOING MERGE (u)-[:COMMUNIQUE_DIRECT]->(n)";
-		transaction.add(query, params);
+			query =
+				"MATCH (u:User {login: {mergedUserLogin}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
+					"MATCH (g:Group) WHERE g.id IN b.COMMUNIQUE_INCOMING MERGE (u)<-[:COMMUNIQUE]-(g)";
+			transaction.add(query, params);
 
-		query =
-			"MATCH (u:User {login: {mergedUserLogin}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
-			"MATCH (n:User) WHERE n.id IN b.COMMUNIQUE_DIRECT_INCOMING MERGE (u)<-[:COMMUNIQUE_DIRECT]-(n)";
-		transaction.add(query, params);
+			query =
+				"MATCH (u:User {login: {mergedUserLogin}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
+					"MATCH (n:User) WHERE n.id IN b.COMMUNIQUE_DIRECT_OUTGOING MERGE (u)-[:COMMUNIQUE_DIRECT]->(n)";
+			transaction.add(query, params);
 
-		query =
-			"MATCH (u:User {login: {mergedUserLogin}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
-			"MATCH (n:User) WHERE n.id IN b.RELATED_OUTGOING MERGE (u)-[:RELATED]->(n)";
-		transaction.add(query, params);
+			query =
+				"MATCH (u:User {login: {mergedUserLogin}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
+					"MATCH (n:User) WHERE n.id IN b.COMMUNIQUE_DIRECT_INCOMING MERGE (u)<-[:COMMUNIQUE_DIRECT]-(n)";
+			transaction.add(query, params);
 
-		query =
-			"MATCH (u:User {login: {mergedUserLogin}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
-			"MATCH (n:User) WHERE n.id IN b.RELATED_INCOMING MERGE (u)<-[:RELATED]-(n)";
-		transaction.add(query, params);
+			query =
+				"MATCH (u:User {login: {mergedUserLogin}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
+					"MATCH (n:User) WHERE n.id IN b.RELATED_OUTGOING MERGE (u)-[:RELATED]->(n)";
+			transaction.add(query, params);
+
+			query =
+				"MATCH (u:User {login: {mergedUserLogin}})-[:HAS_RELATIONSHIPS]->(b:Backup) " +
+					"MATCH (n:User) WHERE n.id IN b.RELATED_INCOMING MERGE (u)<-[:RELATED]-(n)";
+			transaction.add(query, params);
+		}
 	}
 
 
@@ -1140,5 +1171,24 @@ public class User {
 				message.reply(new JsonObject().put("status", "error").put("message", errorMmessage));
 			}
 		});
+	}
+
+
+	private static AppMigrationConfiguration getAppMigrationConfiguration() {
+		if(appMigrationConfiguration == null) {
+			appMigrationConfiguration = AppMigrationConfiguration.fromVertx("referential");
+		}
+		return appMigrationConfiguration;
+	}
+
+	private static EventBus getEventBus() {
+		Context context = Vertx.currentContext();
+		final Vertx vertx;
+		if(context == null) {
+			vertx = context.owner();
+		} else {
+			vertx = Vertx.vertx();
+		}
+		return vertx.eventBus();
 	}
 }
