@@ -44,7 +44,6 @@ body {
   height: 4.5rem !important;
 }
 
-
 .theme-1d .application-icon-src {
   font-size: 6rem !important;
   font-weight: bold !important;
@@ -177,7 +176,36 @@ body {
   width: 302px;
 }
 
-.my-apps-body-skeleton {
-  height: 75vh;
-  gap: 16px;
+.my-apps-skeleton-title {
+  width: 107px;
+  height: 32px;
+  border-radius: 12px;
+}
+
+.my-apps-skeleton-searchBar {
+  width: 302px;
+  height: 48px;
+  border-radius: 12px;
+}
+
+.my-apps-skeleton-notification-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+}
+
+.my-apps-skeleton-toolbar {
+  width: 500px;
+  height: 48px;
+}
+
+.my-apps-skeleton-app-box {
+  width: 84px;
+  height: 84px;
+  border-radius: 12px;
+}
+.my-apps-skeleton-app-text {
+  width: 99px;
+  height: 22px;
+  border-radius: 12px;
 }
