@@ -192,9 +192,10 @@ public class BrokerProxyUtils {
 
   public static List<Listener> getListeners(Object proxyImpl) {
     final List<Listener> methods = new ArrayList<>();
-    for (Method method : proxyImpl.getClass().getMethods()) {
+    final Class<? extends Object> clazz = proxyImpl.getClass();
+    for (Method method : clazz.getMethods()) {
       if (Modifier.isPublic(method.getModifiers())) {
-        final Optional<BrokerListener> maybeAnnotation = getBrokerListenerAnnotation(proxyImpl, method);
+        final Optional<BrokerListener> maybeAnnotation = getBrokerListenerAnnotation(proxyImpl.getClass(), method);
         maybeAnnotation.ifPresent(annotation -> {
           if (annotation.proxy()) {
             log.debug("Adding method " + method.getName() + " as a listener for subject " + annotation.subject());
@@ -209,25 +210,32 @@ public class BrokerProxyUtils {
     return methods;
   }
 
-  public static Optional<BrokerListener> getBrokerListenerAnnotation(final Object proxyImpl, final Method method) {
+  public static Optional<BrokerListener> getBrokerListenerAnnotation(final Class<?> proxyClass, final Method method) {
     BrokerListener annotation = method.getAnnotation(BrokerListener.class);
     if (annotation == null) {
-      // Check if the annotation is present on the interface method
-      for (Class<?> iface : proxyImpl.getClass().getInterfaces()) {
-        try {
-          Method interfaceMethod = iface.getMethod(method.getName(), method.getParameterTypes());
-          if (interfaceMethod != null) {
-            annotation = interfaceMethod.getAnnotation(BrokerListener.class);
-            if (annotation != null) {
-              break;
-            }
-          }
-        } catch (NoSuchMethodException e) {
-          // Method not found in this interface, continue with next interface
-        }
-      }
+      // Get the annotation from the interfaces implemented by the proxy
+      annotation = doGetBrokerListenerAnnotation(proxyClass.getInterfaces(), method);
+    }
+    // Check if the annotation is present on the parent class
+    if (annotation == null && proxyClass.getSuperclass() != null) {
+      annotation = getBrokerListenerAnnotation(proxyClass.getSuperclass(), method).orElse(null);
     }
     return Optional.ofNullable(annotation);
+  }
+  private static BrokerListener doGetBrokerListenerAnnotation(final Class<?>[] classes, final Method method) {
+    BrokerListener annotation = null;
+    for (Class<?> clazz : classes) {
+      try {
+        final Method classMethod = clazz.getMethod(method.getName(), method.getParameterTypes());
+        annotation = classMethod.getAnnotation(BrokerListener.class);
+        if (annotation != null) {
+          break;
+        }
+      } catch (NoSuchMethodException e) {
+        // Method not found in this interface, continue with next interface
+      }
+    }
+    return annotation;
   }
 
   public static class Listener {
