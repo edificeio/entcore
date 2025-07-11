@@ -229,6 +229,7 @@ public class TimelineHelper {
 		final Map<String, JsonObject> messages = new HashMap<>();
 		final AtomicInteger count = new AtomicInteger(ar.result().size());
 		for(final String path : ar.result()) {
+			log.info("... load i18n from " + path);
 			vertx.fileSystem().props(path, new Handler<AsyncResult<FileProps>>() {
 				@Override
 				public void handle(AsyncResult<FileProps> ar) {
@@ -248,6 +249,7 @@ public class TimelineHelper {
 							}
 						});
 					} else {
+						log.info("... Unable to load i18n from " + path);
 						if (count.decrementAndGet() == 0) {
 							appendTimelineEventsI18n(messages);
 						}
