@@ -38,6 +38,8 @@ import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class TransactionHelper
 {
@@ -65,6 +67,7 @@ public class TransactionHelper
 	private boolean flush = false;
 	private Handler<Message<JsonObject>> flushHandler;
 	private boolean autoSend = true;
+	private final List<Function<Void, Future<?>>> additionalActions = new ArrayList<>();
 
 	public final Source source;
 
@@ -186,6 +189,12 @@ public class TransactionHelper
 		}
 	}
 
+	public void addAdditionalAction(Function<Void, Future<?>> action) {
+		if (action != null) {
+			additionalActions.add(action);
+		}
+	}
+
 	public void add(String query, JsonObject params)
 	{
 		this.add(query, params, (Promise<JsonArray>) null);
@@ -241,15 +250,17 @@ public class TransactionHelper
 				}
 				JsonObject body = message.body();
 				if ("ok".equals(message.body().getString("status"))) {
-					Integer tId = message.body().getInteger("transactionId");
-					if (transactionId == null && tId != null) {
-						transactionId = tId;
-						resetTimeOutTimer = new Timer();
-						//resetTimeOutTimer.schedule(new ResetTransactionTimer(), 0, 55000); // TODO use transaction expires
-					}
-					JsonArray results = body.getJsonArray("results");
-					for(int i = 0; i < s.size(); i++)
-						s.get(i).handleResult(results.getJsonArray(i));
+					runAdditionalActions().onComplete(v -> {
+						Integer tId = message.body().getInteger("transactionId");
+						if (transactionId == null && tId != null) {
+							transactionId = tId;
+							resetTimeOutTimer = new Timer();
+							//resetTimeOutTimer.schedule(new ResetTransactionTimer(), 0, 55000); // TODO use transaction expires
+						}
+						JsonArray results = body.getJsonArray("results");
+						for(int i = 0; i < s.size(); i++)
+							s.get(i).handleResult(results.getJsonArray(i));
+					});
 				} else {
 					error = message;
 					log.error(message.body().encode());
@@ -265,6 +276,16 @@ public class TransactionHelper
 				}
 			}
 		});
+	}
+
+	private Future<?> runAdditionalActions() {
+		if(additionalActions.isEmpty()) {
+			return Future.succeededFuture();
+		}
+		final List<? extends Future<?>> futures = additionalActions.stream()
+			.map(action -> action.apply(null))
+			.collect(Collectors.toList());
+		return Future.all(futures);
 	}
 
 	public Future<JsonArray> commit()
