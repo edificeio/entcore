@@ -87,7 +87,7 @@ public class CommunicationDiscoverVisibleFilter implements ResourcesProvider {
 
     private AppMigrationConfiguration getAppMigration() {
         if (appMigrationConfiguration == null) {
-            appMigrationConfiguration = AppMigrationConfiguration.fromVertx("communication-migration");
+            appMigrationConfiguration = AppMigrationConfiguration.fromVertx("communication");
         }
         return appMigrationConfiguration;
     }

@@ -56,7 +56,7 @@ public abstract class MongoDbControllerHelper extends ControllerHelper {
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm, Map<String, SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
 		this.mongo = MongoDb.getInstance();
-		final AppMigrationConfiguration migrationConfig = AppMigrationConfiguration.fromVertx("communication-migration", vertx, config);
+		final AppMigrationConfiguration migrationConfig = AppMigrationConfiguration.fromVertx("communication", vertx, config);
 		setShareService(new MongoDbShareService(eb, this.mongo,
 				sharedCollection, securedActions, groupedActions, migrationConfig));
 		setCrudService(new MongoDbCrudService(sharedCollection));

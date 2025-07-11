@@ -57,7 +57,7 @@ public class Communication extends BaseServer {
 
 	private CommunicationService getSwitchservice(final CommunicationService communicationService,
 																								final Vertx vertx) {
-		final JsonObject config = (JsonObject) vertx.sharedData().getLocalMap("server").get("communication-migration");
+		final JsonObject config = (JsonObject) vertx.sharedData().getLocalMap("server").get("communication");
 		final AppMigrationConfiguration migrationConfig = AppMigrationConfiguration.fromJson(config.getJsonObject("app-migration"));
 		if (migrationConfig.isEnabled()) {
 			return new BrokerSwitchCommunicationService(communicationService, migrationConfig, vertx.eventBus());

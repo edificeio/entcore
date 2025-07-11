@@ -22,7 +22,7 @@ import static fr.wseduc.webutils.Utils.isEmpty;
 public class WorkspaceShareService extends MongoDbShareService {
 
   public WorkspaceShareService(final Vertx vertx, EventBus eb, MongoDb mongo, String collection, Map<String, SecuredAction> securedActions, Map<String, List<String>> groupedActions) {
-    super(eb, mongo, collection, securedActions, groupedActions,  AppMigrationConfiguration.fromVertx("communication-migration", vertx, null));
+    super(eb, mongo, collection, securedActions, groupedActions,  AppMigrationConfiguration.fromVertx("communication", vertx, null));
   }
   @Override
   public Future<String> getResourceOwnerUserId(String resourceId) {

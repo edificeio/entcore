@@ -89,7 +89,7 @@ public class UserUtils {
 	private static AppMigrationConfiguration appMigrationConfiguration = AppMigrationConfiguration.DISABLED;
 
 	static {
-		appMigrationConfiguration = AppMigrationConfiguration.fromJson((JsonObject) vertx.sharedData().getLocalMap("server").get("communication-migration"));
+		appMigrationConfiguration = AppMigrationConfiguration.fromJson((JsonObject) vertx.sharedData().getLocalMap("server").get("communication"));
 	}
 
 	private static void findUsers(final EventBus eb, HttpServerRequest request,

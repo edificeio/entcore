@@ -197,7 +197,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 
 		manual = new ManualFeeder(neo4j, eb, new DefaultUserPositionService(eb, false));
 		manual.setLoginAliasValidatorForAD(config.getBoolean("ad-login-alias-validator", false));
-		final AppMigrationConfiguration appMigrationConfiguration = AppMigrationConfiguration.fromJson((JsonObject) vertx.sharedData().getLocalMap("server").get("communication-migration"));
+		final AppMigrationConfiguration appMigrationConfiguration = AppMigrationConfiguration.fromJson((JsonObject) vertx.sharedData().getLocalMap("server").get("communication"));
 		duplicateUsers = new DuplicateUsers(config.getBoolean("timetable", true),
 			config.getBoolean("autoMergeOnlyInSameStructure", true), appMigrationConfiguration, vertx.eventBus());
 		postImport = new PostImport(vertx, duplicateUsers, config);

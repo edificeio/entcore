@@ -47,7 +47,7 @@ public class ShareTestHelper {
                 final JsonArray actions = StartupUtils.loadSecuredActions(vertx);
                 final Map<String, SecuredAction> mapActions = StartupUtils.securedActionsToMap(actions);
 
-                final AppMigrationConfiguration migrationConf = AppMigrationConfiguration.fromVertx("communication-migration", this.vertx, null);
+                final AppMigrationConfiguration migrationConf = AppMigrationConfiguration.fromVertx("communication", this.vertx, null);
                 return new SqlShareService(schema, table, vertx.eventBus(), mapActions, null, migrationConf);
             } finally {
                 FileResolver.getInstance().setBasePath(oldValue);
@@ -70,7 +70,7 @@ public class ShareTestHelper {
                 FileResolver.getInstance().setBasePath(parent);
                 final JsonArray actions = StartupUtils.loadSecuredActions(vertx);
                 final Map<String, SecuredAction> mapActions = StartupUtils.securedActionsToMap(actions);
-                return new MongoDbShareService(vertx.eventBus(), MongoDb.getInstance(), collection, mapActions, null, AppMigrationConfiguration.fromVertx("communication-migration", this.vertx, null));
+                return new MongoDbShareService(vertx.eventBus(), MongoDb.getInstance(), collection, mapActions, null, AppMigrationConfiguration.fromVertx("communication", this.vertx, null));
             } finally {
                 FileResolver.getInstance().setBasePath(oldValue);
             }
