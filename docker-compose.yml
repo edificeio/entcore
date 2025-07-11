@@ -1,6 +1,6 @@
 services:
   maven:
-    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/mvn-java8-node22:1.2.5
+    image: maven.opendigitaleducation.com/docker/repository/sre-docker-hosted/mvn-java8-node22:latest
     user: "$DEFAULT_DOCKER_USER"
     working_dir: /usr/src/maven
     volumes:
