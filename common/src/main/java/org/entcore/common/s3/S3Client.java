@@ -361,7 +361,12 @@ public class S3Client {
 						log.warn("Client response Headers have already been written : " + resp.getStatusCode() + " \n" + resp.headers());
 					} else {
 						resp.putHeader("ETag", ((eTag != null) ? eTag : response.headers().get("ETag")));
-						resp.putHeader("Content-Type", response.headers().get("Content-Type"));
+						if (metadata != null && metadata.getString("content-type") != null) {
+							resp.putHeader("Content-Type", metadata.getString("content-type"));
+						}
+						else {
+							resp.putHeader("Content-Type", response.headers().get("Content-Type"));
+						}
 						resp.putHeader("Content-Length", response.headers().get("Content-Length"));
 					}
 				}
