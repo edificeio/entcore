@@ -565,6 +565,9 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 
 		template.open('details', 'user-infos');
 		$scope.search.text = '';
+		/*
+		    Fix loading problem of the template => angular sometimes doesn't trigger the digest
+		 */
         setTimeout(function(){
                 if(!$scope.$$phase){
             	    $scope.$apply();
@@ -754,11 +757,11 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 	};
 
 	$scope.displayChildren = function(currentUser) {
-		return currentUser && currentUser.childrenStructure && currentUser.childrenStructure.length;
+		return currentUser?.childrenStructure?.length;
 	};
 
 	$scope.displayRelatives = function(currentUser) {
-		return currentUser && currentUser.relatives && currentUser.relatives.length && (currentUser.type[0] === 'Student') && (model.me.type === 'ENSEIGNANT' || model.me.type === 'PERSEDUCNAT');
+		return currentUser?.relatives?.length && (currentUser.type[0] === 'Student') && (model.me.type === 'ENSEIGNANT' || model.me.type === 'PERSEDUCNAT');
 	};
 
 
