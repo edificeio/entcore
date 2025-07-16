@@ -8,10 +8,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
-import org.entcore.directory.services.impl.DefaultUserBookService;
 import org.entcore.test.TestHelper;
 import org.entcore.test.preparation.*;
 import org.junit.BeforeClass;
@@ -19,6 +17,8 @@ import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.testcontainers.containers.Neo4jContainer;
+
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 @RunWith(VertxUnitRunner.class)
 public class DefaultUserBookServiceTest {
@@ -36,15 +36,6 @@ public class DefaultUserBookServiceTest {
             .email("user.one@edifice.io")
             .profile(Profile.Relative)
             .userBook(new UserBookTest("user.one", new String[] {"SHOW_EMAIL", "SHOW_BIRTHDATE"}))
-            .build();
-    static final UserTest parent2 = UserTestBuilder.anUserTest().id("user.two")
-            .login("user-two")
-            .firstName("User")
-            .lastName("two")
-            .displayName("user two")
-            .birthdate("12/06/2000")
-            .email("user.two@edifice.io")
-            .profile(Profile.Relative)
             .build();
 
     private static DefaultUserBookService defaultUserBookService;
@@ -217,8 +208,7 @@ public class DefaultUserBookServiceTest {
         dataHelper
                 .start()
                 .withStructure(new StructureTest("my-structure-01", "my structure 01"))
-                .withUser(parent)
-                .withUser(parent2);
+                .withUser(parent);
         return dataHelper.execute();
     }
 
