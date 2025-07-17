@@ -400,6 +400,7 @@ public class Importer {
 					s.update(struct);
 				} else {
 					try {
+						struct.put("timetable", "");
 						s = new ImporterCachedStructure(externalId, struct);
 						structures.putIfAbsent(externalId, s);
 						s.create();

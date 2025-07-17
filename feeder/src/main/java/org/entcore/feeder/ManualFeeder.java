@@ -94,6 +94,9 @@ public class ManualFeeder extends BusModBase {
 		if (struct.getString("externalId") == null) {
 			struct.put("externalId", UUID.randomUUID().toString());
 		}
+		if (struct.getString("timetable") == null) {
+			struct.put("timetable", "");
+		}
 		final String error = structureValidator.validate(struct);
 		if (error != null) {
 			logger.error(error);
