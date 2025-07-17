@@ -240,6 +240,8 @@ public class CommunicationController extends BaseController {
 								final String search = filter.getString(criteria);
 								if (isNotEmpty(search)) {
 									preFilter = "AND m.displayNameSearchField CONTAINS {search} ";
+									// Exclude CommunityMemberGroup and CommunityAdminGroup from search
+									preFilter += "AND NOT ANY(label IN ['CommunityMemberGroup', 'CommunityAdminGroup'] WHERE label IN labels(m)) ";
 									String sanitizedSearch = StringValidation.sanitize(search);
 									params.put("search", sanitizedSearch);
 								}

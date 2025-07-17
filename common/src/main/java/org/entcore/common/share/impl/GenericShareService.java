@@ -269,6 +269,8 @@ public abstract class GenericShareService implements ShareService {
 				userParams.put("search", sanitizedSearch);
 				//
 				preFilterUserBuilder.append(" AND m.displayNameSearchField CONTAINS {search} ");
+				// Exclude CommunityMemberGroup and CommunityAdminGroup from search
+				preFilterGroupBuilder.append(" AND NOT ANY(label IN ['CommunityMemberGroup', 'CommunityAdminGroup'] WHERE label IN labels(m)) ");
 				// historically this filter was not user. should it be?
 				//preFilterGroupBuilder.append(" AND profileGroup.displayNameSearchField CONTAINS {search} ");
 			}
