@@ -19,21 +19,13 @@ import java.time.LocalDate;
 import java.util.Random;
 
 public class DefaultScreenTimeService implements ScreenTimeService {
-    private final Vertx vertx;
     private final HttpClient httpClient;
 
     private static final Logger log = LoggerFactory.getLogger(DefaultLibraryService.class);
-    private final JsonObject authConfig;
-
-    private final JsonObject apiConfig;
-
 
     public DefaultScreenTimeService(Vertx vertx, JsonObject config) {
-        this.vertx = vertx;
-        this.httpClient = vertx.createHttpClient(new HttpClientOptions().setSsl(true).setTrustAll(true));
-        this.authConfig = config.getJsonObject("screen-time-config").getJsonObject("auth");
-        this.apiConfig = config.getJsonObject("screen-time-config").getJsonObject("api");
-
+        this.httpClient = vertx.createHttpClient(
+                new HttpClientOptions().setSsl(true).setTrustAll(true));
     }
 
     @Override
