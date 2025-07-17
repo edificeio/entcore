@@ -38,14 +38,18 @@ public class ScreenTimeController extends BaseController {
     @Get("/screen-time/:id/daily")
     @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
     public void fetchDailyScreenTime(final HttpServerRequest httpServerRequest) {
-
-        String entPersonJointure = httpServerRequest.getParam("id");
-        LocalDate date = LocalDate.parse(httpServerRequest.getParam("date"));
-        String accessTokenCacheId = SCREENTIME_PREFIX_CACHE.concat("-ACCESS-TOKEN");
+        final String entPersonJointure = httpServerRequest.getParam("id");
+        final LocalDate date;
+        try {
+            date = LocalDate.parse(httpServerRequest.getParam("date"));
+        } catch (Exception e) {
+            log.error("Invalid date format", e);
+            renderError(httpServerRequest, null, 400, "Invalid date format");
+            return;
+        }
+        final String accessTokenCacheId = SCREENTIME_PREFIX_CACHE.concat("-ACCESS-TOKEN");
 
         cacheService.get(accessTokenCacheId, result -> {
-
-
             if (result.right().getValue() != null && result.right().getValue().containsKey("cache")) {
                 String accessToken = result.right().getValue().getString("cache");
                 try {
