@@ -7,7 +7,7 @@ public class DummyProxyImpl implements DummierProxy {
   }
 
   @Override
-  public ExempleResponseDTO hello(ExempleRequestDTO request) {
+  public ExampleResponseDTO hello(ExampleRequestDTO request) {
     return null;
   }
 

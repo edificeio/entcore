@@ -22,7 +22,7 @@ public class BrokerProxyUtilsTest {
       public void simpleTest() {
       }
       @BrokerListener(subject = "simple.test", proxy = true, broadcast = true)
-      public ExempleResponseDTO hello(ExempleRequestDTO request) {
+      public ExampleResponseDTO hello(ExampleRequestDTO request) {
         return null;
       }
       public void notAListener() {
@@ -39,7 +39,7 @@ public class BrokerProxyUtilsTest {
       }
 
       @Override
-      public ExempleResponseDTO hello(ExempleRequestDTO request) {
+      public ExampleResponseDTO hello(ExampleRequestDTO request) {
         return null;
       }
 
@@ -59,7 +59,7 @@ public class BrokerProxyUtilsTest {
       }
 
       @Override
-      public ExempleResponseDTO hello(ExempleRequestDTO request) {
+      public ExampleResponseDTO hello(ExampleRequestDTO request) {
         return null;
       }
 
@@ -79,7 +79,7 @@ public class BrokerProxyUtilsTest {
       }
 
       @Override
-      public ExempleResponseDTO hello(ExempleRequestDTO request) {
+      public ExampleResponseDTO hello(ExampleRequestDTO request) {
         return null;
       }
 

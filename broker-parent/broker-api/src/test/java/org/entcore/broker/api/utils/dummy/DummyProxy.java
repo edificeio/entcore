@@ -7,7 +7,7 @@ public interface DummyProxy {
   void simpleTest();
 
   @BrokerListener(subject = "simple.test", proxy = true, broadcast = true)
-  ExempleResponseDTO hello(ExempleRequestDTO request);
+  ExampleResponseDTO hello(ExampleRequestDTO request);
 
   void notAListener();
 }
