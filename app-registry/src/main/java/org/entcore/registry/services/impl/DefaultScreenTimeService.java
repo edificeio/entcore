@@ -29,14 +29,13 @@ public class DefaultScreenTimeService implements ScreenTimeService {
     }
 
     @Override
-    public Future<JsonObject> getDailyScreenTime(HttpServerRequest request, String token, String userId, LocalDate date, JsonObject config, Handler<Either<JsonObject, JsonObject>> eitherHandler) {
-        Promise<JsonObject> promise = Promise.promise();
+    public void getDailyScreenTime(HttpServerRequest request, String token, String userId,
+                                   LocalDate date, JsonObject config,
+                                   Handler<Either<JsonObject, JsonObject>> eitherHandler) {
         // TODO remove when real data is available
         if ("true".equals(request.getParam("mock"))) {
             JsonObject mockData = getMockDailyScreenTime();
             eitherHandler.handle(new Either.Right(mockData));
-            promise.complete(mockData);
-            return promise.future();
         }
 
         String uri = config.getString("screen-time-url") + userId + "?date=" + date.toString();
@@ -61,11 +60,13 @@ public class DefaultScreenTimeService implements ScreenTimeService {
                             JsonObject json = body.toJsonObject();
                             JsonObject processed = calculateDailyTotalScreenTime(json);
                             eitherHandler.handle(new Either.Right(processed));
-                            promise.complete(processed);
                         }).onFailure(err -> {
-                            log.error("[screen time] - Failed to read response body: " + err.getMessage(), err);
-                            eitherHandler.handle(new Either.Left(new JsonObject().put("statusCode", 500).put("message", "Failed to read response body")));
-                            promise.fail(err);
+                            log.error(
+                                    "[screen time] - Failed to read response body: " + err.getMessage(),
+                                    err);
+                            eitherHandler.handle(new Either.Left(
+                                    new JsonObject().put("statusCode", 500)
+                                            .put("message", "Failed to read response body")));
                         });
                     } else if (code == 204) {
                         log.info("[screen time] - No content available yet (204)");
@@ -75,7 +76,6 @@ public class DefaultScreenTimeService implements ScreenTimeService {
                                 .put("totalDurationHours", 0.0);
 
                         eitherHandler.handle(new Either.Right(result));
-                        promise.complete(result);
                     } else {
                         response.body().onSuccess(body -> {
                             JsonObject error = new JsonObject()
@@ -83,47 +83,38 @@ public class DefaultScreenTimeService implements ScreenTimeService {
                                     .put("message", body.toString());
                             log.error("[screen time] - Error: " + error.encodePrettily());
                             eitherHandler.handle(new Either.Left(error));
-                            promise.fail(error.encode());
                         }).onFailure(err -> {
-                            JsonObject error = new JsonObject().put("statusCode", 500).put("message", "Failed to read error body");
+                            JsonObject error = new JsonObject().put("statusCode", 500)
+                                    .put("message", "Failed to read error body");
                             log.error("[screen time] - " + error.encodePrettily(), err);
                             eitherHandler.handle(new Either.Left(error));
-                            promise.fail(err);
                         });
                     }
                 })
                 .onFailure(err -> {
-                    JsonObject error = new JsonObject().put("statusCode", 500).put("message", "Request failed: " + err.getMessage());
+                    JsonObject error = new JsonObject().put("statusCode", 500)
+                            .put("message", "Request failed: " + err.getMessage());
                     log.error("[screen time] - " + error.encodePrettily(), err);
                     eitherHandler.handle(new Either.Left(error));
-                    promise.fail(err);
                 });
-
-        return promise.future();
     }
 
-
-
     @Override
-    public Future<JsonObject> getWeeklyScreenTime(HttpServerRequest request,
-                                                  String token,
-                                                  String userId,
-                                                  LocalDate startDate,
-                                                  LocalDate endDate,
-                                                  JsonObject config,
-                                                  Handler<Either<JsonObject, JsonObject>> eitherHandler) {
-
-        Promise<JsonObject> promise = Promise.promise();
-
+    public void getWeeklyScreenTime(HttpServerRequest request,
+                                    String token,
+                                    String userId,
+                                    LocalDate startDate,
+                                    LocalDate endDate,
+                                    JsonObject config,
+                                    Handler<Either<JsonObject, JsonObject>> eitherHandler) {
         // TODO remove when real data is available
         if ("true".equals(request.getParam("mock"))) {
             JsonObject mockData = getMockWeeklyScreenTime(startDate, endDate);
             eitherHandler.handle(new Either.Right(mockData));
-            promise.complete(mockData);
-            return promise.future();
         }
 
-        String uri = config.getString("screen-time-weekly-url") + userId +// "?startDate=2025-06-01&endDate=2025-06-06";
+        String uri = config.getString(
+                "screen-time-weekly-url") + userId +// "?startDate=2025-06-01&endDate=2025-06-06";
                 "?startDate=" + startDate.toString() +
                 "&endDate=" + endDate.toString();
 
@@ -146,13 +137,15 @@ public class DefaultScreenTimeService implements ScreenTimeService {
                     if (code == 200) {
                         response.body().onSuccess(body -> {
                             JsonObject json = body.toJsonObject();
-                            JsonObject result = calculateWeeklyAverageScreenTime(json, startDate, endDate);
+                            JsonObject result = calculateWeeklyAverageScreenTime(json, startDate,
+                                    endDate);
                             eitherHandler.handle(new Either.Right(result));
-                            promise.complete(result);
                         }).onFailure(err -> {
-                            log.error("[screen time] - Failed to read body: " + err.getMessage(), err);
-                            eitherHandler.handle(new Either.Left(new JsonObject().put("statusCode", 500).put("message", "Failed to read response body")));
-                            promise.fail(err);
+                            log.error("[screen time] - Failed to read body: " + err.getMessage(),
+                                    err);
+                            eitherHandler.handle(new Either.Left(
+                                    new JsonObject().put("statusCode", 500)
+                                            .put("message", "Failed to read response body")));
                         });
                     } else if (code == 204) {
                         log.info("[screen time] - No content available yet (204)");
@@ -163,7 +156,6 @@ public class DefaultScreenTimeService implements ScreenTimeService {
                                 .put("averageSchoolUsePercentage", 0.0);
 
                         eitherHandler.handle(new Either.Right(result));
-                        promise.complete(result);
                     } else {
                         response.body().onSuccess(body -> {
                             JsonObject error = new JsonObject()
@@ -171,23 +163,20 @@ public class DefaultScreenTimeService implements ScreenTimeService {
                                     .put("message", body.toString());
                             log.error("[screen time] - Error: " + error.encodePrettily());
                             eitherHandler.handle(new Either.Left(error));
-                            promise.fail(error.encode());
                         }).onFailure(err -> {
-                            JsonObject error = new JsonObject().put("statusCode", 500).put("message", "Failed to read error body");
+                            JsonObject error = new JsonObject().put("statusCode", 500)
+                                    .put("message", "Failed to read error body");
                             log.error("[screen time] - " + error.encodePrettily(), err);
                             eitherHandler.handle(new Either.Left(error));
-                            promise.fail(err);
                         });
                     }
                 })
                 .onFailure(err -> {
-                    JsonObject error = new JsonObject().put("statusCode", 500).put("message", "Request failed: " + err.getMessage());
+                    JsonObject error = new JsonObject().put("statusCode", 500)
+                            .put("message", "Request failed: " + err.getMessage());
                     log.error("[screen time] - " + error.encodePrettily(), err);
                     eitherHandler.handle(new Either.Left(error));
-                    promise.fail(err);
                 });
-
-        return promise.future();
     }
 
     @Override

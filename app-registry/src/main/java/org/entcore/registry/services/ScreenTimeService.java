@@ -10,9 +10,7 @@ import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 
 public interface ScreenTimeService {
-
     Future<JsonObject> getAccessToken(JsonObject config) throws UnsupportedEncodingException;
-    Future<JsonObject> getDailyScreenTime(HttpServerRequest request, String accessToken, String id, LocalDate date, JsonObject config , Handler<Either<JsonObject, JsonObject>> eitherHandler) throws UnsupportedEncodingException;
-    Future<JsonObject> getWeeklyScreenTime(HttpServerRequest request, String accessToken, String id, LocalDate startDate, LocalDate endDate, JsonObject config , Handler<Either<JsonObject, JsonObject>> eitherHandler) throws UnsupportedEncodingException;
-
+    void getDailyScreenTime(HttpServerRequest request, String accessToken, String id, LocalDate date, JsonObject config , Handler<Either<JsonObject, JsonObject>> eitherHandler) throws UnsupportedEncodingException;
+    void getWeeklyScreenTime(HttpServerRequest request, String accessToken, String id, LocalDate startDate, LocalDate endDate, JsonObject config , Handler<Either<JsonObject, JsonObject>> eitherHandler) throws UnsupportedEncodingException;
 }
