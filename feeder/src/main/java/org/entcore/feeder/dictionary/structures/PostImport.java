@@ -54,6 +54,7 @@ public class PostImport {
 	private final Vertx vertx;
 	private final JsonArray manualGroupLinkUsersAutoSources;
 	private final JsonArray fixIncorrectStoragesSources;
+	private final JsonArray fixFunctionnalGroupsSources;
 	private final JsonArray tenantLinkStructureSources;
 	protected final FeederLogger logger = new FeederLogger(e -> "PostImport");
 
@@ -67,6 +68,8 @@ public class PostImport {
 				.getJsonArray("manual-group-link-users-auto-sources", new JsonArray().add("AAF"));
 		this.fixIncorrectStoragesSources = config
 				.getJsonArray("fix-incorrect-storages-sources", new JsonArray().add("AAF"));
+		this.fixFunctionnalGroupsSources = config
+				.getJsonArray("fix-functionnal-group-sources", new JsonArray().add("AAF").add("AAF1D"));
 		this.tenantLinkStructureSources = config
 				.getJsonArray("tenant-link-structure-sources", new JsonArray().add("AAF").add("AAF1D"));
 	}
@@ -151,6 +154,11 @@ public class PostImport {
 						fixIncorrectStoragesSources.contains(source)) {
 					logger.info(e-> "Start fixIncorrectStorages", true);
 					fixIncorrectStorages();
+				}
+				if(Boolean.TRUE.equals(config.getBoolean("fix-functionnal-groups", true)) &&
+						fixFunctionnalGroupsSources.contains(source)) {
+					logger.info(e-> "Start fixFunctionnalGroups", true);
+					fixFunctionnalGroups();
 				}
 			}
 		};
@@ -337,6 +345,34 @@ public class PostImport {
 			});
 		} catch (TransactionException e) {
 			logger.error(t -> "Error in fixing incorrect storages transaction.", e);
+		}
+	}
+
+	private void fixFunctionnalGroups() {
+		// If there are only students or teachers in a functionnal group, remove com rules
+		String cleanComRules = "MATCH (g:FunctionalGroup {users:'BOTH'})<-[:IN]-(u:User) " +
+									"WITH g, count(CASE WHEN 'Teacher' IN u.profiles THEN 1 END) AS numTeachers, count(CASE WHEN 'Student' IN u.profiles THEN 1 END) AS numStudents " +
+									"WHERE numTeachers = g.nbUsers OR numStudents = g.nbUsers WITH DISTINCT g SET g.users = 'NONE' WITH g MATCH g-[com:COMMUNIQUE]-(:User) DELETE com";
+		// If there are students and teachers in a functionnal group without com rule, create com rules
+		String restoreComRules = "MATCH (g:FunctionalGroup {users:'NONE'})<-[:IN]-(u:User) " +
+									"WITH g, collect(DISTINCT u) AS users, count(CASE WHEN 'Teacher' IN u.profiles THEN 1 END) AS numTeachers, count(CASE WHEN 'Student' IN u.profiles THEN 1 END) AS numStudents " +
+									"WHERE numTeachers > 0 AND numStudents > 0 SET g.users = 'BOTH' WITH g, users UNWIND users AS u MERGE (g)-[:COMMUNIQUE]->(u) MERGE (u)-[:COMMUNIQUE]->(g)";
+
+		try {
+			final TransactionHelper tx = TransactionManager.getTransaction();
+			final JsonObject params = new JsonObject();
+			tx.add(cleanComRules, params);
+			tx.add(restoreComRules, params);
+			tx.commit(res -> {
+				if ("ok".equals(res.body().getString("status"))) {
+					logger.info(t -> "Functionnal groups have been fixed");
+				} else {
+					logger.error(t -> "Error in fixing functionnal groups transaction : " + res.body().getString("message"));
+				}
+				logger.info(e-> "SUCCEED to fixFunctionnalGroups", true);
+			});
+		} catch (TransactionException e) {
+			logger.error(t -> "Error in fixing functionnal groups transaction.", e);
 		}
 	}
 
