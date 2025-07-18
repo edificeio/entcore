@@ -59,6 +59,7 @@ export function MessageActionDropdown({
 
   const handleCloseInactiveUsersModal = () => {
     navigate(`/inbox`);
+    setInactiveUsers(undefined);
   };
 
   const classNameContainer = `d-flex ${className}`;
