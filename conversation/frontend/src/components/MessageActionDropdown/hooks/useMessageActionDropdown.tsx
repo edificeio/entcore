@@ -38,12 +38,12 @@ import { useActionsStore } from '~/store/actions';
 export interface MessageActionDropdownProps {
   message: Message;
   actions?: string[];
-  setInactiveUsers: (inactiveUsers: string[] | undefined) => void;
+  onMessageSent: (inactiveUsers?: string[]) => void;
 }
 
 export function useMessageActionDropdown({
   message,
-  setInactiveUsers,
+  onMessageSent,
   actions,
 }: MessageActionDropdownProps) {
   const { t } = useI18n();
@@ -193,15 +193,9 @@ export function useMessageActionDropdown({
       },
       {
         onSuccess: (response) => {
-          if (response.inactive.length > 0 || response.undelivered.length > 0) {
-            if (response.inactive.length > 0) {
-              setInactiveUsers(response.inactive);
-            } else {
-              setInactiveUsers(undefined);
-            }
-          } else {
-            navigate(`/inbox`);
-          }
+          onMessageSent(
+            response.inactive.length > 0 ? response.inactive : undefined,
+          );
         },
       },
     );
