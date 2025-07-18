@@ -39,10 +39,17 @@ export function MessageActionDropdown({
   const [inactiveUsers, setInactiveUsers] = useState<string[] | undefined>();
   const { lg } = useBreakpoint();
 
+  const handleMessageSent = (inactiveUsers?: string[]) => {
+    setInactiveUsers(inactiveUsers);
+    if (!inactiveUsers?.length) {
+      navigate(`/inbox`);
+    }
+  };
+
   const { actionButtons, dropdownOptions } = useMessageActionDropdown({
     message,
     actions,
-    setInactiveUsers,
+    onMessageSent: handleMessageSent,
   });
   const navigate = useNavigate();
 
@@ -51,7 +58,6 @@ export function MessageActionDropdown({
   );
 
   const handleCloseInactiveUsersModal = () => {
-    setInactiveUsers(undefined);
     navigate(`/inbox`);
   };
 
