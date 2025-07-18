@@ -39,9 +39,12 @@ export function RecipientListEdit({
   const setMessageNeedToSave = useMessageStore.use.setMessageNeedToSave();
   const [isComboboxFocused, setIsComboboxFocused] = useState(false);
   const [selectedBookmarkIds, setSelectedBookmarkIds] = useState<string[]>([]);
+  const [loadingBookmarkIndex, setLoadingBookmarkIndex] = useState<
+    number | undefined
+  >(undefined);
   const comboboxRef = useRef<ComboboxRef>(null);
 
-  const handleRecipientClick = async (recipient: Visible) => {
+  const handleSelectRecipient = async (recipient: Visible) => {
     let recipientToAdd: User | Group;
     if (recipient.type === 'User') {
       recipientToAdd = {
@@ -64,7 +67,6 @@ export function RecipientListEdit({
     } else {
       setSelectedBookmarkIds((prev) => [...prev, recipient.id]);
       const shareBookmark = await getBookmarkById(recipient.id);
-
       if (shareBookmark) {
         setRecipientArray((prev) => {
           const newRecipients = [
@@ -171,6 +173,12 @@ export function RecipientListEdit({
       const isSelected =
         recipientArray.some((recipient) => recipient.id === visible.id) ||
         selectedBookmarkIds.includes(visible.id);
+
+      const handleRecipientClick = async (recipient: Visible) => {
+        setLoadingBookmarkIndex(index);
+        await handleSelectRecipient(recipient);
+        setLoadingBookmarkIndex(undefined);
+      };
       return (
         <Fragment key={index}>
           <RecipientListItem
@@ -179,6 +187,7 @@ export function RecipientListEdit({
             recipientType={recipientType}
             disabled={isSelected || recipient.disabled}
             isSelected={isSelected}
+            loading={loadingBookmarkIndex === index}
           />
         </Fragment>
       );
