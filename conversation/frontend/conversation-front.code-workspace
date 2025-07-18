@@ -1,0 +1,18 @@
+{
+  "folders": [
+    {
+      "path": "./"
+    }
+  ],
+  "settings": {
+    "search.exclude": {
+      ".pnpm-store": true,
+    },
+    "workbench.colorCustomizations": {
+      "titleBar.activeBackground": "#2c3e70",
+      "titleBar.activeForeground": "#e1e8f7",
+      "statusBar.background": "#27406d",
+      "statusBar.foreground": "#d7def4"
+    }
+  }
+}
