@@ -111,7 +111,7 @@ export function RecipientListItem({
         {!loading && isSelectedList && (
           <IconSuccessOutline className="text-gray-700" />
         )}
-        {isLoadingBookmark && <Loading isLoading={loading} />}
+        {isLoadingBookmark && <Loading isLoading={true} />}
       </div>
     </Dropdown.Item>
   );
