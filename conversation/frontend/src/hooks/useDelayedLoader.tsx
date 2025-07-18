@@ -1,21 +1,29 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
-export function useDelayedLoader(isLoading: boolean, delay = 300) {
+export function useDelayedLoader(isLoading: boolean, delay = 400) {
   const [showLoader, setShowLoader] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    let timeout: NodeJS.Timeout | undefined;
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
 
-    if (isLoading) {
-      timeout = setTimeout(() => {
+    if (isLoading && delay > 0) {
+      timeoutRef.current = setTimeout(() => {
         setShowLoader(true);
       }, delay);
     } else {
-      clearTimeout(timeout);
       setShowLoader(false);
     }
 
-    return () => clearTimeout(timeout);
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
+    };
   }, [isLoading, delay]);
 
   return showLoader;
