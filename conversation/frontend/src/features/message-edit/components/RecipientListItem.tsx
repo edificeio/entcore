@@ -1,4 +1,4 @@
-import { Dropdown } from '@edifice.io/react';
+import { Dropdown, Loading } from '@edifice.io/react';
 import { IconSuccessOutline } from '@edifice.io/react/icons';
 import clsx from 'clsx';
 import { useI18n } from '~/hooks/useI18n';
@@ -7,6 +7,7 @@ import { Visible } from '~/models/visible';
 import RecipientListAvatar from './RecipientListAvatar';
 import { RecipientType } from './RecipientListEdit';
 import './RecipientListItem.css';
+import { useDelayedLoader } from '~/hooks/useDelayedLoader';
 
 interface MessageRecipientListItemProps {
   visible: Visible;
@@ -14,6 +15,7 @@ interface MessageRecipientListItemProps {
   recipientType: RecipientType;
   disabled?: boolean;
   isSelected?: boolean;
+  loading?: boolean;
 }
 
 export function RecipientListItem({
@@ -22,10 +24,11 @@ export function RecipientListItem({
   recipientType,
   disabled = false,
   isSelected: isSelectedList = false,
+  loading = false,
 }: MessageRecipientListItemProps) {
   const { t, common_t } = useI18n();
   const recipientName = useMessageUserDisplayName(visible);
-
+  const isLoadingBookmark = useDelayedLoader(loading);
   const classNameProfile = clsx(
     `user-profile-${visible.profile?.toLowerCase()}`,
     {
@@ -105,7 +108,10 @@ export function RecipientListItem({
             )}
           </div>
         )}
-        {isSelectedList && <IconSuccessOutline className="text-gray-700" />}
+        {!loading && isSelectedList && (
+          <IconSuccessOutline className="text-gray-700" />
+        )}
+        {isLoadingBookmark && <Loading isLoading={loading} />}
       </div>
     </Dropdown.Item>
   );
