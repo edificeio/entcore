@@ -6,9 +6,7 @@ import static io.vertx.core.impl.ConversionHelper.toJsonArray;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.TestContext;
-import org.apache.commons.collections4.CollectionUtils;
 import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.test.TestHelper;
 import org.testcontainers.containers.Neo4jContainer;
@@ -141,7 +139,8 @@ public class DataHelper {
     public DataHelper withUser(final UserTest user) {
         sb.add("CREATE (u:User{id: {id}, login: {login}, lastName:{lastName}, lastNameSearchField:{lastNameSearchField}, " +
                         " firstName: {firstName}, firstNameSearchField: {firstNameSearchField}, " +
-                        " displayName: {displayName}, displayNameSearchField: {displayNameSearchField}, profiles: {profiles}})",
+                        " displayName: {displayName}, displayNameSearchField: {displayNameSearchField}, profiles: {profiles}," +
+                        " email: {email}, birthDate: {birthdate}})",
                 new JsonObject()
                         .put("id", user.getId())
                         .put("login", user.getLogin())
@@ -151,6 +150,8 @@ public class DataHelper {
                         .put("lastNameSearchField", sanitize(user.getLastName()))
                         .put("displayName", user.getDisplayName())
                         .put("displayNameSearchField", sanitize(user.getDisplayName()))
+                        .put("email", user.getEmail())
+                        .put("birthdate", user.getBirthdate())
                         .put("profiles", user.getProfile() == null ? null : new JsonArray().add(user.getProfile().name)));
         if(user.getUserBook() != null) {
             final UserBookTest ub = user.getUserBook();
@@ -159,6 +160,11 @@ public class DataHelper {
                     .put("ine", ub.getIne())
                     .put("quota", ub.getQuota())
                     .put("storage", ub.getStorage()));
+            if (!user.getUserBook().getVisibleInfos().isEmpty()) {
+                sb.add("MATCH (u:User{id: {id}})-[:USERBOOK]->(sb) SET sb.visibleInfos = {visibleInfos}", new JsonObject()
+                        .put("visibleInfos", ub.getVisibleInfos())
+                        .put("id", user.getId()));
+            }
         }
         return this;
     }
