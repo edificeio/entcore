@@ -81,6 +81,7 @@ export function MessageActionDropdown({
               onClick={option.action}
               aria-label={option.label}
               disabled={option.disabled}
+              isLoading={option.isLoading}
             >
               {lg && option.label}
             </Button>

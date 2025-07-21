@@ -245,6 +245,7 @@ export function useMessageActionDropdown({
       action: handleSendClick,
       hidden: message.state !== 'DRAFT' || message.trashed,
       disabled: !isMessageValid || sendDraftQuery.isPending,
+      isLoading: sendDraftQuery.isPending,
     },
     {
       label: t('restore'),
