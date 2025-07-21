@@ -60,7 +60,7 @@ public interface UserBookService {
 
 	void getCurrentUserInfos(UserInfos user, boolean forceReload, Handler<Either<String, JsonObject>> result);
 
-	void getPersonInfos(String personId, Handler<Either<String, JsonObject>> result);
+	void getPersonInfos(String personId, boolean filterForNoVisible, Handler<Either<String, JsonObject>> result);
 
 	void initUserbook(String userId, String theme, JsonObject uacLanguage);
 
