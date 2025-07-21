@@ -9,10 +9,11 @@ import {
   useBreakpoint,
 } from '@edifice.io/react';
 import { IconOptions } from '@edifice.io/react/icons';
-import { RefAttributes, useState } from 'react';
+import { RefAttributes } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { SentToInactiveUsersModal } from '~/components/MessageActionDropdown/modals/SentToInactiveUsersModal';
 import { Message } from '~/models';
+import { useMessageStore } from '~/store/messageStore';
 import { useMessageActionDropdown } from './hooks/useMessageActionDropdown';
 
 export interface MessageActionDropdownProps {
@@ -36,8 +37,11 @@ export function MessageActionDropdown({
   },
   className,
 }: MessageActionDropdownProps) {
-  const [inactiveUsers, setInactiveUsers] = useState<string[] | undefined>();
   const { lg } = useBreakpoint();
+  const navigate = useNavigate();
+
+  const inactiveUsers = useMessageStore.use.inactiveUsers();
+  const setInactiveUsers = useMessageStore.use.setInactiveUsers();
 
   const handleMessageSent = (inactiveUsers?: string[]) => {
     setInactiveUsers(inactiveUsers);
@@ -51,7 +55,6 @@ export function MessageActionDropdown({
     actions,
     onMessageSent: handleMessageSent,
   });
-  const navigate = useNavigate();
 
   const visibleOptions = dropdownOptions.filter(
     (o) => !o.hidden && !actionButtons.some((a) => !a.hidden && a.id === o.id),
