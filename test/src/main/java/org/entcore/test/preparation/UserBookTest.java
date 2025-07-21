@@ -10,14 +10,14 @@ public class UserBookTest {
     private final String ine;
     private final long quota;
     private final long storage;
-    private final List<String> visbleInfos;
+    private final List<String> visibleInfos;
 
     public UserBookTest(final String userId, final String ine, final long quota, final long storage) {
         this.userId = userId;
         this.ine = ine;
         this.quota = quota;
         this.storage = storage;
-        this.visbleInfos = ImmutableList.of();
+        this.visibleInfos = ImmutableList.of();
     }
 
     public UserBookTest(final String userId, String[] visibleInfos) {
@@ -25,7 +25,7 @@ public class UserBookTest {
         this.ine = "";
         this.quota = 0;
         this.storage = 0;
-        this.visbleInfos = ImmutableList.copyOf(visibleInfos);
+        this.visibleInfos = ImmutableList.copyOf(visibleInfos);
     }
 
     public String getUserId() {
@@ -44,6 +44,6 @@ public class UserBookTest {
         return storage;
     }
 
-    public List<String> getVisibleInfos() { return visbleInfos; }
+    public List<String> getVisibleInfos() { return visibleInfos; }
 
 }
