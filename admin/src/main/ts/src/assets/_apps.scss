@@ -461,6 +461,15 @@ i.nabook-large {
   }
 }
 
+i.votil,
+i.votil-large {
+  @include fonticon;
+  &::before {
+    content:'\e96d';
+    color:#ecbe30;
+  }
+}
+
 i.system {
   @include fonticon;
   &::before {content: "\e854"}

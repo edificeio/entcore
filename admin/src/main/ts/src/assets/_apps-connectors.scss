@@ -851,3 +851,16 @@ i.nabook::before {
   content:'\e96b';
   color:#00FFCC;
 }
+
+i.votil-large,
+i.type.votil,
+i.votil {
+  @include fonticon;
+}
+
+i.votil-large::before,
+i.type.votil::before,
+i.votil::before {
+  content:'\e96d';
+  color:#ecbe30;
+}
