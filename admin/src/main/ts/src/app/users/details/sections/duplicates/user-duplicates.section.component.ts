@@ -46,7 +46,10 @@ export class UserDuplicatesSectionComponent extends AbstractSection implements O
     }
 
     formatStructures(structures): string {
-        return '(' + structures.map(structure => structure.name).join(', ') + ')';
+        if(!structures) {
+            return 'users.details.section.detached';
+        }
+        return structures.map(structure => structure.name).join(', ');
     }
 
     canMerge(duplicate: { code: string, structures: [{ id: string, name: string }] }): boolean {
@@ -56,13 +59,18 @@ export class UserDuplicatesSectionComponent extends AbstractSection implements O
         const localScope = this.session.functions.ADMIN_LOCAL && this.session.functions.ADMIN_LOCAL.scope;
         const superAdmin = this.session.functions.SUPER_ADMIN;
         const bothActivated = !this.user.code && !duplicate.code;
-        return !(bothActivated) && (!!superAdmin || localScope && duplicate.structures
-                .some(structure => localScope.some(f => f == structure.id))
+        return !(bothActivated) && (!!superAdmin || localScope && (duplicate.structures
+                .some(structure => localScope.some(f => f == structure.id)) ||
+                !duplicate.structures)
         );
     }
 
+    public isSuperAdmin(): boolean {
+        return this.session && this.session.isADMC();
+    }
+
     findVisibleStruct(structures: [{ id: string, name: string }]): { id: string, name: string } {
-        return structures.find(structure => globalStore.structures.data.some(struct => struct.id == structure.id));
+        return structures?.find(structure => globalStore.structures.data.some(struct => struct.id == structure.id));
     }
 
     public compare(comparedId: string) {
