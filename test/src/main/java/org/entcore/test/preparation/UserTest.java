@@ -8,9 +8,12 @@ public class UserTest {
     private final String displayName;
     private final Profile profile;
     private final UserBookTest userBook;
+    private final String email;
+    private final String birthdate;
 
     public UserTest(final String id, final String login, final String firstName, final String lastName,
-                    final String displayName, final Profile profile, final UserBookTest userBook) {
+                    final String displayName, final Profile profile, final UserBookTest userBook,
+                    final String email, final String birthDate) {
         this.id = id;
         this.login = login;
         this.firstName = firstName;
@@ -18,6 +21,8 @@ public class UserTest {
         this.displayName = displayName;
         this.profile = profile;
         this.userBook = userBook;
+        this.email = email;
+        this.birthdate = birthDate;
     }
 
     public String getId() {
@@ -47,4 +52,8 @@ public class UserTest {
     public Profile getProfile() {
         return profile;
     }
+
+    public String getEmail() { return email; }
+
+    public String getBirthdate() { return birthdate; }
 }
