@@ -63,6 +63,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.directory.services.impl.filter.NotVisibleFilterPerson;
 
 public class DefaultUserBookService implements UserBookService {
 	private final Vertx vertx;
@@ -515,14 +516,22 @@ public class DefaultUserBookService implements UserBookService {
 			}
 		}));
 	}
-	private Either<String, JsonObject> adaptPersonResult(Either<String, JsonArray> res){
+	private Either<String, JsonObject> adaptPersonResult(Either<String, JsonArray> res, boolean filterNotVisibleInformation){
 		if(res.isRight()){
-			final JsonObject transformed = new JsonObject().put("status", "ok").put("result", (res.right().getValue()));
-			return (new Either.Right<>(transformed));
+			try {
+				final JsonObject transformed = new JsonObject()
+						.put("status", "ok")
+						.put("result", new NotVisibleFilterPerson(res.right().getValue(), filterNotVisibleInformation).apply());
+				return (new Either.Right<>(transformed));
+			} catch(IllegalArgumentException e) {
+				log.info("Argument is not to adapt must be a jsonArray with one element of type JsonObject", e);
+				return new Either.Left<>(res.left().getValue());
+			}
 		}else{
 			return (new Either.Left<>(res.left().getValue()));
 		}
 	}
+
 	public void getCurrentUserInfos(UserInfos user, boolean forceReload, Handler<Either<String, JsonObject>> result) {
 		Object person = user.getAttribute(PERSON_ATTRIBUTE);
 		if (person != null && !forceReload) {
@@ -530,7 +539,7 @@ public class DefaultUserBookService implements UserBookService {
 			return;
 		}
 		queryPerson(user.getUserId(), false, res->{
-			final Either<String, JsonObject> adapted = adaptPersonResult(res.right());
+			final Either<String, JsonObject> adapted = adaptPersonResult(res.right(), false);
 			if(adapted.isRight()){
 				UserUtils.addSessionAttribute(eb, user.getUserId(), PERSON_ATTRIBUTE, adapted.right().getValue().encode(), null);
 				result.handle(adapted);
@@ -540,9 +549,9 @@ public class DefaultUserBookService implements UserBookService {
 		});
 	}
 
-	public void getPersonInfos(String personId, Handler<Either<String, JsonObject>> handler) {
+	public void getPersonInfos(String personId, boolean filterForNotVisible, Handler<Either<String, JsonObject>> handler) {
 		queryPerson(personId, true, result->{
-			handler.handle(adaptPersonResult(result));
+			handler.handle(adaptPersonResult(result, filterForNotVisible));
 		});
 	}
 

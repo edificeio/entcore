@@ -535,8 +535,13 @@ export const directory = {
 		return response.data;
 	},
 	discoverVisibleAcceptedProfiles: async function(){
-		var response = await http.get('/communication/discover/visible/profiles');
-		return response.data;
+        try {
+            var response = await http.get('/communication/discover/visible/profiles');
+            return response.data;
+		} catch(e) {
+            console.debug("[discoverVisibleAcceptedProfiles] Unauthorized", e)
+            return [];
+        }
 	},
 	discoverVisibleStructure: async function(){
 		var response = await http.get('/communication/discover/visible/structures');

@@ -128,7 +128,7 @@
 	</article>
 </div>
 
-<div class="row reduce-block-six" ng-if="currentUser.schools.length">
+<div class="row reduce-block-six" ng-if="currentUser.schools && currentUser.schools.length">
 	<article>
 		<h2 translate key="userBook.profile.schools"></h2>
 		<content-divider ng-model="currentUser.attachedStructures" order="name">
@@ -144,7 +144,7 @@
 	</article>
 </div>
 
-<div class="row reduce-block-six" ng-if="currentUser.hobbies.length">
+<div class="row reduce-block-six" ng-if="currentUser.hobbies && currentUser.hobbies.length">
 	<article>
 		<h1 translate key="userBook.interests"></h1>
 
