@@ -33,6 +33,7 @@ import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.Lists;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
 import io.vertx.core.shareddata.LocalMap;
@@ -222,10 +223,15 @@ public class UserBookController extends BaseController {
 			if (user != null) {
 				final String userId = request.params().get("id");
 				final boolean forceReload = "true".equals(request.params().get("force"));
-				if (userId == null) {
+				if (userId == null || userId.equals(user.getUserId())) {
 					userBookService.getCurrentUserInfos(user, forceReload, defaultResponseHandler(request));
-				}else{
-					userBookService.getPersonInfos(userId, defaultResponseHandler(request));
+				} else {
+					Future<JsonArray> visible = UserUtils.filterFewOrGetAllVisibles(eb, user.getUserId(), new JsonArray(Lists.newArrayList(userId)));
+					visible.onComplete( arr -> {
+						boolean filter = arr.result().stream().noneMatch(o -> ((JsonObject)o).getString("id").equals(userId));
+						userBookService.getPersonInfos(userId, filter, defaultResponseHandler(request));
+					});
+					visible.onFailure(err -> unauthorized(request));
 				}
 			} else {
 				unauthorized(request);
