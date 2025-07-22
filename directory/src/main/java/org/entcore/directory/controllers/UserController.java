@@ -763,6 +763,7 @@ public class UserController extends BaseController {
 
 	@Get("/user/admin/list")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminStructureFilter.class)
 	@MfaProtected()
 	public void listAdmin(final HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
