@@ -153,6 +153,7 @@ public class ClassController extends BaseController {
 		final String classId = request.params().get("classId");
 		JsonArray types = new JsonArray(request.params().getAll("type"));
 		boolean collectRelative = "true".equals(request.params().get("collectRelative"));
+		boolean withFederated = "true".equals(request.params().get("withFederated"));
 	 	Handler<Either<String, JsonArray>> handler;
 		if ("csv".equals(request.params().get("format"))) {
 			handler = new Handler<Either<String, JsonArray>>() {
@@ -191,7 +192,7 @@ public class ClassController extends BaseController {
 		} else {
 			handler = arrayResponseHandler(request);
 		}
-		classService.findUsers(classId, types, collectRelative, handler);
+		classService.findUsers(classId, types, collectRelative, withFederated, handler);
 	}
 
 	@Put("/class/add-self")
