@@ -21,5 +21,14 @@
 	"ENTPersonFonctions" : { "attribute" : "functions", "type" : "array-string", "prefix" : true },
 	"PersEducNatPresenceDevantEleves" : { "attribute" : "teaches", "type" : "boolean" },
 	"ENTAuxEnsDisciplinesPoste" : { "attribute" : "deprecated", "type" : "array-string" },
-	"ENTPersonCategorieEnseignant" : { "attribute" : "isTeacher", "type" : "boolean" }
+	"ENTPersonCategorieEnseignant" : { "attribute" : "isTeacher", "type" : "boolean" },
+	"ENTPersonSTSId": { "attribute" : "deprecated", "type" : "array-string", "prefix": true },
+	"ENTPersonStructRattachDate" : { "attribute" : "deprecated", "type" : "array-string", "prefix" : true },
+	"ENTAuxEnsCategoDisciplineDate" : { "attribute" : "deprecated", "type" : "array-string", "prefix" : true },
+	"ENTAuxEnsMEFDate" : { "attribute" : "deprecated", "type" : "array-string", "prefix" : true },
+	"ENTAuxEnsClassesMatieresDate" : { "attribute" : "deprecated", "type" : "array-string", "prefix" : true },
+	"ENTAuxEnsGroupesMatieresDate" : { "attribute" : "deprecated", "type" : "array-string", "prefix" : true },
+	"ENTAuxEnsClassesPrincipalDate" : { "attribute" : "deprecated", "type" : "array-string", "prefix" : true },
+	"ENTPersonFonctionsDate" : { "attribute" : "deprecated", "type" : "array-string", "prefix" : true },
+	"ENTPersonCategorieEnseignantDate" : { "attribute" : "deprecated", "type" : "string" }
 }
