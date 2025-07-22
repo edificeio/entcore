@@ -3,17 +3,15 @@ import {
   SearchBar,
   useBreakpoint,
   useEdificeClient,
-  useEdificeTheme,
 } from '@edifice.io/react';
 import { IconFilter } from '@edifice.io/react/icons';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { useActionsStore } from '~/store/actions';
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
+import { useActionsStore } from '~/store/actions';
 
 export function MessageListHeader() {
-  const { theme } = useEdificeTheme();
   const { appCode } = useEdificeClient();
   const { t } = useTranslation(appCode);
   const { lg } = useBreakpoint();
@@ -103,7 +101,7 @@ export function MessageListHeader() {
         onBlur={handleSearchBlur}
         buttonDisabled={isSearchDisabled}
       />
-      {!theme?.is1d && !['outbox', 'draft'].includes(folderId!) && (
+      {!['outbox', 'draft'].includes(folderId!) && (
         <Dropdown data-testid="filter-dropdown">
           <Dropdown.Trigger
             label={!lg ? '' : t('filter')}
