@@ -12,5 +12,9 @@
 	"ENTPersonFonctions" : { "attribute" : "functions", "type" : "array-string", "prefix" : true },
 	"ENTEnsFonctionDir" : { "attribute": "direction", "type": "array-string", "prefix": true },
 	"ENTEnsSpecialites" : { "attribute" : "deprecated", "type" : "array-string" },
-	"ENTPersonCategorieEnseignant" : { "attribute" : "isTeacher", "type" : "boolean" }
+	"ENTPersonCategorieEnseignant" : { "attribute" : "isTeacher", "type" : "boolean" },
+	"ENTPersonStructRattachDate" : { "attribute" : "structuresRattachDate", "type" : "array-string", "prefix" : true },
+	"ENTPersonFonctionsDate" : { "attribute" : "functionsDate", "type" : "array-string", "prefix" : true },
+	"ENTEnsFonctionDirDate": { "attribute": "directionDate", "type": "array-string", "prefix": true },
+	"ENTPersonCategorieEnseignantDate" : { "attribute" : "isTeacherDate", "type" : "string" }
 }
