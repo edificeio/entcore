@@ -967,6 +967,7 @@
   "notify.user.dissociate.error.title": "Erreur lors de la dissociation des comptes",
   "notify.user.dissociate.success.content": "Les comptes ont été dissociés avec succès",
   "notify.user.dissociate.success.title": "Dissociation des comptes effectuée",
+  "notify.user.connection.federated": "Cet utilisateur se connecte via un guichet externe (fédération d'identité). Il n'est donc pas possible de générer un message ou PDF de publipostage, ni générer de code de renouvellement de mot de passe pour ce compte.",
   "notify.user.email.content": "L'adresse email de l'utilisateur {{user}} a bien été mis à jour.",
   "notify.user.email.error.content": "L'adresse email de l'utilisateur {{user}} n'a pas pu être mise à jour.",
   "notify.user.email.error.title": "Erreur lors de la modification",
