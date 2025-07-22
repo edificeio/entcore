@@ -66,7 +66,7 @@ export class UserDuplicatesSectionComponent extends AbstractSection implements O
     }
 
     public isSuperAdmin(): boolean {
-        return this.session && this.session.isADMC();
+        return this.session?.isADMC();
     }
 
     findVisibleStruct(structures: [{ id: string, name: string }]): { id: string, name: string } {
