@@ -285,14 +285,14 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         if (filterObj.containsKey("activated")) {
             String activated = filterObj.getString("activated", "false");
             if ("false".equals(activated.toLowerCase())) {
-                condition = "AND NOT(u.activationCode IS NULL) ";
+                condition += "AND NOT(u.activationCode IS NULL) ";
             } else if ("true".equals(activated.toLowerCase())) {
-                condition = "AND (u.activationCode IS NULL) ";
+                condition += "AND (u.activationCode IS NULL) ";
             } else {
                 // third case => empty condition
             }
         } else {
-            condition = "AND NOT(u.activationCode IS NULL) ";
+            condition += "AND NOT(u.activationCode IS NULL) ";
         }
 
         //Profiles
@@ -375,7 +375,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
                 UserInfos.Function f = userInfos.getFunctions().get(CLASS_ADMIN);
                 List<String> scope = f.getScope();
                 if (scope != null && !scope.isEmpty()) {
-                    condition = "AND c.id IN {scope} ";
+                    condition += "AND c.id IN {scope} ";
                     params.put("scope", new JsonArray(scope));
                 }
             }
@@ -426,7 +426,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
                         "(g)-[:HAS_PROFILE]-(p: Profile) ";
         String condition = "WHERE NOT(HAS(u.federatedIDP) AND NOT(u.federatedIDP IS NULL) AND HAS(u.federated) AND u.federated = true) ";
         if (!userInfos.getFunctions().containsKey(SUPER_ADMIN)) {
-            condition = "AND " + DefaultSchoolService.EXCLUDE_ADMC_QUERY_FILTER;
+            condition += "AND " + DefaultSchoolService.EXCLUDE_ADMC_QUERY_FILTER;
         }
 
         String optional =
