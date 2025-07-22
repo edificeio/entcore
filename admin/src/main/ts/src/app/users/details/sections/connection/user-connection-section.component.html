@@ -1,10 +1,14 @@
 <ode-panel-section section-title="users.connection.section.infos" [folded]="false">
+  <div class="message is-info" *ngIf="disabledFlag==='disabled'">
+    <div class="message-body">&nbsp;<s5l>notify.connection.federated</s5l></div>
+  </div>
+  
   <div class="message is-info" *ngIf="isForbidden">
     <div class="message-body">&nbsp;<s5l>notify.user.email.info</s5l></div>
   </div>
-  
+
   <form #loginForm="ngForm">
-    <fieldset>
+    <fieldset [attr.disabled]="disabledFlag">
       <ode-form-field label="login">
         <span *ngIf="isAdmc == false">{{ details.login }}</span>
         <div *ngIf="isAdmc">
@@ -86,7 +90,7 @@
   </form>
 
   <form #connectionForm="ngForm">
-    <fieldset>
+    <fieldset [attr.disabled]="disabledFlag">
       <ode-form-field label="loginAlias">
         <div>
           <input
@@ -121,7 +125,7 @@
   </form>
 
   <form>
-    <fieldset>
+    <fieldset [attr.disabled]="disabledFlag">
       <ode-form-field label="activation.code" *ngIf="details.activationCode">
         <span>{{ details.activationCode }}</span>
       </ode-form-field>
@@ -172,7 +176,7 @@
     </fieldset>
   </form>
   <form>
-    <fieldset>
+    <fieldset [attr.disabled]="disabledFlag">
       <ode-form-field
         label="send.reset.password"
         *ngIf="!details.activationCode"
@@ -282,7 +286,7 @@
   </form>
 
   <form>
-    <fieldset>
+    <fieldset [attr.disabled]="disabledFlag">
       <ode-form-field
         label="password.renewal.code"
         *ngIf="!details.activationCode"
