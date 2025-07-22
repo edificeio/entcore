@@ -36,9 +36,6 @@ public class AdminStructureFilter extends AdmlResourcesProvider {
 				Binding binding, UserInfos user, Function adminLocal,
 				Handler<Boolean> handler) {
 		String structureId = resourceRequest.params().get("id");
-		if (StringUtils.isEmpty(structureId)) {
-			structureId = resourceRequest.params().get("structureId");
-		}
 		handler.handle(adminLocal.getScope().contains(structureId));
 	}
 }
