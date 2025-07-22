@@ -3,24 +3,21 @@ import {
   ButtonSkeleton,
   Checkbox,
   TextSkeleton,
-  useEdificeTheme,
 } from '@edifice.io/react';
 
 export function MessageListSkeleton({ withHeader = true }) {
-  const { theme } = useEdificeTheme();
-
   return (
     <>
       {withHeader && (
         <>
           <div className="d-flex gap-16 align-items-center justify-content-between px-16 px-md-24 py-16 border-bottom">
             <ButtonSkeleton className="col-12 col-md-10"></ButtonSkeleton>
-            {!theme?.is1d && (
+            {
               <ButtonSkeleton
                 className="d-none d-md-block col-2"
                 size="sm"
               ></ButtonSkeleton>
-            )}
+            }
           </div>
           <div className="d-flex gap-16 align-items-center justify-content-between px-16 px-md-24 py-16 border-bottom">
             <Checkbox className="placeholder" disabled></Checkbox>
