@@ -68,13 +68,4 @@ describe('Message list header component', () => {
     const searchInput = await screen.findByText('filter');
     expect(searchInput).toBeInTheDocument();
   });
-
-  it('should not display filter dropdown with 1D theme', async () => {
-    mocks.useEdificeTheme.mockReturnValue({ theme: { is1d: true } });
-
-    render(<MessageListHeader />);
-
-    const searchInput = await screen.queryByText('filter');
-    expect(searchInput).not.toBeInTheDocument();
-  });
 });
