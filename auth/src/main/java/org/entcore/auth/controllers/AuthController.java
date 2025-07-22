@@ -1445,7 +1445,8 @@ public class AuthController extends BaseController {
 									return;
 								}
 
-								final String id = match.getString("login", "");
+								final String loginAlias = match.getString("loginAlias");
+								final String id = isNotEmpty(loginAlias) ? loginAlias : match.getString("login", "");
 								final String mobile = match.getString("mobile", "");
 
 								// Force mail
