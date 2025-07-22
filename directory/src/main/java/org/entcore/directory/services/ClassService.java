@@ -20,8 +20,9 @@
 package org.entcore.directory.services;
 
 
-import fr.wseduc.webutils.Either;
 import org.entcore.common.user.UserInfos;
+
+import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -34,7 +35,7 @@ public interface ClassService {
 
 	void remove(String classId, Handler<Either<String, JsonObject>> result);
 
-	void findUsers(String classId, JsonArray expectedTypes, boolean collectRelative, Handler<Either<String, JsonArray>> results);
+	void findUsers(String classId, JsonArray expectedTypes, boolean collectRelative, boolean withFederated, Handler<Either<String, JsonArray>> results);
 
 	void get(String classId, Handler<Either<String, JsonObject>> result);
 
