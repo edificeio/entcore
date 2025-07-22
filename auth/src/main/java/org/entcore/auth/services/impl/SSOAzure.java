@@ -59,6 +59,7 @@ public class SSOAzure extends AbstractSSOProvider {
 	protected static final String FIRSTNAME_ATTTRIBUTE = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname";
 	protected static final String PROFILE_ATTTRIBUTE = "ENTProfil";
 	protected static final String BIRTHDATE_ATTTRIBUTE = "DateDeNaissance";
+	protected static final String FUNCTION_ATTRIBUTE = "Title";
 	protected static final String UAI_ATTTRIBUTE = "UAI";
 	protected static final String CLASSES_ATTTRIBUTE = "Classes";
 	protected static final String DEFAULT_NOT_EXISTS = "__NOT_EXISTS__";
@@ -72,25 +73,33 @@ public class SSOAzure extends AbstractSSOProvider {
 	private static final int TX_NOAAF_QUERY_NB = 2;
 	private static final String FEEDER = "entcore.feeder";
 	private static final List<String> PROFILES = Arrays.asList("Personnel", "Teacher", "Student", "Relative", "Guest");
+	private static final String PROFILE_WITH_MAIL = "Personnel";
 
 	private final Neo4j neo4j;
 	private final EventBus eb;
 	private final JsonObject issuerAcademiePrefix;
 	private final JsonObject defaultStructureId;
 	private final JsonObject profilesAllowedToDefaultStructure;
+	private final JsonObject defaultGroupId;
+	private final JsonObject functionsAllowedToGroup;
 
 	public SSOAzure() {
 		this(
 			Vertx.currentContext().config().getJsonObject("azure-issuer-academy-prefix", new JsonObject()),
 			Vertx.currentContext().config().getJsonObject("azure-default-structure-id"),
-			Vertx.currentContext().config().getJsonObject("azure-profiles-allowed-to-default-structure")
+			Vertx.currentContext().config().getJsonObject("azure-profiles-allowed-to-default-structure"),
+			Vertx.currentContext().config().getJsonObject("azure-default-group-id"),
+			Vertx.currentContext().config().getJsonObject("azure-functions-allowed-to-group")
 		);
 	}
 
-	public SSOAzure(JsonObject issuerAcademiePrefix, JsonObject defaultStructureId, JsonObject profilesAllowedToDefaultStructure) {
+	public SSOAzure(JsonObject issuerAcademiePrefix, JsonObject defaultStructureId, JsonObject profilesAllowedToDefaultStructure,
+					JsonObject defaultGroupId, JsonObject functionsAllowedToGroup) {
 		this.issuerAcademiePrefix = issuerAcademiePrefix;
 		this.defaultStructureId = defaultStructureId;
 		this.profilesAllowedToDefaultStructure = profilesAllowedToDefaultStructure;
+		this.defaultGroupId = defaultGroupId;
+		this.functionsAllowedToGroup = functionsAllowedToGroup;
 		this.neo4j = Neo4j.getInstance();
 		this.eb = this.neo4j.getEventBus();
 	}
@@ -104,8 +113,8 @@ public class SSOAzure extends AbstractSSOProvider {
 				final String entPersonJointure = getAttribute(assertion, ENTPERSONJOINTURE_ATTTRIBUTE);
 				if (isNotEmpty(entPersonJointure)) {
 					final String externalId = getExternalId(assertion, entPersonJointure);
-					executeQuery("MATCH (u:User {externalId:{joinKey}}) ", new JsonObject().put("joinKey", externalId),
-								assertion, handler);
+					executeQueryWithUpdateIfNeeded("MATCH (u:User {externalId:{joinKey}}) ", new JsonObject().put("joinKey", externalId),
+							assertion, handler);
 				} else if ("Student".equals(getProfile(getAttribute(assertion, PROFILE_ATTTRIBUTE)))) {
 					final String externalId = getAttribute(assertion, ID_ATTTRIBUTE);
 					if (isEmpty(externalId)) {
@@ -122,7 +131,7 @@ public class SSOAzure extends AbstractSSOProvider {
 						return;
 					}
 					if (StringValidation.isEmail(mail)) {
-						executeQuery("MATCH (u:User {emailAcademy:{email}}) ", new JsonObject().put("email", mail),
+						executeQueryWithUpdateIfNeeded("MATCH (u:User {emailAcademy:{email}}) ", new JsonObject().put("email", mail),
 								assertion, handler);
 					} else {
 						handler.handle(new Either.Left<>("invalid.email"));
@@ -133,6 +142,38 @@ public class SSOAzure extends AbstractSSOProvider {
 				handler.handle(new Either.Left<>("invalid.user"));
 			}
 		});
+	}
+
+	private void executeQueryWithUpdateIfNeeded(String query, final JsonObject params, final Assertion assertion,
+												final Handler<Either<String, Object>> handler) {
+		final String mail = getAttribute(assertion, EMAIL_ATTTRIBUTE);
+		final String function = getAttribute(assertion, FUNCTION_ATTRIBUTE);
+		final JsonObject updateParams = params.copy();
+		String updateQuery = query;
+
+		if (PROFILE_WITH_MAIL.equals(getProfile(getAttribute(assertion, PROFILE_ATTTRIBUTE))) && isNotEmpty(mail) && isNotEmpty(function)) {
+			final boolean isAffectationGroup = getFunctionsAllowedToGroup(assertion).contains(function) && isNotEmpty(getDefaultGroupId(assertion));
+			if (isAffectationGroup) {
+				updateQuery += ", (g:ManualGroup {id:{groupId}})";
+				updateParams.put("groupId", getDefaultGroupId(assertion));
+			}
+			updateQuery += " set u.emailInternal = {email}";
+			updateParams.put("email", mail);
+			if (isAffectationGroup) {
+				updateQuery += " CREATE UNIQUE u-[:IN {source:'MANUAL'}]->g";
+			}
+
+			Neo4j.getInstance().execute(updateQuery, updateParams, Neo4jResult.validEmptyHandler(res -> {
+				if (res.isRight()) {
+					executeQuery(query, params, assertion, handler);
+				} else {
+					log.error("Error when updating internal email : " + res.left().getValue());
+					handler.handle(new Either.Left<>("invalid.internal.email"));
+				}
+			}));
+		} else {
+			executeQuery(query, params, assertion, handler);
+		}
 	}
 
 	protected String getExternalId(Assertion assertion, String entPersonJointure) {
@@ -265,6 +306,22 @@ public class SSOAzure extends AbstractSSOProvider {
 	protected JsonArray getProfilesAllowedToDefaultStructure(Assertion assertion) {
 		if (profilesAllowedToDefaultStructure != null) {
 			return profilesAllowedToDefaultStructure.getJsonArray(assertion.getIssuer().getValue(), new JsonArray());
+		} else {
+			return new JsonArray();
+		}
+	}
+
+	protected String getDefaultGroupId(Assertion assertion) {
+		if (defaultGroupId != null) {
+			return defaultGroupId.getString(assertion.getIssuer().getValue());
+		} else {
+			return null;
+		}
+	}
+
+	protected JsonArray getFunctionsAllowedToGroup(Assertion assertion) {
+		if (functionsAllowedToGroup != null) {
+			return functionsAllowedToGroup.getJsonArray(assertion.getIssuer().getValue(), new JsonArray());
 		} else {
 			return new JsonArray();
 		}
