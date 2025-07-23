@@ -392,12 +392,20 @@ public class DefaultSchoolService implements SchoolService {
 		String query =
 			userStructMatcher + filter +
 			"OPTIONAL MATCH (u)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(class: Class) " +
-			"  WITH distinct u, CASE WHEN class IS NULL THEN [] ELSE COLLECT(distinct {id: class.id, name: class.name, externalId : class.externalId}) END as classes  " +
-			"OPTIONAL MATCH (u)-[d: DUPLICATE]-(duplicate: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(sd: Structure) " +
-			"  WITH distinct u, classes, collect(DISTINCT {id: sd.id, name: sd.name}) as structuresDup, duplicate, d " +
+			"  WITH distinct u, s, CASE WHEN class IS NULL THEN [] ELSE COLLECT(distinct {id: class.id, name: class.name, externalId : class.externalId}) END as classes  ";
+		if (!listRemovedUsersInsteadOfNormalUsers) {
+			query += "OPTIONAL MATCH (u)-[dd: DUPLICATE]-(dupDet: User)-[:IN]->(:ProfileGroup) " +
+					" WHERE EXISTS(dupDet.removedFromStructures) AND SIZE(dupDet.removedFromStructures) > 0 " +
+					" WITH  u, s, classes, dupDet, dd, " +
+					" CASE WHEN dupDet IS NULL THEN [] ELSE COLLECT(distinct { id: dupDet.id, firstName: dupDet.firstName, lastName: dupDet.lastName, score: dd.score, code: dupDet.activationCode, structures: null }) END as dupsDet ";
+		} else {
+			query += " WITH u, s, classes, [] as  dupsDet ";
+		}
+		query += "OPTIONAL MATCH (u)-[d: DUPLICATE]-(duplicate: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(sd: Structure) " +
+			"  WITH distinct u, classes, collect({id: sd.id, name: sd.name}) as structuresDup, duplicate, d, dupsDet " +
 			"OPTIONAL MATCH (u)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(struct: Structure) " +
 			"  WITH distinct u, classes, structuresDup, " +
-			"  CASE WHEN duplicate IS NULL THEN [] ELSE COLLECT(distinct { id: duplicate.id, firstName: duplicate.firstName, lastName: duplicate.lastName, score: d.score, code: duplicate.activationCode, structures: structuresDup }) END as duplicates, " +
+			"  CASE WHEN duplicate IS NULL THEN [] ELSE COLLECT(distinct { id: duplicate.id, firstName: duplicate.firstName, lastName: duplicate.lastName, score: d.score, code: duplicate.activationCode, structures: structuresDup }) END + dupsDet as duplicates, " +
 			"  COLLECT (distinct {id: struct.id, name: struct.name, externalId: struct.externalId}) as structures " +
 			"OPTIONAL MATCH (u)-[:IN]->(fgroup: FunctionalGroup) " +
 			"  WITH distinct u, classes, structuresDup, duplicates, structures, CASE WHEN fgroup IS NULL THEN [] ELSE COLLECT(distinct fgroup.name) END as functionalGroups " +

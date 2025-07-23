@@ -1607,6 +1607,7 @@
   "users.details.section.children": "Enfant(s)",
   "users.details.section.classes": "Classe(s)",
   "users.details.section.duplicates": "Doublon(s)",
+  "users.details.section.detached": "non rattaché",
   "users.details.section.functional.groups": "Groupe(s) d'enseignement",
   "users.details.section.infos": "Identité",
   "users.details.section.manual.groups": "Groupe(s) manuel(s)",
