@@ -4,15 +4,21 @@
   [folded]="!open" *ngIf="user?.duplicates?.length > 0">
   <ul class="actions-list">
     <li *ngFor="let duplicate of user?.duplicates">
-                    <span *ngIf="findVisibleStruct(duplicate.structures)">
-                        <a class="action" target="_blank"
-                           [routerLink]="['/admin', findVisibleStruct(duplicate.structures).id, 'users', duplicate.id, 'details']">
-                            {{ duplicate.lastName | uppercase }} {{ duplicate.firstName }} {{ formatStructures(duplicate.structures) }}
-                        </a>
-                    </span>
-      <span *ngIf="!findVisibleStruct(duplicate.structures)">
-                        {{ duplicate.lastName | uppercase }} {{ duplicate.firstName }} {{ (formatStructures(duplicate.structures)) }}
-                    </span>
+      <span *ngIf="findVisibleStruct(duplicate.structures)">
+            <a class="action" target="_blank"
+               [routerLink]="['/admin', findVisibleStruct(duplicate.structures).id, 'users', duplicate.id, 'details']">
+                {{ duplicate.lastName | uppercase }} {{ duplicate.firstName }} ({{ formatStructures(duplicate.structures) | translate }})
+            </a>
+      </span>
+      <span *ngIf="isSuperAdmin() && !findVisibleStruct(duplicate.structures)">
+            <a class="action" target="_blank"
+               [routerLink]="['/admin/admc/search/unlinked', duplicate.id, 'details']">
+                {{ duplicate.lastName | uppercase }} {{ duplicate.firstName }} ({{ formatStructures(duplicate.structures) | translate }})
+            </a>
+      </span>
+      <span *ngIf="!isSuperAdmin() && !findVisibleStruct(duplicate.structures)">
+        {{ duplicate.lastName | uppercase }} {{ duplicate.firstName }} ({{ (formatStructures(duplicate.structures)) | translate }})
+      </span>
       <span class="badge alert" *ngIf="duplicate.score > 3"
             [title]="'blocking.duplicate.tooltip' | translate">
                         <s5l>blocking.duplicate</s5l>

@@ -349,6 +349,16 @@ public class DataHelper {
         return this;
     }
 
+    public DataHelper duplicate(final UserTest user1, final UserTest user2, int score) {
+        sb.add( "MATCH (u1:User {id : {user1}}), (u2:User {id : {user2}}) " +
+                      "MERGE (u1)-[d:DUPLICATE {score:{score}}]-(u2) ",
+                new JsonObject()
+                        .put("user1", user1.getId())
+                        .put("user2", user2.getId())
+                        .put("score",score));
+        return this;
+    }
+
     /**
      * Execute stored queries then empties the list of executed actions if the transaction was successful so this object
      * can then be reused.

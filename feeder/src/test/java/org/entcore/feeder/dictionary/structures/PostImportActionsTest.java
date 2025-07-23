@@ -12,35 +12,34 @@ import org.entcore.test.TestHelper;
 import org.entcore.test.noop.NoopEventStoreFactory;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import static org.mockito.ArgumentMatchers.any;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
+import org.testcontainers.containers.Neo4jContainer;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
 @RunWith(VertxUnitRunner.class)
 public class PostImportActionsTest {
     private static final TestHelper test = TestHelper.helper();
+    @ClassRule
+    public static Neo4jContainer<?> neo4jContainer = test.database().createNeo4jContainer();
 
     private static DuplicateUsers mockDuplicateUsers;
 
     private static MockedStatic<EventStoreFactory> staticMockEventStoreFactory;
-    private static MockedStatic<TransactionManager> staticMockTransactionManager;
 
 
     @BeforeClass
     public static void setUp(TestContext context) throws Exception {
+        test.database().initNeo4j(context, neo4jContainer);
         staticMockEventStoreFactory = Mockito.mockStatic(EventStoreFactory.class);
         staticMockEventStoreFactory.when(EventStoreFactory::getFactory).thenReturn(NoopEventStoreFactory.INSTANCE);
-
-
-        final Neo4j mockNeo4J = Mockito.mock(Neo4j.class);
-        staticMockTransactionManager = Mockito.mockStatic(TransactionManager.class);
-        staticMockTransactionManager.when(TransactionManager::getNeo4jHelper).thenReturn(mockNeo4J);
-
+        TransactionManager.getInstance().setNeo4j(Neo4j.getInstance());
         mockDuplicateUsers = new DuplicateUsers(false, true, test.vertx().eventBus());
     }
 
@@ -48,9 +47,6 @@ public class PostImportActionsTest {
     public static void tearDown() {
         if(!staticMockEventStoreFactory.isClosed()) {
             staticMockEventStoreFactory.close();
-        }
-        if(!staticMockTransactionManager.isClosed()) {
-            staticMockTransactionManager.close();
         }
     }
 
