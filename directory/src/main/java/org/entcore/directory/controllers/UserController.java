@@ -770,18 +770,17 @@ public class UserController extends BaseController {
 			public void handle(UserInfos user) {
 				// Only accept queries having a searchTerm greater than 2 characters.
 				final String searchTerm = request.params().get("searchTerm");
-				if (user != null && (searchTerm == null || searchTerm.trim().length() > 2)) {
-					final String structureId = request.params().get("structureId");
-					final String classId = request.params().get("classId");
-					final JsonArray types = new JsonArray(request.params().getAll("profile"));
-					final String groupId = request.params().get("groupId");
-					final String filterActive = request.params().get("filterActive");
-					final boolean includeSubStructures = "true".equals(request.params().get("includeSubStructures"));
-
-					userService.listAdmin(structureId, includeSubStructures, classId, groupId, types, filterActive, searchQueryFromRequest(request), user, arrayResponseHandler(request));
-				} else {
+				if (user == null || searchTerm != null && searchTerm.trim().length() < 3) {
 					unauthorized(request);
+					return;
 				}
+				final String structureId = request.params().get("structureId");
+				final String classId = request.params().get("classId");
+				final JsonArray types = new JsonArray(request.params().getAll("profile"));
+				final String groupId = request.params().get("groupId");
+				final String filterActive = request.params().get("filterActive");
+				final boolean includeSubStructures = "true".equals(request.params().get("includeSubStructures"));
+				userService.listAdmin(structureId, includeSubStructures, classId, groupId, types, filterActive, searchQueryFromRequest(request), user, arrayResponseHandler(request));
 			}
 		});
 	}

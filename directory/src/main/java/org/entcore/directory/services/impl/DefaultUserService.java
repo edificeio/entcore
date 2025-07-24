@@ -745,6 +745,13 @@ public class DefaultUserService implements UserService {
 		// excepted when the query is already restricted to a class, group or structure.
 		String filterFunction = "WITH u ";
 		String conditionFunction = "WHERE 1=1 ";
+		String securityFilter = " ";
+		if (userInfos.getFunctions().containsKey(ADMIN_LOCAL) ||
+			userInfos.getFunctions().containsKey(CLASS_ADMIN)) {
+			securityFilter += "MATCH (u)-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(authStruct:Structure) "+
+					" WHERE authStruct.id IN {userStructures} ";
+			params.put("userStructures", new JsonArray(userInfos.getStructures()));
+		}
 		if (!userInfos.getFunctions().containsKey(SUPER_ADMIN) &&
 				!userInfos.getFunctions().containsKey(ADMIN_LOCAL) &&
 				!userInfos.getFunctions().containsKey(CLASS_ADMIN)) {
@@ -769,7 +776,7 @@ public class DefaultUserService implements UserService {
 		}
 		String query =
 				"MATCH " + filterUser + "(u:User) " + conditionUser
-				+ filterFunction + conditionFunction + 
+				+ filterFunction + conditionFunction + securityFilter +
 				"OPTIONAL MATCH u-[:IN]->(pg:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
 				"OPTIONAL MATCH u-[:IN]->(:ProfileGroup)-[:DEPENDS]->(class:Class)-[:BELONGS]->(s) " +
 				"OPTIONAL MATCH u-[:RELATED]->(parent: User) " +
