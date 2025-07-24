@@ -20,14 +20,12 @@
 package org.entcore.directory.security;
 
 
+import fr.wseduc.webutils.http.Binding;
+import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
 import org.entcore.common.http.filter.AdmlResourcesProvider;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserInfos.Function;
-import io.vertx.core.Handler;
-import io.vertx.core.http.HttpServerRequest;
-
-import fr.wseduc.webutils.http.Binding;
-import org.entcore.common.utils.StringUtils;
 
 public class AdminStructureFilter extends AdmlResourcesProvider {
 
