@@ -37,6 +37,7 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.communication.CommunicationUtils;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserUtils;
@@ -240,8 +241,11 @@ public class CommunicationController extends BaseController {
 								final String search = filter.getString(criteria);
 								if (isNotEmpty(search)) {
 									preFilter = "AND m.displayNameSearchField CONTAINS {search} ";
+
 									// Exclude CommunityMemberGroup and CommunityAdminGroup from search
-									preFilter += "AND NOT ANY(label IN ['CommunityMemberGroup', 'CommunityAdminGroup'] WHERE label IN labels(m)) ";
+									preFilter += " AND NOT m:" + CommunicationUtils.COMMUNITY_MEMBER_GROUP + " ";
+									preFilter += " AND NOT m:" + CommunicationUtils.COMMUNITY_ADMIN_GROUP + " ";
+
 									String sanitizedSearch = StringValidation.sanitize(search);
 									params.put("search", sanitizedSearch);
 								}

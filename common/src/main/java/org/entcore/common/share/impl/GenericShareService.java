@@ -32,6 +32,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
 
+import org.entcore.common.communication.CommunicationUtils;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
@@ -269,8 +270,11 @@ public abstract class GenericShareService implements ShareService {
 				userParams.put("search", sanitizedSearch);
 				//
 				preFilterUserBuilder.append(" AND m.displayNameSearchField CONTAINS {search} ");
+
 				// Exclude CommunityMemberGroup and CommunityAdminGroup from search
-				preFilterGroupBuilder.append(" AND NOT ANY(label IN ['CommunityMemberGroup', 'CommunityAdminGroup'] WHERE label IN labels(m)) ");
+				preFilterGroupBuilder.append(" AND NOT m:" + CommunicationUtils.COMMUNITY_MEMBER_GROUP + " ");
+				preFilterGroupBuilder.append(" AND NOT m:" + CommunicationUtils.COMMUNITY_ADMIN_GROUP + " ");
+
 				// historically this filter was not user. should it be?
 				//preFilterGroupBuilder.append(" AND profileGroup.displayNameSearchField CONTAINS {search} ");
 			}
