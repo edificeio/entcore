@@ -4,6 +4,7 @@ import {UserOverview} from './user-overview/user-overview.component';
 import {Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import { UserModel } from '../core/store/models/user.model';
+import { SearchTypeEnum } from '../core/enum/SearchTypeEnum';
 
 export interface BackendDirectoryUserResponse {
     zipCode: string;
@@ -57,18 +58,23 @@ export class UsersService {
         );
     }
 
-    public async search(searchTerm: string, searchType?: string, structureId?: string): Promise<UserModel[]> {
+    public async search(searchTerm: string|string[], searchType?: string, structureId?: string): Promise<UserModel[]> {
         if (!searchTerm) return [];
 
         // let term = searchTerm.replace(/[^-0-9a-zÀ-ÿ]/g, ''); // I had to remove that for email search
         
         let structureParam = structureId ? ("&structureId=" + structureId + "&includeSubStructures=true") : "";
         
-        let res: Array<UserModel> = await this.
-            http.
-            get<Array<UserModel>>(`/directory/user/admin/list?searchTerm=${searchTerm}&searchType=${searchType}${structureParam}`).
-            toPromise();
-
-        return res;
+        if(searchType !== SearchTypeEnum.FULL_NAME) {
+            return await this.
+                http.
+                get<Array<UserModel>>(`/directory/user/admin/list?searchTerm=${searchTerm}&searchType=${searchType}${structureParam}`).
+                toPromise();
+        }
+        return await this.
+                http.
+                get<Array<UserModel>>(`/directory/user/admin/list?lastName=${searchTerm[1]}&firstName=${searchTerm[0]}&searchType=${searchType}${structureParam}`).
+                toPromise();
+        
     }
 }
