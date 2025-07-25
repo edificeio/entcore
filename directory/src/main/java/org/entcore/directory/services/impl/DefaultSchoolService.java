@@ -394,8 +394,9 @@ public class DefaultSchoolService implements SchoolService {
 			"OPTIONAL MATCH (u)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(class: Class) " +
 			"  WITH distinct u, s, CASE WHEN class IS NULL THEN [] ELSE COLLECT(distinct {id: class.id, name: class.name, externalId : class.externalId}) END as classes  ";
 		if (!listRemovedUsersInsteadOfNormalUsers) {
-			query += "OPTIONAL MATCH (u)-[dd: DUPLICATE]-(dupDet: User)-[:IN]->(:ProfileGroup) " +
+			query += "OPTIONAL MATCH (u)-[dd: DUPLICATE]-(dupDet: User) " +
 					" WHERE EXISTS(dupDet.removedFromStructures) AND SIZE(dupDet.removedFromStructures) > 0 " +
+					"	AND (NOT EXISTS(dupDet.structures) OR SIZE(dupDet.structures) = 0) " +
 					" WITH  u, s, classes, dupDet, dd, " +
 					" CASE WHEN dupDet IS NULL THEN [] ELSE COLLECT(distinct { id: dupDet.id, firstName: dupDet.firstName, lastName: dupDet.lastName, score: dd.score, code: dupDet.activationCode, structures: null }) END as dupsDet ";
 		} else {
