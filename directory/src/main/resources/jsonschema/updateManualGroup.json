@@ -22,12 +22,6 @@
         "type": "string"
       }
     },
-    "autolinkUsersFromPositions": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
     "autolinkUsersFromLevels":
     {
       "type": "array",

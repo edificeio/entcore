@@ -142,7 +142,6 @@ public class GroupController extends BaseController {
 										body.remove("autolinkTargetAllStructs");
 										body.remove("autolinkTargetStructs");
 										body.remove("autolinkUsersFromGroups");
-										body.remove("autolinkUsersFromPositions");
 										body.remove("autolinkUsersFromLevels");
 									}
 
@@ -174,7 +173,6 @@ public class GroupController extends BaseController {
 									body.remove("autolinkTargetAllStructs");
 									body.remove("autolinkTargetStructs");
 									body.remove("autolinkUsersFromGroups");
-									body.remove("autolinkUsersFromPositions");
 									body.remove("autolinkUsersFromLevels");
 								}
 

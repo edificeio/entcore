@@ -31,13 +31,7 @@
         "type": "string"
       }
     },
-    "autolinkUsersFromPositions": {
-      "type": "array",
-      "items": {
-        "type": "string"
-      }
-    },
-    "autolinkUsersFromLevels": 
+    "autolinkUsersFromLevels":
     {
       "type": "array",
       "items": {
