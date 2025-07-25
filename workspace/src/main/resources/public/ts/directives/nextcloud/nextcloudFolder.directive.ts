@@ -1,11 +1,4 @@
-import {
-  angular,
-  Document,
-  FolderTreeProps,
-  model,
-  ng,
-  template,
-} from "entcore";
+import { angular, Document, FolderTreeProps, model, ng, template, } from "entcore";
 import { Tree } from "entcore/types/src/ts/workspace/model";
 import { Subscription } from "rxjs";
 import { models } from "../../services";
@@ -87,11 +80,21 @@ export const workspaceNextcloudFolderController = ng.controller(
         .then((user) => {
           nextcloudUserService
             .getUserInfo(model.me.userId)
-            .then((nextcloudUserInfo: UserNextcloud) => {
+            .then(async (nextcloudUserInfo: UserNextcloud) => {
               $scope.userInfo = nextcloudUserInfo;
               $scope.documents = [new SyncDocument().initParent()];
               $scope.initTree($scope.documents);
               $scope.initDraggable();
+
+              const urlParams = new URLSearchParams(window.location.search);
+              if (urlParams.get("folder") === "synced") {
+                await $scope.openDocument($scope.documents[0]);
+                await $scope.folderTree.openFolder($scope.documents[0]);
+                $scope.setSwitchDisplayHandler();
+                template.open("documents", "nextcloud/content/workspace-nextcloud-content");
+                WorkspaceEntcoreUtils.toggleWorkspaceContentDisplay(false);
+              }
+
               safeApply($scope);
             })
             .catch((err: Error) => {
@@ -172,12 +175,7 @@ export const workspaceNextcloudFolderController = ng.controller(
               viewModel.openedFolder.push(folder);
             }
 
-            if ((<any>folder).isStaticFolder) {
-              await viewModel.openDocument(folder);
-            } else {
-              // synchronize documents and send content to its other sniplet content
-              await viewModel.openDocument(folder);
-            }
+            await viewModel.openDocument(folder);
 
             // reset drag feedback by security
             viewModel.removeDragFeedback();
@@ -196,15 +194,17 @@ export const workspaceNextcloudFolderController = ng.controller(
           async dragDropHandler(event: DragEvent): Promise<void> {
             await viewModel.resolveDragTarget(event);
           },
-          dragEndHandler(event: DragEvent, content?: any): void {},
-          dragStartHandler(event: DragEvent, content?: any): void {},
+          dragEndHandler(event: DragEvent, content?: any): void {
+          },
+          dragStartHandler(event: DragEvent, content?: any): void {
+          },
           dropConditionHandler(event: DragEvent, content?: any): boolean {
             return false;
           },
         };
       };
 
-      function removeDropTarget(event:DragEvent) {
+      function removeDropTarget(event: DragEvent) {
         const target: HTMLElement = event.target as HTMLElement;
         const droppableElement: HTMLElement = target.closest('.folder-list-item') || target;
         if (droppableElement) {
@@ -237,11 +237,11 @@ export const workspaceNextcloudFolderController = ng.controller(
                 .scope().folder;
               let selectedDocuments: Array<Document> =
                 WorkspaceEntcoreUtils.workspaceScope()["documentList"][
-                  "_documents"
+                "_documents"
                 ];
               selectedDocuments = selectedDocuments.concat(
                 WorkspaceEntcoreUtils.workspaceScope()["currentTree"][
-                  "children"
+                "children"
                 ],
               );
               let documentToUpdate: Set<string> = new Set(
@@ -259,7 +259,7 @@ export const workspaceNextcloudFolderController = ng.controller(
                 .then((_: any) => {
                   WorkspaceEntcoreUtils.updateWorkspaceDocuments(
                     WorkspaceEntcoreUtils.workspaceScope()["openedFolder"][
-                      "folder"
+                    "folder"
                     ],
                   );
                   nextcloudEventService.sendOpenFolderDocument(
