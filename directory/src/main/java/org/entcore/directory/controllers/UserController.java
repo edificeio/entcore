@@ -801,9 +801,11 @@ public class UserController extends BaseController {
 		 */
 		if( nameFilter!=null && nameFilter.length()>0 && searchTerm==null && searchType==null) {
 			return TransversalSearchQuery.searchByDisplayName(nameFilter);
-		} if( !StringUtils.isEmpty(lastNameFilter) || !StringUtils.isEmpty(firstNameFilter) ) {
+		}
+		if( !StringUtils.isEmpty(lastNameFilter) || !StringUtils.isEmpty(firstNameFilter) ) {
 			return TransversalSearchQuery.searchByFullName(lastNameFilter, firstNameFilter);
-		} else if( !StringUtils.isEmpty(searchTerm) ) {
+		}
+		if( !StringUtils.isEmpty(searchTerm) ) {
 			final TransversalSearchType type = TransversalSearchType.fromCode(searchType);
 			if(TransversalSearchType.EMAIL.equals(type))
 				return TransversalSearchQuery.searchByMail(searchTerm);

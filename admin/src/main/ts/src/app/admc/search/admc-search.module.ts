@@ -10,7 +10,7 @@ import { AdmcSearchComponent } from "./admc-search.component";
 import { routes } from "./admc-search.routing";
 import { AdmcSearchService } from "./admc-search.service";
 import { AdmcUserSearchListComponent } from "./components/user-search-list/user-search-list.component";
-import { AdmcUserSearchInputComponent } from "./components/user-search-input/user-search-input.component";
+import { AdmcUserSearchInputComponent } from "../../_shared/user-search-input/user-search-input.component";
 import { AdmcSearchTransverseComponent } from "./transverse/admc-search-transverse.component";
 import { AdmcSearchUnlinkedComponent } from "./unlinked/admc-search-unlinked.component";
 import { UnlinkedUserDetailsComponent } from "./unlinked/details/user-details.component";
@@ -20,6 +20,7 @@ import { UnlinkedUserStructuresSectionComponent } from "./unlinked/structures-se
 import { UsersModule } from "src/app/users/users.module";
 import { UsersStore } from "src/app/users/users.store";
 import { InfiniteScrollModule } from "ngx-infinite-scroll";
+import { SharedModule } from "src/app/_shared/shared.module";
 
 @NgModule({
     imports: [
@@ -29,14 +30,14 @@ import { InfiniteScrollModule } from "ngx-infinite-scroll";
         NgxOdeSijilModule.forChild(),
         NgxOdeUiModule,
         InfiniteScrollModule,
-        UsersModule
+        UsersModule,
+        SharedModule
     ],
     declarations: [
         AdmcSearchComponent,
         AdmcSearchTransverseComponent,
         AdmcSearchUnlinkedComponent,
-        AdmcUserSearchListComponent,
-        AdmcUserSearchInputComponent,
+        AdmcUserSearchListComponent,        
         UnlinkedUserDetailsComponent,
         UnlinkedUserStructuresSectionComponent
     ],
@@ -50,6 +51,7 @@ import { InfiniteScrollModule } from "ngx-infinite-scroll";
         UsersStore
     ],
     exports: [
+        
     ]
 })
 export class AdmcSearchModule {
