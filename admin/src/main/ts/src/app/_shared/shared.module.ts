@@ -9,6 +9,7 @@ import { FlexLayoutModule } from "@angular/flex-layout";
 import { UserPositionModalComponent } from "./user-position-modal/user-position-modal.component";
 import { MatDialogModule } from "@angular/material/dialog";
 import { UserPositionListComponent } from "./user-position-list/user-position-list.component";
+import { AdmcUserSearchInputComponent } from "./user-search-input/user-search-input.component";
 
 @NgModule({
   imports: [
@@ -20,7 +21,7 @@ import { UserPositionListComponent } from "./user-position-list/user-position-li
     MatSortModule,
     FlexLayoutModule,
   ],
-  declarations: [UserPositionModalComponent, UserPositionListComponent],
-  exports: [UserPositionModalComponent, UserPositionListComponent]
+  declarations: [UserPositionModalComponent, UserPositionListComponent, AdmcUserSearchInputComponent],
+  exports: [UserPositionModalComponent, UserPositionListComponent, AdmcUserSearchInputComponent]
 })
 export class SharedModule {}

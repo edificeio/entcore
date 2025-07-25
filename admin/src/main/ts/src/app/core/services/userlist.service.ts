@@ -4,14 +4,21 @@ import {Subject} from 'rxjs';
 
 @Injectable()
 export class UserListService {
-    set inputFilter(filter: string) {
-        this._inputFilter = filter;
+    set inputFilter(filter: string | string[]) {
+        if(filter instanceof String) {
+            this._inputFilter = this.normalize(filter as string);
+        } else {
+            this._inputFilter = (filter as string[])
+                                    .map( s => this.normalize(s));
+        }         
         this.resetLimit();
     }
 
     get inputFilter() {
         return this._inputFilter;
     }
+  
+
     DEFAULT_INCREMENT = 100;
     limit = this.DEFAULT_INCREMENT;
 
@@ -36,7 +43,7 @@ export class UserListService {
     sorts: Array<string> = ['+lastName', '+firstName', '+type'];
 
     // Filters
-    private _inputFilter = '';
+    private _inputFilter: string | string[] = '';
 
     changeSorts(target) {
         this.resetLimit();
@@ -58,8 +65,13 @@ export class UserListService {
 
     filterByInput = (user: UserModel) => {
         if (!this.inputFilter) { return true; }
-        return `${user.displayName}`.toLowerCase()
-            .indexOf(this.inputFilter.trim().toLowerCase()) >= 0;
+        if(this.inputFilter instanceof String) {
+            return `${user.displayName}`.toLowerCase()
+                .indexOf((this.inputFilter as String).trim().toLowerCase()) >= 0;
+        } else {
+            return this.normalize(`${user.firstName}`).indexOf((this.inputFilter as string[])[0]) >= 0
+                && this.normalize(`${user.lastName}`).indexOf((this.inputFilter as string[])[1]) >= 0;
+        }        
     }
 
     resetLimit() {
@@ -68,6 +80,12 @@ export class UserListService {
 
     addPageDown() {
         this.limit = this.limit + this.DEFAULT_INCREMENT;
+    }
+
+    private normalize(s: string): string {
+        return s.normalize("NFD")
+                      .replace(/[\u0300-\u036f-]/g, "")                      
+                      .toLowerCase();
     }
 }
 

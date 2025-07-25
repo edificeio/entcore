@@ -1,4 +1,4 @@
-<admc-user-search-input
+<admin-user-search-input
   *ngIf="isSearchActive"
   [searchType]="searchType"
   [isSearchButtonDisabled]="isSearchButtonDisabled"
@@ -7,7 +7,7 @@
   [delay]="searchDelay"
   (onChange)="inputChange.emit($event)"
 >
-</admc-user-search-input>
+</admin-user-search-input>
 
 <div class="toolbar">
   <ng-content select="[toolbar]"></ng-content>

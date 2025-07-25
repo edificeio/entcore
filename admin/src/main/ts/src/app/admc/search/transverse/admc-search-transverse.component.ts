@@ -7,7 +7,7 @@ import { UserListService } from "src/app/core/services/userlist.service";
 import { UserModel } from "src/app/core/store/models/user.model";
 import { UsersStore } from "src/app/users/users.store";
 import { AdmcSearchService } from "../admc-search.service";
-import { UserSearchTerms } from "../components/user-search-input/user-search-input.component";
+import { UserSearchTerms } from "../../../_shared/user-search-input/user-search-input.component";
 
 @Component({
     selector: 'ode-admc-search-transverse',

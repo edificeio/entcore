@@ -7,7 +7,7 @@ import { SearchTypeEnum } from 'src/app/core/enum/SearchTypeEnum';
 export type UserSearchTerms = Array<string>;
 
 @Component({
-    selector: 'admc-user-search-input',
+    selector: 'admin-user-search-input',
     templateUrl: './user-search-input.component.html',
     styleUrls: ['./user-search-input.component.scss']
 })
