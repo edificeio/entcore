@@ -15,6 +15,9 @@ public class CommunicationUtils {
     private static final Logger log = LoggerFactory.getLogger(CommunicationUtils.class);
     private static final String COMMUNICATION_ADDRESS = "wse.communication";
 
+    public static final String COMMUNITY_MEMBER_GROUP = "CommunityMemberGroup";
+    public static final String COMMUNITY_ADMIN_GROUP = "CommunityAdminGroup";
+
     /**
      * Direction of communication links
      */
