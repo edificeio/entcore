@@ -23,7 +23,7 @@ public class DefaultScreenTimeService implements ScreenTimeService {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultLibraryService.class);
 
-    public DefaultScreenTimeService(Vertx vertx, JsonObject config) {
+    public DefaultScreenTimeService(Vertx vertx) {
         this.httpClient = vertx.createHttpClient(
                 new HttpClientOptions().setSsl(true).setTrustAll(true));
     }
@@ -32,12 +32,6 @@ public class DefaultScreenTimeService implements ScreenTimeService {
     public void getDailyScreenTime(HttpServerRequest request, String token, String userId,
                                    LocalDate date, JsonObject config,
                                    Handler<Either<JsonObject, JsonObject>> eitherHandler) {
-        // TODO remove when real data is available
-        if ("true".equals(request.getParam("mock"))) {
-            JsonObject mockData = getMockDailyScreenTime();
-            eitherHandler.handle(new Either.Right(mockData));
-        }
-
         String uri = config.getString("screen-time-url") + userId + "?date=" + date.toString();
         String host = config.getString("host");
         int port = config.getInteger("port", 443);
@@ -61,8 +55,9 @@ public class DefaultScreenTimeService implements ScreenTimeService {
                             JsonObject processed = calculateDailyTotalScreenTime(json);
                             eitherHandler.handle(new Either.Right(processed));
                         }).onFailure(err -> {
+                            Throwable t = (Throwable) err;
                             log.error(
-                                    "[screen time] - Failed to read response body: " + err.getMessage(),
+                                    "[screen time] - Failed to read response body: " + t.getMessage(),
                                     err);
                             eitherHandler.handle(new Either.Left(
                                     new JsonObject().put("statusCode", 500)
@@ -92,8 +87,9 @@ public class DefaultScreenTimeService implements ScreenTimeService {
                     }
                 })
                 .onFailure(err -> {
+                    Throwable t = (Throwable) err;
                     JsonObject error = new JsonObject().put("statusCode", 500)
-                            .put("message", "Request failed: " + err.getMessage());
+                            .put("message", "Request failed: " + t.getMessage());
                     log.error("[screen time] - " + error.encodePrettily(), err);
                     eitherHandler.handle(new Either.Left(error));
                 });
@@ -107,12 +103,6 @@ public class DefaultScreenTimeService implements ScreenTimeService {
                                     LocalDate endDate,
                                     JsonObject config,
                                     Handler<Either<JsonObject, JsonObject>> eitherHandler) {
-        // TODO remove when real data is available
-        if ("true".equals(request.getParam("mock"))) {
-            JsonObject mockData = getMockWeeklyScreenTime(startDate, endDate);
-            eitherHandler.handle(new Either.Right(mockData));
-        }
-
         String uri = config.getString(
                 "screen-time-weekly-url") + userId +// "?startDate=2025-06-01&endDate=2025-06-06";
                 "?startDate=" + startDate.toString() +
@@ -141,7 +131,8 @@ public class DefaultScreenTimeService implements ScreenTimeService {
                                     endDate);
                             eitherHandler.handle(new Either.Right(result));
                         }).onFailure(err -> {
-                            log.error("[screen time] - Failed to read body: " + err.getMessage(),
+                            Throwable t = (Throwable) err;
+                            log.error("[screen time] - Failed to read body: " + t.getMessage(),
                                     err);
                             eitherHandler.handle(new Either.Left(
                                     new JsonObject().put("statusCode", 500)
@@ -172,8 +163,9 @@ public class DefaultScreenTimeService implements ScreenTimeService {
                     }
                 })
                 .onFailure(err -> {
+                    Throwable t = (Throwable) err;
                     JsonObject error = new JsonObject().put("statusCode", 500)
-                            .put("message", "Request failed: " + err.getMessage());
+                            .put("message", "Request failed: " + t.getMessage());
                     log.error("[screen time] - " + error.encodePrettily(), err);
                     eitherHandler.handle(new Either.Left(error));
                 });
