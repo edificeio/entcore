@@ -283,7 +283,7 @@
   "group.communication.section.title.sending-rules": "Qui les membres du groupe peuvent-ils voir",
   "group.communication.title": "Communication du groupe {{name}}",
   "group.delete.button": "Supprimer",
-  "group.delete.button.lock": "Groupe verouillé",
+  "group.delete.button.lock": "Groupe verrouillé",
   "group.delete.confirm.content": "Veuillez confirmer la suppression définitive du groupe <strong>{{groupName}}</strong>.",
   "group.delete.confirm.title": "Confirmation requise",
   "group.delete.notify.error.content": "Le groupe {{groupName}} n'a pas pu être supprimé.",
