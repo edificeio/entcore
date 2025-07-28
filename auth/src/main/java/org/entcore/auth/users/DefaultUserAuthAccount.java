@@ -352,7 +352,7 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 					: "") +
 				(setFirstname ? " AND u.firstNameSearchField = {firstName}" : "") +
 				(setStructure ? " AND s.id = {structure}" : "") +
-				" RETURN DISTINCT u.login as login, u.activationCode as activationCode, u.mobile as mobile, s.name as structureName, s.id as structureId";
+				" RETURN DISTINCT u.login as login, u.loginAlias as loginAlias, u.activationCode as activationCode, u.mobile as mobile, s.name as structureName, s.id as structureId";
 		//Feat #20790 match only lowercases values
 		JsonObject params = new JsonObject().put("mail", email.toLowerCase());
 		if(setFirstname)
