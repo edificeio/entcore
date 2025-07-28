@@ -398,7 +398,7 @@ public class DefaultSchoolService implements SchoolService {
 					" WHERE EXISTS(dupDet.removedFromStructures) AND SIZE(dupDet.removedFromStructures) > 0 " +
 					"	AND (NOT EXISTS(dupDet.structures) OR SIZE(dupDet.structures) = 0) " +
 					" WITH  u, s, classes, dupDet, dd, " +
-					" CASE WHEN dupDet IS NULL THEN [] ELSE COLLECT(distinct { id: dupDet.id, firstName: dupDet.firstName, lastName: dupDet.lastName, score: dd.score, code: dupDet.activationCode, structures: null }) END as dupsDet ";
+					" CASE WHEN dupDet IS NULL THEN [] ELSE COLLECT(distinct { id: dupDet.id, firstName: dupDet.firstName, lastName: dupDet.lastName, score: dd.score, code: dupDet.activationCode, structures: [] }) END as dupsDet ";
 		} else {
 			query += " WITH u, s, classes, [] as  dupsDet ";
 		}

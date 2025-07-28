@@ -46,7 +46,7 @@ export class UserDuplicatesSectionComponent extends AbstractSection implements O
     }
 
     formatStructures(structures): string {
-        if(!structures) {
+        if(!structures || structures.length === 0) {
             return 'users.details.section.detached';
         }
         return structures.map(structure => structure.name).join(', ');
