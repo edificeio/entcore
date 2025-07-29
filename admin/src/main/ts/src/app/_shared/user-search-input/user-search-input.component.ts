@@ -14,8 +14,8 @@ export type UserSearchTerms = Array<string>;
 export class AdmcUserSearchInputComponent extends OdeComponent implements OnInit, OnDestroy {
 
     constructor(injector: Injector,
-                private _elRef: ElementRef,
-                private _renderer: Renderer2) {
+                private readonly _elRef: ElementRef,
+                private readonly _renderer: Renderer2) {
         super(injector);
     }
 
@@ -47,7 +47,7 @@ export class AdmcUserSearchInputComponent extends OdeComponent implements OnInit
 
     /* Internal logic */
 
-    private $searchTerms = new Subject<UserSearchTerms>();
+    private readonly $searchTerms = new Subject<UserSearchTerms>();
     private observable: Observable<UserSearchTerms>;
     private observer: Subscription;
 

@@ -10,7 +10,6 @@ import { AdmcSearchComponent } from "./admc-search.component";
 import { routes } from "./admc-search.routing";
 import { AdmcSearchService } from "./admc-search.service";
 import { AdmcUserSearchListComponent } from "./components/user-search-list/user-search-list.component";
-import { AdmcUserSearchInputComponent } from "../../_shared/user-search-input/user-search-input.component";
 import { AdmcSearchTransverseComponent } from "./transverse/admc-search-transverse.component";
 import { AdmcSearchUnlinkedComponent } from "./unlinked/admc-search-unlinked.component";
 import { UnlinkedUserDetailsComponent } from "./unlinked/details/user-details.component";
