@@ -18,9 +18,11 @@ export class TreeUserListComponent extends OdeComponent implements OnInit, OnDes
 
     nbUser: number;
     searchTerm: string;
+    searchTerms: string[] = [];
     searchTypes: Array<{label: string, value: SearchTypeEnum}>;
     selectedSearchTypeValue: string;
     userlist: UserModel[];
+    searchTypeEnum = SearchTypeEnum;
 
     @Input()
     structure: StructureModel;
@@ -44,14 +46,14 @@ export class TreeUserListComponent extends OdeComponent implements OnInit, OnDes
         this.searchTypes = [
             {
                 label: 'user.searchType.name',
-                value: SearchTypeEnum.DISPLAY_NAME
+                value: SearchTypeEnum.FULL_NAME
             },
             {
                 label: 'user.searchType.email',
                 value: SearchTypeEnum.EMAIL
             }
         ];
-        this.selectedSearchTypeValue = SearchTypeEnum.DISPLAY_NAME;
+        this.selectedSearchTypeValue = SearchTypeEnum.FULL_NAME;
     }
 
     ngAfterViewChecked() {
@@ -82,15 +84,20 @@ export class TreeUserListComponent extends OdeComponent implements OnInit, OnDes
 
     handleSelectSearchType(searchTypeValue: string): void {
         this.selectedSearchTypeValue = searchTypeValue;
+        this.searchTerm = '';
     }
 
     search = (): void => {
         this.spinner.perform('portal-content',
-            this.usersService.search(this.searchTerm, this.selectedSearchTypeValue, this.structure.id).then(data => {
+            this.usersService.search(this.selectedSearchTypeValue === SearchTypeEnum.EMAIL ?
+                 this.searchTerm : this.searchTerms, 
+                 this.selectedSearchTypeValue, 
+                 this.structure.id)
+            .then(data => {
                 this.userlist = data;
                 this.refreshListCount(data);
                 this.changeDetector.markForCheck();
             })
         );
-    }
+    }  
 }
