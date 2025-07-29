@@ -1,3 +1,10 @@
+<admin-user-search-input
+  isSearchButtonDisabled="true"
+  [searchInput]="false"
+  (onChange)="userListService.inputFilter = $event"
+>
+</admin-user-search-input>  
+
 <ode-list
   [model]="userlist"
   [filters]="listFiltersService.getFormattedFilters()"
@@ -7,12 +14,14 @@
   noResultsLabel="list.results.no.users"
   [isSelected]="isSelected"
   [limit]="userListService.limit"
-  (inputChange)="userListService.inputFilter = $event"
+  [isSearchActive]="false"  
   (onSelect)="selectedUser = $event; onselect.emit($event)"
   (scrolledDown)="userListService.addPageDown()"
   (listChange)="refreshListCount($event)"
 >
-  <div toolbar class="user-toolbar">
+
+
+<div toolbar class="user-toolbar">
     <i
       class="fa is-size-5"
       aria-hidden="true"

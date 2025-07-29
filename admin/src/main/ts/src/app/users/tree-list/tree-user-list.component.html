@@ -1,3 +1,12 @@
+<admin-user-search-input
+  [hidden]="selectedSearchTypeValue === searchTypeEnum.EMAIL"
+  [isSearchButtonDisabled]="(searchTerms[0]?.length + searchTerms[1]?.length) < 3"
+  [searchInput]="selectedSearchTypeValue !== searchTypeEnum.EMAIL"
+  (onChange)="searchTerms = $event"
+  [searchSubmit]="search"
+>
+</admin-user-search-input>  
+
 <ode-list
    [model]="userlist"
    [inputFilter]="userListService.filterByInput"
@@ -11,9 +20,10 @@
    (inputChange)="searchTerm = $event"
    (onSelect)="selectedUser = $event; onselect.emit($event)"
    (scrolledDown)="userListService.addPageDown()"
-   (listChange)="refreshListCount($event)"
-   [searchInput]="true"
-   [isSearchButtonDisabled]="searchTerm?.trim().length<3"
+   (listChange)="refreshListCount($event)"   
+   [searchInput]="selectedSearchTypeValue === searchTypeEnum.EMAIL"
+   [isSearchActive]="selectedSearchTypeValue === searchTypeEnum.EMAIL"
+   [isSearchButtonDisabled]="searchTerm?.trim().length < 3"
    >
       <div toolbar> <!-- necessary div for ng-content with toolbar selector injection from ode-list -->
          <ode-search-toolbar
