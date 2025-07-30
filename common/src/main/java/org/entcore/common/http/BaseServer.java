@@ -85,6 +85,7 @@ public abstract class BaseServer extends Server {
 	private String schema;
 	private String contentSecurityPolicy;
 	private AccessLogger accessLogger;
+	private PreAuthorizeFilter preAuthorizeFilter;
 
 	public static String getModuleName() {
 		return moduleName;
@@ -386,6 +387,11 @@ public abstract class BaseServer extends Server {
 
 	protected BaseServer setResourceProvider(ResourcesProvider resourceProvider) {
 		this.resourceProvider = resourceProvider;
+		return this;
+	}
+
+	protected BaseServer setPreAuthorizeFilter(PreAuthorizeFilter preAuthorizeFilter) {
+		this.preAuthorizeFilter = preAuthorizeFilter;
 		return this;
 	}
 
