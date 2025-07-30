@@ -30,7 +30,7 @@ public class PreAuthorizeFilter {
 
     protected void loadConfiguration() {
         InputStream is = BaseResourceProvider.class.getClassLoader().getResourceAsStream(
-                "PreAuthorize.json");
+                "PreAuthorizes.json");
         if (is != null) {
             try (BufferedReader r = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8))) {
                 String line;
