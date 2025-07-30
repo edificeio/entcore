@@ -98,7 +98,7 @@ public abstract class BaseServer extends Server {
 			setResourceProvider(new ResourceProviderFilter());
 		}
 		super.start(startPromise);
-
+		setPreAuthorizeFilter(new PreAuthorizeFilter());
 		accessLogger = new EntAccessLogger(getEventBus(vertx));
 
 		EventStoreFactory eventStoreFactory = EventStoreFactory.getFactory();
@@ -145,9 +145,9 @@ public abstract class BaseServer extends Server {
 		addFilter(new MandatoryUserValidationFilter(mfaProtectedBinding, getEventBus(vertx)));
 
 		if (config.getString("integration-mode","BUS").equals("HTTP")) {
-			addFilter(new HttpActionFilter(securedUriBinding, config, vertx, resourceProvider));
+			addFilter(new HttpActionFilter(securedUriBinding, config, vertx, resourceProvider, preAuthorizeFilter));
 		} else {
-			addFilter(new ActionFilter(securedUriBinding, vertx, resourceProvider));
+			addFilter(new ActionFilter(securedUriBinding, vertx, resourceProvider, preAuthorizeFilter));
 		}
 		vertx.eventBus().localConsumer("user.repository", repositoryHandler);
 		vertx.eventBus().localConsumer("search.searching", this.searchingHandler);

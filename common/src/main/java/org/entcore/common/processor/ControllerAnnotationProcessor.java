@@ -35,6 +35,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import java.io.*;
@@ -160,12 +162,22 @@ public class ControllerAnnotationProcessor extends fr.wseduc.processor.Controlle
 			if(annotation == null || !isMethod(element) || clazz == null) {
 				continue;
 			}
-			String expression = annotation.value();
-			Class<?> evaluatorClass = annotation.clazz();
-
+			TypeMirror v = null;
+			try {
+				annotation.clazz();
+			} catch(MirroredTypeException e){
+				v = e.getTypeMirror();
+			}
+			Types typeUtils = processingEnv.getTypeUtils();
+			Elements elementUtils = processingEnv.getElementUtils();
+			String qualifiedName = null;
+			if (v != null) {
+				TypeElement classElement = (TypeElement) typeUtils.asElement(v);
+				qualifiedName = classElement.getQualifiedName().toString();
+			}
 			filters.add("{ \"method\" : \"" + clazz.getQualifiedName().toString() + "|" +
-					element.getSimpleName().toString() + "\", \"expression\" : \"" + expression + "\", \"clazz\" : \""+
-					evaluatorClass +"\"  }");
+					element.getSimpleName().toString() + "\", \"expression\" : \"" + annotation.value() + "\", \"clazz\" : \""+
+					qualifiedName +"\"  }");
 		}
 
 		if (!filters.isEmpty()) {

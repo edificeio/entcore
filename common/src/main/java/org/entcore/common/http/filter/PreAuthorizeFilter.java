@@ -5,6 +5,7 @@ import fr.wseduc.webutils.http.Binding;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.http.filter.expression.ExpressionHandler;
 import org.entcore.common.user.UserInfos;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,9 +17,10 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-public class PreAuthorizeFilter implements ResourcesProvider{
+public class PreAuthorizeFilter {
 
     private final Map<String, ExpressionContext> filtersMapping = Maps.newHashMap();
+    private final ExpressionHandler expressionHandler = new ExpressionHandler();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PreAuthorizeFilter.class);
 
@@ -54,12 +56,17 @@ public class PreAuthorizeFilter implements ResourcesProvider{
     }
 
 
-    @Override
     public void authorize(HttpServerRequest resourceRequest, Binding binding, UserInfos user, Handler<Boolean> handler) {
-
+        ExpressionContext context = filtersMapping.get(binding.getServiceMethod());
+        if (context == null) {
+            LOGGER.warn("Missing expression context for method " + binding.getServiceMethod());
+            handler.handle(false);
+            return;
+        }
+        expressionHandler.authorize(resourceRequest, binding, user, handler, context);
     }
 
-    private static class ExpressionContext {
+    public static class ExpressionContext {
         public final String expression;
         public final Class<?> evaluator;
 

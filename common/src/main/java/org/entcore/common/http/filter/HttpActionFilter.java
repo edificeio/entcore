@@ -49,8 +49,8 @@ public class HttpActionFilter extends AbstractActionFilter {
 	private final Vertx vertx;
 	private static final Logger log = LoggerFactory.getLogger(HttpActionFilter.class);
 	public HttpActionFilter(Set<Binding> bindings, JsonObject conf, Vertx vertx,
-			ResourcesProvider provider) {
-		super(bindings, provider);
+			ResourcesProvider provider, PreAuthorizeFilter preAuthorizeFilter) {
+		super(bindings, provider, preAuthorizeFilter);
 		this.vertx = vertx;
 		HttpClientOptions options = new HttpClientOptions()
 				.setDefaultHost("localhost")
@@ -60,7 +60,7 @@ public class HttpActionFilter extends AbstractActionFilter {
 	}
 
 	public HttpActionFilter(Set<Binding> bindings, JsonObject conf, Vertx vertx) {
-		this(bindings, conf, vertx, null);
+		this(bindings, conf, vertx, null, null);
 	}
 
 	@Override

@@ -42,18 +42,18 @@ public class ActionFilter extends AbstractActionFilter {
 	private final Vertx vertx;
 	private final EventBus eb;
 
-	public ActionFilter(Set<Binding> bindings, Vertx vertx, ResourcesProvider provider) {
-		super(bindings, provider);
+	public ActionFilter(Set<Binding> bindings, Vertx vertx, ResourcesProvider provider, PreAuthorizeFilter preAuthorizeFilter) {
+		super(bindings, provider, preAuthorizeFilter);
 		this.vertx = vertx;
 		this.eb = Server.getEventBus(vertx);
 	}
 
 	public ActionFilter(Set<Binding> bindings, Vertx vertx) {
-		this(bindings, vertx, null);
+		this(bindings, vertx, null, null);
 	}
 
-	public ActionFilter(List<Set<Binding>> bindings, Vertx vertx, ResourcesProvider provider) {
-		super(new HashSet<Binding>(), provider);
+	public ActionFilter(List<Set<Binding>> bindings, Vertx vertx, ResourcesProvider provider, PreAuthorizeFilter preAuthorizeFilter) {
+		super(new HashSet<Binding>(), provider, preAuthorizeFilter);
 		if (bindings != null) {
 			for (Set<Binding> bs: bindings) {
 				this.bindings.addAll(bs);
@@ -64,7 +64,7 @@ public class ActionFilter extends AbstractActionFilter {
 	}
 
 	public ActionFilter(List<Set<Binding>> bindings, Vertx vertx) {
-		this(bindings, vertx, null);
+		this(bindings, vertx, null, null);
 	}
 
 	@Override

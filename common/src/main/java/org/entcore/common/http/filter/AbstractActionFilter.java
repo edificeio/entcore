@@ -22,14 +22,13 @@ package org.entcore.common.http.filter;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.filter.Filter;
-import fr.wseduc.webutils.security.ActionType;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
-import org.entcore.common.user.UserInfos;
-import org.entcore.common.user.UserUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -48,23 +47,32 @@ public abstract class AbstractActionFilter implements Filter {
 	protected static final List<String> authorizationTypes = Arrays.asList("Basic", "Bearer");
 	protected final Set<Binding> bindings;
 	protected final ResourcesProvider provider;
+	private final PreAuthorizeFilter preAuthorizeFilter;
 
-	public AbstractActionFilter(Set<Binding> bindings, ResourcesProvider provider) {
+	public AbstractActionFilter(Set<Binding> bindings, ResourcesProvider provider, PreAuthorizeFilter preAuthorizeFilter) {
 		this.bindings = bindings;
 		this.provider = provider;
-	}
+        this.preAuthorizeFilter = preAuthorizeFilter;
+    }
 
 	protected void userIsAuthorized(HttpServerRequest request, JsonObject session,
 								  Handler<Boolean> handler) {
 		if (checkForceChangePassword(request, session)) return;
 
 		Binding binding = requestBinding(request);
-		if (ActionType.WORKFLOW.equals(binding.getActionType())) {
-			authorizeWorkflowAction(session, binding, handler);
-		} else if (ActionType.RESOURCE.equals(binding.getActionType())) {
-			authorizeResourceAction(request, session, binding, handler);
-		} else if (ActionType.AUTHENTICATED.equals(binding.getActionType())) {
-			handler.handle(true);
+		switch (binding.getActionType()) {
+			case WORKFLOW: authorizeWorkflowAction(session, binding, handler); break;
+			case RESOURCE: authorizeResourceAction(request, session, binding, handler); break;
+			case AUTHENTICATED: handler.handle(true); break;
+			case PRE_AUTHORIZE: authorizeWithExpression(request, session, binding, handler); break;
+			default: handler.handle(false);
+		}
+	}
+
+	private void authorizeWithExpression(HttpServerRequest request, JsonObject session, Binding binding, Handler<Boolean> handler) {
+		UserInfos user = UserUtils.sessionToUserInfos(session);
+		if (user != null && preAuthorizeFilter != null) {
+			preAuthorizeFilter.authorize(request, binding, user, handler);
 		} else {
 			handler.handle(false);
 		}
