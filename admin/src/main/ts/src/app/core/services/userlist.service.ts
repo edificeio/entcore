@@ -5,7 +5,7 @@ import {Subject} from 'rxjs';
 @Injectable()
 export class UserListService {
     set inputFilter(filter: string | string[]) {
-        if(filter instanceof String) {
+        if(typeof filter === 'string' || filter instanceof String) {
             this._inputFilter = this.normalize(filter as string);
         } else {
             this._inputFilter = (filter as string[])
@@ -65,9 +65,9 @@ export class UserListService {
 
     filterByInput = (user: UserModel) => {
         if (!this.inputFilter) { return true; }
-        if(this.inputFilter instanceof String) {
-            return `${user.displayName}`.toLowerCase()
-                .indexOf((this.inputFilter as String).trim().toLowerCase()) >= 0;
+        if(typeof this.inputFilter === 'string' || this.inputFilter instanceof String) {
+            return this.normalize(`${user.displayName}`)
+                .indexOf(this.normalize(this.inputFilter as string)) >= 0;
         } else {
             return this.normalize(`${user.firstName}`).indexOf((this.inputFilter as string[])[0]) >= 0
                 && this.normalize(`${user.lastName}`).indexOf((this.inputFilter as string[])[1]) >= 0;
@@ -84,7 +84,8 @@ export class UserListService {
 
     private normalize(s: string): string {
         return s.normalize("NFD")
-                      .replace(/[\u0300-\u036f-]/g, "")                      
+                      .replace(/[\u0300-\u036f-]/g, "")
+                      .replace(" ", "")
                       .toLowerCase();
     }
 }
