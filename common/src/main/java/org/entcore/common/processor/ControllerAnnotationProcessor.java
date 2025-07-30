@@ -20,6 +20,7 @@
 package org.entcore.common.processor;
 
 import fr.wseduc.security.ActionType;
+import fr.wseduc.security.PreAuthorize;
 import fr.wseduc.security.SecuredAction;
 import org.entcore.common.cache.Cache;
 import org.entcore.common.http.filter.IgnoreCsrf;
@@ -34,6 +35,8 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import java.io.*;
@@ -43,7 +46,7 @@ import java.util.*;
 		"fr.wseduc.rs.Get", "fr.wseduc.rs.Post", "fr.wseduc.rs.Delete", "fr.wseduc.rs.Put",
 		"fr.wseduc.security.ResourceFilter", "fr.wseduc.rs.ApiDoc", "fr.wseduc.rs.ApiPrefixDoc",
 		"org.entcore.common.http.filter.ResourceFilter", "org.entcore.common.http.filter.IgnoreCsrf",
-        "org.entcore.common.http.filter.Trace", "org.entcore.common.cache.Cache"})
+        "org.entcore.common.http.filter.Trace", "org.entcore.common.cache.Cache", "fr.wseduc.security.PreAuthorize"})
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 public class ControllerAnnotationProcessor extends fr.wseduc.processor.ControllerAnnotationProcessor {
 
@@ -54,6 +57,7 @@ public class ControllerAnnotationProcessor extends fr.wseduc.processor.Controlle
 		ignoreCsrf(roundEnv);
 		trace(roundEnv);
 		cache(roundEnv);
+		preAuthorizeFilter(roundEnv);
 		return false;
 	}
 
@@ -144,6 +148,40 @@ public class ControllerAnnotationProcessor extends fr.wseduc.processor.Controlle
 		if (filters.size() > 0) {
 			writeFile("", "", filtersMap);
 			writeMetaInfServices(ResourcesProvider.class.getName(), filtersClasses);
+		}
+	}
+
+	private void preAuthorizeFilter(RoundEnvironment roundEnv) {
+		final Map<String,Set<String>> filtersMap = new HashMap<>();
+		Set<String> filters = new TreeSet<>();
+		filtersMap.put("PreAuthorizes", filters);
+
+		for (Element element : roundEnv.getElementsAnnotatedWith(PreAuthorize.class)) {
+			PreAuthorize annotation = element.getAnnotation(PreAuthorize.class);
+			TypeElement clazz = (TypeElement) element.getEnclosingElement();
+			if(annotation == null || !isMethod(element) || clazz == null) {
+				continue;
+			}
+			TypeMirror v = null;
+			try {
+				annotation.clazz();
+			} catch(MirroredTypeException e){
+				v = e.getTypeMirror();
+			}
+			Types typeUtils = processingEnv.getTypeUtils();
+			Elements elementUtils = processingEnv.getElementUtils();
+			String qualifiedName = null;
+			if (v != null) {
+				TypeElement classElement = (TypeElement) typeUtils.asElement(v);
+				qualifiedName = classElement.getQualifiedName().toString();
+			}
+			filters.add("{ \"method\" : \"" + clazz.getQualifiedName().toString() + "|" +
+					element.getSimpleName().toString() + "\", \"expression\" : \"" + annotation.value() + "\", \"clazz\" : \""+
+					qualifiedName +"\"  }");
+		}
+
+		if (!filters.isEmpty()) {
+			writeFile("", "", filtersMap);
 		}
 	}
 
