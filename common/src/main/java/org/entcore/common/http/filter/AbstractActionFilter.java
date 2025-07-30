@@ -22,14 +22,14 @@ package org.entcore.common.http.filter;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.filter.Filter;
-import fr.wseduc.webutils.security.ActionType;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
-import org.entcore.common.user.UserInfos;
-import org.entcore.common.user.UserUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.StringUtils;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -52,21 +52,18 @@ public abstract class AbstractActionFilter implements Filter {
 	public AbstractActionFilter(Set<Binding> bindings, ResourcesProvider provider) {
 		this.bindings = bindings;
 		this.provider = provider;
-	}
+    }
 
 	protected void userIsAuthorized(HttpServerRequest request, JsonObject session,
 								  Handler<Boolean> handler) {
 		if (checkForceChangePassword(request, session)) return;
 
 		Binding binding = requestBinding(request);
-		if (ActionType.WORKFLOW.equals(binding.getActionType())) {
-			authorizeWorkflowAction(session, binding, handler);
-		} else if (ActionType.RESOURCE.equals(binding.getActionType())) {
-			authorizeResourceAction(request, session, binding, handler);
-		} else if (ActionType.AUTHENTICATED.equals(binding.getActionType())) {
-			handler.handle(true);
-		} else {
-			handler.handle(false);
+		switch (binding.getActionType()) {
+			case WORKFLOW: authorizeWorkflowAction(session, binding, handler); break;
+			case RESOURCE: authorizeResourceAction(request, session, binding, handler); break;
+			case AUTHENTICATED: handler.handle(true); break;
+			default: handler.handle(false);
 		}
 	}
 
@@ -102,7 +99,9 @@ public abstract class AbstractActionFilter implements Filter {
 				&& actions != null && actions.size() > 0) {
 			for (Object a: actions) {
 				JsonObject action = (JsonObject) a;
-				if (binding.getServiceMethod().equals(action.getString("name"))) {
+				if (binding.getServiceMethod().equals(action.getString("name")) &&
+						StringUtils.isEmpty(binding.getRight())	||
+					binding.getRight().equals(action.getString("name"))) {
 					handler.handle(true);
 					return;
 				}
