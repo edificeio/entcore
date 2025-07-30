@@ -32,13 +32,16 @@ import fr.wseduc.webutils.request.filter.SecurityHandler;
 import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import fr.wseduc.webutils.validation.JsonSchemaValidator;
-
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Promise;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
-
 import org.entcore.common.cache.CacheFilter;
 import org.entcore.common.cache.CacheService;
-import org.entcore.common.cache.RedisCacheService;
 import org.entcore.common.controller.ConfController;
 import org.entcore.common.controller.RightsController;
 import org.entcore.common.datavalidation.utils.UserValidationFactory;
@@ -47,8 +50,8 @@ import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.explorer.ExplorerPluginFactory;
 import org.entcore.common.http.filter.*;
 import org.entcore.common.http.i18n.I18nHandler;
-import org.entcore.common.http.response.SecurityHookRender;
 import org.entcore.common.http.response.OverrideThemeHookRender;
+import org.entcore.common.http.response.SecurityHookRender;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.redis.Redis;
@@ -64,16 +67,8 @@ import org.entcore.common.utils.Config;
 import org.entcore.common.utils.Mfa;
 import org.entcore.common.utils.Zip;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
-
 import java.io.File;
 import java.util.*;
-
-import io.vertx.core.Future;
 
 public abstract class BaseServer extends Server {
 	public static final String ONDEPLOY_I18N = "ondeploy.i18n";
@@ -97,7 +92,6 @@ public abstract class BaseServer extends Server {
 			setResourceProvider(new ResourceProviderFilter());
 		}
 		super.start(startPromise);
-
 		accessLogger = new EntAccessLogger(getEventBus(vertx));
 
 		EventStoreFactory eventStoreFactory = EventStoreFactory.getFactory();
