@@ -46,6 +46,7 @@ public class OdeRegisteredService extends AbstractCas20ExtensionRegisteredServic
 	private static final String FUNCTION = "function";
 	private static final String FUNCTIONS = "functions";
 	private static final String ID = "id";
+	private static final String ENT_ID = "entId";
 	private static final String LAST_NAME = "lastName";
 	private static final String NATIONAL_1 = "National_1";
 	private static final String NATIONAL_2 = "National_2";
@@ -90,6 +91,11 @@ public class OdeRegisteredService extends AbstractCas20ExtensionRegisteredServic
 			// Firstname
 			if (data.containsKey(FIRST_NAME)) {
 				rootAttributes.appendChild(createTextElement(PRENOMS, data.getString(FIRST_NAME), doc));
+			}
+
+			// add ENT ID
+			if (data.containsKey(ID)) {
+				rootAttributes.appendChild(createTextElement(ENT_ID, data.getString(ID), doc));
 			}
 
 			// Functions
