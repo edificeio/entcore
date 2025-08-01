@@ -328,6 +328,16 @@ export interface SessionDto {
   username?: string;
 }
 
+export interface SessionRecreationRequestDTO {
+  refreshOnly?: boolean;
+  sessionId?: string;
+  userId?: string;
+}
+
+export interface SessionRecreationResponseDTO {
+  session?: SessionDto;
+}
+
 export interface SharesResponseDTO {
   id?: string;
   kind?: Kind;

@@ -582,7 +582,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 	 * @param previousCache Cache of the previous session
 	 * @return The created session objct
 	 */
-	private Future<JsonObject> createSession(final String userId, final String sId, final String sessionIndex, final String nameId,
+	public Future<JsonObject> createSession(final String userId, final String sId, final String sessionIndex, final String nameId,
 											 final boolean secureLocation, final JsonObject previousCache) {
 		return createSessionAndReturnIdAndData(userId, sId, sessionIndex, nameId, secureLocation, previousCache)
 			.map(result -> result.getRight());

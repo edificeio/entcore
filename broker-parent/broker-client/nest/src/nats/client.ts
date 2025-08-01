@@ -102,6 +102,10 @@ import type { RemoveGroupSharesRequestDTO } from './types';
 
 import type { RemoveGroupSharesResponseDTO } from './types';
 
+import type { SessionRecreationRequestDTO } from './types';
+
+import type { SessionRecreationResponseDTO } from './types';
+
 import type { UpdateGroupRequestDTO } from './types';
 
 import type { UpdateGroupResponseDTO } from './types';
@@ -320,6 +324,19 @@ export class EntNatsServiceClient {
       throw new Error('No reply received');
     }
     return reply as RecreateCommunicationLinksResponseDTO;
+  }
+  
+  
+  
+  async recreateSession(request: SessionRecreationRequestDTO): Promise<SessionRecreationResponseDTO> {
+    const eventAddress = "session.recreate";
+    this.logger.debug("Sending request to NATS subject", {messageAddress: eventAddress});
+    const reply = await firstValueFrom(this.natsClient.send(eventAddress, request));
+    if(!reply) {
+      this.logger.warn("No reply received for subject", {messageAddress: eventAddress});
+      throw new Error('No reply received');
+    }
+    return reply as SessionRecreationResponseDTO;
   }
   
   

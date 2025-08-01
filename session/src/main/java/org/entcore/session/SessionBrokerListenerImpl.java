@@ -7,6 +7,9 @@ import io.vertx.core.Future;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.eventbus.impl.MessageImpl;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.broker.api.dto.session.*;
@@ -17,6 +20,7 @@ import org.entcore.common.http.QueryParamTokenFilter;
 import org.entcore.common.http.UserAuthWithQueryParamFilter;
 import org.entcore.common.http.filter.AppOAuthResourceProvider;
 import org.entcore.common.http.request.JsonHttpServerRequest;
+import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import io.vertx.core.logging.Logger;
@@ -82,6 +86,50 @@ public class SessionBrokerListenerImpl implements SessionBrokerListener {
         
         // Use UserAuthWithQueryParamFilter to get session
         return getSessionWithFilter(secureRequest, request.getPathPrefix());
+    }
+
+    @Override
+    public Future<SessionRecreationResponseDTO> recreateSession(SessionRecreationRequestDTO request) {
+        if (request == null || !request.isValid()) {
+            log.error("Invalid recreateSession request: request is null or invalid {}", request);
+            return Future.failedFuture("request.parameters.invalid");
+        }
+
+        final Promise<SessionRecreationResponseDTO> promise = Promise.promise();
+        authManager.sessionStore.getSession(request.getSessionId(), result -> {
+            final String nameId;
+            final String sessionIndex;
+            final boolean secureLocation;
+            final JsonObject cache;
+            if(result.succeeded()) {
+                final JsonObject oldSession = result.result();
+                final JsonObject sessionMetadata = oldSession.getJsonObject("sessionMetadata");
+                sessionIndex = sessionMetadata.getString("SessionIndex");
+                nameId = sessionMetadata.getString("NameID");
+                secureLocation = Boolean.TRUE.equals(sessionMetadata.getBoolean("secureLocation"));
+                cache = oldSession.getJsonObject("cache");
+            } else {
+                sessionIndex = null;
+                nameId = null;
+                secureLocation = false;
+                cache = null;
+            }
+            authManager
+                    .createSession(
+                        request.getUserId(),
+                        request.isRefreshOnly() ? request.getSessionId() :  null,
+                        sessionIndex,
+                        nameId,
+                        secureLocation,
+                        cache)
+                    .onSuccess(session -> promise.complete(new SessionRecreationResponseDTO(fromJsonObjectSession(session))))
+                    .onFailure(error -> {
+                        log.error("Error recreating session for userId: {}", request.getUserId(), error);
+                        promise.fail(error);
+                    });
+        });
+
+        return promise.future();
     }
 
     /**
@@ -309,6 +357,106 @@ public class SessionBrokerListenerImpl implements SessionBrokerListener {
                 groupDtos,
                 structureDtos,
                 functionDtos,
+                isSuperAdmin
+        );
+    }
+
+    private SessionDto fromJsonObjectSession(JsonObject session) {
+        if (session == null) {
+            return null;
+        }
+
+        // Convert authorized actions if present
+        final List<ActionDto> actionDtos = new ArrayList<>();
+        if (session.getJsonArray("authorizedActions") != null) {
+            for (Object actionObj : session.getJsonArray("authorizedActions")) {
+                if (actionObj instanceof UserInfos.Action) {
+                    final UserInfos.Action action = (UserInfos.Action) actionObj;
+                    actionDtos.add(new ActionDto(
+                            action.getName(),
+                            action.getDisplayName(),
+                            action.getType()));
+                } else if (actionObj instanceof JsonObject) {
+                    final JsonObject action = (JsonObject) actionObj;
+                    actionDtos.add(new ActionDto(
+                            action.getString("name"),
+                            action.getString("displayName"),
+                            action.getString("type")
+                    ));
+                }
+            }
+        }
+
+        // Convert classes
+        List<ClassDto> classDtos = new ArrayList<>();
+        final JsonArray classIds = session.getJsonArray("classes");
+        final JsonArray classNames = session.getJsonArray("classNames");
+
+        if (classIds != null) {
+            // Build the list of ClassDto
+            for (int i = 0; i < classIds.size(); i++) {
+                String id = classIds.getString(i);
+                String name = (classNames != null && i < classNames.size()) ? classNames.getString(i) : null;
+                classDtos.add(new ClassDto(id, name));
+            }
+        }
+
+        // Convert groups
+        final List<GroupDto> groupDtos = new ArrayList<>();
+        if (session.getJsonArray("groupIds") != null) {
+            for (Object groupIdObj : session.getJsonArray("groupIds")) {
+                String groupId = (String) groupIdObj;
+                groupDtos.add(new GroupDto(groupId, null));
+            }
+        }
+
+        // Convert structures
+        List<StructureDto> structureDtos = new ArrayList<>();
+        final JsonArray structureIds = session.getJsonArray("structures");
+        final JsonArray structureNames = session.getJsonArray("structureNames");
+
+        if (classIds != null) {
+            // Build the list of StructureDto
+            for (int i = 0; i < structureIds.size(); i++) {
+                String id = structureIds.getString(i);
+                String name = (structureNames != null && i < structureNames.size()) ? structureNames.getString(i) : null;
+                structureDtos.add(new StructureDto(id, name));
+            }
+        }
+
+        // Convert functions
+        final List<UserFunctionDto> functionDtos = new ArrayList<>();
+        final JsonObject functions = session.getJsonObject("functions");
+        if (functions != null) {
+            for (String key : functions.fieldNames()) {
+                JsonObject function = functions.getJsonObject(key);
+                functionDtos.add(new UserFunctionDto(
+                        function.getJsonArray("scope").getList(),
+                        function.getString("code")
+                ));
+            }
+        }
+
+        // Determine if user is a super admin
+        boolean isSuperAdmin = functions != null && functions.containsKey(DefaultFunctions.SUPER_ADMIN);
+
+        return new SessionDto(
+                session.getString("userId"),
+                session.getString("externalId"),
+                session.getString("firstName"),
+                session.getString("lastName"),
+                session.getString("username"),
+                session.getString("birthDate"),
+                session.getString("level"),
+                session.getString("type"),
+                session.getString("login"),
+                session.getString("email"),
+                session.getString("mobile"),
+                new ArrayList<>(actionDtos),
+                new ArrayList<>(classDtos),
+                new ArrayList<>(groupDtos),
+                new ArrayList<>(structureDtos),
+                new ArrayList<>(functionDtos),
                 isSuperAdmin
         );
     }
