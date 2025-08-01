@@ -49,7 +49,6 @@
   "MilliwebRegisteredService.name": "Milliweb",
   "OdeRegisteredService.description": "Service CAS 3.0 spécifique pour ODE, le service ODE utilise l'identifiant externe sans préfixe académique comme attribut principal.",
   "OdeRegisteredService.name": "ODE",
-  "OdeRegisteredService.description": "Service CAS 3.0 spécifique pour ODE, le service ODE utilise l'identifiant externe sans préfixe académique comme attribut principal.",
-  "ProtectedEmailRegisteredService.name": "Email inaltérable",
-  "ProtectedEmailRegisteredService.description": "Service CAS qui transmet uniquement l'email interne ou l'email académique."
+  "ProtectedEmailRegisteredService.description": "Service CAS qui transmet uniquement l'email interne ou l'email académique.",
+  "ProtectedEmailRegisteredService.name": "Email inaltérable"
 }
