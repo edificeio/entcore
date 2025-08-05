@@ -58,7 +58,9 @@ export class ServicesListComponent extends OdeComponent implements OnInit, OnDes
         "record-me":            "dictaphone",
         "school-widget":        "schoolbook",
         "edumalin-widget":      "edumalin",
-        "mediacentre-widget":   "mediacentre"
+        "mediacentre-widget":   "mediacentre",
+        "cantine-widget":       "cantine",
+        "screen-time-widget":   "screen-time"
     }
 
     itemInputFilter: string;
