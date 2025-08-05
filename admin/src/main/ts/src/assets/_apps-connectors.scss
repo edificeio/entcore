@@ -826,6 +826,19 @@ i.edumalin::before {
   color:$blue;
 }
 
+i.cantine-large,
+i.type.cantine,
+i.cantine {
+  @include fonticon;
+}
+
+i.cantine-large::before,
+i.type.cantine::before,
+i.cantine::before {
+  content:'\e96c';
+  color:$blue;
+}
+
 i.mediacentre-large,
 i.type.mediacentre,
 i.mediacentre {

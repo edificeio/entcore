@@ -120,6 +120,7 @@
   "broadcastlist.communication.title": "Communication de la liste {{name}}",
   "calendar-widget": "Calendrier",
   "cancel": "Annuler",
+  "cantine-widget": "Cantine",
   "carnet-de-bord": "Carnet de bord",
   "cas.mapping.inuse": "Le type de CAS est utilisé dans des connecteurs",
   "cas.mappings.cantcreate": "Le type de CAS saisi existe déjà",
