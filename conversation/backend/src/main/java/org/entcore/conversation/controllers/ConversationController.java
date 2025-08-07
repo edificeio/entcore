@@ -76,6 +76,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.Deflater;
 
@@ -96,6 +97,8 @@ public class ConversationController extends BaseController {
 
 	private final Storage storage;
 	private int threshold;
+
+	private int inactiveUserThreshold;
 
 	private ConversationService conversationService;
 	private Neo4jConversationService userService;
@@ -129,6 +132,7 @@ public class ConversationController extends BaseController {
 		this.eventHelper =  new EventHelper(eventStore);
 		this.threshold = config.getInteger("alertStorage", 80);
 		this.mailToExercizer = new MailToExercizer(vertx, config);
+		this.inactiveUserThreshold = config.getInteger("inactive-user-threshold", 50);
 	}
 
 	private void renderViewWeb(HttpServerRequest request) {
@@ -515,10 +519,17 @@ public class ConversationController extends BaseController {
 															.put("thread_id", result.getString("thread_id"))
 															.put("sentIds", message.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray()));
 														timelineNotification(request, timelineParams, user);
+														JsonArray inactive = message.getJsonArray("inactives", new JsonArray());
+														message.put("inactivesCount", inactive.size());
+														if (inactive.size() > inactiveUserThreshold) {
+															message.put("inactives", new JsonArray(inactive.stream().limit(inactiveUserThreshold).collect(Collectors.toList())));
+														}
 														renderJson(request, result
 															.put("inactive", message.getJsonArray("inactives", new fr.wseduc.webutils.collections.JsonArray()))
 															.put("undelivered", message.getJsonArray("undelivered", new fr.wseduc.webutils.collections.JsonArray()))
-															.put("sent", message.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray()).size()));
+															.put("sent", message.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray()).size())
+															.put("inactivesCount", message.getValue("inactivesCount"))
+														);
 													} else {
 														JsonObject error = new JsonObject().put("error", event.left().getValue());
 														renderJson(request, error, 400);

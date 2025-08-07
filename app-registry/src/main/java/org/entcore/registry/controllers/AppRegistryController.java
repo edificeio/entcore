@@ -697,7 +697,9 @@ public class AppRegistryController extends BaseController {
 				}
 				if (userSkinLevels != null && userSkinLevels.contains("2d")) {
 					// We apply default bookmarks for 2D themes only
-					appRegistryService.applyDefaultBookmarks(userId);
+					appRegistryService.applyDefaultBookmarks(userId, busResponseHandler(message));
+				} else {
+					message.reply(new JsonObject().put("status", "ok"));
 				}
 				break;
 			default:
