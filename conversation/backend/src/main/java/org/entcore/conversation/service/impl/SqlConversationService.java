@@ -22,6 +22,7 @@ package org.entcore.conversation.service.impl;
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
+import static org.entcore.common.sql.SqlResult.validUniqueResult;
 import static org.entcore.common.user.UserUtils.findVisibles;
 
 import java.util.*;
@@ -43,6 +44,7 @@ import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.Config;
+import org.entcore.common.utils.StopWatch;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.conversation.Conversation;
@@ -66,8 +68,6 @@ import org.entcore.conversation.util.MessageUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.vertx.core.json.Json;
-
 public class SqlConversationService implements ConversationService{
 	public static final int DEFAULT_SENDTIMEOUT = 15 * 60 * 1000;
 	private static final Logger log = LoggerFactory.getLogger(SqlConversationService.class);
@@ -86,6 +86,7 @@ public class SqlConversationService implements ConversationService{
 	private final boolean optimizedThreadList;
 	private int sendTimeout = DEFAULT_SENDTIMEOUT;
 
+	private final int conversationBatchSize;
 	private final IContentTransformerClient contentTransformerClient;
 	private final IContentTransformerEventRecorder contentTransformerEventRecorder;
 	private final Set<String> CONVERSATION_TRANSFORMATION_EXTENSIONS = Collections.singleton("conversation-history");
@@ -95,6 +96,7 @@ public class SqlConversationService implements ConversationService{
 		this.sql = Sql.getInstance();
 		this.maxFolderDepth = Config.getConf().getInteger("max-folder-depth", Conversation.DEFAULT_FOLDER_DEPTH);
 		this.recallDelayInMinutes = Config.getConf().getInteger("recall-delay-minutes", Conversation.DEFAULT_RECALL_DELAY);
+		this.conversationBatchSize = Config.getConf().getInteger("conversation-batch-size", Conversation.DEFAULT_CONVERSATION_BATCH_SIZE);
 		messageTable = schema + ".messages";
 		folderTable = schema + ".folders";
 		attachmentTable = schema + ".attachments";
@@ -317,30 +319,51 @@ public class SqlConversationService implements ConversationService{
 					builder.prepared(insertUserThread, new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).add(threadId).add(0));
 				}
 
+				String insertUserMessage = "INSERT INTO " +  userMessageTable + "(user_id, message_id, total_quota) VALUES ";
+				String insertUserAttachment = "INSERT INTO " +  userMessageAttachmentTable + "(user_id, message_id, attachment_id) VALUES ";
+
+				StringBuilder insertUserMessageBuilder = new StringBuilder(insertUserMessage);
+				StringBuilder insertUserAttachmentBuilder = new StringBuilder(insertUserAttachment);
+
+				int userMessageValueCount = 0;
+				int userMessageAttachementCount = 0;
+
+				// Optimisation de l'envois des messages: faire des requêtes unitaires est couteux pour postgresql notament
+				// au niveau de la gestion des locks et de son index. Les groupes en insert .. values est bcp plus efficace
 				for(Object toObj : ids){
-					if(toObj.equals(user.getUserId()))
+					if(toObj.equals(user.getUserId())) {
 						continue;
-
-					builder.insert(userMessageTable, new JsonObject()
-						.put("user_id", toObj.toString())
-						.put("message_id", draftId)
-						.put("total_quota", totalQuota)
-					);
-
+					}
+					userMessageValueCount++;
+					insertUserMessageBuilder.append(String.format("('%s', '%s', %s ),", toObj, draftId, totalQuota));
+					if (userMessageValueCount > conversationBatchSize) {
+						userMessageValueCount = 0;
+						builder.prepared(insertUserMessageBuilder.deleteCharAt(insertUserMessageBuilder.length()-1).toString(), new JsonArray());
+						insertUserMessageBuilder = new StringBuilder(insertUserMessage);
+					}
 					if (threadId != null) {
 						builder.prepared(insertUserThread, new fr.wseduc.webutils.collections.JsonArray().add(toObj.toString()).add(threadId).add(1));
 					}
 
 					for(Object attachmentId : attachmentIds){
-						builder.insert(userMessageAttachmentTable, new JsonObject()
-							.put("user_id", toObj.toString())
-							.put("message_id", draftId)
-							.put("attachment_id", attachmentId.toString())
-						);
+						userMessageAttachementCount++;
+						insertUserAttachmentBuilder.append(String.format("('%s', '%s', '%s' ),", toObj, draftId, attachmentId));
+						if (userMessageAttachementCount > conversationBatchSize) {
+							userMessageAttachementCount = 0;
+							builder.prepared(insertUserAttachmentBuilder.deleteCharAt(insertUserAttachmentBuilder.length()-1).toString(), new JsonArray());
+							insertUserAttachmentBuilder = new StringBuilder(insertUserAttachment);
+						}
 					}
 				}
 
-				sql.transaction(builder.build(),new DeliveryOptions().setSendTimeout(sendTimeout), SqlResult.validUniqueResultHandler(0, result));
+				if (userMessageValueCount > 0) {
+					builder.prepared(insertUserMessageBuilder.deleteCharAt(insertUserMessageBuilder.length()-1).toString(), new JsonArray());
+				}
+				if (userMessageAttachementCount > 0) {
+					builder.prepared(insertUserAttachmentBuilder.deleteCharAt(insertUserAttachmentBuilder.length()-1).toString(), new JsonArray());
+				}
+
+				sql.transaction(builder.build(),new DeliveryOptions().setSendTimeout(sendTimeout), SqlResult.validUniqueResultHandler(result));
 			}
 		});
 	}

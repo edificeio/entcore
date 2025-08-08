@@ -22,8 +22,6 @@ package org.entcore.registry.services.impl;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.collections.Joiner;
 
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.neo4j.StatementsBuilder;
@@ -822,7 +820,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 	}
 
 	@Override
-	public void applyDefaultBookmarks(final String userId) {
+	public void applyDefaultBookmarks(final String userId, Handler<Either<String, JsonObject>> eitherHandler) {
 		final String query = "MATCH (u:User {id: {userId}})-[:IN]-(:ProfileGroup)-[:DEPENDS]-(s:Structure) " +
 				"WITH u, COLLECT(CASE WHEN HAS(s.defaultBookmarks) THEN s.defaultBookmarks ELSE \"{}\" END) AS defaultBookmarks " +
 				"RETURN u.profiles[0] AS userProfile, defaultBookmarks";
@@ -831,6 +829,7 @@ public class DefaultAppRegistryService implements AppRegistryService {
 			if (!"ok".equals(event.body().getString("status"))) {
 				final String message = event.body().getString("message");
 				log.error("[AppRegistry] - Retrieving defaultBookmarks failed for user ("+userId+"): " + message);
+				eitherHandler.handle(new Either.Left<>(message));
 			} else {
 				final JsonArray result = event.body().getJsonArray("result");
 				final Set<String> apps = new HashSet<>();
@@ -856,9 +855,12 @@ public class DefaultAppRegistryService implements AppRegistryService {
 						if (!"ok".equals(event2.body().getString("status"))) {
 							final String message = event.body().getString("message");
 							log.error("[AppRegistry] - Retrieving defaultBookmarks failed for user ("+userId+"): " + message);
+							eitherHandler.handle(new Either.Left<>(message));
 						}
+						eitherHandler.handle(new Either.Right<>(new JsonObject()));
 					});
 				}
+				eitherHandler.handle(new Either.Right<>(new JsonObject()));
 			}
 		});
 	}

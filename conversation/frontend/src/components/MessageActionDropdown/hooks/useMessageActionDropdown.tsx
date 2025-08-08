@@ -16,6 +16,7 @@ import {
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useFolderHandlers } from '~/features/menu/hooks/useFolderHandlers';
+import { useGoBackToList } from '~/features/message/hooks/useGoBackToList';
 import { useI18n } from '~/hooks/useI18n';
 import { useRecall } from '~/hooks/useRecall';
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
@@ -31,14 +32,13 @@ import {
   useTrashMessage,
 } from '~/services';
 import { useConfirmModalStore } from '~/store';
-import { useMessageStore } from '~/store/messageStore';
-import { useGoBackToList } from '~/features/message/hooks/useGoBackToList';
 import { useActionsStore } from '~/store/actions';
+import { useMessageStore } from '~/store/messageStore';
 
 export interface MessageActionDropdownProps {
   message: Message;
   actions?: string[];
-  onMessageSent: (inactiveUsers?: string[]) => void;
+  onMessageSent: (inactiveUsers: string[], inactiveCount: number) => void;
 }
 
 export function useMessageActionDropdown({
@@ -193,9 +193,7 @@ export function useMessageActionDropdown({
       },
       {
         onSuccess: (response) => {
-          onMessageSent(
-            response.inactive.length > 0 ? response.inactive : undefined,
-          );
+          onMessageSent(response.inactive, response.inactiveCount);
         },
       },
     );

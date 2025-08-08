@@ -3,11 +3,13 @@ import { useI18n } from '~/hooks/useI18n';
 
 export interface SentToInactiveUsersModalProps {
   users: string[];
+  total: number;
   onModalClose: () => void;
 }
 
 export function SentToInactiveUsersModal({
   users,
+  total,
   onModalClose,
 }: SentToInactiveUsersModalProps) {
   const { t } = useI18n();
@@ -25,18 +27,28 @@ export function SentToInactiveUsersModal({
       <Modal.Body>
         <div>
           <div>{t('warning.inactive.text')}</div>
-          <div>
-            <div>
-              <strong>{t('warning.inactive.users')}</strong>
+
+          {users.length < total ? (
+            <div className="mt-16">
+              <div>
+                <strong>{t('warning.inactive.total', { total })}</strong>
+              </div>
+              <i>{t('warning.inactive.console')}</i>
             </div>
-            <li className="list-group">
-              {users.map((user) => (
-                <ul className="ps-0 mb-4" key={user}>
-                  <span>{user}</span>
-                </ul>
-              ))}
-            </li>
-          </div>
+          ) : (
+            <div>
+              <div>
+                <strong>{t('warning.inactive.users')}</strong>
+              </div>
+              <li className="list-group">
+                {users.map((user) => (
+                  <ul className="ps-0 mb-4" key={user}>
+                    <span>{user}</span>
+                  </ul>
+                ))}
+              </li>
+            </div>
+          )}
         </div>
       </Modal.Body>
       <Modal.Footer>

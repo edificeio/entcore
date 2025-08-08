@@ -251,7 +251,7 @@ public abstract class GenericShareService implements ShareService {
 			final String groupQuery = "RETURN distinct profileGroup.id as id, profileGroup.name as name, "
 					+ "profileGroup.groupDisplayName as groupDisplayName, profileGroup.structureName as structureName "
 					+ "ORDER BY name " + "UNION " + GROUP_SHARED;
-
+			//FIXME should be optimized by removing unecessary optionals
 			final String userQuery = "RETURN distinct visibles.id as id, visibles.login as login, visibles.displayName as username, "
 					+ "visibles.lastName as lastName, visibles.firstName as firstName, visibles.profiles[0] as profile "
 					+ "ORDER BY username " + "UNION " + USER_SHARED;
@@ -476,6 +476,7 @@ public abstract class GenericShareService implements ShareService {
 		final JsonArray originalShares,
 		final Map<String, Set<String>> shareUpdates) {
 		final Promise<AccessibleUsersCheck> promise = Promise.promise();
+		//FIXME should be optimized by removing unecessary optionals
 		final String customReturn = "RETURN DISTINCT visibles.id as id, has(visibles.login) as isUser";
 
 		final List<String> idsOfShare = getIdOfGroupsAndUsersConcernedByShares(originalShares, shareUpdates);

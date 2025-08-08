@@ -202,6 +202,7 @@ public class UserBookController extends BaseController {
 		}
 		String preFilter = "AND m.displayNameSearchField CONTAINS {search} " + filter;
 		params.put("search", StringValidation.sanitize(name));
+		//FIXME should be optimized by removing unecessary optionals
 		String customReturn =
 				"OPTIONAL MATCH visibles-[:USERBOOK]->u " +
 				"RETURN distinct visibles.id as id, visibles.displayName as displayName, " +
@@ -331,6 +332,7 @@ public class UserBookController extends BaseController {
 		String classId = request.params().get("id");
 		UserUtils.getAuthenticatedUserInfos(eb, request)
 				.onSuccess(userInfos -> {
+					//FIXME should be optimized by removing unecessary optionals
 					String queryVisibleUsers = "RETURN DISTINCT visibles.id as user ";
 					UserUtils.findVisibleUsers(eb, request, true, true, queryVisibleUsers, new JsonObject(), visibles -> {
 						String matchClass;
