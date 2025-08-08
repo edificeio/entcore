@@ -972,6 +972,7 @@ public class ConversationController extends BaseController {
 	@Post("visibles")
 	@SecuredAction(value = "conversation.visibles", type = ActionType.AUTHENTICATED)
 	public void visibles(final HttpServerRequest request) {
+		//FIXME should be optimized by removing useless optionals in query
 		final String customReturn = "WHERE visibles.id IN {ids} RETURN DISTINCT visibles.id";
 		final JsonObject params = new JsonObject();
 		final Set<String> ids = new HashSet<>();
