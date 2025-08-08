@@ -110,7 +110,8 @@ public abstract class AbstractActionFilter implements Filter {
 				&& actions != null && actions.size() > 0) {
 			for (Object a: actions) {
 				JsonObject action = (JsonObject) a;
-				if (binding.getServiceMethod().equals(action.getString("name"))) {
+				if (binding.getServiceMethod().equals(action.getString("name")) ||
+					binding.getOverride().equals(action.getString("name"))) {
 					handler.handle(true);
 					return;
 				}
