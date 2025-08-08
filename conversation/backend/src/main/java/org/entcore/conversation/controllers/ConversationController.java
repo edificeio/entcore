@@ -528,7 +528,7 @@ public class ConversationController extends BaseController {
 															.put("inactive", message.getJsonArray("inactives", new fr.wseduc.webutils.collections.JsonArray()))
 															.put("undelivered", message.getJsonArray("undelivered", new fr.wseduc.webutils.collections.JsonArray()))
 															.put("sent", message.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray()).size())
-															.put("inactivesCount", message.getValue("inactivesCount"))
+															.put("inactiveCount", message.getValue("inactivesCount"))
 														);
 													} else {
 														JsonObject error = new JsonObject().put("error", event.left().getValue());
