@@ -1,3 +1,11 @@
+# À propos d'Entcore
+    
+* Licence : [AGPL v3](http://www.gnu.org/licenses/agpl.txt) - Copyright Edifice
+* Financeur(s) : Edifice
+* Développeur(s) : Edifice
+* Description : l’application entcore est un noyau d'ENT modulaire et performant.
+
+
 Notes d'utilisation
 ====================
 
