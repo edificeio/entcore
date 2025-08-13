@@ -58,7 +58,7 @@ import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 
-public class ManualFeeder extends BusModBase {
+public class ManualFeeder extends BusModBase implements IManualFeeder{
 
 	public static final Pattern frenchDatePatter = Pattern.compile("^([0-9]{2})/([0-9]{2})/([0-9]{4})$");
 	private static final Validator structureValidator = new Validator("dictionary/schema/Structure.json");

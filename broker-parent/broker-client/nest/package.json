@@ -1,6 +1,6 @@
 {
   "name": "@edifice.io/edifice-ent-client",
-  "version": "6.6.0-develop-enabling.1753730466924",
+  "version": "6.6.0-develop-referential.1755010815356",
   "description": "Clients to interact with ent-nats-service",
   "scripts": {
     "dev": "vite",
