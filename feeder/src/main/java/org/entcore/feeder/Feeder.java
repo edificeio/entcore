@@ -26,8 +26,7 @@ import fr.wseduc.webutils.collections.SharedDataHelper;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.Promise;
-import io.vertx.core.buffer.Buffer;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonArray;
@@ -102,7 +101,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	public static final String SUBJECT_SOURCE = "MANUAL";
 	private String defaultFeed;
 	private final Map<String, Feed> feeds = new HashMap<>();
-	private ManualFeeder manual;
+	private IManualFeeder manual;
 	private boolean allowManualActionsDuringFeeds = false;
 	private Neo4j neo4j;
 	private Exporter exporter;
@@ -230,8 +229,10 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			}
 		}
 
-		manual = new ManualFeeder(neo4j, eb, new DefaultUserPositionService(eb, false));
-		manual.setLoginAliasValidatorForAD(config.getBoolean("ad-login-alias-validator", false));
+		ManualFeeder entManualFeeder = new ManualFeeder(neo4j, eb, new DefaultUserPositionService(eb, false));
+		entManualFeeder.setLoginAliasValidatorForAD(config.getBoolean("ad-login-alias-validator", false));
+
+		manual = getSwitchManualFeeder(entManualFeeder, vertx);
 		final AppMigrationConfiguration appMigrationConfiguration = AppMigrationConfiguration.fromVertx("referential", vertx, null);
 		duplicateUsers = new DuplicateUsers(config.getBoolean("timetable", true),
 			config.getBoolean("autoMergeOnlyInSameStructure", true), appMigrationConfiguration, vertx.eventBus());
@@ -290,6 +291,16 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			log.debug("No aaf files uploading is possible");
 		}
 		return Future.succeededFuture();
+	}
+
+	private IManualFeeder getSwitchManualFeeder(final IManualFeeder manualFeeder, final Vertx vertx) {
+		final AppMigrationConfiguration migrationConfig = AppMigrationConfiguration.fromVertx("referential", vertx, config);
+		if (migrationConfig.isEnabled()) {
+			return new BrokerSwitchManualFeeder(manualFeeder, vertx.eventBus(), migrationConfig);
+		} else {
+			log.info("Legacy manual feeder only");
+			return manualFeeder;
+		}
 	}
 
 	private void setupImportCron(JsonObject cronConf, ImportsLauncher launcher)
