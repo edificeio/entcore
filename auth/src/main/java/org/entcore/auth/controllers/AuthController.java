@@ -247,6 +247,8 @@ public class AuthController extends BaseController {
 		final String sessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
 		if ("code".equals(responseType) && clientId != null && !clientId.trim().isEmpty()) {
 			if (isNotEmpty(scope)) {
+				log.info(getIp(request) + " - Initialisation de connexion OAuth2 - Client " + clientId + " - Service " + redirectUri);
+
 				final DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(request));
 				data.validateClientById(clientId, new Handler<Boolean>() {
 
