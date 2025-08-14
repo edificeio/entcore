@@ -926,13 +926,8 @@ public class S3Client {
 	}
 
 	public static String getUuid(final String path) {
-		final String separator = "/";
-		if (path.contains(separator)) {
-			return path.substring(path.lastIndexOf(separator));
-		}
-		else {
-			return path;
-		}
+		final int separatorIndex = path.lastIndexOf(File.separator);
+		return (separatorIndex < 0) ? path : path.substring(separatorIndex+1);
 	}
 
 }
