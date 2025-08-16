@@ -22,6 +22,7 @@ package org.entcore.common.share.impl;
 import com.google.common.collect.Lists;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.StartupUtils;
 import fr.wseduc.webutils.security.ActionType;
 import fr.wseduc.webutils.security.SecuredAction;
 import io.vertx.core.*;
@@ -39,6 +40,7 @@ import org.entcore.common.share.ShareInfosQuery;
 import org.entcore.common.share.ShareModel;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 
 import java.util.*;
@@ -72,7 +74,7 @@ public abstract class GenericShareService implements ShareService {
 	public GenericShareService(EventBus eb, Map<String, SecuredAction> securedActions,
 			Map<String, List<String>> groupedActions) {
 		this.eb = eb;
-		this.securedActions = securedActions;
+		this.securedActions = StartupUtils.applyOverrideForShare(securedActions);
 		this.groupedActions = groupedActions;
 		final String main = vertx.getOrCreateContext().config().getString("main");
 		final String module = isNotEmpty(main) ? main.substring(main.lastIndexOf(".") + 1) : "unknown_module";
@@ -117,15 +119,16 @@ public abstract class GenericShareService implements ShareService {
 		for (SecuredAction action : securedActions.values()) {
 			if (ActionType.RESOURCE.name().equals(action.getType()) && !action.getDisplayName().isEmpty()) {
 				JsonObject a = resourceActions.getJsonObject(action.getDisplayName());
+				String name = StringUtils.isEmpty(action.getOverride()) ? action.getName() : action.getOverride();
 				if (a == null) {
 					a = new JsonObject()
 							.put("name",
 									new JsonArray()
-											.add(action.getName().replaceAll("\\.", "-")))
+											.add(name.replaceAll("\\.", "-")))
 							.put("displayName", action.getDisplayName()).put("type", action.getType());
 					resourceActions.put(action.getDisplayName(), a);
 				} else {
-					a.getJsonArray("name").add(action.getName().replaceAll("\\.", "-"));
+					a.getJsonArray("name").add(name.replaceAll("\\.", "-"));
 				}
 			}
 		}
