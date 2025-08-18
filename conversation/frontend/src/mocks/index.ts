@@ -378,6 +378,7 @@ export const mockSentMessage = {
   sent: 1,
   undelivered: [],
   inactive: [],
+  inactiveCount: 0,
   thread_id: null,
 };
 

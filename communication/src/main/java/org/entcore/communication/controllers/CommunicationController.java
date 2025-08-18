@@ -296,8 +296,11 @@ public class CommunicationController extends BaseController {
 				}
 				String customReturn =
 						"WITH COLLECT(visibles.id) as vIds " +
+						"UNWIND vIds AS vId "+
+						"MATCH (u:User { id: vId }) "+
+						"USING INDEX u:User(id) " +
 						"MATCH (s:Group { id : {groupId}})<-[:IN]-(u:User) " +
-						"WHERE u.id IN vIds " +
+						"USING INDEX s:Group(id) "+
 						"RETURN DISTINCT HEAD(u.profiles) as type, u.id as id, " +
 						"u.displayName as displayName, u.login as login " +
 						"ORDER BY type DESC, displayName ";

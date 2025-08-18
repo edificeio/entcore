@@ -76,6 +76,7 @@ public class VisiblesFilter implements ResourcesProvider{
 
 		final String parentMessageId = request.params().get("In-Reply-To");
 		final Set<String> ids = new HashSet<>();
+		//FIXME should be optimized by removing unecessary optionals
 		final String customReturn = "WHERE visibles.id IN {ids} RETURN DISTINCT visibles.id";
 		final JsonObject params = new JsonObject();
 

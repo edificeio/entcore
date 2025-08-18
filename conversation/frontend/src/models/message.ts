@@ -41,6 +41,8 @@ export interface MessageSentResponse {
   sent: number;
   /** IDs of unreachable recipients. */
   undelivered: [];
-  /** IDs of inactive recipients. */
+  /** IDs of inactive recipients. May be truncated.*/
   inactive: string[];
+  /** Total count of inactive recipients. */
+  inactiveCount: number;
 }
