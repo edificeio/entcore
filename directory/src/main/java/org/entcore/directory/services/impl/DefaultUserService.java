@@ -1328,7 +1328,7 @@ public class DefaultUserService implements UserService {
 			fields = new JsonArray().add("id");
 		}
 		final StringBuilder query = new StringBuilder(
-				"MATCH (u:User)-[:IN]->(ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+				"MATCH (u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
 				"WHERE u.id IN {userIds} " +
 				"RETURN u.id as userId, COLLECT(distinct {");
 		for (Object field : fields) {
