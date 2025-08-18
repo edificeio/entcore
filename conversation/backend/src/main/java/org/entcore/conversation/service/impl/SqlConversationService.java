@@ -19,54 +19,46 @@
 
 package org.entcore.conversation.service.impl;
 
-import static fr.wseduc.webutils.Utils.getOrElse;
-import static fr.wseduc.webutils.Utils.isNotEmpty;
-
-import static org.entcore.common.sql.SqlResult.validUniqueResult;
-import static org.entcore.common.user.UserUtils.findVisibles;
-
-import java.util.*;
-import java.util.stream.Collectors;
-
 import fr.wseduc.transformer.IContentTransformerClient;
 import fr.wseduc.transformer.to.ContentTransformerFormat;
 import fr.wseduc.transformer.to.ContentTransformerRequest;
 import fr.wseduc.transformer.to.ContentTransformerResponse;
+import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.Either.Right;
+import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.Utils;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
-
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
-
-import org.entcore.common.editor.IContentTransformerEventRecorder;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.entcore.common.conversation.LegacySearchVisibleRequest;
+import org.entcore.common.editor.IContentTransformerEventRecorder;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.Config;
-import org.entcore.common.utils.StopWatch;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.conversation.Conversation;
 import org.entcore.conversation.service.ConversationService;
 import org.entcore.conversation.util.FolderUtil;
-
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-
-import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.Server;
-import fr.wseduc.webutils.Utils;
-import fr.wseduc.webutils.Either.Right;
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
-
 import org.entcore.conversation.util.MessageUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static fr.wseduc.webutils.Utils.getOrElse;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static org.entcore.common.user.UserUtils.findVisibles;
 
 public class SqlConversationService implements ConversationService{
 	public static final int DEFAULT_SENDTIMEOUT = 15 * 60 * 1000;
