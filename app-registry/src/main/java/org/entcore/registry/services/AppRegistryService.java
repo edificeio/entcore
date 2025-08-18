@@ -21,10 +21,7 @@ package org.entcore.registry.services;
 
 import fr.wseduc.webutils.Either;
 
-import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
-
 import io.vertx.core.Handler;
-import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -94,5 +91,5 @@ public interface AppRegistryService {
 
 	void setDefaultBookmarks(String structureId, JsonObject apps, Handler<Either<String, JsonObject>> handler);
 
-	void applyDefaultBookmarks(String userId);
+	void applyDefaultBookmarks(String userId, Handler<Either<String, JsonObject>> eitherHandler);
 }
