@@ -1,7 +1,7 @@
 import { create } from 'zustand';
-import { createSelectors } from './createSelectors';
 import { Config } from '~/config';
 import { Folder } from '~/models';
+import { createSelectors } from './createSelectors';
 
 type OpenedModal =
   | undefined
@@ -19,13 +19,13 @@ interface ActionsState {
   selectedMessageIds: string[];
   selectedFolders: Folder[];
   openedModal: OpenedModal;
-  inactiveUsers: string[];
+  inactives: { users: string[]; total: number };
   setWorkflows: (workflows: Record<string, boolean>) => void;
   setConfig: (config: Config) => void;
   setSelectedMessageIds: (value: string[]) => void;
   setSelectedFolders: (value: Folder[]) => void;
   setOpenedModal: (value: OpenedModal) => void;
-  setInactiveUsers: (value: string[]) => void;
+  setInactives: (value: { users: string[]; total: number }) => void;
 }
 
 export const useActionsStore = createSelectors(
@@ -38,12 +38,12 @@ export const useActionsStore = createSelectors(
     selectedMessageIds: [],
     selectedFolders: [],
     openedModal: undefined,
-    inactiveUsers: [],
+    inactives: { users: [], total: 0 },
     setWorkflows: (workflows) => set({ workflows }),
     setConfig: (config) => set({ config }),
     setSelectedMessageIds: (selectedMessageIds) => set({ selectedMessageIds }),
     setSelectedFolders: (selectedFolders) => set({ selectedFolders }),
     setOpenedModal: (openedModal) => set({ openedModal }),
-    setInactiveUsers: (inactiveUsers) => set({ inactiveUsers }),
+    setInactives: (inactives) => set({ inactives }),
   })),
 );

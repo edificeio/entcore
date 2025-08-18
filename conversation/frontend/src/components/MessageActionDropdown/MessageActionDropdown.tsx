@@ -40,12 +40,19 @@ export function MessageActionDropdown({
   const { lg } = useBreakpoint();
   const navigate = useNavigate();
 
-  const inactiveUsers = useMessageStore.use.inactiveUsers();
-  const setInactiveUsers = useMessageStore.use.setInactiveUsers();
+  const inactives = useMessageStore.use.inactives();
+  const setInactives = useMessageStore.use.setInactives();
 
-  const handleMessageSent = (inactiveUsers?: string[]) => {
-    setInactiveUsers(inactiveUsers);
-    if (!inactiveUsers?.length) {
+  const handleMessageSent = (
+    inactiveUsers: string[],
+    inactiveCount: number,
+  ) => {
+    setInactives(
+      inactiveCount > 0
+        ? { users: inactiveUsers, total: inactiveCount }
+        : undefined,
+    );
+    if (inactiveCount === 0) {
       navigate(`/inbox`);
     }
   };
@@ -61,7 +68,7 @@ export function MessageActionDropdown({
   );
 
   const handleCloseInactiveUsersModal = () => {
-    setInactiveUsers(undefined);
+    setInactives(undefined);
     navigate(`/inbox`);
   };
 
@@ -138,10 +145,11 @@ export function MessageActionDropdown({
           );
         }}
       </Dropdown>
-      {inactiveUsers?.length && (
+      {inactives && inactives.total > 0 && (
         <SentToInactiveUsersModal
           onModalClose={handleCloseInactiveUsersModal}
-          users={inactiveUsers}
+          users={inactives.users}
+          total={inactives.total}
         />
       )}
     </div>
