@@ -222,6 +222,7 @@ public class BrokerProxyUtils {
     }
     return Optional.ofNullable(annotation);
   }
+  
   private static BrokerListener doGetBrokerListenerAnnotation(final Class<?>[] classes, final Method method) {
     BrokerListener annotation = null;
     for (Class<?> clazz : classes) {
