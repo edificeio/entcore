@@ -39,10 +39,15 @@ export const useApplications = () => {
         app.address?.includes('library.edifice.io') && !enhancement?.category;
 
       if (isLibrary) {
-        enhancement = myAppsConfig.data?.find((e) => e.name === 'library-info');
+        const enhancementOriginal = myAppsConfig.data?.find(
+          (e) => e.name === 'library-info',
+        );
 
-        if (enhancement) {
-          enhancement.name = app.name;
+        if (enhancementOriginal) {
+          enhancement = {
+            ...enhancementOriginal,
+            name: app.name,
+          };
         }
       }
 
