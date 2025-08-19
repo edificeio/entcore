@@ -29,12 +29,8 @@ import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.directory.services.ShareBookmarkService;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.UUID;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 
@@ -142,10 +138,13 @@ public class DefaultShareBookmarkService implements ShareBookmarkService {
 					.map(jo -> jo.getString("id"))
 					.collect(Collectors.toList());
 				// Keep only visible users, in the *membersMap*
+				//eliminate himself from the memebers to check
+				int initialCount = membersMapIds.size() - (membersMapIds.contains(userId) ? 1 : 0);
 				membersMapIds.retainAll(visibleIds);
 				// Update members array
 				members.clear();
 				membersMap.values().stream().forEach( member -> members.add(member) );
+				res.put("notVisibleCount", initialCount - members.size());
 			})
 			.onComplete( ar -> {
 				// Filtered or not, handle the results anyway.
