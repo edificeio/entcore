@@ -16,6 +16,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.entcore.broker.api.dto.resources.ResourcesDeletedDTO;
+import org.entcore.broker.api.publisher.BrokerPublisherFactory;
+import org.entcore.broker.api.utils.AddressParameter;
+import org.entcore.broker.proxy.ResourceBrokerPublisher;
 import org.entcore.common.folders.ElementQuery;
 import org.entcore.common.folders.ElementShareOperations;
 import org.entcore.common.folders.FolderManager;
@@ -90,6 +94,8 @@ public class FolderManagerMongoImpl implements FolderManager {
 	protected final String imageResizerAddress;
 	protected boolean allowDuplicate = false;
 	protected final FolderImporterZip zipImporter;
+	protected final ResourceBrokerPublisher resourcePublisher;
+
 	public FolderManagerMongoImpl(String collection, Storage sto, Vertx vertx, FileSystem fs, EventBus eb, ShareService shareService, String imageResizerAddress, boolean useOldChildrenQuery)
 	{
 		this.storage = sto;
@@ -101,6 +107,12 @@ public class FolderManagerMongoImpl implements FolderManager {
 		this.queryHelper = new QueryHelper(collection, useOldChildrenQuery);
 		this.inheritShareComputer = new InheritShareComputer(queryHelper);
 		this.zipImporter = new FolderImporterZip(vertx, this);
+		// Initialize the resource publisher for sharing notifications
+		this.resourcePublisher = BrokerPublisherFactory.create(
+            ResourceBrokerPublisher.class, 
+            vertx,
+            new AddressParameter("application", "workspace")
+        );
 	}
 
 	public void setAllowDuplicate(boolean allowDuplicate) {
@@ -539,6 +551,14 @@ public class FolderManagerMongoImpl implements FolderManager {
 			final StopWatch timeToDel = new StopWatch();
 			this.storage.removeFiles(new JsonArray(listOfFilesIds), resDelete -> {
 				logTime(timeToDel, "Delete files");
+				// Notify broker for resource deletion
+				if (!ids.isEmpty()) {
+					final List<String> resourceIds = new ArrayList<>(ids);
+					final ResourcesDeletedDTO notification = new ResourcesDeletedDTO(resourceIds, FolderManager.FILE_TYPE);
+					resourcePublisher.notifyResourcesDeleted(notification)
+							.onFailure(err -> log.error("Failed to notify resource deletion: " + err.getMessage()));
+				}
+				// Check if the deletion was successful
 				if (isOk(resDelete)) {
 					future.complete(files);
 				} else {
@@ -1207,5 +1227,4 @@ public class FolderManagerMongoImpl implements FolderManager {
 		});
 
 	}
-
 }
