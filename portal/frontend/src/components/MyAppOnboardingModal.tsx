@@ -19,10 +19,9 @@ export default function MyAppOnboardingModal() {
         <IconButton
           aria-label={t('my.app.notification')}
           className="bg-secondary-200 fw-bold"
-          color="black"
-          icon={<IconNotification />}
+          icon={<IconNotification color='black'/>}
           type="button"
-          variant="filled"
+          variant="ghost"
           onClick={() => {
             onboardingModalRef.current?.setIsOpen(true);
           }}
