@@ -19,6 +19,12 @@ body {
   text-align: center;
 }
 
+.dropdown-item {
+  white-space: nowrap;
+  display: block;
+  text-align: left;
+}
+
 .theme-1d .application-card {
   width: 130px;
   height: 150px;
@@ -144,7 +150,12 @@ body {
   }
   .my-apps-search {
     margin-top: 14px;
-    width: 100% !important;
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .my-apps-search {
+    width: 302px;
   }
 }
 
@@ -170,10 +181,6 @@ body {
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-.my-apps-search {
-  width: 302px;
 }
 
 .my-apps-skeleton-title {

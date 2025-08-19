@@ -22,7 +22,7 @@ export function ApplicationIcon({
   const classApplicationIcon = clsx(
     `application-icon rounded mb-8 d-flex align-items-center justify-content-center mx-auto`,
     data.color && `bg-${data.color}`,
-    !data.color && 'bg-secondary',
+    !data.color && 'bg-white',
     data.category === 'connector' && 'application-icon-connector bg-white',
     'text-white fw-bold fs-4',
   );

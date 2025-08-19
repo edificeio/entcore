@@ -33,23 +33,13 @@ export const Root = () => {
   const { init } = useEdificeClient();
   const { theme } = useEdificeTheme();
   const [themeName, setThemeName] = useState('');
-  // Load theme for icons
+
   useEffect(() => {
     if (!theme) return;
-    const themeMode = theme.is1d ? 'one' : 'neo';
-    const url = `/assets/themes/ode-bootstrap-${themeMode}/skins/default/theme.css`;
-    const link = document.createElement('link');
-    link.rel = 'stylesheet';
-    link.href = url;
-    document.head.appendChild(link);
-
     const themeName = theme.is1d ? '1d' : '2d';
     setThemeName(themeName);
-
-    return () => {
-      document.head.removeChild(link);
-    };
   }, [theme]);
+  
 
   if (!init) return <LoadingScreen position={false} />;
 
