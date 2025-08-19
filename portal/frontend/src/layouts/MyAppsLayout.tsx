@@ -85,7 +85,7 @@ export const MyAppLayout = ({ theme }: { theme: string }) => {
         <header className="d-flex justify-content-between my-apps-header">
           <h1 className="m-0 h3 text-info">{t('navbar.applications')}</h1>
           <Flex gap="16" className="p-3" align="end">
-            <div>
+            <div style={{ flex: 1 }}>
               <SearchBar
                 clearable
                 isVariant
