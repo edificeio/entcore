@@ -19,7 +19,6 @@
 
 package org.entcore.common.share.impl;
 
-import com.google.common.collect.Lists;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.StartupUtils;
@@ -74,7 +73,7 @@ public abstract class GenericShareService implements ShareService {
 	public GenericShareService(EventBus eb, Map<String, SecuredAction> securedActions,
 			Map<String, List<String>> groupedActions) {
 		this.eb = eb;
-		this.securedActions = StartupUtils.applyOverrideForShare(securedActions);
+		this.securedActions = StartupUtils.applyOverrideRightForShare(securedActions);
 		this.groupedActions = groupedActions;
 		final String main = vertx.getOrCreateContext().config().getString("main");
 		final String module = isNotEmpty(main) ? main.substring(main.lastIndexOf(".") + 1) : "unknown_module";
@@ -119,7 +118,7 @@ public abstract class GenericShareService implements ShareService {
 		for (SecuredAction action : securedActions.values()) {
 			if (ActionType.RESOURCE.name().equals(action.getType()) && !action.getDisplayName().isEmpty()) {
 				JsonObject a = resourceActions.getJsonObject(action.getDisplayName());
-				String name = StringUtils.isEmpty(action.getOverride()) ? action.getName() : action.getOverride();
+				String name = StringUtils.isEmpty(action.getRight()) ? action.getName() : action.getRight();
 				if (a == null) {
 					a = new JsonObject()
 							.put("name",
