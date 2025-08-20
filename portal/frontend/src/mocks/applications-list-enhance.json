@@ -33,17 +33,6 @@
     }
   },
   {
-    "name": "Aide aux devoirs",
-    "category": "pedagogy",
-    "color": "blue",
-    "libraries": false,
-    "help": {
-      "fr": null,
-      "en": null,
-      "es": null
-    }
-  },
-  {
     "name": "Aide et support",
     "category": "organisation",
     "color": "yellow",
@@ -96,7 +85,7 @@
     "help": {
       "fr": "https://help.edifice.io/hc/fr/articles/12352333912220-Pr%C3%A9sentation-du-Cahier-de-textes-2D",
       "en": null,
-      "es": "https://help.edifice.io/hc/es-419/articles/360018701960-Presentaci%C3%B3n-del-Cuaderno-Multimedia"
+      "es": null
     }
   },
   {
@@ -167,6 +156,18 @@
   },
   {
     "name": "Administration",
+    "category": "organisation",
+    "color": "yellow",
+    "libraries": false,
+    "isExternal": true,
+    "help": {
+      "fr": "https://help.edifice.io/hc/fr/articles/5167202595612-A-qui-s-adresse-cette-cat%C3%A9gorie",
+      "en": null,
+      "es": null
+    }
+  },
+  {
+    "name": "Console Admin",
     "category": "organisation",
     "color": "yellow",
     "libraries": false,
@@ -412,6 +413,17 @@
       "es": "https://help.edifice.io/hc/es-419/articles/360018772939-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Configuraci%C3%B3n-de-la-clase"
     }
   },
+    {
+    "name": "class_admin_default",
+    "category": "organisation",
+    "color": "yellow",
+    "libraries": false,
+    "help": {
+      "fr": "https://help.edifice.io/hc/fr/articles/360018772939-Pr%C3%A9sentation-de-l-application-Param%C3%A9trage-de-la-classe",
+      "en": null,
+      "es": "https://help.edifice.io/hc/es-419/articles/360018772939-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Configuraci%C3%B3n-de-la-clase"
+    }
+  },
   {
     "name": "Viescolaire",
     "category": "organisation",
@@ -515,6 +527,17 @@
     "name": "Zimbra",
     "category": "communication",
     "color": "orange",
+    "libraries": false,
+    "help": {
+      "fr": null,
+      "en": null,
+      "es": null
+    }
+  },
+  {
+    "name": "Lool",
+    "category": "pedagogy",
+    "color": "blue",
     "libraries": false,
     "help": {
       "fr": null,
