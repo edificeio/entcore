@@ -80,6 +80,7 @@ public class NotificationHelper {
 
                             if (pushNotifServices != null && pushNotifServices.size() > 0
                                     && json.containsKey("pushNotif")
+                                    && json.getJsonObject("pushNotif") != null
                                     && notificationProperties.getBoolean("push-notif")
                                     && !TimelineNotificationsLoader.Restrictions.INTERNAL.name().equals(notificationProperties.getString("restriction"))
                                     && !TimelineNotificationsLoader.Restrictions.HIDDEN.name().equals(notificationProperties.getString("restriction"))) {
