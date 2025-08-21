@@ -34,7 +34,9 @@ pipeline {
       }
       stage('Publish') {
         steps {
-          sh 'DRY_RUN=false ./build.sh $BUILD_SH_EXTRA_PARAM publish'
+          withEnv(["NPM_TOKEN=${env.NPM_PUBLIC_TOKEN}"]) {
+            sh "NPM_TOKEN=${env.NPM_PUBLIC_TOKEN} DRY_RUN=false ./build.sh \$BUILD_SH_EXTRA_PARAM publish"
+          }
         }
       }
     }
