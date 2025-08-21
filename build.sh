@@ -221,7 +221,6 @@ publishBrokerNpmLib() {
   echo "[publish] Publish with the branch tag"
   # Default to dry run if not specified
   DRY_RUN=${DRY_RUN:-true}
-
   if [ "$DRY_RUN" = "true" ]; then
     docker compose run -e NPM_TOKEN=$NPM_TOKEN --rm -u "$USER_UID:$GROUP_GID" node22 sh -c "pnpm publish -r --no-git-checks --tag $TAG_BRANCH --dry-run"
   else
