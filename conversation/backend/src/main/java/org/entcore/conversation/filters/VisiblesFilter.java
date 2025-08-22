@@ -19,12 +19,16 @@
 
 package org.entcore.conversation.filters;
 
+import static org.entcore.common.user.UserUtils.filterFewOrGetAllVisibles;
 import static org.entcore.common.user.UserUtils.findVisibles;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import io.vertx.core.AsyncResult;
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.sql.Sql;
@@ -77,7 +81,7 @@ public class VisiblesFilter implements ResourcesProvider{
 		final String parentMessageId = request.params().get("In-Reply-To");
 		final Set<String> ids = new HashSet<>();
 		//FIXME should be optimized by removing unecessary optionals
-		final String customReturn = "WHERE visibles.id IN {ids} RETURN DISTINCT visibles.id";
+		final String customReturn = "RETURN DISTINCT visibles.id";
 		final JsonObject params = new JsonObject();
 
 		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
@@ -89,11 +93,15 @@ public class VisiblesFilter implements ResourcesProvider{
 				final Handler<Void> checkHandler = new Handler<Void>() {
 					public void handle(Void v) {
 						params.put("ids", new fr.wseduc.webutils.collections.JsonArray(new ArrayList<>(ids)));
-						findVisibles(neo.getEventBus(), user.getUserId(), customReturn, params, true, true, false, new Handler<JsonArray>() {
-							public void handle(JsonArray visibles) {
-								handler.handle(visibles.size() == ids.size());
-							}
-						});
+						filterFewOrGetAllVisibles(neo.getEventBus(), user.getUserId(), new JsonArray(new ArrayList<>(ids)), true, null, customReturn, false)
+								.onComplete( visible -> {
+										int countVisible = ids.size();
+										ids.retainAll((Collection<?>) visible.result().getList()
+																	  .stream()
+																	  .map(vi -> ((JsonObject)vi).getString("visibles.id"))
+																		.collect(Collectors.toList()));
+										handler.handle(countVisible == ids.size());
+								});
 					}
 				};
 
