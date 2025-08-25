@@ -41,6 +41,27 @@ public class Group {
 
 	private static final Logger log = LoggerFactory.getLogger(Group.class);
 	private static final String TX_RUN_LINK_RULES = "TX_RUN_LINK_RULES";
+	private final static String QUERY_FROM_GROUP =
+			"MATCH (g:ManualGroup {id: {groupId}})-[:DEPENDS]->(:Structure)<-[:HAS_ATTACHMENT*0..]-(struct:Structure) " +
+			"WHERE EXISTS(g.autolinkUsersFromGroups) "+
+			"WITH g, struct " +
+			"MATCH (u:User)-[:IN]->(target:Group)-[:DEPENDS]->(struct) " +
+			"WITH g, struct, u, target " +
+			"WHERE " +
+			" (" +
+			"    (g.autolinkTargetAllStructs = true OR struct.id IN g.autolinkTargetStructs) AND " +
+			"    target.filter IN g.autolinkUsersFromGroups " +
+			"  )" +
+			"WITH g, u ";
+
+	private final static String QUERY_FROM_POSITION = "MATCH (g:ManualGroup {id: {groupId}})-[:DEPENDS]->(:Structure)<-[:HAS_ATTACHMENT*0..]-(struct:Structure) " +
+			"MATCH (u:User)-[:IN]->(target:Group)-[:DEPENDS]->(struct) " +
+			"UNWIND COALESCE(g.autolinkUsersFromPositions, []) AS targetPosition "+
+			"MATCH (position:UserPosition {name: targetPosition})<-[:HAS_POSITION]-(u:User)-[:IN]->(:Group)-[:DEPENDS]->(struct)" +
+			" WHERE  "+
+			" ( g.autolinkTargetAllStructs = true OR struct.id IN g.autolinkTargetStructs )" +
+			" with distinct g, u ";
+
 
 	public static void manualCreateOrUpdate(JsonObject object, String structureId, String classId,
 			TransactionHelper transactionHelper) throws ValidationException {
@@ -154,7 +175,9 @@ public class Group {
 				"MATCH (g:ManualGroup) " +
 				"WHERE EXISTS(g.autolinkUsersFromGroups) " +
 				  " OR EXISTS(g.autolinkUsersFromPositions) " +
-				"RETURN g.id as id, g.autolinkUsersFromGroups as autolinkUsersFromGroups, g.autolinkUsersFromLevels as autolinkUsersFromLevels";
+				"RETURN g.id as id, g.autolinkUsersFromGroups as autolinkUsersFromGroups, " +
+						" g.autolinkUsersFromLevels as autolinkUsersFromLevels, " +
+						" g.autolinkUsersFromPositions as autolinkUsersFromPositions";
 			tx.add(listAutolinkGroups, new JsonObject());
 
 			tx.commit().compose(groups -> {
@@ -162,10 +185,7 @@ public class Group {
 					return groups.getJsonArray(0).stream().reduce(
 						Future.succeededFuture(new JsonArray()),
 						(previousFuture, group) -> previousFuture.compose(r ->
-								groupLinkRules(((JsonObject) group).getString("id"),
-										((JsonObject) group).getJsonArray("autolinkUsersFromGroups"),
-										((JsonObject) group).getJsonArray("autolinkUsersFromLevels"),
-										tx).commit()),
+								groupLinkRules(((JsonObject) group).getString("id"), (JsonObject) group, tx).commit()),
 						(f1, f2) -> f2 // return last future
 					);
 				} else {
@@ -194,30 +214,14 @@ public class Group {
 		return p.future();
 	}
 
-	private static TransactionHelper groupLinkRules(String groupId, JsonArray autolinkUsersFromGroups, JsonArray autolinkUsersFromLevel, TransactionHelper tx) {
+	private static TransactionHelper groupLinkRules(String groupId, JsonObject group, TransactionHelper tx) {
 		log.info("tx groupLinkRules with groupId : " + groupId);
-		final StringBuilder linkQuery = new StringBuilder(
-				"MATCH (g:ManualGroup {id: {groupId}})-[:DEPENDS]->(:Structure)<-[:HAS_ATTACHMENT*0..]-(struct:Structure) " +
-				"WHERE EXISTS(g.autolinkUsersFromGroups) OR EXISTS(g.autolinkUsersFromPositions) "+
-				"WITH g, struct " +
-				"MATCH (u:User)-[:IN]->(target:Group)-[:DEPENDS]->(struct) " +
-				"OPTIONAL MATCH (u)-[:HAS_POSITION]->(position:UserPosition) " +
-				"WITH g, struct, u, target, position " +
-				"WHERE " +
-				// filter by type of auto link
-				" (" +
-				"    size(COALESCE(g.autolinkUsersFromPositions, [])) = 0 AND " +
-				"    (g.autolinkTargetAllStructs = true OR struct.id IN g.autolinkTargetStructs) AND " +
-				"    target.filter IN g.autolinkUsersFromGroups " +
-				"  )" +
-				"  OR " +
-				"  (" +
-				"    size(COALESCE(g.autolinkUsersFromPositions, [])) > 0 AND " +
-				"    position IS NOT NULL AND " +
-				"    position.name IN COALESCE(g.autolinkUsersFromPositions, []) " +
-				"  )" +
-				// update the timestamp to remove old user
-				"WITH g, u " );
+		JsonArray autolinkUsersFromLevel = group.getJsonArray("autolinkUsersFromLevels");
+		JsonArray autolinkUsersFromGroups = group.getJsonArray("autolinkUsersFromGroups");
+		JsonArray autolinkUsersFromPositions = group.getJsonArray("autolinkUsersFromPositions");
+
+		final StringBuilder linkQuery = new StringBuilder( autolinkUsersFromPositions != null && !autolinkUsersFromPositions.isEmpty() ?
+				QUERY_FROM_POSITION : QUERY_FROM_GROUP);
 		// Conditional filter on children or students level
 		if (autolinkUsersFromLevel != null && !autolinkUsersFromLevel.isEmpty()) {
 			if (autolinkUsersFromGroups.contains("Relative")) {
