@@ -120,7 +120,8 @@ public class ShareBrokerListenerImpl implements ShareBrokerListener {
                     promise.complete(new RemoveGroupSharesResponseDTO(sharedDtoList));
                     return;
                 }
-                final JsonObject sharedObject = shareService.sharedArrayToSharedObject(sharedArray);
+                final JsonArray cleanShared = new JsonArray(sharedList);
+                final JsonObject sharedObject = shareService.sharedArrayToSharedObject(cleanShared);
                 shareService.share(request.getCurrentUserId(), request.getResourceId(), sharedObject, event -> {
                     if (event.isLeft()) {
                         log.error("Error sharing resource: {}", event.left().getValue());
