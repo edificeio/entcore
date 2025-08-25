@@ -12,6 +12,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -45,6 +46,7 @@ public class NATSBrokerClient implements BrokerClient {
   private final Set<String> subscriptions = new HashSet<>();
   private final Map<String, Object> listeners = new HashMap<>();
   private final String queueName;
+  private MessageConsumer<?> publishConsumer;
 
   public NATSBrokerClient(final Vertx vertx) {
     this.vertx = vertx;
@@ -68,7 +70,50 @@ public class NATSBrokerClient implements BrokerClient {
       .onSuccess(this::registerListeners)
       .compose(e -> this.loadListeners("META-INF/broker-proxy.nats.json"))
       .onSuccess(this::registerProxies)
+      .compose(e -> this.setupEventBusPublishHandler())
       .mapEmpty();
+  }
+
+  private Future<Void> setupEventBusPublishHandler() {
+    final Promise<Void> promise = Promise.promise();
+    // Unregister any existing consumer
+    if(this.publishConsumer != null){
+      this.publishConsumer.unregister();
+    }
+    // Set up an event bus handler for "broker.publish" messages
+    this.publishConsumer = vertx.eventBus().<JsonObject>consumer("broker.publish", message -> {
+      final JsonObject body = message.body();
+      final String subject = body.getString("subject");
+      final String messageStr = body.getString("message");
+
+      if (subject == null || subject.isEmpty()) {
+        message.fail(400, "Subject cannot be empty");
+        return;
+      }
+
+      try {
+        // If the message is null, send an empty message
+        final byte[] payload = messageStr != null ? messageStr.getBytes(charset) : new byte[0];
+
+        natsClient.publish(subject, payload)
+          .onSuccess(v -> {
+            log.debug("Successfully published message to subject: " + subject);
+            message.reply(null); // Empty reply to indicate success
+          })
+          .onFailure(err -> {
+            log.error("Failed to publish message to subject: " + subject, err);
+            message.fail(500, err.getMessage());
+          });
+      } catch (Exception e) {
+        log.error("Error publishing message to subject: " + subject, e);
+        message.fail(500, e.getMessage());
+      }
+    });
+
+    log.info("Set up event bus handler for broker.publish");
+    promise.complete();
+
+    return promise.future();
   }
 
   private void registerProxies(NATSContract contract) {
