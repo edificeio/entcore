@@ -25,6 +25,7 @@ import org.entcore.common.s3.storage.StorageObject;
 import org.entcore.common.s3.utils.*;
 import org.entcore.common.storage.FileStats;
 import org.entcore.common.storage.Storage;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.FileValidator;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -340,7 +341,10 @@ public class S3Client {
 			.setHost(host)
 			.setTimeout(S3_DOWNLOAD_TIMEOUT_IN_MILLISECONDS)
 			.setURI("/" + bucket + "/" + fileId);
-
+		final String range = request.getHeader("Range");
+		if (!StringUtils.isEmpty(range)) {
+			requestOptions.addHeader("Range", range);
+		}
 		httpClient.request(requestOptions)
 			.flatMap(req -> {
 				AwsUtils.setSSEC(req, ssec);
@@ -356,7 +360,7 @@ public class S3Client {
 			.onSuccess(response -> {
 				response.pause();
 
-				if (response.statusCode() == 200 || response.statusCode() == 304) {
+				if (response.statusCode() >= 200 && response.statusCode() < 300 || response.statusCode() == 304) {
 					if(resp.headWritten()) {
 						log.warn("Client response Headers have already been written : " + resp.getStatusCode() + " \n" + resp.headers());
 					} else {
@@ -367,11 +371,14 @@ public class S3Client {
 						else {
 							resp.putHeader("Content-Type", response.headers().get("Content-Type"));
 						}
+						if(!StringUtils.isEmpty(range)) {
+							resp.putHeader("Content-Range", response.getHeader("Content-Range"));
+						}
 						resp.putHeader("Content-Length", response.headers().get("Content-Length"));
 					}
 				}
 
-				if (response.statusCode() == 200) {
+				if (response.statusCode() >= 200 && response.statusCode() < 300) {
 					response.pipeTo(resp).onComplete(aVoid -> {
 						if(aVoid.failed()) {
 							Throwable cause = aVoid.cause();
@@ -424,7 +431,7 @@ public class S3Client {
 			.setURI("/" + bucket + "/" + idPrefixed);
 
 		httpClient.request(requestOptions)
-			.flatMap(req -> {
+				.flatMap(req -> {
 				AwsUtils.setSSEC(req, ssec);
 				try {
 					AwsUtils.sign(req, accessKey, secretKey, region);

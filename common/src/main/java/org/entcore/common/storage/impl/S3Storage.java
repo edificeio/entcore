@@ -98,7 +98,7 @@ public class S3Storage implements Storage {
     public void writeUploadFile(HttpServerRequest request, Long maxSize, Handler<JsonObject> handler) {
         s3Client.uploadFile(request, maxSize, validator, ar -> {
             handler.handle(ar);
-            if (ar.getString("status") == "ok") {
+            if (ar.getString("status").equals("ok")) {
                 scanFile(S3Client.getPath(ar.getString("_id")));
             }
         });
@@ -158,7 +158,7 @@ public class S3Storage implements Storage {
                 JsonObject result = ar.result();
 
                 promise.complete(result);
-                if (result.getString("status") == "ok") {
+                if (result.getString("status").equals("ok")) {
                     scanFile(S3Client.getPath(result.getString("_id")));
                 }
             }
