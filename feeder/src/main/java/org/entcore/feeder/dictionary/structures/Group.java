@@ -46,7 +46,6 @@ public class Group {
 			"WHERE EXISTS(g.autolinkUsersFromGroups) "+
 			"WITH g, struct " +
 			"MATCH (u:User)-[:IN]->(target:Group)-[:DEPENDS]->(struct) " +
-			"WITH g, struct, u, target " +
 			"WHERE " +
 			" (" +
 			"    (g.autolinkTargetAllStructs = true OR struct.id IN g.autolinkTargetStructs) AND " +
