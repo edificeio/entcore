@@ -12,6 +12,8 @@ import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.entcore.broker.api.BrokerListener;
 import org.entcore.broker.api.dto.NATSResponseDTO;
+import org.entcore.broker.api.utils.BrokerAddressUtils;
+import org.entcore.broker.api.utils.ReflectionUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -42,7 +44,7 @@ public class BrokerProxyUtils {
    * @return A function to call to stop listening.
    */
   public static Callable<Void> addBrokerProxy(Object proxyImpl, final Vertx vertx, final AddressParameter... addressParameters) {
-    final Map<String, String> params = getParameters(addressParameters);
+    final Map<String, String> params = BrokerAddressUtils.getParametersMap(addressParameters);
     final List<Listener> listeners = getListeners(proxyImpl);
     checkParameters(params, proxyImpl, listeners);
     final EventBus eb = vertx.eventBus();
@@ -96,23 +98,10 @@ public class BrokerProxyUtils {
     return listenerParameters;
   }
 
-  private static Map<String, String> getParameters(AddressParameter[] addressParameters) {
-    final Map<String, String> params;
-    if(addressParameters == null) {
-      params = Collections.emptyMap();
-    } else {
-      params = new HashMap<>();
-      for (AddressParameter addressParameter : addressParameters) {
-        params.put(addressParameter.getName(), addressParameter.getValue());
-      }
-    }
-    return params;
-  }
-
   private static MessageConsumer<?> startListening(Listener listener, Object proxyImpl, EventBus eb, Map<String, String> params) {
     final BrokerListener annotation = listener.annotation;
     final Method method = listener.method;
-    final String address = replacePlaceHoldersInListeningAddress(annotation.subject(), params);
+    final String address = BrokerAddressUtils.replacePlaceholders(annotation.subject(), params);
     final Class<?> requestType = method.getParameterTypes()[0];
     log.info("Start listening on address " + address);
     return eb.consumer(address, (Handler<Message<byte[]>>) message -> {
@@ -145,16 +134,6 @@ public class BrokerProxyUtils {
       }
       sendResponse(response, message, address);
     });
-  }
-
-  private static String replacePlaceHoldersInListeningAddress(final String subject, final Map<String, String> params) {
-    String address = subject;
-    for (Map.Entry<String, String> entry : params.entrySet()) {
-      final String key = entry.getKey();
-      final String value = entry.getValue();
-      address = address.replace("{" + key + "}", value);
-    }
-    return address;
   }
 
   private static void sendResponse(Object response, Message<byte[]> message, String address) {
@@ -195,7 +174,7 @@ public class BrokerProxyUtils {
     final Class<? extends Object> clazz = proxyImpl.getClass();
     for (Method method : clazz.getMethods()) {
       if (Modifier.isPublic(method.getModifiers())) {
-        final Optional<BrokerListener> maybeAnnotation = getBrokerListenerAnnotation(proxyImpl.getClass(), method);
+        final Optional<BrokerListener> maybeAnnotation = ReflectionUtils.getMethodAnnotation(BrokerListener.class, proxyImpl.getClass(), method);
         maybeAnnotation.ifPresent(annotation -> {
           if (annotation.proxy()) {
             log.debug("Adding method " + method.getName() + " as a listener for subject " + annotation.subject());
@@ -208,35 +187,6 @@ public class BrokerProxyUtils {
       }
     }
     return methods;
-  }
-
-  public static Optional<BrokerListener> getBrokerListenerAnnotation(final Class<?> proxyClass, final Method method) {
-    BrokerListener annotation = method.getAnnotation(BrokerListener.class);
-    if (annotation == null) {
-      // Get the annotation from the interfaces implemented by the proxy
-      annotation = doGetBrokerListenerAnnotation(proxyClass.getInterfaces(), method);
-    }
-    // Check if the annotation is present on the parent class
-    if (annotation == null && proxyClass.getSuperclass() != null) {
-      annotation = getBrokerListenerAnnotation(proxyClass.getSuperclass(), method).orElse(null);
-    }
-    return Optional.ofNullable(annotation);
-  }
-  
-  private static BrokerListener doGetBrokerListenerAnnotation(final Class<?>[] classes, final Method method) {
-    BrokerListener annotation = null;
-    for (Class<?> clazz : classes) {
-      try {
-        final Method classMethod = clazz.getMethod(method.getName(), method.getParameterTypes());
-        annotation = classMethod.getAnnotation(BrokerListener.class);
-        if (annotation != null) {
-          break;
-        }
-      } catch (NoSuchMethodException e) {
-        // Method not found in this interface, continue with next interface
-      }
-    }
-    return annotation;
   }
 
   public static class Listener {

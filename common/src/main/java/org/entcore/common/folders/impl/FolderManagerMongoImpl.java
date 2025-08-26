@@ -555,8 +555,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 				if (!ids.isEmpty()) {
 					final List<String> resourceIds = new ArrayList<>(ids);
 					final ResourcesDeletedDTO notification = new ResourcesDeletedDTO(resourceIds, FolderManager.FILE_TYPE);
-					resourcePublisher.notifyResourcesDeleted(notification)
-							.onFailure(err -> log.error("Failed to notify resource deletion: " + err.getMessage()));
+					resourcePublisher.notifyResourcesDeleted(notification);
 				}
 				// Check if the deletion was successful
 				if (isOk(resDelete)) {
