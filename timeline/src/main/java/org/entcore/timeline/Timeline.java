@@ -31,9 +31,11 @@ import java.util.Map;
 import io.vertx.core.Promise;
 import io.vertx.core.shareddata.LocalMap;
 import fr.wseduc.webutils.http.oauth.OAuth2Client;
+import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.utils.MapFactory;
 import org.entcore.timeline.controllers.helper.NotificationHelper;
+import org.entcore.timeline.listeners.TimelineBrokerListenerImpl;
 import org.entcore.timeline.services.FlashMsgService;
 import org.entcore.timeline.services.TimelineConfigService;
 import org.entcore.timeline.services.TimelinePushNotifService;
@@ -93,6 +95,7 @@ public class Timeline extends BaseServer {
 		setRepositoryEvents(new FlashMsgRepositoryEventsSql());
 
 		addController(timelineController);
+		BrokerProxyUtils.addBrokerProxy(new TimelineBrokerListenerImpl(vertx), vertx);
 
 		final String dailyMailingCron = config.getString("daily-mailing-cron", "0 0 2 * * ?");
 		final String weeklyMailingCron = config.getString("weekly-mailing-cron", "0 0 5 ? * MON");

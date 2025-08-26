@@ -23,13 +23,11 @@ import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.data.FileResolver;
 import fr.wseduc.webutils.http.Renders;
 
+import io.vertx.core.*;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
@@ -86,9 +84,10 @@ public class TimelineHelper {
 			final List<String> recipients, String resource, String subResource, final JsonObject params, final boolean disableAntiFlood){
 		notifyTimeline(req, notificationName, sender, recipients, resource, subResource, params, disableAntiFlood, null);
 	}
-	public void notifyTimeline(final HttpServerRequest req, final String notificationName,
-			UserInfos sender, final List<String> recipients, String resource, String subResource, final JsonObject params, final boolean disableAntiFlood, JsonObject preview){
-		notificationsLoader.getNotification(notificationName, notification -> {
+	public Future<JsonObject> notifyTimeline(final HttpServerRequest req, final String notificationName,
+											 UserInfos sender, final List<String> recipients, String resource, String subResource, final JsonObject params, final boolean disableAntiFlood, JsonObject preview){
+		final Promise<JsonObject> promise = Promise.promise();
+    	notificationsLoader.getNotification(notificationName, notification -> {
 			JsonArray r = new fr.wseduc.webutils.collections.JsonArray();
 			for (String userId: recipients) {
 				r.add(new JsonObject().put("userId", userId).put("unread", 1));
@@ -146,10 +145,14 @@ public class TimelineHelper {
 					JsonObject result = event.body();
 					if("error".equals(result.getString("status", "error"))){
 						log.error("Error in timeline notification : " + result.getString("message"));
+						promise.fail(result.getString("message"));
+					} else {
+						promise.complete(result);
 					}
 				}
 			}));
 		});
+		return promise.future();
 	}
 
 	/**
