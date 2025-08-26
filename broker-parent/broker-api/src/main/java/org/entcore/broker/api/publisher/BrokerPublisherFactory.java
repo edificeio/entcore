@@ -10,15 +10,16 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.broker.api.BrokerPublisher;
 import org.entcore.broker.api.utils.AddressParameter;
-import org.entcore.broker.api.utils.BrokerProxyUtils;
+import org.entcore.broker.api.utils.BrokerAddressUtils;
+import org.entcore.broker.api.utils.ReflectionUtils;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -65,28 +66,12 @@ public class BrokerPublisherFactory {
          */
         public PublisherInvocationHandler(Vertx vertx, AddressParameter... addressParameters) {
             this.vertx = vertx;
-            this.params = getParametersMap(addressParameters);
+            this.params = BrokerAddressUtils.getParametersMap(addressParameters);
             this.disabledSubjects = loadDisabledSubjects(vertx);
             
             if (!disabledSubjects.isEmpty()) {
                 log.info("Broker publisher has " + disabledSubjects.size() + " disabled subject patterns");
             }
-        }
-        
-        /**
-         * Convert address parameters to a map
-         * 
-         * @param addressParameters Array of address parameters
-         * @return Map of parameter names to values
-         */
-        private Map<String, String> getParametersMap(AddressParameter[] addressParameters) {
-            Map<String, String> result = new HashMap<>();
-            if (addressParameters != null) {
-                for (AddressParameter param : addressParameters) {
-                    result.put(param.getName(), param.getValue());
-                }
-            }
-            return result;
         }
         
         /**
@@ -131,28 +116,21 @@ public class BrokerPublisherFactory {
             }
             
             // Get the BrokerPublisher annotation from method or interface
-            BrokerPublisher annotation = method.getAnnotation(BrokerPublisher.class);
-            if (annotation == null) {
-                // Check interfaces for annotation
-                Class<?>[] interfaces = method.getDeclaringClass().getInterfaces();
-                for (Class<?> iface : interfaces) {
-                    try {
-                        Method ifaceMethod = iface.getMethod(method.getName(), method.getParameterTypes());
-                        annotation = ifaceMethod.getAnnotation(BrokerPublisher.class);
-                        if (annotation != null) break;
-                    } catch (NoSuchMethodException e) {
-                        // Continue searching
-                    }
-                }
-            }
-                
-            if (annotation == null) {
+            Optional<BrokerPublisher> annotationOpt = ReflectionUtils.getMethodAnnotation(
+                BrokerPublisher.class, 
+                method.getDeclaringClass(), 
+                method);
+
+            if (!annotationOpt.isPresent()) {
                 return Future.failedFuture(
                     new UnsupportedOperationException("Method " + method.getName() + " is not a BrokerPublisher"));
             }
-            
+
+            // Use the annotation
+            final BrokerPublisher annotation = annotationOpt.get();
+                
             // Replace placeholders in the subject
-            final String subject = replacePlaceholders(annotation.subject(), params);
+            final String subject = BrokerAddressUtils.replacePlaceholders(annotation.subject(), params);
             
             // Check if subject is disabled
             if (isSubjectDisabled(subject)) {
@@ -164,7 +142,7 @@ public class BrokerPublisherFactory {
             final Object message = args.length > 0 ? args[0] : null;
             
             // Serialize the message
-            final String messageJson = message != null ? mapper.writeValueAsString(message) : null;
+            final String messageJson = message == null ? null : mapper.writeValueAsString(message);
             
             // Build the request body
             final JsonObject requestBody = new JsonObject()
@@ -205,21 +183,6 @@ public class BrokerPublisherFactory {
                 }
             }
             return false;
-        }
-        
-        /**
-         * Replace placeholders in subject with actual values
-         * 
-         * @param subject The subject with potential placeholders
-         * @param params Map of parameter values
-         * @return The subject with placeholders replaced
-         */
-        private String replacePlaceholders(String subject, Map<String, String> params) {
-            String result = subject;
-            for (Map.Entry<String, String> entry : params.entrySet()) {
-                result = result.replace("{" + entry.getKey() + "}", entry.getValue());
-            }
-            return result;
         }
     }
     
