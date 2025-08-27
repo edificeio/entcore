@@ -32,7 +32,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class BrokerPublisherFactory {
     private static final Logger log = LoggerFactory.getLogger(BrokerPublisherFactory.class);
     private static final ObjectMapper mapper = new ObjectMapper();
-    
+
+    private BrokerPublisherFactory(){}
     /**
      * Creates a new instance of a broker publisher interface
      * 
