@@ -12,7 +12,7 @@ import java.util.Set;
  */
 public class NotVisibleFilterPerson {
 
-    private final JsonObject userInfos;
+    private final JsonArray userInfos;
     private final boolean isFilterEnabled;
     private static final Set<String> AUTHORIZED_FIELD =
             ImmutableSet.of("id", "displayName", "type");
@@ -25,7 +25,7 @@ public class NotVisibleFilterPerson {
      */
     public NotVisibleFilterPerson(JsonArray userInfos, boolean isFilterEnabled) {
         validateInput(userInfos);
-        this.userInfos = userInfos.getJsonObject(0);
+        this.userInfos = userInfos;
         this.isFilterEnabled = isFilterEnabled;
     }
 
@@ -44,18 +44,22 @@ public class NotVisibleFilterPerson {
     }
 
     public JsonArray apply() {
-        JsonObject filteredPerson = userInfos.copy();
-        JsonArray result = new JsonArray();
-        result.add(filteredPerson);
-        if(!isFilterEnabled) {
-            return result;
+        JsonArray results = new JsonArray();
+        for (int i = 0; i < userInfos.size(); i++) {
+            results.add(userInfos.getJsonObject(i).copy());
         }
-        for(String field : filteredPerson.getMap().keySet()) {
-            if(!AUTHORIZED_FIELD.contains(field)) {
-                filteredPerson.putNull(field);
+
+        if (isFilterEnabled) {
+            for (int i = 0; i < results.size(); i++) {
+                JsonObject userInfo = results.getJsonObject(i);
+                for (String field : userInfo.getMap().keySet()) {
+                    if (!AUTHORIZED_FIELD.contains(field)) {
+                        userInfo.putNull(field);
+                    }
+                }
             }
         }
-        return result;
-    }
 
+        return results;
+    }
 }
