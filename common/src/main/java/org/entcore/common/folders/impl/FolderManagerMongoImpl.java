@@ -545,38 +545,56 @@ public class FolderManagerMongoImpl implements FolderManager {
 		}
 		// Set to avoid duplicate
 		Set<String> ids = files.stream().map(o -> o.getString("_id")).collect(Collectors.toSet());
-		return queryHelper.deleteByIds((ids)).compose(res -> {
+		return queryHelper.deleteByIds(ids).compose(res -> {
 			Promise<List<JsonObject>> future = Promise.promise();
 			List<String> listOfFilesIds = StorageHelper.getListOfFileIds(files);
 			final StopWatch timeToDel = new StopWatch();
 			this.storage.removeFiles(new JsonArray(listOfFilesIds), resDelete -> {
 				logTime(timeToDel, "Delete files");
 				// Notify broker for resource deletion
-				if (!ids.isEmpty()) {
-					final List<String> resourceIds = new ArrayList<>(ids);
-					final ResourcesDeletedDTO notification = new ResourcesDeletedDTO(resourceIds, FolderManager.FILE_TYPE);
-					resourcePublisher.notifyResourcesDeleted(notification);
-				}
-				// Check if the deletion was successful
-				if (isOk(resDelete)) {
-					future.complete(files);
-				} else {
-					// dont throw error
-					// future.fail(toErrorStr(resDelete));
-					JsonArray errors = resDelete.getJsonArray("errors", new JsonArray());
-					for (Object o : errors) {
-						if (o instanceof JsonObject) {
-							String docId = ((JsonObject) o).getString("id");
-							String message = ((JsonObject) o).getString("message");
-							log.error("Failed to remove file with id: " + docId + "/" + message);
-						}
-					}
-					// delete document even if file does not exists
-					future.complete(files);
-				}
+				notifyResourceDeletion(ids);
+				handleStorageDeletionResult(resDelete, files, future);
 			});
 			return future.future();
 		});
+	}
+
+	/**
+	 * Notifies the resource broker when files are deleted
+	 * 
+	 * @param ids Set of document IDs that were deleted
+	 */
+	private void notifyResourceDeletion(Set<String> ids) {
+	    if (!ids.isEmpty()) {
+	        final List<String> resourceIds = new ArrayList<>(ids);
+	        final ResourcesDeletedDTO notification = new ResourcesDeletedDTO(resourceIds, FolderManager.FILE_TYPE);
+	        resourcePublisher.notifyResourcesDeleted(notification);
+	    }
+	}
+
+	/**
+	 * Handles the result of storage deletion operation
+	 * 
+	 * @param resDelete Result from storage deletion
+	 * @param files List of files that were processed
+	 * @param future Promise to complete with the result
+	 */
+	private void handleStorageDeletionResult(JsonObject resDelete, List<JsonObject> files, Promise<List<JsonObject>> future) {
+	    if (isOk(resDelete)) {
+	        future.complete(files);
+	    } else {
+	        // Log errors but don't fail the operation
+	        JsonArray errors = resDelete.getJsonArray("errors", new JsonArray());
+	        for (Object o : errors) {
+	            if (o instanceof JsonObject) {
+	                String docId = ((JsonObject) o).getString("id");
+	                String message = ((JsonObject) o).getString("message");
+	                log.error("Failed to remove file with id: " + docId + "/" + message);
+	            }
+	        }
+	        // Delete document even if file does not exist
+	        future.complete(files);
+	    }
 	}
 
 	private Future<List<JsonObject>> deleteFolderRecursively(Collection<String> foldersIds, Optional<UserInfos> user) {

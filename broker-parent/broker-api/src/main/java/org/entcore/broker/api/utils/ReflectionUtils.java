@@ -13,6 +13,7 @@ import java.util.Optional;
 public class ReflectionUtils {
     private static final Logger log = LoggerFactory.getLogger(ReflectionUtils.class);
 
+    private ReflectionUtils(){}
     /**
      * Find an annotation on a method, checking interfaces and parent classes if not found directly
      * 

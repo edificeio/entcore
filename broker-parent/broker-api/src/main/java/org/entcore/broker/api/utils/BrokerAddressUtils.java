@@ -9,6 +9,7 @@ import java.util.Map;
  */
 public class BrokerAddressUtils {
 
+    private BrokerAddressUtils(){}
     /**
      * Convert an array of AddressParameter objects to a parameter map
      * 
