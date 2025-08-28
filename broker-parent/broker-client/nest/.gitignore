@@ -1,7 +1,0 @@
-node_modules
-dist
-.pnpm-store
-.DS_Store
-.env
-.idea
-.vscode
