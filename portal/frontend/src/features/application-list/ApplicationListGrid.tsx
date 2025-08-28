@@ -1,5 +1,8 @@
-import { ApplicationWrapper } from "~/components/ApplicationWrapper";
-import { Application } from "~/models/application";
+import { ApplicationWrapper } from '~/components/ApplicationWrapper';
+import { Application } from '~/models/application';
+import { useApplications } from '~/services';
+import { useUpdateUserPreferences } from '~/services/queries/preferences';
+import { useUserPreferencesStore } from '~/store/userPreferencesStore';
 
 export function ApplicationListGrid({
   applications,
@@ -8,9 +11,22 @@ export function ApplicationListGrid({
   applications: Application[];
   isConnectors?: boolean;
 }) {
+  const { applications: displayedApps } = useApplications();
+  const { toggleBookmark } = useUserPreferencesStore();
+  const updatePreferences = useUpdateUserPreferences();
+
   const dataId = isConnectors
     ? 'applications-list-connectors'
     : 'applications-list';
+
+  const handleToggleFavorite = (appName: string) => {
+    toggleBookmark(appName);
+
+    updatePreferences.mutate({
+      bookmarks: useUserPreferencesStore.getState().bookmarks,
+      applications: displayedApps?.map((app) => app.name) ?? [],
+    });
+  };
   return (
     <div
       data-id={dataId}
@@ -18,7 +34,11 @@ export function ApplicationListGrid({
       style={{ maxWidth: 1091 }}
     >
       {applications.map((application) => (
-        <ApplicationWrapper key={application.name} data={application} />
+        <ApplicationWrapper
+          key={application.name}
+          data={application}
+          onToggleFavorite={handleToggleFavorite}
+        />
       ))}
     </div>
   );

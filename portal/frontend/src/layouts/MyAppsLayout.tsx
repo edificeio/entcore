@@ -1,12 +1,13 @@
-import { ApplicationList } from '~/features/application-list/ApplicationList';
+import { Flex, TextSkeleton } from '@edifice.io/react';
 import { useTranslation } from 'react-i18next';
 import { ToolbarCategories } from '~/components/ToolbarCategories';
+import { ApplicationList } from '~/features/application-list/ApplicationList';
 import { useHydrateUserPreferences } from '~/hooks/useHydrateUserPreferences';
-import './my-apps.css';
 import { useApplications } from '~/services';
-import { Flex, SearchBar, TextSkeleton } from '@edifice.io/react';
+import './my-apps.css';
 
 import { useMemo, useState } from 'react';
+import { DebounceSearchBar } from '~/components/DebounceSearchBar';
 import MyAppOnboardingModal from '~/components/MyAppOnboardingModal';
 
 export const MyAppLayout = ({ theme }: { theme: string }) => {
@@ -15,7 +16,7 @@ export const MyAppLayout = ({ theme }: { theme: string }) => {
 
   const { isHydrated } = useHydrateUserPreferences();
   const { applications, isLoading, isError } = useApplications();
-  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
 
   const isReady =
     isHydrated && !isLoading && !isError && applications !== undefined;
@@ -29,12 +30,13 @@ export const MyAppLayout = ({ theme }: { theme: string }) => {
   const filteredApps = useMemo(() => {
     if (!applications) return [];
 
-    const searchNorm = normalizeLoose(search);
+    const searchNorm = normalizeLoose(debouncedSearch);
 
-    return applications.filter((app) =>
+    const filtered = applications.filter((app) =>
       normalizeLoose(app.appName).includes(searchNorm),
     );
-  }, [applications, search]);
+    return filtered;
+  }, [applications, debouncedSearch]);
 
   if (!isReady)
     //Skeleton
@@ -86,26 +88,18 @@ export const MyAppLayout = ({ theme }: { theme: string }) => {
           <h1 className="m-0 h3 text-info">{t('navbar.applications')}</h1>
           <Flex gap="16" className="p-3" align="end">
             <div style={{ flex: 1 }}>
-              <SearchBar
-                clearable
-                isVariant
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder={t('my.apps.search')}
-                className="my-apps-search"
-                size="md"
-              />
+              <DebounceSearchBar onDebouncedChange={setDebouncedSearch} />
             </div>
             <div>
               <MyAppOnboardingModal />
             </div>
           </Flex>
         </header>
-        {!search.length && <ToolbarCategories />}
 
+        {!debouncedSearch.length && <ToolbarCategories />}
         <ApplicationList
           applications={filteredApps}
-          isSearch={search.length ? true : false}
+          isSearch={debouncedSearch.length ? true : false}
         />
       </div>
     </>

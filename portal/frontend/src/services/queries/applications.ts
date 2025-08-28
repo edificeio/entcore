@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 import { applicationsService } from '../api';
 import mockData from '~/mocks/mockApplications.json';
 import enhanceData from '~/mocks/applications-list-enhance.json';
@@ -31,36 +32,38 @@ export const useApplications = () => {
 
   const bookmarks = useUserPreferencesStore((s) => s.bookmarks ?? []);
 
-  const displayedApps = query.data?.apps
-    .map((app) => {
-      var enhancement = myAppsConfig.data?.find((e) => e.name === app.name);
+  const displayedApps = useMemo(() => {
+    return query.data?.apps
+      .map((app) => {
+        var enhancement = myAppsConfig.data?.find((e) => e.name === app.name);
 
-      const isLibrary =
-        app.address?.includes('library.edifice.io') && !enhancement?.category;
+        const isLibrary =
+          app.address?.includes('library.edifice.io') && !enhancement?.category;
 
-      if (isLibrary) {
-        const enhancementOriginal = myAppsConfig.data?.find(
-          (e) => e.name === 'library-info',
-        );
+        if (isLibrary) {
+          const enhancementOriginal = myAppsConfig.data?.find(
+            (e) => e.name === 'library-info',
+          );
 
-        if (enhancementOriginal) {
-          enhancement = {
-            ...enhancementOriginal,
-            name: app.name,
-          };
+          if (enhancementOriginal) {
+            enhancement = {
+              ...enhancementOriginal,
+              name: app.name,
+            };
+          }
         }
-      }
 
-      const isFavorite = bookmarks.includes(app.name);
+        const isFavorite = bookmarks.includes(app.name);
 
-      return {
-        ...app,
-        ...{ appName: getAppName(app, t), category: 'connector' },
-        ...(enhancement || {}),
-        isFavorite,
-      };
-    })
-    .filter((app) => app.display !== false);
+        return {
+          ...app,
+          ...{ appName: getAppName(app, t), category: 'connector' },
+          ...(enhancement || {}),
+          isFavorite,
+        };
+      })
+      .filter((app) => app.display !== false);
+  }, [query.data?.apps, myAppsConfig.data, bookmarks, t]);
 
   return {
     applications: displayedApps,
