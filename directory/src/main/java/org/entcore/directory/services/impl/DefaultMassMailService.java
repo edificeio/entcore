@@ -49,9 +49,8 @@ public class DefaultMassMailService extends Renders implements MassMailService {
     }
 
     public void massMailTypePdf(UserInfos userInfos, final HttpServerRequest request, final String templatePath, final String baseUrl, final String filename, final String type, final JsonArray users) {
-         // Get the template hostname from the configuration. If not found, use the request hostname.
-        final String templateHostname = config.getString("template-hostname-connection", Renders.getHost(request));
-        final JsonObject templateProps = new JsonObject().put("hostname", templateHostname).put("host",Renders.getScheme(request));
+
+        final JsonObject templateProps = new JsonObject().put("hostname", Renders.getHost(request)).put("host",Renders.getScheme(request));
 
         // Try to extend each user data.
         try {
