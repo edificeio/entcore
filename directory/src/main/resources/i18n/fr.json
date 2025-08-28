@@ -974,7 +974,7 @@
   "wizard.tooltip.predelete": "Option à sélectionner lors d'une nouvelle rentrée scolaire",
   "wizard.tooltip.transition": "Option à sélectionner lors d'une nouvelle rentrée scolaire",
   "wizard.transition": "Changement d'année scolaire",
-  "wizard.transition.details": "Attention : <br /> - Toutes les classes absentes du fichier vont être supprimées. <br /> - Les classes et les groupes de classes existants sont supprimés puis recréés. <br /> - Les partages associés à ces classes et ces groupes sont également supprimés. <br /> - Les règles de communication sont réinitialisées (retour aux règles par défaut).",
+  "wizard.transition.details": "Attention : <br /> - Toutes les classes absentes du fichier vont être supprimées. <br /> - Les classes, les groupes de classes et les groupes de fonctions existants sont supprimés puis recréés. <br /> - Les partages associés à ces classes et ces groupes sont également supprimés. <br /> - Les règles de communication sont réinitialisées (retour aux règles par défaut).",
   "wizard.type": "Indiquez la source des fichiers que vous allez importer",
   "wizard.type.BE1D": "Base élèves 1er degré (ONDE)",
   "wizard.type.CSV": "CSV",
