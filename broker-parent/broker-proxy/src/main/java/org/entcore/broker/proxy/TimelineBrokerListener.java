@@ -31,7 +31,7 @@ public interface TimelineBrokerListener {
    * @param request Request containing a list of notification templates to register
    * @return Response indicating success or failure of the registrations
    */
-  @BrokerListener(subject = "timeline.notification.register.batch", proxy = true)
+  @BrokerListener(subject = "timeline.notification.register.batch", proxy = true, broadcast = true)
   Future<RegisterNotificationResponseDTO> registerNotifications(RegisterNotificationBatchRequestDTO request);
   
   /**
