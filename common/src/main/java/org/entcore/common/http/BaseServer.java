@@ -36,9 +36,12 @@ import fr.wseduc.webutils.validation.JsonSchemaValidator;
 import io.vertx.core.Promise;
 import io.vertx.core.shareddata.LocalMap;
 
+import org.entcore.broker.api.dto.applications.ApplicationStatusDTO;
+import org.entcore.broker.api.publisher.BrokerPublisherFactory;
+import org.entcore.broker.api.utils.AddressParameter;
+import org.entcore.broker.proxy.ApplicationStatusBrokerPublisher;
 import org.entcore.common.cache.CacheFilter;
 import org.entcore.common.cache.CacheService;
-import org.entcore.common.cache.RedisCacheService;
 import org.entcore.common.controller.ConfController;
 import org.entcore.common.controller.RightsController;
 import org.entcore.common.datavalidation.utils.UserValidationFactory;
@@ -85,6 +88,8 @@ public abstract class BaseServer extends Server {
 	private String schema;
 	private String contentSecurityPolicy;
 	private AccessLogger accessLogger;
+	private ApplicationStatusBrokerPublisher statusPublisher;
+	private String nodeName;
 
 	public static String getModuleName() {
 		return moduleName;
@@ -93,6 +98,11 @@ public abstract class BaseServer extends Server {
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
 		moduleName = getClass().getSimpleName();
+		this.statusPublisher = BrokerPublisherFactory.create(
+				ApplicationStatusBrokerPublisher.class,
+				vertx,
+				new AddressParameter("application", moduleName.toLowerCase())
+		);
 		if (resourceProvider == null) {
 			setResourceProvider(new ResourceProviderFilter());
 		}
@@ -108,7 +118,7 @@ public abstract class BaseServer extends Server {
 		initFilters();
 
 		String node = (String) vertx.sharedData().getLocalMap("server").get("node");
-
+		this.nodeName = node;
 		contentSecurityPolicy = (String) vertx.sharedData().getLocalMap("server").get("contentSecurityPolicy");
 
 		repositoryHandler = new RepositoryHandler(getEventBus(vertx));
@@ -165,6 +175,21 @@ public abstract class BaseServer extends Server {
 			log.info("Received "+ONDEPLOY_I18N+" update i18n override");
 			this.loadI18nAssetsFiles();
 		});
+		// notify started on broker
+		startPromise.future().onComplete(result -> {
+			// Wait for broker module to be deployed
+			vertx.setTimer(10000, time -> {
+				statusPublisher.notifyStarted(ApplicationStatusDTO.withBasicInfo(moduleName, nodeName));
+			});
+		});
+	}
+
+
+	@Override
+	public void stop(final Promise<Void> promise) throws Exception {
+		super.stop(promise);
+		// notify stopped on broker
+		statusPublisher.notifyStopped(ApplicationStatusDTO.withBasicInfo(moduleName, nodeName));
 	}
 
 	protected void initFilters() {
