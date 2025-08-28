@@ -725,6 +725,7 @@
   "mepty.calendar.title": "Vos documents, comme sur un nuage…",
   "messagerie": "Messagerie",
   "mindmap": "Carte mentale",
+  "minetest": "Minetest",
   "missing.buffer.error": "Votre enregistrement audio n'a pas pu être sauvegardé",
   "monday": "lundi",
   "multimedia.notebook": "Cahier multimédia",
@@ -1127,5 +1128,6 @@
   "workspace.tree.shared": "Partagés avec moi",
   "write.file.error": "Votre enregistrement audio n'a pas pu être sauvegardé",
   "yes": "Oui",
-  "zh_CN": "Mandarin (Chinois)"
+  "zh_CN": "Mandarin (Chinois)",
+  "zimbra": "Messagerie"
 }
