@@ -234,6 +234,16 @@ public class TimelineBrokerListenerImpl implements TimelineBrokerListener {
             params.put("disableMailNotification", true);
         }
 
+        // Add sender ID if available
+        if(request.getSenderId() != null) {
+            params.put("senderId", request.getSenderId());
+        }
+
+        // Add sender name if available
+        if(request.getSenderName() != null) {
+            params.put("senderName", request.getSenderName());
+        }
+
         return params;
     }
 
