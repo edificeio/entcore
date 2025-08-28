@@ -35,9 +35,9 @@ public class Communication extends BaseServer {
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
 		super.start(startPromise);
-    TimelineHelper helper = new TimelineHelper(vertx, vertx.eventBus(), config);
+    	TimelineHelper helper = new TimelineHelper(vertx, vertx.eventBus(), config);
 		CommunicationController communicationController = new CommunicationController();
-		final CommunicationService service = new DefaultCommunicationService(helper, config.getJsonArray("discoverVisibleExpectedProfile", new JsonArray()));
+		final CommunicationService service = new DefaultCommunicationService(vertx, helper, config);
 		communicationController.setCommunicationService(service);
 
 		addController(communicationController);
