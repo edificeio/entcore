@@ -41,7 +41,9 @@ public interface CommunicationService {
 	List<String> EXPECTED_TYPES = Arrays.asList(
 			"User", "Group", "ManualGroup", "ProfileGroup", "FunctionalGroup", "FunctionGroup", "HTGroup", "CommunityGroup", "DirectionGroup");
 
-	//enum VisibleType { USERS, GROUPS, BOTH }
+    void resetRules(String structureId, Handler<Either<String, JsonObject>> eitherHandler);
+
+    //enum VisibleType { USERS, GROUPS, BOTH }
 	enum Direction { 
 		INCOMING 	(0x01),
 		OUTGOING 	(0x10), 
