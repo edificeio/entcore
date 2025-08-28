@@ -51,15 +51,16 @@ export function ApplicationIcon({
               className="w-full h-full"
               src={data.icon}
               alt={appName}
+              loading="lazy"
               onError={() => setHasError(true)}
             />
           ) : (
-            <span className='application-icon-src'>
+            <span className="application-icon-src">
               {appName.charAt(0).toUpperCase()}
             </span>
           )
         ) : (
-          <IconComponent className='application-icon-app' />
+          <IconComponent className="application-icon-app" />
         )}
       </span>
     </span>

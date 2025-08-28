@@ -1,13 +1,11 @@
-import { Application } from '~/models/application';
-import { ApplicationIcon } from './ApplicationIcon';
+import { Dropdown, IconButton, IconButtonProps } from '@edifice.io/react';
 import { IconOptions } from '@edifice.io/react/icons';
 import clsx from 'clsx';
-import { Dropdown, IconButton, IconButtonProps } from '@edifice.io/react';
-import { RefAttributes, useRef, useState } from 'react';
-import { ApplicationMenu } from './ApplicationMenu';
+import { RefAttributes, useEffect, useRef, useState } from 'react';
+import { Application } from '~/models/application';
 import { useUserPreferencesStore } from '~/store/userPreferencesStore';
-import { useUpdateUserPreferences } from '~/services/queries/preferences';
-import { useApplications } from '~/services';
+import { ApplicationIcon } from './ApplicationIcon';
+import { ApplicationMenu } from './ApplicationMenu';
 
 function combineRefs<T>(
   ...refs: (React.Ref<T> | undefined)[]
@@ -24,20 +22,29 @@ function combineRefs<T>(
   };
 }
 
-export function ApplicationWrapper({ data }: { data: Application }) {
-  const { applications: displayedApps } = useApplications();
+export function ApplicationWrapper({
+  data,
+  onToggleFavorite,
+}: {
+  data: Application;
+  onToggleFavorite: (appName: string) => void;
+}) {
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const wrapperRef = useRef<HTMLAnchorElement>(null);
+
   const [dropdownActive, setDropdownActive] = useState(false);
   const [hover, setHover] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
+
   const classApplicationCard = clsx(
     'rounded application-card position-relative py-12 px-4',
     (dropdownActive || hover) && 'active border border-secondary bg-gray-200',
   );
-  const { bookmarks, toggleBookmark, isHydrated } = useUserPreferencesStore();
+
+  const { bookmarks, isHydrated } = useUserPreferencesStore();
   const isFavorite = isHydrated
     ? bookmarks.includes(data.name)
     : data.isFavorite;
-  const updatePreferences = useUpdateUserPreferences();
 
   const handleActionDone = () => {
     setHover(false);
@@ -47,17 +54,29 @@ export function ApplicationWrapper({ data }: { data: Application }) {
     }, 0);
   };
 
-  const handleToggleFavorite = () => {
-    toggleBookmark(data.name);
+  // ✅ Intersection Observer for lazy load
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' }, // preload before visible
+    );
 
-    updatePreferences.mutate({
-      bookmarks: useUserPreferencesStore.getState().bookmarks,
-      applications: displayedApps?.map((app) => app.name) ?? [],
-    });
-  };
+    if (wrapperRef.current) {
+      observer.observe(wrapperRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <a
+      ref={wrapperRef}
       tabIndex={0}
       data-id={data.name}
       href={data.address}
@@ -69,7 +88,15 @@ export function ApplicationWrapper({ data }: { data: Application }) {
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
     >
-      <ApplicationIcon data={{ ...data, isFavorite }} isFavorite={isFavorite} />
+      {/* ✅ Load ApplicationIcon only when visible */}
+      {isVisible ? (
+        <ApplicationIcon
+          data={{ ...data, isFavorite }}
+          isFavorite={isFavorite}
+        />
+      ) : (
+        <div className="w-full h-24 bg-gray-200 animate-pulse rounded" />
+      )}
 
       <h1
         className="small text-gray-900 ellipsis-3 application-title"
@@ -109,7 +136,7 @@ export function ApplicationWrapper({ data }: { data: Application }) {
               />
               <ApplicationMenu
                 data={{ ...data, isFavorite }}
-                onToggleFavorite={handleToggleFavorite}
+                onToggleFavorite={() => onToggleFavorite(data.name)}
                 onActionDone={handleActionDone}
               />
             </div>
