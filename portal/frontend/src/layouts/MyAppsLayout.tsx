@@ -88,7 +88,7 @@ export const MyAppLayout = ({ theme }: { theme: string }) => {
           <h1 className="m-0 h3 text-info">{t('navbar.applications')}</h1>
           <Flex gap="16" className="p-3" align="end">
             <div style={{ flex: 1 }}>
-              <DebounceSearchBar onDebouncedChange={setDebouncedSearch} />
+              <DebounceSearchBar onDebouncedChange={setDebouncedSearch} applicationLength={applications.length} />
             </div>
             <div>
               <MyAppOnboardingModal />
