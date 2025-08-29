@@ -60,9 +60,9 @@ public class S3Storage implements Storage {
 
     private static final Logger log = LoggerFactory.getLogger(S3Storage.class);
     
-    public S3Storage(Vertx vertx, URI uri, String accessKey, String secretKey, String region, String bucket, String ssec, boolean keepAlive, int timeout, int threshold, long openDelay) {
+    public S3Storage(Vertx vertx, URI uri, String accessKey, String secretKey, String region, String bucket, String ssec, boolean keepAlive, int timeout, int threshold, long openDelay, int poolSize) {
         this.bucket = bucket;
-        this.s3Client = new S3Client(vertx, uri, accessKey, secretKey, region, bucket, ssec, keepAlive, timeout, threshold, openDelay);
+        this.s3Client = new S3Client(vertx, uri, accessKey, secretKey, region, bucket, ssec, keepAlive, timeout, threshold, openDelay, poolSize);
     }
 
     @Override
