@@ -5,14 +5,17 @@ import { useTranslation } from 'react-i18next';
 
 interface DebounceSearchBarProps {
   onDebouncedChange: (value: string) => void;
+  applicationLength: number;
 }
 
 export const DebounceSearchBar = ({
   onDebouncedChange,
+  applicationLength,
 }: DebounceSearchBarProps) => {
   const { t } = useTranslation('common');
   const [search, setSearch] = useState('');
-  const debouncedSearch = useDebounce(search, 500);
+  const debouncedSearch =
+    applicationLength > 100 ? useDebounce(search, 500) : search;
 
   useEffect(() => {
     onDebouncedChange(debouncedSearch);
