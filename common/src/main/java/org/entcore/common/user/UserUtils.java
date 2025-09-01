@@ -102,6 +102,9 @@ public class UserUtils {
 						  final JsonObject query, final Handler<JsonArray> handler) {
 		if (userId != null && !userId.trim().isEmpty()) {
 			query.put("userId", userId);
+			if (!query.containsKey("additionnalParams")) {
+				query.put("additionnalParams", new JsonObject());
+			}
 			eb.request(COMMUNICATION_USERS, query, new Handler<AsyncResult<Message<JsonArray>>>() {
 
 				@Override
