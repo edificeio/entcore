@@ -9,40 +9,27 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class RegisterNotificationResponseDTO {
 
     /**
-     * The notification name that was registered (for single registrations)
-     * or a status message (for batch registrations)
+     * The number of notifications registered
      */
-    private final String message;
+    private final int count;
 
     /**
      * Constructor for RegisterNotificationResponseDTO
      *
-     * @param message Either the notification name registered or a status message
+     * @param count Number of notifications registered
      */
     @JsonCreator
     public RegisterNotificationResponseDTO(
-            @JsonProperty("message") String message) {
-        this.message = message;
+            @JsonProperty("count") int count) {
+        this.count = count;
     }
 
     /**
-     * Gets the message (notification name or status)
+     * Gets the number of notifications registered
      *
-     * @return The message
+     * @return The count
      */
-    public String getMessage() {
-        return message;
-    }
-
-    /**
-     * Check if this response represents a successful registration
-     *
-     * @return true if message doesn't contain error indicators
-     */
-    public boolean isSuccess() {
-        return message != null &&
-                !message.toLowerCase().contains("error") &&
-                !message.toLowerCase().contains("fail") &&
-                !message.toLowerCase().contains("invalid");
+    public int getCount() {
+        return count;
     }
 }

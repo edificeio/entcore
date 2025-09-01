@@ -109,8 +109,8 @@ public class SendNotificationRequestDTO {
             @JsonProperty("pushNotif") PushNotifParamsDTO pushNotif,
             @JsonProperty("preview") NotificationPreviewDTO preview,
             @JsonProperty("headers") Map<String, String> headers,
-            @JsonProperty("disableMailNotification") Boolean disableMailNotification,
-            @JsonProperty("disableAntiFlood") Boolean disableAntiFlood) {
+            @JsonProperty("disableMailNotification") boolean disableMailNotification,
+            @JsonProperty("disableAntiFlood") boolean disableAntiFlood) {
 
         this.notificationName = notificationName;
         this.senderId = senderId;
@@ -125,8 +125,8 @@ public class SendNotificationRequestDTO {
         this.pushNotif = pushNotif;
         this.preview = preview;
         this.headers = headers != null ? headers : Collections.emptyMap();
-        this.disableMailNotification = Boolean.TRUE.equals(disableMailNotification);
-        this.disableAntiFlood = Boolean.TRUE.equals(disableAntiFlood);
+        this.disableMailNotification = disableMailNotification;
+        this.disableAntiFlood = disableAntiFlood;
     }
 
     public String getNotificationName() {
