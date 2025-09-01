@@ -67,7 +67,7 @@ public class RegisterNotificationRequestDTO {
             @JsonProperty("appAddress") String appAddress,
             @JsonProperty("defaultFrequency") Frequencies defaultFrequency,
             @JsonProperty("restriction") Restrictions restriction,
-            @JsonProperty("pushNotif") Boolean pushNotif) {
+            @JsonProperty("pushNotif") boolean pushNotif) {
 
         this.type = type;
         this.eventType = eventType;
@@ -75,7 +75,7 @@ public class RegisterNotificationRequestDTO {
         this.appAddress = (appAddress != null) ? appAddress : "/";
         this.defaultFrequency = (defaultFrequency != null) ? defaultFrequency : Frequencies.WEEKLY;
         this.restriction = (restriction != null) ? restriction : Restrictions.NONE;
-        this.pushNotif = Boolean.TRUE.equals(pushNotif);
+        this.pushNotif = pushNotif;
     }
 
     public String getType() {
