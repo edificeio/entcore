@@ -79,7 +79,7 @@ public class TimelineBrokerListenerImpl implements TimelineBrokerListener {
             // Wait for all registrations to complete
             CompositeFuture.join(registrationFutures).onComplete(ar -> {
                 if (ar.succeeded()) {
-                    promise.complete(new RegisterNotificationResponseDTO("Successfully registered " + requests.size() + " notifications"));
+                    promise.complete(new RegisterNotificationResponseDTO(requests.size()));
                 } else {
                     log.error(ERR_REGISTRATION + ": " + ar.cause().getMessage());
                     promise.fail(ERR_REGISTRATION);
@@ -108,7 +108,7 @@ public class TimelineBrokerListenerImpl implements TimelineBrokerListener {
             final List<String> recipients = processRecipients(request.getRecipientIds(), sender.getUserId());
             if (recipients.isEmpty()) {
                 log.warn("No recipients for notification: " + request.getNotificationName());
-                return Future.succeededFuture(new SendNotificationResponseDTO(0, null));
+                return Future.succeededFuture(new SendNotificationResponseDTO(0));
             }
 
             // Prepare notification parameters
@@ -132,7 +132,7 @@ public class TimelineBrokerListenerImpl implements TimelineBrokerListener {
                     previewJson
             ).onSuccess(result -> {
                 log.debug("Successfully sent notification: " + request.getNotificationName() + " to " + recipients.size() + " recipients");
-                promise.complete(new SendNotificationResponseDTO(recipients.size(), request.getResourceId()));
+                promise.complete(new SendNotificationResponseDTO(recipients.size()));
             }).onFailure(err -> {
                 log.error(ERR_SEND_ERROR + ": " + err.getMessage(), err.getCause());
                 promise.fail(ERR_SEND_ERROR);
