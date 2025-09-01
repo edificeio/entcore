@@ -99,6 +99,12 @@ public class SchemaGeneratorUtil {
       case DECLARED:
         if ("java.lang.String".equals(typeMirrorAsString)) {
           schema.put("type", "string");
+        } else if(isEnum(typeMirror)){
+          specifyEnum(typeMirror, schema);
+        } else if(isIntegerLike(typeMirrorAsString)) {
+          schema.put("type", "integer");
+        } else if(isNumberLike(typeMirrorAsString)) {
+          schema.put("type", "number");
         } else if ("java.lang.Object".equals(typeMirrorAsString)) {
           schema.put("type", "object");
         } else if (isArrayLike(typeMirror)) {
@@ -139,6 +145,16 @@ public class SchemaGeneratorUtil {
     return schema;
   }
 
+  private void specifyEnum(TypeMirror typeMirror, Map<String, Object> schema) {
+    final Element element = ((DeclaredType) typeMirror).asElement();
+    final List<String> enumConstants = element.getEnclosedElements().stream()
+      .filter(e -> e.getKind() == ElementKind.ENUM_CONSTANT)
+      .map(e -> e.getSimpleName().toString())
+      .collect(Collectors.toList());
+    schema.put("enum", enumConstants);
+  }
+
+
   private Object getElementTypeOfMap(TypeMirror typeMirror) {
     final List<? extends TypeMirror> typeArgs = ((DeclaredType) typeMirror).getTypeArguments();
     if (typeArgs == null || typeArgs.isEmpty()) {
@@ -166,6 +182,21 @@ public class SchemaGeneratorUtil {
     } else {
       return generateJsonSchemaFromTypeMirror(typeArguments.get(0));
     }
+  }
+
+  private boolean isIntegerLike(String typeMirrorAsString) {
+    return "java.lang.Byte".equals(typeMirrorAsString) ||
+      "java.lang.Short".equals(typeMirrorAsString) ||
+      "java.lang.Integer".equals(typeMirrorAsString) ||
+      "java.lang.Long".equals(typeMirrorAsString);
+  }
+  private boolean isNumberLike(String typeMirrorAsString) {
+    return "java.lang.Float".equals(typeMirrorAsString) ||
+      "java.lang.Double".equals(typeMirrorAsString);
+  }
+  private boolean isEnum(TypeMirror typeMirror) {
+    final Element element = ((DeclaredType) typeMirror).asElement();
+    return ElementKind.ENUM.equals(element.getKind());
   }
 
   private boolean isMapLike(TypeMirror typeMirror) {
