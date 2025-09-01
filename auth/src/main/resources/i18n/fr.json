@@ -34,6 +34,7 @@
   "auth.mail": "Courriel",
   "auth.message.header": "Mot de passe oublié",
   "auth.message.title": "Mot de passe oublié",
+  "auth.meta.description": "Connexion à votre ENT : un accès sécurisé et rapide à tous vos services numériques éducatifs.",
   "auth.notify.id.forgotten": "Si cette adresse email est valide, un message contenant votre identifiant vous a été envoyé. Pensez à vérifier vos spams.",
   "auth.notify.invalid.mail.login": "Aucune adresse courriel renseignée pour cet utilisateur. Veuillez contacter l'administrateur ENT de votre établissement.",
   "auth.notify.invalid.receivers.all.login": "Échec de l'envoi, le numéro de téléphone enregistré n'est pas valide.",
@@ -209,6 +210,7 @@
   "validate-sms.success.paragraph2": "Vous allez être redirigé.",
   "validate-sms.success.paragraph2.fullscreen": "Vous pouvez fermer cette fenêtre.",
   "validate-sms.title": "Vérification de votre numéro de téléphone mobile",
+  "wayf.meta.description": "Connexion à votre espace numérique scolaire : un accès simple, sécurisé et intuitif pour toute la communauté éducative.",
   "wayf.label.cgu": "Pour consulter la charte d'utilisation, cliquez ici",
   "wayf.select.profile": "Vous souhaitez vous connecter en tant que ...",
   "weak": "Faible"
