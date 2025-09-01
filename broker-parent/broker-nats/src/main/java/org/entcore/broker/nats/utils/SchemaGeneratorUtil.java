@@ -105,6 +105,8 @@ public class SchemaGeneratorUtil {
           schema.put("type", "integer");
         } else if(isNumberLike(typeMirrorAsString)) {
           schema.put("type", "number");
+        } else if("java.lang.Boolean".equals(typeMirrorAsString)) {
+          schema.put("type", "boolean");
         } else if ("java.lang.Object".equals(typeMirrorAsString)) {
           schema.put("type", "object");
         } else if (isArrayLike(typeMirror)) {
