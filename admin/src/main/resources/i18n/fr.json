@@ -585,7 +585,7 @@
   "management.edt.reports.less": "Voir moins",
   "management.edt.reports.manual": "Rapport manuel du {{date}}",
   "management.edt.reports.more": "Voir plus",
-  "management.edt.tab": "Groupes d'enseignement",
+  "management.edt.tab": "Flux groupes d'enseignement",
   "management.message.flash": "Message Flash",
   "management.message.flash.all": "Tous",
   "management.message.flash.author": "Auteur",
