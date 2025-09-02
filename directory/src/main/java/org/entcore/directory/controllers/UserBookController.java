@@ -228,8 +228,8 @@ public class UserBookController extends BaseController {
 					userBookService.getCurrentUserInfos(user, forceReload, defaultResponseHandler(request));
 				} else {
 					Future<JsonArray> visible = UserUtils.filterFewOrGetAllVisibles(eb, user.getUserId(), new JsonArray(Lists.newArrayList(userId)));
-					visible.onComplete( arr -> {
-						boolean filter = arr.result().stream().noneMatch(o -> ((JsonObject)o).getString("id").equals(userId));
+					visible.onSuccess( arr -> {
+						boolean filter = arr.stream().noneMatch(o -> ((JsonObject)o).getString("id").equals(userId));
 						userBookService.getPersonInfos(userId, filter, defaultResponseHandler(request));
 					});
 					visible.onFailure(err -> unauthorized(request));
