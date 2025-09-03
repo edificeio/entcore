@@ -525,7 +525,10 @@ public class DefaultUserBookService implements UserBookService {
 				return (new Either.Right<>(transformed));
 			} catch(IllegalArgumentException e) {
 				log.info("Argument is not to adapt must be a jsonArray with one element of type JsonObject", e);
-				return new Either.Left<>("Unable to find a user with the provided id");
+				final JsonObject result = new JsonObject()
+						.put("status", "ok")
+						.put("result", new JsonArray());
+				return new Either.Right<>(result);
 			}
 		}else{
 			return (new Either.Left<>(res.left().getValue()));
