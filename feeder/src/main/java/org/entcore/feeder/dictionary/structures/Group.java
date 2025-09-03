@@ -54,7 +54,6 @@ public class Group {
 			"WITH g, u ";
 
 	private final static String QUERY_FROM_POSITION = "MATCH (g:ManualGroup {id: {groupId}})-[:DEPENDS]->(:Structure)<-[:HAS_ATTACHMENT*0..]-(struct:Structure) " +
-			"MATCH (u:User)-[:IN]->(target:Group)-[:DEPENDS]->(struct) " +
 			"UNWIND COALESCE(g.autolinkUsersFromPositions, []) AS targetPosition "+
 			"MATCH (position:UserPosition {name: targetPosition})<-[:HAS_POSITION]-(u:User)-[:IN]->(:Group)-[:DEPENDS]->(struct)" +
 			" WHERE  "+
