@@ -180,6 +180,7 @@ public abstract class BaseServer extends Server {
 			// Wait for broker module to be deployed
 			vertx.setTimer(10000, time -> {
 				statusPublisher.notifyStarted(ApplicationStatusDTO.withBasicInfo(moduleName, nodeName));
+				log.info("Sent started status to broker for application " + moduleName);
 			});
 		});
 	}
