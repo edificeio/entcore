@@ -41,6 +41,12 @@ public interface CommunicationService {
 	List<String> EXPECTED_TYPES = Arrays.asList(
 			"User", "Group", "ManualGroup", "ProfileGroup", "FunctionalGroup", "FunctionGroup", "HTGroup", "CommunityGroup", "DirectionGroup");
 
+	/**
+	 * Reset all communication rules on a structure and apply the default one configured
+	 * in console or configuration
+	 * @param structureId The target structure to reset
+	 * @param eitherHandler handler for the response to the client
+	 */
     void resetRules(String structureId, Handler<Either<String, JsonObject>> eitherHandler);
 
     //enum VisibleType { USERS, GROUPS, BOTH }

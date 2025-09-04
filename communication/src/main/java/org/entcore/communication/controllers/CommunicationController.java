@@ -404,6 +404,7 @@ public class CommunicationController extends BaseController {
 	@Post("/rules/:structureId/reset")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
 	public void resetRules(final HttpServerRequest request) {
 		String structureId = request.params().get("structureId");
 		communicationService.resetRules(structureId, defaultResponseHandler(request));
