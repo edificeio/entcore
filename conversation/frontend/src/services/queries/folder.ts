@@ -370,6 +370,10 @@ export const useTrashFolder = () => {
     onSuccess: async (_data, { id }) => {
       const foldersTree = foldersTreeQuery.data;
 
+      invalidateQueriesWithFirstPage(queryClient, {
+        queryKey: folderQueryKeys.messages('trash'),
+      });
+
       // Try optimistic update...
       if (foldersTree) {
         const found = searchFolder(id, foldersTree);
@@ -377,9 +381,6 @@ export const useTrashFolder = () => {
         if (found) {
           if (found.parent) {
             // All message go to the parent folder so we refresh
-            invalidateQueriesWithFirstPage(queryClient, {
-              queryKey: folderQueryKeys.messages(found.parent.id),
-            });
 
             // This is a sub-folder. Remove it from its parent sub-folders list.
             found.parent.subFolders = found.parent.subFolders?.filter(
@@ -390,11 +391,6 @@ export const useTrashFolder = () => {
               ...foldersTree,
             ]);
           } else {
-            // This is a root folder. All messages go to the trash so we refresh it.
-            invalidateQueriesWithFirstPage(queryClient, {
-              queryKey: folderQueryKeys.messages('trash'),
-            });
-
             // Optimistic update
             return queryClient.setQueryData(
               folderQueryKeys.tree(),
