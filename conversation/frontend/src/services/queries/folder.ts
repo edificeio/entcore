@@ -11,9 +11,9 @@ import {
 import { useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Folder, MessageMetadata } from '~/models';
-import { folderService, searchFolder } from '..';
 import { queryClient } from '~/providers';
 import { useActionsStore } from '~/store/actions';
+import { folderService, searchFolder } from '..';
 
 export const PAGE_SIZE = 20;
 
@@ -370,30 +370,37 @@ export const useTrashFolder = () => {
       const foldersTree = foldersTreeQuery.data;
 
       // Try optimistic update...
-      do {
-        if (!foldersTree) break;
-
+      if (foldersTree) {
         const found = searchFolder(id, foldersTree);
-        if (!found) break;
 
-        if (found.parent) {
-          // This is a sub-folder. Remove it from its parent sub-folders list.
-          found.parent.subFolders = found.parent.subFolders?.filter(
-            (f) => f.id !== id,
-          );
-          // Optimistic update
-          queryClient.setQueryData(folderQueryKeys.tree(), [...foldersTree]);
-        } else {
-          // Optimistic update
-          queryClient.setQueryData(
-            folderQueryKeys.tree(),
-            foldersTree.filter((f) => f.id !== id),
-          );
+        if (found) {
+          if (found.parent) {
+            // All message go to the parent folder so we refresh
+            queryClient.invalidateQueries({
+              queryKey: folderQueryKeys.messages(found.parent.id),
+            });
+
+            // This is a sub-folder. Remove it from its parent sub-folders list.
+            found.parent.subFolders = found.parent.subFolders?.filter(
+              (f) => f.id !== id,
+            );
+            // Optimistic update
+            return queryClient.setQueryData(folderQueryKeys.tree(), [
+              ...foldersTree,
+            ]);
+          } else {
+            // This is a root folder. All messages go to the trash so we refresh it.
+            queryClient.invalidateQueries({
+              queryKey: folderQueryKeys.messages('trash'),
+            });
+            // Optimistic update
+            return queryClient.setQueryData(
+              folderQueryKeys.tree(),
+              foldersTree.filter((f) => f.id !== id),
+            );
+          }
         }
-
-        return;
-        // eslint-disable-next-line no-constant-condition
-      } while (false);
+      }
 
       // ...or full refresh the whole folders tree as a fallback.
       return queryClient.refetchQueries({
