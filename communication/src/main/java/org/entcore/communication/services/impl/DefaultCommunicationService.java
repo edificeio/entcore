@@ -74,7 +74,7 @@ public class DefaultCommunicationService implements CommunicationService {
 
 	@Override
 	public void resetRules(String structureId, Handler<Either<String, JsonObject>> eitherHandler) {
-		log.warn("Reset communication rules fro structure {}",structureId);
+		log.warn("Reset communication rules for structure {}",structureId);
 
 		List<StatementsBuilder> statements = Lists.newLinkedList();
 		StatementsBuilder builder = new StatementsBuilder();
