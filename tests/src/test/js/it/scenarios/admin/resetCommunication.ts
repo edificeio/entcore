@@ -9,9 +9,10 @@ import {
   getProfileGroupsRelatedToGroup,
   resetRulesAndCheck,
   removeCommunicationBetweenGroups,
-  getAdmlsOrMakThem
+  getAdmlsOrMakThem,
+  addCommunicationBetweenGroups,
+  ProfileGroup
 } from "../../../node_modules/edifice-k6-commons/dist/index.js";
-import {ProfileGroup} from "edifice-k6-commons";
 import {fail} from "k6";
 
 const maxDuration = __ENV.MAX_DURATION || "5m";
@@ -78,6 +79,20 @@ export function testResetCommunicationsRules(data: InitData){
     if (outgoingRelation !== null && outgoingRelation.length > 0) {
       fail("[Admin][Structure][Communication] Outgoing group communication should be empty");
     }
+
+    //add custom communication rule
+    const profilGuestGroups: ProfileGroup[] = getProfileGroupsOfStructureByType("Guest", data.structure);
+
+    const targetGuestGroup = profilGuestGroups[0];
+
+    addCommunicationBetweenGroups(profileGroupTeacherStruct.id, targetGuestGroup.id);
+
+    outgoingRelation = getProfileGroupsRelatedToGroup(profileGroupTeacherStruct.id, "outgoing");
+
+    if (outgoingRelation !== null && outgoingRelation.length != 1) {
+      fail("[Admin][Structure][Communication] Outgoing group communication should be equal to 1");
+    }
+
     //reset all rules => the structure has no communication on the teacher group
     resetRulesAndCheck(data.structure, 200);
 
@@ -89,6 +104,10 @@ export function testResetCommunicationsRules(data: InitData){
     }
     if (outgoingUpdatedRelation === null || outgoingUpdatedRelation.length === 0) {
       fail("[Admin][Structure][Communication] Outgoing group communication should not be empty");
+    }
+    //custom relation test
+    if (outgoingUpdatedRelation.find((p) => p.id === targetGuestGroup.id)) {
+      fail("[Admin][Structure][Communication] Outgoing group communication should not contain custom relation");
     }
   });
 

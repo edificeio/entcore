@@ -91,6 +91,17 @@ public class DefaultCommunicationService implements CommunicationService {
 						" WHERE NOT(pg:ManualGroup) AND has(pg.communiqueWith) " +
 					    " REMOVE pg.communiqueWith ";
 		builder.add(query, params);
+		//remove link between group
+		query = "MATCH(s:Structure {id: {structureId}})<-[:BELONGS]-(:Class)<-[:DEPENDS]-(g:Group)-[c:COMMUNIQUE]->(g2:Group) "
+				+ " WHERE NOT(g:ManualGroup) " +
+				" DELETE c";
+		builder.add(query, params);
+		query = "MATCH(s:Structure {id: {structureId}})<-[:DEPENDS]-(g:Group)-[c:COMMUNIQUE]->(g2:Group) "
+				+ " WHERE NOT(g:ManualGroup) " +
+				" DELETE c";
+
+		builder.add(query, params);
+
 		statements.add(builder);
 
 		JsonArray structureIds = new JsonArray(Lists.newArrayList(structureId));
