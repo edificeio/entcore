@@ -14,6 +14,7 @@ import { Folder, MessageMetadata } from '~/models';
 import { queryClient } from '~/providers';
 import { useActionsStore } from '~/store/actions';
 import { folderService, searchFolder } from '..';
+import { invalidateQueriesWithFirstPage } from './utils';
 
 export const PAGE_SIZE = 20;
 
@@ -376,7 +377,7 @@ export const useTrashFolder = () => {
         if (found) {
           if (found.parent) {
             // All message go to the parent folder so we refresh
-            queryClient.invalidateQueries({
+            invalidateQueriesWithFirstPage(queryClient, {
               queryKey: folderQueryKeys.messages(found.parent.id),
             });
 
@@ -390,9 +391,10 @@ export const useTrashFolder = () => {
             ]);
           } else {
             // This is a root folder. All messages go to the trash so we refresh it.
-            queryClient.invalidateQueries({
+            invalidateQueriesWithFirstPage(queryClient, {
               queryKey: folderQueryKeys.messages('trash'),
             });
+
             // Optimistic update
             return queryClient.setQueryData(
               folderQueryKeys.tree(),
