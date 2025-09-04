@@ -604,7 +604,7 @@ public class DefaultCommunicationService implements CommunicationService {
 			//filter user and group with a distinction on the type to help neo4j to optimize
 			if (additionalParams.getJsonArray(EXPECTED_IDS_USERS_GROUPS) != null) {
 				query.append("OPTIONAL MATCH (u:User) WHERE u.id IN {" + EXPECTED_IDS_USERS_GROUPS + "} ")
-						.append(condition);
+						.append( itSelf ? "" : " and u.id <> {userId} ");
 				query.append("WITH comGroups, collect(u) as cu ");
 				query.append("OPTIONAL MATCH (g:Group) WHERE g.id IN {" + EXPECTED_IDS_USERS_GROUPS + "} ");
 				query.append("WITH comGroups, cu, collect(g) as cg with comGroups, cg+cu as cug unwind cug as m ");
