@@ -943,7 +943,8 @@ public class CommunicationController extends BaseController {
 		UserUtils.getAuthenticatedUserInfos(eb, request)
 		.onSuccess(userInfos -> {
 			final String query = request.params().get("query");
-			communicationService.searchVisibles(userInfos, query, I18n.acceptLanguage(request))
+			final String mode = request.params().get("mode");
+			communicationService.searchVisibles(userInfos, query, mode, I18n.acceptLanguage(request))
 				.onSuccess(visibles -> renderJson(request, visibles))
 				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 		});
