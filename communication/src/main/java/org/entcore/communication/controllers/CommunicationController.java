@@ -40,6 +40,7 @@ import io.vertx.core.json.JsonObject;
 import org.entcore.common.communication.CommunicationUtils;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.communication.filters.CommunicationDiscoverVisibleFilter;
@@ -401,6 +402,15 @@ public class CommunicationController extends BaseController {
 				}
 			}
 		});
+	}
+
+	@Post("/rules/:structureId/reset")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
+	public void resetRules(final HttpServerRequest request) {
+		String structureId = request.params().get("structureId");
+		communicationService.resetRules(structureId, defaultResponseHandler(request));
 	}
 
 	/**
