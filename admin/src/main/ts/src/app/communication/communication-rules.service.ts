@@ -185,6 +185,10 @@ export class CommunicationRulesService {
             .filter(group => !!group)
             .filter(group => group.id === groupId);
     }
+
+    public resetCommunication(structureId: string): Observable<any> {
+        return this.http.post(`/communication/rules/${structureId}/reset`, null);
+    }
 }
 
 export interface BidirectionalCommunicationRules {
