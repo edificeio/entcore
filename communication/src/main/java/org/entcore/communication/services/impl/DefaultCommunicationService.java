@@ -33,7 +33,9 @@ import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.conversation.LegacySearchVisibleRequest;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.StatementsBuilder;
+import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.common.notification.TimelineHelper;
+import org.entcore.common.schema.Source;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -60,12 +62,56 @@ public class DefaultCommunicationService implements CommunicationService {
 	final JsonArray discoverVisibleExpectedProfile = new JsonArray();
 	private final String visiblesSearchType;
 	private final EventBus eventBus;
+	private final JsonObject defaultRules;
 
 	public DefaultCommunicationService(final Vertx vertx, final TimelineHelper notifyTimeline, final JsonObject config) {
 		this.notifyTimeline = notifyTimeline;
 		this.discoverVisibleExpectedProfile.addAll(config.getJsonArray("discoverVisibleExpectedProfile", new JsonArray()));
 		this.visiblesSearchType = config.getString("visibles-search-type", "light");
 		this.eventBus = vertx.eventBus();
+		this.defaultRules = config.getJsonObject("initDefaultCommunicationRules");
+	}
+
+	@Override
+	public void resetRules(String structureId, Handler<Either<String, JsonObject>> eitherHandler) {
+		log.warn("Reset communication rules for structure {}",structureId);
+
+		List<StatementsBuilder> statements = Lists.newLinkedList();
+		StatementsBuilder builder = new StatementsBuilder();
+		JsonObject params = new JsonObject();
+
+		params.put("structureId", structureId);
+		//remove communiqueWith to apply default configuration
+		String query =  " MATCH(s:Structure {id: {structureId}})<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(pg:Group) " +
+							"	WHERE NOT(pg:ManualGroup) and has(pg.communiqueWith) " +
+							"  REMOVE pg.communiqueWith ";
+		builder.add(query, params);
+
+		query = " MATCH(s:Structure {id: {structureId}})<-[:DEPENDS]-(pg:Group) " +
+						" WHERE NOT(pg:ManualGroup) AND has(pg.communiqueWith) " +
+					    " REMOVE pg.communiqueWith ";
+		builder.add(query, params);
+		//remove link between group
+		query = "MATCH(s:Structure {id: {structureId}})<-[:BELONGS]-(:Class)<-[:DEPENDS]-(g:Group)-[c:COMMUNIQUE]->(g2:Group) "
+				+ " WHERE NOT(g:ManualGroup) " +
+				" DELETE c";
+		builder.add(query, params);
+		query = "MATCH(s:Structure {id: {structureId}})<-[:DEPENDS]-(g:Group)-[c:COMMUNIQUE]->(g2:Group) "
+				+ " WHERE NOT(g:ManualGroup) " +
+				" DELETE c";
+
+		builder.add(query, params);
+
+		statements.add(builder);
+
+		JsonArray structureIds = new JsonArray(Lists.newArrayList(structureId));
+		//apply default communiqueWith
+		statements.addAll(getStatementsForDefaultRules(structureIds, defaultRules));
+		//apply communique relation
+		statements.add(getApplyDefaultRulesStatements(structureIds));
+
+		StatementsBuilder allStatements = statements.stream().reduce(new StatementsBuilder(), StatementsBuilder::add);
+		neo4j.executeTransaction(allStatements.build(), null, true, validUniqueResultHandler(eitherHandler) );
 	}
 
 	@Override
@@ -281,9 +327,7 @@ public class DefaultCommunicationService implements CommunicationService {
 		neo4j.execute(query, params, validUniqueResultHandler(handler));
 	}
 
-	@Override
-	public void initDefaultRules(JsonArray structureIds, JsonObject defaultRules, final Integer transactionId,
-								 final Boolean commit, final Handler<Either<String, JsonObject>> handler) {
+	private List<StatementsBuilder> getStatementsForDefaultRules(JsonArray structureIds, JsonObject defaultRules) {
 		final StatementsBuilder s1 = new StatementsBuilder();
 		final StatementsBuilder s2 = new StatementsBuilder();
 		final StatementsBuilder s3 = new StatementsBuilder();
@@ -300,19 +344,27 @@ public class DefaultCommunicationService implements CommunicationService {
 						"SET ag.users = 'BOTH' "
 		);
 		for (String attr : defaultRules.fieldNames()) {
-			initDefaultRules(structureIds, attr, defaultRules.getJsonObject(attr), s1, s2);
+			getStatementsForDefaultRules(structureIds, attr, defaultRules.getJsonObject(attr), s1, s2);
 		}
-		neo4j.executeTransaction(s1.build(), transactionId, false, new Handler<Message<JsonObject>>() {
+		return Lists.newArrayList(s1, s2, s3);
+	}
+
+	@Override
+	public void initDefaultRules(JsonArray structureIds, JsonObject defaultRules, final Integer transactionId,
+								 final Boolean commit, final Handler<Either<String, JsonObject>> handler) {
+		List<StatementsBuilder> statementsBuilderList = getStatementsForDefaultRules(structureIds, defaultRules);
+
+		neo4j.executeTransaction(statementsBuilderList.get(0).build(), transactionId, false, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
 				if ("ok".equals(event.body().getString("status"))) {
 					Integer transactionId = event.body().getInteger("transactionId");
-					neo4j.executeTransaction(s2.build(), transactionId, false, new Handler<Message<JsonObject>>() {
+					neo4j.executeTransaction(statementsBuilderList.get(1).build(), transactionId, false, new Handler<Message<JsonObject>>() {
 						@Override
 						public void handle(Message<JsonObject> event) {
 							if ("ok".equals(event.body().getString("status"))) {
 								Integer transactionId = event.body().getInteger("transactionId");
-								neo4j.executeTransaction(s3.build(), transactionId, commit.booleanValue(),
+								neo4j.executeTransaction(statementsBuilderList.get(2).build(), transactionId, commit.booleanValue(),
 										new Handler<Message<JsonObject>>() {
 											@Override
 											public void handle(Message<JsonObject> message) {
@@ -347,8 +399,8 @@ public class DefaultCommunicationService implements CommunicationService {
 		initDefaultRules(structureIds, defaultRules, null, true, handler);
 	}
 
-	private void initDefaultRules(JsonArray structureIds, String attr, JsonObject defaultRules,
-								  final StatementsBuilder existingGroups, final StatementsBuilder newGroups) {
+	private void getStatementsForDefaultRules(JsonArray structureIds, String attr, JsonObject defaultRules,
+											  final StatementsBuilder existingGroups, final StatementsBuilder newGroups) {
 		final String[] a = attr.split("\\-");
 		final String c = "Class".equals(a[0]) ? "*2" : "";
 		String relativeStudent = defaultRules.getString("Relative-Student"); // TODO check type in enum
@@ -451,9 +503,7 @@ public class DefaultCommunicationService implements CommunicationService {
 		}
 	}
 
-	@Override
-	public void applyDefaultRules(JsonArray structureIds, final Integer transactionId, final Boolean commit,
-								  Handler<Either<String, JsonObject>> handler) {
+	private StatementsBuilder getApplyDefaultRulesStatements(JsonArray structureIds) {
 		StatementsBuilder s = new StatementsBuilder();
 		JsonObject params = new JsonObject().put("structures", structureIds);
 		String query =
@@ -500,6 +550,13 @@ public class DefaultCommunicationService implements CommunicationService {
 						"WITH DISTINCT v " +
 						"SET v:Visible ";
 		s.add(setVisible2, params);
+		return s;
+	}
+
+	@Override
+	public void applyDefaultRules(JsonArray structureIds, final Integer transactionId, final Boolean commit,
+								  Handler<Either<String, JsonObject>> handler) {
+		StatementsBuilder s = getApplyDefaultRulesStatements(structureIds);
 		neo4j.executeTransaction(s.build(), transactionId, commit.booleanValue(), event -> {
 			if ("ok".equals(event.body().getString("status"))) {
 				handler.handle(new Either.Right<>(event.body()));
