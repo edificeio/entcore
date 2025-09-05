@@ -43,6 +43,13 @@ public class StatementsBuilder {
 		}
 		return this;
 	}
+	public StatementsBuilder add(StatementsBuilder st) {
+		st.build()
+			.stream()
+			.map(JsonObject.class::cast)
+			.forEach(job -> this.add(job.getString("statement"), job.getJsonObject("parameters")));
+		return this;
+	}
 
 	public StatementsBuilder add(String query, Map<String, Object> params) {
 		return add(query, new JsonObject(params));
