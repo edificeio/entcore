@@ -51,7 +51,15 @@ public interface CommunicationService {
 	 */
 	void visibleUsersForShare(String userId, String search, JsonArray userIds, Handler<Either<String, JsonArray>> responseHandler);
 
-	//enum VisibleType { USERS, GROUPS, BOTH }
+	/**
+	 * Reset all communication rules on a structure and apply the default one configured
+	 * in console or configuration
+	 * @param structureId The target structure to reset
+	 * @param eitherHandler handler for the response to the client
+	 */
+    void resetRules(String structureId, Handler<Either<String, JsonObject>> eitherHandler);
+
+    //enum VisibleType { USERS, GROUPS, BOTH }
 	enum Direction { 
 		INCOMING 	(0x01),
 		OUTGOING 	(0x10), 
