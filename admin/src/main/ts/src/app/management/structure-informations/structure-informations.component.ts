@@ -11,6 +11,7 @@ import { BundlesService } from 'ngx-ode-sijil';
 import { Context } from 'src/app/core/store/mappings/context';
 import { Config } from 'src/app/core/resolvers/Config';
 import { HttpClient } from '@angular/common/http';
+import {CommunicationRulesService} from "../../communication/communication-rules.service";
 
 class UserMetric {
   active: number = 0;
@@ -68,6 +69,8 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
   public showMfaWarningLightbox = false;
   public isADMC: boolean = false;
   public showSettingsLightbox = false;
+  public showResetCommunicationWarningLightBox = false;
+  public showResetCommunicationConfirmLightBox = false;
 
   private config: Config;
 
@@ -78,7 +81,8 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
     private infoService: StructureInformationsService,
     private notify: NotifyService,
     private bundles: BundlesService,
-    private http: HttpClient) {
+    private http: HttpClient,
+    private communicationService: CommunicationRulesService) {
     super(injector);
   }
 
@@ -267,6 +271,8 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
   closeLightbox(): void
   {
     this.showSettingsLightbox = false;
+    this.showResetCommunicationConfirmLightBox = false;
+    this.showResetCommunicationWarningLightBox = false;
     this.changeDetector.markForCheck();
   }
 
@@ -277,4 +283,18 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
 
     return this.config['allow-adml-structure-name-change'];
   }
+  openConfirmResetConfirmation(): void {
+    this.closeLightbox();
+    this.showResetCommunicationConfirmLightBox = true;
+  }
+
+  resetCommunicationRules(): void {
+    this.closeLightbox();
+    this.communicationService.resetCommunication(this.structure._id).subscribe(
+        {
+          next: (data) =>  this.notify.success("management.structure.informations.communications.notify.success.content", "management.structure.informations.communications.notify.success.title"),
+          error: (error) => this.notify.notify("management.structure.informations.communications.notify.error.content", "management.structure.informations.communications.notify.error.title", error, "error")
+        });
+  }
+
 }
