@@ -576,8 +576,8 @@ export const useSendDraft = () => {
       // Delete message from draft list in query cache
       deleteMessagesFromQueryCache('draft', [draftId]);
 
-      // Invalidate message details
-      queryClient.invalidateQueries({
+      // Reset message details (event if there is data in cache force remove it)
+      queryClient.resetQueries({
         queryKey: messageQueryKeys.byId(draftId),
       });
     },
