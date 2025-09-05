@@ -210,8 +210,8 @@
   "validate-sms.success.paragraph2": "Vous allez être redirigé.",
   "validate-sms.success.paragraph2.fullscreen": "Vous pouvez fermer cette fenêtre.",
   "validate-sms.title": "Vérification de votre numéro de téléphone mobile",
-  "wayf.meta.description": "Connexion à votre espace numérique scolaire : un accès simple, sécurisé et intuitif pour toute la communauté éducative.",
   "wayf.label.cgu": "Pour consulter la charte d'utilisation, cliquez ici",
+  "wayf.meta.description": "Connexion à votre espace numérique scolaire : un accès simple, sécurisé et intuitif pour toute la communauté éducative.",
   "wayf.select.profile": "Vous souhaitez vous connecter en tant que ...",
   "weak": "Faible"
 }
