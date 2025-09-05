@@ -12,20 +12,20 @@ importers:
         specifier: ^0.54.2
         version: 0.54.2
       edifice-k6-commons:
-        specifier: latest
-        version: 2.1.1
+        specifier: 2.1.6-develop-b2school-3
+        version: 2.1.6-develop-b2school-3
 
 packages:
 
   '@types/k6@0.54.2':
     resolution: {integrity: sha512-B5LPxeQm97JnUTpoKNE1UX9jFp+JiJCAXgZOa2P7aChxVoPQXKfWMzK+739xHq3lPkKj1aV+HeOxkP56g/oWBg==}
 
-  edifice-k6-commons@2.1.1:
-    resolution: {integrity: sha512-r+eeO3hjTj4thRwDckG0SsCFkBIw0nuOVVJaZFOoDKHbidxjkgiRYA0Ygmu+yWCffBHpcHUiFMZtANaxYxlnJQ==}
-    engines: {node: 18 || 20}
+  edifice-k6-commons@2.1.6-develop-b2school-3:
+    resolution: {integrity: sha512-H4qJMdtIdR025qWy45/T5IsN2SJU1N/GmLXiSqXfbt96rylJoeA7YysZLJAU6vW3kwJBHYjenn5rwCHWkwVMlA==}
+    engines: {node: '>=18'}
 
 snapshots:
 
   '@types/k6@0.54.2': {}
 
-  edifice-k6-commons@2.1.1: {}
+  edifice-k6-commons@2.1.6-develop-b2school-3: {}
