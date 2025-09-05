@@ -46,6 +46,7 @@ import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.infra.services.PartialResults;
 
 public class MongoDbEventStore implements EventStoreService {
 
@@ -53,6 +54,7 @@ public class MongoDbEventStore implements EventStoreService {
 	private MongoDb mongoDb = MongoDb.getInstance();
 	private PostgresqlEventStore pgEventStore;
 	private static final String COLLECTION = "events";
+  private final int eventsBatchSize;
 
 	public MongoDbEventStore(Vertx vertx) {
 		final String eventStoreConf = (String) vertx.sharedData().getLocalMap("server").get("event-store");
@@ -65,7 +67,10 @@ public class MongoDbEventStore implements EventStoreService {
 				pgEventStore.setVertx(vertx);
 				pgEventStore.init();
 			}
-		}
+      eventsBatchSize = eventStoreConfig.getInteger("events-batch-size", 10_000);
+		} else {
+      eventsBatchSize = 10_000;
+    }
 	}
 
 	@Override
@@ -145,9 +150,33 @@ public class MongoDbEventStore implements EventStoreService {
 		if (sorted) {
 			sort = new JsonObject().put("date", 1);
 		}
-		mongoDb.find(eventStoreType, query, sort, (JsonObject) null, -1, -1, Integer.MAX_VALUE,
+		mongoDb.find(eventStoreType, query, sort, (JsonObject) null, -1, eventsBatchSize, Integer.MAX_VALUE,
 				new DeliveryOptions().setSendTimeout(QUERY_TIMEOUT), validAsyncResultsHandler(handler));
 	}
+
+
+
+  @Override
+  public void listEventsPartial(String eventStoreType, long startEpoch, long duration, boolean skipSynced, List<String> eventTypes, boolean sorted, Handler<AsyncResult<PartialResults>> handler) {
+    final JsonObject query = new JsonObject().put("date", new JsonObject()
+      .put("$gte", startEpoch).put("$lt", (startEpoch + duration)));
+    if (skipSynced) {
+      query.put("synced", new JsonObject().put("$exists", false));
+    }
+    if (eventTypes != null && !eventTypes.isEmpty()) {
+      query.put("event-type", new JsonObject().put("$in", new JsonArray(eventTypes)));
+    }
+    JsonObject sort = null;
+    if (sorted) {
+      sort = new JsonObject().put("date", 1);
+    }
+    mongoDb.find(eventStoreType, query, sort, (JsonObject) null, -1, eventsBatchSize, Integer.MAX_VALUE,
+      new DeliveryOptions().setSendTimeout(QUERY_TIMEOUT), validAsyncResultsHandler(data -> {
+        final JsonArray results = data.result();
+        final boolean isPartial = results != null && results.size() >= eventsBatchSize;
+        handler.handle(Future.succeededFuture(new PartialResults(isPartial, results)));
+      }));
+  }
 
 	@Override
 	public void markSyncedEvents(String eventStoreType, long startEpoch, long duration, Handler<AsyncResult<JsonObject>> handler) {
