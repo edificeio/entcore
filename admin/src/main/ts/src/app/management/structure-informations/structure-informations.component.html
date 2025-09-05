@@ -320,3 +320,38 @@
     </p>
   </ode-lightbox-confirm>
 </div>
+
+
+<div class="container has-shadow settings" *ngIf="isADMC == true">
+  <h2>
+    <s5l>management.structure.informations.communications.title</s5l>
+  </h2>
+  <s5l>management.structure.informations.communications.description</s5l>
+  <form #settingsForm="ngForm" (ngSubmit)="showResetCommunicationWarningLightBox = true;">
+    <div class="action-communication">
+      <button class="is-danger">
+        <s5l>management.structure.informations.communications.reset.action</s5l>
+      </button>
+    </div>
+  </form>
+  <ode-lightbox-confirm
+          [show]="showResetCommunicationWarningLightBox"
+          lightboxTitle="management.structure.informations.communications.warning.title"
+          (onCancel)="closeLightbox()"
+          (onConfirm)="openConfirmResetConfirmation()"
+          confirmText="management.structure.informations.communications.warning.continue">
+    <p>
+        <s5l>management.structure.informations.communications.warning.content</s5l>
+    </p>
+  </ode-lightbox-confirm>
+  <ode-lightbox-confirm
+          [show]="showResetCommunicationConfirmLightBox"
+          lightboxTitle="management.structure.informations.communications.warning.title"
+          (onCancel)="closeLightbox()"
+          (onConfirm)="resetCommunicationRules()">
+      <p>
+          <s5l>management.structure.informations.communications.confirm.content</s5l>
+      </p>
+  </ode-lightbox-confirm>
+</div>
+
