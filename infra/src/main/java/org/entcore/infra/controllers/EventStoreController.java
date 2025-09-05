@@ -46,6 +46,7 @@ import java.util.List;
 
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
+import org.entcore.infra.services.PartialResults;
 
 import static org.entcore.common.aggregation.MongoConstants.*;
 
@@ -143,6 +144,7 @@ public class EventStoreController extends BaseController {
 		});
 	}
 
+  @Deprecated
 	@Get("/event/list/:type/:epoch")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(SuperAdminFilter.class)
@@ -165,6 +167,38 @@ public class EventStoreController extends BaseController {
 			badRequest(request, "invalid.input.format");
 		}
 	}
+
+  @Get("/v2/event/list/:type/:epoch")
+  @SecuredAction(value = "", type = ActionType.RESOURCE)
+  @ResourceFilter(SuperAdminFilter.class)
+  public void listEventsPartial(final HttpServerRequest request) {
+    final String type = request.params().get("type");
+    if (!EventStoreService.EVENT_STORE_TYPES.contains(type)) {
+      badRequest(request, "invalid.type");
+      return;
+    }
+    try {
+      final long epoch = Long.parseLong(request.params().get("epoch"));
+      final long duration = request.params().contains("duration") ?
+        Long.parseLong(request.params().get("duration")) : EventStoreService.ONE_DAY_DURATION;
+      final boolean skipSynced =
+        ("true".equals(request.params().get("skip-synced")) || !request.params().contains("skip-synced"));
+      final List<String> eventTypes = request.params().getAll("event-types");
+      final boolean sorted = "true".equals(request.params().get("sorted"));
+      eventStoreService.listEventsPartial(type, epoch, duration, skipSynced, eventTypes, sorted, partialResult -> {
+        if (partialResult.succeeded()) {
+          final PartialResults events = partialResult.result();
+          request.response().putHeader("X-HAS-MORE", Boolean.toString(events.isPartial()));
+          Renders.renderJson(request, events.getResults());
+        } else {
+          JsonObject error = new JsonObject().put("error", partialResult.cause().getMessage());
+          Renders.renderJson(request, error, 400);
+        }
+      });
+    } catch (RuntimeException e) {
+      badRequest(request, "invalid.input.format");
+    }
+  }
 
 	@Put("/event/mark/:type/:epoch")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
