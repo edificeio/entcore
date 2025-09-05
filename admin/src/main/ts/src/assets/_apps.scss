@@ -451,7 +451,7 @@ i.mediacentre,
 i.mediacentre-large {
   @include fonticon;
   &::before {
-    content: "\e863";
+    content: "\e968";
     color: $blue;
   }
 }
@@ -502,8 +502,11 @@ i.type.forms,
 i.forms,
 i.formulaire-large,
 i.type.formulaire,
-i.formulaire {
-  @include fonticon;
+i.formulaire,
+i.formulaire-public-large,
+i.type.formulaire-public,
+i.formulaire-public
+{  @include fonticon;
   &::before {
     content: "\e95b";
     color: $green;
@@ -525,6 +528,66 @@ i.type.appointments {
   @include fonticon;
   &::before {
     content: "\e96a";
+    color: $green;
+  }
+}
+
+i.communities,
+i.communities-large,
+i.type.communities {
+  @include fonticon;
+  &::before {
+    content: "\e96f";
+    color: $purple;
+  }
+}
+
+i.minetest,
+i.minetest-large,
+i.type.minetest {
+  @include fonticon;
+  &::before {
+    content: "\e970";
+    color: $blue;
+  }
+}
+
+i.geogebra,
+i.geogebra-large,
+i.type.geogebra {
+  @include fonticon;
+  &::before {
+    content: "\e971";
+    color: $blue;
+  }
+}
+
+i.lool,
+i.lool-large,
+i.type.lool {
+  @include fonticon;
+  &::before {
+    content: "\e962";
+    color: $blue;
+  }
+}
+
+i.magneto,
+i.magneto-large,
+i.type.magneto {
+  @include fonticon;
+  &::before {
+    content: "\e961";
+    color: $blue;
+  }
+}
+
+i.minibadge,
+i.minibadge-large,
+i.type.minibadge {
+  @include fonticon;
+  &::before {
+    content: "\e960";
     color: $green;
   }
 }
