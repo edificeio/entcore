@@ -728,4 +728,27 @@ public abstract class GenericShareService implements ShareService {
       this.sharesOk = sharesOk;
     }
   }
+
+	@Override
+	public List<String> getAllResourceActionNames() {
+		// Get all resource action names
+		final JsonArray actions = getResoureActions(this.securedActions);
+		final List<String> names = new ArrayList<>();
+		for (Object o : actions) {
+			if (o instanceof JsonObject) {
+				final JsonObject obj = (JsonObject) o;
+				// get all names related to this action display name
+				final JsonArray nameArray = obj.getJsonArray("name");
+				if (nameArray != null) {
+					for (final Object n : nameArray) {
+						// add it if not already in the list
+						if (n instanceof String && !names.contains((String) n)) {
+							names.add((String) n);
+						}
+					}
+				}
+			}
+		}
+		return names;
+	}
 }
