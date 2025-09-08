@@ -19,7 +19,7 @@ services:
       MAVEN_CONFIG: /var/maven/.m2
 
   node:
-    image: opendigitaleducation/node:16-alpine-pnpm
+    image: opendigitaleducation/node:20-alpine-pnpm
     working_dir: /home/node/app
     volumes:
       - ./:/home/node/app
