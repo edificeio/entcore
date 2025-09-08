@@ -129,4 +129,10 @@ public interface ShareService {
 		}
 		return sharePayload;
 	}
+
+	/**
+	 * Returns the list of all available resource action names (fqdn names....).
+	 * @return List of all resource action names.
+	 */
+	List<String> getAllResourceActionNames();
 }
