@@ -1071,7 +1071,7 @@ public class DuplicateUsers {
 						"WHERE prevUb IS NULL " +
 						"SET ub.theme = null " +
 						"CREATE UNIQUE (u)-[:USERBOOK]->(ub) " +
-						"SET ub.userid = {id} " +
+						"SET ub.userid = {oldId} " +
 						"DELETE r"; // We only delete the relationship between the old user and the userbook if it was transfered to the new user
 									// So we will be able to delete unlinked UserBook nodes with query4
 		tx.add(query1, params);
@@ -1092,15 +1092,15 @@ public class DuplicateUsers {
 		final String query4 =
 				"MATCH (old:User {id: {oldId}}) " +
 						"WHERE old.oldId IS NULL OR old.oldId <> {id} " +
-						"WITH old, old.id AS oldId, old.login AS oldLogin, old.password AS oldPassword, old.email AS oldEmail " +
+						"WITH old, old.login AS oldLogin, old.password AS oldPassword, old.email AS oldEmail " +
 						"OPTIONAL MATCH (old)-[rb:HAS_RELATIONSHIPS]->(b:Backup) " +
 						"OPTIONAL MATCH (old)-[rUb:USERBOOK]->(ub:UserBook) " +
 						"OPTIONAL MATCH (old)-[r]-() " +
 						"DELETE r, rb, b, old, rUb, ub " +
-						"WITH oldId, oldLogin, oldPassword, oldEmail " +
+						"WITH oldLogin, oldPassword, oldEmail " +
 						"MATCH (u:User {id: {id}}) " +
-						"SET u.oldId = u.id, u.id = oldId, u.oldLogin = u.login, u.login = oldLogin, " +
-						"u.activationCode = null, u.password = oldPassword, u.email = oldEmail ";
+						"SET u.oldId = {id}, u.id = {oldId}, u.oldLogin = u.login, u.login = oldLogin, " +
+						"u.activationCode = null, u.password = oldPassword, u.email = oldEmail";
 		tx.add(query4, params, new Handler<Either<String, JsonArray>>() {
 			@Override
 			public void handle(Either<String, JsonArray> res) {
