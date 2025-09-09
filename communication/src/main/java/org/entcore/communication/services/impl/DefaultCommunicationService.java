@@ -1505,9 +1505,11 @@ public class DefaultCommunicationService implements CommunicationService {
 	}
 
 	@Override
-	public Future<JsonArray> searchVisibles(UserInfos user, String search, String language) {
+	public Future<JsonArray> searchVisibles(UserInfos user, String search, String mode, String language) {
 		final Future<JsonArray> visibles;
-		switch (this.visiblesSearchType) {
+		final String modeType = !StringUtils.isEmpty(mode) ? mode : this.visiblesSearchType;
+
+		switch (modeType) {
 			case "legacy":
 				visibles = legacySearchVisible(user, search, language);
 				break;
@@ -1516,6 +1518,9 @@ public class DefaultCommunicationService implements CommunicationService {
 				break;
 			case "optimized":
 				visibles = searchVisibleContactsOptimized(user, search, language);
+				break;
+			case "excludeFamily":
+				visibles = searchVisibleContactsExcludeFamily(user, search, language);
 				break;
 			default:
 				visibles = searchVisibleContactsLight(user, search, language);
@@ -1817,6 +1822,87 @@ public class DefaultCommunicationService implements CommunicationService {
 					);
 				}
 			});
+		return promise.future();
+	}
+
+	public Future<JsonArray> searchVisibleContactsExcludeFamily(UserInfos user, String search, String language) {
+		final Promise<JsonArray> promise = Promise.promise();
+		String match = "MATCH (visibles) " +
+				"WITH visibles ";
+
+		String preFilter = "";
+		JsonObject params = new JsonObject();
+
+		if (!StringUtils.isEmpty(search)) {
+			preFilter = "AND (m:Group OR m.displayNameSearchField CONTAINS {search}) ";
+			String sanitizedSearch = StringValidation.sanitize(search);
+			params.put("search", sanitizedSearch);
+		}
+
+		final String customReturn = match +
+				"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
+				"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
+				"visibles.structureName as structureName, " +
+				"HEAD(visibles.profiles) as profile, visibles.nbUsers as nbUsers, " +
+				"labels(visibles) as groupType, visibles.filter as groupProfile, visibles.subType as subType, " +
+				"CASE " +
+				"WHEN visibles.displayName IS NOT NULL THEN visibles.displayName " +
+				"WHEN visibles.name IS NOT NULL THEN visibles.name " +
+				"ELSE '' " +
+				"END as sortDisplayName " +
+				"ORDER BY " +
+				"toLower(sortDisplayName) ";
+
+		Promise<Either<String, JsonArray>> getVisiblePromise = Promise.promise();
+		visibleUsers(
+				user.getUserId(),
+				null,
+				null,
+				true,
+				true,
+				false,
+				preFilter,
+				customReturn,
+				params,
+				user.getType(),
+				true,
+				getVisiblePromise::complete);
+
+		// Share bookmarks
+		final Future<Either<String, JsonArray>> shareBookmarksFuture = getShareBookmarks(user, search);
+
+		CompositeFuture.join(getVisiblePromise.future(), shareBookmarksFuture)
+				.onComplete(ar -> {
+
+					if (ar.failed()) {
+						promise.fail(ar.cause().getMessage());
+					} else {
+
+						final Either<String, JsonArray> resVisible = getVisiblePromise.future().result();
+						final Either<String, JsonArray> resShareBookmark = shareBookmarksFuture.result();
+
+						if (resVisible.isLeft()) {
+							log.error(resVisible.left().getValue());
+						}
+
+						if (resShareBookmark.isLeft()) {
+							log.error(resShareBookmark.left().getValue());
+						}
+
+						JsonArray visible = resVisible.isLeft() ? new JsonArray() : resVisible.right().getValue();
+						JsonArray shareBookmarks = resShareBookmark.isLeft() ? new JsonArray() : resShareBookmark.right().getValue();
+
+						promise.complete(
+								UserUtils.mapObjectToContact(
+										user.getType(),
+										shareBookmarks,
+										visible,
+										language,
+										StringUtils.isEmpty(search) ? null : search
+								)
+						);
+					}
+				});
 		return promise.future();
 	}
 
