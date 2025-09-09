@@ -178,7 +178,8 @@ public abstract class BaseServer extends Server {
 		// notify started on broker
 		startPromise.future().onComplete(result -> {
 			// Wait for broker module to be deployed
-			vertx.setTimer(10000, time -> {
+			final long brokerDelay = config.getLong("broker-start-delay", 60_000L); // 60 sec
+			vertx.setTimer(brokerDelay, time -> {
 				statusPublisher.notifyStarted(ApplicationStatusDTO.withBasicInfo(moduleName, nodeName));
 				log.info("Sent started status to broker for application " + moduleName);
 			});
