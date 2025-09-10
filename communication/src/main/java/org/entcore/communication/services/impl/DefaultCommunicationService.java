@@ -100,6 +100,11 @@ public class DefaultCommunicationService implements CommunicationService {
 		query = "MATCH(s:Structure {id: {structureId}})<-[:DEPENDS]-(g:Group)-[c:COMMUNIQUE]->(g2:Group) "
 				+ " WHERE NOT(g:ManualGroup) " +
 				" DELETE c";
+		builder.add(query, params);
+		//remove incoming communication from an external group
+		query = "MATCH(s:Structure {id: {structureId}, users:'INCOMING'})<-[:DEPENDS]-(g:Group)<-[c:COMMUNIQUE]-(g2:Group) "
+				+ " WHERE NOT(g:ManualGroup) " +
+				" DELETE c";
 
 		builder.add(query, params);
 
