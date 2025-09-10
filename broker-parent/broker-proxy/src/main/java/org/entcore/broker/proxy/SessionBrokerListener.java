@@ -4,6 +4,8 @@ import io.vertx.core.Future;
 import org.entcore.broker.api.BrokerListener;
 import org.entcore.broker.api.dto.session.FindSessionRequestDTO;
 import org.entcore.broker.api.dto.session.FindSessionResponseDTO;
+import org.entcore.broker.api.dto.session.RefreshSessionRequestDTO;
+import org.entcore.broker.api.dto.session.RefreshSessionResponseDTO;
 
 
 /**
@@ -21,4 +23,14 @@ public interface SessionBrokerListener {
    */
   @BrokerListener(subject = "session.find", proxy = true)
   Future<FindSessionResponseDTO> findSession(FindSessionRequestDTO request);
+
+  /**
+   * This method is called to refresh (recreate) a session.
+   * It takes a RefreshSessionRequestDTO as input and returns a RefreshSessionResponseDTO.
+   *
+   * @param request The request containing the session info to refresh.
+   * @return The response containing the new sessionId.
+   */
+  @BrokerListener(subject = "session.refresh", proxy = true)
+  Future<RefreshSessionResponseDTO> refreshSession(RefreshSessionRequestDTO request);
 }
