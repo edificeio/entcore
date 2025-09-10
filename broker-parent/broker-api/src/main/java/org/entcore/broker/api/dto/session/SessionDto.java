@@ -101,8 +101,16 @@ public class SessionDto {
     private final boolean superAdmin;
 
     /**
+     * The unique session ID for this user session.
+     * This identifier is used to reference the session in the system and is required for session refresh and validation.
+     */
+    @JsonProperty("sessionId")
+    private final String sessionId;
+
+    /**
      * Creates a new instance of SessionDto with all user information.
      *
+     * @param sessionId The unique session ID for this user session.
      * @param userId The internal user ID.
      * @param externalId The external user ID.
      * @param firstName The first name of the user.
@@ -118,11 +126,12 @@ public class SessionDto {
      * @param classes The list of classes the user belongs to.
      * @param groups The list of groups the user belongs to.
      * @param structures The list of structures the user is associated with.
-     * @param functions Map of functions assigned to the user.
+     * @param functions List of functions assigned to the user.
      * @param isSuperAdmin Whether the user is a super administrator.
      */
     @JsonCreator
     public SessionDto(
+            @JsonProperty("sessionId") String sessionId,
             @JsonProperty("userId") String userId,
             @JsonProperty("externalId") String externalId,
             @JsonProperty("firstName") String firstName,
@@ -140,6 +149,7 @@ public class SessionDto {
             @JsonProperty("structures") List<StructureDto> structures,
             @JsonProperty("functions") List<UserFunctionDto> functions,
             @JsonProperty("superAdmin") boolean isSuperAdmin) {
+        this.sessionId = sessionId;
         this.userId = userId;
         this.externalId = externalId;
         this.firstName = firstName;
@@ -277,4 +287,11 @@ public class SessionDto {
      * @return true if the user is a super administrator, false otherwise.
      */
     public boolean isSuperAdmin() { return superAdmin; }
+
+    /**
+     * Gets the unique session ID for this user session.
+     *
+     * @return The session ID string.
+     */
+    public String getSessionId() { return sessionId; }
 }
