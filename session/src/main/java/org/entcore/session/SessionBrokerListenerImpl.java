@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.entcore.common.session.SessionRecreationRequest;
 
 /**
  * Implementation of the SessionBrokerListener interface.
@@ -156,7 +157,8 @@ public class SessionBrokerListenerImpl implements SessionBrokerListener {
                 // Authentication successful, get the session
                 UserUtils.getUserInfos(authManager.getVertx().eventBus(), secureRequest, userInfos -> {
                     if (userInfos != null) {
-                        final SessionDto sessionDto = fromUserInfos(userInfos);
+                        final String sessionId = UserUtils.getSessionId(secureRequest).orElse(null);
+                        final SessionDto sessionDto = fromUserInfos(userInfos, sessionId);
                         promise.complete(new FindSessionResponseDTO(sessionDto));
                     } else {
                         log.warn("Failed to convert session data to UserInfos");
@@ -184,7 +186,7 @@ public class SessionBrokerListenerImpl implements SessionBrokerListener {
                 try {
                     final UserInfos userInfos = UserUtils.sessionToUserInfos(ar.result());
                     if (userInfos != null) {
-                        SessionDto sessionDto = fromUserInfos(userInfos);
+                        SessionDto sessionDto = fromUserInfos(userInfos, sessionId);
                         promise.complete(new FindSessionResponseDTO(sessionDto));
                     } else {
                         promise.fail("invalid.session.data");
@@ -208,7 +210,7 @@ public class SessionBrokerListenerImpl implements SessionBrokerListener {
      * @param userInfos The UserInfos object containing user data
      * @return A new SessionDto instance with data from the UserInfos object, or null if input is null
      */
-    private SessionDto fromUserInfos(final UserInfos userInfos) {
+    private SessionDto fromUserInfos(final UserInfos userInfos, final String sessionId) {
         if (userInfos == null) {
             return null;
         }
@@ -293,6 +295,7 @@ public class SessionBrokerListenerImpl implements SessionBrokerListener {
 
         // Create and return the SessionDto
         return new SessionDto(
+                sessionId,
                 userInfos.getUserId(),
                 userInfos.getExternalId(),
                 userInfos.getFirstName(),
@@ -311,5 +314,28 @@ public class SessionBrokerListenerImpl implements SessionBrokerListener {
                 functionDtos,
                 isSuperAdmin
         );
+    }
+
+    /**
+     * Refreshes a session by calling AuthManager with the action 'recreate'.
+     * This method is used to refresh session data and extend the session lifetime.
+     *
+     * @param request The request containing sessionId and userId for the session to be refreshed
+     * @return A Future containing the response of the refresh operation
+     */
+    @Override
+    public Future<RefreshSessionResponseDTO> refreshSession(RefreshSessionRequestDTO request) {
+        if (request == null || !request.isValid()) {
+            return Future.failedFuture("request.parameters.invalid");
+        }
+        // Build the SessionRecreationRequest
+        final SessionRecreationRequest recreationRequest =
+            new SessionRecreationRequest(
+                request.getUserId(),
+                request.getSessionId(),
+                request.isRefreshOnly()
+            );
+        return authManager.recreateSession(recreationRequest)
+            .map(session -> new RefreshSessionResponseDTO(session.getString("_id")));
     }
 }
