@@ -123,7 +123,10 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			doCreate(message);
 			break;
 		case "recreate":
-			doReCreate(message);
+			// Map the message body to SessionRecreationRequest and call recreateSession
+			final SessionRecreationRequest request = message.body().mapTo(SessionRecreationRequest.class);
+			recreateSession(request).onSuccess(message::reply)
+			.onFailure(th -> sendError(message, "[recreateSession] Error while recreating the session", th));
 			break;
 		case "dropAllByUserId":
 			dropAllByUserId(message);
@@ -502,14 +505,15 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 
 	/**
 	 * Recreate a session for the current user and then remove the current session from the store.
-	 * @param message Recreate session request received from the bus
+	 * @param request SessionRecreationRequest containing userId, sessionId, refreshOnly
+	 * @return Future with the new sessionId (or the same if refreshOnly)
 	 */
-	private void doReCreate(final Message<JsonObject> message) {
-		final SessionRecreationRequest request = message.body().mapTo(SessionRecreationRequest.class);
+	public Future<JsonObject> recreateSession(final SessionRecreationRequest request) {
+		final Promise<JsonObject> promise = Promise.promise();
 		final String userId = request.getUserId();
 		if (userId == null || userId.trim().isEmpty()) {
-			sendError(message, "[doReCreate] Invalid userId : " + message.body());
-			return;
+			promise.fail("[recreateSession] Invalid userId : " + request);
+			return promise.future();
 		}
 		sessionStore.getSession(request.getSessionId(), result -> {
 			final String nameId;
@@ -531,7 +535,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			}
 			createSession(userId, request.isRefreshOnly() ? request.getSessionId() : null, sessionIndex, nameId, secureLocation, cache)
 			.onSuccess(session -> {
-				message.reply(session);
+				promise.complete(session);
 				final String sessionId = request.getSessionId();
 				// TODO update metrics
 				if(sessionId != null && !request.isRefreshOnly()) {
@@ -544,8 +548,9 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 					});
 				}
 			})
-			.onFailure(th -> sendError(message, "[doReCreate] Error while recreating the session", th));
+			.onFailure(promise::fail);
 		});
+		return promise.future();
 	}
 	private void doCreate(final Message<JsonObject> message) {
 		final JsonObject body = message.body();
