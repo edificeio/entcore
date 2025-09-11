@@ -1761,6 +1761,8 @@ public class ConversationController extends BaseController {
 
 	@BusAddress("org.entcore.conversation")
 	public void conversationEventBusHandler(Message<JsonObject> message) {
+		log.info("[enctore@WebConference@sendInvitation] - message received");
+		log.info("[enctore@WebConference@sendInvitation] - message :" + message.body().getString("action"));
 		switch (message.body().getString("action", "")) {
 			case "send" : send(message);
 				break;
@@ -1771,6 +1773,7 @@ public class ConversationController extends BaseController {
 	}
 
 	private void send(final Message<JsonObject> message) {
+		log.info("[enctore@WebConference@sendInvitation] - sending message");
 		JsonObject m = message.body().getJsonObject("message");
 		if (m == null) {
 			message.reply(new JsonObject().put("status", "error").put("message", "invalid.message"));
@@ -1783,10 +1786,13 @@ public class ConversationController extends BaseController {
 		m.put("from", user.getUserId());
 		userService.addDisplayNames(m, null, new Handler<JsonObject>() {
 			public void handle(final JsonObject m) {
+				log.info("[enctore@WebConference@sendInvitation] - fetched dusplay names");
 				saveAndSend(null, m, user, null, null,
 					new Handler<Either<String, JsonObject>>() {
 						@Override
 						public void handle(Either<String, JsonObject> event) {
+							log.info("[enctore@WebConference@sendInvitation] - saveAndSend handler");
+
 							if (event.isRight()) {
 								JsonObject result = event.right().getValue();
 								JsonObject timelineParams = new JsonObject()
@@ -1797,10 +1803,13 @@ public class ConversationController extends BaseController {
 								timelineNotification(request, timelineParams, user);
 								JsonObject s = new JsonObject().put("status", "ok")
 										.put("result", new fr.wseduc.webutils.collections.JsonArray().add(new JsonObject()));
+										log.info("[enctore@WebConference@sendInvitation] - saveAndSend is Right status object" + s.getString("status"));
 								message.reply(s);
 							} else {
 								JsonObject error = new JsonObject()
 										.put("error", event.left().getValue());
+										log.info("[enctore@WebConference@sendInvitation] - saveAndSend is LEFT status object" + error.getString("error"));
+
 								message.reply(error);
 							}
 						}
