@@ -139,7 +139,13 @@ public interface WorkspaceService extends FolderManager {
 	public void getShareInfos(final String userId, String resourceId, final String acceptLanguage, final String search,
 			final Handler<Either<String, JsonObject>> handler);
 
-	public Future<Set<String>> getNotifyContributorDest(Optional<String> id, UserInfos user, Set<String> docIds);
+    /** Find users to notify, triggered by a resource update
+     * @param id identifier for the resource that was updated (document or folder)
+     * @param user identifier for who updated the resource
+     * @param docIds set of additional identifiers of updated resources
+     * @return every user with READ access on modified resource AND the historic owners of additional provided resources
+     */
+	public Future<Set<String>> getNotifyDest(Optional<String> id, UserInfos user, Set<String> docIds);
 
 	public void changeVisibility(final JsonArray documentIds, String visibility, final Handler<Message<JsonObject>> handler);
 

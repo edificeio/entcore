@@ -641,9 +641,9 @@ public class DefaultWorkspaceService extends FolderManagerWithQuota implements W
 		this.notification = notification;
 	}
 
-	public Future<Set<String>> getNotifyContributorDest(Optional<String> id, UserInfos user, Set<String> docIds) {
+	public Future<Set<String>> getNotifyDest(Optional<String> id, UserInfos user, Set<String> docIds) {
 		Set<String> actions = new HashSet<>();
-		actions.add(WorkspaceController.SHARED_ACTION);
+		actions.add(WorkspaceController.GET_ACTION);
 		final Set<String> recipientId = new HashSet<>();
 		Promise<Void> futureSHared = Promise.promise();
 		if(id.isPresent()) {

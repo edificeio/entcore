@@ -125,7 +125,7 @@ public class WorkspaceController extends BaseController {
 						storage.writeUploadFile(request, emptySize, uploaded -> {
 							if ("ok".equals(uploaded.getString("status"))) {
 								final Handler<AsyncResult<JsonObject>> handler = eventHelper.onCreateResource(request, RESOURCE_NAME, asyncDefaultResponseHandler(request, 201));
-								workspaceService.addDocumentWithParent(resRights.result(),userInfos, quality, name, application, doc,
+								workspaceService.addDocumentWithParent(resRights.result(), userInfos, quality, name, application, doc,
 										uploaded, handler);
 							} else {
 								badRequest(request, uploaded.getString("message"));
@@ -370,7 +370,7 @@ public class WorkspaceController extends BaseController {
 						}
 						Boolean addVersion = body.getBoolean("addVersion", false);
 						// find receivers
-						Future<Set<String>> futureRecipientIds = workspaceService.getNotifyContributorDest(idOpt, user, ids);
+						Future<Set<String>> futureRecipientIds = workspaceService.getNotifyDest(idOpt, user, ids);
 						futureRecipientIds.compose(recipientIds -> {
 							// find element to put in message
 							if (recipientIds.isEmpty()) {
