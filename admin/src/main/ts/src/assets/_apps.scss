@@ -185,6 +185,16 @@ i.rack {
   }
 }
 
+i.communities-large,
+i.type.communities,
+i.communities {
+  @include fonticon;
+  &::before {
+    content: "\e96f";
+    color: $purple;
+  }
+}
+
 i.community-large,
 i.type.community,
 i.community {
