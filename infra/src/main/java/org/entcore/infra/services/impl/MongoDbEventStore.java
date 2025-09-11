@@ -52,7 +52,6 @@ import org.entcore.infra.services.PartialResults;
 
 public class MongoDbEventStore implements EventStoreService {
 
-	private static final Logger log = LoggerFactory.getLogger(MongoDbEventStore.class);
 	private static final long QUERY_TIMEOUT = 90000L;
 	private MongoDb mongoDb = MongoDb.getInstance();
 	private PostgresqlEventStore pgEventStore;
