@@ -52,14 +52,13 @@ import org.entcore.infra.services.PartialResults;
 
 public class MongoDbEventStore implements EventStoreService {
 
-	private static final Logger log = LoggerFactory.getLogger(MongoDbEventStore.class);
 	private static final long QUERY_TIMEOUT = 90000L;
 	private MongoDb mongoDb = MongoDb.getInstance();
 	private PostgresqlEventStore pgEventStore;
 	private static final String COLLECTION = "events";
-  private final int eventsBatchSize;
-  private static final int DEFAULT_EVENT_BATCH_SIZE = 50_000;
-  private static final Logger log = LoggerFactory.getLogger(MongoDbEventStore.class);
+    private int eventsBatchSize;
+    private static final int DEFAULT_EVENT_BATCH_SIZE = 50_000;
+    private static final Logger log = LoggerFactory.getLogger(MongoDbEventStore.class);
 
 	public MongoDbEventStore(Vertx vertx) {
 		vertx.sharedData().<String, String>getAsyncMap("server")
@@ -74,11 +73,11 @@ public class MongoDbEventStore implements EventStoreService {
 						pgEventStore.setVertx(vertx);
 						pgEventStore.init();
 					}
-				eventsBatchSize = eventStoreConfig.getInteger("events-batch-size", DEFAULT_EVENT_BATCH_SIZE);
-		} else {
-      eventsBatchSize = DEFAULT_EVENT_BATCH_SIZE;}
-            })
-            .onFailure(ex ->log.error("Error when get platformId in event-store server map", ex));
+					eventsBatchSize = eventStoreConfig.getInteger("events-batch-size", DEFAULT_EVENT_BATCH_SIZE);
+				} else {
+					eventsBatchSize = DEFAULT_EVENT_BATCH_SIZE;
+				}
+			}).onFailure(ex -> log.error("Error when get event-store conf in server map", ex));
 	}
 
 	@Override

@@ -45,7 +45,7 @@ import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.explorer.ExplorerPluginFactory;
 import org.entcore.common.http.filter.*;
-import org.entcore.common.http.iw18n.I18nHandler;
+import org.entcore.common.http.i18n.I18nHandler;
 import org.entcore.common.http.response.SecurityHookRender;
 import org.entcore.common.http.response.OverrideThemeHookRender;
 import org.entcore.common.neo4j.Neo4j;
