@@ -422,11 +422,13 @@ public class ConversationController extends BaseController {
 
 	private void saveAndSend(final String messageId, final JsonObject message, final UserInfos user,
 			final String parentMessageId, final String threadId, final Handler<Either<String, JsonObject>> result, final HttpServerRequest request){
-
+		log.info("[enctore@WebConference@sendInvitation] - saveAndSend handler");
 		Handler<Either<String, JsonObject>> handler = new Handler<Either<String, JsonObject>>() {
 			@Override
 			public void handle(Either<String, JsonObject> event) {
 				if(event.isLeft()){
+					log.info("[enctore@WebConference@sendInvitation] - saveAndSend event is left");
+
 					result.handle(event);
 					return;
 				}
@@ -437,7 +439,11 @@ public class ConversationController extends BaseController {
 
 				conversationService.get(id, user, new Handler<Either<String,JsonObject>>() {
 					public void handle(Either<String, JsonObject> event) {
+						log.info("[enctore@WebConference@sendInvitation] - checking conversationService.get");
+
 						if(event.isLeft()){
+							log.info("[enctore@WebConference@sendInvitation] - conversationService.get is left");
+
 							result.handle(event);
 							return;
 						}
@@ -453,11 +459,15 @@ public class ConversationController extends BaseController {
 						userService.findInactives(message, size.get(), new Handler<JsonObject>() {
 							public void handle(JsonObject userDetails) {
 								message.mergeIn(userDetails);
-
+								log.info("[enctore@WebConference@sendInvitation] - userService.findInactives");
 								conversationService.send(parentMessageId, id, message, user, new Handler<Either<String,JsonObject>>() {
 									public void handle(Either<String, JsonObject> event) {
+										log.info("[enctore@WebConference@sendInvitation] - userService event");
 										if(event.isRight()){
+											log.info("[enctore@WebConference@sendInvitation] - userService event is right");
+
 											for(Object recipient : message.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray())){
+												log.info("[enctore@WebConference@sendInvitation] - checking recipient");
 												if(recipient.toString().equals(user.getUserId()))
 													continue;
 												updateUserQuota(recipient.toString(), size.get());
@@ -1832,18 +1842,22 @@ public class ConversationController extends BaseController {
 	}
 
 	private void updateUserQuota(final String userId, long size){
+		log.info("[enctore@WebConference@sendInvitation] - updateUserQuota");
 		updateUserQuota(userId, size, null);
 	}
 
 	private void updateUserQuota(final String userId, long size, final Handler<Void> continuation){
+		log.info("[enctore@WebConference@sendInvitation] - updateUserQuota");
 		JsonObject message = new JsonObject();
 		message.put("action", "updateUserQuota");
 		message.put("userId", userId);
 		message.put("size", size);
 		message.put("threshold", threshold);
 
+		log.info("[enctore@WebConference@sendInvitation] - updateUserQuota request");
 		eb.request(QUOTA_BUS_ADDRESS, message, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 			public void handle(Message<JsonObject> reply) {
+				log.info("[enctore@WebConference@sendInvitation] - updateUserQuota reply");
 				JsonObject obj = reply.body();
 				UserUtils.addSessionAttribute(eb, userId, "storage", obj.getLong("storage"), null);
 				if (obj.getBoolean("notify", false)) {
