@@ -403,6 +403,17 @@ public class UserUtils {
 		return mapObjectToContact(profile, shareBookmarks, visible, acceptLanguage, null, true);
 	}
 
+	/**
+	 * Map a list of visible and sharebookmark to a list of contact. Apply a filter with filterOnGroup if necessary.
+	 * If keepUnrolled is true, add to the list the relatives and children as a contact.
+	 * @param profile profile of the user doing the search
+	 * @param shareBookmarks bookmarks to map
+	 * @param visible visibles to map
+	 * @param acceptLanguage language of the user
+	 * @param filterOnGroup optional filter on contact
+	 * @param keepUnrolled if true, add as contact relatives and children
+	 * @return list of contact
+	 */
 	public static JsonArray mapObjectToContact(final String profile, final JsonArray shareBookmarks,
 											   final JsonArray visible, final String acceptLanguage, String filterOnGroup,  boolean keepUnrolled) {
 		return mapObjectToContactMappingResult(profile, shareBookmarks, visible, acceptLanguage, filterOnGroup, keepUnrolled)
