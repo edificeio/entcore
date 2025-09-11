@@ -57,8 +57,10 @@ import static org.entcore.common.validation.StringValidation.cleanId;
 public abstract class GenericShareService implements ShareService {
 
 	protected static final Logger log = LoggerFactory.getLogger(GenericShareService.class);
+	// Query to retrieve shared groups with their labels (including CommunityGroup labels)
 	private static final String GROUP_SHARED = "MATCH (g:Group) WHERE g.id in {groupIds} "
-			+ "RETURN distinct g.id as id, g.name as name, g.groupDisplayName as groupDisplayName, g.structureName as structureName "
+			+ "RETURN distinct g.id as id, g.name as name, g.groupDisplayName as groupDisplayName, g.structureName as structureName, "
+			+ "labels(g) as labels "
 			+ "ORDER BY name ";
 	private static final String USER_SHARED = "MATCH (u:User) WHERE u.id in {userIds} "
 			+ "RETURN distinct u.id as id, u.login as login, u.displayName as username, "
@@ -251,8 +253,11 @@ public abstract class GenericShareService implements ShareService {
 				}));
 			}));
 		} else {
+			// Complex query that combines visible profile groups and explicitly shared groups
+			// The UNION allows getting both types of groups with their labels for proper display
 			final String groupQuery = "RETURN distinct profileGroup.id as id, profileGroup.name as name, "
-					+ "profileGroup.groupDisplayName as groupDisplayName, profileGroup.structureName as structureName "
+					+ "profileGroup.groupDisplayName as groupDisplayName, profileGroup.structureName as structureName, "
+					+ "labels(profileGroup) as labels "
 					+ "ORDER BY name " + "UNION " + GROUP_SHARED;
 			//FIXME should be optimized by removing unecessary optionals
 			final String userQuery = "RETURN distinct visibles.id as id, visibles.login as login, visibles.displayName as username, "
