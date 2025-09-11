@@ -49,7 +49,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static fr.wseduc.webutils.Utils.*;
 import static fr.wseduc.webutils.http.Renders.unauthorized;
@@ -80,6 +79,13 @@ public class UserUtils {
 	public static final String FIND_SESSION = "findSession";
 	public static final String MONITORINGEVENTS = "monitoringevents";
 	public static final String SESSION_ADDRESS = "wse.session";
+
+	public static class ContactMappinpResult {
+
+		public JsonArray contactList = new JsonArray();
+		public JsonArray relativeAddedToTheList = new JsonArray();
+
+	}
 
 
 	private static void findUsers(final EventBus eb, HttpServerRequest request,
@@ -393,49 +399,41 @@ public class UserUtils {
 	}
 
 	public static JsonArray mapObjectToContact(final String profile, final JsonArray shareBookmarks,
-			final JsonArray visible, final String acceptLanguage) {
-		return mapObjectToContact(profile, shareBookmarks, visible, acceptLanguage, null);
+			final JsonArray visible, final String acceptLanguage ) {
+		return mapObjectToContact(profile, shareBookmarks, visible, acceptLanguage, null, true);
 	}
 
 	public static JsonArray mapObjectToContact(final String profile, final JsonArray shareBookmarks,
-			final JsonArray visible, final String acceptLanguage, String filterOnGroupName) {
+											   final JsonArray visible, final String acceptLanguage, String filterOnGroup,  boolean keepUnrolled) {
+		return mapObjectToContactMappingResult(profile, shareBookmarks, visible, acceptLanguage, filterOnGroup, keepUnrolled)
+				.contactList;
+	}
+
+
+	public static ContactMappinpResult mapObjectToContactMappingResult(final String profile, final JsonArray shareBookmarks,
+																   final JsonArray visible, final String acceptLanguage, String filterOnGroupName,
+																   final boolean keepUnrolled) {
+
+		final ContactMappinpResult result = new ContactMappinpResult();
+
 		final List<String> usedInAll = Arrays.asList("TO", "CC", "CCI");
 		final List<String> usedInCCI = Collections.singletonList("CCI");
 		if( filterOnGroupName != null )
 			filterOnGroupName = StringValidation.sanitize(filterOnGroupName);
 
-		/*
-		final JsonArray sb = new JsonArray();
-		if (shareBookmarks != null) {
-			for (String id: shareBookmarks.fieldNames()) {
-				final JsonArray value = shareBookmarks.getJsonArray(id);
-				if (value == null || value.size() < 2) {
-					continue;
-				}
-				final JsonObject r = new fr.wseduc.webutils.collections.JsonObject();
-				r.put("id", id);
-				r.put("displayName", value.remove(0));
-				r.put("type", "ShareBookmark");
-				sb.add(r);
-			}
-		}
-
-		final JsonArray res = !sb.isEmpty() ? sortShareBookmarksByName(sb) : new JsonArray();
-		 */
-
-		final JsonArray res = new JsonArray();
 		for (Object o: shareBookmarks) {
 			if (!(o instanceof JsonObject)) continue;
 			JsonObject j = (JsonObject) o;
 			j.put("type", "ShareBookmark");
 			j.put("usedIn", usedInAll);
-			res.add(j);
+			result.contactList.add(j);
 		}
 
 		final Set<String> alreadyAddedUsers = new HashSet<>();
 		final Map<String, List<JsonObject>> children = new HashMap<>();
 		final Map<String, List<JsonObject>> parents = new HashMap<>();
 		final Set<JsonObject> unrolledUsers = new HashSet<>();
+
 		for (Object o: visible) {
 			if (!(o instanceof JsonObject)) continue;
 			JsonObject j = (JsonObject) o;
@@ -516,17 +514,21 @@ public class UserUtils {
 			j.remove("sorted_functions");
 			j.remove("sorted_disciplines");
 
-			res.add(j);
+			result.contactList.add(j);
+		}
+		if(!keepUnrolled) {
+			return result;
 		}
 		for (JsonObject unrolledUser : unrolledUsers) {
 			final String id = unrolledUser.getString("id");
 			unrolledUser.put("children", children.get(id));
 			unrolledUser.put("relatives", parents.get(id));
 			if(!alreadyAddedUsers.contains(id)) {
-				res.add(unrolledUser);
+				result.contactList.add(unrolledUser);
+				result.relativeAddedToTheList.add(id);
 			}
 		}
-		return res;
+		return result;
 	}
 
 	private static JsonArray extractRelatives(JsonObject user) {
