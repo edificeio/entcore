@@ -1779,14 +1779,7 @@ public class DefaultCommunicationService implements CommunicationService {
 						JsonArray visible = resVisible.isLeft() ? new JsonArray() : resVisible.right().getValue();
 						JsonArray shareBookmarks = resShareBookmark.isLeft() ? new JsonArray() : resShareBookmark.right().getValue();
 
-						promise.complete(
-							UserUtils.mapObjectToContact(
-								user.getType(),
-								shareBookmarks,
-								visible,
-								language
-							)
-						);
+						applyMapObjectToContact(promise, user, shareBookmarks, visible, language, search);
 					}
 				});
 		return promise.future();
@@ -1870,15 +1863,7 @@ public class DefaultCommunicationService implements CommunicationService {
 					JsonArray visible = resVisible.isLeft() ? new JsonArray() : resVisible.right().getValue();
 					JsonArray shareBookmarks = resShareBookmark.isLeft() ? new JsonArray() : resShareBookmark.right().getValue();
 
-					promise.complete(
-						UserUtils.mapObjectToContact(
-							user.getType(),
-							shareBookmarks,
-							visible,
-							language,
-							StringUtils.isEmpty(search) ? null : search
-						)
-					);
+					applyMapObjectToContact(promise, user, shareBookmarks, visible, language, search);
 				}
 			});
 		return promise.future();
@@ -1989,17 +1974,61 @@ public class DefaultCommunicationService implements CommunicationService {
 					JsonArray visible = resVisible.isLeft() ? new JsonArray() : resVisible.right().getValue();
 					JsonArray shareBookmarks = resShareBookmark.isLeft() ? new JsonArray() : resShareBookmark.right().getValue();
 
-					promise.complete(
-						UserUtils.mapObjectToContact(
-							user.getType(),
-							shareBookmarks,
-							visible,
-							language
-						)
-					);
+					applyMapObjectToContact(promise, user, shareBookmarks, visible, language, search);
 				}
 			});
 		return promise.future();
+	}
+
+	private void applyMapObjectToContact(Promise<JsonArray> promise, UserInfos user, JsonArray shareBookmarks, JsonArray visible,
+										 String language, String search) {
+		if(StringUtils.isEmpty(search)) {
+			// empty search: if the relatives are not in the list of visible items, there is no reason to keep them
+			promise.complete(
+					UserUtils.mapObjectToContact(
+							user.getType(),
+							shareBookmarks,
+							visible,
+							language,
+							StringUtils.isEmpty(search) ? null : search,
+							false
+					)
+			);
+		} else {
+			// non-empty search: if the relatives are not in the list of filtered visible items,
+			// we don't know whether to keep them or not => they will be rechecked later
+			UserUtils.ContactMappinpResult result = UserUtils.mapObjectToContactMappingResult(
+					user.getType(),
+					shareBookmarks,
+					visible,
+					language,
+					StringUtils.isEmpty(search) ? null : search,
+					true);
+			if(!result.relativeAddedToTheList.isEmpty()) {
+				//recheck added users
+				UserUtils.filterFewOrGetAllVisibles(eventBus, user.getUserId(), result.relativeAddedToTheList)
+						.onSuccess(relatives -> {
+							List<String> idsToRemove = Lists.newLinkedList();
+							for(int i = 0; i < result.relativeAddedToTheList.size(); i++) {
+								String id  = result.relativeAddedToTheList.getString(i);
+								if(!relatives.contains(id)) {
+									idsToRemove.add(id);
+								}
+							}
+							JsonArray filtredContact = new JsonArray();
+							for(int i = 0; i < result.contactList.size(); i++) {
+								JsonObject contact = result.contactList.getJsonObject(i);
+								if(!idsToRemove.contains(contact.getString("id"))) {
+									filtredContact.add(contact);
+								}
+							}
+							promise.complete(filtredContact);
+						})
+						.onFailure(t -> promise.fail(t.getMessage()));
+			} else {
+				promise.complete(result.contactList);
+			}
+		}
 	}
 
 	private static Future<Either<String, JsonArray>> getShareBookmarks(UserInfos user, String search) {
