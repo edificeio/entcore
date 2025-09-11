@@ -535,6 +535,26 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		template.open('main', 'mono-class');
 	};
 
+
+	const privateInfosMapping = {
+		'SHOW_EMAIL': 'email',
+		// 'SHOW_MAIL': 'email', unused field at this time
+		'SHOW_PHONE': 'homePhone',
+		'SHOW_BIRTHDATE': 'birthdate',
+		'SHOW_HEALTH': 'health',
+		'SHOW_MOBILE': 'mobile',
+	}
+
+	$scope.removePrivateInfos = function() {
+		const infoToBeRemoved = {};
+		Object.entries(privateInfosMapping).forEach(([k, v]) => {
+			if (!$scope.currentUser.visibleInfos?.includes(k)) {
+				infoToBeRemoved[v] = undefined;
+			}
+		});
+		$scope.currentUser.updateData(infoToBeRemoved);
+	}
+	
 	$scope.selectUser = async function(user){
 		if(!$scope.$$phase){
 			$scope.$apply('search');
@@ -542,6 +562,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 		if(typeof user == "string") {
 			user = new directory.User({ id: user });
 		}
+		user.open();
 		user.one('sync', async function(){
 			$scope.currentUser = user;
 
@@ -559,6 +580,7 @@ export const directoryController = ng.controller('DirectoryController',['$scope'
 			if($scope.currentUser !== undefined){
 				$scope.scroolTop();
 			}
+			$scope.removePrivateInfos(); // Tmp fix: MOZO-77 prevent display of private data on this screen until backend removes them from the response.
 			$scope.$apply('currentUser');
 		});
 		await user.open();
