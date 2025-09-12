@@ -78,7 +78,7 @@ public class DefaultClassService implements ClassService {
 
 	@Override
 	public void findUsers(String classId, JsonArray expectedTypes, boolean collectRelative, 
-						  boolean withFederated, Handler<Either<String, JsonArray>> results) {
+						  boolean withFederated, boolean ine, Handler<Either<String, JsonArray>> results) {
 		JsonObject params = new JsonObject().put("classId", classId);
 		//=== Filter by type
 		String filterPart = "";
@@ -102,6 +102,9 @@ public class DefaultClassService implements ClassService {
 				"CASE WHEN m.loginAlias IS NOT NULL THEN m.loginAlias ELSE m.login END as login, m.login as originalLogin, m.activationCode as activationCode, m.displayName as displayName, m.birthDate as birthDate, m.lastLogin as lastLogin, " +
 				(withFederated 
 					? "(HAS(m.federatedIDP) AND NOT(m.federatedIDP IS NULL) AND HAS(m.federated) AND m.federated = true) as hasFederatedIdentity, " 
+					: "") +
+				(ine 
+					? "m.ine as ine, " 
 					: "") +
 				"p.name as type, m.blocked as blocked, m.source as source, relativeList " +
 				"ORDER BY type, lastName ";

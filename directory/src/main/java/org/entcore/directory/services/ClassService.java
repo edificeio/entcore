@@ -35,7 +35,7 @@ public interface ClassService {
 
 	void remove(String classId, Handler<Either<String, JsonObject>> result);
 
-	void findUsers(String classId, JsonArray expectedTypes, boolean collectRelative, boolean withFederated, Handler<Either<String, JsonArray>> results);
+	void findUsers(String classId, JsonArray expectedTypes, boolean collectRelative, boolean withFederated, boolean ine, Handler<Either<String, JsonArray>> results);
 
 	void get(String classId, Handler<Either<String, JsonObject>> result);
 
