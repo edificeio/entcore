@@ -19,22 +19,21 @@
 
 package org.entcore.common.http.filter;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
-import org.entcore.common.http.response.DefaultPages;
-import org.entcore.common.user.UserUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.http.response.DefaultPages;
+import org.entcore.common.user.UserUtils;
 
-import fr.wseduc.webutils.http.Binding;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 
 public class ActionFilter extends AbstractActionFilter {
@@ -46,10 +45,6 @@ public class ActionFilter extends AbstractActionFilter {
 		super(bindings, provider);
 		this.vertx = vertx;
 		this.eb = Server.getEventBus(vertx);
-	}
-
-	public ActionFilter(Set<Binding> bindings, Vertx vertx) {
-		this(bindings, vertx, null);
 	}
 
 	public ActionFilter(List<Set<Binding>> bindings, Vertx vertx, ResourcesProvider provider) {
