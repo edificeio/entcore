@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.shareddata.AsyncMap;
 import fr.wseduc.webutils.collections.SharedDataHelper;
@@ -59,19 +60,13 @@ public class Timeline extends BaseServer {
 	public void start(final Promise<Void> startPromise) throws Exception {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
-		promise.future().compose(x ->
-			SharedDataHelper.getInstance().<String, Object>getMulti("server", "skins", "skin-levels")
-		).onSuccess(timelineMap -> {
-			try {
-				initTimeline(startPromise, timelineMap);
-			} catch (Exception e) {
-				startPromise.fail(e);
-				log.error("Error when start Timeline", e);
-			}
-		}).onFailure(ex -> log.error("Error when start Timeline server super classes", ex));
+		promise.future()
+				.compose(init -> SharedDataHelper.getInstance().<String, Object>getMulti("server", "skins", "skin-levels"))
+				.compose(timelineConfigMap -> initTimeline(timelineConfigMap))
+				.onComplete(startPromise);
 	}
 
-	public void initTimeline(final Promise<Void> startPromise, final Map<String, Object> timelineMap) throws Exception {
+	public Future<Void> initTimeline(final Map<String, Object> timelineMap) {
 		final Map<String, String> registeredNotificationsCache = new HashMap<>();
 		final Map<String, String> eventsI18n = new HashMap<>();
 		updateRegisteredNotificationsCache(registeredNotificationsCache);
@@ -149,7 +144,7 @@ public class Timeline extends BaseServer {
 				log.error("Invalid cron expression.", e);
 			}
 		}
-		startPromise.tryComplete();
+		return Future.succeededFuture();
 	}
 
 	private void updateRegisteredNotificationsCache(final Map<String, String> registeredNotificationsCache) {

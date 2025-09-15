@@ -22,7 +22,9 @@ package org.entcore.workspace;
 import java.util.HashMap;
 import java.util.Map;
 
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.broker.api.utils.AddressParameter;
 import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.folders.FolderManager;
@@ -60,24 +62,16 @@ public class Workspace extends BaseServer {
 	public void start(final Promise<Void> startPromise) throws Exception {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
-		promise.future().compose(x ->
-			SharedDataHelper.getInstance().<String, Object>getMulti("server", "node")
-		).onSuccess(workspaceMap ->
-			StorageFactory.build(vertx, config,
-				new MongoDBApplicationStorage(DocumentDao.DOCUMENTS_COLLECTION,
-				Workspace.class.getSimpleName())).onSuccess(storageFactory -> {
-				try {
-					initWorkspace(startPromise, workspaceMap, storageFactory);
-				} catch (Exception e) {
-					startPromise.fail(e);
-					log.error("Error when start Workspace", e);
-				}
-			}).onFailure(ex -> log.error("Error when init storage factory in workspace", ex))
-		).onFailure(ex -> log.error("Error when start Workspace server super classes", ex));
+		promise.future()
+				.compose(init -> SharedDataHelper.getInstance().<String, Object>getMulti("server", "node"))
+				.compose(workspaceConfigMap ->
+						StorageFactory.build(vertx, config, new MongoDBApplicationStorage(DocumentDao.DOCUMENTS_COLLECTION, Workspace.class.getSimpleName()))
+								.map(storageFactory -> Pair.of(workspaceConfigMap, storageFactory)))
+				.compose(configPair -> initWorkspace(configPair.getLeft(), configPair.getRight()))
+				.onComplete(startPromise);
 	}
 
-	public void initWorkspace(final Promise<Void> startPromise, final Map<String, Object> workspaceMap,
-			StorageFactory storageFactory) throws Exception {
+	public Future<Void> initWorkspace(final Map<String, Object> workspaceMap, StorageFactory storageFactory) {
 		WorkspaceResourcesProvider resourceProvider = new WorkspaceResourcesProvider();
 		setDefaultResourceFilter(resourceProvider);
 
@@ -155,7 +149,7 @@ public class Workspace extends BaseServer {
 		// add broker listener for workspace resources
 		BrokerProxyUtils.addBrokerProxy(new ResourceBrokerListenerImpl(), vertx, new AddressParameter("application", "workspace"));
 
-		startPromise.tryComplete();
+		return Future.succeededFuture();
 	}
 
 }

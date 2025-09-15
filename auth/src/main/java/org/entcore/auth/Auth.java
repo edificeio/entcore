@@ -22,16 +22,14 @@ package org.entcore.auth;
 import fr.wseduc.cron.CronTrigger;
 import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.security.JWT;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
+import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.AsyncMap;
 import jp.eisbahn.oauth2.server.data.DataHandler;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.auth.controllers.*;
 import org.entcore.auth.controllers.AuthController.AuthEvent;
 import org.entcore.auth.oauth.HttpServerRequestAdapter;
@@ -57,6 +55,8 @@ import org.entcore.common.http.BaseServer;
 import org.entcore.common.neo4j.Neo;
 import org.entcore.common.sms.SmsSenderFactory;
 
+import java.security.InvalidKeyException;
+import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -70,24 +70,16 @@ public class Auth extends BaseServer {
 	public void start(final Promise<Void> startPromise) throws Exception {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
-		promise.future().compose(x ->
-			SharedDataHelper.getInstance().<String, Object>getMulti(
-				"server", "signKey", "smsProvider", "node", "emailValidationConfig", "skins", "event-store")
-		).compose(authMap -> 
-			SharedDataHelper.getInstance().<String, Object>getAsyncMap("server").compose(asyncAuthMap -> {
-				try {
-					initAuth(startPromise, authMap, asyncAuthMap);
-				} catch (Exception e) {
-					startPromise.fail(e);
-					log.error("Error when start Auth", e);
-				}
-				return startPromise.future();
-			})
-		).onFailure(ex -> log.error("Error when start Auth server super classes", ex));
+		promise.future()
+				.compose(init -> SharedDataHelper.getInstance().<String, Object>getMulti(
+						"server", "signKey", "smsProvider", "node", "emailValidationConfig", "skins", "event-store"))
+				.compose(authMap -> SharedDataHelper.getInstance().<String, Object>getAsyncMap("server")
+						.map(asyncServerMap -> Pair.of(authMap, asyncServerMap)))
+				.compose(configPair -> initAuth(configPair.getLeft(), configPair.getRight()))
+				.onComplete(startPromise);
 	}
 
-	public void initAuth(final Promise<Void> startPromise, final Map<String, Object> authMap,
-			final AsyncMap<String, Object> asyncAuthMap) throws Exception {
+	public Future<Void> initAuth(final Map<String, Object> authMap, final AsyncMap<String, Object> asyncAuthMap) {
 		final EventBus eb = getEventBus(vertx);
 		setDefaultResourceFilter(new AuthResourcesProvider(new Neo(vertx, eb, null)));
 		final String JWT_PERIOD_CRON = "jwt-bearer-authorization-periodic";
@@ -100,7 +92,12 @@ public class Auth extends BaseServer {
 
 		SmsSenderFactory.getInstance().init(vertx, config);
 		UserValidationFactory.getFactory().setEventStore(eventStore, AuthEvent.SMS.name());
-		final MfaService mfaService = new DefaultMfaService(vertx, config, authMap).setEventStore(eventStore);
+		final MfaService mfaService;
+		try {
+			mfaService = new DefaultMfaService(vertx, config, authMap).setEventStore(eventStore);
+		} catch (InvalidKeyException e) {
+			return Future.failedFuture(e);
+		}
 
 		final JsonObject oic = config.getJsonObject("openid-connect");
 		final OpenIdConnectService openIdConnectService = (oic != null)
@@ -239,7 +236,11 @@ public class Auth extends BaseServer {
 				NDWTask = new NewDeviceWarningTask(vertx, config, emailFactory.getSender(), config.getString("email"),
 						warnADMC, warnADML, warnUsers, scoreThreshold, batchLimit, processInterval,
 						(String) authMap.get("event-store"));
-				new CronTrigger(vertx, cron).schedule(NDWTask);
+				try {
+					new CronTrigger(vertx, cron).schedule(NDWTask);
+				} catch (ParseException e) {
+					return Future.failedFuture(e);
+				}
 			}
 		}
 
@@ -264,7 +265,7 @@ public class Auth extends BaseServer {
 				}
 			});
 		}
-		startPromise.tryComplete();
+		return Future.succeededFuture();
 	}
 
 }

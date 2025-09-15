@@ -20,6 +20,7 @@
 package org.entcore.cas;
 
 import fr.wseduc.cas.endpoint.CredentialResponse;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import org.entcore.cas.controllers.*;
 import org.entcore.cas.data.EntCoreDataHandlerFactory;
@@ -41,17 +42,10 @@ public class Cas extends BaseServer {
 	public void start(final Promise<Void> startPromise) throws Exception {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
-		promise.future().onSuccess(x -> {
-			try {
-				initCas(startPromise);
-			} catch (Exception e) {
-				startPromise.fail(e);
-				log.error("Error when start Cas", e);
-			}
-		}).onFailure(ex -> log.error("Error when start Cas server super classes", ex));
+		promise.future().compose(init -> initCas()).onComplete(startPromise);
 	}
 
-	public void initCas(final Promise<Void> startPromise) throws Exception {
+	public Future<Void> initCas(){
 		MappingService.getInstance().configure(config());
 		EntCoreDataHandlerFactory dataHandlerFactory = new EntCoreDataHandlerFactory(getEventBus(vertx), config);
 
@@ -94,7 +88,7 @@ public class Cas extends BaseServer {
 				configurationController.loadPatterns();
 			}
 		});
-		startPromise.tryComplete();
+		return Future.succeededFuture();
 	}
 
 }
