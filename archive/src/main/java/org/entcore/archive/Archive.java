@@ -22,10 +22,12 @@ package org.entcore.archive;
 import fr.wseduc.cron.CronTrigger;
 import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.security.RSA;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.AsyncMap;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.archive.controllers.ArchiveController;
 import org.entcore.archive.controllers.ImportController;
 import org.entcore.archive.controllers.DuplicationController;
@@ -54,22 +56,15 @@ public class Archive extends BaseServer {
 	public void start(final Promise<Void> startPromise) throws Exception {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
-		promise.future().compose(x ->
-			SharedDataHelper.getInstance().<String, String>getAsyncMap("server")
-		).onSuccess(archivesMap -> {
-			StorageFactory.build(vertx, config).onSuccess(storageFactory -> {
-				try {
-					initArchives(startPromise, archivesMap, storageFactory);
-				} catch (Exception e) {
-					startPromise.fail(e);
-					log.error("Error when start Archive", e);
-				}
-			}).onFailure(ex -> log.error("Error building storage factory", ex));
-		}).onFailure(ex -> log.error("Error when start Archive server super classes", ex));
+		promise.future()
+				.compose(init -> StorageFactory.build(vertx, config))
+				.compose(storageFactory -> SharedDataHelper.getInstance().<String, String>getAsyncMap("server")
+						.map(archiveConfigMap -> Pair.of(storageFactory, archiveConfigMap)))
+				.compose(configPair -> initArchives(configPair.getLeft(), configPair.getRight()))
+				.onComplete(startPromise);
 	}
 
-	public void initArchives(final Promise<Void> startPromise, final AsyncMap<String, String> archivesMap,
-			final StorageFactory storageFactory) throws Exception {
+	public Future<Void> initArchives(final StorageFactory storageFactory, final AsyncMap<String, String> archivesMap){
 		setDefaultResourceFilter(new ArchiveFilter());
 		Storage storage = storageFactory.getStorage();
 
@@ -83,8 +78,14 @@ public class Archive extends BaseServer {
 
 		archivesMap.put("archiveConfig", new JsonObject().put("storageTimeout", storageTimeout).encode());
 
-		PrivateKey signKey = RSA.loadPrivateKey(vertx, privateKeyPath);
-		PublicKey verifyKey = RSA.loadPublicKey(vertx, privateKeyPath);
+		PrivateKey signKey;
+		PublicKey verifyKey;
+		try {
+			signKey = RSA.loadPrivateKey(vertx, privateKeyPath);
+			verifyKey = RSA.loadPublicKey(vertx, privateKeyPath);
+		} catch (Exception e) {
+			return Future.failedFuture(e);
+		}
 
 		ImportService importService = new DefaultImportService(vertx, config, storage, importPath, null, verifyKey, forceEncryption);
 
@@ -143,7 +144,7 @@ public class Archive extends BaseServer {
 				log.error("Invalid cron expression.", e);
 			}
 		}
-		startPromise.tryComplete();
+		return Future.succeededFuture();
 	}
 
 }

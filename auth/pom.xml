@@ -55,11 +55,5 @@
             <version>${revision}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>${commonsLangVersion}</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 </project>

@@ -1,6 +1,8 @@
 package org.entcore.audience;
 
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.audience.controllers.AudienceController;
 import org.entcore.audience.reaction.dao.ReactionDao;
 import org.entcore.audience.reaction.dao.impl.ReactionDaoImpl;
@@ -21,39 +23,34 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Audience extends BaseServer {
-  private AudienceController audienceController;
 
-  @Override
-  public void start(final Promise<Void> startPromise) throws Exception {
+	private AudienceController audienceController;
+
+	@Override
+	public void start(final Promise<Void> startPromise) throws Exception {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
-		promise.future().onSuccess(x -> {
-			try {
-				initAudience(startPromise);
-			} catch (Exception e) {
-				startPromise.fail(e);
-				log.error("Error when start Audience", e);
-			}
-		}).onFailure(ex -> log.error("Error when start Audience server super classes", ex));
+		promise.future().compose(init -> initAudience()).onComplete(startPromise);
 	}
 
-	public void initAudience(final Promise<Void> startPromise) throws Exception {
-    final ISql isql = Sql.getInstance();
-    final ReactionDao reactionDao = new ReactionDaoImpl(isql);
-    final ReactionService reactionService = new ReactionServiceImpl(vertx.eventBus(), reactionDao);
-    final ViewDao viewDao = new ViewDaoImpl(isql);
-    final ViewService viewService = new ViewServiceImpl(viewDao);
-    final AudienceService audienceService = new AudienceServiceImpl(reactionService, viewService);
-    final Set<String> validReactionTypes = config.getJsonObject("publicConf").getJsonArray("reaction-types").stream().map(Object::toString).collect(Collectors.toSet());
-    audienceController = new AudienceController(vertx, config(), reactionService, viewService, audienceService, validReactionTypes);
-    addController(audienceController);
-    setRepositoryEvents(new AudienceRepositoryEvents(audienceService));
-    startPromise.tryComplete();
-  }
+	public Future<Void> initAudience() {
 
-  @Override
-  public void stop(Promise<Void> stopPromise) throws Exception {
-    super.stop(stopPromise);
-    audienceController.stopResourceDeletionListener();
-  }
+		final ISql isql = Sql.getInstance();
+		final ReactionDao reactionDao = new ReactionDaoImpl(isql);
+		final ReactionService reactionService = new ReactionServiceImpl(vertx.eventBus(), reactionDao);
+		final ViewDao viewDao = new ViewDaoImpl(isql);
+		final ViewService viewService = new ViewServiceImpl(viewDao);
+		final AudienceService audienceService = new AudienceServiceImpl(reactionService, viewService);
+		final Set<String> validReactionTypes = config.getJsonObject("publicConf").getJsonArray("reaction-types").stream().map(Object::toString).collect(Collectors.toSet());
+		audienceController = new AudienceController(vertx, config(), reactionService, viewService, audienceService, validReactionTypes);
+		addController(audienceController);
+		setRepositoryEvents(new AudienceRepositoryEvents(audienceService));
+		return Future.succeededFuture();
+	}
+
+	@Override
+	public void stop(Promise<Void> stopPromise) throws Exception {
+		super.stop(stopPromise);
+		audienceController.stopResourceDeletionListener();
+	}
 }
