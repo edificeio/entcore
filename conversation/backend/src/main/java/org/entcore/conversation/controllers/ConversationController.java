@@ -1783,12 +1783,13 @@ public class ConversationController extends BaseController {
 	}
 
 	private void send(final Message<JsonObject> message) {
+		final JsonObject defaultJsonRequest = new JsonObject().put("method", "POST");
 		JsonObject m = message.body().getJsonObject("message");
 		if (m == null) {
 			message.reply(new JsonObject().put("status", "error").put("message", "invalid.message"));
 		}
 		final HttpServerRequest request = new JsonHttpServerRequest(
-				message.body().getJsonObject("request", new JsonObject()));
+				message.body().getJsonObject("request", defaultJsonRequest));
 		final UserInfos user = new UserInfos();
 		user.setUserId(message.body().getString("userId"));
 		user.setUsername(message.body().getString("username"));
