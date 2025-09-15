@@ -576,6 +576,7 @@
   "explorer.modal.share.sharebookmark.placeholder": "Saisir le nom du favori",
   "explorer.modal.share.sharebookmark.save": "Enregistrer favori",
   "explorer.modal.share.usersWithAccess": "Utilisateurs ayant accès",
+  "explorer.modal.share.alert.community" : "Vous pouvez supprimer des communautés du partage uniquement en vous rendant dans la communauté en question.",
   "explorer.move": "Déplacer",
   "explorer.move.subtitle": "Sélectionner le dossier vers lequel déplacer les éléments",
   "explorer.move.title": "Déplacer",
