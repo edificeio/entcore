@@ -19,6 +19,7 @@
 
 package org.entcore.registry;
 
+import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.Promise;
 import org.entcore.broker.api.utils.AddressParameter;
@@ -35,22 +36,20 @@ public class AppRegistry extends BaseServer {
 	public void start(final Promise<Void> startPromise) throws Exception {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
-		promise.future().onSuccess(x -> {
-			try {
-				initAppRegistry(startPromise);
-			} catch (Exception e) {
-				log.error("Error when start AppRegistry", e);
-			}
-		}).onFailure(ex -> log.error("Error when start AppRegistry server super classes", ex));
+		promise.future().compose(init -> initAppRegistry()).onComplete(startPromise);
 	}
 
-	public void initAppRegistry(final Promise<Void> startPromise) throws Exception {
+	public Future<Void> initAppRegistry() {
     final AppRegistryController appRegistryController = new AppRegistryController();
     addController(appRegistryController);
 
 		addController(new ExternalApplicationController(config.getInteger("massAuthorizeBatchSize", 1000)));
 		addController(new WidgetController());
-		addController(new LibraryController(vertx, config()));
+		try {
+			addController(new LibraryController(vertx, config()));
+		} catch (Exception e) {
+			return Future.failedFuture(e);
+		}
 		BrokerProxyUtils.addBrokerProxy(appRegistryController, vertx, new AddressParameter("application", "appregistry"));
 		JsonObject eduMalinConf = config.getJsonObject("edumalin-widget-config");
 		if(eduMalinConf != null)
@@ -68,7 +67,7 @@ public class AppRegistry extends BaseServer {
 		setDefaultResourceFilter(new AppRegistryFilter());
 		new AppRegistryEventsHandler(vertx, new NopAppRegistryEventService());
 		vertx.eventBus().publish("app-registry.loaded", new JsonObject());
-		startPromise.tryComplete();
+		return Future.succeededFuture();
 	}
 
 }

@@ -18,6 +18,7 @@
 
 package org.entcore.admin;
 
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 
 import java.util.Map;
@@ -43,19 +44,13 @@ public class Admin extends BaseServer {
 	public void start(final Promise<Void> startPromise) throws Exception {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
-		promise.future().compose(x ->
-			SharedDataHelper.getInstance().<String, Object>getMulti("server", "smsProvider", "node", "hidePersonalData")
-		).onSuccess(adminMap -> {
-			try {
-				initAdmin(startPromise, adminMap);
-			} catch (Exception e) {
-				startPromise.fail(e);
-				log.error("Error when start Admin", e);
-			}
-		}).onFailure(ex -> log.error("Error when start Admin server super classes", ex));
+		promise.future()
+				.compose(init -> SharedDataHelper.getInstance().<String, Object>getMulti("server", "smsProvider", "node", "hidePersonalData"))
+				.compose(adminConfigMap -> initAdmin(adminConfigMap))
+				.onComplete(startPromise);
 	}
 
-	public void initAdmin(final Promise<Void> startPromise, final Map<String, Object> adminMap) throws Exception {
+	public Future<Void> initAdmin(final Map<String, Object> adminMap) {
 		addController(new AdminController());
 
 		BlockProfileTraceController blockProfileTraceController = new BlockProfileTraceController("adminv2");
@@ -95,7 +90,7 @@ public class Admin extends BaseServer {
 					}
 				}
 		);
-		startPromise.complete();
+		return Future.succeededFuture();
 	}
 
 }

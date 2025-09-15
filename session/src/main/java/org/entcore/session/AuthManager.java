@@ -69,13 +69,12 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		super.start();
 		final SharedDataHelper sharedDataHelper = SharedDataHelper.getInstance();
 		sharedDataHelper.init(vertx);
-		sharedDataHelper.<String, Object>getMulti(
-				"server", "neo4jConfig", "node", "oauthCache", "redisConfig"
-		).onSuccess(sessionMap -> initSession(startPromise, sessionMap)
-		).onFailure(ex -> logger.error("Error when start Session server super classes", ex));
+		sharedDataHelper.<String, Object>getMulti("server", "neo4jConfig", "node", "oauthCache", "redisConfig")
+				.compose(sessionMap -> initSession(sessionMap))
+				.onComplete(startPromise);
 	}
 
-	public void initSession(Promise<Void> startPromise, Map<String, Object> sessionMap) {
+	public Future<Void> initSession(Map<String, Object> sessionMap) {
     BrokerProxyUtils.addBrokerProxy(new SessionBrokerListenerImpl(this), vertx);
     String neo4jConfig = (String) sessionMap.get("neo4jConfig");
 		neo4j = Neo4j.getInstance();
@@ -111,7 +110,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 			final String address = getOptionalStringConfig("address", "wse.session");
 			eb.consumer(address, this);
 		}
-		startPromise.tryComplete();
+		return Future.succeededFuture();
 	}
 
 	@Override

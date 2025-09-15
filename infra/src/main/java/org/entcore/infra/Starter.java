@@ -67,16 +67,11 @@ public class Starter extends BaseServer {
 	public void start(Promise<Void> startPromise) throws Exception {
 		final Promise<Void> initInfraPromise = Promise.promise();
 		super.start(initInfraPromise);
-		initInfraPromise.future().onSuccess(x -> {
-			try {
-				initInfra(startPromise);
-			} catch (Exception e) {
-				log.error("Error when start Infra", e);
-			}
-		}).onFailure(ex -> log.error("Error when start Infra server super classes", ex));
+		initInfraPromise.future().compose(init -> initInfra()).onComplete(startPromise);
 	}
 
-	public void initInfra(Promise<Void> startPromise) {
+	public Future<Void> initInfra() {
+		Promise<Void> returnPromise = Promise.promise();
 		try {
 			final Map<String, Object> serverMap = new HashMap<>();
 			serverMap.put("signKey", config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK" + Math.random()));
@@ -197,7 +192,7 @@ public class Starter extends BaseServer {
 				final List<Future<Void>> futures = new ArrayList<>();
 				serverMap.entrySet().stream().forEach(entry -> futures.add(asyncServerMap.put(entry.getKey(), entry.getValue())));
 				Future.all(futures)
-					.onSuccess(a -> startPromise.complete())
+					.onSuccess(a -> returnPromise.complete())
 					.onFailure(ex -> log.error("Error putting values in config server map", ex));
 			}).onFailure(ex -> log.error("Error getting server map", ex));
 
@@ -255,6 +250,7 @@ public class Starter extends BaseServer {
 		} else if (new MetricsOptions(config.getJsonObject("metricsOptions")).isEnabled()) {
 			new MicrometerInfraMetricsRecorder(vertx);
 		}
+		return returnPromise.future();
 	}
 
 	private void loadInvalidEmails() {

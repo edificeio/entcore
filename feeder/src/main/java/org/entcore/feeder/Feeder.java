@@ -24,11 +24,13 @@ import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.collections.SharedDataHelper;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.common.bus.MessageReplyNotifier;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStoreFactory;
@@ -99,19 +101,13 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		final SharedDataHelper sharedDataHelper = SharedDataHelper.getInstance();
 		sharedDataHelper.init(vertx);
 		sharedDataHelper.<String, Object>getMulti("server", "neo4jConfig", "node")
-		.onSuccess(feederMap -> {
-			StorageFactory.build(vertx, config)
-            .onSuccess(storageFactory -> {
-				try {
-					initFeeder(startPromise, feederMap, storageFactory);
-				} catch (Exception e) {
-					logger.error("Error when start Feeder", e);
-				}
-			}).onFailure(ex -> logger.error("Error building storage factory", ex));
-		}).onFailure(ex -> logger.error("Error when start Feeder server super classes", ex));
+				.compose(feederConfigMap -> StorageFactory.build(vertx, config)
+						.map(storageFactory -> Pair.of(feederConfigMap, storageFactory)))
+				.compose(configPair -> initFeeder(configPair.getLeft(), configPair.getRight()))
+				.onComplete(startPromise);
 	}
 
-	public void initFeeder(Promise<Void> startPromise, Map<String,Object> feederMap, StorageFactory storageFactory) {
+	public Future<Void> initFeeder(Map<String,Object> feederMap, StorageFactory storageFactory) {
 		storage = storageFactory.getStorage();
 		EmailFactory.build(vertx, config);
 		FeederLogger.init(config);
@@ -182,7 +178,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		} catch (ParseException e) {
 			logger.fatal(e.getMessage(), e);
 			vertx.close();
-			return;
+			return Future.failedFuture(e);
 		}
 		final String reinitLoginCron = config.getString("reinit-login-cron", null);
 		Validator.initLogin(neo4j, vertx);
@@ -259,7 +255,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		}
 		I18n.getInstance().init(vertx);
 		validatorFactory = new ValidatorFactory(vertx);
-		startPromise.tryComplete();
+		return Future.succeededFuture();
 	}
 
 	private void setupImportCron(JsonObject cronConf, ImportsLauncher launcher)
