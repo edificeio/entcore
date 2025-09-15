@@ -22,6 +22,8 @@ package org.entcore.conversation;
 import java.text.ParseException;
 
 import static org.entcore.common.editor.ContentTransformerConfig.getContentTransformerConfig;
+
+import io.vertx.core.Future;
 import org.entcore.common.editor.ContentTransformerEventRecorderFactory;
 import org.entcore.common.editor.IContentTransformerEventRecorder;
 import org.entcore.common.http.BaseServer;
@@ -57,20 +59,13 @@ public class Conversation extends BaseServer {
 	public void start(final Promise<Void> startPromise) throws Exception {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
-		promise.future().onSuccess(adminMap -> {
-			StorageFactory.build(vertx, config, new ConversationStorage())
-            .onSuccess(storageFactory -> {
-				try {
-					initConversation(startPromise, storageFactory);
-				} catch (Exception e) {
-					startPromise.fail(e);
-					log.error("Error when start Conversation", e);
-				}
-			}).onFailure(ex -> log.error("Error building storage factory", ex));
-		}).onFailure(ex -> log.error("Error when start Conversation server super classes", ex));
+		promise.future()
+				.compose(init -> StorageFactory.build(vertx, config, new ConversationStorage()))
+				.compose(this::initConversation)
+				.onComplete(startPromise);
 	}
 
-	public void initConversation(final Promise<Void> startPromise, StorageFactory storageFactory) throws Exception {
+	public Future<Void> initConversation(StorageFactory storageFactory) {
 		final Storage storage = storageFactory.getStorage();
 
 		ContentTransformerFactoryProvider.init(vertx);
@@ -105,7 +100,7 @@ public class Conversation extends BaseServer {
 				log.error("Invalid cron expression.", e);
 			}
 		}
-		startPromise.tryComplete();
+		return Future.succeededFuture();
 	}
 
 }

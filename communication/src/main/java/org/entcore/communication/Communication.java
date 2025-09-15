@@ -19,6 +19,7 @@
 
 package org.entcore.communication;
 
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 
@@ -34,17 +35,10 @@ public class Communication extends BaseServer {
 	public void start(final Promise<Void> startPromise) throws Exception {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
-		promise.future().onSuccess(x -> {
-			try {
-				initCommunication(startPromise);
-			} catch (Exception e) {
-				startPromise.fail(e);
-				log.error("Error when start Communication", e);
-			}
-		}).onFailure(ex -> log.error("Error when start Communication server super classes", ex));
+		promise.future().compose(init -> initCommunication()).onComplete(startPromise);
 	}
 
-	public void initCommunication(final Promise<Void> startPromise) throws Exception {
+	public Future<Void> initCommunication() {
     	final TimelineHelper helper = new TimelineHelper(vertx, vertx.eventBus(), config);
 		final CommunicationController communicationController = new CommunicationController();
 
@@ -53,7 +47,7 @@ public class Communication extends BaseServer {
 
 		addController(communicationController);
 		setDefaultResourceFilter(new CommunicationFilter());
-		startPromise.tryComplete();
+		return Future.succeededFuture();
 	}
 
 }

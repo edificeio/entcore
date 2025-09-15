@@ -21,6 +21,7 @@ package org.entcore.directory;
 
 import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.email.EmailSender;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
@@ -33,6 +34,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.BaseServer;
@@ -72,23 +74,15 @@ public class Directory extends BaseServer {
 	public void start(final Promise<Void> startPromise) throws Exception {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
-		promise.future().compose(x ->
-			SharedDataHelper.getInstance().<String, Object>getMulti("server", "skins", "assetPath", "hidePersonalData")
-		).onSuccess(serverMap -> {
-			StorageFactory.build(vertx, config, new MongoDBApplicationStorage("documents", Directory.class.getSimpleName()))
-            .onSuccess(storageFactory -> {
-				try {
-					initDirectory(startPromise, serverMap, storageFactory);
-				} catch (Exception e) {
-					startPromise.fail(e);
-					log.error("Error when start Directory", e);
-				}
-			}).onFailure(ex -> log.error("Error building storage factory", ex));
-		}).onFailure(ex -> log.error("Error when start Directory server super classes", ex));
+		promise.future()
+				.compose(init -> StorageFactory.build(vertx, config, new MongoDBApplicationStorage("documents", Directory.class.getSimpleName())))
+				.compose(storageFactory -> SharedDataHelper.getInstance().<String, Object>getMulti("server", "skins", "assetPath", "hidePersonalData")
+						.map(directoryConfigMap -> Pair.of(storageFactory, directoryConfigMap)))
+				.compose(configPair -> initDirectory(configPair.getLeft(), configPair.getRight()))
+				.onComplete(startPromise);
 	}
 
-	public void initDirectory(final Promise<Void> startPromise, Map<String, Object> serverMap,
-			final StorageFactory storageFactory) throws Exception {
+	public Future<Void> initDirectory(final StorageFactory storageFactory, final Map<String, Object> serverMap) {
 		final EventBus eb = getEventBus(vertx);
 		MongoDbConf.getInstance().setCollection(SLOTPROFILE_COLLECTION);
 		setDefaultResourceFilter(new DirectoryResourcesProvider());
@@ -250,14 +244,19 @@ public class Directory extends BaseServer {
 
         final JsonObject remoteNodes = config.getJsonObject("remote-nodes");
         if (remoteNodes != null) {
-			final RemoteClientCluster remoteClientCluster = new RemoteClientCluster(vertx, remoteNodes);
-			final RemoteUserService remoteUserService = new DefaultRemoteUserService(emailSender);
+	        final RemoteClientCluster remoteClientCluster;
+	        try {
+		        remoteClientCluster = new RemoteClientCluster(vertx, remoteNodes);
+	        } catch (URISyntaxException e) {
+		        return Future.failedFuture(e);
+	        }
+	        final RemoteUserService remoteUserService = new DefaultRemoteUserService(emailSender);
 			((DefaultRemoteUserService) remoteUserService).setRemoteClientCluster(remoteClientCluster);
 			final RemoteUserController remoteUserController = new RemoteUserController();
 			remoteUserController.setRemoteUserService(remoteUserService);
 			addController(remoteUserController);
 		}
-		startPromise.tryComplete();
+		return Future.succeededFuture();
 	}
 
 }
