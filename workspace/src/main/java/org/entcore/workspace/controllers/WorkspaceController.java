@@ -981,7 +981,8 @@ public class WorkspaceController extends BaseController {
 						file = getAnyThumbnail(jo);
 					}
 					if (!StringUtils.isEmpty(file)) {
-						boolean inline = inlineDocumentResponse(jo, request.params().get("application"));
+						boolean inline = "true".equalsIgnoreCase(request.params().get("inline"))
+										 || inlineDocumentResponse(jo, request.params().get("application"));
 						if (inline && ETag.check(request, file)) {
 							notModified(request, file);
 						} else {

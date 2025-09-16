@@ -1852,23 +1852,6 @@ i.download {
   display: block;
   max-width: 100%;
 }
-pdf-viewer {
-  display: block;
-  width: 100%;
-  position: relative;
-  margin-top: 30px;
-}
-pdf-viewer .file-controls,
-pdf-viewer .pagination {
-  position: absolute;
-  top: -30px;
-}
-pdf-viewer .file-controls {
-  right: 65px;
-}
-pdf-viewer .pagination {
-  right: 5px;
-}
 .pagination input[type=text] {
   width: 20px;
 }
