@@ -37,7 +37,19 @@ public interface EventStoreService {
 	List<String> EVENT_STORE_TYPES = Arrays.asList("events", "traces");
 	long ONE_DAY_DURATION = 24 * 3600 * 1000L;
 
-	void store(JsonObject event, Handler<Either<String, Void>> handler);
+	/**
+	 * Store an event with optional user and request context.
+	 * If user and request are not null, enrich the event with user and request info.
+	 */
+	void store(JsonObject event, UserInfos user, HttpServerRequest request, Handler<Either<String, Void>> handler);
+
+	/**
+	 * Default implementation for backward compatibility.
+	 * Delegates to the new store method with null user and request.
+	 */
+	default void store(JsonObject event, Handler<Either<String, Void>> handler) {
+		store(event, null, null, handler);
+	}
 
 	void generateMobileEvent(String eventType, UserInfos user, HttpServerRequest request, String module, final Handler<Either<String, Void>> handler);
 

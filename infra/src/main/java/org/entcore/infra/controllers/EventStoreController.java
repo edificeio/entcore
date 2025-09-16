@@ -72,7 +72,10 @@ public class EventStoreController extends BaseController {
 			    if (!authorizedUser(event)) {
                     Renders.ok(request);
                 } else {
-                    eventStoreService.store(event, voidResponseHandler(request));
+                    // Retrieve user infos and pass to new store method
+                    UserUtils.getUserInfos(eb, request, user -> {
+                        eventStoreService.store(event, user, request, voidResponseHandler(request));
+                    });
                 }
 			}
 		});
