@@ -6,7 +6,10 @@ export const pdfViewer = ng.directive("pdfViewer", function () {
     template: "",
     link: function (_scope, element, attributes) {
       if (navigator.pdfViewerEnabled) {
-        let reference = window.open(attributes.ngSrc, "pdfviewer");
+        let reference = window.open(
+          attributes.ngSrc + "?inline=true",
+          "pdfviewer"
+        );
         reference && reference.focus();
       } else {
         let span = document.createElement("span");
