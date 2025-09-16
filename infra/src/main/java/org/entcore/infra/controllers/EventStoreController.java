@@ -101,6 +101,10 @@ public class EventStoreController extends BaseController {
 							event.put("userId", user.getUserId());
 						}
 
+						if(!event.containsKey("profil") && user.getType() != null) {
+							event.put("profil", user.getType());
+						}
+
 						if(!event.containsKey("ua") && request.headers().get("User-Agent") != null) {
 							event.put("ua", request.headers().get("User-Agent"));
 						}
