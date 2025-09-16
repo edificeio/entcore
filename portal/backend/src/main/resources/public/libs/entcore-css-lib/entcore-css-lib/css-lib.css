@@ -8114,23 +8114,6 @@ ul.icons-tabs {
     display: block;
     max-width: 100%; }
 
-pdf-viewer {
-  display: block;
-  width: 100%;
-  position: relative;
-  margin-top: 30px; }
-  pdf-viewer .file-controls, pdf-viewer .pagination {
-    position: absolute;
-    top: -72px; }
-    pdf-viewer .file-controls i, pdf-viewer .pagination i {
-      display: inline-block;
-      font-size: 22px;
-      margin-right: 10px; }
-  pdf-viewer .file-controls {
-    left: 65px; }
-  pdf-viewer canvas {
-    max-width: 100%; }
-
 .editor-view .viewer .media {
   opacity: 0.3;
   cursor: inherit; }
