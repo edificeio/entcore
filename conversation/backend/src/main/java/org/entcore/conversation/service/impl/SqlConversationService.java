@@ -355,7 +355,7 @@ public class SqlConversationService implements ConversationService{
 					builder.prepared(insertUserAttachmentBuilder.deleteCharAt(insertUserAttachmentBuilder.length()-1).toString(), new JsonArray());
 				}
 
-				sql.transaction(builder.build(),new DeliveryOptions().setSendTimeout(sendTimeout), SqlResult.validUniqueResultHandler(result));
+				sql.transaction(builder.build(),new DeliveryOptions().setSendTimeout(sendTimeout), SqlResult.validUniqueResultHandler(0, result));
 			}
 		});
 	}
