@@ -85,6 +85,8 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 	private final Map<String, String> equipments = new HashMap<>();
 	private final Map<String, String> personnels = new HashMap<>();
 	private final Map<String, String> students = new HashMap<>();
+	// Store pending student->group links that couldn't be resolved immediately
+	private final Map<String, List<String>> pendingStudentGroupLinks = new HashMap<>();
 	private final Map<String, JsonObject> subClasses = new HashMap<>();
 	private final Set<String> userImportedPronoteId = new HashSet<>();
 	private final Map<String, String> idpnIdent = new HashMap<>();
@@ -165,10 +167,14 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 							userImportedExternalId.addAll(r.getList());
 						}
 					}
+					// Try to resolve pending student->group links after all processing
+					resolvePendingStudentGroupLinks();
 					handler.handle(null);
 				}
 			});
 		} else {
+			// Even if there are no IDPN to process, still try to resolve pending links
+			resolvePendingStudentGroupLinks();
 			handler.handle(null);
 		}
 	}
@@ -241,6 +247,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 			// The group won't be actually added to unknowns if it is auto-reconciliated: see the query for details
 			txXDT.add(UNKNOWN_GROUPS, new JsonObject().put("UAI", UAI).put("source", this.getTimetableSource()).put("groupExternalId", externalId).put("groupName", name));
 		}
+		processDirectStudentsInGroup(id, externalId, currentEntity);
 	}
 
 	private void classInGroups(String id, JsonArray classes, Map<String, JsonObject> ref) {
@@ -725,6 +732,114 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 	@Override
 	protected String getTeacherMappingAttribute() {
 		return "IDPN";
+	}
+
+	/**
+	 * Process direct student-group relationships from <Eleve> tags within <Groupe> tags.
+	 * This method reads student references in a group and creates the appropriate relationships.
+	 *
+	 * @param groupId The identifier of the group being processed
+	 * @param groupExternalId The external identifier of the group to create relationships with
+	 * @param currentEntity The JSON object representing the group with potential Eleve elements
+	 */
+	private void processDirectStudentsInGroup(String groupId, String groupExternalId, JsonObject currentEntity) {
+		if (!authorizeUpdateGroups) {
+			return; // Skip if group updates are not authorized
+		}
+
+		final JsonArray directStudents = currentEntity.getJsonArray("Eleve");
+		if (directStudents == null || directStudents.isEmpty()) {
+			return; // No direct students in this group
+		}
+		
+		log.debug("Processing " + directStudents.size() + " direct students in group: " + currentEntity.getString("Nom", "unknown"));
+		final long now = importTimestamp;
+		int studentCount = 0;
+		
+		for (Object o : directStudents) {
+			if (!(o instanceof JsonObject)) continue;
+			
+			final JsonObject student = (JsonObject) o;
+			final String studentIdent = student.getString(IDENT);
+			
+			if (isEmpty(studentIdent)) continue;
+			
+			// Queue this association for later resolution
+			log.debug("Queuing pending student->group link: studentIdent=" + studentIdent + " -> group=" + groupExternalId);
+			List<String> groupIds = pendingStudentGroupLinks.get(studentIdent);
+			if (groupIds == null) {
+				groupIds = new ArrayList<>();
+				pendingStudentGroupLinks.put(studentIdent, groupIds);
+			}
+			groupIds.add(groupExternalId);
+				
+			studentCount++;
+		}
+		
+		if (studentCount > 0) {
+			log.debug("Added " + studentCount + " direct students to group " + currentEntity.getString("Nom", "unknown"));
+			ttReport.validateGroupCreated(currentEntity.getString("Nom", "unknown"));
+		}
+	}
+
+	/**
+	 * Process pending student->group links that were queued when students weren't available yet.
+	 * This method should be called after all students have been loaded.
+	 */
+	private void resolvePendingStudentGroupLinks() {
+		if (pendingStudentGroupLinks.isEmpty()) {
+			return;
+		}
+		
+		log.info("Processing " + pendingStudentGroupLinks.size() + " pending student->group links");
+		final long now = importTimestamp;
+		int resolvedLinks = 0;
+		
+		// Make a copy to avoid ConcurrentModificationException
+		for (Map.Entry<String, List<String>> entry : new HashMap<>(pendingStudentGroupLinks).entrySet()) {
+			final String studentIdent = entry.getKey();
+			final String studentId = students.get(studentIdent);
+			
+			if (isNotEmpty(studentId)) {
+				// Student found, create all pending links
+				for (String groupExternalId : entry.getValue()) {
+					txXDT.add(STUDENTS_TO_GROUPS, new JsonObject()
+						.put("id", studentId)
+						.put("externalId", groupExternalId)
+						.put("source", EDT)
+						.put("inDate", importTimestamp)
+						.put("outDate", importTimestamp + 31536000000L) // Add one year by default
+						.put("now", now));
+					
+					// Try to find group name for reporting
+					String groupName = null;
+					for (JsonObject group : groups.values()) {
+						if (groupExternalId.equals(group.getString("externalId"))) {
+							groupName = group.getString("Nom");
+							break;
+						}
+					}
+					
+					if (groupName != null) {
+						ttReport.validateGroupCreated(groupName);
+					}
+					resolvedLinks++;
+				}
+				
+				// Remove this entry as it's been processed
+				pendingStudentGroupLinks.remove(studentIdent);
+			} else {
+				log.warn("Student with Ident=" + studentIdent + " still not found after all students processed");
+			}
+		}
+		
+		if (resolvedLinks > 0) {
+			log.debug("Successfully resolved " + resolvedLinks + " student->group links");
+		}
+		
+		if (!pendingStudentGroupLinks.isEmpty()) {
+			log.warn(pendingStudentGroupLinks.size() + " student->group links could not be resolved");
+		}
 	}
 
 	public static void launchImport(Vertx vertx, Storage storage, EDTUtils edtUtils, final Message<JsonObject> message, boolean edtUserCreation) {
