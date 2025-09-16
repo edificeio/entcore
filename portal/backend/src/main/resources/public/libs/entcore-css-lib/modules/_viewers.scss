@@ -72,29 +72,6 @@
 	}
 }
 
-pdf-viewer{
-	display: block;
-	width: 100%;
-	position: relative;
-	margin-top: 30px;
-	.file-controls, .pagination{
-		position: absolute;
-		top: -72px;
-		i{
-			display: inline-block;
-			font-size: 22px;
-			margin-right: 10px;
-		}
-	}
-	.file-controls{
-		left: 65px;
-	}
-	canvas{
-		max-width: 100%;
-	}
-}
-
-
 .editor-view{
 	.viewer{
 		.media{
