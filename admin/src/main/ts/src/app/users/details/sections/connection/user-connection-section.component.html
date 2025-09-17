@@ -1,13 +1,8 @@
-<ode-panel-section
-  section-title="users.connection.section.infos"
-  [folded]="false"
->
-  <div class="message is-info" *ngIf="disabledFlag === 'disabled'">
-    <div class="message-body">
-      &nbsp;<s5l>notify.user.connection.federated</s5l>
-    </div>
+<ode-panel-section section-title="users.connection.section.infos" [folded]="false">
+  <div class="message is-info" *ngIf="disabledFlag==='disabled'">
+    <div class="message-body">&nbsp;<s5l>notify.user.connection.federated</s5l></div>
   </div>
-
+  
   <div class="message is-info" *ngIf="isForbidden">
     <div class="message-body">&nbsp;<s5l>notify.user.email.info</s5l></div>
   </div>
@@ -63,13 +58,13 @@
     <fieldset>
       <ode-form-field label="email">
         <div>
-          <input
-            type="email"
-            [(ngModel)]="email"
-            name="email"
+          <input 
+            type="email" 
+            [(ngModel)]="email" 
+            name="email" 
             [disabled]="isForbidden || isMyAdmlAccount"
-            #emailInput="ngModel"
-            [pattern]="emailPattern"
+            #emailInput="ngModel" 
+            [pattern]="emailPattern" 
             (ngModelChange)="isUpdateMailSaved = false"
           />
           <ode-form-errors [control]="emailInput"></ode-form-errors>
@@ -78,13 +73,12 @@
             (click)="updateMail()"
             [disabled]="
               (isUpdateMailSaved ||
-                mailForm.pristine ||
-                mailForm.invalid ||
-                spinner.isLoading('portal-content') ||
-                isForbidden) &&
-              !isMyAdmlAccount
-            "
-          >
+              mailForm.pristine ||
+              mailForm.invalid ||
+              spinner.isLoading('portal-content') ||
+              isForbidden) 
+              && !isMyAdmlAccount
+            ">
             <s5l *ngIf="!isMyAdmlAccount">save</s5l>
             <s5l *ngIf="isMyAdmlAccount">edit</s5l>
             <i *ngIf="!isMyAdmlAccount" class="fa fa-floppy-o"></i>
@@ -131,7 +125,7 @@
   </form>
 
   <form>
-    <fieldset>
+    <fieldset [attr.disabled]="disabledFlag">
       <ode-form-field label="activation.code" *ngIf="details.activationCode">
         <span>{{ details.activationCode }}</span>
       </ode-form-field>
@@ -150,48 +144,25 @@
           </button>
         </div>
       </ode-form-field>
-      <ode-form-field
-        label="mergedLogins"
-        *ngIf="details.mergedLogins && details.mergedLogins.length"
-      >
+      <ode-form-field label="mergedLogins" *ngIf="details.mergedLogins && details.mergedLogins.length" >
         <div>
-          <button
-            type="button"
-            class="noflex"
-            (click)="showMergedLogins = true"
-          >
+          <button type="button" class="noflex"
+                  (click)="showMergedLogins = true">
             <s5l>mergedLogins.view</s5l>
             <i class="fa fa-eye"></i>
           </button>
 
-          <ode-lightbox
-            class="merge-info"
-            [show]="showMergedLogins"
-            (onClose)="showMergedLogins = false"
-          >
-            <h2>
-              <s5l [s5l-params]="{ displayName: details.displayName }"
-                >mergedLogins.box.title</s5l
-              >
-            </h2>
+          <ode-lightbox class="merge-info" [show]="showMergedLogins" (onClose)="showMergedLogins = false">
+            <h2><s5l [s5l-params]="{displayName: details.displayName}">mergedLogins.box.title</s5l></h2>
             <div>
               <div *ngIf="isAdmc" class="message is-info">
-                <div class="message-body">
-                  &nbsp;<s5l>mergedLogins.box.content</s5l>
-                </div>
+                <div class="message-body">&nbsp;<s5l>mergedLogins.box.content</s5l></div>
               </div>
               <ul>
                 <li *ngFor="let item of details.mergedLogins">
-                  <div
-                    class="is-display-flex has-space-between has-align-items-center"
-                  >
+                  <div class="is-display-flex has-space-between has-align-items-center">
                     <div>{{ item }}</div>
-                    <button
-                      type="button"
-                      class="button is-primary"
-                      *ngIf="isAdmc"
-                      (click)="unmerge(item)"
-                    >
+                    <button type="button" class="button is-primary" *ngIf="isAdmc" (click)="unmerge(item)">
                       <s5l>mergedLogins.unmerge</s5l>
                       <i class="fa fa-scissors"></i>
                     </button>
@@ -226,9 +197,7 @@
             <button
               type="button"
               (click)="sendResetPasswordMail(passwordResetMail)"
-              [disabled]="
-                !passwordResetMail || passwordMailInput.errors || isForbidden
-              "
+              [disabled]="!passwordResetMail || passwordMailInput.errors || isForbidden"
             >
               <span><s5l>send.reset.password.button</s5l></span>
               <i class="fa fa-envelope"></i>
@@ -250,11 +219,7 @@
               type="button"
               class="mobile"
               (click)="sendResetPasswordMobile(passwordResetMobile)"
-              [disabled]="
-                !passwordResetMobile ||
-                passwordMobileInput.errors ||
-                isForbidden
-              "
+              [disabled]="!passwordResetMobile || passwordMobileInput.errors || isForbidden"
             >
               <span><s5l>send.reset.password.button</s5l></span>
               <i class="fa fa-mobile"></i>
@@ -269,13 +234,7 @@
     <fieldset>
       <ode-form-field label="homePhone" *ngIf="!config['hide-personal-data']">
         <div>
-          <input
-            type="tel"
-            [(ngModel)]="details.homePhone"
-            name="homePhone"
-            [disabled]="isForbidden"
-            (ngModelChange)="isHomePhoneSaved = false"
-          />
+          <input type="tel" [(ngModel)]="details.homePhone" name="homePhone" [disabled]="isForbidden" (ngModelChange)="isHomePhoneSaved = false" />
           <button
             type="button"
             (click)="updateHomePhone()"
@@ -299,23 +258,21 @@
     <fieldset>
       <ode-form-field label="mobilePhone" *ngIf="!config['hide-personal-data']">
         <div>
-          <input
-            type="tel"
-            [(ngModel)]="details.mobile"
-            name="mobile"
-            [disabled]="isForbidden || isMyAdmlAccount"
-            (ngModelChange)="isMobileSaved = false"
-          />
+          <input type="tel" 
+            [(ngModel)]="details.mobile" 
+            name="mobile" 
+            [disabled]="isForbidden || isMyAdmlAccount" 
+            (ngModelChange)="isMobileSaved = false"/>
           <button
             type="button"
             (click)="updateMobile()"
             [disabled]="
               (isMobileSaved ||
-                mobileForm.pristine ||
-                mobileForm.invalid ||
-                isForbidden ||
-                spinner.isLoading('portal-content')) &&
-              !isMyAdmlAccount
+              mobileForm.pristine ||
+              mobileForm.invalid ||
+              isForbidden ||
+              spinner.isLoading('portal-content'))
+              && !isMyAdmlAccount
             "
           >
             <s5l *ngIf="!isMyAdmlAccount">save</s5l>
@@ -335,11 +292,7 @@
         *ngIf="!details.activationCode"
       >
         <div>
-          <button
-            type="button"
-            (click)="clickOnGenerateRenewalCode()"
-            [disabled]="isForbidden"
-          >
+          <button type="button" (click)="clickOnGenerateRenewalCode()" [disabled]="isForbidden">
             <span><s5l>generate.password.renewal.code</s5l></span>
           </button>
           <span *ngIf="renewalCode">
