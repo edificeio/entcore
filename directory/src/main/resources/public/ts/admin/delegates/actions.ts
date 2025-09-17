@@ -9,7 +9,6 @@ export interface ActionsDelegateScope extends EventDelegateScope {
     selectedUsersAreNotActivated(): boolean;
     selectedUsersAreBlocked(): boolean;
     selectedUsersAreNotBlocked(): boolean;
-    selectedUsersAreFederated(): boolean;
     confirmRemove();
     canRemoveSelection(): boolean
     blockUsers(): void;
@@ -51,9 +50,6 @@ export function ActionsDelegate($scope: ActionsDelegateScope) {
     }
     $scope.selectedUsersAreBlocked = function () {
         return selection.findIndex((u) => !u.blocked) == -1;
-    }
-    $scope.selectedUsersAreFederated = function () {
-        return selection.findIndex((u) => u.hasFederatedIdentity!==true) === -1;
     }
     $scope.canRemoveSelection = function () {
         return selection.filter((user) => {
