@@ -256,15 +256,16 @@ public abstract class BaseServer extends Server {
 	}
 
 	@Override
-	protected Server addController(BaseController controller) {
+	protected Future<Server> addController(BaseController controller) {
 		controller.setAccessLogger(accessLogger);
-		super.addController(controller);
-		if (config.getJsonObject("override-theme") != null) {
-			controller.addHookRenderProcess(new OverrideThemeHookRender(getEventBus(vertx), config.getJsonObject("override-theme")));
-		}
-		controller.addHookRenderProcess(new SecurityHookRender(getEventBus(vertx),
-				true, contentSecurityPolicy));
-		return this;
+		return super.addController(controller).map(e -> {
+      if (config.getJsonObject("override-theme") != null) {
+        controller.addHookRenderProcess(new OverrideThemeHookRender(getEventBus(vertx), config.getJsonObject("override-theme")));
+      }
+      controller.addHookRenderProcess(new SecurityHookRender(getEventBus(vertx),
+        true, contentSecurityPolicy));
+      return this;
+    });
 	}
 
 	@Override
