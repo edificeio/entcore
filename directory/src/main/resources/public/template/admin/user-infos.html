@@ -31,14 +31,12 @@
 				<label translate content="userBook.profile.login" class="four cell"><span class="no-style ng-scope"></span></label>
 				<label ng-if="!showLoginInput" class="six cell"><span class="no-style">[[selectedUser.login]]</span></label>
 				<input ng-if="showLoginInput" class="four cell inline-editing" ng-model="selectedUser.tempLoginAlias" type="text">
-				<label ng-if="!showLoginInput && !isForbidden()">
-					<a ng-disabled="hasFederatedIdentity()" ng-click="openLoginInput()" href="#" translate content="directory.modify"></a>
-				</label>
+				<label ng-if="!showLoginInput && !isForbidden()"><a ng-click="openLoginInput()" href="#" translate content="directory.modify"></a></label>
 				<label ng-if="showLoginInput && !isLoginAliasWellFormatted()" tooltip="classAdmin.pattern">
 					<a disabled="disabled" href="#" translate content="classAdmin.save"></a>
 				</label>
 				<label ng-if="showLoginInput && isLoginAliasWellFormatted()">
-					<a ng-disabled="hasFederatedIdentity()" ng-click="saveAndCloseLoginInput()" href="#" translate content="classAdmin.save"></a>
+					<a ng-click="saveAndCloseLoginInput()" href="#" translate content="classAdmin.save"></a>
 				</label>
 			</div>
 			<div class="row">
@@ -125,15 +123,8 @@
 	<!--END FORM-->
 	<!--BUTTONS-->
 	<div class="row twelve bottom-spacing-three" ng-if="!isForbidden()">
-		<a class="button" workflow="directory.allowClassAdminResetPassword"
-			ng-if="!selectedUser.activationCode" 
-			ng-click="resetPasswords(selectedUser)"
-			ng-disabled="hasFederatedIdentity()" 
-			translate content="classAdmin.userInfos.reset"></a>
-		<a class="button"
-			ng-click="userInfoExport(selectedUser)"
-			ng-disabled="hasFederatedIdentity()" 
-			translate content="classAdmin.userInfos.connectInfos"></a>
+		<a workflow="directory.allowClassAdminResetPassword" ng-if="!selectedUser.activationCode" class="button" ng-click="resetPasswords(selectedUser)" translate content="classAdmin.userInfos.reset"></a>
+		<a class="button" ng-click="userInfoExport(selectedUser)" translate content="classAdmin.userInfos.connectInfos"></a>
 	</div>
 	<!--END BUTTON-->
 	<!--MOOD-->

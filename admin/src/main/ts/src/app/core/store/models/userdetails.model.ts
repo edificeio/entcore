@@ -64,8 +64,6 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     structureNodes?: Array<any>;
     removedFromStructures?: Array<String>;
     userPositions?: Array<UserPosition>;
-    federated?: boolean|null;
-    federatedIDP?: string|null;
 
     toggleBlock() {
         return this.http.put(`/auth/block/${this.id}`, { block: !this.blocked }).then(() => {
