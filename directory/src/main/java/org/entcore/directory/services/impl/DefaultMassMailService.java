@@ -273,7 +273,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         String filter =
                 " MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User), " +
                         "(g)-[:HAS_PROFILE]-(p: Profile) ";
-        String condition = "WHERE NOT(HAS(u.federatedIDP) AND NOT(u.federatedIDP IS NULL) AND HAS(u.federated) AND u.federated = true) ";
+        String condition = "";
         String optional =
                 " OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) " +
                         "OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) ";
@@ -284,14 +284,14 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         if (filterObj.containsKey("activated")) {
             String activated = filterObj.getString("activated", "false");
             if ("false".equals(activated.toLowerCase())) {
-                condition += "AND NOT(u.activationCode IS NULL) ";
+                condition = "WHERE NOT(u.activationCode IS NULL) ";
             } else if ("true".equals(activated.toLowerCase())) {
-                condition += "AND (u.activationCode IS NULL) ";
+                condition = "WHERE (u.activationCode IS NULL) ";
             } else {
-                // third case => empty condition
+                condition = "WHERE 1 = 1 ";
             }
         } else {
-            condition += "AND NOT(u.activationCode IS NULL) ";
+            condition = "WHERE NOT(u.activationCode IS NULL) ";
         }
 
         //Profiles
@@ -374,7 +374,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
                 UserInfos.Function f = userInfos.getFunctions().get(CLASS_ADMIN);
                 List<String> scope = f.getScope();
                 if (scope != null && !scope.isEmpty()) {
-                    condition += "AND c.id IN {scope} ";
+                    condition = "AND c.id IN {scope} ";
                     params.put("scope", new JsonArray(scope));
                 }
             }
@@ -423,9 +423,9 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         String filter =
                 "MATCH (s:Structure)<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User {id: {userId}}), " +
                         "(g)-[:HAS_PROFILE]-(p: Profile) ";
-        String condition = "WHERE NOT(HAS(u.federatedIDP) AND NOT(u.federatedIDP IS NULL) AND HAS(u.federated) AND u.federated = true) ";
+        String condition = "";
         if (!userInfos.getFunctions().containsKey(SUPER_ADMIN)) {
-            condition += "AND " + DefaultSchoolService.EXCLUDE_ADMC_QUERY_FILTER;
+            condition = "WHERE " + DefaultSchoolService.EXCLUDE_ADMC_QUERY_FILTER;
         }
 
         String optional =
@@ -461,7 +461,7 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         String filter =
                 "MATCH (s:Structure {id: {structureId}})<-[:DEPENDS]-(g:ProfileGroup)<-[:IN]-(u:User), " +
                         "(g)-[:HAS_PROFILE]-(p: Profile) ";
-        String condition = "WHERE NOT(HAS(u.federatedIDP) AND NOT(u.federatedIDP IS NULL) AND HAS(u.federated) AND u.federated = true) ";
+        String condition = "";
         String optional =
                 "OPTIONAL MATCH (s)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u) " +
                         "OPTIONAL MATCH (u)<-[:RELATED]-(child: User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(c) " +
@@ -478,13 +478,13 @@ public class DefaultMassMailService extends Renders implements MassMailService {
             UserInfos.Function f = userInfos.getFunctions().get(ADMIN_LOCAL);
             List<String> scope = f.getScope();
             if (scope != null && !scope.isEmpty()) {
-                condition += "AND s.id IN {scope} ";
+                condition += "WHERE s.id IN {scope} ";
                 params.put("scope", new JsonArray(scope));
             }
         }
 
         if (!userInfos.getFunctions().containsKey(SUPER_ADMIN)) {
-            condition += "AND "+ DefaultSchoolService.EXCLUDE_ADMC_QUERY_FILTER;
+            condition += (condition.isEmpty() ? "WHERE " : "AND ") + DefaultSchoolService.EXCLUDE_ADMC_QUERY_FILTER;
         }
 
         //With clause

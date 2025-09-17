@@ -72,7 +72,6 @@ export interface UserInfosDelegateScope extends EventDelegateScope {
     showPhoneInput: boolean;
     showMobileInput: boolean;
     isForbidden(): boolean;
-    hasFederatedIdentity(): boolean;
     //from others
     usersForType(type?: UserTypes): User[]
     openLightbox(path: string): void;
@@ -377,9 +376,6 @@ export async function UserInfosDelegate($scope: UserInfosDelegateScope) {
             return true;
         }
         return false;
-    }
-    $scope.hasFederatedIdentity = function() {
-        return $scope.selectedUser && $scope.selectedUser.hasFederatedIdentity || false;
     }
     $scope.userInfosDisplayChildren = function () {
         return $scope.selectedUser && $scope.selectedUser.type == "Relative";
