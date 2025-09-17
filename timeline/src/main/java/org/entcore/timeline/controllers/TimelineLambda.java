@@ -19,6 +19,7 @@
 
 package org.entcore.timeline.controllers;
 
+import com.google.common.collect.Maps;
 import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
 import fr.wseduc.webutils.I18n;
@@ -43,13 +44,15 @@ import java.util.concurrent.ConcurrentMap;
 public final class TimelineLambda {
 
 	private static final Logger log = LoggerFactory.getLogger(TimelineLambda.class);
+	private static final Map<String, Integer> i18nEventsHash = Maps.newHashMap();
 
 	private TimelineLambda() {}
 
 	public static void setLambdaTemplateRequest(final HttpServerRequest request, final TemplateProcessor processor,
-			final LocalMap<String, String> eventsI18n, final HashMap<String, JsonObject> lazyEventsI18n) {
+			final LocalMap<String, String> eventsI18n, final Map<String, JsonObject> lazyEventsI18n) {
 
 		processor.setLambda("i18n", new Mustache.Lambda() {
+
 			@Override
 			public void execute(Template.Fragment frag, Writer out) throws IOException {
 				String key = frag.execute();
@@ -57,16 +60,12 @@ public final class TimelineLambda {
 
 				JsonObject timelineI18n;
 				if (!lazyEventsI18n.containsKey(language)) {
-					String i18n = eventsI18n.get(language.split(",")[0].split("-")[0]);
-					i18n = i18n != null ? i18n : "}";
-					try {
-						timelineI18n = new JsonObject("{" + i18n.substring(0, i18n.length() - 1) + "}");
-						lazyEventsI18n.put(language, timelineI18n);
-					} catch (DecodeException de) {
-						timelineI18n = new JsonObject();
-						log.error("Bad json : " + "{" + i18n.substring(0, i18n.length() - 1) + "}", de);
-					}
+					timelineI18n = computeTimeLineI18n(language, eventsI18n, lazyEventsI18n);
 				} else {
+					String eventI18n = eventsI18n.get(language.split(",")[0].split("-")[0]);
+					if( eventI18n != null && (!i18nEventsHash.containsKey(language) || eventI18n.hashCode() != i18nEventsHash.get(language))) {
+						computeTimeLineI18n(language, eventsI18n, lazyEventsI18n);
+					}
 					timelineI18n = lazyEventsI18n.get(language);
 				}
 
@@ -118,6 +117,23 @@ public final class TimelineLambda {
 				}
 			}
 		});
+	}
+
+	private static JsonObject computeTimeLineI18n(String language, Map<String, String> eventsI18n, Map<String, JsonObject> lazyEventsI18n) {
+		String eventI18n = eventsI18n.get(language.split(",")[0].split("-")[0]);
+		String i18n = eventI18n != null ? eventI18n : "}";
+		JsonObject timelineI18n;
+		try {
+			timelineI18n = new JsonObject("{" + i18n.substring(0, i18n.length() - 1) + "}");
+			lazyEventsI18n.put(language, timelineI18n);
+			if(eventI18n != null) {
+				i18nEventsHash.put(language, eventI18n.hashCode());
+			}
+		} catch (DecodeException de) {
+			timelineI18n = new JsonObject();
+			log.error("Bad json : " + "{" + i18n.substring(0, i18n.length() - 1) + "}", de);
+		}
+		return timelineI18n;
 	}
 
 	private static Map<String, Object> getRootContext(Template.Fragment frag)
