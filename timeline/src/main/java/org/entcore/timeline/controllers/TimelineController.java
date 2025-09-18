@@ -154,6 +154,7 @@ public class TimelineController extends BaseController {
 
 	private boolean isLightmode(){
 		final JsonObject publicConf =  config.getJsonObject("publicConf", new JsonObject());
+		JsonArray a = new JsonArray();
 		return publicConf.getBoolean("lightmode", false);
 	}
 

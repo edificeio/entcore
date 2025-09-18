@@ -879,7 +879,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"COLLECT(distinct [child.id, child.lastName, child.firstName]) as childrenInfo, has(n.password) as hasPw, " +
 				"structures, COLLECT(distinct [f.externalId, rf.scope]) as functions, " +
 				"groupsIds, structureNodes, n.structures as structureExternalId, manualGroups, n.federatedIDP as federatedIDP, n.functions as aafFunctions, " +
-				"optionEnabled";
+				"optionEnabled"; // 1s 60k db
 		final String query2 =
 				"MATCH (n:User {id : {id}})-[:IN]->()-[:AUTHORIZED]->(:Role)-[:AUTHORIZE]->(a:Action)" +
 				"<-[:PROVIDE]-(app:Application) " +
@@ -901,7 +901,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 					"application: app.name, " +
 					"mandatory: ANY(a IN authorizations WHERE HAS(a.mandatory) AND a.mandatory = true)"+
 				"}) as widgets";
-		final String query4 = "MATCH (s:Structure) return s.id as id, s.externalId as externalId";
+		final String query4 = "MATCH (s:Structure) return s.id as id, s.externalId as externalId"; //1 sec 60kdb
 		final String query5 = "MATCH (u:User {id: {id}})-[:PREFERS]->(uac:UserAppConf) RETURN uac AS preferences";
 		JsonObject params = new JsonObject();
 		params.put("id", userId);
