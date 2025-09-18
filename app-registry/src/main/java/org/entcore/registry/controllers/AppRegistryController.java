@@ -81,7 +81,7 @@ public class AppRegistryController extends BaseController {
 	@ResourceFilter(AdminFilter.class)
 	@MfaProtected()
 	public void staticAdmin(final HttpServerRequest request) {
-		renderView(request);
+		renderTemplateView(request);
 	}
 
 	@Get("/app-preview")
@@ -89,7 +89,7 @@ public class AppRegistryController extends BaseController {
 	@ResourceFilter(AdminFilter.class)
 	@MfaProtected()
 	public void appPreview(final HttpServerRequest request) {
-		renderView(request);
+		renderTemplateView(request);
 	}
 
 	@Get("/applications")

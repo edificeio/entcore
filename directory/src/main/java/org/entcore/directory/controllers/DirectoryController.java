@@ -88,14 +88,14 @@ public class DirectoryController extends BaseController {
 	@ResourceFilter(AdminFilter.class)
 	@MfaProtected()
 	public void adminConsole(HttpServerRequest request) {
-		renderView(request, new JsonObject());
+		renderTemplateView(request);
 	}
 
 	@Get("/class-admin")
 	@SecuredAction("classadmin.address")
 	@MfaProtected()
 	public void classAdmin(HttpServerRequest request) {
-		renderView(request);
+		renderTemplateView(request);
 		eventStore.createAndStoreEvent(UserBookController.DirectoryEvent.ACCESS.name(), request, new JsonObject().put("override-module", "ClassParam"));
 	}
 
@@ -222,7 +222,7 @@ public class DirectoryController extends BaseController {
 	@Get("/schools")
 	@SecuredAction(value = "directory.schools", type = ActionType.AUTHENTICATED)
 	public void schools(HttpServerRequest request) {
-		renderView(request);
+		renderTemplateView(request);
 	}
 
 	@Get("/api/ecole")

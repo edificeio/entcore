@@ -62,7 +62,7 @@ public class MassMessagingController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
 	public void view(HttpServerRequest request) {
-		renderView(request);
+		renderTemplateView(request);
 	}
 
 

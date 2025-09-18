@@ -689,7 +689,7 @@ public class AuthController extends BaseController {
 
 	@Get("/admin-welcome-message")
 	public void adminWelcomeMessage(final HttpServerRequest request) {
-		renderView(request);
+		renderTemplateView(request);
 	}
 
 	private void viewLogin(final HttpServerRequest request, String error, String callBack) {
@@ -2001,19 +2001,19 @@ public class AuthController extends BaseController {
 	@Get("/revalidate-terms")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void revalidateTerms(final HttpServerRequest request) {
-		renderView(request);
+		renderTemplateView(request);
 	}
 
 	@Get("/validate-mail")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void validateMail(HttpServerRequest request) {
-		renderView(request);
+		renderTemplateView(request);
 	}
 
 	@Get("/validate-mfa")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void validateMfa(HttpServerRequest request) {
-		renderView(request);
+		renderTemplateView(request);
 	}
 
 	public void setUserAuthAccount(UserAuthAccount userAuthAccount) {

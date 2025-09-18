@@ -219,7 +219,7 @@ public class TimelineController extends BaseController {
 	@Get("/preferencesView")
 	@SecuredAction(value = "timeline.preferencesView", type = ActionType.AUTHENTICATED)
 	public void preferencesView(HttpServerRequest request) {
-		renderView(request);
+		renderTemplateView(request);
 	}
 
 	@Get("/historyView")
@@ -264,7 +264,7 @@ public class TimelineController extends BaseController {
 	@Get("/calendar")
 	@SecuredAction(value = "timeline.calendar", type = ActionType.AUTHENTICATED)
 	public void calendar(HttpServerRequest request) {
-		renderView(request);
+		renderTemplateView(request);
 	}
 
 	@Get("/lastNotifications")
@@ -408,7 +408,7 @@ public class TimelineController extends BaseController {
 	@ResourceFilter(SuperAdminFilter.class)
 	@MfaProtected()
 	public void adminPage(final HttpServerRequest request) {
-		renderView(request);
+		renderTemplateView(request);
 	}
 
 	@Get("/admin-history")
@@ -416,7 +416,7 @@ public class TimelineController extends BaseController {
 	@ResourceFilter(AdminFilter.class)
 	@MfaProtected()
 	public void adminHistory(final HttpServerRequest request) {
-		renderView(request);
+		renderTemplateView(request);
 	}
 
 	@Get("/config")

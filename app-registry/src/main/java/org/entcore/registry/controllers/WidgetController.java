@@ -74,7 +74,7 @@ public class WidgetController extends BaseController
 	@ResourceFilter(AdminFilter.class)
 	@MfaProtected()
 	public void widgetPreview(final HttpServerRequest request) {
-		renderView(request);
+		renderTemplateView(request);
 	}
 
 	@Get("/widgets")

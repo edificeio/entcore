@@ -133,7 +133,7 @@ public class ArchiveController extends BaseController {
 	@Get("")
 	@SecuredAction("archive.view")
 	public void view(HttpServerRequest request) {
-		renderView(request);
+		renderTemplateView(request);
 		eventStore.createAndStoreEvent(ArchiveEvent.ACCESS.name(), request);
 	}
 
