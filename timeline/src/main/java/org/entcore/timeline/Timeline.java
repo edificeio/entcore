@@ -59,7 +59,6 @@ public class Timeline extends BaseServer {
 
 		final Map<String, String> registeredNotifications = MapFactory.getSyncClusterMap("notificationsMap", vertx);
 		final LocalMap<String,String> eventsI18n = vertx.sharedData().getLocalMap("timelineEventsI18n");
-		final HashMap<String, JsonObject> lazyEventsI18n = new HashMap<>();
 
 		final DefaultTimelineConfigService configService = new DefaultTimelineConfigService("timeline.config");
 		configService.setRegisteredNotifications(registeredNotifications);
@@ -67,7 +66,6 @@ public class Timeline extends BaseServer {
 		mailerService.setConfigService(configService);
 		mailerService.setRegisteredNotifications(registeredNotifications);
 		mailerService.setEventsI18n(eventsI18n);
-		mailerService.setLazyEventsI18n(lazyEventsI18n);
 
 		final NotificationHelper notificationHelper = new NotificationHelper(vertx, configService);
 		notificationHelper.setMailerService(mailerService);
@@ -77,7 +75,6 @@ public class Timeline extends BaseServer {
 		timelineController.setMailerService(mailerService);
 		timelineController.setRegisteredNotifications(registeredNotifications);
 		timelineController.setEventsI18n(eventsI18n);
-		timelineController.setLazyEventsI18n(lazyEventsI18n);
 
 
 		final List<TimelinePushNotifService> pushNotifServices = startPushNotifServices(

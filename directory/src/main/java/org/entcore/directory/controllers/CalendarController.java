@@ -15,6 +15,6 @@ public class CalendarController extends BaseController {
     @ResourceFilter(AdminFilter.class)
     @MfaProtected()
     public void timetable(HttpServerRequest request) {
-        renderView(request);
+        renderTemplateView(request);
     }
 }

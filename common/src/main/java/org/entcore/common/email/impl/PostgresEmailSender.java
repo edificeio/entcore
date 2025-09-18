@@ -6,6 +6,7 @@ import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.email.Bounce;
 import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.eventbus.ResultMessage;
+import fr.wseduc.webutils.http.ProcessTemplateContext;
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
@@ -247,7 +248,13 @@ public class PostgresEmailSender implements EmailSender {
             };
 
             if (templateParams != null) {
-                renders.processTemplate(request, templateBody, templateParams, mailHandler);
+                ProcessTemplateContext.Builder context = new ProcessTemplateContext.Builder()
+                        .params(templateParams)
+                        .request(request)
+                        .templateString(templateBody)
+                        .escapeHtml(true);
+
+                renders.processTemplateWithLambdas(context, h -> mailHandler.handle(h != null ? h.toString() : null));
             } else {
                 mailHandler.handle(templateBody);
             }

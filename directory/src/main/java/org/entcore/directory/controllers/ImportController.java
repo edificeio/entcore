@@ -66,7 +66,7 @@ public class ImportController extends BaseController {
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
 	public void view(HttpServerRequest request) {
-		renderView(request);
+		renderTemplateView(request);
 	}
 
     @Post("/wizard/column/mapping")

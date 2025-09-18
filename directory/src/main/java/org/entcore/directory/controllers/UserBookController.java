@@ -164,19 +164,19 @@ public class UserBookController extends BaseController {
 	@Get("/birthday")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void birthday(HttpServerRequest request) {
-		renderView(request);
+		renderTemplateView(request);
 	}
 
 	@Get("/mood")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void mood(HttpServerRequest request) {
-		renderView(request);
+		renderTemplateView(request);
 	}
 
 	@Get("/annuaire")
 	@SecuredAction(value = "userbook.authent", type = ActionType.AUTHENTICATED)
 	public void annuaire(HttpServerRequest request) {
-		renderView(request);
+		renderTemplateView(request);
 		eventStore.createAndStoreEvent(DirectoryEvent.ACCESS.name(), request);
 	}
 

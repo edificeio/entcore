@@ -62,7 +62,7 @@ public class CommunicationController extends BaseController {
 	@ResourceFilter(AdminFilter.class)
 	@MfaProtected()
 	public void adminConsole(final HttpServerRequest request) {
-		renderView(request);
+		renderTemplateView(request);
 	}
 
 	@Post("/group/:startGroupId/communique/:endGroupId")

@@ -19,6 +19,8 @@
 
 package org.entcore.timeline.controllers;
 
+import com.samskivert.mustache.Mustache;
+import fr.wseduc.webutils.http.ProcessTemplateContext;
 import io.vertx.core.*;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -70,7 +72,6 @@ import io.vertx.core.json.JsonObject;
 import org.vertx.java.core.http.RouteMatcher;
 
 import java.io.StringReader;
-import java.io.Writer;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -92,7 +93,6 @@ public class TimelineController extends BaseController {
 	private TimelineMailerService mailerService;
 	private Map<String, String> registeredNotifications;
 	private LocalMap<String, String> eventsI18n;
-	private HashMap<String, JsonObject> lazyEventsI18n;
 	private Set<String> antiFlood;
 
 	//Declaring a TimelineHelper ensures the loading of the i18n/timeline folder.
@@ -147,13 +147,15 @@ public class TimelineController extends BaseController {
 
 	/* Override i18n to use additional timeline translations and nested templates */
 	@Override
-	protected void setLambdaTemplateRequest(final HttpServerRequest request) {
-		super.setLambdaTemplateRequest(request);
-		TimelineLambda.setLambdaTemplateRequest(request, this.templateProcessor, eventsI18n, lazyEventsI18n);
+	protected Map<String, Mustache.Lambda> getLambdasFromRequest(final HttpServerRequest request) {
+		Map<String, Mustache.Lambda> lambdas = super.getLambdasFromRequest(request);
+		TimelineLambda.setLambdaTemplateRequest(request, lambdas, eventsI18n);
+		return lambdas;
 	}
 
 	private boolean isLightmode(){
 		final JsonObject publicConf =  config.getJsonObject("publicConf", new JsonObject());
+		JsonArray a = new JsonArray();
 		return publicConf.getBoolean("lightmode", false);
 	}
 
@@ -187,21 +189,22 @@ public class TimelineController extends BaseController {
 		// handle both new and old timeline app depending on user theme
 		// if 2D then new timeline else default timeline
 		if (this.skinLevels == null) {
-			renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)));
+			renderTemplateView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)));
 			return;
 		}
 
 		UserUtils.getTheme(eb, request, this.hostSkin, userTheme -> {
 			if (isEmpty(userTheme)) {
-				renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)));
+				renderTemplateView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)));
 				return;
 			}
 
 			JsonArray userSkinLevels = this.skinLevels.getJsonArray(userTheme);
 			if (userSkinLevels != null && userSkinLevels.contains("2d")) {
-				renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "timeline2.html", null);
+				renderTemplateView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)),
+									"timeline2.html", null, new HashMap<>());
 			} else {
-				renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)));
+				renderTemplateView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)));
 			}
 		});
 		eventHelper.onAccess(request);
@@ -211,21 +214,21 @@ public class TimelineController extends BaseController {
 	@SecuredAction(value = "timeline.view", type = ActionType.AUTHENTICATED)
 	public void view2(HttpServerRequest request) {
 		final boolean cache = config.getBoolean("cache", false);
-		renderView(request, new JsonObject().put("lightMode",isLightmode()).put("cache", cache));
+		renderTemplateView(request, new JsonObject().put("lightMode",isLightmode()).put("cache", cache));
 		eventHelper.onAccess(request);
 	}
 
 	@Get("/preferencesView")
 	@SecuredAction(value = "timeline.preferencesView", type = ActionType.AUTHENTICATED)
 	public void preferencesView(HttpServerRequest request) {
-		renderView(request);
+		renderTemplateView(request);
 	}
 
 	@Get("/historyView")
 	@SecuredAction(value = "timeline.historyView")
 	public void historyView(HttpServerRequest request) {
 		final JsonObject publicConf =  config.getJsonObject("publicConf", new JsonObject());
-		renderView(request, new JsonObject().put("lightMode",isLightmode()));
+		renderTemplateView(request, new JsonObject().put("lightMode",isLightmode()));
 	}
 
 	@Get("/i18nNotifications")
@@ -263,7 +266,7 @@ public class TimelineController extends BaseController {
 	@Get("/calendar")
 	@SecuredAction(value = "timeline.calendar", type = ActionType.AUTHENTICATED)
 	public void calendar(HttpServerRequest request) {
-		renderView(request);
+		renderTemplateView(request);
 	}
 
 	@Get("/lastNotifications")
@@ -338,15 +341,17 @@ public class TimelineController extends BaseController {
 												continue;
 											}
 											JsonObject registeredNotif = new JsonObject(stringifiedRegisteredNotif);
-
 											StringReader reader = new StringReader(registeredNotif.getString("template", ""));
-											processTemplate(request,notif.getJsonObject("params",new JsonObject()),key, reader, new Handler<Writer>() {
-												public void handle(Writer writer) {
-													notif.put("message", writer.toString());
-													compiledResults.add(notif);
-													endHandler.handle(null);
-												}
-											});
+											ProcessTemplateContext.Builder context = new ProcessTemplateContext.Builder()
+																					.escapeHtml(true)
+																					.request(request)
+																				 	.reader(reader)
+																					.params(notif.getJsonObject("params",new JsonObject()));
+											processTemplateWithLambdas(context ,key, writer -> {
+                                                notif.put("message", writer.toString());
+                                                compiledResults.add(notif);
+                                                endHandler.handle(null);
+                                            });
 										}
 									} else {
 										renderError(request, res);
@@ -407,7 +412,7 @@ public class TimelineController extends BaseController {
 	@ResourceFilter(SuperAdminFilter.class)
 	@MfaProtected()
 	public void adminPage(final HttpServerRequest request) {
-		renderView(request);
+		renderTemplateView(request);
 	}
 
 	@Get("/admin-history")
@@ -415,7 +420,7 @@ public class TimelineController extends BaseController {
 	@ResourceFilter(AdminFilter.class)
 	@MfaProtected()
 	public void adminHistory(final HttpServerRequest request) {
-		renderView(request);
+		renderTemplateView(request);
 	}
 
 	@Get("/config")
@@ -661,16 +666,23 @@ public class TimelineController extends BaseController {
 						endHandler.handle(null);
 						continue;
 					}
-					JsonObject registeredNotif = new JsonObject(stringifiedRegisteredNotif);
 
+					JsonObject registeredNotif = new JsonObject(stringifiedRegisteredNotif);
 					StringReader reader = new StringReader(registeredNotif.getString("template", ""));
-					processTemplate(request,notif.getJsonObject("params",new JsonObject()),key, reader, new Handler<Writer>() {
-						public void handle(Writer writer) {
-							notif.put("message", writer.toString());
-							compiledResults.add(notif);
-							endHandler.handle(null);
-						}
-					});
+
+
+
+					ProcessTemplateContext.Builder context = new ProcessTemplateContext.Builder()
+							.escapeHtml(true)
+							.reader(reader)
+							.request(request)
+							.params(notif.getJsonObject("params",new JsonObject()));
+
+					processTemplateWithLambdas(context, key, writer -> {
+                        notif.put("message", writer.toString());
+                        compiledResults.add(notif);
+                        endHandler.handle(null);
+                    });
 				}
 			}
 		});
@@ -1005,7 +1017,4 @@ public class TimelineController extends BaseController {
 		this.eventsI18n = eventsI18n;
 	}
 
-	public void setLazyEventsI18n(HashMap<String, JsonObject> lazyEventsI18n) {
-		this.lazyEventsI18n = lazyEventsI18n;
-	}
 }
