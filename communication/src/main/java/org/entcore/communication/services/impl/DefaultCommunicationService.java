@@ -30,6 +30,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.communication.CommunicationUtils;
 import org.entcore.common.conversation.LegacySearchVisibleRequest;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.StatementsBuilder;
@@ -1818,10 +1819,13 @@ public class DefaultCommunicationService implements CommunicationService {
 				"WITH visibles ";
 
 		String preFilter = "";
-		JsonObject params = new JsonObject();
+		// exclude Community groups from search
+		preFilter += " AND NOT m:" + CommunicationUtils.COMMUNITY_MEMBER_GROUP + " ";
+		preFilter += " AND NOT m:" + CommunicationUtils.COMMUNITY_ADMIN_GROUP + " ";
 
+		JsonObject params = new JsonObject();
 		if (!StringUtils.isEmpty(search)) {
-			preFilter = "AND (m:Group OR m.displayNameSearchField CONTAINS {search}) ";
+			preFilter += "AND (m:Group OR m.displayNameSearchField CONTAINS {search}) ";
 			String sanitizedSearch = StringValidation.sanitize(search);
 			params.put("search", sanitizedSearch);
 		}
