@@ -19,6 +19,7 @@
 
 package org.entcore.communication.services.impl;
 
+import com.google.common.collect.Lists;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.collections.Joiner;
 import io.vertx.core.*;
