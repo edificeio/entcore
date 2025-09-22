@@ -33,6 +33,7 @@ import org.entcore.common.messaging.IMessagingClient;
 import org.entcore.common.messaging.MessagingClientFactoryProvider;
 import org.entcore.common.storage.impl.*;
 
+import static io.vertx.core.Future.succeededFuture;
 import static org.entcore.common.storage.impl.StorageFileAnalyzer.Configuration.DEFAULT_CONTENT;
 
 import org.entcore.common.validation.ExtensionValidator;
@@ -85,6 +86,7 @@ public class StorageFactory {
 				vertx.eventBus().consumer("storage", applicationStorage);
 			}
 
+      Future<Void> future = Future.succeededFuture();
 			if(config == null) {
 				this.messagingClient = IMessagingClient.noop;
 				this.storageFileAnalyzerConfiguration = new StorageFileAnalyzer.Configuration();
@@ -92,23 +94,30 @@ public class StorageFactory {
 				final JsonObject fileAnalyzerConfiguration = config.getJsonObject("fileAnalyzer");
 				if (fileAnalyzerConfiguration != null && fileAnalyzerConfiguration.getBoolean("enabled", false)) {
 					MessagingClientFactoryProvider.init(vertx);
-					this.messagingClient = MessagingClientFactoryProvider.getFactory(fileAnalyzerConfiguration.getJsonObject("messaging")).create();
-					if(this.messagingClient.canListen()) {
-						this.storageFileAnalyzerConfiguration = new StorageFileAnalyzer.Configuration(
-								fileAnalyzerConfiguration.getJsonArray("mime-types", new JsonArray()).getList(),
-								fileAnalyzerConfiguration.getInteger("max-size", -1),
-								fileAnalyzerConfiguration.getString("replacement-content", DEFAULT_CONTENT)
-						);
-					} else {
-						this.storageFileAnalyzerConfiguration = new StorageFileAnalyzer.Configuration();
-					}
+          final Promise<Void> promise = Promise.promise();
+					MessagingClientFactoryProvider.getFactory(fileAnalyzerConfiguration.getJsonObject("messaging")).create().onSuccess(messagingClient -> {
+            this.messagingClient = messagingClient;
+            if(this.messagingClient.canListen()) {
+              this.storageFileAnalyzerConfiguration = new StorageFileAnalyzer.Configuration(
+                fileAnalyzerConfiguration.getJsonArray("mime-types", new JsonArray()).getList(),
+                fileAnalyzerConfiguration.getInteger("max-size", -1),
+                fileAnalyzerConfiguration.getString("replacement-content", DEFAULT_CONTENT)
+              );
+            } else {
+              this.storageFileAnalyzerConfiguration = new StorageFileAnalyzer.Configuration();
+            }
+            promise.complete();
+          }).onFailure(promise::fail);
+          future = promise.future();
 				} else {
 					this.messagingClient = IMessagingClient.noop;
 					this.storageFileAnalyzerConfiguration = new StorageFileAnalyzer.Configuration();
 				}
 			}
-			initPromise.complete(this);
-		}).onFailure(ex -> initPromise.fail(ex));
+      future
+        .onSuccess(e -> initPromise.complete(this))
+        .onFailure(initPromise::fail);
+		}).onFailure(initPromise::fail);
 	}
 
 	public static Future<StorageFactory> build(Vertx vertx) {

@@ -1,5 +1,6 @@
 package org.entcore.common.redis;
 
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -33,19 +34,21 @@ public class RedisClient implements IRedisClient {
      * @param config An object <b><u>containing a field redisConfig</u></b> which holds redis configuration
      * @return A client to call Redis
      */
-    public static RedisClient create(final Vertx vertx, final JsonObject config) {
+    public static Future<RedisClient> create(final Vertx vertx, final JsonObject config) {
         if (config.getJsonObject("redisConfig") != null) {
             final JsonObject redisConfig = config.getJsonObject("redisConfig");
             final RedisClient redisClient = new RedisClient(vertx, redisConfig);
-            return redisClient;
+            return Future.succeededFuture(redisClient);
         }else{
-            final String redisConfig = (String) vertx.sharedData().getLocalMap("server").get("redisConfig");
-            if(redisConfig!=null){
-                final RedisClient redisClient = new RedisClient(vertx, new JsonObject(redisConfig));
-                return redisClient;
-            }else{
+          return SharedDataHelper.getInstance().<String, String>getMulti("server", "redisConfig")
+            .map(map -> map.get("redisConfig"))
+            .map(redisConfig -> {
+              if (redisConfig != null) {
+                return new RedisClient(vertx, new JsonObject(redisConfig));
+              } else {
                 throw new InvalidParameterException("Missing redisConfig config");
-            }
+              }
+            });
         }
     }
 
