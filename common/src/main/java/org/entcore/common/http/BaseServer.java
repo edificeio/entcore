@@ -150,7 +150,7 @@ public abstract class BaseServer extends Server {
     });
 	}
 
-	public void initBaseServer(final Promise<Void> startPromise, final Map<String, Object> baseServerMap) throws Exception {
+  public void initBaseServer(final Promise<Void> startPromise, final Map<String, Object> baseServerMap) throws Exception {
 		initFilters(baseServerMap);
 
 		final String node = (String) baseServerMap.get("node");
@@ -185,7 +185,7 @@ public abstract class BaseServer extends Server {
 		if(Boolean.TRUE.equals(cacheEnabled)){
 			final CacheService cacheService = CacheService.create(vertx);
 			addFilter(new CacheFilter(getEventBus(vertx),securedUriBinding, cacheService));
-		}
+  }
 
 		addFilter(new MandatoryUserValidationFilter(mfaProtectedBinding, getEventBus(vertx)));
 
@@ -211,8 +211,13 @@ public abstract class BaseServer extends Server {
 			log.info("Received "+ONDEPLOY_I18N+" update i18n override");
 			this.loadI18nAssetsFiles(skins);
 		});
+    futures.add(initProbes());
 		Future.all(futures).onComplete(res -> startPromise.tryComplete());
-	}
+  }
+
+  private Future<Void> initProbes() {
+    return Future.succeededFuture();
+  }
 
 
 	@Override
@@ -222,7 +227,7 @@ public abstract class BaseServer extends Server {
 		statusPublisher.notifyStopped(ApplicationStatusDTO.withBasicInfo(moduleName, nodeName));
 	}
 
-	protected void initFilters(final Map<String, Object> baseServerMap) {
+  protected void initFilters(final Map<String, Object> baseServerMap) {
 		//prepare cache if needed
 		final Map<String, Object> server = baseServerMap;
 		final Optional<Object> oauthCache = Optional.ofNullable(server.get("oauthCache"));
