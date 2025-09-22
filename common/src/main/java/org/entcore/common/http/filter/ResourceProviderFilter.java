@@ -34,12 +34,14 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.stream.Collectors;
 
 public class ResourceProviderFilter implements ResourcesProvider {
 
 	protected static final Logger log = LoggerFactory.getLogger(BaseResourceProvider.class);
 	private static final String DEFAULT = "default";
 	private Map<String, ResourcesProvider> filtersMapping = new HashMap<>();
+	private Map<String, String[]> filtersParameters = new HashMap<>();
 
 	public ResourceProviderFilter() {
 		loadFiltersMapping();
@@ -63,11 +65,17 @@ public class ResourceProviderFilter implements ResourcesProvider {
 					JsonObject filter = new JsonObject(line);
 					String method = filter.getString("method");
 					String f = filter.getString("filter");
+
+					String[] arguments = filter.getJsonArray("arguments") != null ?
+							filter.getJsonArray("arguments").stream()
+								.map(String.class::cast)
+								.toArray(String[]::new) : new String[0];
 					if (f != null && method != null &&
 							!f.trim().isEmpty() && !method.trim().isEmpty()) {
 						ResourcesProvider rp = mf.get(f);
 						if (rp != null) {
 							filtersMapping.put(method, rp);
+							filtersParameters.put(method, arguments);
 						} else {
 							log.error("Missing filter " + f);
 						}
@@ -100,7 +108,8 @@ public class ResourceProviderFilter implements ResourcesProvider {
 				return;
 			}
 		}
-		filter.authorize(resourceRequest, binding, user, handler);
+		String[] parameters = filtersParameters.get(binding.getServiceMethod());
+		filter.authorize(resourceRequest, new Binding(binding, parameters), user, handler);
 	}
 
 	public void setDefault(ResourcesProvider f) {

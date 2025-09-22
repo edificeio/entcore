@@ -21,6 +21,7 @@ package org.entcore.common.processor;
 
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
+import io.vertx.core.json.JsonArray;
 import org.entcore.common.cache.Cache;
 import org.entcore.common.http.filter.IgnoreCsrf;
 import org.entcore.common.http.filter.ResourceFilter;
@@ -28,7 +29,10 @@ import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.http.filter.Trace;
 import org.entcore.common.share.ShareRoles;
 
-import javax.annotation.processing.*;
+import javax.annotation.processing.Filer;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
@@ -36,7 +40,9 @@ import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
-import java.io.*;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.*;
 
 @SupportedAnnotationTypes({"fr.wseduc.security.SecuredAction", "fr.wseduc.bus.BusAddress",
@@ -137,8 +143,11 @@ public class ControllerAnnotationProcessor extends fr.wseduc.processor.Controlle
 				v = e.getTypeMirror();
 			}
 			String value = String.format("%s", v);
+			String[] arguments = annotation.arguments() != null ? annotation.arguments() : new String[0];
+
 			filters.add("{ \"method\" : \"" + clazz.getQualifiedName().toString() + "|" +
-					element.getSimpleName().toString() + "\", \"filter\" : \"" + value + "\" }");
+					element.getSimpleName().toString() + "\", \"filter\" : \"" + value + "\" " +
+					", \"arguments\": " + new JsonArray(Arrays.asList(arguments)) + "}");
 			filtersClasses.add(value);
 		}
 		if (filters.size() > 0) {

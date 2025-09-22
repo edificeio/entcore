@@ -22,14 +22,14 @@ package org.entcore.common.http.filter;
 import fr.wseduc.webutils.http.Binding;
 import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
-import io.vertx.core.http.*;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import org.entcore.common.http.response.DefaultPages;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.*;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.http.response.DefaultPages;
 
 import java.util.Set;
 

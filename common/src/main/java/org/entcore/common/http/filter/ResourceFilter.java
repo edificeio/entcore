@@ -28,4 +28,5 @@ public @interface ResourceFilter {
 
 	Class<? extends ResourcesProvider> value();
 
+	String[] arguments() default {};
 }
