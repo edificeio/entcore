@@ -19,8 +19,11 @@
 
 package org.entcore.common.redis;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+
+import static io.vertx.core.Future.succeededFuture;
 
 public class Redis {
 
@@ -39,9 +42,12 @@ public class Redis {
         return RedisHolder.instance;
     }
 
-    public void init(Vertx vertx, JsonObject redisConfig) {
-        this.redisClient = RedisClient.create(vertx, new JsonObject().put("redisConfig", redisConfig));
-        RedisHolder.redisConfig = redisConfig;
+    public Future<Void> init(Vertx vertx, JsonObject redisConfig) {
+        return RedisClient.create(vertx, new JsonObject().put("redisConfig", redisConfig))
+          .onSuccess(redisClient -> {
+            this.redisClient = redisClient;
+            RedisHolder.redisConfig = redisConfig;
+          }).mapEmpty();
     }
 
     public RedisClient getRedisClient() {
@@ -52,9 +58,9 @@ public class Redis {
         return getInstance().getRedisClient();
     }
 
-    public static RedisClient createClientForDb(Vertx vertx, Integer db) {
+    public static Future<RedisClient> createClientForDb(Vertx vertx, Integer db) {
         if(RedisHolder.redisConfig.getInteger("select", 0).equals(db)) {
-            return getInstance().getRedisClient();
+            return succeededFuture(getInstance().getRedisClient());
         }
         final JsonObject newRedisConfig = RedisHolder.redisConfig.copy();
         newRedisConfig.put("select", db);
