@@ -421,6 +421,11 @@ public class AuthController extends BaseController {
 			@Override
 			public void handle(Void v) {
 				final Request req = new HttpServerRequestAdapter(request);
+                String clientId = req.getParameter("client_id");
+                String redirectUri = req.getParameter("redirect_uri");
+                log.info(getIp(request) +
+                        " - Initialisation de connexion OAuth2 - ClientID " + clientId +
+                        " - RedirectUri " + redirectUri);
 				token.handleRequest(req, new Handler<Response>() {
 
 					@Override
