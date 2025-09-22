@@ -115,7 +115,7 @@ public class TimelineController extends BaseController {
 		this.serverMap = serverMap;
 	}
 
-	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
+	public Future<Void> initAsync(Vertx vertx, JsonObject config, RouteMatcher rm,
 			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
 		store = new DefaultTimelineEventStore();
@@ -131,10 +131,14 @@ public class TimelineController extends BaseController {
 		antiFlood = new TTLSet<>(config.getLong("antiFloodDelay", 3000l),
 				vertx, config.getLong("antiFloodClear", 3600 * 1000l));
 		refreshTypesCache = config.getBoolean("refreshTypesCache", false);
+    Future<Void> future = Future.succeededFuture();
 		if(config.getBoolean("cache", false)){
-			final CacheService cacheService = CacheService.create(vertx, config);
-			final Integer cacheLen = config.getInteger("cache-size", PAGELIMIT);
-			store = new CachedTimelineEventStore(store, cacheService, cacheLen, configService, registeredNotifications);
+      final Promise<Void> promise = Promise.promise();
+			CacheService.create(vertx, config).onSuccess(cacheService -> {
+        final Integer cacheLen = config.getInteger("cache-size", PAGELIMIT);
+        store = new CachedTimelineEventStore(store, cacheService, cacheLen, configService, registeredNotifications);
+      }).onFailure(promise::fail);
+      future = promise.future();
 		}
 
 		// TEMPORARY to handle both timeline and timeline2 view
@@ -148,6 +152,7 @@ public class TimelineController extends BaseController {
 
 		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Timeline.class.getSimpleName());
 		this.eventHelper =  new EventHelper(eventStore);
+    return future;
 	}
 
 	/* Override i18n to use additional timeline translations and nested templates */

@@ -1,5 +1,6 @@
 package org.entcore.common.explorer;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mongo.MongoClient;
@@ -10,6 +11,8 @@ import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.redis.RedisClient;
 
 import java.util.function.Function;
+
+import static io.vertx.core.Future.succeededFuture;
 
 public class ExplorerPluginFactory {
     private static  Vertx vertxInstance;
@@ -58,7 +61,7 @@ public class ExplorerPluginFactory {
         return globalConfig;
     }
 
-    public static IExplorerPluginCommunication getCommunication() throws Exception {
+    public static Future<IExplorerPluginCommunication> getCommunication() throws Exception {
         if(explorerConfig == null){
             throw new Exception("Explorer config not initialized");
         }
@@ -66,27 +69,46 @@ public class ExplorerPluginFactory {
             final IExplorerPluginMetricsRecorder metricsRecorder = ExplorerPluginMetricsFactory.getExplorerPluginMetricsRecorder("postgres");
             final IPostgresClient postgresClient = IPostgresClient.create(vertxInstance, getPostgresConfig(), false, true);
             final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationPostgres(vertxInstance, postgresClient, metricsRecorder).setEnabled(isEnabled());
-            return communication;
+            return succeededFuture(communication);
         }else {
             final IExplorerPluginMetricsRecorder metricsRecorder = ExplorerPluginMetricsFactory.getExplorerPluginMetricsRecorder("redis");
-            final RedisClient redisClient = RedisClient.create(vertxInstance, getRedisConfig());
-            final IExplorerPluginCommunication communication = new ExplorerPluginCommunicationRedis(vertxInstance, redisClient, metricsRecorder).setEnabled(isEnabled());
-            return communication;
+            return RedisClient.create(vertxInstance, getRedisConfig())
+              .map(redisClient -> {
+                try {
+                  return new ExplorerPluginCommunicationRedis(vertxInstance, redisClient, metricsRecorder).setEnabled(isEnabled());
+                } catch (Exception e) {
+                  throw new RuntimeException(e);
+                }
+              });
         }
     }
 
-    public static IExplorerPlugin createMongoPlugin(final Function<ExplorerFactoryParams<MongoClient>, IExplorerPlugin> instance) throws Exception {
-        final IExplorerPluginCommunication communication = getCommunication();
-        final MongoClient mongoClient = MongoClientFactory.create(vertxInstance, globalConfig);
-        final ExplorerFactoryParams<MongoClient> params = new ExplorerFactoryParams<MongoClient>(mongoClient,communication);
-        return instance.apply(params).setConfig(getExplorerConfig());
+    public static Future<IExplorerPlugin> createMongoPlugin(final Function<ExplorerFactoryParams<MongoClient>, IExplorerPlugin> instance) throws Exception {
+        return getCommunication().map(communication -> {
+          try {
+            final MongoClient mongoClient = MongoClientFactory.create(vertxInstance, globalConfig);
+            final ExplorerFactoryParams<MongoClient> params = new ExplorerFactoryParams<MongoClient>(mongoClient, communication);
+            return instance.apply(params).setConfig(getExplorerConfig());
+          } catch (Exception e) {
+            throw new RuntimeException("Error while initializing explorer mongo plugin", e);
+          }
+        });
     }
 
-    public static IExplorerPlugin createPostgresPlugin(final Function<ExplorerFactoryParams<IPostgresClient>, IExplorerPlugin> instance) throws Exception {
-        final IExplorerPluginCommunication communication = getCommunication();
-        final IPostgresClient postgresClient = IPostgresClient.create(vertxInstance, globalConfig, false, true);
-        final ExplorerFactoryParams<IPostgresClient> params = new ExplorerFactoryParams<IPostgresClient>(postgresClient,communication);
-        return instance.apply(params).setConfig(getExplorerConfig());
+    public static Future<IExplorerPlugin> createPostgresPlugin(final Function<ExplorerFactoryParams<IPostgresClient>, IExplorerPlugin> instance) throws Exception {
+      try {
+        return getCommunication().map(communication -> {
+          try {
+            final IPostgresClient postgresClient = IPostgresClient.create(vertxInstance, globalConfig, false, true);
+            final ExplorerFactoryParams<IPostgresClient> params = new ExplorerFactoryParams<IPostgresClient>(postgresClient, communication);
+            return instance.apply(params).setConfig(getExplorerConfig());
+          } catch (Exception e) {
+            throw new RuntimeException("Error while initializing explorer postgres plugin", e);
+          }
+        });
+      } catch (Exception e) {
+        throw new RuntimeException("Error while creating postgres plugin", e);
+      }
     }
 
     public static class ExplorerFactoryParams<DB>{
