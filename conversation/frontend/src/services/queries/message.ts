@@ -16,6 +16,7 @@ import {
   createDefaultMessage,
   folderQueryKeys,
   messageService,
+  useFolderUtils,
 } from '~/services';
 import { useMessageStore } from '~/store/messageStore';
 import { useDeleteMessagesFromQueryCache } from './hooks/useDeleteMessageFromQueryCache';
@@ -590,6 +591,7 @@ export const useSendDraft = () => {
  */
 export const useRecallMessage = () => {
   const queryClient = useQueryClient();
+  const { updateFolderMessagesQueryCache } = useFolderUtils();
   return useMutation({
     mutationFn: ({ messageId }: { messageId: string }) =>
       messageService.recall(messageId),
@@ -597,6 +599,11 @@ export const useRecallMessage = () => {
       queryClient.invalidateQueries({
         queryKey: messageQueryKeys.byId(messageId),
       });
+      updateFolderMessagesQueryCache('', (oldMessage) =>
+        oldMessage.id === messageId
+          ? { ...oldMessage, state: 'RECALL' }
+          : oldMessage,
+      );
     },
   });
 };
