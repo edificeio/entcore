@@ -36,6 +36,11 @@ pipeline {
           sh './build.sh $BUILD_SH_EXTRA_PARAM publish'
         }
       }
+        stage('Build image') {
+            steps {
+                sh 'edifice image'
+            }
+        }
     }
   post {
     cleanup {
