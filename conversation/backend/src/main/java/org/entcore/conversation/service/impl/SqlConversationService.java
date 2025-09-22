@@ -320,38 +320,41 @@ public class SqlConversationService implements ConversationService{
 				int userMessageValueCount = 0;
 				int userMessageAttachementCount = 0;
 
+				// Messages
+				//
 				// Optimisation de l'envois des messages: faire des requêtes unitaires est couteux pour postgresql notament
 				// au niveau de la gestion des locks et de son index. Les groupes en insert .. values est bcp plus efficace
 				for(Object toObj : ids){
-					if(toObj.equals(user.getUserId())) {
-						continue;
-					}
+					if(toObj.equals(user.getUserId())) continue;
+					
 					userMessageValueCount++;
 					insertUserMessageBuilder.append(String.format("('%s', '%s', %s ),", toObj, draftId, totalQuota));
-					for(Object attachmentId : attachmentIds){
-						userMessageAttachementCount++;
-						insertUserAttachmentBuilder.append(String.format("('%s', '%s', '%s' ),", toObj, draftId, attachmentId));
-					}
 					if (userMessageValueCount >= conversationBatchSize) {
-						// Messages
 						builder.prepared(insertUserMessageBuilder.deleteCharAt(insertUserMessageBuilder.length()-1).toString(), new JsonArray());
 						insertUserMessageBuilder = new StringBuilder(insertUserMessage);
 						userMessageValueCount = 0;
-						
-						// Pièces jointes
-						if (userMessageAttachementCount > 0) {
-							builder.prepared(insertUserAttachmentBuilder.deleteCharAt(insertUserAttachmentBuilder.length()-1).toString(), new JsonArray());
-							insertUserAttachmentBuilder = new StringBuilder(insertUserAttachment);
-							userMessageAttachementCount = 0;
-						}
 					}
 					if (threadId != null) {
 						builder.prepared(insertUserThread, new fr.wseduc.webutils.collections.JsonArray().add(toObj.toString()).add(threadId).add(1));
 					}
 				}
-
 				if (userMessageValueCount > 0) {
 					builder.prepared(insertUserMessageBuilder.deleteCharAt(insertUserMessageBuilder.length()-1).toString(), new JsonArray());
+				}
+
+				// Pièces jointes
+				for(Object toObj : ids){
+					if(toObj.equals(user.getUserId())) continue;
+
+					for(Object attachmentId : attachmentIds){
+						userMessageAttachementCount++;
+						insertUserAttachmentBuilder.append(String.format("('%s', '%s', '%s' ),", toObj, draftId, attachmentId));
+						if (userMessageAttachementCount >= conversationBatchSize) {
+							builder.prepared(insertUserAttachmentBuilder.deleteCharAt(insertUserAttachmentBuilder.length()-1).toString(), new JsonArray());
+							insertUserAttachmentBuilder = new StringBuilder(insertUserAttachment);
+							userMessageAttachementCount = 0;
+						}
+					}
 				}
 				if (userMessageAttachementCount > 0) {
 					builder.prepared(insertUserAttachmentBuilder.deleteCharAt(insertUserAttachmentBuilder.length()-1).toString(), new JsonArray());
