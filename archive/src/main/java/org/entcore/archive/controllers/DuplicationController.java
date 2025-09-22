@@ -1,15 +1,14 @@
 package org.entcore.archive.controllers;
 
-import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
-import fr.wseduc.webutils.http.Renders;
-import fr.wseduc.webutils.request.RequestUtils;
 
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
@@ -26,7 +25,6 @@ import java.util.Map;
 
 import org.entcore.archive.services.DuplicationService;
 import org.entcore.archive.services.impl.DefaultDuplicationService;
-import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.http.RouteMatcher;
 
@@ -51,12 +49,13 @@ public class DuplicationController extends BaseController
   }
 
 	@Override
-	public void init(Vertx vertx, final JsonObject config, RouteMatcher rm,
-			Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions)
+	public Future<Void> initAsync(Vertx vertx, final JsonObject config, RouteMatcher rm,
+                 Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions)
 	{
     super.init(vertx, config, rm, securedActions);
-
-    this.dupService = new DefaultDuplicationService(vertx, config, storage, importPath, signKey, verifyKey, forceEncryption);
+    final Promise<Void> promise = Promise.promise();
+    this.dupService = new DefaultDuplicationService(vertx, config, storage, importPath, signKey, verifyKey, forceEncryption, promise);
+    return promise.future();
   }
 
   @Post("/duplicate")
