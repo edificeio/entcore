@@ -1,5 +1,6 @@
 import { useDate, useEdificeClient } from '@edifice.io/react';
 import { useLayoutEffect } from 'react';
+import { SIGNATURE_EMPTY_CONTENT } from '~/components/SignatureEditor';
 import { Group, Message, Recipients, User } from '~/models';
 import {
   createDefaultMessage,
@@ -9,7 +10,6 @@ import {
 import { useMessageStore } from '~/store/messageStore';
 import { useAdditionalRecipients } from './useAdditionalRecipients';
 import { useI18n } from './useI18n';
-import { SIGNATURE_EMPTY_CONTENT } from '~/components/SignatureEditor';
 
 export type UserAction = 'reply' | 'replyAll' | 'transfer';
 export interface MessageReplyOrTransferProps {
@@ -129,7 +129,9 @@ export function useInitMessage({
                 ...messageOrigin.to,
                 users: [
                   ...messageOrigin.to.users.filter(
-                    (user: User) => messageOrigin.from?.id !== user.id,
+                    (usr: User) =>
+                      messageOrigin.from?.id !== usr.id &&
+                      usr.id !== user?.userId,
                   ),
                   ...(messageOrigin.from ? [messageOrigin.from] : []),
                 ],
