@@ -156,7 +156,7 @@ public class MongoDbEventStore implements EventStoreService {
 		if (sorted) {
 			sort = new JsonObject().put("date", 1);
 		}
-		mongoDb.find(eventStoreType, query, sort, (JsonObject) null, -1, eventsBatchSize, Integer.MAX_VALUE,
+		mongoDb.find(eventStoreType, query, sort, (JsonObject) null, -1, -1, Integer.MAX_VALUE,
 				new DeliveryOptions().setSendTimeout(QUERY_TIMEOUT), validAsyncResultsHandler(handler));
 	}
 
