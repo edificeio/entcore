@@ -275,8 +275,8 @@ public abstract class GenericShareService implements ShareService {
 				preFilterUserBuilder.append(" AND m.displayNameSearchField CONTAINS {search} ");
 
 				// Exclude CommunityMemberGroup and CommunityAdminGroup from search
-				preFilterGroupBuilder.append(" AND NOT m:" + CommunicationUtils.COMMUNITY_MEMBER_GROUP + " ");
-				preFilterGroupBuilder.append(" AND NOT m:" + CommunicationUtils.COMMUNITY_ADMIN_GROUP + " ");
+				preFilterGroupBuilder.append(" AND NOT gp:" + CommunicationUtils.COMMUNITY_MEMBER_GROUP + " ");
+				preFilterGroupBuilder.append(" AND NOT gp:" + CommunicationUtils.COMMUNITY_ADMIN_GROUP + " ");
 
 				// historically this filter was not user. should it be?
 				//preFilterGroupBuilder.append(" AND profileGroup.displayNameSearchField CONTAINS {search} ");
