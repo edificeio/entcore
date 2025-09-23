@@ -1,8 +1,8 @@
+import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { Message, MessageBase } from '~/models';
+import { queryClient } from '~/providers';
 import { messageQueryKeys, useFolderUtils } from '~/services';
 import { useUpdateFolderBadgeCountQueryCache } from './useUpdateFolderBadgeCountQueryCache';
-import { useSelectedFolder } from '~/hooks/useSelectedFolder';
-import { queryClient } from '~/providers';
 
 export const useToggleUnreadMessagesFromQueryCache = () => {
   const { updateFolderMessagesQueryCache } = useFolderUtils();
@@ -29,19 +29,21 @@ export const useToggleUnreadMessagesFromQueryCache = () => {
       }
 
       // Update the message unread status in the list
-      updateFolderMessagesQueryCache(folderId, (oldMessage) =>
-        messageIds.includes(oldMessage.id)
-          ? { ...oldMessage, unread }
-          : oldMessage,
-      );
-
-      // Update the message unread status in outbox list if from me
       updateFolderMessagesQueryCache(
-        folderId === 'outbox' ? 'inbox' : 'outbox',
         (oldMessage) =>
           messageIds.includes(oldMessage.id)
             ? { ...oldMessage, unread }
             : oldMessage,
+        folderId,
+      );
+
+      // Update the message unread status in outbox list if from me
+      updateFolderMessagesQueryCache(
+        (oldMessage) =>
+          messageIds.includes(oldMessage.id)
+            ? { ...oldMessage, unread }
+            : oldMessage,
+        folderId === 'outbox' ? 'inbox' : 'outbox',
       );
     }
     // Update message details (unread status)
