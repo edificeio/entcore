@@ -57,11 +57,11 @@ export const useAttachFiles = () => {
       );
 
       updateFolderMessagesQueryCache(
-        'draft',
         (oldMessage) =>
           oldMessage.id === draftId
             ? { ...oldMessage, date: Date.now(), hasAttachment: true }
             : oldMessage,
+        'draft',
         true,
       );
       toast.success(t('attachments.loaded'));
@@ -108,11 +108,11 @@ export const useDetachFile = () => {
         },
       );
       updateFolderMessagesQueryCache(
-        'draft',
         (oldMessage) =>
           oldMessage.id === draftId
             ? { ...oldMessage, date: Date.now() }
             : oldMessage,
+        'draft',
         true,
       );
     },
