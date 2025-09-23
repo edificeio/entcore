@@ -26,6 +26,7 @@ import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.data.FileResolver;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
+import fr.wseduc.webutils.metrics.HealthCheckProbe;
 import fr.wseduc.webutils.request.AccessLogger;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.filter.AccessLoggerFilter;
@@ -56,6 +57,10 @@ import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.explorer.ExplorerPluginFactory;
 import org.entcore.common.http.filter.*;
+import org.entcore.common.http.health.MongoProbe;
+import org.entcore.common.http.health.Neo4jProbe;
+import org.entcore.common.http.health.PostgresProbe;
+import org.entcore.common.http.health.RedisProbe;
 import org.entcore.common.http.i18n.I18nHandler;
 import org.entcore.common.http.response.OverrideThemeHookRender;
 import org.entcore.common.http.response.SecurityHookRender;
@@ -214,14 +219,8 @@ public abstract class BaseServer extends Server {
 			log.info("Received "+ONDEPLOY_I18N+" update i18n override");
 			this.loadI18nAssetsFiles(skins);
 		});
-    futures.add(initProbes());
 		Future.all(futures).onComplete(res -> startPromise.tryComplete());
   }
-
-  private Future<Void> initProbes() {
-    return Future.succeededFuture();
-  }
-
 
 	@Override
 	public void stop(final Promise<Void> promise) throws Exception {
