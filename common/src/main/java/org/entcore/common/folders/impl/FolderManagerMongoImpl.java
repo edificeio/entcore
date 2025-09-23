@@ -17,6 +17,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.entcore.broker.api.dto.resources.ResourcesDeletedDTO;
+import org.entcore.broker.api.dto.resources.ResourcesTrashedDTO;
 import org.entcore.broker.api.publisher.BrokerPublisherFactory;
 import org.entcore.broker.api.utils.AddressParameter;
 import org.entcore.broker.proxy.ResourceBrokerPublisher;
@@ -565,12 +566,29 @@ public class FolderManagerMongoImpl implements FolderManager {
 	 * @param ids Set of document IDs that were deleted
 	 */
 	private void notifyResourceDeletion(Set<String> ids) {
-	    if (!ids.isEmpty()) {
-	        final List<String> resourceIds = new ArrayList<>(ids);
-	        final ResourcesDeletedDTO notification = new ResourcesDeletedDTO(resourceIds, FolderManager.FILE_TYPE);
-	        resourcePublisher.notifyResourcesDeleted(notification);
-	    }
+	    // Note: For now, this notification is not necessary as the deletion 
+        // is handled through notifyResourceTrashed. This method is kept for future use.
+        /*
+        if (!ids.isEmpty()) {
+            final List<String> resourceIds = new ArrayList<>(ids);
+            final ResourcesDeletedDTO notification = new ResourcesDeletedDTO(resourceIds, FolderManager.FILE_TYPE);
+            resourcePublisher.notifyResourcesDeleted(notification);
+        }
+        */
 	}
+
+    /**
+     * Notifies the resource broker when files are trashed
+     * 
+     * @param ids Set of document IDs that were trashed
+     */
+    private void notifyResourceTrashed(Set<String> ids) {
+        if (!ids.isEmpty()) {
+            final List<String> resourceIds = new ArrayList<>(ids);
+            final ResourcesTrashedDTO notification = new ResourcesTrashedDTO(resourceIds, "workspace", FolderManager.FILE_TYPE);
+            resourcePublisher.notifyResourcesTrashed(notification);
+        }
+    }
 
 	/**
 	 * Handles the result of storage deletion operation
@@ -925,6 +943,8 @@ public class FolderManagerMongoImpl implements FolderManager {
 		}
 		return queryHelper.updateAll(ids, mongo).compose(e -> {
 			if (deleted) {
+				// Notify broker when resources are trashed
+				notifyResourceTrashed(ids);
 				return queryHelper.breakParentLink(roots);
 			} else {
 				return queryHelper.restoreParentLink(RestoreParentDirection.FromTrash, files);
