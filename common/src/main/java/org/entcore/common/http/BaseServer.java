@@ -171,55 +171,59 @@ public abstract class BaseServer extends Server {
 
 		Config.getInstance().setConfig(config);
 
-		if (node != null) {
-			initModulesHelpers(node, baseServerMap);
-		}
+    EmailFactory.build(vertx, config)
+    .onFailure(startPromise::fail)
+    .onSuccess(f -> {
+      UserValidationFactory.build(vertx, config);
+      if (node != null) {
+        initModulesHelpers(node, baseServerMap);
+      }
 
-		if (config.getBoolean("csrf-token", false)) {
-			addFilter(new CsrfFilter(getEventBus(vertx), securedUriBinding));
-		}
-		if (config.getBoolean("block-route-filter", false)) {
-			addFilter(new BlockRouteFilter(vertx, getEventBus(vertx), Server.getPathPrefix(config),
-				config.getLong("block-route-filter-refresh-period", 5 * 60 * 1000L),
-				config.getBoolean("block-route-filter-redirect-if-mobile", true),
-				config.getInteger("block-route-filter-error-status-code", 401)
-			));
-		}
+      if (config.getBoolean("csrf-token", false)) {
+        addFilter(new CsrfFilter(getEventBus(vertx), securedUriBinding));
+      }
+      if (config.getBoolean("block-route-filter", false)) {
+        addFilter(new BlockRouteFilter(vertx, getEventBus(vertx), Server.getPathPrefix(config),
+          config.getLong("block-route-filter-refresh-period", 5 * 60 * 1000L),
+          config.getBoolean("block-route-filter-redirect-if-mobile", true),
+          config.getInteger("block-route-filter-error-status-code", 401)
+        ));
+      }
 
-		final List<Future<? extends Object>> futures = new ArrayList<>();
-		futures.add(EmailFactory.build(vertx, config).compose(f -> UserValidationFactory.build(vertx, config)));
+      final List<Future<?>> futures = new ArrayList<>();
 
-		final Boolean cacheEnabled = (Boolean) baseServerMap.getOrDefault("cache-filter", false);
-		if(Boolean.TRUE.equals(cacheEnabled)){
-			final CacheService cacheService = CacheService.create(vertx);
-			addFilter(new CacheFilter(getEventBus(vertx),securedUriBinding, cacheService));
-  }
+      final Boolean cacheEnabled = (Boolean) baseServerMap.getOrDefault("cache-filter", false);
+      if(Boolean.TRUE.equals(cacheEnabled)){
+        final CacheService cacheService = CacheService.create(vertx);
+        addFilter(new CacheFilter(getEventBus(vertx),securedUriBinding, cacheService));
+      }
 
-		addFilter(new MandatoryUserValidationFilter(mfaProtectedBinding, getEventBus(vertx)));
+      addFilter(new MandatoryUserValidationFilter(mfaProtectedBinding, getEventBus(vertx)));
 
-		if (config.getString("integration-mode","BUS").equals("HTTP")) {
-			addFilter(new HttpActionFilter(securedUriBinding, config, vertx, resourceProvider));
-		} else {
-			addFilter(new ActionFilter(securedUriBinding, vertx, resourceProvider));
-		}
-		vertx.eventBus().consumer("user.repository", repositoryHandler);
-		vertx.eventBus().consumer("search.searching", this.searchingHandler);
-		vertx.eventBus().consumer(moduleName.toLowerCase()+".i18n", this.i18nHandler);
+      if (config.getString("integration-mode","BUS").equals("HTTP")) {
+        addFilter(new HttpActionFilter(securedUriBinding, config, vertx, resourceProvider));
+      } else {
+        addFilter(new ActionFilter(securedUriBinding, vertx, resourceProvider));
+      }
+      vertx.eventBus().consumer("user.repository", repositoryHandler);
+      vertx.eventBus().consumer("search.searching", this.searchingHandler);
+      vertx.eventBus().consumer(moduleName.toLowerCase()+".i18n", this.i18nHandler);
 
-		final Map<String, Object> skins = getOrElse((JsonObject) baseServerMap.get("skins"), new JsonObject()).getMap();
-		loadI18nAssetsFiles(skins);
+      final Map<String, Object> skins = getOrElse((JsonObject) baseServerMap.get("skins"), new JsonObject()).getMap();
+      loadI18nAssetsFiles(skins);
 
-		addController(new RightsController());
-		addController(new ConfController());
-		SecurityHandler.setVertx(vertx);
+      futures.add(addController(new RightsController()));
+      futures.add(addController(new ConfController()));
+      SecurityHandler.setVertx(vertx);
 
-		Renders.getAllowedHosts().addAll(skins.keySet());
-		//listen for i18n deploy
-		vertx.eventBus().consumer(ONDEPLOY_I18N, message ->{
-			log.info("Received "+ONDEPLOY_I18N+" update i18n override");
-			this.loadI18nAssetsFiles(skins);
-		});
-		Future.all(futures).onComplete(res -> startPromise.tryComplete());
+      Renders.getAllowedHosts().addAll(skins.keySet());
+      //listen for i18n deploy
+      vertx.eventBus().consumer(ONDEPLOY_I18N, message ->{
+        log.info("Received "+ONDEPLOY_I18N+" update i18n override");
+        this.loadI18nAssetsFiles(skins);
+      });
+      Future.all(futures).onComplete(res -> startPromise.tryComplete());
+    });
   }
 
 	@Override
