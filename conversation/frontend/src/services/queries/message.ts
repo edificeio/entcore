@@ -599,10 +599,12 @@ export const useRecallMessage = () => {
       queryClient.invalidateQueries({
         queryKey: messageQueryKeys.byId(messageId),
       });
-      updateFolderMessagesQueryCache('', (oldMessage) =>
-        oldMessage.id === messageId
-          ? { ...oldMessage, state: 'RECALL' }
-          : oldMessage,
+      updateFolderMessagesQueryCache(
+        (oldMessage) =>
+          oldMessage.id === messageId
+            ? { ...oldMessage, state: 'RECALL' }
+            : oldMessage,
+        '',
       );
     },
   });
