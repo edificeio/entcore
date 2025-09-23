@@ -4,6 +4,7 @@ import io.vertx.core.Future;
 import org.entcore.broker.api.BrokerPublisher;
 import org.entcore.broker.api.dto.resources.ResourcesDeletedDTO;
 import org.entcore.broker.api.dto.resources.ResourceSharesChangedDTO;
+import org.entcore.broker.api.dto.resources.ResourcesTrashedDTO;
 
 /**
  * Interface for publishing resource-related events to the broker.
@@ -23,6 +24,15 @@ public interface ResourceBrokerPublisher {
      */
     @BrokerPublisher(subject = "resource.{application}.deleted")
     Future<Void> notifyResourcesDeleted(ResourcesDeletedDTO notification);
+    
+    /**
+     * Notifies subscribers that resources have been trashed.
+     * 
+     * @param notification DTO containing the IDs of trashed resources, application, and resource type
+     * @return Future indicating completion of the notification
+     */
+    @BrokerPublisher(subject = "resource.{application}.trashed")
+    Future<Void> notifyResourcesTrashed(ResourcesTrashedDTO notification);
     
     /**
      * Notifies subscribers that the shares for resources have changed.
