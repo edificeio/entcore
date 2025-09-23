@@ -149,8 +149,8 @@ public class Directory extends BaseServer {
 		directoryController.setUserService(userService);
 		directoryController.setGroupService(groupService);
 		directoryController.setSlotProfileService(new DefaultSlotProfileService(SLOTPROFILE_COLLECTION));
-		addController(directoryController);
-		vertx.setTimer(5000l, event -> directoryController.createSuperAdmin());
+		addController(directoryController)
+      .onSuccess(e -> vertx.setTimer(5000l, event -> directoryController.createSuperAdmin()));
 
 
 		UserBookController userBookController = new UserBookController(serverMap);

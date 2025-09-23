@@ -79,7 +79,7 @@ public class Neo4j {
 						config.getBoolean("keepAlive", true),
 						config);
 			} catch (Exception e) {
-				log.error(e.getMessage(), e);
+				log.error("An error occurred while initializing Neo4j", e);
 			}
 		} else {
 			log.error("Invalid Neo4j URI");

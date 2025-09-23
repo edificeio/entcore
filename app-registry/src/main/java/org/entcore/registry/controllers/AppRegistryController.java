@@ -34,6 +34,7 @@ import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.http.BaseController;
 
 import fr.wseduc.webutils.http.Renders;
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.AdmlOfStructure;
@@ -71,12 +72,13 @@ public class AppRegistryController extends BaseController {
 	private final AppRegistryService appRegistryService = new DefaultAppRegistryService();
 	private JsonObject skinLevels;
 
-	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
-					 Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
+	public Future<Void> initAsync(Vertx vertx, JsonObject config, RouteMatcher rm,
+                          Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
-		SharedDataHelper.getInstance().<String, JsonObject>get("server", "skin-levels")
+		return SharedDataHelper.getInstance().<String, JsonObject>get("server", "skin-levels")
 			.onSuccess(skinLevels -> AppRegistryController.this.skinLevels = skinLevels)
-			.onFailure(ex -> log.error("Error getting skin-levels", ex));
+			.onFailure(ex -> log.error("Error getting skin-levels", ex))
+      .mapEmpty();
 	}
 
 	@Get("/admin-console")
