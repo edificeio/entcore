@@ -159,8 +159,8 @@ export const useFolderUtils = () => {
 
   /** Update some messages metadata in the list of a folder's messages. */
   function updateFolderMessagesQueryCache(
-    folderId: string,
     updater: (oldMessage: MessageMetadata) => MessageMetadata,
+    folderId?: string,
     reOrder: boolean = false,
   ) {
     queryClient.setQueriesData<InfiniteData<MessageMetadata[]>>(
