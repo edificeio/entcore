@@ -30,6 +30,9 @@ import org.entcore.registry.controllers.*;
 import org.entcore.registry.filters.AppRegistryFilter;
 import org.entcore.registry.services.impl.NopAppRegistryEventService;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class AppRegistry extends BaseServer {
 
 	@Override
@@ -40,28 +43,29 @@ public class AppRegistry extends BaseServer {
 	}
 
 	public Future<Void> initAppRegistry() {
+    final List<Future<?>> futures = new ArrayList<>();
     final AppRegistryController appRegistryController = new AppRegistryController();
-    addController(appRegistryController);
+    futures.add(addController(appRegistryController));
 
-		addController(new ExternalApplicationController(config.getInteger("massAuthorizeBatchSize", 1000)));
-		addController(new WidgetController());
+    futures.add(addController(new ExternalApplicationController(config.getInteger("massAuthorizeBatchSize", 1000))));
+    futures.add(addController(new WidgetController()));
 		try {
-			addController(new LibraryController(vertx, config()));
+      futures.add(addController(new LibraryController(vertx, config())));
 		} catch (Exception e) {
 			return Future.failedFuture(e);
 		}
 		BrokerProxyUtils.addBrokerProxy(appRegistryController, vertx, new AddressParameter("application", "appregistry"));
 		JsonObject eduMalinConf = config.getJsonObject("edumalin-widget-config");
 		if(eduMalinConf != null)
-			addController(new EdumalinWidgetController());
+      futures.add(addController(new EdumalinWidgetController()));
 
 		JsonObject webGerestEnabled = config.getJsonObject("webGerest-config");
 		if(webGerestEnabled != null) {
-			addController(new WebGerestController());
+      futures.add(addController(new WebGerestController()));
 		}
 		JsonObject screenTimeEnabled = config.getJsonObject("screen-time-config");
 		if(screenTimeEnabled != null) {
-			addController(new ScreenTimeController());
+      futures.add(addController(new ScreenTimeController()));
 		}
 
 		JsonObject ptitObservatoireConf = config.getJsonObject("ptit-observatoire-widget-config");
@@ -72,7 +76,7 @@ public class AppRegistry extends BaseServer {
 		setDefaultResourceFilter(new AppRegistryFilter());
 		new AppRegistryEventsHandler(vertx, new NopAppRegistryEventService());
 		vertx.eventBus().publish("app-registry.loaded", new JsonObject());
-		return Future.succeededFuture();
+		return Future.all(futures).mapEmpty();
 	}
 
 }
