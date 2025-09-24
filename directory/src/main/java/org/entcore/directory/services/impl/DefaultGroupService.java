@@ -192,7 +192,10 @@ public class DefaultGroupService implements GroupService {
 	public void getInfos(String groupId, Handler<Either<String, JsonObject>> handler) {
 		final String query =
 				"MATCH (g:Group {id:{id}}) " +
-				"RETURN g.id as id, g.name as name, g.nbUsers as nbUsers ";
+				"RETURN g.id as id, g.name as name, g.nbUsers as nbUsers, " +
+				"CASE WHEN (g: ProfileGroup)-[:DEPENDS]->(:Structure) THEN 'StructureGroup' " +
+				"     WHEN (g: ProfileGroup)-[:DEPENDS]->(:Class) THEN 'ClassGroup' " +
+				"     WHEN HAS(g.subType) THEN g.subType END as type ";
 		final JsonObject params = new JsonObject().put("id", groupId);
 		neo.execute(query, params, validUniqueResultHandler(handler));
 	}
