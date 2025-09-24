@@ -190,7 +190,16 @@ export function useInitMessage({
             ) || []),
           ],
         };
-        messageTmp.cci = { groups: [...broadcastGroupToAdd], users: [] };
+        messageTmp.cci = {
+          groups: [
+            ...broadcastGroupToAdd,
+            ...(messageTmp.cci?.groups?.filter(
+              (group: Group) =>
+                !broadcastGroupToAdd.some((g) => g.id === group.id),
+            ) || []),
+          ],
+          users: [],
+        };
       }
 
       setMessage({
