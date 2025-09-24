@@ -273,13 +273,6 @@ public abstract class GenericShareService implements ShareService {
 				userParams.put("search", sanitizedSearch);
 				//
 				preFilterUserBuilder.append(" AND m.displayNameSearchField CONTAINS {search} ");
-
-				// Exclude CommunityMemberGroup and CommunityAdminGroup from search
-				preFilterGroupBuilder.append(" AND NOT gp:" + CommunicationUtils.COMMUNITY_MEMBER_GROUP + " ");
-				preFilterGroupBuilder.append(" AND NOT gp:" + CommunicationUtils.COMMUNITY_ADMIN_GROUP + " ");
-
-				// historically this filter was not user. should it be?
-				//preFilterGroupBuilder.append(" AND profileGroup.displayNameSearchField CONTAINS {search} ");
 			}
 			//PREFILTER GROUPS BY FILTER
 			if(query.getOnlyGroupsWithFilters() != null && query.getOnlyGroupsWithFilters().size() > 0) {
@@ -493,8 +486,8 @@ public abstract class GenericShareService implements ShareService {
 		final String customReturn = "RETURN DISTINCT visibles.id as id, has(visibles.login) as isUser";
 
 		final List<String> idsOfShare = getIdOfGroupsAndUsersConcernedByShares(originalShares, shareUpdates);
-
-		UserUtils.filterFewOrGetAllVisibles(eb, userId, new JsonArray(idsOfShare),	true,"fr", customReturn, false)
+		// include hidden groups because we are able to share to hidden groups
+		UserUtils.filterFewOrGetAllVisibles(eb, userId, new JsonArray(idsOfShare),	true,"fr", customReturn, false, true)
 				.onSuccess(visibleChunks -> {
 					final Set<String> seeableUsersAndGroupsFromOriginalShares = visibleChunks.stream()
 							.map(entry -> ((JsonObject) entry).getString("id"))

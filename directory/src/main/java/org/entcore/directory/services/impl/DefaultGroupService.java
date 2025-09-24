@@ -33,6 +33,7 @@ import org.entcore.directory.Directory;
 import org.entcore.directory.services.GroupService;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
@@ -322,25 +323,36 @@ public class DefaultGroupService implements GroupService {
 	 * @return Future with the modified group information or failure
 	 */
 	@Override
-	public Future<JsonObject> addLabelToGroup(String groupId, String label) {
+	public Future<JsonObject> addLabelsToGroup(String groupId, List<String> labels) {
 		final Promise<JsonObject> promise = Promise.promise();
 		
 		if (groupId == null || groupId.trim().isEmpty()) {
 			return Future.failedFuture("invalid.group.id");
 		}
 		
-		if (label == null || label.trim().isEmpty()) {
-			return Future.failedFuture("invalid.label");
+		if (labels == null || labels.isEmpty()) {
+			return Future.failedFuture("invalid.labels");
 		}
 		
-		// Sanitize label to avoid injection - remove spaces and special characters
-		String sanitizedLabel = label.replaceAll("[^a-zA-Z0-9_]", "");
-		if (sanitizedLabel.isEmpty()) {
-			return Future.failedFuture("invalid.label.format");
+		// Sanitize labels to avoid injection - remove spaces and special characters
+		final List<String> sanitizedLabels = labels.stream()
+				.map(label -> label.replaceAll("\\W", ""))
+				.filter(label -> !label.isEmpty())
+				.collect(Collectors.toList());
+		
+		if (sanitizedLabels.isEmpty()) {
+			return Future.failedFuture("invalid.labels.format");
+		}
+		
+		// Build dynamic SET clause for multiple labels
+		final StringBuilder setClause = new StringBuilder("SET ");
+		for (int i = 0; i < sanitizedLabels.size(); i++) {
+			if (i > 0) setClause.append(", ");
+			setClause.append("g:").append(sanitizedLabels.get(i));
 		}
 		
 		final String query = "MATCH (g:Group {id:{groupId}}) " +
-					 "SET g:" + sanitizedLabel + " " +
+					 setClause.toString() + " " +
 					 "RETURN g.id as id, g.name as name, g.displayName as displayName, " +
 					 "labels(g) as labels";
 		

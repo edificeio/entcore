@@ -621,10 +621,15 @@ public class DefaultCommunicationService implements CommunicationService {
 				"AND (length(p) < 1 OR (length(p) < 2 AND g.id <> cg.id) OR (length(p) < 2 AND m:User)) " +
 				"AND (NOT(HAS(m.blocked)) OR m.blocked = false) " +
 				"AND (NOT(HAS(m.nbUsers)) OR m.nbUsers > 0) ");
-		if (preFilter != null) {
-			query.append(preFilter);
+
+		String combinedPreFilter = (preFilter != null ? preFilter : "");
+		if (additionalParams == null || !additionalParams.getBoolean("includeHidden", false)) {
+			combinedPreFilter += " AND NOT m:Hidden ";
+		}
+		if (!combinedPreFilter.isEmpty()) {
+			query.append(combinedPreFilter);
 			if (union != null) {
-				union.append(preFilter);
+				union.append(combinedPreFilter);
 				union.append(conditionUnion);
 			}
 		}
@@ -731,11 +736,18 @@ public class DefaultCommunicationService implements CommunicationService {
 		if (additionnalParams != null) {
 			excludeEmptyGroups = additionnalParams.getBoolean("excludeEmptyGroups", excludeEmptyGroups);
 		}
+		
+		// Build preFilter with Hidden exclusion unless explicitly requested
+		String combinedPreFilter = (preFilter != null ? preFilter : "");
+		if (additionnalParams == null || !additionnalParams.getBoolean("includeHidden", false)) {
+			combinedPreFilter += " AND NOT gp:Hidden ";
+		}
+		
 		String query =
 				"MATCH p=(n:User)-[:COMMUNIQUE*1..2]->l<-[:DEPENDS*0..1]-(gp:Group) " +
 						"WHERE n.id = {userId} " +
 						(excludeEmptyGroups ? "AND (NOT(HAS(gp.nbUsers)) OR gp.nbUsers > 0)" : "") +
-						"AND (length(p) > 1 OR gp.users <> 'INCOMING') " + (preFilter != null ? preFilter : "") +
+						"AND (length(p) > 1 OR gp.users <> 'INCOMING') " + combinedPreFilter +
 						"OPTIONAL MATCH gp-[:DEPENDS*0..1]->(pg:ProfileGroup)-[:HAS_PROFILE]->(profile:Profile) " +
 						r;
 		neo4j.execute(query, params, validResultHandler(handler));
@@ -1819,9 +1831,6 @@ public class DefaultCommunicationService implements CommunicationService {
 				"WITH visibles ";
 
 		String preFilter = "";
-		// exclude Community groups from search
-		preFilter += " AND NOT m:" + CommunicationUtils.COMMUNITY_MEMBER_GROUP + " ";
-		preFilter += " AND NOT m:" + CommunicationUtils.COMMUNITY_ADMIN_GROUP + " ";
 
 		JsonObject params = new JsonObject();
 		if (!StringUtils.isEmpty(search)) {
