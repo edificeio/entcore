@@ -1,8 +1,11 @@
 import { BookmarkWithDetails, odeServices } from '@edifice.io/client';
-import { Visible } from '~/models/visible';
+import { Visible, VisibleType } from '~/models/visible';
 
 type VisibleData = { id: string; displayName: string };
-export type VisibleGroupData = VisibleData & { nbUsers: number; type?: string };
+export type VisibleGroupData = VisibleData & {
+  nbUsers: number;
+  type?: VisibleType;
+};
 export type VisibleUserData = VisibleData & { profile: string };
 
 /**
@@ -51,7 +54,7 @@ export const createUserService = () => {
             id: string;
             name: string;
             nbUsers: number;
-            type?: string;
+            type?: VisibleType;
           }>(`/directory/group/${id}`)
           .then(({ id, nbUsers, type, ...result }) => ({
             id,
@@ -98,7 +101,7 @@ export const createUserService = () => {
               id: bookmark.id,
               displayName: bookmark.displayName,
               usedIn: ['TO', 'CC', 'CCI'],
-              type: 'ShareBookmark',
+              type: VisibleType.ShareBookmark,
             }),
           );
         });

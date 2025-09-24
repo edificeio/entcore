@@ -2,6 +2,7 @@ import { useDate, useEdificeClient } from '@edifice.io/react';
 import { useLayoutEffect } from 'react';
 import { SIGNATURE_EMPTY_CONTENT } from '~/components/SignatureEditor';
 import { Group, Message, Recipients, User } from '~/models';
+import { VisibleType } from '~/models/visible';
 import {
   createDefaultMessage,
   useMessageQuery,
@@ -168,7 +169,7 @@ export function useInitMessage({
         const broadcastGroupToAdd: Group[] = [];
         const groupToAdd: Group[] = [];
         recipientsToAddToMessage.groups.forEach((group: Group) => {
-          if (group.type === 'BroadcastGroup') {
+          if (group.type === VisibleType.BroadcastGroup) {
             broadcastGroupToAdd.push(group);
           } else {
             groupToAdd.push(group);
