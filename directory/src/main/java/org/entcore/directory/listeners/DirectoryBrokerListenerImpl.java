@@ -83,21 +83,21 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
             if (event.isRight()) {
                 final String id = event.right().getValue().getString("id");
                 
-                // Check if label is provided in the request
-                if (request.getLabel() != null && !request.getLabel().trim().isEmpty()) {
-                    // Add the label to the created group
-                    groupService.addLabelToGroup(id, request.getLabel())
+                // Check if labels are provided in the request
+                if (request.getLabels() != null && !request.getLabels().isEmpty()) {
+                    // Add the labels to the created group
+                    groupService.addLabelsToGroup(id, request.getLabels())
                         .onSuccess(labelResult -> {
-                            log.debug("Successfully added label {} to group {}", request.getLabel(), id);
+                            log.debug("Successfully added labels {} to group {}", request.getLabels(), id);
                             promise.complete(new CreateGroupResponseDTO(id));
                         })
                         .onFailure(error -> {
-                            log.error("Failed to add label {} to group {}: {}", request.getLabel(), id, error.getMessage());
+                            log.error("Failed to add labels {} to group {}: {}", request.getLabels(), id, error.getMessage());
                             // We still consider the group creation as successful even if label addition fails
                             promise.complete(new CreateGroupResponseDTO(id));
                         });
                 } else {
-                    // No label to add, complete directly
+                    // No labels to add, complete directly
                     promise.complete(new CreateGroupResponseDTO(id));
                 }
             } else {

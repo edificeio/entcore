@@ -663,10 +663,15 @@ public class UserUtils {
 	 */
 	public static Future<JsonArray> filterFewOrGetAllVisibles(EventBus eb, String userId, JsonArray checkIds) {
 		return filterFewOrGetAllVisibles(eb, userId, checkIds, false, null, " MATCH (visibles) RETURN DISTINCT visibles.id as id ", true);
-	};
+	}
 
 	public static Future<JsonArray> filterFewOrGetAllVisibles(EventBus eb, String userId, JsonArray checkIds,
 															  boolean itself, String language, String customReturn, boolean reverseUnion) {
+		return filterFewOrGetAllVisibles(eb, userId, checkIds, itself, language, customReturn, reverseUnion, false);
+	}
+
+	public static Future<JsonArray> filterFewOrGetAllVisibles(EventBus eb, String userId, JsonArray checkIds,
+															  boolean itself, String language, String customReturn, boolean reverseUnion, boolean includeHidden) {
 		if(StringUtils.isEmpty(userId) || checkIds == null || checkIds.isEmpty()) {
 			return Future.succeededFuture(new JsonArray());
 		}
@@ -675,6 +680,11 @@ public class UserUtils {
 		if(checkIds.size() < getMaxCheckIdsSize()) {
 			params.put(EXPECTED_IDS_USERS_GROUPS, checkIds);
 		}
+		// Add includeHidden parameter for communication service
+		if (includeHidden) {
+			params.put("includeHidden", true);
+		}
+		
 		visibleFutures.add(findVisibles(eb,
 				userId,
 				customReturn,
