@@ -242,10 +242,6 @@ public class CommunicationController extends BaseController {
 								if (isNotEmpty(search)) {
 									preFilter = "AND m.displayNameSearchField CONTAINS {search} ";
 
-									// Exclude CommunityMemberGroup and CommunityAdminGroup from search
-									preFilter += " AND NOT m:" + CommunicationUtils.COMMUNITY_MEMBER_GROUP + " ";
-									preFilter += " AND NOT m:" + CommunicationUtils.COMMUNITY_ADMIN_GROUP + " ";
-
 									String sanitizedSearch = StringValidation.sanitize(search);
 									params.put("search", sanitizedSearch);
 								}
