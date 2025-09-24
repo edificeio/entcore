@@ -2,7 +2,7 @@ import { BookmarkWithDetails, odeServices } from '@edifice.io/client';
 import { Visible } from '~/models/visible';
 
 type VisibleData = { id: string; displayName: string };
-export type VisibleGroupData = VisibleData & { nbUsers: number };
+export type VisibleGroupData = VisibleData & { nbUsers: number; type?: string };
 export type VisibleUserData = VisibleData & { profile: string };
 
 /**
@@ -51,11 +51,13 @@ export const createUserService = () => {
             id: string;
             name: string;
             nbUsers: number;
+            type?: string;
           }>(`/directory/group/${id}`)
-          .then(({ id, nbUsers, ...result }) => ({
+          .then(({ id, nbUsers, type, ...result }) => ({
             id,
             displayName: result.name,
             nbUsers,
+            type,
           }));
     }
   }
