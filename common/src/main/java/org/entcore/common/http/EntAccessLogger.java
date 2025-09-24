@@ -49,9 +49,9 @@ public class EntAccessLogger extends AccessLogger {
 						secureRequest = new SecureHttpServerRequest(request);
 						secureRequest.setSession(session);
 					}
-					log.trace(formatLog(secureRequest) + " - " + session.getString("userId"));
+					log.info(formatLog(secureRequest, session.getString("userId")));
 				} else {
-					log.trace(formatLog(request));
+					log.info(formatLog(request, null));
 				}
 				request.resume();
 				handler.handle(null);
