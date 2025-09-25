@@ -5,6 +5,7 @@ import org.entcore.broker.api.dto.resources.ResourceInfoDTO;
 import org.entcore.broker.proxy.ResourceBrokerListener;
 import org.entcore.common.resources.MongoResourceBrokerListenerImpl;
 import org.entcore.common.utils.DateUtils;
+import org.entcore.common.utils.ResourceUtils;
 
 import java.util.Date;
 
@@ -48,12 +49,15 @@ public class ResourceBrokerListenerImpl extends MongoResourceBrokerListenerImpl 
             final String description = "";
             
             // Get thumbnail from thumbnails object if available
-            String thumbnail = "";
-            JsonObject thumbnails = resource.getJsonObject("thumbnails");
-            if (thumbnails != null && !thumbnails.isEmpty()) {
-                // Get the first thumbnail available (e.g. "640x480")
-                String firstKey = thumbnails.fieldNames().iterator().next();
-                thumbnail = thumbnails.getString(firstKey, "");
+            String thumbnail =  resource.getString("thumbnail");
+            if (thumbnail == null || thumbnail.isEmpty()) {
+                final JsonObject metadata = resource.getJsonObject("metadata");
+                if (metadata != null) {
+                    final String contentType = metadata.getString("content-type", "");
+                    if (contentType.startsWith("image/")) {
+                        thumbnail = ResourceUtils.WORKSPACE_DOCUMENT_PATH + "/" + id;
+                    }
+                }
             }
             
             // Extract user information - different structure

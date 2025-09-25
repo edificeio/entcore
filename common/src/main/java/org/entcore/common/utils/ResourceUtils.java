@@ -9,6 +9,7 @@ import java.util.regex.Pattern;
 
 public final class ResourceUtils {
 
+    public static final String WORKSPACE_DOCUMENT_PATH = "/workspace/document";
     private static final Pattern workspaceDoc = Pattern.compile("/workspace/document/(?<id>([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}))");
     private static final Pattern workspacePubDoc = Pattern.compile("/workspace/pub/document/(?<id>([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}))");
 
