@@ -19,6 +19,7 @@
 
 package org.entcore.timeline.controllers;
 
+import fr.wseduc.webutils.security.WrappedHttpServerRequest;
 import io.vertx.core.*;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -250,6 +251,11 @@ public class TimelineController extends BaseController {
 	@Get("/registeredNotifications")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void registeredNotifications(HttpServerRequest request) {
+		if (request.getClass().isAssignableFrom(WrappedHttpServerRequest.class)) {
+			String traceId = ((WrappedHttpServerRequest)request).getFromContext("traceId");
+			log.info("["+traceId+"] get last events");
+		}
+
 		JsonArray reply = new JsonArray();
 		for (String key : registeredNotifications.keySet()) {
 			JsonObject notif = new JsonObject(registeredNotifications.get(key))
@@ -269,6 +275,11 @@ public class TimelineController extends BaseController {
 	@Get("/lastNotifications")
 	@SecuredAction(value = "timeline.events", type = ActionType.AUTHENTICATED)
 	public void lastEvents(final HttpServerRequest request) {
+		if (request.getClass().isAssignableFrom(WrappedHttpServerRequest.class)) {
+			String traceId = ((WrappedHttpServerRequest)request).getFormAttribute("traceId");
+			log.info("["+traceId+"] get last events");
+		}
+
 		if(isLightmode()){
 			renderJson(request, lightModeResult(request));
 			return;
