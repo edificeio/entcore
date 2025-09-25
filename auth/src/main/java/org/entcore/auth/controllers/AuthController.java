@@ -637,14 +637,14 @@ public class AuthController extends BaseController {
 					pwdResetFormatByLang.put(lang, i18n.translate("password.rules.reset", Renders.getHost(request), lang));
 				} catch (Exception e) {
 					pwdResetFormatByLang.put(lang, "");
-					log.error("error when translating password.rules.reset in {0} : {1}", lang, e);
+					log.error(String.format("error when translating password.rules.reset in %s : ", lang), e);
 				}
 
 				try {
 					pwdActivationFormatByLang.put(lang, i18n.translate("password.rules.activation", Renders.getHost(request), lang));
 				} catch (Exception e) {
 					pwdActivationFormatByLang.put(lang, "");
-					log.error("error when translating password.rules.activation in {0} : {1}", lang, e);
+					log.error(String.format("error when translating password.rules.activation in %s : ", lang), e);
 				}
 			}
 		});
