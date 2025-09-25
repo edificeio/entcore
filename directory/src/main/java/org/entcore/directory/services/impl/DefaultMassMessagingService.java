@@ -32,6 +32,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import org.checkerframework.checker.units.qual.s;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.directory.pojo.ImportInfos;
 import org.entcore.directory.services.MassMessagingService;
@@ -50,6 +52,7 @@ public class DefaultMassMessagingService implements MassMessagingService {
 	private static final Logger log = LoggerFactory.getLogger(DefaultMassMessagingService.class);
 
 	private static final String CONVERSATION_ADDRESS = "org.entcore.conversation";
+	private static final String DEFAULT_SENDER_USERNAME = "Cartable numerique e-SY";
 	private final EventBus eb;
 	private final Vertx vertx;
 	private final Neo4j neo4j = Neo4j.getInstance();
@@ -112,15 +115,24 @@ public class DefaultMassMessagingService implements MassMessagingService {
 			@Override
 			public void handle(Message<JsonObject> event) {
 
+				if (!"ok".equals(event.body().getString("status"))) {
+					handler.handle(new Either.Left<>(new JsonObject().put("error", "Database query failed")));
+					return;
+				}
+
 				JsonArray result = event.body().getJsonArray("result");
-				if (result.getJsonObject(0) != null) {
+				if (result != null && result.size() > 0 && result.getJsonObject(0) != null) {
 					JsonObject name = result.getJsonObject(0);
 					if (name != null) {
 						String displayName = name.getString("displayName");
 						handler.handle(new Either.Right<>(displayName));
+					} else {
+						log.info("[Masse Messaging] - No display name found");
+						handler.handle(new Either.Right<>(DEFAULT_SENDER_USERNAME));
 					}
 				} else {
-					handler.handle(new Either.Left<>(new JsonObject().put("error", "Query execution failed")));
+					log.info("[Masse Messaging] - Sender name not foudn");
+					handler.handle(new Either.Right<>(DEFAULT_SENDER_USERNAME));
 				}
 			}
 		});
@@ -181,53 +193,65 @@ public class DefaultMassMessagingService implements MassMessagingService {
 											.collect(Collectors.toList());
 
 				rows.stream().map(row -> ((JsonObject)row).getJsonObject("login").getString("value")).forEach(loginList::add);
-
-				String query = "MATCH (u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
-						"WHERE u.login IN {logins} "+
-						"RETURN DISTINCT u.id as id, u.login as login";
-				JsonObject params = new JsonObject().put("logins", loginList);
-				neo4j.execute(query, params, new Handler<Message<JsonObject>>(){
+				
+				getSenderDisplayName(request, messageConfig, new Handler<Either<JsonObject, String>>(){
 					@Override
-					public void handle(Message<JsonObject> event) {
-						Map<String, JsonObject> rowMap = new HashMap<>();
+					public void handle(Either<JsonObject, String> senderEvent) {
 
-						//Getting from map is O[1] better than doing a nested loop
-						rows.forEach(row -> {
-							JsonObject obj = (JsonObject) row;
-							String key = ((JsonObject)obj.getValue("login")).getString("value");
-							if(!key.isEmpty()) {
-								rowMap.put(key, obj);
-							}
-						});
-						JsonArray res = event.body().getJsonArray("result");
-						AtomicInteger failureCounter = new AtomicInteger();
-						if ("ok".equals(event.body().getString("status")) && res != null) {
-							res.stream().forEach(userid -> {
-								String loginKey = ((JsonObject) userid).getString("login");
-									if(rowMap.containsKey((loginKey))) {
-										JsonObject newValue = rowMap.get(loginKey).put("userId", ((JsonObject) userid).getValue("id"));
-										rowMap.put(loginKey, newValue);
-										sendMassMessaging(rowMap.get(loginKey), headers, messageSubject, senderId,template, handler);
-										loginsFailed.remove(loginKey);
-									} else {
-										failureCounter.getAndIncrement();
+						String senderUsername = senderEvent.isRight() ? senderEvent.right().getValue() : DEFAULT_SENDER_USERNAME;
+						if (senderEvent.isLeft()) {
+							log.info("Sender not found, using fallback: " + senderUsername);
+						}
+						String query = "MATCH (u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(s:Structure) " +
+                            "WHERE u.login IN {logins} "+
+                            "RETURN DISTINCT u.id as id, u.login as login";
+
+						JsonObject params = new JsonObject().put("logins", loginList);
+						neo4j.execute(query, params, new Handler<Message<JsonObject>>(){
+							@Override
+							public void handle(Message<JsonObject> event) {
+								Map<String, JsonObject> rowMap = new HashMap<>();
+		
+								//Getting from map is O[1] better than doing a nested loop
+								rows.forEach(row -> {
+									JsonObject obj = (JsonObject) row;
+									String key = ((JsonObject)obj.getValue("login")).getString("value");
+									if(!key.isEmpty()) {
+										rowMap.put(key, obj);
 									}
 								});
-							log.debug("number of logins ignored:" + failureCounter);
-							JsonObject result = new JsonObject();
-							result.put("remainingLogins", new JsonArray(loginsFailed));
-							result.put("loginsSucceeded", res.size());
-							handler.handle(new Either.Right<>(result));
-						} else {
-							handler.handle(new Either.Left<>("failed to send all messages"));
-						}
+								JsonArray res = event.body().getJsonArray("result");
+								AtomicInteger failureCounter = new AtomicInteger();
+								if ("ok".equals(event.body().getString("status")) && res != null) {
+									res.stream().forEach(userid -> {
+										String loginKey = ((JsonObject) userid).getString("login");
+											if(rowMap.containsKey((loginKey))) {
+												JsonObject newValue = rowMap.get(loginKey).put("userId", ((JsonObject) userid).getValue("id"));
+												rowMap.put(loginKey, newValue);
+												sendMassMessaging(rowMap.get(loginKey), headers, messageSubject, senderId, senderUsername, template, handler);
+												loginsFailed.remove(loginKey);
+											} else {
+												failureCounter.getAndIncrement();
+											}
+										});
+									log.debug("number of logins ignored:" + failureCounter);
+									JsonObject result = new JsonObject();
+									result.put("remainingLogins", new JsonArray(loginsFailed));
+									result.put("loginsSucceeded", res.size());
+									handler.handle(new Either.Right<>(result));
+								} else {
+									handler.handle(new Either.Left<>("failed to send all messages"));
+								}
+							}
+						});
+
 					}
 				});
 			}
 		});
 	}
 
-	private void sendMassMessaging(JsonObject row, JsonArray headers, String messageSubject, String senderId,String template,Handler<Either<String, JsonObject>> handler) {
+	private void sendMassMessaging(JsonObject row, JsonArray headers, String messageSubject, String senderId, String senderUsername, String template,Handler<Either<String, JsonObject>> handler) {
 		JsonObject mail = new JsonObject();
 
 		for (Object headerObject : headers) {
@@ -251,7 +275,7 @@ public class DefaultMassMessagingService implements MassMessagingService {
 		JsonObject message = new JsonObject();
 		message.put("action", "send");
 		message.put("userId", senderId);// the FROM field of the email
-		message.put("username", loginUsername);
+		message.put("username", senderUsername);
 		message.put("message", mail);
 
 		eb.request(CONVERSATION_ADDRESS, message, handlerToAsyncHandler(event -> {
