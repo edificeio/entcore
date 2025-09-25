@@ -393,20 +393,22 @@ export const useCreateOrUpdateDraft = () => {
       ],
     };
 
-    if (messageUpdated.id && messageUpdated.state === 'DRAFT') {
-      return updateDraft.mutateAsync(
-        {
-          draftId: messageUpdated.id,
-          payload,
-        },
-        {
-          onSuccess: () => {
-            if (withNotification) {
-              toast.success(t('message.draft.saved'));
-            }
+    if (messageUpdated.id) {
+      if (messageUpdated.state === 'DRAFT') {
+        return updateDraft.mutateAsync(
+          {
+            draftId: messageUpdated.id,
+            payload,
           },
-        },
-      );
+          {
+            onSuccess: () => {
+              if (withNotification) {
+                toast.success(t('message.draft.saved'));
+              }
+            },
+          },
+        );
+      }
     } else {
       return createDraft.mutateAsync(
         {
@@ -531,6 +533,7 @@ export const useSendDraft = () => {
     useUpdateFolderBadgeCountQueryCache();
   const { deleteMessagesFromQueryCache } = useDeleteMessagesFromQueryCache();
   const queryClient = useQueryClient();
+  const setMessageNeedToSave = useMessageStore.use.setMessageNeedToSave();
 
   const { user } = useEdificeClient();
   const toast = useToast();
@@ -551,7 +554,10 @@ export const useSendDraft = () => {
         cci?: string[];
       };
       inReplyToId?: string;
-    }) => messageService.send(draftId, payload, inReplyToId),
+    }) => {
+      setMessageNeedToSave(false);
+      return messageService.send(draftId, payload, inReplyToId);
+    },
     onSuccess: (_response, { payload, draftId }) => {
       toast.success(t('message.sent'));
 
