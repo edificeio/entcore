@@ -36,7 +36,7 @@ export const useDeleteMessagesFromQueryCache = () => {
         }
 
         //total message count
-        const totalItems = data.pages[0][0].count;
+        const totalItems = data.pages[0][0] ? data.pages[0][0].count : 0;
         const newTotalItems = totalItems - messageIds.length;
 
         const pages = data.pages
