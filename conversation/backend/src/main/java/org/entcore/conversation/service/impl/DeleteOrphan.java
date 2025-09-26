@@ -43,24 +43,25 @@ public class DeleteOrphan implements Handler<Long> {
 	private static final String UNKNOWN_ERROR = "Unknown error";
 
 	private static final String SELECT_ORPHAN_ATTACHMENT =
-			"select a.id as orphanid from conversation.attachments a " +
-			"left join conversation.usermessagesattachments uma on uma.attachment_id = a.id " +
-			"where uma.message_id is NULL LIMIT ?;";
+		"SELECT a.id AS orphanid FROM conversation.attachments a " +
+		"WHERE NOT EXISTS (SELECT 1 FROM conversation.usermessagesattachments uma WHERE uma.attachment_id = a.id) " +
+		"LIMIT ?;";
 
 	private static final String DELETE_ORPHAN_MESSAGE =
-			"delete from conversation.messages where id IN " +
-			"(select m.id from conversation.messages m " +
-			"left join conversation.usermessages um on um.message_id = m.id " +
-			"where um.user_id is NULL LIMIT ?);";
+		"DELETE FROM conversation.messages WHERE id IN " +
+		"(SELECT id FROM conversation.messages m " +
+		"WHERE NOT EXISTS (SELECT 1 FROM conversation.usermessages um WHERE um.message_id = m.id) " +
+		"LIMIT ?);";
 
 	private static final String DELETE_ORPHAN_THREAD =
-			"delete from conversation.threads where id IN " +
-			"(select t.id from conversation.threads t " +
-			"left join conversation.userthreads ut on ut.thread_id = t.id " +
-			"where ut.user_id is NULL LIMIT ?);";
+		"DELETE FROM conversation.threads WHERE id IN " +
+		"(SELECT id FROM conversation.threads t " +
+		"WHERE NOT EXISTS (SELECT 1 FROM conversation.userthreads ut WHERE ut.thread_id = t.id) " +
+		"LIMIT ?);";
 
 	private static final String DELETE_ORPHAN_ATTACHMENT_BATCH =
-			"delete from conversation.attachments where id = ANY(?::text[]);";
+		"DELETE FROM conversation.attachments WHERE id = ANY(?::text[]) " +
+		"AND NOT EXISTS (SELECT 1 FROM conversation.usermessagesattachments uma WHERE uma.attachment_id = conversation.attachments.id);";
 
 	private final long sqlTimeout;
 	private final int batchSize;
@@ -299,17 +300,20 @@ public class DeleteOrphan implements Handler<Long> {
 	private Future<Void> logRemainingOrphans() {
 		final Sql sql = Sql.getInstance();
 
-		String countMessages = "select count(*) as count from conversation.messages m " +
-			"left join conversation.usermessages um on um.message_id = m.id " +
-			"where um.user_id is NULL";
+		String countMessages =
+			"SELECT COUNT(*) AS count FROM (SELECT 1 FROM conversation.messages m " +
+			"WHERE NOT EXISTS (SELECT 1 FROM conversation.usermessages um WHERE um.message_id = m.id) " +
+			"LIMIT 100000) subquery";
 
-		String countThreads = "select count(*) as count from conversation.threads t " +
-			"left join conversation.userthreads ut on ut.thread_id = t.id " +
-			"where ut.user_id is NULL";
+		String countThreads =
+			"SELECT COUNT(*) AS count FROM (SELECT 1 FROM conversation.threads t " +
+			"WHERE NOT EXISTS (SELECT 1 FROM conversation.userthreads ut WHERE ut.thread_id = t.id) " +
+			"LIMIT 100000) subquery";
 
-		String countAttachments = "select count(*) as count from conversation.attachments a " +
-			"left join conversation.usermessagesattachments uma on uma.attachment_id = a.id " +
-			"where uma.message_id is NULL";
+		String countAttachments =
+			"SELECT COUNT(*) AS count FROM (SELECT 1 FROM conversation.attachments a " +
+			"WHERE NOT EXISTS (SELECT 1 FROM conversation.usermessagesattachments uma WHERE uma.attachment_id = a.id) " +
+			"LIMIT 100000) subquery";
 
 		Promise<Void> promise = Promise.promise();
 		sql.prepared(countMessages, new JsonArray(), result1 -> {
