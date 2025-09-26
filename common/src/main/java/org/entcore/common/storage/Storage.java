@@ -153,7 +153,14 @@ public interface Storage {
 		throw new FileNotFoundException("Invalid file : " + file);
 	}
 
-	class FileInfo{
+  /**
+   * @return {@code true} if the underlying storage uses the local fs
+   */
+  default boolean isLocal() { return false; }
+
+  Future<Void> copyDirectoryToFs(final String srcDir, final String targetDir);
+
+  class FileInfo{
 		public final String path;
 		public final FileProps props;
 		public final boolean deleted;

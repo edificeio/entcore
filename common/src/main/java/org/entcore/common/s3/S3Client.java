@@ -16,6 +16,14 @@
 
 package org.entcore.common.s3;
 
+import io.vertx.core.*;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.OpenOptions;
+import io.vertx.core.http.*;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.streams.ReadStream;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.net.QuotedPrintableCodec;
 import org.entcore.common.s3.exception.SignatureException;
@@ -32,21 +40,10 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import io.vertx.core.file.OpenOptions;
-
-import io.vertx.core.*;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.*;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.streams.ReadStream;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.channels.ClosedChannelException;
@@ -56,18 +53,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 public class S3Client {
 
@@ -936,5 +924,127 @@ public class S3Client {
 		final int separatorIndex = path.lastIndexOf(File.separator);
 		return (separatorIndex < 0) ? path : path.substring(separatorIndex+1);
 	}
+
+  /**
+   *
+   * @param prefix
+   * @return
+   */
+	public Future<List<S3FileInfo>> listFilesByPrefix(final String prefix) {
+		Promise<List<S3FileInfo>> promise = Promise.promise();
+		List<S3FileInfo> allObjects = new ArrayList<>();
+		
+		listBucketRecursive(prefix, null, allObjects, promise);
+		
+		return promise.future();
+	}
+	
+	private void listBucketRecursive(final String prefix, String continuationToken, 
+			List<S3FileInfo> allObjects, Promise<List<S3FileInfo>> promise) {
+		
+		final StringBuilder url = new StringBuilder().append('/').append(defaultBucket).append("/?list-type=2");
+		if (prefix != null) {
+			try {
+				url.append("&prefix=").append(URLEncoder.encode(prefix, "UTF-8"));
+			} catch (UnsupportedEncodingException e) {
+				promise.fail(new StorageException("Error encoding prefix: " + e.getMessage()));
+				return;
+			}
+		}
+		if (continuationToken != null) {
+			url.append("&continuation-token=").append(continuationToken);
+		}
+
+		RequestOptions requestOptions = new RequestOptions()
+			.setMethod(HttpMethod.GET)
+			.setHost(host)
+			.setURI(url.toString());
+
+		httpClient.request(requestOptions)
+			.flatMap(req -> {
+				AwsUtils.setSSEC(req, ssec);
+				try {
+					AwsUtils.sign(req, accessKey, secretKey, region);
+				} catch (SignatureException e) {
+					log.error("S3Client listFilesByPrefix, signature failed: " + e.getMessage(), e);
+					return Future.failedFuture("S3Client listFilesByPrefix, signature failed");
+				}
+				return req.send();
+			})
+			.onSuccess(response -> {
+				response.pause();
+				if (response.statusCode() == 200) {
+					response.bodyHandler(body -> {
+						try {
+							DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+							DocumentBuilder builder = factory.newDocumentBuilder();
+							Document document = builder.parse(new ByteArrayInputStream(body.getBytes()));
+
+							NodeList contents = document.getElementsByTagName("Contents");
+							for (int i = 0; i < contents.getLength(); i++) {
+								Node content = contents.item(i);
+								NodeList children = content.getChildNodes();
+								for (int j = 0; j < children.getLength(); j++) {
+									Node child = children.item(j);
+									if ("Key".equals(child.getNodeName())) {
+										String key = child.getTextContent();
+										if (key != null && !key.trim().isEmpty()) {
+											allObjects.add(new S3FileInfo(getUuid(key), key));
+										}
+									}
+								}
+							}
+
+							// Check if there are more objects to retrieve
+							NodeList isTruncatedNodes = document.getElementsByTagName("IsTruncated");
+							boolean isTruncated = false;
+							if (isTruncatedNodes.getLength() > 0) {
+								isTruncated = "true".equals(isTruncatedNodes.item(0).getTextContent());
+							}
+
+							if (isTruncated) {
+								NodeList nextContinuationTokenNodes = document.getElementsByTagName("NextContinuationToken");
+								if (nextContinuationTokenNodes.getLength() > 0) {
+									String nextToken = nextContinuationTokenNodes.item(0).getTextContent();
+									// Recursive call to get the next batch
+									listBucketRecursive(prefix, nextToken, allObjects, promise);
+								} else {
+									promise.complete(allObjects);
+								}
+							} else {
+								promise.complete(allObjects);
+							}
+
+						} catch (ParserConfigurationException | SAXException | IOException e) {
+							promise.fail(new StorageException("Error parsing response: " + e.getMessage()));
+						}
+					});
+					response.resume();
+				} else {
+					promise.fail(new StorageException(response.statusCode() + " - " + response.statusMessage()));
+				}
+			})
+			.onFailure(exception -> {
+				promise.fail(new StorageException(exception.getMessage()));
+			});
+	}
+
+  public static class S3FileInfo {
+    private final String id;
+    private final String path;
+
+    public S3FileInfo(String id, String path) {
+      this.id = id;
+      this.path = path;
+    }
+
+    public String getId() {
+      return id;
+    }
+
+    public String getPath() {
+      return path;
+    }
+  }
 
 }

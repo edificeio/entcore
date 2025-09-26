@@ -19,12 +19,14 @@
 
  package org.entcore.common.storage.impl;
 
+import com.google.common.collect.Lists;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpClientResponse;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -45,24 +47,30 @@ import org.entcore.common.validation.FileValidator;
 
 import java.io.File;
 import java.net.URI;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
- 
+import java.util.stream.Collectors;
+
 public class S3Storage implements Storage {
     
     private final S3Client s3Client;
     private final String bucket;
+    private final FileSystem fs;
 
     private AntivirusClient antivirus;
     private FileValidator validator;
 
     private FallbackStorage fallbackStorage;
 
+    private static final int DOWNLOAD_TO_FS_BATCH_SIZE = 10;
+
     private static final Logger log = LoggerFactory.getLogger(S3Storage.class);
     
     public S3Storage(Vertx vertx, URI uri, String accessKey, String secretKey, String region, String bucket, String ssec, boolean keepAlive, int timeout, int threshold, long openDelay, int poolSize) {
         this.bucket = bucket;
         this.s3Client = new S3Client(vertx, uri, accessKey, secretKey, region, bucket, ssec, keepAlive, timeout, threshold, openDelay, poolSize);
+        this.fs = vertx.fileSystem();
     }
 
     @Override
@@ -287,8 +295,44 @@ public class S3Storage implements Storage {
         
         return onFileRead.future();
     }
-    
-    @Override
+
+  @Override
+  public Future<Void> copyDirectoryToFs(String srcDir, String targetDir) {
+    return this.fs.mkdir(targetDir)
+      .compose(e -> s3Client.listFilesByPrefix(srcDir))
+      .compose(s3FilePaths -> downloadToFs(s3FilePaths, srcDir, targetDir));
+  }
+
+  private Future<Void> downloadToFs(final List<S3Client.S3FileInfo> s3FilePaths, String srcDir, String targetDir) {
+    final List<List<S3Client.S3FileInfo>> batches = Lists.partition(s3FilePaths, DOWNLOAD_TO_FS_BATCH_SIZE);
+    return downloadBatchToFs(srcDir, targetDir, batches, 0);
+  }
+
+  private Future<Void> downloadBatchToFs(final String srcDir,
+                                         final String targetDir,
+                                         final List<List<S3Client.S3FileInfo>> batches, int batchIndex) {
+      if(batchIndex >= batches.size()) {
+        return Future.succeededFuture();
+      }
+      // Download all files of a batch then move on to the next
+      final List<Future<Void>> futures = batches.get(batchIndex).stream().map(fileInfo -> {
+        final Promise<Void> promise = Promise.promise();
+        this.s3Client.writeToFileSystem(fileInfo.getId(), fileInfo.getPath().replaceFirst(srcDir, targetDir), e -> {
+          if(e.succeeded()) {
+            log.debug("Successfully downloaded file " + fileInfo.getPath());
+            promise.complete();
+          } else {
+            log.error("could not download file " + fileInfo.getPath() + ": ", e.cause());
+            promise.fail(e.cause());
+          }
+        });
+        return promise.future();
+      }).collect(Collectors.toList());
+      return Future.all(futures)
+        .flatMap(e -> downloadBatchToFs(srcDir, targetDir, batches, batchIndex + 1));
+  }
+
+  @Override
     public void copyFile(String id, final Handler<JsonObject> handler) {
         s3Client.copyFile(id, new Handler<AsyncResult<String>>() {
             @Override

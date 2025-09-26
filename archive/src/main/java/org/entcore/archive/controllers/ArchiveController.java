@@ -258,14 +258,20 @@ public class ArchiveController extends BaseController {
 	}
 
 	private void verifyExport(final HttpServerRequest request, final String exportId) {
-		exportService.setDownloadInProgress(exportId);
-		storage.fileStats(exportId, ar -> {
-			if (ar.succeeded() && ar.result().getSizeInBytes() > 0 && request.response().getStatusCode() == 200) {
-				renderJson(request, new JsonObject().put("status", "ok"));
-			} else if (!request.response().ended()) {
-				notFound(request);
-			}
-		});
+		exportService.setDownloadInProgress(exportId)
+        .onSuccess(e -> {
+          storage.fileStats(exportId, ar -> {
+            if (ar.succeeded() && ar.result().getSizeInBytes() > 0 && request.response().getStatusCode() == 200) {
+              renderJson(request, new JsonObject().put("status", "ok"));
+            } else if (!request.response().ended()) {
+              notFound(request);
+            }
+          });
+        })
+      .onFailure(th -> {
+        log.error("An error occurred while verifying download in progress", th);
+        renderError(request);
+      });
 	}
 
 	@Get("/export/:exportId")
@@ -336,11 +342,11 @@ public class ArchiveController extends BaseController {
 						@Override
 						public void handle(Either<String, String> event)
 						{
-							if (event.isRight() == true)
+							if (event.isRight())
 							{
 								String exportId = event.right().getValue();
 
-								if(Boolean.TRUE.equals(synchroniseReply) == false)
+								if(!Boolean.TRUE.equals(synchroniseReply))
 								{
 									message.reply(
 										new JsonObject()

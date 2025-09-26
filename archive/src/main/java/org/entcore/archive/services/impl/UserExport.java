@@ -8,23 +8,31 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static java.lang.System.currentTimeMillis;
+
 public class UserExport implements Shareable, Serializable {
 
 	private static final long serialVersionUID = 42L;
 
-	private AtomicLong progress;
-	private AtomicInteger counter;
+  private final long start;
+	private final AtomicLong progress;
+	private final AtomicInteger counter;
 	private final Set<String> expectedExport;
 	private final String exportId;
 
 	public UserExport(Set<String> expectedExport, String exportId) {
-		this.progress = new AtomicLong(System.currentTimeMillis());
+    this.start = currentTimeMillis();
+		this.progress = new AtomicLong(this.start);
 		this.counter = new AtomicInteger(0);
 		this.expectedExport = Collections.unmodifiableSet(expectedExport);
 		this.exportId = exportId;
 	}
 
-	public Long getProgress() {
+  public long getStart() {
+    return start;
+  }
+
+  public Long getProgress() {
 		return this.progress.get();
 	}
 
