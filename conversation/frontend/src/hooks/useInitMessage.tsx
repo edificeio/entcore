@@ -2,6 +2,7 @@ import { useDate, useEdificeClient } from '@edifice.io/react';
 import { useLayoutEffect } from 'react';
 import { SIGNATURE_EMPTY_CONTENT } from '~/components/SignatureEditor';
 import { Group, Message, Recipients, User } from '~/models';
+import { VisibleType } from '~/models/visible';
 import {
   createDefaultMessage,
   useMessageQuery,
@@ -165,6 +166,15 @@ export function useInitMessage({
         recipientsToAddToMessage?.users.length ||
         recipientsToAddToMessage?.groups.length
       ) {
+        const broadcastGroupToAdd: Group[] = [];
+        const groupToAdd: Group[] = [];
+        recipientsToAddToMessage.groups.forEach((group: Group) => {
+          if (group.type === VisibleType.BroadcastGroup) {
+            broadcastGroupToAdd.push(group);
+          } else {
+            groupToAdd.push(group);
+          }
+        });
         messageTmp.to = {
           users: [
             ...recipientsToAddToMessage.users,
@@ -174,12 +184,21 @@ export function useInitMessage({
             ) || []),
           ],
           groups: [
-            ...recipientsToAddToMessage.groups,
+            ...groupToAdd,
             ...(messageTmp.to.groups.filter(
-              (group: Group) =>
-                !recipientsToAddToMessage.groups.some((g) => g.id === group.id),
+              (group: Group) => !groupToAdd.some((g) => g.id === group.id),
             ) || []),
           ],
+        };
+        messageTmp.cci = {
+          groups: [
+            ...broadcastGroupToAdd,
+            ...(messageTmp.cci?.groups?.filter(
+              (group: Group) =>
+                !broadcastGroupToAdd.some((g) => g.id === group.id),
+            ) || []),
+          ],
+          users: [],
         };
       }
 

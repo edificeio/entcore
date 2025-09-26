@@ -1,4 +1,9 @@
-export type VisibleType = 'User' | 'Group' | 'ShareBookmark' | 'BroadcastGroup';
+export enum VisibleType {
+  User = 'User',
+  Group = 'Group',
+  ShareBookmark = 'ShareBookmark',
+  BroadcastGroup = 'BroadcastGroup',
+}
 
 export type Visible = {
   id: string;

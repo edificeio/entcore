@@ -29,12 +29,19 @@ export function RecipientListAvatar({
     className,
     `avatar-${size}`,
     {
-      'bg-secondary-200': type === 'Group' || type === 'BroadcastGroup',
-      'bg-yellow-200': type === 'ShareBookmark',
+      'bg-secondary-200':
+        type === VisibleType.Group || type === VisibleType.BroadcastGroup,
+      'bg-yellow-200': type === VisibleType.ShareBookmark,
     },
   );
 
-  if (['ShareBookmark', 'BroadcastGroup', 'Group'].includes(type)) {
+  if (
+    [
+      VisibleType.ShareBookmark,
+      VisibleType.BroadcastGroup,
+      VisibleType.Group,
+    ].includes(type)
+  ) {
     return (
       <div
         className={classNameGroup}
@@ -43,7 +50,7 @@ export function RecipientListAvatar({
       >
         {type === 'ShareBookmark' ? (
           <IconBookmark className="w-16" />
-        ) : type === 'BroadcastGroup' ? (
+        ) : type === VisibleType.BroadcastGroup ? (
           <IconGlobe2 className="w-16" />
         ) : (
           <IconGroupAvatar className="w-16" />
