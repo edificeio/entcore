@@ -10,9 +10,12 @@ import org.entcore.common.mongodb.MongoClientFactory;
 import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.redis.RedisClient;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
 import static io.vertx.core.Future.failedFuture;
+import static com.google.common.collect.Lists.newArrayList;
 import static io.vertx.core.Future.succeededFuture;
 
 public class ExplorerPluginFactory {
@@ -94,8 +97,12 @@ public class ExplorerPluginFactory {
         }
     }
 
-    public static Future<IExplorerPlugin> createMongoPlugin(final Function<ExplorerFactoryParams<MongoClient>, IExplorerPlugin> instance) {
-        return Future.all(getCommunication(), MongoClientFactory.create(vertxInstance, globalConfig)).flatMap(res -> {
+    public static Future<IExplorerPlugin> createMongoPlugin(final Function<ExplorerFactoryParams<MongoClient>, IExplorerPlugin> instance) throws Exception {
+      final List<Future<?>> futures = newArrayList(
+        getCommunication(),
+        MongoClientFactory.create(vertxInstance, globalConfig)
+      );
+        return Future.all(futures).map(res -> {
           final IExplorerPluginCommunication communication = res.resultAt(0);
           final MongoClient mongoClient = res.resultAt(1);
           try {

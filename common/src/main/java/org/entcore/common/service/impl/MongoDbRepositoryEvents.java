@@ -311,11 +311,11 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 	}
 
 	protected void exportFiles(final JsonArray results, String exportPath, Set<String> usedFileName,
-							   final AtomicBoolean exported, final Handler<Boolean> handler) {
+							   final AtomicBoolean exported, final Handler<JsonObject> handler) {
 		if (results.isEmpty()) {
 			exported.set(true);
 			log.info(title + " exported successfully to : " + exportPath);
-			handler.handle(exported.get());
+			handler.handle(new JsonObject().put("ok", exported.get()).put("path", exportPath));
 		} else {
 			JsonObject resources = results.getJsonObject(0);
 			String fileId = resources.getString("_id");
@@ -336,7 +336,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 						exportFiles(results, exportPath, usedFileName, exported, handler);
 					} else {
 						log.error(title + " : Could not write file " + filePath, event.cause());
-						handler.handle(exported.get());
+						handler.handle(new JsonObject().put("ok", false).put("path", exportPath));
 					}
 				}
 			});
@@ -354,7 +354,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 
 	@Override
 	public void exportResources(JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources, String exportId, String userId,
-								JsonArray g, String exportPath, String locale, String host, Handler<Boolean> handler) {
+								JsonArray g, String exportPath, String locale, String host, Handler<JsonObject> handler) {
 		Bson findByAuthor = Filters.eq("author.userId", userId);
 		Bson findByOwner = Filters.eq("owner.userId", userId);
 		Bson findByAuthorOrOwner = Filters.or(findByAuthor, findByOwner);
@@ -397,7 +397,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 											exportFiles(results, path, new HashSet<String>(), exported, handler);
 										} else {
 											// Should never happen, export doesn't fail if docs export fail.
-											handler.handle(exported.get());
+											handler.handle(new JsonObject().put("ok", exported.get()).put("path", path));
 										}
 									}
 								};
@@ -407,16 +407,16 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 								else
 									finish.handle(Boolean.TRUE);
 							} else {
-								handler.handle(exported.get());
+								handler.handle(new JsonObject().put("ok", exported.get()).put("path", exportPath) );
 							}
 						});
 					} else {
 						log.error(title + " : Could not proceed query " + query.encode(), event.body().getString("message"));
-						handler.handle(exported.get());
+						handler.handle(new JsonObject().put("ok", exported.get()).put("path", exportPath));
 					}
 				}).onFailure(error -> {
 					log.error(title + " : Could not filter resources ", error);
-					handler.handle(exported.get());
+					handler.handle(new JsonObject().put("ok", exported.get()).put("path", exportPath));
 				});
 		});
 	}

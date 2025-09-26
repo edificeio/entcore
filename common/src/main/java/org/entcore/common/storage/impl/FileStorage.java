@@ -51,13 +51,12 @@ import org.entcore.common.validation.FileValidator;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class FileStorage implements Storage {
 
@@ -960,4 +959,43 @@ public class FileStorage implements Storage {
 		this.fallbackStorage = fallbackStorage;
 	}
 
+
+  @Override
+  public boolean isLocal() {
+    return true;
+  }
+
+  @Override
+  public Future<Void> moveDirectoryToFs(String srcDir, String targetDir) {
+    final Future<Void> future;
+    if(srcDir.equals(targetDir)) {
+      // Nothing to do
+      future = Future.succeededFuture();
+    } else {
+      future = fs.mkdirs(targetDir)
+      .compose(e -> Future.all(fs.readDir(srcDir), fs.readDir(targetDir)))
+      .compose(dirEntries -> {
+        final List<String> srcEntries = dirEntries.resultAt(0);
+        final Set<String> destEntries = new HashSet<>((List<String>) dirEntries.resultAt(1)).stream()
+          .map(p -> p.replace(targetDir + File.separator, ""))
+          .collect(Collectors.toSet());
+        final List<Future<Void>> futures = new ArrayList<>();
+        for (final String srcEntry : srcEntries) {
+          final String srcEntryName = srcEntry.replace(srcDir + File.separator, "");
+          if (!destEntries.contains(srcEntryName)) {
+            final String destPath = targetDir + File.separator + srcEntryName;
+            futures.add(fs.move(srcEntry, destPath));
+          }
+        }
+        return Future.all(futures);
+      })
+      .mapEmpty();
+    }
+    return future;
+  }
+
+  @Override
+  public Future<Void> moveFsDirectory(String srcPath, String destPath) {
+    return moveDirectoryToFs(srcPath, destPath);
+  }
 }
