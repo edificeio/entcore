@@ -4,6 +4,7 @@ import clsx from 'clsx';
 import { useI18n } from '~/hooks/useI18n';
 import { useMessageUserDisplayName } from '~/hooks/useUserDisplayName';
 import { Group, User } from '~/models';
+import { VisibleType } from '~/models/visible';
 import RecipientListAvatar from './RecipientListAvatar';
 
 interface RecipientListSelectedItemProps {
@@ -44,12 +45,12 @@ export function RecipientListSelectedItem({
     }
   };
 
-  const visibleType =
+  const visibleType: VisibleType =
     type === 'group'
-      ? (recipient as Group).subType === 'BroadcastGroup'
-        ? 'BroadcastGroup'
-        : 'Group'
-      : 'User';
+      ? (recipient as Group).subType === VisibleType.BroadcastGroup
+        ? VisibleType.BroadcastGroup
+        : VisibleType.Group
+      : VisibleType.User;
 
   return (
     <div className="badge rounded-pill d-flex align-items-center gap-8 small fw-bold py-4 px-2 me-8 mt-4">

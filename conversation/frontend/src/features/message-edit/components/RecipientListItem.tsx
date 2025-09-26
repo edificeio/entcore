@@ -1,13 +1,13 @@
 import { Dropdown, Loading } from '@edifice.io/react';
 import { IconSuccessOutline } from '@edifice.io/react/icons';
 import clsx from 'clsx';
+import { useDelayedLoader } from '~/hooks/useDelayedLoader';
 import { useI18n } from '~/hooks/useI18n';
 import { useMessageUserDisplayName } from '~/hooks/useUserDisplayName';
-import { Visible } from '~/models/visible';
+import { Visible, VisibleType } from '~/models/visible';
 import RecipientListAvatar from './RecipientListAvatar';
 import { RecipientType } from './RecipientListEdit';
 import './RecipientListItem.css';
-import { useDelayedLoader } from '~/hooks/useDelayedLoader';
 
 interface MessageRecipientListItemProps {
   visible: Visible;
@@ -58,9 +58,9 @@ export function RecipientListItem({
     >
       <div className={className}>
         <RecipientListAvatar id={visible.id} type={visible.type} />
-        {(visible.type === 'Group' ||
-          visible.type === 'ShareBookmark' ||
-          visible.type === 'BroadcastGroup') && (
+        {(visible.type === VisibleType.Group ||
+          visible.type === VisibleType.ShareBookmark ||
+          visible.type === VisibleType.BroadcastGroup) && (
           <div className="d-flex flex-column small flex-fill">
             <strong className={classNameTextDisabled}>{recipientName}</strong>
             {(visible.nbUsers || !canBeUsedAsRecipient) && (
