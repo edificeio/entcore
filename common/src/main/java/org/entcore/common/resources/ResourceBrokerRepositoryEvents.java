@@ -1,6 +1,5 @@
 package org.entcore.common.resources;
 
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
@@ -152,14 +151,8 @@ public class ResourceBrokerRepositoryEvents implements RepositoryEvents {
 
     @Override
     public void exportResources(boolean exportDocuments, boolean exportSharedResources, String exportId, String userId, JsonArray groups, String exportPath,
-                                String locale, String host, Handler<Boolean> handler) {
+                                String locale, String host, Handler<JsonObject> handler) {
         delegateEvents.exportResources(exportDocuments, exportSharedResources, exportId, userId, groups, exportPath, locale, host, handler);
-    }
-
-    @Override
-    public void exportResources(JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources, String exportId, String userId,
-                                JsonArray groups, String exportPath, String locale, String host, Handler<Boolean> handler) {
-        delegateEvents.exportResources(resourcesIds, exportDocuments, exportSharedResources, exportId, userId, groups, exportPath, locale, host, handler);
     }
 
     @Override

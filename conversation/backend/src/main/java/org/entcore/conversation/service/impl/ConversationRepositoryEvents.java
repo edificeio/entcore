@@ -135,7 +135,7 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 
 	@Override
 	public void exportResources(JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources, String exportId, String userId,
-								JsonArray groups, String exportPath, String locale, String host, Handler<Boolean> handler) {
+								JsonArray groups, String exportPath, String locale, String host, Handler<JsonObject> handler) {
 
 
 			final HashMap<String, JsonArray> queries = new HashMap<String, JsonArray>();
@@ -200,11 +200,11 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 						exportAttachments(path, attachments, new Handler<Boolean>() {
 							@Override
 							public void handle(Boolean event) {
-								exportTables(queries, new JsonArray(), null, exportDocuments, path, exported, handler);
+								exportTables(queries, new JsonArray(), null, exportDocuments, path, exported, e -> handler.handle(new JsonObject().put("ok", e).put("path", exportPath)));
 							}
 						});
 					} else {
-						handler.handle(exported.get());
+						handler.handle(new JsonObject().put("ok", exported.get()).put("path", exportPath));
 					}
 				}
 			});

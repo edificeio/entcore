@@ -2,6 +2,9 @@ package org.entcore.common.s3.utils;
 
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,7 +61,8 @@ public class MultipartUpload {
         this.ssec = ssec;
     }
 
-    public void upload(final String filepath, final String id, final Handler<JsonObject> handler) {
+
+  public void upload(final String filepath, final String id, final Handler<JsonObject> handler) {
         init(id, Paths.get(filepath).getFileName().toString(), AwsUtils.getContentType(filepath), uploadId -> {
             if (uploadId == null) {
                 handler.handle(
@@ -138,20 +142,24 @@ public class MultipartUpload {
 
                             initiateMultipartUploadResult = (InitiateMultipartUploadResult) unmarshaller.unmarshal(stringReader);
                         } catch (JAXBException e) {
+                            log.error("An error occurred while deserializing the response body of the upload of file id="+id + " filename=" + filename + ":" + bodyBuffer);
                             handler.handle(null);
                             return;
                         }
 
                         if (initiateMultipartUploadResult.getUploadId() == null) {
+                            log.error("No uploadId received for the upload of file id="+id + " filename=" + filename + ":" + bodyBuffer);
                             handler.handle(null);
                             return;
                         }
 
                         handler.handle(initiateMultipartUploadResult.getUploadId());
                     });
-                }
-                else {
-                    handler.handle(null);
+                } else {
+                  response.bodyHandler(bodyBuffer -> {
+                      log.error("An error occurred while upload file id=" + id + " filename=" + filename + " HTTP code=" + response.statusCode() + " body=" + bodyBuffer.toString());
+                  });
+                  handler.handle(null);
                 }
             })
             .onFailure(exception -> {

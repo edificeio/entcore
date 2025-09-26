@@ -20,11 +20,14 @@
 package org.entcore.archive.services;
 
 import fr.wseduc.webutils.Either;
+import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
+
+import java.util.Map;
 
 public interface ExportService {
 
@@ -35,7 +38,7 @@ public interface ExportService {
 
 	void userExportId(UserInfos user, Handler<String> handler);
 
-	boolean userExportExists(String exportId);
+	Future<Boolean> userExportExists(String exportId);
 
 	void waitingExport(String exportId, Handler<Boolean> handler);
 
@@ -45,11 +48,15 @@ public interface ExportService {
 
 	void deleteExport(String exportId);
 
-	void setDownloadInProgress(String exportId);
+	Future<Void> setDownloadInProgress(String exportId);
 
-	boolean downloadIsInProgress(String exportId);
+	Future<Boolean> downloadIsInProgress(String exportId);
 
 	String getExportBusAddress(String exportId);
 
 	void clearUserExport(String string);
+
+  Future<Map<String, Long>> getUserExportInProgress();
+
+  Future<Void> removeUserExportInProgress(final String key);
 }

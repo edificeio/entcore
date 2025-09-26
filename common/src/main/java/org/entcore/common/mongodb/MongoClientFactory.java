@@ -14,16 +14,18 @@ public class MongoClientFactory {
             final JsonObject mongoConfig = config.getJsonObject("mongoConfig");
             final MongoClient mongoClient = MongoClient.create(vertx, mongoConfig);
             return succeededFuture(mongoClient);
-        }else {
+        }else{
           return vertx.sharedData().<String, String>getAsyncMap("server")
-            .flatMap(m -> m.get("mongoConfig"))
+            .flatMap(map -> map.get("mongoConfig"))
             .flatMap(mongoConfig -> {
+              final Future<MongoClient> future;
               if (mongoConfig != null) {
                 final MongoClient mongoClient = MongoClient.create(vertx, new JsonObject(mongoConfig));
-                return succeededFuture(mongoClient);
+                future = succeededFuture(mongoClient);
               } else {
-                return failedFuture("Missing mongoConfig config");
+                future = failedFuture("Missing mongoConfig config");
               }
+              return future;
             });
         }
     }
