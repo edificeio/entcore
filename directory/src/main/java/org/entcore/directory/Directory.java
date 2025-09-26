@@ -224,7 +224,7 @@ public class Directory extends BaseServer {
 		addController(userPositionController);
 
         vertx.eventBus().consumer("user.repository",
-                new RepositoryHandler(new UserbookRepositoryEvents(userBookService), eb));
+                new RepositoryHandler(new UserbookRepositoryEvents(userBookService), eb, storageFactory.getStorage()));
 
 		MessageConsumer<JsonObject> consumer = eb.consumer(DIRECTORY_ADDRESS);
 		consumer.handler(message -> {

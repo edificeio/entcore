@@ -10,8 +10,11 @@ import org.entcore.common.mongodb.MongoClientFactory;
 import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.redis.RedisClient;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Function;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static io.vertx.core.Future.succeededFuture;
 
 public class ExplorerPluginFactory {
@@ -84,9 +87,14 @@ public class ExplorerPluginFactory {
     }
 
     public static Future<IExplorerPlugin> createMongoPlugin(final Function<ExplorerFactoryParams<MongoClient>, IExplorerPlugin> instance) throws Exception {
-        return getCommunication().map(communication -> {
+      final List<Future<?>> futures = newArrayList(
+        getCommunication(),
+        MongoClientFactory.create(vertxInstance, globalConfig)
+      );
+        return Future.all(futures).map(res -> {
+          final IExplorerPluginCommunication communication = res.resultAt(0);
+          final MongoClient mongoClient = res.resultAt(1);
           try {
-            final MongoClient mongoClient = MongoClientFactory.create(vertxInstance, globalConfig);
             final ExplorerFactoryParams<MongoClient> params = new ExplorerFactoryParams<MongoClient>(mongoClient, communication);
             return instance.apply(params).setConfig(getExplorerConfig());
           } catch (Exception e) {
@@ -95,7 +103,7 @@ public class ExplorerPluginFactory {
         });
     }
 
-    public static Future<IExplorerPlugin> createPostgresPlugin(final Function<ExplorerFactoryParams<IPostgresClient>, IExplorerPlugin> instance) throws Exception {
+    public static Future<IExplorerPlugin> createPostgresPlugin(final Function<ExplorerFactoryParams<IPostgresClient>, IExplorerPlugin> instance) {
       try {
         return getCommunication().map(communication -> {
           try {

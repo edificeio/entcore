@@ -165,13 +165,13 @@ public class ExplorerRepositoryEventsTest {
             this.report = report;
         }
         @Override
-        public void exportResources(final boolean exportDocuments, final boolean exportSharedResources, final String exportId, final String userId, final JsonArray groups, final String exportPath, final String locale, final String host, final Handler<Boolean> handler) {
-            handler.handle(true);
+        public void exportResources(final boolean exportDocuments, final boolean exportSharedResources, final String exportId, final String userId, final JsonArray groups, final String exportPath, final String locale, final String host, final Handler<JsonObject> handler) {
+            handler.handle(new JsonObject().put("ok", true));
         }
 
         @Override
-        public void exportResources(final JsonArray resourcesIds, final boolean exportDocuments, final boolean exportSharedResources, final String exportId, final String userId, final JsonArray groups, final String exportPath, final String locale, final String host, final Handler<Boolean> handler) {
-            handler.handle(true);
+        public void exportResources(final JsonArray resourcesIds, final boolean exportDocuments, final boolean exportSharedResources, final String exportId, final String userId, final JsonArray groups, final String exportPath, final String locale, final String host, final Handler<JsonObject> handler) {
+            handler.handle(new JsonObject().put("ok", true));
         }
 
         @Override

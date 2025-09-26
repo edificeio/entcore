@@ -153,7 +153,22 @@ public interface Storage {
 		throw new FileNotFoundException("Invalid file : " + file);
 	}
 
-	class FileInfo{
+  /**
+   * @return {@code true} if the underlying storage uses the local fs
+   */
+  default boolean isLocal() { return false; }
+
+  Future<Void> moveDirectoryToFs(final String srcDir, final String targetDir);
+
+  /**
+   * Copy recursively everything from {@code srcPath} {@code destPath}
+   * @param srcPath Absolute path from the filesystem
+   * @param destPath Absolute path to the target storage
+   * @return A future that completes when the copy has been completed
+   */
+  Future<Void> moveFsDirectory(String srcPath, String destPath);
+
+  class FileInfo{
 		public final String path;
 		public final FileProps props;
 		public final boolean deleted;
