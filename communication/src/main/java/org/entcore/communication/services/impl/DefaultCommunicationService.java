@@ -1898,7 +1898,8 @@ public class DefaultCommunicationService implements CommunicationService {
 										shareBookmarks,
 										visible,
 										language,
-										StringUtils.isEmpty(search) ? null : search
+										StringUtils.isEmpty(search) ? null : search,
+										false
 								)
 						);
 					}
