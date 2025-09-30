@@ -19,11 +19,8 @@
 
 package org.entcore.conversation.service.impl;
 
-import fr.wseduc.webutils.Either;
 import io.vertx.core.eventbus.DeliveryOptions;
 import org.entcore.common.sql.Sql;
-import org.entcore.common.sql.SqlResult;
-import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.storage.Storage;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -31,84 +28,341 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DeleteOrphan implements Handler<Long> {
 
 	private static final Logger log = LoggerFactory.getLogger(DeleteOrphan.class);
 
+	private static final String STATUS_OK = "ok";
+	private static final String STATUS_FIELD = "status";
+	private static final String MESSAGE_FIELD = "message";
+	private static final String UNKNOWN_ERROR = "Unknown error";
+
 	private static final String SELECT_ORPHAN_ATTACHMENT =
-			"select a.id as orphanid from conversation.attachments a " +
-			"left join conversation.usermessagesattachments uma on uma.attachment_id = a.id " +
-			"where uma.message_id is NULL;";
+		"SELECT a.id AS orphanid FROM conversation.attachments a " +
+		"WHERE NOT EXISTS (SELECT 1 FROM conversation.usermessagesattachments uma WHERE uma.attachment_id = a.id) " +
+		"LIMIT ?;";
 
 	private static final String DELETE_ORPHAN_MESSAGE =
-			"delete from conversation.messages where id IN " +
-			"(select m.id from conversation.messages m " +
-			"left join conversation.usermessages um on um.message_id = m.id " +
-			"where um.user_id is NULL);";
+		"DELETE FROM conversation.messages WHERE id IN " +
+		"(SELECT id FROM conversation.messages m " +
+		"WHERE NOT EXISTS (SELECT 1 FROM conversation.usermessages um WHERE um.message_id = m.id) " +
+		"LIMIT ?);";
 
 	private static final String DELETE_ORPHAN_THREAD =
-			"delete from conversation.threads where id IN " +
-			"(select t.id from conversation.threads t " +
-			"left join conversation.userthreads ut on ut.thread_id = t.id " +
-			"where ut.user_id is NULL);";
+		"DELETE FROM conversation.threads WHERE id IN " +
+		"(SELECT id FROM conversation.threads t " +
+		"WHERE NOT EXISTS (SELECT 1 FROM conversation.userthreads ut WHERE ut.thread_id = t.id) " +
+		"LIMIT ?);";
 
-	private final long timeout;
+	private static final String DELETE_ORPHAN_ATTACHMENT_BATCH =
+		"DELETE FROM conversation.attachments WHERE id = ANY(?::text[]) " +
+		"AND NOT EXISTS (SELECT 1 FROM conversation.usermessagesattachments uma WHERE uma.attachment_id = conversation.attachments.id);";
+
+	private final long sqlTimeout;
+	private final int batchSize;
+	private final int maxBatches;
 
 	private final Storage storage;
 
 	public DeleteOrphan(Storage storage) {
 		this.storage = storage;
-		timeout = Vertx.currentContext().config().getLong("orphan-timeout",  600000L);
+
+		JsonObject orphanConfig = Vertx.currentContext().config().getJsonObject("orphans-killer", new JsonObject());
+		sqlTimeout = orphanConfig.getLong("sql-timeout", 600000L);
+		batchSize = orphanConfig.getInteger("batch-size", 100);
+		maxBatches = orphanConfig.getInteger("max-batches", 10);
 	}
 
 	@Override
 	public void handle(Long event) {
-		final Sql sql = Sql.getInstance();
-		final SqlStatementsBuilder builder = new SqlStatementsBuilder();
-		builder.raw(DELETE_ORPHAN_MESSAGE);
-		builder.raw(DELETE_ORPHAN_THREAD);
-		builder.raw(SELECT_ORPHAN_ATTACHMENT);
-		sql.transaction(builder.build(), new DeliveryOptions().setSendTimeout(timeout),
-				SqlResult.validResultHandler(2, new Handler<Either<String, JsonArray>>() {
-			@Override
-			public void handle(Either<String, JsonArray> res) {
-				if (res.isRight()) {
-					log.info("Successful delete orphan conversation messages.");
-					final JsonArray attachments = res.right().getValue();
-					if (attachments != null && attachments.size() > 0) {
-						log.info("Orphan attachments : " + attachments.encode());
-						for (Object attObj : attachments) {
-							if (!(attObj instanceof JsonObject)) continue;
-							JsonObject unusedAttachment = (JsonObject) attObj;
-							final String attachmentId = unusedAttachment.getString("orphanid");
-							storage.removeFile(attachmentId, new Handler<JsonObject>() {
-								public void handle(JsonObject event) {
-									if (!"ok".equals(event.getString("status"))) {
-										log.error("Error while tying to delete attachment file (_id: {" + attachmentId + "})");
-									}
-								}
-							});
-							deleteAttachmentRow(attachmentId, sql);
-						}
-					}
-				} else {
-					log.error("Orphan conversation error : " + res.left().getValue());
-				}
-			}
-		}));
+		log.info("Starting orphan cleanup process with batch processing");
+		deleteOrphanEntitiesInBatches()
+			.onSuccess(v -> log.info("Orphan cleanup process completed successfully"))
+			.onFailure(err -> log.error("Orphan cleanup process failed: " + err.getMessage(), err));
 	}
 
-	private void deleteAttachmentRow(String id, Sql sql) {
-		final String deletOrphanAttachments =
-				"delete from conversation.attachments where id = ?";
-		sql.prepared(deletOrphanAttachments, new JsonArray().add(id),
-				new DeliveryOptions().setSendTimeout(timeout), event -> {
-			if (!"ok".equals(event.body().getString("status"))) {
-				log.error("Error deleting orphan attachment " + id + " : " +
-						event.body().getString("message", ""));
+	private Future<Void> deleteOrphanEntitiesInBatches() {
+		return deleteOrphanMessages()
+			.compose(v -> deleteOrphanThreads())
+			.compose(v -> deleteOrphanAttachments())
+			.compose(v -> logRemainingOrphans());
+	}
+
+	private Future<Void> deleteOrphanMessages() {
+		log.info("Starting orphan messages cleanup");
+		return deleteInBatchesSequential(DELETE_ORPHAN_MESSAGE, "messages", 0, 0);
+	}
+
+	private Future<Void> deleteOrphanThreads() {
+		log.info("Starting orphan threads cleanup");
+		return deleteInBatchesSequential(DELETE_ORPHAN_THREAD, "threads", 0, 0);
+	}
+
+	private Future<Void> deleteInBatchesSequential(String query, String entityType, int batchNumber, int totalDeleted) {
+		if (batchNumber >= maxBatches) {
+			if (totalDeleted > 0) {
+				log.info("Successfully deleted {} orphan {}", totalDeleted, entityType);
 			}
+			return Future.succeededFuture();
+		}
+
+		final Sql sql = Sql.getInstance();
+		Promise<Void> promise = Promise.promise();
+
+		sql.prepared(query, new JsonArray().add(batchSize),
+			new DeliveryOptions().setSendTimeout(sqlTimeout),
+			result -> {
+				if (STATUS_OK.equals(result.body().getString(STATUS_FIELD))) {
+					int deletedCount = result.body().getInteger("rows", 0);
+					if (deletedCount > 0) {
+						log.info("Batch {} deleted {} orphan {}", batchNumber, deletedCount, entityType);
+					}
+
+					// Stop if no more orphans found
+					if (deletedCount == 0) {
+						promise.complete();
+					} else {
+						// Continue with next batch
+						deleteInBatchesSequential(query, entityType, batchNumber + 1, totalDeleted + deletedCount)
+							.onComplete(promise);
+					}
+				} else {
+					String error = result.body().getString(MESSAGE_FIELD, UNKNOWN_ERROR);
+					log.error("Batch {} failed for orphan {}: {}", batchNumber, entityType, error);
+
+					// Continue with next batch despite error
+					deleteInBatchesSequential(query, entityType, batchNumber + 1, totalDeleted)
+						.onComplete(promise);
+				}
+			});
+
+		return promise.future();
+	}
+
+	private Future<Void> deleteOrphanAttachments() {
+		log.info("Starting orphan attachments cleanup");
+		return processOrphanAttachmentsSequential(0, 0);
+	}
+
+	private Future<Void> processOrphanAttachmentsSequential(int batchNumber, int totalProcessed) {
+		if (batchNumber >= maxBatches) {
+			if (totalProcessed > 0) {
+				log.info("Successfully processed {} orphan attachments", totalProcessed);
+			}
+			return Future.succeededFuture();
+		}
+
+		final Sql sql = Sql.getInstance();
+		Promise<Void> promise = Promise.promise();
+
+		sql.prepared(SELECT_ORPHAN_ATTACHMENT, new JsonArray().add(batchSize),
+			new DeliveryOptions().setSendTimeout(sqlTimeout),
+			result -> {
+				if (!STATUS_OK.equals(result.body().getString(STATUS_FIELD))) {
+					String error = result.body().getString(MESSAGE_FIELD, UNKNOWN_ERROR);
+					log.error("Batch {} failed to select orphan attachments: {}", batchNumber, error);
+
+					// Continue with next batch despite error
+					processOrphanAttachmentsSequential(batchNumber + 1, totalProcessed)
+						.onComplete(promise);
+					return;
+				}
+
+				JsonArray attachments = result.body().getJsonArray("results", new JsonArray());
+				if (attachments.size() == 0) {
+					log.info("No more orphan attachments found");
+					promise.complete();
+					return;
+				}
+
+				log.info("Processing {} orphan attachments in batch {}", attachments.size(), batchNumber);
+				processAttachmentBatch(attachments)
+					.onSuccess(v -> processOrphanAttachmentsSequential(batchNumber + 1, totalProcessed + attachments.size())
+						.onComplete(promise)
+					)
+					.onFailure(err -> {
+						log.error("Batch {} failed to process attachments: {}", batchNumber, err.getMessage());
+
+						// Continue with next batch despite error
+						processOrphanAttachmentsSequential(batchNumber + 1, totalProcessed)
+							.onComplete(promise);
+					});
+			});
+
+		return promise.future();
+	}
+
+	private Future<Void> processAttachmentBatch(JsonArray attachments) {
+		List<String> attachmentIds = new ArrayList<>();
+		List<Future<StorageResult>> storageDeletions = new ArrayList<>();
+
+		for (Object attObj : attachments) {
+			if (!(attObj instanceof JsonObject)) continue;
+			JsonObject attachment = (JsonObject) attObj;
+			String attachmentId = attachment.getString("orphanid");
+			if (attachmentId != null) {
+				attachmentIds.add(attachmentId);
+
+				// Schedule storage deletion with result tracking
+				Promise<StorageResult> storagePromise = Promise.promise();
+				Future<StorageResult> storageDeletion = storagePromise.future();
+				storage.removeFile(attachmentId, event -> {
+					boolean success = STATUS_OK.equals(event.getString(STATUS_FIELD));
+					if (!success) {
+						log.error("Error deleting attachment file {}: {}", attachmentId, event.getString(MESSAGE_FIELD, UNKNOWN_ERROR));
+					}
+					storagePromise.complete(new StorageResult(success));
+				});
+				storageDeletions.add(storageDeletion);
+			}
+		}
+
+		if (attachmentIds.isEmpty()) {
+			return Future.succeededFuture();
+		}
+
+		// Wait for all storage deletions to complete and collect results
+		Promise<List<StorageResult>> allResultsPromise = Promise.promise();
+		collectAllStorageResults(storageDeletions, new ArrayList<>(), 0, allResultsPromise);
+
+		// Process results and delete from database
+		return allResultsPromise.future().compose(results -> {
+			int successCount = 0;
+			int failureCount = 0;
+
+			for (StorageResult result : results) {
+				if (result.success) {
+					successCount++;
+				} else {
+					failureCount++;
+				}
+			}
+
+			if (successCount > 0) {
+				log.info("Successfully deleted {} attachment files from storage", successCount);
+			}
+			if (failureCount > 0) {
+				log.warn("{} attachment files failed to delete from storage", failureCount);
+			}
+
+			// Delete from database regardless of storage results (orphan records are worse than orphan files)
+			return deleteAttachmentRowsBatch(attachmentIds);
 		});
+	}
+
+	private Future<Void> deleteAttachmentRowsBatch(List<String> attachmentIds) {
+		if (attachmentIds.isEmpty()) {
+			return Future.succeededFuture();
+		}
+
+		final Sql sql = Sql.getInstance();
+		JsonArray idsArray = new JsonArray();
+		attachmentIds.forEach(idsArray::add);
+
+		Promise<Void> promise = Promise.promise();
+		sql.prepared(DELETE_ORPHAN_ATTACHMENT_BATCH, new JsonArray().add(idsArray),
+			new DeliveryOptions().setSendTimeout(sqlTimeout),
+			result -> {
+				if (STATUS_OK.equals(result.body().getString(STATUS_FIELD))) {
+					int deleted = result.body().getInteger("rows", 0);
+					log.info("Deleted {} orphan attachment records", deleted);
+					promise.complete();
+				} else {
+					String error = result.body().getString(MESSAGE_FIELD, UNKNOWN_ERROR);
+					log.error("Error deleting orphan attachment records: {}", error);
+					promise.fail(error);
+				}
+			});
+		return promise.future();
+	}
+
+	private void collectAllStorageResults(List<Future<StorageResult>> futures, List<StorageResult> results, int index, Promise<List<StorageResult>> promise) {
+		if (index >= futures.size()) {
+			promise.complete(results);
+			return;
+		}
+
+		futures.get(index).onComplete(ar -> {
+			if (ar.succeeded()) {
+				results.add(ar.result());
+			} else {
+				results.add(new StorageResult(false));
+			}
+			collectAllStorageResults(futures, results, index + 1, promise);
+		});
+	}
+
+	private Future<Void> logRemainingOrphans() {
+		final Sql sql = Sql.getInstance();
+
+		String countMessages =
+			"SELECT COUNT(*) AS count FROM (SELECT 1 FROM conversation.messages m " +
+			"WHERE NOT EXISTS (SELECT 1 FROM conversation.usermessages um WHERE um.message_id = m.id) " +
+			"LIMIT 100000) subquery";
+
+		String countThreads =
+			"SELECT COUNT(*) AS count FROM (SELECT 1 FROM conversation.threads t " +
+			"WHERE NOT EXISTS (SELECT 1 FROM conversation.userthreads ut WHERE ut.thread_id = t.id) " +
+			"LIMIT 100000) subquery";
+
+		String countAttachments =
+			"SELECT COUNT(*) AS count FROM (SELECT 1 FROM conversation.attachments a " +
+			"WHERE NOT EXISTS (SELECT 1 FROM conversation.usermessagesattachments uma WHERE uma.attachment_id = a.id) " +
+			"LIMIT 100000) subquery";
+
+		Promise<Void> promise = Promise.promise();
+		sql.prepared(countMessages, new JsonArray(), result1 -> {
+			if (!STATUS_OK.equals(result1.body().getString(STATUS_FIELD))) {
+				// Don't fail for logging issues
+				promise.complete();
+				return;
+			}
+
+			JsonArray results1 = result1.body().getJsonArray("results", new JsonArray());
+			int remainingMessages = results1.size() > 0 ? results1.getJsonObject(0).getInteger("count", 0) : 0;
+
+			sql.prepared(countThreads, new JsonArray(), result2 -> {
+				if (!STATUS_OK.equals(result2.body().getString(STATUS_FIELD))) {
+					promise.complete();
+					return;
+				}
+
+				JsonArray results2 = result2.body().getJsonArray("results", new JsonArray());
+				int remainingThreads = results2.size() > 0 ? results2.getJsonObject(0).getInteger("count", 0) : 0;
+
+				sql.prepared(countAttachments, new JsonArray(), result3 -> {
+					if (!STATUS_OK.equals(result3.body().getString(STATUS_FIELD))) {
+						promise.complete();
+						return;
+					}
+
+					JsonArray results3 = result3.body().getJsonArray("results", new JsonArray());
+					int remainingAttachments = results3.size() > 0 ? results3.getJsonObject(0).getInteger("count", 0) : 0;
+					int totalRemaining = remainingMessages + remainingThreads + remainingAttachments;
+					if (totalRemaining > 0) {
+						log.info("Orphan cleanup completed. Remaining orphans: {} messages, {} threads, {} attachments (total: {})", remainingMessages, remainingThreads, remainingAttachments, totalRemaining);
+					} else {
+						log.info("Orphan cleanup completed. No orphans remaining.");
+					}
+
+					promise.complete();
+				});
+			});
+		});
+		return promise.future();
+	}
+
+	private static class StorageResult {
+		final boolean success;
+
+		StorageResult(boolean success) {
+			this.success = success;
+		}
 	}
 
 }
