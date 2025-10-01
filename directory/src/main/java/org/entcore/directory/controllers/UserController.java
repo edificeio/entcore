@@ -524,7 +524,11 @@ public class UserController extends BaseController {
 				if (user != null) {
 					final String structureId = request.params().get("structureId");
 					final String classId = request.params().get("classId");
-					JsonArray types = new JsonArray(request.params().getAll("profile"));
+					JsonArray types = new JsonArray();
+					List<String> profiles = request.params().getAll("profile");
+					if (profiles != null) {
+						profiles.forEach(types::add);
+					}
 					final String profile = (types != null && types.size() > 0) ? types.getString(0) : "All";
 					final String filterActive = request.params().get("filterActive");
 					final String exportType = request.params().get("type") == null ? "" : request.params().get("type");
