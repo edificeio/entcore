@@ -31,7 +31,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface BrokerListener {
   /**
-   * The NATS subject to subscribe to.<br />
+   * The NATS subject to subscribe to.
    * This subject must :
    * <ul>
    * <li>respect the naming conventions of <a href="https://docs.nats.io/nats-concepts/subjects">NATS subjects</a></li>
@@ -59,4 +59,12 @@ public @interface BrokerListener {
    * @return true if is a broadcast listener
    */
   boolean broadcast() default false;
+
+  /**
+   * Timeout in milliseconds to wait for a response when the listener is used in a request/response (RPC) scenario.
+   * Default value is 60000 (60 seconds).
+   *
+   * @return timeout in milliseconds
+   */
+  int timeout() default 60000;
 }

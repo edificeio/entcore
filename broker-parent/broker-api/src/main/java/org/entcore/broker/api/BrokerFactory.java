@@ -1,4 +1,4 @@
-package org.entcore.broker.api.publisher;
+package org.entcore.broker.api;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -8,7 +8,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.entcore.broker.api.BrokerPublisher;
 import org.entcore.broker.api.utils.AddressParameter;
 import org.entcore.broker.api.utils.BrokerAddressUtils;
 import org.entcore.broker.api.utils.ReflectionUtils;
@@ -16,66 +15,68 @@ import org.entcore.broker.api.utils.ReflectionUtils;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 
 /**
- * Factory for creating broker publisher proxies.
- * @deprecated Use {@link org.entcore.broker.api.BrokerFactory} instead, which supports both 
- * publisher and listener patterns.
+ * Factory for creating broker proxies.
+ * This class provides methods to generate implementations of interfaces
+ * annotated with @BrokerPublisher for publishing messages or @BrokerListener 
+ * for request/response communication with the broker.
  */
-@Deprecated
-public class BrokerPublisherFactory {
-    private static final Logger log = LoggerFactory.getLogger(BrokerPublisherFactory.class);
+public class BrokerFactory {
+    private static final Logger log = LoggerFactory.getLogger(BrokerFactory.class);
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    private BrokerPublisherFactory(){}
+    private BrokerFactory(){}
     
     /**
      * Creates a new instance of a broker publisher interface
      * 
-     * @param <T> The publisher interface type
-     * @param publisherClass The class of the publisher interface
+     * @param <T> The interface type (publisher or listener)
+     * @param interfaceClass The class of the interface
      * @param vertx Vertx instance to use for event bus communication
      * @param addressParameters Optional parameters for subject placeholder substitution
-     * @return A new instance of the publisher interface
-     * @deprecated Use {@link BrokerFactory#create(Class, Vertx, AddressParameter...)} instead
+     * @return A new instance of the interface
      */
-    @Deprecated
     @SuppressWarnings("unchecked")
-    public static <T> T create(final Class<T> publisherClass, final Vertx vertx, final AddressParameter... addressParameters) {
+    public static <T> T create(final Class<T> interfaceClass, final Vertx vertx, final AddressParameter... addressParameters) {
         return (T) Proxy.newProxyInstance(
-            publisherClass.getClassLoader(),
-            new Class<?>[] { publisherClass },
-            new PublisherInvocationHandler(vertx, addressParameters));
+            interfaceClass.getClassLoader(),
+            new Class<?>[] { interfaceClass },
+            new BrokerProxyInvocationHandler(vertx, addressParameters));
     }
     
     /**
-     * Handles method invocations on the publisher proxy
+     * Handles method invocations on the broker proxy (both publisher and listener)
      */
-    private static class PublisherInvocationHandler implements InvocationHandler {
+    private static class BrokerProxyInvocationHandler implements InvocationHandler {
         private final Vertx vertx;
         private final Map<String, String> params;
         private final List<SubjectMatcher> disabledSubjects;
         
         /**
-         * Creates a new PublisherInvocationHandler
+         * Creates a new BrokerProxyInvocationHandler
          * 
          * @param vertx Vertx instance
          * @param addressParameters Parameters for subject placeholders
          */
-        public PublisherInvocationHandler(Vertx vertx, AddressParameter... addressParameters) {
+        public BrokerProxyInvocationHandler(Vertx vertx, AddressParameter... addressParameters) {
             this.vertx = vertx;
             this.params = BrokerAddressUtils.getParametersMap(addressParameters);
             this.disabledSubjects = loadDisabledSubjects(vertx);
             
             if (!disabledSubjects.isEmpty()) {
-                log.info("Broker publisher has " + disabledSubjects.size() + " disabled subject patterns");
+                log.info("Broker proxy has " + disabledSubjects.size() + " disabled subject patterns");
             }
         }
         
@@ -120,20 +121,37 @@ public class BrokerPublisherFactory {
                 return method.invoke(this, args);
             }
             
-            // Get the BrokerPublisher annotation from method or interface
-            Optional<BrokerPublisher> annotationOpt = ReflectionUtils.getMethodAnnotation(
+            // Check for BrokerPublisher annotation (pub/sub pattern)
+            Optional<BrokerPublisher> publisherAnnotation = ReflectionUtils.getMethodAnnotation(
                 BrokerPublisher.class, 
                 method.getDeclaringClass(), 
                 method);
 
-            if (!annotationOpt.isPresent()) {
-                return Future.failedFuture(
-                    new UnsupportedOperationException("Method " + method.getName() + " is not a BrokerPublisher"));
+            if (publisherAnnotation.isPresent()) {
+                return handlePublisherMethod(publisherAnnotation.get(), method, args);
+            }
+            
+            // Check for BrokerListener annotation (request/response pattern)
+            Optional<BrokerListener> listenerAnnotation = ReflectionUtils.getMethodAnnotation(
+                BrokerListener.class, 
+                method.getDeclaringClass(), 
+                method);
+                
+            if (listenerAnnotation.isPresent()) {
+                return handleListenerMethod(listenerAnnotation.get(), method, args);
             }
 
-            // Use the annotation
-            final BrokerPublisher annotation = annotationOpt.get();
-                
+            // No valid annotation found
+            return Future.failedFuture(
+                new UnsupportedOperationException("Method " + method.getName() + 
+                    " has neither BrokerPublisher nor BrokerListener annotation"));
+        }
+        
+        /**
+         * Handles methods annotated with BrokerPublisher (pub/sub pattern)
+         */
+        private Future<Void> handlePublisherMethod(BrokerPublisher annotation, Method method, Object[] args) 
+                throws JsonProcessingException {
             // Replace placeholders in the subject
             final String subject = BrokerAddressUtils.replacePlaceholders(annotation.subject(), params);
             
@@ -142,11 +160,8 @@ public class BrokerPublisherFactory {
                 log.debug("Subject is disabled, skipping publish: " + subject);
                 return Future.succeededFuture();
             }
-            
-            // Get the message to publish (first argument)
-            final Object message = args.length > 0 ? args[0] : null;
-            
-            // Serialize the message
+
+            final Object message = args != null && args.length > 0 ? args[0] : null;
             final String messageJson = message == null ? null : mapper.writeValueAsString(message);
             
             // Build the request body
@@ -169,6 +184,85 @@ public class BrokerPublisherFactory {
                 })
                 .onFailure(err -> {
                     log.error("Failed to publish message to subject: " + subject, err);
+                    promise.fail(err);
+                });
+                
+            return promise.future();
+        }
+        
+        /**
+         * Handles methods annotated with BrokerListener (request/response pattern)
+         */
+        @SuppressWarnings("unchecked")
+        private <T> Future<T> handleListenerMethod(BrokerListener annotation, Method method, Object[] args) 
+                throws JsonProcessingException {
+            // Replace placeholders in the subject
+            final String subject = BrokerAddressUtils.replacePlaceholders(annotation.subject(), params);
+            
+            // Check if subject is disabled
+            if (isSubjectDisabled(subject)) {
+                log.debug("Subject is disabled, skipping request: " + subject);
+                return Future.failedFuture(new IllegalStateException("Subject is disabled: " + subject));
+            }
+
+            final Object request = args != null && args.length > 0 ? args[0] : null;
+            final String requestJson = request == null ? null : mapper.writeValueAsString(request);
+            
+            // Build the request body for the event bus
+            final JsonObject requestBody = new JsonObject()
+                .put("subject", subject)
+                .put("message", requestJson)
+                .put("timeout", annotation.timeout());
+            
+            // Configure delivery options if timeout is specified
+            final DeliveryOptions options = new DeliveryOptions();
+            if (annotation.timeout() > 0) {
+                options.setSendTimeout(annotation.timeout());
+            }
+            
+            // Get the expected return type
+            Type returnType = method.getGenericReturnType();
+            final JavaType javaType;
+            if (returnType instanceof Class) {
+                // If it's a simple class type
+                javaType = TypeFactory.defaultInstance().constructType(returnType);
+            } else {
+                // For parameterized types (like Future<MyType>), determine the actual type argument once
+                JavaType tmp;
+                try {
+                    Class<?> responseType = method.getReturnType();
+                    if (Future.class.isAssignableFrom(responseType)) {
+                        tmp = TypeFactory.defaultInstance().constructType(
+                            ReflectionUtils.getTypeArgumentOfFuture(method));
+                    } else {
+                        tmp = TypeFactory.defaultInstance().constructType(Object.class);
+                    }
+                } catch (Exception e) {
+                    log.warn("Could not determine response type for " + method.getName(), e);
+                    tmp = TypeFactory.defaultInstance().constructType(Object.class);
+                }
+                javaType = tmp;
+            }
+            
+            // Make the request via event bus
+            final Promise<T> promise = Promise.promise();
+            vertx.eventBus().request("broker.request", requestBody, options)
+                .onSuccess(reply -> {
+                    try {
+                        if (reply.body() == null) {
+                            promise.complete(null);
+                            return;
+                        }
+                        final String responseJson = (String) reply.body();
+                        T response = (T) mapper.readValue(responseJson, javaType);
+                        promise.complete(response);
+                    } catch (Exception e) {
+                        log.error("Error deserializing response for subject: " + subject, e);
+                        promise.fail(e);
+                    }
+                })
+                .onFailure(err -> {
+                    log.error("Failed to make request to subject: " + subject, err);
                     promise.fail(err);
                 });
                 
