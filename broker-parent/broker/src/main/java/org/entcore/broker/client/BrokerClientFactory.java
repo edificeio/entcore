@@ -30,7 +30,7 @@ public class BrokerClientFactory {
       return new NATSBrokerClient(vertx);
     } else if ("none".equalsIgnoreCase(brokerType)) {
       log.warn("Broker is disabled (broker-type=none). No broker operations will be performed.");
-      return new NoOpBrokerClient();
+      return new NoOpBrokerClient(vertx);
     } else {
       return new RESTBrokerClient(vertx);
     }

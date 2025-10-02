@@ -71,6 +71,7 @@ public class NATSBrokerClient implements BrokerClient {
       .compose(e -> this.loadListeners("META-INF/broker-proxy.nats.json"))
       .onSuccess(this::registerProxies)
       .compose(e -> this.setupEventBusPublishHandler())
+      .compose(e -> this.setupEventBusRequestHandler())
       .mapEmpty();
   }
 
@@ -111,6 +112,51 @@ public class NATSBrokerClient implements BrokerClient {
     });
 
     log.info("Set up event bus handler for broker.publish");
+    promise.complete();
+
+    return promise.future();
+  }
+
+  private Future<Void> setupEventBusRequestHandler() {
+    final Promise<Void> promise = Promise.promise();
+    // Set up an event bus handler for "broker.request" messages
+    vertx.eventBus().<JsonObject>consumer("broker.request", message -> {
+        final JsonObject body = message.body();
+        final String subject = body.getString("subject");
+        final String requestStr = body.getString("message");
+        final long timeout = body.getLong("timeout", defaultTimeout);
+
+        if (subject == null || subject.isEmpty()) {
+            message.fail(400, "Subject cannot be empty");
+            return;
+        }
+
+        try {
+            // If the message is null, send an empty message
+            final Object requestObj = requestStr != null ? mapper.readValue(requestStr, Object.class) : null;
+
+            this.<Object, Object>request(subject, requestObj, timeout)
+                .onSuccess(response -> {
+                    try {
+                        // Serialize the response to JSON
+                        final String responseJson = mapper.writeValueAsString(response);
+                        message.reply(responseJson);
+                    } catch (Exception e) {
+                        log.error("Error serializing response", e);
+                        message.fail(500, e.getMessage());
+                    }
+                })
+                .onFailure(err -> {
+                    log.error("Failed to make request to subject: " + subject, err);
+                    message.fail(500, err.getMessage());
+                });
+        } catch (Exception e) {
+            log.error("Error processing request message for subject: " + subject, e);
+            message.fail(500, e.getMessage());
+        }
+    });
+
+    log.info("Set up event bus handler for broker.request");
     promise.complete();
 
     return promise.future();
