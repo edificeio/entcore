@@ -6,6 +6,10 @@ import io.vertx.core.logging.LoggerFactory;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Optional;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+
+import io.vertx.core.Future;
 
 /**
  * Utility class for reflection operations used by broker components
@@ -80,5 +84,36 @@ public class ReflectionUtils {
             }
         }
         return null;
+    }
+    
+    /**
+     * Gets the type argument of a Future from a method's return type.
+     *
+     * @param method The method with a Future return type
+     * @return The type argument of the Future
+     * @throws IllegalArgumentException if the method doesn't return a Future or 
+     *         the Future type argument can't be determined
+     */
+    public static Type getTypeArgumentOfFuture(Method method) {
+        Type returnType = method.getGenericReturnType();
+        
+        if (!(returnType instanceof ParameterizedType)) {
+            throw new IllegalArgumentException(
+                "Method " + method.getName() + " does not return a parameterized type");
+        }
+        
+        ParameterizedType paramType = (ParameterizedType) returnType;
+        if (!Future.class.isAssignableFrom((Class<?>) paramType.getRawType())) {
+            throw new IllegalArgumentException(
+                "Method " + method.getName() + " does not return a Future");
+        }
+        
+        Type[] typeArgs = paramType.getActualTypeArguments();
+        if (typeArgs.length == 0) {
+            throw new IllegalArgumentException(
+                "Future return type of method " + method.getName() + " has no type arguments");
+        }
+        
+        return typeArgs[0];
     }
 }

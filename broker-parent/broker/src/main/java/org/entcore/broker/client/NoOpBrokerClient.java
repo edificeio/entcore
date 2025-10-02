@@ -1,6 +1,8 @@
 package org.entcore.broker.client;
 
 import io.vertx.core.Future;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.broker.listener.BrokerListener;
@@ -15,16 +17,36 @@ public class NoOpBrokerClient implements BrokerClient {
   // Logger for debug/info output
   private static final Logger log = LoggerFactory.getLogger(NoOpBrokerClient.class);
 
+  private Vertx vertx;
+  private MessageConsumer<?> publishConsumer;
+  private MessageConsumer<?> requestConsumer;
+
   /**
    * Constructor for NoOpBrokerClient.
    */
-  public NoOpBrokerClient() {}
+  public NoOpBrokerClient(Vertx vertx) {
+      this.vertx = vertx;
+  }
 
   /**
    * Starts the NoOpBrokerClient. Does nothing and always succeeds.
    */
   @Override
   public Future<Void> start() {
+    log.info("NoOpBrokerClient starting - registering event bus handlers");
+
+    // Setup publish handler
+    publishConsumer = vertx.eventBus().consumer("broker.publish", message -> {
+        log.debug("NoOpBrokerClient.publish called - message ignored");
+        message.reply(null);
+    });
+
+    // Setup request handler
+    requestConsumer = vertx.eventBus().consumer("broker.request", message -> {
+        log.debug("NoOpBrokerClient.request called - returning null response");
+        message.reply(null);
+    });
+
     log.info("NoOpBrokerClient started - no actual broker operations will be performed");
     return Future.succeededFuture();
   }
@@ -79,6 +101,16 @@ public class NoOpBrokerClient implements BrokerClient {
    */
   @Override
   public Future<Void> close() {
+    log.info("NoOpBrokerClient closing - unregistering event bus handlers");
+
+    if (publishConsumer != null) {
+        publishConsumer.unregister();
+    }
+
+    if (requestConsumer != null) {
+        requestConsumer.unregister();
+    }
+
     log.info("NoOpBrokerClient closed - no cleanup needed");
     return Future.succeededFuture();
   }
