@@ -203,6 +203,12 @@ install () {
   cd -
 }
 
+buildBroker () {
+  cd broker-parent/broker-client/quarkus
+  ./build.sh install
+  cd -
+}
+
 test () {
   if [ -z "$JAVA_8_HOME" ]
   then
@@ -380,10 +386,7 @@ do
       buildBackend
       ;;
     install)
-      buildFrontend && buildBackend && install
-      ;;
-    buildBack)
-      install
+      buildFrontend && buildBackend  && buildBroker
       ;;
     buildBack)
       install
