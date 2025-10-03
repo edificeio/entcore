@@ -60,7 +60,7 @@
         <revision>6.11-SNAPSHOT</revision>
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
-        <modPostgresVersion>2.0-SNAPSHOT</modPostgresVersion>
+        <modPostgresVersion>2.0-develop-b2school-SNAPSHOT</modPostgresVersion>
         <modMongoVersion>4.0-SNAPSHOT</modMongoVersion>
         <webUtilsVersion>3.2-SNAPSHOT</webUtilsVersion>
         <mongodbHelperVersion>3.0-SNAPSHOT</mongodbHelperVersion>
@@ -70,7 +70,7 @@
         <owaspVersion>20220608.1</owaspVersion>
         <jacksonVersion>2.15.2</jacksonVersion>
         <casVersion>0.2-SNAPSHOT</casVersion>
-        <vertxCronTimerVersion>3.0-SNAPSHOT</vertxCronTimerVersion>
+        <vertxCronTimerVersion>3.0-develop-b2school-SNAPSHOT</vertxCronTimerVersion>
         <jnaVersion>3.0.2</jnaVersion>
         <lamejbVersion>0.2.0</lamejbVersion>
         <opencsvVersion>3.9</opencsvVersion>
