@@ -17,7 +17,7 @@ export const useDeleteMessagesFromQueryCache = () => {
     // Update list message
     queryClient.setQueriesData(
       { queryKey: folderQueryKeys.messages(folderId) },
-      (data: InfiniteData<MessageMetadata[]>) => {
+      (data: InfiniteData<MessageMetadata[]> | undefined) => {
         if (!data) return;
         const countUnreadMessages = (
           messages: MessageMetadata[],
@@ -30,7 +30,8 @@ export const useDeleteMessagesFromQueryCache = () => {
 
         if (!['trash', 'draft', 'outbox'].includes(folderId!)) {
           unreadTrashedCount = data.pages.reduce(
-            (count, page) => count + countUnreadMessages(page, messageIds),
+            (count: number, page: MessageMetadata[]) =>
+              count + countUnreadMessages(page, messageIds),
             0,
           );
         }
