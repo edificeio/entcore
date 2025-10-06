@@ -1807,13 +1807,14 @@ public class DefaultCommunicationService implements CommunicationService {
 		final Promise<JsonArray> promise = Promise.promise();
 		String match = "MATCH (visibles) " +
 
-			"OPTIONAL MATCH visibles-[:RELATED]->(parent: User) " +
-			"WITH DISTINCT visibles, collect({id: parent.id, displayName: parent.displayName}) as relatives " +
-
-			"OPTIONAL MATCH visibles<-[:RELATED]-(child: User) " +
-			"WITH visibles, relatives, child " +
+			"OPTIONAL MATCH visibles-[:RELATED]->(parent1: User) " +
+			"OPTIONAL MATCH visibles<-[:RELATED]-(child: User)-[:RELATED]->(parent2: User) " +
+			"WITH DISTINCT visibles, COLLECT(DISTINCT {id: parent1.id, displayName: parent1.displayName}) " +
+				" + COLLECT(DISTINCT {id: parent2.id, displayName: parent2.displayName}) as relatives, child " +
 			"ORDER BY child.displayName " +
-			"WITH visibles, relatives, collect({id: child.id, displayName: child.displayName}) AS children, collect(distinct child.displayName) AS sorted_children " +
+			"WITH visibles,  [r IN relatives WHERE r.id IS NOT NULL] AS relatives, " +
+				"collect({id: child.id, displayName: child.displayName}) AS children," +
+				" collect(distinct child.displayName) AS sorted_children " +
 			"WITH visibles, relatives, children, reduce(s = '', name IN sorted_children | s + name) AS sorted_children_names ";
 
 		String preFilter = "";
@@ -2109,9 +2110,10 @@ public class DefaultCommunicationService implements CommunicationService {
 				UserUtils.filterFewOrGetAllVisibles(eventBus, user.getUserId(), result.relativeAddedToTheList)
 						.onSuccess(relatives -> {
 							List<String> idsToRemove = Lists.newLinkedList();
+							List<String> relativesIds = relatives.stream().map( o -> ((JsonObject)o).getString("id")).collect(Collectors.toList());
 							for(int i = 0; i < result.relativeAddedToTheList.size(); i++) {
 								String id  = result.relativeAddedToTheList.getString(i);
-								if(!relatives.contains(id)) {
+								if(!relativesIds.contains(id)) {
 									idsToRemove.add(id);
 								}
 							}
