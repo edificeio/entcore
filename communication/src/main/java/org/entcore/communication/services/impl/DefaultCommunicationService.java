@@ -2106,7 +2106,7 @@ public class DefaultCommunicationService implements CommunicationService {
 					StringUtils.isEmpty(search) ? null : search,
 					true);
 			if(!result.relativeAddedToTheList.isEmpty()) {
-				//recheck addoed users
+				//recheck added users
 				UserUtils.filterFewOrGetAllVisibles(eventBus, user.getUserId(), result.relativeAddedToTheList)
 						.onSuccess(relatives -> {
 							List<String> idsToRemove = Lists.newLinkedList();

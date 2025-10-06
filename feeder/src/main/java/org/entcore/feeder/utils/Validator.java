@@ -20,11 +20,6 @@
 package org.entcore.feeder.utils;
 
 import fr.wseduc.webutils.I18n;
-import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.utils.MapFactory;
-import org.entcore.common.utils.SanitizerUtils;
-import org.entcore.common.utils.StringUtils;
-import org.joda.time.DateTime;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
@@ -32,6 +27,10 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.utils.MapFactory;
+import org.entcore.common.utils.StringUtils;
+import org.joda.time.DateTime;
 
 import java.security.NoSuchAlgorithmException;
 import java.text.Normalizer;
