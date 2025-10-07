@@ -9,6 +9,8 @@ import { Session } from 'src/app/core/store/mappings/session';
 import { SessionModel } from 'src/app/core/store/models/session.model';
 import { BundlesService } from 'ngx-ode-sijil';
 import { Context } from 'src/app/core/store/mappings/context';
+import { Config } from 'src/app/core/resolvers/Config';
+import { HttpClient } from '@angular/common/http';
 
 class UserMetric {
   active: number = 0;
@@ -67,14 +69,16 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
   public isADMC: boolean = false;
   public showSettingsLightbox = false;
 
+  private config: Config;
+
   public metrics: StructureMetrics = new StructureMetrics();
   public settings: DuplicationSettings = new DuplicationSettings();
 
   constructor(injector: Injector,
     private infoService: StructureInformationsService,
     private notify: NotifyService,
-    private bundles: BundlesService)
-  {
+    private bundles: BundlesService,
+    private http: HttpClient) {
     super(injector);
   }
 
@@ -131,6 +135,10 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
       }
     }));
     this.admcSpecific();
+    this.http.get<Config>('/admin/api/platform/config').subscribe(config => {
+      this.config = config;
+      this.changeDetector.markForCheck();
+    });
   }
 
   checkThenUpdate(): void {
@@ -260,5 +268,13 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
   {
     this.showSettingsLightbox = false;
     this.changeDetector.markForCheck();
+  }
+
+  canChangeName(): boolean {
+    if (this.isADMC) {
+      return true;
+    }
+
+    return this.config['allow-adml-structure-name-change'];
   }
 }
