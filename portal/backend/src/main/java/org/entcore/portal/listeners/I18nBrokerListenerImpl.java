@@ -2,6 +2,7 @@ package org.entcore.portal.listeners;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import io.vertx.core.*;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
@@ -13,6 +14,8 @@ import org.entcore.broker.api.dto.i18n.RegisterTranslationFilesResponseDTO;
 import org.entcore.broker.proxy.I18nBrokerListener;
 import org.entcore.common.cache.CacheService;
 import org.entcore.common.http.request.JsonHttpServerRequest;
+import org.entcore.common.user.UserUtils;
+import io.vertx.core.MultiMap;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
@@ -456,49 +459,93 @@ public class I18nBrokerListenerImpl implements I18nBrokerListener {
         try {
             // Use headers or explicit language and domain
             if (request.getHeaders() != null) {
-                // Create a simulated HttpServerRequest with the provided headers
-                final MultiMap headers = MultiMap.caseInsensitiveMultiMap();
-                request.getHeaders().forEach((key, value) -> {
-                    if (value != null) {
-                        headers.add(key, value);
-                    }
-                });
+                // Create a SecureHttpServerRequest (with session) and proceed when ready
+                createSecureRequestWithSession(request)
+                    .onSuccess(secureRequest -> {
+                        try {
+                            final JsonObject translationsForRequest = i18n.load(secureRequest);
+                            if (translationsForRequest != null) {
+                                translations.mergeIn(translationsForRequest);
+                            } else {
+                                log.debug("No translations found for headers in application " + application);
+                            }
+                            // Convert JsonObject to Map<String, String>
+                            final Map<String, String> translationsMap = new HashMap<>();
+                            for (String key : translations.fieldNames()) {
+                                Object value = translations.getValue(key);
+                                if (value instanceof String) {
+                                    translationsMap.put(key, (String) value);
+                                }
+                            }
 
-                final HttpServerRequest httpRequest = new JsonHttpServerRequest(new JsonObject(), headers);
-                final JsonObject translationsForRequest = i18n.load(httpRequest);
-                if(translationsForRequest != null) {
-                    translations.mergeIn(translationsForRequest);
-                } else {
-                    log.debug("No translations found for headers in application " + application);
-                }
-            } else {
+                            final FetchTranslationsResponseDTO response = new FetchTranslationsResponseDTO(translationsMap);
+                            promise.complete(response);
+                            log.debug("Successfully fetched " + translationsMap.size() + " translations for application " + application);
+                        } catch (Exception e) {
+                            log.error("Error processing translations with session for application: " + application, e);
+                            promise.fail("i18n.processing.error");
+                        }
+                    })
+                    .onFailure(err -> {
+                        log.error("Failed to create secure request with session for application: " + application, err);
+                        promise.fail("i18n.request.build.error");
+                    });
+             } else {
                 // Use explicit language and domain
                 final LangAndDomain langAndDomain = request.getLangAndDomain();
                 translations.mergeIn(langAndDomain.getDomain() == null ?
                         i18n.load(langAndDomain.getLang()) :
                         i18n.load(langAndDomain.getLang(), langAndDomain.getDomain())
                 );
-            }
-
-            // Convert JsonObject to Map<String, String>
-            final Map<String, String> translationsMap = new HashMap<>();
-            for (String key : translations.fieldNames()) {
-                Object value = translations.getValue(key);
-                // Only include string values
-                if (value instanceof String) {
-                    translationsMap.put(key, (String) value);
+                // Convert JsonObject to Map<String, String>
+                final Map<String, String> translationsMap = new HashMap<>();
+                for (String key : translations.fieldNames()) {
+                    Object value = translations.getValue(key);
+                    if (value instanceof String) {
+                        translationsMap.put(key, (String) value);
+                    }
                 }
+ 
+                final FetchTranslationsResponseDTO response = new FetchTranslationsResponseDTO(translationsMap);
+                promise.complete(response);
+                log.debug("Successfully fetched " + translationsMap.size() + " translations for application " + application);
+             }
+         } catch (Exception e) {
+             log.error("Error processing translations for application: " + application, e);
+             promise.fail("i18n.processing.error");
+         }
+ 
+         return promise.future();
+     }
+
+    /**
+     * Creates a SecureHttpServerRequest with session data for proper language detection.
+     * This allows I18n.acceptLanguage to access cached session preferences.
+     *
+     * @param request The original fetch translations request containing headers
+     * @return Future that completes with the configured SecureHttpServerRequest (session set when available)
+     */
+    private Future<SecureHttpServerRequest> createSecureRequestWithSession(final FetchTranslationsRequestDTO request) {
+        final Promise<SecureHttpServerRequest> promise = Promise.promise();
+
+        // Create a simulated HttpServerRequest with the provided headers
+        final MultiMap headers = MultiMap.caseInsensitiveMultiMap();
+        request.getHeaders().forEach((key, value) -> {
+            if (value != null) {
+                headers.add(key, value);
             }
+        });
 
-            // Create and complete the response
-            final FetchTranslationsResponseDTO response = new FetchTranslationsResponseDTO(translationsMap);
-            promise.complete(response);
-
-            log.debug("Successfully fetched " + translationsMap.size() + " translations for application " + application);
-        } catch (Exception e) {
-            log.error("Error processing translations for application: " + application, e);
-            promise.fail("i18n.processing.error");
-        }
+        final HttpServerRequest httpRequest = new JsonHttpServerRequest(new JsonObject(), headers);
+        final SecureHttpServerRequest secureRequest = new SecureHttpServerRequest(httpRequest);
+        
+        // Get session using UserUtils and inject it into SecureHttpServerRequest
+        UserUtils.getSession(vertx.eventBus(), httpRequest, session -> {
+            if (session != null) {
+                secureRequest.setSession(session);
+            }
+            promise.complete(secureRequest);
+        });
 
         return promise.future();
     }

@@ -20,6 +20,7 @@
 package org.entcore.portal;
 
 import io.vertx.core.Promise;
+import java.io.File;
 import org.entcore.broker.api.utils.AddressParameter;
 import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.cache.CacheService;
@@ -33,7 +34,7 @@ public class Portal extends BaseServer {
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
 		super.start(startPromise);
-		final String assetPath = config.getString("assets-path", "../..");
+		final String assetPath = config.getString("assets-path", "../..")+ File.separator + "assets";
 		final AddressParameter parameter = new AddressParameter("application", "portal");
 		final CacheService cacheService = CacheService.create(vertx);
 		BrokerProxyUtils.addBrokerProxy(new I18nBrokerListenerImpl(vertx, assetPath, cacheService), vertx, parameter);
