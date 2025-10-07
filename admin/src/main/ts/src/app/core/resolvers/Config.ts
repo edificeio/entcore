@@ -9,4 +9,5 @@ export interface Config {
     'hide-adminv1-link': boolean;
     'hide-personal-data': boolean;
     'mass-messaging-enabled': boolean;
+    'allow-adml-structure-name-change': boolean;
 }
