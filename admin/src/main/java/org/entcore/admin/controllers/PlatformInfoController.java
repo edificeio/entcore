@@ -71,7 +71,8 @@ public class PlatformInfoController extends BaseController {
 				.put("distributions", config.getJsonArray("distributions", new JsonArray()))
 				.put("hide-adminv1-link", config.getBoolean("hide-adminv1-link", false))
 				.put("hide-personal-data", serverMap.get("hidePersonalData"))
-				.put("mass-messaging-enabled", config.getBoolean("mass-messaging-enabled"));
+				.put("mass-messaging-enabled", config.getBoolean("mass-messaging-enabled"))
+				.put("allow-adml-structure-name-change", config.getBoolean("allow-adml-structure-name-change", true));
 
 		if (preDelete != null && preDelete.size() == PROFILES.size() &&
 				PROFILES.containsAll(preDelete.fieldNames())) {
