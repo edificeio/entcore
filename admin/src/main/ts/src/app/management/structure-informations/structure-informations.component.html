@@ -12,26 +12,28 @@
         pattern=".*\S+.*"
         (blur)="structName = structName.trim()"
         #nameInput="ngModel"
+        [disabled]="!canChangeName()"
       />
       <ode-form-errors [control]="nameInput"></ode-form-errors>
-      <button
-        type="button"
-        class="cancel"
-        (click)="resetManualName()"
-        *ngIf="structure.manualName"
-      >
-        <s5l>management.structure.informations.name.reset</s5l>
-      </button>
-      <i class="fa is-info">
-        <s5l class="info-label"
-          >management.structure.informations.help.label</s5l
+        <button
+                (click)="resetManualName()"
+                *ngIf="structure.manualName && canChangeName()"
+                class="cancel"
+                type="button"
         >
-      </i>
-      <ode-message-sticker
-        type="info"
-        [messages]="['management.structure.informations.name.help']"
-      >
-      </ode-message-sticker>
+            <s5l>management.structure.informations.name.reset</s5l>
+        </button>
+        <i class="fa is-info">
+            <s5l class="info-label">
+                management.structure.informations.help.label
+            </s5l
+            >
+        </i>
+        <ode-message-sticker
+                [messages]="['management.structure.informations.name.help']"
+                type="info"
+        >
+        </ode-message-sticker>
     </ode-form-field>
 
     <ode-form-field label="management.structure.informations.id">
