@@ -32,6 +32,7 @@ import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class DeleteOrphan implements Handler<Long> {
 
@@ -106,7 +107,7 @@ public class DeleteOrphan implements Handler<Long> {
 	private Future<Void> deleteInBatchesSequential(String query, String entityType, int batchNumber, int totalDeleted) {
 		if (batchNumber >= maxBatches) {
 			if (totalDeleted > 0) {
-				log.info("Successfully deleted {} orphan {}", totalDeleted, entityType);
+				log.info("Successfully deleted " + totalDeleted + " orphan " + entityType);
 			}
 			return Future.succeededFuture();
 		}
@@ -120,7 +121,7 @@ public class DeleteOrphan implements Handler<Long> {
 				if (STATUS_OK.equals(result.body().getString(STATUS_FIELD))) {
 					int deletedCount = result.body().getInteger("rows", 0);
 					if (deletedCount > 0) {
-						log.info("Batch {} deleted {} orphan {}", batchNumber, deletedCount, entityType);
+						log.info("Batch " + batchNumber + " deleted " + deletedCount + " orphan " + entityType);
 					}
 
 					// Stop if no more orphans found
@@ -133,7 +134,7 @@ public class DeleteOrphan implements Handler<Long> {
 					}
 				} else {
 					String error = result.body().getString(MESSAGE_FIELD, UNKNOWN_ERROR);
-					log.error("Batch {} failed for orphan {}: {}", batchNumber, entityType, error);
+					log.error("Batch " + batchNumber + " failed for orphan " + entityType + ": " + error);
 
 					// Continue with next batch despite error
 					deleteInBatchesSequential(query, entityType, batchNumber + 1, totalDeleted)
@@ -152,7 +153,7 @@ public class DeleteOrphan implements Handler<Long> {
 	private Future<Void> processOrphanAttachmentsSequential(int batchNumber, int totalProcessed) {
 		if (batchNumber >= maxBatches) {
 			if (totalProcessed > 0) {
-				log.info("Successfully processed {} orphan attachments", totalProcessed);
+				log.info("Successfully processed " + totalProcessed + " orphan attachments");
 			}
 			return Future.succeededFuture();
 		}
@@ -165,7 +166,7 @@ public class DeleteOrphan implements Handler<Long> {
 			result -> {
 				if (!STATUS_OK.equals(result.body().getString(STATUS_FIELD))) {
 					String error = result.body().getString(MESSAGE_FIELD, UNKNOWN_ERROR);
-					log.error("Batch {} failed to select orphan attachments: {}", batchNumber, error);
+					log.error("Batch " + batchNumber + " failed to select orphan attachments: " + error);
 
 					// Continue with next batch despite error
 					processOrphanAttachmentsSequential(batchNumber + 1, totalProcessed)
@@ -180,13 +181,13 @@ public class DeleteOrphan implements Handler<Long> {
 					return;
 				}
 
-				log.info("Processing {} orphan attachments in batch {}", attachments.size(), batchNumber);
+				log.info("Processing " + attachments.size() + " orphan attachments in batch " + batchNumber);
 				processAttachmentBatch(attachments)
 					.onSuccess(v -> processOrphanAttachmentsSequential(batchNumber + 1, totalProcessed + attachments.size())
 						.onComplete(promise)
 					)
 					.onFailure(err -> {
-						log.error("Batch {} failed to process attachments: {}", batchNumber, err.getMessage());
+						log.error("Batch " + batchNumber + " failed to process attachments: " + err.getMessage());
 
 						// Continue with next batch despite error
 						processOrphanAttachmentsSequential(batchNumber + 1, totalProcessed)
@@ -214,7 +215,7 @@ public class DeleteOrphan implements Handler<Long> {
 				storage.removeFile(attachmentId, event -> {
 					boolean success = STATUS_OK.equals(event.getString(STATUS_FIELD));
 					if (!success) {
-						log.error("Error deleting attachment file {}: {}", attachmentId, event.getString(MESSAGE_FIELD, UNKNOWN_ERROR));
+						log.error("Error deleting attachment file " + attachmentId + ": " + event.getString(MESSAGE_FIELD, UNKNOWN_ERROR));
 					}
 					storagePromise.complete(new StorageResult(success));
 				});
@@ -244,10 +245,10 @@ public class DeleteOrphan implements Handler<Long> {
 			}
 
 			if (successCount > 0) {
-				log.info("Successfully deleted {} attachment files from storage", successCount);
+				log.info("Successfully deleted " + successCount + " attachment files from storage");
 			}
 			if (failureCount > 0) {
-				log.warn("{} attachment files failed to delete from storage", failureCount);
+				log.warn(failureCount + " attachment files failed to delete from storage");
 			}
 
 			// Delete from database regardless of storage results (orphan records are worse than orphan files)
@@ -270,11 +271,11 @@ public class DeleteOrphan implements Handler<Long> {
 			result -> {
 				if (STATUS_OK.equals(result.body().getString(STATUS_FIELD))) {
 					int deleted = result.body().getInteger("rows", 0);
-					log.info("Deleted {} orphan attachment records", deleted);
+					log.info("Deleted " + deleted + " orphan attachment records");
 					promise.complete();
 				} else {
 					String error = result.body().getString(MESSAGE_FIELD, UNKNOWN_ERROR);
-					log.error("Error deleting orphan attachment records: {}", error);
+					log.error("Error deleting orphan attachment records: " + error);
 					promise.fail(error);
 				}
 			});
@@ -315,6 +316,10 @@ public class DeleteOrphan implements Handler<Long> {
 			"WHERE NOT EXISTS (SELECT 1 FROM conversation.usermessagesattachments uma WHERE uma.attachment_id = a.id) " +
 			"LIMIT 100000) subquery";
 
+		AtomicInteger remainingMessages = new AtomicInteger(0);
+		AtomicInteger remainingThreads = new AtomicInteger(0);
+		AtomicInteger remainingAttachments = new AtomicInteger(0);
+
 		Promise<Void> promise = Promise.promise();
 		sql.prepared(countMessages, new JsonArray(), result1 -> {
 			if (!STATUS_OK.equals(result1.body().getString(STATUS_FIELD))) {
@@ -324,7 +329,9 @@ public class DeleteOrphan implements Handler<Long> {
 			}
 
 			JsonArray results1 = result1.body().getJsonArray("results", new JsonArray());
-			int remainingMessages = results1.size() > 0 ? results1.getJsonObject(0).getInteger("count", 0) : 0;
+			if (results1.size() > 0 && results1.getValue(0) instanceof JsonObject) {
+				remainingMessages.set(results1.getJsonObject(0).getInteger("count", 0));
+			}
 
 			sql.prepared(countThreads, new JsonArray(), result2 -> {
 				if (!STATUS_OK.equals(result2.body().getString(STATUS_FIELD))) {
@@ -333,7 +340,9 @@ public class DeleteOrphan implements Handler<Long> {
 				}
 
 				JsonArray results2 = result2.body().getJsonArray("results", new JsonArray());
-				int remainingThreads = results2.size() > 0 ? results2.getJsonObject(0).getInteger("count", 0) : 0;
+				if (results2.size() > 0 && results2.getValue(0) instanceof JsonObject) {
+					remainingThreads.set(results2.getJsonObject(0).getInteger("count", 0));
+				}
 
 				sql.prepared(countAttachments, new JsonArray(), result3 -> {
 					if (!STATUS_OK.equals(result3.body().getString(STATUS_FIELD))) {
@@ -342,10 +351,12 @@ public class DeleteOrphan implements Handler<Long> {
 					}
 
 					JsonArray results3 = result3.body().getJsonArray("results", new JsonArray());
-					int remainingAttachments = results3.size() > 0 ? results3.getJsonObject(0).getInteger("count", 0) : 0;
-					int totalRemaining = remainingMessages + remainingThreads + remainingAttachments;
+					if (results3.size() > 0 && results3.getValue(0) instanceof JsonObject) {
+						remainingAttachments.set(results3.getJsonObject(0).getInteger("count", 0));
+					}
+					int totalRemaining = remainingMessages.get() + remainingThreads.get() + remainingAttachments.get();
 					if (totalRemaining > 0) {
-						log.info("Orphan cleanup completed. Remaining orphans: {} messages, {} threads, {} attachments (total: {})", remainingMessages, remainingThreads, remainingAttachments, totalRemaining);
+						log.info("Orphan cleanup completed. Remaining orphans: " + remainingMessages.get() + " messages, " + remainingThreads.get() + " threads, " + remainingAttachments.get() + " attachments (total: " + totalRemaining + ")");
 					} else {
 						log.info("Orphan cleanup completed. No orphans remaining.");
 					}
