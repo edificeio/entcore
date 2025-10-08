@@ -74,6 +74,7 @@
   "audience.views.uniqueViewsPerProfile.teacher": "Enseignant(s)",
   "back": "Retour",
   "bbm": "Bibliothèque multimédia",
+  "bbm.upload.alert": "L’ordre d’import des médias se fait dans l’ordre chronologique de leur création. Vous pourrez modifier l’ordre une fois l’import effectué",
   "bbm.attachment.modal.title": "Ajouter une pièce jointe",
   "bbm.audio": "Dictaphone",
   "bbm.audio.modal.title": "Ajouter un son",
