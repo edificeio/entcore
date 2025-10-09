@@ -148,17 +148,19 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
     protected void doFetchForIndex(final ExplorerStream<JsonObject> stream, final ExplorerReindexResourcesRequest request) {
         final Tuple tuple = Tuple.tuple();
         final StringBuilder query = new StringBuilder();
-        if(getShareTableName().isPresent()){
+        // Always alias main table as "t" to keep filters consistent (filters use "t.<col>")
+        if (getShareTableName().isPresent()) {
             final String schema = getTableName().split("\\.")[0];
             final String shareTable = getShareTableName().get();
-            query.append(" SELECT t.*, ");
+            query.append("SELECT t.*, ");
             query.append(String.format(" JSON_AGG(ROW_TO_JSON(ROW(member_id,action)::%s.share_tuple)) AS shared, ", schema));
             query.append(" ARRAY_TO_JSON(ARRAY_AGG(group_id)) AS groups ");
             query.append(String.format(" FROM %s AS t ", getTableName()));
             query.append(String.format(" LEFT JOIN %s s ON t.id = s.resource_id ", shareTable));
-            query.append(String.format(" LEFT JOIN %s.members ON (member_id = %s.members.id AND group_id IS NOT NULL) ",schema, schema));
-        }else{
-            query.append(String.format("SELECT * FROM %s ", getTableName()));
+            query.append(String.format(" LEFT JOIN %s.members ON (member_id = %s.members.id AND group_id IS NOT NULL) ", schema, schema));
+        } else {
+            // No share table: still use alias "t" so "t.<col>" filters work
+            query.append(String.format("SELECT t.* FROM %s AS t ", getTableName()));
         }
         final Date from = request.getFrom();
         final Date to = request.getTo();
@@ -172,19 +174,19 @@ public abstract class ExplorerPluginResourceSql extends ExplorerPluginResource {
                     .toLocalDateTime();
             tuple.addValue(localFrom);
             tuple.addValue(localTo);
-            filters.add(String.format(" %s >= $1 AND %s < $2 ",getCreatedAtColumn(),getCreatedAtColumn()));
+            filters.add(String.format(" t.%s >= $1 AND t.%s < $2 ", getCreatedAtColumn(), getCreatedAtColumn()));
         } else if (from != null) {
             final LocalDateTime localFrom = Instant.ofEpochMilli(from.getTime())
                     .atZone(ZoneId.systemDefault())
                     .toLocalDateTime();
             tuple.addValue(localFrom);
-            filters.add(String.format(" %s >= $1 ",getCreatedAtColumn()));
+            filters.add(String.format(" t.%s >= $1 ", getCreatedAtColumn()));
         } else if (to != null) {
             final LocalDateTime localTo = Instant.ofEpochMilli(to.getTime())
                     .atZone(ZoneId.systemDefault())
                     .toLocalDateTime();
             tuple.addValue(localTo);
-            filters.add(String.format(" %s < $1 ",getCreatedAtColumn()));
+            filters.add(String.format(" t.%s < $1 ", getCreatedAtColumn()));
         }
         if(isNotEmpty(request.getIds())) {
             filters.add("t." + getIdColumn() + " IN (" + String.join(",", request.getIds()) + ") ");
