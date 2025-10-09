@@ -1,13 +1,16 @@
 package org.entcore.common.redis;
 
 import io.vertx.core.*;
+import io.vertx.redis.client.*;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.Promise;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.redis.client.*;
 import org.entcore.common.utils.StringUtils;
 
 import java.security.InvalidParameterException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class RedisClient implements IRedisClient {
     public static final String ID_STREAM = "$id_stream";
@@ -79,6 +82,83 @@ public class RedisClient implements IRedisClient {
         }
         final io.vertx.redis.client.Redis oldClient = io.vertx.redis.client.Redis.createClient(vertx, redisOptions);
         client = RedisAPI.api(oldClient);
+    }
+
+    /**
+     * Performs a SCAN operation to retrieve all keys matching a pattern.
+     * This is a safe alternative to KEYS command that avoids blocking Redis.
+     *
+     * @param pattern The pattern to match keys (e.g., "myprefix:*")
+     * @param batch Optional count hint for each SCAN iteration (default: 100)
+     * @return Future containing list of all matching keys
+     */
+    public Future<List<String>> scanAll(final String pattern, final int batch) {
+        final Promise<List<String>> promise = Promise.promise();
+        scanAllRecursive("0", pattern, batch, new ArrayList<>(), promise);
+        return promise.future();
+    }
+
+    /**
+     * Performs a SCAN operation to retrieve all keys matching a pattern with default count.
+     *
+     * @param pattern The pattern to match keys (e.g., "myprefix:*")
+     * @return Future containing list of all matching keys
+     */
+    public Future<List<String>> scanAll(final String pattern) {
+        return scanAll(pattern, 100);
+    }
+
+    /**
+     * Recursive helper method for SCAN operation.
+     *
+     * @param cursor Current cursor position
+     * @param pattern Pattern to match
+     * @param count Count hint for SCAN
+     * @param accumulator Accumulated results
+     * @param promise Promise to complete when done
+     */
+    private void scanAllRecursive(final String cursor, final String pattern, final int count,
+                                 final List<String> accumulator, final Promise<List<String>> promise) {
+        final String[] scanArgs = new String[] {
+                cursor,
+                "MATCH", pattern,
+                "COUNT", String.valueOf(count)
+        };
+
+        client.send(io.vertx.redis.client.Command.SCAN, scanArgs).onComplete(ar -> {
+            if (ar.succeeded()) {
+                final Response response = ar.result();
+                final String nextCursor = response.get(0).toString();
+
+                // Add keys from this iteration to accumulator
+                if (response.size() > 1 && response.get(1) != null) {
+                    final Response keys = response.get(1);
+                    for (int i = 0; i < keys.size(); i++) {
+                        accumulator.add(keys.get(i).toString());
+                    }
+                }
+
+                // Continue scanning if cursor is not "0"
+                if (!"0".equals(nextCursor)) {
+                    scanAllRecursive(nextCursor, pattern, count, accumulator, promise);
+                } else {
+                    promise.complete(accumulator);
+                }
+            } else {
+                log.error("SCAN operation failed", ar.cause());
+                promise.fail(ar.cause());
+            }
+        });
+    }
+
+    /**
+     * Expose configured RedisOptions for cases where a raw Redis connection is needed.
+     * Minimal accessor to avoid breaking callers.
+     *
+     * @return RedisOptions used by this client
+     */
+    public RedisOptions getRedisOptions() {
+        return this.redisOptions;
     }
 
     @Override
