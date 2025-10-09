@@ -196,8 +196,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 							" : " + eventOwner.body().getString("message"));
 				}
 				// find updated resources
-				final Bson findByKey = Filters.eq("_deleteUsersKey", timestamp);
-				final JsonObject query = MongoQueryBuilder.build(findByKey);
+				final JsonObject query = new JsonObject().put("_deleteUsersKey", timestamp);
 				mongo.find(collection, query, eventFind -> {
 					final JsonArray results = eventFind.body().getJsonArray("results");
 					final List<ResourceChanges> list = new ArrayList<>();
