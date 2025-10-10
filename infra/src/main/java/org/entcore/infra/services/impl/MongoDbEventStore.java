@@ -141,9 +141,7 @@ public class MongoDbEventStore implements EventStoreService {
 	}
 
 	@Override
-  @Deprecated
 	public void listEvents(String eventStoreType, long startEpoch, long duration, boolean skipSynced, List<String> eventTypes, boolean sorted, Handler<AsyncResult<JsonArray>> handler) {
-    log.error("Calling deprecated method EventStoreService.listEvents, please use listEventsPartial instead");
 		final JsonObject query = new JsonObject().put("date", new JsonObject()
 			.put("$gte", startEpoch).put("$lt", (startEpoch + duration)));
 		if (skipSynced) {
