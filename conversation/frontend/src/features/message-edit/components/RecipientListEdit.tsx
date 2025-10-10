@@ -69,7 +69,6 @@ export function RecipientListEdit({
     } else {
       setSelectedBookmarkIds((prev) => [...prev, recipient.id]);
       const shareBookmark = await getBookmarkById(recipient.id);
-      console.log('shareBookmark:', shareBookmark);
       if (shareBookmark) {
         setRecipientArray((prev) => {
           const newRecipients = [
