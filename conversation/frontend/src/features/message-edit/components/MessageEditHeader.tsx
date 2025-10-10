@@ -23,6 +23,10 @@ export function MessageEditHeader({ message }: MessageHeaderProps) {
     cci && (cci.groups.length > 0 || cci.users.length > 0),
   );
 
+  const handleRecipientsNotVisible = (hasNotVisibleCount: boolean) => {
+    setShowRecipientsNotVisibleAlert(hasNotVisibleCount);
+  };
+
   return (
     <>
       <MessageEditHeaderAlerts
@@ -35,7 +39,7 @@ export function MessageEditHeader({ message }: MessageHeaderProps) {
             head={<span className="me-4">{t('at')}</span>}
             recipients={to}
             recipientType="to"
-            onRecipientsNotVisible={setShowRecipientsNotVisibleAlert}
+            onRecipientsNotVisible={handleRecipientsNotVisible}
           />
           <div className="d-flex align-items-center">
             <Button
@@ -64,7 +68,7 @@ export function MessageEditHeader({ message }: MessageHeaderProps) {
               head={<span className="me-4">{t('cc')}</span>}
               recipients={cc}
               recipientType="cc"
-              onRecipientNotVisible={setShowNotVisibleCountAlert}
+              onRecipientsNotVisible={handleRecipientsNotVisible}
             />
           </div>
         )}
@@ -74,7 +78,7 @@ export function MessageEditHeader({ message }: MessageHeaderProps) {
               head={<span className="me-4">{t('cci')}</span>}
               recipients={cci || { groups: [], users: [] }}
               recipientType="cci"
-              onRecipientNotVisible={setShowNotVisibleCountAlert}
+              onRecipientsNotVisible={handleRecipientsNotVisible}
             />
           </div>
         )}
