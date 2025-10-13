@@ -83,7 +83,7 @@
                     <button type="button" class="flat-button" ng-click="backToDiscoverVisibleSelectedGroup()">
                         <i18n>cancel</i18n>
                     </button>
-                    <button ng-disabled="discoverVisible.editOrAddGroup.selectedUsers.length === 0">
+                    <button ng-disabled="discoverVisible.editOrAddGroup.selectedUsers.length === 0  || discoverVisible.editOrAddGroup.selectedUsers.length > 100 || discoverVisible.editOrAddGroup.groupName === '' || discoverVisible.editOrAddGroup.groupName === null ">
                         <i18n>directory.save</i18n>
                     </button>
                 </div>
