@@ -740,9 +740,14 @@ public class CommunicationController extends BaseController {
 	 * */
 	@Get("/discover/visible/profiles")
 	@SecuredAction(value= "", type = ActionType.RESOURCE)
-	@ResourceFilter(CommunicationDiscoverVisibleFilter.class)
 	public void getDiscoverVisibleAcceptedProfile(HttpServerRequest request) {
-		communicationService.getDiscoverVisibleAcceptedProfile(arrayResponseHandler(request));
+		UserUtils.getUserInfos(eb, request, user -> {
+			if(user == null) {
+				badRequest(request, "invalid.user");
+				return;
+			}
+			communicationService.getDiscoverVisibleAcceptedProfile(user, arrayResponseHandler(request));
+		});
 	}
 
 	/**

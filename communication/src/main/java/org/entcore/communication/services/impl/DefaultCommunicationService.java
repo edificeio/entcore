@@ -1515,7 +1515,11 @@ public class DefaultCommunicationService implements CommunicationService {
 	}
 
 	@Override
-	public void getDiscoverVisibleAcceptedProfile(Handler<Either<String, JsonArray>> handler) {
+	public void getDiscoverVisibleAcceptedProfile(UserInfos user, Handler<Either<String, JsonArray>> handler) {
+		if(discoverVisibleExpectedProfile.isEmpty() || !discoverVisibleExpectedProfile.contains(user.getType())) {
+			handler.handle(new Either.Right<>(new JsonArray()));
+			return;
+		}
 		handler.handle(new Either.Right<>(discoverVisibleExpectedProfile));
 	}
 

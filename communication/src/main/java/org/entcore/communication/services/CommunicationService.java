@@ -168,7 +168,7 @@ public interface CommunicationService {
 
 	void addDiscoverVisibleGroupUsers(UserInfos user, String groupId, JsonObject body, HttpServerRequest request, Handler<Either<String, JsonObject>> handler);
 
-	void getDiscoverVisibleAcceptedProfile(Handler<Either<String, JsonArray>> handler);
+	void getDiscoverVisibleAcceptedProfile(UserInfos user, Handler<Either<String, JsonArray>> handler);
 
 
 	/**
