@@ -755,9 +755,11 @@ public class DefaultUserService implements UserService {
 			UserInfos.Function f = userInfos.getFunctions().get(ADMIN_LOCAL);
 			List<String> scope = f.getScope();
 			if (scope != null && !scope.isEmpty()) {
-				filterFunction += "MATCH (fs:Structure)<-[:DEPENDS]-(pg:ProfileGroup)<-[:IN]-(u) ";
-				conditionFunction += "AND (fs.id IN {scope}) ";
-				params.put("scope", new JsonArray(scope));
+				if (isEmpty(groupId)) {
+					filterFunction += "MATCH (fs:Structure)<-[:DEPENDS]-(pg:ProfileGroup)<-[:IN]-(u) ";
+					conditionFunction += "AND (fs.id IN {scope}) ";
+					params.put("scope", new JsonArray(scope));
+				}
 			}
 		} else if(userInfos.getFunctions().containsKey(CLASS_ADMIN)){
 			UserInfos.Function f = userInfos.getFunctions().get(CLASS_ADMIN);
