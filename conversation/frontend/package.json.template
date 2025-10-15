@@ -16,7 +16,7 @@
   "scripts": {
     "build": "pnpm run typecheck && vite build",
     "clean": "rm pnpm-lock.yaml && rm -rf node_modules && pnpm i",
-    "dev:fast": "pnpm get-tokens --auto && vite",
+    "dev:recette": "pnpm get-tokens --auto && vite",
     "dev": "vite",
     "format": "prettier --write \"**/*.{ts,tsx,css}\"",
     "get-tokens": "node scripts/get-tokens/index.cjs",
