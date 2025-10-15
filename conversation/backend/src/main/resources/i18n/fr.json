@@ -67,6 +67,7 @@
   "conversation.users.search.placeholder": "Rechercher des destinataires",
   "conversation.users.search.placeholder.adml": "Saisissez 3 lettres pour démarrer la recherche ou appuyez sur entrée",
   "conversation.warn.message.grouped": "Vous êtes sur le point d’envoyer un message à un groupe de parents ou d'élèves ! Attention, les destinataires pourront utiliser la fonctionnalité “répondre à tous” et répondre aux autres destinataires. Si vous ne souhaitez pas ouvrir une conversation de groupe, ajoutez les utilisateurs en copie cachée.",
+  "conversation.edit.warn.no.visible.recipients": "Certains utilisateurs ou groupes de votre favori n’ont pas pu être ajouté car ils ne sont plus valides par rapport à vos droits de communication.",
   "copy": "Copie",
   "create": "Créer",
   "create.folder": "Créer un dossier",
