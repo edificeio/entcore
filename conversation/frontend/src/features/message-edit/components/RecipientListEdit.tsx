@@ -21,6 +21,7 @@ export interface RecipientListProps {
   head: ReactNode;
   recipientType: RecipientType;
   onRecipientUpdate?: (recipients: Recipients) => void;
+  onRecipientsNotVisible?: (hasNotVisibleCount: boolean) => void;
 }
 
 export function RecipientListEdit({
@@ -28,6 +29,7 @@ export function RecipientListEdit({
   head,
   recipientType,
   onRecipientUpdate,
+  onRecipientsNotVisible,
 }: RecipientListProps) {
   const { t } = useI18n();
   const [recipientArray, setRecipientArray] = useState<(User | Group)[]>([]);
@@ -92,6 +94,9 @@ export function RecipientListEdit({
             displayName: group.displayName,
           })),
         );
+        if (shareBookmark.notVisibleCount > 0) {
+          onRecipientsNotVisible?.(true);
+        }
       }
     }
     updateMessage();
