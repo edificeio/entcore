@@ -535,6 +535,7 @@ public class UserUtils {
 			unrolledUser.put("children", children.get(id));
 			unrolledUser.put("relatives", parents.get(id));
 			if(!alreadyAddedUsers.contains(id)) {
+				alreadyAddedUsers.add(id);
 				result.contactList.add(unrolledUser);
 				result.relativeAddedToTheList.add(id);
 			}
