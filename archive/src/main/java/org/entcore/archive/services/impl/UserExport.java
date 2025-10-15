@@ -71,4 +71,8 @@ public class UserExport implements Shareable, Serializable {
     public String getExportId() {
         return exportId;
     }
+
+    public int getCounter() {
+        return counter.get();
+    }
 }

@@ -10,7 +10,6 @@ import org.entcore.common.mongodb.MongoClientFactory;
 import org.entcore.common.postgres.IPostgresClient;
 import org.entcore.common.redis.RedisClient;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
@@ -97,12 +96,12 @@ public class ExplorerPluginFactory {
         }
     }
 
-    public static Future<IExplorerPlugin> createMongoPlugin(final Function<ExplorerFactoryParams<MongoClient>, IExplorerPlugin> instance) throws Exception {
+    public static Future<IExplorerPlugin> createMongoPlugin(final Function<ExplorerFactoryParams<MongoClient>, IExplorerPlugin> instance) {
       final List<Future<?>> futures = newArrayList(
         getCommunication(),
         MongoClientFactory.create(vertxInstance, globalConfig)
       );
-        return Future.all(futures).map(res -> {
+        return Future.all(futures).flatMap(res -> {
           final IExplorerPluginCommunication communication = res.resultAt(0);
           final MongoClient mongoClient = res.resultAt(1);
           try {

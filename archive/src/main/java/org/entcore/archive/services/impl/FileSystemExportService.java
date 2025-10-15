@@ -79,6 +79,9 @@ public class FileSystemExportService implements ExportService {
 	private static final long DOWNLOAD_IN_PROGRESS = -2l;
 	private static final long EXPORT_ERROR = -4l;
 
+    private static final String EXPORT_LOCK_PREFIX = "EXPORT_LOCK";
+    private static final long EXPORT_LOCK_TIMEOUT = 3000L;
+
 	public FileSystemExportService(Vertx vertx, FileSystem fs, EventBus eb, String exportPath, String customHandlerActionName,
 								   EmailSender notification, Storage storage, TimelineHelper timeline,
 								   PrivateKey signKey, boolean forceEncryption) {
@@ -247,8 +250,7 @@ public class FileSystemExportService implements ExportService {
 	}
 
 	@Override
-	public void exported(final String exportId, String status, final String locale, final String host)
-	{
+	public void exported(final String exportId, String status, final String locale, final String host) {
 		log.debug("Exported method");
 		if (exportId == null) {
 			log.error("Export receive event without exportId ");
@@ -256,79 +258,97 @@ public class FileSystemExportService implements ExportService {
 		}
 		final String exportDirectory = exportPath + File.separator + exportId;
 		final String userId = getUserId(exportId);
-    userExport.get(userId)
-      .onFailure(th -> log.error("Cannot get userExport", th))
-      .map(UserExport::fromJson)
-      .onSuccess(export -> {
-        if(export == null) {
-          log.warn("Received a notification about a finished export (" + exportId + ") but this export could not be found");
-          return;
-        }
-        final int counter = export.incrementAndGetCounter();
-        final boolean isFinished = counter == export.getExpectedExport().size();
-        if (isFinished) {
-          log.debug("Export " + exportId + " finished for user " + userId);
-        } else {
-          log.debug("Received " + counter + " parts out of " + export.getExpectedExport().size() + " for export " + exportId + " of user " + userId);
-        }
-        if (!"ok".equals(status)) {
-          export.setProgress(EXPORT_ERROR);
-        }
-        if (isFinished && export.getProgress() == EXPORT_ERROR) {
-          log.error("Error in export " + exportId);
-          JsonObject j = new JsonObject()
-            .put("status", "error")
-            .put("message", "export.error");
-          eb.publish(getExportBusAddress(exportId), j);
-          userExportInProgress.remove(userId);
-          fs.deleteRecursive(exportDirectory, true, new Handler<AsyncResult<Void>>() {
-            @Override
-            public void handle(AsyncResult<Void> event) {
-              if (event.failed()) {
-                log.error("Error deleting directory : " + exportDirectory, event.cause());
-              }
-            }
-          });
-          if (notification != null) {
-            sendExportEmail(exportId, locale, status, host);
-          }
-          return;
-        }
-        if (isFinished) {
-          log.debug("Export " + exportId + " is finished and OK", exportId);
-          // Copy what the different modules produced to this service's file system (because if the modules exported to S3)
-          // then archive cannot access the export files.
-          storage.moveDirectoryToFs(exportDirectory, exportDirectory)
-            .onFailure(th -> log.error("Error while retrieving exported files", th)) // TODO jber purge download
-            .onSuccess(e  ->
-                addManifestToExport(exportId, exportDirectory, locale, event -> {
-                log.debug("Manifest added for export " + exportId);
-                signExport(exportId, exportDirectory, signed -> {
-                  log.debug("Zipping export " + exportId);
-                  Zip.getInstance().zipFolder(exportDirectory, exportDirectory + ".zip", true,
-                    Deflater.NO_COMPRESSION, event1 -> {
-                      if (!"ok".equals(event1.body().getString("status")) || signed.failed()) {
-                        log.error("Zip export " + exportId + " error : "
-                          + (signed.failed() ? "Could not sign the archive" : event1.body().getString("message")));
-                        event1.body().put("message", "zip.export.error");
-                        userExportInProgress.remove(userId);
-                        fs.deleteRecursive(exportDirectory, true, event2 -> {
-                          if (event2.failed()) {
-                            log.error("Error deleting directory : " + exportDirectory,
-                              event2.cause());
-                          }
+        this.vertx.sharedData().getLockWithTimeout(EXPORT_LOCK_PREFIX + "_" + exportId, EXPORT_LOCK_TIMEOUT)
+            .onFailure(th -> log.error("An error occurred while getting a log for export " + exportId + " of user " + userId))
+            .onSuccess(lock -> {
+                userExport.get(userId)
+                        .onFailure(th -> {
+                            log.error("Cannot get userExport " + exportId + " of user " + userId, th);
+                            lock.release();
+                        })
+                        .map(UserExport::fromJson)
+                        .flatMap(export -> {
+                            if (export == null) {
+                                log.warn("Received a notification about a finished export (" + exportId + ") but this export could not be found");
+                                lock.release();
+                                return succeededFuture();
+                            }
+                            final int counter = export.incrementAndGetCounter();
+                            final boolean isFinished = counter == export.getExpectedExport().size();
+                            if (isFinished) {
+                                log.debug("Export " + exportId + " finished for user " + userId);
+                            } else {
+                                log.debug("Received " + counter + " parts out of " + export.getExpectedExport().size() + " for export " + exportId + " of user " + userId);
+                            }
+                            if (!"ok".equals(status)) {
+                                export.setProgress(EXPORT_ERROR);
+                            }
+                            return userExport.put(userId, JsonObject.mapFrom(export)).map(export);
+                        })
+                        .onFailure(th -> {
+                            log.error("Cannot update userExport " + exportId + " of user " + userId, th);
+                            lock.release();
+                        })
+                        .onSuccess(export -> {
+                            lock.release();
+                            final int counter = export.getCounter();
+                            final boolean isFinished = counter >= export.getExpectedExport().size();
+                            if (isFinished && export.getProgress() == EXPORT_ERROR) {
+                                log.error("Error in export " + exportId);
+                                JsonObject j = new JsonObject()
+                                        .put("status", "error")
+                                        .put("message", "export.error");
+                                eb.publish(getExportBusAddress(exportId), j);
+                                userExportInProgress.remove(userId);
+                                fs.deleteRecursive(exportDirectory, true, new Handler<AsyncResult<Void>>() {
+                                    @Override
+                                    public void handle(AsyncResult<Void> event) {
+                                        if (event.failed()) {
+                                            log.error("Error deleting directory : " + exportDirectory, event.cause());
+                                        }
+                                    }
+                                });
+                                if (notification != null) {
+                                    sendExportEmail(exportId, locale, status, host);
+                                }
+                                return;
+                            }
+                            if (isFinished) {
+                                log.debug("Export " + exportId + " is finished and OK", exportId);
+                                // Copy what the different modules produced to this service's file system (because if the modules exported to S3)
+                                // then archive cannot access the export files.
+                                storage.moveDirectoryToFs(exportDirectory, exportDirectory)
+                                        .onFailure(th -> log.error("Error while retrieving exported files", th)) // TODO jber purge download
+                                        .onSuccess(e  ->
+                                                addManifestToExport(exportId, exportDirectory, locale, event -> {
+                                                    log.debug("Manifest added for export " + exportId);
+                                                    signExport(exportId, exportDirectory, signed -> {
+                                                        log.debug("Zipping export " + exportId);
+                                                        Zip.getInstance().zipFolder(exportDirectory, exportDirectory + ".zip", true,
+                                                                Deflater.NO_COMPRESSION, event1 -> {
+                                                                    if (!"ok".equals(event1.body().getString("status")) || signed.failed()) {
+                                                                        log.error("Zip export " + exportId + " error : "
+                                                                                + (signed.failed() ? "Could not sign the archive" : event1.body().getString("message")));
+                                                                        event1.body().put("message", "zip.export.error");
+                                                                        userExportInProgress.remove(userId);
+                                                                        fs.deleteRecursive(exportDirectory, true, event2 -> {
+                                                                            if (event2.failed()) {
+                                                                                log.error("Error deleting directory : " + exportDirectory,
+                                                                                        event2.cause());
+                                                                            }
+                                                                        });
+                                                                        publish(event1, exportId, locale, host);
+                                                                    } else {
+                                                                        log.debug("Storing export zip in file storage");
+                                                                        storeZip(event1, exportId, exportDirectory, userId, locale, host);
+                                                                    }
+                                                                });
+                                                    });
+                                                }));
+                            }
                         });
-                        publish(event1, exportId, locale, host);
-                      } else {
-                        log.debug("Storing export zip in file storage");
-                        storeZip(event1, exportId, exportDirectory, userId, locale, host);
-                      }
-                    });
-                });
-            }));
+            });
         }
-      });
-	}
 
   // TODO check if that should not be conditional when using S3
   private void storeZip(final Message<JsonObject> event, final String exportId, final String exportDirectory, final String userId, final String locale, final String host) {
@@ -405,6 +425,7 @@ public class FileSystemExportService implements ExportService {
 		});
 		MongoDb.getInstance().delete(Archive.ARCHIVES, new JsonObject().put("file_id", exportId));
 		String userId = getUserId(exportId);
+        userExport.remove(userId);
 		userExportInProgress.remove(userId);
 	}
 

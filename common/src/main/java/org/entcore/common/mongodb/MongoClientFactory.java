@@ -9,7 +9,7 @@ import static io.vertx.core.Future.failedFuture;
 import static io.vertx.core.Future.succeededFuture;
 
 public class MongoClientFactory {
-    public static Future<MongoClient> create(final Vertx vertx, final JsonObject config) throws Exception{
+    public static Future<MongoClient> create(final Vertx vertx, final JsonObject config) {
         if (config.getJsonObject("mongoConfig") != null) {
             final JsonObject mongoConfig = config.getJsonObject("mongoConfig");
             final MongoClient mongoClient = MongoClient.create(vertx, mongoConfig);

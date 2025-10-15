@@ -311,11 +311,11 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 	}
 
 	protected void exportFiles(final JsonArray results, String exportPath, Set<String> usedFileName,
-							   final AtomicBoolean exported, final Handler<JsonObject> handler) {
+							   final AtomicBoolean exported, final Handler<Boolean> handler) {
 		if (results.isEmpty()) {
 			exported.set(true);
 			log.info(title + " exported successfully to : " + exportPath);
-			handler.handle(new JsonObject().put("ok", exported.get()).put("path", exportPath));
+			handler.handle(exported.get());
 		} else {
 			JsonObject resources = results.getJsonObject(0);
 			String fileId = resources.getString("_id");
@@ -336,7 +336,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 						exportFiles(results, exportPath, usedFileName, exported, handler);
 					} else {
 						log.error(title + " : Could not write file " + filePath, event.cause());
-						handler.handle(new JsonObject().put("ok", false).put("path", exportPath));
+						handler.handle(false);
 					}
 				}
 			});
@@ -390,17 +390,14 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 						}
 						createExportDirectory(exportPath, locale, path -> {
 							if (path != null) {
-								Handler<Boolean> finish = new Handler<Boolean>() {
-									@Override
-									public void handle(Boolean bool) {
-										if (bool) {
-											exportFiles(results, path, new HashSet<String>(), exported, handler);
-										} else {
-											// Should never happen, export doesn't fail if docs export fail.
-											handler.handle(new JsonObject().put("ok", exported.get()).put("path", path));
-										}
-									}
-								};
+								Handler<Boolean> finish = bool -> {
+                                    if (bool) {
+                                        exportFiles(results, path, new HashSet<>(), exported, e -> new JsonObject().put("ok", e).put("path", exportPath));
+                                    } else {
+                                        // Should never happen, export doesn't fail if docs export fail.
+                                        handler.handle(new JsonObject().put("ok", exported.get()).put("path", path));
+                                    }
+                                };
 
 								if(exportDocuments == true)
 									exportDocumentsDependancies(results, path, finish);
