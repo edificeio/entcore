@@ -35,6 +35,7 @@ public class Zip {
 
 	private EventBus eb;
 	private String address;
+    private boolean local;
 	private static final Logger log = LoggerFactory.getLogger(Zip.class);
 
 	private Zip() {}
@@ -47,9 +48,10 @@ public class Zip {
 		return ZipHolder.instance;
 	}
 
-	public void init(EventBus eb, String address) {
+	public void init(EventBus eb, String address, final boolean local) {
 		this.eb = eb;
 		this.address = address;
+        this.local = local;
 	}
 
 	public void zipFolder(String path, String zipPath, boolean deletePath, Handler<Message<JsonObject>> handler) {
@@ -57,12 +59,15 @@ public class Zip {
 	}
 
 	public void zipFolder(String path, String zipPath, boolean deletePath, int level, Handler<Message<JsonObject>> handler) {
-		JsonObject j = new JsonObject()
+		final JsonObject j = new JsonObject()
 				.put("path", path)
 				.put("zipFile", zipPath)
 				.put("deletePath", deletePath)
 				.put("level", level);
-		eb.request(address, j, new DeliveryOptions().setSendTimeout(900000l), handlerToAsyncHandler(handler));
+        final DeliveryOptions deliveryOptions = new DeliveryOptions()
+                .setSendTimeout(900000l)
+                .setLocalOnly(local);
+        eb.request(address, j, deliveryOptions, handlerToAsyncHandler(handler));
 	}
 
 }

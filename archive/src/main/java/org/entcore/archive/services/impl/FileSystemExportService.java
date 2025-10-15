@@ -325,11 +325,12 @@ public class FileSystemExportService implements ExportService {
                                                     signExport(exportId, exportDirectory, signed -> {
                                                         log.debug("Zipping export " + exportId);
                                                         Zip.getInstance().zipFolder(exportDirectory, exportDirectory + ".zip", true,
-                                                                Deflater.NO_COMPRESSION, event1 -> {
-                                                                    if (!"ok".equals(event1.body().getString("status")) || signed.failed()) {
+                                                                Deflater.NO_COMPRESSION, zipResult -> {
+                                                                    if (!"ok".equals(zipResult.body().getString("status")) || signed.failed()) {
                                                                         log.error("Zip export " + exportId + " error : "
-                                                                                + (signed.failed() ? "Could not sign the archive" : event1.body().getString("message")));
-                                                                        event1.body().put("message", "zip.export.error");
+                                                                                + (signed.failed() ? "Could not sign the archive" : zipResult.body().getString("message")));
+                                                                        zipResult.body().put("message", "zip.export.error");
+                                                                        userExport.remove(userId);
                                                                         userExportInProgress.remove(userId);
                                                                         fs.deleteRecursive(exportDirectory, true, event2 -> {
                                                                             if (event2.failed()) {
@@ -337,10 +338,10 @@ public class FileSystemExportService implements ExportService {
                                                                                         event2.cause());
                                                                             }
                                                                         });
-                                                                        publish(event1, exportId, locale, host);
+                                                                        publish(zipResult, exportId, locale, host);
                                                                     } else {
                                                                         log.debug("Storing export zip in file storage");
-                                                                        storeZip(event1, exportId, exportDirectory, userId, locale, host);
+                                                                        storeZip(zipResult, exportId, exportDirectory, userId, locale, host);
                                                                     }
                                                                 });
                                                     });

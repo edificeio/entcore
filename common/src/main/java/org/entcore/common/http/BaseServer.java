@@ -316,7 +316,8 @@ public abstract class BaseServer extends Server {
 		}
 		if (config.getBoolean("zip", true)) {
 			Zip.getInstance().init(getEventBus(vertx), node +
-					config.getString("zip-address", "entcore.zipper"));
+					config.getString("zip-address", "entcore.zipper"),
+                    config.getBoolean("zip-local", false));
 		}
 		if (config.getBoolean("sql", false)) {
 			Sql.getInstance().init(getEventBus(vertx), node +

@@ -392,7 +392,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 							if (path != null) {
 								Handler<Boolean> finish = bool -> {
                                     if (bool) {
-                                        exportFiles(results, path, new HashSet<>(), exported, e -> new JsonObject().put("ok", e).put("path", exportPath));
+                                        exportFiles(results, path, new HashSet<>(), exported, e -> handler.handle(new JsonObject().put("ok", e).put("path", exportPath)));
                                     } else {
                                         // Should never happen, export doesn't fail if docs export fail.
                                         handler.handle(new JsonObject().put("ok", exported.get()).put("path", path));
