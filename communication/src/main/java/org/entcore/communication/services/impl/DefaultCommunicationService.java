@@ -1750,9 +1750,8 @@ public class DefaultCommunicationService implements CommunicationService {
 		String match = "MATCH (visibles) " +
 
 			"OPTIONAL MATCH visibles-[:RELATED]->(parent1: User) " +
-			"OPTIONAL MATCH visibles<-[:RELATED]-(child: User)-[:RELATED]->(parent2: User) " +
-			"WITH DISTINCT visibles, COLLECT(DISTINCT {id: parent1.id, displayName: parent1.displayName}) " +
-				" + COLLECT(DISTINCT {id: parent2.id, displayName: parent2.displayName}) as relatives, child " +
+			"OPTIONAL MATCH visibles<-[:RELATED]-(child: User) " +
+			"WITH DISTINCT visibles, COLLECT(DISTINCT {id: parent1.id, displayName: parent1.displayName}) as relatives, child " +
 			"ORDER BY child.displayName " +
 			"WITH visibles,  [r IN relatives WHERE r.id IS NOT NULL] AS relatives, " +
 				"collect({id: child.id, displayName: child.displayName}) AS children," +
