@@ -738,7 +738,9 @@ public class DefaultUserService implements UserService {
 			}
 		}
 		if (!userInfos.getFunctions().containsKey(SUPER_ADMIN)) {
-			conditionUser += "AND " + DefaultSchoolService.EXCLUDE_ADMC_QUERY_FILTER;
+			if (isEmpty(groupId)) {
+				conditionUser += "AND " + DefaultSchoolService.EXCLUDE_ADMC_QUERY_FILTER;
+			}
 		}
 
 		// This second level of filtering ensures the data is in the scope of the connected user
@@ -755,9 +757,11 @@ public class DefaultUserService implements UserService {
 			UserInfos.Function f = userInfos.getFunctions().get(ADMIN_LOCAL);
 			List<String> scope = f.getScope();
 			if (scope != null && !scope.isEmpty()) {
-				filterFunction += "MATCH (fs:Structure)<-[:DEPENDS]-(pg:ProfileGroup)<-[:IN]-(u) ";
-				conditionFunction += "AND (fs.id IN {scope}) ";
-				params.put("scope", new JsonArray(scope));
+				if (isEmpty(groupId)) {
+					filterFunction += "MATCH (fs:Structure)<-[:DEPENDS]-(pg:ProfileGroup)<-[:IN]-(u) ";
+					conditionFunction += "AND (fs.id IN {scope}) ";
+					params.put("scope", new JsonArray(scope));
+				}
 			}
 		} else if(userInfos.getFunctions().containsKey(CLASS_ADMIN)){
 			UserInfos.Function f = userInfos.getFunctions().get(CLASS_ADMIN);
