@@ -175,8 +175,9 @@ public class Group {
 				  " OR EXISTS(g.autolinkUsersFromPositions) " +
 				"RETURN g.id as id, g.autolinkUsersFromGroups as autolinkUsersFromGroups, " +
 						" g.autolinkUsersFromLevels as autolinkUsersFromLevels, " +
-						" g.autolinkUsersFromPositions as autolinkUsersFromPositions";
-			tx.add(listAutolinkGroups, new JsonObject());
+                        " g.autolinkUsersFromPositions as autolinkUsersFromPositions" +
+                        " g.linkedUserPositions as linkedUserPositions";
+            tx.add(listAutolinkGroups, new JsonObject());
 
 			tx.commit().compose(groups -> {
 				if (groups != null && groups.size() == 1 && groups.getJsonArray(0) != null) {

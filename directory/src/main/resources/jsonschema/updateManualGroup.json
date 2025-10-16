@@ -15,8 +15,7 @@
         "type": "string"
       }
     },
-    "autolinkUsersFromGroups":
-    {
+    "autolinkUsersFromGroups": {
       "type": "array",
       "items": {
         "type": "string"
@@ -28,15 +27,18 @@
         "type": "string"
       }
     },
-    "autolinkUsersFromLevels":
-    {
+    "autolinkUsersFromLevels": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "linkedUserPositions": {
       "type": "array",
       "items": {
         "type": "string"
       }
     }
   },
-  "required": [
-    "name"
-  ]
+  "required": ["name"]
 }

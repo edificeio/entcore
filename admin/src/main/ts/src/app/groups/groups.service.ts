@@ -14,6 +14,7 @@ export type GroupUpdatePayload = {
   autolinkUsersFromGroups?: Array<string>;
   autolinkUsersFromPositions?: Array<string>;
   autolinkUsersFromLevels?: Array<string>;
+  linkedUserPositions?: Array<string>;
 };
 
 @Injectable()
