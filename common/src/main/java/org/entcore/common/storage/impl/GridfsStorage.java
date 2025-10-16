@@ -88,7 +88,22 @@ public class GridfsStorage implements Storage {
 		throw new NotImplementedException();
 	}
 
-	public GridfsStorage(Vertx vertx, EventBus eb, String gridfsAddress) {
+    @Override
+    public Future<Void> moveDirectoryToFs(String srcDir, String targetDir) {
+      return Future.failedFuture(new NotImplementedException(this.getClass().getCanonicalName() + " did not implement Future<Void> moveDirectoryToFs(String srcDir, String targetDir)"));
+    }
+
+    @Override
+    public Future<Void> copyDirectoryToFs(String srcDir, String targetDir) {
+        return Future.failedFuture(new NotImplementedException(this.getClass().getCanonicalName() + " did not implement Future<Void> copyDirectoryToFs(String srcDir, String targetDir)"));
+    }
+
+    @Override
+    public Future<Void> moveFsDirectory(String srcPath, String destPath) {
+      return Future.failedFuture(new NotImplementedException(this.getClass().getCanonicalName() + " did not implement Future<Void> copyFsDirectory(String srcDir, String destPath)"));
+    }
+
+  public GridfsStorage(Vertx vertx, EventBus eb, String gridfsAddress) {
 		this(vertx, eb, gridfsAddress, "fs");
 	}
 

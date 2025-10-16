@@ -537,7 +537,7 @@ public class AppRegistryController extends BaseController implements AppRegistry
     @Put("/structures/:structureId/roles")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(AdminFilter.class)
-		@MfaProtected()
+	@MfaProtected()
     public void authorizeProfiles(final HttpServerRequest request) {
         bodyToJson(request, new Handler<JsonObject>() {
             @Override

@@ -404,22 +404,27 @@ public class DefaultImportService implements ImportService {
       String locale, String host, JsonObject apps)
     {
         userImports.put(importId, new UserImport(apps.size()));
-
         fs.readDir(getUnzippedImportPath(importId), results -> {
             if (results.succeeded()) {
                 if (results.result().size() == 1)
                 {
-                    JsonObject j = new JsonObject()
-                            .put("action", handlerActionName)
-                            .put("importId", importId)
-                            .put("userId", userId)
-                            .put("userLogin", userLogin)
-                            .put("userName", userName)
-                            .put("locale", locale)
-                            .put("host", host)
-                            .put("apps", apps)
-                            .put("path", results.result().get(0));
-                    eb.publish("user.repository", j);
+                    final String path = results.result().get(0);
+                    log.debug("Moving unzipped files to storage " + path);
+                    storage.moveFsDirectory(path, path)
+                    .onSuccess(e -> {
+                        JsonObject j = new JsonObject()
+                                .put("action", handlerActionName)
+                                .put("importId", importId)
+                                .put("userId", userId)
+                                .put("userLogin", userLogin)
+                                .put("userName", userName)
+                                .put("locale", locale)
+                                .put("host", host)
+                                .put("apps", apps)
+                                .put("path", path);
+                        eb.publish("user.repository", j);
+                    })
+                    .onFailure(th -> log.error("[Archive] Error while moving zip to storage", th));
                 }
                 else {
                     deleteArchive(importId);

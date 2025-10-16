@@ -21,30 +21,40 @@ package org.entcore.common.user;
 
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.Utils;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.storage.Storage;
 import org.entcore.common.utils.Config;
 
 import java.io.File;
+
+import static io.vertx.core.Future.succeededFuture;
 
 
 public class RepositoryHandler implements Handler<Message<JsonObject>> {
 
 	private RepositoryEvents repositoryEvents;
 	private final EventBus eb;
+    private final Storage storage;
+    private static final Logger log = LoggerFactory.getLogger(RepositoryHandler.class);
 
-	public RepositoryHandler(EventBus eb) {
+	public RepositoryHandler(EventBus eb, Storage storage) {
 		this.eb = eb;
-		this.repositoryEvents = new LogRepositoryEvents();
+    this.storage = storage;
+    this.repositoryEvents = new LogRepositoryEvents();
 	}
 
-	public RepositoryHandler(RepositoryEvents repositoryEvents, EventBus eb) {
+	public RepositoryHandler(RepositoryEvents repositoryEvents, EventBus eb, Storage storage) {
 		this.eb = eb;
 		this.repositoryEvents = repositoryEvents;
-	}
+    this.storage = storage;
+  }
 
 	@Override
 	public void handle(Message<JsonObject> message)
@@ -79,18 +89,29 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 					String finalBusAddress = exportedBusAddress;
 					repositoryEvents.exportResources(resourcesIds, exportDocuments.booleanValue(), exportSharedResources.booleanValue(),
 														exportId, userId, groupIds, path, locale, host,
-					new Handler<Boolean>()
+					new Handler<JsonObject>()
 					{
 						@Override
-						public void handle(Boolean isExported)
+						public void handle(JsonObject isExported)
 						{
-							JsonObject exported = new JsonObject()
-									.put("action", "exported")
-									.put("status", (isExported ? "ok" : "error"))
-									.put("exportId", exportId)
-									.put("locale", locale)
-									.put("host", host);
-							eb.publish(finalBusAddress, exported);
+              final boolean ok = isExported.getBoolean("ok");
+              final Future<Void> future;
+              if(ok) {
+                final String finalPath = isExported.getString("path");
+                future = storage.moveFsDirectory(finalPath, finalPath);
+              } else {
+                future = succeededFuture();
+              }
+              future.onComplete(res -> {
+                final boolean exported = ok && res.succeeded();
+                JsonObject responsePayload = new JsonObject()
+                    .put("action", "exported")
+                    .put("status", (exported ? "ok" : "error"))
+                    .put("exportId", exportId)
+                    .put("locale", locale)
+                    .put("host", host);
+                eb.publish(finalBusAddress, responsePayload);
+              });
 						}
 					});
 				}
@@ -109,24 +130,36 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 
 				if (!Utils.isEmpty(appTitle) && importApps.containsKey(appTitle.substring(1)))
 				{
-					final String importId = message.body().getString("importId", "");
-					String userId = message.body().getString("userId", "");
-					String userLogin = message.body().getString("userLogin", "");
-					String userName = message.body().getString("userName", "");
-					String path = message.body().getString("path", "");
-					String locale = message.body().getString("locale", "fr");
-					String folderPath = path + File.separator + importApps.getJsonObject(appTitle.substring(1)).getString("folder");
-					String host = message.body().getString("host", "");
-
+                    final JsonObject body = message.body();
+					final String importId = body.getString("importId", "");
+					final String userId = body.getString("userId", "");
+                    final String userLogin = body.getString("userLogin", "");
+                    final String userName = body.getString("userName", "");
+                    final String path = body.getString("path", "");
+                    final String locale = body.getString("locale", "fr");
+                    final String folderPath = path + File.separator + importApps.getJsonObject(appTitle.substring(1)).getString("folder");
+                    final String host = body.getString("host", "");
+                    final boolean force = forceImportAsDuplication;
 					String finalBusAddress = importedBusAddress;
-					repositoryEvents.importResources(importId, userId, userLogin, userName, folderPath, locale, host, forceImportAsDuplication, success -> {
-							JsonObject imported = new JsonObject()
-									.put("action", "imported")
-									.put("importId", importId)
-									.put("app", appTitle.substring(1))
-									.put("rapport", success);
-							eb.publish(finalBusAddress, imported);
-					});
+                    storage.copyDirectoryToFs(folderPath, folderPath)
+                    .onSuccess(e -> {
+                        repositoryEvents.importResources(importId, userId, userLogin, userName, folderPath, locale, host, force, success -> {
+                            JsonObject imported = new JsonObject()
+                                    .put("action", "imported")
+                                    .put("importId", importId)
+                                    .put("app", appTitle.substring(1))
+                                    .put("rapport", success);
+                            eb.publish(finalBusAddress, imported);
+                        });
+                    }).onFailure(th -> {
+                        log.error("Error while copying from FS", th);
+                        final JsonObject imported = new JsonObject()
+                            .put("action", "imported")
+                            .put("importId", importId)
+                            .put("app", appTitle.substring(1))
+                            .put("rapport", new JsonObject().put("status", "error"));
+                        eb.publish(finalBusAddress, imported);
+                    });
 				}
 				break;
 			case "delete-groups" :
