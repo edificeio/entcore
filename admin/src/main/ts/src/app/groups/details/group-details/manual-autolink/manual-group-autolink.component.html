@@ -1,0 +1,53 @@
+<ode-panel-section
+    *ngIf="group?.type === 'ManualGroup' && group?.subType !== 'BroadcastGroup'"
+    folded="true"
+    section-title="group.details.manual.autoLink.mainSection.title"
+>
+    <form (ngSubmit)="onSubmit()">
+        <section class="is-display-flex has-flex-end">
+            <button [disabled]="!showActions" type="submit">
+                <s5l>save</s5l>
+                <i class="fa fa-save"></i>
+            </button>
+        </section>
+
+        <!-- Functions Selection -->
+        <section>
+            <h2>
+                <s5l>group.details.manual.autoLink.profilesSection.include.personnels</s5l>
+            </h2>
+
+            <div class="bordered-section">
+                <!-- UserPosition -->
+                <div class="is-display-flex has-vertical-padding-10">
+                    <input
+                        (click)="handleUsersPositionsClick($event)"
+                        [(ngModel)]="form.personnelSubSectionRadio"
+                        id="autolinkUsersPosition"
+                        name="personnelSubSectionRadio"
+                        type="radio"
+                        value="usersPositions"
+                    />
+                    <label class="has-left-padding-10" for="autolinkUsersPosition">
+                        <s5l>group.details.manual.autoLink.profilesSection.include.teachers.usersPositions</s5l>
+                    </label>
+                </div>
+                <div *ngIf="showUsersPositionsPicker || form.personnelSubSectionRadio === 'usersPositions'">
+                    <ode-multi-combo
+                        *ngIf="showActions"
+                        [(outputModel)]="form.selectedUsersPositions"
+                        [comboModel]="usersPositionsOptions"
+                        [title]="'userspositions.multi.combo.title' | translate"
+                    >
+                    </ode-multi-combo>
+                    <div class="multi-combo-companion">
+                        <div (click)="unselectUsersPositions(item)" *ngFor="let item of form.selectedUsersPositions">
+                            <s5l>{{ item }}</s5l>
+                            <i *ngIf="showActions" class="fa fa-trash is-size-5"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </form>
+</ode-panel-section>

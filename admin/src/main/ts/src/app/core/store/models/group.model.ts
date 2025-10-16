@@ -13,6 +13,7 @@ export class GroupModel extends Model<GroupModel> {
   autolinkUsersFromGroups: string[];
   autolinkUsersFromPositions: string[];
   autolinkUsersFromLevels: string[];
+  manualGroupAutolinkUsersPositions: string[];
   readonly nbUsers?: number; // A server-side job computes this value periodically.
   displayName?: string;
   type?: GroupType;

@@ -99,6 +99,19 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
 
         this.groupNewName = this.groupsStore.group.name;
 
+        if (this.groupsStore.group.type === "ManualGroup" && !this.groupsStore.group.subType) {
+            this.spinnerService.perform('portal-content',
+                this.usersPositionService.searchUserPositions({
+                    structureId: this.groupsStore.structure.id,
+                    includeSubStruct: true
+                }).then((usersPosition) => {
+                    this.autolinkUserPositionOptions = Array.from(new Set(usersPosition.map(userP => userP.name)));
+                    this.autolinkUserPositionOptions.sort();
+                })
+            )
+        }
+
+
         if (this.groupsStore.group.subType === 'BroadcastGroup') {
             // Load additional options
             this.spinnerService.perform('portal-content', 
