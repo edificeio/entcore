@@ -16,65 +16,76 @@ export type GroupUpdatePayload = {
   autolinkUsersFromLevels?: Array<string>;
 };
 
+export type ManualGroupAutolinkUsersPositionsPayload = {
+  manualGroupAutolinkUsersPositions?: Array<string>;
+};
+
 @Injectable()
 export class GroupsService {
 
-    constructor(private httpClient: HttpClient,
-                public groupsStore: GroupsStore) {
-    }
+  constructor(private httpClient: HttpClient,
+    public groupsStore: GroupsStore) {
+  }
 
-    public delete(group: GroupModel): Observable<void> {
-        return this.httpClient.delete<void>(`/directory/group/${group.id}`)
-        .pipe(
-            tap(() => {
-                this.groupsStore.structure.groups.data.splice(
-                    this.groupsStore.structure.groups.data.findIndex(g => g.id === group.id)
-                    , 1);
-            })
-        );
-    }
+  public delete(group: GroupModel): Observable<void> {
+    return this.httpClient.delete<void>(`/directory/group/${group.id}`)
+      .pipe(
+        tap(() => {
+          this.groupsStore.structure.groups.data.splice(
+            this.groupsStore.structure.groups.data.findIndex(g => g.id === group.id)
+            , 1);
+        })
+      );
+  }
 
-    public update(groupId: string, groupUpdatePayload: GroupUpdatePayload): Observable<GroupModel> {
-        return this.httpClient.put<GroupModel>(`/directory/group/${groupId}`, groupUpdatePayload)
-        .pipe(
-            tap((group) => {
-                const sGroup: GroupModel = this.groupsStore.structure.groups.data.find(g => g.id === groupId);
-                if (sGroup) {
-                    sGroup.name = groupUpdatePayload.name;
-                    sGroup.modifiedAt = group.modifiedAt;
-                    sGroup.modifiedByName = group.modifiedByName;
-                    sGroup.autolinkTargetAllStructs = groupUpdatePayload.autolinkTargetAllStructs;
-                    sGroup.autolinkTargetStructs = groupUpdatePayload.autolinkTargetStructs;
-                    sGroup.autolinkUsersFromGroups = groupUpdatePayload.autolinkUsersFromGroups;
-                    sGroup.autolinkUsersFromLevels = groupUpdatePayload.autolinkUsersFromLevels;
-                    sGroup.autolinkUsersFromPositions = groupUpdatePayload.autolinkUsersFromPositions;
-                }
-                this.groupsStore.group.name = groupUpdatePayload.name;
-                this.groupsStore.group.modifiedAt = group.modifiedAt;
-                this.groupsStore.group.modifiedByName = group.modifiedByName;
-                this.groupsStore.group.autolinkTargetAllStructs = groupUpdatePayload.autolinkTargetAllStructs;
-                this.groupsStore.group.autolinkTargetStructs = groupUpdatePayload.autolinkTargetStructs;
-                this.groupsStore.group.autolinkUsersFromGroups = groupUpdatePayload.autolinkUsersFromGroups;
-                this.groupsStore.group.autolinkUsersFromLevels = groupUpdatePayload.autolinkUsersFromLevels;
-                this.groupsStore.group.autolinkUsersFromPositions = groupUpdatePayload.autolinkUsersFromPositions;
-            })
-        );
-    }
+  public update(groupId: string, groupUpdatePayload: GroupUpdatePayload): Observable<GroupModel> {
+    return this.httpClient.put<GroupModel>(`/directory/group/${groupId}`, groupUpdatePayload)
+      .pipe(
+        tap((group) => {
+          const sGroup: GroupModel = this.groupsStore.structure.groups.data.find(g => g.id === groupId);
+          if (sGroup) {
+            sGroup.name = groupUpdatePayload.name;
+            sGroup.modifiedAt = group.modifiedAt;
+            sGroup.modifiedByName = group.modifiedByName;
+            sGroup.autolinkTargetAllStructs = groupUpdatePayload.autolinkTargetAllStructs;
+            sGroup.autolinkTargetStructs = groupUpdatePayload.autolinkTargetStructs;
+            sGroup.autolinkUsersFromGroups = groupUpdatePayload.autolinkUsersFromGroups;
+            sGroup.autolinkUsersFromLevels = groupUpdatePayload.autolinkUsersFromLevels;
+            sGroup.autolinkUsersFromPositions = groupUpdatePayload.autolinkUsersFromPositions;
+          }
+          this.groupsStore.group.name = groupUpdatePayload.name;
+          this.groupsStore.group.modifiedAt = group.modifiedAt;
+          this.groupsStore.group.modifiedByName = group.modifiedByName;
+          this.groupsStore.group.autolinkTargetAllStructs = groupUpdatePayload.autolinkTargetAllStructs;
+          this.groupsStore.group.autolinkTargetStructs = groupUpdatePayload.autolinkTargetStructs;
+          this.groupsStore.group.autolinkUsersFromGroups = groupUpdatePayload.autolinkUsersFromGroups;
+          this.groupsStore.group.autolinkUsersFromLevels = groupUpdatePayload.autolinkUsersFromLevels;
+          this.groupsStore.group.autolinkUsersFromPositions = groupUpdatePayload.autolinkUsersFromPositions;
+        })
+      );
+  }
 
-    public getFuncAndDisciplines(structure: StructureModel): Observable<Array<GroupModel>> {
-        return this.httpClient.get<Array<GroupModel>>(
-            '/directory/group/admin/funcAndDisciplines', 
-            {
-                'params': {
-                    'structureId': structure.id,
-                    'recursive': 'true'
-                }
-            }
-        );
-    }
+  public setManualGroupAutolinkUsersPositions(groupId: string, payload: ManualGroupAutolinkUsersPositionsPayload): Observable<GroupModel> {
+    return this.httpClient.post<GroupModel>(
+      `/directory/group/${groupId}/setManualGroupAutolinkUsersPositions`,
+      payload
+    );
+  }
 
-    public async getLevels(structure: StructureModel): Promise<Level[]> {
-        await structure.syncLevels();
-        return structure.levels;
-    }
+  public getFuncAndDisciplines(structure: StructureModel): Observable<Array<GroupModel>> {
+    return this.httpClient.get<Array<GroupModel>>(
+      '/directory/group/admin/funcAndDisciplines',
+      {
+        'params': {
+          'structureId': structure.id,
+          'recursive': 'true'
+        }
+      }
+    );
+  }
+
+  public async getLevels(structure: StructureModel): Promise<Level[]> {
+    await structure.syncLevels();
+    return structure.levels;
+  }
 }

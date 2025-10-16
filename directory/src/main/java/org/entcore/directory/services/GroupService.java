@@ -70,7 +70,9 @@ public interface GroupService {
 	
 	void removeUsers(String groupId, JsonArray userIds, Handler<Either<String, JsonObject>> result);
 
-	void getInfos(String groupId, Handler<Either<String,JsonObject>> handler);
+    void setManualGroupAutolinkUsersPositions(String groupId, JsonArray manualGroupAutolinkUsersPositions, Handler<Either<String, JsonObject>> result);
+
+    void getInfos(String groupId, Handler<Either<String, JsonObject>> handler);
 
 	void getBatchInfos(JsonArray groupIds, int fieldMask, Handler<Either<String, JsonArray>> handler);
 
