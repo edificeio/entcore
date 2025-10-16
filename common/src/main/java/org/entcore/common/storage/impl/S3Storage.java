@@ -53,6 +53,8 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import static org.entcore.common.s3.S3Client.encodeUrlPath;
+
 public class S3Storage implements Storage {
     
     private final S3Client s3Client;
@@ -297,40 +299,59 @@ public class S3Storage implements Storage {
         return onFileRead.future();
     }
 
-  @Override
-  public Future<Void> moveDirectoryToFs(String srcDir, String targetDir) {
-    return this.fs.mkdirs(targetDir)
-      .compose(e -> s3Client.listFilesByPrefix(srcDir.charAt(0) == '/' ? srcDir.replaceFirst("/", "") : srcDir))
-      .compose(s3FilePaths -> downloadToFs(s3FilePaths, srcDir, targetDir));
-  }
+    @Override
+    public Future<Void> moveDirectoryToFs(String srcDir, String targetDir) {
+      return this.fs.mkdirs(targetDir)
+        .compose(e -> s3Client.listFilesByPrefix(srcDir.charAt(0) == '/' ? srcDir.replaceFirst("/", "") : srcDir))
+        .compose(s3FilePaths -> downloadToFs(s3FilePaths, srcDir, targetDir, true));
+    }
 
-  private Future<Void> downloadToFs(final List<S3Client.S3FileInfo> s3FilePaths, String srcDir, String targetDir) {
+    @Override
+    public Future<Void> copyDirectoryToFs(String srcDir, String targetDir) {
+        return this.fs.mkdirs(targetDir)
+            .compose(e -> s3Client.listFilesByPrefix(encodeUrlPath(srcDir.charAt(0) == '/' ? srcDir.replaceFirst("/", "") : srcDir)))
+            .compose(s3FilePaths -> downloadToFs(s3FilePaths, srcDir, targetDir, false));
+    }
+
+    private Future<Void> downloadToFs(final List<S3Client.S3FileInfo> s3FilePaths, String srcDir, String targetDir, final boolean deleteAfterMove) {
     final List<List<S3Client.S3FileInfo>> batches = Lists.partition(s3FilePaths, DOWNLOAD_TO_FS_BATCH_SIZE);
-    return downloadBatchToFs(srcDir, targetDir, batches, 0);
+    return downloadBatchToFs(srcDir, targetDir, batches, 0, deleteAfterMove);
   }
 
   private Future<Void> downloadBatchToFs(final String srcDir,
                                          final String targetDir,
-                                         final List<List<S3Client.S3FileInfo>> batches, int batchIndex) {
+                                         final List<List<S3Client.S3FileInfo>> batches,
+                                         final int batchIndex,
+                                         final boolean deleteAfterMove) {
       if(batchIndex >= batches.size()) {
         return Future.succeededFuture();
       }
       // Download all files of a batch then move on to the next
       final List<Future<Void>> futures = batches.get(batchIndex).stream().map(fileInfo -> {
         final Promise<Void> promise = Promise.promise();
-        this.s3Client.writeToFileSystemWithId(fileInfo.getPath(), getPathInTargetDirectory(File.separatorChar + fileInfo.getPath(), srcDir, targetDir), e -> {
+        final String path = fileInfo.getPath();
+        this.s3Client.writeToFileSystemWithId(path, getPathInTargetDirectory(File.separatorChar + fileInfo.getPath(), srcDir, targetDir), e -> {
           if(e.succeeded()) {
-            log.debug("Successfully downloaded file " + fileInfo.getPath());
+            log.debug("Successfully downloaded file " + path);
+            if(deleteAfterMove) {
+                this.s3Client.deleteFile(path, x -> {
+                    if(x.succeeded()) {
+                        log.debug("Successfully deleted file " + path);
+                    } else {
+                        log.warn("Could not delete file " + path);
+                    }
+                });
+            }
             promise.complete();
           } else {
-            log.error("could not download file " + fileInfo.getPath() + ": ", e.cause());
+            log.error("could not download file " + path + ": ", e.cause());
             promise.fail(e.cause());
           }
         });
         return promise.future();
       }).collect(Collectors.toList());
       return Future.all(futures)
-        .flatMap(e -> downloadBatchToFs(srcDir, targetDir, batches, batchIndex + 1));
+        .flatMap(e -> downloadBatchToFs(srcDir, targetDir, batches, batchIndex + 1, deleteAfterMove));
   }
 
   private String getPathInTargetDirectory(final String path, final String srcDir, final String targetDir) {

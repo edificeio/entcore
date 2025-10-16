@@ -160,6 +160,8 @@ public interface Storage {
 
   Future<Void> moveDirectoryToFs(final String srcDir, final String targetDir);
 
+  Future<Void> copyDirectoryToFs(final String srcDir, final String targetDir);
+
   /**
    * Copy recursively everything from {@code srcPath} {@code destPath}
    * @param srcPath Absolute path from the filesystem

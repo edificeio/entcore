@@ -538,9 +538,11 @@ public class S3Client {
 		deleteFile(id, defaultBucket, handler);
 	}
 
-	public void deleteFile(String id, String bucket, final Handler<AsyncResult<Void>> handler) {
-		id = getPath(id);
+    public void deleteFile(String id, String bucket, final Handler<AsyncResult<Void>> handler) {
+        deleteFileWithId(getPath(id), bucket, handler);
+    }
 
+	public void deleteFileWithId(String id, String bucket, final Handler<AsyncResult<Void>> handler) {
 		RequestOptions requestOptions = new RequestOptions()
 			.setMethod(HttpMethod.DELETE)
 			.setHost(host)

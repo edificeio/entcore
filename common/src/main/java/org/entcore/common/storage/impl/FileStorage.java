@@ -965,8 +965,18 @@ public class FileStorage implements Storage {
     return true;
   }
 
-  @Override
-  public Future<Void> moveDirectoryToFs(String srcDir, String targetDir) {
+
+    @Override
+    public Future<Void> copyDirectoryToFs(String srcDir, String targetDir) {
+        return moveOrCopyDirectoryToFs(srcDir, targetDir, false);
+    }
+
+    @Override
+    public Future<Void> moveDirectoryToFs(String srcDir, String targetDir) {
+        return moveOrCopyDirectoryToFs(srcDir, targetDir, true);
+    }
+
+  private Future<Void> moveOrCopyDirectoryToFs(final String srcDir, final String targetDir, final boolean deleteAfterMove) {
     final Future<Void> future;
     if(srcDir.equals(targetDir)) {
       // Nothing to do
@@ -984,7 +994,13 @@ public class FileStorage implements Storage {
           final String srcEntryName = srcEntry.replace(srcDir + File.separator, "");
           if (!destEntries.contains(srcEntryName)) {
             final String destPath = targetDir + File.separator + srcEntryName;
-            futures.add(fs.move(srcEntry, destPath));
+              final Future<Void> onDone;
+              if(deleteAfterMove) {
+                onDone = fs.move(srcEntry, destPath);
+            } else {
+                onDone = fs.copy(srcEntry, destPath);
+            }
+            futures.add(onDone);
           }
         }
         return Future.all(futures);

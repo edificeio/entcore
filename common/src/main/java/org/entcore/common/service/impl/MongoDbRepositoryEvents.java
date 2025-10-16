@@ -523,52 +523,56 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 							promise.complete(fileMap);
 						}
 					};
+                    if(nbFiles <= 0) {
+                        log.info("No files to read from import in " + dirPath + " of user " + userId);
+                        finaliseRead.handle(null);
+                    } else {
+                        for (String filePath : filesInDir) {
+                            self.fs.props(filePath, new Handler<AsyncResult<FileProps>>() {
+                                @Override
+                                public void handle(AsyncResult<FileProps> propsResult) {
+                                    if (propsResult.succeeded() == false)
+                                        promise.fail(propsResult.cause());
+                                    else {
+                                        if (propsResult.result().isDirectory() == true) {
+                                            FolderImporterContext ctx = new FolderImporterContext(filePath, userId, userName);
+                                            self.fileImporter.importFoldersFlatFormat(ctx, new Handler<JsonObject>() {
+                                                @Override
+                                                public void handle(JsonObject rapport) {
+                                                    int ix = unprocessed.decrementAndGet();
 
-					for(String filePath : filesInDir) {
-						self.fs.props(filePath, new Handler<AsyncResult<FileProps>>() {
-							@Override
-							public void handle(AsyncResult<FileProps> propsResult) {
-								if(propsResult.succeeded() == false)
-									promise.fail(propsResult.cause());
-								else {
-									if(propsResult.result().isDirectory() == true) {
-										FolderImporterContext ctx = new FolderImporterContext(filePath, userId, userName);
-										self.fileImporter.importFoldersFlatFormat(ctx, new Handler<JsonObject>() {
-											@Override
-											public void handle(JsonObject rapport) {
-												int ix = unprocessed.decrementAndGet();
+                                                    nbErrors.addAndGet(Integer.parseInt(rapport.getString("errorsNumber", "1")));
+                                                    contexts.add(ctx);
 
-												nbErrors.addAndGet(Integer.parseInt(rapport.getString("errorsNumber", "1")));
-												contexts.add(ctx);
+                                                    if (ix == 0)
+                                                        finaliseRead.handle(null);
+                                                }
+                                            });
+                                        } else {
+                                            self.fs.readFile(filePath, new Handler<AsyncResult<Buffer>>() {
+                                                @Override
+                                                public void handle(AsyncResult<Buffer> fileResult) {
+                                                    if (fileResult.succeeded() == false)
+                                                        promise.fail(fileResult.cause());
+                                                    else {
+                                                        int ix = unprocessed.decrementAndGet();
 
-												if(ix == 0)
-													finaliseRead.handle(null);
-											}
-										});
-									} else {
-										self.fs.readFile(filePath, new Handler<AsyncResult<Buffer>>() {
-											@Override
-											public void handle(AsyncResult<Buffer> fileResult) {
-												if(fileResult.succeeded() == false)
-													promise.fail(fileResult.cause());
-												else {
-													int ix = unprocessed.decrementAndGet();
+                                                        if (filterMongoDocumentFile(filePath, fileResult.result()) == true) {
+                                                            mongoDocs.set(ix, fileResult.result().toJsonObject());
+                                                            mongoDocsFileNames.set(ix, FileUtils.getFilename(filePath));
+                                                        }
 
-													if(filterMongoDocumentFile(filePath, fileResult.result()) == true) {
-														mongoDocs.set(ix, fileResult.result().toJsonObject());
-														mongoDocsFileNames.set(ix, FileUtils.getFilename(filePath));
-													}
-
-													if(ix == 0)
-														finaliseRead.handle(null);
-												}
-											}
-										});
-									}
-								}
-							}
-						});
-					}
+                                                        if (ix == 0)
+                                                            finaliseRead.handle(null);
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
 				}
 			}
 		});
