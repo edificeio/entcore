@@ -1580,4 +1580,13 @@ public class ManualFeeder extends BusModBase {
 	public void setLoginAliasValidatorForAD(Boolean loginAliasValidatorForAD) {
 		this.loginAliasValidatorForAD = loginAliasValidatorForAD;
 	}
+
+    public void setManualGroupAutolinkUsersPositions(Message<JsonObject> message) {
+        final String groupId = getMandatoryString("groupId", message);
+        final JsonArray userPositions = message.body().getJsonArray("manualGroupAutolinkUsersPositions");
+
+        if (userPositions == null || groupId == null) return;
+
+        executeTransaction(message, tx -> Group.setManualGroupAutolinkUsersPositions(groupId, userPositions, tx));
+    }
 }

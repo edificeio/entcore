@@ -19,9 +19,12 @@
 
 package org.entcore.feeder.dictionary.structures;
 
-import java.util.UUID;
-
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.common.validation.StringValidation;
@@ -30,12 +33,9 @@ import org.entcore.feeder.exceptions.ValidationException;
 import org.entcore.feeder.utils.TransactionManager;
 import org.entcore.feeder.utils.Validator;
 
+import java.util.UUID;
+
 import static fr.wseduc.webutils.Utils.isNotEmpty;
-import io.vertx.core.Future;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 public class Group {
 
@@ -60,6 +60,10 @@ public class Group {
 			" ( g.autolinkTargetAllStructs = true OR struct.id IN g.autolinkTargetStructs )" +
 			" with distinct g, u ";
 
+	private static final String QUERY_MANUAL_GROUP_AUTOLINK_POSITIONS = "MATCH (g:ManualGroup {id: {groupId}})-[:DEPENDS]->(:Structure)<-[:HAS_ATTACHMENT*0..]-(struct:Structure) " +
+			"UNWIND COALESCE(g.manualGroupAutolinkUsersPositions, []) AS targetPosition " +
+			"MATCH (position:UserPosition {name: targetPosition})<-[:HAS_POSITION]-(u:User)-[:IN]->(:Group)-[:DEPENDS]->(struct)" +
+			" with distinct g, u ";
 
 	public static void manualCreateOrUpdate(JsonObject object, String structureId, String classId,
 			TransactionHelper transactionHelper) throws ValidationException {
@@ -148,7 +152,41 @@ public class Group {
 		User.countUsersInGroups(groupId, null, transactionHelper);
 	}
 
-	public static void updateEmail(String groupId, String emailInternal, TransactionHelper transactionHelper)
+    public static void setManualGroupAutolinkUsersPositions(String groupId, JsonArray userPositions,
+                                                            TransactionHelper transactionHelper) {
+        final JsonObject params = new JsonObject()
+                .put("groupId", groupId)
+                .put("now", System.currentTimeMillis())
+                .put("userPositions", userPositions);
+
+        final String updateGroupQuery;
+        if (userPositions == null || userPositions.isEmpty()) {
+            updateGroupQuery = "MATCH (g:ManualGroup {id: {groupId}}) " +
+                    "REMOVE g.manualGroupAutolinkUsersPositions";
+        } else {
+            updateGroupQuery = "MATCH (g:ManualGroup {id: {groupId}}) " +
+                    "SET g.manualGroupAutolinkUsersPositions = {userPositions}";
+        }
+        transactionHelper.add(updateGroupQuery, params);
+
+        if (userPositions != null && !userPositions.isEmpty()) {
+            final String linkQuery = QUERY_MANUAL_GROUP_AUTOLINK_POSITIONS +
+                    "MERGE (u)-[new:IN]->(g) " +
+                    "ON CREATE SET new.source = 'AUTO' " +
+                    "SET new.updated = {now} ";
+            transactionHelper.add(linkQuery, params);
+        }
+
+        final String removeQuery =
+                "MATCH (g:ManualGroup {id: {groupId}})<-[old:IN]-(:User) " +
+                        "WHERE old.source = 'AUTO' AND (NOT EXISTS(old.updated) OR old.updated <> {now}) " +
+                        "DELETE old ";
+        transactionHelper.add(removeQuery, params);
+
+        User.countUsersInGroups(groupId, null, transactionHelper);
+    }
+
+    public static void updateEmail(String groupId, String emailInternal, TransactionHelper transactionHelper)
 			throws ValidationException{
 
 		if(!StringValidation.isEmail(emailInternal)) {
@@ -173,10 +211,12 @@ public class Group {
 				"MATCH (g:ManualGroup) " +
 				"WHERE EXISTS(g.autolinkUsersFromGroups) " +
 				  " OR EXISTS(g.autolinkUsersFromPositions) " +
+                        "OR EXISTS(g.manualGroupAutolinkUsersPositions) " +
 				"RETURN g.id as id, g.autolinkUsersFromGroups as autolinkUsersFromGroups, " +
 						" g.autolinkUsersFromLevels as autolinkUsersFromLevels, " +
-						" g.autolinkUsersFromPositions as autolinkUsersFromPositions";
-			tx.add(listAutolinkGroups, new JsonObject());
+                        " g.autolinkUsersFromPositions as autolinkUsersFromPositions, " +
+                        " g.manualGroupAutolinkUsersPositions as manualGroupAutolinkUsersPositions";
+            tx.add(listAutolinkGroups, new JsonObject());
 
 			tx.commit().compose(groups -> {
 				if (groups != null && groups.size() == 1 && groups.getJsonArray(0) != null) {
@@ -217,11 +257,18 @@ public class Group {
 		JsonArray autolinkUsersFromLevel = group.getJsonArray("autolinkUsersFromLevels");
 		JsonArray autolinkUsersFromGroups = group.getJsonArray("autolinkUsersFromGroups");
 		JsonArray autolinkUsersFromPositions = group.getJsonArray("autolinkUsersFromPositions");
+        JsonArray manualGroupAutolinkUsersPositions = group.getJsonArray("manualGroupAutolinkUsersPositions");
 
-		final StringBuilder linkQuery = new StringBuilder( autolinkUsersFromPositions != null && !autolinkUsersFromPositions.isEmpty() ?
-				QUERY_FROM_POSITION : QUERY_FROM_GROUP);
-		// Conditional filter on children or students level
-		if (autolinkUsersFromLevel != null && !autolinkUsersFromLevel.isEmpty()) {
+        final StringBuilder linkQuery;
+        if ((autolinkUsersFromPositions != null && !autolinkUsersFromPositions.isEmpty()) || 
+            (manualGroupAutolinkUsersPositions != null && !manualGroupAutolinkUsersPositions.isEmpty())) {
+            linkQuery = new StringBuilder(QUERY_FROM_POSITION);
+        } else {
+            linkQuery = new StringBuilder(QUERY_FROM_GROUP);
+        }
+
+        // Conditional filter on children or students level
+        if (autolinkUsersFromLevel != null && !autolinkUsersFromLevel.isEmpty()) {
 			if (autolinkUsersFromGroups.contains("Relative")) {
 				linkQuery.append(
 						"MATCH (u)<-[:RELATED]-(child:User) " +
@@ -240,7 +287,7 @@ public class Group {
 
 		final String removeQuery =
 				"MATCH (g:ManualGroup {id: {groupId}})<-[old:IN]-(:User) " +
-				"WHERE (EXISTS(g.autolinkUsersFromGroups) OR EXISTS(g.autolinkUsersFromPositions))" +
+                        "WHERE (EXISTS(g.autolinkUsersFromGroups) OR EXISTS(g.autolinkUsersFromPositions)) OR EXISTS(g.manualGroupAutolinkUsersPositions) " +
 				" AND old.source = 'AUTO' AND (NOT EXISTS(old.updated) OR old.updated <> {now}) " +
 				"DELETE old ";
 

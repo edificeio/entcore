@@ -18,14 +18,20 @@ import { GroupCreateComponent } from "./create/group-create/group-create.compone
 import { GroupDetailsComponent } from "./details/group-details/group-details.component";
 import { GroupManageUsersComponent } from "./details/manage-users/group-manage-users/group-manage-users.component";
 import { GroupInputUsersComponent } from "./details/manage-users/input/group-input-users/group-input-users.component";
-import { GroupInputFiltersComponent } from "./details/manage-users/input/group-input-filters/group-input-filters.component";
-import { GroupOutputUsersComponent } from "./details/manage-users/output/group-output-users/group-output-users.component";
+import {
+    GroupInputFiltersComponent
+} from "./details/manage-users/input/group-input-filters/group-input-filters.component";
+import {
+    GroupOutputUsersComponent
+} from "./details/manage-users/output/group-output-users/group-output-users.component";
 import { GroupUsersListComponent } from "./details/users-list/group-users-list.component";
 import { GroupsTypeViewComponent } from "./type-view/groups-type-view.component";
 import { GroupAutolinkComponent } from "./details/group-details/autolink/group-autolink.component";
 import { GroupsService } from "./groups.service";
 import { CommunicationModule } from "../communication/communication.module";
-import { SmartGroupCommunicationComponent } from "./communication/smart-group-communication/smart-group-communication.component";
+import {
+    SmartGroupCommunicationComponent
+} from "./communication/smart-group-communication/smart-group-communication.component";
 import { globalStoreProvider } from "../core/store/global.store";
 import { GroupInfoComponent } from "./info/group-info.component";
 import { UsersService } from "../users/users.service";
@@ -33,6 +39,7 @@ import { ClassesComponent } from "./classes/classes.component";
 import { ClassDetailsComponent } from "./classes/details/class-details.component";
 import { ClassesService } from "./classes/classes.service";
 import { ClassCreateComponent } from "./classes/create/class-create.component";
+import { ManualGroupAutolinkComponent } from "./details/group-details/manual-autolink/manual-group-autolink.component";
 
 @NgModule({
   imports: [
@@ -58,7 +65,8 @@ import { ClassCreateComponent } from "./classes/create/class-create.component";
     GroupsTypeViewComponent,
     GroupInfoComponent,
     SmartGroupCommunicationComponent,
-    GroupAutolinkComponent
+      GroupAutolinkComponent,
+      ManualGroupAutolinkComponent
   ],
   providers: [
     GroupsResolver,

@@ -306,4 +306,24 @@ public class GroupController extends BaseController {
 		});
 	}
 
+	@Post("/group/:groupId/setManualGroupAutolinkUsersPositions")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(AdminFilter.class)
+	public void setManualGroupAutolinkUsersPositions(final HttpServerRequest request) {
+		final String groupId = request.params().get("groupId");
+		if (groupId != null && !groupId.trim().isEmpty()) {
+			bodyToJson(request, body -> {
+				final JsonArray manualGroupAutolinkUsersPositions = body.getJsonArray(
+						"manualGroupAutolinkUsersPositions");
+				if (manualGroupAutolinkUsersPositions == null) {
+					badRequest(request, "invalid.positions");
+					return;
+				}
+				groupService.setManualGroupAutolinkUsersPositions(groupId, manualGroupAutolinkUsersPositions,
+						defaultResponseHandler(request));
+			});
+		} else {
+			badRequest(request, "invalid.id");
+		}
+	}
 }

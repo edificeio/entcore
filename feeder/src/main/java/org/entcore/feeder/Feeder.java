@@ -40,7 +40,14 @@ import org.entcore.feeder.aaf1d.Aaf1dFeeder;
 import org.entcore.feeder.csv.CsvFeeder;
 import org.entcore.feeder.csv.CsvImportsLauncher;
 import org.entcore.feeder.csv.CsvValidator;
-import org.entcore.feeder.dictionary.structures.*;
+import org.entcore.feeder.dictionary.structures.DuplicateUsers;
+import org.entcore.feeder.dictionary.structures.GraphData;
+import org.entcore.feeder.dictionary.structures.Group;
+import org.entcore.feeder.dictionary.structures.Importer;
+import org.entcore.feeder.dictionary.structures.ImporterTask;
+import org.entcore.feeder.dictionary.structures.PostImport;
+import org.entcore.feeder.dictionary.structures.Transition;
+import org.entcore.feeder.dictionary.structures.User;
 import org.entcore.feeder.export.Exporter;
 import org.entcore.feeder.export.eliot.EliotExporter;
 import org.entcore.feeder.timetable.AbstractTimetableImporter;
@@ -60,7 +67,11 @@ import org.vertx.java.busmods.BusModBase;
 import java.text.ParseException;
 import java.time.OffsetTime;
 import java.time.format.DateTimeParseException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static fr.wseduc.webutils.Utils.*;
@@ -418,6 +429,9 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				break;
 			case "manual-structure-detachment" : manual.structureDetachment(message);
 				break;
+            case "manual-link-user-positions":
+                manual.setManualGroupAutolinkUsersPositions(message);
+                break;
 			case "transition" : launchTransition(message, null);
 				break;
 			case "import" : launchImport(message);

@@ -103,7 +103,8 @@ public class DefaultGroupService implements GroupService {
 				"HEAD(filter(x IN labels(g) WHERE x <> 'Visible' AND x <> 'Group')) as type " +
 				"RETURN DISTINCT g.id as id, g.name as name, g.displayName as displayName, g.filter as filter, labels(g) as labels, " +
 				"g.createdAt as createdAt, g.createdByName as createdByName, g.modifiedAt as modifiedAt, g.modifiedByName as modifiedByName, " +
-				"g.autolinkTargetAllStructs as autolinkTargetAllStructs, " +
+                        "g.manualGroupAutolinkUsersPositions as manualGroupAutolinkUsersPositions, " +
+                        "g.autolinkTargetAllStructs as autolinkTargetAllStructs, " +
 				"g.autolinkTargetStructs as autolinkTargetStructs," +
 				"g.autolinkUsersFromGroups as autolinkUsersFromGroups, " +
 				"g.autolinkUsersFromPositions as autolinkUsersFromPositions, " +
@@ -138,7 +139,17 @@ public class DefaultGroupService implements GroupService {
 		eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(0, result)));
 	}
 
-	@Override
+    @Override
+    public void setManualGroupAutolinkUsersPositions(String groupId, JsonArray manualGroupAutolinkUsersPositions,
+                                                     Handler<Either<String, JsonObject>> result) {
+        JsonObject action = new JsonObject()
+                .put("action", "manual-link-user-positions")
+                .put("groupId", groupId)
+                .put("manualGroupAutolinkUsersPositions", manualGroupAutolinkUsersPositions);
+        eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+    }
+
+    @Override
 	public void deleteManual(String groupId, Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-delete-group")
