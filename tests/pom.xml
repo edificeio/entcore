@@ -34,7 +34,7 @@
                 <version>3.4.0</version>
                 <executions>
                     <execution>
-                        <id>create-it-jar</id>
+                        <id>create-test-js-jar</id>
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>
@@ -42,7 +42,7 @@
                         <configuration>
                             <descriptors>
                                 <!-- Specify a custom assembly descriptor -->
-                                <descriptor>src/assembly/it-jar.xml</descriptor>
+                                <descriptor>src/assembly/test-js-jar.xml</descriptor>
                             </descriptors>
                             <appendAssemblyId>true</appendAssemblyId>
                             <finalName>${project.artifactId}-${project.version}</finalName>
@@ -55,8 +55,8 @@
                 <artifactId>maven-deploy-plugin</artifactId>
                 <version>3.1.3</version>
                 <configuration>
-                    <file>${project.build.directory}/${project.artifactId}-${project.version}-it.jar</file>
-                    <classifier>it</classifier>
+                    <file>${project.build.directory}/${project.artifactId}-${project.version}-testJs.jar</file>
+                    <classifier>testJs</classifier>
                 </configuration>
             </plugin>
         </plugins>
