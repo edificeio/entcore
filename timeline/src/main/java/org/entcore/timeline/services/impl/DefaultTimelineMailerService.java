@@ -19,16 +19,24 @@
 
 package org.entcore.timeline.services.impl;
 
-import com.mongodb.client.model.Filters;
+import com.samskivert.mustache.Mustache;
 import fr.wseduc.mongodb.MongoDb;
-import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.eventbus.EventBus;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.request.JsonHttpServerRequest;
@@ -40,15 +48,6 @@ import org.entcore.common.utils.StringUtils;
 import org.entcore.timeline.controllers.TimelineLambda;
 import org.entcore.timeline.services.TimelineConfigService;
 import org.entcore.timeline.services.TimelineMailerService;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 
 import java.io.StringReader;
 import java.io.Writer;
@@ -57,7 +56,6 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static com.mongodb.client.model.Filters.*;
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static org.entcore.common.utils.DateUtils.formatUtcDateTime;
 
@@ -106,10 +104,10 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 	}
 
 	/* Override i18n to use additional timeline translations and nested templates */
-	@Override
-	protected void setLambdaTemplateRequest(final HttpServerRequest request) {
-		super.setLambdaTemplateRequest(request);
-		TimelineLambda.setLambdaTemplateRequest(request, this.templateProcessor, eventsI18n, lazyEventsI18n);
+	protected Map<String, Mustache.Lambda> getLambdaTemplateRequest(final HttpServerRequest request) {
+		Map<String, Mustache.Lambda> lambdas = getLambdasFromRequest(request);
+		TimelineLambda.setLambdaTemplateRequest(request, lambdas, eventsI18n);
+		return lambdas;
 	}
 
 	@Override

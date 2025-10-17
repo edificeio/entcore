@@ -22,6 +22,7 @@ package org.entcore.common.http.renders;
 import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
 import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.http.ProcessTemplateContext;
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -31,6 +32,7 @@ import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.file.FileProps;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.utils.I18nUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -40,8 +42,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.entcore.common.utils.I18nUtils;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
@@ -80,13 +80,16 @@ public abstract class TemplatedEmailRenders extends Renders {
 		loadThemeKVs(request)
 				.onSuccess( themeKV -> {
 					this.requestThemeKV = themeKV;
+					ProcessTemplateContext.Builder context = new ProcessTemplateContext.Builder()
+							.request(request)
+							.lambdas(getLambdasFromRequest(request))
+							.params(parameters);
 					if(reader){
-						final StringReader templateReader = new StringReader(template);
-						processTemplate(request, parameters, "", templateReader, writer -> promise.complete(writer.toString()));
-
+						context.reader(new StringReader(template));
 					} else {
-						processTemplate(request, template, parameters, promise::complete);
+						context.templateString(template);
 					}
+					processTemplateWithLambdas(context, w -> promise.complete(w != null ? w.toString() : null));
 				}).onFailure(promise::fail);
 		return promise.future();
 	}
@@ -116,7 +119,7 @@ public abstract class TemplatedEmailRenders extends Renders {
 						vertx.fileSystem().readDir(i18nDirectory, asyncResult -> {
 							if (asyncResult.succeeded()) {
 								readI18nTimeline(asyncResult.result())
-								.onSuccess( themeKV -> promise.complete(themeKV) );
+								.onSuccess(promise::complete);
 							} else {
 								log.error("Error loading assets at "+i18nDirectory, asyncResult.cause());
 								promise.complete(null);
@@ -192,44 +195,59 @@ public abstract class TemplatedEmailRenders extends Renders {
 
 	/* Override i18n to use additional theme variables */
 	@Override
+	@Deprecated
 	protected void setLambdaTemplateRequest(final HttpServerRequest request) {
 		super.setLambdaTemplateRequest(request);
+		Map<String, Mustache.Lambda> lambda = getThemeLambda(request);
+		this.templateProcessor.setLambda("theme", lambda.get("theme"));
+		this.templateProcessor.setLambda("host", lambda.get("host"));
+	}
 
-		final Mustache.Lambda hostLambda = new Mustache.Lambda() {
-			@Override
-			public void execute(Template.Fragment frag, Writer out) throws IOException{
-				String contents = frag.execute();
-				if(contents.matches("^(http://|https://).*")){
-					out.write(contents);
-				} else {
-					String host = Renders.getScheme(request) + "://" + Renders.getHost(request);
-					out.write(host + contents);
-				}
+	private Map<String, Mustache.Lambda> getThemeLambda(final HttpServerRequest request) {
+		Map<String, Mustache.Lambda> lambdas = new HashMap<>();
+
+		final Mustache.Lambda hostLambda = (frag, out) -> {
+			String contents = frag.execute();
+			if(contents.matches("^(http://|https://).*")){
+				out.write(contents);
+			} else {
+				String host = Renders.getScheme(request) + "://" + Renders.getHost(request);
+				out.write(host + contents);
 			}
 		};
 
-		this.templateProcessor.setLambda("theme", new Mustache.Lambda() {
-			@Override
-			public void execute(Template.Fragment frag, Writer out) throws IOException {
-				String key = frag.execute();
-				String language = getOrElse(I18n.acceptLanguage(request), "fr", false);
-				// {{theme}} directives may have inner {{host}}
-				Object innerCtx = new Object() {
-					Mustache.Lambda host = hostLambda;
-				};
+        // {{theme}} directives may have inner {{host}}
+        // #46383, translations from the theme takes precedence over those from the domain
 
-				// #46383, translations from the theme takes precedence over those from the domain
-				final String translatedContents = I18n.getInstance().translate(key, Renders.getHost(request), I18n.getTheme(request), I18n.getLocale(language));
-				if (!translatedContents.equals(key)) {
-					Mustache.compiler().compile(translatedContents).execute(innerCtx, out);
-				} else {
-					JsonObject timelineI18n = (requestThemeKV==null ? getThemeDefaults():requestThemeKV).getOrDefault( language.split(",")[0].split("-")[0], new JsonObject() );
-					Mustache.compiler().compile(timelineI18n.getString(key, key)).execute(innerCtx, out);
-				}
-			}
-		});
+        final Mustache.Lambda themeLambda = (frag, out) -> {
+            String key = frag.execute();
+            String language = getOrElse(I18n.acceptLanguage(request), "fr", false);
+            // {{theme}} directives may have inner {{host}}
+            Object innerCtx = new Object() {
+                Mustache.Lambda host = hostLambda;
+            };
 
-		this.templateProcessor.setLambda("host", hostLambda);
+            // #46383, translations from the theme takes precedence over those from the domain
+            final String translatedContents = I18n.getInstance().translate(key, Renders.getHost(request), I18n.getTheme(request), I18n.getLocale(language));
+            if (!translatedContents.equals(key)) {
+                Mustache.compiler().compile(translatedContents).execute(innerCtx, out);
+            } else {
+                JsonObject timelineI18n = (requestThemeKV==null ? getThemeDefaults():requestThemeKV).getOrDefault( language.split(",")[0].split("-")[0], new JsonObject() );
+                Mustache.compiler().compile(timelineI18n.getString(key, key)).execute(innerCtx, out);
+            }
+        };
+		lambdas.put("theme", themeLambda);
+		lambdas.put("host", hostLambda);
+		return lambdas;
+	}
+
+	@Override
+	protected Map<String, Mustache.Lambda> getLambdasFromRequest(HttpServerRequest request) {
+		Map<String, Mustache.Lambda> lambdaMap = super.getLambdasFromRequest(request);
+		Map<String, Mustache.Lambda> lambda = getThemeLambda(request);
+		lambdaMap.put("theme", lambda.get("theme"));
+		lambdaMap.put("host", lambda.get("host"));
+		return lambdaMap;
 	}
 
 	/**

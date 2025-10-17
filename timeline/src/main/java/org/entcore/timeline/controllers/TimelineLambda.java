@@ -24,134 +24,115 @@ import com.samskivert.mustache.Mustache;
 import com.samskivert.mustache.Template;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
-import fr.wseduc.webutils.template.TemplateProcessor;
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
 
-import java.io.IOException;
-import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentMap;
 
 public final class TimelineLambda {
 
-	private static final Logger log = LoggerFactory.getLogger(TimelineLambda.class);
-	private static final Map<String, Integer> i18nEventsHash = Maps.newHashMap();
+    private static final Logger log = LoggerFactory.getLogger(TimelineLambda.class);
+    private static final Map<String, Integer> i18nEventsHash = Maps.newHashMap();
+    private static final Map<String, JsonObject> lazyEventsI18n = Maps.newHashMap();
 
-	private TimelineLambda() {}
+    public static void setLambdaTemplateRequest(final HttpServerRequest request, Map<String, Mustache.Lambda> lambdas,
+                                                final LocalMap<String, String> eventsI18n) {
 
-	public static void setLambdaTemplateRequest(final HttpServerRequest request, final TemplateProcessor processor,
-			final LocalMap<String, String> eventsI18n, final Map<String, JsonObject> lazyEventsI18n) {
+        lambdas.put("i18n", (frag, out) -> {
+            String key = frag.execute();
+            String language = Utils.getOrElse(I18n.acceptLanguage(request), "fr", false);
 
-		processor.setLambda("i18n", new Mustache.Lambda() {
+            JsonObject timelineI18n;
+            if (!lazyEventsI18n.containsKey(language)) {
+                timelineI18n = computeTimeLineI18n(language, eventsI18n, lazyEventsI18n);
+            } else {
+                String eventI18n = eventsI18n.get(language.split(",")[0].split("-")[0]);
+                if (eventI18n != null && (!i18nEventsHash.containsKey(language) || eventI18n.hashCode() != i18nEventsHash.get(language))) {
+                    computeTimeLineI18n(language, eventsI18n, lazyEventsI18n);
+                }
+                timelineI18n = lazyEventsI18n.get(language);
+            }
 
-			@Override
-			public void execute(Template.Fragment frag, Writer out) throws IOException {
-				String key = frag.execute();
-				String language = Utils.getOrElse(I18n.acceptLanguage(request), "fr", false);
+            // #46383, translations from the theme takes precedence over those from the domain
+            String translatedContents = I18n.getInstance().translate(key, Renders.getHost(request), I18n.getTheme(request), I18n.getLocale(language));
+            if (translatedContents.equals(key)) {
+                translatedContents = timelineI18n.getString(key, key);
+            }
+            Mustache.compiler().compile(translatedContents).execute(TimelineLambda.getRootContext(frag), out);
+        });
 
-				JsonObject timelineI18n;
-				if (!lazyEventsI18n.containsKey(language)) {
-					timelineI18n = computeTimeLineI18n(language, eventsI18n, lazyEventsI18n);
-				} else {
-					String eventI18n = eventsI18n.get(language.split(",")[0].split("-")[0]);
-					if( eventI18n != null && (!i18nEventsHash.containsKey(language) || eventI18n.hashCode() != i18nEventsHash.get(language))) {
-						computeTimeLineI18n(language, eventsI18n, lazyEventsI18n);
-					}
-					timelineI18n = lazyEventsI18n.get(language);
-				}
+        lambdas.put("host", (frag, out) -> {
+            String contents = frag.execute();
+            if (contents.matches("^(http://|https://).*")) {
+                out.write(contents);
+            } else {
+                String host = Renders.getScheme(request) + "://" + Renders.getHost(request);
+                out.write(host + contents);
+            }
+        });
 
-				// #46383, translations from the theme takes precedence over those from the domain
-				String translatedContents = I18n.getInstance().translate(key, Renders.getHost(request), I18n.getTheme(request), I18n.getLocale(language));
-				if (translatedContents.equals(key)) {
-					translatedContents = timelineI18n.getString(key, key);
-				}
-				Mustache.compiler().compile(translatedContents).execute(TimelineLambda.getRootContext(frag), out);
-			}
-		});
+        lambdas.put("nested", (frag, out) -> {
+            String nestedTemplateName = frag.execute();
+            Map<String, Object> ctx = TimelineLambda.getRootContext(frag);
+            String nestedTemplate = (String) ctx.get(nestedTemplateName);
+            if (nestedTemplate != null)
+                Mustache.compiler().compile(nestedTemplate).execute(ctx, out);
+        });
 
-		processor.setLambda("host", new Mustache.Lambda() {
-			@Override
-			public void execute(Template.Fragment frag, Writer out) throws IOException{
-				String contents = frag.execute();
-				if(contents.matches("^(http://|https://).*")){
-					out.write(contents);
-				} else {
-					String host = Renders.getScheme(request) + "://" + Renders.getHost(request);
-					out.write(host + contents);
-				}
-			}
-		});
+        lambdas.put("nestedArray", (frag, out) -> {
+            String nestedTemplatePos = frag.execute();
+            Map<String, Object> ctx = TimelineLambda.getRootContext(frag);
+            JsonArray nestedArray = new JsonArray((List<Object>) ctx.get("nestedTemplatesArray"));
+            try {
+                JsonObject nestedTemplate = nestedArray.getJsonObject(Integer.parseInt(nestedTemplatePos) - 1);
+                ctx.putAll(nestedTemplate.getJsonObject("params", new JsonObject()).getMap());
+                Mustache.compiler()
+                        .compile(nestedTemplate.getString("template", ""))
+                        .execute(ctx, out);
+            } catch (NumberFormatException e) {
+                log.error("Mustache compiler error while parsing a nested template array lambda.");
+            }
+        });
+    }
 
-		processor.setLambda("nested", new Mustache.Lambda() {
-			public void execute(Template.Fragment frag, Writer out) throws IOException {
-				String nestedTemplateName = frag.execute();
-				Map<String, Object> ctx = TimelineLambda.getRootContext(frag);
-				String nestedTemplate = (String) ctx.get(nestedTemplateName);
-				if(nestedTemplate != null)
-					Mustache.compiler().compile(nestedTemplate).execute(ctx, out);
-			}
-		});
+    private static JsonObject computeTimeLineI18n(String language, Map<String, String> eventsI18n, Map<String, JsonObject> lazyEventsI18n) {
+        String eventI18n = eventsI18n.get(language.split(",")[0].split("-")[0]);
+        String i18n = eventI18n != null ? eventI18n : "}";
+        JsonObject timelineI18n;
+        try {
+            timelineI18n = new JsonObject("{" + i18n.substring(0, i18n.length() - 1) + "}");
+            lazyEventsI18n.put(language, timelineI18n);
+            if (eventI18n != null) {
+                i18nEventsHash.put(language, eventI18n.hashCode());
+            }
+        } catch (DecodeException de) {
+            timelineI18n = new JsonObject();
+            log.error("Bad json : " + "{" + i18n.substring(0, i18n.length() - 1) + "}", de);
+        }
+        return timelineI18n;
+    }
 
-		processor.setLambda("nestedArray", new Mustache.Lambda() {
-			public void execute(Template.Fragment frag, Writer out) throws IOException {
-				String nestedTemplatePos = frag.execute();
-				Map<String, Object> ctx = TimelineLambda.getRootContext(frag);
-				JsonArray nestedArray = new JsonArray((List<Object>) ctx.get("nestedTemplatesArray"));
-				try {
-					JsonObject nestedTemplate = nestedArray.getJsonObject(Integer.parseInt(nestedTemplatePos) - 1);
-					ctx.putAll(nestedTemplate.getJsonObject("params", new JsonObject()).getMap());
-					Mustache.compiler()
-							.compile(nestedTemplate.getString("template", ""))
-							.execute(ctx, out);
-				} catch(NumberFormatException e) {
-					log.error("Mustache compiler error while parsing a nested template array lambda.");
-				}
-			}
-		});
-	}
+    private static Map<String, Object> getRootContext(Template.Fragment frag) {
+        Object parentCtx = null, ctx = null;
+        try {
+            int i = 0;
+            do {
+                parentCtx = ctx;
+                ctx = frag.context(i++);
+            }
+            while (ctx != null);
+        } catch (Exception e) {
+        }
 
-	private static JsonObject computeTimeLineI18n(String language, Map<String, String> eventsI18n, Map<String, JsonObject> lazyEventsI18n) {
-		String eventI18n = eventsI18n.get(language.split(",")[0].split("-")[0]);
-		String i18n = eventI18n != null ? eventI18n : "}";
-		JsonObject timelineI18n;
-		try {
-			timelineI18n = new JsonObject("{" + i18n.substring(0, i18n.length() - 1) + "}");
-			lazyEventsI18n.put(language, timelineI18n);
-			if(eventI18n != null) {
-				i18nEventsHash.put(language, eventI18n.hashCode());
-			}
-		} catch (DecodeException de) {
-			timelineI18n = new JsonObject();
-			log.error("Bad json : " + "{" + i18n.substring(0, i18n.length() - 1) + "}", de);
-		}
-		return timelineI18n;
-	}
-
-	private static Map<String, Object> getRootContext(Template.Fragment frag)
-	{
-		Object parentCtx = null, ctx = null;
-		try
-		{
-			int i = 0;
-			do
-			{
-				parentCtx = ctx;
-				ctx = frag.context(i++);
-			}
-			while(ctx != null);
-		}
-		catch(Exception e) {}
-
-		return parentCtx instanceof Map ? ((Map<String, Object>) parentCtx) : new HashMap<String, Object>();
-	}
+        return parentCtx instanceof Map ? ((Map<String, Object>) parentCtx) : new HashMap<String, Object>();
+    }
 
 }

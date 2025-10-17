@@ -21,6 +21,7 @@ package org.entcore.feeder.timetable;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -29,6 +30,8 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.samskivert.mustache.Mustache;
+import fr.wseduc.webutils.http.ProcessTemplateContext;
 import org.entcore.common.storage.Storage;
 
 import fr.wseduc.mongodb.MongoDb;
@@ -193,6 +196,7 @@ public class TimetableReport {
 
   private long nbUsersFound = 0;
   private List<User> missingUsers = new LinkedList<User>();
+  private Map<String, Mustache.Lambda> lambdas = new HashMap<>();
 
   private static final Map<Vertx, FileTemplateProcessor> templateProcessors = new ConcurrentHashMap<Vertx, FileTemplateProcessor>();
   private FileTemplateProcessor templator;
@@ -206,13 +210,10 @@ public class TimetableReport {
   public TimetableReport(Vertx vertx, String locale) {
     this.templator = TimetableReport.templateProcessors.get(vertx);
 
-    if(this.templator == null)
-    {
+    if(this.templator == null) {
       this.templator = new FileTemplateProcessor(vertx, "template");
-      this.templator.escapeHTML(false);
-
-      this.templator.setLambda("i18n", new I18nLambda(locale));
-      this.templator.setLambda("datetime", new LocaleDateLambda(locale));
+      this.lambdas.put("i18n", new I18nLambda(locale));
+      this.lambdas.put("datetime", new LocaleDateLambda(locale));
 
       TimetableReport.templateProcessors.put(vertx, this.templator);
     }
@@ -310,12 +311,14 @@ public class TimetableReport {
         .put("nbUsersFound", this.nbUsersFound)
         .put("missingUsers", this.getTemplateEntities(this.missingUsers));
 
-    this.templator.processTemplate("timetable-report.txt", params, new Handler<String>() {
-      @Override
-      public void handle(String template) {
-        handler.handle(template);
-      }
-    });
+    ProcessTemplateContext.Builder context = new ProcessTemplateContext.Builder()
+            .lambdas(this.lambdas)
+            .escapeHtml(false)
+            .templateString("timetable-report.txt")
+            .params(params);
+
+
+    this.templator.processTemplate(context.build(),h -> handler.handle( h != null ? h.toString() : null ));
   }
 
   private JsonArray getTemplateWeeks() {

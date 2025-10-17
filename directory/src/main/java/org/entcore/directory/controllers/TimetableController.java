@@ -100,7 +100,7 @@ public class TimetableController extends BaseController {
   @ResourceFilter(AdminFilter.class)
   @MfaProtected()
   public void timetable(HttpServerRequest request) {
-    renderView(request);
+    renderTemplateView(request);
   }
 
   @Get("/timetable/courses/:structureId")
