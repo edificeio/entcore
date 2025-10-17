@@ -17,6 +17,9 @@
  */
 package org.entcore.conversation.util;
 
+import static fr.wseduc.webutils.Utils.getOrElse;
+import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -25,15 +28,13 @@ import java.util.stream.Stream;
 
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.StringUtils;
 
-import static fr.wseduc.webutils.Utils.getOrElse;
-import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.entcore.common.utils.StringUtils;
 
 /**
  * Utility class for handling messages, particularly for decoding display names stored in the database,
@@ -143,13 +144,15 @@ public class MessageUtil {
     static public void formatRecipients(JsonObject message, final JsonObject userIndex, final JsonObject groupIndex) {
         final String from = message.getString(MSG_FROM);
         boolean isDeleted = message.getString(MSG_FROM).equals(FROM_DELETED_ID);
-        message.put(MSG_FROM, userIndex.getJsonObject(from));
+
+        // Format the sender
+        final JsonObject fromUserJo = userIndex.getJsonObject(from);
+        message.put(MSG_FROM, fromUserJo);
         if(isDeleted) {
-            JsonObject fromUser = userIndex.getJsonObject(from);
-            fromUser.put(RECIPIENT_ID, "");
-            message.put(MSG_FROM, fromUser);
+            fromUserJo.put(RECIPIENT_ID, "");
         }
 
+        // Format to, cc and cci
         Stream.of(MSG_TO, MSG_CC, MSG_CCI).forEach(key -> {
             JsonArray recipients = (JsonArray) message.remove(key);
             final JsonArray users = new JsonArray();
