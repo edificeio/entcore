@@ -739,7 +739,7 @@ public class CommunicationController extends BaseController {
 	 * Return list of accepted profile for discover visible
 	 * */
 	@Get("/discover/visible/profiles")
-	@SecuredAction(value= "", type = ActionType.RESOURCE)
+	@SecuredAction(value= "", type = ActionType.AUTHENTICATED)
 	public void getDiscoverVisibleAcceptedProfile(HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, user -> {
 			if(user == null) {
