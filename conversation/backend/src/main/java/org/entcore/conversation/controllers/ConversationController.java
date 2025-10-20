@@ -1987,9 +1987,10 @@ public class ConversationController extends BaseController {
 
 
 				final UserInfos user = new UserInfos();
-				user.setUserId(action.getString("userId"));
-				user.setUsername(action.getString("username"));
-				message.put("from", action.getString("userId"));
+				user.setUserId(from);
+				user.setUsername(username);
+				message.put("from", from);
+				message.put("fromName", username);
 				userService.addDisplayNames(message, null, new Handler<JsonObject>() {
 					public void handle(final JsonObject m) {
 						saveAndSend(null, m, user, null, null,
