@@ -1611,87 +1611,61 @@ public class SqlConversationService implements ConversationService{
 		if (folderIds == null || folderIds.isEmpty()) {
 			return Future.failedFuture("conversation.invalid.parameter");
 		}
-		return getIdsOfMessagesInUserFolders(folderIds, user)
-		.compose( messageIds -> {
-			final JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
-			final SqlStatementsBuilder builder = new SqlStatementsBuilder();
-			if( !messageIds.isEmpty() ) {
-				prepareTrashMessagesStatement(
-					builder, 
-					messageIds, 
-					user, 
-					true
-				);
+
+		final Promise<JsonObject> promise = Promise.promise();
+		final SqlStatementsBuilder builder = new SqlStatementsBuilder();
+
+		final JsonArray values = new JsonArray();
+		values.add(user.getUserId());
+		String trashMessagesQuery =
+			"UPDATE " + userMessageTable + " AS um " +
+			"SET trashed = true, folder_id = NULL " +
+			"WHERE um.user_id = ? " +
+			"AND (um.trashed = false OR um.folder_id IS NOT NULL) " +
+			"AND um.folder_id IN (" +
+				"WITH RECURSIVE userFolders AS (" +
+					"SELECT DISTINCT f.id AS id FROM " + folderTable + " AS f " +
+					"WHERE f.id IN " + generateInVars(folderIds, values) + " AND f.user_id = ? " +
+					"UNION " +
+					"SELECT DISTINCT f.id AS id FROM " + folderTable + " AS f " +
+					"JOIN userFolders ON f.parent_id = userFolders.id " +
+					"WHERE f.user_id = ? " +
+				") " +
+				"SELECT id FROM userFolders" +
+			")";
+		values.add(user.getUserId());
+		values.add(user.getUserId());
+		builder.prepared(trashMessagesQuery, values);
+
+		final String deleteUserThreads =
+			"DELETE FROM conversation.userthreads " +
+			"WHERE user_id = ? AND thread_id NOT IN (" +
+				"SELECT DISTINCT m.thread_id " +
+				"FROM conversation.usermessages um " +
+				"LEFT JOIN conversation.messages m on um.message_id = m.id " +
+				"WHERE user_id = ? AND trashed = false " +
+			")";
+		final JsonArray threadValues = new JsonArray()
+			.add(user.getUserId())
+			.add(user.getUserId());
+		builder.prepared(deleteUserThreads, threadValues);
+
+		final JsonArray deleteFolderValues = new JsonArray();
+		deleteFolderValues.add(user.getUserId());
+		String deleteFolder = "DELETE FROM "+ folderTable +" f WHERE f.user_id = ? AND f.id IN " + generateInVars(folderIds, deleteFolderValues);
+		builder.prepared(deleteFolder, deleteFolderValues);
+
+		sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(0, either -> {
+			if(either.isLeft()) {
+				promise.fail(either.left().getValue());
+			} else {
+				promise.complete(new JsonObject());
 			}
-			/*
-			   Physically delete the folders in cascade. 
-			   No quota is freed, since all messages have been removed from the folders (and subfolders) they won't be deleted.
-			*/
-			String deleteFolder =
-				"DELETE FROM "+ folderTable +" f WHERE f.user_id = ? AND f.id IN ";
-			values.add(user.getUserId());
-			deleteFolder += generateInVars(folderIds, values);
+		}));
 
-			builder.prepared(deleteFolder, values);
-
-			final Promise<JsonObject> promise = Promise.promise();
-			sql.transaction(builder.build(), SqlResult.validUniqueResultHandler(0, either -> {
-				if(either.isLeft()) {
-					promise.fail(either.left().getValue());
-				} else {
-					promise.complete(new JsonObject().put("trashedMessageIds", messageIds));
-				}
-			}));
-			return promise.future();
-		});
-	}
-
-	/**
-	 * Retrieves the IDs of messages located in the specified user folders (and subfolders, recursively).
-	 * 
-	 * @param folderIds A collection of folder IDs to search within. Must not be null or empty.
-	 * @param user The user information object containing the user ID.
-	 * @return A Future that will be completed with a JsonArray of message IDs found in the folders.
-	 *         If the folderIds parameter is null or empty, the Future will fail with an appropriate error message.
-	 */
-	private Future<List<String>> getIdsOfMessagesInUserFolders(Collection<String> folderIds, UserInfos user) {
-		final Promise<List<String>> promise = Promise.promise();
-		if(folderIds==null || folderIds.isEmpty()) {
-			promise.fail("folderIds parameter cannot be null or empty");
-		} else {
-			JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
-			String nonRecursiveTerm = 
-				"SELECT DISTINCT f.id AS id FROM "+ folderTable +" AS f "+ 
-				"WHERE f.id IN "+ generateInVars(folderIds,values) +" AND f.user_id = ? ";
-			values.add(user.getUserId());
-
-			String recursiveTerm = 
-				"SELECT DISTINCT f.id AS id FROM "+ folderTable +" AS f "+
-				"JOIN userFolders ON f.parent_id = userFolders.id "+ 
-				"WHERE f.user_id = ? ";
-			values.add(user.getUserId());
-
-			String query =
-				"WITH RECURSIVE userFolders AS ("+ nonRecursiveTerm +" UNION "+ recursiveTerm +") " +
-				"SELECT DISTINCT um.message_id AS id FROM userFolders "+
-				"JOIN "+ userMessageTable +" um ON um.folder_id = userFolders.id WHERE um.user_id = ? ";
-			values.add(user.getUserId());
-	
-			sql.prepared(query, values, SqlResult.validResultHandler(results->{
-				if( results.isLeft() ) {
-					promise.fail(results.left().getValue());
-				} else {
-					final List<String> ids = results.right().getValue()
-						.stream()
-						.map(JsonObject.class::cast)
-						.map(result -> result.getString("id"))
-						.collect(Collectors.toList());
-					promise.complete(ids);
-				}
-			}));
-		}
 		return promise.future();
 	}
+
 
 	/**
 	 * Prepares SQL statements to mark messages as trashed for a specific user.
