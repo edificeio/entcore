@@ -148,6 +148,9 @@ export class MassMailComponent extends OdeComponent implements OnInit, OnDestroy
         if (outputModels.functions.length == 1) {
             params.adml = outputModels.functions[0].indexOf('users.adml') >= 0;
         }
+        if(outputModels.blocked.length == 1) {
+            params.b = outputModels.blocked[0].indexOf('users.blocked') >= 0;
+        }
 
         try {
             blob = await this.spinner.perform('portal-content', MassMailService.massMailProcess(this.structureId, type, params));

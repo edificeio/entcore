@@ -351,6 +351,16 @@ public class DefaultMassMailService extends Renders implements MassMailService {
             params.put("userIds", filterObj.getJsonArray("userIds"));
         }
 
+        //Blocked status
+        if (filterObj.containsKey("blocked")) {
+            Boolean blocked = filterObj.getBoolean("blocked", false);
+            if(blocked) {
+                condition += " AND u.blocked = true ";
+            } else {
+                condition += " AND (NOT EXISTS(u.blocked) OR u.blocked = false) ";
+            }
+        }
+
         //Admin check
         if(performCheck){
             if (!userInfos.getFunctions().containsKey(SUPER_ADMIN) &&
@@ -495,7 +505,8 @@ public class DefaultMassMailService extends Renders implements MassMailService {
         String returnStr =
                 "RETURN distinct collect(p.name)[0] as type, " +
                         "u.id as id, u.firstName as firstName, u.lastName as lastName, " +
-                        "u.email as email, CASE WHEN u.loginAlias IS NOT NULL THEN u.loginAlias ELSE u.login END as login, u.activationCode as code, u.created as creationDate, " +
+                        "u.email as email, CASE WHEN u.loginAlias IS NOT NULL THEN u.loginAlias ELSE u.login END as login, u.activationCode as code, " +
+                        "u.created as creationDate, COALESCE(u.blocked, false) as blocked, " +
                         "COLLECT(distinct [f.externalId, rf.scope]) as functions ";
 
         withStr += ", collect(distinct {id: c.id, name: c.name}) as classes, min(c.name) as classname, CASE count(c) WHEN 0 THEN false ELSE true END as isInClass ";
