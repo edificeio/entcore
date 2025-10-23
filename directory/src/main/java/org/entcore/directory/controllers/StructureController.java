@@ -499,6 +499,14 @@ public class StructureController extends BaseController {
             filter.put("date", request.params().get("date"));
         }
 
+		// If query parameter b does not exist, then do nothing.
+		if(request.params().contains("b")){
+			// Keep unblocked users iif b has an explicit value of "false".
+			// Keep blocked users in any other case.
+			final boolean keepUnblockedUsers = "false".equalsIgnoreCase(request.params().get("b"));
+			filter.put("blocked", !keepUnblockedUsers);
+		}
+
 		this.assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath");
 		this.skins = vertx.sharedData().getLocalMap("skins");
 
