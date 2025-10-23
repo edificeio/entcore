@@ -504,7 +504,7 @@ public class StructureController extends BaseController {
 			// Keep unblocked users iif b has an explicit value of "false".
 			// Keep blocked users in any other case.
 			final boolean keepUnblockedUsers = "false".equalsIgnoreCase(request.params().get("b"));
-			filter.put("blocked", new Boolean(!keepUnblockedUsers));
+			filter.put("blocked", !keepUnblockedUsers);
 		}
 
 		this.assetsPath = (String) vertx.sharedData().getLocalMap("server").get("assetPath");
