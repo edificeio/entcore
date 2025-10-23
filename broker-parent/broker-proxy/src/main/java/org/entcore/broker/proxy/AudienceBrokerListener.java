@@ -15,6 +15,6 @@ public interface AudienceBrokerListener {
      * @param request The request object containing the user information, module, resource type, and resource IDs.
      * @return A response object indicating if the user has access and containing potential error information.
      */
-    @BrokerListener(subject = "audience.check.right.{module}.{resourceType}", proxy = true)
+    @BrokerListener(subject = "audience.check.right.{module}.{resourceType}", proxy = false)
     Future<CheckResourceAccessResponseDTO> checkResourceAccess(CheckResourceAccessRequestDTO request);
 }
