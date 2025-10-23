@@ -373,6 +373,7 @@ public class S3Client {
 						}
 						if(!StringUtils.isEmpty(range)) {
 							resp.putHeader("Content-Range", response.getHeader("Content-Range"));
+							resp.setStatusCode(206).setStatusMessage("Partial Content");
 						}
 						resp.putHeader("Content-Length", response.headers().get("Content-Length"));
 					}
@@ -401,14 +402,14 @@ public class S3Client {
 							resultHandler.handle(new DefaultAsyncResult<>((Void) null));
 						}
 					});
-
-					response.resume();
 				} else {
 					resp.setStatusCode(response.statusCode()).setStatusMessage(response.statusMessage()).end();
 					if (resultHandler != null) {
 						resultHandler.handle(new DefaultAsyncResult<>((Void) null));
 					}
 				}
+
+				response.resume();
 			})
 			.onFailure(exception -> {
 				resp.setStatusCode(500).setStatusMessage(exception.getMessage()).end();
