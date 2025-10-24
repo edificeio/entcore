@@ -883,3 +883,10 @@ i.type.screen-time,
 i.screen-time {
   @include fonticon;
 }
+
+i.screen-time-large::before,
+i.type.screen-time::before,
+i.screen-time::before {
+  content:'\e972';
+  color:$blue;
+}
