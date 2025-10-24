@@ -21,6 +21,7 @@ package org.entcore.common.user;
 
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.Utils;
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
@@ -44,6 +45,8 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 	private final EventBus eb;
     private final Storage storage;
     private static final Logger log = LoggerFactory.getLogger(RepositoryHandler.class);
+    private final long LOCK_RELEASE_TIMEOUT = 500L;
+    private final long LOCK_RELEASE_DELAY = 2 * LOCK_RELEASE_TIMEOUT;
 
 	public RepositoryHandler(EventBus eb, Storage storage) {
 		this.eb = eb;
@@ -80,42 +83,51 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 
 				if (!Utils.isEmpty(title) && exportApps.contains(title.substring(1)))
 				{
-					final String exportId = message.body().getString("exportId", "");
-					String userId = message.body().getString("userId", "");
-					String path = message.body().getString("path", "");
-					final String locale = message.body().getString("locale", "fr");
-					final String host = message.body().getString("host", "");
-					JsonArray groupIds = message.body().getJsonArray("groups", new fr.wseduc.webutils.collections.JsonArray());
+                    final String exportId = message.body().getString("exportId", "");
+                    final String userId = message.body().getString("userId", "");
+                    final String finalBusAddress = exportedBusAddress;
+                    final SharedDataHelper sharedData = SharedDataHelper.getInstance();
+                    sharedData.getLock("export_" + exportId + "_" + title, LOCK_RELEASE_TIMEOUT)
+                        .onFailure(th -> log.debug("We could not get the export lock so it means that someone else is already treating the import", th))
+                        .onSuccess(lock -> {
+                            try {
+                                log.info("We got a lock to process export " + exportId + " for user " + userId + " for app " + title);
+                                String path = message.body().getString("path", "");
+                                final String locale = message.body().getString("locale", "fr");
+                                final String host = message.body().getString("host", "");
+                                JsonArray groupIds = message.body().getJsonArray("groups", new fr.wseduc.webutils.collections.JsonArray());
 
-					String finalBusAddress = exportedBusAddress;
-					repositoryEvents.exportResources(resourcesIds, exportDocuments.booleanValue(), exportSharedResources.booleanValue(),
-														exportId, userId, groupIds, path, locale, host,
-					new Handler<ExportResourceResult>()
-					{
-						@Override
-						public void handle(ExportResourceResult isExported)
-						{
-              final boolean ok = isExported.isOk();
-              final Future<Void> future;
-              if(ok) {
-                final String finalPath = isExported.getExportPath();
-                future = storage.moveFsDirectory(finalPath, finalPath);
-              } else {
-                future = succeededFuture();
-              }
-              future.onComplete(res -> {
-                final boolean exported = ok && res.succeeded();
-                JsonObject responsePayload = new JsonObject()
-                    .put("action", "exported")
-                    .put("status", (exported ? "ok" : "error"))
-                    .put("exportId", exportId)
-                    .put("locale", locale)
-                    .put("host", host);
-                eb.publish(finalBusAddress, responsePayload);
-              });
-						}
-					});
-				}
+                                repositoryEvents.exportResources(resourcesIds, exportDocuments.booleanValue(), exportSharedResources.booleanValue(),
+                                        exportId, userId, groupIds, path, locale, host,
+                                        new Handler<JsonObject>() {
+                                            @Override
+                                            public void handle(JsonObject isExported) {
+                                                final boolean ok = isExported.getBoolean("ok");
+                                                final Future<Void> future;
+                                                if (ok) {
+                                                    final String finalPath = isExported.getString("path");
+                                                    future = storage.moveFsDirectory(finalPath, finalPath);
+                                                } else {
+                                                    future = succeededFuture();
+                                                }
+                                                future.onComplete(res -> {
+                                                    sharedData.releaseLockAfterDelay(lock, LOCK_RELEASE_DELAY);
+                                                    final boolean exported = ok && res.succeeded();
+                                                    JsonObject responsePayload = new JsonObject()
+                                                            .put("action", "exported")
+                                                            .put("status", (exported ? "ok" : "error"))
+                                                            .put("exportId", exportId)
+                                                            .put("locale", locale)
+                                                            .put("host", host);
+                                                    eb.publish(finalBusAddress, responsePayload);
+                                                });
+                                            }
+                                        });
+                            } catch (Exception e) {
+                                sharedData.releaseLockAfterDelay(lock, LOCK_RELEASE_DELAY);
+                            }
+                        });
+                }
 				break;
 			case "duplicate:import" :
 				importedBusAddress = "entcore.duplicate";
@@ -132,34 +144,47 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 				if (!Utils.isEmpty(appTitle) && importApps.containsKey(appTitle.substring(1)))
 				{
                     final JsonObject body = message.body();
-					final String importId = body.getString("importId", "");
-					final String userId = body.getString("userId", "");
-                    final String userLogin = body.getString("userLogin", "");
-                    final String userName = body.getString("userName", "");
-                    final String path = body.getString("path", "");
-                    final String locale = body.getString("locale", "fr");
-                    final String folderPath = path + File.separator + importApps.getJsonObject(appTitle.substring(1)).getString("folder");
-                    final String host = body.getString("host", "");
+                    final String importId = body.getString("importId", "");
+                    final String userId = body.getString("userId", "");
                     final boolean force = forceImportAsDuplication;
-					String finalBusAddress = importedBusAddress;
-                    storage.copyDirectoryToFs(folderPath, folderPath)
-                    .onSuccess(e -> {
-                        repositoryEvents.importResources(importId, userId, userLogin, userName, folderPath, locale, host, force, success -> {
-                            JsonObject imported = new JsonObject()
-                                    .put("action", "imported")
-                                    .put("importId", importId)
-                                    .put("app", appTitle.substring(1))
-                                    .put("rapport", success);
-                            eb.publish(finalBusAddress, imported);
-                        });
-                    }).onFailure(th -> {
-                        log.error("Error while copying from FS", th);
-                        final JsonObject imported = new JsonObject()
-                            .put("action", "imported")
-                            .put("importId", importId)
-                            .put("app", appTitle.substring(1))
-                            .put("rapport", new JsonObject().put("status", "error"));
-                        eb.publish(finalBusAddress, imported);
+                    final String finalBusAddress = importedBusAddress;
+                    final SharedDataHelper sharedData = SharedDataHelper.getInstance();
+                    sharedData.getLock("import_" + importId + "_" + appTitle, LOCK_RELEASE_TIMEOUT)
+                    .onFailure(th -> log.info("We could not get the lock so it means that someone else is already treating the import", th))
+                    .onSuccess(lock -> {
+                        log.info("We got a lock to process import " + importId + " for user " + userId + " for app " + appTitle);
+                        try {
+                            final String userLogin = body.getString("userLogin", "");
+                            final String userName = body.getString("userName", "");
+                            final String path = body.getString("path", "");
+                            final String locale = body.getString("locale", "fr");
+                            final String folderPath = path + File.separator + importApps.getJsonObject(appTitle.substring(1)).getString("folder");
+                            final String host = body.getString("host", "");
+                            storage.copyDirectoryToFs(folderPath, folderPath)
+                                    .onSuccess(e -> {
+                                        repositoryEvents.importResources(importId, userId, userLogin, userName, folderPath, locale, host, force, success -> {
+                                            sharedData.releaseLockAfterDelay(lock, LOCK_RELEASE_DELAY);
+                                            JsonObject imported = new JsonObject()
+                                                    .put("action", "imported")
+                                                    .put("importId", importId)
+                                                    .put("app", appTitle.substring(1))
+                                                    .put("rapport", success);
+                                            eb.publish(finalBusAddress, imported);
+                                        });
+                                    }).onFailure(th -> {
+                                        sharedData.releaseLockAfterDelay(lock, LOCK_RELEASE_DELAY);
+                                        log.error("Error while copying from FS", th);
+                                        final JsonObject imported = new JsonObject()
+                                                .put("action", "imported")
+                                                .put("importId", importId)
+                                                .put("app", appTitle.substring(1))
+                                                .put("rapport", new JsonObject().put("status", "error"));
+                                        eb.publish(finalBusAddress, imported);
+                                    });
+                        } catch (Exception e) {
+                            log.error("Error while processing the import", e);
+                            sharedData.releaseLockAfterDelay(lock, LOCK_RELEASE_DELAY);
+                        }
                     });
 				}
 				break;
