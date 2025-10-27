@@ -8,6 +8,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.broker.api.BrokerProxyFactory;
 import org.entcore.broker.api.BrokerPublisher;
 import org.entcore.broker.api.utils.AddressParameter;
 import org.entcore.broker.api.utils.BrokerAddressUtils;
@@ -26,7 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Factory for creating broker publisher proxies.
- * @deprecated Use {@link org.entcore.broker.api.BrokerFactory} instead, which supports both 
+ * @deprecated Use {@link BrokerProxyFactory} instead, which supports both
  * publisher and listener patterns.
  */
 @Deprecated

@@ -33,11 +33,11 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
  * annotated with @BrokerPublisher for publishing messages or @BrokerListener 
  * for request/response communication with the broker.
  */
-public class BrokerFactory {
-    private static final Logger log = LoggerFactory.getLogger(BrokerFactory.class);
+public class BrokerProxyFactory {
+    private static final Logger log = LoggerFactory.getLogger(BrokerProxyFactory.class);
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    private BrokerFactory(){}
+    private BrokerProxyFactory(){}
     
     /**
      * Creates a new instance of a broker publisher interface

@@ -2,9 +2,11 @@ package org.entcore.audience.services.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.entcore.audience.services.AudienceAccessFilter;
-import org.entcore.broker.api.BrokerFactory;
-import org.entcore.broker.proxy.AudienceBrokerListener;
+import org.entcore.broker.api.BrokerProxyFactory;
+import org.entcore.broker.proxy.AudienceListener;
 import org.entcore.broker.api.dto.audience.CheckResourceAccessRequestDTO;
 import org.entcore.broker.api.utils.AddressParameter;
 import org.entcore.common.user.UserInfos;
@@ -17,6 +19,7 @@ import java.util.Set;
  * This implementation uses the AudienceBrokerListener interface to check resource access rights.
  */
 public class NatsBrokerAudienceAccessFilter implements AudienceAccessFilter {
+    private static final Logger log = LoggerFactory.getLogger(NatsBrokerAudienceAccessFilter.class);
     private final Vertx vertx;
     
     public NatsBrokerAudienceAccessFilter(final Vertx vertx) {
@@ -27,8 +30,8 @@ public class NatsBrokerAudienceAccessFilter implements AudienceAccessFilter {
     public Future<Boolean> canAccess(final String module, final String resourceType,
                                      final UserInfos user, final Set<String> resourceIds) {
         // Create the broker listener with address parameters for module and resourceType
-        AudienceBrokerListener listener = BrokerFactory.create(
-            AudienceBrokerListener.class, 
+        AudienceListener listener = BrokerProxyFactory.create(
+            AudienceListener.class,
             vertx,
             new AddressParameter("module", module),
             new AddressParameter("resourceType", resourceType)
@@ -49,6 +52,7 @@ public class NatsBrokerAudienceAccessFilter implements AudienceAccessFilter {
                 if (response.isSuccess()) {
                     return response.isAccess();
                 } else {
+                    log.error(String.format("Error while checking access for %s-%s resources", module, resourceType));
                     throw new RuntimeException(response.getErrorMsg());
                 }
             });
