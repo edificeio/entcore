@@ -62,6 +62,7 @@
   "appregistry.crossRoles": "Rôles transverses",
   "appregistry.delete": "Supprimer",
   "appregistry.delete.application": "Supprimer l'application",
+  "appregistry.distributions": "Distributions",
   "appregistry.do.lock": "Verrouiller",
   "appregistry.do.unlock": "Déverrouiller",
   "appregistry.external.app.header": "Ce lien/connecteur sera uniquement visible par les membres des groupes sélectionnés dans l'onglet \"Droits d'accès\".",

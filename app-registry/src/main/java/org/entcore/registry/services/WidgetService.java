@@ -22,6 +22,7 @@ package org.entcore.registry.services;
 import java.util.List;
 
 import io.vertx.core.Handler;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import fr.wseduc.webutils.Either;
@@ -41,5 +42,5 @@ public interface WidgetService {
 	public void massUnauthorize(String widgetId, String structureId, List<String> profiles, Handler<Either<String, JsonObject>> handler);
 	public void massSetMandatory(String widgetId, String structureId, List<String> profiles, Handler<Either<String, JsonObject>> handler);
 	public void massRemoveMandatory(String widgetId, String structureId, List<String> profiles, Handler<Either<String, JsonObject>> handler);
-
+	public void changeWidgetDistributions(String widgetId, JsonArray distributions, Handler<Either<String, JsonObject>> handler);
 }

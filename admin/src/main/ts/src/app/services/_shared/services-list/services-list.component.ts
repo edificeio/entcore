@@ -100,6 +100,12 @@ export class ServicesListComponent extends OdeComponent implements OnInit, OnDes
                                 this.collectionRef[this.serviceName].collection,
                                 this.servicesStore.structure.levelsOfEducation
                             )
+
+                            // A non-SUPER_ADMIN can only see widgets with non distribution or with distribution is in the current structure distributions.
+                            this.collectionRef[this.serviceName].collection = filterWidgetsByDistributions(
+                                this.collectionRef[this.serviceName].collection,
+                                this.servicesStore.structure.distributions
+                            );
                         }
 
                         // We add icon property because doesn't exist on WidgetModel 
@@ -208,6 +214,25 @@ export function filterWidgetsByLevelsOfEducation(widgets: WidgetModel[], levelsO
         return widgets;
     }
     return widgets.filter(widget => levelsOfEducation.some(level => widget.levelsOfEducation.indexOf(level) >= 0));
+}
+
+export function filterWidgetsByDistributions(widgets: WidgetModel[], structureDistributions: string[]) {
+
+    return widgets.filter((widget: WidgetModel) => {
+
+        if (widget.distributions == null || widget.distributions.length === 0) {
+            return true;
+        }
+
+        return widget.distributions.some(distribution => {
+            // if distrubtion is in structureDistributions, return true
+            if (structureDistributions.some(structureDistribution => distribution.indexOf(structureDistribution) > -1)) {
+                return true;
+            }
+
+            return false;
+        });
+    });
 }
 
 export function addWidgetsIcons(widgets: WidgetModel[], iconWidget:{[T: string]: string}) {

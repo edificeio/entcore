@@ -97,6 +97,7 @@ public class DefaultWidgetService implements WidgetService {
 			"MATCH (w:Widget) OPTIONAL MATCH (w)<-[:HAS_WIDGET]-(a:Application) "+
 			"WITH w, a, length(a-[:PROVIDE]->(:WorkflowAction)) > 0 as workflowLinked " +
 			"RETURN collect({id: w.id, name: w.name, js: w.js, path: w.path, i18n: w.i18n, " +
+			"distributions: coalesce(w.distributions, []), " +
 			"levelsOfEducation: coalesce(w.levelsOfEducation, CASE " +
 				"WHEN w.name IN {1stLoeWidgets} THEN [1] " +
 				"WHEN w.name IN {2ndLoeWidgets} THEN [2] " +
@@ -310,6 +311,22 @@ public class DefaultWidgetService implements WidgetService {
 				.put("widgetId", widgetId)
 				.put("structureId", structureId)
 				.put("profiles", new JsonArray(profiles));
+
+		neo.execute(query, params, validEmptyHandler(handler));
+	}
+
+	@Override
+	public void changeWidgetDistributions(String widgetId, JsonArray distributions, Handler<Either<String, JsonObject>> handler) {
+		if(widgetId == null || widgetId.trim().isEmpty() || distributions == null || distributions.isEmpty()){
+			handler.handle(new Either.Left<String, JsonObject>("invalid.parameters"));
+		}
+
+		String query =
+			"MATCH (w:Widget {id: {widgetId}}) SET w.distributions = {distributions}";
+	
+		JsonObject params = new JsonObject()
+				.put("widgetId", widgetId)
+				.put("distributions", distributions);
 
 		neo.execute(query, params, validEmptyHandler(handler));
 	}

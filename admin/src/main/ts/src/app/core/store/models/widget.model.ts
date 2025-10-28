@@ -18,6 +18,7 @@ export class WidgetModel extends Model<WidgetModel> {
     path: string;
 
     roles: Array<RoleModel>;
+    distributions: Array<string>;
     levelsOfEducation: Array<number>;
 
     constructor() {
