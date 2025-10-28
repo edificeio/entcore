@@ -16,10 +16,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -63,7 +60,9 @@ public class BrokerProxyFactory {
         private final Vertx vertx;
         private final Map<String, String> params;
         private final List<SubjectMatcher> disabledSubjects;
-        
+        private final Map<String, Optional<BrokerPublisher>> cachedPublishers;
+        private final Map<String, Optional<BrokerListener>> cachedListeners;
+        private final Map<String, JavaType> methodReturnType;
         /**
          * Creates a new BrokerProxyInvocationHandler
          * 
@@ -74,7 +73,9 @@ public class BrokerProxyFactory {
             this.vertx = vertx;
             this.params = BrokerAddressUtils.getParametersMap(addressParameters);
             this.disabledSubjects = loadDisabledSubjects(vertx);
-            
+            this.cachedPublishers = new HashMap<>();
+            this.cachedListeners = new HashMap<>();
+            this.methodReturnType = new HashMap<>();
             if (!disabledSubjects.isEmpty()) {
                 log.info("Broker proxy has " + disabledSubjects.size() + " disabled subject patterns");
             }
@@ -120,25 +121,29 @@ public class BrokerProxyFactory {
             if (method.getDeclaringClass() == Object.class) {
                 return method.invoke(this, args);
             }
-            
+
+            final String methodKey = method.getDeclaringClass().getCanonicalName() + "." + method.toGenericString();
             // Check for BrokerPublisher annotation (pub/sub pattern)
-            Optional<BrokerPublisher> publisherAnnotation = ReflectionUtils.getMethodAnnotation(
-                BrokerPublisher.class, 
-                method.getDeclaringClass(), 
-                method);
+            Optional<BrokerPublisher> publisherAnnotation = cachedPublishers.computeIfAbsent(methodKey, k -> ReflectionUtils.getMethodAnnotation(
+                    BrokerPublisher.class,
+                    method.getDeclaringClass(),
+                    method));
+
 
             if (publisherAnnotation.isPresent()) {
-                return handlePublisherMethod(publisherAnnotation.get(), method, args);
+                return handlePublisherMethod(publisherAnnotation.get(), args);
             }
             
             // Check for BrokerListener annotation (request/response pattern)
-            Optional<BrokerListener> listenerAnnotation = ReflectionUtils.getMethodAnnotation(
+            Optional<BrokerListener> listenerAnnotation = cachedListeners.computeIfAbsent(methodKey, k -> ReflectionUtils.getMethodAnnotation(
                 BrokerListener.class, 
                 method.getDeclaringClass(), 
-                method);
+                method)
+            );
                 
             if (listenerAnnotation.isPresent()) {
-                return handleListenerMethod(listenerAnnotation.get(), method, args);
+                JavaType returnType = methodReturnType.computeIfAbsent(methodKey, k -> getMethodReturnType(method));
+                return handleListenerMethod(listenerAnnotation.get(), args, returnType);
             }
 
             // No valid annotation found
@@ -146,11 +151,37 @@ public class BrokerProxyFactory {
                 new UnsupportedOperationException("Method " + method.getName() + 
                     " has neither BrokerPublisher nor BrokerListener annotation"));
         }
-        
+
+        private JavaType getMethodReturnType(Method method) {
+            Type returnType = method.getGenericReturnType();
+            final JavaType javaType;
+            if (returnType instanceof Class) {
+                // If it's a simple class type
+                javaType = TypeFactory.defaultInstance().constructType(returnType);
+            } else {
+                // For parameterized types (like Future<MyType>), determine the actual type argument once
+                JavaType tmp;
+                try {
+                    Class<?> responseType = method.getReturnType();
+                    if (Future.class.isAssignableFrom(responseType)) {
+                        tmp = TypeFactory.defaultInstance().constructType(
+                                ReflectionUtils.getTypeArgumentOfFuture(method));
+                    } else {
+                        tmp = TypeFactory.defaultInstance().constructType(Object.class);
+                    }
+                } catch (Exception e) {
+                    log.warn("Could not determine response type for " + method.getName(), e);
+                    tmp = TypeFactory.defaultInstance().constructType(Object.class);
+                }
+                javaType = tmp;
+            }
+            return javaType;
+        }
+
         /**
          * Handles methods annotated with BrokerPublisher (pub/sub pattern)
          */
-        private Future<Void> handlePublisherMethod(BrokerPublisher annotation, Method method, Object[] args) 
+        private Future<Void> handlePublisherMethod(BrokerPublisher annotation, Object[] args)
                 throws JsonProcessingException {
             // Replace placeholders in the subject
             final String subject = BrokerAddressUtils.replacePlaceholders(annotation.subject(), params);
@@ -194,7 +225,7 @@ public class BrokerProxyFactory {
          * Handles methods annotated with BrokerListener (request/response pattern)
          */
         @SuppressWarnings("unchecked")
-        private <T> Future<T> handleListenerMethod(BrokerListener annotation, Method method, Object[] args) 
+        private <T> Future<T> handleListenerMethod(BrokerListener annotation, Object[] args, final JavaType returnType)
                 throws JsonProcessingException {
             // Replace placeholders in the subject
             final String subject = BrokerAddressUtils.replacePlaceholders(annotation.subject(), params);
@@ -219,30 +250,7 @@ public class BrokerProxyFactory {
             if (annotation.timeout() > 0) {
                 options.setSendTimeout(annotation.timeout());
             }
-            
-            // Get the expected return type
-            Type returnType = method.getGenericReturnType();
-            final JavaType javaType;
-            if (returnType instanceof Class) {
-                // If it's a simple class type
-                javaType = TypeFactory.defaultInstance().constructType(returnType);
-            } else {
-                // For parameterized types (like Future<MyType>), determine the actual type argument once
-                JavaType tmp;
-                try {
-                    Class<?> responseType = method.getReturnType();
-                    if (Future.class.isAssignableFrom(responseType)) {
-                        tmp = TypeFactory.defaultInstance().constructType(
-                            ReflectionUtils.getTypeArgumentOfFuture(method));
-                    } else {
-                        tmp = TypeFactory.defaultInstance().constructType(Object.class);
-                    }
-                } catch (Exception e) {
-                    log.warn("Could not determine response type for " + method.getName(), e);
-                    tmp = TypeFactory.defaultInstance().constructType(Object.class);
-                }
-                javaType = tmp;
-            }
+
             
             // Make the request via event bus
             final Promise<T> promise = Promise.promise();
@@ -254,7 +262,7 @@ public class BrokerProxyFactory {
                             return;
                         }
                         final String responseJson = (String) reply.body();
-                        T response = (T) mapper.readValue(responseJson, javaType);
+                        T response = (T) mapper.readValue(responseJson, returnType);
                         promise.complete(response);
                     } catch (Exception e) {
                         log.error("Error deserializing response for subject: " + subject, e);
