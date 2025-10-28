@@ -8,9 +8,7 @@ import io.vertx.core.logging.LoggerFactory;
 import org.entcore.audience.services.AudienceAccessFilter;
 import org.entcore.common.user.UserInfos;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Configurable implementation of AudienceAccessFilter that selects the appropriate
@@ -26,9 +24,13 @@ import java.util.Set;
  * {
  *   "config": {
  *     "broker": {
- *       "defaultType": "EVENTBUS", // by default: use the event-bus
+ *       "defaultType": "EVENTBUS", // by default: use the event-bus TODO: Removed
  *       "modules": {
- *         "communities": { "type": "NATS" }, // for module "communities" use NATS
+ *         "communities": { "type": "NATS" }, // for module "communities" use NATS TODO: Removed
+ *       },
+ *       "natsModules": { //modules using NATS. For each one, provide the resourceTypes TODO: Replaces "defaultType" and "modules"
+ *           "communities": [ "announcements" ],
+ *           "foo": [ "bar", "baz" ]
  *       }
  *     }
  *   }
@@ -44,45 +46,37 @@ import java.util.Set;
  */
 public class ConfigurableAudienceAccessFilter implements AudienceAccessFilter {
     private static final Logger log = LoggerFactory.getLogger(ConfigurableAudienceAccessFilter.class);
-    private static final String NATS = "NATS";
 
-    private final Vertx vertx;
     private final JsonObject config;
     private final NatsBrokerAudienceAccessFilter natsFilter;
     private final EventBusAudienceAccessFilter eventBusFilter;
-    private final Boolean useNatsByDefault;
-    private final Map<String, Boolean> modulesUsingNats;
+    private final Map<String, List<String>> natsModulesConfig;
 
     public ConfigurableAudienceAccessFilter(final Vertx vertx, final JsonObject config) {
-        this.vertx = vertx;
         this.config = config != null ? config.copy() : new JsonObject();
         // pre-create delegates to avoid creating them at each call
-        this.natsFilter = new NatsBrokerAudienceAccessFilter(vertx);
         this.eventBusFilter = new EventBusAudienceAccessFilter(vertx);
 
-        // initialize default and module-specific broker config
-        Map<String, Boolean> map = new HashMap<>();
+        // initialize NATS audience filters using provided config
+        this.natsModulesConfig = new HashMap<>();
         JsonObject brokerConfig = this.config.getJsonObject("broker");
-        if (brokerConfig == null) {
-            this.useNatsByDefault = false; // fall back to event-bus
-        } else {
-            this.useNatsByDefault = brokerConfig.getString("defaultType", "").equals(NATS);
-            JsonObject modulesConfig = brokerConfig.getJsonObject("modules");
+        if (brokerConfig != null) {
+            JsonObject modulesConfig = brokerConfig.getJsonObject("natsModules");
             if (modulesConfig != null) {
                 Set<String> modules = modulesConfig.fieldNames();
-                for (String module:modules) {
-                    map.put(module, modulesConfig.getString("type", "").equals(NATS));
+                for (String module : modules) {
+                    final List<String> resourceTypes = modulesConfig.getJsonArray(module).getList();
+                    natsModulesConfig.put(module, resourceTypes);
                 }
             }
         }
-        this.modulesUsingNats = map;
+        this.natsFilter = new NatsBrokerAudienceAccessFilter(vertx, natsModulesConfig);
     }
 
     @Override
     public Future<Boolean> canAccess(final String module, final String resourceType,
                                      final UserInfos user, final Set<String> resourceIds) {
-        boolean useNats = this.modulesUsingNats.getOrDefault(module, this.useNatsByDefault);
-        if (useNats) {
+        if (natsModulesConfig.containsKey(module)) {
             log.debug("ConfigurableAudienceAccessFilter: using NATS for module " + module);
             return natsFilter.canAccess(module, resourceType, user, resourceIds);
         } else {
