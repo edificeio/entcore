@@ -65,8 +65,7 @@ public class Zip {
 				.put("deletePath", deletePath)
 				.put("level", level);
         final DeliveryOptions deliveryOptions = new DeliveryOptions()
-                .setSendTimeout(900000l)
-                .setLocalOnly(local);
+                .setSendTimeout(900000l);
         eb.request(address, j, deliveryOptions, handlerToAsyncHandler(handler));
 	}
 
