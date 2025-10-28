@@ -311,4 +311,19 @@ public class WidgetController extends BaseController
 			}
 		});
 	}
+
+	@Put("/widget/:id/distributions")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(SuperAdminFilter.class)
+	@MfaProtected()
+	public void changeWidgetDistributions(final HttpServerRequest request) {
+		bodyToJson(request, new Handler<JsonObject>() {
+			@Override
+			public void handle(JsonObject jo) {
+				final String widgetId = request.params().get("id");
+				final JsonArray distributions = jo.getJsonArray("distributions");
+				service.changeWidgetDistributions(widgetId, distributions, defaultResponseHandler(request));
+			}
+		});
+	}
 }

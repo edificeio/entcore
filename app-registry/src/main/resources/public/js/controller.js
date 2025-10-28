@@ -924,4 +924,12 @@ function AppRegistry($scope, $sce, $http, model, template, httpWrapper){
             notify.info(lang.translate("appregistry.notify.distributionsUpdate"));
         });
     };
+
+	$scope.changeWidgetDistributions = function (widgetId, distributions) {
+		$http.put('/appregistry/widget/' + widgetId + '/distributions', {
+			distributions: distributions
+		}).success(function () {
+			notify.info(lang.translate("appregistry.notify.distributionsUpdate"));
+		});
+	};
 }
