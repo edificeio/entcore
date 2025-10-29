@@ -542,16 +542,6 @@ i.type.appointments {
   }
 }
 
-i.communities,
-i.communities-large,
-i.type.communities {
-  @include fonticon;
-  &::before {
-    content: "\e96f";
-    color: $purple;
-  }
-}
-
 i.minetest,
 i.minetest-large,
 i.type.minetest {
