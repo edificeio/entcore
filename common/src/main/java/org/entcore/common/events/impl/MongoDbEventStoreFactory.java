@@ -34,7 +34,7 @@ public class MongoDbEventStoreFactory extends EventStoreFactory {
 		eventStore.setModule(module);
 		eventStore.setVertx(vertx);
 
-		vertx.sharedData().<String, String>getAsyncMap("server")
+		vertx.sharedData().<String, String>getLocalAsyncMap("server")
             .compose(serverMap -> serverMap.get("event-store"))
             .onSuccess(eventStoreConf -> {
                 if (eventStoreConf != null) {

@@ -58,7 +58,7 @@ public class Archive extends BaseServer {
 		super.start(promise);
 		promise.future()
 				.compose(init -> StorageFactory.build(vertx, config))
-				.compose(storageFactory -> SharedDataHelper.getInstance().<String, String>getAsyncMap("server")
+				.compose(storageFactory -> SharedDataHelper.getInstance().<String, String>getLocalAsyncMap("server")
 						.map(archiveConfigMap -> Pair.of(storageFactory, archiveConfigMap)))
 				.compose(configPair -> initArchives(configPair.getLeft(), configPair.getRight()))
 				.onComplete(startPromise);

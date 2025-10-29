@@ -139,7 +139,7 @@ public class FolderImporter
 		this.fs = fs;
 		this.eb = eb;
 		this.throwErrors = throwErrors;
-		vertx.sharedData().<String, String>getAsyncMap("server")
+		vertx.sharedData().<String, String>getLocalAsyncMap("server")
 			.compose(serverMap -> serverMap.get("archiveConfig"))
 			.onSuccess(archiveConfig -> {
 				try {

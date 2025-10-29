@@ -26,7 +26,6 @@ import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.data.FileResolver;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
-import fr.wseduc.webutils.metrics.HealthCheckProbe;
 import fr.wseduc.webutils.request.AccessLogger;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.request.filter.AccessLoggerFilter;
@@ -35,8 +34,8 @@ import fr.wseduc.webutils.request.filter.UserAuthFilter;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import fr.wseduc.webutils.validation.JsonSchemaValidator;
 
-import io.vertx.core.Promise;
-import io.vertx.core.shareddata.LocalMap;
+import io.vertx.core.*;
+import io.vertx.core.json.JsonArray;
 
 import org.entcore.broker.api.dto.applications.ApplicationStatusDTO;
 import org.entcore.broker.api.publisher.BrokerPublisherFactory;
@@ -52,10 +51,6 @@ import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.explorer.ExplorerPluginFactory;
 import org.entcore.common.http.filter.*;
-import org.entcore.common.http.health.MongoProbe;
-import org.entcore.common.http.health.Neo4jProbe;
-import org.entcore.common.http.health.PostgresProbe;
-import org.entcore.common.http.health.RedisProbe;
 import org.entcore.common.http.i18n.I18nHandler;
 import org.entcore.common.http.response.SecurityHookRender;
 import org.entcore.common.http.response.OverrideThemeHookRender;
@@ -76,14 +71,12 @@ import org.entcore.common.utils.Config;
 import org.entcore.common.utils.Mfa;
 import org.entcore.common.utils.Zip;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 import java.io.File;
 import java.util.*;
@@ -107,125 +100,130 @@ public abstract class BaseServer extends Server {
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
-		moduleName = getClass().getSimpleName();
-		this.statusPublisher = BrokerPublisherFactory.create(
-				ApplicationStatusBrokerPublisher.class,
-				vertx,
-				new AddressParameter("application", moduleName.toLowerCase())
-		);
-		if (resourceProvider == null) {
-			setResourceProvider(new ResourceProviderFilter());
-		}
-		final Promise<Void> baseServerPromise = Promise.promise();
-		super.start(baseServerPromise);
-		baseServerPromise.future().compose(x ->
-			SharedDataHelper.getInstance().<String, Object>getMulti("server",
-				"node", "contentSecurityPolicy", "cache-filter", "skins", "oauthCache",
-				"neo4jConfig", "elasticsearchConfig", "redisConfig", "explorerConfig")
-		).compose(baseServerMap -> {
-			accessLogger = new EntAccessLogger(getEventBus(vertx));
-			EventStoreFactory eventStoreFactory = EventStoreFactory.getFactory();
-			eventStoreFactory.setVertx(vertx);
-			return Mfa.Factory.getFactory().init(vertx, config).compose(x -> {
-				try {
-					initBaseServer(startPromise, baseServerMap);
-				} catch (Exception e) {
-					log.error("Error when initialing BaseServer on module " + moduleName, e);
-					startPromise.fail(e);
-					if (vertx.isClustered()) {
-						try {
-							Promise<Void> stopPromise = Promise.promise();
-							super.stop(stopPromise);
-							stopPromise.future().onComplete(r -> vertx.close());
-						} catch (Exception e1) {
-							log.error("Error when stop module " + moduleName, e1);
-						}
-					}
-				}
-				return startPromise.future();
-			});
-		}).onFailure(ex -> log.error("Error when initialing Server on module " + moduleName, ex));
-    startPromise.future().onComplete(result -> {
-      // Wait for broker module to be deployed
-      final long brokerDelay = config.getLong("broker-start-delay", 60_000L); // 60 sec
-      vertx.setTimer(brokerDelay, time -> {
-        statusPublisher.notifyStarted(ApplicationStatusDTO.withBasicInfo(moduleName, nodeName));
-        log.info("Sent started status to broker for application " + moduleName);
-      });
-    });
+        moduleName = getClass().getSimpleName();
+        this.statusPublisher = BrokerPublisherFactory.create(
+                ApplicationStatusBrokerPublisher.class,
+                vertx,
+                new AddressParameter("application", moduleName.toLowerCase())
+        );
+        if (resourceProvider == null) {
+            setResourceProvider(new ResourceProviderFilter());
+        }
+        Future.<Void>future(p ->{
+            try {
+                super.start(p);
+            } catch (Exception e) {
+                startPromise.fail(e);
+                return;
+            }}
+        ).compose(x -> {
+            accessLogger = new EntAccessLogger(getEventBus(vertx));
+            EventStoreFactory eventStoreFactory = EventStoreFactory.getFactory();
+            eventStoreFactory.setVertx(vertx);
+            return loadInfra();
+        })
+        .compose(x -> Mfa.Factory.getFactory().init(vertx, config))
+        .compose(x ->
+            SharedDataHelper.getInstance().<String, Object>getLocalMulti("server",
+                "node", "contentSecurityPolicy", "cache-filter", "skins", "oauthCache",
+                "neo4jConfig", "elasticsearchConfig", "redisConfig", "explorerConfig")
+        )
+        .compose(this::initBaseServer)
+        .onFailure(e -> {
+            log.error("Error when initialing BaseServer on module " + moduleName, e);
+            if (vertx.isClustered()) {
+                try {
+                    Promise<Void> stopPromise = Promise.promise();
+                    super.stop(stopPromise);
+                    stopPromise.future().onComplete(r -> vertx.close());
+                } catch (Exception e1) {
+                    log.error("Error when stop module " + moduleName, e1);
+                }
+            }
+        })
+        .onSuccess(result -> {
+            // Wait for broker module to be deployed
+            final long brokerDelay = config.getLong("broker-start-delay", 60_000L); // 60 sec
+            vertx.setTimer(brokerDelay, time -> {
+                statusPublisher.notifyStarted(ApplicationStatusDTO.withBasicInfo(moduleName, nodeName));
+                log.info("Sent started status to broker for application " + moduleName);
+            });
+        })
+        .onComplete(startPromise);
 	}
 
-  public void initBaseServer(final Promise<Void> startPromise, final Map<String, Object> baseServerMap) throws Exception {
+    public Future<Void> initBaseServer(final Map<String, Object> baseServerMap) {
 		initFilters(baseServerMap);
 
 		final String node = (String) baseServerMap.get("node");
-    this.nodeName = node;
+        this.nodeName = node;
 		contentSecurityPolicy = (String) baseServerMap.get("contentSecurityPolicy");
+        return Future.future(p -> {
+            StorageFactory.build(vertx, config)
+                .onFailure(p::fail)
+                .onSuccess(factory -> {
+                    final Storage storage = factory.getStorage();
+                    repositoryHandler = new RepositoryHandler(getEventBus(vertx), storage);
+                    searchingHandler = new SearchingHandler(getEventBus(vertx));
+                    i18nHandler = new I18nHandler();
 
-    StorageFactory.build(vertx, config)
-      .onFailure(startPromise::fail)
-      .onSuccess(factory -> {
-        final Storage storage = factory.getStorage();
-        repositoryHandler = new RepositoryHandler(getEventBus(vertx), storage);
-        searchingHandler = new SearchingHandler(getEventBus(vertx));
-        i18nHandler = new I18nHandler();
+                    Config.getInstance().setConfig(config);
 
-        Config.getInstance().setConfig(config);
+                    EmailFactory.build(vertx, config)
+                        .onFailure(p::fail)
+                        .onSuccess(f -> {
+                            UserValidationFactory.build(vertx, config);
+                            if (node != null) {
+                                initModulesHelpers(node, baseServerMap);
+                            }
 
-        EmailFactory.build(vertx, config)
-          .onFailure(startPromise::fail)
-          .onSuccess(f -> {
-            UserValidationFactory.build(vertx, config);
-            if (node != null) {
-              initModulesHelpers(node, baseServerMap);
-            }
+                            if (config.getBoolean("csrf-token", false)) {
+                                addFilter(new CsrfFilter(getEventBus(vertx), securedUriBinding));
+                            }
+                            if (config.getBoolean("block-route-filter", false)) {
+                                addFilter(new BlockRouteFilter(vertx, getEventBus(vertx), Server.getPathPrefix(config),
+                                        config.getLong("block-route-filter-refresh-period", 5 * 60 * 1000L),
+                                        config.getBoolean("block-route-filter-redirect-if-mobile", true),
+                                        config.getInteger("block-route-filter-error-status-code", 401)
+                                ));
+                            }
 
-            if (config.getBoolean("csrf-token", false)) {
-              addFilter(new CsrfFilter(getEventBus(vertx), securedUriBinding));
-            }
-            if (config.getBoolean("block-route-filter", false)) {
-              addFilter(new BlockRouteFilter(vertx, getEventBus(vertx), Server.getPathPrefix(config),
-                config.getLong("block-route-filter-refresh-period", 5 * 60 * 1000L),
-                config.getBoolean("block-route-filter-redirect-if-mobile", true),
-                config.getInteger("block-route-filter-error-status-code", 401)
-              ));
-            }
+                            final List<Future<?>> futures = new ArrayList<>();
 
-            final List<Future<?>> futures = new ArrayList<>();
+                            final Boolean cacheEnabled = (Boolean) baseServerMap.getOrDefault("cache-filter", false);
+                            if(Boolean.TRUE.equals(cacheEnabled)){
+                                final CacheService cacheService = CacheService.create(vertx);
+                                addFilter(new CacheFilter(getEventBus(vertx),securedUriBinding, cacheService));
+                            }
 
-            final Boolean cacheEnabled = (Boolean) baseServerMap.getOrDefault("cache-filter", false);
-            if(Boolean.TRUE.equals(cacheEnabled)){
-              final CacheService cacheService = CacheService.create(vertx);
-              addFilter(new CacheFilter(getEventBus(vertx),securedUriBinding, cacheService));
-            }
+                            addFilter(new MandatoryUserValidationFilter(mfaProtectedBinding, getEventBus(vertx)));
 
-            addFilter(new MandatoryUserValidationFilter(mfaProtectedBinding, getEventBus(vertx)));
+                            if (config.getString("integration-mode","BUS").equals("HTTP")) {
+                                addFilter(new HttpActionFilter(securedUriBinding, config, vertx, resourceProvider));
+                            } else {
+                                addFilter(new ActionFilter(securedUriBinding, vertx, resourceProvider));
+                            }
+                            vertx.eventBus().consumer("user.repository", repositoryHandler);
+                            vertx.eventBus().consumer("search.searching", this.searchingHandler);
+                            vertx.eventBus().consumer(moduleName.toLowerCase()+".i18n", this.i18nHandler);
 
-            if (config.getString("integration-mode","BUS").equals("HTTP")) {
-              addFilter(new HttpActionFilter(securedUriBinding, config, vertx, resourceProvider));
-            } else {
-              addFilter(new ActionFilter(securedUriBinding, vertx, resourceProvider));
-            }
-            vertx.eventBus().consumer("user.repository", repositoryHandler);
-            vertx.eventBus().consumer("search.searching", this.searchingHandler);
-            vertx.eventBus().consumer(moduleName.toLowerCase()+".i18n", this.i18nHandler);
+                            final Map<String, Object> skins = getOrElse((JsonObject) baseServerMap.get("skins"), new JsonObject()).getMap();
+                            loadI18nAssetsFiles(skins);
 
-            final Map<String, Object> skins = getOrElse((JsonObject) baseServerMap.get("skins"), new JsonObject()).getMap();
-            loadI18nAssetsFiles(skins);
+                            futures.add(addController(new RightsController()));
+                            futures.add(addController(new ConfController()));
+                            SecurityHandler.setVertx(vertx);
 
-            futures.add(addController(new RightsController()));
-            futures.add(addController(new ConfController()));
-            SecurityHandler.setVertx(vertx);
-
-            Renders.getAllowedHosts().addAll(skins.keySet());
-            //listen for i18n deploy
-            vertx.eventBus().consumer(ONDEPLOY_I18N, message ->{
-              log.info("Received "+ONDEPLOY_I18N+" update i18n override");
-              this.loadI18nAssetsFiles(skins);
-            });
-            Future.all(futures).onComplete(res -> startPromise.tryComplete());
-          });
-      });
+                            Renders.getAllowedHosts().addAll(skins.keySet());
+                            //listen for i18n deploy
+                            vertx.eventBus().consumer(ONDEPLOY_I18N, message ->{
+                                log.info("Received "+ONDEPLOY_I18N+" update i18n override");
+                                this.loadI18nAssetsFiles(skins);
+                            });
+                            Future.all(futures).onComplete(res -> p.tryComplete());
+                        });
+                });
+        });
   }
 
 	@Override
@@ -502,4 +500,79 @@ public abstract class BaseServer extends Server {
 		return Future.succeededFuture();
 	}
 
+
+    private Future<Void> loadInfra() {
+        if(moduleName.contains("Starter")) {
+            log.info("Skipping module loading for module " + moduleName);
+            return Future.succeededFuture();
+        }
+        log.info("loading infra for module " + moduleName);
+        Promise<Void> returnPromise = Promise.promise();
+        try {
+            final Map<String, Object> serverMap = new HashMap<>();
+            String random = config.getBoolean("key-random", true) ? String.valueOf(Math.random()) : "";
+            serverMap.put("signKey", config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK" + random));
+
+            serverMap.put("sameSiteValue", config.getString("sameSiteValue", "Strict"));
+            serverMap.put("hidePersonalData", config.getBoolean("hidePersonalData", false));
+
+            //JWT need signKey
+            SecurityHandler.setVertx(vertx);
+            //encoding
+            final JsonArray encondings = config.getJsonArray("encoding-available", new JsonArray());
+            final JsonArray safeEncondigs = new JsonArray();
+            for(final Object o : encondings){
+                safeEncondigs.add(o.toString());
+            }
+            serverMap.put("encoding-available", safeEncondigs.encode());
+            //
+            CookieHelper.getInstance().init((String) serverMap.get("signKey"),
+                    (String) serverMap.get("sameSiteValue"),
+                    log);
+
+            final String[] keys = new String[]{"swift", "s3", "emailConfig", "emailValidationConfig", "mfaConfig",
+                    "webviewConfig", "file-system", "neo4jConfig", "mongoConfig", "postgresConfig", "explorerConfig",
+                    "redisConfig", "oauthCache", "node-pdf-generator", "event-store", "metricsOptions", "content-transformer"};
+            for(final String key : keys) {
+                JsonObject value = config.getJsonObject(key);
+                if (value != null) {
+                    serverMap.put(key, value.encode());
+                }
+            }
+            serverMap.put("cache-enabled", config.getBoolean("cache-enabled", false));
+            serverMap.put("gridfsAddress", config.getString("gridfs-address", "wse.gridfs.persistor"));
+            final String csp = config.getString("content-security-policy");
+            if (isNotEmpty(csp)) {
+                serverMap.put("contentSecurityPolicy", csp);
+            }
+            final String staticHost = config.getString("static-host");
+            if(staticHost != null) {
+                serverMap.put("static-host", staticHost);
+            }
+            /* sharedConf sub-object */
+            JsonObject sharedConf = config.getJsonObject("sharedConf", new JsonObject());
+            for(String field : sharedConf.fieldNames()){
+                serverMap.put(field, sharedConf.getValue(field));
+            }
+
+            serverMap.put("skins", config.getJsonObject("skins", new JsonObject()));
+
+            log.info("config skin-levels = " + config.getJsonObject("skin-levels", new JsonObject()));
+            serverMap.put("skin-levels", config.getJsonObject("skin-levels", new JsonObject()));
+
+            vertx.sharedData().getLocalAsyncMap("server").onSuccess(asyncServerMap -> {
+                final List<Future<Void>> futures = new ArrayList<>();
+                serverMap.entrySet().stream().forEach(entry -> futures.add(asyncServerMap.put(entry.getKey(), entry.getValue())));
+                Future.all(futures)
+                        .onSuccess(a -> returnPromise.tryComplete())
+                        .onFailure(ex -> {
+                            log.error("Error putting values in config server map", ex);
+                            returnPromise.tryFail(ex);
+                        });
+            }).onFailure(ex -> log.error("Error getting server map", ex));
+        } catch (Exception ex) {
+            returnPromise.tryFail(ex);
+        }
+        return returnPromise.future();
+    }
 }

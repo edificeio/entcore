@@ -134,7 +134,7 @@ public class PortalController extends BaseController {
         }
         defaultTracker = config.getJsonObject( "tracker", new JsonObject().put("type", "none") );
         eventStore = EventStoreFactory.getFactory().getEventStore(Portal.class.getSimpleName());
-        SharedDataHelper.getInstance().getAsyncMap("server")
+        SharedDataHelper.getInstance().getLocalAsyncMap("server")
           .compose(serverMap -> serverMap.put("assetPath", assetsPath))
           .onFailure(ex -> log.error("Error when put assetPath", ex));
 

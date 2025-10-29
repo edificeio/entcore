@@ -15,7 +15,7 @@ public class MongoClientFactory {
             final MongoClient mongoClient = MongoClient.create(vertx, mongoConfig);
             return succeededFuture(mongoClient);
         }else{
-          return vertx.sharedData().<String, String>getAsyncMap("server")
+          return vertx.sharedData().<String, String>getLocalAsyncMap("server")
             .flatMap(map -> map.get("mongoConfig"))
             .flatMap(mongoConfig -> {
               final Future<MongoClient> future;

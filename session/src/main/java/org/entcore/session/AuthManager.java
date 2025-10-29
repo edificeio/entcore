@@ -69,7 +69,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		super.start();
 		final SharedDataHelper sharedDataHelper = SharedDataHelper.getInstance();
 		sharedDataHelper.init(vertx);
-		sharedDataHelper.<String, Object>getMulti("server", "neo4jConfig", "node", "oauthCache", "redisConfig")
+		sharedDataHelper.<String, Object>getLocalMulti("server", "neo4jConfig", "node", "oauthCache", "redisConfig")
 				.compose(sessionMap -> initSession(sessionMap))
 				.onComplete(startPromise);
 	}

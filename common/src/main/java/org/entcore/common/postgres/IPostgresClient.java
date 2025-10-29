@@ -41,7 +41,7 @@ public interface IPostgresClient {
             final JsonObject postgresqlConfig = config.getJsonObject("postgresConfig");
             return succeededFuture(postgresqlConfig);
         } else {
-            return vertx.sharedData().<String, String>getAsyncMap("server")
+            return vertx.sharedData().<String, String>getLocalAsyncMap("server")
               .flatMap(m -> m.get("postgresConfig"))
               .flatMap(postgresConfig -> {
                 final Future<JsonObject> pgConf;

@@ -54,7 +54,7 @@ public class FolderImporterZip {
             .onSuccess(antivirus -> this.antivirusClient = antivirus)
             .onFailure(ex -> logger.error("Error creating antivirus", ex));
         encodings.add("UTF-8");
-        SharedDataHelper.getInstance().<String, String>get("server", "encoding-available").onSuccess(encodingList -> {
+        SharedDataHelper.getInstance().<String, String>getLocal("server", "encoding-available").onSuccess(encodingList -> {
             try {
                 if (encodingList != null) {
                     final JsonArray encodingJson = new JsonArray(encodingList);
@@ -139,7 +139,7 @@ public class FolderImporterZip {
         final Promise<String> promise = Promise.promise();
         String importPath = vertx.getOrCreateContext().config().getString("import-path");
         if(org.apache.commons.lang3.StringUtils.isEmpty(importPath)) {
-            vertx.sharedData().<String, String>getAsyncMap("server").compose(serverMap -> serverMap.get("import-path"))
+            vertx.sharedData().<String, String>getLocalAsyncMap("server").compose(serverMap -> serverMap.get("import-path"))
             .onSuccess(iPath ->
                 promise.complete(isNotEmpty(iPath) ? iPath : System.getProperty("java.io.tmpdir"))
             ).onFailure(ex -> {

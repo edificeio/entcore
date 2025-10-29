@@ -48,7 +48,7 @@ public interface AntivirusClient {
 
 	static Future<Optional<AntivirusClient>> create(Vertx vertx){
 		final Promise<Optional<AntivirusClient>> promise = Promise.promise();
-		vertx.sharedData().<String, String>getAsyncMap("server")
+		vertx.sharedData().<String, String>getLocalAsyncMap("server")
 			.compose(serverMap -> serverMap.get("file-system"))
 			.onSuccess(s ->
 				promise.complete(create(vertx, Utils.isNotEmpty(s) ?  new JsonObject(s) : new JsonObject()))

@@ -26,7 +26,7 @@ import java.util.Map;
     public static void init(final Vertx vertx, final JsonObject config){
         DataValidationMetricsFactory.config = config;
         if(config.getJsonObject("metricsOptions") == null) {
-            vertx.sharedData().<String, String>getAsyncMap("server")
+            vertx.sharedData().<String, String>getLocalAsyncMap("server")
             .compose(serverMap -> serverMap.get("metricsOptions"))
             .onSuccess(metricsOptions -> {
                 if(metricsOptions == null){

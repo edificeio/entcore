@@ -48,7 +48,7 @@ public class Portal extends BaseServer {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
 		promise.future().compose(x ->
-			SharedDataHelper.getInstance().<String, JsonObject>get("server", "skins")
+			SharedDataHelper.getInstance().<String, JsonObject>getLocal("server", "skins")
 		).onSuccess(skins -> {
         final String assetPath = config.getString("assets-path", "../..");
         final AddressParameter parameter = new AddressParameter("application", "portal");

@@ -189,7 +189,7 @@ public class Starter extends BaseServer {
 			log.info("config skin-levels = " + config.getJsonObject("skin-levels", new JsonObject()));
 			serverMap.put("skin-levels", config.getJsonObject("skin-levels", new JsonObject()));
 
-			SharedDataHelper.getInstance().getAsyncMap("server").onSuccess(asyncServerMap -> {
+			SharedDataHelper.getInstance().getLocalAsyncMap("server").onSuccess(asyncServerMap -> {
 				final List<Future<Void>> futures = new ArrayList<>();
 				serverMap.entrySet().stream().forEach(entry -> futures.add(asyncServerMap.put(entry.getKey(), entry.getValue())));
 				Future.all(futures)
@@ -243,7 +243,7 @@ public class Starter extends BaseServer {
 			vertx.setPeriodic(checkMonitoringEvents.getLong("period", 300000L), monitoringEventsChecker);
 		}
 		if(config.getJsonObject("metricsOptions") == null) {
-			SharedDataHelper.getInstance().<String, String>get("server", "metricsOptions").onSuccess(metricsOptions -> {
+			SharedDataHelper.getInstance().<String, String>getLocal("server", "metricsOptions").onSuccess(metricsOptions -> {
 				if(isNotEmpty(metricsOptions) && new MetricsOptions(new JsonObject(metricsOptions)).isEnabled()){
 					new MicrometerInfraMetricsRecorder(vertx);
 				}

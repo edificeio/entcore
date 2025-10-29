@@ -40,7 +40,7 @@ public class PdfFactory {
 
 	public PdfFactory(Vertx vertx, JsonObject config) {
 		this.pdfGenerator = new NodePdfClient();
-		SharedDataHelper.getInstance().<String, String>getMulti("server", "node-pdf-generator", "signKey", "metricsOptions").onSuccess(serverMap -> {
+		SharedDataHelper.getInstance().<String, String>getLocalMulti("server", "node-pdf-generator", "signKey", "metricsOptions").onSuccess(serverMap -> {
 			JsonObject node = null;
 			final String nodePdfConfig = serverMap.get("node-pdf-generator");
 			final String signKey = serverMap.get("signKey");

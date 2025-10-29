@@ -82,7 +82,7 @@ public class AppRegistryController extends BaseController implements AppRegistry
 	public Future<Void> initAsync(Vertx vertx, JsonObject config, RouteMatcher rm,
                           Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
-		return SharedDataHelper.getInstance().<String, JsonObject>get("server", "skin-levels")
+		return SharedDataHelper.getInstance().<String, JsonObject>getLocal("server", "skin-levels")
 			.onSuccess(skinLevels -> AppRegistryController.this.skinLevels = skinLevels)
 			.onFailure(ex -> log.error("Error getting skin-levels", ex))
       .mapEmpty();
