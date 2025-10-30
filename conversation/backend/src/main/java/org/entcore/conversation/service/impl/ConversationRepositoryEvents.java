@@ -38,7 +38,7 @@ import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.entcore.common.user.position.ExportResourceResult;
+import org.entcore.common.user.ExportResourceResult;
 import org.entcore.common.utils.StringUtils;
 
 public class ConversationRepositoryEvents extends SqlRepositoryEvents {

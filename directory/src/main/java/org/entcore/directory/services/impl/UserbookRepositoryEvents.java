@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.common.user.RepositoryEvents;
-import org.entcore.common.user.position.ExportResourceResult;
+import org.entcore.common.user.ExportResourceResult;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.directory.services.UserBookService;
 

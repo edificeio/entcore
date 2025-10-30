@@ -5,11 +5,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.shareddata.Shareable;
 
+import java.beans.Transient;
 import java.io.Serializable;
-import java.util.Collections;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import static java.lang.System.currentTimeMillis;
 
@@ -19,27 +19,31 @@ public class UserExport implements Shareable, Serializable {
 
   private long start;
 	private final AtomicLong progress;
-	private final AtomicInteger counter;
-	private final Set<String> expectedExport;
+    /** {@code true} or {@code} false for each apps that have to be exported.*/
+	private final Map<String, Boolean> stateByModule;
 	private final String exportId;
 
-	public UserExport(Set<String> expectedExport, String exportId) {
-    this.start = currentTimeMillis();
+	public UserExport(Map<String, Boolean> stateByModule, String exportId) {
+        this.start = currentTimeMillis();
 		this.progress = new AtomicLong(this.start);
-		this.counter = new AtomicInteger(0);
-		this.expectedExport = Collections.unmodifiableSet(expectedExport);
+		this.stateByModule = new HashMap<>(stateByModule);
 		this.exportId = exportId;
 	}
 
+    public UserExport(Collection<String> apps, String exportId) {
+        this.start = currentTimeMillis();
+        this.progress = new AtomicLong(this.start);
+        this.stateByModule = apps.stream().collect(Collectors.toMap(e -> e, e -> false));
+        this.exportId = exportId;
+    }
+
   @JsonCreator
   public UserExport(@JsonProperty("progress") final long progress,
-                    @JsonProperty("counter") final int counter,
-                    @JsonProperty("expectedExport") final Set<String> expectedExport,
+                    @JsonProperty("stateByModule") final Map<String, Boolean> stateByModule,
                     @JsonProperty("exportId") final String exportId,
                     @JsonProperty("start") final long start) {
     this.progress = new AtomicLong(progress);
-    this.counter = new AtomicInteger(counter);
-    this.expectedExport = expectedExport;
+    this.stateByModule = stateByModule;
     this.exportId = exportId;
     this.start = start;
   }
@@ -60,19 +64,16 @@ public class UserExport implements Shareable, Serializable {
 		this.progress.set(progress);
 	}
 
-	public int incrementAndGetCounter() {
-		return this.counter.incrementAndGet();
-	}
-
-	public Set<String> getExpectedExport() {
-		return this.expectedExport;
-	}
-
     public String getExportId() {
         return exportId;
     }
 
-    public int getCounter() {
-        return counter.get();
+    public Map<String, Boolean> getStateByModule() {
+        return stateByModule;
+    }
+
+    @Transient
+    public boolean isFinished() {
+        return stateByModule.values().stream().allMatch(exported -> exported);
     }
 }

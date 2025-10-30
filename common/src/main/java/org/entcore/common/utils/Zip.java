@@ -35,7 +35,7 @@ public class Zip {
 
 	private EventBus eb;
 	private String address;
-    private boolean local;
+    private boolean local; // TODO to be removed
 	private static final Logger log = LoggerFactory.getLogger(Zip.class);
 
 	private Zip() {}

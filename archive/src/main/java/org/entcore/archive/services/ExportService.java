@@ -22,7 +22,6 @@ package org.entcore.archive.services;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
@@ -44,7 +43,7 @@ public interface ExportService {
 
 	void exportPath(String exportId, Handler<Either<String, String>> handler);
 
-	void exported(String exportId, String status, String locale, String host);
+	void onExportDone(String exportId, String status, String locale, String host, final String app);
 
 	void deleteExport(String exportId);
 

@@ -1095,7 +1095,11 @@ public class S3Client {
 			});
 	}
 
-  public static class S3FileInfo {
+    public String getDefaultBucket() {
+        return defaultBucket;
+    }
+
+    public static class S3FileInfo {
     private final String id;
     private final String path;
 
@@ -1111,6 +1115,7 @@ public class S3Client {
     public String getPath() {
       return path;
     }
+
   }
 
 }

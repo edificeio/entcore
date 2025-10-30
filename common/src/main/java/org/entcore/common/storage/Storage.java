@@ -158,19 +158,32 @@ public interface Storage {
    */
   default boolean isLocal() { return false; }
 
+    /**
+     * Moves a directory from the underlying storage to the filesystem of the application.
+     * @param srcDir Path in the underlying storage
+     * @param targetDir Path to the filesystem target directory
+     * @return A future that completes when the move has been completed
+     */
   Future<Void> moveDirectoryToFs(final String srcDir, final String targetDir);
-
+    /**
+     * Copy recursively everything from {@code srcPath} from the storage to {@code destPath} on the file system.
+     * @param srcDir Absolute path from the storage
+     * @param targetDir Absolute path to the filesystem
+     * @return A future that completes when the copy has been completed
+     */
   Future<Void> copyDirectoryToFs(final String srcDir, final String targetDir);
 
   /**
-   * Copy recursively everything from {@code srcPath} {@code destPath}
+   * Move recursively everything from {@code srcPath} on the filesystem to {@code destPath} in the target storage.
    * @param srcPath Absolute path from the filesystem
    * @param destPath Absolute path to the target storage
-   * @return A future that completes when the copy has been completed
+   * @return A future that completes when the move has been completed
    */
   Future<Void> moveFsDirectory(String srcPath, String destPath);
 
-  class FileInfo{
+  Future<Void> deleteRecursive(String exportDirectory);
+
+    class FileInfo{
 		public final String path;
 		public final FileProps props;
 		public final boolean deleted;

@@ -42,7 +42,7 @@ import org.entcore.common.folders.FolderImporter.FolderImporterContext;
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.RepositoryEvents;
-import org.entcore.common.user.position.ExportResourceResult;
+import org.entcore.common.user.ExportResourceResult;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.workspace.controllers.WorkspaceController;
 import org.entcore.workspace.dao.DocumentDao;

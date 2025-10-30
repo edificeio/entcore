@@ -50,7 +50,10 @@ import io.vertx.core.shareddata.AsyncMap;
 
 import java.io.File;
 import java.security.PrivateKey;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.zip.Deflater;
 
 import static com.google.common.collect.Lists.newArrayList;
@@ -80,7 +83,7 @@ public class FileSystemExportService implements ExportService {
 	private static final long EXPORT_ERROR = -4l;
 
     private static final String EXPORT_LOCK_PREFIX = "EXPORT_LOCK";
-    private static final long EXPORT_LOCK_TIMEOUT = 3000L;
+    private static final long EXPORT_LOCK_TIMEOUT = Duration.of(10, ChronoUnit.MINUTES).toMillis();
 
 	public FileSystemExportService(Vertx vertx, FileSystem fs, EventBus eb, String exportPath, String customHandlerActionName,
 								   EmailSender notification, Storage storage, TimelineHelper timeline,
@@ -119,7 +122,8 @@ public class FileSystemExportService implements ExportService {
 								if ("ok".equals(res.body().getString("status"))) {
                   final List<Future<Void>> futures = newArrayList(
                     userExportInProgress.put(user.getUserId(), now),
-                    userExport.put(user.getUserId(), mapFrom(new UserExport(new HashSet<>(apps.getList()), exportId)))
+
+                    userExport.put(user.getUserId(), mapFrom(new UserExport(apps.getList(), exportId)))
                   );
                   Future.all(futures)
                     .onFailure(th -> {
@@ -250,7 +254,7 @@ public class FileSystemExportService implements ExportService {
 	}
 
 	@Override
-	public void exported(final String exportId, String status, final String locale, final String host) {
+	public void onExportDone(final String exportId, String status, final String locale, final String host, final String app) {
 		log.debug("Exported method");
 		if (exportId == null) {
 			log.error("Export receive event without exportId ");
@@ -273,17 +277,21 @@ public class FileSystemExportService implements ExportService {
                                 lock.release();
                                 return succeededFuture();
                             }
-                            final int counter = export.incrementAndGetCounter();
-                            final boolean isFinished = counter == export.getExpectedExport().size();
-                            if (isFinished) {
+                            final Map<String, Boolean> states = export.getStateByModule();
+                            states.put(app, true);
+                            if (export.isFinished()) {
                                 log.debug("Export " + exportId + " finished for user " + userId);
                             } else {
-                                log.debug("Received " + counter + " parts out of " + export.getExpectedExport().size() + " for export " + exportId + " of user " + userId);
+                                final String stillProcessingApps = states.entrySet().stream()
+                                        .filter(exported -> !exported.getValue())
+                                        .map(e -> e.getKey())
+                                        .collect(Collectors.joining(","));
+                                log.info("Still waiting for apps [" + stillProcessingApps + "] for export " + exportId + " of user " + userId);
                             }
                             if (!"ok".equals(status)) {
                                 export.setProgress(EXPORT_ERROR);
                             }
-                            return userExport.put(userId, JsonObject.mapFrom(export)).map(export);
+                            return userExport.put(userId, mapFrom(export)).map(export);
                         })
                         .onFailure(th -> {
                             log.error("Cannot update userExport " + exportId + " of user " + userId, th);
@@ -291,21 +299,19 @@ public class FileSystemExportService implements ExportService {
                         })
                         .onSuccess(export -> {
                             lock.release();
-                            final int counter = export.getCounter();
-                            final boolean isFinished = counter >= export.getExpectedExport().size();
+                            final boolean isFinished = export.isFinished();
                             if (isFinished && export.getProgress() == EXPORT_ERROR) {
                                 log.error("Error in export " + exportId);
-                                JsonObject j = new JsonObject()
+                                JsonObject errorPayload = new JsonObject()
                                         .put("status", "error")
                                         .put("message", "export.error");
-                                eb.publish(getExportBusAddress(exportId), j);
+                                eb.publish(getExportBusAddress(exportId), errorPayload);
                                 userExportInProgress.remove(userId);
-                                fs.deleteRecursive(exportDirectory, true, new Handler<AsyncResult<Void>>() {
-                                    @Override
-                                    public void handle(AsyncResult<Void> event) {
-                                        if (event.failed()) {
-                                            log.error("Error deleting directory : " + exportDirectory, event.cause());
-                                        }
+                                storage.deleteRecursive(exportDirectory)
+                                        .onComplete(e -> log.debug("Deletion of " + exportDirectory + " is ok ? " + e.succeeded()));
+                                fs.deleteRecursive(exportDirectory, true, event -> {
+                                    if (event.failed()) {
+                                        log.error("Error deleting directory : " + exportDirectory, event.cause());
                                     }
                                 });
                                 if (notification != null) {
@@ -473,7 +479,7 @@ public class FileSystemExportService implements ExportService {
       })
       .map(UserExport::fromJson)
       .onSuccess(e -> {
-        final Set<String> expectedExport = e.getExpectedExport();
+        final Set<String> expectedExport = e.getStateByModule().keySet();
         this.vertx.eventBus().request("portal", new JsonObject().put("action", "getI18n").put("acceptLanguage", locale), json -> {
           vertx.sharedData().<String, String>getAsyncMap("versions")
             .compose(AsyncMap::entries).onSuccess(versionMap -> {

@@ -12,7 +12,7 @@ import org.entcore.broker.api.publisher.BrokerPublisherFactory;
 import org.entcore.broker.api.utils.AddressParameter;
 import org.entcore.broker.proxy.ResourceBrokerPublisher;
 import org.entcore.common.user.RepositoryEvents;
-import org.entcore.common.user.position.ExportResourceResult;
+import org.entcore.common.user.ExportResourceResult;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -124,11 +124,12 @@ public class DuplicationController extends BaseController
     switch (action)
     {
       case "exported" :
-        this.dupService.exported(
+        this.dupService.onExportDone(
             message.body().getString("exportId"),
             message.body().getString("status"),
             message.body().getString("locale", "fr"),
-            message.body().getString("host", config.getString("host", ""))
+            message.body().getString("host", config.getString("host", "")),
+            message.body().getString("app")
         );
         break;
         case "imported" :

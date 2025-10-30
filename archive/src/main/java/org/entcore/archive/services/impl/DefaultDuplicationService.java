@@ -200,9 +200,9 @@ public class DefaultDuplicationService implements DuplicationService
   }
 
   @Override
-  public void exported(final String exportId, String status, final String locale, final String host)
+  public void onExportDone(final String exportId, String status, final String locale, final String host, final String app)
   {
-    this.exportService.exported(exportId, status, locale, host);
+    this.exportService.onExportDone(exportId, status, locale, host, app);
   }
 
   @Override

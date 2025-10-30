@@ -11,6 +11,9 @@
     </parent>
 
     <artifactId>archive</artifactId>
+    <properties>
+        <shade.minimizeJar>false</shade.minimizeJar>
+    </properties>
 
     <dependencies>
         <dependency>

@@ -31,7 +31,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.storage.Storage;
-import org.entcore.common.user.position.ExportResourceResult;
 import org.entcore.common.utils.Config;
 
 import java.io.File;
@@ -79,23 +78,25 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 				final JsonArray resourcesIds = message.body().getJsonArray("resourcesIds");
 				final Boolean exportDocuments = message.body().getBoolean("exportDocuments", true);
 				final Boolean exportSharedResources = message.body().getBoolean("exportSharedResources", true);
-				String title = Server.getPathPrefix(Config.getConf());
+				String pathPrefix = Server.getPathPrefix(Config.getConf());
 
-				if (!Utils.isEmpty(title) && exportApps.contains(title.substring(1)))
+				if (!Utils.isEmpty(pathPrefix) && exportApps.contains(pathPrefix.substring(1)))
 				{
                     final String exportId = message.body().getString("exportId", "");
                     final String userId = message.body().getString("userId", "");
                     final String finalBusAddress = exportedBusAddress;
                     final SharedDataHelper sharedData = SharedDataHelper.getInstance();
-                    sharedData.getLock("export_" + exportId + "_" + title, LOCK_RELEASE_TIMEOUT)
-                        .onFailure(th -> log.debug("We could not get the export lock so it means that someone else is already treating the import", th))
+                    final String lockName = "export_" + exportId + "_" + pathPrefix;
+                    sharedData.getLock(lockName, LOCK_RELEASE_TIMEOUT)
+                        .onFailure(th -> log.debug("We could not get the export lock " + lockName+ " so it means that someone else is already treating the export", th))
                         .onSuccess(lock -> {
+                            String path = message.body().getString("path", "");
+                            final String locale = message.body().getString("locale", "fr");
+                            final String host = message.body().getString("host", "");
+                            final JsonArray groupIds = message.body().getJsonArray("groups", new fr.wseduc.webutils.collections.JsonArray());
+                            final String appTitle = pathPrefix.replaceFirst("/", "");
                             try {
-                                log.info("We got a lock to process export " + exportId + " for user " + userId + " for app " + title);
-                                String path = message.body().getString("path", "");
-                                final String locale = message.body().getString("locale", "fr");
-                                final String host = message.body().getString("host", "");
-                                JsonArray groupIds = message.body().getJsonArray("groups", new fr.wseduc.webutils.collections.JsonArray());
+                                log.info("We got a lock to process export " + exportId + " for user " + userId + " for app " + pathPrefix);
 
                                 repositoryEvents.exportResources(resourcesIds, exportDocuments.booleanValue(), exportSharedResources.booleanValue(),
                                         exportId, userId, groupIds, path, locale, host,
@@ -113,15 +114,25 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
                                                 final boolean exported = ok && res.succeeded();
                                                 JsonObject responsePayload = new JsonObject()
                                                         .put("action", "exported")
+                                                        .put("app", appTitle)
                                                         .put("status", (exported ? "ok" : "error"))
                                                         .put("exportId", exportId)
                                                         .put("locale", locale)
                                                         .put("host", host);
-                                                eb.publish(finalBusAddress, responsePayload);
+                                                eb.send(finalBusAddress, responsePayload);
                                             });
                                         });
                             } catch (Exception e) {
                                 sharedData.releaseLockAfterDelay(lock, LOCK_RELEASE_DELAY);
+                                log.error("An error occurred while treating an export " + message.body().encode(), e);
+                                JsonObject responsePayload = new JsonObject()
+                                        .put("action", "exported")
+                                        .put("app", appTitle)
+                                        .put("status", "error")
+                                        .put("exportId", exportId)
+                                        .put("locale", locale)
+                                        .put("host", host);
+                                eb.send(finalBusAddress, responsePayload);
                             }
                         });
                 }
@@ -166,7 +177,7 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
                                                     .put("importId", importId)
                                                     .put("app", appTitle.substring(1))
                                                     .put("rapport", success);
-                                            eb.publish(finalBusAddress, imported);
+                                            eb.send(finalBusAddress, imported);
                                         });
                                     }).onFailure(th -> {
                                         sharedData.releaseLockAfterDelay(lock, LOCK_RELEASE_DELAY);
@@ -176,11 +187,17 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
                                                 .put("importId", importId)
                                                 .put("app", appTitle.substring(1))
                                                 .put("rapport", new JsonObject().put("status", "error"));
-                                        eb.publish(finalBusAddress, imported);
+                                        eb.send(finalBusAddress, imported);
                                     });
                         } catch (Exception e) {
                             log.error("Error while processing the import", e);
                             sharedData.releaseLockAfterDelay(lock, LOCK_RELEASE_DELAY);
+                            final JsonObject imported = new JsonObject()
+                                    .put("action", "imported")
+                                    .put("importId", importId)
+                                    .put("app", appTitle.substring(1))
+                                    .put("rapport", new JsonObject().put("status", "error"));
+                            eb.send(finalBusAddress, imported);
                         }
                     });
 				}

@@ -38,7 +38,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileProps;
 
-import org.entcore.common.user.position.ExportResourceResult;
+import org.entcore.common.user.ExportResourceResult;
 import org.entcore.common.utils.FileUtils;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.folders.FolderImporter;

@@ -11,7 +11,7 @@ import org.entcore.common.explorer.impl.ExplorerRepositoryEvents;
 import org.entcore.common.explorer.to.ExplorerReindexResourcesRequest;
 import org.entcore.common.user.RepositoryEvents;
 import org.entcore.common.user.UserInfos;
-import org.entcore.common.user.position.ExportResourceResult;
+import org.entcore.common.user.ExportResourceResult;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

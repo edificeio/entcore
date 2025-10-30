@@ -1014,4 +1014,9 @@ public class FileStorage implements Storage {
   public Future<Void> moveFsDirectory(String srcPath, String destPath) {
     return moveDirectoryToFs(srcPath, destPath);
   }
+
+    @Override
+    public Future<Void> deleteRecursive(final String srcDir) {
+        return fs.deleteRecursive(srcDir, true);
+    }
 }

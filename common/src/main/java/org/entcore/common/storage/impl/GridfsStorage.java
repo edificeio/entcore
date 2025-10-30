@@ -103,7 +103,12 @@ public class GridfsStorage implements Storage {
       return Future.failedFuture(new NotImplementedException(this.getClass().getCanonicalName() + " did not implement Future<Void> copyFsDirectory(String srcDir, String destPath)"));
     }
 
-  public GridfsStorage(Vertx vertx, EventBus eb, String gridfsAddress) {
+    @Override
+    public Future<Void> deleteRecursive(String exportDirectory) {
+        return Future.failedFuture(new NotImplementedException(this.getClass().getCanonicalName() + " did not implement Future<Void> deleteRecursive(String srcDir)"));
+    }
+
+    public GridfsStorage(Vertx vertx, EventBus eb, String gridfsAddress) {
 		this(vertx, eb, gridfsAddress, "fs");
 	}
 

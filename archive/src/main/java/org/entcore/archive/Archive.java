@@ -68,8 +68,6 @@ public class Archive extends BaseServer {
 		setDefaultResourceFilter(new ArchiveFilter());
 		Storage storage = storageFactory.getStorage();
 
-		final Map<String, Long> archiveInProgress = MapFactory.getSyncClusterMap(Archive.ARCHIVES, vertx);
-
 		Integer storageTimeout = config.getInteger("import-storage-timeout", 600);
 		String exportPath = config.getString("export-path", System.getProperty("java.io.tmpdir"));
 		String importPath = config.getString("import-path", System.getProperty("java.io.tmpdir"));
@@ -89,8 +87,8 @@ public class Archive extends BaseServer {
 
 		ImportService importService = new DefaultImportService(vertx, config, storage, importPath, null, verifyKey, forceEncryption);
 
-		ArchiveController ac = new ArchiveController(storage, archiveInProgress, signKey, forceEncryption);
-		ImportController ic = new ImportController(importService, storage, archiveInProgress);
+		ArchiveController ac = new ArchiveController(storage, signKey, forceEncryption);
+		ImportController ic = new ImportController(importService, storage);
 		DuplicationController dc = new DuplicationController(vertx, storage, importPath, signKey, verifyKey, forceEncryption);
 
 		addController(ac);

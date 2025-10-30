@@ -26,7 +26,6 @@ import java.util.Optional;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.entcore.common.user.position.ExportResourceResult;
 
 public interface RepositoryEvents {
 

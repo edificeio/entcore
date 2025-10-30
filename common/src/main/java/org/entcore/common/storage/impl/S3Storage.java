@@ -300,6 +300,25 @@ public class S3Storage implements Storage {
     }
 
     @Override
+    public Future<Void> deleteRecursive(String srcDir) {
+        return s3Client.listFilesByPrefix(srcDir.charAt(0) == '/' ? srcDir.replaceFirst("/", "") : srcDir)
+                .compose(s3FilePaths -> deleteFromS3(s3FilePaths, 0));
+    }
+
+    private Future<Void> deleteFromS3(List<S3Client.S3FileInfo> s3FilePaths, int index) {
+        if(index < 0 || index >= s3FilePaths.size()) {
+            return Future.succeededFuture();
+        } else {
+            final S3Client.S3FileInfo path = s3FilePaths.get(index);
+            return Future.future(p -> {
+                s3Client.deleteFileWithId(path.getId(), s3Client.getDefaultBucket(), e -> {
+                    deleteFromS3(s3FilePaths, index + 1).onComplete(p);
+                });
+            });
+        }
+    }
+
+    @Override
     public Future<Void> moveDirectoryToFs(String srcDir, String targetDir) {
       return this.fs.mkdirs(targetDir)
         .compose(e -> s3Client.listFilesByPrefix(srcDir.charAt(0) == '/' ? srcDir.replaceFirst("/", "") : srcDir))
@@ -466,7 +485,8 @@ public class S3Storage implements Storage {
         this.fallbackStorage = fallbackStorage;
 	}
 
-  @Override
+
+    @Override
   public Future<Void> moveFsDirectory(final String srcPath, final String destPath) {
     log.debug("Copying from " + srcPath + " to " + destPath);
     return fs.readDir(srcPath)

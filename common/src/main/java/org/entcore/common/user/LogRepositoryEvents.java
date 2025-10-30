@@ -21,10 +21,8 @@ package org.entcore.common.user;
 
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.entcore.common.user.position.ExportResourceResult;
 
 public class LogRepositoryEvents implements RepositoryEvents {
 	private static final Logger log = LoggerFactory.getLogger(LogRepositoryEvents.class);

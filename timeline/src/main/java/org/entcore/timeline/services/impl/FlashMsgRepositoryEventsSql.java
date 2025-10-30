@@ -28,7 +28,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import fr.wseduc.webutils.Either;
-import org.entcore.common.user.position.ExportResourceResult;
+import org.entcore.common.user.ExportResourceResult;
 
 public class FlashMsgRepositoryEventsSql implements RepositoryEvents {
 

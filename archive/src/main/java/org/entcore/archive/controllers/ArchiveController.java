@@ -26,7 +26,6 @@ import fr.wseduc.rs.Post;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.MfaProtected;
 import fr.wseduc.security.SecuredAction;
-import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.http.BaseController;
@@ -74,9 +73,8 @@ public class ArchiveController extends BaseController {
 
 	private enum ArchiveEvent { ACCESS }
 
-	public ArchiveController(Storage storage, Map<String, Long> archiveInProgress, PrivateKey signKey, boolean forceEncryption) {
+	public ArchiveController(Storage storage, PrivateKey signKey, boolean forceEncryption) {
 		this.storage = storage;
-		//this.archiveInProgress = archiveInProgress;
 		this.signKey = signKey;
 		this.forceEncryption = forceEncryption;
 	}
@@ -410,11 +408,12 @@ public class ArchiveController extends BaseController {
 				}
 				break;
 			case "exported" :
-				exportService.exported(
+				exportService.onExportDone(
 						message.body().getString("exportId"),
 						message.body().getString("status"),
 						message.body().getString("locale", "fr"),
-						message.body().getString("host", config.getString("host", ""))
+						message.body().getString("host", config.getString("host", "")),
+                        message.body().getString("app")
 				);
 				break;
 			default: log.error("Archive : invalid action " + action);
