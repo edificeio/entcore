@@ -172,6 +172,34 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>com.opendigitaleducation</groupId>
+            <artifactId>mod-json-schema-validator</artifactId>
+            <version>2.0-zookeeper-SNAPSHOT</version>
+            <scope>runtime</scope>
+            <classifier>fat</classifier>
+        </dependency>
+        <dependency>
+            <groupId>fr.wseduc</groupId>
+            <artifactId>mod-image-resizer</artifactId>
+            <version>3.1-zookeeper-SNAPSHOT</version>
+            <scope>runtime</scope>
+            <classifier>fat</classifier>
+        </dependency>
+        <dependency>
+            <groupId>fr.wseduc</groupId>
+            <artifactId>mod-zip</artifactId>
+            <version>3.1-zookeeper-SNAPSHOT</version>
+            <scope>runtime</scope>
+            <classifier>fat</classifier>
+        </dependency>
+        <dependency>
+            <groupId>fr.wseduc</groupId>
+            <artifactId>mod-pdf-generator</artifactId>
+            <version>2.0-zookeeper-SNAPSHOT</version>
+            <scope>runtime</scope>
+            <classifier>fat</classifier>
+        </dependency>
     </dependencies>
 
     <build>

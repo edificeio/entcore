@@ -1,7 +1,6 @@
 package org.entcore.admin.controllers;
 
 import fr.wseduc.bus.BusAddress;
-import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Get;
 import fr.wseduc.security.ActionType;

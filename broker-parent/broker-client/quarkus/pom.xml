@@ -4,7 +4,7 @@
 
     <groupId>org.entcore</groupId>
     <artifactId>edifice-ent-client</artifactId>
-    <version>6.8-develop-community-SNAPSHOT</version>
+    <version>6.8-zookeeper-SNAPSHOT</version>
 
     <parent>
         <groupId>io.edifice</groupId>
