@@ -12,6 +12,7 @@ import org.entcore.broker.api.publisher.BrokerPublisherFactory;
 import org.entcore.broker.api.utils.AddressParameter;
 import org.entcore.broker.proxy.ResourceBrokerPublisher;
 import org.entcore.common.user.RepositoryEvents;
+import org.entcore.common.user.position.ExportResourceResult;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -151,7 +152,7 @@ public class ResourceBrokerRepositoryEvents implements RepositoryEvents {
 
     @Override
     public void exportResources(boolean exportDocuments, boolean exportSharedResources, String exportId, String userId, JsonArray groups, String exportPath,
-                                String locale, String host, Handler<JsonObject> handler) {
+                                String locale, String host, Handler<ExportResourceResult> handler) {
         delegateEvents.exportResources(exportDocuments, exportSharedResources, exportId, userId, groups, exportPath, locale, host, handler);
     }
 

@@ -38,6 +38,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileProps;
 
+import org.entcore.common.user.position.ExportResourceResult;
 import org.entcore.common.utils.FileUtils;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.folders.FolderImporter;
@@ -354,7 +355,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 
 	@Override
 	public void exportResources(JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources, String exportId, String userId,
-								JsonArray g, String exportPath, String locale, String host, Handler<JsonObject> handler) {
+								JsonArray g, String exportPath, String locale, String host, Handler<ExportResourceResult> handler) {
 		Bson findByAuthor = Filters.eq("author.userId", userId);
 		Bson findByOwner = Filters.eq("owner.userId", userId);
 		Bson findByAuthorOrOwner = Filters.or(findByAuthor, findByOwner);
@@ -392,10 +393,10 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 							if (path != null) {
 								Handler<Boolean> finish = bool -> {
                                     if (bool) {
-                                        exportFiles(results, path, new HashSet<>(), exported, e -> handler.handle(new JsonObject().put("ok", e).put("path", exportPath)));
+                                        exportFiles(results, path, new HashSet<>(), exported, e -> handler.handle(new ExportResourceResult(e, exportPath)));
                                     } else {
                                         // Should never happen, export doesn't fail if docs export fail.
-                                        handler.handle(new JsonObject().put("ok", exported.get()).put("path", path));
+                                        handler.handle(new ExportResourceResult(exported.get(), path));
                                     }
                                 };
 
@@ -404,16 +405,16 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 								else
 									finish.handle(Boolean.TRUE);
 							} else {
-								handler.handle(new JsonObject().put("ok", exported.get()).put("path", exportPath) );
+								handler.handle(new ExportResourceResult(exported.get(), exportPath) );
 							}
 						});
 					} else {
 						log.error(title + " : Could not proceed query " + query.encode(), event.body().getString("message"));
-						handler.handle(new JsonObject().put("ok", exported.get()).put("path", exportPath));
+						handler.handle(new ExportResourceResult(exported.get(), exportPath));
 					}
 				}).onFailure(error -> {
 					log.error(title + " : Could not filter resources ", error);
-					handler.handle(new JsonObject().put("ok", exported.get()).put("path", exportPath));
+					handler.handle(new ExportResourceResult(exported.get(), exportPath));
 				});
 		});
 	}

@@ -27,7 +27,6 @@ import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.service.impl.SqlRepositoryEvents;
 import io.vertx.core.Vertx;
-import fr.wseduc.webutils.Either;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
@@ -39,7 +38,7 @@ import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import fr.wseduc.webutils.Either;
+import org.entcore.common.user.position.ExportResourceResult;
 import org.entcore.common.utils.StringUtils;
 
 public class ConversationRepositoryEvents extends SqlRepositoryEvents {
@@ -135,7 +134,7 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 
 	@Override
 	public void exportResources(JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources, String exportId, String userId,
-								JsonArray groups, String exportPath, String locale, String host, Handler<JsonObject> handler) {
+								JsonArray groups, String exportPath, String locale, String host, Handler<ExportResourceResult> handler) {
 
 
 			final HashMap<String, JsonArray> queries = new HashMap<String, JsonArray>();
@@ -200,11 +199,11 @@ public class ConversationRepositoryEvents extends SqlRepositoryEvents {
 						exportAttachments(path, attachments, new Handler<Boolean>() {
 							@Override
 							public void handle(Boolean event) {
-								exportTables(queries, new JsonArray(), null, exportDocuments, path, exported, e -> handler.handle(new JsonObject().put("ok", e).put("path", exportPath)));
+								exportTables(queries, new JsonArray(), null, exportDocuments, path, exported, e -> handler.handle(new ExportResourceResult(e, exportPath)));
 							}
 						});
 					} else {
-						handler.handle(new JsonObject().put("ok", exported.get()).put("path", exportPath));
+						handler.handle(new ExportResourceResult(exported.get(), exportPath));
 					}
 				}
 			});

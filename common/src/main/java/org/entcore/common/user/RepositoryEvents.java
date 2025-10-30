@@ -26,16 +26,17 @@ import java.util.Optional;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.position.ExportResourceResult;
 
 public interface RepositoryEvents {
 
 	default void exportResources(boolean exportDocuments, boolean exportSharedResources, String exportId, String userId, JsonArray groups, String exportPath,
-						 String locale, String host, Handler<JsonObject> handler) {
+						 String locale, String host, Handler<ExportResourceResult> handler) {
 		exportResources(null,exportDocuments,exportSharedResources,exportId,userId,groups,exportPath,locale,host,handler);
 	};
 
 	default void exportResources(JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources, String exportId, String userId,
-			JsonArray groups, String exportPath, String locale, String host, Handler<JsonObject> handler) {}
+			JsonArray groups, String exportPath, String locale, String host, Handler<ExportResourceResult> handler) {}
 
 	default void importResources(String importId, String userId, String userLogin, String userName, String importPath,
 		String locale, String host, boolean forceImportAsDuplication, Handler<JsonObject> handler) {}

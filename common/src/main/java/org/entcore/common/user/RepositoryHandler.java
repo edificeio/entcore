@@ -30,6 +30,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.storage.Storage;
+import org.entcore.common.user.position.ExportResourceResult;
 import org.entcore.common.utils.Config;
 
 import java.io.File;
@@ -89,15 +90,15 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 					String finalBusAddress = exportedBusAddress;
 					repositoryEvents.exportResources(resourcesIds, exportDocuments.booleanValue(), exportSharedResources.booleanValue(),
 														exportId, userId, groupIds, path, locale, host,
-					new Handler<JsonObject>()
+					new Handler<ExportResourceResult>()
 					{
 						@Override
-						public void handle(JsonObject isExported)
+						public void handle(ExportResourceResult isExported)
 						{
-              final boolean ok = isExported.getBoolean("ok");
+              final boolean ok = isExported.isOk();
               final Future<Void> future;
               if(ok) {
-                final String finalPath = isExported.getString("path");
+                final String finalPath = isExported.getExportPath();
                 future = storage.moveFsDirectory(finalPath, finalPath);
               } else {
                 future = succeededFuture();

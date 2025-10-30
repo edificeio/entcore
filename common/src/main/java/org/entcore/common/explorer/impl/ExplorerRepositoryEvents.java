@@ -31,6 +31,7 @@ import org.entcore.common.explorer.IExplorerPluginClient;
 import org.entcore.common.explorer.to.ExplorerReindexResourcesRequest;
 import org.entcore.common.user.RepositoryEvents;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.position.ExportResourceResult;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -91,13 +92,13 @@ public class ExplorerRepositoryEvents implements RepositoryEvents {
 
     @Override
     public void exportResources(boolean exportDocuments, boolean exportSharedResources, String exportId, String userId, JsonArray groups, String exportPath,
-                                String locale, String host, Handler<JsonObject> handler) {
+                                String locale, String host, Handler<ExportResourceResult> handler) {
         realRepositoryEvents.exportResources(exportDocuments, exportSharedResources, exportId, userId, groups, exportPath, locale, host, handler);
     }
 
     @Override
     public void exportResources(JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources, String exportId, String userId,
-                                JsonArray groups, String exportPath, String locale, String host, Handler<JsonObject> handler) {
+                                JsonArray groups, String exportPath, String locale, String host, Handler<ExportResourceResult> handler) {
         realRepositoryEvents.exportResources(resourcesIds, exportDocuments, exportSharedResources, exportId, userId, groups, exportPath, locale, host, handler);
     }
 
