@@ -24,13 +24,8 @@ import java.util.*;
  * {
  *   "config": {
  *     "broker": {
- *       "defaultType": "EVENTBUS", // by default: use the event-bus TODO: Removed
- *       "modules": {
- *         "communities": { "type": "NATS" }, // for module "communities" use NATS TODO: Removed
- *       },
- *       "natsModules": { //modules using NATS. For each one, provide the resourceTypes TODO: Replaces "defaultType" and "modules"
- *           "communities": [ "announcements" ],
- *           "foo": [ "bar", "baz" ]
+ *       "natsModules": { //modules using NATS. For each one, provide the resourceTypes
+ *           "communities": [ "announcement" ]
  *       }
  *     }
  *   }
