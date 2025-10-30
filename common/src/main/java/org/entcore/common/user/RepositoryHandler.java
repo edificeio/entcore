@@ -99,29 +99,26 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
 
                                 repositoryEvents.exportResources(resourcesIds, exportDocuments.booleanValue(), exportSharedResources.booleanValue(),
                                         exportId, userId, groupIds, path, locale, host,
-                                        new Handler<JsonObject>() {
-                                            @Override
-                                            public void handle(JsonObject isExported) {
-                                                final boolean ok = isExported.getBoolean("ok");
-                                                final Future<Void> future;
-                                                if (ok) {
-                                                    final String finalPath = isExported.getString("path");
-                                                    future = storage.moveFsDirectory(finalPath, finalPath);
-                                                } else {
-                                                    future = succeededFuture();
-                                                }
-                                                future.onComplete(res -> {
-                                                    sharedData.releaseLockAfterDelay(lock, LOCK_RELEASE_DELAY);
-                                                    final boolean exported = ok && res.succeeded();
-                                                    JsonObject responsePayload = new JsonObject()
-                                                            .put("action", "exported")
-                                                            .put("status", (exported ? "ok" : "error"))
-                                                            .put("exportId", exportId)
-                                                            .put("locale", locale)
-                                                            .put("host", host);
-                                                    eb.publish(finalBusAddress, responsePayload);
-                                                });
+                                        isExported -> {
+                                            final boolean ok = isExported.isOk();
+                                            final Future<Void> future;
+                                            if (ok) {
+                                                final String finalPath = isExported.getExportPath();
+                                                future = storage.moveFsDirectory(finalPath, finalPath);
+                                            } else {
+                                                future = succeededFuture();
                                             }
+                                            future.onComplete(res -> {
+                                                sharedData.releaseLockAfterDelay(lock, LOCK_RELEASE_DELAY);
+                                                final boolean exported = ok && res.succeeded();
+                                                JsonObject responsePayload = new JsonObject()
+                                                        .put("action", "exported")
+                                                        .put("status", (exported ? "ok" : "error"))
+                                                        .put("exportId", exportId)
+                                                        .put("locale", locale)
+                                                        .put("host", host);
+                                                eb.publish(finalBusAddress, responsePayload);
+                                            });
                                         });
                             } catch (Exception e) {
                                 sharedData.releaseLockAfterDelay(lock, LOCK_RELEASE_DELAY);
