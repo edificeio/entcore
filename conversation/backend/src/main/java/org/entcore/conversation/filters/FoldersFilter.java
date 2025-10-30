@@ -19,9 +19,6 @@
 
 package org.entcore.conversation.filters;
 
-import java.util.List;
-
-import fr.wseduc.webutils.request.RequestUtils;
 import org.entcore.common.http.filter.ResourcesProvider;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
