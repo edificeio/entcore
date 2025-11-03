@@ -20,7 +20,7 @@ import org.entcore.audience.reaction.service.ReactionService;
 import org.entcore.audience.services.AudienceAccessFilter;
 import org.entcore.audience.services.AudienceService;
 import org.entcore.audience.view.service.ViewService;
-import org.entcore.audience.services.impl.EventBusAudienceAccessFilter;
+import org.entcore.audience.services.impl.ConfigurableAudienceAccessFilter;
 import org.entcore.common.audience.AudienceHelper;
 import org.entcore.common.audience.to.NotifyResourceDeletionMessage;
 import org.entcore.common.audience.to.NotifyResourceDeletionResponseMessage;
@@ -49,7 +49,7 @@ public class AudienceController extends BaseController {
 
   public AudienceController(final Vertx vertx, final JsonObject config, final ReactionService reactionService,
                             final ViewService viewService, final AudienceService audienceService, Set<String> validReactionTypes) {
-    this.audienceAccessFilter = new EventBusAudienceAccessFilter(vertx);
+    this.audienceAccessFilter = new ConfigurableAudienceAccessFilter(vertx, config);
     this.reactionService = reactionService;
     this.viewService = viewService;
     this.audienceService = audienceService;

@@ -8,6 +8,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.broker.api.BrokerProxyFactory;
 import org.entcore.broker.api.BrokerPublisher;
 import org.entcore.broker.api.utils.AddressParameter;
 import org.entcore.broker.api.utils.BrokerAddressUtils;
@@ -26,14 +27,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Factory for creating broker publisher proxies.
- * This class provides methods to generate implementations of interfaces
- * annotated with @BrokerPublisher to publish messages to the broker.
+ * @deprecated Use {@link BrokerProxyFactory} instead, which supports both
+ * publisher and listener patterns.
  */
+@Deprecated
 public class BrokerPublisherFactory {
     private static final Logger log = LoggerFactory.getLogger(BrokerPublisherFactory.class);
     private static final ObjectMapper mapper = new ObjectMapper();
 
     private BrokerPublisherFactory(){}
+    
     /**
      * Creates a new instance of a broker publisher interface
      * 
@@ -42,7 +45,9 @@ public class BrokerPublisherFactory {
      * @param vertx Vertx instance to use for event bus communication
      * @param addressParameters Optional parameters for subject placeholder substitution
      * @return A new instance of the publisher interface
+     * @deprecated Use {@link BrokerFactory#create(Class, Vertx, AddressParameter...)} instead
      */
+    @Deprecated
     @SuppressWarnings("unchecked")
     public static <T> T create(final Class<T> publisherClass, final Vertx vertx, final AddressParameter... addressParameters) {
         return (T) Proxy.newProxyInstance(

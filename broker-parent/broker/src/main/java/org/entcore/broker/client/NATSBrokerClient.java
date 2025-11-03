@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.nats.client.Message;
+import io.nats.client.impl.Headers;
 import io.nats.vertx.NatsClient;
 import io.nats.vertx.NatsOptions;
 import io.vertx.codegen.annotations.Nullable;
@@ -27,6 +28,7 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -71,6 +73,7 @@ public class NATSBrokerClient implements BrokerClient {
       .compose(e -> this.loadListeners("META-INF/broker-proxy.nats.json"))
       .onSuccess(this::registerProxies)
       .compose(e -> this.setupEventBusPublishHandler())
+      .compose(e -> this.setupEventBusRequestHandler())
       .mapEmpty();
   }
 
@@ -111,6 +114,51 @@ public class NATSBrokerClient implements BrokerClient {
     });
 
     log.info("Set up event bus handler for broker.publish");
+    promise.complete();
+
+    return promise.future();
+  }
+
+  private Future<Void> setupEventBusRequestHandler() {
+    final Promise<Void> promise = Promise.promise();
+    // Set up an event bus handler for "broker.request" messages
+    vertx.eventBus().<JsonObject>consumer("broker.request", message -> {
+        final JsonObject body = message.body();
+        final String subject = body.getString("subject");
+        final String requestStr = body.getString("message");
+        final long timeout = body.getLong("timeout", defaultTimeout);
+
+        if (subject == null || subject.isEmpty()) {
+            message.fail(400, "Subject cannot be empty");
+            return;
+        }
+
+        try {
+            // If the message is null, send an empty message
+            final Object requestObj = requestStr != null ? mapper.readValue(requestStr, Object.class) : null;
+
+            this.<Object, Object>request(subject, requestObj, timeout)
+                .onSuccess(response -> {
+                    try {
+                        // Serialize the response to JSON
+                        final String responseJson = mapper.writeValueAsString(response);
+                        message.reply(responseJson);
+                    } catch (Exception e) {
+                        log.error("Error serializing response", e);
+                        message.fail(500, e.getMessage());
+                    }
+                })
+                .onFailure(err -> {
+                    log.error("Failed to make request to subject: " + subject, err);
+                    message.fail(500, err.getMessage());
+                });
+        } catch (Exception e) {
+            log.error("Error processing request message for subject: " + subject, e);
+            message.fail(500, e.getMessage());
+        }
+    });
+
+    log.info("Set up event bus handler for broker.request");
     promise.complete();
 
     return promise.future();
@@ -274,45 +322,23 @@ public class NATSBrokerClient implements BrokerClient {
       final byte[] payload = mapper.writeValueAsString(message).getBytes(charset);
 
       Promise<V> future = Promise.promise();
-      final String replyTo = subject + ".reply." + serverId + "." + UUID.randomUUID();
-      final AtomicLong timer = new AtomicLong(System.currentTimeMillis()); // This will be used to actually time out the request
       // Start by creating a subscription for the reply which will be where the response will be sent
-      natsClient.subscribe(replyTo, msg -> {
-        try {
-          @SuppressWarnings("unchecked")
-          V response = mapper.readValue(new String(msg.getData(), charset), (Class<V>) Object.class);
-          future.tryComplete(response);
-        } catch (Exception e) {
-          log.error("Error deserializing response", e);
-          future.tryFail(e);
-        } finally {
-          vertx.cancelTimer(timer.get());
-          // Unsubscribe from the reply subject which was temporarily created
-          this.unsubscribe(replyTo);
-        }
-      }).onFailure(th -> {
-        log.error("Failed to subscribe to reply subject", th);
-        future.tryFail(th);
-      }).onSuccess(subscription -> {
-        // Now that we're listening for the reply, we can send the request with our 
-        // temporary reply subject
-        natsClient.publish(subject, replyTo, payload)
+        natsClient.request(subject, payload)
           .onSuccess(e -> {
             log.debug("Message sent to subject: " + subject);
-            // Set a timeout for the request
-            long handle = vertx.setTimer(timeout, id -> {
-              log.error("Request timed out for subject: " + subject);
-              future.fail(new RuntimeException("Request timed out"));
-              this.unsubscribe(replyTo);
-            });
-            timer.set(handle);
+            try {
+              String responseStr = new String(e.getData(), charset);
+              @SuppressWarnings("unchecked")
+              V response = mapper.readValue(responseStr, (Class<V>) Object.class);
+              future.complete(response);
+            } catch(Exception err) {
+              future.fail(err);
+            }
           })
           .onFailure(e -> {
             log.error("Error while sending message to NATS", e);
             future.fail(e);
-            this.unsubscribe(replyTo);
           });
-      });
       return future.future();
     } catch (Exception e) {
       log.error("Error while serializing message to JSON", e);
