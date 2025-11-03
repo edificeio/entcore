@@ -74,8 +74,7 @@ public class Starter extends BaseServer {
 		Promise<Void> returnPromise = Promise.promise();
 		try {
 			final Map<String, Object> serverMap = new HashMap<>();
-            String random = config.getBoolean("key-random", true) ? String.valueOf(Math.random()) : "";
-			serverMap.put("signKey", config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK" + random));
+			serverMap.put("signKey", config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK" + Math.random()));
 
 			serverMap.put("sameSiteValue", config.getString("sameSiteValue", "Strict"));
 			serverMap.put("hidePersonalData", config.getBoolean("hidePersonalData", false));
