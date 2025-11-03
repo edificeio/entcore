@@ -21,6 +21,7 @@ public class NoOpBrokerClient implements BrokerClient {
 
   private final Vertx vertx;
   private MessageConsumer<JsonObject> publishConsumer;
+  private MessageConsumer<JsonObject> requestConsumer;
 
   /**
    * Constructor for NoOpBrokerClient.
@@ -40,8 +41,12 @@ public class NoOpBrokerClient implements BrokerClient {
     if (publishConsumer != null) {
       publishConsumer.unregister();
     }
-    publishConsumer = vertx.eventBus().<JsonObject>consumer("broker.publish", message -> {
+    publishConsumer = vertx.eventBus().consumer("broker.publish", message -> {
       log.debug("NoOpBrokerClient received broker.publish for subject: {} (replying with dummy success)", message.body().getString("subject"));
+      message.reply(null); // Always reply with success (null)
+    });
+      requestConsumer = vertx.eventBus().consumer("broker.request", message -> {
+      log.debug("NoOpBrokerClient received broker.request for subject: {} (replying with dummy success)", message.body().getString("subject"));
       message.reply(null); // Always reply with success (null)
     });
     return Future.succeededFuture();
@@ -101,6 +106,10 @@ public class NoOpBrokerClient implements BrokerClient {
     if (publishConsumer != null) {
       publishConsumer.unregister();
       publishConsumer = null;
+    }
+    if (requestConsumer != null) {
+      requestConsumer.unregister();
+      requestConsumer = null;
     }
     return Future.succeededFuture();
   }
