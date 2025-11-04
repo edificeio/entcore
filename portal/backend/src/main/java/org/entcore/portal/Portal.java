@@ -20,6 +20,7 @@
 package org.entcore.portal;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
@@ -49,18 +50,27 @@ public class Portal extends BaseServer {
 		super.start(promise);
 		promise.future().compose(x ->
 			SharedDataHelper.getInstance().<String, JsonObject>getLocal("server", "skins")
-		).onSuccess(skins -> {
-        final String assetPath = config.getString("assets-path", "../..");
-        final AddressParameter parameter = new AddressParameter("application", "portal");
-        final CacheService cacheService = CacheService.create(vertx);
-        BrokerProxyUtils.addBrokerProxy(new I18nBrokerListenerImpl(vertx, assetPath, cacheService), vertx, parameter);
-        BrokerProxyUtils.addBrokerProxy(new EventBrokerListenerImpl(), vertx);
-        addController(new PortalController(skins));
-			registerGlobalWidgets(config.getString("widgets-path", config.getString("assets-path", ".") + "/assets/widgets"));
-			startPromise.tryComplete();
-		})
-		.onFailure(ex -> log.error("Error when start Infra server super classes", ex));
+		)
+        .compose(this::initPortal)
+		.onComplete(startPromise);
 	}
+
+    public Future<Void> initPortal(final JsonObject skins) {
+        return Future.future(p -> {
+            try {
+                final String assetPath = config.getString("assets-path", "../..");
+                final AddressParameter parameter = new AddressParameter("application", "portal");
+                final CacheService cacheService = CacheService.create(vertx);
+                BrokerProxyUtils.addBrokerProxy(new I18nBrokerListenerImpl(vertx, assetPath, cacheService), vertx, parameter);
+                BrokerProxyUtils.addBrokerProxy(new EventBrokerListenerImpl(), vertx);
+                addController(new PortalController(skins));
+                registerGlobalWidgets(config.getString("widgets-path", config.getString("assets-path", ".") + "/assets/widgets"));
+                p.complete();
+            } catch (Exception e) {
+                p.fail(e);
+            }
+        });
+    }
 
 	private void registerWidget(final String widgetPath){
 		final String widgetName = new File(widgetPath).getName();
