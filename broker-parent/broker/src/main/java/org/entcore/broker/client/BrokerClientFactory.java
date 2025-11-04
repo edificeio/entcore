@@ -8,6 +8,7 @@ import io.vertx.core.Vertx;
  */
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.broker.config.NATSBrokersConfig;
 
 public class BrokerClientFactory {
 
@@ -24,15 +25,21 @@ public class BrokerClientFactory {
    * @return BrokerClient implementation
    */
   public static BrokerClient getClient(final Vertx vertx) {
-    final String brokerType = vertx.getOrCreateContext().config().getString("broker-type", "rest");
-    log.debug("Broker type selected: {}", brokerType);
-    if ("nats".equalsIgnoreCase(brokerType)) {
-      return new NATSBrokerClient(vertx);
-    } else if ("none".equalsIgnoreCase(brokerType)) {
-      log.warn("Broker is disabled (broker-type=none). No broker operations will be performed.");
-      return new NoOpBrokerClient(vertx);
-    } else {
-      return new RESTBrokerClient(vertx);
-    }
+     final String brokerType = vertx.getOrCreateContext().config().getString("broker-type", "rest");
+     log.debug("Broker type selected: {}", brokerType);
+     if ("nats".equalsIgnoreCase(brokerType)) {
+        final NATSBrokersConfig config = new NATSBrokersConfig(vertx);
+        if (config.isMultiBrokerMode()) {
+           return new NATSMultiBrokerClient(vertx, config);
+        } else {
+           // Legacy single broker mode
+           return new NATSBrokerClient(vertx, config);
+        }
+     } else if ("none".equalsIgnoreCase(brokerType)) {
+        log.warn("Broker is disabled (broker-type=none). No broker operations will be performed.");
+        return new NoOpBrokerClient(vertx);
+     } else {
+        return new RESTBrokerClient(vertx);
+     }
   }
 }
