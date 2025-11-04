@@ -738,7 +738,9 @@ public class DefaultUserService implements UserService {
 			}
 		}
 		if (!userInfos.getFunctions().containsKey(SUPER_ADMIN)) {
-			conditionUser += "AND " + DefaultSchoolService.EXCLUDE_ADMC_QUERY_FILTER;
+			if (isEmpty(groupId)) {
+				conditionUser += "AND " + DefaultSchoolService.EXCLUDE_ADMC_QUERY_FILTER;
+			}
 		}
 
 		// This second level of filtering ensures the data is in the scope of the connected user
