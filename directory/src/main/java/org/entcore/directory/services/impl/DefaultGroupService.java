@@ -150,6 +150,14 @@ public class DefaultGroupService implements GroupService {
     }
 
     @Override
+    public void updateManualGroupsByUserPositions(String userPosition, Handler<Either<String, JsonObject>> result) {
+        JsonObject action = new JsonObject()
+                .put("action", "manual-update-group-linked-positions")
+                .put("userPosition", userPosition);
+        eventBus.request(Directory.FEEDER, action, handlerToAsyncHandler(validEmptyHandler(result)));
+    }
+
+    @Override
 	public void deleteManual(String groupId, Handler<Either<String, JsonObject>> result) {
 		JsonObject action = new JsonObject()
 				.put("action", "manual-delete-group")
