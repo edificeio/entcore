@@ -27,20 +27,43 @@
       <s5l>group.delete.button</s5l>
       <i class="fa fa-trash is-size-5"></i>
     </button>
-    <button type="button"
-            *ngIf="groupsStore.group?.type === 'ManualGroup' && groupsStore.group?.lockDelete == true"
-            disabled="true"
-            class="lct-group-delete-button">
-      <s5l>group.delete.button.lock</s5l>
-      <i class="fa fa-lock is-size-5"></i>
-    </button>
+    
+    <ng-container *ngIf="groupsStore.group?.type === 'ManualGroup'">
+      <!-- visible but disabled for non-ADMC when group is locked -->
+      <button type="button"
+              *ngIf="groupsStore.group?.lockDelete && !canLockGroup"
+              disabled
+              class="lct-group-delete-button">
+        <s5l>group.delete.button.lock</s5l>
+        <i class="fa fa-lock is-size-5"></i>
+      </button>
+      
+      <!-- only ADMC can click unlock -->
+      <button (click)="switchLockedStatus()"
+              *ngIf="groupsStore.group?.lockDelete && canLockGroup"
+              class="lct-group-delete-button"
+              type="button">
+        <s5l>group.unlock.button</s5l>
+        <i class="fa fa-unlock is-size-5"></i>
+      </button>
+      
+      <!-- only ADMC can click lock-->
+      <button (click)="switchLockedStatus()"
+              *ngIf="!groupsStore.group?.lockDelete && canLockGroup"
+              class="lct-group-delete-button"
+              type="button">
+        <s5l>group.lock.button</s5l>
+        <i class="fa fa-lock is-size-5"></i>
+      </button>
+    </ng-container>
   </div>
 </div>
 
 <div class="padded">
-  <button (click)="showLightBox()" *ngIf="groupsStore.group?.type === 'ManualGroup' && groupsStore.group?.subType !== 'BroadcastGroup'">
-    <s5l>group.details.add.users</s5l>
-  </button>
+    <button (click)="showLightBox()"
+            *ngIf="groupsStore.group?.type === 'ManualGroup' && groupsStore.group?.subType !== 'BroadcastGroup' && groupsStore.group?.lockDelete !==true">
+        <s5l>group.details.add.users</s5l>
+    </button>
 
   <ode-lightbox class="inner-list" [show]="showAddUsersLightBox" (onClose)="closeLightBox()">
     <ode-group-manage-users (closeEmitter)="closeLightBox()"></ode-group-manage-users>
@@ -82,6 +105,7 @@
 </ode-group-autolink>
 
 <ode-manual-group-autolink
+        *ngIf="groupsStore.group?.lockDelete != true"
         [group]="groupsStore.group"
         [structure]="groupsStore.structure"
         [usersPositionsOptions]="autolinkUserPositionOptions"
