@@ -432,6 +432,9 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
             case "manual-link-user-positions":
                 manual.setManualGroupAutolinkUsersPositions(message);
                 break;
+            case "manual-update-group-linked-positions":
+                manual.updateManualGroupsByUserPositions(message);
+                break;
 			case "transition" : launchTransition(message, null);
 				break;
 			case "import" : launchImport(message);

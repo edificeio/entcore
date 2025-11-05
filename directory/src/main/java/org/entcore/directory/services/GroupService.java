@@ -72,6 +72,8 @@ public interface GroupService {
 
     void setManualGroupAutolinkUsersPositions(String groupId, JsonArray manualGroupAutolinkUsersPositions, Handler<Either<String, JsonObject>> result);
 
+    void updateManualGroupsByUserPositions(String userPositionName, Handler<Either<String, JsonObject>> eitherHandler);
+
     void getInfos(String groupId, Handler<Either<String, JsonObject>> handler);
 
 	void getBatchInfos(JsonArray groupIds, int fieldMask, Handler<Either<String, JsonArray>> handler);
