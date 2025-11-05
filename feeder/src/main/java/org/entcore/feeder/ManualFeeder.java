@@ -1589,4 +1589,11 @@ public class ManualFeeder extends BusModBase {
 
         executeTransaction(message, tx -> Group.setManualGroupAutolinkUsersPositions(groupId, userPositions, tx));
     }
+
+    public void updateManualGroupsByUserPositions(Message<JsonObject> message) {
+        final String userPosition = getMandatoryString("userPosition", message);
+        if (userPosition == null || userPosition.isEmpty()) return;
+
+        executeTransaction(message, tx -> Group.updateManualGroupsByUserPositions(userPosition, tx));
+    }
 }

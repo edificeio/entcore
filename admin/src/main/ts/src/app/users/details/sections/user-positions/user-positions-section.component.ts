@@ -125,18 +125,18 @@ export class UserPositionsSectionComponent
                 return undefined;
             })
         )
-    )
-    .then(addedPosition => {
-      if(addedPosition) {
-        // Do not duplicate positions
-        const addedName = addedPosition.name?.trim();
-        if( addedName && this.userPositions.findIndex(pos => pos.name?.trim() == addedName) < 0 ) {
-          this.userPositions.push(addedPosition);
-          this.saveUpdate();
-        }
-        this.showUserPositionSelectionLightbox = false;
-      }
-    });
+          )
+          .then(addedPosition => {
+              if (addedPosition) {
+                  // Do not duplicate positions
+                  const addedName = addedPosition.name?.trim();
+                  if (addedName && this.userPositions.findIndex(pos => pos.name?.trim() == addedName) < 0) {
+                      this.userPositions.push(addedPosition);
+                      this.saveUpdate(false, addedPosition);
+                  }
+                  this.showUserPositionSelectionLightbox = false;
+              }
+          })
   }
 
   removeUserPosition(position: UserPosition) {
@@ -151,7 +151,7 @@ export class UserPositionsSectionComponent
 
   removeUserPositionConfirmed() {
     this.userPositions = this.userPositions.filter((p) => p.id !== this.positionToRemove.id);
-    this.saveUpdate(true);
+      this.saveUpdate(true, this.positionToRemove);
     this.searchContent = "";
     this.showConfirmRemovePosition = false;
   }
@@ -171,8 +171,8 @@ export class UserPositionsSectionComponent
     this.showUserPositionCreationLightbox = false;
   }
 
-  saveUpdate(removePosition = false) {
-    if( this.userPositions && this.userPositions.length>0) {
+    saveUpdate(removePosition = false, changedPosition?: UserPosition) {
+        if (this.userPositions && this.userPositions.length > 0) {
       this.details.userPositions = [...this.userPositions];
     } else {
       this.details.userPositions = [];
@@ -187,6 +187,11 @@ export class UserPositionsSectionComponent
         this.user.userPositions = this.details.userPositions.map(p=>({id: p.id}));
         this.userInfoService.setState(this.details);
       })
+        .then(async () => {
+            if (changedPosition) {
+                await this.userPositionService.updateManualGroupsByUserPositions(changedPosition);
+            }
+        })
       .catch(err => {
         this.ns.error(
           removePosition ? 'notify.user-position.remove.error.content':  'notify.user-position.assign.error.content',

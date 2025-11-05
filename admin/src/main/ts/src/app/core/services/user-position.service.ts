@@ -101,4 +101,13 @@ export class UserPositionService {
       return position;
     });
   }
+
+    public async updateManualGroupsByUserPositions(userPosition: UserPosition): Promise<any> {
+        console.log("updateManualGroupsByUserPositions", userPosition);
+        const res = await http.post(
+            `/directory/group/updateManualGroupsByUserPositions`,
+            userPosition
+        );
+        return res.data;
+    }
 }
