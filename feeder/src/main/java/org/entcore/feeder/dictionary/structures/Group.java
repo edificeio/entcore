@@ -152,6 +152,39 @@ public class Group {
 		User.countUsersInGroups(groupId, null, transactionHelper);
 	}
 
+    public static void updateManualGroupsByUserPositions(String userPosition, TransactionHelper transactionHelper) {
+            final long now = System.currentTimeMillis();
+            final JsonObject params = new JsonObject()
+                    .put("userPosition", userPosition)
+                    .put("now", now);
+
+            final String updateQuery =
+                    "MATCH (g:ManualGroup) " +
+                        "WHERE EXISTS(g.manualGroupAutolinkUsersPositions) " +
+                        "  AND {userPosition} IN g.manualGroupAutolinkUsersPositions " +
+                        "WITH g " +
+                        "MATCH (g)-[:DEPENDS]->(:Structure)<-[:HAS_ATTACHMENT*0..]-(struct:Structure) " +
+                        "UNWIND g.manualGroupAutolinkUsersPositions AS targetPosition " +
+                        "MATCH (position:UserPosition {name: targetPosition})<-[:HAS_POSITION]-(u:User)-[:IN]->(:Group)-[:DEPENDS]->(struct) " +
+                        "WITH DISTINCT g, u " +
+                        "MERGE (u)-[new:IN]->(g) " +
+                        "ON CREATE SET new.source = 'AUTO' " +
+                        "SET new.updated = {now}";
+
+            transactionHelper.add(updateQuery, params);
+
+            final String cleanupQuery =
+                    "MATCH (g:ManualGroup) " +
+                        "WHERE EXISTS(g.manualGroupAutolinkUsersPositions) " +
+                        "  AND {userPosition} IN g.manualGroupAutolinkUsersPositions " +
+                        "MATCH (g)<-[old:IN]-(u:User) " +
+                        "WHERE old.source = 'AUTO' " +
+                        "  AND (NOT EXISTS(old.updated) OR old.updated <> {now}) " +
+                        "DELETE old";
+
+            transactionHelper.add(cleanupQuery, params);
+        }
+
     public static void setManualGroupAutolinkUsersPositions(String groupId, JsonArray userPositions,
                                                             TransactionHelper transactionHelper) {
         final JsonObject params = new JsonObject()
@@ -159,15 +192,10 @@ public class Group {
                 .put("now", System.currentTimeMillis())
                 .put("userPositions", userPositions);
 
-        final String updateGroupQuery;
-        if (userPositions == null || userPositions.isEmpty()) {
-            updateGroupQuery = "MATCH (g:ManualGroup {id: {groupId}}) " +
-                    "REMOVE g.manualGroupAutolinkUsersPositions";
-        } else {
-            updateGroupQuery = "MATCH (g:ManualGroup {id: {groupId}}) " +
-                    "SET g.manualGroupAutolinkUsersPositions = {userPositions}";
-        }
-        transactionHelper.add(updateGroupQuery, params);
+		final String updateGroupQuery = "MATCH (g:ManualGroup {id: {groupId}}) " +
+				"SET g.manualGroupAutolinkUsersPositions = {userPositions}";
+
+		transactionHelper.add(updateGroupQuery, params);
 
         if (userPositions != null && !userPositions.isEmpty()) {
             final String linkQuery = QUERY_MANUAL_GROUP_AUTOLINK_POSITIONS +
