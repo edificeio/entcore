@@ -14,6 +14,7 @@ export type GroupUpdatePayload = {
   autolinkUsersFromGroups?: Array<string>;
   autolinkUsersFromPositions?: Array<string>;
   autolinkUsersFromLevels?: Array<string>;
+  lockDelete?: boolean;
 };
 
 export type ManualGroupAutolinkUsersPositionsPayload = {
@@ -52,6 +53,9 @@ export class GroupsService {
             sGroup.autolinkUsersFromGroups = groupUpdatePayload.autolinkUsersFromGroups;
             sGroup.autolinkUsersFromLevels = groupUpdatePayload.autolinkUsersFromLevels;
             sGroup.autolinkUsersFromPositions = groupUpdatePayload.autolinkUsersFromPositions;
+            if (groupUpdatePayload.lockDelete !== undefined) {
+              sGroup.lockDelete = groupUpdatePayload.lockDelete;
+            }
           }
           this.groupsStore.group.name = groupUpdatePayload.name;
           this.groupsStore.group.modifiedAt = group.modifiedAt;
@@ -61,6 +65,9 @@ export class GroupsService {
           this.groupsStore.group.autolinkUsersFromGroups = groupUpdatePayload.autolinkUsersFromGroups;
           this.groupsStore.group.autolinkUsersFromLevels = groupUpdatePayload.autolinkUsersFromLevels;
           this.groupsStore.group.autolinkUsersFromPositions = groupUpdatePayload.autolinkUsersFromPositions;
+          if (groupUpdatePayload.lockDelete !== undefined) {
+            this.groupsStore.group.lockDelete = groupUpdatePayload.lockDelete;
+          }
         })
       );
   }
