@@ -34,6 +34,9 @@
       "items": {
         "type": "string"
       }
+    },
+    "lockDelete": {
+      "type": "boolean"
     }
   },
   "required": [

@@ -44,7 +44,9 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
     public autolinkLevelOptions: Array<string> = [];
 
     public showActions: boolean;
-    
+
+    public canLockGroup: boolean = true;
+
     constructor(public groupsStore: GroupsStore,
                 private notifyService: NotifyService,
                 private communicationRulesService: CommunicationRulesService,
@@ -162,7 +164,8 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
             );
         }
 
-    this.setCanShowActions();
+        this.setCanShowActions();
+        this.setCanLockGroup();
     }
 
     showLightBox() {
@@ -258,11 +261,38 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
         this.groupNewName = trim(name);
     }
 
-  async setCanShowActions() {
-    const group = this.groupsStore.group;
-    const session: Session = await SessionModel.getSession();
-    this.showActions =
-      !group.subType ||
-      (group.subType === "BroadcastGroup" && session.isADMC());
-  }
+    async setCanShowActions() {
+        const group = this.groupsStore.group;
+        const session: Session = await SessionModel.getSession();
+        this.showActions =
+            !group.subType ||
+            (group.subType === "BroadcastGroup" && session.isADMC());
+    }
+
+    async setCanLockGroup() {
+        const group = this.groupsStore.group;
+        const session: Session = await SessionModel.getSession();
+        this.canLockGroup = group.type === "ManualGroup" && !group.subType && session.isADMC();
+    }
+
+    switchLockedStatus() {
+      const currentLockStatus = this.groupsStore.group.lockDelete || false;
+      const newLockStatus = !currentLockStatus;
+      
+      this.groupsService.update(this.groupsStore.group.id, {
+        name: this.groupsStore.group.name,
+        lockDelete: newLockStatus
+      }).subscribe(() => {
+        this.notifyService.success({
+          key: newLockStatus ? 'group.lock.notify.success.content' : 'group.unlock.notify.success.content',
+          parameters: {groupName: this.groupsStore.group.name}
+        }, newLockStatus ? 'group.lock.notify.success.title' : 'group.unlock.notify.success.title');
+        this.changeDetector.markForCheck();
+      }, (error: HttpErrorResponse) => {
+        this.notifyService.error({
+          key: newLockStatus ? 'group.lock.notify.error.content' : 'group.unlock.notify.error.content',
+          parameters: {groupName: this.groupsStore.group.name}
+        }, newLockStatus ? 'group.lock.notify.error.title' : 'group.unlock.notify.error.title');
+      });
+    }
 }
