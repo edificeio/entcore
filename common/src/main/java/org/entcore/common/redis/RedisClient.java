@@ -43,7 +43,7 @@ public class RedisClient implements IRedisClient {
             final RedisClient redisClient = new RedisClient(vertx, redisConfig);
             return Future.succeededFuture(redisClient);
         }else{
-          return SharedDataHelper.getInstance().<String, String>getMulti("server", "redisConfig")
+          return SharedDataHelper.getInstance().<String, String>getLocalMulti("server", "redisConfig")
             .map(map -> map.get("redisConfig"))
             .map(redisConfig -> {
               if (redisConfig != null) {

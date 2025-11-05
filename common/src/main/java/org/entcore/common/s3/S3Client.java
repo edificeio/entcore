@@ -16,6 +16,14 @@
 
 package org.entcore.common.s3;
 
+import io.vertx.core.*;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.file.OpenOptions;
+import io.vertx.core.http.*;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.streams.ReadStream;
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.net.QuotedPrintableCodec;
 import org.entcore.common.s3.exception.SignatureException;
@@ -32,22 +40,12 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import io.vertx.core.file.OpenOptions;
-
-import io.vertx.core.*;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.*;
-import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.streams.ReadStream;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.channels.ClosedChannelException;
 import java.nio.charset.StandardCharsets;
@@ -56,18 +54,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 public class S3Client {
 
@@ -550,9 +539,11 @@ public class S3Client {
 		deleteFile(id, defaultBucket, handler);
 	}
 
-	public void deleteFile(String id, String bucket, final Handler<AsyncResult<Void>> handler) {
-		id = getPath(id);
+    public void deleteFile(String id, String bucket, final Handler<AsyncResult<Void>> handler) {
+        deleteFileWithId(getPath(id), bucket, handler);
+    }
 
+	public void deleteFileWithId(String id, String bucket, final Handler<AsyncResult<Void>> handler) {
 		RequestOptions requestOptions = new RequestOptions()
 			.setMethod(HttpMethod.DELETE)
 			.setHost(host)
@@ -626,12 +617,21 @@ public class S3Client {
 
 	public void writeToFileSystem(String id, final String destination, String bucket,
 			final Handler<AsyncResult<String>> handler) {
-		final String fileId = getPath(id);
+    final String fileId = getPath(id);
+    writeToFileSystemWithId(fileId, destination, bucket, handler);
+  }
 
+
+  public void writeToFileSystemWithId(String id, final String destination,
+                                      final Handler<AsyncResult<String>> handler) {
+    writeToFileSystemWithId(id, destination, defaultBucket, handler);
+  }
+  public void writeToFileSystemWithId(String id, final String destination, String bucket,
+                                final Handler<AsyncResult<String>> handler) {
 		RequestOptions requestOptions = new RequestOptions()
 			.setMethod(HttpMethod.GET)
 			.setHost(host)
-			.setURI("/" + bucket + "/" + fileId);
+			.setURI("/" + bucket + "/" + id);
 
 		httpClient.request(requestOptions)
 			.flatMap(req -> {
@@ -648,22 +648,27 @@ public class S3Client {
 			.onSuccess(response -> {
 				response.pause();
 				if (response.statusCode() == 200) {
-					vertx.fileSystem().open(destination, new OpenOptions(), ar -> {
-						if (ar.succeeded()) {
-							response.pipeTo(ar.result(), aVoid -> {
-								if(aVoid.succeeded()) {
-									log.info(id + " file successfully downloaded from S3");
-									handler.handle(new DefaultAsyncResult<>(destination));
-								} else {
-									final String message = "An error occurred while piping " + id + " to " + destination;
-									log.error(message, aVoid.cause());
-									handler.handle(new DefaultAsyncResult<>(new StorageException(message, aVoid.cause())));
-								}
-							});
-						} else {
-							handler.handle(new DefaultAsyncResult<>(ar.cause()));
-						}
-					});
+          final String dest = decodePath(destination);
+          createParentsIfNeeded(dest)
+          .onSuccess(e -> {
+            vertx.fileSystem().open(dest, new OpenOptions(), ar -> {
+              if (ar.succeeded()) {
+                response.pipeTo(ar.result(), aVoid -> {
+                  if (aVoid.succeeded()) {
+                    log.info(id + " file successfully downloaded from S3 to " + dest);
+                    handler.handle(new DefaultAsyncResult<>(dest));
+                  } else {
+                    final String message = "An error occurred while piping " + id + " to " + dest;
+                    log.error(message, aVoid.cause());
+                    handler.handle(new DefaultAsyncResult<>(new StorageException(message, aVoid.cause())));
+                  }
+                });
+              } else {
+                handler.handle(new DefaultAsyncResult<>(ar.cause()));
+              }
+            });
+          })
+          .onFailure(th -> handler.handle(new DefaultAsyncResult<>(th)));
 				} else {
 					handler.handle(new DefaultAsyncResult<>(new StorageException(response.statusMessage())));
 				}
@@ -673,7 +678,13 @@ public class S3Client {
 			});
 	}
 
-	public void writeFromFileSystem(final String id, String path, final Handler<JsonObject> handler) {
+  private Future<Void> createParentsIfNeeded(final String destination) {
+    final File file = new File(destination);
+    final File parent = file.getParentFile();
+    return vertx.fileSystem().mkdirs(parent.getAbsolutePath());
+  }
+
+  public void writeFromFileSystem(final String id, String path, final Handler<JsonObject> handler) {
 		writeFromFileSystem(id, path, defaultBucket, handler);
 	}
 
@@ -694,6 +705,54 @@ public class S3Client {
 			handler.handle(new JsonObject().put("_id", id).put("status", "ok"));
 		});
 	}
+
+  public Future<JsonObject> writeFromFileSystem(final String s3Path, String fsPath) {
+    final Promise<JsonObject> promise = Promise.promise();
+    MultipartUpload multipartUpload = new MultipartUpload(vertx, httpClient, host, accessKey, secretKey, region, defaultBucket, ssec);
+    final String id = encodeUrlPath(s3Path);
+    multipartUpload.upload(fsPath, id, result -> promise.complete(new JsonObject().put("_id", id).put("status", result.getString("status")).put("message", result.getValue("message"))));
+    return promise.future();
+  }
+
+
+  public static String encodeUrlPath(String path) {
+    String[] segments = path.split("/");
+    StringBuilder result = new StringBuilder();
+
+    for (int i = 0; i < segments.length; i++) {
+      if (i > 0) {
+        result.append("/");
+      }
+      // Encode each segment separately
+      try {
+        result.append(URLEncoder.encode(segments[i], StandardCharsets.UTF_8.name()));
+      } catch (UnsupportedEncodingException e) {
+        result.append(URLEncoder.encode(segments[i]));
+      }
+    }
+
+    return result.toString();
+  }
+
+
+  public static String decodePath(String path) {
+    String[] segments = path.split("/");
+    StringBuilder result = new StringBuilder();
+
+    for (int i = 0; i < segments.length; i++) {
+      if (i > 0) {
+        result.append("/");
+      }
+      // Encode each segment separately
+      try {
+        result.append(URLDecoder.decode(segments[i], StandardCharsets.UTF_8.name()));
+      } catch (UnsupportedEncodingException e) {
+        result.append(URLDecoder.decode(segments[i]));
+      }
+    }
+
+    return result.toString();
+  }
 
 	public void writeBufferStream(final String id, ReadStream<Buffer> bufferReadStream, String contentType, String filename, Handler<AsyncResult<JsonObject>> handler) {
 		bufferReadStream.pause();
@@ -937,5 +996,127 @@ public class S3Client {
 		final int separatorIndex = path.lastIndexOf(File.separator);
 		return (separatorIndex < 0) ? path : path.substring(separatorIndex+1);
 	}
+
+  /**
+   *
+   * @param prefix
+   * @return
+   */
+	public Future<List<S3FileInfo>> listFilesByPrefix(final String prefix) {
+		Promise<List<S3FileInfo>> promise = Promise.promise();
+		List<S3FileInfo> allObjects = new ArrayList<>();
+		
+		listBucketRecursive(prefix, null, allObjects, promise);
+		
+		return promise.future();
+	}
+	
+	private void listBucketRecursive(final String prefix, String continuationToken, 
+			List<S3FileInfo> allObjects, Promise<List<S3FileInfo>> promise) {
+		
+		final StringBuilder url = new StringBuilder().append('/').append(defaultBucket).append("/?list-type=2");
+		if (prefix != null) {
+      url.append("&prefix=").append(encodeUrlPath(prefix));
+		}
+		if (continuationToken != null) {
+			url.append("&continuation-token=").append(continuationToken);
+		}
+
+		RequestOptions requestOptions = new RequestOptions()
+			.setMethod(HttpMethod.GET)
+			.setHost(host)
+			.setURI(url.toString());
+
+		httpClient.request(requestOptions)
+			.flatMap(req -> {
+				AwsUtils.setSSEC(req, ssec);
+				try {
+					AwsUtils.sign(req, accessKey, secretKey, region);
+				} catch (SignatureException e) {
+					log.error("S3Client listFilesByPrefix, signature failed: " + e.getMessage(), e);
+					return Future.failedFuture("S3Client listFilesByPrefix, signature failed");
+				}
+				return req.send();
+			})
+			.onSuccess(response -> {
+				response.pause();
+				if (response.statusCode() == 200) {
+					response.bodyHandler(body -> {
+						try {
+							DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+							DocumentBuilder builder = factory.newDocumentBuilder();
+							Document document = builder.parse(new ByteArrayInputStream(body.getBytes()));
+
+							NodeList contents = document.getElementsByTagName("Contents");
+							for (int i = 0; i < contents.getLength(); i++) {
+								Node content = contents.item(i);
+								NodeList children = content.getChildNodes();
+								for (int j = 0; j < children.getLength(); j++) {
+									Node child = children.item(j);
+									if ("Key".equals(child.getNodeName())) {
+										String key = child.getTextContent();
+										if (key != null && !key.trim().isEmpty()) {
+											allObjects.add(new S3FileInfo(getUuid(key), key));
+										}
+									}
+								}
+							}
+
+							// Check if there are more objects to retrieve
+							NodeList isTruncatedNodes = document.getElementsByTagName("IsTruncated");
+							boolean isTruncated = false;
+							if (isTruncatedNodes.getLength() > 0) {
+								isTruncated = "true".equals(isTruncatedNodes.item(0).getTextContent());
+							}
+
+							if (isTruncated) {
+								NodeList nextContinuationTokenNodes = document.getElementsByTagName("NextContinuationToken");
+								if (nextContinuationTokenNodes.getLength() > 0) {
+									String nextToken = nextContinuationTokenNodes.item(0).getTextContent();
+									// Recursive call to get the next batch
+									listBucketRecursive(prefix, nextToken, allObjects, promise);
+								} else {
+									promise.complete(allObjects);
+								}
+							} else {
+								promise.complete(allObjects);
+							}
+
+						} catch (ParserConfigurationException | SAXException | IOException e) {
+							promise.fail(new StorageException("Error parsing response: " + e.getMessage()));
+						}
+					});
+					response.resume();
+				} else {
+					promise.fail(new StorageException(response.statusCode() + " - " + response.statusMessage()));
+				}
+			})
+			.onFailure(exception -> {
+				promise.fail(new StorageException(exception.getMessage()));
+			});
+	}
+
+    public String getDefaultBucket() {
+        return defaultBucket;
+    }
+
+    public static class S3FileInfo {
+    private final String id;
+    private final String path;
+
+    public S3FileInfo(String id, String path) {
+      this.id = id;
+      this.path = path;
+    }
+
+    public String getId() {
+      return id;
+    }
+
+    public String getPath() {
+      return path;
+    }
+
+  }
 
 }

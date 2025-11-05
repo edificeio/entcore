@@ -66,7 +66,7 @@ public class EmailFactory {
 		} else {
 			final SharedDataHelper sharedDataHelper = SharedDataHelper.getInstance();
 			sharedDataHelper.init(vertx);
-			sharedDataHelper.<String, String>get("server", "emailConfig").onSuccess(s -> {
+			sharedDataHelper.<String, String>getLocal("server", "emailConfig").onSuccess(s -> {
 				if (s != null) {
 					this.config = new JsonObject(s);
 					this.moduleConfig = this.config;

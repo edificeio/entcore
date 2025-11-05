@@ -111,7 +111,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		super.start();
 		final SharedDataHelper sharedDataHelper = SharedDataHelper.getInstance();
 		sharedDataHelper.init(vertx);
-		sharedDataHelper.<String, Object>getMulti("server", "neo4jConfig", "node")
+		sharedDataHelper.<String, Object>getLocalMulti("server", "neo4jConfig", "node")
 				.compose(feederConfigMap -> StorageFactory.build(vertx, config)
 						.map(storageFactory -> Pair.of(feederConfigMap, storageFactory)))
 				.compose(configPair -> initFeeder(configPair.getLeft(), configPair.getRight()))

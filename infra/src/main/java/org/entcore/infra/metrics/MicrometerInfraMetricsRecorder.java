@@ -50,7 +50,7 @@ public class MicrometerInfraMetricsRecorder implements InfraMetricsRecorder {
     final Promise<String> promise = Promise.promise();
     String entVersion = vertx.getOrCreateContext().config().getString("ent-version");
     if(org.apache.commons.lang3.StringUtils.isEmpty(entVersion)) {
-      vertx.sharedData().getAsyncMap("server").compose(server -> server.get("ent-version")).onSuccess(version ->
+      vertx.sharedData().getLocalAsyncMap("server").compose(server -> server.get("ent-version")).onSuccess(version ->
         promise.complete(StringUtils.isEmpty(entVersion) ? "na" : entVersion)
       ).onFailure(ex -> promise.fail(ex));
     } else {

@@ -46,7 +46,7 @@ public class PostgresEmailSender implements EmailSender {
         maxSize = pgConfig.getInteger("max-size", -1);
         this.helper = PostgresEmailHelper.create(vertx, pgConfig);
 
-        vertx.sharedData().<String, String>getAsyncMap("server")
+        vertx.sharedData().<String, String>getLocalAsyncMap("server")
             .compose(serverMap -> serverMap.get("event-store"))
             .onSuccess(eventStoreConf -> {
                 if (eventStoreConf != null) {

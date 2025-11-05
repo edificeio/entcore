@@ -66,7 +66,7 @@ public class UserValidationFactory {
 		if (config == null ) {
 			final SharedDataHelper sharedDataHelper = SharedDataHelper.getInstance();
 			sharedDataHelper.init(vertx);
-			sharedDataHelper.<String, String>get("server", "emailValidationConfig").onSuccess(s -> {
+			sharedDataHelper.<String, String>getLocal("server", "emailValidationConfig").onSuccess(s -> {
 				config = (s != null) ? new JsonObject(s) : new JsonObject();
 				initInternal(initPromise);
 			}).onFailure(ex ->  {

@@ -45,7 +45,7 @@ public class Admin extends BaseServer {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
 		promise.future()
-				.compose(init -> SharedDataHelper.getInstance().<String, Object>getMulti("server", "smsProvider", "node", "hidePersonalData"))
+				.compose(init -> SharedDataHelper.getInstance().<String, Object>getLocalMulti("server", "smsProvider", "node", "hidePersonalData"))
 				.compose(adminConfigMap -> initAdmin(adminConfigMap))
 				.onComplete(startPromise);
 	}

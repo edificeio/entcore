@@ -32,6 +32,13 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>mod-mongo-persistor</artifactId>
+            <version>4.1-zookeeper-SNAPSHOT</version>
+            <scope>runtime</scope>
+            <classifier>fat</classifier>
+        </dependency>
+        <dependency>
             <groupId>org.entcore</groupId>
             <artifactId>test</artifactId>
             <version>${revision}</version>

@@ -7,7 +7,7 @@
     <parent>
         <groupId>io.edifice</groupId>
         <artifactId>app-parent</artifactId>
-        <version>1.0</version>
+        <version>1.1-SNAPSHOT</version>
     </parent>
 
     <groupId>org.entcore</groupId>
@@ -63,7 +63,7 @@
         <modPostgresVersion>2.0-SNAPSHOT</modPostgresVersion>
         <modMongoVersion>4.0-SNAPSHOT</modMongoVersion>
         <webUtilsVersion>3.2-zookeeper-SNAPSHOT</webUtilsVersion>
-        <mongodbHelperVersion>3.0-SNAPSHOT</mongodbHelperVersion>
+        <mongodbHelperVersion>3.0-zookeeper-SNAPSHOT</mongodbHelperVersion>
         <jodaTimeVersion>2.9.4</jodaTimeVersion>
         <scramVersion>2.1</scramVersion>
         <micrometerPrometheusVersion>1.11.4</micrometerPrometheusVersion>
@@ -171,6 +171,34 @@
                     <artifactId>mongodb-driver-async</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.opendigitaleducation</groupId>
+            <artifactId>mod-json-schema-validator</artifactId>
+            <version>2.0-zookeeper-SNAPSHOT</version>
+            <scope>runtime</scope>
+            <classifier>fat</classifier>
+        </dependency>
+        <dependency>
+            <groupId>fr.wseduc</groupId>
+            <artifactId>mod-image-resizer</artifactId>
+            <version>3.1-zookeeper-SNAPSHOT</version>
+            <scope>runtime</scope>
+            <classifier>fat</classifier>
+        </dependency>
+        <dependency>
+            <groupId>fr.wseduc</groupId>
+            <artifactId>mod-zip</artifactId>
+            <version>3.1-zookeeper-SNAPSHOT</version>
+            <scope>runtime</scope>
+            <classifier>fat</classifier>
+        </dependency>
+        <dependency>
+            <groupId>fr.wseduc</groupId>
+            <artifactId>mod-pdf-generator</artifactId>
+            <version>2.0-zookeeper-SNAPSHOT</version>
+            <scope>runtime</scope>
+            <classifier>fat</classifier>
         </dependency>
     </dependencies>
 
