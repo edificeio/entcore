@@ -326,4 +326,19 @@ public class GroupController extends BaseController {
 			badRequest(request, "invalid.id");
 		}
 	}
+
+    @Post("/group/updateManualGroupsByUserPositions")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(AdminFilter.class)
+    public void updateManualGroupsByUserPositions(final HttpServerRequest request) {
+        bodyToJson(request, body -> {
+            final String userPositionName = body.getString("name");
+
+            if (userPositionName != null && !userPositionName.trim().isEmpty()) {
+                groupService.updateManualGroupsByUserPositions(userPositionName, defaultResponseHandler(request));
+            } else {
+                badRequest(request, "invalid.user.position");
+            }
+        });
+    }
 }
