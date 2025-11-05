@@ -81,7 +81,7 @@ public class PostgresqlEventStore extends GenericEventStore {
 			handler.handle(Future.succeededFuture());
 			return;
 		}
-		vertx.sharedData().<String, String>getAsyncMap("server")
+		vertx.sharedData().<String, String>getLocalAsyncMap("server")
             .compose(serverMap -> serverMap.get("event-store"))
             .onSuccess(eventStoreConf -> {
                 if (eventStoreConf != null) {

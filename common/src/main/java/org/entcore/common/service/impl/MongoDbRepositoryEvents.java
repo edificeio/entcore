@@ -38,6 +38,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.FileProps;
 
+import org.entcore.common.user.ExportResourceResult;
 import org.entcore.common.utils.FileUtils;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.folders.FolderImporter;
@@ -336,7 +337,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 						exportFiles(results, exportPath, usedFileName, exported, handler);
 					} else {
 						log.error(title + " : Could not write file " + filePath, event.cause());
-						handler.handle(exported.get());
+						handler.handle(false);
 					}
 				}
 			});
@@ -354,7 +355,7 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 
 	@Override
 	public void exportResources(JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources, String exportId, String userId,
-								JsonArray g, String exportPath, String locale, String host, Handler<Boolean> handler) {
+								JsonArray g, String exportPath, String locale, String host, Handler<ExportResourceResult> handler) {
 		Bson findByAuthor = Filters.eq("author.userId", userId);
 		Bson findByOwner = Filters.eq("owner.userId", userId);
 		Bson findByAuthorOrOwner = Filters.or(findByAuthor, findByOwner);
@@ -390,33 +391,30 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 						}
 						createExportDirectory(exportPath, locale, path -> {
 							if (path != null) {
-								Handler<Boolean> finish = new Handler<Boolean>() {
-									@Override
-									public void handle(Boolean bool) {
-										if (bool) {
-											exportFiles(results, path, new HashSet<String>(), exported, handler);
-										} else {
-											// Should never happen, export doesn't fail if docs export fail.
-											handler.handle(exported.get());
-										}
-									}
-								};
+								Handler<Boolean> finish = bool -> {
+                                    if (bool) {
+                                        exportFiles(results, path, new HashSet<>(), exported, e -> handler.handle(new ExportResourceResult(e, exportPath)));
+                                    } else {
+                                        // Should never happen, export doesn't fail if docs export fail.
+                                        handler.handle(new ExportResourceResult(exported.get(), path));
+                                    }
+                                };
 
 								if(exportDocuments == true)
 									exportDocumentsDependancies(results, path, finish);
 								else
 									finish.handle(Boolean.TRUE);
 							} else {
-								handler.handle(exported.get());
+								handler.handle(new ExportResourceResult(exported.get(), exportPath) );
 							}
 						});
 					} else {
 						log.error(title + " : Could not proceed query " + query.encode(), event.body().getString("message"));
-						handler.handle(exported.get());
+						handler.handle(new ExportResourceResult(exported.get(), exportPath));
 					}
 				}).onFailure(error -> {
 					log.error(title + " : Could not filter resources ", error);
-					handler.handle(exported.get());
+					handler.handle(new ExportResourceResult(exported.get(), exportPath));
 				});
 		});
 	}
@@ -526,52 +524,56 @@ public class MongoDbRepositoryEvents extends AbstractRepositoryEvents {
 							promise.complete(fileMap);
 						}
 					};
+                    if(nbFiles <= 0) {
+                        log.info("No files to read from import in " + dirPath + " of user " + userId);
+                        finaliseRead.handle(null);
+                    } else {
+                        for (String filePath : filesInDir) {
+                            self.fs.props(filePath, new Handler<AsyncResult<FileProps>>() {
+                                @Override
+                                public void handle(AsyncResult<FileProps> propsResult) {
+                                    if (propsResult.succeeded() == false)
+                                        promise.fail(propsResult.cause());
+                                    else {
+                                        if (propsResult.result().isDirectory() == true) {
+                                            FolderImporterContext ctx = new FolderImporterContext(filePath, userId, userName);
+                                            self.fileImporter.importFoldersFlatFormat(ctx, new Handler<JsonObject>() {
+                                                @Override
+                                                public void handle(JsonObject rapport) {
+                                                    int ix = unprocessed.decrementAndGet();
 
-					for(String filePath : filesInDir) {
-						self.fs.props(filePath, new Handler<AsyncResult<FileProps>>() {
-							@Override
-							public void handle(AsyncResult<FileProps> propsResult) {
-								if(propsResult.succeeded() == false)
-									promise.fail(propsResult.cause());
-								else {
-									if(propsResult.result().isDirectory() == true) {
-										FolderImporterContext ctx = new FolderImporterContext(filePath, userId, userName);
-										self.fileImporter.importFoldersFlatFormat(ctx, new Handler<JsonObject>() {
-											@Override
-											public void handle(JsonObject rapport) {
-												int ix = unprocessed.decrementAndGet();
+                                                    nbErrors.addAndGet(Integer.parseInt(rapport.getString("errorsNumber", "1")));
+                                                    contexts.add(ctx);
 
-												nbErrors.addAndGet(Integer.parseInt(rapport.getString("errorsNumber", "1")));
-												contexts.add(ctx);
+                                                    if (ix == 0)
+                                                        finaliseRead.handle(null);
+                                                }
+                                            });
+                                        } else {
+                                            self.fs.readFile(filePath, new Handler<AsyncResult<Buffer>>() {
+                                                @Override
+                                                public void handle(AsyncResult<Buffer> fileResult) {
+                                                    if (fileResult.succeeded() == false)
+                                                        promise.fail(fileResult.cause());
+                                                    else {
+                                                        int ix = unprocessed.decrementAndGet();
 
-												if(ix == 0)
-													finaliseRead.handle(null);
-											}
-										});
-									} else {
-										self.fs.readFile(filePath, new Handler<AsyncResult<Buffer>>() {
-											@Override
-											public void handle(AsyncResult<Buffer> fileResult) {
-												if(fileResult.succeeded() == false)
-													promise.fail(fileResult.cause());
-												else {
-													int ix = unprocessed.decrementAndGet();
+                                                        if (filterMongoDocumentFile(filePath, fileResult.result()) == true) {
+                                                            mongoDocs.set(ix, fileResult.result().toJsonObject());
+                                                            mongoDocsFileNames.set(ix, FileUtils.getFilename(filePath));
+                                                        }
 
-													if(filterMongoDocumentFile(filePath, fileResult.result()) == true) {
-														mongoDocs.set(ix, fileResult.result().toJsonObject());
-														mongoDocsFileNames.set(ix, FileUtils.getFilename(filePath));
-													}
-
-													if(ix == 0)
-														finaliseRead.handle(null);
-												}
-											}
-										});
-									}
-								}
-							}
-						});
-					}
+                                                        if (ix == 0)
+                                                            finaliseRead.handle(null);
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    }
 				}
 			}
 		});

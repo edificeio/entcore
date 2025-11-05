@@ -42,6 +42,7 @@ import org.entcore.common.folders.FolderImporter.FolderImporterContext;
 import org.entcore.common.folders.FolderManager;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.RepositoryEvents;
+import org.entcore.common.user.ExportResourceResult;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.workspace.controllers.WorkspaceController;
 import org.entcore.workspace.dao.DocumentDao;
@@ -90,7 +91,7 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 	@SuppressWarnings("unchecked")
 	@Override
 	public void exportResources(final JsonArray resourcesIds, boolean exportDocuments, boolean exportSharedResources, final String exportId, final String userId,
-								JsonArray groupIds, final String exportPathOrig, final String locale, String host, final Handler<Boolean> handler) {
+								JsonArray groupIds, final String exportPathOrig, final String locale, String host, final Handler<ExportResourceResult> handler) {
 
 		Bson findByOwner = Filters.eq("owner", userId);
 		Bson findByShared = Filters.or(Filters.eq("inheritedShares.userId", userId),
@@ -155,16 +156,16 @@ public class WorkspaceRepositoryEvents implements RepositoryEvents {
 						public void handle(AsyncResult<Void> event) {
 							if (event.succeeded()) {
 								log.info("Documents exported successfully to : " + finalExportPath);
-								handler.handle(true);
+								handler.handle(new ExportResourceResult(true, finalExportPath));
 							} else {
 								log.error("Documents : Failed to export documents to " + finalExportPath + " - " + event.cause());
-								handler.handle(false);
+								handler.handle(new ExportResourceResult(false, finalExportPath));
 							}
 						}
 					});
 				} else {
 					log.error("Documents : Failed to export documents to " + finalExportPath);
-					handler.handle(false);
+					handler.handle(new ExportResourceResult(false, finalExportPath));
 				}
 			}
 		});

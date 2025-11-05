@@ -61,7 +61,7 @@ public class Timeline extends BaseServer {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
 		promise.future()
-				.compose(init -> SharedDataHelper.getInstance().<String, Object>getMulti("server", "skins", "skin-levels"))
+				.compose(init -> SharedDataHelper.getInstance().<String, Object>getLocalMulti("server", "skins", "skin-levels"))
 				.compose(timelineConfigMap -> initTimeline(timelineConfigMap))
 				.onComplete(startPromise);
 	}

@@ -139,7 +139,7 @@ public class FolderImporter
 		this.fs = fs;
 		this.eb = eb;
 		this.throwErrors = throwErrors;
-		vertx.sharedData().<String, String>getAsyncMap("server")
+		vertx.sharedData().<String, String>getLocalAsyncMap("server")
 			.compose(serverMap -> serverMap.get("archiveConfig"))
 			.onSuccess(archiveConfig -> {
 				try {
@@ -240,7 +240,9 @@ public class FolderImporter
 																	.put("oldFileId", fileId)
 																	.put("filePath", filePath)
 																	.put("userId", context.userId);
-		final DeliveryOptions options = new DeliveryOptions().setSendTimeout(this.busTimeoutSec * 1000);
+		final DeliveryOptions options = new DeliveryOptions()
+                .setSendTimeout(this.busTimeoutSec * 1000)
+                .setLocalOnly(true);
 		this.eb.request("org.entcore.workspace", importParams, options, new Handler<AsyncResult<Message<JsonObject>>>()
 		{
 			@Override
@@ -380,17 +382,20 @@ public class FolderImporter
 			{
 				if(result.succeeded() == false)
 				{
+                    log.error("An error occurred while reading " + context.basePath, result.cause());
 					context.addError(null, null, "Failed to read document folder", result.cause().getMessage());
 					throw new RuntimeException(result.cause());
 				}
 				else
 				{
 					List<String> filesInDir = result.result();
+                    log.debug("Read files from " + context.basePath + " : " + filesInDir);
 
 					LinkedList<Future> futures = new LinkedList<Future>();
 
 					fileFor: for(String filePath : filesInDir)
 					{
+                        log.debug("Reading file " + filePath);
 						Promise<Void> future = Promise.promise();
 						futures.add(future.future());
 
@@ -403,6 +408,7 @@ public class FolderImporter
 							if(m.find() == false)
 							{
 								String error = "Filename " + fileTrunc + "does not contain the file id";
+                                log.debug(error);
 								context.addError(null, null, error, null);
 								future.fail(new RuntimeException(error));
 

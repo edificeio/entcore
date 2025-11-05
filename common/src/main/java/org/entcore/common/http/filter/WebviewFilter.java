@@ -32,7 +32,7 @@ public class WebviewFilter implements Filter {
     public WebviewFilter(Vertx vertx, EventBus eb) {
         this.eb = eb;
         this.vertx = vertx;
-        vertx.sharedData().<String, String>getAsyncMap("server")
+        vertx.sharedData().<String, String>getLocalAsyncMap("server")
             .compose(serverMap -> serverMap.get("webviewConfig"))
 			.onSuccess(webviewConfig -> {
 				if (webviewConfig != null) {

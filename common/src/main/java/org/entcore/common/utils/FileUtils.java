@@ -116,7 +116,7 @@ public final class FileUtils {
 		final Path path = Paths.get(zipFilename);
 		final URI uri = URI.create("jar:file:" + path.toUri().getPath());
 
-		final Map<String, String> env = new HashMap<>();
+		Map<String, String> env = new HashMap<>();
 		if(encoding.isPresent()){
 			env.put("encoding", encoding.get());
 		}
