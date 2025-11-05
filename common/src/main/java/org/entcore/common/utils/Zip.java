@@ -35,7 +35,6 @@ public class Zip {
 
 	private EventBus eb;
 	private String address;
-    private boolean local; // TODO to be removed
 	private static final Logger log = LoggerFactory.getLogger(Zip.class);
 
 	private Zip() {}
@@ -48,10 +47,9 @@ public class Zip {
 		return ZipHolder.instance;
 	}
 
-	public void init(EventBus eb, String address, final boolean local) {
+	public void init(EventBus eb, String address) {
 		this.eb = eb;
 		this.address = address;
-        this.local = local;
 	}
 
 	public void zipFolder(String path, String zipPath, boolean deletePath, Handler<Message<JsonObject>> handler) {

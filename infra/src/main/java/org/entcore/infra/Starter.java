@@ -73,128 +73,19 @@ public class Starter extends BaseServer {
 	public Future<Void> initInfra() {
 		Promise<Void> returnPromise = Promise.promise();
 		try {
-			final Map<String, Object> serverMap = new HashMap<>();
-			serverMap.put("signKey", config.getString("key", "zbxgKWuzfxaYzbXcHnK3WnWK" + Math.random()));
-
-			serverMap.put("sameSiteValue", config.getString("sameSiteValue", "Strict"));
-			serverMap.put("hidePersonalData", config.getBoolean("hidePersonalData", false));
-
-			//JWT need signKey
-			SecurityHandler.setVertx(vertx);
-			//encoding
-			final JsonArray encondings = config.getJsonArray("encoding-available", new JsonArray());
-			final JsonArray safeEncondigs = new JsonArray();
-			for(final Object o : encondings){
-				safeEncondigs.add(o.toString());
-			}
-			serverMap.put("encoding-available", safeEncondigs.encode());
-			//
-			CookieHelper.getInstance().init((String) serverMap.get("signKey"),
-					(String) serverMap.get("sameSiteValue"),
-					log);
-
-			JsonObject swift = config.getJsonObject("swift");
-			if (swift != null) {
-				serverMap.put("swift", swift.encode());
-			}
-			JsonObject s3 = config.getJsonObject("s3");
-			if (s3 != null) {
-				serverMap.put("s3", s3.encode());
-			}
-			JsonObject emailConfig = config.getJsonObject("emailConfig");
-			if (emailConfig != null) {
-				serverMap.put("emailConfig", emailConfig.encode());
-				if(emailConfig.containsKey("postgresql")){
-					addController(new MailController(vertx, emailConfig));
-				}
-			}
-			JsonObject dataValidationConfig = config.getJsonObject("emailValidationConfig");
-			if (dataValidationConfig != null) {
-				serverMap.put("emailValidationConfig", dataValidationConfig.encode());
-			}
-			JsonObject mfaConfig = config.getJsonObject("mfaConfig");
-			if (mfaConfig != null) {
-				serverMap.put("mfaConfig", mfaConfig.encode());
-			}
-			final JsonObject webviewConfig = config.getJsonObject("webviewConfig");
-			if (webviewConfig != null) {
-				serverMap.put("webviewConfig", webviewConfig.encode());
-			}
-			JsonObject filesystem = config.getJsonObject("file-system");
-			if (filesystem != null) {
-				serverMap.put("file-system", filesystem.encode());
-			}
-			JsonObject neo4jConfig = config.getJsonObject("neo4jConfig");
-			if (neo4jConfig != null) {
-				serverMap.put("neo4jConfig", neo4jConfig.encode());
-			}
-			JsonObject mongoConfig = config.getJsonObject("mongoConfig");
-			if (mongoConfig != null) {
-				serverMap.put("mongoConfig", mongoConfig.encode());
-			}
-			JsonObject postgresConfig = config.getJsonObject("postgresConfig");
-			if (postgresConfig != null) {
-				serverMap.put("postgresConfig", postgresConfig.encode());
-			}
-			JsonObject explorerConfig = config.getJsonObject("explorerConfig");
-			if (explorerConfig != null) {
-				serverMap.put("explorerConfig", explorerConfig.encode());
-			}
-			JsonObject redisConfig = config.getJsonObject("redisConfig");
-			if (redisConfig != null) {
-				serverMap.put("redisConfig", redisConfig.encode());
-			}
-			JsonObject oauthCache = config.getJsonObject("oauthCache");
-			if (oauthCache != null) {
-				serverMap.put("oauthCache", oauthCache.encode());
-			}
-			serverMap.put("cache-enabled", config.getBoolean("cache-enabled", false));
-			final String csp = config.getString("content-security-policy");
-			if (isNotEmpty(csp)) {
-				serverMap.put("contentSecurityPolicy", csp);
-			}
-			JsonObject nodePdfGenerator = config.getJsonObject("node-pdf-generator");
-			if (nodePdfGenerator != null) {
-				serverMap.put("node-pdf-generator", nodePdfGenerator.encode());
-			}
-			final String staticHost = config.getString("static-host");
-			if(staticHost != null)
-			{
-				serverMap.put("static-host", staticHost);
-			}
-			JsonObject eventStoreConfig = config.getJsonObject("event-store");
-			if (eventStoreConfig != null) {
-				serverMap.put("event-store", eventStoreConfig.encode());
-			}
-			serverMap.put("gridfsAddress", config.getString("gridfs-address", "wse.gridfs.persistor"));
-			final JsonObject metricsOptions = config.getJsonObject("metricsOptions");
-			if(metricsOptions != null) {
-				serverMap.put("metricsOptions", metricsOptions.encode());
-			}
-			final JsonObject contentTransformer = config.getJsonObject("content-transformer");
-			if (contentTransformer != null) {
-				serverMap.put("content-transformer", contentTransformer.encode());
-			}
-			//initModulesHelpers(node);
-
-			/* sharedConf sub-object */
-			JsonObject sharedConf = config.getJsonObject("sharedConf", new JsonObject());
-			for(String field : sharedConf.fieldNames()){
-				serverMap.put(field, sharedConf.getValue(field));
-			}
-
-			serverMap.put("skins", config.getJsonObject("skins", new JsonObject()));
-
-			log.info("config skin-levels = " + config.getJsonObject("skin-levels", new JsonObject()));
-			serverMap.put("skin-levels", config.getJsonObject("skin-levels", new JsonObject()));
-
-			SharedDataHelper.getInstance().getLocalAsyncMap("server").onSuccess(asyncServerMap -> {
-				final List<Future<Void>> futures = new ArrayList<>();
-				serverMap.entrySet().stream().forEach(entry -> futures.add(asyncServerMap.put(entry.getKey(), entry.getValue())));
-				Future.all(futures)
-					.onSuccess(a -> returnPromise.complete())
-					.onFailure(ex -> log.error("Error putting values in config server map", ex));
-			}).onFailure(ex -> log.error("Error getting server map", ex));
+			vertx.sharedData().getLocalAsyncMap("server").onSuccess(asyncServerMap -> {
+				asyncServerMap.get("emailConfig")
+						.map(config -> (String) config)
+						.compose(emailConfigStr -> {
+							if (isNotEmpty(emailConfigStr)) {
+								JsonObject emailConfig = new JsonObject(emailConfigStr);
+								if(emailConfig.containsKey("postgresql")) {
+									addController(new MailController(vertx, emailConfig));
+								}
+							}
+							return Future.succeededFuture();
+						});
+			}).onFailure(th -> log.error("Error getting server map", th));
 
 			final MessageConsumer<JsonObject> messageConsumer = vertx.eventBus().consumer("app-registry.loaded");
 			messageConsumer.handler(message -> {

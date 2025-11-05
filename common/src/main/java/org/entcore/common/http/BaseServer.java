@@ -314,8 +314,7 @@ public abstract class BaseServer extends Server {
 		}
 		if (config.getBoolean("zip", true)) {
 			Zip.getInstance().init(getEventBus(vertx), node +
-					config.getString("zip-address", "entcore.zipper"),
-                    config.getBoolean("zip-local", false));
+					config.getString("zip-address", "entcore.zipper"));
 		}
 		if (config.getBoolean("sql", false)) {
 			Sql.getInstance().init(getEventBus(vertx), node +
@@ -502,10 +501,6 @@ public abstract class BaseServer extends Server {
 
 
     private Future<Void> loadInfra() {
-        if(moduleName.contains("Starter")) {
-            log.info("Skipping module loading for module " + moduleName);
-            return Future.succeededFuture();
-        }
         log.info("loading infra for module " + moduleName);
         Promise<Void> returnPromise = Promise.promise();
         try {
@@ -519,12 +514,12 @@ public abstract class BaseServer extends Server {
             //JWT need signKey
             SecurityHandler.setVertx(vertx);
             //encoding
-            final JsonArray encondings = config.getJsonArray("encoding-available", new JsonArray());
-            final JsonArray safeEncondigs = new JsonArray();
-            for(final Object o : encondings){
-                safeEncondigs.add(o.toString());
+            final JsonArray encodings = config.getJsonArray("encoding-available", new JsonArray());
+            final JsonArray safeEncodings = new JsonArray();
+            for(final Object o : encodings){
+                safeEncodings.add(o.toString());
             }
-            serverMap.put("encoding-available", safeEncondigs.encode());
+            serverMap.put("encoding-available", safeEncodings.encode());
             //
             CookieHelper.getInstance().init((String) serverMap.get("signKey"),
                     (String) serverMap.get("sameSiteValue"),
