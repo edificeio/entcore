@@ -55,7 +55,7 @@ public class Mfa {
 			if( this.config == null ) {
 				SharedDataHelper sharedDataHelper = SharedDataHelper.getInstance();
 				sharedDataHelper.init(vertx);
-				sharedDataHelper.<String, String>get("server", "mfaConfig").onSuccess(mfaConfig -> {
+				sharedDataHelper.<String, String>getLocal("server", "mfaConfig").onSuccess(mfaConfig -> {
 					this.config = (mfaConfig != null) ? new JsonObject(mfaConfig) : new JsonObject();
 					// TODO extraire la liste réelle des URLs sensibles
 					mfaProtectedUrls = this.config.getJsonArray("protectedUrls", new JsonArray());

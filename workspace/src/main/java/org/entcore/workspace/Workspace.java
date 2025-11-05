@@ -63,7 +63,7 @@ public class Workspace extends BaseServer {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
 		promise.future()
-				.compose(init -> SharedDataHelper.getInstance().<String, Object>getMulti("server", "node"))
+				.compose(init -> SharedDataHelper.getInstance().<String, Object>getLocalMulti("server", "node"))
 				.compose(workspaceConfigMap ->
 						StorageFactory.build(vertx, config, new MongoDBApplicationStorage(DocumentDao.DOCUMENTS_COLLECTION, Workspace.class.getSimpleName()))
 								.map(storageFactory -> Pair.of(workspaceConfigMap, storageFactory)))

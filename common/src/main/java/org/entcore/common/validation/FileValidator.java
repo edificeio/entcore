@@ -55,7 +55,7 @@ public abstract class FileValidator extends AbstractValidator<JsonObject, JsonOb
 
     public static Future<Optional<FileValidator>> create(Vertx vertx) {
         final Promise<Optional<FileValidator>> promise = Promise.promise();
-        vertx.sharedData().<String, String>getAsyncMap("server")
+        vertx.sharedData().<String, String>getLocalAsyncMap("server")
         .compose(serverMap -> serverMap.get("file-system"))
         .onSuccess(s ->
             promise.complete(create(Utils.isNotEmpty(s) ?  new JsonObject(s) : new JsonObject()))

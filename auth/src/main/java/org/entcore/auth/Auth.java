@@ -71,9 +71,9 @@ public class Auth extends BaseServer {
 		final Promise<Void> promise = Promise.promise();
 		super.start(promise);
 		promise.future()
-				.compose(init -> SharedDataHelper.getInstance().<String, Object>getMulti(
+				.compose(init -> SharedDataHelper.getInstance().<String, Object>getLocalMulti(
 						"server", "signKey", "smsProvider", "node", "emailValidationConfig", "skins", "event-store"))
-				.compose(authMap -> SharedDataHelper.getInstance().<String, Object>getAsyncMap("server")
+				.compose(authMap -> SharedDataHelper.getInstance().<String, Object>getLocalAsyncMap("server")
 						.map(asyncServerMap -> Pair.of(authMap, asyncServerMap)))
 				.compose(configPair -> initAuth(configPair.getLeft(), configPair.getRight()))
 				.onComplete(startPromise);

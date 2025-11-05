@@ -1066,6 +1066,7 @@ public class UserUtils {
 					if (res.succeeded() && "ok".equals(res.result().body().getString("status"))) {
 						handler.handle(res.result().body().getString("sessionId"));
 					} else {
+                        log.error("An error occurred while creating session for user " + userId, res.cause());
 						handler.handle(null);
 					}
 				}

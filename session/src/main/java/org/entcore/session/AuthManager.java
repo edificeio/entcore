@@ -34,6 +34,8 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.cache.CacheService;
@@ -69,16 +71,16 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		super.start();
 		final SharedDataHelper sharedDataHelper = SharedDataHelper.getInstance();
 		sharedDataHelper.init(vertx);
-		sharedDataHelper.<String, Object>getMulti("server", "neo4jConfig", "node", "oauthCache", "redisConfig")
-				.compose(sessionMap -> initSession(sessionMap))
+
+		initSession(config.getMap())
 				.onComplete(startPromise);
 	}
 
 	public Future<Void> initSession(Map<String, Object> sessionMap) {
-    BrokerProxyUtils.addBrokerProxy(new SessionBrokerListenerImpl(this), vertx);
-    String neo4jConfig = (String) sessionMap.get("neo4jConfig");
+        BrokerProxyUtils.addBrokerProxy(new SessionBrokerListenerImpl(this), vertx);
+        final JsonObject neo4jConfig = (JsonObject) sessionMap.get("neo4jConfig");
 		neo4j = Neo4j.getInstance();
-		neo4j.init(vertx, new JsonObject(neo4jConfig));
+		neo4j.init(vertx, neo4jConfig);
 
 		cluster = vertx.isClustered();
 		String node = (String) sessionMap.get("node");
@@ -89,11 +91,11 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 
 		try
 		{
-			Object oauthCacheConf = sessionMap.get("oauthCache");
+            JsonObject oauthCacheConf = (JsonObject) sessionMap.get("oauthCache");
 			if(oauthCacheConf != null)
 			{
-				JsonObject redisConfig = new JsonObject((String) sessionMap.get("redisConfig"));
-				if(new JsonObject((String)oauthCacheConf).getBoolean("enabled", false) == true)
+				JsonObject redisConfig = (JsonObject)sessionMap.get("redisConfig");
+				if(oauthCacheConf.getBoolean("enabled", false) == true)
 				{
 					Redis.getInstance().init(vertx, redisConfig);
 					this.OAuthCacheService = CacheService.create(vertx);

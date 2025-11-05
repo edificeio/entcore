@@ -63,7 +63,7 @@ public class StorageFactory {
 		this.vertx = vertx;
 		final SharedDataHelper sharedDataHelper = SharedDataHelper.getInstance();
 		sharedDataHelper.init(vertx);
-		sharedDataHelper.<String, String>getMulti("server", "s3", "file-system", "gridfsAddress").onSuccess(server -> {
+		sharedDataHelper.<String, String>getLocalMulti("server", "s3", "file-system", "gridfsAddress").onSuccess(server -> {
 			String s = (String) server.get("s3");
 			if (s != null) {
 				this.s3 = new JsonObject(s);
