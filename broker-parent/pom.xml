@@ -14,8 +14,8 @@
     <packaging>pom</packaging>
     <properties>
         <nats.version>2.1.0</nats.version>
-        <jnats.version>2.20.5
-        </jnats.version> <!-- this version should match the one corresponding to ${nats.version} -->
+        <wiki-generator.version>0.1.0</wiki-generator.version>
+        <jnats.version>2.20.5</jnats.version> <!-- this version should match the one corresponding to ${nats.version} -->
     </properties>
 
     <modules>
@@ -24,4 +24,11 @@
         <module>broker-proxy</module>
         <module>broker</module>
     </modules>
+    <dependencies>
+        <dependency>
+            <groupId>org.entcore.edificewikigenerator</groupId>
+            <artifactId>edifice-wiki-generator-client</artifactId>
+            <version>${wiki-generator.version}</version>
+        </dependency>
+    </dependencies>
 </project>
