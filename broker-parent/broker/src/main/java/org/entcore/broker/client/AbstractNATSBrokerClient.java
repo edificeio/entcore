@@ -25,6 +25,7 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.*;
 
 import static org.apache.commons.lang3.StringUtils.isBlank;
@@ -247,16 +248,14 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
             }
             
             try {
-                // Parse the request object
-                final Object requestObj = requestStr != null 
-                    ? mapper.readValue(requestStr, Object.class) 
-                    : null;
-                
-                // Delegate to request (uses polymorphism)
-                this.<Object, Object>request(subject, requestObj, timeout)
+                final NatsClient client = getNatsClientForSubject(subject);
+                if (client == null) {
+                    message.fail(500, "No NATS client available for subject: " + subject);
+                    return;
+                }
+                request(client, subject, requestStr, timeout)
                     .onSuccess(response -> {
                         try {
-                            // Serialize the response to JSON
                             final String responseJson = mapper.writeValueAsString(response);
                             message.reply(responseJson);
                         } catch (Exception e) {
@@ -544,32 +543,49 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
         if (client == null) {
             return Future.failedFuture("No NATS client available for subject: " + subject);
         }
-        
         try {
-            final byte[] payload = mapper.writeValueAsString(message).getBytes(charset);
-            
-            Promise<V> future = Promise.promise();
-            client.request(subject, payload)
-                .onSuccess(e -> {
-                    log.debug("Message sent to subject: " + subject);
-                    try {
-                        String responseStr = new String(e.getData(), charset);
-                        @SuppressWarnings("unchecked")
-                        V response = mapper.readValue(responseStr, (Class<V>) Object.class);
-                        future.complete(response);
-                    } catch(Exception err) {
-                        future.fail(err);
-                    }
-                })
-                .onFailure(e -> {
-                    log.error("Error while sending message to NATS", e);
-                    future.fail(e);
-                });
-            return future.future();
+            final String payload = mapper.writeValueAsString(message);
+            return request(client, subject, payload, timeout)
+                    .compose(responseStr -> {
+                        try {
+                            @SuppressWarnings("unchecked")
+                            V response = mapper.readValue(responseStr, (Class<V>) Object.class);
+                            return Future.succeededFuture(response);
+                        } catch (Exception err) {
+                            return Future.failedFuture(err);
+                        }
+                    });
         } catch (Exception e) {
             log.error("Error while serializing message to JSON", e);
             return Future.failedFuture(e);
         }
+    }
+    /**
+     * Internal helper to perform a NATS request and deserialize the response.
+     * @param client The NatsClient to use
+     * @param subject The NATS subject
+     * @param payload The serialized request payload
+     * @param timeout The timeout in ms
+     * @return Future with the serialized response
+     */
+    private Future<String> request(NatsClient client, String subject, String payload, long timeout) throws Exception {
+        Promise<String> future = Promise.promise();
+        final byte[] payloadBytes = payload != null? payload.getBytes(charset) : new byte[0];
+        client.request(subject, payloadBytes, Duration.ofMillis(timeout))
+            .onSuccess(e -> {
+                log.debug("Message sent to subject: " + subject);
+                try {
+                    final String responseStr = new String(e.getData(), charset);
+                    future.complete(responseStr);
+                } catch(Exception err) {
+                    future.fail(err);
+                }
+            })
+            .onFailure(e -> {
+                log.error("Error while sending message to NATS", e);
+                future.fail(e);
+            });
+        return future.future();
     }
     
     @Override
@@ -595,9 +611,11 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
                             client.publish(replyTo, payload);
                         } catch (Exception e) {
                             log.error("Error serializing response to JSON", e);
+                            sendError(msg, e, client);
                         }
                     }).onFailure(e -> {
                         log.error("Error while processing message", e);
+                        sendError(msg, e, client);
                     });
                 }
             } catch (Exception e) {
