@@ -89,7 +89,9 @@ public enum ShareRoles {
                     a = new JsonArray();
                     rights.put(action.getDisplayName(), a);
                 }
-                a.add(action.getName().replaceAll("\\.", "-"));
+                if(!a.contains(action.getRight().replaceAll("\\.", "-"))) {
+                    a.add(action.getRight().replaceAll("\\.", "-"));
+                }
             }
         }
         return rights;
@@ -120,8 +122,8 @@ public enum ShareRoles {
         for (SecuredAction action: securedActions.values()) {
             if (isRoleBasedAction(action)) {
                 final String actionRole = action.getDisplayName().substring(action.getDisplayName().lastIndexOf('.') + 1);
-                if (role.key.equalsIgnoreCase(actionRole)) {
-                    actionNames.add(action.getName().replaceAll("\\.", "-"));
+                if (role.key.equalsIgnoreCase(actionRole) && !actionNames.contains(action.getRight().replaceAll("\\.", "-"))) {
+                    actionNames.add(action.getRight().replaceAll("\\.", "-"));
                 }
             }
         }
