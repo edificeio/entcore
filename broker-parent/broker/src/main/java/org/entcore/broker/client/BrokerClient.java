@@ -23,6 +23,16 @@ public interface BrokerClient {
      */
     <K> Future<Void> sendMessage(String subject, K message);
 
+
+    /**
+     *
+     * @param subject Subject to which the message will be sent
+     * @param message Raw message to be sent
+     * @return a Future that will be completed when the message is sent
+     * @param <K> Type of the message to send
+     */
+    <K> Future<Void> sendRawMessage(String subject, String message);
+
     /**
      * Sends a message to the broker and waits for a reply.
      * @param subject Subject to which the message will be sent

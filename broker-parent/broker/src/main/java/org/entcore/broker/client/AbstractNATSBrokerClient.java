@@ -197,10 +197,10 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
             
             try {
                 // Prepare message object
-                final Object messageObj = messageStr != null ? messageStr : "";
+                final String messageObj = messageStr != null ? messageStr : "";
                 
                 // Delegate to sendMessage (uses polymorphism)
-                this.<Object>sendMessage(subject, messageObj)
+                this.sendRawMessage(subject, messageObj)
                     .onSuccess(v -> {
                         log.debug("Successfully published message to subject: " + subject);
                         message.reply(null); // Empty reply to indicate success
@@ -514,18 +514,31 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
     // ============================================================
     // BROKERCLIENT INTERFACE IMPLEMENTATION
     // ============================================================
-    
+
+
     @Override
     public <K> Future<Void> sendMessage(String subject, K message) {
+        try {
+            return sendRawMessage(subject, mapper.writeValueAsString(message));
+        } catch (JsonProcessingException e) {
+            log.error("An error occurred while serializing message to JSON : " + message, e);
+            return Future.failedFuture(e);
+        }
+    }
+
+
+
+    @Override
+    public <K> Future<Void> sendRawMessage(String subject, String message) {
         final NatsClient client = getNatsClientForSubject(subject);
         if (client == null) {
             return Future.failedFuture("No NATS client available for subject: " + subject);
         }
-        
+
         try {
-            final byte[] payload = mapper.writeValueAsString(message).getBytes(charset);
+            final byte[] payload = message.getBytes(charset);
             return client.publish(subject, payload)
-                .onFailure(e -> log.error("Error while sending message to NATS", e));
+                    .onFailure(e -> log.error("Error while sending message to NATS", e));
         } catch (Exception e) {
             log.error("An error occurred while serializing message to JSON : " + message, e);
             return Future.failedFuture(e);
