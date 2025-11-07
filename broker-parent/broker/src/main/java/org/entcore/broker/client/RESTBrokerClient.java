@@ -19,7 +19,12 @@ public class RESTBrokerClient implements BrokerClient {
     throw new NotImplementedException();
   }
 
-  @Override
+    @Override
+    public <K> Future<Void> sendRawMessage(String subject, String message) {
+        throw new NotImplementedException();
+    }
+
+    @Override
   public <K, V> Future<V> request(String subject, K message) {
     throw new NotImplementedException();
   }
