@@ -3,6 +3,7 @@ package org.entcore.broker.client;
 import io.vertx.core.Future;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.NotImplementedException;
 import org.entcore.broker.listener.BrokerListener;
 
 /**
@@ -97,7 +98,12 @@ public class NoOpBrokerClient implements BrokerClient {
     return Future.succeededFuture();
   }
 
-  /**
+    @Override
+    public <K> Future<Void> sendRawMessage(String subject, String message) {
+        throw new NotImplementedException();
+    }
+
+    /**
    * Closes the NoOpBrokerClient. Unregisters the event bus consumer and always succeeds.
    */
   @Override
