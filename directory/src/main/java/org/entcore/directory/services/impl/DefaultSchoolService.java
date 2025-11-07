@@ -41,6 +41,7 @@ import org.entcore.directory.services.SchoolService;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collector;
@@ -511,7 +512,43 @@ public class DefaultSchoolService implements SchoolService {
 		query.append("['ManualGroup','FunctionalGroup','CommunityGroup'] as groupTypes");
 
 		JsonObject params = new JsonObject().put("structures", new JsonArray(structures)).put("1d", firstLevel).put("defLoe", defaultStructureLevelsOfEducation);
-		neo.execute(query.toString(), params, validUniqueResultHandler(handler));
+		neo.execute(query.toString(), params, validUniqueResultHandler(result -> {
+			if (result.isRight()) {
+				JsonObject data = result.right().getValue();
+				JsonArray functions = data.getJsonArray("functions");
+
+				// Deduplicate functions by function name only, ignoring establishment code
+				// Format: "ESTABLISHMENT_CODE$FUNCTION_CODE$FUNCTION_NAME$JOB_CODE$DISCIPLINE"
+				if (functions != null && functions.size() > 0) {
+					java.util.Map<String, String> functionMap = new java.util.TreeMap<>();
+					List<String> malformedFunctions = new java.util.ArrayList<>();
+
+					for (int i = 0; i < functions.size(); i++) {
+						String functionStr = functions.getString(i);
+						if (functionStr != null && !functionStr.isEmpty()) {
+							// Extract function name (3rd part after 2nd $)
+							String[] parts = functionStr.split("\\$", 4);
+							if (parts.length >= 3) {
+								String functionName = parts[2];
+								// TreeMap keeps alphabetical order and prevents duplicates
+								if (!functionMap.containsKey(functionName)) {
+									functionMap.put(functionName, functionStr);
+								}
+							} else {
+								// Keep malformed entries as-is
+								malformedFunctions.add(functionStr);
+							}
+						}
+					}
+
+					// Build final list: sorted functions + malformed entries
+					List<Object> sortedFunctions = new java.util.ArrayList<>(functionMap.values());
+					sortedFunctions.addAll(malformedFunctions);
+					data.put("functions", new JsonArray(sortedFunctions));
+				}
+			}
+			handler.handle(result);
+		}));
 	}
 
 	@Override
