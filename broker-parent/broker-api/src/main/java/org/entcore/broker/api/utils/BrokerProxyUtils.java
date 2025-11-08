@@ -105,7 +105,7 @@ public class BrokerProxyUtils {
     final Class<?> requestType = method.getParameterTypes()[0];
     log.info("Start listening on address " + address);
     return eb.consumer(address, (Handler<Message<byte[]>>) message -> {
-      log.debug("Received message on address " + address);
+      log.debug("Received message on address " + message.address());
       Object response = null;
       if (method.getParameterCount() == 1) {
         final byte[] rawRequest = message.body();
