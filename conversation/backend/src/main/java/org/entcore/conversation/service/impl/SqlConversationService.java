@@ -424,7 +424,7 @@ public class SqlConversationService implements ConversationService{
 
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 		String messageConditionUnread = addMessageConditionUnread(folder, values, unread, user);
-		String messagesFields = "m.id, m.subject, m.from, m.state, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.cci, m.\"cciName\", m.\"displayNames\", m.date ";
+		String messagesFields = "m.id, m.subject, m.from, m.state, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.cci, m.\"cciName\", m.\"displayNames\", m.date, m.\"noReply\" ";
 
 		values.add(State.SENT.name()).add(State.RECALL.name()).add(user.getUserId());
 		String additionalWhere = addCompleteFolderCondition(values, restrain, unread, folder, user, states);
@@ -516,7 +516,7 @@ public class SqlConversationService implements ConversationService{
 	public void listThreads(UserInfos user, int page, Handler<Either<String, JsonArray>> results) {
 		int nbThread =  10;
 		int skip = page * nbThread;
-		String messagesFields = "id, date, subject, \"displayNames\", \"to\", \"from\", cc, cci ";
+		String messagesFields = "id, date, subject, \"displayNames\", \"to\", \"from\", cc, cci, \"noReply\" ";
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 		values.add(user.getUserId());
 		final String query;
@@ -551,7 +551,7 @@ public class SqlConversationService implements ConversationService{
 		int skip = page * LIST_LIMIT;
 		String messagesFields = 
 			"m.id, m.parent_id, m.subject, m.body, " +
-			"m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\",  m.cci, m.\"cciName\", m.\"displayNames\", m.date, m.thread_id ";
+			"m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\",  m.cci, m.\"cciName\", m.\"displayNames\", m.date, m.thread_id, m.\"noReply\" ";
 
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 		values.add(user.getUserId());
@@ -630,7 +630,7 @@ public class SqlConversationService implements ConversationService{
 		int maxMessageInThread = 15;
 		String messagesFields = 
 			"m.id, m.parent_id, m.subject, m.body, " +
-			"m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.cci, m.\"cciName\", m.\"displayNames\", m.date, m.thread_id ";
+			"m.from, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.cci, m.\"cciName\", m.\"displayNames\", m.date, m.thread_id, m.\"noReply\" ";
 		String condition, limit;
 		JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
 
@@ -802,7 +802,7 @@ public class SqlConversationService implements ConversationService{
 				"m.id, m.parent_id, m.subject, m.body, " +
 				"m.from as \"from\", m.\"fromName\" as \"fromName\",  m.\"to\" as \"to\", m.\"toName\" as \"toName\", " +
 				"m.cc, m.\"ccName\" as \"ccName\", m.cci, m.\"cciName\" as \"cciName\", " +
-				"m.\"displayNames\" as \"displayNames\", m.state, m.date, m.language, m.thread_id, " + 
+					"m.\"displayNames\" as \"displayNames\", m.state, m.date, m.language, m.thread_id, m.\"noReply\", " +
 				(apiVersion>0 
 					? "m.content_version, um.folder_id as folder_id, um.trashed as trashed, um.unread as unread, " +
 					  "CASE WHEN count(distinct om.message_id) = 0 THEN false ELSE true END AS original_format_exists, " 

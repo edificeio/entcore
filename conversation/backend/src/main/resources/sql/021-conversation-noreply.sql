@@ -1,0 +1,2 @@
+ALTER TABLE conversation.messages
+    ADD COLUMN "noReply" BOOLEAN NOT NULL DEFAULT FALSE;

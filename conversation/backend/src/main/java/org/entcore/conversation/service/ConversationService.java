@@ -59,11 +59,11 @@ public interface ConversationService {
 	}
 
 	List<String> MESSAGE_FIELDS = Arrays.asList("id", "subject", "body", "from", "to", "cc", "date", "state",
-			"displayNames");
+            "displayNames", "noReply");
 
 	List<String> DRAFT_REQUIRED_FIELDS = Arrays.asList("id", "from", "date", "state");
 
-	List<String> UPDATE_DRAFT_FIELDS = Arrays.asList("subject", "body", "to", "cc", "date", "displayNames");
+	List<String> UPDATE_DRAFT_FIELDS = Arrays.asList("subject", "body", "to", "cc", "date", "displayNames", "noReply");
 
 	List<String> UPDATE_DRAFT_REQUIRED_FIELDS = Arrays.asList("date");
 

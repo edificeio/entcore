@@ -45,6 +45,7 @@
   "conversation.error.new.folder": "Le dossier n'a pas pu être créé",
   "conversation.error.recall.mail": "Le message n'a pas pu être rappelé.",
   "conversation.error.rename.folder": "Le dossier n'a pas pu être renommé",
+  "conversation.error.reply.not.allowed": "Vous ne pouvez pas répondre à ce message",
   "conversation.error.send.visible": "Votre message n'a pas été envoyé car il ne respecte pas vos droits de communication",
   "conversation.error.trash.folder": "Le dossier n'a pas pu être supprimé",
   "conversation.notfound.or.unauthorized": "Le message demandé n'existe pas, a été supprimé, ou vous n'avez pas la possibilité d'y accéder.",
