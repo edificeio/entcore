@@ -4,6 +4,8 @@ import { MessageBody } from '~/components/MessageBody';
 import { MessageHeader } from '~/features/message/components/MessageHeader';
 import { Message as MessageData } from '~/models';
 import { MessageNavigation } from './components/MessageNavigation';
+import { Alert } from '@edifice.io/react';
+import { useI18n } from '~/hooks/useI18n';
 
 export interface MessageProps {
   message: MessageData;
@@ -12,6 +14,8 @@ export interface MessageProps {
 
 export function Message({ message, isPrint }: MessageProps) {
   const className = clsx('d-flex flex-column gap-16', { 'my-16': isPrint });
+  const { t } = useI18n();
+
   return (
     <article className={className}>
       {!isPrint && <MessageNavigation message={message} />}
@@ -22,6 +26,12 @@ export function Message({ message, isPrint }: MessageProps) {
         </div>
         {!isPrint && (
           <footer className="d-print-none d-flex justify-content-end gap-12 pt-24 border-top ">
+            {message.noReply && (
+              <Alert type="warning" className="flex-grow-1">
+                {t('noReply.enabled.warning')}
+              </Alert>
+            )}
+
             <MessageActionDropdown
               message={message}
               actions={['reply', 'replyall', 'transfer']}
