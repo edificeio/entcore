@@ -15,6 +15,7 @@ export interface MessageBase {
   trashed?: boolean;
   response?: boolean;
   forwarded?: boolean;
+  noReply?: boolean;
 }
 
 export interface MessageMetadata extends MessageBase {
