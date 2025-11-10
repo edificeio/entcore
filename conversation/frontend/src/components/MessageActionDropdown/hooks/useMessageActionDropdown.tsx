@@ -48,6 +48,7 @@ export function useMessageActionDropdown({
 }: MessageActionDropdownProps) {
   const { t } = useI18n();
   const setMessageNeedToSave = useMessageStore.use.setMessageNeedToSave();
+  const setMessage = useMessageStore.use.setMessage();
   const markAsUnreadQuery = useMarkUnread();
   const navigate = useNavigate();
   const { openModal } = useConfirmModalStore();
@@ -76,13 +77,18 @@ export function useMessageActionDropdown({
   const canTransfer = useMemo(() => {
     return (
       (message.state === 'SENT' || (message.state === 'RECALL' && isFromMe)) &&
-      message.trashed !== true
+      message.trashed !== true &&
+      message.noReply !== true
     );
-  }, [isFromMe, message.state, message.trashed]);
+  }, [isFromMe, message.state, message.trashed, message.noReply]);
 
   const canReply = useMemo(() => {
-    return message.state === 'SENT' && message.trashed !== true;
-  }, [message.state, message.trashed]);
+    return (
+      message.state === 'SENT' &&
+      message.trashed !== true &&
+      message.noReply !== true
+    );
+  }, [message.state, message.trashed, message.noReply]);
 
   const canReplyAll = useMemo(() => {
     const { to, cc, cci } = message;
@@ -102,6 +108,7 @@ export function useMessageActionDropdown({
     return (
       (isMeWithCci || hasRecipients) &&
       message.state !== 'DRAFT' &&
+      message.noReply !== true &&
       !message.trashed
     );
   }, [message, user]);
@@ -136,6 +143,40 @@ export function useMessageActionDropdown({
   };
 
   // Handlers
+  const handleToggleNoReplyClick = () => {
+    const newNoReplyValue = !message.noReply;
+    const confirmText = newNoReplyValue
+      ? t('noReply.enable')
+      : t('noReply.disable');
+
+    if (newNoReplyValue === false) {
+      // If disabling no-reply, do it directly without confirmation
+      setMessage({
+        ...message,
+        noReply: newNoReplyValue,
+      });
+      setMessageNeedToSave(true);
+      return;
+    }
+
+    openModal({
+      id: 'no-reply-modal',
+      header: <>{confirmText}</>,
+      body: <p>{t('noReply.enable.confirmation.message')}</p>,
+      okText: t('confirm'),
+      koText: t('cancel'),
+      variant: 'yes/no',
+      size: 'sm',
+      onSuccess: () => {
+        setMessage({
+          ...message,
+          noReply: newNoReplyValue,
+        });
+        setMessageNeedToSave(true);
+      },
+    });
+  };
+
   const handleDeleteClick = () => {
     openModal({
       id: 'delete-modal',
@@ -187,6 +228,7 @@ export function useMessageActionDropdown({
           to: recipientToIds(message.to),
           cc: recipientToIds(message.cc),
           cci: message.cci ? recipientToIds(message.cci) : undefined,
+          noReply: message.noReply,
         },
         inReplyToId:
           message.id !== message.parent_id ? message.parent_id : undefined,
@@ -317,6 +359,16 @@ export function useMessageActionDropdown({
         folderId === 'trash' ||
         !hasActionsList('save') ||
         (message.state !== 'DRAFT' && !message.trashed),
+    },
+    {
+      label: message.noReply ? t('noReply.disable') : t('noReply.enable'),
+      id: 'toggle-noreply',
+      icon: <IconRedo />,
+      action: handleToggleNoReplyClick,
+      hidden:
+        !hasActionsList('toggle-noreply') ||
+        message.state !== 'DRAFT' ||
+        message.trashed,
     },
     {
       label: t('move.first.caps'),
