@@ -216,6 +216,11 @@ public class ConversationController extends BaseController {
 							final Handler<JsonObject> parentHandler = new Handler<JsonObject>() {
 								@Override
 								public void handle(JsonObject parent) {
+									if (parent != null && parent.getBoolean("noReply", false)) {
+										forbidden(request, "conversation.error.reply.not.allowed");
+										return;
+									}
+
 									final String threadId = ConversationController.getShouldCreateThread(parent, message, user)
 											? null
 											: parent != null ? parent.getString("thread_id") : null;
@@ -501,6 +506,12 @@ public class ConversationController extends BaseController {
 
 							final Handler<JsonObject> parentHandler = new Handler<JsonObject>() {
 								public void handle(JsonObject parentMsg) {
+									if (parentMsg != null && parentMsg.getBoolean("noReply", false)) {
+										forbidden(request, "conversation.error.reply.not.allowed");
+										return;
+									}
+
+
 									final String threadId = ConversationController.getShouldCreateThread(parentMsg, message, user)
 											? null
 											: parentMsg != null ? parentMsg.getString("thread_id") : null;
