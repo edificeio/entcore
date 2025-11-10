@@ -391,6 +391,7 @@ export const useCreateOrUpdateDraft = () => {
           ...(messageUpdated.cci?.groups?.map((g) => g.id) ?? []),
         ]),
       ],
+      noReply: messageUpdated.noReply,
     };
 
     if (messageUpdated.id) {
@@ -462,6 +463,7 @@ export const useCreateDraft = () => {
         to?: string[];
         cc?: string[];
         cci?: string[];
+        noReply?: boolean;
       };
       inReplyToId?: string;
     }) => messageService.createDraft(payload, inReplyToId),
@@ -501,6 +503,7 @@ export const useUpdateDraft = () => {
         to?: string[];
         cc?: string[];
         cci?: string[];
+        noReply?: boolean;
       };
     }) => messageService.updateDraft(draftId, payload),
     onSuccess: (_data, { draftId }) => {
@@ -552,6 +555,7 @@ export const useSendDraft = () => {
         to?: string[];
         cc?: string[];
         cci?: string[];
+        noReply?: boolean;
       };
       inReplyToId?: string;
     }) => {
