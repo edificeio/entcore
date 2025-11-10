@@ -135,6 +135,8 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
                 });
             connectFutures.add(connectFuture);
         }
+
+        listenDynamicSubjectRegistration();
         
         return Future.all(connectFutures)
             // 2. Load and register listeners
@@ -144,7 +146,37 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
             .compose(v -> setupEventBusRequestHandler())
             .mapEmpty();
     }
-    
+
+    /**
+     * Sets up the 2 event bus addresses on which this class will listen to take into account
+     * subjects that were not present in the static contracts.
+     * broker.add -> excepts a string with the name of the subject to listen to
+     * broker.remove -> excepts a string with the name of the subject to stop listening to
+     */
+    private void listenDynamicSubjectRegistration() {
+        final EventBus eb = this.vertx.eventBus();
+        eb.<String>localConsumer("broker.remove", m -> {
+            final String subjectToRemove = m.body();
+            final NatsClient natsClient = getNatsClientForSubject(subjectToRemove);
+            natsClient.unsubscribe(subjectToRemove)
+                .onSuccess(e -> m.reply(new JsonObject().put("ok", true)))
+                .onFailure(th -> {
+                    log.warn("Error while unsubscribing to subject " + subjectToRemove);
+                    m.reply(new JsonObject().put("ok", false).put("error", th.getMessage()));
+                });
+        });
+        eb.<String>localConsumer("broker.add", m -> {
+            final String subjectToListen = m.body();
+            final NatsClient natsClient = getNatsClientForSubject(subjectToListen);
+            natsClient.subscribe(subjectToListen, this::proxifyNatsMessage)
+                .onSuccess(e -> m.reply(new JsonObject().put("ok", true)))
+                .onFailure(th -> {
+                    log.warn("Error while subscribing to subject " + subjectToListen);
+                    m.reply(new JsonObject().put("ok", false).put("error", th.getMessage()));
+                });
+        });
+    }
+
     @Override
     public Future<Void> close() {
         // Unregister EventBus handlers
@@ -397,7 +429,7 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
             
             try {
                 final String subject = transformToWildcard(endpoint.getSubject());
-                final Handler<Message> messageHandler = getProxyMessageHandler(eb);
+                final Handler<Message> messageHandler = getProxyMessageHandler();
                 final NatsClient natsClient = getNatsClientForSubject(endpoint.getSubject());
                 final Future<Void> future;
                 
@@ -421,16 +453,17 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
     /**
      * Creates a proxy message handler that bridges NATS to EventBus.
      * 
-     * @param eventBus The EventBus instance
      * @return The message handler
      */
-    private Handler<Message> getProxyMessageHandler(final EventBus eventBus) {
-        return msg -> {
-            final Promise<Object> promise = Promise.promise();
-            final NatsClient natsClient = getNatsClientForSubject(msg.getSubject());
-            
-            try {
-                eventBus.request(msg.getSubject(), getDataFromMessage(msg))
+    private Handler<Message> getProxyMessageHandler() {
+        return msg -> proxifyNatsMessage(msg);
+    }
+
+    private void proxifyNatsMessage(Message msg) {
+        final Promise<Object> promise = Promise.promise();
+        final NatsClient natsClient = getNatsClientForSubject(msg.getSubject());
+        try {
+            this.vertx.eventBus().request(msg.getSubject(), getDataFromMessage(msg))
                     .onSuccess(response -> {
                         try {
                             promise.tryComplete(response.body());
@@ -443,21 +476,20 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
                         log.error("Error calling subject " + msg.getSubject(), th);
                         promise.tryFail(th);
                     });
-            } catch (IOException e) {
-                promise.tryFail(e);
+        } catch (IOException e) {
+            promise.tryFail(e);
+        }
+
+        promise.future().onSuccess(response -> {
+            try {
+                final byte[] payload = ((String) response).getBytes(charset);
+                natsClient.publish(msg.getReplyTo(), payload);
+            } catch (Exception e) {
+                sendError(msg, e, natsClient);
             }
-            
-            promise.future().onSuccess(response -> {
-                try {
-                    final byte[] payload = ((String) response).getBytes(charset);
-                    natsClient.publish(msg.getReplyTo(), payload);
-                } catch (Exception e) {
-                    sendError(msg, e, natsClient);
-                }
-            }).onFailure(th -> {
-                sendError(msg, th, natsClient);
-            });
-        };
+        }).onFailure(th -> {
+            sendError(msg, th, natsClient);
+        });
     }
     
     /**
