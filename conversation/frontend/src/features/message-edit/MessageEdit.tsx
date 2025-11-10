@@ -64,15 +64,20 @@ export function MessageEdit({ message }: { message?: Message }) {
           />
           <div className="d-print-none d-flex justify-content-end gap-12 pt-24 pe-16">
             <div className="d-flex align-items-end flex-column gap-16 col-12">
-              <MessageActionDropdown
-                message={message}
-                appearance={{
-                  dropdownVariant: 'outline',
-                  mainButtonVariant: 'filled',
-                  buttonColor: 'primary',
-                }}
-                className="gap-12"
-              />
+              <div className="d-flex gap-16 align-items-center">
+                {message.noReply && (
+                  <p>{t('noReply.enabled.editor.message')}</p>
+                )}
+                <MessageActionDropdown
+                  message={message}
+                  appearance={{
+                    dropdownVariant: 'outline',
+                    mainButtonVariant: 'filled',
+                    buttonColor: 'primary',
+                  }}
+                  className="gap-12"
+                />
+              </div>
               <MessageSaveDate />
             </div>
           </div>

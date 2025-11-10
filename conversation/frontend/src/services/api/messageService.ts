@@ -121,6 +121,8 @@ export const createMessageService = (baseURL: string) => ({
       cc?: string[];
       /** IDs of recipients in "copie-carbone-invisible" */
       cci?: string[];
+      /** If true, the message cannot be replied to. */
+      noReply?: boolean;
     },
     inReplyToId?: string,
   ) {
