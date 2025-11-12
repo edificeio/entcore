@@ -19,6 +19,7 @@ import { useFolderHandlers } from '~/features/menu/hooks/useFolderHandlers';
 import { useGoBackToList } from '~/features/message/hooks/useGoBackToList';
 import { useI18n } from '~/hooks/useI18n';
 import { useRecall } from '~/hooks/useRecall';
+import { useRights } from '~/hooks/useRights';
 import { useSelectedFolder } from '~/hooks/useSelectedFolder';
 import { Message, Recipients } from '~/models';
 import {
@@ -65,6 +66,7 @@ export function useMessageActionDropdown({
   const { folderId } = useSelectedFolder();
   const { user } = useEdificeClient();
   const { success } = useToast();
+  const { canSetNoReply } = useRights();
 
   const isFromMe = message.from?.id === user?.userId;
 
@@ -368,7 +370,8 @@ export function useMessageActionDropdown({
       hidden:
         !hasActionsList('toggle-noreply') ||
         message.state !== 'DRAFT' ||
-        message.trashed,
+        message.trashed ||
+        !canSetNoReply,
     },
     {
       label: t('move.first.caps'),
