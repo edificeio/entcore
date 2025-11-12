@@ -1988,7 +1988,8 @@ public class ConversationController extends BaseController {
 						.put("subject", subject)
 						.put("body", messageBody)
 						.put("to", to)
-						.put("cci", new JsonArray());
+						.put("cci", new JsonArray())
+						.put("noReply", true);
 
 				JsonObject action = new JsonObject()
 						.put("action", "send")
