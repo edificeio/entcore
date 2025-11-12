@@ -11,4 +11,9 @@ export const existingActions: IAction[] = [
     workflow:
       'org.entcore.conversation.controllers.ApiController|recallMessage',
   },
+  {
+    id: 'noReply' as ActionType,
+    workflow:
+      'org.entcore.conversation.controllers.ConversationController|noReply',
+  },
 ];

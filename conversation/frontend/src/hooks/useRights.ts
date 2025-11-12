@@ -15,5 +15,10 @@ export function useRights() {
       'org.entcore.conversation.controllers.ApiController|recallMessage'
     ] ?? false;
 
-  return { canCreateDraft, canRecallMessages };
+  const canSetNoReply =
+    actions?.[
+      'org.entcore.conversation.controllers.ConversationController|noReply'
+    ] ?? false;
+
+  return { canCreateDraft, canRecallMessages, canSetNoReply };
 }

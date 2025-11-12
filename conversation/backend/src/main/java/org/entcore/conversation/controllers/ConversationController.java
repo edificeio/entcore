@@ -2032,4 +2032,10 @@ public class ConversationController extends BaseController {
 			}});
 	}
 
+	@Get("/allowNoReply")
+	@SecuredAction(value = "conversation.allowNoReply")
+	public void noReply(final HttpServerRequest request) {
+		// This route is used to create conversation.allowNoReply workflow right
+		request.response().end();
+	}
 }
