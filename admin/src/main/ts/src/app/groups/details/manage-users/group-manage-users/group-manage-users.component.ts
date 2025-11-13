@@ -2,25 +2,24 @@ import {
   Component,
   EventEmitter,
   Injector,
+  OnChanges,
   OnInit,
   Output,
-  ViewChild,
-  ElementRef,
-  OnChanges,
   SimpleChanges,
+  ViewChild,
 } from "@angular/core";
 import { OdeComponent } from "ngx-ode-core";
-import { Subscription } from "rxjs";
-import { UserModel } from "../../../../core/store/models/user.model";
-import { GroupsStore } from "../../../groups.store";
 import { SpinnerService } from "ngx-ode-ui";
+import { Subscription } from "rxjs";
 import { NotifyService } from "src/app/core/services/notify.service";
-import { GroupInputUsersComponent } from "../input/group-input-users/group-input-users.component";
-import { GroupOutputUsersComponent } from "../output/group-output-users/group-output-users.component";
-import { StructureModel } from "src/app/core/store/models/structure.model";
 import { globalStore } from "src/app/core/store/global.store";
 import { Session } from "src/app/core/store/mappings/session";
 import { SessionModel } from "src/app/core/store/models/session.model";
+import { StructureModel } from "src/app/core/store/models/structure.model";
+import { UserModel } from "../../../../core/store/models/user.model";
+import { GroupsStore } from "../../../groups.store";
+import { GroupInputUsersComponent } from "../input/group-input-users/group-input-users.component";
+import { GroupOutputUsersComponent } from "../output/group-output-users/group-output-users.component";
 
 @Component({
   selector: "ode-group-manage-users",
@@ -94,8 +93,10 @@ export class GroupManageUsersComponent
       this.spinner.perform(
         "group-manage-users",
         this.groupsStore.structure.users.sync().then(() => {
-          this.populateInputUsers(this.groupsStore.structure.users.data);
-          this.isLoading = false;
+          this.groupsStore.group.syncUsers().then(() => {
+              this.populateInputUsers(this.groupsStore.structure.users.data);
+              this.isLoading = false;
+          });
         })
       );
     } else {
@@ -104,7 +105,12 @@ export class GroupManageUsersComponent
 
     this.groupSubscriber = this.route.params.subscribe(params => {
       if (params.groupId) {
-        this.populateInputUsers(this.groupsStore.structure.users.data);
+      this.isLoading = true;
+      this.populateInputUsers([]);
+        this.groupsStore.group.syncUsers().then(() => {
+          this.populateInputUsers(this.groupsStore.structure.users.data);
+            this.isLoading = false;
+        });
       }
     });
 
