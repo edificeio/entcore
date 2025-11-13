@@ -43,7 +43,7 @@
   </button>
 
   <ode-lightbox class="inner-list" [show]="showAddUsersLightBox" (onClose)="closeLightBox()">
-    <ode-group-manage-users (closeEmitter)="closeLightBox()"></ode-group-manage-users>
+    <ode-group-manage-users *ngIf="showAddUsersLightBox" (closeEmitter)="closeLightBox()"></ode-group-manage-users>
   </ode-lightbox>
 
   <button class="button--with-icon" (click)="openGroupCommunication(groupsStore.group)">
