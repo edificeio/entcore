@@ -24,11 +24,11 @@ pipeline {
       stage('Test') {
         steps {
           script {
-//            sh 'sleep 6'
-            try {
+            sh 'sleep 6'
+/*            try {
               sh './build.sh $BUILD_SH_EXTRA_PARAM test'
             } catch (err) {
-            }
+            }*/
           }
         }
       }
