@@ -57,8 +57,8 @@ public class DeleteOrphan implements Handler<Long> {
 	private static final String DELETE_ORPHAN_THREAD =
 		"WITH to_delete AS " +
 		"(SELECT t.id FROM conversation.threads t " +
-		"LEFT JOIN conversation.userthreads ut ON ut.thread_id = t.id " +
-		"WHERE ut.thread_id IS NULL LIMIT ?) " +
+		"WHERE NOT EXISTS (SELECT 1 FROM conversation.userthreads ut WHERE ut.thread_id = t.id) " +
+		"ORDER BY t.date LIMIT ?) " +
 		"DELETE FROM conversation.threads th USING to_delete WHERE th.id = to_delete.id;";
 
 	private static final String DELETE_ORPHAN_ATTACHMENT_BATCH =
