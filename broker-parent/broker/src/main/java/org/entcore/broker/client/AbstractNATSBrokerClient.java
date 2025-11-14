@@ -168,7 +168,7 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
         eb.<String>localConsumer("broker.add", m -> {
             final String subjectToListen = m.body();
             final NatsClient natsClient = getNatsClientForSubject(subjectToListen);
-            natsClient.subscribe(subjectToListen, this::proxifyNatsMessage)
+            natsClient.subscribe(subjectToListen, this.getQueueName(), this::proxifyNatsMessage)
                 .onSuccess(e -> m.reply(new JsonObject().put("ok", true)))
                 .onFailure(th -> {
                     log.warn("Error while subscribing to subject " + subjectToListen);
