@@ -576,7 +576,7 @@
   "explorer.modal.share.avatar.me.alt": "Mon avatar",
   "explorer.modal.share.avatar.shared.alt": "Avatar de l'élément partagé",
   "explorer.modal.share.search": "Rechercher des utilisateurs",
-  "explorer.modal.share.search.placeholder": "nom d’utilisateurs, groupes, favoris",
+  "explorer.modal.share.search.placeholder": "Rechercher un utilisateur, un groupe ou un favori",
   "explorer.modal.share.sharebookmark.placeholder": "Saisir le nom du favori",
   "explorer.modal.share.sharebookmark.save": "Enregistrer favori",
   "explorer.modal.share.usersWithAccess": "Utilisateurs ayant accès",
