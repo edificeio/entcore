@@ -76,6 +76,10 @@ export class GroupInputFiltersComponent extends OdeComponent implements OnChange
                 this.structure.groups.data.filter(g => g.type === 'ManualGroup').map(g => g.name));
             this.changeDetector.markForCheck();
         });
+        this.structure.syncPositions().then(() => {
+            this.listFilters.setPositionComboModel(this.structure.userPositions);
+            this.changeDetector.markForCheck();
+        })
         this.listFilters.setMailsComboModel([]);
     }
 
