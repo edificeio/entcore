@@ -33,6 +33,11 @@ public class NotVisibleFilterPerson {
         if (userInfos == null) {
             throw new IllegalArgumentException("User infos cannot be null");
         }
+        if (userInfos.isEmpty()) {
+            // empty array should not trigger an error see #COCO-4671
+            //throw new IllegalArgumentException("User infos array cannot be empty");
+            return;
+        }
         try {
             userInfos.getJsonObject(0);
         } catch (ClassCastException e) {
