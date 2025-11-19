@@ -33,6 +33,9 @@ public class NotVisibleFilterPerson {
         if (userInfos == null) {
             throw new IllegalArgumentException("User infos cannot be null");
         }
+        if (userInfos.isEmpty()) {
+            throw new IllegalArgumentException("User infos array cannot be empty");
+        }
         try {
             userInfos.getJsonObject(0);
         } catch (ClassCastException e) {
