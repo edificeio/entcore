@@ -592,6 +592,7 @@
   "explorer.resource.editModal.access.flexSwitchCheckDefault.label": "Accessible publiquement via une URL",
   "explorer.resource.editModal.access.url.button": "Copier URL",
   "explorer.resource.editModal.access.url.extension": "extension personnalisée",
+  "explorer.resource.editModal.comments.allowReplies": "Autoriser les réponses aux commentaires",
   "explorer.resource.editModal.description.placeholder": "Description de la ressource",
   "explorer.resource.editModal.header.create": "Création",
   "explorer.resource.editModal.header.edit": "Propriétés",
