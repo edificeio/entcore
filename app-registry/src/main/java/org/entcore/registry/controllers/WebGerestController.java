@@ -44,6 +44,17 @@ public class WebGerestController extends BaseController {
 
         if (checkUaiAndDate(httpServerRequest, uai, date)) return;
 
+        // Check date limit if configuration exists
+        if (!webGerestService.validateDateLimit(date, webGerestConfig)) {
+            Integer maxDaysAhead = webGerestConfig != null ? webGerestConfig.getInteger("webGerest-fetch-max-days-ahead") : null;
+            String message = maxDaysAhead != null 
+                    ? "The requested date exceeds the maximum allowed offset of " + maxDaysAhead + " days"
+                    : "The requested date exceeds the maximum allowed offset";
+            JsonObject response = new JsonObject().put("message", message);
+            renderJson(httpServerRequest, response, 422);
+            return;
+        }
+
         String cacheId = WEBGREST_PREFIX_CACHE.concat(uai).concat("-").concat(date);
 
         cacheService.get(cacheId, result -> {
