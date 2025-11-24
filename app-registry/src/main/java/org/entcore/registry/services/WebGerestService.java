@@ -7,5 +7,6 @@ import io.vertx.core.json.JsonObject;
 
 public interface WebGerestService {
     void getMenu(HttpServerRequest httpServerRequest, String uai, String date,JsonObject config, Handler<Either<String, JsonObject>> eitherHandler);
-
+    
+    boolean validateDateLimit(String date, JsonObject config);
 }
