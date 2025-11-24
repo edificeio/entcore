@@ -365,7 +365,7 @@ export function useMessageActionDropdown({
     {
       label: message.noReply ? t('noReply.disable') : t('noReply.enable'),
       id: 'toggle-noreply',
-      icon: <IconRedo />,
+      icon: <IconUndo />,
       action: handleToggleNoReplyClick,
       hidden:
         !hasActionsList('toggle-noreply') ||
