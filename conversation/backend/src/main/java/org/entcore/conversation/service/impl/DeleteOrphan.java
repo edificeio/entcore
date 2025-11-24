@@ -62,8 +62,7 @@ public class DeleteOrphan implements Handler<Long> {
 		"DELETE FROM conversation.threads th USING to_delete WHERE th.id = to_delete.id;";
 
 	private static final String DELETE_ORPHAN_ATTACHMENT_BATCH =
-		"DELETE FROM conversation.attachments WHERE id = ANY(?::text[]) " +
-		"AND NOT EXISTS (SELECT 1 FROM conversation.usermessagesattachments uma WHERE uma.attachment_id = conversation.attachments.id);";
+		"DELETE FROM conversation.attachments WHERE id = ANY(?::text[]);";
 
 	private final long sqlTimeout;
 	private final int batchSize;
