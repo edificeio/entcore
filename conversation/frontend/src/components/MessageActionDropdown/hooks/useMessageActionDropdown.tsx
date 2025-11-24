@@ -11,6 +11,7 @@ import {
   IconSend,
   IconUndo,
   IconUndoAll,
+  IconUndoSlashed,
   IconUnreadMail,
 } from '@edifice.io/react/icons';
 import { useMemo } from 'react';
@@ -365,7 +366,7 @@ export function useMessageActionDropdown({
     {
       label: message.noReply ? t('noReply.disable') : t('noReply.enable'),
       id: 'toggle-noreply',
-      icon: <IconRedo />,
+      icon: message.noReply ? <IconUndo /> : <IconUndoSlashed />,
       action: handleToggleNoReplyClick,
       hidden:
         !hasActionsList('toggle-noreply') ||
