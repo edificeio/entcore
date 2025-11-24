@@ -12,6 +12,10 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.registry.services.WebGerestService;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
+import java.time.temporal.ChronoUnit;
+
 public class DefaultWebGerestService implements WebGerestService {
 
     private HttpClient httpClient;
@@ -133,5 +137,33 @@ public class DefaultWebGerestService implements WebGerestService {
                 });
 
         return promise.future();
+    }
+
+    @Override
+    public boolean validateDateLimit(String date, JsonObject config) {
+        if (config == null) {
+            return true;
+        }
+
+        Integer maxDaysAhead = config.getInteger("webGerest-fetch-max-days-ahead");
+        if (maxDaysAhead == null) {
+            return true;
+        }
+
+        try {
+            // Frontend sends dates in YYYY-MM-DD format
+            LocalDate requestDate = LocalDate.parse(date);
+            LocalDate today = LocalDate.now();
+            long diffInDays = ChronoUnit.DAYS.between(today, requestDate);
+
+            if (diffInDays > maxDaysAhead) {
+                return false;
+            }
+        } catch (DateTimeParseException e) {
+            log.error("[WebGerest] - Error parsing date: " + date);
+            return true;
+        }
+
+        return true;
     }
 }
