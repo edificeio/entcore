@@ -211,13 +211,11 @@ public class DeleteOrphan implements Handler<Long> {
 				if (row.size() > 0) {
 					attachmentId = row.getString(0);
 				}
-				log.debug("[FURET] Le furet du bois, Mesdames ! Row format, attachmentId=" + attachmentId);
 			} else if (attObj instanceof JsonObject) {
 				JsonObject attachment = (JsonObject) attObj;
 				attachmentId = attachment.getString("orphanid");
-				log.debug("[FURET] Il court, il court, le furet ! Object format, attachmentId=" + attachmentId);
 			} else {
-				log.warn("[FURET] Le furet du bois joli ! Type inattendu: " + (attObj != null ? attObj.getClass().getName() : "null"));
+				log.warn("Unexpected object type : " + (attObj != null ? attObj.getClass().getName() : "null"));
 				continue;
 			}
 
@@ -325,7 +323,7 @@ public class DeleteOrphan implements Handler<Long> {
 		String countThreads =
 			"SELECT COUNT(*) AS count FROM (SELECT 1 FROM conversation.threads t " +
 			"WHERE NOT EXISTS (SELECT 1 FROM conversation.userthreads ut WHERE ut.thread_id = t.id) " +
-			"LIMIT 100000) subquery";
+			"ORDER BY t.date LIMIT 100000) subquery";
 
 		String countAttachments =
 			"SELECT COUNT(*) AS count FROM (SELECT 1 FROM conversation.attachments a " +
