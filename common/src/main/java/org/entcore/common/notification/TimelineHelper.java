@@ -265,7 +265,7 @@ public class TimelineHelper {
 	}
 
 	private void loadAssetsTimelineDirectory() {
-		final String[] app = Utils.loadFromResource("mod.json").getString("main").split("\\.");
+		final String[] app = config.getString("main").split("\\.");
 		final String assetsDirectory = config.getString("assets-path", "../..") + File.separator + "assets";
 		final String i18nDirectory = assetsDirectory + File.separator + "i18n" + File.separator + app[app.length - 1] +
 				File.separator + "timeline";
