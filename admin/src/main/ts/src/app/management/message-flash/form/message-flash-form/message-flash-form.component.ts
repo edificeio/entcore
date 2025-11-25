@@ -37,7 +37,8 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
     loadedLanguages: string[] = [];
     selectedLanguage: string = this.bundles.currentLanguage;
     dateFormat: Intl.DateTimeFormat;
-    comboModel = ['Teacher', 'Student', 'Relative', 'Personnel', 'Guest', 'AdminLocal'];
+    profileComboModel = ['Teacher', 'Student', 'Relative', 'Personnel', 'Guest', 'AdminLocal'];
+    userPositionsComboModel: Array<string>;
     showLightbox = false;
     mailNotification = false;
     pushNotification = false;
@@ -67,6 +68,7 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
                 this.structure = data.structure;
                 this.message.structureId = this.structure.id;
                 this.items = this.getItems();
+                this.userPositionsComboModel = Array.from(new Set(this.structure.userPositions.map(userP => userP.name)));
             }
             if (this.action !== 'create' && data.messages) {
                 this.messages = data.messages;
@@ -90,6 +92,7 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
                 this.message.contents = JSON.parse(JSON.stringify(this.originalMessage.contents));
                 this.message.signature = this.originalMessage.signature;
                 this.message.signatureColor = this.originalMessage.signatureColor || '#ffffff';
+                this.message.userPositions = Object.assign([], this.originalMessage.userPositions);
                 MessageFlashService.getSubStructuresByMessageId(this.originalMessage.id)
                     .then(sdata => {
                         this.message.subStructures = sdata.map((item: any) => item.structure_id);
@@ -124,8 +127,11 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
             });
     }
 
-    deselect(item) {
-        this.message.profiles.splice(this.message.profiles.indexOf(item), 1);
+    deselect(item: string, array: string[]) {
+        const index = array.indexOf(item);
+        if (index >= 0) {
+            array.splice(index, 1);
+        }
     }
 
     languageOptions(): { value: string, label: string }[] {
@@ -253,10 +259,26 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
     //
 
     isUploadable(): boolean {
-        return !!this.message && !!this.message.title && !!this.message.startDate && !!this.message.endDate
-            && !!this.message.profiles && this.message.profiles.length > 0 && (!!this.message.color || !!this.message.customColor)
-            && !!this.message.contents && Object.keys(this.message.contents).length > 0
-            && Object.values(this.message.contents).findIndex(val => !!val) !== -1;
+        if (!this.message) return false;
+
+        const hasBasicFields =
+            this.message.title &&
+            this.message.startDate &&
+            this.message.endDate;
+
+        const hasTargetAudience =
+            (this.message.profiles?.length ?? 0) > 0 ||
+            (this.message.userPositions?.length ?? 0) > 0;
+
+        const hasColor =
+            this.message.color || this.message.customColor;
+
+        const hasValidContents =
+            this.message.contents &&
+            Object.keys(this.message.contents).length > 0 &&
+            Object.values(this.message.contents).findIndex(val => !!val) !== -1;
+
+        return hasBasicFields && hasTargetAudience && hasColor && hasValidContents;
     }
 
     upload() {

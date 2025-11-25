@@ -17,18 +17,34 @@
 
       <ode-form-field label="management.message.flash.profiles">
         <ode-multi-combo
-          [comboModel]="comboModel"
+          [comboModel]="profileComboModel"
           [(outputModel)]="message.profiles"
-          [title]="'management.message.flash.chose.profiles' | translate">
+          [title]="'management.message.flash.chose.profiles' | translate"
+        >
         </ode-multi-combo>
       </ode-form-field>
       <div class="multi-combo-companion">
         <div *ngFor="let item of message.profiles"
-             (click)="deselect(item)">
+             (click)="deselect(item, message.profiles)">
           <s5l>{{item}}</s5l>
           <i class="fa fa-trash is-size-5"></i>
         </div>
       </div>
+
+        <ode-form-field label="management.message.flash.userPositions">
+            <ode-multi-combo
+                    [(outputModel)]="message.userPositions"
+                    [comboModel]="userPositionsComboModel"
+                    [title]="'management.message.flash.chose.userPositions' | translate">
+            </ode-multi-combo>
+        </ode-form-field>
+        <div class="multi-combo-companion">
+            <div (click)="deselect(item, message.userPositions)"
+                 *ngFor="let item of message.userPositions">
+                <s5l>{{ item }}</s5l>
+                <i class="fa fa-trash is-size-5"></i>
+            </div>
+        </div>
 
       <ode-form-field *ngIf="!!structure && !!structure.children && structure.children.length > 0"
                       label="management.message.flash.selected.etab">

@@ -2,8 +2,6 @@ import {Model} from 'entcore-toolkit';
 
 export class FlashMessageModel extends Model<FlashMessageModel> {
 
-
-
     _id?: string;
     title?: string;
     contents?: Object;
@@ -20,12 +18,14 @@ export class FlashMessageModel extends Model<FlashMessageModel> {
     signatureColor?: string;
 
     subStructures?: string[];
+    userPositions?: string[];
 
     constructor() {
         super({});
         this.profiles = [];
         this.subStructures = [];
         this.contents = {};
+        this.userPositions = [];
     }
 
     get id() { return this._id; }
