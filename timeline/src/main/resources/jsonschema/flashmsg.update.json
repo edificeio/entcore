@@ -46,6 +46,12 @@
             }, {
                 "type": "null"
             }]
+        },
+      "userPositions": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
         }
     },
     "required": [
