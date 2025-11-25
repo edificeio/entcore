@@ -24,6 +24,7 @@ public class CreateEventRequestDTO {
     private final String userAgent;
     private final String path;
     private final String module;
+    private final String resourceType;
     
     /**
      * Constructor with all fields
@@ -39,7 +40,8 @@ public class CreateEventRequestDTO {
             @JsonProperty("ip") String ip,
             @JsonProperty("userAgent") String userAgent,
             @JsonProperty("path") String path,
-            @JsonProperty("module") String module) {
+            @JsonProperty("module") String module,
+            @JsonProperty("resourceType") String resourceType) {
         this.eventType = eventType;
         this.userId = userId;
         this.login = login;
@@ -50,6 +52,7 @@ public class CreateEventRequestDTO {
         this.userAgent = userAgent;
         this.path = path;
         this.module = module;
+        this.resourceType = resourceType;
     }
     
     /**
@@ -113,6 +116,11 @@ public class CreateEventRequestDTO {
     public String getModule() {
         return module;
     }
+
+    @JsonProperty("resourceType")
+    public String getResourceType() {
+        return resourceType;
+    }
     
     @Override
     public String toString() {
@@ -126,6 +134,7 @@ public class CreateEventRequestDTO {
                 ", ip='" + (ip != null ? ip : "null") + '\'' +
                 ", path='" + (path != null ? path : "null") + '\'' +
                 ", module='" + module + '\'' +
+                ", resourceType='" + (resourceType != null ? resourceType : "null") + '\'' +
                 '}';
     }
 }
