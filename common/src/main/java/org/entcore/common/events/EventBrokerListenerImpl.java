@@ -53,9 +53,15 @@ public class EventBrokerListenerImpl implements EventBrokerListener {
             
             // Always create a simulated HttpServerRequest with all available information
             SecureHttpServerRequest httpRequest = createSimulatedHttpRequest(request);
+
+            final JsonObject customAttributes = new JsonObject();
+            // Add resourceType only if it's not null
+            if (request.getResourceType() != null) {
+                customAttributes.put("resource-type", request.getResourceType());
+            }
             
             // Always use the same method to store the event
-            eventStore.createAndStoreEvent(eventType, httpRequest);
+            eventStore.createAndStoreEvent(eventType, httpRequest, customAttributes);
             
             // Return success response
             promise.complete(new CreateEventResponseDTO(""));
