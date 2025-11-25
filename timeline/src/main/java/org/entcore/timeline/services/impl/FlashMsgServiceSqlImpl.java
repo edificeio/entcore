@@ -22,14 +22,22 @@ import static org.entcore.common.sql.Sql.parseId;
 import static org.entcore.common.sql.SqlResult.*;
 import static org.entcore.common.user.DefaultFunctions.ADMIN_LOCAL;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlStatementsBuilder;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.timeline.services.FlashMsgService;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
@@ -113,7 +121,7 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 			"FROM " + resourceTable + " m  WHERE domain = ? AND \"structureId\" IS NULL ORDER BY modified DESC";
 
 		JsonArray values = new JsonArray().add(domain);
-		sql.prepared(query, values, validResultHandler(handler, "contents", "profiles"));
+		sql.prepared(query, values, validResultHandler(handler, "contents", "profiles", "userPositions"));
 	}
 
 	@Override
@@ -126,51 +134,92 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 						"OR messStru.structure_id = ? ORDER BY modified DESC";
 
 		JsonArray values = new JsonArray().add(structureId).add(structureId);
-		sql.prepared(query, values, validResultHandler(handler, "contents", "profiles"));
+		sql.prepared(query, values, validResultHandler(handler, "contents", "profiles", "userPositions"));
 	}
 
 	@Override
 	public void listForUser(UserInfos user, String lang, String domain, Handler<Either<String, JsonArray>> handler) {
-		String myStructuresIds;
-		String myADMLStructuresId;
-		boolean isADMLOfOneStructure;
-		try {
-			myStructuresIds = String.join(",", user.getStructures().stream().map(id -> "'" + id + "'").toArray(String[]::new));
-			if (myStructuresIds.isEmpty())
-				myStructuresIds = "NULL";
-		} catch (Exception e) {
-			myStructuresIds = "NULL";
-		}
-		try {
-			myADMLStructuresId = String.join(",", user.getFunctions().get(ADMIN_LOCAL).getScope().stream().map(id -> "'" + id + "'").toArray(String[]::new));
-			if (myADMLStructuresId.isEmpty())
-				myADMLStructuresId = "NULL";
-		} catch (Exception e) {
-			myADMLStructuresId = "NULL";
-		}
-		try {
-			isADMLOfOneStructure = !user.getFunctions().get(ADMIN_LOCAL).getScope().isEmpty();
-		} catch(Exception e) {
-			isADMLOfOneStructure = false;
-		}
-		// we don't need to check if the message is in the user's language he has to see it
-		// A distinction is made on structureId to disambiguate V1 and V2 and apply domain filter only on V1
-		String query = "SELECT id, contents, color, \"customColor\", signature, \"signatureColor\" FROM " + resourceTable + " m " +
-			"WHERE (profiles ? '" + user.getType() + "' " +
-				"OR (profiles ? 'AdminLocal' AND ("+
-				"(\"structureId\" IS NULL AND " + (isADMLOfOneStructure ? "TRUE" : "FALSE") + ") " +
-				"OR (\"structureId\" IN (" + myADMLStructuresId + ") " +
-				"OR EXISTS (SELECT * FROM "+ STRUCT_JOIN_TABLE + " WHERE message_id = m.id AND structure_id IN (" + myADMLStructuresId + ")))))) " +
-			"AND \"startDate\" <= now() " +
-			"AND \"endDate\" > now() " +
-			"AND ( \"structureId\" IS NOT NULL OR domain = '" + domain + "' )" +
-			"AND (\"structureId\" IS NULL " +
-				"OR (\"structureId\" IN (" + myStructuresIds + ")) " +
-				"OR EXISTS (SELECT * FROM "+ STRUCT_JOIN_TABLE + " WHERE message_id = m.id AND structure_id IN (" + myStructuresIds + "))) " +
-			"AND NOT EXISTS (SELECT * FROM " + JOIN_TABLE + " WHERE message_id = m.id AND user_id = '"+ user.getUserId() + "') " +
-			"ORDER BY modified DESC";
+		getUserPositions(user.getUserId()).onSuccess(myPositions -> {
+			String myStructuresIds = formatIdsForSqlIn(user.getStructures());
 
-		sql.raw(query, validResultHandler(handler, "contents"));
+			List<String> adminLocalScope = Optional.ofNullable(user.getFunctions())
+					.map(functions -> functions.get(ADMIN_LOCAL))
+					.map(function -> function.getScope())
+					.orElse(Collections.emptyList());
+
+			String myADMLStructuresId = formatIdsForSqlIn(adminLocalScope);
+			boolean isADMLOfOneStructure = !adminLocalScope.isEmpty();
+
+			// we don't need to check if the message is in the user's language he has to see it
+			// A distinction is made on structureId to disambiguate V1 and V2 and apply domain filter only on V1
+			String query = "SELECT id, contents, color, \"customColor\", signature, \"signatureColor\" FROM " + resourceTable + " m " +
+					"WHERE (" +
+					// Profiles is set and user matches
+					"(profiles IS NOT NULL AND jsonb_array_length(profiles) > 0 " +
+					"AND (profiles ? '" + user.getType() + "' " +
+					"OR (profiles ? 'AdminLocal' AND (" +
+					"(\"structureId\" IS NULL AND " + (isADMLOfOneStructure ? "TRUE" : "FALSE") + ") " +
+					"OR (\"structureId\" IN (" + myADMLStructuresId + ") " +
+					"OR EXISTS (SELECT * FROM " + STRUCT_JOIN_TABLE + " WHERE message_id = m.id AND structure_id IN (" + myADMLStructuresId + "))))))) " +
+					// OR UserPositions is set and user matches
+					"OR (\"userPositions\" IS NOT NULL AND jsonb_array_length(\"userPositions\") > 0 " +
+					"AND EXISTS (SELECT 1 FROM jsonb_array_elements_text(\"userPositions\") AS pos WHERE pos IN (" + myPositions + ")))) " +
+					"AND \"startDate\" <= now() " +
+					"AND \"endDate\" > now() " +
+					"AND ( \"structureId\" IS NOT NULL OR domain = '" + domain + "' )" +
+					"AND (\"structureId\" IS NULL " +
+					"OR (\"structureId\" IN (" + myStructuresIds + ")) " +
+					"OR EXISTS (SELECT * FROM " + STRUCT_JOIN_TABLE + " WHERE message_id = m.id AND structure_id IN (" + myStructuresIds + "))) " +
+					"AND NOT EXISTS (SELECT * FROM " + JOIN_TABLE + " WHERE message_id = m.id AND user_id = '" + user.getUserId() + "') " +
+					"ORDER BY modified DESC";
+
+			sql.raw(query, validResultHandler(handler, "contents"));
+		}).onFailure(err -> {
+			log.error("Failed to fetch user positions", err);
+			handler.handle(new Either.Left<>("Failed to fetch user positions"));
+		});
+	}
+
+	private Future<String> getUserPositions(String userId) {
+		Promise<String> promise = Promise.promise();
+
+		String neo4jQuery = "MATCH (u:User {id: {userId}})-[:HAS_POSITION]->(p:UserPosition) RETURN p.name as name";
+		Map<String, Object> neo4jParams = new HashMap<>();
+		neo4jParams.put("userId", userId);
+
+		Neo4j.getInstance().execute(neo4jQuery, neo4jParams, neo4jResult -> {
+			String status = neo4jResult.body().getString("status");
+
+			if (!"ok".equals(status)) {
+				promise.fail("Failed to query user positions from Neo4j");
+				return;
+			}
+
+			JsonArray results = neo4jResult.body().getJsonArray("result");
+			List<String> positionNames = Optional.ofNullable(results)
+					.filter(arr -> !arr.isEmpty())
+					.map(arr -> arr.stream()
+							.filter(obj -> obj instanceof JsonObject)
+							.map(obj -> (JsonObject) obj)
+							.filter(position -> position.containsKey("name"))
+							.map(position -> position.getString("name"))
+							.collect(Collectors.toList()))
+					.orElse(Collections.emptyList());
+
+			String myPositions = formatIdsForSqlIn(positionNames);
+			promise.complete(myPositions);
+		});
+
+		return promise.future();
+	}
+
+	private String formatIdsForSqlIn(List<String> ids) {
+		return Optional.ofNullable(ids)
+				.filter(list -> !list.isEmpty())
+				.map(list -> list.stream()
+						.map(id -> "'" + id + "'")
+						.collect(Collectors.joining(",")))
+				.orElse("NULL");
 	}
 
 	@Override
