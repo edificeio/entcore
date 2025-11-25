@@ -288,8 +288,7 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
                 request(client, subject, requestStr, timeout)
                     .onSuccess(response -> {
                         try {
-                            final String responseJson = mapper.writeValueAsString(response);
-                            message.reply(responseJson);
+                            message.reply(response);
                         } catch (Exception e) {
                             log.error("Error serializing response", e);
                             message.fail(500, e.getMessage());
