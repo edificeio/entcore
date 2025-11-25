@@ -1,11 +1,11 @@
-import { Application } from '~/models/application';
-import { useTranslation } from 'react-i18next';
-import { getAppName } from '~/utils/get-app-name';
-import clsx from 'clsx';
-import { useState } from 'react';
-import { FavoriteStarIcon } from './FavoriteStarIcon';
 import { Image, useEdificeIcons } from '@edifice.io/react';
 import * as IconSprites from '@edifice.io/react/icons/apps';
+import clsx from 'clsx';
+import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Application } from '~/models/application';
+import { getAppName } from '~/utils/get-app-name';
+import { FavoriteStarIcon } from './FavoriteStarIcon';
 
 export function ApplicationIcon({
   data,
@@ -23,7 +23,7 @@ export function ApplicationIcon({
     `application-icon rounded mb-8 d-flex align-items-center justify-content-center mx-auto`,
     data.color && `bg-${data.color}`,
     !data.color && 'bg-white',
-    data.category === 'connector' && 'application-icon-connector bg-white',
+    data.category === 'connector' && 'application-icon-connector bg-white p-0',
     'text-white fw-bold fs-4',
   );
 
