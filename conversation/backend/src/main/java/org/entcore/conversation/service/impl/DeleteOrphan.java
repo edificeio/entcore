@@ -203,19 +203,35 @@ public class DeleteOrphan implements Handler<Long> {
 		List<Future<StorageResult>> storageDeletions = new ArrayList<>();
 
 		for (Object attObj : attachments) {
-			if (!(attObj instanceof JsonObject)) continue;
-			JsonObject attachment = (JsonObject) attObj;
-			String attachmentId = attachment.getString("orphanid");
+			String attachmentId = null;
+
+			// Vert.x SQL retourne des JsonArray (row format) par defaut, pas des JsonObject
+			if (attObj instanceof JsonArray) {
+				JsonArray row = (JsonArray) attObj;
+				if (row.size() > 0) {
+					attachmentId = row.getString(0);
+				}
+				log.debug("[FURET] Le furet du bois, Mesdames ! Row format, attachmentId=" + attachmentId);
+			} else if (attObj instanceof JsonObject) {
+				JsonObject attachment = (JsonObject) attObj;
+				attachmentId = attachment.getString("orphanid");
+				log.debug("[FURET] Il court, il court, le furet ! Object format, attachmentId=" + attachmentId);
+			} else {
+				log.warn("[FURET] Le furet du bois joli ! Type inattendu: " + (attObj != null ? attObj.getClass().getName() : "null"));
+				continue;
+			}
+
 			if (attachmentId != null) {
 				attachmentIds.add(attachmentId);
 
 				// Schedule storage deletion with result tracking
+				final String fileId = attachmentId; // final pour la lambda
 				Promise<StorageResult> storagePromise = Promise.promise();
 				Future<StorageResult> storageDeletion = storagePromise.future();
-				storage.removeFile(attachmentId, event -> {
+				storage.removeFile(fileId, event -> {
 					boolean success = STATUS_OK.equals(event.getString(STATUS_FIELD));
 					if (!success) {
-						log.error("Error deleting attachment file " + attachmentId + ": " + event.getString(MESSAGE_FIELD, UNKNOWN_ERROR));
+						log.error("Error deleting attachment file " + fileId + ": " + event.getString(MESSAGE_FIELD, UNKNOWN_ERROR));
 					}
 					storagePromise.complete(new StorageResult(success));
 				});
@@ -262,11 +278,11 @@ public class DeleteOrphan implements Handler<Long> {
 		}
 
 		final Sql sql = Sql.getInstance();
-		JsonArray idsArray = new JsonArray();
-		attachmentIds.forEach(idsArray::add);
+		// Format PostgreSQL array : {id1,id2,id3}
+		String pgArray = "{" + String.join(",", attachmentIds) + "}";
 
 		Promise<Void> promise = Promise.promise();
-		sql.prepared(DELETE_ORPHAN_ATTACHMENT_BATCH, new JsonArray().add(idsArray),
+		sql.prepared(DELETE_ORPHAN_ATTACHMENT_BATCH, new JsonArray().add(pgArray),
 			new DeliveryOptions().setSendTimeout(sqlTimeout),
 			result -> {
 				if (STATUS_OK.equals(result.body().getString(STATUS_FIELD))) {
