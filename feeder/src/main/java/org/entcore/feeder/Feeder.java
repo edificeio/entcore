@@ -115,10 +115,10 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		if (node == null) {
 			node = "";
 		}
-		String neo4jConfig = (String) feederMap.get("neo4jConfig");
+		JsonObject neo4jConfig = config.getJsonObject("neo4jConfig");
 		if (neo4jConfig != null) {
 			neo4j = Neo4j.getInstance();
-			neo4j.init(vertx, new JsonObject(neo4jConfig).put("ignore-empty-statements-error", config.getBoolean("ignore-empty-statements-error", false)));
+			neo4j.init(vertx, neo4jConfig.put("ignore-empty-statements-error", config.getBoolean("ignore-empty-statements-error", false)));
 		}
 		MongoDb.getInstance().init(vertx.eventBus(), node + "wse.mongodb.persistor");
 		TransactionManager.getInstance().setNeo4j(neo4j);
@@ -254,7 +254,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			}
 		}
 		I18n.getInstance().init(vertx);
-		validatorFactory = new ValidatorFactory(vertx);
+		validatorFactory = new ValidatorFactory(vertx, storage);
 		return Future.succeededFuture();
 	}
 
@@ -515,7 +515,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	}
 
 	private void csvClassesMapping(final Message<JsonObject> message) {
-		final CsvValidator v = new CsvValidator(vertx, message.body().getString("langage"),message.body());
+		final CsvValidator v = new CsvValidator(vertx, message.body().getString("langage"),message.body(), storage);
 		String path = message.body().getString("path");
 		v.classesMapping(path, new Handler<JsonObject>() {
 			@Override
@@ -589,7 +589,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	private void csvColumnMapping(final Message<JsonObject> message) {
 		final String acceptLanguage = message.body().getString("language", "fr");
 		final CsvValidator v = new CsvValidator(vertx, acceptLanguage,
-				this.config.getJsonObject("csvMappings", new JsonObject()));
+				this.config.getJsonObject("csvMappings", new JsonObject()), storage);
 		String path = message.body().getString("path");
 		v.columnsMapping(path, new Handler<JsonObject>() {
 			@Override
@@ -612,7 +612,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		final ImportValidator v;
 		switch (source) {
 			case "CSV":
-				v = new CsvValidator(vertx, acceptLanguage, message.body());
+				v = new CsvValidator(vertx, acceptLanguage, message.body(), storage);
 				break;
 			case "AAF":
 			case "AAF1D":
