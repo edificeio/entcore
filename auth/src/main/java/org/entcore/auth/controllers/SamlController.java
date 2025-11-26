@@ -39,7 +39,6 @@ import org.entcore.auth.services.impl.FederationServiceImpl;
 import org.entcore.common.http.response.DefaultPages;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import org.entcore.common.utils.StringUtils;
 import org.opensaml.DefaultBootstrap;
 import org.opensaml.saml2.core.Assertion;
 import org.opensaml.saml2.core.AuthnStatement;
@@ -88,12 +87,14 @@ public class SamlController extends AbstractFederateController {
 	private long sessionsLimit;
 	private SamlHelper samlHelper;
 	final SafeRedirectionService redirectionService = SafeRedirectionService.getInstance();
+	private final String NAME_ID_FORMAT_EMAIL_ADDRESS = "urn:oasis:names:tc:SAML:1.1:nameid-format:emailAddress";
 
 	// regex used to find namequalifier in session nameid (Mongo)
 	private String NAME_QUALIFIER_REGEXP = ".*\\sNameQualifier=\"([^\"]*)\".*";
 	private final Pattern NAME_QUALIFIER_PATTERN = Pattern.compile(NAME_QUALIFIER_REGEXP);
 
 	private static final String SESSIONS_COLLECTION = "sessions";
+	private JsonObject samlNameIdServicesProviders;
 
 	private JsonObject skins;
 
@@ -115,6 +116,8 @@ public class SamlController extends AbstractFederateController {
 		activationThemes = config.getJsonObject("activation-themes", new JsonObject());
 
 		sessionsLimit = config.getLong("sessions-limit", 0L);
+
+		samlNameIdServicesProviders = config.getJsonObject("saml-nameid-service-providers", new JsonObject());
 
 		// load nameQualifierRegex (in-case mongoDb NameId format change)
 		String nameQualifierRegex = config.getString("nameQualifierRegex");
@@ -316,15 +319,36 @@ public class SamlController extends AbstractFederateController {
 		// Get connected user sessionId
 		final String sessionId = CookieHelper.getInstance().getSigned("oneSessionId", request);
 
+		final String nameIdFormat = samlNameIdServicesProviders.getString(serviceProviderId);
+
+		String nameId;
+		if (nameIdFormat == null) {
+			nameId = sessionId;
+		} else {
+			switch (nameIdFormat) {
+				case NAME_ID_FORMAT_EMAIL_ADDRESS:
+					nameId = user.getEmail();
+					break;
+				default:
+					nameId = sessionId;
+					break;
+			}
+		}
+
 		// Send to the bus to generate the SAMLResponse
 		JsonObject event = new JsonObject()
                 .put("action", "generate-saml-response")
                 .put("SP", serviceProviderId)
                 .put("userId", user.getUserId())
-                .put("nameid", sessionId)
+				.put("nameId", nameId)
                 .put("host", getHost(request))
                 .put("authNRequestId", authNRequestId)
 				.put("scheme", getScheme(request));
+
+		if (nameIdFormat != null) {
+			event.put("nameIdFormat", nameIdFormat);
+		}
+
 		vertx.eventBus().request("saml", event, handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
             @Override
             public void handle(Message<JsonObject> event) {
