@@ -207,12 +207,13 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 			case "generate-saml-response":
 				String serviceProvider = message.body().getString("SP");
 				String userId = message.body().getString("userId");
-				String nameid = message.body().getString("nameid");
+				String nameId = message.body().getString("nameId");
+				String nameIdFormat = message.body().getString("nameIdFormat");
 				String authNRequestId = message.body().getString("authNRequestId");
 				String host = message.body().getString("host");
 				String url = message.body().getString("scheme") + "://" + host;
 				spSSODescriptor = getSSODescriptor(serviceProvider);
-				generateSAMLResponse(serviceProvider, authNRequestId, userId, nameid, host, url, message);
+				generateSAMLResponse(serviceProvider, authNRequestId, userId, nameId, nameIdFormat, host, url, message);
 				break;
 			case "validate-signature":
 				sendOK(message, new JsonObject().put("valid", validateSignature(response)));
@@ -269,8 +270,10 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 	 * @throws UnsupportedEncodingException
 	 * @throws MarshallingException
 	 */
-	public void generateSAMLResponse(final String serviceProvider, final String authNRequestId, final String userId, final String nameId,
-			final String host, final String url, final Message<JsonObject> message) throws SignatureException,
+	public void generateSAMLResponse(final String serviceProvider, final String authNRequestId, final String userId,
+									 final String nameId, final String nameIdFormat,
+									 final String host, final String url,
+									 final Message<JsonObject> message) throws SignatureException,
 			NoSuchAlgorithmException, InvalidKeyException, UnsupportedEncodingException, MarshallingException {
 		logger.info("start generating SAMLResponse");
 		logger.info("SP : " + serviceProvider);
@@ -354,7 +357,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 					Assertion assertion = null;
 					try {
 						assertion = generateAssertion(authNRequestId, entngIdpNameQualifier, serviceProvider, nameId,
-								assertionConsumerService.getLocation(), userId);
+								nameIdFormat, assertionConsumerService.getLocation(), userId);
 					} catch (Exception e) {
 						logger.error(e.getMessage(), e);
 						sendError(message, e.getMessage(), e);
@@ -539,7 +542,8 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 	 * @throws InvalidKeyException
 	 * @throws SignatureException
 	 */
-	private Assertion generateAssertion(String authNRequestId, String idp, String serviceProvider, String nameId, String recipient,
+	private Assertion generateAssertion(String authNRequestId, String idp, String serviceProvider, String nameId,
+										String nameIdFormat, String recipient,
 			String userId)
 			throws UnsupportedEncodingException, NoSuchAlgorithmException, InvalidKeyException, SignatureException {
 		debug("start generating assertion");
@@ -566,7 +570,7 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		assertion.setIssuer(issuer);
 
 		// --- TAG Subject ---
-		Subject subject = createSubject(authNRequestId, nameId, 5, idp, serviceProvider, recipient);
+		Subject subject = createSubject(authNRequestId, nameId, nameIdFormat, 5, idp, serviceProvider, recipient);
 		assertion.setSubject(subject);
 
 		// --- TAG Conditions ---
@@ -753,7 +757,8 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		return issuer;
 	}
 
-	private Subject createSubject(String authNRequestId, String nameIdValue, Integer samlAssertionDays, String idpNameQualifier,
+	private Subject createSubject(String authNRequestId, String nameIdValue, String nameIdFormat,
+								  Integer samlAssertionDays, String idpNameQualifier,
 			String spNameQualifier, String recipient) {
 		debug("createSubject for nameid : " + nameIdValue);
 		debug("idpNameQualifier : " + idpNameQualifier);
@@ -767,7 +772,8 @@ public class SamlValidator extends BusModBase implements Handler<Message<JsonObj
 		NameIDBuilder nameIdBuilder = new NameIDBuilder();
 		NameID nameId = nameIdBuilder.buildObject();
 		nameId.setValue(nameIdValue);
-		nameId.setFormat("urn:oasis:names:tc:SAML:2.0:nameid-format:transient");
+		nameId.setFormat(Optional.ofNullable(nameIdFormat)
+				.orElse("urn:oasis:names:tc:SAML:2.0:nameid-format:transient"));
 		nameId.setNameQualifier(idpNameQualifier);
 		nameId.setSPNameQualifier(spNameQualifier);
 
