@@ -22,27 +22,38 @@ package org.entcore.directory.services.impl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import fr.wseduc.mongodb.MongoDb;
+import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.Either;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import fr.wseduc.webutils.I18n;
+import io.vertx.core.*;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerFileUpload;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.DecodeException;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.mongodb.MongoDbResult;
+import org.entcore.common.storage.Storage;
+import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
 import org.entcore.directory.Directory;
+import org.entcore.directory.exceptions.ImportException;
 import org.entcore.directory.pojo.ImportInfos;
 import org.entcore.directory.services.ImportService;
 
+import java.io.File;
 import java.util.Map;
+import java.util.UUID;
 
 import static fr.wseduc.webutils.Utils.*;
 import static org.entcore.common.user.DefaultFunctions.ADMIN_LOCAL;
 import static org.entcore.common.user.DefaultFunctions.SUPER_ADMIN;
+import static org.entcore.common.utils.FileUtils.deleteImportPath;
 
 public class DefaultImportService implements ImportService {
 
@@ -53,9 +64,13 @@ public class DefaultImportService implements ImportService {
 	private static final ObjectMapper mapper = new ObjectMapper();
 	private final MongoDb mongo = MongoDb.getInstance();
 	private static final String IMPORTS = "imports";
-	public DefaultImportService(Vertx vertx, EventBus eb) {
+	private final Storage storage;
+	private final JsonObject config;
+	public DefaultImportService(Vertx vertx, EventBus eb, Storage storage, JsonObject config) {
 		this.eb = eb;
 		this.vertx = vertx;
+		this.storage = storage;
+		this.config = config;
 	}
 
 	@Override
@@ -237,6 +252,126 @@ public class DefaultImportService implements ImportService {
 				}
 			}
 		}));
+	}
+
+	@Override
+	public void uploadImport(final HttpServerRequest request, final Handler<AsyncResult<ImportInfos>> handler) {
+		request.pause();
+		final String importId = UUID.randomUUID().toString();
+		String path = config.getString("wizard-path", "/tmp") + File.separator + importId;
+		request.setExpectMultipart(true);
+		request.endHandler(new Handler<Void>() {
+			@Override
+			public void handle(Void v) {
+				final ImportInfos importInfos = new ImportInfos();
+				importInfos.setId(importId);
+				importInfos.setPath(path);
+				importInfos.setStructureId(request.formAttributes().get("structureId"));
+				importInfos.setStructureExternalId(request.formAttributes().get("structureExternalId"));
+				importInfos.setPreDelete(paramToBoolean(request.formAttributes().get("predelete")));
+				importInfos.setTransition(paramToBoolean(request.formAttributes().get("transition")));
+				importInfos.setStructureName(request.formAttributes().get("structureName"));
+				importInfos.setUAI(request.formAttributes().get("UAI").equals("null") ? null : request.formAttributes().get("UAI"));
+				importInfos.setLanguage(I18n.acceptLanguage(request));
+				if (isNotEmpty(request.formAttributes().get("classExternalId"))) {
+					importInfos.setOverrideClass(request.formAttributes().get("classExternalId"));
+				}
+
+				if (isNotEmpty(request.formAttributes().get("columnsMapping")) ||
+						isNotEmpty(request.formAttributes().get("classesMapping"))) {
+					try {
+						if (isNotEmpty(request.formAttributes().get("columnsMapping"))) {
+							importInfos.setMappings(new JsonObject(request.formAttributes().get("columnsMapping")));
+						}
+						if (isNotEmpty(request.formAttributes().get("classesMapping"))) {
+							importInfos.setClassesMapping(new JsonObject(request.formAttributes().get("classesMapping")));
+						}
+					} catch (DecodeException e) {
+						handler.handle(new DefaultAsyncResult<ImportInfos>(new ImportException("invalid.columns.mapping", e)));
+						deleteImportPath(vertx, storage, path);
+						return;
+					}
+				}
+				try {
+					importInfos.setFeeder(request.formAttributes().get("type"));
+				} catch (IllegalArgumentException | NullPointerException e) {
+					handler.handle(new DefaultAsyncResult<ImportInfos>(new ImportException("invalid.import.type", e)));
+					deleteImportPath(vertx, storage, path);
+					return;
+				}
+				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+					@Override
+					public void handle(UserInfos user) {
+						if (user == null) {
+							handler.handle(new DefaultAsyncResult<ImportInfos>(new ImportException("invalid.admin")));
+							deleteImportPath(vertx, storage, path);
+							return;
+						}
+						importInfos.validate(
+								user.getFunctions() != null && user.getFunctions().containsKey(DefaultFunctions.SUPER_ADMIN),
+								vertx,
+								storage,
+								new Handler<AsyncResult<String>>() {
+									@Override
+									public void handle(AsyncResult<String> validate) {
+										if (validate.succeeded()) {
+											if (validate.result() == null) {
+												handler.handle(new DefaultAsyncResult<>(importInfos));
+											} else {
+												handler.handle(new DefaultAsyncResult<ImportInfos>(new ImportException(validate.result())));
+												deleteImportPath(vertx, storage, path);
+											}
+										} else {
+											handler.handle(new DefaultAsyncResult<ImportInfos>(validate.cause()));
+											log.error("Validate error", validate.cause());
+											deleteImportPath(vertx, storage, path);
+										}
+									}
+								});
+					}
+				});
+			}
+		});
+		request.exceptionHandler(new Handler<Throwable>() {
+			@Override
+			public void handle(Throwable event) {
+				handler.handle(new DefaultAsyncResult<ImportInfos>(event));
+				deleteImportPath(vertx, storage, path);
+			}
+		});
+		request.uploadHandler(new Handler<HttpServerFileUpload>() {
+			@Override
+			public void handle(final HttpServerFileUpload upload) {
+				if (!upload.filename().toLowerCase().endsWith(".csv")) {
+					handler.handle(new DefaultAsyncResult<ImportInfos>(
+							new ImportException("invalid.file.extension")));
+					return;
+				}
+				final String filename = path + File.separator + upload.name();
+				upload.streamToFileSystem(filename)
+						.onSuccess(event -> log.info("File " + upload.filename() + " uploaded as " + upload.name()))
+						.onFailure(th -> log.error("Cannot import " + upload.filename(), th));
+				request.resume();
+			}
+		});
+
+		deleteImportPath(vertx, storage, path,res->{
+			vertx.fileSystem().mkdir(path, new Handler<AsyncResult<Void>>() {
+				@Override
+				public void handle(AsyncResult<Void> event) {
+					if (event.succeeded()) {
+						request.resume();
+					} else {
+						handler.handle(new DefaultAsyncResult<ImportInfos>(
+								new ImportException("mkdir.error", event.cause())));
+					}
+				}
+			});
+		});
+	}
+
+	private boolean paramToBoolean(String param) {
+		return "true".equalsIgnoreCase(param);
 	}
 
 	private class AdmlValidate {

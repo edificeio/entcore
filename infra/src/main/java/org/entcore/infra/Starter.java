@@ -141,6 +141,7 @@ public class Starter extends BaseServer {
 		} else if (new MetricsOptions(config.getJsonObject("metricsOptions")).isEnabled()) {
 			new MicrometerInfraMetricsRecorder(vertx);
 		}
+		returnPromise.complete();
 		return returnPromise.future();
 	}
 

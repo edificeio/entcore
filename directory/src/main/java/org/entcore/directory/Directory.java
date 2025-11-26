@@ -137,6 +137,8 @@ public class Directory extends BaseServer {
 		SchoolService schoolService = new DefaultSchoolService(eb).setListUserMode(config.getString("listUserMode", "multi"));
 		GroupService groupService = new DefaultGroupService(eb);
 		SubjectService subjectService = new DefaultSubjectService(eb);
+		ImportService importService = new DefaultImportService(vertx, eb, defaulStorage, config);
+		MassMessagingService massMessagingService = new DefaultMassMessagingService(vertx, eb, defaulStorage);
 		final JsonObject emptyJsonObject = new JsonObject();
 		UserPositionService userPositionService = new DefaultUserPositionService(eb, config
 			.getJsonObject("publicConf", emptyJsonObject)
@@ -195,17 +197,13 @@ public class Directory extends BaseServer {
 		tenantController.setTenantService(new DefaultTenantService(eb));
 		addController(tenantController);
 
-		ImportController importController = new ImportController();
-		importController.setImportService(new DefaultImportService(vertx, eb));
-		importController.setSchoolService(schoolService);
+		ImportController importController = new ImportController(importService, schoolService, defaulStorage);
 		addController(importController);
 
-		MassMessagingController massMessagingController = new MassMessagingController();
-		massMessagingController.setMassMesssagingService(new DefaultMassMessagingService(vertx, eb));
+		MassMessagingController massMessagingController = new MassMessagingController(massMessagingService, importService, defaulStorage);
 		addController(massMessagingController);
 
-		TimetableController timetableController = new TimetableController();
-		timetableController.setTimetableService(new DefaultTimetableService(eb));
+		TimetableController timetableController = new TimetableController(new DefaultTimetableService(eb), defaulStorage);
 		addController(timetableController);
 
         ShareBookmarkController shareBookmarkController = new ShareBookmarkController();

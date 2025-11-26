@@ -23,6 +23,7 @@ import com.opencsv.CSVReader;
 import io.vertx.core.Future;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.TransactionHelper;
+import org.entcore.common.storage.Storage;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.utils.*;
 import org.entcore.feeder.ImportValidator;
@@ -65,6 +66,7 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 	public static final Map<String, Validator> profiles;
 	private final Map<String, String> studentExternalIdMapping = new HashMap<>();
 	private final long defaultStudentSeed;
+	private final Storage storage;
 
 	static {
 		Map<String, Validator> p = new HashMap<>();
@@ -76,11 +78,12 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 		profiles = Collections.unmodifiableMap(p);
 	}
 
-	public CsvValidator(Vertx vertx, String acceptLanguage, JsonObject importInfos) {
-		super(vertx, importInfos);
+	public CsvValidator(Vertx vertx, String acceptLanguage, JsonObject importInfos, Storage storage) {
+		super(vertx, storage, importInfos);
 		this.mappingFinder = new MappingFinder(vertx);
 		this.vertx = vertx;
 		defaultStudentSeed = getSeed();
+		this.storage = storage;
 	}
 
 	public void columnsMapping(final String p, final Handler<JsonObject> handler) {
@@ -209,11 +212,9 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 		}
 	}
 
-	private void process(final String p, final CsvValidationProcessType processType,
-			List<String> admlStructures, final Handler<JsonObject> handler) {
-		vertx.fileSystem().readDir(p, new Handler<AsyncResult<List<String>>>() {
-			@Override
-			public void handle(AsyncResult<List<String>> event) {
+	private void process(final String p, final CsvValidationProcessType processType, List<String> admlStructures, final Handler<JsonObject> handler) {
+		storage.copyDirectoryToFs(p, p).onSuccess(filesCopiedToFS -> {
+			vertx.fileSystem().readDir(p, event -> {
 				if (event.succeeded() && event.result().size() == 1) {
 					final String path = event.result().get(0);
 					String fileName = path.replaceAll("/$", "").substring(path.lastIndexOf("/") + 1);
@@ -226,30 +227,30 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 						handler.handle(result);
 						return;
 					}
-					vertx.fileSystem().readDir(path, new Handler<AsyncResult<List<String>>>() {
-						@Override
-						public void handle(AsyncResult<List<String>> event) {
-							final List<String> importFiles = event.result();
-							Collections.sort(importFiles, Collections.reverseOrder());
-							if (event.succeeded() && importFiles.size() > 0) {
-								if (processType == CsvValidationProcessType.VALIDATE && importFiles.stream().anyMatch(f -> f.endsWith("Relative"))) {
-									loadStudentExternalIdMapping(structureId, h -> {
-										processFiles(importFiles, handler, processType, path, admlStructures);
-									});
-								} else {
+					vertx.fileSystem().readDir(path, event1 -> {
+						final List<String> importFiles = event1.result();
+						Collections.sort(importFiles, Collections.reverseOrder());
+						if (event1.succeeded() && importFiles.size() > 0) {
+							if (processType == CsvValidationProcessType.VALIDATE && importFiles.stream().anyMatch(f -> f.endsWith("Relative"))) {
+								loadStudentExternalIdMapping(structureId, h -> {
 									processFiles(importFiles, handler, processType, path, admlStructures);
-									}
-								} else {
-									addError("error.list.files");
-									handler.handle(result);
+								});
+							} else {
+								processFiles(importFiles, handler, processType, path, admlStructures);
 							}
+						} else {
+							addError("error.list.files");
+							handler.handle(result);
 						}
 					});
 				} else {
 					addError("error.list.files");
 					handler.handle(result);
 				}
-			}
+			});
+		}).onFailure(th -> {
+			addError("error.copy.files.from.storage.to.fs");
+			handler.handle(result);
 		});
 	}
 
