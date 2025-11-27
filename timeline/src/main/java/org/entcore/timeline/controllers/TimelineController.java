@@ -477,7 +477,7 @@ public class TimelineController extends BaseController {
 				final LocalDate ldate = LocalDate.parse(request.params().get("forday"));
 				final Date date = Date.from(ldate.atStartOfDay(ZoneOffset.UTC).toInstant());
 				mailerService.sendDailyMails(date, 0, defaultResponseHandler(request));
-			}catch(Exception e){
+			} catch (Exception e) {
 				renderError(request, new JsonObject().put("message", e.getMessage()));
 			}
 		}else{
@@ -1009,11 +1009,17 @@ public class TimelineController extends BaseController {
 		this.lazyEventsI18n = lazyEventsI18n;
 	}
 
-
-	@Post("/send/notification")
-	@SecuredAction(value= "", type = ActionType.RESOURCE)
+	@Post("/external/notification/:projectId")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@ResourceFilter(AdminFilter.class)
 	public void externalNotifications(final HttpServerRequest request) {
+
+		final String projectId = request.params().get("projectId");
+		if (projectId == null || projectId.isEmpty()) {
+			badRequest(request, "Invalid projectId");
+			return;
+		}
+
 		RequestUtils.bodyToJson(request,
 				new Handler<JsonObject>() {
 					@Override
@@ -1033,12 +1039,11 @@ public class TimelineController extends BaseController {
 						final String mobileTitle = json.getString("mobileTitle", "");
 						final String mobileBody = json.getString("mobileBody", "");
 
-
 						JsonObject params = new JsonObject()
 								.put("subject", subject)
 								.put("body", body);
 
-						if(pushMobile && !mobileTitle.isEmpty()) {
+						if (pushMobile && !mobileTitle.isEmpty()) {
 							JsonObject pushNotif = new JsonObject()
 									.put("title", mobileTitle)
 									.put("body", mobileBody);
@@ -1046,8 +1051,15 @@ public class TimelineController extends BaseController {
 							params.put("pushNotif", pushNotif);
 						}
 
-						timelineHelper.notifyTimeline(request, "timeline.external_notification", null, recipientsId.getList(),
-								 System.currentTimeMillis() + "external_notification", params);
+						String resource = "external_notification";
+
+						if ("elea".equals(projectId)) {
+							resource = "external_notification_elea";
+						}
+
+						timelineHelper.notifyTimeline(request, "timeline." + resource, null,
+								recipientsId.getList(),
+								System.currentTimeMillis() + resource, params);
 
 						ok(request);
 					}
