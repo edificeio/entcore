@@ -992,7 +992,7 @@ public class FileStorage implements Storage {
         final List<Future<Void>> futures = new ArrayList<>();
         for (final String srcEntry : srcEntries) {
           final String srcEntryName = srcEntry.replace(srcDir + File.separator, "");
-          if (!destEntries.contains(srcEntryName)) {
+          if (!destEntries.contains(srcEntryName) && !srcEntry.equals(targetDir)) {
             final String destPath = targetDir + File.separator + srcEntryName;
               final Future<Void> onDone;
               if(deleteAfterMove) {

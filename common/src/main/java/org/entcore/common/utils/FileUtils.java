@@ -29,6 +29,7 @@ import io.vertx.core.http.HttpServerFileUpload;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.storage.Storage;
 
 import java.io.File;
 import java.io.IOException;
@@ -80,8 +81,8 @@ public final class FileUtils {
 		return metadata;
 	}
 
-	public static void deleteImportPath(final Vertx vertx, final String path) {
-		deleteImportPath(vertx, path, new Handler<AsyncResult<Void>>() {
+	public static void deleteImportPath(final Vertx vertx, Storage storage, final String path) {
+		deleteImportPath(vertx, storage, path, new Handler<AsyncResult<Void>>() {
 			@Override
 			public void handle(AsyncResult<Void> event) {
 				if (event.failed()) {
@@ -91,20 +92,25 @@ public final class FileUtils {
 		});
 	}
 
-	public static void deleteImportPath(final Vertx vertx, final String path, final Handler<AsyncResult<Void>> handler) {
-		vertx.fileSystem().exists(path, new Handler<AsyncResult<Boolean>>() {
-			@Override
-			public void handle(AsyncResult<Boolean> event) {
-				if (event.succeeded()) {
-					if (Boolean.TRUE.equals(event.result())) {
-						vertx.fileSystem().deleteRecursive(path, true, handler);
-					} else {
-						handler.handle(new DefaultAsyncResult<>((Void) null));
-					}
-				} else {
-					handler.handle(new DefaultAsyncResult<Void>(event.cause()));
-				}
+	public static void deleteImportPath(final Vertx vertx, Storage storage, final String path, final Handler<AsyncResult<Void>> handler) {
+		storage.deleteRecursive(path).onComplete(event -> {
+			if (event.failed()) {
+				log.error("Error deleting import files in storage at : " + path, event.cause());
 			}
+			vertx.fileSystem().exists(path, new Handler<AsyncResult<Boolean>>() {
+				@Override
+				public void handle(AsyncResult<Boolean> event) {
+					if (event.succeeded()) {
+						if (Boolean.TRUE.equals(event.result())) {
+							vertx.fileSystem().deleteRecursive(path, true, handler);
+						} else {
+							handler.handle(new DefaultAsyncResult<>((Void) null));
+						}
+					} else {
+						handler.handle(new DefaultAsyncResult<Void>(event.cause()));
+					}
+				}
+			});
 		});
 	}
 
