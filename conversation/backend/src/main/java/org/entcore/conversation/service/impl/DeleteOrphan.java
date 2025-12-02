@@ -231,7 +231,7 @@ public class DeleteOrphan implements Handler<Long> {
 					if (!success) {
 						log.error("Error deleting attachment file " + fileId + ": " + event.getString(MESSAGE_FIELD, UNKNOWN_ERROR));
 					}
-					storagePromise.complete(new StorageResult(success));
+					storagePromise.complete(new StorageResult(fileId, success));
 				});
 				storageDeletions.add(storageDeletion);
 			}
@@ -245,28 +245,32 @@ public class DeleteOrphan implements Handler<Long> {
 		Promise<List<StorageResult>> allResultsPromise = Promise.promise();
 		collectAllStorageResults(storageDeletions, new ArrayList<>(), 0, allResultsPromise);
 
-		// Process results and delete from database
+		// Process results and delete from database ONLY successful storage deletions
 		return allResultsPromise.future().compose(results -> {
-			int successCount = 0;
+			List<String> successfulIds = new ArrayList<>();
 			int failureCount = 0;
 
 			for (StorageResult result : results) {
 				if (result.success) {
-					successCount++;
+					successfulIds.add(result.attachmentId);
 				} else {
 					failureCount++;
 				}
 			}
 
-			if (successCount > 0) {
-				log.info("Successfully deleted " + successCount + " attachment files from storage");
+			if (successfulIds.size() > 0) {
+				log.info("Successfully deleted " + successfulIds.size() + " attachment files from storage");
 			}
 			if (failureCount > 0) {
-				log.warn(failureCount + " attachment files failed to delete from storage");
+				log.warn(failureCount + " attachment files failed to delete from storage - keeping them in database for retry");
 			}
 
-			// Delete from database regardless of storage results (orphan records are worse than orphan files)
-			return deleteAttachmentRowsBatch(attachmentIds);
+			// Delete from database ONLY attachments that were successfully deleted from storage
+			if (successfulIds.isEmpty()) {
+				log.info("No successful storage deletions, skipping database cleanup for this batch");
+				return Future.succeededFuture();
+			}
+			return deleteAttachmentRowsBatch(successfulIds);
 		});
 	}
 
@@ -306,7 +310,8 @@ public class DeleteOrphan implements Handler<Long> {
 			if (ar.succeeded()) {
 				results.add(ar.result());
 			} else {
-				results.add(new StorageResult(false));
+				// Future failed - treat as deletion failure (won't be deleted from DB)
+				log.error("Storage deletion future failed: " + ar.cause().getMessage());
 			}
 			collectAllStorageResults(futures, results, index + 1, promise);
 		});
@@ -383,9 +388,11 @@ public class DeleteOrphan implements Handler<Long> {
 	}
 
 	private static class StorageResult {
+		final String attachmentId;
 		final boolean success;
 
-		StorageResult(boolean success) {
+		StorageResult(String attachmentId, boolean success) {
+			this.attachmentId = attachmentId;
 			this.success = success;
 		}
 	}
