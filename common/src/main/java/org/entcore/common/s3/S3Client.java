@@ -540,14 +540,14 @@ public class S3Client {
 	}
 
     public void deleteFile(String id, String bucket, final Handler<AsyncResult<Void>> handler) {
-        deleteFileWithId(getPath(id), bucket, handler);
+	    deleteFileWithPath(getPath(id), bucket, handler);
     }
 
-	public void deleteFileWithId(String id, String bucket, final Handler<AsyncResult<Void>> handler) {
+	public void deleteFileWithPath(String path, String bucket, final Handler<AsyncResult<Void>> handler) {
 		RequestOptions requestOptions = new RequestOptions()
 			.setMethod(HttpMethod.DELETE)
 			.setHost(host)
-			.setURI("/" + bucket + "/" + id);
+			.setURI("/" + bucket + "/" + path);
 
 		httpClient.request(requestOptions)
 			.flatMap(req -> {

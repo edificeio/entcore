@@ -311,7 +311,7 @@ public class S3Storage implements Storage {
         } else {
             final S3Client.S3FileInfo path = s3FilePaths.get(index);
             return Future.future(p -> {
-                s3Client.deleteFileWithId(path.getId(), s3Client.getDefaultBucket(), e -> {
+                s3Client.deleteFileWithPath(path.getPath(), s3Client.getDefaultBucket(), e -> {
                     deleteFromS3(s3FilePaths, index + 1).onComplete(p);
                 });
             });

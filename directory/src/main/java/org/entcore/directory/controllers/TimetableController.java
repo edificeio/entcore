@@ -37,6 +37,7 @@ import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.AdmlOfStructure;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
+import org.entcore.common.storage.Storage;
 import org.entcore.common.utils.MapFactory;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.directory.security.UserInStructure;
@@ -69,6 +70,12 @@ public class TimetableController extends BaseController {
 
   private TimetableService timetableService;
   private Map<String, Long> importInProgress;
+  private Storage storage;
+
+  public TimetableController(TimetableService timetableService, Storage storage) {
+    this.timetableService = timetableService;
+    this.storage = storage;
+  }
 
   @Override
   public void init(Vertx vertx, JsonObject config, RouteMatcher rm, Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
@@ -283,7 +290,7 @@ public class TimetableController extends BaseController {
       public void handle(Throwable event) {
         importInProgress.remove(structureIdentifier);
         badRequest(request, event.getMessage());
-        deleteImportPath(vertx, path);
+        deleteImportPath(vertx, storage, path);
       }
     });
     request.uploadHandler(upload -> {
@@ -291,7 +298,7 @@ public class TimetableController extends BaseController {
       upload.streamToFileSystem(filename).onComplete(event -> {
         Handler<Either<JsonObject, JsonObject>> hnd = result -> {
           importInProgress.remove(structureIdentifier);
-          reportResponseHandler(vertx, path, request).handle(result);
+          reportResponseHandler(vertx, storage, path, request).handle(result);
         };
 
         if (feederImport != true) {
