@@ -296,5 +296,7 @@
   "xtnotifications.never": "Jamais",
   "xtnotifications.title": "Mes notifications externes",
   "xtnotifications.validate": "Enregistrer",
-  "xtnotifications.weekly": "Hebdomadaire"
+  "xtnotifications.weekly": "Hebdomadaire",
+  "elea": "ELEA",
+  "elea.external_notification": "Notification depuis ELEA"
 }
