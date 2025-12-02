@@ -51,6 +51,7 @@ import org.entcore.common.mute.MuteHelper;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.notification.TimelineNotificationsLoader;
 import org.entcore.common.notification.NotificationUtils;
+import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.timeline.Timeline;
@@ -1025,14 +1026,14 @@ public class TimelineController extends BaseController {
 					@Override
 					public void handle(JsonObject json) {
 						final JsonArray recipientsId = json.getJsonArray("recipients", new JsonArray());
+						final String body = json.getString("body", "");
 
-						if (recipientsId == null || recipientsId.isEmpty()) {
-							badRequest(request, "Invalid sender or recipients");
+						if (recipientsId == null || recipientsId.isEmpty() || body.isEmpty()) {
+							badRequest(request, "Invalid recipients or body");
 							return;
 						}
 
-						final String subject = json.getString("subject", "");
-						final String body = json.getString("body", "");
+						final String senderId = json.getString("senderId", "");
 
 						final boolean pushMobile = json.getBoolean("pushMobile", false);
 
@@ -1040,9 +1041,14 @@ public class TimelineController extends BaseController {
 						final String mobileBody = json.getString("mobileBody", "");
 
 						JsonObject params = new JsonObject()
-								.put("subject", subject)
 								.put("body", body);
 
+
+						final String username = json.getString("username", "");
+						if(senderId != null && !senderId.isEmpty() && !username.isEmpty()) {
+							params.put("username", username);
+							params.put("uri", "/userbook/annuaire#" + senderId + "#");
+						}
 						if (pushMobile && !mobileTitle.isEmpty()) {
 							JsonObject pushNotif = new JsonObject()
 									.put("title", mobileTitle)
@@ -1051,18 +1057,118 @@ public class TimelineController extends BaseController {
 							params.put("pushNotif", pushNotif);
 						}
 
-						String resource = "external_notification";
-
-						if ("elea".equals(projectId)) {
-							resource = "external_notification_elea";
+					// Ajouter le projectId dans les params pour utilisation dans le template
+					params.put("projectId", projectId);
+					
+					final String resource = "external_notification";
+					final String resourceId = String.valueOf(System.currentTimeMillis()) + resource;
+					final List<String> recipientsList = recipientsId.getList();
+					
+					// Utiliser le projectId comme nom d'application
+					final String appName = projectId;
+					
+					// Construire le nom de la notification : {projectId}.external_notification
+					// Exemple: "elea.external_notification" ou "monapp.external_notification"
+					final String notificationName = (appName + "." + resource).toLowerCase();
+					
+					// Récupérer la notification directement sans passer par le bus
+					TimelineNotificationsLoader.getInstance(vertx).getNotification(notificationName, notification -> {
+						if (notification == null || notification.isEmpty()) {
+							log.error("Failed to retrieve notification: " + notificationName);
+							// badRequest(request, "Invalid notification name: " + notificationName);
+							// return;
 						}
-
-						timelineHelper.notifyTimeline(request, "timeline." + resource, null,
-								recipientsId.getList(),
-								System.currentTimeMillis() + resource, params);
-
-						ok(request);
+						
+						log.info("Using notification template: " + notificationName);
+						processNotificationWithTemplate(notification, notificationName, request, 
+								recipientsList, resourceId, params, projectId, senderId);
+					});
 					}
 				});
 	}
+
+		/**
+	 * Traite une notification avec le template spécifié.
+	 * Cette méthode exécute directement la logique du case "add" sans passer par le bus.
+	 * 
+	 * @param notification Le JsonObject de la notification chargée
+	 * @param notificationName Le nom complet de la notification (ex: "timeline.external_notification_elea")
+	 * @param request La requête HTTP
+	 * @param recipientsList La liste des IDs des destinataires
+	 * @param resourceId L'ID de la ressource
+	 * @param params Les paramètres à passer au template (incluant projectId)
+	 * @param projectId L'ID du projet (pour logging)
+	 */
+		private void processNotificationWithTemplate(final JsonObject notification, final String notificationName,
+			final HttpServerRequest request, final List<String> recipientsList, final String resourceId,
+			final JsonObject params, final String projectId, final String senderId) {
+		
+		// Construire le JsonObject event comme le fait notifyTimeline
+		JsonArray recipients = new JsonArray();
+		for (String userId : recipientsList) {
+			recipients.add(new JsonObject().put("userId", userId).put("unread", 1));
+		}
+
+		final JsonObject event = new JsonObject()
+				.put("action", "add")
+				.put("type", notification.getString("type"))
+				.put("event-type", notification.getString("event-type"))
+				.put("recipients", recipients)
+				.put("recipientsIds", new JsonArray(recipientsList))
+				.put("resource", resourceId)
+				.put("sender", senderId) // Pour éviter l'anti-flood
+				.put("disableAntiFlood", true);
+
+		// Gérer pushNotif et disableMailNotification depuis params
+		event.put("pushNotif", params.remove("pushNotif"));
+		event.put("disableMailNotification", params.remove("disableMailNotification"));
+
+		// Ajouter les paramètres et la notification
+		event.put("params", params)
+				.put("notificationName", notificationName)
+				.put("notification", notification)
+				.put("request", new JsonObject().put("headers",
+						new JsonObject()
+								.put("Host", Renders.getHost(request))
+								.put("X-Forwarded-Proto", Renders.getScheme(request))
+								.put("Accept-Language", request.headers().get("Accept-Language"))
+				));
+
+		// Exécuter directement le code du case "add" sans passer par le bus
+		final String sender = event.getString("sender");
+		if (sender == null || sender.startsWith("no-reply") || event.getBoolean("disableAntiFlood", false) || antiFlood.add(sender)) {
+			this.removeMutersFromRecipientList(event)
+			.onComplete(notificationResult -> {
+				final JsonObject notificationToAdd = notificationResult.succeeded() ? notificationResult.result() : event;
+				store.add(notificationToAdd, new Handler<JsonObject>() {
+					public void handle(JsonObject result) {
+						// IF call only when recipient size > maxRecipientLength (10k by default)
+						// timer for performance (thread block) reasons
+						if (result.containsKey(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS)) {
+							final JsonArray chunkedNotifications = result.getJsonArray(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS);
+							result.remove(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS);
+							for (int i = 0; i < chunkedNotifications.size(); i++) {
+								final JsonObject cn = chunkedNotifications.getJsonObject(i);
+								vertx.setTimer((i* IMMEDIATE_NOTIF_DELAY_BY_CHUNK) + 1000L, t -> {
+									final JsonArray chunkRecipientsIds = cn.getJsonArray("recipientsIds");
+									log.info("Launch chunked immediate notification. Recipients :  " +
+										(chunkRecipientsIds != null ? chunkRecipientsIds.size():0));
+									notificationHelper.sendImmediateNotifications(new JsonHttpServerRequest(cn.getJsonObject("request")), cn);
+								});
+							}
+						} else {
+							notificationHelper.sendImmediateNotifications(new JsonHttpServerRequest(notificationToAdd.getJsonObject("request")), notificationToAdd);
+						}
+						ok(request);
+					}
+				});
+			});
+			if (refreshTypesCache && eventTypes != null && !eventTypes.contains(event.getString("type"))) {
+				eventTypes = null;
+			}
+		} else {
+			badRequest(request, "flood");
+		}
+	}
+
 }
