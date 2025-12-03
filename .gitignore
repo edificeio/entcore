@@ -94,7 +94,7 @@ conversation/src/main/resources/view/
 **/backend/**/resources/public/*.*
 # Ignore HTML files in "backend/view" folders
 **/backend/**/resources/view/*.html
-broker-parent/broker-client
+#broker-parent/broker-client
 .env
 dependency-reduced-pom.xml
 .flattened-pom.xml
