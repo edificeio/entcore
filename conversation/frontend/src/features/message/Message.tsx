@@ -4,7 +4,7 @@ import { MessageBody } from '~/components/MessageBody';
 import { MessageHeader } from '~/features/message/components/MessageHeader';
 import { Message as MessageData } from '~/models';
 import { MessageNavigation } from './components/MessageNavigation';
-import { Alert } from '@edifice.io/react';
+import { Alert, useEdificeClient } from '@edifice.io/react';
 import { useI18n } from '~/hooks/useI18n';
 
 export interface MessageProps {
@@ -14,6 +14,7 @@ export interface MessageProps {
 
 export function Message({ message, isPrint }: MessageProps) {
   const className = clsx('d-flex flex-column gap-16', { 'my-16': isPrint });
+  const { user } = useEdificeClient();
   const { t } = useI18n();
 
   return (
@@ -28,7 +29,9 @@ export function Message({ message, isPrint }: MessageProps) {
           <footer className="d-print-none d-flex justify-content-end gap-12 pt-24 border-top ">
             {message.noReply && (
               <Alert type="warning" className="flex-grow-1">
-                {t('noReply.enabled.warning')}
+                {message.from?.id === user?.userId
+                  ? t('noReply.enabled.warning.sender')
+                  : t('noReply.enabled.warning.recipient')}
               </Alert>
             )}
 
