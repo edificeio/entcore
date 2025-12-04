@@ -54,6 +54,14 @@ public interface SchoolService {
 
 	void listChildren(String structureId, Handler<Either<String, JsonArray>> results);
 
+	/**
+	 * Retrieve all structures. Fields to retrieve can be specified by the fields param,
+	 * a filter on structureIds can be specified by the param structureIds
+	 *
+	 * @param fields list of string of field on structure in neo4j
+	 * @param structureIds list of ids of structure for filter them
+	 * @param results structures
+	 */
 	void list(JsonArray fields, JsonArray structureIds, Handler<Either<String, JsonArray>> results);
 
 	void updateAndLog(UserInfos user, String structureId, JsonObject body, Handler<Either<String,JsonObject>> eitherHandler);
