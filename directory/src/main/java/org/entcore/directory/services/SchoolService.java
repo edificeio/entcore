@@ -54,7 +54,7 @@ public interface SchoolService {
 
 	void listChildren(String structureId, Handler<Either<String, JsonArray>> results);
 
-	void list(JsonArray fields, Handler<Either<String, JsonArray>> results);
+	void list(JsonArray fields, JsonArray structureIds, Handler<Either<String, JsonArray>> results);
 
 	void updateAndLog(UserInfos user, String structureId, JsonObject body, Handler<Either<String,JsonObject>> eitherHandler);
 
