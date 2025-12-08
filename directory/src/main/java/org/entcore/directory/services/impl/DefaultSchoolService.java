@@ -221,17 +221,23 @@ public class DefaultSchoolService implements SchoolService {
 
 
 	@Override
-	public void list(JsonArray fields, Handler<Either<String, JsonArray>> results) {
-		if (fields == null || fields.size() == 0) {
+	public void list(JsonArray fields, JsonArray structureIds, Handler<Either<String, JsonArray>> results) {
+		if (fields == null || fields.isEmpty()) {
 			fields = new JsonArray().add("id").add("externalId").add("name").add("UAI");
 		}
+		JsonObject params = new JsonObject();
 		StringBuilder query = new StringBuilder();
-		query.append("MATCH (s:Structure) RETURN ");
+		String filter = "";
+		if (structureIds != null && !structureIds.isEmpty()) {
+			filter = " WHERE s.id IN {ids} ";
+			params.put("ids", structureIds);
+		}
+		query.append("MATCH (s:Structure) ").append(filter).append(" RETURN ");
 		for (Object field : fields) {
 			query.append(" s.").append(field).append(" as ").append(field).append(",");
 		}
 		query.deleteCharAt(query.length() - 1);
-		neo.execute(query.toString(), (JsonObject) null, validResultHandler(results));
+		neo.execute(query.toString(), params, validResultHandler(results));
 	}
 
 	@Override
