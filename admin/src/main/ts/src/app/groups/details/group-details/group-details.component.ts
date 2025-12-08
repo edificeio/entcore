@@ -14,6 +14,7 @@ import { GroupsService } from '../../groups.service';
 import { GroupsStore } from '../../groups.store';
 import { GroupIdAndInternalCommunicationRule } from '../group-internal-communication-rule.resolver';
 import { UserPositionService } from 'src/app/core/services/user-position.service';
+import type { Config } from "src/app/core/resolvers/Config";
 
 @Component({
     selector: 'ode-group-detail',
@@ -22,6 +23,7 @@ import { UserPositionService } from 'src/app/core/services/user-position.service
     changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDestroy {
+    private config: Config;
     public internalCommunicationRule: InternalCommunicationRule | undefined;
     public showAddUsersLightBox = false;
     public $toggleCommunicationRuleClicked: Subject<GroupModel> = new Subject();
@@ -74,6 +76,8 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
             map((data: GroupIdAndInternalCommunicationRule) => data.internalCommunicationRule),
             tap(rule => this.internalCommunicationRule = rule)
         );
+
+        this.route.data.subscribe(data => this.config = data.config as Config)
 
         const groupChangesObserver = this.route.params
             .pipe(
@@ -273,6 +277,10 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
         const group = this.groupsStore.group;
         const session: Session = await SessionModel.getSession();
         this.canLockGroup = group.type === "ManualGroup" && !group.subType && session.isADMC();
+    }
+
+    public showManualGroupAutolink(): boolean {
+        return this.config?.['enable-manual-group-autolink'] ?? false;
     }
 
     switchLockedStatus() {

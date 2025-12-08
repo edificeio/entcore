@@ -10,4 +10,5 @@ export interface Config {
     'hide-personal-data': boolean;
     'mass-messaging-enabled': boolean;
     'allow-adml-structure-name-change': boolean;
+    'enable-manual-group-autolink': boolean;
 }
