@@ -308,8 +308,14 @@ public class GroupController extends BaseController {
 
 	@Post("/group/:groupId/setManualGroupAutolinkUsersPositions")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-    @ResourceFilter(AdminFilter.class)
+	@ResourceFilter(AdminFilter.class)
 	public void setManualGroupAutolinkUsersPositions(final HttpServerRequest request) {
+		final Boolean isFeatureEnabled = config.getBoolean("enable-manual-group-autolink", false);
+		if (!isFeatureEnabled) {
+			forbidden(request);
+			return;
+		}
+
 		final String groupId = request.params().get("groupId");
 		if (groupId != null && !groupId.trim().isEmpty()) {
 			bodyToJson(request, body -> {

@@ -8,7 +8,7 @@ import { GroupsResolver } from "./groups.resolver";
 import { GroupDetailsResolver } from "./details/group-details.resolver";
 import { GroupInternalCommunicationRuleResolver } from "./details/group-internal-communication-rule.resolver";
 import { SmartGroupCommunicationComponent } from "./communication/smart-group-communication/smart-group-communication.component";
-import { GroupInfoComponent } from "./info/group-info.component";
+import { ConfigResolver } from "../core/resolvers/config.resolver";
 import { ClassesComponent } from "./classes/classes.component";
 import { ClassDetailsComponent } from "./classes/details/class-details.component";
 import { ClassCreateComponent } from "./classes/create/class-create.component";
@@ -47,6 +47,7 @@ export let routes: Routes = [
             resolve: {
               group: GroupDetailsResolver,
               rule: GroupInternalCommunicationRuleResolver,
+              config: ConfigResolver,
             },
           },
           {
