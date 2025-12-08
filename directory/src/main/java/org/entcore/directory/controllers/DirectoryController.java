@@ -596,7 +596,7 @@ public class DirectoryController extends BaseController {
 				userService.list(groupIds, userIds, itSelf, excludeId, busArrayHandler(message));
 				break;
 			case "list-structures" :
-				schoolService.list(message.body().getJsonArray("fields"), busArrayHandler(message));
+				schoolService.list(message.body().getJsonArray("fields"), message.body().getJsonArray("structureIds") , busArrayHandler(message));
 				break;
 			case "list-groups" :
 				String structureId = message.body().getString("structureId");
