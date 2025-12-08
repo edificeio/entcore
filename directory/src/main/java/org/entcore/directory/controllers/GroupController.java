@@ -308,8 +308,14 @@ public class GroupController extends BaseController {
 
 	@Post("/group/:groupId/setManualGroupAutolinkUsersPositions")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-    @ResourceFilter(AdminFilter.class)
+	@ResourceFilter(AdminFilter.class)
 	public void setManualGroupAutolinkUsersPositions(final HttpServerRequest request) {
+		final Boolean isFeatureEnabled = config.getBoolean("enable-manual-group-autolink", false);
+		if (!isFeatureEnabled) {
+			forbidden(request);
+			return;
+		}
+
 		final String groupId = request.params().get("groupId");
 		if (groupId != null && !groupId.trim().isEmpty()) {
 			bodyToJson(request, body -> {
@@ -327,18 +333,23 @@ public class GroupController extends BaseController {
 		}
 	}
 
-    @Post("/group/updateManualGroupsByUserPositions")
-    @SecuredAction(value = "", type = ActionType.RESOURCE)
-    @ResourceFilter(AdminFilter.class)
-    public void updateManualGroupsByUserPositions(final HttpServerRequest request) {
-        bodyToJson(request, body -> {
-            final String userPositionName = body.getString("name");
+	@Post("/group/updateManualGroupsByUserPositions")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@ResourceFilter(AdminFilter.class)
+	public void updateManualGroupsByUserPositions(final HttpServerRequest request) {
+		final Boolean isFeatureEnabled = config.getBoolean("enable-manual-group-autolink", false);
+		if (!isFeatureEnabled) {
+			forbidden(request);
+			return;
+		}
+		bodyToJson(request, body -> {
+			final String userPositionName = body.getString("name");
 
-            if (userPositionName != null && !userPositionName.trim().isEmpty()) {
-                groupService.updateManualGroupsByUserPositions(userPositionName, defaultResponseHandler(request));
-            } else {
-                badRequest(request, "invalid.user.position");
-            }
-        });
-    }
+			if (userPositionName != null && !userPositionName.trim().isEmpty()) {
+				groupService.updateManualGroupsByUserPositions(userPositionName, defaultResponseHandler(request));
+			} else {
+				badRequest(request, "invalid.user.position");
+			}
+		});
+	}
 }

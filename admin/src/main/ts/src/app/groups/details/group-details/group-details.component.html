@@ -105,7 +105,7 @@
 </ode-group-autolink>
 
 <ode-manual-group-autolink
-        *ngIf="groupsStore.group?.lockDelete != true"
+        *ngIf="groupsStore.group?.lockDelete != true && showManualGroupAutolink()"
         [group]="groupsStore.group"
         [structure]="groupsStore.structure"
         [usersPositionsOptions]="autolinkUserPositionOptions"
