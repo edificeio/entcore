@@ -227,48 +227,45 @@ public class StructureController extends BaseController {
 		JsonArray fields = new JsonArray().add("id").add("externalId").add("name").add("UAI")
 				.add("address").add("zipCode").add("city").add("phone").add("academy");
 		if ("XML".equalsIgnoreCase(format)) {
-			structureService.list(fields, new Handler<Either<String, JsonArray>>() {
-				@Override
-				public void handle(Either<String, JsonArray> event) {
-					if (event.isRight()) {
-						JsonArray r = event.right().getValue();
-						Ent ent = new Ent();
-						for (Object o: r) {
-							if (!(o instanceof JsonObject)) continue;
-							JsonObject j = (JsonObject) o;
-							Ent.Etablissement etablissement = new Ent.Etablissement();
-							etablissement.setEtablissementId(j.getString("UAI", ""));
-							etablissement.setEtablissementUid(j.getString("UAI", ""));
-							etablissement.setCodePorteur(j.getString("academy", ""));
-							etablissement.setNomCourant(j.getString("name", ""));
-							etablissement.setAdressePlus(j.getString("address", ""));
-							etablissement.setCodePostal(j.getString("zipCode", ""));
-							etablissement.setVille(j.getString("city", ""));
-							etablissement.setTelephone(j.getString("phone", ""));
-							etablissement.setFax("");
-							ent.getEtablissement().add(etablissement);
-						}
-						try {
-							StringWriter response = new StringWriter();
-							JAXBContext context = JAXBContext.newInstance(Ent.class);
-							Marshaller marshaller = context.createMarshaller();
-							marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
-							marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-							marshaller.marshal(ent, response);
-							request.response().putHeader("content-type", "application/xml");
-							request.response().end(response.toString());
-						} catch (JAXBException e) {
-							log.error(e.toString(), e);
-							request.response().setStatusCode(500);
-							request.response().end(e.getMessage());
-						}
-					} else {
-						leftToResponse(request, event.left());
-					}
-				}
-			});
+			structureService.list(fields, new JsonArray(), event -> {
+                if (event.isRight()) {
+                    JsonArray r = event.right().getValue();
+                    Ent ent = new Ent();
+                    for (Object o: r) {
+                        if (!(o instanceof JsonObject)) continue;
+                        JsonObject j = (JsonObject) o;
+                        Ent.Etablissement etablissement = new Ent.Etablissement();
+                        etablissement.setEtablissementId(j.getString("UAI", ""));
+                        etablissement.setEtablissementUid(j.getString("UAI", ""));
+                        etablissement.setCodePorteur(j.getString("academy", ""));
+                        etablissement.setNomCourant(j.getString("name", ""));
+                        etablissement.setAdressePlus(j.getString("address", ""));
+                        etablissement.setCodePostal(j.getString("zipCode", ""));
+                        etablissement.setVille(j.getString("city", ""));
+                        etablissement.setTelephone(j.getString("phone", ""));
+                        etablissement.setFax("");
+                        ent.getEtablissement().add(etablissement);
+                    }
+                    try {
+                        StringWriter response = new StringWriter();
+                        JAXBContext context = JAXBContext.newInstance(Ent.class);
+                        Marshaller marshaller = context.createMarshaller();
+                        marshaller.setProperty(Marshaller.JAXB_FRAGMENT, true);
+                        marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+                        marshaller.marshal(ent, response);
+                        request.response().putHeader("content-type", "application/xml");
+                        request.response().end(response.toString());
+                    } catch (JAXBException e) {
+                        log.error(e.toString(), e);
+                        request.response().setStatusCode(500);
+                        request.response().end(e.getMessage());
+                    }
+                } else {
+                    leftToResponse(request, event.left());
+                }
+            });
 		} else {
-			structureService.list(fields, arrayResponseHandler(request));
+			structureService.list(fields,new JsonArray(), arrayResponseHandler(request));
 		}
 	}
 
