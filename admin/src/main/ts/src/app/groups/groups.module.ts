@@ -9,6 +9,7 @@ import { routes } from "./groups.routing";
 import { GroupsResolver } from "./groups.resolver";
 import { GroupDetailsResolver } from "./details/group-details.resolver";
 import { GroupInternalCommunicationRuleResolver } from "./details/group-internal-communication-rule.resolver";
+import { ConfigResolver } from "../core/resolvers/config.resolver";
 import { GroupsStore } from "./groups.store";
 import { GroupNameService } from "../core/services/group-name.service";
 import { UserlistFiltersService } from "../core/services/userlist.filters.service";
@@ -72,6 +73,7 @@ import { ManualGroupAutolinkComponent } from "./details/group-details/manual-aut
     GroupsResolver,
     GroupDetailsResolver,
     GroupInternalCommunicationRuleResolver,
+    ConfigResolver,
     GroupsStore,
     UserlistFiltersService,
     GroupNameService,
