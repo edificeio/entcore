@@ -228,6 +228,8 @@ public class Auth extends BaseServer {
 
 		addController(new RedirectController());
 
+		addController(new CarbonioPreauthController());
+
 		if (jwtVerifier != null) {
 			DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(null));
 			((OAuthDataHandler) data).getClientsByGrantType(vertx, jwtVerifier);
