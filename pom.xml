@@ -60,10 +60,10 @@
         <revision>6.12.5</revision>
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
-        <modPostgresVersion>2.0.1</modPostgresVersion>
-        <modMongoVersion>4.0.2</modMongoVersion>
-        <webUtilsVersion>3.2.1</webUtilsVersion>
-        <mongodbHelperVersion>3.0.3</mongodbHelperVersion>
+        <modPostgresVersion>2.0-SNAPSHOT</modPostgresVersion>
+        <modMongoVersion>4.0-develop-pedago-SNAPSHOT</modMongoVersion>
+        <webUtilsVersion>3.2-develop-pedago-SNAPSHOT</webUtilsVersion>
+        <mongodbHelperVersion>3.0-develop-pedago-SNAPSHOT</mongodbHelperVersion>
         <jodaTimeVersion>2.9.4</jodaTimeVersion>
         <scramVersion>2.1</scramVersion>
         <micrometerPrometheusVersion>1.11.4</micrometerPrometheusVersion>
