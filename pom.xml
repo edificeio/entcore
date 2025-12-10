@@ -60,8 +60,8 @@
         <revision>6.10-zookeeper-SNAPSHOT</revision>
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
-        <modPostgresVersion>2.0-SNAPSHOT</modPostgresVersion>
-        <modMongoVersion>4.0-SNAPSHOT</modMongoVersion>
+        <modPostgresVersion>2.0-zookeeper-SNAPSHOT</modPostgresVersion>
+        <modMongoVersion>4.1-zookeeper-SNAPSHOT</modMongoVersion>
         <webUtilsVersion>3.2-zookeeper-SNAPSHOT</webUtilsVersion>
         <mongodbHelperVersion>3.0-zookeeper-SNAPSHOT</mongodbHelperVersion>
         <jodaTimeVersion>2.9.4</jodaTimeVersion>

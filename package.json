@@ -77,7 +77,7 @@
     "karma-jasmine": "~1.1.0",
     "karma-jasmine-html-reporter": "^0.2.2",
     "merge2": "^1.0.3",
-    "ode-ngjs-front": "dev",
+    "ode-ngjs-front": "zookeeper",
     "ode-ts-client": "dev",
     "rxjs": "5.4.2",
     "sass-loader": "^13.0.2",
