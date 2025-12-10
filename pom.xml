@@ -58,6 +58,7 @@
 
     <properties>
         <revision>6.12-SNAPSHOT</revision>
+        <revision>6.11-SNAPSHOT</revision>
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
         <modPostgresVersion>2.0-SNAPSHOT</modPostgresVersion>
