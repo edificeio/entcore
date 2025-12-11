@@ -22,13 +22,15 @@ import static org.entcore.common.sql.Sql.parseId;
 import static org.entcore.common.sql.SqlResult.*;
 import static org.entcore.common.user.DefaultFunctions.ADMIN_LOCAL;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlStatementsBuilder;
@@ -140,15 +142,31 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 	@Override
 	public void listForUser(UserInfos user, String lang, String domain, Handler<Either<String, JsonArray>> handler) {
 		getUserPositions(user.getUserId()).onSuccess(myPositions -> {
-			String myStructuresIds = formatIdsForSqlIn(user.getStructures());
-
-			List<String> adminLocalScope = Optional.ofNullable(user.getFunctions())
-					.map(functions -> functions.get(ADMIN_LOCAL))
-					.map(function -> function.getScope())
-					.orElse(Collections.emptyList());
-
-			String myADMLStructuresId = formatIdsForSqlIn(adminLocalScope);
-			boolean isADMLOfOneStructure = !adminLocalScope.isEmpty();
+			String myStructuresIds;
+			String myADMLStructuresId;
+			boolean isADMLOfOneStructure;
+			try {
+				myStructuresIds = String.join(",",
+						user.getStructures().stream().map(id -> "'" + id + "'").toArray(String[]::new));
+				if (myStructuresIds.isEmpty())
+					myStructuresIds = "NULL";
+			} catch (Exception e) {
+				myStructuresIds = "NULL";
+			}
+			try {
+				myADMLStructuresId = String.join(",",
+						user.getFunctions().get(ADMIN_LOCAL).getScope().stream().map(id -> "'" + id + "'")
+								.toArray(String[]::new));
+				if (myADMLStructuresId.isEmpty())
+					myADMLStructuresId = "NULL";
+			} catch (Exception e) {
+				myADMLStructuresId = "NULL";
+			}
+			try {
+				isADMLOfOneStructure = !user.getFunctions().get(ADMIN_LOCAL).getScope().isEmpty();
+			} catch (Exception e) {
+				isADMLOfOneStructure = false;
+			}
 
 			// we don't need to check if the message is in the user's language he has to see it
 			// A distinction is made on structureId to disambiguate V1 and V2 and apply domain filter only on V1
@@ -196,30 +214,21 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 			}
 
 			JsonArray results = neo4jResult.body().getJsonArray("result");
-			List<String> positionNames = Optional.ofNullable(results)
+			String myPositions = Optional.ofNullable(results)
 					.filter(arr -> !arr.isEmpty())
 					.map(arr -> arr.stream()
 							.filter(obj -> obj instanceof JsonObject)
 							.map(obj -> (JsonObject) obj)
 							.filter(position -> position.containsKey("name"))
 							.map(position -> position.getString("name"))
-							.collect(Collectors.toList()))
-					.orElse(Collections.emptyList());
+							.map(name -> "'" + name.replace("'", "''") + "'")
+							.collect(Collectors.joining(",")))
+					.orElse("NULL");
 
-			String myPositions = formatIdsForSqlIn(positionNames);
 			promise.complete(myPositions);
 		});
 
 		return promise.future();
-	}
-
-	private String formatIdsForSqlIn(List<String> ids) {
-		return Optional.ofNullable(ids)
-				.filter(list -> !list.isEmpty())
-				.map(list -> list.stream()
-						.map(id -> "'" + id + "'")
-						.collect(Collectors.joining(",")))
-				.orElse("NULL");
 	}
 
 	@Override
