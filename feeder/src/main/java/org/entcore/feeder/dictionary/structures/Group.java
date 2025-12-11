@@ -315,7 +315,7 @@ public class Group {
 
 		final String removeQuery =
 				"MATCH (g:ManualGroup {id: {groupId}})<-[old:IN]-(:User) " +
-                        "WHERE (EXISTS(g.autolinkUsersFromGroups) OR EXISTS(g.autolinkUsersFromPositions)) OR EXISTS(g.manualGroupAutolinkUsersPositions) " +
+						"WHERE (EXISTS(g.autolinkUsersFromGroups) OR EXISTS(g.autolinkUsersFromPositions) OR EXISTS(g.manualGroupAutolinkUsersPositions)) " +
 				" AND old.source = 'AUTO' AND (NOT EXISTS(old.updated) OR old.updated <> {now}) " +
 				"DELETE old ";
 
