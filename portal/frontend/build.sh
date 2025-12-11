@@ -55,6 +55,10 @@ init () {
     echo "[init] Get branch name from git..."
     BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
   fi
+  if [ ! -z "$FRONT_TAG" ]; then
+    echo "[buildNode] Get tag name from jenkins param... $FRONT_TAG"
+    BRANCH_NAME="$FRONT_TAG"
+  fi
 
   echo "[init] Generate package.json from package.json.template..."
   NPM_VERSION_SUFFIX=`date +"%Y%m%d%H%M"`

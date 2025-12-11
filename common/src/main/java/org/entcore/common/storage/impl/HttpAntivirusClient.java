@@ -51,13 +51,17 @@ public class HttpAntivirusClient implements AntivirusClient {
 		this.httpClient = vertx.createHttpClient(options);
 		this.credential = cretential;
 
-		final String eventStoreConf = (String) vertx.sharedData().getLocalMap("server").get("event-store");
-        if (eventStoreConf != null) {
-            final JsonObject eventStoreConfig = new JsonObject(eventStoreConf);
-            this.platformId = eventStoreConfig.getString("platform");
-        } else {
-            this.platformId = null;
-        }
+		vertx.sharedData().<String, String>getLocalAsyncMap("server")
+            .compose(serverMap -> serverMap.get("event-store"))
+            .onSuccess(eventStoreConf -> {
+                if (eventStoreConf != null) {
+                    final JsonObject eventStoreConfig = new JsonObject(eventStoreConf);
+                    platformId = eventStoreConfig.getString("platform");
+                } else {
+                    platformId = null;
+                }
+            })
+            .onFailure(ex ->log.error("Error when get platformId in event-store server map (HttpAntivirusClient)", ex));
 	}
 
   @Override

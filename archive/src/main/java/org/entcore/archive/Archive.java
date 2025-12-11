@@ -20,11 +20,14 @@
 package org.entcore.archive;
 
 import fr.wseduc.cron.CronTrigger;
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.security.RSA;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.shareddata.LocalMap;
+import io.vertx.core.shareddata.AsyncMap;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.archive.controllers.ArchiveController;
 import org.entcore.archive.controllers.ImportController;
 import org.entcore.archive.controllers.DuplicationController;
@@ -51,13 +54,19 @@ public class Archive extends BaseServer {
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
-		setResourceProvider(new ArchiveFilter());
-		super.start(startPromise);
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future()
+				.compose(init -> StorageFactory.build(vertx, config))
+				.compose(storageFactory -> SharedDataHelper.getInstance().<String, String>getLocalAsyncMap("server")
+						.map(archiveConfigMap -> Pair.of(storageFactory, archiveConfigMap)))
+				.compose(configPair -> initArchives(configPair.getLeft(), configPair.getRight()))
+				.onComplete(startPromise);
+	}
 
-		Storage storage = new StorageFactory(vertx, config).getStorage();
-
-		final Map<String, Long> archiveInProgress = MapFactory.getSyncClusterMap(Archive.ARCHIVES, vertx);
-		final LocalMap<Object, Object> serverMap = vertx.sharedData().getLocalMap("server");
+	public Future<Void> initArchives(final StorageFactory storageFactory, final AsyncMap<String, String> archivesMap){
+		setDefaultResourceFilter(new ArchiveFilter());
+		Storage storage = storageFactory.getStorage();
 
 		Integer storageTimeout = config.getInteger("import-storage-timeout", 600);
 		String exportPath = config.getString("export-path", System.getProperty("java.io.tmpdir"));
@@ -65,15 +74,21 @@ public class Archive extends BaseServer {
 		String privateKeyPath = config.getString("archive-private-key", null);
 		boolean forceEncryption = config.getBoolean("force-encryption", false); //TODO: Set the default to true when it is safe to do so
 
-		serverMap.put("archiveConfig", new JsonObject().put("storageTimeout", storageTimeout).encode());
+		archivesMap.put("archiveConfig", new JsonObject().put("storageTimeout", storageTimeout).encode());
 
-		PrivateKey signKey = RSA.loadPrivateKey(vertx, privateKeyPath);
-		PublicKey verifyKey = RSA.loadPublicKey(vertx, privateKeyPath);
+		PrivateKey signKey;
+		PublicKey verifyKey;
+		try {
+			signKey = RSA.loadPrivateKey(vertx, privateKeyPath);
+			verifyKey = RSA.loadPublicKey(vertx, privateKeyPath);
+		} catch (Exception e) {
+			return Future.failedFuture(e);
+		}
 
 		ImportService importService = new DefaultImportService(vertx, config, storage, importPath, null, verifyKey, forceEncryption);
 
-		ArchiveController ac = new ArchiveController(storage, archiveInProgress, signKey, forceEncryption);
-		ImportController ic = new ImportController(importService, storage, archiveInProgress);
+		ArchiveController ac = new ArchiveController(storage, signKey, forceEncryption);
+		ImportController ic = new ImportController(importService, storage);
 		DuplicationController dc = new DuplicationController(vertx, storage, importPath, signKey, verifyKey, forceEncryption);
 
 		addController(ac);
@@ -85,7 +100,7 @@ public class Archive extends BaseServer {
 			try {
 				new CronTrigger(vertx, purgeArchivesCron).schedule(
 						new DeleteOldArchives(vertx,
-								new StorageFactory(vertx, config).getStorage(),
+								storageFactory.getStorage(),
 								config.getInteger("deleteDelay", 24),
 								exportPath,
 								importService,
@@ -127,6 +142,7 @@ public class Archive extends BaseServer {
 				log.error("Invalid cron expression.", e);
 			}
 		}
+		return Future.succeededFuture();
 	}
 
 }

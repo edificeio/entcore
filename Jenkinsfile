@@ -39,6 +39,11 @@ pipeline {
           }
         }
       }
+        stage('Build image') {
+            steps {
+                sh 'edifice image'
+            }
+        }
     }
   post {
     cleanup {

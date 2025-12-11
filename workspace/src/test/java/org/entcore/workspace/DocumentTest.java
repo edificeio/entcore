@@ -76,30 +76,33 @@ public class DocumentTest {
         test.database().initNeo4j(context, neo4jContainer);
         final ShareService shareService = test.share().createMongoShareService(context,
                 DocumentDao.DOCUMENTS_COLLECTION);
-        final Storage storage = new StorageFactory(test.vertx(), new JsonObject().put("file-system", new JsonObject().put("path", "/tmp")),
+        StorageFactory.build(test.vertx(), new JsonObject().put("file-system", new JsonObject().put("path", "/tmp")),
                 new MongoDBApplicationStorage(DocumentDao.DOCUMENTS_COLLECTION, Workspace.class.getSimpleName()))
-                .getStorage();
-        final String imageResizerAddress = "wse.image.resizer";
-        final FolderManager folderManager = FolderManager.mongoManager(DocumentDao.DOCUMENTS_COLLECTION, storage,
-                test.vertx(), shareService, imageResizerAddress, false);
-        final boolean neo4jPlugin = false;
-        final QuotaService quotaService = new DefaultQuotaService(neo4jPlugin,
-                new TimelineHelper(test.vertx(), test.vertx().eventBus(), new JsonObject()));
-        final int threshold = 80;
-        workspaceService = new DefaultWorkspaceService(storage, MongoDb.getInstance(), threshold, imageResizerAddress,
-                quotaService, folderManager, test.vertx(), shareService, false);
-        test.database().initMongo(context, mongoContainer);
-        final Async async = context.async();
-        test.directory().createActiveUser("user1", "password", "email").onComplete(res -> {
-            context.assertTrue(res.succeeded());
-            userid = res.result();
-            async.complete();
-        });
-        final Async async2 = context.async();
-        test.directory().createActiveUser(test.http().sessionUser()).onComplete(r -> {
-            context.assertTrue(r.succeeded());
-            async2.complete();
-        });
+            .onSuccess(storageFactory -> {
+                Storage storage = storageFactory.getStorage();
+                final String imageResizerAddress = "wse.image.resizer";
+                final FolderManager folderManager = FolderManager.mongoManager(DocumentDao.DOCUMENTS_COLLECTION, storage,
+                        test.vertx(), shareService, imageResizerAddress, false);
+                final boolean neo4jPlugin = false;
+                final QuotaService quotaService = new DefaultQuotaService(neo4jPlugin,
+                        new TimelineHelper(test.vertx(), test.vertx().eventBus(), new JsonObject()));
+                final int threshold = 80;
+                workspaceService = new DefaultWorkspaceService(storage, MongoDb.getInstance(), threshold, imageResizerAddress,
+                        quotaService, folderManager, test.vertx(), shareService, false);
+                test.database().initMongo(context, mongoContainer);
+                final Async async = context.async();
+                test.directory().createActiveUser("user1", "password", "email").onComplete(res -> {
+                    context.assertTrue(res.succeeded());
+                    userid = res.result();
+                    async.complete();
+                });
+                final Async async2 = context.async();
+                test.directory().createActiveUser(test.http().sessionUser()).onComplete(r -> {
+                    context.assertTrue(r.succeeded());
+                    async2.complete();
+                });
+            })
+            .onFailure(ex -> context.fail(ex));
     }
 
     private ElementShareOperations readWrite(UserInfos user) {

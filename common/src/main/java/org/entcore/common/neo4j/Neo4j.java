@@ -59,6 +59,7 @@ public class Neo4j {
 	}
 
 	public void init(Vertx vertx, JsonObject config) {
+		log.info("Neo4j config : " + config.encode());
 		this.eb = Server.getEventBus(vertx);
 		JsonArray serverUris = config.getJsonArray("server-uris");
 		String serverUri = config.getString("server-uri");
@@ -78,7 +79,7 @@ public class Neo4j {
 						config.getBoolean("keepAlive", true),
 						config);
 			} catch (Exception e) {
-				log.error(e.getMessage(), e);
+				log.error("An error occurred while initializing Neo4j", e);
 			}
 		} else {
 			log.error("Invalid Neo4j URI");

@@ -22,6 +22,8 @@ package org.entcore.conversation;
 import java.text.ParseException;
 
 import static org.entcore.common.editor.ContentTransformerConfig.getContentTransformerConfig;
+
+import io.vertx.core.Future;
 import org.entcore.common.editor.ContentTransformerEventRecorderFactory;
 import org.entcore.common.editor.IContentTransformerEventRecorder;
 import org.entcore.common.http.BaseServer;
@@ -55,9 +57,16 @@ public class Conversation extends BaseServer {
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {
-		super.start(startPromise);
+		final Promise<Void> promise = Promise.promise();
+		super.start(promise);
+		promise.future()
+				.compose(init -> StorageFactory.build(vertx, config, new ConversationStorage()))
+				.compose(this::initConversation)
+				.onComplete(startPromise);
+	}
 
-		final Storage storage = new StorageFactory(vertx, config, new ConversationStorage()).getStorage();
+	public Future<Void> initConversation(StorageFactory storageFactory) {
+		final Storage storage = storageFactory.getStorage();
 
 		ContentTransformerFactoryProvider.init(vertx);
 		final JsonObject contentTransformerConfig = getContentTransformerConfig(vertx).orElse(null);
@@ -91,6 +100,7 @@ public class Conversation extends BaseServer {
 				log.error("Invalid cron expression.", e);
 			}
 		}
+		return Future.succeededFuture();
 	}
 
 }

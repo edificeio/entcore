@@ -27,6 +27,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.file.FileSystem;
+import org.entcore.common.storage.Storage;
 import org.entcore.common.utils.FileUtils;
 import org.entcore.feeder.exceptions.ValidationException;
 import org.entcore.feeder.utils.CSVUtil;
@@ -46,9 +47,10 @@ public class CsvReport extends Report {
 	private static final String CLASSES_MAPPING = "classesMapping";
 	private static final String HEADERS = "headers";
 	private final Vertx vertx;
+	private final Storage storage;
 	protected final ProfileColumnsMapper columnsMapper;
 
-	public CsvReport(Vertx vertx, JsonObject importInfos) {
+	public CsvReport(Vertx vertx, Storage storage, JsonObject importInfos) {
 		super(importInfos.getString("language", "fr"));
 		final String importId = importInfos.getString("id");
 		if (isNotEmpty(importId)) {
@@ -60,6 +62,7 @@ public class CsvReport extends Report {
 			uncleanKeys();
 		}
 		this.vertx = vertx;
+		this.storage = storage;
 		this.columnsMapper = new ProfileColumnsMapper(getMappings());
 	}
 
@@ -126,7 +129,7 @@ public class CsvReport extends Report {
 		final String UAI = result.getString("UAI");
 
 		//clean directory if exists
-		FileUtils.deleteImportPath(vertx, originalPath, resDel ->
+		FileUtils.deleteImportPath(vertx, storage, originalPath, resDel ->
 		{
 			String basePath;
 

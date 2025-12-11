@@ -175,7 +175,7 @@ public class MapSessionStore extends AbstractSessionStore {
             addLoginInfo(userId, timerId, sessionId);
             handler.handle(Future.succeededFuture());
         } catch (Exception e) {
-            logger.error("Error putting session in hazelcast map");
+            logger.error("Error putting session in hazelcast map", e);
             handler.handle(Future.failedFuture(new SessionException("Error putting session in hazelcast map")));
         }
     }

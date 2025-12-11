@@ -1,6 +1,7 @@
 package org.entcore.common.cache;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -9,6 +10,8 @@ import org.entcore.common.user.UserInfos;
 
 import java.util.List;
 import java.util.Optional;
+
+import static io.vertx.core.Future.succeededFuture;
 
 public interface CacheService {
 
@@ -20,13 +23,13 @@ public interface CacheService {
         }
     }
 
-    static CacheService create(Vertx vertx, JsonObject config){
+    static Future<CacheService> create(Vertx vertx, JsonObject config){
         if(Redis.getClient() !=  null){
             final Integer db = config.getInteger("redis-db");
             if(db != null){
-                return new RedisCacheService(Redis.createClientForDb(vertx, db).getClient());
+              return Redis.createClientForDb(vertx, db).map(redisApi -> new RedisCacheService(redisApi.getClient()));
             }else{
-                return new RedisCacheService(Redis.getClient().getClient());
+                return succeededFuture(new RedisCacheService(Redis.getClient().getClient()));
             }
         } else{
             throw new IllegalStateException("CacheService.create : could not create cache because it is not initialized");

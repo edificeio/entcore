@@ -63,7 +63,7 @@
          final EventStoreFactory fac = new PostgresqlEventStoreFactory();
          fac.setVertx(test.vertx());
          eventStore = fac.getEventStore("test");
-         test.vertx().eventBus().localConsumer("event.store", new Handler<Message<JsonObject>>() {
+         test.vertx().eventBus().consumer("event.store", new Handler<Message<JsonObject>>() {
              @Override
              public void handle(Message<JsonObject> event) {
                  final JsonObject json = event.body();

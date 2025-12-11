@@ -12,6 +12,10 @@
 
     <artifactId>tests</artifactId>
 
+    <properties>
+        <shade.minimizeJar>false</shade.minimizeJar>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>io.gatling.highcharts</groupId>

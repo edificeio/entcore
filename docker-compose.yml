@@ -47,7 +47,6 @@ services:
     image: opendigitaleducation/node:22-alpine-pnpm
     working_dir: /home/node/app
     volumes:
-      - ./broker-parent/broker-client/nest:/home/node/app
       - ~/.npm:/.npm
       - ../recette:/home/node/recette # TODO : rendre générique pour appliquer à tous les springboards
     environment:

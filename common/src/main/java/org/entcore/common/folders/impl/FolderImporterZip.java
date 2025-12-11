@@ -2,6 +2,7 @@ package org.entcore.common.folders.impl;
 
 import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.I18n;
+import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -15,7 +16,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.streams.Pump;
 import io.vertx.core.streams.ReadStream;
 import org.entcore.common.folders.FolderManager;
@@ -34,34 +34,40 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.ObjectUtils.isEmpty;
+import static org.apache.commons.lang3.ObjectUtils.isNotEmpty;
 
 public class FolderImporterZip {
     static final Logger logger = LoggerFactory.getLogger(FolderImporterZip.class);
     private final Vertx vertx;
     private final FolderManager manager;
     private final List<String> encodings = new ArrayList<>();
-    private final Optional<AntivirusClient> antivirusClient;
-    private final Optional<FileValidator> fileValidator;
+    private Optional<AntivirusClient> antivirusClient;
+    private Optional<FileValidator> fileValidator = Optional.empty();
 
     public FolderImporterZip(final Vertx v, final FolderManager aManager) {
         this.vertx = v;
         this.manager = aManager;
-        this.fileValidator = FileValidator.create(v);
-        this.antivirusClient =  AntivirusClient.create(v);
-        try {
-            encodings.add("UTF-8");
-            final String encodingList = (String) v.sharedData().getLocalMap("server").get("encoding-available");
-            if (encodingList != null) {
-                final JsonArray encodingJson = new JsonArray(encodingList);
-                for (final Object o : encodingJson) {
-                    if (!encodings.contains(o.toString())) {
-                        encodings.add(o.toString());
+        FileValidator.create(v)
+            .onSuccess(fValidator -> fileValidator = fValidator)
+            .onFailure(ex -> logger.error("Error creating fileValidator", ex));
+        AntivirusClient.create(v)
+            .onSuccess(antivirus -> this.antivirusClient = antivirus)
+            .onFailure(ex -> logger.error("Error creating antivirus", ex));
+        encodings.add("UTF-8");
+        SharedDataHelper.getInstance().<String, String>getLocal("server", "encoding-available").onSuccess(encodingList -> {
+            try {
+                if (encodingList != null) {
+                    final JsonArray encodingJson = new JsonArray(encodingList);
+                    for (final Object o : encodingJson) {
+                        if (!encodings.contains(o.toString())) {
+                            encodings.add(o.toString());
+                        }
                     }
                 }
+            } catch (Exception e) {
+                logger.warn("An error occurred while initializing importer", e);
             }
-        } catch (Exception e) {
-            logger.warn("An error occurred while initializing importer", e);
-        }
+        }).onFailure(ex -> logger.error("Error adding encodings from server map", ex));
     }
 
     public Future<Optional<String>> getGuessedEncoding(FolderImporterZipContext context) {
@@ -96,27 +102,28 @@ public class FolderImporterZip {
     public static Future<FolderImporterZipContext> createContext(Vertx vertx, UserInfos user, ReadStream<Buffer> buffer, String invalidMessage) {
         final Promise<FolderImporterZipContext> future = Promise.promise();
         final String name = UUID.randomUUID() + ".zip";
-        final String importPath = getImportPath(vertx);
-        final String zipPath = Paths.get(importPath, name).normalize().toString();
         buffer.pause();
-        vertx.fileSystem().open(zipPath, new OpenOptions().setTruncateExisting(true).setCreate(true).setWrite(true), fileRes -> {
-            if (fileRes.succeeded()) {
-                final AsyncFile file = fileRes.result();
-                final Pump pump = Pump.pump(buffer, file);
-                buffer.endHandler(r -> {
-                    file.end();
-                    future.complete(new FolderImporterZipContext(zipPath, importPath, user, invalidMessage));
-                });
-                buffer.exceptionHandler(e -> {
-                    file.end();
-                    future.fail(e);
-                });
-                pump.start();
-                buffer.resume();
-            } else {
-                future.fail(fileRes.cause());
-            }
-        });
+        getImportPath(vertx).onSuccess(importPath -> {
+            final String zipPath = Paths.get(importPath, name).normalize().toString();
+            vertx.fileSystem().open(zipPath, new OpenOptions().setTruncateExisting(true).setCreate(true).setWrite(true), fileRes -> {
+                if (fileRes.succeeded()) {
+                    final AsyncFile file = fileRes.result();
+                    final Pump pump = Pump.pump(buffer, file);
+                    buffer.endHandler(r -> {
+                        file.end();
+                        future.complete(new FolderImporterZipContext(zipPath, importPath, user, invalidMessage));
+                    });
+                    buffer.exceptionHandler(e -> {
+                        file.end();
+                        future.fail(e);
+                    });
+                    pump.start();
+                    buffer.resume();
+                } else {
+                    future.fail(fileRes.cause());
+                }
+            });
+        }).onFailure(ex -> future.fail(ex));
         return future.future();
     }
 
@@ -128,13 +135,21 @@ public class FolderImporterZip {
      * @param vertx Vertx instance of the called
      * @return The path to import the zip file
      */
-    private static String getImportPath(Vertx vertx) {
+    private static Future<String> getImportPath(Vertx vertx) {
+        final Promise<String> promise = Promise.promise();
         String importPath = vertx.getOrCreateContext().config().getString("import-path");
         if(org.apache.commons.lang3.StringUtils.isEmpty(importPath)) {
-            final LocalMap<Object, Object> localMap = vertx.sharedData().getLocalMap("server");
-            importPath = (String)localMap.getOrDefault("import-path", System.getProperty("java.io.tmpdir"));
+            vertx.sharedData().<String, String>getLocalAsyncMap("server").compose(serverMap -> serverMap.get("import-path"))
+            .onSuccess(iPath ->
+                promise.complete(isNotEmpty(iPath) ? iPath : System.getProperty("java.io.tmpdir"))
+            ).onFailure(ex -> {
+                logger.error("Error getting import-path", ex);
+                promise.complete(System.getProperty("java.io.tmpdir"));
+            });
+        } else {
+            promise.complete(importPath);
         }
-        return importPath;
+        return promise.future();
     }
 
     public Future<Void> doPrepare(final FolderImporterZipContext context) {

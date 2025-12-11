@@ -20,20 +20,24 @@
 package org.entcore.common.storage;
 
 import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.collections.SharedDataHelper;
+
 import static fr.wseduc.webutils.Utils.isNotEmpty;
+
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.messaging.IMessagingClient;
 import org.entcore.common.messaging.MessagingClientFactoryProvider;
 import org.entcore.common.storage.impl.*;
 
+import static io.vertx.core.Future.succeededFuture;
 import static org.entcore.common.storage.impl.StorageFileAnalyzer.Configuration.DEFAULT_CONTENT;
 
 import org.entcore.common.validation.ExtensionValidator;
 import org.entcore.common.validation.FileValidator;
-import org.entcore.common.validation.QuotaFileSizeValidation;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -41,68 +45,93 @@ import java.net.URISyntaxException;
 public class StorageFactory {
 
 	private final Vertx vertx;
-	private final IMessagingClient messagingClient;
+	private IMessagingClient messagingClient;
 	private JsonObject fs;
 	private JsonObject s3;
 	private String gridfsAddress;
-	private final StorageFileAnalyzer.Configuration storageFileAnalyzerConfiguration;
+	private StorageFileAnalyzer.Configuration storageFileAnalyzerConfiguration;
 
-	public StorageFactory(Vertx vertx) {
-		this(vertx, null);
+	public StorageFactory(Vertx vertx, Promise<StorageFactory> initPromise) {
+		this(vertx, null, initPromise);
 	}
 
-	public StorageFactory(Vertx vertx, JsonObject config) {
-		this(vertx, config, null);
+	public StorageFactory(Vertx vertx, JsonObject config, Promise<StorageFactory> initPromise) {
+		this(vertx, config, null, initPromise);
 	}
 
-	public StorageFactory(Vertx vertx, JsonObject config, AbstractApplicationStorage applicationStorage) {
+	public StorageFactory(Vertx vertx, JsonObject config, AbstractApplicationStorage applicationStorage, Promise<StorageFactory> initPromise) {
 		this.vertx = vertx;
-		LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
-		String s = (String) server.get("s3");
-		if (s != null) {
-			this.s3 = new JsonObject(s);
-		}
-		s = (String) server.get("file-system");
-		if (s != null) {
-			this.fs = new JsonObject(s);
-		}
-		this.gridfsAddress = (String) server.get("gridfsAddress");
-		if (config != null && config.getJsonObject("s3") != null) {
-			this.s3 = config.getJsonObject("s3");
-		} else if (config != null && config.getJsonObject("file-system") != null) {
-			this.fs = config.getJsonObject("file-system");
-		} else if (config != null && config.getString("gridfs-address") != null) {
-			this.gridfsAddress = config.getString("gridfs-address");
-		}
+		final SharedDataHelper sharedDataHelper = SharedDataHelper.getInstance();
+		sharedDataHelper.init(vertx);
+		sharedDataHelper.<String, String>getLocalMulti("server", "s3", "file-system", "gridfsAddress").onSuccess(server -> {
+			String s = (String) server.get("s3");
+			if (s != null) {
+				this.s3 = new JsonObject(s);
+			}
+			s = (String) server.get("file-system");
+			if (s != null) {
+				this.fs = new JsonObject(s);
+			}
+			this.gridfsAddress = (String) server.get("gridfsAddress");
+			if (config != null && config.getJsonObject("s3") != null) {
+				this.s3 = config.getJsonObject("s3");
+			} else if (config != null && config.getJsonObject("file-system") != null) {
+				this.fs = config.getJsonObject("file-system");
+			} else if (config != null && config.getString("gridfs-address") != null) {
+				this.gridfsAddress = config.getString("gridfs-address");
+			}
 
-		if (applicationStorage != null) {
-			applicationStorage.setVertx(vertx);
-			vertx.eventBus().localConsumer("storage", applicationStorage);
-		}
+			if (applicationStorage != null) {
+				applicationStorage.setVertx(vertx);
+				vertx.eventBus().consumer("storage", applicationStorage);
+			}
 
-		if(config == null) {
-			this.messagingClient = IMessagingClient.noop;
-			this.storageFileAnalyzerConfiguration = new StorageFileAnalyzer.Configuration();
-		} else {
-			final IMessagingClient messagingClient;
-			final JsonObject fileAnalyzerConfiguration = config.getJsonObject("fileAnalyzer");
-			if (fileAnalyzerConfiguration != null && fileAnalyzerConfiguration.getBoolean("enabled", false)) {
-				MessagingClientFactoryProvider.init(vertx);
-				this.messagingClient = MessagingClientFactoryProvider.getFactory(fileAnalyzerConfiguration.getJsonObject("messaging")).create();
-				if(this.messagingClient.canListen()) {
-					this.storageFileAnalyzerConfiguration = new StorageFileAnalyzer.Configuration(
-							fileAnalyzerConfiguration.getJsonArray("mime-types", new JsonArray()).getList(),
-							fileAnalyzerConfiguration.getInteger("max-size", -1),
-							fileAnalyzerConfiguration.getString("replacement-content", DEFAULT_CONTENT)
-					);
-				} else {
-					this.storageFileAnalyzerConfiguration = new StorageFileAnalyzer.Configuration();
-				}
-			} else {
+      Future<Void> future = Future.succeededFuture();
+			if(config == null) {
 				this.messagingClient = IMessagingClient.noop;
 				this.storageFileAnalyzerConfiguration = new StorageFileAnalyzer.Configuration();
+			} else {
+				final JsonObject fileAnalyzerConfiguration = config.getJsonObject("fileAnalyzer");
+				if (fileAnalyzerConfiguration != null && fileAnalyzerConfiguration.getBoolean("enabled", false)) {
+					MessagingClientFactoryProvider.init(vertx);
+          final Promise<Void> promise = Promise.promise();
+					MessagingClientFactoryProvider.getFactory(fileAnalyzerConfiguration.getJsonObject("messaging")).create().onSuccess(messagingClient -> {
+            this.messagingClient = messagingClient;
+            if(this.messagingClient.canListen()) {
+              this.storageFileAnalyzerConfiguration = new StorageFileAnalyzer.Configuration(
+                fileAnalyzerConfiguration.getJsonArray("mime-types", new JsonArray()).getList(),
+                fileAnalyzerConfiguration.getInteger("max-size", -1),
+                fileAnalyzerConfiguration.getString("replacement-content", DEFAULT_CONTENT)
+              );
+            } else {
+              this.storageFileAnalyzerConfiguration = new StorageFileAnalyzer.Configuration();
+            }
+            promise.complete();
+          }).onFailure(promise::fail);
+          future = promise.future();
+				} else {
+					this.messagingClient = IMessagingClient.noop;
+					this.storageFileAnalyzerConfiguration = new StorageFileAnalyzer.Configuration();
+				}
 			}
-		}
+      future
+        .onSuccess(e -> initPromise.complete(this))
+        .onFailure(initPromise::fail);
+		}).onFailure(initPromise::fail);
+	}
+
+	public static Future<StorageFactory> build(Vertx vertx) {
+		return build(vertx, null, null);
+	}
+
+	public static Future<StorageFactory> build(Vertx vertx, JsonObject config) {
+		return build(vertx, config, null);
+	}
+
+	public static Future<StorageFactory> build(Vertx vertx, JsonObject config, AbstractApplicationStorage applicationStorage) {
+		final Promise<StorageFactory> promise = Promise.promise();
+		new StorageFactory(vertx, config, applicationStorage, promise);
+		return promise.future();
 	}
 
 	public Storage getStorage() {
@@ -136,12 +165,7 @@ public class StorageFactory {
 				}
 			}
 
-			FileValidator fileValidator = new QuotaFileSizeValidation();
-			JsonArray blockedExtensions = s3.getJsonArray("blockedExtensions");
-			if (blockedExtensions != null && blockedExtensions.size() > 0) {
-				fileValidator.setNext(new ExtensionValidator(blockedExtensions));
-			}
-			((S3Storage) storage).setValidator(fileValidator);
+			((S3Storage) storage).setValidator(FileValidator.createNullable(s3));
 
 			JsonObject s3fallbacks3s3 = s3.getJsonObject("s3fallbacks3s3");
 			JsonObject s3fallback = s3.getJsonObject("s3fallback");
@@ -168,12 +192,7 @@ public class StorageFactory {
 					((FileStorage) storage).setAntivirus(av);
 				}
 			}
-			FileValidator fileValidator = new QuotaFileSizeValidation();
-			JsonArray blockedExtensions = fs.getJsonArray("blockedExtensions");
-			if (blockedExtensions != null && blockedExtensions.size() > 0) {
-				fileValidator.setNext(new ExtensionValidator(blockedExtensions));
-			}
-			((FileStorage) storage).setValidator(fileValidator);
+			((FileStorage) storage).setValidator(FileValidator.createNullable(fs));
 
 			JsonObject s3fallback = fs.getJsonObject("s3fallback");
 			JsonObject s3fallbacks3fs = fs.getJsonObject("s3fallbacks3fs");

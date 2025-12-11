@@ -31,7 +31,7 @@ public class PostgresEmailSender implements EmailSender {
     private final Renders renders;
     private final EventBus eventBus;
     private final int maxSize;
-    private final String platformId;
+    private String platformId;
     private final PostgresEmailHelper helper;
     private final int priority;
     private final String senderEmail;
@@ -45,13 +45,19 @@ public class PostgresEmailSender implements EmailSender {
         this.renders = new Renders(vertx, moduleConfig);
         maxSize = pgConfig.getInteger("max-size", -1);
         this.helper = PostgresEmailHelper.create(vertx, pgConfig);
-        final String eventStoreConf = (String) vertx.sharedData().getLocalMap("server").get("event-store");
-        if (eventStoreConf != null) {
-            final JsonObject eventStoreConfig = new JsonObject(eventStoreConf);
-            platformId = eventStoreConfig.getString("platform");
-        } else {
-            platformId = null;
-        }
+
+        vertx.sharedData().<String, String>getLocalAsyncMap("server")
+            .compose(serverMap -> serverMap.get("event-store"))
+            .onSuccess(eventStoreConf -> {
+                if (eventStoreConf != null) {
+                    final JsonObject eventStoreConfig = new JsonObject(eventStoreConf);
+                    platformId = eventStoreConfig.getString("platform");
+                } else {
+                    platformId = null;
+                }
+            })
+            .onFailure(ex ->logger.error("Error when get platformId in event-store server map", ex));
+
         //
         final String defaultMail = emailConfig.getString("email", "noreply@one1d.fr");
         final String defaultHost = emailConfig.getString("host", "http://localhost:8009");

@@ -72,19 +72,21 @@ public class FolderTest {
         test.database().initNeo4j(context, neo4jContainer);
         final ShareService shareService = test.share().createMongoShareService(context,
                 DocumentDao.DOCUMENTS_COLLECTION);
-        final Storage storage = new StorageFactory(test.vertx(), new JsonObject(),
+        StorageFactory.build(test.vertx(), new JsonObject().put("file-system", new JsonObject().put("path", "/tmp")),
                 new MongoDBApplicationStorage(DocumentDao.DOCUMENTS_COLLECTION, Workspace.class.getSimpleName()))
-                .getStorage();
-        final String imageResizerAddress = "wse.image.resizer";
-        final FolderManager folderManager = FolderManager.mongoManager(DocumentDao.DOCUMENTS_COLLECTION, storage,
-                test.vertx(), shareService, imageResizerAddress, false);
-        final boolean neo4jPlugin = false;
-        final QuotaService quotaService = new DefaultQuotaService(neo4jPlugin,
-                new TimelineHelper(test.vertx(), test.vertx().eventBus(), new JsonObject()));
-        final int threshold = 80;
-        workspaceService = new DefaultWorkspaceService(storage, MongoDb.getInstance(), threshold, imageResizerAddress,
-                quotaService, folderManager, test.vertx(), shareService, false);
-        test.database().initMongo(context, mongoContainer);
+            .onSuccess(storageFactory -> {
+                final Storage storage = storageFactory.getStorage();
+                final String imageResizerAddress = "wse.image.resizer";
+                final FolderManager folderManager = FolderManager.mongoManager(DocumentDao.DOCUMENTS_COLLECTION, storage,
+                        test.vertx(), shareService, imageResizerAddress, false);
+                final boolean neo4jPlugin = false;
+                final QuotaService quotaService = new DefaultQuotaService(neo4jPlugin,
+                        new TimelineHelper(test.vertx(), test.vertx().eventBus(), new JsonObject()));
+                final int threshold = 80;
+                workspaceService = new DefaultWorkspaceService(storage, MongoDb.getInstance(), threshold, imageResizerAddress,
+                        quotaService, folderManager, test.vertx(), shareService, false);
+                test.database().initMongo(context, mongoContainer);
+            }).onFailure(ex -> context.fail(ex));
     }
 
     @Before
