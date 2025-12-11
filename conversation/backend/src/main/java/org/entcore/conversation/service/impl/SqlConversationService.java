@@ -242,7 +242,7 @@ public class SqlConversationService implements ConversationService{
 		String query =
 			"SELECT " +
 				"coalesce(json_agg(distinct att.id), '[]'::json) as attachmentIds," +
-				"coalesce(sum(att.size), 0)::integer as totalQuota " +
+				"coalesce(sum(att.size), 0)::bigint as totalQuota " +
 			"FROM " + attachmentTable + " att " +
 			"JOIN " + userMessageAttachmentTable + " uma " +
 				"ON (att.id = uma.attachment_id) " +
@@ -744,7 +744,7 @@ public class SqlConversationService implements ConversationService{
 		values3.add(user.getUserId());
 
 		String getTotalQuota =
-			"SELECT coalesce(sum(um.total_quota), 0)::integer AS totalQuota FROM " + userMessageTable + " um " +
+			"SELECT coalesce(sum(um.total_quota), 0)::bigint AS totalQuota FROM " + userMessageTable + " um " +
 			"WHERE um.user_id = ? AND um.trashed = true";
 
 		String deleteUserMessages =
@@ -1576,7 +1576,7 @@ public class SqlConversationService implements ConversationService{
 					"UNION " +
 					recursiveTerm +
 			") " +
-			"SELECT COALESCE(sum(um.total_quota), 0)::integer AS totalQuota FROM parents JOIN " +
+			"SELECT COALESCE(sum(um.total_quota), 0)::bigint AS totalQuota FROM parents JOIN " +
 			userMessageTable + " um ON um.folder_id = parents.id AND um.user_id = parents.user_id ";
 
 		builder.prepared(quotaRecursion, recursiveValues);
