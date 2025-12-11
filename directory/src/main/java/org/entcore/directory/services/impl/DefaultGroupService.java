@@ -185,7 +185,7 @@ public class DefaultGroupService implements GroupService {
 		}
 		String query =
 				"MATCH (s:Structure)<-[:DEPENDS" + sub + "]-(g:" + type + ") " + condition +
-				"RETURN g.id as id, g.name as name, g.displayName as displayName ";
+				"RETURN g.id as id, g.name as name, g.displayName as displayName, g.filter as filter";
 		neo.execute(query, params, validResultHandler(results));
 	}
 	
