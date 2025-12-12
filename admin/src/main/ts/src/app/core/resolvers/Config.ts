@@ -11,4 +11,5 @@ export interface Config {
     'mass-messaging-enabled': boolean;
     'allow-adml-structure-name-change': boolean;
     'enable-manual-group-autolink': boolean;
+    'enable-flashmsg-user-position-field': boolean;
 }

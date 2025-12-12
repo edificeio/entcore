@@ -45,6 +45,7 @@ import { StructureUserPositionComponent } from './structure-user-positions/struc
 import { MatDialogModule } from '@angular/material/dialog';
 import { StructureUserPositionsComponent } from './structure-user-positions/structure-user-positions.component';
 import { SharedModule } from '../_shared/shared.module';
+import { ConfigResolver } from '../core/resolvers/config.resolver';
 
 @NgModule({
     imports: [
@@ -104,6 +105,7 @@ import { SharedModule } from '../_shared/shared.module';
         MessageFlashStore,
         MessageFlashResolver,
         BlockProfilesService,
+        ConfigResolver,
         ZimbraService,
         {
             provide: MatPaginatorIntl,

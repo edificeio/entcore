@@ -17,6 +17,7 @@ import {SubjectCreate} from './subjects/create/subject-create.component';
 import {SubjectDetails} from './subjects/details/subject-details.component';
 import {StructureGarComponent} from './structure-gar/structure-gar.component';
 import { StructureUserPositionsComponent } from './structure-user-positions/structure-user-positions.component';
+import { ConfigResolver } from '../core/resolvers/config.resolver';
 
 export let routes: Routes = [
      {
@@ -46,6 +47,7 @@ export let routes: Routes = [
                         path: 'edit/:messageId',
                         component: EditMessageFlashComponent,
                         resolve: {
+                            config: ConfigResolver,
                             messages: MessageFlashResolver
                         }
                     },
@@ -53,12 +55,16 @@ export let routes: Routes = [
                         path: 'duplicate/:messageId',
                         component: DuplicateMessageFlashComponent,
                         resolve: {
+                            config: ConfigResolver,
                             messages: MessageFlashResolver
                         }
                     },
                     {
                         path: 'create',
-                        component: CreateMessageFlashComponent
+                        component: CreateMessageFlashComponent,
+                        resolve: {
+                            config: ConfigResolver
+                        }
                     }
                 ]
             },
