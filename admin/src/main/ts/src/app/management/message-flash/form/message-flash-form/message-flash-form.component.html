@@ -31,20 +31,22 @@
         </div>
       </div>
 
+      <div *ngIf="showUserPositionField()">
         <ode-form-field label="management.message.flash.userPositions">
             <ode-multi-combo
-                    [(outputModel)]="message.userPositions"
-                    [comboModel]="userPositionsComboModel"
-                    [title]="'management.message.flash.chose.userPositions' | translate">
+              [(outputModel)]="message.userPositions"
+              [comboModel]="userPositionsComboModel"
+              [title]="'management.message.flash.chose.userPositions' | translate"
+            >
             </ode-multi-combo>
         </ode-form-field>
         <div class="multi-combo-companion">
-            <div (click)="deselect(item, message.userPositions)"
-                 *ngFor="let item of message.userPositions">
-                <s5l>{{ item }}</s5l>
-                <i class="fa fa-trash is-size-5"></i>
-            </div>
+          <div (click)="deselect(item, message.userPositions)" *ngFor="let item of message.userPositions">
+            <s5l>{{ item }}</s5l>
+            <i class="fa fa-trash is-size-5"></i>
+          </div>
         </div>
+      </div>
 
       <ode-form-field *ngIf="!!structure && !!structure.children && structure.children.length > 0"
                       label="management.message.flash.selected.etab">

@@ -11,6 +11,7 @@ import { FlashMessageModel } from '../../../../core/store/models/flashmessage.mo
 import { TrumbowygOptions } from 'ngx-trumbowyg';
 import * as dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
+import { Config } from 'src/app/core/resolvers/Config';
 
 class StructureListItem {
     name: string;
@@ -29,6 +30,7 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
     @Input() action: 'create' | 'edit' | 'duplicate';
     @Input() messageId = 'none';
 
+    config: Config;
     structure: StructureModel;
     items: StructureListItem[];
     originalMessage: FlashMessageModel;
@@ -115,6 +117,8 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
             }
         }));
 
+        this.route.data.subscribe((data) => (this.config = data.config as Config));
+
         MessageFlashService.getLanguages()
             .then(lang => {
                 this.loadedLanguages = lang;
@@ -176,6 +180,10 @@ export class MessageFlashFormComponent extends OdeComponent implements OnInit, O
             this.pushNotification = false;
         }
         return res;
+    }
+
+    public showUserPositionField(): boolean {
+        return this.config?.['enable-flashmsg-user-position-field'] ?? false;
     }
 
     openLightbox(): void {
