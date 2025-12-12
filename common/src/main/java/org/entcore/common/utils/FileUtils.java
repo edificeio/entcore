@@ -97,20 +97,35 @@ public final class FileUtils {
 			if (event.failed()) {
 				log.error("Error deleting import files in storage at : " + path, event.cause());
 			}
-			vertx.fileSystem().exists(path, new Handler<AsyncResult<Boolean>>() {
-				@Override
-				public void handle(AsyncResult<Boolean> event) {
-					if (event.succeeded()) {
-						if (Boolean.TRUE.equals(event.result())) {
-							vertx.fileSystem().deleteRecursive(path, true, handler);
-						} else {
-							handler.handle(new DefaultAsyncResult<>((Void) null));
-						}
-					} else {
-						handler.handle(new DefaultAsyncResult<Void>(event.cause()));
-					}
+			deleteFSImportPath(vertx, path, handler);
+		});
+	}
+
+	public static void deleteFSImportPath(final Vertx vertx, final String path) {
+		deleteFSImportPath(vertx, path, new Handler<AsyncResult<Void>>() {
+			@Override
+			public void handle(AsyncResult<Void> event) {
+				if (event.failed()) {
+					log.error("Error deleting import files in filesystem at : " + path, event.cause());
 				}
-			});
+			}
+		});
+	}
+
+	public static void deleteFSImportPath(Vertx vertx, String path, Handler<AsyncResult<Void>> handler) {
+		vertx.fileSystem().exists(path, new Handler<AsyncResult<Boolean>>() {
+			@Override
+			public void handle(AsyncResult<Boolean> event) {
+				if (event.succeeded()) {
+					if (Boolean.TRUE.equals(event.result())) {
+						vertx.fileSystem().deleteRecursive(path, true, handler);
+					} else {
+						handler.handle(new DefaultAsyncResult<>((Void) null));
+					}
+				} else {
+					handler.handle(new DefaultAsyncResult<Void>(event.cause()));
+				}
+			}
 		});
 	}
 
