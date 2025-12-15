@@ -19,18 +19,18 @@
 
 package org.entcore.communication.services;
 
-import fr.wseduc.webutils.Either;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
+import org.entcore.common.user.UserInfos;
+
+import fr.wseduc.webutils.Either;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.entcore.common.user.UserInfos;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
 
 public interface CommunicationService {
 	String IMPOSSIBLE_TO_CHANGE_DIRECTION = "impossible to change direction";
@@ -40,6 +40,16 @@ public interface CommunicationService {
 	
 	List<String> EXPECTED_TYPES = Arrays.asList(
 			"User", "Group", "ManualGroup", "ProfileGroup", "FunctionalGroup", "FunctionGroup", "HTGroup", "CommunityGroup", "DirectionGroup");
+
+	/**
+	 * Optimized search of users for share that only return revelant information for share process
+	 *
+	 * @param userId          the requester
+	 * @param search          optional string to filter visible
+	 * @param userIds
+	 * @param responseHandler
+	 */
+	void visibleUsersForShare(String userId, String search, JsonArray userIds, Handler<Either<String, JsonArray>> responseHandler);
 
 	//enum VisibleType { USERS, GROUPS, BOTH }
 	enum Direction { 
