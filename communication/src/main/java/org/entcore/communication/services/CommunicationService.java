@@ -49,7 +49,17 @@ public interface CommunicationService {
 	 */
     void resetRules(String structureId, Handler<Either<String, JsonObject>> eitherHandler);
 
-    //enum VisibleType { USERS, GROUPS, BOTH }
+	/**
+	 * Optimized search of users for share that only return revelant information for share process
+	 *
+	 * @param userId          the requester
+	 * @param search          optional string to filter visible
+	 * @param userIds
+	 * @param responseHandler
+	 */
+	void visibleUsersForShare(String userId, String search, JsonArray userIds, Handler<Either<String, JsonArray>> responseHandler);
+
+	//enum VisibleType { USERS, GROUPS, BOTH }
 	enum Direction { 
 		INCOMING 	(0x01),
 		OUTGOING 	(0x10), 

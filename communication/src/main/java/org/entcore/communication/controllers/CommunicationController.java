@@ -352,6 +352,11 @@ public class CommunicationController extends BaseController {
 				communicationService.visibleUsers(userId, schoolId, expectedTypes, itSelf, myGroup,
 						profile, preFilter, customReturn, ap, userProfile, reverseUnion, responseHandler);
 				break;
+			case "visibleUsersForShare":
+					String search = message.body().getString("search");
+					JsonArray userIds =  message.body().getJsonArray("userIds");
+					communicationService.visibleUsersForShare(userId, search, userIds, responseHandler);
+					break;
 			case "usersCanSeeMe":
 				communicationService.usersCanSeeMe(userId, responseHandler);
 				break;

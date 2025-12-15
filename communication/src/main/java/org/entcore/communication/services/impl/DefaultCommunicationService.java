@@ -30,13 +30,10 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.entcore.common.communication.CommunicationUtils;
 import org.entcore.common.conversation.LegacySearchVisibleRequest;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.StatementsBuilder;
-import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.common.notification.TimelineHelper;
-import org.entcore.common.schema.Source;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -118,6 +115,73 @@ public class DefaultCommunicationService implements CommunicationService {
 
 		StatementsBuilder allStatements = statements.stream().reduce(new StatementsBuilder(), StatementsBuilder::add);
 		neo4j.executeTransaction(allStatements.build(), null, true, validUniqueResultHandler(eitherHandler) );
+	}
+
+	@Override
+	public void visibleUsersForShare(String userId, String search, JsonArray userIds, Handler<Either<String, JsonArray>> responseHandler) {
+		String searchFilter = (StringUtils.isEmpty(search) ? "" : " AND m.displayNameSearchField CONTAINS {search} ");
+		String query = "MATCH (n :User { id: {userId} })-[:COMMUNIQUE] ->(g :Group) \n" +
+				"    WITH(REDUCE(acc = [], groups IN COLLECT(COALESCE(g.communiqueWith, [])) | acc + groups) " +
+				"           + COLLECT(\n" +
+				"        CASE\n" +
+				"            WHEN g.users = 'BOTH' THEN g.id\n" +
+				"            ELSE ''\n" +
+				"        END\n" +
+				"    )\n" +
+				") as comGroups " +
+				" MATCH (g:Group)-[:COMMUNIQUE]->(m:User)\n" +
+				" WHERE\n" +
+				"    g.id IN comGroups\n" +
+				"    AND (\n" +
+				"        NOT(HAS(m.blocked))\n" +
+				"        OR m.blocked = false\n" +
+				"    )\n" +
+				"    AND NOT m:Hidden\n" +
+				searchFilter +
+				"    AND m.id <> {userId}\n" +
+				"  WITH DISTINCT m as visibles \n" +
+				" RETURN distinct visibles.id as id, "+
+				"    visibles.login as login,\n" +
+				"    visibles.displayName as username,\n" +
+				"    visibles.lastName as lastName,\n" +
+				"    visibles.firstName as firstName,\n" +
+				"    visibles.profiles [0] as profile\n" +
+				"ORDER BY\n" +
+				"    username\n" +
+				"UNION\n" +
+				"MATCH (u:User)\n" +
+				"WHERE\n" +
+				"    u.id in {userIds} " +
+				"RETURN distinct u.id as id,\n" +
+				"    u.login as login,\n" +
+				"    u.displayName as username,\n" +
+				"    u.lastName as lastName,\n" +
+				"    u.firstName as firstName,\n" +
+				"    u.profiles [0] as profile\n" +
+				"ORDER BY\n" +
+				"    username\n" +
+				"UNION\n" +
+				"MATCH p=(n:User)-[:COMMUNIQUE_DIRECT]->(m:User) \n" +
+				"WHERE\n" +
+				"    n.id = {userId}\n" +
+				"    AND (\n" +
+				"        NOT(HAS(m.blocked))\n" +
+				"        OR m.blocked = false\n" +
+				"    )\n" +
+				"    AND NOT m:Hidden \n" +
+				searchFilter +
+				"    AND m.id <> {userId} \n" +
+				" WITH DISTINCT m as visibles\n" +
+				" RETURN distinct visibles.id as id, "+
+				"    visibles.login as login,\n" +
+				"    visibles.displayName as username,\n" +
+				"    visibles.lastName as lastName,\n" +
+				"    visibles.firstName as firstName,\n" +
+				"    visibles.profiles [0] as profile\n" +
+				"ORDER BY\n" +
+				"    username\n";
+
+		neo4j.execute(query, new JsonObject().put("userId", userId).put("userIds", userIds).put("search", search), validResultHandler(responseHandler));
 	}
 
 	@Override
