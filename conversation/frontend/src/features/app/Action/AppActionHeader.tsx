@@ -1,5 +1,5 @@
 import { Dropdown, IconButton, IconButtonProps } from '@edifice.io/react';
-import { IconOptions, IconSignature } from '@edifice.io/react/icons';
+import { IconSettings, IconSignature } from '@edifice.io/react/icons';
 import { Fragment, RefAttributes } from 'react';
 import { useLocation } from 'react-router-dom';
 import { NewMessageButton } from '~/components/NewMessageButton';
@@ -44,7 +44,7 @@ export function AppActionHeader() {
                   aria-label={common_t('tiptap.tooltip.plus')}
                   color="primary"
                   variant="outline"
-                  icon={<IconOptions />}
+                  icon={<IconSettings />}
                 />
 
                 <Dropdown.Menu>
