@@ -127,6 +127,22 @@ public class UserUtils {
 		}
 	}
 
+	public static void findVisibleUsersForShare(final EventBus eb, String userId, String search,JsonArray usersIds,  final Handler<JsonArray> handler) {
+		JsonObject m = new JsonObject()
+				.put("action", "visibleUsersForShare")
+				.put("userId", userId)
+				.put("userIds",  usersIds)
+				.put("search", search);
+
+		eb.request(COMMUNICATION_USERS, m, (Handler<AsyncResult<Message<JsonArray>>>) res -> {
+            if (res.succeeded()) {
+                handler.handle(res.result().body());
+            } else {
+                handler.handle(new fr.wseduc.webutils.collections.JsonArray());
+            }
+        });
+	}
+
 	public static void findVisibleUsers(final EventBus eb, HttpServerRequest request, boolean profile,
 										final Handler<JsonArray> handler) {
 		findVisibleUsers(eb, request, profile, null, null, handler);
