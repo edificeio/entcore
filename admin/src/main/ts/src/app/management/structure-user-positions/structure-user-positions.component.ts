@@ -131,6 +131,7 @@ export class StructureUserPositionsComponent
   onCloseCreateUserPosition(userPosition: UserPosition) {
     if (userPosition) {
       this.userPositionList.push(userPosition);
+      this.structure.userPositions.push(userPosition);
       this.selectedUserPosition = userPosition;
 
       // Redirect to the new user position URL
@@ -149,6 +150,13 @@ export class StructureUserPositionsComponent
     );
     if(index>=0) {
       this.userPositionList[index] = userPosition;
+      const structureIndex = this.structure.userPositions.findIndex(
+        (uP) => uP.id === userPosition.id
+      );
+      if (structureIndex >= 0) {
+        this.structure.userPositions[structureIndex] = userPosition;
+      }
+
       this.changeDetector.markForCheck();
     }
   }
@@ -161,6 +169,14 @@ export class StructureUserPositionsComponent
       this.userPositionList.splice(index, 1);
       this.changeDetector.markForCheck();
     }
+
+    const structureIndex = this.structure.userPositions.findIndex(
+      (uP) => uP.id === userPosition.id
+    );
+    if (structureIndex >= 0) {
+      this.structure.userPositions.splice(structureIndex, 1);
+    }
+
     this.selectedUserPosition = null;
   }
 }
