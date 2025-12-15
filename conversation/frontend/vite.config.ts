@@ -44,6 +44,24 @@ export default ({ mode }: { mode: string }) => {
         changeOrigin: false,
       };
 
+  // Common proxy configuration
+  const commonProxyConfig = {
+    '/applications-list': proxyObj,
+    '/conf/public': proxyObj,
+    '^/(?=help-1d|help-2d)': proxyObj,
+    '^/(?=assets)': proxyObj,
+    '^/(?=theme|locale|i18n|skin)': proxyObj,
+    '^/(?=auth|appregistry|cas|userbook|directory|communication|conversation|portal|session|timeline|workspace|infra)':
+      proxyObj,
+    '/explorer': proxyObj,
+  };
+
+    const proxyConfig = {
+        ...commonProxyConfig,
+        '/conversation': proxyObj,
+      };
+
+
   return defineConfig({
     base: mode === 'production' ? '/conversation' : '',
     root: __dirname,
@@ -66,16 +84,7 @@ export default ({ mode }: { mode: string }) => {
          */
         allow: ['../../'],
       },
-      proxy: {
-        '/applications-list': proxyObj,
-        '/conf/public': proxyObj,
-        '^/(?=help-1d|help-2d|assets|theme|locale|i18n|skin|explorer)':
-          proxyObj,
-        '^/(?=auth|appregistry|cas|userbook|directory|communication|portal|session|timeline|workspace|infra)':
-          proxyObj,
-        '^/conversation/(?=api/|messages/|message|message/|folders/|folder|folder$|folder/trash|trash$|restore$|delete$|move$|move/|count/|toggleUnread|i18n|draft|draft/|conf/public|emptyTrash|max-depth|send)':
-          proxyObj,
-      },
+      proxy: proxyConfig,
       port: 4200,
       headers,
       host: 'localhost',
