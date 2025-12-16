@@ -228,7 +228,9 @@ public class Auth extends BaseServer {
 
 		addController(new RedirectController());
 
-		addController(new CarbonioPreauthController());
+		if (config.containsKey("carbonio-base-url") && config.containsKey("carbonio-domain-key")) {
+			addController(new CarbonioPreauthController());
+		}
 
 		if (jwtVerifier != null) {
 			DataHandler data = oauthDataFactory.create(new HttpServerRequestAdapter(null));
