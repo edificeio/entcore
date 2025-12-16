@@ -31,6 +31,7 @@ import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.conversation.controllers.ApiController;
 import org.entcore.conversation.controllers.ConversationController;
+import org.entcore.conversation.controllers.TaskController;
 import org.entcore.conversation.service.ConversationService;
 import org.entcore.conversation.service.impl.ConversationRepositoryEvents;
 import org.entcore.conversation.service.impl.ConversationStorage;
@@ -92,10 +93,15 @@ public class Conversation extends BaseServer {
 
 		setRepositoryEvents(new ConversationRepositoryEvents(storage, getOrElse(config.getLong("repositoryEventsTimeout"), 300000l),vertx));
 
+		// Delete Orphans
 		final String deleteOrphanCron = config.getString("deleteOrphanCron");
+		final DeleteOrphan deleteOrphan = new DeleteOrphan(storage);
+		// Enable delete orphan task to be triggered via API
+		addController(new TaskController(deleteOrphan));
+		// Schedule delete orphan task from cron expression
 		if (deleteOrphanCron != null) {
 			try {
-				new CronTrigger(vertx, deleteOrphanCron).schedule(new DeleteOrphan(storage));
+				new CronTrigger(vertx, deleteOrphanCron).schedule(deleteOrphan);
 			} catch (ParseException e) {
 				log.error("Invalid cron expression.", e);
 			}
