@@ -221,21 +221,22 @@ public class Auth extends BaseServer {
 
 		final JsonObject NDWConf = config.getJsonObject("new-device-warning");
 		NewDeviceWarningTask NDWTask = null;
-		if(NDWConf != null)
-		{
+		if(NDWConf != null) {
 			String cron = NDWConf.getString("cron");
-			if(cron != null)
-			{
-				EmailFactory emailFactory = EmailFactory.getInstance();
-				boolean warnADMC = NDWConf.getBoolean("warn-admc", false);
-				boolean warnADML = NDWConf.getBoolean("warn-adml", false);
-				boolean warnUsers = NDWConf.getBoolean("warn-users", false);
-				int scoreThreshold = NDWConf.getInteger("score-threshold", 2).intValue();
-				int batchLimit = NDWConf.getInteger("batch-limit", 4000).intValue();
-				String processInterval = NDWConf.getString("process-interval");
-				NDWTask = new NewDeviceWarningTask(vertx, config, emailFactory.getSender(), config.getString("email"),
-						warnADMC, warnADML, warnUsers, scoreThreshold, batchLimit, processInterval,
-						(String) authMap.get("event-store"));
+			EmailFactory emailFactory = EmailFactory.getInstance();
+			boolean warnADMC = NDWConf.getBoolean("warn-admc", false);
+			boolean warnADML = NDWConf.getBoolean("warn-adml", false);
+			boolean warnUsers = NDWConf.getBoolean("warn-users", false);
+			int scoreThreshold = NDWConf.getInteger("score-threshold", 2).intValue();
+			int batchLimit = NDWConf.getInteger("batch-limit", 4000).intValue();
+			String processInterval = NDWConf.getString("process-interval");
+			NDWTask = new NewDeviceWarningTask(vertx, config, emailFactory.getSender(), config.getString("email"),
+					warnADMC, warnADML, warnUsers, scoreThreshold, batchLimit, processInterval,
+					(String) authMap.get("event-store"));
+			// Add controller to trigger the task via API
+			addController(new TaskController(NDWTask));
+			// Schedule the task from cron expression
+			if (cron != null && !cron.trim().isEmpty()) {
 				try {
 					new CronTrigger(vertx, cron).schedule(NDWTask);
 				} catch (ParseException e) {

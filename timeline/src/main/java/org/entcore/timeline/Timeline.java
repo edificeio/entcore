@@ -33,9 +33,11 @@ import org.entcore.common.notification.ws.OssFcm;
 import org.entcore.common.user.DefaultPreferenceHelper;
 import org.entcore.common.user.PreferenceHelper;
 import org.entcore.common.utils.MapFactory;
+import org.entcore.timeline.controllers.TaskController;
 import org.entcore.timeline.controllers.FlashMsgController;
 import org.entcore.timeline.controllers.TimelineController;
 import org.entcore.timeline.controllers.helper.NotificationHelper;
+import org.entcore.timeline.cron.PurgeMessageCronTask;
 import org.entcore.timeline.cron.DailyMailingCronTask;
 import org.entcore.timeline.cron.WeeklyMailingCronTask;
 import org.entcore.timeline.listeners.TimelineBrokerListenerImpl;
@@ -119,28 +121,25 @@ public class Timeline extends BaseServer {
 
 		final String dailyMailingCron = config.getString("daily-mailing-cron", "0 0 2 * * ?");
 		final String weeklyMailingCron = config.getString("weekly-mailing-cron", "0 0 5 ? * MON");
+		final String purgeMessagesReadCron = config.getString("purge-messages-read-cron", "0 0 2 * * ?");
 		final int dailyDayDelta = config.getInteger("daily-day-delta", -1);
 		final int weeklyDayDelta = config.getInteger("weekly-day-delta", -1);
+		final DailyMailingCronTask dailyMailingCronTask = new DailyMailingCronTask(mailerService, dailyDayDelta);
+		final WeeklyMailingCronTask weeklyMailingCronTask = new WeeklyMailingCronTask(mailerService, weeklyDayDelta);
+		final PurgeMessageCronTask purgeMessageCronTask =  new PurgeMessageCronTask(flashMsgService);
 
+		// Enable mailing tasks to be triggered via API
+		addController(new TaskController(dailyMailingCronTask, weeklyMailingCronTask, purgeMessageCronTask));
+		// Schedule mailing tasks from cron expressions
 		try {
-			new CronTrigger(vertx, dailyMailingCron).schedule(new DailyMailingCronTask(mailerService, dailyDayDelta));
-			new CronTrigger(vertx, weeklyMailingCron).schedule(new WeeklyMailingCronTask(mailerService, weeklyDayDelta));
+			new CronTrigger(vertx, dailyMailingCron).schedule(dailyMailingCronTask);
+			new CronTrigger(vertx, weeklyMailingCron).schedule(weeklyMailingCronTask);
 		} catch (ParseException e) {
 			log.error("Failed to start mailing crons.");
 		}
-
-		final String purgeMessagesReadCron = config.getString("purge-messages-read-cron", "0 0 2 * * ?");
 		if (purgeMessagesReadCron != null) {
 			try {
-				new CronTrigger(vertx, purgeMessagesReadCron).schedule(l -> {
-					flashMsgService.purgeMessagesRead(res -> {
-						if (res.isLeft()) {
-							log.error("[Timeline - FlashMessages] - Purge of flashmsg.messages_read failed - " + res.left().getValue());
-						} else {
-							log.info("[Timeline - FlashMessages] - Purge of flashmsg.messages_read succeeded");
-						}
-					});
-				});
+				new CronTrigger(vertx, purgeMessagesReadCron).schedule(purgeMessageCronTask);
 			} catch (ParseException e) {
 				log.error("Invalid cron expression.", e);
 			}
