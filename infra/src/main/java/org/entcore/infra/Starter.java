@@ -23,13 +23,10 @@ import fr.wseduc.cron.CronTrigger;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.http.Renders;
-import fr.wseduc.webutils.request.CookieHelper;
-import fr.wseduc.webutils.request.filter.SecurityHandler;
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
+import io.vertx.core.*;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.eventbus.MessageConsumer;
-import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.metrics.MetricsOptions;
 import io.vertx.core.shareddata.AsyncMap;
 import org.entcore.common.email.EmailFactory;
@@ -45,20 +42,9 @@ import org.entcore.infra.services.EventStoreService;
 import org.entcore.infra.services.impl.ClamAvService;
 import org.entcore.infra.services.impl.ExecCommandWorker;
 import org.entcore.infra.services.impl.MongoDbEventStore;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.file.FileProps;
-import io.vertx.core.json.JsonObject;
 
-import java.io.File;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class Starter extends BaseServer {
@@ -180,10 +166,14 @@ public class Starter extends BaseServer {
 					});
 				}
 				EmailFactory emailFactory = EmailFactory.getInstance();
+				HardBounceTask hardBounceTask = new HardBounceTask(emailFactory.getSender(), config.getInteger("hard-bounces-day", -1),
+						new TimelineHelper(vertx, getEventBus(vertx), config), invalidEmails);
+				// Enable hard bounce task to be triggered via API
+				addController(new TaskController(hardBounceTask));
+				// Schedule hard bounce task from cron expression
 				try {
 					new CronTrigger(vertx, config.getString("hard-bounces-cron", "0 0 7 * * ? *"))
-							.schedule(new HardBounceTask(emailFactory.getSender(), config.getInteger("hard-bounces-day", -1),
-									new TimelineHelper(vertx, getEventBus(vertx), config), invalidEmails));
+							.schedule(hardBounceTask);
 				} catch (ParseException e) {
 					log.error(e.getMessage(), e);
 					vertx.close();

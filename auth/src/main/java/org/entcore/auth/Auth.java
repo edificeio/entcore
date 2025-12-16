@@ -236,6 +236,9 @@ public class Auth extends BaseServer {
 				NDWTask = new NewDeviceWarningTask(vertx, config, emailFactory.getSender(), config.getString("email"),
 						warnADMC, warnADML, warnUsers, scoreThreshold, batchLimit, processInterval,
 						(String) authMap.get("event-store"));
+				// Add controller to trigger the task via API
+				addController(new TaskController(NDWTask));
+				// Schedule the task from cron expression
 				try {
 					new CronTrigger(vertx, cron).schedule(NDWTask);
 				} catch (ParseException e) {
