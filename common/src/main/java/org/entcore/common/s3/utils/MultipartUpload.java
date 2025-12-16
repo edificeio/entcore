@@ -2,9 +2,6 @@ package org.entcore.common.s3.utils;
 
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +17,7 @@ import io.vertx.core.http.RequestOptions;
 import org.apache.commons.codec.EncoderException;
 import org.apache.commons.codec.net.QuotedPrintableCodec;
 
+import org.entcore.common.s3.S3Client;
 import org.entcore.common.s3.dataclasses.CompleteMultipartUpload;
 import org.entcore.common.s3.dataclasses.CompletePart;
 import org.entcore.common.s3.dataclasses.InitiateMultipartUploadResult;
@@ -107,7 +105,7 @@ public class MultipartUpload {
         RequestOptions requestOptions = new RequestOptions()
             .setMethod(HttpMethod.POST)
             .setHost(endPoint)
-            .setURI("/" + bucket + "/" + id + "?uploads=");
+            .setURI("/" + bucket + "/" + S3Client.encodeUrlPath(id) + "?uploads=");
 
         httpClient.request(requestOptions)
             .flatMap(req -> {
@@ -236,7 +234,7 @@ public class MultipartUpload {
         RequestOptions requestOptions = new RequestOptions()
             .setMethod(HttpMethod.PUT)
             .setHost(endPoint)
-            .setURI("/" + bucket + "/" + id + "?partNumber=" + chunk.getChunkNumber() + "&uploadId=" + uploadId);
+            .setURI("/" + bucket + "/" + S3Client.encodeUrlPath(id) + "?partNumber=" + chunk.getChunkNumber() + "&uploadId=" + uploadId);
 
         httpClient.request(requestOptions)
             .flatMap(req -> {
@@ -286,7 +284,7 @@ public class MultipartUpload {
         RequestOptions requestOptions = new RequestOptions()
             .setMethod(HttpMethod.POST)
             .setHost(endPoint)
-            .setURI("/" + bucket + "/" + id + "?uploadId=" + uploadId);
+            .setURI("/" + bucket + "/" + S3Client.encodeUrlPath(id) + "?uploadId=" + uploadId);
 
         httpClient.request(requestOptions)
             .flatMap(req -> {
@@ -333,7 +331,7 @@ public class MultipartUpload {
         RequestOptions requestOptions = new RequestOptions()
                 .setMethod(HttpMethod.DELETE)
                 .setHost(endPoint)
-                .setURI("/" + bucket + "/" + id + "?uploadId=" + uploadId);
+                .setURI("/" + bucket + "/" + S3Client.encodeUrlPath(id) + "?uploadId=" + uploadId);
 
         httpClient.request(requestOptions).flatMap(req -> {
             if (!sign(req, null)) {

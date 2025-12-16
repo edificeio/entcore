@@ -543,11 +543,15 @@ public class S3Client {
 	    deleteFileWithPath(getPath(id), bucket, handler);
     }
 
+	public void deleteFileWithPath(String path, final Handler<AsyncResult<Void>> handler) {
+		deleteFileWithPath(path, defaultBucket, handler);
+	}
+
 	public void deleteFileWithPath(String path, String bucket, final Handler<AsyncResult<Void>> handler) {
 		RequestOptions requestOptions = new RequestOptions()
 			.setMethod(HttpMethod.DELETE)
 			.setHost(host)
-			.setURI("/" + bucket + "/" + path);
+			.setURI("/" + bucket + "/" + encodeUrlPath(path));
 
 		httpClient.request(requestOptions)
 			.flatMap(req -> {
@@ -631,7 +635,7 @@ public class S3Client {
 		RequestOptions requestOptions = new RequestOptions()
 			.setMethod(HttpMethod.GET)
 			.setHost(host)
-			.setURI("/" + bucket + "/" + id);
+			.setURI("/" + bucket + "/" + encodeUrlPath(id));
 
 		httpClient.request(requestOptions)
 			.flatMap(req -> {
@@ -1016,7 +1020,12 @@ public class S3Client {
 		
 		final StringBuilder url = new StringBuilder().append('/').append(defaultBucket).append("/?list-type=2");
 		if (prefix != null) {
-      url.append("&prefix=").append(encodeUrlPath(prefix));
+			try {
+				url.append("&prefix=").append(URLEncoder.encode(prefix, StandardCharsets.UTF_8.toString()));
+			} catch (UnsupportedEncodingException e) {
+				promise.fail(new StorageException("Error encoding prefix in listBucketRecursive method"));
+				return;
+			}
 		}
 		if (continuationToken != null) {
 			url.append("&continuation-token=").append(continuationToken);
@@ -1086,10 +1095,12 @@ public class S3Client {
 							promise.fail(new StorageException("Error parsing response: " + e.getMessage()));
 						}
 					});
-					response.resume();
 				} else {
+					response.bodyHandler(bodyBuffer ->
+							log.error("An error occurred while listing files by prefix : HTTP code=" + response.statusCode() + " body=" + bodyBuffer.toString()));
 					promise.fail(new StorageException(response.statusCode() + " - " + response.statusMessage()));
 				}
+				response.resume();
 			})
 			.onFailure(exception -> {
 				promise.fail(new StorageException(exception.getMessage()));

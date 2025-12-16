@@ -353,7 +353,7 @@ public class S3Storage implements Storage {
           if(e.succeeded()) {
             log.debug("Successfully downloaded file " + path);
             if(deleteAfterMove) {
-                this.s3Client.deleteFile(path, x -> {
+                this.s3Client.deleteFileWithPath(path, x -> {
                     if(x.succeeded()) {
                         log.debug("Successfully deleted file " + path);
                     } else {

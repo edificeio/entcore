@@ -16,7 +16,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.entcore.broker.api.dto.resources.ResourcesDeletedDTO;
 import org.entcore.broker.api.dto.resources.ResourcesTrashedDTO;
 import org.entcore.broker.api.publisher.BrokerPublisherFactory;
 import org.entcore.broker.api.utils.AddressParameter;
@@ -1204,7 +1203,7 @@ public class FolderManagerMongoImpl implements FolderManager {
 							}
 						}
 
-						future.fail(new RuntimeException("Failed to send a request to the image resizer", result.cause()));
+						future.fail(new RuntimeException("	Failed to send a request to the image resizer", result.cause()));
 						handler.handle(future.future());
 					}
 				});
