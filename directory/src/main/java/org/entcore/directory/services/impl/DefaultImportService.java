@@ -271,7 +271,7 @@ public class DefaultImportService implements ImportService {
 				importInfos.setPreDelete(paramToBoolean(request.formAttributes().get("predelete")));
 				importInfos.setTransition(paramToBoolean(request.formAttributes().get("transition")));
 				importInfos.setStructureName(request.formAttributes().get("structureName"));
-				importInfos.setUAI(request.formAttributes().get("UAI").equals("null") ? null : request.formAttributes().get("UAI"));
+				importInfos.setUAI("null".equals(request.formAttributes().get("UAI")) ? null : request.formAttributes().get("UAI"));
 				importInfos.setLanguage(I18n.acceptLanguage(request));
 				if (isNotEmpty(request.formAttributes().get("classExternalId"))) {
 					importInfos.setOverrideClass(request.formAttributes().get("classExternalId"));
