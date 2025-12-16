@@ -324,7 +324,21 @@ public class FileSystemExportService implements ExportService {
                                 // Copy what the different modules produced to this service's file system (because if the modules exported to S3)
                                 // then archive cannot access the export files.
                                 storage.moveDirectoryToFs(exportDirectory, exportDirectory)
-                                        .onFailure(th -> log.error("Error while retrieving exported files", th)) // TODO jber purge download
+                                        .onFailure(th -> {
+                                            JsonObject errorPayload = new JsonObject()
+                                                    .put("status", "error")
+                                                    .put("message", "export.error");
+                                            eb.publish(getExportBusAddress(exportId), errorPayload);
+                                            userExportInProgress.remove(userId);
+                                            storage.deleteRecursive(exportDirectory)
+                                                    .onComplete(e -> log.debug("Deletion of " + exportDirectory + " is ok ? " + e.succeeded()));
+                                            fs.deleteRecursive(exportDirectory, true, event -> {
+                                                if (event.failed()) {
+                                                    log.error("Error deleting directory : " + exportDirectory, event.cause());
+                                                }
+                                            });
+                                            log.error("Error while retrieving exported files", th); // TODO jber purge download;
+                                        })
                                         .onSuccess(e  ->
                                                 addManifestToExport(exportId, exportDirectory, locale, event -> {
                                                     log.debug("Manifest added for export " + exportId);

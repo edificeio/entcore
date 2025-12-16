@@ -1028,7 +1028,12 @@ public class S3Client {
 			}
 		}
 		if (continuationToken != null) {
-			url.append("&continuation-token=").append(continuationToken);
+			try {
+				url.append("&continuation-token=").append(URLEncoder.encode(continuationToken, StandardCharsets.UTF_8.toString()));
+			} catch (UnsupportedEncodingException e) {
+				promise.fail(new StorageException("Error encoding continuation token in listBucketRecursive method"));
+				return;
+			}
 		}
 
 		RequestOptions requestOptions = new RequestOptions()
