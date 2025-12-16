@@ -99,6 +99,10 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 	private PostImport postImport;
 	private final ConcurrentLinkedQueue<MessageReplyNotifier<JsonObject>> eventQueue = new ConcurrentLinkedQueue<>();
 	private Storage storage;
+	private TimelineHelper timeline;
+
+	private User.DeleteTask userDeleteTask;
+	private TimetableReport.EraseTask timetableReportEraseTask;
 
 	public enum FeederEvent {
 		IMPORT, DELETE_USER, CREATE_USER, MERGE_USER
@@ -150,9 +154,15 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		final JsonObject imports = config.getJsonObject("imports");
 		final JsonObject preDelete = config.getJsonObject("pre-delete");
 		final Long deleteDelay = config.getLong("delete-delay", 240l); // To small platform default value to 300 and to big platform put value 900 in config
-		final TimelineHelper timeline = new TimelineHelper(vertx, eb, config);
+		timeline = new TimelineHelper(vertx, eb, config);
+
+		userDeleteTask = new User.DeleteTask(deleteUserDelay, eb, vertx, deleteDelay);
+		timetableReportEraseTask = new TimetableReport.EraseTask(storage, timetableReportEraseAfterSeconds);
+
 		try {
-			new CronTrigger(vertx, deleteCron).schedule(new User.DeleteTask(deleteUserDelay, eb, vertx, deleteDelay));
+			// Schedule pre-deleted user deletion task from cron expression
+			new CronTrigger(vertx, deleteCron).schedule(userDeleteTask);
+			// Pre-deletion
 			if (preDelete != null) {
 				if (preDelete.size() == ManualFeeder.profiles.size() &&
 						ManualFeeder.profiles.keySet().containsAll(preDelete.fieldNames())) {
@@ -167,6 +177,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			} else {
 				new CronTrigger(vertx, preDeleteCron).schedule(new User.PreDeleteTask(preDeleteUserDelay, timeline));
 			}
+			// Imports
 			if (imports != null) {
 				if (feeds.keySet().containsAll(imports.fieldNames())) {
 					for (String f : imports.fieldNames()) {
@@ -184,34 +195,26 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				new CronTrigger(vertx, importCron).schedule(new ImporterTask(vertx, defaultFeed,
 						config.getBoolean("auto-export", false), config.getLong("auto-export-delay", 1800000l)));
 			}
-
-			new CronTrigger(vertx, timetableReportEraseCron).schedule(new TimetableReport.EraseTask(storage, timetableReportEraseAfterSeconds));
+			// Erase timetable reports
+			new CronTrigger(vertx, timetableReportEraseCron).schedule(timetableReportEraseTask);
 		} catch (ParseException e) {
 			logger.fatal(e.getMessage(), e);
 			vertx.close();
 			return Future.failedFuture(e);
 		}
+		// Reinit login
 		final String reinitLoginCron = config.getString("reinit-login-cron", null);
 		Validator.initLogin(neo4j, vertx);
-		if(reinitLoginCron != null)
-		{
-			try
-			{
-				new CronTrigger(vertx, reinitLoginCron).schedule(new Handler<Long>()
-				{
-					@Override
-					public void handle(Long l)
-					{
-						if(Importer.getInstance().isReady())
-						{
-							logger.info("Reinit login cron");
-							Validator.initLogin(neo4j, vertx);
-						}
+		if(reinitLoginCron != null) {
+			try {
+				new CronTrigger(vertx, reinitLoginCron).schedule((Handler<Long>) l -> {
+					if(Importer.getInstance().isReady()) {
+						logger.info("Reinit login cron");
+						Validator.initLogin(neo4j, vertx);
 					}
 				});
 			}
-			catch (ParseException e)
-			{
+			catch (ParseException e) {
 				logger.fatal(e.getMessage(), e);
 			}
 		}
@@ -239,13 +242,10 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 						config.getString("pronote-partner-name", "NEO-Open"));
 
 				feeds.put("PRONOTE", new EDTFeederLauncher(edtUtils, config.getString("mode", "prod")));
-				setupImportCron(edt, new ImportsLauncher(vertx, storage, null, postImport, edtUtils, config.getBoolean("edt-user-creation", false), false));
 			}
 		}
 		final JsonObject udt = config.getJsonObject("udt");
 		if (udt != null) {
-			setupImportCron(udt, new ImportsLauncher(vertx, storage, null, postImport, edtUtils, config.getBoolean("udt-user-creation", false), false));
-
 			final JsonObject udtWebdav = udt.getJsonObject("webdav");
 			setupImportCron(udtWebdav, new UDTWebDAVImportsLauncher(vertx, storage, null, postImport, null, false, false));
 
@@ -455,6 +455,12 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				break;
 			case "import" : launchImport(message);
 				break;
+			case "import-with-auto-export" :
+				launchImportWithAutoExport(message);
+				break;
+			case "import-csv" :
+				launchImportCsv(message);
+				break;
 			case "importWithId" : importWithId(message);
 				break;
 			case "export" : launchExport(message);
@@ -466,6 +472,13 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			case "columnsMapping" : csvColumnMapping(message);
 				break;
 			case "classesMapping" : csvClassesMapping(message);
+				break;
+			case "delete-users" :
+				userDeleteTask.handle(0L);
+				message.reply(new JsonObject().put("status", "ok"));
+				break;
+			case "pre-delete-users" :
+				preDeleteUsers(message);
 				break;
 			case "ignore-duplicate" :
 				duplicateUsers.ignoreDuplicate(message);
@@ -496,6 +509,10 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				break;
 			case "check-duplicates" :
 				duplicateUsers.checkDuplicatesIntegrity(message);
+				break;
+			case "erase-timetable-reports" :
+				timetableReportEraseTask.handle(0L);
+				message.reply(new JsonObject().put("status", "ok"));
 				break;
 			case "manual-init-timetable-structure" :
 				AbstractTimetableImporter.initStructure(eb, message);
@@ -801,6 +818,37 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			logger.info(e -> "START import without transition");
 			validateAndImport(message, feed, preDelete, structureExternalId, source);
 		}
+	}
+
+	private void launchImportWithAutoExport(final Message<JsonObject> message) {
+		String feederType = message.body().getString("feeder");
+		Boolean autoExport = message.body().getBoolean("auto-export", false);
+		Long autoExportDelay = message.body().getLong("auto-export-delay", 1800000l);
+		if (feeds.containsKey(feederType)) {
+			ImporterTask importerTask = new ImporterTask(vertx, feederType, autoExport, autoExportDelay);
+			importerTask.handle(0L);
+			message.reply(new JsonObject().put("status", "ok"));
+		} else {
+			String errorMessage = "Invalid feeder type: " + feederType;
+			logger.error(errorMessage);
+			message.fail(400, errorMessage);
+		}
+	}
+
+	private void launchImportCsv(final Message<JsonObject> message) {
+		String csvPath = message.body().getString("path");
+		JsonObject config = message.body().getJsonObject("config");
+		CsvImportsLauncher csvImportsLauncher = new CsvImportsLauncher(vertx, csvPath, config, postImport);
+		csvImportsLauncher.handle(0L);
+		message.reply(new JsonObject().put("status", "ok"));
+	}
+
+	private void preDeleteUsers(final Message<JsonObject> message) {
+		String profile = message.body().getString("profile");
+		Long delay = message.body().getLong("delay", defaultPreDeleteUserDelay);
+		User.PreDeleteTask preDeleteTask = new User.PreDeleteTask(delay, profile, timeline);
+		preDeleteTask.handle(0L);
+		message.reply(new JsonObject().put("status", "ok"));
 	}
 
 	private void validateAndImport(final Message<JsonObject> message, final Feed feed, final boolean preDelete,
