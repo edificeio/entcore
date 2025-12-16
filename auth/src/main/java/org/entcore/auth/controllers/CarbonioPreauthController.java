@@ -24,8 +24,8 @@ public class CarbonioPreauthController extends BaseController {
 					 Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
 
-		Optional<String> carbonioBaseUrl = Optional.ofNullable(config.getString("carbonioBaseUrl"));
-		Optional<String> carbonioDomainKey = Optional.ofNullable(config.getString("carbonioDomainKey"));
+		Optional<String> carbonioBaseUrl = Optional.ofNullable(config.getString("carbonio-base-url"));
+		Optional<String> carbonioDomainKey = Optional.ofNullable(config.getString("carbonio-domain-key"));
 
 		if (!carbonioBaseUrl.isPresent() || !carbonioDomainKey.isPresent()) {
 			throw new IllegalArgumentException("Both carbonio-base-url and carbonio-domain-key must be configured");
