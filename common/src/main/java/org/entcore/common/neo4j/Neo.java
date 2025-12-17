@@ -35,7 +35,7 @@ public class Neo  {
 
 	private Neo4j neo4j;
 
-	public Neo (Vertx vertx, EventBus eb, Logger log) {
+	public Neo (Vertx vertx, EventBus eb, Object log) {
 		neo4j = Neo4j.getInstance();
 	}
 

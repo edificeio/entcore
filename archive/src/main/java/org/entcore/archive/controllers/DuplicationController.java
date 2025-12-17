@@ -80,7 +80,7 @@ public class DuplicationController extends BaseController
         }
         catch(Exception e)
         {
-          log.error(e, e.getMessage());
+          log.error(e.getMessage(), e);
           badRequest(request);
           return;
         }
