@@ -152,7 +152,8 @@ public class UserController extends BaseController {
 						// Validate mobile phone number if provided
 						final String mobile = body.getString("mobile");
 						if (!StringUtils.isEmpty(mobile)) {
-							PhoneValidation.PhoneValidationResult validation = PhoneValidation.validateMobileNumber(mobile);
+							String region = PhoneValidation.extractRegion(mobile);
+							PhoneValidation.PhoneValidationResult validation = PhoneValidation.validateMobileNumber(mobile, region);
 							if (!validation.isValid()) {
 								badRequest(request, validation.getErrorCode());
 								return;

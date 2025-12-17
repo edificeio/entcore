@@ -172,6 +172,50 @@ public class PhoneValidation {
     }
 
     /**
+     * Extracts the region code from a phone number's country calling code.
+     * If the number starts with "+" or "00", extracts the country code and returns the corresponding region.
+     * Otherwise returns the fallback region.
+     *
+     * Examples:
+     * - "+33650335075" -> "FR"
+     * - "0033650335075" -> "FR"
+     * - "+34612345678" -> "ES"
+     * - "+262692123456" -> "RE" (Réunion)
+     * - "0650335075" -> fallbackRegion (no country code)
+     *
+     * @param phoneNumber    The phone number (may have "+", "00" prefix, or no prefix)
+     * @param fallbackRegion Region to use if no country code can be extracted
+     * @return ISO 3166-1 alpha-2 region code (e.g., "FR", "ES", "BR", "RE")
+     */
+    public static String extractRegion(String phoneNumber) {
+        if (StringUtils.isEmpty(phoneNumber)) {
+            return DEFAULT_REGION;
+        }
+        String cleaned = phoneNumber.trim();
+
+        // Convert "00" prefix to "+" for international format (e.g., 0033 -> +33)
+        if (cleaned.startsWith("00")) {
+            cleaned = "+" + cleaned.substring(2);
+        }
+
+        // If number starts with "+", try to extract region from country code
+        if (cleaned.startsWith("+")) {
+            try {
+                // Parse with a dummy region, libphonenumber will use the country code from "+"
+                PhoneNumber parsed = phoneUtil.parse(cleaned, "ZZ");
+                String region = phoneUtil.getRegionCodeForCountryCode(parsed.getCountryCode());
+                if (region != null && !region.equals("ZZ")) {
+                    return region;
+                }
+            } catch (NumberParseException e) {
+                // Fall through to return fallback
+            }
+        }
+
+        return DEFAULT_REGION;
+    }
+
+    /**
      * Converts a phone number to E.164 format.
      * Returns null if the number cannot be parsed or is invalid.
      *

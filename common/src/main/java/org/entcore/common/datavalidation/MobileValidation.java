@@ -18,12 +18,14 @@ public class MobileValidation {
 	 * @return the new mobileState, or a failed Future if validation fails
 	 */
     static public Future<JsonObject> setPending(final EventBus unused, String userId, String mobile) {
+		String region = PhoneValidation.extractRegion(mobile);
+
 		// Validate phone number format and type before proceeding
-		PhoneValidationResult validation = PhoneValidation.validateMobileNumber(mobile);
+		PhoneValidationResult validation = PhoneValidation.validateMobileNumber(mobile, region);
 		if (!validation.isValid()) {
 			return Future.failedFuture(validation.getErrorCode());
 		}
-		
+
 		// Use normalized E.164 format for storage and SMS sending
 		return UserValidationFactory.getInstance().setPendingMobile(userId, validation.getNormalizedNumber());
     }
