@@ -288,12 +288,14 @@ public class Group {
         JsonArray manualGroupAutolinkUsersPositions = group.getJsonArray("manualGroupAutolinkUsersPositions");
 
         final StringBuilder linkQuery;
-        if ((autolinkUsersFromPositions != null && !autolinkUsersFromPositions.isEmpty()) || 
-            (manualGroupAutolinkUsersPositions != null && !manualGroupAutolinkUsersPositions.isEmpty())) {
-            linkQuery = new StringBuilder(QUERY_FROM_POSITION);
-        } else {
-            linkQuery = new StringBuilder(QUERY_FROM_GROUP);
-        }
+
+		if (autolinkUsersFromPositions != null && !autolinkUsersFromPositions.isEmpty()) {
+			linkQuery = new StringBuilder(QUERY_FROM_POSITION);
+		} else if (manualGroupAutolinkUsersPositions != null && !manualGroupAutolinkUsersPositions.isEmpty()) {
+			linkQuery = new StringBuilder(QUERY_MANUAL_GROUP_AUTOLINK_POSITIONS);
+		} else {
+			linkQuery = new StringBuilder(QUERY_FROM_GROUP);
+		}
 
         // Conditional filter on children or students level
         if (autolinkUsersFromLevel != null && !autolinkUsersFromLevel.isEmpty()) {
