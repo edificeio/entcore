@@ -6,16 +6,28 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.datavalidation.utils.UserValidationFactory;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.validation.PhoneValidation;
+import org.entcore.common.validation.PhoneValidation.PhoneValidationResult;
 
 public class MobileValidation {
 	/**
 	 * Start a new mobile phone number validation workflow.
+	 * Validates the phone number format and type before proceeding.
 	 * @param userId user ID
 	 * @param mobile the mobile phone number to be checked
-	 * @return the new mobileState
+	 * @return the new mobileState, or a failed Future if validation fails
 	 */
     static public Future<JsonObject> setPending(final EventBus unused, String userId, String mobile) {
-		return UserValidationFactory.getInstance().setPendingMobile(userId, mobile);
+		String region = PhoneValidation.extractRegion(mobile);
+
+		// Validate phone number format and type before proceeding
+		PhoneValidationResult validation = PhoneValidation.validateMobileNumber(mobile, region);
+		if (!validation.isValid()) {
+			return Future.failedFuture(validation.getErrorCode());
+		}
+
+		// Use normalized E.164 format for storage and SMS sending
+		return UserValidationFactory.getInstance().setPendingMobile(userId, validation.getNormalizedNumber());
     }
 
 	/**
