@@ -14,6 +14,15 @@ public class NATSEndpoint {
   private String className;
   private boolean proxy;
   private boolean broadcast;
+  private boolean provider;
+
+  public boolean isProvider() {
+    return provider;
+  }
+
+  public void setProvider(boolean provider) {
+    this.provider = provider;
+  }
 
   public String getSubject() {
     return subject;
