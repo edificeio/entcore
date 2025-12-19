@@ -480,5 +480,10 @@
     "userbook.discover.visible.group.exit": "Exit the group",
     "userbook.discover.visible.user.delete.relation.tooltip": "Delete from my network",
     "userbook.discover.visible.user.add.relation.tooltip": "Add to my network",
-    "userbook.discover.search": "Search by first or last name"
+    "userbook.discover.search": "Search by first or last name",
+    "phone.validation.error.empty": "Phone number is required",
+    "phone.validation.error.invalid.format": "Invalid phone number format",
+    "phone.validation.error.invalid.number": "This phone number is not valid",
+    "phone.validation.error.not.mobile": "This number is not a mobile phone number",
+    "phone.validation.error.premium.blocked": "Premium-rate numbers are not allowed"
 }
