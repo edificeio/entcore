@@ -57,6 +57,7 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.DateUtils;
 import org.entcore.common.utils.StringUtils;
+import org.entcore.common.validation.PhoneValidation;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.directory.Directory;
 import org.entcore.directory.pojo.MergeUsersMetadata;
@@ -147,6 +148,20 @@ public class UserController extends BaseController {
 								body.remove("firstName");
 							}
 						}
+						
+						// Validate mobile phone number if provided
+						final String mobile = body.getString("mobile");
+						if (!StringUtils.isEmpty(mobile)) {
+							String region = PhoneValidation.extractRegion(mobile);
+							PhoneValidation.PhoneValidationResult validation = PhoneValidation.validateMobileNumber(mobile, region);
+							if (!validation.isValid()) {
+								badRequest(request, validation.getErrorCode());
+								return;
+							}
+							// Use normalized E.164 format
+							body.put("mobile", validation.getNormalizedNumber());
+						}
+
 						final Promise<Either<String, JsonObject>> onUpdateDone = Promise.promise();
 						final Promise<Void> onRemoveSessionAttributeDone = Promise.promise();
 
@@ -1082,7 +1097,7 @@ public class UserController extends BaseController {
 							})
 							.onSuccess(e -> ok(request))
 							.onFailure( e -> {
-								renderError( request, new JsonObject().put("error", e.getMessage()) );
+								badRequest( request, e.getMessage() );
 							});
 					});
 		});
@@ -1115,7 +1130,7 @@ public class UserController extends BaseController {
 									CookieHelper.set("userbookVersion", System.currentTimeMillis()+"", request);
 								})
 								.onFailure( e -> {
-									renderError( request, new JsonObject().put("error", e.getMessage()) );
+									badRequest( request, e.getMessage() );
 								});
 					});
 		});
