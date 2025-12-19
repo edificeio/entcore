@@ -90,6 +90,7 @@ public class BrokerListenerProcessor extends AbstractProcessor {
     // Get method information
     endpoint.setMethodName(method.getSimpleName().toString());
     endpoint.setClassName(((TypeElement) method.getEnclosingElement()).getQualifiedName().toString());
+    endpoint.setProvider(true);
 
     final List<? extends VariableElement> parameters = method.getParameters();
     // Get request type information (first parameter)

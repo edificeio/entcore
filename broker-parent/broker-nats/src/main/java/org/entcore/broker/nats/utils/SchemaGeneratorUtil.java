@@ -1,5 +1,7 @@
 package org.entcore.broker.nats.utils;
 
+import io.vertx.core.json.JsonObject;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
@@ -107,7 +109,7 @@ public class SchemaGeneratorUtil {
           schema.put("type", "number");
         } else if("java.lang.Boolean".equals(typeMirrorAsString)) {
           schema.put("type", "boolean");
-        } else if ("java.lang.Object".equals(typeMirrorAsString)) {
+        } else if ("java.lang.Object".equals(typeMirrorAsString) || JsonObject.class.getCanonicalName().equals(typeMirrorAsString)) {
           schema.put("type", "object");
         } else if (isArrayLike(typeMirror)) {
           schema.put("type", "array");
@@ -153,6 +155,7 @@ public class SchemaGeneratorUtil {
       .filter(e -> e.getKind() == ElementKind.ENUM_CONSTANT)
       .map(e -> e.getSimpleName().toString())
       .collect(Collectors.toList());
+    schema.put("title", typeMirror.toString());
     schema.put("enum", enumConstants);
   }
 
