@@ -1,0 +1,49 @@
+{
+  "name": "org.entcore~broker",
+  "main":"org.entcore.broker.Broker",
+  "config":{
+    "port": 8778,
+    "mode": "prod",
+    "app-type": "SYSTEM",
+    "auto-redeploy": false,
+    "app-name" : "Broker",
+    "app-address" : "http://localhost:8778/broker",
+    "sql": false,
+    "broker-type": "{{ brokerType | default('none') }}",
+    {% if brokerType is defined and brokerType == 'nats' and brokerIaEnabled is defined and brokerIaEnabled %}
+			"nats": [
+				{
+				  "name": "ent",
+				  "default": true,
+				  "routing": [],
+				  "client": {
+				  	"io.nats.client.password": "{{ brokerNatsPassword }}",
+						"io.nats.client.pinginterval": "PT15s",
+						"io.nats.client.url": "{{ brokerNatsUrl }}",
+						"io.nats.client.username": "{{ brokerNatsUser | default('ent') }}"
+				  }
+				},
+				{
+				  "name": "ia",
+				  "default": false,
+				  "routing": ["ia.>"],
+				  "client": {
+						"io.nats.client.password": "{{ brokerIaPassword }}",
+						"io.nats.client.pinginterval": "PT15s",
+						"io.nats.client.url": "{{ brokerIaUrl }}",
+						"io.nats.client.username": "{{ brokerIaUser | default('ent') }}"
+				  }				  
+				}
+			],
+		{% elif brokerType is defined and brokerType == 'nats' %}
+      "nats": {
+		  	"io.nats.client.password": "{{ brokerNatsPassword }}",
+				"io.nats.client.pinginterval": "PT15s",
+				"io.nats.client.url": "{{ brokerNatsUrl }}",
+				"io.nats.client.username": "{{ brokerNatsUser | default('ent') }}"
+      },
+    {% endif %}
+    "publicConf": {
+    }
+  }
+}

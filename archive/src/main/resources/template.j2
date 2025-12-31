@@ -1,0 +1,65 @@
+{
+  "name": "org.entcore~archive",
+  "config": {
+    "main": "org.entcore.archive.Archive",
+    "port": 8004,
+    "csrf-token": {{ csrfToken | default('true') }},
+    "mode": "prod",
+    "host": "https://{{ host }}",
+    "ssl": true,
+    "email": "{{ fromEmail }}",
+    "auto-redeploy": false,
+    "app-name": "Archive",
+    "app-address": "/archive",
+    "app-icon": "archive-large",
+    "app-type" : "END_USER",
+    "export-path": "{{ archiveExportPath | default('/tmp') }}",
+    "import-path": "{{ archiveImportPath | default('/tmp') }}",
+    "archive-private-key": "{{ archivePrivateKey }}",
+    "force-encryption": {{ archiveForceEncryption | default('false') }},
+    "enablePurgeByFileAge": {{ archiveEnablePurgeByFileAge | default('true') }},
+    {% if inventory_hostname_short is defined and inventory_hostname_short == 'jobs' and archiveReprise is defined %}
+       "reprise": {{ archiveReprise }},
+    {% endif %}
+    "fileAnalyzer": {
+      "enabled": {{ fileAnalyzerOn | default('true') }},
+      "messaging": {
+        "type": "redis",
+        "stream": "xss-analyzer",
+        "tags": ["xss-analyzer", "archive"],
+        "metrics": {
+          "enabled": true
+        }
+      }
+    },
+  "publicConf": {
+    "apps" : {
+      {#{% if zimbraUrl is not defined %}"conversation" : "org.entcore.conversation.controllers.ConversationController|createDraft",{% endif %}#}
+      {% if (archiveCommunityEnabled | default(true)) %}"community" : "net.atos.entng.community.controllers.CommunityController|create",{% endif %}
+      "rack" : "fr.wseduc.rack.controllers.RackController|postRack",
+      "blog" : "org.entcore.blog.controllers.BlogController|create",
+      "wiki" : "net.atos.entng.wiki.controllers.WikiController|createWiki",
+      "scrapbook" : "fr.wseduc.scrapbook.controllers.ScrapbookController|createScrapbook",
+      {% if (archiveHomeworksEnabled | default(true)) %}"homeworks" : "fr.wseduc.homeworks.controllers.HomeworksController|createHomework",{% endif %}
+      {% if (archiveForumEnabled | default(true)) %}"forum" : "net.atos.entng.forum.controllers.ForumController|createCategory",{% endif %}
+      "pages" : "fr.wseduc.pages.controllers.PagesController|add",
+      "collaborativewall" : "net.atos.entng.collaborativewall.controllers.CollaborativeWallController|create",
+      "timelinegenerator" : "net.atos.entng.timelinegenerator.controllers.TimelineController|createTimeline",
+      "actualites" : "net.atos.entng.actualites.controllers.ThreadController|createThread",
+      {% if (archiveSchoolbookEnabled | default(true)) %}"schoolbook" : "fr.wseduc.schoolbook.controllers.SchoolBookController|createWord",{% endif %}
+      "exercizer" : "fr.openent.exercizer.controllers.SubjectController|persist",
+      {% if (archiveCalendarEnabled | default(true)) %}"calendar" : "net.atos.entng.calendar.controllers.CalendarController|createCalendar",{% endif %}
+      "mindmap" : "net.atos.entng.mindmap.controllers.MindmapController|create",
+      "formulaire" : "fr.openent.formulaire.controllers.FormController|initCreationRight",
+      {% if (archiveCollaborativeEditorEnabled | default(true)) %}"collaborativeeditor" : "net.atos.entng.collaborativeeditor.controllers.CollaborativeEditorController|create",{% endif %}
+      "workspace" : "org.entcore.workspace.controllers.WorkspaceController|addDocument"
+    },
+    "minimum-import-version": {
+  		"timelinegenerator": "1.7",
+  		"homeworks": "1.12" 
+    }
+  },
+  "purgeArchive": "0 0 2 * * ? *",
+  "periodicUserClear": 1800000
+  }
+}

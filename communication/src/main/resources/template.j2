@@ -1,0 +1,16 @@
+{
+  "name": "org.entcore~communication",
+  "config": {
+    "main": "org.entcore.communication.Communication",
+    "auto-redeploy": false,
+    "ssl": true,
+    "app-type" : "SYSTEM",
+    "xp-com-rules": true,
+    "csrf-token": {{ csrfToken | default('true') }},
+    "discoverVisibleExpectedProfile": {{ communicationDiscoverVisibleExpectedProfile | default('[]') }},
+    "mode": "prod",
+    "port": 8015,
+    "initDefaultCommunicationRules": {{ communicationDefaultComRules }},
+    "visibles-search-type": "{{ communicationVisiblesSearchType | default('light') }}"
+  }
+}

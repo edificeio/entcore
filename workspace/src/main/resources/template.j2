@@ -1,0 +1,51 @@
+{
+  "name": "org.entcore~workspace",
+  "config": {
+    "main": "org.entcore.workspace.Workspace",
+    "auto-redeploy": false,
+    "mode": "prod",
+    "wsPort": 6502,
+    "csrf-token": {{ csrfToken | default('true') }},
+    "ssl": true,
+    "app-type" : "END_USER",
+    "host": "https://{{ host }}",
+    "neo4jPlugin": true,
+    "userbook-host": "https://{{ host }}",
+    "app-name": "Espace documentaire",
+    "app-address": "/workspace/workspace",
+    "app-icon": "workspace-large",
+    "port": 8011,
+    "old-query": {{ workspaceUseOldQuery | default('false') }},
+    "fileAnalyzer": {
+      "enabled": {{ fileAnalyzerOn | default('true') }},
+      "messaging": {
+        "type": "redis",
+        "stream": "xss-analyzer",
+        "tags": ["xss-analyzer", "workspace"],
+        "consumer-block-ms": 0,
+        "consumer-name": "xss-analyzer-workspace-{{ ansible_fqdn | default('app') }}",
+        "consumer-group": "xss-analyzer-workspace-group",
+        "metrics": {
+          "enabled": true
+        }
+      },
+      "mime-types": {{ fileAnalyzerMimeTypes|default('[".*image/svg.*"]') }},
+      "max-size": 20000000
+    },
+    "mongo-address": "wse.mongodb.persistor",
+    {% if scratchUrl is defined %} "enable-scratch": true,{% endif %}
+    {% if loolProvider is defined or loolProviders is defined %}"enable-lool": true,{% endif %}
+    {% if workspaceEnableGeogebra is defined and workspaceEnableGeogebra %}"enable-geogebra": true,{% endif %}
+    {% if nextcloudHost is defined or nextcloudProviders is defined %}
+      "enable-nextcloud": true,
+      "use-nextcloud-sniplet": {{ nextcloudSniplet | default('false') }},
+    {% endif %}
+    "searching-event": {{ workspaceSearchingEvent | default('true') }},
+    "publicConf": {
+      "lazy-mode": {{ workspaceLazyMode | default('true') }},
+      {% if nextcloudHost is defined or nextcloudProviders is defined %}"folder-service": ["nextcloud"],{% endif %}
+      "ttl-documents":{{ workspaceTtlDoc | default('180') }},
+      "ttl-folders":{{ workspaceTtlFolder | default('600') }}
+    }
+  }
+}

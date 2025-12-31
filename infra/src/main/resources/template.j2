@@ -1,0 +1,325 @@
+{ 
+  "name": "org.entcore~infra",
+  "waitDeploy" : true,
+  "config" : {
+    "main": "org.entcore.infra.Starter",
+    "port": 8001,
+    "mode": "prod",
+    "sameSiteValue": "{{ cookieSameSiteValue  | default('None') }}",
+    "encoding-available": ["Cp858", "Cp1250", "ISO-8859-1"],
+    "neo4jMetricsEnable": {{ neo4jMetricsEnable  | default('true') }},
+    {% if checkMonitoringEvents is defined %}
+      "check-monitoring-events" : {
+    		"session-min-delay": {{ checkMEminDelay | default(1000) }},
+    		"session-threshold": {{ checkMEthreshold | default(1000) }},
+    		"session-window-duration": {{ checkMEduration | default(300000) }},
+    		"period": {{ checkMEperiod | default(300000) }}
+    	},
+    {% endif %}
+    {% if infraNeo4jCheck is defined %}
+      "neo4jConfigOverride": {
+        "optimized-check-active": true
+      },
+    {% endif %}
+    {% if mfaConfig is defined %}
+      "mfaConfig": {{ mfaConfig }},
+    {% endif %}
+    {% if ha is defined and ha and inventory_hostname_short is defined and inventory_hostname_short != 'jobs' and infraInstance is defined %}
+      "instances": {{ infraInstance }},
+    {% endif %}
+    "auto-redeploy": false,
+    "path-prefix": "infra",
+    "ssl": true,
+    "antivirus": {{ antivirus  | default('false') }},
+    {% if csp is defined %}"content-security-policy": "{{ csp }}",{% endif %}
+    "csrf-token": {{ csrfToken | default('true') }},
+    "sql": true,
+    {% if ha is defined and ha and inventory_hostname_short is defined and inventory_hostname_short != 'jobs' %}
+      "hard-bounces-cron" : "0 0 1 * * ? 2099",
+    {% else %}
+      "hard-bounces-cron" : "0 0 6 * * ? *",
+    {% endif %}
+    "key": "{{ credentials_ent_signkey }}",
+	  {% if skinLevels is defined %}
+      "skin-levels": {{skinLevels}},
+	  {% endif %}
+    "skins": {{ skins }} ,
+    {% if gridfs is defined and gridfs %}
+      "gridfs-address" : "wse.gridfs.persistor",
+    {% elif s3 is defined and 'storage' in s3 and s3['storage'] %}
+      "s3": {
+        "uri": "{{ s3['storage']['uri'] }}",
+        "accessKey": "{{ s3['storage']['accessKey'] }}",
+        "secretKey": "{{ s3['storage']['secretKey'] }}",
+        {% if 'ssec' in s3['storage'] %}
+          "ssec": "{{ s3['storage']['ssec'] }}",
+        {% endif %}
+        "region": "{{ s3['storage']['region'] }}",
+        "bucket": "{{ s3['storage']['bucket'] }}",
+        "keepAlive": {{ s3['storage']['keepAlive'] | default('true') }},
+        "poolSize": {{ s3['storage']['poolSize'] | default(64) }},
+        "timeout": {{ s3['storage']['timeout'] | default(60000) }},
+        {% if s3['storage']['s3fallbacks3s3'] is defined and s3['storage']['s3fallbacks3s3']  %}
+          "s3fallbacks3s3": {
+            "uri": "{{ s3['storage']['s3fallbacks3s3']['uri'] }}",
+            "accessKey": "{{ s3['storage']['s3fallbacks3s3']['accessKey'] }}",
+            "secretKey": "{{ s3['storage']['s3fallbacks3s3']['secretKey'] }}",
+            "region": "{{ s3['storage']['s3fallbacks3s3']['region'] }}",
+            "bucket": "{{ s3['storage']['s3fallbacks3s3']['bucket'] }}"
+            {% if s3['storage']['s3fallbacks3s3']['ssec'] is defined and s3['storage']['s3fallbacks3s3']['ssec'] %}
+              ,"ssec": "{{ s3['storage']['s3fallbacks3s3']['ssec'] }}"
+            {% endif %}
+          },
+        {% endif %}
+        {% if s3['storage']['s3fallback'] is defined and s3['storage']['s3fallback']  %}
+          "s3fallback": {
+            "uri": "{{ s3['storage']['s3fallback']['uri'] }}",
+            "accessKey": "{{ s3['storage']['s3fallback']['accessKey'] }}",
+            "secretKey": "{{ s3['storage']['s3fallback']['secretKey'] }}",
+            "region": "{{ s3['storage']['s3fallback']['region'] }}",
+            "bucket": "{{ s3['storage']['s3fallback']['bucket'] }}",
+            "ssec": "{{ s3['storage']['s3fallback']['ssec'] }}"
+          },
+        {% endif %}
+        "antivirus": {
+          "host": "{{ s3['antivirus']['host'] }}",
+          "port": {{ s3['antivirus']['port'] }},
+          "credential": "{{ (project_env ~ '-' ~ project_name ~ ':' ~ s3['antivirus']['credential']) | b64encode }}"
+        },
+    	 "blockedExtensions" : {{ blockedExtensions | default('["ade","and","adp","ani","asp","asx","bas","bat","cab","cga","cgb","cgc","cgd","cge","cgf","cgg","cgh","cgi","cgj","cgk","cgl","cgm","cgn","cgo","cgp","cgq","cgr","cgs","cgt","cgu","cgv","cgw","cgx","cgy","cgz","chk","chm","clp","cmd","cnf","cod","col","com","conf","config","cpio","cpl","cpp","crl","crt","csh","exe","grp","hhp","hlp","ht","hta","idx","inf","ins","isp","job","js","jse","lnk","mcw","mdb","mde","msc","msg","msi","mso","msp","msrcincident","msstyles","mst","pcd","pif","prf","rar","reg","sc2","scd","scf","sch","schema","scp","scr","sct","shb","shs","shtm","shtml","svg","swf","url","vb","vbe","vbs","vxd","wab","wax","wbk","wcs","wdb","web","webinfo","webpnp","wht","wiz","wizhtml","wll","wm","wma","wmd","wmdb","wmf","wms","wmx","wmz","wpc","wpl","wpz","wri","wsc","wsdl","wsf","wsh","wtx","wvx"]')}}
+      },
+    {% else %}
+      "file-system": {
+        {% if fsStorages is defined %}
+          "path": "{{storagePath |default('/srv/storage')}}",
+          "paths" : {{ fsStorages }},
+        {% else %}
+          "path": "{{storagePath |default('/srv/storage')}}",
+        {% endif %}
+        "flat": false
+        {% if s3fallback is defined and s3fallback  %}
+          ,"s3fallback": {
+            "host": "s3.fr-par.scw.cloud",
+            "name": "{{credentials_s3fallback_name}}",
+            "multi-buckets": {{credentials_s3fallback_multibuckets}},
+            "nb-storage-folder": {{credentials_s3fallback_nbstorage}},
+            "region": "fr-par",
+            "access-key": "{{credentials_s3fallback_access}}",
+            "secret-key": "{{credentials_s3fallback_secret}}"
+          }
+        {% endif %}
+        {% if s3fallbacks3fs is defined and s3fallbacks3fs  %}
+          ,"s3fallbacks3fs": {
+            "uri": "{{ s3fallbacks3fs['storage']['uri'] }}",
+            "accessKey": "{{ s3fallbacks3fs['storage']['accessKey'] }}",
+            "secretKey": "{{ s3fallbacks3fs['storage']['secretKey'] }}",
+            "region": "{{ s3fallbacks3fs['storage']['region'] }}",
+            "bucket": "{{ s3fallbacks3fs['storage']['bucket'] }}",
+            "bucketMaxAge": {{ s3fallbacks3fs['storage']['bucketMaxAge'] }}
+            {% if s3fallbacks3fs['storage']['ssec'] is defined and s3fallbacks3fs['storage']['ssec'] %}
+            ,"ssec": "{{ s3fallbacks3fs['storage']['ssec'] }}"
+            {% endif %}
+          }
+        {% endif %}
+        {% if antivirus is defined and antivirus and inventory_hostname_short is defined and inventory_hostname_short != 'jobs' %}
+          ,"antivirus" : {
+            "host" : "{{ antivirusHost }}",
+            "credential" : "{{ credentials_antivirus_apient }}"
+          }
+        {% endif %}
+        ,"blockedExtensions" : {{ blockedExtensions | default('["ade","and","adp","ani","asp","asx","bas","bat","cab","cga","cgb","cgc","cgd","cge","cgf","cgg","cgh","cgi","cgj","cgk","cgl","cgm","cgn","cgo","cgp","cgq","cgr","cgs","cgt","cgu","cgv","cgw","cgx","cgy","cgz","chk","chm","clp","cmd","cnf","cod","col","com","conf","config","cpio","cpl","cpp","crl","crt","csh","exe","grp","hhp","hlp","ht","hta","idx","inf","ins","isp","job","js","jse","lnk","mcw","mdb","mde","msc","msg","msi","mso","msp","msrcincident","msstyles","mst","pcd","pif","prf","rar","reg","sc2","scd","scf","sch","schema","scp","scr","sct","shb","shs","shtm","shtml","svg","swf","url","vb","vbe","vbs","vxd","wab","wax","wbk","wcs","wdb","web","webinfo","webpnp","wht","wiz","wizhtml","wll","wm","wma","wmd","wmdb","wmf","wms","wmx","wmz","wpc","wpl","wpz","wri","wsc","wsdl","wsf","wsh","wtx","wvx"]')}}
+      },
+    {% endif %}
+    "sharedConf": {
+      "smsProvider": "{{ smsProvider | default('Sinch') }}",
+      "ent-version": "{{ maven_artifact_version | default('') }}",
+      "forced-mfa-profiles": "{{ forcedMfaProfiles | default('') }}",
+      "findVisiblesTimeout": {{ findVisiblesTimeout | default(60000) }},            
+      "sharesPartitionSize": {{ sharesPartitionSize | default(50) }},
+      "sharesMaxCheckSize": {{ sharesMaxCheckSize | default('1000') }}
+    }, 
+    {% if contentTransformerUrl is defined %}
+      "content-transformer": {
+        "url": "{{ contentTransformerUrl }}",
+		    {% if contentTransformerToken is defined %}
+			    "auth": "{{ contentTransformerToken }}",
+		    {% endif %}
+        "content-transformer-metrics": {
+          "enabled": {{ contentTransformerMetricsEnabled | default('true')}}
+          {% if contentTransformerMetricsSla is defined %}
+          ,
+          "sla": {{ contentTransformerMetricsSla }}
+          {% endif %}
+        }
+      },
+    {% endif %}
+    "emailConfig":
+    {% if emailConfig is defined %}
+      {{ emailConfig }},
+    {% else %}
+      {
+        "email": "{{ fromEmail }}",
+        "host": "https://{{ host }}",
+        "type": "SendInBlue",
+        "api-key": "{{ sendInBlueApiKey | default('') }}",
+        "uri": "https://api.sendinblue.com:443",
+        "split-recipients" : true,
+        "ip": "{{ sendInBlueIP | default('') }}",
+        "tracking-image": "sendInBlueTrackingImage | default('')",
+        "postgresql": {
+          "port": {{ emailConfigPgPort | default('5432')}},
+          "host": "{{ emailConfigPgHost | default('')}}",
+          "database": "{{ statsDB }}",
+          "user": "{{ emailConfigPgUser }}",
+          "password": "{{ statsPGCluster_cred_pql_pf }}",
+          "ssl-mode": "REQUIRE",
+          "log-emails": {{ logEmails | default('false') }},
+          "pool-size": {{ eventsPGPoolSizeDirectory | default(10) }}
+        }
+      },
+    {% endif %}
+    "event-store" : {
+      "events-batch-size": {{ eventsBatchSize | default(100000) }},
+		  "platform": "{{ platform_id }}"
+      {% if platform_name is defined and platform_name != 'prod-nc' -%}
+        ,"postgresql": {
+          "user":"{{ statsPGUser }}",
+          "password":"{{ statsPGCluster_cred_pql_pf }}",
+          "host": "{{ statsPGHost }}",
+          "port": 5432,
+          "database":"{{ statsDB }}",
+          "ssl-mode": "REQUIRE",
+		      "enable-persist-fallback-timer": {{ eventStoreFallbackTimer | default('true') }},
+		      "allowed-events": {{ eventAllowedEvents | default(["AUTH","LOGIN","SMS"]|to_json) }},
+          "pool-size": {{ eventsPGPoolSize | default(5) }}
+        },
+        "postgresql-slave": {
+          "user":"{{ statsPGUser }}",
+          "password":"{{statsPGCluster_cred_pql_pf}}",
+          "host": "{{ statsPGHostSlave }}",      
+          "port": 5432,
+          "database":"{{ statsDB }}",
+          "ssl-mode": "REQUIRE",
+          "pool-size": {{ eventsPGPoolSize | default(5) }}
+        }
+      {% endif -%}
+    },
+    "eventConfig": {
+			"event-whitelist": {{ eventWhitelist | default('["EDIT_START", "EDIT_STOP", "EDIT_FINISH", "CANTOO_ADAPT_TEXT", "CANTOO_READ_TEXT", "CANTOO_DICTATE_TEXT", "CANTOO_TRANSLATED_TEXT", "CANTOO_EDITEUR_ADAPT_TEXT", "CANTOO_EDITEUR_SPEECH_TO_TEXT", "CANTOO_EDITEUR_TEXT_TO_SPEECH", "CANTOO_DEFINED_TEXT", "VIDEO_SAVE", "VIDEO_READ", "SPEECH_AND_TEXT", "EDUMALIN_OPEN_MODAL", "EDUMALIN_OPEN_GAR", "EDUMALIN_OPEN_LINK", "ACCESS_LIBRARY_FROM_EXPLORER", "DISCOVER_VISIBLE_LINK_USER", "DISCOVER_VISIBLE_UNLINK_USER", "DISCOVER_VISIBLE_EXIT_GROUP", "DISCOVER_VISIBLE_CREATE_GROUP", "ACCESS_WIKI_PAGE_VERSIONS"]') }},
+      "user-blacklist": {{ usersBlacklist | default([]) }},
+      "module-reference": {"welcome": "Portal" , "collaborativeeditor": "CollaborativeEditor", "chatbotcontroller" : "ChatbotController" , "classparam" : "ClassParam", "collaborativewall": "collaborativewall", "homeworkassistance" : "HomeworkAssistance", "myaccount" : "MyAccount","schoolbook": "SchoolBook", "searchengine" : "SearchEngine", "sharebigfiles" : "ShareBigFiles" , "timelinegenerator" : "TimelineGenerator", "webconference" : "WebConference"}
+    },
+    "mfaConfig": {
+      "types": {{ authMfaTypes | default([]) }},
+      "protectedUrls": {{ mfaProtectedUrls | default([]) }}
+    },
+    "emailValidationConfig": {
+      "active": {{ emailValidationActive | default('true') }},
+      "encryptKey": "{{ credentials_ent_emailvalidationencryptkey }}",
+			"emailValidationRelativeActive": {{ emailValidationRelativeActive | default('false') }},
+      "ttlInSeconds": {{ emailValidationTtl | default('600') }},
+      "retryNumber": {{ emailValidationRetry | default('5') }},
+      "waitInSeconds": {{ emailValidationWait | default('2') }}
+    },
+    "node-pdf-generator" : {
+      "pdf-connector-id": "exportpdf",
+			"pdf-pool": {{ nodePdfPool | default('5') }},
+      "auth": "{{ nodePdfToken }}",
+      "url" : "{{ nodePdfUrl }}"
+    },
+    "redisConfig": {
+      {% if redis_hosts is defined %}
+        "hosts": [{{ redis_hosts|join(', ') }}],
+      {% else %}
+        "host": "{{ redisHost }}",
+      {% endif %}      
+      "port": {{ redisPort | default('6379') }},
+      {% if redis_hosts is defined %}
+        "select": {{ redisSelect | default('0') }},
+      {% endif %}
+      "auth": "{{ credentials_redis_x_password }}",
+      "maxPoolWaiting": {{ redisPoolWaitingExplorer | default('2024') }},
+      "maxWaitingHandlers": {{ redisWaitingHandlerExplorer | default('2024') }}
+    },
+    {% if oauthCache is defined %}
+      "oauthCache": {
+        "enabled": {{ oauthCache }}
+      },
+    {% endif %}
+    {% if webviewFilter is defined %}
+      "webviewConfig": {
+        "enabled": {{ webviewFilter }},
+        "whitelist": {{ webviewFilterWhitelist | default(["dev.CC3B2A9FC9C32565FF6237642B73E","monlycee.CC3B2A9FC9C32565FF6237642B73E","neo.CC3B2A9FC9C32565FF6237642B73E","one.CC3B2A9FC9C32565FF6237642B73E","openent.CC3B2A9FC9C32565FF6237642B73E","leducdenormandie.CC3B2A9FC9C32565FF6237642B73E","lyceeconnecte.CC3B2A9FC9C32565FF6237642B73E"]|to_json) }},
+        "illegal-page": "{{ webviewFilterPage | default('/auth/login') }}",          
+        "blacklist": {{ webviewFilterBlacklist | default([]) }}
+      },
+    {% endif %}
+    {% if redisHostExplorer is defined %}
+      "explorerConfig": {
+        "redisConfig": {
+        	"maxPoolWaiting": {{ redisPoolWaitingExplorer | default('2024') }},
+          "maxWaitingHandlers": {{ redisWaitingHandlerExplorer | default('2024') }},
+          "select": {{ redisSelectExplorer | default('0') }},
+          "host": "{{ redisHostExplorer }},
+          "port": {{ redisPortExplorer | default('6379') }},
+          "auth": "{{ credentials_redis_2_password }}"
+          {% if redisMaxPoolSize is defined %},
+            "maxPoolSize": {{ redisMaxPoolSize }}
+          {% endif %}
+        }
+      },
+    {% else %}
+      "explorerConfig": {
+        "enabled": false
+      },
+    {% endif %}
+	  "mongoConfig": {
+      "username": "{{ mongo_user }}",
+      "password": "{{ credentials_mongodb_ent }}",
+      "ssl": {{ mongoUseSsl  | default('true') }},
+      "authSource": "{{ dbName }}",
+      "hosts": {{ mongoHosts }},
+      "db_name": "{{ dbName }}",
+      {% if (readPreferenceMongo is defined and readPreferenceMongo) %}
+        "readPreference": "nearest",
+      {% endif %}
+      {% if socketTimeoutMongo is defined %}
+        "socketTimeoutMS":{{socketTimeoutMongo}},
+      {% endif %}
+      {% if mongoMaxPoolSize is defined %}
+        "maxPoolSize":{{mongoMaxPoolSize}},
+      {% endif %}
+      {% if mongoMinPoolSize is defined %}
+        "minPoolSize":{{mongoMinPoolSize}},
+      {% endif %}
+      "use_mongo_types": true
+    },
+    "postgresConfig":{
+      "host": "{{ postgresHost }}",
+      "database": "{{ dbName }}",
+      "ssl-mode": "REQUIRE",
+      "port": {{ postgresPort | default(5432) }},
+      "user": "{{ userPostgres }}",
+      "password": "{{ credentials_postgresql_ent }}",
+      "pool-size": {{ postgresPoolSize | default(50) }}
+    },
+    "neo4jConfig": {
+      "poolSize": {{ neo4jPoolSize | default('10') }},
+      "checkDelay": 30000,
+    	"optimized-check-enable": {{ neo4jOptimizedEnable | default('true') }},
+    	"optimized-check-delay": {{ neo4jOptimizedDelay | default('10000') }},
+      "username": "{{ neo4j_user }}",
+      {% if neo4j_user == 'neo4j' %}
+        "password": "{{ credentials_neo4j_admin }}",
+      {% else %}
+        "password": "{{ credentials_neo4j_ent }}",
+      {% endif %}
+      "server-uris": {{ neo4jUris }},
+      {% if ha is defined and ha %}
+        "slave-readonly": true
+      {% else %}
+        "slave-readonly": false
+      {% endif %}
+    }
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "name": "org.entcore~conversation",
+  "config": {
+    "main": "org.entcore.conversation.Conversation",
+    "host": "https://{{ host }}",
+    "app-type" : "END_USER",
+    "mode": "prod",
+    "csrf-token": {{ csrfToken | default('true') }},
+    "ssl": true,
+    "optimized-thread-list" : {{ conversationOptimizedThreadList | default('false') }},
+    "recall-delay-minutes": {{ conversationRecallDelayMinutes | default('60') }},
+    "auto-redeploy": false,
+    "userbook-host": "https://{{ host }}",
+    "app-address": "/conversation/conversation",
+    "port": 8019,
+    "app-name": "Messagerie",
+    "app-icon": "conversation-large",
+    "block-route-filter": {{ conversationBlockRouteFilter | default('false') }},
+    {% if (ha is defined and not(ha)) or (inventory_hostname_short is defined and inventory_hostname_short == 'jobs') %}
+      "deleteOrphanCron" : "0 45 4 * * ? *",
+      "orphans-killer": {
+      	"sql-timeout": {{ conversationDeleteOrphanTimeout | default(60000)}},
+      	"batch-size": {{ conversationDeleteOrphanBatchSize | default('500') }},
+      	"max-batches": {{ conversationDeleteOrphanMaxBatches | default('10') }}
+      },
+    {% endif %}
+    "fileAnalyzer": {
+      "enabled": {{ fileAnalyzerOn | default('true') }},
+      "messaging": {
+        "type": "redis",
+        "stream": "xss-analyzer",
+        "tags": ["xss-analyzer", "conversation"],
+        "metrics": {
+          "enabled": true
+        }
+      }
+    },
+    "sql": true,
+    "db-schema": "conversation",
+    {% if mailToExercizer is defined and mailToExercizer == 'true'  %}
+      "mail-to-exercizer": {
+    		"langfuse_public_key": "{{ langfuse_public_key }}",
+    		"langfuse_secret_key": "{{ langfuse_secret_key }}",
+    		"langfuse_host": "{{ langfuseHost }}",
+    		"environment" : "{{ platform_name }}",
+    		"mistral_api_key": "{{ mistralApiKey }}",
+    		"version": "{{ mailToExercizerVersion | default('0.1.0') }}"
+    	},
+    {% endif %}
+    {% if ipPostgres2 is defined %}
+      "sql-address": "sql.persistor2",
+    {% endif %}
+    "get-visible-strategy": "{{ conversationGetVisibleStrategy | default('all-at-once') }}",
+    "inactive-user-threshold": {{ conversationInactiveUserThreshold | default('50') }},
+    "publicConf": {
+    	"debounce-time-to-auto-save": {{ conversationDebounceTimeToAutoSave | default('5000') }},
+    	"mail-to-exercizer": {{ mailToExercizer | default('false') }},
+    	"purge-grace-period": {{ conversationPurgeGracePeriod | default('24') }}      
+    }
+  }
+}

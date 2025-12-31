@@ -1,0 +1,199 @@
+{
+  "name": "org.entcore~portal",
+  "config": {
+    "port": 8017,
+    "auto-redeploy": false,
+    {% if ha is defined and ha and inventory_hostname_short is defined and inventory_hostname_short != 'jobs' and portalInstance is defined %}
+      "instances": {{ portalInstance }},
+    {% endif %}
+    {% if portalNeo4jCheck is defined and portalNeo4jCheck %}
+      "neo4jConfigOverride":{
+		    "email-alerts-subject": "{{ portalNeo4jCheckEmailSubject | default('[NEO4J] Noeuds down: ') }}",
+        {% if ha is defined and ha and inventory_hostname_short is defined and inventory_hostname_short == 'jobs' and portalNeo4jCheckEmails is defined %}
+          "email-alerts-dest": {{ portalNeo4jCheckEmails | default('[]') }},
+        {% endif %}
+		    "notification-enable": true,
+        "optimized-check-active": true
+      },
+    {% endif %}
+    "ssl": true,
+    "app-type" : "SYSTEM",
+    {% if smartBanner is defined -%} "smartBanner": {{ smartBanner }}, {%- endif %}
+    "csrf-token": {{ csrfToken | default('true') }},
+		{% if cantooOptionalFeatureScriptPath is defined -%}
+      "optionalFeature-cantoo-scriptPath": "{{ cantooOptionalFeatureScriptPath }}",
+    {%- endif %}
+    {% if zendeskGuideEnabled is not defined or zendeskGuideEnabled == 'true' %}
+      "zendeskGuide": {
+        "key": "{{ zendeskGuide_key }}",
+        "color": "{{ zendeskGuideColor | default('#ffc400') }}",
+        "articleRedirectButton": {{ zendeskGuideArticleRedirectButton | default('true') }},
+        "modules": {{ zendeskGuideModules | default('{"admin":{"labels":{"admin":"admin/home","admin/management/infos":"admin/structure/menu","admin/management/message-flash/list":"admin/flashmessage","admin/management/block-profiles":"admin/massblocking","admin/management/calendar":"admin/calendar","admin/users/list/filter":"admin/user/menu","admin/users/list/details":"admin/user/fields","admin/users/list/communication":"admin/user/communication","admin/groups/profileGroup":"admin/group/profilgroup","admin/groups/manualGroup":"admin/group/manualgroup","admin/groups/manualGroup/details":"admin/group/manualgroup","admin/groups/functionalGroup":"admin/group/educationgroup","admin/groups/functionGroup":"admin/group/function","admin/management/import-edt":"admin/importedt","admin/management/positions":"admin/positions","admin/services/applications":"admin/application","admin/services/connectors":"admin/connector","admin/services/widgets":"admin/widget","admin/alertes/signalements":"admin/alert","admin/imports-exports/import-csv":"admin/import","admin/imports-exports/export":"admin/export","admin/imports-exports/massmail":"admin/massmail","admin/groups/profileGroup/details":"admin/group/communication","admin/groups/profileGroup/communication":"admin/group/communication","admin/groups/manualGroup/communication":"admin/group/manualgroup"},"default":"admin/home"},"actualites":{"labels":{"actualites#/default":"actualites/default/${profile}"},"default":"actualites"},"calendar":{"labels":{},"default":"calendar"},"support":{"labels":{},"default":"support"},"blog":{"labels":{"blog?view=home":"blog/home","blog?view=home#/view":"blog/home","blog#/view":"blog/view"},"default":"blog/home"},"homeworks":{"labels":{"homeworks#":"homeworks/home/${profile}","homeworks#/view-homeworks":"homeworks/view/${profile}"},"default":"homeworks/home"},"diary":{"labels":{"diary#/administrator/global":"diary/home/${adml}/${profile}","diary#/view":"diary/vuecalendaire/${profile}","diary#/progressions/view":"diary/progressions/${profile}","diary#/archives/notebooks/view":"diary/archives/${profile}","diary#/list":"diary/home/${profile}"},"default":"diary/home/${adml}/${profile}"},"scrapbook":{"labels":{"scrapbook#":"scrapbook/home","scrapbook#/view-scrapbook":"scrapbook/view"},"default":"scrapbook/home"},"schoolbook":{"labels":{"schoolbook#/list":"schoolbook/home/${profile}","schoolbook#/report":"schoolbook/report/${profile}"},"default":"schoolbook/home/${profile}"},"mindmap":{"labels":{},"default":"mindmap/${profile}"},"rack":{"labels":{},"default":"rack"},"community":{"labels":{},"default":"community"},"communities":{"labels":{},"default":"communities"},"competences":{"labels":{"competences#":"competences/home/${adml}/${profile}","competences#/devoirs/list":"competences/evaluations/${profile}","competences#/releve":"competences/releve/${profile}","competences#/competences/eleve":"competences/suivieleve/${profile}","competences#/projets":"competences/projets/${profile}","competences#/export":"competences/export/${adml}/${profile}","competences#/bulletin":"competences/bulletin/${adml}/${profile}"},"default":"competences/home/${adml}/${profile}"},"edt":{"labels":{},"default":"agenda/${adml}/${profile}"},"workspace":{"labels":{},"default":"workspace"},"exercizer":{"labels":{"exercizer#/dashboard":"exercizer/dashboard/${profile}","exercizer#/subject/edit":"exercizer/subject/${profile}","exercizer#/subject/copy/perform/simple":"exercizer/subject/${profile}","exercizer#/dashboard/teacher/correction":"exercizer/correction/${profile}","exercizer#/subject/edit/simple":"exercizer/subject/${profile}","exercizer#/subject/copy/perform":"exercizer/subject/${profile}"},"default":"exercizer/dashboard/${profile}"},"formulaire":{"labels":{"formulaire#/list/mine":"formulaire/home/${profile}","formulaire#/form/edit":"formulaire/edit/${profile}","formulaire#/list/responses":"formulaire/reponse"},"default":"formulaire/home/${profile}"},"forum":{"labels":{},"default":"forum"},"timelinegenerator":{"labels":{"timelinegenerator":"timelinegenerator/home","timelinegenerator#/view":"timelinegenerator/view"},"default":"timelinegenerator/home"},"archive":{"labels":{},"default":"archive"},"mediacentre":{"labels":{},"default":"mediacentre"},"conversation":{"labels":{},"default":"conversation"},"collaborativewall":{"labels":{},"default":"collaborativewall/${profile}"},"collaborativeeditor":{"labels":{},"default":"collaborativeeditor"},"pages":{"labels":{"pages#/list-sites":"pages/home/${profile}","pages#/website":"pages/edit/${profile}"},"default":"pages/home"},"directory":{"labels":{},"default":"classadmin/home"},"presences":{"labels":{"presences#/dashboard":"presences/dashboard/${adml}/${profile}/${theme}","presences#":"presences/registry/${adml}/${profile}/${theme}","presences#/registers":"presences/registers/${adml}/${profile}/${theme}","presences#/events":"presences/events/${adml}/${profile}/${theme}","presences#/presences":"presences/presences/${adml}/${profile}/${theme}","presences#/calendar":"presences/calendar/${adml}/${profile}/${theme}","presences#/alerts":"presences/alerts/${adml}/${profile}/${theme}","presences#/statements-absences":"presences/statements/${adml}/${profile}/${theme}","presences#/exemptions":"presences/exemptions/${adml}/${profile}/${theme}","presences#/collective-absences":"presences/collectiveabsences/${adml}/${profile}/${theme}"},"default":"presences/dashboard/${adml}/${profile}/${theme}"},"massmailing":{"labels":{},"default":"presences/massmailing/${adml}/${profile}/${theme}"},"statistics-presences":{"labels":{},"default":"presences/statistics/${adml}/${profile}/${theme}"},"incidents":{"labels":{"incidents#/incidents":"presences/incidents/${adml}/${profile}/${theme}","incidents#/punishment/sanction":"presences/punishment/${adml}/${profile}/${theme}"},"default":"presences/incidents/${adml}/${profile}/${theme}"},"rbs":{"labels":{},"default":"reservationressources/${adml}"},"website":{"labels":{},"default":"website"},"stats":{"labels":{},"default":"stats"},"wiki":{"labels":{},"default":"courswiki/${profile}"},"viescolaire":{"labels":{"viescolaire#/viescolaire/accueil":"viescolaire/home/${adml}/${profile}","viescolaire#/viescolaire/accueil?filter=Evaluation":"viescolaire/evaluation/${adml}/${profile}","viescolaire#/viescolaire/accueil?filter=Presences":"viescolaire/presences/${adml}/${profile}/${theme}","viescolaire#/viescolaire/accueil?filter=Cahier%20de%20texte":"viescolaire/cahierdetextes/${adml}/${profile}","viescolaire#/viescolaire/accueil?filter=Emploi%20du%20temps":"viescolaire/emploidutemps/${adml}/${profile}"},"default":"viescolaire/evaluation/${adml}/${profile}"},"timeline":{"labels":{"timeline/timeline":"timeline","timeline/preferencesView":"moncompte/notificationsexternes","timeline/historyView":"moncompte/historique"},"default":"timeline"},"welcome":{"labels":{},"default":"mesapplis"},"homework-assistance":{"labels":{},"default":"homeworkassistance"},"geogebra":{"labels":{},"default":"geogebra"},"lool":{"labels":{},"default":"lool"},"lystore":{"labels":{},"default":"lystore"},"magneto":{"labels":{"magneto#":"magneto/home","magneto#/board/view":"magneto/board/view"},"default":"magneto/home"},"minetest":{"labels":{},"default":"minetest"},"minibadge":{"labels":{},"default":"minibadge"},"moodle":{"labels":{},"default":"moodle"},"searchengine":{"labels":{},"default":"searchengine"},"sharebigfiles":{"labels":{},"default":"sharebigfiles"},"poll":{"labels":{},"default":"poll"},"webconference":{"labels":{},"default":"webconference"},"zimbra":{"labels":{},"default":"zimbra"},"userbook":{"labels":{"userbook/annuaire#/search":"userbook","userbook/mon-compte#/edit-me":"moncompte/monprofil","userbook/annuaire?myClass&token/myClass#/myClass":"laclasse","userbook/mon-compte#/themes":"moncompte/theme"},"default":"userbook"}},"nabook":{"labels":{},"default":"nabook"},"assistancetic":{"labels":{},"default":"assistancetic"},"appointments":{"labels":{},"default":"appointments"}, "votil":{"labels":{},"default":"vote"}')}}
+      },
+    {% endif %} 
+    "mode": "prod",
+    "assets-path": "{{ assetsPath | default('/srv/vertx/entcore') }}",
+    "path-prefix": "",
+    "emailProvider": {{ emailProvider | default('[]') }},
+    "root-page": "{{ rootPage | default('/timeline/timeline') }}",
+    "urls": {
+      "userbook": "/userbook",
+      "auth": "/auth",
+      "portal": "/",
+      "logoutCallback": "{{ portalLogoutCallback | default('') }}"
+    },
+    "admin-urls": [
+      {
+        "name": "directory",
+        "url": "/directory/admin-console"
+      },
+      {
+        "name": "appRegistry",
+        "url": "/appregistry/admin-console"
+      },
+      {
+        "name": "wizard",
+        "url": "/directory/wizard"
+      },
+      {
+        "name": "timeline.history",
+        "url": "/timeline/admin-history"
+      },
+      {
+        "name": "timeline",
+        "url": "/timeline/admin-console",
+        "allowed": [
+          "SUPER_ADMIN"
+        ]
+      },
+      {
+        "name": "welcomeMessage",
+        "url": "/auth/admin-welcome-message",
+        "allowed": [
+          "SUPER_ADMIN"
+        ]
+      },
+      {
+        "name": "embed",
+        "url": "/infra/embed/admin",
+        "allowed": [
+          "SUPER_ADMIN"
+        ]
+      },
+      {% if edtKey is defined %}
+        {
+          "name": "edtudt",
+            "url": "/directory/timetable",
+            "allowed": [
+              "SUPER_ADMIN"
+            ]
+        },
+      {% endif %}
+      {% if zimbraConsole is defined and zimbraConsole == 'True'  %}
+        {
+          "name": "zimbra",
+          "url": "/zimbra/admin-console"
+        },
+      {% endif %}
+      {
+        "name": "calendar",
+        "url": "/directory/calendar"
+      },
+      {
+        "name": "keyring",
+        "url": "/sso/keyring/admin-console",
+        "allowed": [
+          "SUPER_ADMIN"
+        ]
+      },
+      {
+        "name": "flashMessage",
+          "url": "/timeline/flashmsg/admin",
+          "allowed": [
+            "SUPER_ADMIN"
+          ]
+      }
+    ],
+    "widgets": [
+      {
+        "name": "recorder",
+        "path": "/public/template/record-me.html",
+        "js": "/public/js/record-me.js"
+      },
+      {
+        "name": "calendar",
+        "path": "/public/template/calendar.html",
+        "js": "/public/js/calendar.js"
+      },
+      {
+        "name": "actualites",
+        "path": "/actualites/public/template/last-infos-widget.html",
+        "js": "/actualites/public/js/last-infos-widget.js",
+        "i18n": "/actualites/i18n"
+      },
+      {% if (rssEnabled | default(True)) != 'False' %}
+        {
+          "name": "rss",
+          "path": "/rss/public/template/rss-widget.html",
+          "js": "/rss/public/js/rss-widget.js",
+          "i18n": "/rss/i18n"
+        },
+      {% endif %}
+	    {% if skinLevels is defined %}
+        {
+  				"name": "school-widget",
+  				"path": "/public/template/school-widget.html",
+  				"js": "/public/template/school-widget.html" 
+		    },
+	    {% endif %}
+      {
+        "name": "notes",
+        "path": "/public/template/notes.html",
+        "js": "/public/js/notes.js"
+      }
+    ],
+    "resources-applications": [
+      "workspace",
+      "blog",
+      "actualites",
+      "wiki",
+      "pages",
+      "poll",
+      "timelinegenerator",
+      "community",
+      "mindmap",
+      "forum",
+      "homeworks",
+      "scrapbook",
+  	  "collaborativewall",
+		  "exercizer",
+		  "formulaire",
+		  "magneto" {{ resourcesApplicationExt | default('') }}
+    ],
+    {% if matomoODEEnabled is defined and matomoODEEnabled %}
+      "tracker": {
+          "type":"matomo",
+          "matomo": {
+            "url":"{{ matomoSiteUrl }}",
+            "siteId": {{ matomoSiteId }},
+            "detailApps": true,
+            "doNotTrack": {{ matomoEventBlackList | default('["*.edit"]') }}
+          },
+          "internal":{
+            "doNotTrack": ["*.edit"],
+            "trackOnly":[]
+          }
+      },
+    {% endif %}
+    "my-apps-config": {{ myAppsConfig | default('[{"name": "Actualites","category": "communication","color": "orange","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/360018742559-Pr%C3%A9sentation-de-l-application-Actualit%C3%A9s","en": "https://help.edifice.io/hc/en-gb/articles/360018742559-News-introduction","es": "https://help.edifice.io/hc/es-419/articles/360018742559-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Noticias"}},{"name": "Annuaire","category": "organisation","color": "green","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/360018743359-Pr%C3%A9sentation-de-l-application-Annuaire","en": "https://help.edifice.io/hc/en-gb/articles/360018743359-Directory-Presentation","es": "https://help.edifice.io/hc/es-419/articles/360018743359-Presentación-de-la-aplicación-Directorio"}},{"name": "Calendar","category": "organisation","color": "green","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/5570293349276-Pr%C3%A9sentation-de-l-Agenda","en": "https://help.edifice.io/hc/en-gb/articles/5570293349276-Agenda-Presentation","es": "https://help.edifice.io/hc/es-419/articles/5570293349276-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Agenda"}},{"name": "Aide et support","category": "organisation","color": "yellow","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/360018743999-Pr%C3%A9sentation-de-l-application-Assistance-ENT","en": "https://help.edifice.io/hc/en-gb/articles/360018743999-Assistance-Introduction","es": "https://help.edifice.io/hc/es-419/articles/360018743999-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Ayuda"}},{"name": "library-info","category": "pedagogy","color": "purple","libraries": false,"isExternal": true,"help": {"fr": "https://help.edifice.io/hc/fr/articles/5896833929372-Pr%C3%A9sentation-de-la-Biblioth%C3%A8que","en": "https://help.edifice.io/hc/en-gb/articles/5896833929372-Library-Presentation","es": "https://help.edifice.io/hc/es-419/articles/5896833929372-Presentaci%C3%B3n-de-la-Biblioteca"}},{"name": "Blog","category": "communication","color": "orange","libraries": true,"help": {"fr": "https://help.edifice.io/hc/fr/articles/360018673880-Pr%C3%A9sentation-de-l-application-Blog","en": "https://help.edifice.io/hc/en-gb/articles/360018673880-Blog-Presentation","es": "https://help.edifice.io/hc/es-419/articles/360018673880-Presentaci%C3%B3n-del-Blog"}},{"name": "Cahier de texte","category": "pedagogy","color": "blue","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/360018701660-Pr%C3%A9sentation-de-l-application-Cahier-de-textes-Carnet-d-activit%C3%A9s","en": "https://help.edifice.io/hc/en-gb/articles/360018701660-Homework-notebook-Presentation","es": "https://help.edifice.io/hc/es-419/articles/360018701660-Presentaci%C3%B3n-de-la-Libreta-de-tareas"}},{"name": "Diary","category": "pedagogy","color": "blue","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/12352333912220-Pr%C3%A9sentation-du-Cahier-de-textes-2D","en": "https://help.edifice.io/hc/en-gb/articles/12352333912220-Presentation-of-the-Diary-app","es": "https://help.edifice.io/hc/es-419/articles/12352333912220-Presentaci%C3%B3n-de-la-Lista-de-tareas"}},{"name": "Cahier Multimédia","category": "pedagogy","color": "blue","libraries": true,"help": {"fr": "https://help.edifice.io/hc/fr/articles/360018701960-Pr%C3%A9sentation-du-Cahier-Multim%C3%A9dia","en": "https://help.edifice.io/hc/en-gb/articles/360018701960-Multimedia-notebook-Presentation","es": "https://help.edifice.io/hc/es-419/articles/360018701960-Presentaci%C3%B3n-del-Cuaderno-Multimedia"}},{"name": "Schoolbook","category": "communication","color": "orange","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/360018771239-Pr%C3%A9sentation-du-Carnet-de-liaison","en": "https://help.edifice.io/hc/en-gb/articles/360018771239-Schoolbook-Presentation","es": "https://help.edifice.io/hc/es-419/articles/360018771239-Presentaci%C3%B3n-del-Cuaderno-de-correspondencia"}},{"name": "Mindmap","category": "pedagogy","color": "blue","libraries": true,"help": {"fr": "https://help.edifice.io/hc/fr/articles/360018771359-Pr%C3%A9sentation-de-l-application-Carte-mentale","en": "https://help.edifice.io/hc/en-gb/articles/360018771359-Mind-map-Presentation","es": "https://help.edifice.io/hc/es-419/articles/360018771359-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Mapa-Mental"}},{"name": "Rack","category": "organisation","color": "green","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/360018702700-Pr%C3%A9sentation-de-l-application-Casier","en": "https://help.edifice.io/hc/en-gb/articles/360018702700-Presentation-of-the-Rack-App","es": "https://help.edifice.io/hc/es-419/articles/360018702700-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Casillero"}},{"name": "Community","category": "pedagogy","color": "blue","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/12333891407260-Pr%C3%A9sentation-de-l-application-Communaut%C3%A9s","en": "https://help.edifice.io/hc/en-gb/articles/12333891407260-Presentation-of-the-Communities-app","es": "https://help.edifice.io/hc/es-419/articles/12333891407260-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Comunidades"}},{"name":"Communities","category":"pedagogy","color":"purple","libraries":false,"help":{"fr":"https://help.edifice.io/hc/fr/sections/23206860465820-Communaut%C3%A9s-Coll%C3%A8ges-et-Lyc%C3%A9es-Nouvelle-version","en":"https://help.edifice.io/hc/en-gb/sections/23206860465820-Communities-High-school-New-version","es":"https://help.edifice.io/hc/es-419/sections/23206860465820-Comunidad-colegio-instituto-Nueva-versi%C3%B3n"}},{"name": "Competences","category": "organisation","color": "green","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/12334253934108-Pr%C3%A9sentation-de-Comp%C3%A9tences","en": "https://help.edifice.io/hc/en-gb/articles/12334253934108-Presentation-of-the-Skills-app","es": null}},{"name": "Administration","category": "organisation","color": "yellow","libraries": false,"isExternal": true,"help": {"fr": "https://help.edifice.io/hc/fr/articles/5167202595612-A-qui-s-adresse-cette-cat%C3%A9gorie","en": "https://help.edifice.io/hc/en-gb/articles/5167202595612-Who-can-access-the-Admin-console","es": "https://help.edifice.io/hc/es-419/articles/5167202595612--Qui%C3%A9n-tiene-acceso-a-la-consola-de-administraci%C3%B3n"}},{"name": "Console Admin","category": "organisation","color": "yellow","libraries": false,"isExternal": true,"help": {"fr": "https://help.edifice.io/hc/fr/articles/5167202595612-A-qui-s-adresse-cette-cat%C3%A9gorie","en": "https://help.edifice.io/hc/en-gb/articles/5167202595612-Who-can-access-the-Admin-console","es": "https://help.edifice.io/hc/es-419/articles/5167202595612--Qui%C3%A9n-tiene-acceso-a-la-consola-de-administraci%C3%B3n"}},{"name": "Wiki","category": "pedagogy","color": "blue","libraries": true,"help": {"fr": "https://help.edifice.io/hc/fr/articles/17256898627484-Pr%C3%A9sentation-de-Cours-et-Wiki","en": "https://help.edifice.io/hc/en-gb/articles/17256898627484-Presentation-of-the-Lecture-and-Wiki-app","es": "https://help.edifice.io/hc/es-419/articles/17256898627484-Presentaci%C3%B3n-de-Cursos-y-Wiki"}},{"name": "Edt","category": "organisation","color": "green","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/12368734214556-Pr%C3%A9sentation-de-l-Emploi-du-temps","en": "https://help.edifice.io/hc/en-gb/articles/12368734214556-Presentation-of-the-timetable-app","es": null}},{"name": "Espace documentaire","category": "communication","color": "orange","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/360018702820-Pr%C3%A9sentation-de-l-Espace-documentaire","en": "https://help.edifice.io/hc/en-gb/articles/360018702820-Presentation-of-the-Filespace-app","es": "https://help.edifice.io/hc/es-419/articles/360018702820-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Espacio-Documental"}},{"name": "Exercices et évaluations","category": "pedagogy","color": "blue","libraries": true,"help": {"fr": "https://help.edifice.io/hc/fr/articles/5702650331676-Pr%C3%A9sentation-de-l-application-Exercices","en": "https://help.edifice.io/hc/en-gb/articles/5702650331676-Presentation-of-the-exercices-app","es": "https://help.edifice.io/hc/es-419/articles/5702650331676-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Ejercicios"}},{"name": "Formulaire","category": "organisation","color": "green","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/5876062115868-Pr%C3%A9sentation-de-l-application-Formulaire","en": "https://help.edifice.io/hc/en-gb/articles/5876062115868-Presentation-of-the-form-app","es": "https://help.edifice.io/hc/es-419/articles/5876062115868-Presentaci%C3%B3n-del-Formulario"}},{"name": "Forum","category": "communication","color": "orange","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/12437184364444-Pr%C3%A9sentation-de-l-application-Forum","en": "https://help.edifice.io/hc/en-gb/articles/12437184364444-Presentation-of-the-Forum-app","es": "https://help.edifice.io/hc/es-419/articles/12437184364444-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Foro"}},{"name": "TimelineGenerator","category": "pedagogy","color": "blue","libraries": true,"help": {"fr": "https://help.edifice.io/hc/fr/articles/360018772039-Pr%C3%A9sentation-de-l-application-Frise-Chronologique","en": "https://help.edifice.io/hc/en-gb/articles/360018772039-Presentation-of-the-Timeline-app","es": "https://help.edifice.io/hc/es-419/articles/360018772039-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Barra-cronol%C3%B3gica"}},{"name": "Geogebra","category": "pedagogy","color": "blue","libraries": false,"help": {"fr": null,"en": null,"es": null}},{"name": "Magneto","category": "pedagogy","color": "blue","libraries": false,"help": {"fr": null,"en": null,"es": null}},{"name": "Mediacentre","category": "pedagogy","color": "blue","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/12609064528284-M%C3%A9diacentre-Pr%C3%A9sentation","en": "https://help.edifice.io/hc/en-gb/articles/12609064528284-M%C3%A9diacentre-Introduction","es": null}},{"name": "Archive","category": "organisation","color": "yellow","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/360018771799-Pr%C3%A9sentation-de-l-application-Mes-donn%C3%A9es","en": "https://help.edifice.io/hc/en-gb/articles/360018771799-My-Data-Introduction","es": "https://help.edifice.io/hc/es-419/articles/360018771799-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Mis-Datos"}},{"name": "Messagerie","category": "communication","color": "orange","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/360018703900-Pr%C3%A9sentation-de-l-application-Messagerie","en": "https://help.edifice.io/hc/en-gb/articles/360018703900-Mailbox-Introduction","es": "https://help.edifice.io/hc/es-419/articles/360018703900-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Correo-Electr%C3%B3nico"}},{"name": "Minetest","category": "pedagogy","color": "blue","libraries": false,"help": {"fr": null,"en": null,"es": null}},{"name": "assistancetic","category": "organisation","color": "green","libraries": false,"help": {"fr": null,"en": null,"es": null}},{"name": "MiniBadge","category": "organisation","color": "green","libraries": false,"help": {"fr": null,"en": null,"es": null}},{"name": "Moodle","category": "connector"},{"name": "CollaborativeWall","category": "pedagogy","color": "blue","libraries": true,"help": {"fr": "https://help.edifice.io/hc/fr/articles/12243605816604-Pr%C3%A9sentation-du-Mur-collaboratif","en": "https://help.edifice.io/hc/en-gb/articles/12243605816604-Collaborative-Noticeboard-Introduction","es": "https://help.edifice.io/hc/es-419/articles/12243605816604-Presentaci%C3%B3n-del-Muro-de-colaboraci%C3%B3n"}},{"name": "nabook","category": "pedagogy","color": "nabook-color","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/19317709653660-Pr%C3%A9sentation-de-l-application-Nabook","en": "https://help.edifice.io/hc/en-gb/articles/19317709653660-Nabook-Introduction","es": null}},{"name": "votil","category": "organisation","color": "yellow","libraries": false,"help": {"fr": null,"en": null,"es": null}},{"name": "Outils bureautiques","category": "pedagogy","color": "blue","libraries": false,"help": {"fr": null,"en": null,"es": null}},{"name": "Collaborative Editor","category": "pedagogy","color": "blue","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/360018704360-Pr%C3%A9sentation-de-l-application-Pad","en": "https://help.edifice.io/hc/en-gb/articles/360018704360-Pad-Introduction","es": "https://help.edifice.io/hc/es-419/articles/360018704360-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Pad"}},{"name": "Pages","category": "communication","color": "orange","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/12244538265372-Pr%C3%A9sentation-de-l-application-Pages","en": "https://help.edifice.io/hc/en-gb/articles/12244538265372-Pages-Introduction","es": null}},{"name": "Paramétrage de la classe","category": "organisation","color": "yellow","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/360018772939-Pr%C3%A9sentation-de-l-application-Param%C3%A9trage-de-la-classe","en": "https://help.edifice.io/hc/en-gb/articles/360018772939-Class-settings-Introduction","es": "https://help.edifice.io/hc/es-419/articles/360018772939-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Configuraci%C3%B3n-de-la-clase"}},{"name": "class_admin_default","category": "organisation","color": "yellow","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/360018772939-Pr%C3%A9sentation-de-l-application-Param%C3%A9trage-de-la-classe","en": "https://help.edifice.io/hc/en-gb/articles/360018772939-Class-settings-Introduction","es": "https://help.edifice.io/hc/es-419/articles/360018772939-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Configuraci%C3%B3n-de-la-clase"}},{"name": "Viescolaire","category": "organisation","color": "yellow","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/13127059434396-Param%C3%A9trages-de-Vie-scolaire","en": "https://help.edifice.io/hc/en-gb/articles/13127059434396-School-Office-settings-Introduction","es": null}},{"name": "ShareBigFiles","category": "organisation","color": "green","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/13125889297948-Pr%C3%A9sentation-de-Poste-fichiers","en": "https://help.edifice.io/hc/en-gb/articles/13125889297948-Big-file-sharing-tool-Introduction","es": null}},{"name": "Presences","category": "organisation","color": "green","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/8693056375580-Pr%C3%A9sentation-de-l-application-Pr%C3%A9sences","en": "https://help.edifice.io/hc/en-gb/articles/8693056375580-Presentation-of-the-Attendance-app","es": "https://help.edifice.io/hc/es-419/articles/8693056375580-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Asistencias"}},{"name": "Appointments","category": "organisation","color": "green","libraries": false,"help": {"fr": null,"en": null,"es": null}},{"name": "Réservation de ressources","category": "organisation","color": "green","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/12606134641692-Pr%C3%A9sentation-de-l-application-R%C3%A9servation-de-ressources","en": "https://help.edifice.io/hc/en-gb/articles/12606134641692-Presentation-of-Resource-reservation-app","es": "https://help.edifice.io/hc/es-419/articles/12606134641692-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Reserva-de-Recursos"}},{"name": "website","category": "communication","color": "orange","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/360018773239-Cr%C3%A9er-un-nouveau-site-web","en": "https://help.edifice.io/hc/en-gb/articles/21291311306908-Websites-Presentation","es": "https://help.edifice.io/hc/es-419/articles/360018773239-Crear-un-nuevo-sitio-web"}},{"name": "Poll","category": "organisation","color": "green","libraries": false,"help": {"fr": null,"en": null,"es": null}},{"name": "Statistiques","category": "organisation","color": "yellow","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/360018773319-Pr%C3%A9sentation-de-l-application-Statistiques","en": "https://help.edifice.io/hc/en-gb/articles/360018773319-Presentation-of-statistics-app","es": "https://help.edifice.io/hc/es-419/articles/360018773319-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Estad%C3%ADsticas"}},{"name": "Web-conference","category": "communication","color": "orange","libraries": false,"help": {"fr": "https://help.edifice.io/hc/fr/articles/360018773379-Pr%C3%A9sentation-de-l-application-Web-conf%C3%A9rence","en": "https://help.edifice.io/hc/en-gb/articles/360018773379-Presentation-of-the-Video-conference-app","es": "https://help.edifice.io/hc/es-419/articles/360018773379-Presentaci%C3%B3n-de-la-aplicaci%C3%B3n-Videoconferencia"}},{"name": "Zimbra","category": "communication","color": "orange","libraries": false,"help": {"fr": null,"en": null,"es": null}},{"name": "Lool","category": "pedagogy","color": "blue","libraries": false,"help": {"fr": null,"en": null,"es": null}},{"name": "Searchengine","display": false}]') }},
+    "publicConf": {
+	      "my-apps-connectors-threshold": {{ myAppsConnectorsThreshold | default('6') }}
+  	},
+  	"my-apps-force-as-application": [
+  		{"field": "address", "fullMatch": false, "caseSensitive": true, "pattern": "library\\.opendigitaleducation\\.com" }, {"field": "address", "fullMatch": false, "caseSensitive": true, "pattern": "library\\.edifice\\.io" }
+  	],
+  	"my-apps-force-as-connector": [
+  		{"field": "name", "fullMatch": true, "caseSensitive": false, "pattern": "cns" }
+  	]
+  }
+}
