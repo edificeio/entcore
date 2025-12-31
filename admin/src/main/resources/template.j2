@@ -1,0 +1,42 @@
+{
+  "name": "org.entcore~admin",
+  "config": {
+    "main":"org.entcore.admin.Admin",
+    "port": 8089,
+    "csrf-token" : false,
+    "ssl" : true,
+    "mode": "prod",
+    "auto-redeploy": false,
+    "app-type" : "END_USER",
+    "host": "https://{{ host }}",
+    "mass-messaging-enabled": {{ adminMassMessagingEnabled | default('false') }},
+    {% if hotjarId is defined %}
+      "publicConf": {
+        "hotjarId": {{ hotjarId }}
+      },
+    {% endif %}
+    {% if adminDistributions is defined %}
+      "distributions": {{ adminDistributions }},
+    {% endif %}
+    {% if feederPreDeleteByProfile is defined %}
+      "pre-delete" : {{ feederPreDeleteByProfile }},
+    {% endif %}
+    "app-name" : "Admin",
+    "app-address" : "/admin",
+    "app-icon" : "admin-large",
+    "services" : {
+      {% if zimbraUrl is defined and zimbraConsole == 'True' %}
+        "zimbra" : true,
+      {% else %}
+        "zimbra" : false,
+      {% endif %}
+      "edt" : {{ adminEdtTab | default('true') }},
+      "calendar" : {{ adminCalendarTab | default('false') }},
+      "subjects" : {{ adminSubjectsTab | default('false') }}
+    },
+    "hide-adminv1-link": {{ hideAdminv1Link | default('true') }},
+    "allow-adml-structure-name-change": {{ adminAllowStructureNameChange | default('true') }},
+    "enable-manual-group-autolink": {{ adminEnableManualGroupAutoLink | default('false') }},
+    "enable-flashmsg-user-position-field": {{ adminEnableFlashmsgUserPositionField | default('false') }}
+  }
+}

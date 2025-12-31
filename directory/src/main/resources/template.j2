@@ -1,0 +1,146 @@
+{
+  "name": "org.entcore~directory",
+  "config": {
+    "main": "org.entcore.directory.Directory",
+    "auto-redeploy": false,
+    "ssl": true,
+    {% if ha is defined and ha and inventory_hostname_short is defined and inventory_hostname_short != 'jobs' and directoryInstance is defined %}
+      "instances": {{ directoryInstance }},
+    {% endif %}
+    "csrf-token": {{ csrfToken | default('true') }},
+    "wizard-path": "{{ directoryWizardPath | default('/tmp') }}",
+    "timetable-path": "{{ directoryTimetablePath | default('/tmp') }}",
+    "mode": "prod",
+    "app-type" : "SYSTEM",
+    "host": "https://{{ host }}",
+    "port": 8003,
+    "email": "{{fromEmail}}",
+    "app-name": "Directory",
+    "workspace-url": "localhost",
+    "workspace-port": 8011,
+    "workspace-prefix": "/workspace",
+    "activation-welcome-message": {{ activationWelcomeMessage | default('true') }},
+    "createdUserEmail": {{ directoryCreatedUserEmail | default('false') }},
+    "classDefaultRoles": {{ directoryClassDefaultRoles | default('false') }},
+    "listUserMode": "{{ directoryListUserMode | default('mono') }}",
+    "visible-check" : {{ directoryVisibleCheck | default('true') }},        
+		{% if directoryTemplateHostnameConnection is defined %}
+      "template-hostname-connection": "{{directoryTemplateHostnameConnection}}", 
+    {% endif %} 
+		{% if adminMassMessagingEnabled is defined and adminMassMessagingEnabled == 'true' %}
+			"massMessagingDefaultSenderId" : "{{ directoryMassMessagingDefaultSenderId | default('') }}",
+		{% endif %}
+    "fileAnalyzer": {
+      "enabled": {{ fileAnalyzerOn | default('true') }},
+      "messaging": {
+        "type": "redis",
+        "stream": "xss-analyzer",
+        "tags": ["xss-analyzer", "directory"],
+        "metrics": {
+          "enabled": true
+        }
+      }
+    },
+    "user-book-data": {
+      {% if cloudflareAvatarsCache is defined and cloudflareAvatarsCache %}
+        "cloudflare": {
+          "url": "{{ cloudflareAvatarsCache['url'] }}",
+          "token": "{{ cloudflareAvatarsCache['token'] }}"
+        },
+      {% elif varnishAvatarsCache is defined and varnishAvatarsCache %}
+        "varnish": {
+          "url": "{{ varnishAvatarsCache['url'] }}"
+        },
+      {% endif %}
+      "default-theme": "{{ defaultTheme | default('default') }}",
+      "default-avatar": "no-avatar.jpg",
+      "default-mood": "default",
+      "moods": ["default", "happy", "proud", "dreamy", "love", "tired", "angry", "worried", "sick", "joker", "sad"],
+      "hobbies": [
+        "sport",
+        "cinema",
+        "animals",
+        "music",
+        "places",
+        "books"
+      ]
+    },
+    {% if s3 is defined and 'avatars' in s3 and s3['avatars'] %}
+      "s3avatars": {
+        "uri": "{{ s3['avatars']['uri'] }}",
+        "accessKey": "{{ s3['avatars']['accessKey'] }}",
+        "secretKey": "{{ s3['avatars']['secretKey'] }}",
+        {% if 'ssec' in s3['avatars'] %}
+          "ssec": "{{ s3['avatars']['ssec'] }}",
+        {% endif %}
+        "region": "{{ s3['avatars']['region'] }}",
+        "bucket": "{{ s3['avatars']['bucket'] }}",
+        "keepAlive": {{ s3['avatars']['keepAlive'] | default('true') }},
+        "poolSize": {{ s3['avatars']['poolSize'] | default(64) }},
+        {% if s3['avatars']['s3fallbacks3s3'] is defined and s3['avatars']['s3fallbacks3s3'] %}
+          "s3fallbacks3s3": {
+            "uri": "{{ s3['avatars']['s3fallbacks3s3']['uri'] }}",
+            "accessKey": "{{ s3['avatars']['s3fallbacks3s3']['accessKey'] }}",
+            "secretKey": "{{ s3['avatars']['s3fallbacks3s3']['secretKey'] }}",
+            "region": "{{ s3['avatars']['s3fallbacks3s3']['region'] }}",
+            "bucket": "{{ s3['avatars']['s3fallbacks3s3']['bucket'] }}"
+            {% if s3['avatars']['s3fallbacks3s3']['ssec'] is defined and s3['avatars']['s3fallbacks3s3']['ssec'] -%}
+            ,"ssec": "{{ s3['avatars']['s3fallbacks3s3']['ssec'] }}"
+            {%- endif %}
+          },
+        {% endif %}
+        "antivirus": {
+          "host": "{{ s3['antivirus']['host'] }}",
+          "port": {{ s3['antivirus']['port'] }},
+          "credential": "{{ (project_env ~ '-' ~ project_name ~ ':' ~ s3['antivirus']['credential']) | b64encode }}"
+        }
+      },
+    {% endif %}
+    "avatar-path":"/srv/avatars/",
+    {% if inventory_hostname_short is defined and inventory_hostname_short == 'jobs' and remoteNodes is defined %}
+      "remote-nodes": {{ remoteNodes }},
+    {% endif %}
+    {% if garAdminConf is defined %}"gar-config": {{ garAdminConf }},{% endif %}
+    {% if garRaAssignmentPolicy is defined %}"gar-ra-assignment-policy": {{ garRaAssignmentPolicy }},{% endif %}
+    {% if emailConfigDirectory is defined or emailConfigPgHost is defined -%}
+      "emailConfig":
+      {% if emailConfigDirectory is defined %}
+        {{ emailConfigDirectory }}
+      {% else %}
+        {
+          "email": "{{ fromEmail }}",
+          "host": "https://{{ host }}",
+          "type": "SendInBlue",
+          "api-key": "{{ sendInBlueApiKey | default('') }}",
+          "uri": "https://api.sendinblue.com:443",
+          "split-recipients" : true,
+          "ip": "{{ sendInBlueIP | default('') }}",
+          "tracking-image": "sendInBlueTrackingImage | default('')",
+          "postgresql": {
+            "port": {{ emailConfigPgPort | default('5432')}},
+            "host": "{{ emailConfigPgHost | default('')}}",
+            "database": "{{ statsDB }}",
+            "user": "{{ emailConfigPgUser }}",
+            "password": "{{statsPGCluster_cred_pql_pf}}",
+            "ssl-mode": "REQUIRE",
+            "log-emails": {{ logEmails | default('false') }},
+            "pool-size": {{ eventsPGPoolSizeDirectory | default(10) }}
+          }
+        },
+      {% endif %}
+    {% endif -%}
+    "enable-manual-group-autolink": {{ adminEnableManualGroupAutoLink | default('false') }},
+    "publicConf": {
+      "feeders": [
+        "CSV"
+      ],
+      "federatedAddress": {{ federatedAddress | default('{}') }},
+      {% if directoryDisabledFederatedAdress is defined %}
+        "disabledFederatedAdress": {{ directoryDisabledFederatedAdress }},
+      {% endif %}
+      "userPosition": {
+        "restrictCRUDToADMC": {{ directoryRestrictCRUDToADMC | default('false') }}
+      }
+    }
+  }
+}
