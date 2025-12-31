@@ -1,0 +1,120 @@
+{
+  "name": "org.entcore~feeder",
+  "worker": true,
+  "config": {
+    "mode": "{{ feederMode | default('prod') }}",
+    "csrf-token": {{ csrfToken | default('true') }},
+    "neo4j-address": "wse.neo4j.persistor",
+    "apply-communication-rules": true,
+    "aafNeo4jPlugin": false,
+    "store-delete-user-event": {{ feederStoreDeleteUserEvent | default('false') }},
+    "check-exists-relationships": {{ feederCheckExistsRelationships | default('true') }},
+    "allow-manual-actions-during-feeds": {{ feederAllowManualActionsDuringFeeds | default('false') }},
+    "exclude-mark-duplicates-by-source" : ["CSV"],
+    "ad-login-alias-validator": {{ feederADLoginAliasValidator | default('false') }},
+    {% if platform_name is defined and platform_name != 'prod-nc' -%}
+      "manual-group-link-users-auto-sources": ["AAF","AAF1D"],
+    {% endif -%}
+    "fileAnalyzer": {
+      "enabled": {{ fileAnalyzerOn | default('true') }},
+      "messaging": {
+        "type": "redis",
+        "stream": "xss-analyzer",
+        "tags": ["xss-analyzer", "feeder"],
+        "metrics": {
+          "enabled": true
+        }
+      }
+    },
+    "import-files": "{{ feederImportAAF }}",
+    "execute-merge-ine": {{ executeMergeIne | default('true') }},
+    "support-perseducnat-1d-2d": {{ supportPerseducnat1d2d | default('true') }},
+    {% if platform_name is defined and platform_name == 'prod-nc' %}
+      "csv" : {
+        "path":"/home/wse/Educasud",
+        "config" : {
+            "namePattern" : ".*?/Educasud_[0-9]{8}_[0-9]{7}[A-Z]_(.*?).zip",
+            "profiles" : {
+              "_Eleves_":"Student",
+              "_Enseignants_":"Teacher",
+              "_Personnels_":"Personnel",
+              "_Parents_":"Relative"
+            },
+            "preDelete" : true
+        },
+        "cron" : {% if inventory_hostname_short is defined and inventory_hostname_short == 'jobs' %}"{{ educasudCron | default('0 0 3 * * ? *') }}"{% else %}"0 0 3 * * ? 2099"{% endif %}
+      },
+      "csv-imports-timeout" : 900000,
+      "feeder" : "CSV",
+      "imports": {
+        {% if feederAafCron is defined and inventory_hostname_short is defined and inventory_hostname_short == 'jobs' %}
+        	"AAF": {
+          	"files" : "{{ feederImportAAF }}",
+          	"auto-export": false,
+          	"cron" : "{{ feederAafCron }}"
+        	}
+        {% endif %}
+      },
+    {% else %}
+      "feeder": "AAF",
+      {% if (ha is defined and not(ha)) or (inventory_hostname_short is defined and inventory_hostname_short == 'jobs') %}
+        "imports": {
+          {% if feederAafCron is defined %}
+            "AAF": {
+              "files" : "{{ feederImportAAF }}",
+              "auto-export": false,
+              "cron" : "{{ feederAafCron }}"
+            }
+          {% endif %}
+          {% if feederAafCron is defined and feederAaf1dCron is defined %},{% endif %}
+          {% if feederAaf1dCron is defined %}
+            "AAF1D": {
+              "files" : "{{ feederImportAAF }}1d",
+              "cron" : "{{ feederAaf1dCron }}"
+            }
+          {% endif %}
+        },
+      {% endif %}
+    {% endif %}
+    {% if edtKey is defined %}
+      "edt" : {
+        "pronote-private-key" : "{{ edtKey }}"
+      },
+    {% endif %}
+    {% if feederCrossSourceFunctionalGroup is defined %}
+      "cross-source-functional-group-match": {{ feederCrossSourceFunctionalGroup }},
+    {% endif %}
+    {% if (ha is defined and not(ha)) or (inventory_hostname_short is defined and inventory_hostname_short == 'jobs') %}
+      "ignore-empty-statements-error": true,
+      {% if feederActiveUserFromOldPlatform is defined %}"active-user-from-old-platform": {{ feederActiveUserFromOldPlatform }},{% endif %}
+      {% if udtAutoImport is defined %}
+        "udt": {{ udtAutoImport }},
+      {% endif %}
+      "reinit-login-cron": "{{ feederReinitLoginCron | default('0 0 0,6,13 * * ? *') }}",
+      "timetable-report-erase-cron": "0 45 0 * * ? *",
+      "timetable-report-erase-after-seconds": 7776000,
+      "log-details": {{ feederLogDetails | default('false') }},
+      {% if feederPreDeleteByProfile is defined %}
+        "pre-delete" : {{ feederPreDeleteByProfile }},
+      {% else %}
+        "pre-delete-cron" : "0 0 5 * * ? *",
+        {% if feederDeleteUserDelay is defined %}"delete-user-delay": {{ feederDeleteUserDelay }},{% endif %}
+      {% endif %}
+      "delete-cron" : "{{ feederDeleteCron | default('0 30 5 ? * 7 *') }}",
+      "delete-delay": {{ feederDeleteDelay | default('240') }},
+    {% else %}
+      "pre-delete-cron" : "0 0 3 11 11 ? 2099",
+      "delete-cron" : "0 30 5 * * ? 2099",
+    {% endif %}
+    "mongodb": true,
+    {% if feederSendReport is defined %}"sendReport": {{ feederSendReport }},{% endif %}
+    {% if feederPublishClasses is defined and feederPublishClasses %}"publish-classes-update":["AAF"],{% endif %}
+    "import-person-in-charge": {{ feederImportPersonInCharge | default('false') }},
+    "auto-export": false,
+    "udt-user-creation" : false,
+    "exporter": "ELIOT",
+    "export-path": "/tmp",
+    "delete-export" : {{ feederEliotDeleteExport | default('false') }},
+    "export-destination": ""
+  }
+}

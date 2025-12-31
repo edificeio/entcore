@@ -1,0 +1,94 @@
+{
+  "name": "org.entcore~app-registry",
+  "waitDeploy" : true,
+  "config": {
+    "main": "org.entcore.registry.AppRegistry",
+    "auto-redeploy": false,
+    "app-type" : "SYSTEM",
+    "csrf-token": {{ csrfToken | default('true') }},
+    "mode": "prod",
+    "ssl": true,
+    {% if briefmeEnabled is defined and briefmeEnabled  %}
+      "widget-external-cache": [
+         {
+          "id": "briefme",
+          "widget-name": "briefme-widget",
+          "url": "https://www.brief.me/api/gar/latest_issues/?format=json",
+          "ttl": 43200
+         },
+         {
+          "id": "briefeco",
+          "widget-name": "briefme-widget",
+          "url": "https://www.brief.eco/api/gar/latest_issues/?format=json",
+          "ttl": 43200
+         },
+         {
+          "id": "briefscience",
+          "widget-name": "briefme-widget",
+          "url": "https://www.brief.science/api/gar/latest_issues/?format=json",
+          "ttl": 43200
+         }
+      ],
+    {% endif %}
+    {% if edumalinWidgetUrl is defined %}
+    	"edumalin-widget-config": {
+    		"url": "{{ edumalinWidgetUrl }}",
+    		"referrer": "{{ edumalinWidgetReferrer | default('https://widget.edumalin.fr') }}",
+    		"username": "{{ edumalinWidget_pf_username }}",
+    		"password": "{{ edumalinWidget_pf_password }}"
+    	},
+    {% endif %}
+    {% if ptitObservatoireWidgetUrl is defined %}
+      "ptit-observatoire-widget-config" : {
+        "url": "{{ ptitObservatoireWidgetUrl }}",
+        "api-key": "{{ ptitObservatoireWidget_pf_apiKey }}"
+      },
+    {% endif %}
+    {% if webGerestUrl is defined %}
+      "webGerest-config": {
+        "webGerest-enabled": {{ webGerestEnabled | default('true') }},
+        "webGerest-url":  "{{ webGerestUrl }}",
+        "webGerest-client-id": "{{ webGerestClientId | default('EDIFICE') }}",
+        "webGerest-client-secret": "{{ webGerestClientSecret }}",
+        "webGerest-cache-ttl": {{ webGerestCacheTtl | default(3600) }},
+        "webGerest-cache-prefix": "{{ webGerestCachePrefix | default('cantine') }}",
+        "webGerest-fetch-max-days-ahead": {{ webGerestMaxDaysAhead | default(60) }},
+        "webGerest-ssl-bypass": {{ webGerestSslBypass | default('true') }}
+      },
+    {% endif %}
+    {% if screenTimeConfig is defined and screenTimeConfig == 'true' %}
+      "screen-time-config": {
+        "auth": {
+          "host": "{{ screenTimeHostAuth }}",
+          "path": "{{ screenTimePathAuth }}",
+          "clientId": "{{ screenTimeClientIdAuth }}",
+          "clientSecret": "{{ screenTimeClientSecretAuth }}",
+          "scope": "{{ screenTimeScopeAuth }}"
+        },
+        "api": {
+          "screen-time-url": "{{ screenTimeDailyUrlApi | default('/screenTime/by-day/') }}",
+          "host": "{{ screenTimeHostApi }}",
+          "screen-time-weekly-url": "{{ screenTimeWeeklyUrlApi | default('/screenTime/by-range/') }}"
+        }
+      },
+    {% endif %}
+    {% if libraryEnabled is defined %}
+      "library-enabled": true,
+      "library-api-url": "{{ libraryUrl }}",
+      "library-token": "{{ libraryToken }}",
+      "library-structures-blacklist": {{ libraryStructuresBlacklist | default([]) }},
+    {% endif %}
+    "port": 8012,
+    "fileAnalyzer": {
+      "enabled": {{ fileAnalyzerOn | default('true') }},
+      "messaging": {
+        "type": "redis",
+        "stream": "xss-analyzer",
+        "tags": ["xss-analyzer", "app-registry"],
+        "metrics": {
+          "enabled": true
+        }
+      }
+    }
+  }
+}

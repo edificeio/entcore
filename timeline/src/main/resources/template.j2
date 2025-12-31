@@ -1,0 +1,34 @@
+{
+  "name": "org.entcore~timeline",
+  "config": {
+    "main": "org.entcore.timeline.Timeline",
+    "port": 8016,
+    "isolate-mobile": {{ timelineIsolateMobile | default('false') }},
+    "cache": {{ timelineCache | default('false') }},
+    {% if ha is defined and ha and inventory_hostname_short is defined and inventory_hostname_short != 'jobs' and timelineInstance is defined %}
+      "instances": {{ timelineInstance }},
+    {% endif %}
+    "app-name": "Timeline",
+    "app-address": "/timeline/timeline",
+    "app-type" : "SYSTEM",
+    "sql": true,
+    "db-schema": "flashmsg",
+    "auto-redeploy": false,
+    "ssl": true,
+    "maxRecipientLength": {{ timelineMaxRecipientLength | default(1000) }},
+    {% if pushNotif is defined %}
+      "push-notif": {{ pushNotif }},
+    {% endif %}
+    "host": "https://{{ host }}",
+    {% if (platform_name is defined and not(platform_name.startswith('prod'))) or (ha is defined and ha and inventory_hostname_short is defined and inventory_hostname_short != 'jobs') %}
+      "daily-mailing-cron" : "0 30 4 * * ? 2099",
+      "weekly-mailing-cron": "0 30 7 ? * 1 2099",
+    {% else %}
+      "daily-mailing-cron" : "{{ timelineDailyCron | default('0 30 4 * * ? *') }}",
+      "weekly-mailing-cron": "{{ timelineWeeklyCron | default(0 30 7 ? * 1 *') }}",
+    {% endif %}
+    "mode": "prod",
+    "log-push-notifs": {{ timelineLogPushNotifs | default('false') }},
+    "remove-push-notifs-404-tokens": {{ timelinePushNotifs404 | default('true') }}
+  }
+}

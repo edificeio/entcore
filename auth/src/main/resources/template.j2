@@ -1,0 +1,113 @@
+{
+  "name": "org.entcore~auth",
+  "config": {
+    "main": "org.entcore.auth.Auth",
+    "port": 8009,
+    {{ authHttpServerOptions | default('"httpServerOptions": {"maxFormAttributeSize": 2147483647},')}}
+    "otp-disabled": {{ authOtpDisabled | default('true') }},
+    {% if ha is defined and ha and inventory_hostname_short is defined and inventory_hostname_short != 'jobs' and authInstance is defined %}
+      "instances": {{ authInstance }},
+    {% endif %}
+    {% if (readPreferenceMongo is defined and readPreferenceMongo) %}
+      "mongo-address": "wse.mongodb.persistor2",
+    {% endif %}
+    "auto-redeploy": false,
+    "ssl": true,
+    {% if authPasswordEventMinDate is defined %} "password-event-min-date": "{{ authPasswordEventMinDate }}", {% endif %}
+    {% if authPasswordSyncDefaultValue is defined %} "password-event-sync-default-value": {{ authPasswordSyncDefaultValue }}, {% endif %}
+    "maxRetry": {{ authMaxRetry|default(20) }},
+    "private-etabs-prefix-educonnect": {{ authPrivateStructEduconnect | default('false') }},
+    "safeRedirect":{
+      "delayInMinutes": {{ safeRedirectDelay | default(30) }},
+      "defaultDomains": {{ safeRedirectDomains | default([]) }}
+    },
+    "sessions-limit": {{ sessionsLimit | default('0') }},
+    "ip-allowed-by-pass-limit": {{ authIpAllowedLimit | default([]) }},
+    "reset-code-expire-delay":{{ resetCodeExpireDelay | default(86400000) }},
+    {% if changePasswordMailFilter is defined %} "change-password-mail-filter": {{ changePasswordMailFilter }}, {% endif %}
+    "app-type" : "SYSTEM",
+    {% if externalTokens is defined %} "externalTokens": {{externalTokens}}, {% endif %}
+    "csrf-token": {{ csrfToken | default('true') }},
+    "cgu": {{ authCgu | default('true') }},
+    "mode": "prod",
+    {% if sessionCookieTimeout is defined and (not(sessionInactivity is defined) or not(sessionInactivity))  %}
+      "cookie_timeout" : {{ sessionCookieTimeout }},
+    {% endif %}
+    "email": "{{ fromEmail }}",
+    {% if authMandatoryData is defined %}"mandatory": {{ authMandatoryData }},{% endif %}
+    "activationAutoLogin": true,
+    "teacherForgotPasswordEmail": false,
+    "authorize-mobile-session": {{ authAuthorizeMobileSession | default(["app-e"]|to_json) }},
+    "reset-pwd-mail-ignore-error": true,
+    "send-forgot-password-email-with-reset-code": {{ authSendForgotPwdWithResetCode | default('false') }},
+    "check-federated-login": {{ authCheckFederatedLogin | default('true') }},
+    "log-send-email-ack": true,
+    "publicConf" : {
+      "intl-phone-input": {
+      	"preferredCountries": {{ authPhoneInputCountries | default(["fr", "mx", "es", "co", "gf", "pf", "gp", "yt", "nc", "pm", "wf", "gy", "mq", "mm", "ph"]|to_json) }},
+      	"initialCountry": "{{ authPhoneInputInitialCountry|default("auto") }}"
+      }
+    },
+    {% if (ha is defined and not(ha)) or (inventory_hostname_short is defined and inventory_hostname_short == 'jobs') %}
+      "new-device-warning": {
+        {% if authActivateNewDeviceWarning is defined and not(authActivateNewDeviceWarning) %}
+          "cron": "0 */2 * * * ? 2099",
+        {% else %}
+          "cron": "0 */2 * * * ? *",
+        {% endif %}
+        "warn-admc": true, 
+        "warn-adml": true, 
+        "warn-users": {{ authNewDeviceWarnUser | default('true') }},
+        "score-threshold": 4,
+        "batch-limit": 1000 
+      },
+    {% endif %}
+    "authenticationServer": {
+      "loginURL": "/auth/login",
+      "logoutURL": "/auth/logout",
+      "loginCallback": "",
+      "logoutCallback": ""
+    },
+    {%if authJwtBearerAuthorization is defined %}
+      "jwt-bearer-authorization": {{ authJwtBearerAuthorization }},
+      "jwt-bearer-authorization-periodic": {{ authJwtBearerAuthorizationPeriodic | default('3600000') }},
+    {% endif %}
+    "jwt-ttl-seconds": {{ authJwtTtlSeconds | default('30') }},
+    {% if authCanopeCas is defined %}
+      "canope-cas":  {{authCanopeCas}},
+    {% endif %}
+    {% if authLocations is defined %}{{ authLocations }},{% endif %}
+    {% if authSaml is defined %}{{ authSaml }}{% endif %}
+    {% if oauthLoginUri is defined %} 
+    	{% if oauthLoginUri.startswith('{') %}
+    		"oauthLoginUri": {{oauthLoginUri}},
+    	{% else %}
+    		"oauthLoginUri": "{{oauthLoginUri}}",
+    	{% endif %}
+    {% endif %}
+    {% if samlLoginUri is defined %} 
+    	{% if samlLoginUri.startswith('{') %}
+    		"samlLoginUri": {{samlLoginUri}},
+    	{% else %}
+    		"samlLoginUri": "{{samlLoginUri}}",
+    	{% endif %}
+    {% endif %}    
+    "host": "https://{{ host }}",
+    {% if openidConnectIss is defined %}
+      "openid-connect": {
+        {% if openidConnectKeys is defined %}
+          "keys" : "{{ openidConnectKeys }}",
+        {% endif %}
+        {% if openidConnectCerts is defined %}
+          "certs" : "{{ openidConnectCerts }}",
+        {% endif %}
+        "iss" : "{{ openidConnectIss }}"
+      },
+    {% endif %}
+    {% if authSlo is defined %}"slo": {{ authSlo }}, {% endif %}
+    {% if openidFederate is defined %}
+     "openid-federate": {{ openidFederate }},
+    {% endif %}
+    "passwordRegex": "{{ authPasswordRegex }}"
+  }
+}
