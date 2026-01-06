@@ -37,7 +37,7 @@
     {% if ha is defined and ha and inventory_hostname_short is defined and inventory_hostname_short != 'jobs' %}
       "hard-bounces-cron" : "0 0 1 * * ? 2099",
     {% else %}
-      "hard-bounces-cron" : "0 0 6 * * ? *",
+      "hard-bounces-cron" : "{{ hardBouncesCron | default('0 0 6 * * ? *') }}",
     {% endif %}
     "key": "{{ credentials_ent_signkey }}",
 	  {% if skinLevels is defined %}
