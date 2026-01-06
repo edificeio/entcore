@@ -5,33 +5,30 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.BaseController;
-import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import org.entcore.auth.services.CarbonioPreauthService;
+import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.core.http.RouteMatcher;
 
 import java.util.Map;
-import java.util.Optional;
 
 public class CarbonioPreauthController extends BaseController {
 	CarbonioPreauthService carbonioPreauthService;
+	String carbonioBaseUrl;
+	String carbonioDomainKey;
 
 	@Override
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
 					 Map<String, fr.wseduc.webutils.security.SecuredAction> securedActions) {
 		super.init(vertx, config, rm, securedActions);
 
-		Optional<String> carbonioBaseUrl = Optional.ofNullable(config.getString("carbonio-base-url"));
-		Optional<String> carbonioDomainKey = Optional.ofNullable(config.getString("carbonio-domain-key"));
+		carbonioBaseUrl = config.getString("carbonio-base-url");
+		carbonioDomainKey = config.getString("carbonio-domain-key");
 
-		if (!carbonioBaseUrl.isPresent() || !carbonioDomainKey.isPresent()) {
-			throw new IllegalArgumentException("Both carbonio-base-url and carbonio-domain-key must be configured");
-		}
-
-		carbonioPreauthService = new CarbonioPreauthService(carbonioBaseUrl.get(), carbonioDomainKey.get());
+		carbonioPreauthService = new CarbonioPreauthService(carbonioBaseUrl, carbonioDomainKey);
 	}
 
 	@Get("/carbonio/preauth")
@@ -41,10 +38,9 @@ public class CarbonioPreauthController extends BaseController {
 			if (userInfos == null) {
 				unauthorized(request, "User not found");
 			} else {
-				String email = userInfos.getEmail();
+				final String userAlias = getUserAlias(userInfos);
 
-				Either<String, String> result = carbonioPreauthService.generatePreauthUrl(email);
-
+				Either<String, String> result = carbonioPreauthService.generatePreauthUrl(userAlias);
 				if (result.isLeft()) {
 					badRequest(request, result.left().getValue());
 					return;
@@ -56,5 +52,15 @@ public class CarbonioPreauthController extends BaseController {
 				request.response().end();
 			}
 		});
+	}
+
+	private String getUserAlias(UserInfos userInfos) {
+		// TODO Replace hardcoded value
+//		final String domain = carbonioBaseUrl
+//				.replaceFirst("https?://", "")
+//				.replaceFirst("/.*$", "");
+		final String domain = "testdomain1.lan";
+
+		return String.format("%s@%s", userInfos.getUserId(), domain);
 	}
 }
