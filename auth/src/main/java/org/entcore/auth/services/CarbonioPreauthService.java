@@ -13,11 +13,11 @@ import java.util.stream.IntStream;
 public class CarbonioPreauthService {
 	private static final String HMAC_ALGORITHM = "HmacSHA1";
 
-	private final String carbonioBaseUrl;
+	private final String carbonioRedirectUrl;
 	private final String carbonioDomainKey;
 
-	public CarbonioPreauthService(String carbonioBaseUrl, String carbonioDomainKey) {
-		this.carbonioBaseUrl = carbonioBaseUrl;
+	public CarbonioPreauthService(String carbonioRedirectUrl, String carbonioDomainKey) {
+		this.carbonioRedirectUrl = carbonioRedirectUrl;
 		this.carbonioDomainKey = carbonioDomainKey;
 	}
 
@@ -65,7 +65,7 @@ public class CarbonioPreauthService {
 
 	private String buildUrl(Map<String, String> params, String computedPreAuth) {
 		return String.format("%s/service/preauth?account=%s&by=%s&timestamp=%s&expires=%s&preauth=%s",
-				carbonioBaseUrl,
+				carbonioRedirectUrl,
 				params.get("account"),
 				params.get("by"),
 				params.get("timestamp"),
