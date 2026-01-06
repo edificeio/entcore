@@ -41,7 +41,7 @@
     "reset-pwd-mail-ignore-error": true,
     "send-forgot-password-email-with-reset-code": {{ authSendForgotPwdWithResetCode | default('false') }},
     "check-federated-login": {{ authCheckFederatedLogin | default('true') }},
-    "log-send-email-ack": true,
+    "log-send-email-ack": {{ authLogSendMailAck | default('true') }},
     "publicConf" : {
       "intl-phone-input": {
       	"preferredCountries": {{ authPhoneInputCountries | default(["fr", "mx", "es", "co", "gf", "pf", "gp", "yt", "nc", "pm", "wf", "gy", "mq", "mm", "ph"]|to_json) }},

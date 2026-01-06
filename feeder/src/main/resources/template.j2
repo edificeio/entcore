@@ -97,7 +97,7 @@
       {% if feederPreDeleteByProfile is defined %}
         "pre-delete" : {{ feederPreDeleteByProfile }},
       {% else %}
-        "pre-delete-cron" : "0 0 5 * * ? *",
+        "pre-delete-cron" : "{{ feederPreDeleteCron | default('0 0 5 * * ? *') }}",
         {% if feederDeleteUserDelay is defined %}"delete-user-delay": {{ feederDeleteUserDelay }},{% endif %}
       {% endif %}
       "delete-cron" : "{{ feederDeleteCron | default('0 30 5 ? * 7 *') }}",
