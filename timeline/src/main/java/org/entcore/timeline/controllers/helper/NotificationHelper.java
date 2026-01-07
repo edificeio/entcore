@@ -28,11 +28,13 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.timeline.services.TimelineConfigService;
 import org.entcore.timeline.services.TimelineMailerService;
 import org.entcore.timeline.services.TimelinePushNotifService;
 import org.entcore.common.notification.TimelineNotificationsLoader;
 
+import java.time.*;
 import java.util.List;
 
 import org.entcore.common.notification.NotificationUtils;
@@ -111,15 +113,12 @@ public class NotificationHelper {
     private boolean isImmediateNotification(final JsonObject notification) {
         final boolean isImmediate;
         final JsonObject dateWrapper = notification.getJsonObject("date");
-        if(dateWrapper == null) {
+        if(dateWrapper == null || dateWrapper.getString("$date") == null) {
             isImmediate = true;
         } else {
-            final Long ts = dateWrapper.getLong("$date");
-            if(ts == null) {
-                isImmediate = true;
-            } else {
-                isImmediate = ts <= currentTimeMillis();
-            }
+            Instant now = LocalDateTime.now().toInstant(ZoneOffset.UTC);
+            Instant publishDate = OffsetDateTime.parse(dateWrapper.getString("$date")).toInstant();
+            isImmediate = publishDate.isBefore(now);
         }
         return isImmediate;
     }
