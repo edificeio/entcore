@@ -117,12 +117,7 @@ public class NotificationHelper {
             isImmediate = true;
         } else {
             Instant now = LocalDateTime.now().toInstant(ZoneOffset.UTC);
-            Instant publishDate = null;
-            if (StringUtils.parseLong(dateWrapper.getString("$date")).isPresent()) {
-                publishDate = Instant.ofEpochMilli(dateWrapper.getLong("$date"));
-            } else {
-                publishDate = OffsetDateTime.parse(dateWrapper.getString("$date")).toInstant();
-            }
+            Instant publishDate = OffsetDateTime.parse(dateWrapper.getString("$date")).toInstant();
             isImmediate = publishDate.isBefore(now);
         }
         return isImmediate;
