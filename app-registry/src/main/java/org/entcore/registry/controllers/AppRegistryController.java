@@ -159,6 +159,48 @@ public class AppRegistryController extends BaseController implements AppRegistry
 		});
 	}
 
+	/**
+	 * List all structures that have activated a specific application via role-group relationships.
+	 * 
+	 * Pagination:
+	 * - If 'page' parameter is not specified, defaults to page 0 (first page)
+	 * - If 'pageSize' parameter is not specified, defaults to 100 (max 1000)
+	 * - Response includes pagination metadata with 'hasMore' flag indicating if more pages exist
+	 * - Requesting a non-existent page (e.g., page=300 when only 25 pages exist) returns empty data array with hasMore=false
+	 * - Use the 'hasMore' flag or check if data.length < pageSize to determine when to stop paginating
+	 * 
+	 * Example: GET /appregistry/application/votil/structures?page=0&pageSize=100
+	 * 
+	 * @param request HTTP request containing appName (path param), optional page and pageSize (query params)
+	 */
+	@Get("/application/:appName/structures")
+	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	public void listStructuresByApplication(final HttpServerRequest request) {
+		String appName = request.params().get("appName");
+		if (appName == null || appName.trim().isEmpty()) {
+			badRequest(request, "invalid.application.name");
+			return;
+		}
+
+		Integer page = null;
+		Integer pageSize = null;
+		try {
+			String pageParam = request.params().get("page");
+			String pageSizeParam = request.params().get("pageSize");
+			if (pageParam != null) {
+				page = Integer.parseInt(pageParam);
+			}
+			if (pageSizeParam != null) {
+				pageSize = Integer.parseInt(pageSizeParam);
+			}
+		} catch (NumberFormatException e) {
+			badRequest(request, "invalid.pagination.parameters");
+			return;
+		}
+
+		appRegistryService.listStructuresByApplication(appName, page, pageSize, defaultResponseHandler(request));
+	}
+
 	@Post("/role")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
