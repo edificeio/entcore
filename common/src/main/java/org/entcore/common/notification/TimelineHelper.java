@@ -27,6 +27,7 @@ import io.vertx.core.*;
 import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.user.UserInfos;
+import org.entcore.common.utils.DateUtils;
 import org.entcore.common.utils.StringUtils;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
@@ -118,7 +119,7 @@ public class TimelineHelper {
 			}
 			Long date = params.getLong("timeline-publish-date");
 			if (date != null) {
-				event.put("date", new JsonObject().put("$date", date));
+				event.put("date", new JsonObject().put("$date", DateUtils.formatUtcDateTime(date)));
 				params.remove("timeline-publish-date");
 			}
 
