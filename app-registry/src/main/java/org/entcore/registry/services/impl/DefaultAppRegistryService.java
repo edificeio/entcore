@@ -52,6 +52,9 @@ import static org.entcore.common.neo4j.Neo4jUtils.nodeSetPropertiesFromJson;
 
 public class DefaultAppRegistryService implements AppRegistryService {
 
+	private static final int DEFAULT_PAGE_SIZE = 100;
+	private static final int MAX_PAGE_SIZE = 1000;
+	
 	private final int firstLevel = 1;
 	private final int secondLevel = 2;
 	private final JsonArray defaultLevelsOfEducation = new JsonArray()
@@ -226,6 +229,76 @@ public class DefaultAppRegistryService implements AppRegistryService {
 			.put("appId", appId)
 			.put("structureId", structureId);
 		neo.execute(query, params, result -> handler.handle(addsDefaultRoleDistributions.apply(validResult(result))));
+	}
+
+
+	@Override
+	public void listStructuresByApplication(String appName, Integer page, Integer pageSize, Handler<Either<String, JsonObject>> handler) {
+		int effectivePage = (page != null && page >= 0) ? page : 0;
+		int effectivePageSize = (pageSize != null && pageSize > 0) ? Math.min(pageSize, MAX_PAGE_SIZE) : DEFAULT_PAGE_SIZE;
+		int skip = effectivePage * effectivePageSize;
+
+		// First, count total structures (for pagination metadata)
+		String countQuery =
+				"MATCH (app:Application {name: {appName}})-[:PROVIDE]->(:Action)<-[:AUTHORIZE]-(r:Role) " +
+				"MATCH (r)<-[:AUTHORIZED]-(g:Group)-[:DEPENDS*1..2]->(s:Structure) " +
+				"RETURN COUNT(DISTINCT s) as total";
+		
+		// Then fetch the paginated results
+		String dataQuery =
+				"MATCH (app:Application {name: {appName}})-[:PROVIDE]->(:Action)<-[:AUTHORIZE]-(r:Role) " +
+				"MATCH (r)<-[:AUTHORIZED]-(g:Group)-[:DEPENDS*1..2]->(s:Structure) " +
+				"RETURN DISTINCT s.id as structureId, s.UAI as UAI " +
+				"ORDER BY UAI " +
+				"SKIP {skip} LIMIT {limit}";
+		
+		JsonObject params = new JsonObject()
+			.put("appName", appName)
+			.put("skip", skip)
+			.put("limit", effectivePageSize);
+		
+		// Execute count query first
+		neo.execute(countQuery, params, countResult -> {
+			Either<String, JsonArray> countEither = validResult(countResult);
+			if (countEither.isLeft()) {
+				handler.handle(new Either.Left<>(countEither.left().getValue()));
+				return;
+			}
+			
+			JsonArray countArray = countEither.right().getValue();
+			final long total;
+			if (countArray != null && countArray.size() > 0) {
+				total = countArray.getJsonObject(0).getLong("total", 0L);
+			} else {
+				total = 0;
+			}
+			
+			// Execute data query
+			neo.execute(dataQuery, params, dataResult -> {
+				Either<String, JsonArray> dataEither = validResult(dataResult);
+				if (dataEither.isLeft()) {
+					handler.handle(new Either.Left<>(dataEither.left().getValue()));
+					return;
+				}
+				
+				JsonArray structures = dataEither.right().getValue();
+				if (structures == null) {
+					structures = new JsonArray();
+				}
+				
+				// Build response with pagination metadata
+				JsonObject response = new JsonObject()
+					.put("data", structures)
+					.put("pagination", new JsonObject()
+						.put("page", effectivePage)
+						.put("pageSize", effectivePageSize)
+						.put("total", total)
+						.put("totalPages", (int) Math.ceil((double) total / effectivePageSize))
+						.put("hasMore", structures.size() == effectivePageSize && (skip + effectivePageSize) < total));
+				
+				handler.handle(new Either.Right<>(response));
+			});
+		});
 	}
 
 	@Override
