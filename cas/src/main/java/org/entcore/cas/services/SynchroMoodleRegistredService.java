@@ -124,6 +124,11 @@ public class SynchroMoodleRegistredService extends DefaultRegisteredService {
                             .put(NAME, groupNode.getString(NAME)));
                 }
             }
+
+            if(data.containsKey(TYPE) && (data.getString(TYPE).equals("Teacher") || data.getString(TYPE).equals("Personnel"))) {
+                groups.add(new JsonObject().put(ID, "virtual-1755822100640")
+                        .put(NAME, "Cohorte role synchronisation"));
+            }
             attributes.put(GROUPS_KEY, groups.toString());
         }
 
