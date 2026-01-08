@@ -80,6 +80,7 @@ import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.MapFactory;
 import org.entcore.common.utils.Mfa;
 import org.entcore.common.utils.StringUtils;
+import org.entcore.common.validation.PhoneValidation;
 import org.entcore.common.validation.StringValidation;
 import org.vertx.java.core.http.RouteMatcher;
 
@@ -89,6 +90,7 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -96,6 +98,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.*;
 import static fr.wseduc.webutils.request.RequestUtils.getTokenHeader;
@@ -1260,32 +1263,81 @@ public class AuthController extends BaseController {
 						error.put("login", login);
 					}
 					renderJson(request, error);
-				} else if (login == null || activationCode == null || password == null || login.trim().isEmpty()
-						|| activationCode.trim().isEmpty() || password.trim().isEmpty()
-						|| !password.equals(confirmPassword) || !passwordPattern.matcher(password).matches()
-						|| (config.getJsonObject("mandatory", new JsonObject()).getBoolean("mail", false)
-								&& (email == null || email.trim().isEmpty() || invalidEmails.containsKey(email)))
-						|| (config.getJsonObject("mandatory", new JsonObject()).getBoolean("phone", false)
-								&& (phone == null || phone.trim().isEmpty()))
-						|| (email != null && !email.trim().isEmpty() && !StringValidation.isEmail(email))
-						|| (phone != null && !phone.trim().isEmpty() && !StringValidation.isPhone(phone))) {
-					trace.info(getIp(request) + " - Echec de l'activation du compte utilisateur " + login + " - Referer " + request.headers().get("Referer"));
-					JsonObject error = new JsonObject().put("error",
-							new JsonObject().put("message",
-									I18n.getInstance().translate("auth.activation.invalid.argument", getHost(request),
-											I18n.acceptLanguage(request))));
-					if (activationCode != null) {
-						error.put("activationCode", activationCode);
-					}
-					if (login != null) {
-						error.put("login", login);
-					}
-					if (config.getBoolean("cgu", true)) {
-						error.put("cgu", true);
-					}
-					renderJson(request, error);
 				} else {
-					userAuthAccount.activateAccount(login, activationCode, password, email, phone, theme, request,
+					// Validate fields and collect all errors
+					List<String> validationErrors = new ArrayList<>();
+					String normalizedPhone = phone;
+					
+					// Validate login
+					if (StringUtils.isEmpty(login)) {
+						validationErrors.add("auth.activation.error.login.missing");
+					}
+
+					// Validate activation code
+					if (StringUtils.isEmpty(activationCode)) {
+						validationErrors.add("auth.activation.error.code.missing");
+					}
+
+					// Password validations
+					if (StringUtils.isEmpty(password)) {
+						validationErrors.add("auth.activation.error.password.missing");
+					} else {
+						if (!password.equals(confirmPassword)) {
+							validationErrors.add("auth.activation.error.password.mismatch");
+						}
+						if (!passwordPattern.matcher(password).matches()) {
+							validationErrors.add("auth.activation.error.password.format");
+						}
+					}
+
+					// Email validations
+					if (config.getJsonObject("mandatory", new JsonObject()).getBoolean("mail", false)
+							&& StringUtils.isEmpty(email)) {
+						validationErrors.add("auth.activation.error.email.mandatory");
+					} else if (!StringUtils.isEmpty(email)) {
+						if (!StringValidation.isEmail(email)) {
+							validationErrors.add("auth.activation.error.email.format");
+						} else if (invalidEmails.containsKey(email)) {
+							validationErrors.add("auth.activation.error.email.blocked");
+						}
+					}
+
+					// Phone validations
+					if (config.getJsonObject("mandatory", new JsonObject()).getBoolean("phone", false)
+							&& StringUtils.isEmpty(phone)) {
+						validationErrors.add("auth.activation.error.phone.mandatory");
+					} else if (!StringUtils.isEmpty(phone)) {
+						String region = PhoneValidation.extractRegion(phone);
+						PhoneValidation.PhoneValidationResult phoneValidation = PhoneValidation.validateMobileNumber(phone, region);
+						if (!phoneValidation.isValid()) {
+							validationErrors.add(phoneValidation.getErrorCode());
+						} else {
+							// Use normalized E.164 format
+							normalizedPhone = phoneValidation.getNormalizedNumber();
+						}
+					}
+
+					if (!validationErrors.isEmpty()) {
+						trace.info(getIp(request) + " - Echec de l'activation du compte utilisateur " + login + " - Referer " + request.headers().get("Referer"));
+						// Translate and concatenate all error messages
+						String combinedMessage = validationErrors.stream()
+							.map(errorKey -> I18n.getInstance().translate(errorKey, getHost(request), I18n.acceptLanguage(request)))
+							.collect(Collectors.joining("<br />"));
+						JsonObject error = new JsonObject().put("error",
+								new JsonObject().put("message", combinedMessage));
+						if (activationCode != null) {
+							error.put("activationCode", activationCode);
+						}
+						if (login != null) {
+							error.put("login", login);
+						}
+						if (config.getBoolean("cgu", true)) {
+							error.put("cgu", true);
+						}
+						renderJson(request, error);
+					} else {
+						final String phoneToStore = normalizedPhone;
+						userAuthAccount.activateAccount(login, activationCode, password, email, phoneToStore, theme, request,
 							new io.vertx.core.Handler<Either<String, String>>() {
 
 								@Override
@@ -1306,7 +1358,7 @@ public class AuthController extends BaseController {
 										} else {
 											// else try activation with loginAlias
 											userAuthAccount.activateAccountByLoginAlias(login, activationCode, password,
-													email, phone, theme, request,
+													email, phoneToStore, theme, request,
 													new io.vertx.core.Handler<Either<String, String>>() {
 														@Override
 														public void handle(Either<String, String> activated) {
@@ -1331,6 +1383,7 @@ public class AuthController extends BaseController {
 									}
 								}
 							});
+					}
 				}
 			}
 		});
