@@ -48,18 +48,30 @@ public class SqlShareService extends GenericShareService {
 	private final Sql sql;
 	private final String schema;
 	private final String shareTable;
+	//for new react share modal without explorer, we need to include themselves in get share infos
+	private boolean includeHimself;
 
 	public SqlShareService(EventBus eb, Map<String, SecuredAction> securedActions,
 			Map<String, List<String>> groupedActions) {
 		this(null, null, eb, securedActions, groupedActions);
+		this.includeHimself = false;
 	}
 
 	public SqlShareService(String schema, String shareTable, EventBus eb, Map<String, SecuredAction> securedActions,
-			Map<String, List<String>> groupedActions) {
+						   Map<String, List<String>> groupedActions) {
 		super(eb, securedActions, groupedActions);
 		sql = Sql.getInstance();
 		this.schema = (schema != null && !schema.trim().isEmpty()) ? schema + "." : "";
 		this.shareTable = this.schema + ((shareTable != null && !shareTable.trim().isEmpty()) ? shareTable : "shares");
+	}
+
+	public SqlShareService(String schema, String shareTable, EventBus eb, Map<String, SecuredAction> securedActions,
+			Map<String, List<String>> groupedActions, boolean includeHimself) {
+		super(eb, securedActions, groupedActions);
+		sql = Sql.getInstance();
+		this.schema = (schema != null && !schema.trim().isEmpty()) ? schema + "." : "";
+		this.shareTable = this.schema + ((shareTable != null && !shareTable.trim().isEmpty()) ? shareTable : "shares");
+		this.includeHimself = includeHimself;
 	}
 
 	private Future<Set<String>[]> findUserIdsAndGroups(final String resourceId, final String currentUserId,
@@ -213,44 +225,38 @@ public class SqlShareService extends GenericShareService {
 		String query = "SELECT s.member_id, s.action, m.group_id FROM " + shareTable + " AS s " + "JOIN " + schema
 				+ "members AS m ON s.member_id = m.id WHERE resource_id = ?";
 		sql.prepared(query, new JsonArray().add(Sql.parseId(resourceId)),
-				new Handler<Message<JsonObject>>() {
-					@Override
-					public void handle(Message<JsonObject> message) {
-						if ("ok".equals(message.body().getString("status"))) {
-							JsonArray r = message.body().getJsonArray("results");
-							JsonObject groupCheckedActions = new JsonObject();
-							JsonObject userCheckedActions = new JsonObject();
-							for (Object o : r) {
-								if (!(o instanceof JsonArray))
-									continue;
-								JsonArray row = (JsonArray) o;
-								final String memberId = row.getString(0);
-								if (memberId == null || memberId.equals(userId))
-									continue;
-								final JsonObject checkedActions = (row.getValue(2) != null) ? groupCheckedActions
-										: userCheckedActions;
-								JsonArray m = checkedActions.getJsonArray(memberId);
-								if (m == null) {
-									m = new JsonArray();
-									checkedActions.put(memberId, m);
-								}
-								m.add(row.getValue(1));
-							}
-							getShareInfos(userId, actions, groupCheckedActions, userCheckedActions, acceptLanguage,
-									search, new Handler<JsonObject>() {
-										@Override
-										public void handle(JsonObject event) {
-											if (event != null && event.size() == 3) {
-												handler.handle(new Either.Right<String, JsonObject>(event));
-											} else {
-												handler.handle(new Either.Left<String, JsonObject>(
-														"Error finding shared resource."));
-											}
-										}
-									});
-						}
-					}
-				});
+                message -> {
+                    if ("ok".equals(message.body().getString("status"))) {
+                        JsonArray r = message.body().getJsonArray("results");
+                        JsonObject groupCheckedActions = new JsonObject();
+                        JsonObject userCheckedActions = new JsonObject();
+                        for (Object o : r) {
+                            if (!(o instanceof JsonArray))
+                                continue;
+                            JsonArray row = (JsonArray) o;
+                            final String memberId = row.getString(0);
+                            if (memberId == null || memberId.equals(userId) && !includeHimself)
+                                continue;
+                            final JsonObject checkedActions = (row.getValue(2) != null) ? groupCheckedActions
+                                    : userCheckedActions;
+                            JsonArray m = checkedActions.getJsonArray(memberId);
+                            if (m == null) {
+                                m = new JsonArray();
+                                checkedActions.put(memberId, m);
+                            }
+                            m.add(row.getValue(1));
+                        }
+                        getShareInfos(userId, actions, groupCheckedActions, userCheckedActions, acceptLanguage,
+                                search, event -> {
+                                    if (event != null && event.size() == 3) {
+                                        handler.handle(new Either.Right<String, JsonObject>(event));
+                                    } else {
+                                        handler.handle(new Either.Left<String, JsonObject>(
+                                                "Error finding shared resource."));
+                                    }
+                                });
+                    }
+                });
 	}
 
 	@Override
