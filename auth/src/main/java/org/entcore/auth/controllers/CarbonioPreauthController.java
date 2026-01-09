@@ -34,7 +34,7 @@ public class CarbonioPreauthController extends BaseController {
 	}
 
 	@Get("/carbonio/preauth")
-	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+	@SecuredAction("carbonio.preauth")
 	public void preauth(HttpServerRequest request) {
 		UserUtils.getUserInfos(eb, request, userInfos -> {
 			if (userInfos == null) {
