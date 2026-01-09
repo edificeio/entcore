@@ -979,6 +979,8 @@
   "notify.user.create.content": "L'utilisateur {{user}} a bien été créé.",
   "notify.user.create.error.content": "L'utilisateur {{user}} n'a pas pu être créé.",
   "notify.user.create.error.title": "Erreur lors de la création",
+  "notify.user.create.manual-group-link.error.title": "L'utilisateur n'a pas pu être ajouté au groupe manuel",
+  "notify.user.create.manual-group-link.error.content": "Erreur du rattachement de l'utilisateur au groupe manuel {{group}}",
   "notify.user.create.title": "Création effectuée",
   "notify.user.delete.content": "L'utilisateur {{user}} a bien été supprimé.",
   "notify.user.delete.error.content": "L'utilisateur {{user}} n'a pas pu être supprimé.",

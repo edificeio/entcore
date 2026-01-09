@@ -10,7 +10,7 @@ import { UserModel } from '../../core/store/models/user.model';
 import { UsersStore } from '../users.store';
 import { UserPosition, UserPositionElementQuery } from 'src/app/core/store/models/userPosition.model';
 import { UserPositionService } from 'src/app/core/services/user-position.service';
-
+import { Config } from 'src/app/core/resolvers/Config';
 
 @Component({
     selector: 'ode-user-create',
@@ -23,6 +23,7 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
 
     newUser: UserModel = new UserModel();
     noClasses: Array<any> = [];
+    config: Config;
 
     public typeOptions: SelectOption<string>[] = ['Teacher', 'Personnel', 'Relative', 'Student', 'Guest'].map(t => ({
         value: t,
@@ -92,10 +93,12 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
 
         this.subscriptions.add(routing.observe(this.route, 'data').subscribe((data: Data) => {
             if (data.structure) {
-
                 this.newUser.structures = [data.structure];
                 this.classeOptions = [{value: null, label: 'create.user.sansclasse'}];
                 this.classeOptions.push(...this.usersStore.structure.classes.map(c => ({value: [c], label: c.name})));
+            }
+            if (data.config) {
+                this.config = data.config;
             }
         }));
         this.newUser.userDetails.children = [];
@@ -103,7 +106,7 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
 
     createNewUser() {
         this.spinner.perform('portal-content', this.newUser.createNewUser(this.usersStore.structure.id)
-            .then(res => {
+            .then(async res => {
                 this.ns.success({
                         key: 'notify.user.create.content',
                         parameters: {
@@ -119,6 +122,31 @@ export class UserCreateComponent extends OdeComponent implements OnInit, OnDestr
                     this.newUser.classes = [];
                 }
                 this.usersStore.structure.users.data.push(this.newUser);
+
+                try {
+                    if (
+                      (this.config?.["enable-manual-group-autolink"] ?? false) &&
+                      this.newUser.type === "Personnel" &&
+                      this.newUser.userDetails.userPositions &&
+                      this.newUser.userDetails.userPositions.length > 0
+                    ) {
+                      await Promise.all(
+                        this.newUser.userDetails.userPositions.map((position) =>
+                          this.userPositionService.updateManualGroupsByUserPositions(
+                            position
+                          )
+                        )
+                      );
+                    }
+                } catch (error) {
+                    this.ns.error(
+                      {
+                        key: "notify.user.create.manual-group-link.error.content",
+                        parameters: {},
+                      },
+                      "notify.user.create.manual-group-link.error.title", error
+                    );
+                }
 
                 this.router.navigate(['/admin', this.usersStore.structure.id, 'users', 'list', res.data.id, 'details'], {
                     relativeTo: this.route,
