@@ -138,7 +138,6 @@ public class DefaultCommunicationService implements CommunicationService {
 				"    )\n" +
 				"    AND NOT m:Hidden\n" +
 				searchFilter +
-				"    AND m.id <> {userId}\n" +
 				"  WITH DISTINCT m as visibles \n" +
 				" RETURN distinct visibles.id as id, "+
 				"    visibles.login as login,\n" +
@@ -170,7 +169,6 @@ public class DefaultCommunicationService implements CommunicationService {
 				"    )\n" +
 				"    AND NOT m:Hidden \n" +
 				searchFilter +
-				"    AND m.id <> {userId} \n" +
 				" WITH DISTINCT m as visibles\n" +
 				" RETURN distinct visibles.id as id, "+
 				"    visibles.login as login,\n" +
