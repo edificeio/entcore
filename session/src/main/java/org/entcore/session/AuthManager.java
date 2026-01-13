@@ -918,9 +918,11 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				"groupsIds, structureNodes, n.structures as structureExternalId, manualGroups, n.federatedIDP as federatedIDP, n.functions as aafFunctions, " +
 				"optionEnabled";
 		final String query2 =
-				"MATCH (n:User {id : {id}})-[:IN]->()-[:AUTHORIZED]->(:Role)-[:AUTHORIZE]->(a:Action)" +
-				"<-[:PROVIDE]-(app:Application) " +
-				"WHERE HAS(n.login) " +
+				"MATCH (u:User {id : {id}}) WHERE exists(u.login) " +
+				"MATCH (u)-[:IN]->()-[:AUTHORIZED]->(r:Role) " +
+				// retain only distinct role to optimize authorize action list
+				"WITH distinct r AS r " +
+				"MATCH (r)-[:AUTHORIZE]->(a:Action)<-[:PROVIDE]-(app:Application) " +
 				"RETURN DISTINCT COLLECT(distinct [a.name,a.displayName,a.type]) as authorizedActions, " +
 				"COLLECT(distinct [app.name,app.address,app.icon,app.target,app.displayName,app.display,app.prefix,app.casType,app.scope,app:External]) as apps";
 		final String query3 =
