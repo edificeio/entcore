@@ -4,7 +4,7 @@ import clsx from 'clsx';
 import { RefAttributes, useEffect, useRef, useState } from 'react';
 import { Application } from '~/models/application';
 import { useUserPreferencesStore } from '~/store/userPreferencesStore';
-import { ApplicationIcon } from './ApplicationIcon';
+import { ApplicationIcon } from './ApplicationIcon/ApplicationIcon';
 import { ApplicationMenu } from './ApplicationMenu';
 
 function combineRefs<T>(
