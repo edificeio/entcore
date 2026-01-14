@@ -72,6 +72,19 @@
             ></a
           >
         </li>
+
+        <!-- Carbonio preauth link -->
+        <li class="nav-item" ng-if="me.hasWorkflow('org.entcore.auth.controllers.CarbonioPreauthController|preauth')">
+          <a aria-label="navbar.messages" class="nav-link position-relative" href="/auth/carbonio/preauth" i18n-title="navbar.messages">
+            <svg aria-hidden="true" color="#fff" fill="none" height="24" viewBox="0 0 24 24" width="24"
+                 xmlns="http://www.w3.org/2000/svg">
+              <path
+                      d="m.5 21.257 7.46-8.216 4.052 2.403 4.052-2.403 7.46 8.216H.5Zm0-2.738V8.573l5.848 3.531L.5 18.52Zm0-12.084V3.048h23.023v3.387l-11.511 6.847L.5 6.435Zm17.176 5.67 5.848-3.532v9.946l-5.848-6.415Z"
+                      fill="currentColor"></path>
+            </svg>
+          </a>
+        </li>
+
         <li class="nav-item">
           <a href="/userbook/mon-compte" class="nav-link"
             ><svg
@@ -373,6 +386,19 @@
             ng-include="template.containers.portal.conversationUnread"
           ></div>
         </li>
+
+        <!-- Carbonio preauth link -->
+        <li class="nav-item" ng-if="me.hasWorkflow('org.entcore.auth.controllers.CarbonioPreauthController|preauth')">
+          <a aria-label="navbar.messages" class="nav-link position-relative" href="/auth/carbonio/preauth" i18n-title="navbar.messages">
+            <svg aria-hidden="true" color="#fff" fill="none" height="24" viewBox="0 0 24 24" width="24"
+                 xmlns="http://www.w3.org/2000/svg">
+              <path
+                      d="m.5 21.257 7.46-8.216 4.052 2.403 4.052-2.403 7.46 8.216H.5Zm0-2.738V8.573l5.848 3.531L.5 18.52Zm0-12.084V3.048h23.023v3.387l-11.511 6.847L.5 6.435Zm17.176 5.67 5.848-3.532v9.946l-5.848-6.415Z"
+                      fill="currentColor"></path>
+            </svg>
+          </a>
+        </li>
+
         <li class="nav-item">
           <a
             href="#"
