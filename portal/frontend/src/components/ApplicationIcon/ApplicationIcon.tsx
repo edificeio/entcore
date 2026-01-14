@@ -3,9 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { getAppName } from '~/utils/get-app-name';
 import clsx from 'clsx';
 import { useState } from 'react';
-import { FavoriteStarIcon } from './FavoriteStarIcon';
-import { Image, useEdificeIcons } from '@edifice.io/react';
+import { FavoriteStarIcon } from '../FavoriteStarIcon';
+import { Badge, Image, useEdificeIcons } from '@edifice.io/react';
 import * as IconSprites from '@edifice.io/react/icons/apps';
+import { IWebApp } from '@edifice.io/client';
+import './ApplicationIcon.css';
 
 export function ApplicationIcon({
   data,
@@ -32,6 +34,16 @@ export function ApplicationIcon({
   const iconCode = data.icon ? getIconCode(data.icon) : '';
   const isIconURL = isIconUrl(data.icon);
   const appCode = iconCode || 'placeholder';
+  const webapp: IWebApp = {
+    name: data.name,
+    address: data.address,
+    display: data.display,
+    displayName: data.displayName,
+    icon: data.icon,
+    isExternal: data.isExternal,
+    scope: data.scope,
+    version: data.version,
+  };
 
   const IconComponent =
     IconSprites[
@@ -63,6 +75,13 @@ export function ApplicationIcon({
           <IconComponent className="application-icon-app" />
         )}
       </span>
+
+      {data.version === 'BETA' && (
+        <Badge
+          variant={{ type: 'beta', app: webapp }}
+          className="myapps-beta-badge"
+        />
+      )}
     </span>
   );
 }
