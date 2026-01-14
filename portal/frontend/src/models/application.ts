@@ -15,7 +15,15 @@ export type Application = {
   help?: helpType;
   appName?: string;
   isFavorite?: boolean;
+  version?: APP_VERSION;
 };
+
+export type APP_VERSION =
+  | 'BETA'
+  | 'ALPHA'
+  | 'STABLE'
+  | 'DEPRECATED'
+  | 'EXPERIMENTAL';
 
 type helpType = {
   [lang: string]: string | null;

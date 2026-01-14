@@ -32,6 +32,16 @@ export function ApplicationIcon({
   const iconCode = data.icon ? getIconCode(data.icon) : '';
   const isIconURL = isIconUrl(data.icon);
   const appCode = iconCode || 'placeholder';
+  const webapp: IWebApp = {
+    name: data.name,
+    address: data.address,
+    display: data.display,
+    displayName: data.displayName,
+    icon: data.icon,
+    isExternal: data.isExternal,
+    scope: data.scope,
+    version: data.version,
+  };
 
   const IconComponent =
     IconSprites[
@@ -63,6 +73,13 @@ export function ApplicationIcon({
           <IconComponent className="application-icon-app" />
         )}
       </span>
+
+      {data.version === 'BETA' && (
+        <Badge
+          variant={{ type: 'beta', app: webapp }}
+          className="myapps-beta-badge"
+        />
+      )}
     </span>
   );
 }
