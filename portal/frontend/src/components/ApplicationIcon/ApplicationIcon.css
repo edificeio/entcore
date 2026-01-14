@@ -1,4 +1,10 @@
 .myapps-beta-badge {
-    position: relative;
-    top: -15px;
+  position: absolute;
+  bottom: -2px;
+  left: 7px;
+  max-width: 50px;
+  padding-left: 5px;
+  padding: 0px 8px;
+  height: unset !important;
+  font-size: 1.2rem;
 }
