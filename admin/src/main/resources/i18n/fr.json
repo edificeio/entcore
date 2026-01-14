@@ -803,7 +803,7 @@
   "management.zimbra.tab": "Messagerie Zimbra",
   "management.zimbra.warning.content": "Attention, lorsque vous ouvrez des droits vers l'extérieur, les règles de communication définies par l'établissement ne sont plus appliquées dans la messagerie pour les utilisateurs contenus dans les groupes sélectionnés.",
   "massmail": "Publipostage",
-  "massmail.accounts": "Publipostage des comptes",
+  "massmail.accounts": "Distribuer les comptes",
   "massmail.classname": "Classe",
   "massmail.confirm": "Êtes-vous sûr de vouloir envoyer leur identifiant par mail à {{nbUsers}} utilisateur(s) ?",
   "massmail.error": "Erreur lors du publipostage",
