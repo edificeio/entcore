@@ -258,10 +258,10 @@ publish() {
     *)         export nexusRepository='releases' ;;
   esac
 
-  docker compose run --rm  maven mvn $MVN_OPTS -DrepositoryId=ode-$nexusRepository -DskipTests --settings /var/maven/.m2/settings.xml deploy
-  #cd broker-parent/broker-client/quarkus
-  #./build.sh publish
-  #cd -
+  docker compose run --rm  maven mvn  $MVN_OPTS -DrepositoryId=ode-$nexusRepository -DskipTests --settings /var/maven/.m2/settings.xml deploy
+  cd broker-parent/broker-client/quarkus
+  ./build.sh publish
+  cd -
   publishBrokerNpmLib
 }
 
