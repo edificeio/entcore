@@ -37,6 +37,9 @@
     },
     "lockDelete": {
       "type": "boolean"
+    },
+    "lockCompose": {
+      "type": "boolean"
     }
   },
   "required": [

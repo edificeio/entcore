@@ -284,12 +284,13 @@ export class GroupDetailsComponent extends OdeComponent implements OnInit, OnDes
     }
 
     switchLockedStatus() {
-      const currentLockStatus = this.groupsStore.group.lockDelete || false;
+      const currentLockStatus = this.groupsStore.group.lockCompose || false;
       const newLockStatus = !currentLockStatus;
       
       this.groupsService.update(this.groupsStore.group.id, {
         name: this.groupsStore.group.name,
-        lockDelete: newLockStatus
+        lockDelete: newLockStatus,
+        lockCompose: newLockStatus
       }).subscribe(() => {
         this.notifyService.success({
           key: newLockStatus ? 'group.lock.notify.success.content' : 'group.unlock.notify.success.content',
