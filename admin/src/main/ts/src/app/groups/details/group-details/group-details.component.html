@@ -31,7 +31,7 @@
     <ng-container *ngIf="groupsStore.group?.type === 'ManualGroup'">
       <!-- visible but disabled for non-ADMC when group is locked -->
       <button type="button"
-              *ngIf="groupsStore.group?.lockDelete && !canLockGroup"
+              *ngIf="groupsStore.group?.lockCompose && !canLockGroup"
               disabled
               class="lct-group-delete-button">
         <s5l>group.delete.button.lock</s5l>
@@ -40,7 +40,7 @@
       
       <!-- only ADMC can click unlock -->
       <button (click)="switchLockedStatus()"
-              *ngIf="groupsStore.group?.lockDelete && canLockGroup"
+              *ngIf="groupsStore.group?.lockCompose && canLockGroup"
               class="lct-group-delete-button"
               type="button">
         <s5l>group.unlock.button</s5l>
@@ -49,7 +49,7 @@
       
       <!-- only ADMC can click lock-->
       <button (click)="switchLockedStatus()"
-              *ngIf="!groupsStore.group?.lockDelete && canLockGroup"
+              *ngIf="!groupsStore.group?.lockCompose && canLockGroup"
               class="lct-group-delete-button"
               type="button">
         <s5l>group.lock.button</s5l>
@@ -61,7 +61,7 @@
 
 <div class="padded">
     <button (click)="showLightBox()"
-            *ngIf="groupsStore.group?.type === 'ManualGroup' && groupsStore.group?.subType !== 'BroadcastGroup' && groupsStore.group?.lockDelete !==true">
+            *ngIf="groupsStore.group?.type === 'ManualGroup' && groupsStore.group?.subType !== 'BroadcastGroup' && groupsStore.group?.lockCompose !==true">
         <s5l>group.details.add.users</s5l>
     </button>
 
@@ -105,7 +105,7 @@
 </ode-group-autolink>
 
 <ode-manual-group-autolink
-        *ngIf="groupsStore.group?.lockDelete != true && showManualGroupAutolink()"
+        *ngIf="groupsStore.group?.lockCompose !== true && showManualGroupAutolink()"
         [group]="groupsStore.group"
         [structure]="groupsStore.structure"
         [usersPositionsOptions]="autolinkUserPositionOptions"

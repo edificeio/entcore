@@ -24,6 +24,7 @@ export class GroupModel extends Model<GroupModel> {
   filter?: string;
   structureId?: string;
   lockDelete?: boolean;
+  lockCompose?: boolean;
   users: UserModel[];
   internalCommunicationRule?: InternalCommunicationRule;
   roles?: string[];
