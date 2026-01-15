@@ -110,7 +110,7 @@ public class DefaultGroupService implements GroupService {
 				"g.autolinkUsersFromPositions as autolinkUsersFromPositions, " +
 				"g.autolinkUsersFromLevels as autolinkUsersFromLevels," +
 				"type, g.users as internalCommunicationRule, "+
-				"g.lockDelete AS lockDelete, coalesce(g.nbUsers,0) as nbUsers, " +
+				"g.lockDelete AS lockDelete, g.lockCompose AS lockCompose, coalesce(g.nbUsers,0) as nbUsers, " +
 				"CASE WHEN any(x in classes where x <> {name: null, id: null}) THEN classes END as classes," +
 				"CASE WHEN any(x in structures where x <> {name: null, id: null}) THEN structures END as structures, " +
 				"CASE WHEN (g: ProfileGroup)-[:DEPENDS]-(:Structure) THEN 'StructureGroup' " +
