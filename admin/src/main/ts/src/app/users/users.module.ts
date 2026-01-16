@@ -44,6 +44,7 @@ import { UsersListComponent } from './users-list/users-list.component';
 import { UsersRelinkComponent } from './users-relink/users-relink.component';
 import { SharedModule } from '../_shared/shared.module';
 import { UserPositionsSectionComponent } from './details/sections/user-positions/user-positions-section.component';
+import { ConfigResolver } from '../core/resolvers/config.resolver';
 
 @NgModule({
     imports: [
@@ -87,6 +88,7 @@ import { UserPositionsSectionComponent } from './details/sections/user-positions
         UserPositionsSectionComponent
     ],
     providers: [
+        ConfigResolver,
         UserDetailsResolver,
         UsersResolver,
         RemovedUsersResolver,

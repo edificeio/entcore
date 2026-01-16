@@ -1,9 +1,11 @@
 import {
   ChangeDetectorRef,
   Component,
+  OnDestroy,
   OnInit,
   ViewEncapsulation,
 } from "@angular/core";
+import { Subscription } from "rxjs";
 
 import { AbstractSection } from "../abstract.section";
 import { SpinnerService } from "ngx-ode-ui";
@@ -11,6 +13,8 @@ import { UserPosition, UserPositionElementQuery } from "src/app/core/store/model
 import { UserPositionService } from "src/app/core/services/user-position.service";
 import { UserInfoService } from "../info/user-info.service";
 import { NotifyService } from "src/app/core/services/notify.service";
+import { Config } from "src/app/core/resolvers/Config";
+import { ActivatedRoute } from "@angular/router";
 
 @Component({
   selector: "ode-user-positions-section",
@@ -21,8 +25,9 @@ import { NotifyService } from "src/app/core/services/notify.service";
 })
 export class UserPositionsSectionComponent
   extends AbstractSection
-  implements OnInit
+  implements OnInit, OnDestroy
 {
+  private subscriptions = new Subscription();
   /** List of all positions existing in structures the user is ADMx of. */
   positionList: UserPosition[];
   userPositions: UserPosition[];
@@ -38,6 +43,7 @@ export class UserPositionsSectionComponent
   isUserPositionCrudAllowed: boolean = true;
   showConfirmRemovePosition: boolean = false;
   positionToRemove: UserPosition;
+  config: Config;
 
   /** Truthy when detecting user's positions changes */
   get hasUserPositionsChanged(): boolean {
@@ -61,12 +67,14 @@ export class UserPositionsSectionComponent
     public spinner: SpinnerService,
     protected cdRef: ChangeDetectorRef,
     private userInfoService: UserInfoService,
-    private userPositionService: UserPositionService
+    private userPositionService: UserPositionService,
+    private route: ActivatedRoute
   ) {
     super();
   }
 
   async ngOnInit() {
+    this.subscriptions.add(this.route.data.subscribe((data) => this.config = data.config));
     this.isUserPositionCrudAllowed = !(await this.userPositionService.isCrudRestricted());
     
     const params:UserPositionElementQuery = {};
@@ -84,6 +92,10 @@ export class UserPositionsSectionComponent
         return [];
       });
     this.memoizeInitialUserPositions();
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
   }
 
   protected onUserChange() {
@@ -171,31 +183,42 @@ export class UserPositionsSectionComponent
     this.showUserPositionCreationLightbox = false;
   }
 
-    saveUpdate(removePosition = false, changedPosition?: UserPosition) {
-        if (this.userPositions && this.userPositions.length > 0) {
+  saveUpdate(removePosition = false, changedPosition?: UserPosition) {
+    if (this.userPositions && this.userPositions.length > 0) {
       this.details.userPositions = [...this.userPositions];
     } else {
       this.details.userPositions = [];
     }
     this.spinner
-      .perform('portal-content', this.details.updateUserPositions())
+      .perform("portal-content", this.details.updateUserPositions())
       .then(() => {
         this.ns.success(
-          removePosition ? 'notify.user-position.remove.success.content' :'notify.user-position.assign.success.content',
-          'notify.user-position.success.title'
+          removePosition
+            ? "notify.user-position.remove.success.content"
+            : "notify.user-position.assign.success.content",
+          "notify.user-position.success.title"
         );
-        this.user.userPositions = this.details.userPositions.map(p=>({id: p.id}));
+        this.user.userPositions = this.details.userPositions.map((p) => ({
+          id: p.id,
+        }));
         this.userInfoService.setState(this.details);
       })
-        .then(async () => {
-            if (changedPosition) {
-                await this.userPositionService.updateManualGroupsByUserPositions(changedPosition);
-            }
-        })
-      .catch(err => {
+      .then(async () => {
+        if (
+          (this.config?.["enable-manual-group-autolink"] ?? false) &&
+          changedPosition
+        ) {
+          await this.userPositionService.updateManualGroupsByUserPositions(
+            changedPosition
+          );
+        }
+      })
+      .catch((err) => {
         this.ns.error(
-          removePosition ? 'notify.user-position.remove.error.content':  'notify.user-position.assign.error.content',
-          'notify.user-position.assign.error.title', 
+          removePosition
+            ? "notify.user-position.remove.error.content"
+            : "notify.user-position.assign.error.content",
+          "notify.user-position.assign.error.title",
           err
         );
       });

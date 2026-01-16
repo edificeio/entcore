@@ -21,7 +21,9 @@ export let routes: Routes = [
             {
                 path: 'list', component: UsersListComponent, resolve: {users: UsersResolver},
                 children: [
-                    {path: 'create', component: UserCreateComponent},
+                    {path: 'create', component: UserCreateComponent, resolve: {
+                        config: ConfigResolver
+                    }},
                     {path: 'filter', component: UserFiltersComponent},
                     {
                         path: ':userId/details', component: UserDetailsComponent, resolve: {
