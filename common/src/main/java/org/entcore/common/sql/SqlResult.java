@@ -301,8 +301,8 @@ public class SqlResult {
 	public static void parseShared(JsonObject j) {
 		Map<String, JsonObject> shared = new HashMap<>();
 		JsonArray a = new fr.wseduc.webutils.collections.JsonArray();
-		JsonArray s = new fr.wseduc.webutils.collections.JsonArray(j.getString("shared"));
-		JsonArray m = new fr.wseduc.webutils.collections.JsonArray(j.getString("groups"));
+		JsonArray s = new fr.wseduc.webutils.collections.JsonArray(j.getString("shared", ""));
+		JsonArray m = new fr.wseduc.webutils.collections.JsonArray(j.getString("groups", ""));
 		for (Object o : s) {
 			if (o == null || !(o instanceof JsonObject)) continue;
 			JsonObject json = (JsonObject) o;
