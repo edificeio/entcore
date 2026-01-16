@@ -1,7 +1,11 @@
 {
   "name": "@edifice.io/edifice-ent-client",
-  "version": "6.9.0-feat-ia.1762443202795",
+  "version": "6.11.0-zookeeper.1768571140496",
   "description": "Clients to interact with ent-nats-service",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
