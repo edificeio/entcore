@@ -97,15 +97,51 @@ public class DefaultWebGerestService implements WebGerestService {
                 })
                 .onFailure(err -> {
                     log.error("[WebGerest] - " + err.getMessage());
-                    promise.fail("[WebGerest] - " + err.getMessage());
+                    promise.fail(err.getMessage());
                 });
 
         return promise.future();
     }
 
     private Future<JsonObject> fetchMenuApi(String accessToken, String webServiceUrl, String uai, String date) {
-        Promise<JsonObject> promise = Promise.promise();
-        String api = webServiceUrl + "/menus?rne=" + uai + "&date_menu=" + date + "&service=2";
+        // First fetch lunch menu (service=2) - this is required
+        Future<JsonArray> lunchMenuFuture = fetchMenuByService(accessToken, webServiceUrl, uai, date, 2);
+        
+        // Then fetch dinner menu (service=4) - this is optional
+        Future<JsonArray> dinnerMenuFuture = fetchMenuByService(accessToken, webServiceUrl, uai, date, 4);
+
+        // Wait for lunch menu first (required), then check dinner menu
+        return lunchMenuFuture
+                .compose(lunchMenu -> {
+                    if (lunchMenu == null) {
+                        return Future.failedFuture("[WebGerest] - Menu key not found");
+                    }
+                    
+                    JsonObject response = new JsonObject().put("lunchMenu", lunchMenu);
+                    
+                    // Check dinner menu result (non-blocking, already fetched)
+                    return dinnerMenuFuture
+                            .map(dinnerMenu -> {
+                                boolean dinnerAvailable = dinnerMenu != null && dinnerMenu.size() > 0;
+                                response.put("dinnerAvailable", dinnerAvailable);
+                                
+                                if (dinnerAvailable) {
+                                    response.put("dinnerMenu", dinnerMenu);
+                                }
+                                
+                                return response;
+                            })
+                            .recover(err -> {
+                                // If dinner fetch failed, just set dinnerAvailable to false
+                                response.put("dinnerAvailable", false);
+                                return Future.succeededFuture(response);
+                            });
+                });
+    }
+
+    private Future<JsonArray> fetchMenuByService(String accessToken, String webServiceUrl, String uai, String date, int service) {
+        Promise<JsonArray> promise = Promise.promise();
+        String api = webServiceUrl + "/menus?rne=" + uai + "&date_menu=" + date + "&service=" + service;
         MultiMap headers = MultiMap.caseInsensitiveMultiMap();
         headers.add("Authorization", accessToken);
 
@@ -120,20 +156,41 @@ public class DefaultWebGerestService implements WebGerestService {
                             JsonObject json = body.toJsonObject();
                             if (json.containsKey("contenu")) {
                                 JsonArray menu = json.getJsonArray("contenu");
-                                promise.complete(new JsonObject().put("menu", menu));
+                                // Empty response structure: {"error": "0", "nbObjet": 0, "contenu": []}
+                                if (menu != null && menu.size() > 0) {
+                                    promise.complete(menu);
+                                } else {
+                                    // {"error": "0", "nbObjet": 0, "contenu": []} means no data available
+                                    promise.complete(null);
+                                }
                             } else {
-                                log.error("[WebGerest] - Menu key not found");
-                                promise.fail("[WebGerest] - Menu key not found");
+                                // If contenu key doesn't exist, treat as no data
+                                promise.complete(null);
                             }
                         });
                     } else {
-                        log.error("[WebGerest] - Menu not found");
-                        promise.fail("[WebGerest] - Menu not found");
+                        // If request fails, treat as no data available
+                        if (service == 2) {
+                            // For lunch (service=2), this is an error
+                            log.error("[WebGerest] - Menu not found for service=" + service);
+                            promise.fail("[WebGerest] - Menu not found");
+                        } else {
+                            // For dinner (service=4), this is acceptable (service may not be available)
+                            log.warn("[WebGerest] - Menu not found for service=" + service);
+                            promise.complete(null);
+                        }
                     }
                 })
                 .onFailure(err -> {
-                    log.error("[WebGerest] - " + err.getMessage());
-                    promise.fail("[WebGerest] - " + err.getMessage());
+                    if (service == 2) {
+                        // For lunch (service=2), this is an error
+                        log.error("[WebGerest] - " + err.getMessage());
+                        promise.fail(err.getMessage());
+                    } else {
+                        // For dinner (service=4), this is acceptable (service may not be available)
+                        log.warn("[WebGerest] - Error fetching menu for service=" + service + ": " + err.getMessage());
+                        promise.complete(null);
+                    }
                 });
 
         return promise.future();

@@ -59,14 +59,14 @@ public class WebGerestController extends BaseController {
         cacheService.get(cacheId, result -> {
             if (result.isRight()) {
                 if (result.right().getValue() != null && result.right().getValue().containsKey("cache")) {
-                    JsonArray menuArray = new JsonArray(result.right().getValue().getString("cache"));
-                    JsonObject responseJson = new JsonObject().put("menu", menuArray);
-                    renderJson(httpServerRequest, responseJson);
+                    String cachedResponse = result.right().getValue().getString("cache");
+                    JsonObject cachedMenu = new JsonObject(cachedResponse);
+                    renderJson(httpServerRequest, cachedMenu);
                 } else {
                     webGerestService.getMenu(httpServerRequest, uai, date, webGerestConfig, resp -> {
                         if (resp.isRight()) {
                             JsonObject menu = resp.right().getValue();
-                            cacheService.put(cacheId, menu.getJsonArray("menu").encode(),
+                            cacheService.put(cacheId, menu.encode(),
                                     webGerestConfig.getInteger("webGerest-cache-ttl"));
                             renderJson(httpServerRequest, menu);
 
