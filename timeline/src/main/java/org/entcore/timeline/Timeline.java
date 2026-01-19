@@ -37,6 +37,7 @@ import org.entcore.broker.api.publisher.BrokerPublisherFactory;
 import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.broker.proxy.ApplicationStatusBrokerPublisher;
 import org.entcore.common.http.BaseServer;
+import org.entcore.common.utils.MapFactory;
 import org.entcore.timeline.controllers.helper.NotificationHelper;
 import org.entcore.timeline.listeners.TimelineBrokerListenerImpl;
 import org.entcore.timeline.services.FlashMsgService;
@@ -148,10 +149,14 @@ public class Timeline extends BaseServer {
 	}
 
 	private void updateRegisteredNotificationsCache(final Map<String, String> registeredNotificationsCache) {
-		SharedDataHelper.getInstance().<String, String>getAsyncMap("notificationsMap")
-			.compose(AsyncMap::entries)
-			.onSuccess(registeredNotificationsCache::putAll)
-			.onFailure(ex -> log.error("Error when update registeredNotifications", ex));
+		MapFactory.<String, String>getClusterMap("notificationsMap", vertx, map -> {
+			map.entries()
+				.onSuccess(entries -> {
+					registeredNotificationsCache.clear();
+					registeredNotificationsCache.putAll(entries);
+				})
+				.onFailure(ex -> log.error("Error when update registered notifications", ex));
+		});
 	}
 
 	private void updateEventsI18nCache(final Map<String, String> eventsI18n) {
