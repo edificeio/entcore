@@ -26,7 +26,9 @@ export const createFolderService = (baseURL: string) => ({
    * @returns count of [unread] messages
    */
   getCount(folderId: string, unread?: boolean) {
-    const queryParams = [] as string[];
+    
+    // To force backend cache to refresh we add a query param with current timestamp
+    const queryParams = [`queryparam_token=${new Date().getTime()}`] as string[];
     // `restrain` query parameter applies to users folders only.
     if (SYSTEM_FOLDER_IDS.findIndex((f) => f === folderId) === -1) {
       queryParams.push('restrain');
