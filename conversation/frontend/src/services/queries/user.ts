@@ -98,7 +98,7 @@ function applySearchRules(
     backendFiltering || isAdml ? search.substring(0, 3) : undefined;
   function computeFrontendFilter() {
     const removeAccents = odeServices.idiom().removeAccents;
-    const searchTerm = removeAccents(search).toLowerCase();
+    const searchTerm = removeAccents(search).toLowerCase().replace(/ /g, '');
     let testDisplayNames: string[] = [],
       testNameReverseds: string[] = [];
 
@@ -133,8 +133,12 @@ function applySearchRules(
         });
       }
       return (
-        testDisplayNames.some((name) => name.indexOf(searchTerm) !== -1) ||
-        testNameReverseds.some((name) => name.indexOf(searchTerm) !== -1)
+        testDisplayNames.some(
+          (name) => name.replace(/ /g, '').indexOf(searchTerm) !== -1,
+        ) ||
+        testNameReverseds.some(
+          (name) => name.replace(/ /g, '').indexOf(searchTerm) !== -1,
+        )
       );
     };
   }
