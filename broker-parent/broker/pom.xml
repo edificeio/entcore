@@ -11,6 +11,9 @@
     </parent>
     <artifactId>broker</artifactId>
 
+    <properties>
+        <skipBuildClients>true</skipBuildClients>
+    </properties>
 
     <dependencies>
         <dependency>
@@ -58,18 +61,19 @@
                         <goals>
                             <goal>exec</goal>
                         </goals>
+                        <configuration>
+                            <skip>${skipBuildClients}</skip>
+                            <executable>edifice</executable>
+                            <arguments>
+                                <argument>install</argument>
+                                <argument>--clients</argument>
+                                <argument>--wd=${project.basedir}/../..</argument>
+                                <argument>--debug</argument>
+                                <argument>--no-docker</argument>
+                            </arguments>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <executable>edifice</executable>
-                    <arguments>
-                        <argument>install</argument>
-                        <argument>--clients</argument>
-                        <argument>--wd=${project.basedir}/../..</argument>
-                        <argument>--debug</argument>
-                        <argument>--no-docker</argument>
-                    </arguments>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -108,4 +112,19 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>build-clients</id>
+            <activation>
+                <property>
+                    <name>buildClients</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <properties>
+                <skipBuildClients>false</skipBuildClients>
+            </properties>
+        </profile>
+    </profiles>
 </project>
