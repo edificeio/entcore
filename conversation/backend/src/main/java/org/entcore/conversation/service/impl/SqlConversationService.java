@@ -1055,10 +1055,11 @@ public class SqlConversationService implements ConversationService{
 		query += addCompleteFolderCondition(values, restrain, unread, folder, user, EnumSet.of(State.SENT));
 
 		if(restrain != null && unread){
-			query += " AND (m.from <> ? OR m.to @> ?::jsonb OR m.cc @> ?::jsonb) ";
+			final String userAndGroupsJsonb = buildUserAndGroupsJsonbArray(user.getUserId(), user.getGroupsIds());
+			query += " AND (m.from <> ? OR m.to @> ANY(?::jsonb[]) OR m.cc @> ANY(?::jsonb[])) ";
 			values.add(user.getUserId());
-			values.add(new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).toString());
-			values.add(new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).toString());
+			values.add(userAndGroupsJsonb);
+			values.add(userAndGroupsJsonb);
 		}
 
 		sql.prepared(query, values, SqlResult.validUniqueResultHandler(result));
@@ -1427,14 +1428,15 @@ public class SqlConversationService implements ConversationService{
 		return;
 		final JsonArray subValues = new JsonArray();
 		final StringBuilder subQuery = new StringBuilder();
+		final String userAndGroupsJsonb = buildUserAndGroupsJsonbArray(user.getUserId(), user.getGroupsIds());
 		subQuery.append("SELECT count(*) as count,um.folder_id  FROM ").append(userMessageTable).append(" um ");
 		subQuery.append(" INNER JOIN ").append(messageTable).append(" m ON (um.message_id = m.id) ");
 		subQuery.append(" WHERE um.user_id = ?  AND m.state='SENT' ");
-		subQuery.append(" AND (m.from <> ? OR m.to @> ?::jsonb OR m.cc @> ?::jsonb) ");
+		subQuery.append(" AND (m.from <> ? OR m.to @> ANY(?::jsonb[]) OR m.cc @> ANY(?::jsonb[])) ");
 		subValues.add(user.getUserId());
 		subValues.add(user.getUserId());
-		subValues.add(new JsonArray().add(user.getUserId()).toString());
-		subValues.add(new JsonArray().add(user.getUserId()).toString());
+		subValues.add(userAndGroupsJsonb);
+		subValues.add(userAndGroupsJsonb);
 		if(unread != null && unread){
 			subQuery.append(" AND um.unread = ").append(unread ? " TRUE " : " FALSE ");
 		}
@@ -1956,16 +1958,17 @@ public class SqlConversationService implements ConversationService{
 		return builder.toString();
 	}
 
-	private String addFolderCondition(String folder, JsonArray values, String userId, EnumSet<State> states){
+	private String addFolderCondition(String folder, JsonArray values, String userId, List<String> groupIds, EnumSet<State> states){
 		String additionalWhere = "";
 		switch(folder.toUpperCase()){
 			case "INBOX":
-				additionalWhere = "AND (m.from <> ? OR m.to @> ?::jsonb OR m.cc @> ?::jsonb) AND m.state IN ("
+				final String userAndGroupsJsonb = buildUserAndGroupsJsonbArray(userId, groupIds);
+				additionalWhere = "AND (m.from <> ? OR m.to @> ANY(?::jsonb[]) OR m.cc @> ANY(?::jsonb[])) AND m.state IN ("
 					+ states.stream().map(state->"?").collect(Collectors.joining(","))
 					+") AND um.trashed = false AND um.folder_id IS NULL";
 				values.add(userId);
-				values.add(new fr.wseduc.webutils.collections.JsonArray().add(userId).toString());
-				values.add(new fr.wseduc.webutils.collections.JsonArray().add(userId).toString());
+				values.add(userAndGroupsJsonb);
+				values.add(userAndGroupsJsonb);
 				states.stream().forEach(state-> values.add(state.name()));
 				break;
 			case "OUTBOX":
@@ -1998,7 +2001,7 @@ public class SqlConversationService implements ConversationService{
 			additionalWhere += "AND um.folder_id = ? AND um.trashed = false";
 			values.add(folder);
 		} else {
-			additionalWhere += addFolderCondition(folder, values, user.getUserId(), states);
+			additionalWhere += addFolderCondition(folder, values, user.getUserId(), user.getGroupsIds(), states);
 		}
 
 		return additionalWhere;
@@ -2018,6 +2021,27 @@ public class SqlConversationService implements ConversationService{
 		}
 
 		return messageConditionUnread;
+	}
+
+	/**
+	 * Build a PostgreSQL JSONB array containing the userId and all groupIds.
+	 * Used for checking if a message was sent to the user directly or via a group.
+	 * Format: {"[\"userId\"]", "[\"groupId1\"]", "[\"groupId2\"]", ...}
+	 *
+	 * @param userId   The user's ID
+	 * @param groupIds The list of group IDs the user belongs to
+	 * @return A string representing a PostgreSQL JSONB array
+	 */
+	private String buildUserAndGroupsJsonbArray(String userId, List<String> groupIds) {
+		final List<String> allIds = new ArrayList<>();
+		allIds.add(userId);
+		if (groupIds != null) {
+			allIds.addAll(groupIds);
+		}
+
+		return allIds.stream()
+			.map(id -> "[\"" + id + "\"]")
+			.collect(Collectors.joining(",", "{", "}"));
 	}
 
 	private boolean validationError(UserInfos user, Handler<Either<String, JsonArray>> results, String ... params) {
