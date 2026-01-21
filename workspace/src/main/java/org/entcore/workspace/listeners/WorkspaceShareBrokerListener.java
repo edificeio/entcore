@@ -105,8 +105,8 @@ public class WorkspaceShareBrokerListener implements ShareBrokerListener {
             final UserInfos user = new UserInfos();
             user.setUserId(currentUserId);
 
-            // Step 6: Use SHARE_OBJECT to apply the complete share object
-            final ElementShareOperations shareOps = ElementShareOperations.addShareObject(
+            // Step 6: Use SHARE_OBJECT to apply the complete share object (as system operation to bypass permission check)
+            final ElementShareOperations shareOps = ElementShareOperations.addShareObjectAsSystem(
                     WorkspaceController.SHARED_ACTION,
                     user,
                     sharedObject
@@ -171,8 +171,8 @@ public class WorkspaceShareBrokerListener implements ShareBrokerListener {
             final UserInfos user = new UserInfos();
             user.setUserId(currentUserId);
 
-            // Step 5: Use SHARE_OBJECT with the updated share object (group removed)
-            final ElementShareOperations shareOps = ElementShareOperations.addShareObject(
+            // Step 5: Use SHARE_OBJECT with the updated share object (group removed) as system operation
+            final ElementShareOperations shareOps = ElementShareOperations.addShareObjectAsSystem(
                     WorkspaceController.SHARED_ACTION,
                     user,
                     sharedObject

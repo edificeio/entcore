@@ -18,6 +18,7 @@ public class ElementShareOperations {
 	List<String> actions;
 	JsonObject share;
 	String shareAction;
+	boolean isSystemShare = false;
 
 	public static ElementShareOperations addShareObject(String shareAction, UserInfos user, JsonObject shareO) {
 		ElementShareOperations share = new ElementShareOperations();
@@ -25,6 +26,12 @@ public class ElementShareOperations {
 		share.user = user; 
 		share.share = shareO;
 		share.shareAction = shareAction;
+		return share;
+	}
+
+	public static ElementShareOperations addShareObjectAsSystem(String shareAction, UserInfos user, JsonObject shareO) {
+		ElementShareOperations share = addShareObject(shareAction, user, shareO);
+		share.isSystemShare = true;
 		return share;
 	}
 
@@ -126,5 +133,13 @@ public class ElementShareOperations {
 
 	public void setShare(JsonObject share) {
 		this.share = share;
+	}
+
+	public boolean isSystemShare() {
+		return isSystemShare;
+	}
+
+	public void setSystemShare(boolean isSystemShare) {
+		this.isSystemShare = isSystemShare;
 	}
 }
