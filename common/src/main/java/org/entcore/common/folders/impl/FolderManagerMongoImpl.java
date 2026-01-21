@@ -951,95 +951,115 @@ public class FolderManagerMongoImpl implements FolderManager {
 		}).map(new JsonArray(new ArrayList<>(ids)));
 	}
 
-	public void share(String id, ElementShareOperations shareOperations, Handler<AsyncResult<JsonObject>> hh) {
+public void share(String id, ElementShareOperations shareOperations, Handler<AsyncResult<JsonObject>> hh) {
+		// If system share (from broker), skip permission check and execute directly
+		if (shareOperations.isSystemShare()) {
+			// First fetch the document, then execute the share operation
+			queryHelper.findOne(queryHelper.queryBuilder().withId(id)).compose(founded -> {
+				if (founded == null) {
+					return Future.failedFuture("resource.not.found");
+				}
+				return executeShareOperationWithFounded(id, shareOperations, founded);
+			}).onComplete(hh);
+			return;
+		}
+
 		final UserInfos user = shareOperations.getUser();
 		// is owner or has shared right
 		queryHelper.findOne(queryHelper.queryBuilder().withId(id).filterByInheritShareAndOwnerWithAction(user,
 				shareOperations.getShareAction())).compose(founded -> {
-					// prepare futures
-					final List<Future> futures = new ArrayList<Future>();
-					final Promise<JsonObject> futureShared = Promise.promise();
-					futures.add(futureShared.future());
-					// compute shared after sharing
-					final Handler<Either<String, JsonObject>> handler = (event) -> {
-						if (event.isRight()) {
-							futureShared.complete(event.right().getValue());
-						} else {
-							futureShared.fail(event.left().getValue());
+			return executeShareOperationWithFounded(id, shareOperations, founded);
+		}).onComplete(hh);
+	}
+
+	/**
+	 * Core share logic, executes after document is found
+	 */
+	private Future<JsonObject> executeShareOperationWithFounded(String id, ElementShareOperations shareOperations, JsonObject founded) {
+		final UserInfos user = shareOperations.getUser();
+		// prepare futures
+		final List<Future> futures = new ArrayList<Future>();
+		final Promise<JsonObject> futureShared = Promise.promise();
+		futures.add(futureShared.future());
+		// compute shared after sharing
+		final Handler<Either<String, JsonObject>> handler = (event) -> {
+			if (event.isRight()) {
+				futureShared.complete(event.right().getValue());
+			} else {
+				futureShared.fail(event.left().getValue());
+			}
+		};
+		//
+		switch (shareOperations.getKind()) {
+			case GROUP_SHARE:
+				this.shareService.groupShare(user.getUserId(), shareOperations.getGroupId(), id,
+						shareOperations.getActions(), handler);
+				break;
+			case GROUP_SHARE_REMOVE:
+				this.shareService.removeGroupShare(shareOperations.getGroupId(), id,
+						shareOperations.getActions(), handler);
+				break;
+			case USER_SHARE:
+				this.shareService.userShare(user.getUserId(), shareOperations.getUserId(), id,
+						shareOperations.getActions(), handler);
+				break;
+			case USER_SHARE_REMOVE:
+				this.shareService.removeUserShare(shareOperations.getUserId(), id,
+						shareOperations.getActions(), handler);
+				break;
+			case SHARE_OBJECT:{
+				// get current shares
+				final JsonObject shares = shareOperations.getShare();
+				// trigger save shared
+				futures.add(this.shareService.share(user.getUserId(), id, shares, handler));
+				break;
+			}
+		}
+		return CompositeFuture.all(futures).compose(ev -> {
+			final JsonObject resultShare = (JsonObject) ev.list().get(0);
+			Future<InheritShareComputer.InheritShareResult> futureInheritCompute = null;
+			// ensure owner has all rights and put it in inherit shared: do it after shares because shareService is removing the owner from shares
+			final String ownerId = DocumentHelper.getOwner(founded);
+			// Get all actions available
+			final List<String> allActions = this.shareService.getAllResourceActionNames();
+			// create right with all actions for owner
+			final JsonObject ownerRight = new JsonObject().put("userId", ownerId);
+			for(final String action : allActions){
+				ownerRight.put(action, true);
+			}
+			if (ev.list().size() == 2) {
+				final JsonObject validatedShares = (JsonObject) ev.list().get(1);
+				// get current shared
+				final JsonArray shared = validatedShares.getJsonArray("shared", new JsonArray());
+				// add owner shares
+				shared.add(ownerRight);
+				founded.put("shared", shared);
+				// avoid fetch shared => in case of mongo lag replication it could make shared
+				// empty #34806
+				futureInheritCompute = this.inheritShareComputer.compute(founded, true);
+			} else {
+				// recompute from id (to refresh shared array) => this case is never called because share by 1 user or 1 group is deprecated
+				futureInheritCompute = this.inheritShareComputer.compute(id, true);
+			}
+			return futureInheritCompute.compose(res -> queryHelper.bulkUpdateShares(res).map(res))
+					// break parent link if needed
+					.compose(res -> {
+						Promise<Void> future = Promise.promise();
+						if (res.parentRoot.isPresent()) {
+							JsonObject parentRoot = res.parentRoot.get();
+							Boolean isShared = DocumentHelper.isShared(res.root);
+							Boolean parentIsShared = DocumentHelper.isShared(parentRoot);
+							// if my parent is shared and i m not (vice versa)...break the link
+							if (!isShared.equals(parentIsShared)) {
+								Set<String> ids = new HashSet<String>();
+								ids.add(DocumentHelper.getId(res.root));
+								return queryHelper.breakParentLink(ids);
+							}
 						}
-					};
-					//
-					switch (shareOperations.getKind()) {
-						case GROUP_SHARE:
-							this.shareService.groupShare(user.getUserId(), shareOperations.getGroupId(), id,
-									shareOperations.getActions(), handler);
-							break;
-						case GROUP_SHARE_REMOVE:
-							this.shareService.removeGroupShare(shareOperations.getGroupId(), id,
-									shareOperations.getActions(), handler);
-							break;
-						case USER_SHARE:
-							this.shareService.userShare(user.getUserId(), shareOperations.getUserId(), id,
-									shareOperations.getActions(), handler);
-							break;
-						case USER_SHARE_REMOVE:
-							this.shareService.removeUserShare(shareOperations.getUserId(), id,
-									shareOperations.getActions(), handler);
-							break;
-						case SHARE_OBJECT:{
-							// get current shares
-							final JsonObject shares = shareOperations.getShare();
-							// trigger save shared
-							futures.add(this.shareService.share(user.getUserId(), id, shares, handler));
-							break;
-						}
-					}
-					return CompositeFuture.all(futures).compose(ev -> {
-						final JsonObject resultShare = (JsonObject) ev.list().get(0);
-						Future<InheritShareComputer.InheritShareResult> futureInheritCompute = null;
-						// ensure owner has all rights and put it in inherit shared: do it after shares because shareService is removing the owner from shares
-						final String ownerId = DocumentHelper.getOwner(founded);
-						// Get all actions available
-						final List<String> allActions = this.shareService.getAllResourceActionNames();
-						// create right with all actions for owner
-						final JsonObject ownerRight = new JsonObject().put("userId", ownerId);
-						for(final String action : allActions){
-							ownerRight.put(action, true);
-						}
-						if (ev.list().size() == 2) {
-							final JsonObject validatedShares = (JsonObject) ev.list().get(1);
-							// get current shared
-							final JsonArray shared = validatedShares.getJsonArray("shared", new JsonArray());
-							// add owner shares
-							shared.add(ownerRight);
-							founded.put("shared", shared);
-							// avoid fetch shared => in case of mongo lag replication it could make shared
-							// empty #34806
-							futureInheritCompute = this.inheritShareComputer.compute(founded, true);
-						} else {
-							// recompute from id (to refresh shared array) => this case is never called because share by 1 user or 1 group is deprecated
-							futureInheritCompute = this.inheritShareComputer.compute(id, true);
-						}
-						return futureInheritCompute.compose(res -> queryHelper.bulkUpdateShares(res).map(res))
-								// break parent link if needed
-								.compose(res -> {
-									Promise<Void> future = Promise.promise();
-									if (res.parentRoot.isPresent()) {
-										JsonObject parentRoot = res.parentRoot.get();
-										Boolean isShared = DocumentHelper.isShared(res.root);
-										Boolean parentIsShared = DocumentHelper.isShared(parentRoot);
-										// if my parent is shared and i m not (vice versa)...break the link
-										if (!isShared.equals(parentIsShared)) {
-											Set<String> ids = new HashSet<String>();
-											ids.add(DocumentHelper.getId(res.root));
-											return queryHelper.breakParentLink(ids);
-										}
-									}
-									future.complete(null);
-									return future.future();
-								}).map(resultShare);
-					});
-				}).onComplete(hh);
+						future.complete(null);
+						return future.future();
+					}).map(resultShare);
+		});
 	}
 
 	@Override
