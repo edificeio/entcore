@@ -38,6 +38,7 @@ import org.entcore.workspace.controllers.AudioRecorderHandler;
 import org.entcore.workspace.controllers.QuotaController;
 import org.entcore.workspace.controllers.WorkspaceController;
 import org.entcore.workspace.dao.DocumentDao;
+import org.entcore.workspace.listeners.ResourceBrokerListenerImpl;
 import org.entcore.workspace.listeners.WorkspaceShareBrokerListener;
 import org.entcore.workspace.security.WorkspaceResourcesProvider;
 import org.entcore.workspace.service.WorkspaceService;
@@ -135,6 +136,8 @@ public class Workspace extends BaseServer {
 		WorkspaceShareBrokerListener shareBrokerListener = new WorkspaceShareBrokerListener(
 				securedActions, shareService, folderManager);
 		BrokerProxyUtils.addBrokerProxy(shareBrokerListener, vertx, new AddressParameter("application", "workspace"));
+		// add broker listener for workspace resources (for resource info queries)
+		BrokerProxyUtils.addBrokerProxy(new ResourceBrokerListenerImpl(), vertx, new AddressParameter("application", "workspace"));
 
 	}
 
