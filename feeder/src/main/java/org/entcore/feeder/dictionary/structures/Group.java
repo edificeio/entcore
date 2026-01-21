@@ -62,8 +62,8 @@ public class Group {
 
 	private static final String QUERY_MANUAL_GROUP_AUTOLINK_POSITIONS = "MATCH (g:ManualGroup {id: {groupId}})-[:DEPENDS]->(:Structure)<-[:HAS_ATTACHMENT*0..]-(struct:Structure) " +
 			"UNWIND COALESCE(g.manualGroupAutolinkUsersPositions, []) AS targetPosition " +
-			"MATCH (position:UserPosition {name: targetPosition})<-[:HAS_POSITION]-(u:User)-[:IN]->(:Group)-[:DEPENDS]->(struct)" +
-			" with distinct g, u ";
+			"MATCH (position:UserPosition {name: targetPosition})<-[:HAS_POSITION]-(u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(struct) " +
+			"WITH DISTINCT g, u ";
 
 	public static void manualCreateOrUpdate(JsonObject object, String structureId, String classId,
 			TransactionHelper transactionHelper) throws ValidationException {
@@ -165,7 +165,7 @@ public class Group {
                         "WITH g " +
                         "MATCH (g)-[:DEPENDS]->(:Structure)<-[:HAS_ATTACHMENT*0..]-(struct:Structure) " +
                         "UNWIND g.manualGroupAutolinkUsersPositions AS targetPosition " +
-                        "MATCH (position:UserPosition {name: targetPosition})<-[:HAS_POSITION]-(u:User)-[:IN]->(:Group)-[:DEPENDS]->(struct) " +
+                        "MATCH (position:UserPosition {name: targetPosition})<-[:HAS_POSITION]-(u:User)-[:IN]->(:ProfileGroup)-[:DEPENDS]->(struct) " +
                         "WITH DISTINCT g, u " +
                         "MERGE (u)-[new:IN]->(g) " +
                         "ON CREATE SET new.source = 'AUTO' " +
@@ -185,34 +185,34 @@ public class Group {
             transactionHelper.add(cleanupQuery, params);
         }
 
-    public static void setManualGroupAutolinkUsersPositions(String groupId, JsonArray userPositions,
-                                                            TransactionHelper transactionHelper) {
-        final JsonObject params = new JsonObject()
-                .put("groupId", groupId)
-                .put("now", System.currentTimeMillis())
-                .put("userPositions", userPositions);
+	public static void setManualGroupAutolinkUsersPositions(String groupId, JsonArray userPositions,
+															TransactionHelper transactionHelper) {
+		final JsonObject params = new JsonObject()
+				.put("groupId", groupId)
+				.put("now", System.currentTimeMillis())
+				.put("userPositions", userPositions);
 
 		final String updateGroupQuery = "MATCH (g:ManualGroup {id: {groupId}}) " +
 				"SET g.manualGroupAutolinkUsersPositions = {userPositions}";
 
 		transactionHelper.add(updateGroupQuery, params);
 
-        if (userPositions != null && !userPositions.isEmpty()) {
-            final String linkQuery = QUERY_MANUAL_GROUP_AUTOLINK_POSITIONS +
-                    "MERGE (u)-[new:IN]->(g) " +
-                    "ON CREATE SET new.source = 'AUTO' " +
-                    "SET new.updated = {now} ";
-            transactionHelper.add(linkQuery, params);
-        }
+		if (userPositions != null && !userPositions.isEmpty()) {
+			final String linkQuery = QUERY_MANUAL_GROUP_AUTOLINK_POSITIONS +
+					"MERGE (u)-[new:IN]->(g) " +
+					"ON CREATE SET new.source = 'AUTO' " +
+					"SET new.updated = {now} ";
+			transactionHelper.add(linkQuery, params);
+		}
 
-        final String removeQuery =
-                "MATCH (g:ManualGroup {id: {groupId}})<-[old:IN]-(:User) " +
-                        "WHERE old.source = 'AUTO' AND (NOT EXISTS(old.updated) OR old.updated <> {now}) " +
-                        "DELETE old ";
-        transactionHelper.add(removeQuery, params);
+		final String removeQuery =
+				"MATCH (g:ManualGroup {id: {groupId}})<-[old:IN]-(:User) " +
+						"WHERE old.source = 'AUTO' AND (NOT EXISTS(old.updated) OR old.updated <> {now}) " +
+						"DELETE old ";
+		transactionHelper.add(removeQuery, params);
 
-        User.countUsersInGroups(groupId, null, transactionHelper);
-    }
+		User.countUsersInGroups(groupId, null, transactionHelper);
+	}
 
     public static void updateEmail(String groupId, String emailInternal, TransactionHelper transactionHelper)
 			throws ValidationException{
