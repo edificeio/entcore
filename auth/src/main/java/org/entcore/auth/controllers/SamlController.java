@@ -63,6 +63,7 @@ import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
@@ -293,8 +294,17 @@ public class SamlController extends AbstractFederateController {
 		UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 			@Override
 			public void handle(final UserInfos user) {
-				final String serviceProviderId = request.params().get("providerId");
-                String relayState = null;
+				String serviceProviderId = request.params().get("providerId");
+				
+				try {
+					final String serviceProviderIdDecoded = URLDecoder.decode(serviceProviderId, "UTF-8");
+					serviceProviderId = serviceProviderIdDecoded;
+				} catch (UnsupportedEncodingException e) {
+					log.error("Error decoding serviceProviderId", e);
+				}
+
+				String relayState = null;
+
                 JsonObject relayStateMap = config.getJsonObject("relay-state");
                 if(relayStateMap != null) {
                     relayState = relayStateMap.getString(serviceProviderId);
