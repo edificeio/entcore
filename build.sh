@@ -205,6 +205,7 @@ install () {
 
 buildBroker () {
   edifice install --all=false --clients=false --client-nest=true
+  #cd broker-parent/broker-client/quarkus
   #./build.sh install
   #cd -
 }
@@ -259,9 +260,9 @@ publish() {
   esac
 
   docker compose run --rm  maven mvn  $MVN_OPTS -DrepositoryId=ode-$nexusRepository -DskipTests --settings /var/maven/.m2/settings.xml deploy
-  cd broker-parent/broker-client/quarkus
-  ./build.sh publish
-  cd -
+  #cd broker-parent/broker-client/quarkus
+  #./build.sh publish
+  #cd -
   publishBrokerNpmLib
 }
 
