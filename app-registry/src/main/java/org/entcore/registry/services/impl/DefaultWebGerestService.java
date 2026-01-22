@@ -117,7 +117,7 @@ public class DefaultWebGerestService implements WebGerestService {
                         return Future.failedFuture("[WebGerest] - Menu key not found");
                     }
                     
-                    JsonObject response = new JsonObject().put("lunchMenu", lunchMenu);
+                    JsonObject response = new JsonObject().put("menu", lunchMenu);
                     
                     // Check dinner menu result (non-blocking, already fetched)
                     return dinnerMenuFuture
