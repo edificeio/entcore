@@ -68,6 +68,33 @@ public class VisiblesFilter implements ResourcesProvider{
 					handler.handle(false);
 				}
 			});
+		} else if (isNotEmpty(request.params().get("In-Reply-To"))) {
+			String inReply =  request.params().get("In-Reply-To");
+			String query =
+					"SELECT count(distinct m) AS number FROM conversation.messages m " +
+							"JOIN conversation.usermessages um ON m.id = um.message_id " +
+							"WHERE um.user_id = ? AND um.message_id = ? ";
+
+			JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
+					.add(user.getUserId())
+					.add(inReply);
+
+			request.pause();
+
+			sql.prepared(query, values, SqlResult.validUniqueResultHandler(event -> {
+
+                request.resume();
+                if(event.isLeft()){
+                    handler.handle(false);
+                    return;
+                }
+                int count = event.right().getValue().getInteger("number", 0);
+                if (count == 0 ) {
+					handler.handle(false);
+					return;
+				}
+                checkVisibles(request, binding, user, handler);
+            }));
 		} else {
 			checkVisibles(request, binding, user, handler);
 		}
