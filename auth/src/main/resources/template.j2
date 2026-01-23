@@ -106,7 +106,16 @@
     {% endif %}
     {% if authSlo is defined %}"slo": {{ authSlo }}, {% endif %}
     {% if openidFederate is defined %}
-     "openid-federate": {{ openidFederate }},
+      "openid-federate": {{ openidFederate }},
+    {% endif %}
+    {% if carbonioBaseUrl is defined %}
+      "carbonio-base-url": "{{ carbonioBaseUrl }}",
+    {% endif %}
+    {% if carbonioRedirectUrl is defined %}
+      "carbonio-redirect-url": "{{ carbonioRedirectUrl }}",
+    {% endif %}
+    {% if carbonioDomainKey is defined %}
+      "carbonio-domain-key": "{{ carbonioDomainKey }}",
     {% endif %}
     "passwordRegex": "{{ authPasswordRegex }}"
   }
