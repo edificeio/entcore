@@ -57,6 +57,9 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+
+import static io.vertx.core.Future.failedFuture;
 
 public class S3Client {
 
@@ -111,7 +114,7 @@ public class S3Client {
 					AwsUtils.sign(req, accessKey, secretKey, region);
 				} catch (SignatureException e) {
 					log.error("S3Client getFileStats, signature failed", e);
-					return Future.failedFuture("S3Client getFileStats, signature failed");
+					return failedFuture("S3Client getFileStats, signature failed");
 				}
 				return req.send();
 			})
@@ -125,7 +128,7 @@ public class S3Client {
 					try {
 						modified = format.parse(response.getHeader("Last-Modified"));
 					} catch (ParseException e) {
-						handler.handle(Future.failedFuture("Parsing error"));
+						handler.handle(failedFuture("Parsing error"));
 						return;
 					}
 					long size = Long.parseLong(response.getHeader("Content-Length"));
@@ -341,7 +344,7 @@ public class S3Client {
 					AwsUtils.sign(req, accessKey, secretKey, region);
 				} catch (SignatureException e) {
 					log.error("S3Client downloadFile, signature failed", e);
-					return Future.failedFuture("S3Client downloadFile, signature failed");
+					return failedFuture("S3Client downloadFile, signature failed");
 				}
 
 				return req.send();
@@ -427,7 +430,7 @@ public class S3Client {
 					AwsUtils.sign(req, accessKey, secretKey, region);
 				} catch (SignatureException e) {
 					log.error("S3Client readFile, signature failed", e);
-					return Future.failedFuture("S3Client readFile, signature failed");
+					return failedFuture("S3Client readFile, signature failed");
 				}
 
 				return req.send();
@@ -483,7 +486,7 @@ public class S3Client {
 					AwsUtils.sign(req, accessKey, secretKey, region);
 				} catch (SignatureException e) {
 					log.error("S3Client readFileStream, signature failed", e);
-					return Future.failedFuture("S3Client readFileStream, signature failed");
+					return failedFuture("S3Client readFileStream, signature failed");
 				}
 
 				return req.send();
@@ -518,7 +521,7 @@ public class S3Client {
 					AwsUtils.sign(req, accessKey, secretKey, region, object);
 				} catch (SignatureException e) {
 					log.error("S3Client writeFile, signature failed", e);
-					return Future.failedFuture("S3Client writeFile, signature failed");
+					return failedFuture("S3Client writeFile, signature failed");
 				}
 
 				return req.send(object.getBuffer());
@@ -560,7 +563,7 @@ public class S3Client {
 					AwsUtils.sign(req, accessKey, secretKey, region);
 				} catch (SignatureException e) {
 					log.error("S3Client deleteFile, signature failed", e);
-					return Future.failedFuture("S3Client deleteFile, signature failed");
+					return failedFuture("S3Client deleteFile, signature failed");
 				}
 
 				return req.send();
@@ -597,7 +600,7 @@ public class S3Client {
 					AwsUtils.sign(req, accessKey, secretKey, region);
 				} catch (SignatureException e) {
 					log.error("S3Client copyFile, signature failed", e);
-					return Future.failedFuture("S3Client copyFile, signature failed");
+					return failedFuture("S3Client copyFile, signature failed");
 				}
 				req.putHeader("x-amz-copy-source", "/" + bucket + "/" + getPath(from));
 
@@ -644,7 +647,7 @@ public class S3Client {
 					AwsUtils.sign(req, accessKey, secretKey, region);
 				} catch (SignatureException e) {
 					log.error("S3Client writeToFileSystem, signature failed", e);
-					return Future.failedFuture("S3Client writeToFileSystem, signature failed");
+					return failedFuture("S3Client writeToFileSystem, signature failed");
 				}
 
 				return req.send();
@@ -847,23 +850,33 @@ public class S3Client {
 	public void listBucket(final String prefix, String continuationToken, final Handler<AsyncResult<List<String>>> handler) {
 		List<String> objects = new ArrayList<>();
 
-		String url = "/" + defaultBucket + "/?list-type=2";
+		final StringBuilder url = new StringBuilder().append('/').append(defaultBucket).append("/?");
+		final Map<String, String> params = new HashMap<>();
+		params.put("list-type", "2");
 		if (prefix != null) {
 			try {
-				url += "&prefix=" + URLEncoder.encode(prefix, StandardCharsets.UTF_8.toString());
+				params.put("prefix", URLEncoder.encode(prefix, StandardCharsets.UTF_8.toString()));
 			} catch (UnsupportedEncodingException e) {
-				handler.handle(Future.failedFuture("Error escaping prefix in listBuck method"));
+				handler.handle(failedFuture("Error encoding prefix in listBucketRecursive method"));
 				return;
 			}
 		}
 		if (continuationToken != null) {
-			url += "&continuation-token=" + continuationToken;
+			try {
+				params.put("continuation-token", URLEncoder.encode(continuationToken, StandardCharsets.UTF_8.toString()));
+			} catch (UnsupportedEncodingException e) {
+				handler.handle(failedFuture("Error encoding continuation token in listBucketRecursive method"));
+				return;
+			}
 		}
+		url.append(params.keySet().stream().sorted()
+				.map(key -> key + '=' + params.get(key))
+				.collect(Collectors.joining("&")));
 
 		RequestOptions requestOptions = new RequestOptions()
 			.setMethod(HttpMethod.GET)
 			.setHost(host)
-			.setURI(url);
+			.setURI(url.toString());
 
 		httpClient.request(requestOptions)
 			.flatMap(req -> {
@@ -872,7 +885,7 @@ public class S3Client {
 					AwsUtils.sign(req, accessKey, secretKey, region);
 				} catch (SignatureException e) {
 					log.error("S3Client listBucket, signature failed", e);
-					return Future.failedFuture("S3Client listBucket, signature failed");
+					return failedFuture("S3Client listBucket, signature failed");
 				}
 
 				return req.send();
@@ -889,7 +902,7 @@ public class S3Client {
 						} catch (ParserConfigurationException | SAXException | IOException e) {
 							String message = "Error parsing S3 ListObjectsV2 response";
 							log.error(message);
-							handler.handle(Future.failedFuture(message));
+							handler.handle(failedFuture(message));
 							return;
 						}
 
@@ -912,17 +925,20 @@ public class S3Client {
 						if (truncateds.getLength() >= 1) {
 							Node truncated = truncateds.item(0);
 							isTruncated = Boolean.parseBoolean(truncated.getTextContent());
-
 							if (isTruncated) {
-								listBucket(prefix, token, results -> {
-									if (results.succeeded()) {
-										objects.addAll(results.result());
-									}
-									else {
-										handler.handle(results);
-										return;
-									}
-								});
+								NodeList nextContinuationTokenNodes = document.getElementsByTagName("NextContinuationToken");
+								if (nextContinuationTokenNodes.getLength() > 0) {
+									String nextToken = nextContinuationTokenNodes.item(0).getTextContent();
+									// Recursive call to get the next batch
+									listBucket(prefix, nextToken, results -> {
+										if (results.succeeded()) {
+											objects.addAll(results.result());
+										} else {
+											handler.handle(results);
+											return;
+										}
+									});
+								}
 							}
 						}
 
@@ -931,7 +947,7 @@ public class S3Client {
 
 					response.resume();
 				} else {
-					handler.handle(Future.failedFuture("HTTP status code : " + response.statusCode()));
+					handler.handle(failedFuture("HTTP status code : " + response.statusCode()));
 				}
 			})
 			.onFailure(exception -> {
@@ -941,7 +957,7 @@ public class S3Client {
 
 	public void getObjectsEndingWith(final String endsWith, final Handler<AsyncResult<List<String>>> handler) {
 		if (endsWith.length() < 4) {
-			handler.handle(Future.failedFuture("endsWith must be 4 characters or higher"));
+			handler.handle(failedFuture("endsWith must be 4 characters or higher"));
 			return;
 		}
 		String path = getPath(endsWith);
@@ -1018,10 +1034,12 @@ public class S3Client {
 	private void listBucketRecursive(final String prefix, String continuationToken, 
 			List<S3FileInfo> allObjects, Promise<List<S3FileInfo>> promise) {
 		
-		final StringBuilder url = new StringBuilder().append('/').append(defaultBucket).append("/?list-type=2");
+		final StringBuilder url = new StringBuilder().append('/').append(defaultBucket).append("/?");
+		final Map<String, String> params = new HashMap<>();
+		params.put("list-type", "2");
 		if (prefix != null) {
 			try {
-				url.append("&prefix=").append(URLEncoder.encode(prefix, StandardCharsets.UTF_8.toString()));
+				params.put("prefix", URLEncoder.encode(prefix, StandardCharsets.UTF_8.toString()));
 			} catch (UnsupportedEncodingException e) {
 				promise.fail(new StorageException("Error encoding prefix in listBucketRecursive method"));
 				return;
@@ -1029,12 +1047,15 @@ public class S3Client {
 		}
 		if (continuationToken != null) {
 			try {
-				url.append("&continuation-token=").append(URLEncoder.encode(continuationToken, StandardCharsets.UTF_8.toString()));
+				params.put("continuation-token", URLEncoder.encode(continuationToken, StandardCharsets.UTF_8.toString()));
 			} catch (UnsupportedEncodingException e) {
 				promise.fail(new StorageException("Error encoding continuation token in listBucketRecursive method"));
 				return;
 			}
 		}
+		url.append(params.keySet().stream().sorted()
+				.map(key -> key + '=' + params.get(key))
+				.collect(Collectors.joining("&")));
 
 		RequestOptions requestOptions = new RequestOptions()
 			.setMethod(HttpMethod.GET)
@@ -1048,7 +1069,7 @@ public class S3Client {
 					AwsUtils.sign(req, accessKey, secretKey, region);
 				} catch (SignatureException e) {
 					log.error("S3Client listFilesByPrefix, signature failed: " + e.getMessage(), e);
-					return Future.failedFuture("S3Client listFilesByPrefix, signature failed");
+					return failedFuture("S3Client listFilesByPrefix, signature failed");
 				}
 				return req.send();
 			})

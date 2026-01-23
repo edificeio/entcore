@@ -289,6 +289,7 @@ public class FileSystemExportService implements ExportService {
                                 log.info("Still waiting for apps [" + stillProcessingApps + "] for export " + exportId + " of user " + userId);
                             }
                             if (!"ok".equals(status)) {
+                                log.warn("Export from '" + app + "' is '" + status+ "' for export '" + exportId + "' of user '" + userId + "'");
                                 export.setProgress(EXPORT_ERROR);
                             }
                             return userExport.put(userId, mapFrom(export)).map(export);
