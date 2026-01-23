@@ -25,7 +25,7 @@
       "weekly-mailing-cron": "0 30 7 ? * 1 2099",
     {% else %}
       "daily-mailing-cron" : "{{ timelineDailyCron | default('0 30 4 * * ? *') }}",
-      "weekly-mailing-cron": "{{ timelineWeeklyCron | default(0 30 7 ? * 1 *') }}",
+      "weekly-mailing-cron": "{{ timelineWeeklyCron | default('0 30 7 ? * 1 *') }}",
     {% endif %}
     "mode": "prod",
     "log-push-notifs": {{ timelineLogPushNotifs | default('false') }},

@@ -20,6 +20,7 @@
 				  	"io.nats.client.password": "{{ brokerNatsPassword }}",
 						"io.nats.client.pinginterval": "PT15s",
 						"io.nats.client.url": "{{ brokerNatsUrl }}",
+						"io.nats.client.reconnect.max": -1,
 						"io.nats.client.username": "{{ brokerNatsUser | default('ent') }}"
 				  }
 				},
@@ -31,6 +32,7 @@
 						"io.nats.client.password": "{{ brokerIaPassword }}",
 						"io.nats.client.pinginterval": "PT15s",
 						"io.nats.client.url": "{{ brokerIaUrl }}",
+						"io.nats.client.reconnect.max": -1,
 						"io.nats.client.username": "{{ brokerIaUser | default('ent') }}"
 				  }				  
 				}
@@ -40,6 +42,7 @@
 		  	"io.nats.client.password": "{{ brokerNatsPassword }}",
 				"io.nats.client.pinginterval": "PT15s",
 				"io.nats.client.url": "{{ brokerNatsUrl }}",
+				"io.nats.client.reconnect.max": -1,
 				"io.nats.client.username": "{{ brokerNatsUser | default('ent') }}"
       },
     {% endif %}
