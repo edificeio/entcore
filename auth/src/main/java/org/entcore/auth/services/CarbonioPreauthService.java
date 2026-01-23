@@ -1,6 +1,8 @@
 package org.entcore.auth.services;
 
 import fr.wseduc.webutils.Either;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -11,6 +13,8 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class CarbonioPreauthService {
+	private static final Logger log = LoggerFactory.getLogger(CarbonioPreauthService.class);
+
 	private static final String HMAC_ALGORITHM = "HmacSHA1";
 
 	private final String carbonioRedirectUrl;
@@ -45,6 +49,7 @@ public class CarbonioPreauthService {
 			String hmac = calculateHmac(preAuthString, carbonioDomainKey);
 			return new Either.Right<>(hmac);
 		} catch (Exception e) {
+			log.error("Failed to compute preauth HMAC", e);
 			return new Either.Left<>("Failed to compute preauth: " + e.getMessage());
 		}
 	}
