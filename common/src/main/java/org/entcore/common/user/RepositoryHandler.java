@@ -105,11 +105,15 @@ public class RepositoryHandler implements Handler<Message<JsonObject>> {
                                             final Future<Void> future;
                                             if (ok) {
                                                 final String finalPath = isExported.getExportPath();
+												log.debug("Moving exported resources from fs to Storage '" + finalPath + "' for application '" + appTitle + "'");
                                                 future = storage.moveFsDirectory(finalPath, finalPath);
                                             } else {
                                                 future = succeededFuture();
                                             }
                                             future.onComplete(res -> {
+												if(!res.succeeded()) {
+													log.error("An error occurred while moving exported files to storage", res.cause());
+												}
                                                 sharedData.releaseLockAfterDelay(lock, LOCK_RELEASE_DELAY);
                                                 final boolean exported = ok && res.succeeded();
                                                 JsonObject responsePayload = new JsonObject()

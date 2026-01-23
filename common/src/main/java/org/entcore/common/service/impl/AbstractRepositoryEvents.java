@@ -109,8 +109,7 @@ public abstract class AbstractRepositoryEvents implements RepositoryEvents {
 							String exportPathFinal = exportPath + File.separator + "Documents";
 							exporter.export(new FolderExporterContext(exportPathTmp), list).onComplete(res -> {
 								if (res.failed()) {
-									log.error(title + " : Failed to export document to " + exportPathTmp + " - "
-											+ res.cause());
+									log.error(title + " : Failed to export document to " + exportPathTmp, res.cause());
 								}
 								// We still move the tmp folder if it failed
 								vertx.fileSystem().move(exportPathTmp, exportPathFinal, resMove -> {
