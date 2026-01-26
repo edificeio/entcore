@@ -284,7 +284,7 @@ public class DefaultClassService implements ClassService {
 		}
 		String query =
 				"MATCH (c:Class)-[:BELONGS]->(s:Structure) " + condition +
-				"RETURN c.id as id, c.name as name , c.externalId as externalId";
+				"RETURN c.id as id, c.name as name , c.externalId as externalId, c.level";
 		neo.execute(query, params, validResultHandler(results));
 	}
 
