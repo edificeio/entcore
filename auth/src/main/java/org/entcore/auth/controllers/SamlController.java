@@ -824,6 +824,7 @@ public class SamlController extends AbstractFederateController {
 						j.put(attr, request.formAttributes().get(attr));
 					}
 				}
+				j.put("federated", true);
 				final String nameId = j.getString("nameId", "").replaceAll("\\r", "");
 				final String sessionIndex = j.getString("sessionIndex");
 				try {
