@@ -311,6 +311,7 @@ public class UserController extends BaseController {
 					.add("joinKey").add("isTeacher").add("structures").add("type").add("children").add("parents")
 					.add("functionalGroups").add("startDateStruct").add("endDateStruct")
 					.add("administrativeStructures").add("subjectCodes").add("fieldOfStudyLabels").add("startDateClasses")
+					.add("endDateClasses")
 					.add("scholarshipHolder").add("attachmentId").add("fieldOfStudy").add("module").add("transport")
 					.add("accommodation").add("status").add("relative").add("moduleName").add("sector").add("level");
 			if (!config.getBoolean("enable-birthdate-in-get-user", false)) {
