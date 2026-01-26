@@ -11,6 +11,7 @@ import io.vertx.core.file.FileProps;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.file.OpenOptions;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -25,6 +26,7 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.FileUtils;
 import org.entcore.common.utils.StringUtils;
 
+import java.beans.Transient;
 import java.io.File;
 import java.security.PublicKey;
 import java.time.Duration;
@@ -48,10 +50,10 @@ public class DefaultImportService implements ImportService {
 
         @JsonCreator
         public UserImport(@JsonProperty("expectedImports") int expectedImports,
-                          @JsonProperty("results") JsonObject results,
+                          @JsonProperty("results") String results,
                           @JsonProperty("counter") int counter) {
             this.expectedImports = expectedImports;
-            this.results = results;
+            this.results = new JsonObject(results);
             this.counter = counter;
         }
 
@@ -63,13 +65,17 @@ public class DefaultImportService implements ImportService {
         public boolean addAppResult(String app, JsonObject importRapport)
         {
             this.results.put(app, importRapport);
-            this.counter = this.counter - 1;
-            return this.counter <= expectedImports;
+            this.counter = this.counter + 1;
+            return this.counter >= expectedImports;
         }
 
+        @Transient
         public JsonObject getResults() {
             return results;
         }
+
+        @JsonProperty("results")
+        public String getEncodedResults() {return Json.encode(results);}
 
         public int getExpectedImports() {
             return expectedImports;
