@@ -158,7 +158,6 @@ public abstract class AbstractSSOProvider implements SamlServiceProvider {
 			@Override
 			public void handle(final Either<String, JsonArray> event) {
 				if (event.isRight()) {
-					JsonArray ids = new JsonArray();
 					final Set<String> userIds = new HashSet<>();
 					final JsonArray usersIter = event.right().getValue();
 					final JsonArray users = new JsonArray();
@@ -173,37 +172,40 @@ public abstract class AbstractSSOProvider implements SamlServiceProvider {
 
 						userIds.add(j.getString("id"));
 						users.add(o);
-						if (Utils.isNotEmpty(j.getString("id")) && !j.getBoolean("federated", false)) {
-							ids.add(j.getString("id"));
-						}
 					}
 					if (users.isEmpty()) {
 						handler.handle(new Either.Left<String, Object>("blocked.user"));
 						return;
 					}
-					if (ids.size() > 0) {
-						String query = "MATCH (u:User) WHERE u.id IN {ids} SET u.federated = true, u.changePw=null ";
-						JsonObject params = new JsonObject().put("ids", ids);
-						if (assertion != null && assertion.getIssuer() != null &&
-								assertion.getIssuer().getValue() != null && !assertion.getIssuer().getValue().trim().isEmpty()) {
-							query += ", u.federatedIDP = {idp} ";
-							params.put("idp", assertion.getIssuer().getValue());
-						}
-						Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
-							@Override
-							public void handle(Message<JsonObject> event2) {
-								if (userIds.size() == 1) {
-									handler.handle(new Either.Right<String, Object>(users.getJsonObject(0)));
-								} else {
-									handler.handle(new Either.Right<String, Object>(users));
-								}
-							}
-						});
-					} else {
+					if (userIds.size() > 0) {
 						if (userIds.size() == 1) {
-							handler.handle(new Either.Right<String, Object>(users.getJsonObject(0)));
+							String query = "MATCH (u:User) WHERE u.id IN {ids} SET u.federated = true, u.changePw=null ";
+							JsonObject params = new JsonObject().put("ids", userIds);
+							if (assertion != null && assertion.getIssuer() != null &&
+									assertion.getIssuer().getValue() != null && !assertion.getIssuer().getValue().trim().isEmpty()) {
+								query += ", u.federatedIDP = {idp} ";
+								params.put("idp", assertion.getIssuer().getValue());
+							}
+							Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
+								@Override
+								public void handle(Message<JsonObject> event2) {
+									handler.handle(new Either.Right<String, Object>(users.getJsonObject(0)));
+								}
+							});
 						} else {
-							handler.handle(new Either.Right<String, Object>(users));
+							if (assertion != null && assertion.getIssuer() != null &&
+								assertion.getIssuer().getValue() != null && !assertion.getIssuer().getValue().trim().isEmpty()) {
+									String query = "MATCH (u:User) WHERE u.id IN {ids} SET u.federatedIDP = {idp} ";
+									JsonObject params = new JsonObject().put("ids", userIds);
+									params.put("idp", assertion.getIssuer().getValue());
+									Neo4j.getInstance().execute(query, params, new Handler<Message<JsonObject>>() {
+										@Override
+										public void handle(Message<JsonObject> event2) {
+											handler.handle(new Either.Right<String, Object>(users));
+										}
+									});
+							}
+							else handler.handle(new Either.Right<String, Object>(users));
 						}
 					}
 				} else {

@@ -56,6 +56,7 @@ public abstract class AbstractFederateController extends BaseController {
 		final String login = res.getString("login");
 		final String email = res.getString("email");
 		final String mobile = res.getString("mobile");
+		final Boolean federated = res.getBoolean("federated");
 		final String theme = activationThemes.getJsonObject(Renders.getHost(request), new JsonObject()).getString(res.getString("source"));
 		if (userId != null) {
 			userAuthAccount.storeDomain(userId, getHost(request), getScheme(request), new Handler<Boolean>() {
@@ -66,6 +67,16 @@ public abstract class AbstractFederateController extends BaseController {
 					}
 				}
 			});
+			if(federated != null && federated) {
+				userAuthAccount.storeFederated(userId, new Handler<Boolean>() {
+					@Override
+					public void handle(Boolean event) {
+						if (Boolean.FALSE.equals(event)) {
+							log.error("[Federate] Error while setting federated flag for user " + userId);
+						}
+					}
+				});
+			}
 		}
 		if (activationCode != null && login != null) {
 			trace.info(Renders.getIp(request) + " - Code d'activation entré pour l'utilisateur fédéré " + login);

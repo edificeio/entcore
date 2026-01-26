@@ -950,6 +950,23 @@ public class DefaultUserAuthAccount extends TemplatedEmailRenders implements Use
 	}
 
 	@Override
+	public void storeFederated(String id, final Handler<Boolean> handler) {
+		String query =
+				"MATCH (u:User {id: {id}}) " +
+				"SET u.federated = true, u.changePw = null " +
+				"return count(*) = 1 as exists";
+		JsonObject params = new JsonObject().put("id", id);
+		neo.execute(query, params, new Handler<Message<JsonObject>>() {
+			@Override
+			public void handle(Message<JsonObject> r) {
+				handler.handle("ok".equals(r.body().getString("status")) &&
+						r.body().getJsonArray("result") != null && r.body().getJsonArray("result").getValue(0) != null &&
+						(r.body().getJsonArray("result").getJsonObject(0)).getBoolean("exists", false));
+			}
+		});
+	}
+
+	@Override
 	public void storeDomainByLogin(String login, String domain, String scheme, final Handler<Boolean> handler) {
 		String querySet =
 				"SET u.lastDomain = {domain}, u.lastScheme = {scheme}, u.lastLogin = {now} " +
