@@ -12,6 +12,10 @@
 
     <artifactId>auth</artifactId>
 
+    <properties>
+        <shade.minimizeJar>false</shade.minimizeJar>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.entcore</groupId>
