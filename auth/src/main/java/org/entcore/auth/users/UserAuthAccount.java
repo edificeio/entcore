@@ -90,6 +90,8 @@ public interface UserAuthAccount {
 
 	void storeDomainByLogin(String login, String domain, String scheme, Handler<Boolean> handler);
 
+	void storeFederated(String id, Handler<Boolean> handler);
+
 	void generateOTP(String id, Handler<Either<String, JsonObject>> handler);
 
 	void storeLockEvent(JsonArray ids, boolean block);
