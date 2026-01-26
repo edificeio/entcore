@@ -204,7 +204,7 @@ public class DefaultUserService implements UserService {
 				.add("lastDomain").add("displayName").add("source").add("login").add("teaches").add("headTeacher")
 				.add("externalId").add("joinKey").add("birthDate").add("modules").add("lastScheme").add("addressDiffusion")
 				.add("isTeacher").add("structures").add("type").add("children").add("parents").add("functionalGroups")
-				.add("administrativeStructures").add("subjectCodes").add("fieldOfStudyLabels").add("startDateClasses")
+				.add("administrativeStructures").add("subjectCodes").add("fieldOfStudyLabels").add("startDateClasses").add("endDateClasses")
 				.add("scholarshipHolder").add("attachmentId").add("fieldOfStudy").add("module").add("transport")
 				.add("accommodation").add("status").add("relative").add("moduleName").add("sector").add("level")
 				.add("relativeAddress").add("classCategories").add("subjectTaught").add("needRevalidateTerms")
@@ -790,9 +790,10 @@ public class DefaultUserService implements UserService {
 				"u.lastName as lastName, u.displayName as displayName, u.source as source, u.attachmentId as attachmentId, " +
 				"u.birthDate as birthDate, u.blocked as blocked, u.created as creationDate, u.lastLogin as lastLogin, " +
 				"u.email as email, u.homePhone as phone, u.mobile as mobile, u.zipCode as zipCode, u.address as address, " +
-				"u.city as city, u.country as country, " +
+				"u.city as city, u.country as country, u.level as level, u.title as title, u.startDateClasses as startDateClasses," +
+				" u.endDateClasses as endDateClasses," +
 				"extract(function IN u.functions | last(split(function, \"$\"))) as aafFunctions, " +
-				"CASE WHEN s IS NULL THEN [] ELSE collect(distinct {id: s.id, name: s.name}) END as structures, " +
+				"CASE WHEN s IS NULL THEN [] ELSE collect(distinct {id: s.id, uai: s.UAI, name: s.name}) END as structures, " +
 				"collect(distinct {id: class.id, name: class.name}) as allClasses, " +
 				"collect(distinct [f.externalId, rf.scope]) as functions, " +
 				"CASE WHEN parent IS NULL THEN [] ELSE collect(distinct {id: parent.id, firstName: parent.firstName, lastName: parent.lastName}) END as parents, " +
