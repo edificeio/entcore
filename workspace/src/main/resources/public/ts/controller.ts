@@ -48,7 +48,7 @@ export interface WorkspaceScope extends RevisionDelegateScope, NavigationDelegat
 	lightboxDelegateClose: () => boolean
 	newFile: { chosenFiles: any[] }
 	//
-	display: { nbFiles: number, importFiles?: boolean, viewFile?: models.Element, share?: boolean }
+	display: { nbFiles: number, importFiles?: boolean, viewFile?: models.Element, share?: boolean, loolModal?: boolean }
 	lastRoute: string
 	safeApply(a?);
 	//help
@@ -144,6 +144,9 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 			$scope.onTreeInit(() => {
 				$scope.setCurrentTree("protected")
 			})
+		},
+		openLoolModal: function (params) {
+			$scope.openLoolModal();
 		}
 	});
 	//
@@ -162,7 +165,7 @@ export let workspaceController = ng.controller('Workspace', ['$scope', '$rootSco
 	SearchDelegate($scope);
 	RevisionDelegate($scope);
 	KeyboardDelegate($scope);
-	ENABLE_LOOL && LoolDelegate($scope, $route);
+	ENABLE_LOOL && LoolDelegate($scope, $route, $location);
 	ENABLE_SCRATCH && ScratchDelegate($scope, $route);
 	ENABLE_GGB && GeogebraDelegate($scope, $route);
 	$scope.ENABLE_LOOL = ENABLE_LOOL;
