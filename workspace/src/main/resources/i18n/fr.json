@@ -243,6 +243,7 @@
   "workspace.leave.comment": "Laisser un commentaire",
   "workspace.loading": "Chargement en cours",
   "workspace.lool.open": "Éditer",
+  "workspace.lool.modal.error": "Impossible de charger la fenêtre de création de document. Veuillez réessayer.",
   "workspace.manager": "Gérer",
   "workspace.move": "Déplacer",
   "workspace.move.path": "Destination",
@@ -318,5 +319,6 @@
   "workspace.versions.list": "Versions",
   "workspace.warning.cancel": "Annuler",
   "workspace.warning.copy": "Copier et partager",
-  "workspace.warning.notcopy": "Partager sans copier"
+  "workspace.warning.notcopy": "Partager sans copier",
+  "workspace.lool.create-document": "Créer un document"
 }
