@@ -46,6 +46,9 @@ routes.define(function ($routeProvider) {
     .when("/external", {
       action: "openExternal",
     })
+    .when("/lool", {
+      action: "openLoolModal",
+    })
     .otherwise({
       redirectTo: "/",
     });
