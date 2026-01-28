@@ -8,3 +8,46 @@
     <image-editor document="display.editedImage" show="display.editImage" on-save="refreshImage(display.editedImage)"></image-editor>
 </div>
 <import-files show="display.importFiles"></import-files>
+
+<!-- Lool Modal Overlay -->
+<div ng-if="display.loolModal" ng-click="closeLoolModal($event)" class="lool-modal-overlay">
+    <div class="lool-modal-container" ng-click="$event.stopPropagation()">
+        <iframe 
+            ng-src="[[display.loolModalUrl]]"
+            class="lool-modal-iframe"
+            ng-class="{'loaded': display.loolModalLoaded}"
+            id="lool-modal-iframe"
+            frameborder="0"
+            onload="angular.element(this).scope().onLoolModalLoad()">
+        </iframe>
+    </div>
+</div>
+
+<style>
+
+.lool-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10000;
+}
+
+.lool-modal-container {
+    width: 100%;
+    height: 100%;
+}
+
+.lool-modal-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.lool-modal-iframe.loaded {
+    opacity: 1;
+}
+</style>
