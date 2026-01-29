@@ -1034,15 +1034,11 @@ public class TimelineController extends BaseController {
 						}
 
 						final String senderId = json.getString("senderId", "");
-
 						final boolean pushMobile = json.getBoolean("pushMobile", false);
-
 						final String mobileTitle = json.getString("mobileTitle", "");
 						final String mobileBody = json.getString("mobileBody", "");
 
-						JsonObject params = new JsonObject()
-								.put("body", body);
-
+						JsonObject params = new JsonObject().put("body", body);
 
 						final String username = json.getString("username", "");
 						if(senderId != null && !senderId.isEmpty() && !username.isEmpty()) {
@@ -1063,31 +1059,26 @@ public class TimelineController extends BaseController {
 					final String resource = "external_notification";
 					final String resourceId = String.valueOf(System.currentTimeMillis()) + resource;
 					final List<String> recipientsList = recipientsId.getList();
-					
 					// Utiliser le projectId comme nom d'application
-					final String appName = projectId;
-					
 					// Construire le nom de la notification : {projectId}.external_notification
 					// Exemple: "elea.external_notification" ou "monapp.external_notification"
-					final String notificationName = (appName + "." + resource).toLowerCase();
+					final String notificationName = (projectId + "." + resource).toLowerCase();
 					
 					// Récupérer la notification directement sans passer par le bus
 					TimelineNotificationsLoader.getInstance(vertx).getNotification(notificationName, notification -> {
 						if (notification == null || notification.isEmpty()) {
-							log.error("Failed to retrieve notification: " + notificationName);
-							// badRequest(request, "Invalid notification name: " + notificationName);
-							// return;
+							badRequest(request, "Invalid notification name: " + notificationName);
+							return;
 						}
-						
 						log.info("Using notification template: " + notificationName);
 						processNotificationWithTemplate(notification, notificationName, request, 
-								recipientsList, resourceId, params, projectId, senderId);
+								recipientsList, resourceId, senderId, params);
 					});
 					}
 				});
 	}
 
-		/**
+	/**
 	 * Traite une notification avec le template spécifié.
 	 * Cette méthode exécute directement la logique du case "add" sans passer par le bus.
 	 * 
@@ -1096,13 +1087,13 @@ public class TimelineController extends BaseController {
 	 * @param request La requête HTTP
 	 * @param recipientsList La liste des IDs des destinataires
 	 * @param resourceId L'ID de la ressource
+	 * @param senderId L'ID de l'expéditeur
 	 * @param params Les paramètres à passer au template (incluant projectId)
-	 * @param projectId L'ID du projet (pour logging)
 	 */
-		private void processNotificationWithTemplate(final JsonObject notification, final String notificationName,
-			final HttpServerRequest request, final List<String> recipientsList, final String resourceId,
-			final JsonObject params, final String projectId, final String senderId) {
-		
+	private void processNotificationWithTemplate(final JsonObject notification, final String notificationName,
+		final HttpServerRequest request, final List<String> recipientsList, final String resourceId, 
+		final String senderId, final JsonObject params) {
+
 		// Construire le JsonObject event comme le fait notifyTimeline
 		JsonArray recipients = new JsonArray();
 		for (String userId : recipientsList) {
@@ -1110,19 +1101,15 @@ public class TimelineController extends BaseController {
 		}
 
 		final JsonObject event = new JsonObject()
-				.put("action", "add")
-				.put("type", notification.getString("type"))
-				.put("event-type", notification.getString("event-type"))
-				.put("recipients", recipients)
-				.put("recipientsIds", new JsonArray(recipientsList))
-				.put("resource", resourceId)
-				.put("sender", senderId) // Pour éviter l'anti-flood
-				.put("disableAntiFlood", true);
-
-		// Gérer pushNotif et disableMailNotification depuis params
-		event.put("pushNotif", params.remove("pushNotif"));
-		event.put("disableMailNotification", params.remove("disableMailNotification"));
-
+			.put("action", "add")
+			.put("type", notification.getString("type"))
+			.put("event-type", notification.getString("event-type"))
+			.put("recipients", recipients)
+			.put("recipientsIds", new JsonArray(recipientsList))
+			.put("resource", resourceId)
+			.put("sender", senderId) // Pour éviter l'anti-flood
+			.put("disableAntiFlood", true)
+			.put("pushNotif", params.remove("pushNotif"));
 		// Ajouter les paramètres et la notification
 		event.put("params", params)
 				.put("notificationName", notificationName)
@@ -1132,42 +1119,36 @@ public class TimelineController extends BaseController {
 								.put("Host", Renders.getHost(request))
 								.put("X-Forwarded-Proto", Renders.getScheme(request))
 								.put("Accept-Language", request.headers().get("Accept-Language"))
-				));
+			));
 
-		// Exécuter directement le code du case "add" sans passer par le bus
-		final String sender = event.getString("sender");
-		if (sender == null || sender.startsWith("no-reply") || event.getBoolean("disableAntiFlood", false) || antiFlood.add(sender)) {
-			this.removeMutersFromRecipientList(event)
+		this.removeMutersFromRecipientList(event)
 			.onComplete(notificationResult -> {
-				final JsonObject notificationToAdd = notificationResult.succeeded() ? notificationResult.result() : event;
-				store.add(notificationToAdd, new Handler<JsonObject>() {
-					public void handle(JsonObject result) {
-						// IF call only when recipient size > maxRecipientLength (10k by default)
-						// timer for performance (thread block) reasons
-						if (result.containsKey(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS)) {
-							final JsonArray chunkedNotifications = result.getJsonArray(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS);
-							result.remove(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS);
-							for (int i = 0; i < chunkedNotifications.size(); i++) {
-								final JsonObject cn = chunkedNotifications.getJsonObject(i);
-								vertx.setTimer((i* IMMEDIATE_NOTIF_DELAY_BY_CHUNK) + 1000L, t -> {
-									final JsonArray chunkRecipientsIds = cn.getJsonArray("recipientsIds");
-									log.info("Launch chunked immediate notification. Recipients :  " +
-										(chunkRecipientsIds != null ? chunkRecipientsIds.size():0));
-									notificationHelper.sendImmediateNotifications(new JsonHttpServerRequest(cn.getJsonObject("request")), cn);
-								});
-							}
-						} else {
-							notificationHelper.sendImmediateNotifications(new JsonHttpServerRequest(notificationToAdd.getJsonObject("request")), notificationToAdd);
+			final JsonObject notificationToAdd = notificationResult.succeeded() ? notificationResult.result() : event;
+			store.add(notificationToAdd, new Handler<JsonObject>() {
+				public void handle(JsonObject result) {
+					// IF call only when recipient size > maxRecipientLength (10k by default)
+					// timer for performance (thread block) reasons
+					if (result.containsKey(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS)) {
+						final JsonArray chunkedNotifications = result.getJsonArray(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS);
+						result.remove(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS);
+						for (int i = 0; i < chunkedNotifications.size(); i++) {
+							final JsonObject cn = chunkedNotifications.getJsonObject(i);
+							vertx.setTimer((i* IMMEDIATE_NOTIF_DELAY_BY_CHUNK) + 1000L, t -> {
+								final JsonArray chunkRecipientsIds = cn.getJsonArray("recipientsIds");
+								log.info("Launch chunked immediate notification. Recipients :  " +
+									(chunkRecipientsIds != null ? chunkRecipientsIds.size():0));
+								notificationHelper.sendImmediateNotifications(new JsonHttpServerRequest(cn.getJsonObject("request")), cn);
+							});
 						}
-						ok(request);
+					} else {
+						notificationHelper.sendImmediateNotifications(new JsonHttpServerRequest(notificationToAdd.getJsonObject("request")), notificationToAdd);
 					}
-				});
+					ok(request);
+				}
 			});
-			if (refreshTypesCache && eventTypes != null && !eventTypes.contains(event.getString("type"))) {
-				eventTypes = null;
-			}
-		} else {
-			badRequest(request, "flood");
+		});
+		if (refreshTypesCache && eventTypes != null && !eventTypes.contains(event.getString("type"))) {
+			eventTypes = null;
 		}
 	}
 
