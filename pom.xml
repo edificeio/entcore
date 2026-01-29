@@ -172,6 +172,7 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <!-- Used by future Image creation
         <dependency>
             <groupId>com.opendigitaleducation</groupId>
             <artifactId>mod-json-schema-validator</artifactId>
@@ -199,7 +200,7 @@
             <version>2.0-zookeeper-SNAPSHOT</version>
             <scope>runtime</scope>
             <classifier>fat</classifier>
-        </dependency>
+        </dependency>-->
     </dependencies>
 
     <build>
