@@ -339,6 +339,7 @@ export class TimelineController implements IController {
 			case "userbook_motto":				return "userbook"; //#45822, motto notifications share the same color as userbook
 			case "userbook_mood":				return "userbook"; //#45822, mood  notifications share the same color as userbook
 			case "userbook_discovervisiblegroups":				return "userbook"; //#45822, userbook_discover_workGroup notifications share the same color as userbook
+			case "assistancetic": return "assistance-tic";
 			default:							return notifType;
 		}
 	}
