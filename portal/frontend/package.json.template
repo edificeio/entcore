@@ -30,9 +30,9 @@
     ]
   },
   "dependencies": {
-    "@edifice.io/react": "2.5.9",
-    "@edifice.io/bootstrap": "2.5.9",
-    "@edifice.io/client": "2.5.9",
+    "@edifice.io/react": "develop-integration",
+    "@edifice.io/bootstrap": "develop-integration",
+    "@edifice.io/client": "develop-integration",
     "@react-spring/web": "^9.7.5",
     "@tanstack/react-query": "5.62.7",
     "@uidotdev/usehooks": "2.4.1",
