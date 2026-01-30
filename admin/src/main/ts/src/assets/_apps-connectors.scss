@@ -865,6 +865,36 @@ i.nabook::before {
   color:#00FFCC;
 }
 
+i.assistancetic-large,
+i.type.assistancetic,
+i.assistancetic {
+  @include fonticon;
+}
+
+i.assistancetic-large::before,
+i.type.assistancetic::before,
+i.assistancetic::before {
+  content:'\e974';
+  color:#ecbe30;
+}
+
+// Timeline-specific classes for assistancetic
+.bg-app-assistancetic {
+  background-color: #ecbe30;
+}
+
+.color-app-assistancetic {
+  color: #ecbe30;
+}
+
+.ic-app-assistancetic {
+  @include fonticon;
+  &::before {
+    content: '\e974';
+    color: #ecbe30;
+  }
+}
+
 i.votil-large,
 i.type.votil,
 i.votil {
