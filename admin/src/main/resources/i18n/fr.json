@@ -25,6 +25,7 @@
   "actualites.infos.list": "Actualités : lister les actualités",
   "actualites.threads.list": "Actualités : lister les fils d'actualités",
   "actualites.view": "Actualités : accéder au service actualités",
+  "actualites.genai.falc": "Utiliser la simplification de texte (FALC)",
   "add.child": "Ajouter un enfant",
   "add.class": "Ajouter une classe",
   "add.group": "Ajouter un groupe",
