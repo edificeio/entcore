@@ -116,10 +116,7 @@ export class ValidateMailController implements IController {
 			if( http().latestResponse.status>=400 ) {
 				// We want more details about any error
 				const response = http().latestResponse as IHttpResponseErrorWithPayload;
-				if( response.status>=400 && !!response.data?.error ) {
-					throw(response.data.error);
-				}
-				throw ('validate-mail.error.network');
+				throw(response.data?.error || 'validate-mail.error.network');
 			}
 
 			this.step = "code";
@@ -146,10 +143,7 @@ export class ValidateMailController implements IController {
 			if( http().latestResponse.status>=400 ) {
 				// We want more details about any error
 				const response = http().latestResponse as IHttpResponseErrorWithPayload;
-				if( response.status>=400 && !!response.data?.error ) {
-					throw(response.data.error);
-				}
-				throw ('validate-sms.error.network');
+				throw(response.data?.error || 'validate-sms.error.network');
 			}
 
 			this.step = "code";
