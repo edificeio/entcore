@@ -97,7 +97,8 @@ public class SamlController extends AbstractFederateController {
 
 	private JsonObject skins;
 
-	public SamlController(JsonObject skins) {
+	public SamlController(JsonObject skins) throws ConfigurationException {
+		this();
 		this.skins = skins;
 	}
 
