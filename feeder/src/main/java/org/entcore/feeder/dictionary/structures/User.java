@@ -488,11 +488,19 @@ public class User {
 
 	public static void preDelete(String userId, TransactionHelper transaction) {
 		JsonObject params = new JsonObject().put("userId", userId);
+
+		// Nettoyage des attributs de fusion pour éviter les références orphelines lors de la suppression
+		String cleanupMergeQuery =
+				"MATCH (u:User {id: {userId}})<-[:MERGED]-(um:User) " +
+				"WHERE um.mergedWith = u.id " +
+				"REMOVE um.mergedWith, u.mergedLogins";
+		transaction.add(cleanupMergeQuery, params);
+
+		// Restauration conditionnelle des liens entre utilisateur fusionné et élèves (profils Relative)
 		String mQuery =
 				"MATCH (u:User { id : {userId}})<-[r:MERGED]-(um:User), " +
 				"u<-[:RELATED]-(us:User) " +
 				"WHERE has(us.relative) AND LENGTH(FILTER(eId IN us.relative WHERE eId STARTS WITH um.externalId)) > 0 " +
-				"REMOVE um.mergedWith, u.mergedLogins " +
 				"CREATE UNIQUE um<-[:RELATED]-us " +
 				"DELETE r " +
 				"WITH um, us " +
@@ -605,6 +613,14 @@ public class User {
 
 	public static void delete(JsonArray deleteUsers, TransactionHelper transactionHelper) {
 		JsonObject params = new JsonObject().put("deleteUsers", deleteUsers);
+
+		// Nettoyage des références mergedWith orphelines avant suppression définitive
+		final String cleanupOrphanMergesQuery =
+				"MATCH (um:User) " +
+				"WHERE um.mergedWith IN {deleteUsers} " +
+				"REMOVE um.mergedWith";
+		transactionHelper.add(cleanupOrphanMergesQuery, params);
+
 		final String query =
 				"MATCH (:DeleteGroup)<-[:IN]-(u:User) " +
 				"WHERE u.id IN {deleteUsers} " +
