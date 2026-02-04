@@ -93,6 +93,8 @@ public abstract class BaseServer extends Server {
 	private AccessLogger accessLogger;
 	private ApplicationStatusBrokerPublisher statusPublisher;
 	private String nodeName;
+	private static final long SQL_LOCK_TIMEOUT = 30000L;
+	private static final long SQL_LOCK_RELEASE_DELAY = 5000L;
 
 	public static String getModuleName() {
 		return moduleName;
@@ -328,8 +330,22 @@ public abstract class BaseServer extends Server {
 			);
 			final String initScriptsPath = FileResolver.absolutePath(config.getString("init-scripts", "sql"));
 			DB migration = new DB(vertx, sqlAdmin, schema);
-			migration.loadScripts(initScriptsPath)
-				.compose(Void -> postSqlScripts());
+			
+			final SharedDataHelper sharedData = SharedDataHelper.getInstance();
+			final String lockName = "sql_migration_" + schema;
+			sharedData.getLock(lockName, SQL_LOCK_TIMEOUT)
+				.onFailure(th -> log.debug("Lock '" + lockName + "' unavailable, another instance is processing SQL scripts", th))
+				.onSuccess(lock -> {
+					log.info("Acquired lock '" + lockName + "' for SQL migration");
+					migration.loadScripts(initScriptsPath)
+						.compose(v -> postSqlScripts())
+						.onComplete(result -> {
+							sharedData.releaseLockAfterDelay(lock, SQL_LOCK_RELEASE_DELAY);
+							if (result.failed()) {
+								log.error("SQL migration failed for schema: " + schema, result.cause());
+							}
+						});
+				});
 		}
 		if (config.getBoolean("elasticsearch", false)) {
 			if (config.getJsonObject("elasticsearchConfig") != null) {
