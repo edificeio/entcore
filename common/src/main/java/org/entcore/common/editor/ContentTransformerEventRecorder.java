@@ -52,7 +52,7 @@ public class ContentTransformerEventRecorder implements IContentTransformerEvent
       if (occurrences != null) {
         final JsonObject customAttributes = new JsonObject()
           .put("override-module", module)
-          .put("resource_type", resourceType)
+          .put("resource-type", resourceType)
           .put("resource_id", id);
         for (Map.Entry<String, Integer> entry : occurrences.entrySet()) {
           customAttributes.put(entry.getKey(), entry.getValue());
