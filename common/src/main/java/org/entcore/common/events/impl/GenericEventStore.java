@@ -21,6 +21,7 @@ package org.entcore.common.events.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Renders;
+import fr.wseduc.webutils.request.CookieHelper;
 import io.vertx.core.AsyncResult;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.neo4j.Neo4j;
@@ -44,6 +45,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.net.URLDecoder;
 
 public abstract class GenericEventStore implements EventStore {
 
@@ -240,11 +242,12 @@ public abstract class GenericEventStore implements EventStore {
 
 	private void execute(UserInfos user, String eventType, HttpServerRequest request, JsonObject customAttributes) {
 		if (user == null || !userBlacklist.contains(user.getUserId())) {
-			storeEvent(generateEvent(eventType, user, request, customAttributes), new Handler<Either<String, Void>>() {
+			final JsonObject event = generateEvent(eventType, user, request, customAttributes);
+			storeEvent(event, new Handler<Either<String, Void>>() {
 				@Override
-				public void handle(Either<String, Void> event) {
-					if (event.isLeft()) {
-						logger.error("Error adding event : " + event.left().getValue());
+				public void handle(Either<String, Void> storeResult) {
+					if (storeResult.isLeft()) {
+						logger.error("Error adding event : " + storeResult.left().getValue());
 					}
 				}
 			});
@@ -275,18 +278,44 @@ public abstract class GenericEventStore implements EventStore {
 			}
 		}
 		if (request != null) {
-			// event.put("referer", request.headers().get("Referer"));
-			// event.put("sessionId", CookieHelper.getInstance().getSigned("oneSessionId", request));
 			final String ua = request.headers().get("User-Agent");
 			if (ua != null) {
 				event.put("ua", ua);
 			}
+			
+			// Read device info from cookies set by front-end
+			final String osNameRaw = CookieHelper.get("osName", request);
+			final String osVersionRaw = CookieHelper.get("osVersion", request);
+			final String deviceTypeRaw = CookieHelper.get("deviceType", request);
+			final String deviceNameRaw = CookieHelper.get("deviceName", request);
+			
+			final String osName = decodeCookie(osNameRaw);
+			final String osVersion = decodeCookie(osVersionRaw);
+			final String deviceType = decodeCookie(deviceTypeRaw);
+			final String deviceName = decodeCookie(deviceNameRaw);
+			
+			event.put("osName", osName);
+			event.put("osVersion", osVersion);
+			event.put("deviceType", deviceType);
+			event.put("deviceName", deviceName);
+			
 			final String ip = Renders.getIp(request);
 			if (ip != null) {
 				event.put("ip", ip);
 			}
 		}
 		return event;
+	}
+	
+	private String decodeCookie(String value) {
+		if (value == null) {
+			return "Unknown";
+		}
+		try {
+			return URLDecoder.decode(value, "UTF-8");
+		} catch (Exception e) {
+			return "Unknown";
+		}
 	}
 
 	protected abstract void storeEvent(JsonObject event, Handler<Either<String, Void>> handler);
