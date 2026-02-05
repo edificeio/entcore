@@ -1,9 +1,10 @@
 import angular = require("angular");
 import { IAttributes, IController, IDirective, IScope } from "angular";
-import { conf, http, session, notify, notif } from "ode-ngjs-front";
-import { IEmailValidationInfos, IMobileValidationInfos, IPromisified } from "ode-ts-client";
+import { conf, http, notif, notify, session } from "ode-ngjs-front";
+import { IEmailValidationInfos, IHttpResponse, IMobileValidationInfos, IPromisified } from "ode-ts-client";
 
 type OTPStatus = ""|"wait"|"ok"|"ko";
+type IHttpResponseErrorWithPayload = IHttpResponse & {data?:{error?:any}};
 
 /* Controller for the directive */
 export class ValidateMailController implements IController {
@@ -113,7 +114,9 @@ export class ValidateMailController implements IController {
 		try {
 			await session().checkEmail(this.emailAddress);
 			if( http().latestResponse.status>=400 ) {
-				throw ('validate-mail.error.network');
+				// We want more details about any error
+				const response = http().latestResponse as IHttpResponseErrorWithPayload;
+				throw(response.data?.error || 'validate-mail.error.network');
 			}
 
 			this.step = "code";
@@ -126,7 +129,7 @@ export class ValidateMailController implements IController {
 			setTimeout( () => debounceTime.resolve(), duration);
 			return debounceTime.promise;
 		} catch( e ) {
-			const msg = (typeof e !== "string") ? 'validate-mail.error.network' : e;			
+			const msg = (typeof e !== "string") ? 'validate-mail.error.network' : e;
 			notify.error(msg);
 		}
 	}
@@ -138,7 +141,9 @@ export class ValidateMailController implements IController {
 		try {
 			await session().checkMobile(this.finalPhoneNumber);
 			if( http().latestResponse.status>=400 ) {
-				throw ('validate-sms.error.network');
+				// We want more details about any error
+				const response = http().latestResponse as IHttpResponseErrorWithPayload;
+				throw(response.data?.error || 'validate-sms.error.network');
 			}
 
 			this.step = "code";
