@@ -42,6 +42,9 @@
 			</ul>
 		</script>
 		<!--TODO move to cssutils?-->
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100..900&display=swap" rel="stylesheet">
 		<style>
 		[draggable=false],[draggable=false] *{
 			user-drag: none;
@@ -77,7 +80,148 @@
 		.lool-sniplet-secondary .classic-link{
 			display: none;
 		}
+		.theme-2d .document-buttons-import{
+			background-color: rgb(255, 141, 46);
+			border-color: rgb(255, 141, 46);
+			border-width: 1px;
+			border-radius: 8px;
+			color: rgb(255, 255, 255);
+			font-size: 16px;
+			font-family: Roboto, sans-serif;
+			font-weight: 500;
+			height: 40px;
+			line-height: 22px;
+			margin: 0px;
+			padding-left:16px;
+			padding-right:16px;
+			padding-top:8px;
+			padding-bottom:8px;
+			box-shadow: none;
+			display: flex;
+			gap: 8px;
+			justify-content: center;
+			align-items: center;
+			white-space: nowrap;
+		}
+		.theme-2d .document-buttons-import:hover {
+			background-color: rgb(218, 106, 11);
+			border-bottom-color: rgb(218, 106, 11);
+			color: rgb(255, 255, 255);
+		}
+		.theme-2d .document-buttons-add{
+			background-color: rgb(255, 255, 255);
+			border-color: rgb(255, 141, 46);
+			border-radius: 8px;
+			color: rgb(255, 141, 46);
+			font-size: 16px;
+			font-family: Roboto, sans-serif;
+			font-weight: 500;
+			height: 40px;
+			line-height: 22px;
+			margin: 0px;
+			padding-left: 16px;
+			padding-right: 16px;
+			padding-top: 8px;
+			padding-bottom: 8px;
+			border-width: 1px;
+			box-shadow: none;
+			border-style: solid;
+			display: flex;
+			gap: 8px;
+			justify-content: center;
+			align-items: center;
+			white-space: nowrap;
+		}
+		.theme-2d .document-buttons-add:hover {
+			background-color:rgb(255, 255, 255);
+			border-color: rgb(218, 106, 11);
+			color: rgb(218, 106, 11);
+		}
+		.theme-2d .document-buttons-import-wrapper {
+			margin-left: 8px;
+		}
+		.theme-1d .document-buttons-import{
+			background-color: rgb(42, 156, 200);
+			border-color: rgb(42, 156, 200);
+			border-width: 1px;
+			border-radius: 8px;
+			color: rgb(255, 255, 255);
+			font-size: 16px;
+			font-family: Roboto, sans-serif;
+			font-weight: 400;
+			height: 40px;
+			line-height: 22px;
+			margin: 0px;
+			padding-left:16px !important;
+			padding-right:16px !important;
+			padding-top:8px;
+			padding-bottom:8px;
+			box-shadow: none;
+			display: flex;
+			gap: 8px;
+			justify-content: center;
+			align-items: center;
+			white-space: nowrap;
+			background-image: none;
+		}
+		.theme-1d .document-buttons-import:hover {
+			background-color: rgb(47, 126, 167);
+			border-bottom-color: rgb(47, 126, 167);
+			color: rgb(255, 255, 255);
+		}
+		.theme-1d .document-buttons-add{
+			background-color: rgb(255, 255, 255);
+			border-color: rgb(42, 156, 200);
+			border-radius: 8px;
+			color: rgb(42, 156, 200);
+			font-size: 16px;
+			font-family: Roboto, sans-serif;
+			font-weight: 400;
+			height: 40px;
+			line-height: 22px;
+			margin: 0px;
+			padding-left: 16px !important;
+			padding-right: 16px !important;
+			padding-top: 8px;
+			padding-bottom: 8px;
+			border-width: 1px;
+			box-shadow: none;
+			border-style: solid;
+			display: flex;
+			gap: 8px;
+			justify-content: center;
+			align-items: center;
+			white-space: nowrap;
+			background-image: none;
+		}
+		.theme-1d .document-buttons-add:hover {
+			background-color:rgb(255, 255, 255);
+			border-color: rgb(47, 126, 167);
+			color: rgb(47, 126, 167);
+		}
+		.theme-1d .document-buttons-import-wrapper {
+			margin-left: 8px;
+		}
+		.document-buttons-import-mobile-wrapper{
+			margin-bottom: 8px;
+			overflow: hidden;
+		}
+		.theme-1d .document-buttons-import-mobile-wrapper{
+			margin-top: 8px;
+		}
+		.document-buttons-import-mobile-wrapper, .document-buttons-import-mobile-wrapper button,
+		.document-buttons-add-mobile-wrapper, .document-buttons-add-mobile-wrapper button{
+			width: 100% !important;
+		}
 		</style>
+		<script>
+		// TODO: create a directive that add the correct class
+		entcore.ui.getCurrentThemeConf().then(function(conf){
+			var is1d = conf.parent === 'panda'
+			document.body.classList.add(is1d ? "theme-1d" : "theme-2d")
+		})
+		</script>
+
 </head>
 
 <body data-ng-controller="Workspace" bottom-scroll="incrementVisibleFiles()" class="workspace-app">
@@ -90,12 +234,14 @@
 				</h1>
 				<div class="right-magnet zero-mobile vertical-spacing-twice-1d " ng-if="openedFolder.all.length || reloadingContent">
 					<div ng-repeat="button in currentTree.buttons" class="aligned">
-						<button ng-click="button.action()" ng-hide="canEmptyTrash()" ng-disabled="button.disabled()" workflow="[[button.workflow]]" class="primary-button">
-							[[button.text]]
+						<button ng-click="button.action()" ng-hide="canEmptyTrash()" ng-disabled="button.disabled()" workflow="[[button.workflow]]" class="document-buttons-add">
+							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor" fill-rule="evenodd" clip-path="url(#icon-download_svg__a)" clip-rule="evenodd"><path d="M7.293 16.293a1 1 0 0 1 1.414 0L12 19.586l3.293-3.293a1 1 0 0 1 1.414 1.414l-4 4a1 1 0 0 1-1.414 0l-4-4a1 1 0 0 1 0-1.414"></path><path d="M12 11a1 1 0 0 1 1 1v9a1 1 0 1 1-2 0v-9a1 1 0 0 1 1-1"></path><path d="M8.668 1.994A9 9 0 0 1 17.48 8H18a6.002 6.002 0 0 1 5.689 7.919 6 6 0 0 1-2.234 2.989 1 1 0 1 1-1.15-1.636A4 4 0 0 0 18 10H16.74a1 1 0 0 1-.969-.751A7 7 0 1 0 3.75 15.627a1 1 0 1 1-1.498 1.326A9 9 0 0 1 8.668 1.994"></path></g><defs><clipPath id="icon-download_svg__a"><path fill="#fff" d="M0 0h24v24H0z"></path></clipPath></defs></svg>
+							<span>[[button.text]]</span>
 						</button>
 					</div>
-					<div workflow="lool.createDocument" class="aligned" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL">
-					<button class="primary-button" ng-click="openLoolModal()">
+					<div workflow="lool.createDocument" class="aligned document-buttons-import-wrapper" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL">
+					<button class="document-buttons-import" ng-click="openLoolModal()">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M1 4a3 3 0 0 1 3-3h16a3 3 0 0 1 3 3v16a3 3 0 0 1-3 3H4a3 3 0 0 1-3-3zm3-1a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zm1 9a1 1 0 0 1 1-1h5V6a1 1 0 1 1 2 0v5h5a1 1 0 1 1 0 2h-5v5a1 1 0 1 1-2 0v-5H6a1 1 0 0 1-1-1" clip-rule="evenodd"></path></svg>
 						<i18n>workspace.lool.create-document</i18n>
 					</button>
 					</div>
@@ -130,13 +276,15 @@
 				<nav class="twelve cell toggle-buttons-spacer">
 					<div class="row">
 						<!--IMPORT MOBILE-->
-						<div ng-if="openedFolder.all.length || reloadingContent" class="zero-desktop six-mobile" ng-repeat="button in currentTree.buttons">
-							<button ng-click="button.action(button.url)" ng-disabled="button.disabled()" workflow="[[button.workflow]]">
-								 [[translate(button.text)]]
+						<div ng-if="openedFolder.all.length || reloadingContent" class="zero-desktop six-mobile document-buttons-import-mobile-wrapper" ng-repeat="button in currentTree.buttons">
+							<button ng-click="button.action(button.url)" ng-disabled="button.disabled()" workflow="[[button.workflow]]" class="document-buttons-add">
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" fill-rule="evenodd" d="M1 4a3 3 0 0 1 3-3h16a3 3 0 0 1 3 3v16a3 3 0 0 1-3 3H4a3 3 0 0 1-3-3zm3-1a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zm1 9a1 1 0 0 1 1-1h5V6a1 1 0 1 1 2 0v5h5a1 1 0 1 1 0 2h-5v5a1 1 0 1 1-2 0v-5H6a1 1 0 0 1-1-1" clip-rule="evenodd"></path></svg>
+								<span>[[translate(button.text)]]</span>
 							</button>
 						</div>
-						<div class="zero-desktop six-mobile" workflow="lool.createDocument" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL && (openedFolder.all.length || reloadingContent)">
-						<button class="primary-button" ng-click="openLoolModal()">
+						<div class="zero-desktop six-mobile document-buttons-add-mobile-wrapper" workflow="lool.createDocument" ng-if="canDropOnFolder() && !isSharedTree() && ENABLE_LOOL && (openedFolder.all.length || reloadingContent)">
+						<button class="document-buttons-import" ng-click="openLoolModal()">
+							<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor" fill-rule="evenodd" clip-path="url(#icon-download_svg__a)" clip-rule="evenodd"><path d="M7.293 16.293a1 1 0 0 1 1.414 0L12 19.586l3.293-3.293a1 1 0 0 1 1.414 1.414l-4 4a1 1 0 0 1-1.414 0l-4-4a1 1 0 0 1 0-1.414"></path><path d="M12 11a1 1 0 0 1 1 1v9a1 1 0 1 1-2 0v-9a1 1 0 0 1 1-1"></path><path d="M8.668 1.994A9 9 0 0 1 17.48 8H18a6.002 6.002 0 0 1 5.689 7.919 6 6 0 0 1-2.234 2.989 1 1 0 1 1-1.15-1.636A4 4 0 0 0 18 10H16.74a1 1 0 0 1-.969-.751A7 7 0 1 0 3.75 15.627a1 1 0 1 1-1.498 1.326A9 9 0 0 1 8.668 1.994"></path></g><defs><clipPath id="icon-download_svg__a"><path fill="#fff" d="M0 0h24v24H0z"></path></clipPath></defs></svg>
 							<i18n>workspace.lool.create-document</i18n>
 						</button>
 						</div>
