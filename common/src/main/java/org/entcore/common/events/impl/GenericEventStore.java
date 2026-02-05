@@ -21,11 +21,14 @@ package org.entcore.common.events.impl;
 
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Renders;
+import fr.wseduc.webutils.request.CookieHelper;
 import io.vertx.core.AsyncResult;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.events.DeviceInfoDTO;
+import org.entcore.common.events.UserAgentService;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
@@ -51,6 +54,7 @@ public abstract class GenericEventStore implements EventStore {
 	protected EventBus eventBus;
 	protected Vertx vertx;
 	protected JsonArray userBlacklist;
+	protected UserAgentService uaService;
 	protected static final Logger logger = LoggerFactory.getLogger(GenericEventStore.class);
 
 	@Override
@@ -240,11 +244,30 @@ public abstract class GenericEventStore implements EventStore {
 
 	private void execute(UserInfos user, String eventType, HttpServerRequest request, JsonObject customAttributes) {
 		if (user == null || !userBlacklist.contains(user.getUserId())) {
-			storeEvent(generateEvent(eventType, user, request, customAttributes), new Handler<Either<String, Void>>() {
+			final String ua = request != null ? request.headers().get("User-Agent") : null;
+			if (ua != null && uaService != null && uaService.isEnabled()) {
+				// Parse user agent asynchronously using Future
+				uaService.parseUserAgent(ua).onComplete(result -> {
+						final DeviceInfoDTO deviceInfo = result.succeeded() ? result.result() : null;
+						final JsonObject event = generateEvent(eventType, user, request, customAttributes, deviceInfo);
+						storeEvent(event, new Handler<Either<String, Void>>() {
+							@Override
+							public void handle(Either<String, Void> storeResult) {
+								if (storeResult.isLeft()) {
+									logger.error("Error adding event : " + storeResult.left().getValue());
+								}
+							}
+						});
+					});
+				return;
+			}
+			
+			// Fallback to generation without device info
+			storeEvent(generateEvent(eventType, user, request, customAttributes, null), new Handler<Either<String, Void>>() {
 				@Override
-				public void handle(Either<String, Void> event) {
-					if (event.isLeft()) {
-						logger.error("Error adding event : " + event.left().getValue());
+				public void handle(Either<String, Void> result) {
+					if (result.isLeft()) {
+						logger.error("Error adding event : " + result.left().getValue());
 					}
 				}
 			});
@@ -252,7 +275,7 @@ public abstract class GenericEventStore implements EventStore {
 	}
 
 	private JsonObject generateEvent(String eventType, UserInfos user, HttpServerRequest request,
-			JsonObject customAttributes) {
+			JsonObject customAttributes, DeviceInfoDTO deviceInfo) {
 		JsonObject event = new JsonObject();
 		if (customAttributes != null && customAttributes.size() > 0) {
 			event.mergeIn(customAttributes);
@@ -280,6 +303,30 @@ public abstract class GenericEventStore implements EventStore {
 			final String ua = request.headers().get("User-Agent");
 			if (ua != null) {
 				event.put("ua", ua);
+				
+				// Get isPad flag from cookie
+				final String isPadCookie = CookieHelper.get("isPad", request);
+				final boolean isPad = "true".equals(isPadCookie);
+				
+				// Use provided deviceInfo or fallback to synchronous cache lookup
+				if (deviceInfo != null) {
+					String osName = deviceInfo.getOsName();
+					String osVersion = deviceInfo.getOsVersion();
+					String deviceType = deviceInfo.getDeviceType();
+					String deviceName = deviceInfo.getDeviceName();
+					
+					// Transform macOS to iPadOS if isPad cookie is true
+					if (isPad && "macOS".equalsIgnoreCase(osName)) {
+						osName = "iPadOS";
+						deviceType = "tablet";
+						deviceName = "iPad";
+					}
+					
+					event.put("osName", osName);
+					event.put("osVersion", osVersion);
+					event.put("deviceType", deviceType);
+					event.put("deviceName", deviceName);
+				}
 			}
 			final String ip = Renders.getIp(request);
 			if (ip != null) {
@@ -312,6 +359,7 @@ public abstract class GenericEventStore implements EventStore {
 
 	public void setVertx(Vertx vertx) {
 		this.vertx = vertx;
+		this.uaService = UserAgentServiceImpl.getInstance(vertx);
 	}
 
 }
