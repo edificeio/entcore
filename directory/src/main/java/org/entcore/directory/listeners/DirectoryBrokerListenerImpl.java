@@ -400,4 +400,24 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
 
         return promise.future();
     }
+
+    @Override
+    public Future<GetClassAdminResponseDTO> getClassAdminUsers(GetClassAdminRequestDTO request) {
+        final Promise<GetClassAdminResponseDTO> promise = Promise.promise();
+        this.userService.getUserInfos(request.getUserId(), result -> {
+            if (result.isRight()) {
+                if (result.right().getValue() != null && !result.right().getValue().isEmpty()) {
+                    promise.complete(new GetClassAdminResponseDTO(result.right().getValue()));
+                } else {
+                    log.warn("No user infos could be found for " + request.getUserId());
+                    promise.fail(result.left().getValue());
+                }
+            } else {
+                final String reason = result.left().getValue();
+                log.warn("An error occurred while fetching user infos for " + request.getUserId() + " : " + reason);
+                promise.fail(reason);
+            }
+        });
+        return promise.future();
+    }
 }

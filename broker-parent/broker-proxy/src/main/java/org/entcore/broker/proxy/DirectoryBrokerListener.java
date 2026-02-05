@@ -70,4 +70,7 @@ public interface DirectoryBrokerListener {
    */
   @BrokerListener(subject = "directory.users.get.byids", proxy = true)
   Future<GetUsersByIdsResponseDTO> getUsersByIds(GetUsersByIdsRequestDTO request);
+
+  @BrokerListener(subject = "directory.class.admin.by.id", proxy = true)
+  Future<GetClassAdminResponseDTO> getClassAdminUsers(final GetClassAdminRequestDTO request);
 }
