@@ -71,6 +71,11 @@ public interface DirectoryBrokerListener {
   @BrokerListener(subject = "directory.users.get.byids", proxy = true)
   Future<GetUsersByIdsResponseDTO> getUsersByIds(GetUsersByIdsRequestDTO request);
 
+  /**
+   * This method retrieves users by their ENT IDs with basic profile information, classes informations and hobbies
+   * @param request The request object containing the user ID to look up
+   * @return A response object containing detailed user information
+   */
   @BrokerListener(subject = "directory.class.admin.by.id", proxy = true)
   Future<GetClassAdminResponseDTO> getClassAdminUsers(final GetClassAdminRequestDTO request);
 }

@@ -401,6 +401,12 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
         return promise.future();
     }
 
+    /**
+     * Retrieves user by its ENT ID with basic profile information, classes informations and hobbies
+     *
+     * @param request The request containing a user ID
+     * @return Response with detailed user information
+     */
     @Override
     public Future<GetClassAdminResponseDTO> getClassAdminUsers(GetClassAdminRequestDTO request) {
         final Promise<GetClassAdminResponseDTO> promise = Promise.promise();
