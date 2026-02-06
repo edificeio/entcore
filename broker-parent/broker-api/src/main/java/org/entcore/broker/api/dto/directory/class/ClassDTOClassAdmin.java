@@ -3,12 +3,12 @@ package org.entcore.broker.api.dto.directory.clazz;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class ClassDTO {
+public class ClassDTOClassAdmin {
     private final String name;
     private final String id;
 
     @JsonCreator
-    public ClassDTO(
+    public ClassDTOClassAdmin(
             @JsonProperty("name") String name,
             @JsonProperty("id") String id) {
         this.name = name;

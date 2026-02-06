@@ -3,13 +3,13 @@ package org.entcore.broker.api.dto.directory.user;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class RelativeDTO {
+public class RelativeDTOClassAdmin {
     private final String relatedName;
     private final String relatedType;
     private final String relatedId;
 
     @JsonCreator
-    public RelativeDTO(
+    public RelativeDTOClassAdmin(
             @JsonProperty("relatedName") String relatedName,
             @JsonProperty("relatedType") String relatedType,
             @JsonProperty("relatedId") String relatedId) {
