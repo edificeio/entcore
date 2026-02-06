@@ -19,7 +19,7 @@
 
 package org.entcore.common.http;
 
-import fr.wseduc.webutils.request.AccessLogger;
+import fr.wseduc.webutils.request.AccessLoggerJson;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import org.entcore.common.user.UserUtils;
 import io.vertx.core.Handler;
@@ -27,36 +27,36 @@ import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 
-public class EntAccessLogger extends AccessLogger implements IEntAccessLogger {
+public class EntAccessLoggerJson extends AccessLoggerJson implements IEntAccessLogger {
 
-	private final EventBus eb;
+    private final EventBus eb;
 
-	public EntAccessLogger(EventBus eb) {
-		this.eb = eb;
-	}
+    public EntAccessLoggerJson(EventBus eb) {
+        this.eb = eb;
+    }
 
-	@Override
-	public void log(final HttpServerRequest request, final Handler<Void> handler) {
-		request.pause();
-		UserUtils.getSession(eb, request, true, new Handler<JsonObject>() {
-			@Override
-			public void handle(JsonObject session) {
-				if (session != null) {
-					final SecureHttpServerRequest secureRequest;
-					if(request instanceof SecureHttpServerRequest) {
-						secureRequest = (SecureHttpServerRequest) request;
-					} else {
-						secureRequest = new SecureHttpServerRequest(request);
-						secureRequest.setSession(session);
-					}
-					log.info(formatLog(secureRequest, session.getString("userId")));
-				} else {
-					log.info(formatLog(request, null));
-				}
-				request.resume();
-				handler.handle(null);
-			}
-		});
-	}
+    @Override
+    public void log(final HttpServerRequest request, final Handler<Void> handler) {
+        request.pause();
+        UserUtils.getSession(eb, request, true, new Handler<JsonObject>() {
+            @Override
+            public void handle(JsonObject session) {
+                if (session != null) {
+                    final SecureHttpServerRequest secureRequest;
+                    if(request instanceof SecureHttpServerRequest) {
+                        secureRequest = (SecureHttpServerRequest) request;
+                    } else {
+                        secureRequest = new SecureHttpServerRequest(request);
+                        secureRequest.setSession(session);
+                    }
+                    log.finest(formatLog(secureRequest, session.getString("userId")));
+                } else {
+                    log.finest(formatLog(request, null));
+                }
+                request.resume();
+                handler.handle(null);
+            }
+        });
+    }
 
 }

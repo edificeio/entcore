@@ -1,9 +1,5 @@
 package org.entcore.feeder;
 
-import fr.wseduc.webutils.http.Renders;
-import fr.wseduc.webutils.request.AccessLogger;
-import io.vertx.core.Handler;
-import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
