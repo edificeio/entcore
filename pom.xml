@@ -57,20 +57,20 @@
     </modules>
 
     <properties>
-        <revision>6.13.2</revision>
+        <revision>6.13-SNAPSHOT</revision>
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
-        <modPostgresVersion>2.1.0</modPostgresVersion>
-        <modMongoVersion>4.1.0</modMongoVersion>
-        <webUtilsVersion>3.3.1</webUtilsVersion>
-        <mongodbHelperVersion>3.1.0</mongodbHelperVersion>
+        <modPostgresVersion>2.1-SNAPSHOT</modPostgresVersion>
+        <modMongoVersion>4.1-SNAPSHOT</modMongoVersion>
+        <webUtilsVersion>3.3-SNAPSHOT</webUtilsVersion>
+        <mongodbHelperVersion>3.1-SNAPSHOT</mongodbHelperVersion>
         <jodaTimeVersion>2.9.4</jodaTimeVersion>
         <scramVersion>2.1</scramVersion>
         <micrometerPrometheusVersion>1.11.4</micrometerPrometheusVersion>
         <owaspVersion>20220608.1</owaspVersion>
         <jacksonVersion>2.15.2</jacksonVersion>
-        <casVersion>0.3.0</casVersion>
-        <vertxCronTimerVersion>3.0.0</vertxCronTimerVersion>
+        <casVersion>0.3-SNAPSHOT</casVersion>
+        <vertxCronTimerVersion>3.0-SNAPSHOT</vertxCronTimerVersion>
         <jnaVersion>3.0.2</jnaVersion>
         <lamejbVersion>0.2.0</lamejbVersion>
         <opencsvVersion>3.9</opencsvVersion>
