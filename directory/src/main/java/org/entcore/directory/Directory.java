@@ -257,7 +257,7 @@ public class Directory extends BaseServer {
 			addController(remoteUserController);
 		}
 		// add the directory broker listener
-		BrokerProxyUtils.addBrokerProxy(new DirectoryBrokerListenerImpl(vertx, userService), vertx);
+		BrokerProxyUtils.addBrokerProxy(new DirectoryBrokerListenerImpl(vertx, userService, schoolService), vertx);
 		BrokerProxyUtils.addBrokerProxy(new LoadTestProxyImpl(vertx), vertx);
 		return Future.succeededFuture();
 	}

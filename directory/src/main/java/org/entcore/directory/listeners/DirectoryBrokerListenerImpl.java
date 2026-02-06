@@ -11,6 +11,7 @@ import org.entcore.broker.api.dto.directory.*;
 import org.entcore.broker.proxy.DirectoryBrokerListener;
 import org.entcore.directory.services.GroupService;
 import org.entcore.directory.services.UserService;
+import org.entcore.directory.services.SchoolService;
 import org.entcore.directory.services.impl.DefaultGroupService;
 
 import java.util.ArrayList;
@@ -27,14 +28,17 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
     private static final Logger log = LoggerFactory.getLogger(DirectoryBrokerListenerImpl.class);
     private final GroupService groupService;
     private final UserService userService;
+    private final SchoolService structureService;
 
     /**
      * Constructor for DirectoryBrokerListenerImpl.
      *
      * @param vertx The Vertx instance
+     * @param userService The user service to handle user operations
+     * @param structureService The structure service to handle structure operations
      */
-    public DirectoryBrokerListenerImpl(Vertx vertx, UserService userService) {
-        this(new DefaultGroupService(vertx.eventBus()), userService);
+    public DirectoryBrokerListenerImpl(Vertx vertx, UserService userService, SchoolService structureService) {
+        this(new DefaultGroupService(vertx.eventBus()), userService, structureService);
     }
     
     /**
@@ -43,9 +47,10 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
      * @param groupService The group service to handle group operations
      * @param userService The user service to handle user operations
      */
-    public DirectoryBrokerListenerImpl(GroupService groupService, UserService userService) {
+    public DirectoryBrokerListenerImpl(GroupService groupService, UserService userService, SchoolService structureService) {
         this.groupService = groupService;
         this.userService = userService;
+        this.structureService = structureService;
     }
 
     /**
@@ -434,6 +439,47 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
             } else {
                 final String reason = result.left().getValue();
                 log.warn("An error occurred while fetching user infos for " + request.getUserId() + " : " + reason);
+                promise.fail(reason);
+            }
+        });
+        return promise.future();
+    }
+    
+    /**
+     * Retrieves all users linked to a structure with basic profile information, classes informations and hobbies
+     *
+     * @param request The request containing a structure ID
+     * @return Response with a list of detailed user information
+     */
+    @Override
+    public Future<GetStructureUserResponseDTO> getStructureUsers(GetStructureUserRequestDTO request) {
+        final Promise<GetStructureUserResponseDTO> promise = Promise.promise();
+
+        if (request == null || !request.isValid()) {
+            log.error("Invalid request for getStructureUsers: {}", request);
+            promise.fail("request.parameters.invalid");
+            return promise.future();
+        }
+
+        String structureId = request.getStructureId();
+        if (structureId == null || structureId.trim().isEmpty()) {
+            promise.fail("request.parameters.structureid.invalid");
+            return promise.future();
+        }
+
+        // The boolean params might be used to filter deleted users
+        // TODO: update the method to find if the user is an admc or not (third params) defaulting to false for now
+        this.structureService.userList(request.getStructureId(), false, false, result -> {
+            if (result.isRight()) {
+                if (result.right().getValue() != null && !result.right().getValue().isEmpty()) {
+                    promise.complete(new GetStructureUserResponseDTO(result.right().getValue()));
+                } else {
+                    log.warn("No structure could be found for " + request.getStructureId());
+                    promise.fail(result.left().getValue());
+                }
+            } else {
+                final String reason = result.left().getValue();
+                log.warn("An error occurred while fetching structure " + request.getStructureId() + " : " + reason);
                 promise.fail(reason);
             }
         });
