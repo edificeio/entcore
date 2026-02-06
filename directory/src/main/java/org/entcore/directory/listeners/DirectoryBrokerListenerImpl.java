@@ -410,6 +410,19 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
     @Override
     public Future<GetClassAdminResponseDTO> getClassAdminUsers(GetClassAdminRequestDTO request) {
         final Promise<GetClassAdminResponseDTO> promise = Promise.promise();
+
+        if (request == null || !request.isValid()) {
+            log.error("Invalid request for getClassAdminUsers: {}", request);
+            promise.fail("request.parameters.invalid");
+            return promise.future();
+        }
+
+        String userId = request.getUserId();
+        if (userId == null || userId.trim().isEmpty()) {
+            promise.fail("request.parameters.userid.invalid");
+            return promise.future();
+        }
+
         this.userService.getUserInfos(request.getUserId(), result -> {
             if (result.isRight()) {
                 if (result.right().getValue() != null && !result.right().getValue().isEmpty()) {
