@@ -26,8 +26,8 @@ import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.data.FileResolver;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
-import fr.wseduc.webutils.request.AccessLogger;
 import fr.wseduc.webutils.request.CookieHelper;
+import fr.wseduc.webutils.request.IAccessLogger;
 import fr.wseduc.webutils.request.filter.AccessLoggerFilter;
 import fr.wseduc.webutils.request.filter.SecurityHandler;
 import fr.wseduc.webutils.request.filter.UserAuthFilter;
@@ -90,7 +90,7 @@ public abstract class BaseServer extends Server {
 	private I18nHandler i18nHandler;
 	private String schema;
 	private String contentSecurityPolicy;
-	private AccessLogger accessLogger;
+	private IAccessLogger accessLogger;
 	private ApplicationStatusBrokerPublisher statusPublisher;
 	private String nodeName;
 
@@ -117,7 +117,7 @@ public abstract class BaseServer extends Server {
                 return;
             }}
         ).compose(x -> {
-            accessLogger = new EntAccessLogger(getEventBus(vertx));
+			accessLogger = EntAccessLoggerFactory.create(getEventBus(vertx));
             EventStoreFactory eventStoreFactory = EventStoreFactory.getFactory();
             eventStoreFactory.setVertx(vertx);
             return loadInfra();
