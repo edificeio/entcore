@@ -5,6 +5,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.entcore.broker.api.dto.directory.clazz.ClassDTOClassAdmin;
 import java.util.List;
 
+/*
+    * This DTO is used to represent school information for class-admin
+    * it used in GetClassAdminResponseDTO to represent 
+    * the response of the directory.class.admin.by.id nats subject
+    * It is intended to be a duplicate of the others SchoolDTO as some informations
+    * aren't return in the directory.class.admin.by.id subject 
+    * and to avoid confusion between the different subjects responses
+*/
 public class SchoolDTOClassAdmin {
     private final List<ClassDTOClassAdmin> classes;
     private final String name;
