@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.entcore.broker.api.dto.directory.structure.SchoolDTO;
 import java.util.List;
 
-public class UserProfileDTO {
+public class UserProfileDTOClassAdmin {
     private final List<String> profiles; // Teacher, Student, Personnal, ...
     private final String id; // The ENT ID of the user
     private final String firstName; 
@@ -16,16 +16,16 @@ public class UserProfileDTO {
     private final String mobile;
     private final String birthDate; // Format: "yyyy-MM-dd"
     private final String originalLogin; // firstname.lastname or firstname.lastname1, etc. depending on the number of users with the same name in the directory
-    private final List<RelativeDTO> relativeList; // List of relatives (parents, tutors, etc.) with their ENT ID, name and type of relationship
+    private final List<RelativeDTOClassAdmin> relativeList; // List of relatives (parents, tutors, etc.) with their ENT ID, name and type of relationship
     private final String motto; 
     private final String health;
     private final String mood;
-    private final List<HobbyDTO> hobbies;
-    private final List<SchoolDTO> schools; // List of schools the user is associated with, each containing a list of classes the user is enrolled in or teaches
+    private final List<HobbyDTOClassAdmin> hobbies;
+    private final List<SchoolDTOClassAdmin> schools; // List of schools the user is associated with, each containing a list of classes the user is enrolled in or teaches
     private final Boolean lockedEmail;
 
     @JsonCreator
-    public UserProfileDTO(
+    public UserProfileDTOClassAdmin(
             @JsonProperty("profiles") List<String> profiles,
             @JsonProperty("id") String id,
             @JsonProperty("firstName") String firstName,
@@ -36,12 +36,12 @@ public class UserProfileDTO {
             @JsonProperty("mobile") String mobile,
             @JsonProperty("birthDate") String birthDate,
             @JsonProperty("originalLogin") String originalLogin,
-            @JsonProperty("relativeList") List<RelativeDTO> relativeList,
+            @JsonProperty("relativeList") List<RelativeDTOClassAdmin> relativeList,
             @JsonProperty("motto") String motto,
             @JsonProperty("health") String health,
             @JsonProperty("mood") String mood,
-            @JsonProperty("hobbies") List<HobbyDTO> hobbies,
-            @JsonProperty("schools") List<SchoolDTO> schools,
+            @JsonProperty("hobbies") List<HobbyDTOClassAdmin> hobbies,
+            @JsonProperty("schools") List<SchoolDTOClassAdmin> schools,
             @JsonProperty("lockedEmail") Boolean lockedEmail) {
         this.profiles = profiles;
         this.id = id;
@@ -102,7 +102,7 @@ public class UserProfileDTO {
         return originalLogin;
     }
 
-    public List<RelativeDTO> getRelativeList() {
+    public List<RelativeDTOClassAdmin> getRelativeList() {
         return relativeList;
     }
 
@@ -118,11 +118,11 @@ public class UserProfileDTO {
         return mood;
     }
 
-    public List<HobbyDTO> getHobbies() {
+    public List<HobbyDTOClassAdmin> getHobbies() {
         return hobbies;
     }
 
-    public List<SchoolDTO> getSchools() {
+    public List<SchoolDTOClassAdmin> getSchools() {
         return schools;
     }
 

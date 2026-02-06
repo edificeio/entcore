@@ -3,13 +3,13 @@ package org.entcore.broker.api.dto.directory.user;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public class HobbyDTO {
+public class HobbyDTOClassAdmin {
     private final String visibility;
     private final String category;
     private final String values;
 
     @JsonCreator
-    public HobbyDTO(
+    public HobbyDTOClassAdmin(
             @JsonProperty("visibility") String visibility,
             @JsonProperty("category") String category,
             @JsonProperty("values") String values) {
