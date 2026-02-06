@@ -78,4 +78,12 @@ public interface DirectoryBrokerListener {
    */
   @BrokerListener(subject = "directory.class.admin.by.id", proxy = true)
   Future<GetClassAdminResponseDTO> getClassAdminUsers(final GetClassAdminRequestDTO request);
+  
+  /**
+   * This method retrieves a list of users linked to a structure
+   * @param request The request object containing the structure ID to look up
+   * @return A response object containing a list of detailed user information
+   */
+  @BrokerListener(subject = "directory.structure.users.by.id", proxy = true)
+  Future<GetStructureUserResponseDTO> getStructureUsers(final GetStructureUserRequestDTO request);
 }
