@@ -468,7 +468,11 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
         }
 
         // The boolean params might be used to filter deleted users
-        // TODO: update the method to find if the user is an admc or not (third params) defaulting to false for now
+        // TODO: update the method to find if the user is an admc or not (third params) 
+        // As we do not have acces to the user informations in the broker
+        // we default to false for now
+        // In directory > src > ... > controllers > StructureController.java:
+        // final boolean isAdmc = (user.getFunctions() != null && user.getFunctions().containsKey(DefaultFunctions.SUPER_ADMIN));
         this.structureService.userList(request.getStructureId(), false, false, result -> {
             if (result.isRight()) {
                 if (result.right().getValue() != null && !result.right().getValue().isEmpty()) {
