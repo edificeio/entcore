@@ -5,6 +5,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.entcore.broker.api.dto.directory.structure.SchoolDTO;
 import java.util.List;
 
+/*
+    * This DTO is used to represent user information for class-admin
+    * it used in GetClassAdminResponseDTO to represent 
+    * the response of the directory.class.admin.by.id nats subject
+    * It is intended to be a duplicate of the others UserDTO as some informations
+    * aren't return in the directory.class.admin.by.id subject 
+    * and to avoid confusion between the different subjects responses
+*/
 public class UserProfileDTOClassAdmin {
     private final List<String> profiles; // Teacher, Student, Personnal, ...
     private final String id; // The ENT ID of the user
