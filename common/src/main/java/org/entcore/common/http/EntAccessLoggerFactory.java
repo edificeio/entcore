@@ -19,44 +19,25 @@
 
 package org.entcore.common.http;
 
-import fr.wseduc.webutils.request.AccessLogger;
-import fr.wseduc.webutils.security.SecureHttpServerRequest;
-import org.entcore.common.user.UserUtils;
-import io.vertx.core.Handler;
+import fr.wseduc.webutils.request.IAccessLogger;
 import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonObject;
 
-public class EntAccessLogger extends AccessLogger implements IEntAccessLogger {
+public class EntAccessLoggerFactory {
 
-	private final EventBus eb;
-
-	public EntAccessLogger(EventBus eb) {
-		this.eb = eb;
-	}
-
-	@Override
-	public void log(final HttpServerRequest request, final Handler<Void> handler) {
-		request.pause();
-		UserUtils.getSession(eb, request, true, new Handler<JsonObject>() {
-			@Override
-			public void handle(JsonObject session) {
-				if (session != null) {
-					final SecureHttpServerRequest secureRequest;
-					if(request instanceof SecureHttpServerRequest) {
-						secureRequest = (SecureHttpServerRequest) request;
-					} else {
-						secureRequest = new SecureHttpServerRequest(request);
-						secureRequest.setSession(session);
-					}
-					log.info(formatLog(secureRequest, session.getString("userId")));
-				} else {
-					log.info(formatLog(request, null));
-				}
-				request.resume();
-				handler.handle(null);
-			}
-		});
+	/**
+	 * Factory method to create the appropriate EntAccessLogger.
+	 *
+	 * @param  format If is set to "json", returns EntAccessLoggerJson (JSON format). Otherwise, returns EntAccessLogger (plain text format).
+	 * @param eb EventBus instance
+	 * @return A logger
+	 */
+	public static IEntAccessLogger create(EventBus eb) {
+		final String format = System.getenv(IAccessLogger.LOG_FORMAT_CONF_KEY);
+		if ("json".equalsIgnoreCase(format)) {
+			return new EntAccessLoggerJson(eb);
+		} else {
+			return new EntAccessLogger(eb);
+		}
 	}
 
 }
