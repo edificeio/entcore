@@ -1,0 +1,22 @@
+package org.entcore.broker.api.dto.directory;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import org.entcore.broker.api.dto.directory.user.UserProfileDTOStructure;
+import java.util.List;
+
+/**
+ * DTO for responding with a list of users in a structure with basic profile information, classes informations and hobbies
+ */
+public class GetUserInClassWithParamsResponseDTO {
+    private final List<Object> data;
+
+    @JsonCreator
+    public GetUserInClassWithParamsResponseDTO(@JsonProperty("data") List<Object> data) {
+        this.data = data;
+    }
+
+    public List<Object> getData() {
+        return data;
+    }
+}

@@ -12,6 +12,7 @@ import org.entcore.broker.proxy.DirectoryBrokerListener;
 import org.entcore.directory.services.GroupService;
 import org.entcore.directory.services.UserService;
 import org.entcore.directory.services.SchoolService;
+import org.entcore.directory.services.ClassService;
 import org.entcore.directory.services.impl.DefaultGroupService;
 
 import java.util.ArrayList;
@@ -29,6 +30,7 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
     private final GroupService groupService;
     private final UserService userService;
     private final SchoolService structureService;
+    private final ClassService classService;
 
     /**
      * Constructor for DirectoryBrokerListenerImpl.
@@ -37,8 +39,8 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
      * @param userService The user service to handle user operations
      * @param structureService The structure service to handle structure operations
      */
-    public DirectoryBrokerListenerImpl(Vertx vertx, UserService userService, SchoolService structureService) {
-        this(new DefaultGroupService(vertx.eventBus()), userService, structureService);
+    public DirectoryBrokerListenerImpl(Vertx vertx, UserService userService, SchoolService structureService, ClassService classService) {
+        this(new DefaultGroupService(vertx.eventBus()), userService, structureService, classService);
     }
     
     /**
@@ -47,10 +49,11 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
      * @param groupService The group service to handle group operations
      * @param userService The user service to handle user operations
      */
-    public DirectoryBrokerListenerImpl(GroupService groupService, UserService userService, SchoolService structureService) {
+    public DirectoryBrokerListenerImpl(GroupService groupService, UserService userService, SchoolService structureService, ClassService classService) {
         this.groupService = groupService;
         this.userService = userService;
         this.structureService = structureService;
+        this.classService = classService;
     }
 
     /**
@@ -439,6 +442,50 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
             } else {
                 final String reason = result.left().getValue();
                 log.warn("An error occurred while fetching user infos for " + request.getUserId() + " : " + reason);
+                promise.fail(reason);
+            }
+        });
+        return promise.future();
+    }
+
+    /**
+     * Retrieves user linked to a class with basic profile information, classes informations, hobbies 
+     * and INE + relatives if requested
+     * with additional parameters to specify the type of users to retrieve
+     *
+     * @param request The request containing a user ID
+     * @return Response with detailed user information
+     */
+    @Override
+    public Future<GetUserInClassWithParamsResponseDTO> getUserInClassWithParams(GetUserInClassWithParamsRequestDTO request) {
+        final Promise<GetUserInClassWithParamsResponseDTO> promise = Promise.promise();
+
+        if (request == null || !request.isValid()) {
+            log.error("Invalid request for getUserInClassWithParams: {}", request);
+            promise.fail("request.parameters.invalid");
+            return promise.future();
+        }
+
+        String classId = request.getClassId();
+        String types = request.getTypes();
+        String collectRelative = request.getCollectRelative();
+        String ine = request.getIne();
+        if (classId == null || classId.trim().isEmpty()) {
+            promise.fail("request.parameters.classid.invalid");
+            return promise.future();
+        }
+
+        classService.findUsers(classId, types, collectRelative, ine, result -> {
+            if (result.isRight()) {
+                if (result.right().getValue() != null && !result.right().getValue().isEmpty()) {
+                    promise.complete(new GetUserInClassWithParamsResponseDTO(result.right().getValue()));
+                } else {
+                    log.warn("No user infos could be found in class " + request.getClassId());
+                    promise.fail(result.left().getValue());
+                }
+            } else {
+                final String reason = result.left().getValue();
+                log.warn("An error occurred while fetching user infos in class " + request.getClassId() + " : " + reason);
                 promise.fail(reason);
             }
         });
