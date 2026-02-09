@@ -6,11 +6,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * DTO for requesting user by its ENT ID with basic profile information, classes informations and hobbies
  */
-public class GetStructureUserResponseDTO {
+public class GetStructureUsersRequestDTO {
     private final String structureId;
 
     @JsonCreator
-    public GetStructureUserResponseDTO(@JsonProperty("structureId") String structureId) {
+    public GetStructureUsersRequestDTO(@JsonProperty("structureId") String structureId) {
         this.structureId = structureId;
     }
 

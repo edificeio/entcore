@@ -2,7 +2,7 @@ package org.entcore.broker.api.dto.directory.user;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.entcore.broker.api.dto.directory.structure.SchoolDTO;
+import org.entcore.broker.api.dto.directory.structure.SchoolDTOClassAdmin;
 import java.util.List;
 
 /*
