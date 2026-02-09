@@ -18,7 +18,7 @@ public class GetClassAdminRequestDTO {
         return userId;
     }
 
-    public String isValid() {
+    public boolean isValid() {
         return userId != null && !userId.trim().isEmpty();
     }
 }
