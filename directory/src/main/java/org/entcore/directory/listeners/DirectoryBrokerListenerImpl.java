@@ -499,8 +499,8 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
      * @return Response with a list of detailed user information
      */
     @Override
-    public Future<GetStructureUserResponseDTO> getStructureUsers(GetStructureUserRequestDTO request) {
-        final Promise<GetStructureUserResponseDTO> promise = Promise.promise();
+    public Future<GetStructureUsersResponseDTO> getStructureUsers(GetStructureUsersRequestDTO request) {
+        final Promise<GetStructureUsersResponseDTO> promise = Promise.promise();
 
         if (request == null || !request.isValid()) {
             log.error("Invalid request for getStructureUsers: {}", request);
@@ -523,7 +523,7 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
         this.structureService.userList(request.getStructureId(), false, false, result -> {
             if (result.isRight()) {
                 if (result.right().getValue() != null && !result.right().getValue().isEmpty()) {
-                    promise.complete(new GetStructureUserResponseDTO(result.right().getValue()));
+                    promise.complete(new GetStructureUsersResponseDTO(result.right().getValue()));
                 } else {
                     log.warn("No structure could be found for " + request.getStructureId());
                     promise.fail(result.left().getValue());
