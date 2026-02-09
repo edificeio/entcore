@@ -18,7 +18,7 @@ public class GetStructureUsersRequestDTO {
         return structureId;
     }
 
-    public String isValid() {
+    public boolean isValid() {
         return structureId != null && !structureId.trim().isEmpty();
     }
 }
