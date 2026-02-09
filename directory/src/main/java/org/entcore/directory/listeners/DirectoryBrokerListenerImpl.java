@@ -484,7 +484,7 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
         }
 
         String classId = request.getClassId();
-        String types = request.getType();
+        JsonArray types = new JsonArray().add(request.getType());
         boolean collectRelative = request.doesCollectRelative();
         boolean ine = request.doesCollectIne();
         if (classId == null || classId.trim().isEmpty()) {
