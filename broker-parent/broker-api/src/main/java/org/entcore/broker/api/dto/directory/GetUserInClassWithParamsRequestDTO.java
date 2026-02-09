@@ -35,4 +35,8 @@ public class GetUserInClassWithParamsRequestDTO {
     public String getType() {
         return type;
     }
+
+    public String isValid() {
+        return classId != null && !classId.trim().isEmpty() && type != null && !type.trim().isEmpty();
+    }
 }
