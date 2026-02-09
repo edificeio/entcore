@@ -8,11 +8,11 @@ import java.util.List;
 /**
  * DTO for responding with a list of users in a structure with basic profile information, classes informations and hobbies
  */
-public class GetStructureUserResponseDTO {
+public class GetStructureUsersResponseDTO {
     private final List<UserProfileDTOStructure> data;
 
     @JsonCreator
-    public GetStructureUserResponseDTO(@JsonProperty("data") List<UserProfileDTOStructure> data) {
+    public GetStructureUsersResponseDTO(@JsonProperty("data") List<UserProfileDTOStructure> data) {
         this.data = data;
     }
 

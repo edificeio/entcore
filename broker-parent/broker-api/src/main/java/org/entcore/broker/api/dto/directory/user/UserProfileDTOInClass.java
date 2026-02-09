@@ -119,7 +119,7 @@ public class UserProfileDTOInClass {
         return source;
     }
 
-    public List<RelativeInClassDTO> getRelativeList() {
+    public List<RelativeDTOInClass> getRelativeList() {
         return relativeList;
     }
 }

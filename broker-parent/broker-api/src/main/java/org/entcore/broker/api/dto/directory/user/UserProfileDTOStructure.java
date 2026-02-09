@@ -56,7 +56,7 @@ public class UserProfileDTOStructure {
             @JsonProperty("classes") List<ClassDTOStructure> classes,
             @JsonProperty("functionalGroups") List<String> functionalGroups,
             @JsonProperty("manualGroups") List<String> manualGroups,
-            @JsonProperty("functions") List<List<Object>> functions,
+            @JsonProperty("functions") List<List<String>> functions,
             @JsonProperty("duplicates") List<String> duplicates,
             @JsonProperty("structures") List<SchoolDTOStructure> structures,
             @JsonProperty("userPositions") List<Object> userPositions) {
@@ -151,7 +151,7 @@ public class UserProfileDTOStructure {
         return manualGroups;
     }
 
-    public List<List<Object>> getFunctions() {
+    public List<List<String>> getFunctions() {
         return functions;
     }
 

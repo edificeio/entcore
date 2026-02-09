@@ -94,5 +94,5 @@ public interface DirectoryBrokerListener {
    * @return A response object containing a list of detailed user information
    */
   @BrokerListener(subject = "directory.structure.users.by.id", proxy = true)
-  Future<GetStructureUserResponseDTO> getStructureUsers(final GetStructureUserRequestDTO request);
+  Future<GetStructureUsersResponseDTO> getStructureUsers(final GetStructureUsersRequestDTO request);
 }
