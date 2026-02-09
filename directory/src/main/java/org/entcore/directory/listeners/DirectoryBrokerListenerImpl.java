@@ -1,5 +1,8 @@
 package org.entcore.directory.listeners;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -8,6 +11,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.broker.api.dto.directory.*;
+import org.entcore.broker.api.dto.directory.user.UserProfileDTOStructure;
 import org.entcore.broker.proxy.DirectoryBrokerListener;
 import org.entcore.directory.services.GroupService;
 import org.entcore.directory.services.UserService;
@@ -467,9 +471,9 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
         }
 
         String classId = request.getClassId();
-        String types = request.getTypes();
-        String collectRelative = request.getCollectRelative();
-        String ine = request.getIne();
+        String types = request.getType();
+        boolean collectRelative = request.doesCollectRelative();
+        boolean ine = request.doesCollectIne();
         if (classId == null || classId.trim().isEmpty()) {
             promise.fail("request.parameters.classid.invalid");
             return promise.future();
@@ -523,10 +527,22 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
         this.structureService.userList(request.getStructureId(), false, false, result -> {
             if (result.isRight()) {
                 if (result.right().getValue() != null && !result.right().getValue().isEmpty()) {
-                    promise.complete(new GetStructureUsersResponseDTO(result.right().getValue()));
+
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    try {
+                        JsonArray jsonArray = result.right().getValue();
+                        List<UserProfileDTOStructure> userProfiles = objectMapper.readValue(
+                            jsonArray.toString(),
+                            new TypeReference<List<UserProfileDTOStructure>>() {}
+                        );
+                        promise.complete(new GetStructureUsersResponseDTO(userProfiles));
+                    } catch (Exception e) {
+                        log.error("Error converting JsonArray to List<UserProfileDTOStructure>", e);
+                        promise.fail("Error processing user data");
+                    }
                 } else {
-                    log.warn("No structure could be found for " + request.getStructureId());
-                    promise.fail(result.left().getValue());
+                    log.warn("No users found for structure " + request.getStructureId());
+                    promise.fail("No users found for structure");
                 }
             } else {
                 final String reason = result.left().getValue();
