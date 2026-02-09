@@ -12,6 +12,8 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.broker.api.dto.directory.*;
 import org.entcore.broker.api.dto.directory.user.UserProfileDTOStructure;
+import org.entcore.broker.api.dto.directory.user.UserProfileDTOClassAdmin;
+import org.entcore.broker.api.dto.directory.user.UserProfileDTOInClass;
 import org.entcore.broker.proxy.DirectoryBrokerListener;
 import org.entcore.directory.services.GroupService;
 import org.entcore.directory.services.UserService;
@@ -31,6 +33,7 @@ import java.util.Map;
 public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
     
     private static final Logger log = LoggerFactory.getLogger(DirectoryBrokerListenerImpl.class);
+    private static final ObjectMapper objectMapper = new ObjectMapper();
     private final GroupService groupService;
     private final UserService userService;
     private final SchoolService structureService;
@@ -438,10 +441,20 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
         this.userService.getUserInfos(request.getUserId(), result -> {
             if (result.isRight()) {
                 if (result.right().getValue() != null && !result.right().getValue().isEmpty()) {
-                    promise.complete(new GetClassAdminResponseDTO(result.right().getValue()));
+                    try {
+                        JsonObject userInfoJson = result.right().getValue();
+                        UserProfileDTOClassAdmin userProfile = objectMapper.readValue(
+                            userInfoJson.toString(),
+                            UserProfileDTOClassAdmin.class
+                        );
+                        promise.complete(new GetClassAdminResponseDTO(userProfile));
+                    } catch (Exception e) {
+                        log.error("Error converting JsonObject to UserProfileDTOClassAdmin", e);
+                        promise.fail("Error processing user data");
+                    }
                 } else {
                     log.warn("No user infos could be found for " + request.getUserId());
-                    promise.fail(result.left().getValue());
+                    promise.fail("No user found");
                 }
             } else {
                 final String reason = result.left().getValue();
@@ -482,10 +495,20 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
         classService.findUsers(classId, types, collectRelative, ine, result -> {
             if (result.isRight()) {
                 if (result.right().getValue() != null && !result.right().getValue().isEmpty()) {
-                    promise.complete(new GetUserInClassWithParamsResponseDTO(result.right().getValue()));
+                    try {
+                        JsonArray jsonArray = result.right().getValue();
+                        List<UserProfileDTOInClass> userProfiles = objectMapper.readValue(
+                            jsonArray.toString(),
+                            new TypeReference<List<UserProfileDTOInClass>>() {}
+                        );
+                        promise.complete(new GetUserInClassWithParamsResponseDTO(userProfiles));
+                    } catch (Exception e) {
+                        log.error("Error converting JsonArray to List<UserProfileDTOInClass>", e);
+                        promise.fail("Error processing user data");
+                    }
                 } else {
                     log.warn("No user infos could be found in class " + request.getClassId());
-                    promise.fail(result.left().getValue());
+                    promise.fail("No users found in class");
                 }
             } else {
                 final String reason = result.left().getValue();
@@ -527,8 +550,6 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
         this.structureService.userList(request.getStructureId(), false, false, result -> {
             if (result.isRight()) {
                 if (result.right().getValue() != null && !result.right().getValue().isEmpty()) {
-
-                    ObjectMapper objectMapper = new ObjectMapper();
                     try {
                         JsonArray jsonArray = result.right().getValue();
                         List<UserProfileDTOStructure> userProfiles = objectMapper.readValue(
