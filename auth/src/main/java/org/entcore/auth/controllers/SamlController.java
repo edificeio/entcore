@@ -649,8 +649,10 @@ public class SamlController extends AbstractFederateController {
 								loginResult(request, "auth.error.blockedProfileType", assertion);
 							else if(error.equals("blocked.user"))
 								loginResult(request, "auth.error.blockedUser", assertion);
-							else
+							else {
+								log.error(error);
 								loginResult(request, "fed.auth.error.user.not.found", assertion);
+							}
 						} else {
 							final String nameIdFromAssertion = getNameId(assertion);
 							final String sessionIndex = getSessionId(assertion);
