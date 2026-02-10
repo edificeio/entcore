@@ -32,7 +32,7 @@ public class UserProfileDTOStructure {
     private final List<ClassDTOStructure> classes;
     private final List<String> functionalGroups;
     private final List<String> manualGroups;
-    private final List<List<String>> functions;
+    private final List<FunctionDTOStructure> functions;
     private final List<String> duplicates;
     private final List<SchoolDTOStructure> structures;
     private final List<Object> userPositions;
@@ -56,7 +56,7 @@ public class UserProfileDTOStructure {
             @JsonProperty("classes") List<ClassDTOStructure> classes,
             @JsonProperty("functionalGroups") List<String> functionalGroups,
             @JsonProperty("manualGroups") List<String> manualGroups,
-            @JsonProperty("functions") List<List<String>> functions,
+            @JsonProperty("functions") List<FunctionDTOStructure> functions,
             @JsonProperty("duplicates") List<String> duplicates,
             @JsonProperty("structures") List<SchoolDTOStructure> structures,
             @JsonProperty("userPositions") List<Object> userPositions) {
@@ -151,7 +151,7 @@ public class UserProfileDTOStructure {
         return manualGroups;
     }
 
-    public List<List<String>> getFunctions() {
+    public List<FunctionDTOStructure> getFunctions() {
         return functions;
     }
 
