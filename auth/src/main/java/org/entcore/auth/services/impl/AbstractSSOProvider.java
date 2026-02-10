@@ -25,6 +25,8 @@ import io.vertx.core.eventbus.EventBus;
 import org.entcore.auth.services.SamlServiceProvider;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.opensaml.saml2.core.Assertion;
 import org.opensaml.saml2.core.Attribute;
 import org.opensaml.saml2.core.AttributeStatement;
@@ -48,12 +50,26 @@ public abstract class AbstractSSOProvider implements SamlServiceProvider {
 			"u.login as login, u.email as email, u.mobile as mobile, u.federated, u.blocked as blockedUser, p.blocked as blockedProfile, u.source as source ";
 
 	protected boolean validConditions(Assertion assertion, Handler<Either<String, Object>> handler) {
+		return validConditions(assertion, handler, 5);
+	}
+
+	protected boolean validConditions(Assertion assertion, Handler<Either<String, Object>> handler, int clockSkewMinutes) {
 		if (Utils.validationParamsNull(handler, "invalid.assertion", assertion)) return false;
 
-		Conditions conditions = assertion.getConditions();
-		if (conditions.getNotBefore() == null || !conditions.getNotBefore().isBeforeNow() ||
-				conditions.getNotOnOrAfter() == null || !conditions.getNotOnOrAfter().isAfterNow()) {
-			handler.handle(new Either.Left<String, Object>("invalid.conditions"));
+		final Conditions conditions = assertion.getConditions();
+		if (conditions == null) {
+			handler.handle(new Either.Left<>("invalid.conditions"));
+			return false;
+		}
+		final DateTime now = DateTime.now(DateTimeZone.UTC);
+		final DateTime nowMinusSkew = now.minusMinutes(clockSkewMinutes);
+		final DateTime nowPlusSkew  = now.plusMinutes(clockSkewMinutes);
+
+		if (conditions.getNotBefore() == null
+				|| conditions.getNotBefore().isAfter(nowPlusSkew)
+				|| conditions.getNotOnOrAfter() == null
+				|| !conditions.getNotOnOrAfter().isAfter(nowMinusSkew)) {
+			handler.handle(new Either.Left<>("invalid.conditions"));
 			return false;
 		}
 		return true;
