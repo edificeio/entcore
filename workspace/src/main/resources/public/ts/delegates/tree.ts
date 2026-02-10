@@ -38,6 +38,7 @@ export interface TreeDelegateScope {
     removeHighlightTree(els: { folder: models.Node, count: number }[])
     setHighlightTree(els: { folder: models.Node, count: number }[]);
     firstVisibleAscendant(folder: models.Node): models.Node;
+    refresh(): void;
 
 }
 export function TreeDelegate($scope: TreeDelegateScope, $location) {
@@ -169,6 +170,11 @@ export function TreeDelegate($scope: TreeDelegateScope, $location) {
             throw "could not found tree with name: " + filter;
         }
         return tree;
+    }
+    $scope.refresh = function () {
+        $scope.onTreeInit(() => {
+            workspaceService.onChange.next({action:"tree-change"});
+        })
     }
     $scope.setCurrentTreeRoute = function (name, forceReload = false) {
         const tree = $scope.getTreeByFilter(name);

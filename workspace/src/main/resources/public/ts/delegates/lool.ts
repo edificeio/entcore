@@ -18,6 +18,7 @@ export interface LoolDelegateScope {
     onLoolModalError(): void;
     onLoolModalLoad(): void;
     openLoolModal(): void;
+    refresh(): void;
 }
 
 export function LoolDelegate($scope: LoolDelegateScope, $route, $location) {
@@ -94,11 +95,12 @@ export function LoolDelegate($scope: LoolDelegateScope, $route, $location) {
                        })
                    }
                    break;
-                   case 'lool@close-modal': {
-                       ($scope as any).display.loolModal = false;
-                       $scope.safeApply();
-                   }
-                   break;
+                    case 'lool@close-modal': {
+                        ($scope as any).display.loolModal = false;
+                        $scope.refresh();
+                        $scope.safeApply();
+                    }
+                    break;
                    case 'lool@modal-ready': {
                        if (loolModalTimeout) {
                            clearTimeout(loolModalTimeout);
