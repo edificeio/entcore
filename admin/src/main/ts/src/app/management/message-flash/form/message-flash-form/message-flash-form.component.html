@@ -15,7 +15,7 @@
         <ode-date-picker [(ngModel)]="message.endDate"></ode-date-picker>
       </ode-form-field>
 
-      <ode-form-field label="management.message.flash.profiles">
+      <ode-form-field [label]="showUserPositionField() ? 'management.message.flash.profiles' : 'management.message.flash.profiles.mandatory'">
         <ode-multi-combo
           [comboModel]="profileComboModel"
           [(outputModel)]="message.profiles"
@@ -48,6 +48,10 @@
         </div>
       </div>
 
+      <div *ngIf="showUserPositionField()">
+        <i class="fa fa-info-circle"></i>
+        <s5l>management.message.flash.target.audience.hint</s5l>
+      </div>
       <ode-form-field *ngIf="!!structure && !!structure.children && structure.children.length > 0"
                       label="management.message.flash.selected.etab">
         <span class="is-flex-none has-right-margin-40">{{message.subStructures.length}}</span>
