@@ -4,7 +4,9 @@ pipeline {
   agent any
 
   environment {
-    NPM_TOKEN = credentials('npm-public-token')
+    NPM_TOKEN = credentials('npm-token')
+    TIPTAP_PRO_TOKEN = credentials('tiptap-pro-token')
+    NPM_PUBLIC_TOKEN = credentials('npm-public-token')
   }
 
   stages {
@@ -39,7 +41,7 @@ pipeline {
     }
     stage('Publish') {
       steps {
-        sh "NPM_TOKEN=$NPM_TOKEN DRY_RUN=false ./build.sh \$BUILD_SH_EXTRA_PARAM publish"
+        sh "NPM_TOKEN=$NPM_PUBLIC_TOKEN DRY_RUN=false ./build.sh \$BUILD_SH_EXTRA_PARAM publish"
       }
     }
     /*
