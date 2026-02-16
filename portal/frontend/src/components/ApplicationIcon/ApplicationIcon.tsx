@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Application } from '~/models/application';
 import { getAppName } from '~/utils/get-app-name';
-import { FavoriteStarIcon } from './FavoriteStarIcon';
+import { FavoriteStarIcon } from '../FavoriteStarIcon';
 
 export function ApplicationIcon({
   data,
