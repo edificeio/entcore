@@ -18,6 +18,7 @@ public class GetStructureUsersRequestDTO {
         return structureId;
     }
 
+    @Transient
     public boolean isValid() {
         return structureId != null && !structureId.trim().isEmpty();
     }

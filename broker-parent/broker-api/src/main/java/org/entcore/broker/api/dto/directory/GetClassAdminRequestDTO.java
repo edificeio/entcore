@@ -24,6 +24,7 @@ public class GetClassAdminRequestDTO {
         return userId;
     }
 
+    @Transient
     public boolean isValid() {
         return userId != null && !userId.trim().isEmpty();
     }

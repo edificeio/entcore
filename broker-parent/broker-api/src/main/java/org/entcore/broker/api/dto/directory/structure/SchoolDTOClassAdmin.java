@@ -18,17 +18,32 @@ public class SchoolDTOClassAdmin {
     private final String name;
     private final String id;
     private final String source;
+    private final String address;
+    private final String city;
+    private final String zipCode;
+    private final String academy;
+    private final String uai;
 
     @JsonCreator
     public SchoolDTOClassAdmin(
             @JsonProperty("classes") List<ClassDTOClassAdmin> classes,
             @JsonProperty("name") String name,
             @JsonProperty("id") String id,
-            @JsonProperty("source") String source) {
+            @JsonProperty("source") String source,
+            @JsonProperty("address") String address,
+            @JsonProperty("city") String city,
+            @JsonProperty("zipCode") String zipCode,
+            @JsonProperty("academy") String academy,
+            @JsonProperty("uai") String uai) {
         this.classes = classes;
         this.name = name;
         this.id = id;
         this.source = source;
+        this.address = address;
+        this.city = city;
+        this.zipCode = zipCode;
+        this.academy = academy;
+        this.uai = uai;
     }
 
     public List<ClassDTOClassAdmin> getClasses() {
@@ -45,5 +60,25 @@ public class SchoolDTOClassAdmin {
 
     public String getSource() {
         return source;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public String getZipCode() {
+        return zipCode;
+    }
+
+    public String getAcademy() {
+        return academy;
+    }
+
+    public String getUai() {
+        return uai;
     }
 }
