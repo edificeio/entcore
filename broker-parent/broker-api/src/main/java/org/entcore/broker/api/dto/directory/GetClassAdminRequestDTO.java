@@ -3,6 +3,7 @@ package org.entcore.broker.api.dto.directory;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.beans.Transient;
 import java.util.Set;
 
 /**
