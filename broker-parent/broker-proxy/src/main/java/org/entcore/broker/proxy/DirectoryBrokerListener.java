@@ -70,4 +70,29 @@ public interface DirectoryBrokerListener {
    */
   @BrokerListener(subject = "directory.users.get.byids", proxy = true)
   Future<GetUsersByIdsResponseDTO> getUsersByIds(GetUsersByIdsRequestDTO request);
+
+  /**
+   * This method retrieves users by their ENT IDs with basic profile information, classes informations and hobbies
+   * @param request The request object containing the user ID to look up
+   * @return A response object containing detailed user information
+   */
+  @BrokerListener(subject = "directory.class.admin.by.id", proxy = true)
+  Future<GetClassAdminResponseDTO> getClassAdminUsers(final GetClassAdminRequestDTO request);
+  
+  /**
+   * This method retrieves users present in the class
+   * It's getting more informations like INE and other relatives informations
+   * @param request The request object containing the user ID to look up
+   * @return A response object containing detailed user information
+   */
+  @BrokerListener(subject = "directory.class.by.id.with.params", proxy = true)
+  Future<GetUserInClassWithParamsResponseDTO> getUserInClassWithParams(final GetUserInClassWithParamsRequestDTO request);
+  
+  /**
+   * This method retrieves a list of users linked to a structure
+   * @param request The request object containing the structure ID to look up
+   * @return A response object containing a list of detailed user information
+   */
+  @BrokerListener(subject = "directory.structure.users.by.id", proxy = true)
+  Future<GetStructureUsersResponseDTO> getStructureUsers(final GetStructureUsersRequestDTO request);
 }

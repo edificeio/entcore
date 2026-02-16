@@ -34,6 +34,8 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.tuple.Pair;
+import org.entcore.broker.api.dto.directory.ClassIncludeField;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.user.DefaultFunctions;
@@ -52,7 +54,9 @@ import com.google.common.collect.Sets;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static fr.wseduc.webutils.Utils.*;
+import static org.apache.commons.lang3.tuple.Pair.of;
 import static org.entcore.common.neo4j.Neo4jResult.*;
 import static org.entcore.common.user.DefaultFunctions.*;
 
@@ -66,6 +70,14 @@ public class DefaultUserService implements UserService {
 	private final EventBus eb;
 	private final JsonObject userBookData;
 	private Logger logger = LoggerFactory.getLogger(DefaultUserService.class);
+
+
+	private static final List<Pair<ClassIncludeField, String>> NEO4J_STRUCTURE_INCLUDE_FIELD_MAPPING = newArrayList(
+			of(ClassIncludeField.STRUCTURE_ACADEMY, "academy"),
+			of(ClassIncludeField.STRUCTURE_ADDRESS, "address"),
+			of(ClassIncludeField.STRUCTURE_CITY, "city"),
+			of(ClassIncludeField.STRUCTURE_ZIP_CODE, "zipCode")
+	);
 
 
 	public DefaultUserService(EmailSender notification, EventBus eb, JsonObject aUserBookData) {
@@ -1202,15 +1214,54 @@ public class DefaultUserService implements UserService {
 		neo.execute(query, params, validResultHandler(handler));
 	}
 
+	/**
+	 * This function is tailored to be used exclusively in the getUserInfos function to add
+	 * extra fields to the structures part of the query if needed.
+	 * @param fields the fields to add to the query if needed
+	 * @return the part of the query to add to the return statement with the extra fields for schools
+	 */
+	private String getSchoolsExtraFields(Set<ClassIncludeField> fields) {
+		if (fields == null) {
+			return "";
+		}
+		final StringBuffer sbuffer = new StringBuffer();
+		 NEO4J_STRUCTURE_INCLUDE_FIELD_MAPPING.stream()
+			 .filter(e -> fields.contains(e.getKey()))
+			 .map(Pair::getValue)
+			 .forEach(field -> sbuffer.append(", ").append(field).append(": s.").append(field));
+		return sbuffer.toString();
+	}
+
+	/**
+	 * This function is tailored to be used exclusively in the getUserInfos function to add
+	 * extra fields to the classes part of the query if needed.
+	 * @param fields the fields to add to the query if needed
+	 * @return the part of the query to add to the return statement with the extra fields for classes
+	 */
+	private String getClasssExtraFields(Set<ClassIncludeField> fields) {
+		if (fields == null) {
+			return "";
+		}
+		final StringBuffer sbuffer = new StringBuffer();
+		if(fields.contains(ClassIncludeField.INC)) {
+			sbuffer.append(", inc: split(c.externalId, '$')[1]");
+		}
+		return sbuffer.toString();
+	}
+
 	@Override
-	public void getUserInfos(String userId, final Handler<Either<String,JsonObject>> handler) {
+	public void getUserInfos(String userId, final Set<ClassIncludeField> fields, final Handler<Either<String,JsonObject>> handler) {
+		final String schoolsExtraFields = getSchoolsExtraFields(fields);
+		final String classsExtraFields = getClasssExtraFields(fields);
 		String query;
 		try {
 			query = "MATCH (u:`User` { id : {userId}}) " +
 				"OPTIONAL MATCH u-[:USERBOOK]->(ub: UserBook) WITH ub.motto as motto, ub.health as health, ub.mood as mood, u,  "+
 				UserBookService.selectHobbies(userBookData, "ub")+
-				"OPTIONAL MATCH s<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(spg:ProfileGroup)-[:HAS_PROFILE]->(Profile), cpg<-[:IN]-u-[:IN]->spg WITH s, COLLECT(distinct {name: c.name, id: c.id}) as c, motto, health, mood, hobbies, u " +
-				"WITH COLLECT(distinct {name: s.name, id: s.id, classes: c, source: s.source}) as schools, motto, health, mood, hobbies, u " +
+				"OPTIONAL MATCH s<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(cpg:ProfileGroup)-[:DEPENDS]->(spg:ProfileGroup)-[:HAS_PROFILE]->(Profile)," +
+					" cpg<-[:IN]-u-[:IN]->spg WITH s, " +
+					" COLLECT(distinct {name: c.name, id: c.id" + classsExtraFields + "}) as c, motto, health, mood, hobbies, u " +
+				"WITH COLLECT(distinct {name: s.name, id: s.id, classes: c, source: s.source " + schoolsExtraFields + "}) as schools, motto, health, mood, hobbies, u " +
 				"OPTIONAL MATCH u-[:RELATED]-(u2: User) WITH COLLECT(distinct {relatedName: u2.displayName, relatedId: u2.id, relatedType: u2.profiles}) as relativeList, schools, motto, health, mood, hobbies, u " +
 				"RETURN DISTINCT u.profiles as profiles, u.id as id, u.firstName as firstName, u.lastName as lastName, u.displayName as displayName, "+
 				"u.email as email, u.homePhone as homePhone, u.mobile as mobile, u.birthDate as birthDate, u.login as originalLogin, relativeList, " +

@@ -1,5 +1,8 @@
 package org.entcore.directory.listeners;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -8,9 +11,14 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.broker.api.dto.directory.*;
+import org.entcore.broker.api.dto.directory.user.UserProfileDTOStructure;
+import org.entcore.broker.api.dto.directory.user.UserProfileDTOClassAdmin;
+import org.entcore.broker.api.dto.directory.user.UserProfileDTOInClass;
 import org.entcore.broker.proxy.DirectoryBrokerListener;
 import org.entcore.directory.services.GroupService;
 import org.entcore.directory.services.UserService;
+import org.entcore.directory.services.SchoolService;
+import org.entcore.directory.services.ClassService;
 import org.entcore.directory.services.impl.DefaultGroupService;
 
 import java.util.ArrayList;
@@ -25,16 +33,21 @@ import java.util.Map;
 public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
     
     private static final Logger log = LoggerFactory.getLogger(DirectoryBrokerListenerImpl.class);
+    private static final ObjectMapper objectMapper = new ObjectMapper();
     private final GroupService groupService;
     private final UserService userService;
+    private final SchoolService structureService;
+    private final ClassService classService;
 
     /**
      * Constructor for DirectoryBrokerListenerImpl.
      *
      * @param vertx The Vertx instance
+     * @param userService The user service to handle user operations
+     * @param structureService The structure service to handle structure operations
      */
-    public DirectoryBrokerListenerImpl(Vertx vertx, UserService userService) {
-        this(new DefaultGroupService(vertx.eventBus()), userService);
+    public DirectoryBrokerListenerImpl(Vertx vertx, UserService userService, SchoolService structureService, ClassService classService) {
+        this(new DefaultGroupService(vertx.eventBus()), userService, structureService, classService);
     }
     
     /**
@@ -43,9 +56,11 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
      * @param groupService The group service to handle group operations
      * @param userService The user service to handle user operations
      */
-    public DirectoryBrokerListenerImpl(GroupService groupService, UserService userService) {
+    public DirectoryBrokerListenerImpl(GroupService groupService, UserService userService, SchoolService structureService, ClassService classService) {
         this.groupService = groupService;
         this.userService = userService;
+        this.structureService = structureService;
+        this.classService = classService;
     }
 
     /**
@@ -398,6 +413,164 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
                 promise.fail(error);
             });
 
+        return promise.future();
+    }
+
+    /**
+     * Retrieves user by its ENT ID with basic profile information, classes informations and hobbies
+     *
+     * @param request The request containing a user ID
+     * @return Response with detailed user information
+     */
+    @Override
+    public Future<GetClassAdminResponseDTO> getClassAdminUsers(GetClassAdminRequestDTO request) {
+        final Promise<GetClassAdminResponseDTO> promise = Promise.promise();
+
+        if (request == null || !request.isValid()) {
+            log.error("Invalid request for getClassAdminUsers: {}", request);
+            promise.fail("request.parameters.invalid");
+            return promise.future();
+        }
+
+        String userId = request.getUserId();
+        if (userId == null || userId.trim().isEmpty()) {
+            promise.fail("request.parameters.userid.invalid");
+            return promise.future();
+        }
+
+        this.userService.getUserInfos(request.getUserId(), request.getIncludes(), result -> {
+            if (result.isRight()) {
+                if (result.right().getValue() != null && !result.right().getValue().isEmpty()) {
+                    try {
+                        JsonObject userInfoJson = result.right().getValue();
+                        UserProfileDTOClassAdmin userProfile = objectMapper.readValue(
+                            userInfoJson.toString(),
+                            UserProfileDTOClassAdmin.class
+                        );
+                        promise.complete(new GetClassAdminResponseDTO(userProfile));
+                    } catch (Exception e) {
+                        log.error("Error converting JsonObject to UserProfileDTOClassAdmin", e);
+                        promise.fail("Error processing user data");
+                    }
+                } else {
+                    log.warn("No user infos could be found for " + request.getUserId());
+                    promise.fail("No user found");
+                }
+            } else {
+                final String reason = result.left().getValue();
+                log.warn("An error occurred while fetching user infos for " + request.getUserId() + " : " + reason);
+                promise.fail(reason);
+            }
+        });
+        return promise.future();
+    }
+
+    /**
+     * Retrieves user linked to a class with basic profile information, classes informations, hobbies 
+     * and INE + relatives if requested
+     * with additional parameters to specify the type of users to retrieve
+     *
+     * @param request The request containing a user ID
+     * @return Response with detailed user information
+     */
+    @Override
+    public Future<GetUserInClassWithParamsResponseDTO> getUserInClassWithParams(GetUserInClassWithParamsRequestDTO request) {
+        final Promise<GetUserInClassWithParamsResponseDTO> promise = Promise.promise();
+
+        if (request == null || !request.isValid()) {
+            log.error("Invalid request for getUserInClassWithParams: {}", request);
+            promise.fail("request.parameters.invalid");
+            return promise.future();
+        }
+
+        String classId = request.getClassId();
+        JsonArray types = new JsonArray().add(request.getType());
+        boolean collectRelative = request.doesCollectRelative();
+        boolean ine = request.doesCollectIne();
+        if (classId == null || classId.trim().isEmpty()) {
+            promise.fail("request.parameters.classid.invalid");
+            return promise.future();
+        }
+
+        classService.findUsers(classId, types, collectRelative, ine, result -> {
+            if (result.isRight()) {
+                if (result.right().getValue() != null && !result.right().getValue().isEmpty()) {
+                    try {
+                        JsonArray jsonArray = result.right().getValue();
+                        List<UserProfileDTOInClass> userProfiles = objectMapper.readValue(
+                            jsonArray.toString(),
+                            new TypeReference<List<UserProfileDTOInClass>>() {}
+                        );
+                        promise.complete(new GetUserInClassWithParamsResponseDTO(userProfiles));
+                    } catch (Exception e) {
+                        log.error("Error converting JsonArray to List<UserProfileDTOInClass>", e);
+                        promise.fail("Error processing user data");
+                    }
+                } else {
+                    log.warn("No user infos could be found in class " + request.getClassId());
+                    promise.fail("No users found in class");
+                }
+            } else {
+                final String reason = result.left().getValue();
+                log.warn("An error occurred while fetching user infos in class " + request.getClassId() + " : " + reason);
+                promise.fail(reason);
+            }
+        });
+        return promise.future();
+    }
+    
+    /**
+     * Retrieves all users linked to a structure with basic profile information, classes informations and hobbies
+     *
+     * @param request The request containing a structure ID
+     * @return Response with a list of detailed user information
+     */
+    @Override
+    public Future<GetStructureUsersResponseDTO> getStructureUsers(GetStructureUsersRequestDTO request) {
+        final Promise<GetStructureUsersResponseDTO> promise = Promise.promise();
+
+        if (request == null || !request.isValid()) {
+            log.error("Invalid request for getStructureUsers: {}", request);
+            promise.fail("request.parameters.invalid");
+            return promise.future();
+        }
+
+        String structureId = request.getStructureId();
+        if (structureId == null || structureId.trim().isEmpty()) {
+            promise.fail("request.parameters.structureid.invalid");
+            return promise.future();
+        }
+
+        // The boolean params might be used to filter deleted users
+        // TODO: update the method to find if the user is an admc or not (third params) 
+        // As we do not have acces to the user informations in the broker
+        // we default to false for now
+        // In directory > src > ... > controllers > StructureController.java:
+        // final boolean isAdmc = (user.getFunctions() != null && user.getFunctions().containsKey(DefaultFunctions.SUPER_ADMIN));
+        this.structureService.userList(request.getStructureId(), false, false, result -> {
+            if (result.isRight()) {
+                if (result.right().getValue() != null && !result.right().getValue().isEmpty()) {
+                    try {
+                        JsonArray jsonArray = result.right().getValue();
+                        List<UserProfileDTOStructure> userProfiles = objectMapper.readValue(
+                            jsonArray.toString(),
+                            new TypeReference<List<UserProfileDTOStructure>>() {}
+                        );
+                        promise.complete(new GetStructureUsersResponseDTO(userProfiles));
+                    } catch (Exception e) {
+                        log.error("Error converting JsonArray to List<UserProfileDTOStructure>", e);
+                        promise.fail("Error processing user data");
+                    }
+                } else {
+                    log.warn("No users found for structure " + request.getStructureId());
+                    promise.fail("No users found for structure");
+                }
+            } else {
+                final String reason = result.left().getValue();
+                log.warn("An error occurred while fetching structure " + request.getStructureId() + " : " + reason);
+                promise.fail(reason);
+            }
+        });
         return promise.future();
     }
 }
