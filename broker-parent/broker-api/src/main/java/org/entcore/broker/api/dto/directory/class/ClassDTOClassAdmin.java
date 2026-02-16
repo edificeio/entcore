@@ -14,13 +14,19 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 public class ClassDTOClassAdmin {
     private final String name;
     private final String id;
+    private final String inc;
+    private final String level;
 
     @JsonCreator
     public ClassDTOClassAdmin(
             @JsonProperty("name") String name,
-            @JsonProperty("id") String id) {
+            @JsonProperty("id") String id,
+            @JsonProperty("inc") String inc,
+            @JsonProperty("level") String level) {
         this.name = name;
         this.id = id;
+        this.inc = inc;
+        this.level = level;
     }
 
     public String getName() {
@@ -29,5 +35,13 @@ public class ClassDTOClassAdmin {
 
     public String getId() {
         return id;
+    }
+
+    public String getInc() {
+        return inc;
+    }
+
+    public String getLevel() {
+        return level;
     }
 }
