@@ -438,7 +438,7 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
             return promise.future();
         }
 
-        this.userService.getUserInfos(request.getUserId(), result -> {
+        this.userService.getUserInfos(request.getUserId(), request.getIncludes(), result -> {
             if (result.isRight()) {
                 if (result.right().getValue() != null && !result.right().getValue().isEmpty()) {
                     try {
