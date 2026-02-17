@@ -12,7 +12,16 @@
 
     <artifactId>common</artifactId>
 
+    <properties>
+        <edifice.storage.version>1.0-SNAPSHOT</edifice.storage.version>
+    </properties>
+
     <dependencies>
+        <dependency>
+            <groupId>io.edifice</groupId>
+            <artifactId>edifice-storage-common</artifactId>
+            <version>${edifice.storage.version}</version>
+        </dependency>
         <dependency>
             <groupId>fr.wseduc</groupId>
             <artifactId>mongodb-helper</artifactId>

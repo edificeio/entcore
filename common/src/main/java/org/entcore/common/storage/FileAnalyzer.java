@@ -1,7 +1,8 @@
 package org.entcore.common.storage;
 
+import io.edifice.storage.common.messaging.UploadedFileMessage;
 import io.vertx.core.Future;
-import org.entcore.common.messaging.to.UploadedFileMessage;
+
 
 import java.util.List;
 

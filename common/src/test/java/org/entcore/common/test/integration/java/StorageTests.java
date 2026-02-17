@@ -38,7 +38,7 @@
 //package org.entcore.common.test.integration.java;
 //
 //import org.entcore.common.storage.BucketStats;
-//import org.entcore.common.storage.Storage;
+//import io.edifice.storage.common.Storage;
 //import io.vertx.core.AsyncResult;
 //import io.vertx.core.Handler<AsyncResult>;
 //

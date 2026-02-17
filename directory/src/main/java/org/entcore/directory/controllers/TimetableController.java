@@ -37,7 +37,7 @@ import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.AdmlOfStructure;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.common.utils.MapFactory;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.directory.security.UserInStructure;

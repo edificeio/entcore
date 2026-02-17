@@ -27,7 +27,7 @@ import io.vertx.core.Future;
 import org.entcore.common.editor.ContentTransformerEventRecorderFactory;
 import org.entcore.common.editor.IContentTransformerEventRecorder;
 import org.entcore.common.http.BaseServer;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.conversation.controllers.ApiController;
 import org.entcore.conversation.controllers.ConversationController;

@@ -13,7 +13,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;

@@ -61,7 +61,7 @@ import org.entcore.common.search.SearchingEvents;
 import org.entcore.common.search.SearchingHandler;
 import org.entcore.common.sql.DB;
 import org.entcore.common.sql.Sql;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.trace.TraceFilter;
 import org.entcore.common.user.RepositoryEvents;

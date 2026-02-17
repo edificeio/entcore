@@ -24,15 +24,14 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.StartupUtils;
 import fr.wseduc.webutils.security.ActionType;
 import fr.wseduc.webutils.security.SecuredAction;
+import io.edifice.storage.common.validation.StringValidation;
 import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.core.shareddata.LocalMap;
 
-import org.entcore.common.communication.CommunicationUtils;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
@@ -43,17 +42,17 @@ import org.entcore.common.share.ShareModel;
 import org.entcore.common.share.ShareService;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.StringUtils;
-import org.entcore.common.validation.StringValidation;
+
 
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.*;
+import static io.edifice.storage.common.validation.StringValidation.cleanId;
 import static org.entcore.common.neo4j.Neo4jResult.validResultHandler;
 import static org.entcore.common.user.UserUtils.findVisibleProfilsGroups;
 import static org.entcore.common.user.UserUtils.findVisibleUsers;
-import static org.entcore.common.validation.StringValidation.cleanId;
 
 public abstract class GenericShareService implements ShareService {
 

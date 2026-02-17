@@ -21,7 +21,7 @@ package org.entcore.conversation.service.impl;
 
 import io.vertx.core.eventbus.DeliveryOptions;
 import org.entcore.common.sql.Sql;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;

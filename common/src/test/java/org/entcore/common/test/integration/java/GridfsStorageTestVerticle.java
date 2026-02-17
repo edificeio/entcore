@@ -39,7 +39,7 @@
 //
 //import fr.wseduc.mongodb.MongoDb;
 //import org.entcore.common.storage.BucketStats;
-//import org.entcore.common.storage.Storage;
+//import io.edifice.storage.common.Storage;
 //import org.entcore.common.storage.StorageFactory;
 //import org.junit.Test;
 //import io.vertx.core.AsyncResult;

@@ -51,8 +51,7 @@ import org.entcore.common.sms.SmsSender;
 import org.entcore.common.sms.SmsSenderFactory;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.StringUtils;
-import org.entcore.common.validation.StringValidation;
-import org.joda.time.DateTime;
+import io.edifice.storage.common.validation.StringValidation;import org.joda.time.DateTime;
 
 import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;

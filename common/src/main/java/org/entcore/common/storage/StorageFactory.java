@@ -24,6 +24,8 @@ import fr.wseduc.webutils.collections.SharedDataHelper;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
+import io.edifice.storage.common.Storage;
+import io.edifice.storage.common.validation.FileValidator;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -33,11 +35,8 @@ import org.entcore.common.messaging.IMessagingClient;
 import org.entcore.common.messaging.MessagingClientFactoryProvider;
 import org.entcore.common.storage.impl.*;
 
-import static io.vertx.core.Future.succeededFuture;
 import static org.entcore.common.storage.impl.StorageFileAnalyzer.Configuration.DEFAULT_CONTENT;
 
-import org.entcore.common.validation.ExtensionValidator;
-import org.entcore.common.validation.FileValidator;
 
 import java.net.URI;
 import java.net.URISyntaxException;

@@ -6,6 +6,7 @@ import fr.wseduc.webutils.http.HttpMethod;
 import fr.wseduc.webutils.security.ActionType;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import fr.wseduc.webutils.validation.JsonSchemaValidator;
+import io.edifice.storage.common.validation.StringValidation;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
@@ -16,7 +17,6 @@ import io.vertx.core.json.JsonObject;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.http.response.JsonHttpResponse;
 import org.entcore.common.user.UserInfos;
-import org.entcore.common.validation.StringValidation;
 
 import java.net.URI;
 import java.util.*;

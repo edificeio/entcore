@@ -25,6 +25,10 @@ import fr.wseduc.mongodb.MongoQueryBuilder;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import static fr.wseduc.webutils.Utils.handlerToAsyncHandler;
 import fr.wseduc.webutils.http.ETag;
+import io.edifice.storage.common.BucketStats;
+import io.edifice.storage.common.messaging.UploadedFileMessage;
+import io.edifice.storage.common.validation.FileValidator;
+import io.edifice.storage.s3.exception.StorageException;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -46,13 +50,13 @@ import io.vertx.core.streams.ReadStream;
 import io.vertx.core.streams.WriteStream;
 import org.apache.commons.lang3.NotImplementedException;
 import org.bson.conversions.Bson;
-import org.entcore.common.messaging.to.UploadedFileMessage;
-import org.entcore.common.storage.BucketStats;
-import org.entcore.common.storage.FileStats;
-import org.entcore.common.storage.Storage;
-import org.entcore.common.storage.StorageException;
+
+
+import io.edifice.storage.common.FileStats;
+import io.edifice.storage.common.Storage;
+
 import org.entcore.common.utils.FileUtils;
-import org.entcore.common.validation.FileValidator;
+
 
 import java.io.File;
 import java.io.IOException;

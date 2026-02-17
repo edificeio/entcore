@@ -4,6 +4,7 @@ import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.collections.SharedDataHelper;
 import fr.wseduc.webutils.http.Renders;
+import io.edifice.storage.common.validation.FileValidator;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -25,7 +26,7 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.FileUtils;
 import org.entcore.common.utils.MimeTypeUtils;
 import org.entcore.common.utils.StringUtils;
-import org.entcore.common.validation.FileValidator;
+
 
 import java.io.IOException;
 import java.nio.file.*;

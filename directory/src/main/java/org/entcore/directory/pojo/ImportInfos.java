@@ -27,7 +27,7 @@ import io.vertx.core.file.FileSystem;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 
 import java.io.File;
 import java.util.*;

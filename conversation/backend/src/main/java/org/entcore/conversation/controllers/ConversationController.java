@@ -41,7 +41,7 @@ import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.notification.TimelineHelper;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.Config;

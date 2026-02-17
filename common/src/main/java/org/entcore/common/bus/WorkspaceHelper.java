@@ -22,7 +22,7 @@ package org.entcore.common.bus;
 import fr.wseduc.mongodb.MongoDb;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.logging.LoggerFactory;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import io.vertx.core.logging.Logger;

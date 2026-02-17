@@ -39,7 +39,7 @@ import org.entcore.archive.services.impl.DefaultImportService;
 import org.entcore.archive.services.impl.DefaultRepriseService;
 import org.entcore.archive.services.impl.DeleteOldArchives;
 import org.entcore.common.http.BaseServer;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.utils.MapFactory;
 

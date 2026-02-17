@@ -33,7 +33,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import static org.entcore.common.http.filter.AppOAuthResourceProvider.getTokenHeader;
 
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import static org.entcore.common.user.UserUtils.getSessionIdOrTokenId;

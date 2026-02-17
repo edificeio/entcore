@@ -18,7 +18,7 @@ import io.vertx.ext.web.codec.BodyCodec;
 
 import org.entcore.archive.services.ImportService;
 import org.entcore.archive.services.RepriseService;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.common.user.UserDataSync;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;

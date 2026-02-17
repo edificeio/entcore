@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.template.TemplateProcessor;

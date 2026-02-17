@@ -34,7 +34,7 @@ import java.util.Set;
 
 import io.vertx.core.json.JsonArray;
 import org.entcore.common.bus.WorkspaceHelper;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.user.UserUtils;
 import org.vertx.java.busmods.BusModBase;

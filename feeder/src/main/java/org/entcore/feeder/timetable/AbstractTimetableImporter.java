@@ -24,7 +24,7 @@ import fr.wseduc.webutils.DefaultAsyncResult;
 import io.vertx.core.*;
 import org.entcore.common.neo4j.Neo4jUtils;
 import org.entcore.common.neo4j.TransactionHelper;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.feeder.Feeder;
 import org.entcore.feeder.dictionary.structures.Importer;
 import org.entcore.feeder.dictionary.structures.Transition;

@@ -23,7 +23,7 @@ import com.opencsv.CSVReader;
 import io.vertx.core.Future;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.TransactionHelper;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.feeder.exceptions.TransactionException;
 import org.entcore.feeder.utils.*;
 import org.entcore.feeder.ImportValidator;

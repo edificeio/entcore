@@ -20,7 +20,7 @@
 package org.entcore.auth.services.impl;
 
 import fr.wseduc.webutils.Either;
-import org.entcore.common.validation.StringValidation;
+import io.edifice.storage.common.validation.StringValidation;
 import org.opensaml.saml2.core.Assertion;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;

@@ -31,17 +31,14 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
+import io.edifice.storage.common.validation.ValidationException;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.pgclient.PgPool;
 import io.vertx.sqlclient.PoolOptions;
 import io.vertx.sqlclient.Row;
 import org.entcore.common.sql.Sql;
-import org.entcore.common.validation.ValidationException;
 
 import fr.wseduc.webutils.Either;
-import io.vertx.pgclient.PgPool;
-import io.vertx.sqlclient.PoolOptions;
-import io.vertx.sqlclient.Row;
 import io.vertx.pgclient.SslMode;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;

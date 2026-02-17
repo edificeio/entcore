@@ -37,7 +37,7 @@
 //
 //package org.entcore.common.test.integration.java;
 //
-//import org.entcore.common.storage.Storage;
+//import io.edifice.storage.common.Storage;
 //import org.entcore.common.storage.StorageFactory;
 //import org.junit.Test;
 //import io.vertx.core.Handler;

@@ -26,7 +26,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.archive.Archive;
 import org.entcore.archive.services.ImportService;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.utils.StringUtils;

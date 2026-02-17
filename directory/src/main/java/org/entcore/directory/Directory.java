@@ -44,7 +44,7 @@ import org.entcore.common.notification.ConversationNotification;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.remote.RemoteClientCluster;
 import org.entcore.common.sms.SmsSenderFactory;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.storage.impl.FileStorage;
 import org.entcore.common.storage.impl.MongoDBApplicationStorage;

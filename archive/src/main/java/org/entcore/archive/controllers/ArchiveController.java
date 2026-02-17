@@ -43,7 +43,7 @@ import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.notification.TimelineHelper;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.common.user.UserUtils;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;

@@ -1,5 +1,6 @@
 package org.entcore.common.messaging.impl;
 
+import io.edifice.storage.common.messaging.ClientMessage;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -10,7 +11,7 @@ import static java.util.Collections.singletonList;
 import static org.apache.commons.lang3.StringUtils.isNotEmpty;
 import org.entcore.common.messaging.AppMessageProcessor;
 import org.entcore.common.messaging.IMessagingClient;
-import org.entcore.common.messaging.to.ClientMessage;
+
 import org.entcore.common.redis.RedisClient;
 
 import java.util.ArrayList;

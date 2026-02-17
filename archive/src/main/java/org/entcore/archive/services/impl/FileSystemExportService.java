@@ -34,7 +34,7 @@ import org.entcore.archive.utils.User;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.notification.TimelineHelper;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.utils.Zip;

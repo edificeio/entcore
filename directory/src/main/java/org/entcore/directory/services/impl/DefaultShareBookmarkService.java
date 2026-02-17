@@ -34,9 +34,9 @@ import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
 
+import static io.edifice.storage.common.validation.StringValidation.cleanId;
 import static org.entcore.common.neo4j.Neo4jResult.*;
 import org.entcore.common.user.UserUtils;
-import static org.entcore.common.validation.StringValidation.cleanId;
 
 import io.vertx.core.eventbus.EventBus;
 

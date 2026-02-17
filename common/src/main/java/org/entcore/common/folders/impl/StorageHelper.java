@@ -17,7 +17,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.tuple.Pair;
 import io.vertx.core.Promise;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.common.utils.StringUtils;
 
 import io.vertx.core.CompositeFuture;

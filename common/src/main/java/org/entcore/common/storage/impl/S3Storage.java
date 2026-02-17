@@ -20,6 +20,12 @@
  package org.entcore.common.storage.impl;
 
 import com.google.common.collect.Lists;
+import io.edifice.storage.common.BucketStats;
+import io.edifice.storage.common.messaging.UploadedFileMessage;
+import io.edifice.storage.common.validation.FileValidator;
+import io.edifice.storage.s3.DefaultAsyncResult;
+import io.edifice.storage.s3.S3Client;
+import io.edifice.storage.s3.StorageObject;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -34,16 +40,14 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.streams.ReadStream;
-import org.entcore.common.messaging.to.UploadedFileMessage;
-import org.entcore.common.s3.S3Client;
-import org.entcore.common.s3.storage.DefaultAsyncResult;
-import org.entcore.common.s3.storage.StorageObject;
+
+
 import org.entcore.common.storage.AntivirusClient;
-import org.entcore.common.storage.BucketStats;
+
 import org.entcore.common.storage.FallbackStorage;
-import org.entcore.common.storage.FileStats;
-import org.entcore.common.storage.Storage;
-import org.entcore.common.validation.FileValidator;
+import io.edifice.storage.common.FileStats;
+import io.edifice.storage.common.Storage;
+
 
 import java.io.File;
 import java.net.URI;
@@ -53,7 +57,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static org.entcore.common.s3.S3Client.encodeUrlPath;
+import static io.edifice.storage.s3.S3Client.encodeUrlPath;
 
 public class S3Storage implements Storage {
     

@@ -1,7 +1,7 @@
 package org.entcore.common.messaging;
 
+import io.edifice.storage.common.messaging.ClientMessage;
 import io.vertx.core.Future;
-import org.entcore.common.messaging.to.ClientMessage;
 
 import java.util.function.Function;
 

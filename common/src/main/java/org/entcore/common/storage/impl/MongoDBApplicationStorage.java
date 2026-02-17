@@ -21,9 +21,10 @@ package org.entcore.common.storage.impl;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.DefaultAsyncResult;
+import io.edifice.storage.s3.exception.StorageException;
 import io.vertx.core.AsyncResult;
 import org.entcore.common.storage.FileInfos;
-import org.entcore.common.storage.StorageException;
+
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;

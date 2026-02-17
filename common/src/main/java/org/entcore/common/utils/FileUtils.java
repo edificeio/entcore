@@ -29,7 +29,7 @@ import io.vertx.core.http.HttpServerFileUpload;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 
 import java.io.File;
 import java.io.IOException;

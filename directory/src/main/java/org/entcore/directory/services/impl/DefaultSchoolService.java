@@ -35,8 +35,7 @@ import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.neo4j.StatementsBuilder;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
-import org.entcore.common.validation.StringValidation;
-import org.entcore.directory.Directory;
+import io.edifice.storage.common.validation.StringValidation;import org.entcore.directory.Directory;
 import org.entcore.directory.services.SchoolService;
 
 import java.util.Arrays;

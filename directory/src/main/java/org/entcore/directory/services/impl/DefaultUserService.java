@@ -22,6 +22,7 @@ package org.entcore.directory.services.impl;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.email.EmailSender;
+import io.edifice.storage.common.validation.ValidationException;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -39,8 +40,8 @@ import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
-import org.entcore.common.validation.StringValidation;
-import org.entcore.common.validation.ValidationException;
+import io.edifice.storage.common.validation.StringValidation;
+
 import org.entcore.directory.Directory;
 import org.entcore.directory.pojo.TransversalSearchQuery;
 import org.entcore.directory.pojo.TransversalSearchType;

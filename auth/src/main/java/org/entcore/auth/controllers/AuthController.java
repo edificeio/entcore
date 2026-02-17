@@ -19,6 +19,7 @@
 
 package org.entcore.auth.controllers;
 
+import io.edifice.storage.common.validation.StringValidation;
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
@@ -81,7 +82,6 @@ import org.entcore.common.utils.MapFactory;
 import org.entcore.common.utils.Mfa;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.PhoneValidation;
-import org.entcore.common.validation.StringValidation;
 import org.vertx.java.core.http.RouteMatcher;
 
 import java.io.UnsupportedEncodingException;
@@ -359,7 +359,7 @@ public class AuthController extends BaseController {
 
 	/** 
 	 * Endpoint to convert a valid OAuth2 token in another platform-recognized token representing a user session.
-	 * @param type Set to "QueryParam" to produce a JWT reusable in HTTP query params.
+	 * @param request Set to "QueryParam" to produce a JWT reusable in HTTP query params.
 	 * @return JSON {"token_type":"QueryParam", "access_token":stringified token, "expires_in":number of seconds}
 	 */
 	@Get("/oauth2/token")

@@ -21,7 +21,7 @@ import org.entcore.archive.controllers.ArchiveController;
 
 import org.entcore.archive.services.ImportService;
 import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.FileUtils;
 import org.entcore.common.utils.StringUtils;

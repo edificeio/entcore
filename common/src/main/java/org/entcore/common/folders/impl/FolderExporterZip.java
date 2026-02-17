@@ -8,7 +8,7 @@ import java.util.zip.Deflater;
 
 import io.vertx.core.Promise;
 import org.entcore.common.folders.FolderExporter;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.common.utils.Zip;
 
 import io.vertx.core.Future;

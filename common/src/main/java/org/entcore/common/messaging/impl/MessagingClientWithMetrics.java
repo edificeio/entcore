@@ -1,10 +1,11 @@
 package org.entcore.common.messaging.impl;
 
+import io.edifice.storage.common.messaging.ClientMessage;
 import io.vertx.core.Future;
 import org.entcore.common.messaging.AppMessageProcessor;
 import org.entcore.common.messaging.IMessagingClient;
 import org.entcore.common.messaging.IMessagingClientMetricsRecorder;
-import org.entcore.common.messaging.to.ClientMessage;
+
 
 import java.util.List;
 

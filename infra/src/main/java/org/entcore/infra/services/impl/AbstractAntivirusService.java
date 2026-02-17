@@ -24,7 +24,7 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.notification.TimelineHelper;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.infra.services.AntivirusService;
 import io.vertx.core.AsyncResult;

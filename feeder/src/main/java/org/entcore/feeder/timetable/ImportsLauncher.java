@@ -19,7 +19,7 @@
 
 package org.entcore.feeder.timetable;
 
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.feeder.dictionary.structures.PostImport;
 import org.entcore.feeder.timetable.edt.EDTImporter;
 import org.entcore.feeder.timetable.edt.EDTUtils;

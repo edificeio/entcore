@@ -5,7 +5,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.entcore.common.s3.S3Client;
+
+import io.edifice.storage.s3.S3Client;
 import org.entcore.common.storage.FallbackStorage;
 
 import io.vertx.core.AsyncResult;

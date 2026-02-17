@@ -29,6 +29,7 @@ import fr.wseduc.webutils.security.JWT;
 import fr.wseduc.webutils.security.SecureHttpServerRequest;
 import fr.wseduc.webutils.security.oauth.DefaultOAuthResourceProvider;
 import fr.wseduc.webutils.security.oauth.OAuthResourceProvider;
+import io.edifice.storage.common.validation.StringValidation;
 import io.vertx.core.*;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
@@ -43,7 +44,7 @@ import io.vertx.core.shareddata.LocalMap;
 import org.entcore.common.session.SessionRecreationRequest;
 import org.entcore.common.utils.HostUtils;
 import org.entcore.common.utils.StringUtils;
-import org.entcore.common.validation.StringValidation;
+
 
 import java.io.IOException;
 import java.util.*;

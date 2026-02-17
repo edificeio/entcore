@@ -21,7 +21,7 @@ package org.entcore.feeder;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.DefaultAsyncResult;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.feeder.csv.CsvValidator;
 import org.entcore.feeder.exceptions.ValidationException;
 import io.vertx.core.AsyncResult;

@@ -41,8 +41,7 @@ import org.entcore.common.communication.CommunicationUtils;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.user.UserUtils;
-import org.entcore.common.validation.StringValidation;
-import org.entcore.communication.filters.CommunicationDiscoverVisibleFilter;
+import io.edifice.storage.common.validation.StringValidation;import org.entcore.communication.filters.CommunicationDiscoverVisibleFilter;
 import org.entcore.communication.services.CommunicationService;
 import org.entcore.communication.services.impl.DefaultCommunicationService;
 

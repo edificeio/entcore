@@ -26,7 +26,7 @@ import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.mongodb.MongoDbResult;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.share.ShareService;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.StringUtils;

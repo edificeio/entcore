@@ -34,7 +34,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.directory.pojo.ImportInfos;
 import org.entcore.directory.services.MassMessagingService;
 

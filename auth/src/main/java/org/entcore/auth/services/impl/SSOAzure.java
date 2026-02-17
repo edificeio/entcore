@@ -23,8 +23,7 @@ import org.entcore.common.appregistry.ApplicationUtils;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.neo4j.StatementsBuilder;
-import org.entcore.common.validation.StringValidation;
-import org.opensaml.saml2.core.Assertion;
+import io.edifice.storage.common.validation.StringValidation;import org.opensaml.saml2.core.Assertion;
 
 import fr.wseduc.webutils.Either;
 import io.vertx.core.AsyncResult;

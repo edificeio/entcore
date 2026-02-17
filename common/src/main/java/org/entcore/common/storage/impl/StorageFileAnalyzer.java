@@ -1,6 +1,7 @@
 package org.entcore.common.storage.impl;
 
 import fr.wseduc.webutils.security.XSSUtils;
+import io.edifice.storage.common.messaging.UploadedFileMessage;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
@@ -9,12 +10,10 @@ import io.vertx.core.json.Json;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singleton;
+
 import org.entcore.common.messaging.AppMessageProcessor;
-import org.entcore.common.messaging.to.UploadedFileMessage;
 import org.entcore.common.storage.FileAnalyzer;
-import org.entcore.common.storage.Storage;
-import org.entcore.common.storage.StorageException;
+import io.edifice.storage.common.Storage;
 import org.entcore.common.storage.StorageFileAnalyzingException;
 
 import java.nio.charset.StandardCharsets;

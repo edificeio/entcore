@@ -38,8 +38,7 @@ import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.StringUtils;
-import org.entcore.common.validation.StringValidation;
-import org.entcore.communication.services.CommunicationService;
+import io.edifice.storage.common.validation.StringValidation;import org.entcore.communication.services.CommunicationService;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;

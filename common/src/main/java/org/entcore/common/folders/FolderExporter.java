@@ -14,7 +14,7 @@ import java.util.Set;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import org.entcore.common.folders.impl.DocumentHelper;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.common.utils.StringUtils;
 
 import io.vertx.core.CompositeFuture;

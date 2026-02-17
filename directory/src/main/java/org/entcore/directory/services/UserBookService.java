@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Optional;
 
 import fr.wseduc.webutils.Either;
+import io.edifice.storage.common.validation.ValidationException;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
@@ -32,7 +33,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;
-import org.entcore.common.validation.ValidationException;
 
 public interface UserBookService {
 	String PUBLIC = "PUBLIC";

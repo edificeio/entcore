@@ -34,7 +34,7 @@ import org.entcore.common.folders.QuotaService;
 import org.entcore.common.folders.impl.DocumentHelper;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.share.ShareService;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.storage.impl.MongoDBApplicationStorage;
 import org.entcore.common.user.UserInfos;

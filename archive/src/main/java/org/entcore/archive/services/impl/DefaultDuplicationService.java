@@ -22,7 +22,7 @@ import org.entcore.common.explorer.IExplorerPluginCommunication;
 import org.entcore.common.explorer.IdAndVersion;
 import org.entcore.common.explorer.impl.ExplorerResourceDetails;
 import org.entcore.common.explorer.impl.ExplorerResourceDetailsQuery;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.archive.services.DuplicationService;
 import org.entcore.archive.services.ExportService;
 import org.entcore.archive.services.ImportService;

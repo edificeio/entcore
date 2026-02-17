@@ -15,7 +15,7 @@ import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.pdf.Pdf;
 import org.entcore.common.pdf.PdfFactory;
 import org.entcore.common.pdf.PdfGenerator;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.utils.StringUtils;

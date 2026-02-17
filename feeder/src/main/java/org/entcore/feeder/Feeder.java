@@ -36,7 +36,7 @@ import org.entcore.common.email.EmailFactory;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.notification.TimelineHelper;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.user.position.impl.DefaultUserPositionService;
 import org.entcore.common.utils.StringUtils;

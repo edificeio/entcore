@@ -24,7 +24,7 @@ import org.entcore.common.folders.FolderImporter;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.sql.SqlStatementsBuilder;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.common.service.impl.SqlRepositoryEvents;
 import io.vertx.core.Vertx;
 import io.vertx.core.AsyncResult;

@@ -19,6 +19,9 @@
 
 package org.entcore.common.storage.impl;
 
+import io.edifice.storage.common.BucketStats;
+import io.edifice.storage.common.messaging.UploadedFileMessage;
+import io.edifice.storage.common.validation.FileValidator;
 import org.entcore.common.utils.FileUtils;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import static fr.wseduc.webutils.Utils.isNotEmpty;
@@ -40,14 +43,13 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.streams.ReadStream;
 import org.entcore.common.messaging.IMessagingClient;
-import org.entcore.common.messaging.to.UploadedFileMessage;
 import org.entcore.common.storage.AntivirusClient;
-import org.entcore.common.storage.BucketStats;
+
 import org.entcore.common.storage.FallbackStorage;
-import org.entcore.common.storage.FileStats;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.FileStats;
+import io.edifice.storage.common.Storage;
 import org.entcore.common.utils.StringUtils;
-import org.entcore.common.validation.FileValidator;
+
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -844,7 +846,7 @@ public class FileStorage implements Storage {
 					bucketStats.setStorageSize(fsProps.totalSpace() - fsProps.usableSpace());
 					handler.handle(new DefaultAsyncResult<>(bucketStats));
 				} else {
-					handler.handle(new DefaultAsyncResult<BucketStats>(event.cause()));
+					handler.handle(new DefaultAsyncResult<>(event.cause()));
 				}
 			}
 		});

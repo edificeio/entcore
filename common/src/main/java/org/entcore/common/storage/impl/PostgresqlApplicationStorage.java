@@ -21,10 +21,11 @@ package org.entcore.common.storage.impl;
 
 import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.Either;
+import io.edifice.storage.common.StorageException;
 import io.vertx.core.AsyncResult;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.storage.FileInfos;
-import org.entcore.common.storage.StorageException;
+
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;

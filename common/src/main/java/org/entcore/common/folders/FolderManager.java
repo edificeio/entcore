@@ -9,7 +9,7 @@ import org.entcore.common.folders.impl.FolderImporterZip;
 import org.entcore.common.folders.impl.FolderManagerMongoImpl;
 import org.entcore.common.folders.impl.FolderManagerWithQuota;
 import org.entcore.common.share.ShareService;
-import org.entcore.common.storage.Storage;
+import io.edifice.storage.common.Storage;
 import org.entcore.common.user.UserInfos;
 
 import io.vertx.core.AsyncResult;
