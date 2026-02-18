@@ -400,4 +400,10 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
 
         return promise.future();
     }
+
+    @Override
+    public Future<GetUsersFromGroupsResponseDTO> getUsersFromGroups(GetUsersFromGroupsRequestDTO request) {
+        // TODO: call userService.list(groups, [], true, null)
+        return null;
+    }
 }
