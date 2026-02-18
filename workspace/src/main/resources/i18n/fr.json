@@ -242,8 +242,9 @@
   "workspace.invalidfile.placeholder": "Fichier invalide",
   "workspace.leave.comment": "Laisser un commentaire",
   "workspace.loading": "Chargement en cours",
-  "workspace.lool.open": "Éditer",
+  "workspace.lool.create-document": "Créer un document",
   "workspace.lool.modal.error": "Impossible de charger la fenêtre de création de document. Veuillez réessayer.",
+  "workspace.lool.open": "Éditer",
   "workspace.manager": "Gérer",
   "workspace.move": "Déplacer",
   "workspace.move.path": "Destination",
@@ -319,6 +320,5 @@
   "workspace.versions.list": "Versions",
   "workspace.warning.cancel": "Annuler",
   "workspace.warning.copy": "Copier et partager",
-  "workspace.warning.notcopy": "Partager sans copier",
-  "workspace.lool.create-document": "Créer un document"
+  "workspace.warning.notcopy": "Partager sans copier"
 }
