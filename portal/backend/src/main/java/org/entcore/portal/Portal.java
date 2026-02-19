@@ -58,7 +58,7 @@ public class Portal extends BaseServer {
     public Future<Void> initPortal(final JsonObject skins) {
         return Future.future(p -> {
             try {
-                final String assetPath = config.getString("assets-path", "../..");
+                final String assetPath = config.getString("assets-path", "../..") + "/assets";
                 final AddressParameter parameter = new AddressParameter("application", "portal");
                 final CacheService cacheService = CacheService.create(vertx);
                 BrokerProxyUtils.addBrokerProxy(new I18nBrokerListenerImpl(vertx, assetPath, cacheService), vertx, parameter);
