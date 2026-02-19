@@ -165,7 +165,7 @@ public class Directory extends BaseServer {
 		addController(userBookController);
 
 		StructureController structureController = new StructureController(
-				(JsonObject) serverMap.get("skins"), (String) serverMap.get("assetPath"));
+				(JsonObject) serverMap.get("skins"), this.config.getString("assetPath"));
 		structureController.setStructureService(schoolService);
 		structureController.setNotifHelper(emailSender);
 		structureController.setMassMailService(new DefaultMassMailService(
