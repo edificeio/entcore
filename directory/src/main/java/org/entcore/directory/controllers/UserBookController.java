@@ -122,7 +122,7 @@ public class UserBookController extends BaseController {
 		eventStore = EventStoreFactory.getFactory().getEventStore(ANNUAIRE_MODULE);
 		if (config.getBoolean("activation-welcome-message", false)) {
 			activationWelcomeMessage = new HashMap<>();
-			String assetsPath = (String) serverMap.get("assetPath");
+			String assetsPath = config.getString("assetPath");
 			Map<String, Object> skins = getOrElse((JsonObject) serverMap.get("skins"), new JsonObject()).getMap();
 			if (skins != null) {
 				activationWelcomeMessage = new HashMap<>();
