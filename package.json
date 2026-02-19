@@ -91,5 +91,10 @@
     "webpack-merge": "^4.1.0",
     "webpack-stream": "^3.2.0",
     "husky": "^8.0.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "@microsoft/api-extractor": "7.56.3"
+    }
   }
 }
