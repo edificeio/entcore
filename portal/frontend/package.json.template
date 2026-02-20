@@ -30,9 +30,9 @@
     ]
   },
   "dependencies": {
-    "@edifice.io/react": "%packageVersion%",
-    "@edifice.io/bootstrap": "%packageVersion%",
-    "@edifice.io/client": "%packageVersion%",
+    "@edifice.io/react": "2.5.11",
+    "@edifice.io/bootstrap": "2.5.11",
+    "@edifice.io/client": "2.5.11",
     "@react-spring/web": "^9.7.5",
     "@tanstack/react-query": "5.62.7",
     "@uidotdev/usehooks": "2.4.1",
@@ -40,7 +40,7 @@
     "i18next": "23.8.1",
     "i18next-http-backend": "2.4.2",
     "framer-motion": "^12.18.1",
-    "ode-explorer": "%packageVersion%",
+    "ode-explorer": "2.5.2",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-error-boundary": "4.0.13",
