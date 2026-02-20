@@ -1,4 +1,4 @@
-import { Image, useEdificeIcons } from '@edifice.io/react';
+import { Badge, Image, useEdificeIcons } from '@edifice.io/react';
 import * as IconSprites from '@edifice.io/react/icons/apps';
 import clsx from 'clsx';
 import { useState } from 'react';
@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Application } from '~/models/application';
 import { getAppName } from '~/utils/get-app-name';
 import { FavoriteStarIcon } from '../FavoriteStarIcon';
+import { IWebApp } from '@edifice.io/client';
 
 export function ApplicationIcon({
   data,
