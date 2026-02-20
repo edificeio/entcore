@@ -1,0 +1,220 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "title": "JSON Schema for Events",
+  "description": "https://www.w3.org/TR/CSP2/#violation-reports",
+  "properties": {
+    "_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Identifiant unique de l'événement"
+    },
+    "event-type": {
+      "type": "string",
+      "format": "keyword",
+      "description": "Type fonctionnel de l'événement"
+    },
+    "module": {
+      "type": "string",
+      "format": "keyword",
+      "description": "Module applicatif à l'origine de l'événement"
+    },
+    "date": {
+      "type": "long",
+      "format": "epoch_millis",
+      "description": "Date de l'événement en timestamp Unix (millisecondes)"
+    },
+    "userId": {
+      "type": "string",
+      "format": "keyword",
+      "description": "Identifiant de l'utilisateur"
+    },
+    "profil": {
+      "type": "string",
+      "format": "keyword",
+      "description": "Profil ou rôle de l'utilisateur"
+    },
+    "structures": {
+      "type": "string",
+      "format": "keyword",
+      "description": "Structures associées à l'utilisateur"
+    },
+    "classes": {
+      "type": "string",
+      "format": "keyword",
+      "description": "Classes associées à l'utilisateur"
+    },
+    "groups": {
+      "type": "string",
+      "format": "keyword",
+      "description": "Groupes auxquels appartient l'utilisateur"
+    },
+    "ua": {
+      "type": "string",
+      "format": "user-agent",
+      "description": "User-Agent du client"
+    },
+    "ip": {
+      "type": "string",
+      "format": "ipv4/ipv6",
+      "description": "Adresse IP du client"
+    },
+    "service": {
+      "type": "string",
+      "format": "keyword",
+      "description": "Service applicatif concerné"
+    },
+    "connector-type": {
+      "type": "string",
+      "format": "keyword",
+      "description": "Type de connecteur utilisé"
+    },
+    "cas-type": {
+      "type": "string",
+      "format": "keyword",
+      "description": "Type d’authentification CAS"
+    },
+    "referer": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL de provenance de la requête"
+    },
+    "sessionId": {
+      "type": "double",
+      "format": "numeric",
+      "description": "Identifiant numérique de session"
+    },
+    "resource_type": {
+      "type": "string",
+      "format": "keyword",
+      "description": "Type de ressource manipulée"
+    },
+    "resource_id": {
+      "type": "string",
+      "format": "keyword",
+      "description": "Identifiant de la ressource"
+    },
+    "nb_attachments": {
+      "type": "double",
+      "format": "count",
+      "description": "Nombre de pièces jointes"
+    },
+    "nb_sounds": {
+      "type": "double",
+      "format": "count",
+      "description": "Nombre de fichiers audio"
+    },
+    "nb_external_links": {
+      "type": "double",
+      "format": "count",
+      "description": "Nombre de liens externes"
+    },
+    "nb_images": {
+      "type": "double",
+      "format": "count",
+      "description": "Nombre d’images"
+    },
+    "nb_formulae": {
+      "type": "double",
+      "format": "count",
+      "description": "Nombre de formules"
+    },
+    "nb_embedded": {
+      "type": "double",
+      "format": "count",
+      "description": "Nombre de contenus embarqués"
+    },
+    "nb_videos": {
+      "type": "double",
+      "format": "count",
+      "description": "Nombre de vidéos"
+    },
+    "nb_internal_links": {
+      "type": "double",
+      "format": "count",
+      "description": "Nombre de liens internes"
+    },
+    "resource-type": {
+      "type": "string",
+      "format": "keyword",
+      "description": "Type fonctionnel de la ressource"
+    },
+    "useradmin": {
+      "type": "string",
+      "format": "boolean-like",
+      "description": "Indique si l'utilisateur est administrateur"
+    },
+    "shares": {
+      "type": "string",
+      "format": "json",
+      "description": "Informations de partage de la ressource"
+    },
+    "share_profiles": {
+      "type": "string",
+      "format": "keyword",
+      "description": "Profils ayant accès au partage"
+    },
+    "share_rights": {
+      "type": "string",
+      "format": "keyword",
+      "description": "Droits associés au partage"
+    },
+    "sms_id": {
+      "type": "string",
+      "format": "keyword",
+      "description": "Identifiant du SMS associé"
+    },
+    "phone": {
+      "type": "string",
+      "format": "e164",
+      "description": "Numéro de téléphone"
+    },
+    "adapter": {
+      "type": "string",
+      "format": "keyword",
+      "description": "Adaptateur technique utilisé"
+    },
+    "video_id": {
+      "type": "string",
+      "format": "keyword",
+      "description": "Identifiant de la vidéo"
+    },
+    "duration": {
+      "type": "double",
+      "format": "seconds",
+      "description": "Durée en secondes"
+    },
+    "weight": {
+      "type": "double",
+      "format": "numeric",
+      "description": "Poids ou score associé à l'événement"
+    },
+    "device_type": {
+      "type": "string",
+      "format": "keyword",
+      "description": "Type d’appareil utilisé"
+    },
+    "source": {
+      "type": "string",
+      "format": "keyword",
+      "description": "Source de l'événement"
+    },
+    "function": {
+      "type": "string",
+      "format": "keyword",
+      "description": "Fonction applicative appelée"
+    },
+    "answer": {
+      "type": "string",
+      "format": "text",
+      "description": "Réponse ou contenu associé à l'événement"
+    }
+  },
+  "required": [
+    "_id",
+    "event-type",
+    "module",
+    "date"
+  ]
+}
