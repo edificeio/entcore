@@ -33,14 +33,29 @@ public class MongoDbEventStore extends GenericEventStore {
 
 	private final MongoDb mongoDb = MongoDb.getInstance();
 	private static final String COLLECTION = "events";
+	private static final String FORMAT_ERROR_COLLECTION = "events_format_error";
+	private final boolean storeMalformed;
 	private PostgresqlEventStore postgresqlEventStore;
+
+	public MongoDbEventStore(boolean storeMalformed) {
+		this.storeMalformed = storeMalformed;
+	}
 
 	@Override
 	protected void storeEvent(final JsonObject event, final Handler<Either<String, Void>> handler) {
+		doStoreEvent(COLLECTION, event, handler);
+	}
+
+	@Override
+	protected void storeMalformedEvent(JsonObject event, Handler<Either<String, Void>> handler) {
+		doStoreEvent(FORMAT_ERROR_COLLECTION, event, handler);
+	}
+
+	protected void doStoreEvent(final String collection, final JsonObject event, final Handler<Either<String, Void>> handler) {
 		if (StringUtils.isEmpty(event.getString("_id"))) {
 			event.put("_id", UUID.randomUUID().toString());
 		}
-		mongoDb.insert(COLLECTION, event, new Handler<Message<JsonObject>>() {
+		mongoDb.insert(collection, event, new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> res) {
 				if ("ok".equals(res.body().getString("status"))) {
@@ -66,6 +81,11 @@ public class MongoDbEventStore extends GenericEventStore {
 
 	public void setPostgresqlEventStore(PostgresqlEventStore postgresqlEventStore) {
 		this.postgresqlEventStore = postgresqlEventStore;
+	}
+
+	@Override
+	protected boolean shouldStoreMalformedEvent() {
+		return this.storeMalformed;
 	}
 
 }

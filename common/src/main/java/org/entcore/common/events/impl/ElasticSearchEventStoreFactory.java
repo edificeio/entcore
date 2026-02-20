@@ -27,7 +27,7 @@ public class ElasticSearchEventStoreFactory extends EventStoreFactory {
 
 	@Override
 	public EventStore getEventStore(String module) {
-		ElasticSearchEventStore eventStore = new ElasticSearchEventStore();
+		ElasticSearchEventStore eventStore = new ElasticSearchEventStore(vertx.getOrCreateContext().config().getBoolean("event-store-malformed", false));
 		eventStore.setEventBus(Server.getEventBus(vertx));
 		eventStore.setModule(module);
 		eventStore.setVertx(vertx);

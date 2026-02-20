@@ -40,6 +40,11 @@ public class BusEventStore extends GenericEventStore {
 	}
 
 	@Override
+	protected void storeMalformedEvent(JsonObject event, Handler<Either<String, Void>> handler) {
+		storeEvent(event, handler);
+	}
+
+	@Override
 	public void storeCustomEvent(String baseEventType, JsonObject payload) {
 		eventBus.request("event.store.custom", new JsonObject()
 				.put("base-event-type", baseEventType).put("payload", payload));
