@@ -49,6 +49,7 @@ object AuthScenario {
       .check(status.is(302), header("Location").find.transformOption(_.map(location =>
           location.substring(location.indexOf("code=") + 5).substring(0, 36)
       )).saveAs("oauth2Code")))
+    .exitHereIfFailed
     .exec(http("Logout teacher user")
       .get("""/auth/logout""")
       .check(status.is(302)))
@@ -63,6 +64,7 @@ object AuthScenario {
       .formParam("""redirect_uri""", "http://localhost:1500/code")
       .check(status.is(200), jsonPath("$.token_type").is("Bearer"),
         jsonPath("$.access_token").find.saveAs("oauth2AccessToken")))
+    .exitHereIfFailed
     .exec(http("Get userinfo with access token")
       .get("/auth/oauth2/userinfo")
       .header("Authorization", "Bearer ${oauth2AccessToken}")

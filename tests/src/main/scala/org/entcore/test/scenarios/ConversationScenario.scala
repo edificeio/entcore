@@ -21,6 +21,7 @@ object ConversationScenario {
     .saveAs("conversationTeacherVisibleGroupId"),
     jsonPath("$.users.id").findAll.transformOption(_.orElse(Some(Nil)))
       .saveAs("conversationTeacherVisibleUserId")))
+  .exitHereIfFailed
   .exec(http("Create draft message")
     .post("/conversation/draft")
     .header("Content-Type", "application/json")
@@ -67,9 +68,11 @@ object ConversationScenario {
     .get("/conversation/list/INBOX")
     .check(status.is(200), jsonPath("$[0].id").find.saveAs("conversationMessageId"),
       jsonPath("$[0].unread").find.transformOption(_.map(u => String.valueOf(u))).is("true")))
+  .exitHereIfFailed
   .exec(http("Count unread messages")
     .get("/conversation/count/INBOX?unread=true")
     .check(status.is(200), jsonPath("$.count").find.saveAs("unreadMessageNumber")))
+  .exitHereIfFailed
   .exec(http("Read message")
     .get("/conversation/message/${conversationMessageId}")
     .check(status.is(200), jsonPath("$.body").find.exists, jsonPath("$.state").find.is("SENT")))
@@ -124,6 +127,7 @@ object ConversationScenario {
       status.is(200),
       jsonPath("$[0].name").find.is("folder"),
       jsonPath("$[0].id").find.saveAs("folderId")))
+  .exitHereIfFailed
   .exec(http("Create a subfolder")
     .post("/conversation/folder")
     .header("Content-Type", "application/json")
@@ -135,6 +139,7 @@ object ConversationScenario {
       status.is(200),
       jsonPath("$[0].name").find.is("subfolder"),
       jsonPath("$[0].id").find.saveAs("subfolderId")))
+  .exitHereIfFailed
   .exec(http("Rename a folder")
     .put("/conversation/folder/${subfolderId}")
     .header("Content-Type", "application/json")
@@ -197,10 +202,10 @@ object ConversationScenario {
     .post("/conversation/draft")
     .header("Content-Type", "application/json")
     .body(StringBody("""{"subject":"Attachments", "body":"<p>Testing attachments.</p>","to":[]}"""))
-    .check(status.is(201), jsonPath("$.id").find.saveAs("attachmentDraftId")))
-  .exec(http("Check teacher quota before adding the attachment")
+    .check(status.is(201), jsonPath("$.id").find.saveAs("attachmentDraftId")))  .exitHereIfFailed  .exec(http("Check teacher quota before adding the attachment")
     .get("""/workspace/quota/user/${teacherId}""")
     .check(status.is(200), jsonPath("$.storage").find.saveAs("teacherStorageInitial")))
+  .exitHereIfFailed
   .exec(http("Add attachment")
     .post("""/conversation/message/${attachmentDraftId}/attachment""")
     .headers(headers_202)
@@ -211,6 +216,7 @@ object ConversationScenario {
     .check(
       status.is(200),
       jsonPath("$.attachments[0::].id").find.saveAs("attachmentId")))
+  .exitHereIfFailed
   .exec(http("Check teacher quota after adding the attachment")
     .get("""/workspace/quota/user/${teacherId}""")
     .check(status.is(200), jsonPath("$.storage").find.greaterThan("${teacherStorageInitial}")))
@@ -245,6 +251,7 @@ object ConversationScenario {
   .exec(http("Check student quota before deleting the attachment")
     .get("""/workspace/quota/user/${studentId}""")
     .check(status.is(200), jsonPath("$.storage").find.saveAs("studentStorageInitial")))
+  .exitHereIfFailed
   .exec(http("Move message to trash")
     .put("/conversation/trash")
     .header("Content-Type", "application/json")

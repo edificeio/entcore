@@ -54,14 +54,17 @@ object DirectoryScenario {
 			.get("""/directory/api/ecole""")
 		.check(status.is(200), jsonPath("$.status").is("ok"),
       jsonPath("$.result.*.id").find.saveAs("schoolId")))
+		.exitHereIfFailed
 		.exec(http("List classes")
 			.get("""/directory/api/classes?id=${schoolId}""")
 		.check(status.is(200), jsonPath("$.status").is("ok"),
       jsonPath("$.result.*.classId").find.saveAs("classId")))
+    .exitHereIfFailed
     .exec(http("List students in class")
       .get("""/directory/api/personnes?id=${classId}&type=Student""")
     .check(status.is(200), jsonPath("$.status").is("ok"),
       jsonPath("$.result.*.userId").find.saveAs("childrenId")))
+    .exitHereIfFailed
 		.exec(http("Create manual teacher")
 			.post("""/directory/api/user""")
 			.formParam("""classId""", """${classId}""")
@@ -113,6 +116,7 @@ object DirectoryScenario {
           }
         }.toMap
       })).saveAs("createdUserIds")))
+    .exitHereIfFailed
     .exec{session =>
       val uIds = session("createdUserIds").as[Map[String, String]]
       session.set("teacherId", uIds.get("Teacher").get).set("studentId", uIds.get("Student").get)
@@ -124,11 +128,13 @@ object DirectoryScenario {
       .check(status.is(200), jsonPath("$.status").is("ok"),
         jsonPath("$.result.*.login").find.saveAs("teacherLogin"),
         jsonPath("$.result.*.code").find.saveAs("teacherCode")))
+    .exitHereIfFailed
     .exec(http("Student details")
     .get("""/directory/api/details?id=${studentId}""")
       .check(status.is(200), jsonPath("$.status").is("ok"),
         jsonPath("$.result.*.login").find.saveAs("studentLogin"),
         jsonPath("$.result.*.code").find.saveAs("studentCode")))
+    .exitHereIfFailed
 
     // create function
     .exec(http("Create function")
@@ -189,8 +195,7 @@ object DirectoryScenario {
     .post("""/directory/group""")
     .header("Content-Type", "application/json")
     .body(StringBody("""{"name": "Group with rattachment"}"""))
-    .check(status.is(201), jsonPath("$.id").find.saveAs("manuel-group-id")))
-
+    .check(status.is(201), jsonPath("$.id").find.saveAs("manuel-group-id")))  .exitHereIfFailed
   .exec(http("update group")
     .put("""/directory/group/${manuel-group-id}""")
     .header("Content-Type", "application/json")

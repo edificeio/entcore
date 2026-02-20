@@ -37,6 +37,7 @@ object TimelineScenario {
       .formParam("""scope""", "org.entcore.timeline.controllers.TimelineController|publish")
       .check(status.is(200), jsonPath("$.token_type").is("Bearer"),
         jsonPath("$.access_token").find.saveAs("clientCredentialsToken")))
+    .exitHereIfFailed
     .exec(http("MyExternalApp publish on Timeline")
        .post("/timeline/publish")
        .header("Authorization", "Bearer ${clientCredentialsToken}")

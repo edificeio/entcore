@@ -42,6 +42,7 @@ object AppRegistryScenario {
           }
         }
       }).saveAs("roles")))
+    .exitHereIfFailed
     .foreach("${roles}", "role") {
       exec(http("Create role ${role(0)}")
         .post("""/appregistry/role""")
@@ -62,8 +63,7 @@ object AppRegistryScenario {
     .post("""/appregistry/role""")
     .header("Content-Type", "application/json")
     .body(StringBody("""{"role":"${testRole(0)}-test","actions":["${testRole(1)}"]}"""))
-    .check(status.is(201), jsonPath("$.id").find.saveAs("test-id")))
-    .exec(http("Update role ${testRole(0)}-test")
+    .check(status.is(201), jsonPath("$.id").find.saveAs("test-id")))    .exitHereIfFailed    .exec(http("Update role ${testRole(0)}-test")
     .put("""/appregistry/role/${test-id}""")
     .header("Content-Type", "application/json")
     .body(StringBody("""{"role":"${testRole(0)}-bla-test"}"""))
@@ -90,6 +90,7 @@ object AppRegistryScenario {
             }
           }.map(_.mkString("\",\""))
         }).saveAs("rolesIds")))
+    .exitHereIfFailed
     .exec(http("Find profil groups with roles")
       .get("""/appregistry/groups/roles?structureId=${schoolId}""")
       .check(status.is(200),
@@ -104,6 +105,7 @@ object AppRegistryScenario {
             }
           }
         }).saveAs("profilGroupIds")))
+    .exitHereIfFailed
     .exec(http("Link teacher profil groups with roles")
       .post("""/appregistry/authorize/group?schoolId=${schoolId}""")
       .header("Content-Type", "application/json")

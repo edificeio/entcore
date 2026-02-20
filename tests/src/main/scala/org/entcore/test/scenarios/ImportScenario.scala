@@ -15,6 +15,7 @@ object ImportScenario {
     .exec(http("Directory : list Schools")
       .get("""/directory/api/ecole""")
       .check(status.is(200), jsonPath("$.status").is("ok"), jsonPath("$.result").find.saveAs("schools")))
+    .exitHereIfFailed
     .doIf(session => session("schools").asOption[String].getOrElse("") == "{}") {
       exec(http("Directory : import schools")
         .post("""/directory/wizard/import""")
