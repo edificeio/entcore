@@ -1056,7 +1056,7 @@ public class TimelineController extends BaseController {
 					// Ajouter le projectId dans les params pour utilisation dans le template
 					params.put("projectId", projectId);
 					
-					final String resource = "external_notification";
+					final String resource = json.getString("resource", "external_notification");
 					final String resourceId = String.valueOf(System.currentTimeMillis()) + resource;
 					final List<String> recipientsList = recipientsId.getList();
 					// Utiliser le projectId comme nom d'application
