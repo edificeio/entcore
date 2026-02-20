@@ -36,8 +36,7 @@ object GroupsAndSharesScenario {
     .exec(http("Search users and groups")
       .post("/communication/visible")
       .body(StringBody("""{"profiles" : ["Teacher", "Personnel"]}"""))
-      .check(jsonPath("$.groups[*].id").findAll.saveAs("shareGroupIds"), jsonPath("$.users[*].id").findAll.saveAs("shareUserIds")))
-    .exec{ session =>
+      .check(jsonPath("$.groups[*].id").findAll.saveAs("shareGroupIds"), jsonPath("$.users[*].id").findAll.saveAs("shareUserIds")))    .exitHereIfFailed    .exec{ session =>
       val shareUserIds = session("shareUserIds").as[Seq[String]].mkString("\",\"")
       val shareAllIds = session("shareGroupIds").as[Seq[String]].mkString("\",\"") + "\",\"" + shareUserIds
       session.set("shareUserIds", shareUserIds).set("shareAllIds", shareAllIds)
@@ -45,8 +44,7 @@ object GroupsAndSharesScenario {
     .exec(http("Create share bookmark")
       .post("/directory/sharebookmark")
       .body(StringBody("""{"name" : "Mon favoris de partage", "members": ["${shareUserIds}"]}"""))
-      .check(status.is(201), jsonPath("$.id").find.saveAs("shareBookmarkId")))
-    .exec(http("Update share bookmark")
+      .check(status.is(201), jsonPath("$.id").find.saveAs("shareBookmarkId")))    .exitHereIfFailed    .exec(http("Update share bookmark")
       .put("/directory/sharebookmark/${shareBookmarkId}")
       .body(StringBody("""{"name" : "Mon favoris de partage renommé", "members": ["${shareAllIds}"]}"""))
       .check(status.is(200)))
@@ -56,6 +54,7 @@ object GroupsAndSharesScenario {
     .exec(http("List share bookmark")
       .get("/directory/sharebookmark/all")
       .check(status.is(200), jsonPath("$..id").findAll.transform(_.size).saveAs("sbCount")))
+    .exitHereIfFailed
     .exec(http("Delete share bookmark")
       .delete("/directory/sharebookmark/${shareBookmarkId}")
       .check(status.is(200)))

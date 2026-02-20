@@ -37,8 +37,7 @@ object DirectoryAdmlScenario {
     .post("""/directory/group""")
     .header("Content-Type", "application/json")
     .body(StringBody("""{"name": "Group with rattachment", "structureId":"${schoolId}"}"""))
-    .check(status.is(201), jsonPath("$.id").find.saveAs("manual-group-id")))
-
+    .check(status.is(201), jsonPath("$.id").find.saveAs("manual-group-id")))    .exitHereIfFailed
     .exec(http("update group")
     .put("""/directory/group/${manual-group-id}""")
     .header("Content-Type", "application/json")
