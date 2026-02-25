@@ -44,13 +44,11 @@ pipeline {
         sh "NPM_TOKEN=$NPM_PUBLIC_TOKEN DRY_RUN=false ./build.sh \$BUILD_SH_EXTRA_PARAM publish"
       }
     }
-    /*
-      stage('Build image') {
-          steps {
-              sh 'edifice image'
-          }
+    stage('Build image') {
+      steps {
+          sh './build.sh image'
       }
-      */
+    }
   }
   post {
     cleanup {

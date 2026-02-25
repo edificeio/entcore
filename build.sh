@@ -88,6 +88,25 @@ echo "======================"
 init() {
   me=`id -u`:`id -g`
   echo "DEFAULT_DOCKER_USER=$me" > .env
+
+    # If CLI_VERSION is empty set $cli_version to latest
+  	if [ -z "$CLI_VERSION" ]; then
+  		CLI_VERSION="latest"
+  	fi
+  	# Create a build.compose.yaml file from following template
+  	cat <<EOF > build.compose.yaml
+services:
+  edifice-cli:
+    image: opendigitaleducation/edifice-cli:$CLI_VERSION
+    user: "$DEFAULT_DOCKER_USER"
+EOF
+  	# Copy /root/edifice from edifice-cli container to host machine
+  	docker compose -f build.compose.yaml create edifice-cli
+  	docker compose -f build.compose.yaml cp edifice-cli:/root/edifice ./edifice
+  	docker compose -f build.compose.yaml rm -fsv edifice-cli
+  	rm -f build.compose.yaml
+  	chmod +x edifice
+  	./edifice version $EDIFICE_CLI_DEBUG_OPTION
 }
 
 clean () {
@@ -203,12 +222,6 @@ install () {
   cd -
 }
 
-buildBroker () {
-  edifice install --all=false --clients=false --client-nest=true
-  #./build.sh install
-  #cd -
-}
-
 test () {
   if [ -z "$JAVA_8_HOME" ]
   then
@@ -258,41 +271,10 @@ publish() {
   esac
 
   docker compose run --rm  maven mvn $MVN_OPTS -DrepositoryId=ode-$nexusRepository -DskipTests --settings /var/maven/.m2/settings.xml deploy
-  #cd broker-parent/broker-client/quarkus
-  #./build.sh publish
-  #cd -
-  publishBrokerNpmLib
 }
 
-publishBrokerNpmLib() {
-  # Set GIT_BRANCH to the current branch if not set
-  if [ -z "$GIT_BRANCH" ]; then
-    GIT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
-  fi
-  echo "[publish] Publish packages..."
-  # Récupération de la branche locale
-  LOCAL_BRANCH=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
-  # Récupération de la date et du timestamp
-  # Récupération du dernier tag stable
-  LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "1.0.0")
-  LATEST_TAG=${LATEST_TAG#v}
-
-  # Définition du tag de la branche
-  if [ "$LOCAL_BRANCH" = "main" ]; then
-    TAG_BRANCH="latest"
-  else
-    TAG_BRANCH=$LOCAL_BRANCH
-  fi
-
-  # Publier avec le tag de la branche
-  echo "[publish] Publish with the branch tag"
-  # Default to dry run if not specified
-  DRY_RUN=${DRY_RUN:-true}
-  if [ "$DRY_RUN" = "true" ]; then
-    docker compose run -e NPM_TOKEN=$NPM_TOKEN --rm -u "$USER_UID:$GROUP_GID" node22 sh -c "pnpm publish -r --no-git-checks --tag $TAG_BRANCH --dry-run"
-  else
-    docker compose run -e NPM_TOKEN=$NPM_TOKEN --rm -u "$USER_UID:$GROUP_GID" node22 sh -c "pnpm publish -r --no-git-checks --tag $TAG_BRANCH"
-  fi
+image() {
+  ./edifice image --project-type=entcore --rebuild=false $EDIFICE_CLI_DEBUG_OPTION
 }
 
 check_prefix_sh_file() {
@@ -389,7 +371,7 @@ do
       install
       ;;
     install)
-      buildFrontend && buildBackend  && buildBroker
+      buildFrontend && buildBackend
       ;;
     buildBack)
       install
@@ -414,6 +396,9 @@ do
       ;;
     publish)
       publish
+      ;;
+    image)
+      image
       ;;
     *)
       echo "Invalid argument : $param"

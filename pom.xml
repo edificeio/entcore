@@ -41,23 +41,20 @@
         <module>audience</module>
         <module>auth</module>
         <module>cas</module>
-        <module>common</module>
         <module>communication</module>
         <module>conversation/backend</module>
         <module>directory</module>
         <module>feeder</module>
         <module>infra</module>
         <module>portal/backend</module>
-        <module>session</module>
-        <module>test</module>
         <module>timeline</module>
         <module>workspace</module>
-        <module>broker-parent</module>
         <module>tests</module>
     </modules>
 
     <properties>
-        <revision>6.14-SNAPSHOT</revision>
+        <revision>6.14-separation-SNAPSHOT</revision>
+        <entcore-libs.version>6.14-separation-SNAPSHOT</entcore-libs.version>
         <junitVersion>4.13.2</junitVersion>
         <testContainerVersion>1.19.3</testContainerVersion>
         <modPostgresVersion>2.1-SNAPSHOT</modPostgresVersion>
@@ -83,10 +80,17 @@
 
     <dependencies>
         <dependency>
-            <groupId>fr.wseduc</groupId>
-            <artifactId>web-utils</artifactId>
-            <version>${webUtilsVersion}</version>
+            <groupId>org.entcore</groupId>
+            <artifactId>common</artifactId>
+            <version>${entcore-libs.version}</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.entcore</groupId>
+            <artifactId>session</artifactId>
+            <version>${entcore-libs.version}</version>
+            <scope>runtime</scope>
+            <classifier>fat</classifier>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
