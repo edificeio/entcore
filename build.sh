@@ -29,7 +29,7 @@ esac
 NO_DOCKER=""
 SPRINGBOARD="recette"
 MODULE=""
-MVN_OPTS="-Duser.home=/var/maven"
+MVN_OPTS="-Duser.home=/var/maven -T 4"
 for i in "$@"
 do
 case $i in
