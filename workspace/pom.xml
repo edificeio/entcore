@@ -16,8 +16,15 @@
         <dependency>
             <groupId>org.entcore</groupId>
             <artifactId>common</artifactId>
-            <version>${revision}</version>
+            <version>${entcore-libs.version}</version>
             <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.entcore</groupId>
+            <artifactId>session</artifactId>
+            <version>${entcore-libs.version}</version>
+            <scope>runtime</scope>
+            <classifier>fat</classifier>
         </dependency>
         <dependency>
             <groupId>com.sun.jna</groupId>
