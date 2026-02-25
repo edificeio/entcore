@@ -34,6 +34,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.conversation.LegacySearchVisibleRequest;
@@ -270,100 +271,126 @@ public class SqlConversationService implements ConversationService{
 		if (validationParamsError(user, result, draftId))
 			return;
 
-		getSenderAttachments(user.getUserId(), draftId, new Handler<Either<String,JsonObject>>() {
-			public void handle(Either<String, JsonObject> event) {
-				if(event.isLeft()){
-					result.handle(new Either.Left<String, JsonObject>(event.left().getValue()));
-					return;
-				}
+		getSenderAttachments(user.getUserId(), draftId, event -> {
+            if(event.isLeft()){
+                result.handle(new Either.Left<String, JsonObject>(event.left().getValue()));
+                return;
+            }
 
-				JsonArray attachmentIds = event.right().getValue().getJsonArray("attachmentids");
-				long totalQuota = event.right().getValue().getLong("totalquota");
-				String unread = "false";
-				final JsonArray ids = message.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray());
-				if(ids.contains(user.getUserId()))
-					unread = "true";
-				SqlStatementsBuilder builder = new SqlStatementsBuilder();
+            JsonArray attachmentIds = event.right().getValue().getJsonArray("attachmentids");
+            long totalQuota = event.right().getValue().getLong("totalquota");
+            String unread = "false";
+            final JsonArray ids = message.getJsonArray("allUsers", new JsonArray());
+            if(ids.contains(user.getUserId()))
+                unread = "true";
+            SqlStatementsBuilder builder = new SqlStatementsBuilder();
 
-				String updateMessage =
-						"UPDATE " + messageTable + " SET state = ? WHERE id = ? "+
-								"RETURNING id, subject, body, thread_id";
-				String updateUnread = "UPDATE " + userMessageTable + " " +
-						"SET unread = " + unread +
-						" WHERE user_id = ? AND message_id = ? ";
-				builder.prepared(updateMessage, new fr.wseduc.webutils.collections.JsonArray().add(State.SENT.name()).add(draftId));
-				builder.prepared(updateUnread, new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).add(draftId));
+            //select  + update with exception if state is not different from previous STATE to avoid double send and ROLLBACK
+            String updateMessage =
+                    "SELECT update_message_with_state_transition(?, ?), id, subject, body, thread_id FROM " + messageTable + " WHERE id = ? ";
 
-				final String insertThread =
-						"INSERT INTO conversation.threads as t (" +
-						"SELECT thread_id as id, date, subject, \"from\", \"to\", cc, cci, \"displayNames\" " +
-						"FROM conversation.messages m " +
-						"WHERE m.id = ?) " +
-						"ON CONFLICT (id) DO UPDATE SET date = EXCLUDED.date, subject = EXCLUDED.subject, \"from\" = EXCLUDED.\"from\", " +
-						"\"to\" = EXCLUDED.\"to\", cc = EXCLUDED.cc, cci = EXCLUDED.cci, \"displayNames\" = EXCLUDED.\"displayNames\" " +
-						"WHERE t.id = EXCLUDED.id ";
-				builder.prepared(insertThread, new fr.wseduc.webutils.collections.JsonArray().add(draftId));
+            String updateUnread = "UPDATE " + userMessageTable + " " +
+                    "SET unread = " + unread +
+                    " WHERE user_id = ? AND message_id = ? ";
+            builder.prepared(updateMessage, new JsonArray().add(draftId).add(State.SENT.name()).add(draftId));
+            builder.prepared(updateUnread, new JsonArray().add(user.getUserId()).add(draftId));
 
-				final String insertUserThread =
-						"INSERT INTO conversation.userthreads as ut (user_id,thread_id,nb_unread) VALUES (?,?,?) " +
-						"ON CONFLICT (user_id,thread_id) DO UPDATE SET nb_unread = ut.nb_unread + 1 " +
-						"WHERE ut.user_id = EXCLUDED.user_id AND ut.thread_id = EXCLUDED.thread_id";
-				if (threadId != null) {
-					builder.prepared(insertUserThread, new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).add(threadId).add(0));
-				}
+            final String insertThread =
+                    "INSERT INTO conversation.threads as t (" +
+                    "SELECT thread_id as id, date, subject, \"from\", \"to\", cc, cci, \"displayNames\" " +
+                    "FROM conversation.messages m " +
+                    "WHERE m.id = ?) " +
+                    "ON CONFLICT (id) DO UPDATE SET date = EXCLUDED.date, subject = EXCLUDED.subject, \"from\" = EXCLUDED.\"from\", " +
+                    "\"to\" = EXCLUDED.\"to\", cc = EXCLUDED.cc, cci = EXCLUDED.cci, \"displayNames\" = EXCLUDED.\"displayNames\" " +
+                    "WHERE t.id = EXCLUDED.id ";
+            builder.prepared(insertThread, new fr.wseduc.webutils.collections.JsonArray().add(draftId));
 
-				String insertUserMessage = "INSERT INTO " +  userMessageTable + "(user_id, message_id, total_quota) VALUES ";
-				String insertUserAttachment = "INSERT INTO " +  userMessageAttachmentTable + "(user_id, message_id, attachment_id) VALUES ";
+            final String insertUserThread =
+                    "INSERT INTO conversation.userthreads as ut (user_id,thread_id,nb_unread) VALUES ";
+            final String insertUserThreadConflict =
+                    " ON CONFLICT (user_id,thread_id) DO UPDATE SET nb_unread = ut.nb_unread + 1 WHERE ut.user_id = EXCLUDED.user_id AND ut.thread_id = EXCLUDED.thread_id";
+            if (threadId != null) {
+                builder.prepared(insertUserThread + " (?, ?, ?) " + insertUserThreadConflict, new JsonArray().add(user.getUserId()).add(threadId).add(0));
+            }
 
-				StringBuilder insertUserMessageBuilder = new StringBuilder(insertUserMessage);
-				StringBuilder insertUserAttachmentBuilder = new StringBuilder(insertUserAttachment);
+            String insertUserMessage = "INSERT INTO " +  userMessageTable + "(user_id, message_id, total_quota) VALUES ";
+            String insertUserAttachment = "INSERT INTO " +  userMessageAttachmentTable + "(user_id, message_id, attachment_id) VALUES ";
 
-				int userMessageValueCount = 0;
-				int userMessageAttachementCount = 0;
+            StringBuilder insertUserMessageBuilder = new StringBuilder(insertUserMessage);
+            StringBuilder insertUserAttachmentBuilder = new StringBuilder(insertUserAttachment);
+            StringBuilder insertThreadBuilder = new StringBuilder(insertUserThread);
 
-				// Messages
-				//
-				// Optimisation de l'envois des messages: faire des requêtes unitaires est couteux pour postgresql notament
-				// au niveau de la gestion des locks et de son index. Les groupes en insert .. values est bcp plus efficace
-				for(Object toObj : ids){
-					if(toObj.equals(user.getUserId())) continue;
-					
-					userMessageValueCount++;
-					insertUserMessageBuilder.append(String.format("('%s', '%s', %s ),", toObj, draftId, totalQuota));
-					if (userMessageValueCount >= conversationBatchSize) {
-						builder.prepared(insertUserMessageBuilder.deleteCharAt(insertUserMessageBuilder.length()-1).toString(), new JsonArray());
-						insertUserMessageBuilder = new StringBuilder(insertUserMessage);
-						userMessageValueCount = 0;
-					}
-					if (threadId != null) {
-						builder.prepared(insertUserThread, new fr.wseduc.webutils.collections.JsonArray().add(toObj.toString()).add(threadId).add(1));
-					}
-				}
-				if (userMessageValueCount > 0) {
-					builder.prepared(insertUserMessageBuilder.deleteCharAt(insertUserMessageBuilder.length()-1).toString(), new JsonArray());
-				}
+            int userMessageValueCount = 0;
+            int userMessageAttachementCount = 0;
+            int userThreadValueCount = 0;
 
-				// Pièces jointes
-				for(Object toObj : ids){
-					if(toObj.equals(user.getUserId())) continue;
+            JsonArray userMessageValues = new JsonArray();
+            JsonArray userMessageAttachmentsValues = new JsonArray();
+            JsonArray userThreadValues = new JsonArray();
 
-					for(Object attachmentId : attachmentIds){
-						userMessageAttachementCount++;
-						insertUserAttachmentBuilder.append(String.format("('%s', '%s', '%s' ),", toObj, draftId, attachmentId));
-						if (userMessageAttachementCount >= conversationBatchSize) {
-							builder.prepared(insertUserAttachmentBuilder.deleteCharAt(insertUserAttachmentBuilder.length()-1).toString(), new JsonArray());
-							insertUserAttachmentBuilder = new StringBuilder(insertUserAttachment);
-							userMessageAttachementCount = 0;
-						}
-					}
-				}
-				if (userMessageAttachementCount > 0) {
-					builder.prepared(insertUserAttachmentBuilder.deleteCharAt(insertUserAttachmentBuilder.length()-1).toString(), new JsonArray());
-				}
+            // Messages
+            //
+            // Optimisation de l'envois des messages: faire des requêtes unitaires est couteux pour postgresql notament
+            // au niveau de la gestion des locks et de son index. Les groupes en insert .. values est bcp plus efficace
+            for(Object toObj : ids){
+                if(toObj.equals(user.getUserId())) continue;
 
-				sql.transaction(builder.build(),new DeliveryOptions().setSendTimeout(sendTimeout), SqlResult.validUniqueResultHandler(0, result));
-			}
-		});
+                userMessageValueCount++;
+                insertUserMessageBuilder.append("(? ,? , ? ),");
+                userMessageValues.add( toObj) .add(draftId).add(totalQuota);
+
+                if (threadId != null) {
+                    userThreadValueCount++;
+                    insertThreadBuilder.append("(? , ?, 1),");
+                    userThreadValues.add(toObj).add(threadId);
+                }
+                if (userMessageValueCount >= conversationBatchSize) {
+                    builder.prepared(insertUserMessageBuilder.deleteCharAt(insertUserMessageBuilder.length()-1).toString(), userMessageValues);
+                    insertUserMessageBuilder = new StringBuilder(insertUserMessage);
+                    userMessageValueCount = 0;
+                    userMessageValues = new JsonArray();
+
+                    if(userThreadValueCount > 0) {
+                        builder.prepared(insertThreadBuilder.deleteCharAt(insertThreadBuilder.length() - 1).append(insertUserThreadConflict).toString(),
+                                        userThreadValues);
+                        insertThreadBuilder = new StringBuilder(insertUserThread);
+                        userThreadValueCount = 0;
+                        userThreadValues = new JsonArray();
+                    }
+                }
+            }
+            if (userMessageValueCount > 0) {
+                builder.prepared(insertUserMessageBuilder.deleteCharAt(insertUserMessageBuilder.length()-1).toString(), userMessageValues);
+            }
+            if(userThreadValueCount > 0) {
+                builder.prepared(insertThreadBuilder.deleteCharAt(insertThreadBuilder.length() - 1).append(insertUserThreadConflict).toString(), userThreadValues);
+            }
+
+            // Pièces jointes
+            for(Object toObj : ids){
+                if(toObj.equals(user.getUserId())) continue;
+
+                for(Object attachmentId : attachmentIds){
+                    userMessageAttachementCount++;
+                    insertUserAttachmentBuilder.append("(?, ?, ?),");
+                    userMessageAttachmentsValues.add(toObj).add(draftId).add(attachmentId);
+
+                    if (userMessageAttachementCount >= conversationBatchSize) {
+                        builder.prepared(insertUserAttachmentBuilder.deleteCharAt(insertUserAttachmentBuilder.length()-1).toString(),
+                                userMessageAttachmentsValues);
+                        insertUserAttachmentBuilder = new StringBuilder(insertUserAttachment);
+                        userMessageAttachementCount = 0;
+                        userMessageAttachmentsValues = new JsonArray();
+                    }
+                }
+            }
+            if (userMessageAttachementCount > 0) {
+                builder.prepared(insertUserAttachmentBuilder.deleteCharAt(insertUserAttachmentBuilder.length()-1).toString(),
+                        userMessageAttachmentsValues);
+            }
+
+            sql.transaction(builder.build(),new DeliveryOptions().setSendTimeout(sendTimeout), SqlResult.validUniqueResultHandler(0, result));
+        });
 	}
 
 	@Override

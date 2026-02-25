@@ -53,7 +53,7 @@ public class Conversation extends BaseServer {
 	/** Default strategy for getting visible contacts. */
 	public final static String DEFAULT_GET_VISIBLE_STRATEGY = "all-at-once"; /* other expected value is "filtered" */
 
-	public final static int DEFAULT_CONVERSATION_BATCH_SIZE = 1000;
+	public final static int DEFAULT_CONVERSATION_BATCH_SIZE = 2;
 
 	@Override
 	public void start(final Promise<Void> startPromise) throws Exception {

@@ -463,18 +463,16 @@ public class ConversationController extends BaseController {
 							public void handle(JsonObject userDetails) {
 								message.mergeIn(userDetails);
 
-								conversationService.send(parentMessageId, id, message, user, new Handler<Either<String,JsonObject>>() {
-									public void handle(Either<String, JsonObject> event) {
-										if(event.isRight()){
-											for(Object recipient : message.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray())){
-												if(recipient.toString().equals(user.getUserId()))
-													continue;
-												updateUserQuota(recipient.toString(), size.get());
-											}
-										}
-										result.handle(event);
-									}
-								});
+								conversationService.send(parentMessageId, id, message, user, event1 -> {
+                                    if(event1.isRight()){
+                                        for(Object recipient : message.getJsonArray("allUsers", new JsonArray())){
+                                            if(recipient.toString().equals(user.getUserId()))
+                                                continue;
+                                            updateUserQuota(recipient.toString(), size.get());
+                                        }
+                                    }
+                                    result.handle(event1);
+                                });
 							}
 						});
 					}
