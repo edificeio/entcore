@@ -1,7 +1,0 @@
-{
-	"main" : "org.entcore.session.AuthManager",
-	"worker": true,
-	"preserve-cwd" : true,
-	"slo" : true,
-	"address" : "wse.session"
-}
