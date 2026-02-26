@@ -22,10 +22,9 @@ package org.entcore.registry.services.impl;
 import static fr.wseduc.webutils.Utils.defaultValidationParamsNull;
 import static org.entcore.common.neo4j.Neo4jResult.validEmptyHandler;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collector;
 
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
@@ -235,20 +234,30 @@ public class DefaultWidgetService implements WidgetService {
 		if(structureId == null || structureId .trim().isEmpty() ||
 				widgetId == null || widgetId.trim().isEmpty() || profiles == null || profiles.isEmpty()){
 			handler.handle(new Either.Left<String, JsonObject>("invalid.parameters"));
+			return;
 		}
 
-		String query =
+		final boolean includeAdml = profiles.contains("AdminLocal");
+		final List<String> filteredProfiles = includeAdml ? new ArrayList<>(profiles) : profiles;
+		if (includeAdml) filteredProfiles.remove("AdminLocal");
+
+		JsonObject params = new JsonObject()
+				.put("widgetId", widgetId)
+				.put("structureId", structureId);
+
+		String queryAdml =
+			"MATCH (w:Widget {id: {widgetId}}), " +
+			"(parentStructure:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(fg:FunctionGroup) " +
+			"WHERE fg.filter = 'AdminLocal' AND NOT(fg-[:AUTHORIZED]->w) " +
+			"CREATE UNIQUE fg-[:AUTHORIZED]->w";
+
+		String queryProfile =
 			"MATCH (w:Widget {id: {widgetId}}), " +
 			"(parentStructure:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile) " +
 			"WHERE p.name IN {profiles} AND NOT(g-[:AUTHORIZED]->w) " +
 			"CREATE UNIQUE g-[:AUTHORIZED]->w";
 
-		JsonObject params = new JsonObject()
-				.put("widgetId", widgetId)
-				.put("structureId", structureId)
-				.put("profiles", new JsonArray(profiles));
-
-		neo.execute(query, params, validEmptyHandler(handler));
+		executeMassDispatch(includeAdml, filteredProfiles, params, queryAdml, queryProfile, handler);
 	}
 
 	@Override
@@ -256,20 +265,30 @@ public class DefaultWidgetService implements WidgetService {
 		if(structureId == null || structureId .trim().isEmpty() ||
 				widgetId == null || widgetId.trim().isEmpty() || profiles == null || profiles.isEmpty()){
 			handler.handle(new Either.Left<String, JsonObject>("invalid.parameters"));
+			return;
 		}
 
-		String query =
+		final boolean includeAdml = profiles.contains("AdminLocal");
+		final List<String> filteredProfiles = includeAdml ? new ArrayList<>(profiles) : profiles;
+		if (includeAdml) filteredProfiles.remove("AdminLocal");
+
+		JsonObject params = new JsonObject()
+				.put("widgetId", widgetId)
+				.put("structureId", structureId);
+
+		String queryAdml =
+			"MATCH (parentStructure:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(fg:FunctionGroup), " +
+			"fg-[rel:AUTHORIZED]->(w:Widget {id: {widgetId}}) " +
+			"WHERE fg.filter = 'AdminLocal' " +
+			"DELETE rel";
+
+		String queryProfile =
 			"MATCH (parentStructure:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
 			"g-[rel:AUTHORIZED]->(w:Widget {id: {widgetId}}) " +
 			"WHERE p.name IN {profiles} " +
 			"DELETE rel";
 
-		JsonObject params = new JsonObject()
-				.put("widgetId", widgetId)
-				.put("structureId", structureId)
-				.put("profiles", new JsonArray(profiles));
-
-			neo.execute(query, params, validEmptyHandler(handler));
+		executeMassDispatch(includeAdml, filteredProfiles, params, queryAdml, queryProfile, handler);
 	}
 
 	@Override
@@ -277,20 +296,30 @@ public class DefaultWidgetService implements WidgetService {
 		if(structureId == null || structureId .trim().isEmpty() ||
 				widgetId == null || widgetId.trim().isEmpty() || profiles == null || profiles.isEmpty()){
 			handler.handle(new Either.Left<String, JsonObject>("invalid.parameters"));
+			return;
 		}
 
-		String query =
+		final boolean includeAdml = profiles.contains("AdminLocal");
+		final List<String> filteredProfiles = includeAdml ? new ArrayList<>(profiles) : profiles;
+		if (includeAdml) filteredProfiles.remove("AdminLocal");
+
+		JsonObject params = new JsonObject()
+				.put("widgetId", widgetId)
+				.put("structureId", structureId);
+
+		String queryAdml =
+			"MATCH (parentStructure:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(fg:FunctionGroup), " +
+			"fg-[rel:AUTHORIZED]->(w:Widget {id: {widgetId}}) " +
+			"WHERE fg.filter = 'AdminLocal' " +
+			"SET rel.mandatory = true";
+
+		String queryProfile =
 			"MATCH (parentStructure:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
 			"g-[rel:AUTHORIZED]->(w:Widget {id: {widgetId}}) " +
 			"WHERE p.name IN {profiles} " +
 			"SET rel.mandatory = true";
 
-		JsonObject params = new JsonObject()
-				.put("widgetId", widgetId)
-				.put("structureId", structureId)
-				.put("profiles", new JsonArray(profiles));
-
-		neo.execute(query, params, validEmptyHandler(handler));
+		executeMassDispatch(includeAdml, filteredProfiles, params, queryAdml, queryProfile, handler);
 	}
 
 	@Override
@@ -298,21 +327,50 @@ public class DefaultWidgetService implements WidgetService {
 		if(structureId == null || structureId .trim().isEmpty() ||
 				widgetId == null || widgetId.trim().isEmpty() || profiles == null || profiles.isEmpty()){
 			handler.handle(new Either.Left<String, JsonObject>("invalid.parameters"));
+			return;
 		}
 
-		String query =
+		final boolean includeAdml = profiles.contains("AdminLocal");
+		final List<String> filteredProfiles = includeAdml ? new ArrayList<>(profiles) : profiles;
+		if (includeAdml) filteredProfiles.remove("AdminLocal");
+
+		JsonObject params = new JsonObject()
+				.put("widgetId", widgetId)
+				.put("structureId", structureId);
+
+		String queryAdml =
+			"MATCH (parentStructure:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(fg:FunctionGroup), " +
+			"fg-[rel:AUTHORIZED]->(w:Widget {id: {widgetId}}) " +
+			"WHERE fg.filter = 'AdminLocal' " +
+			"AND COALESCE(w.locked ,false) = false " +
+			"REMOVE rel.mandatory";
+
+		String queryProfile =
 			"MATCH (parentStructure:Structure {id: {structureId}})<-[:HAS_ATTACHMENT*0..]-(s:Structure)<-[:DEPENDS]-(g:ProfileGroup)-[:HAS_PROFILE]->(p:Profile), " +
 			"g-[rel:AUTHORIZED]->(w:Widget {id: {widgetId}}) " +
 			"WHERE p.name IN {profiles} " +
 			"AND COALESCE(w.locked ,false) = false " +
 			"REMOVE rel.mandatory";
 
-		JsonObject params = new JsonObject()
-				.put("widgetId", widgetId)
-				.put("structureId", structureId)
-				.put("profiles", new JsonArray(profiles));
+		executeMassDispatch(includeAdml, filteredProfiles, params, queryAdml, queryProfile, handler);
+	}
 
-		neo.execute(query, params, validEmptyHandler(handler));
+	/** Dispatch mass operation: ADML only, profiles only, or both sequentially. */
+	private void executeMassDispatch(boolean includeAdml, List<String> filteredProfiles,
+			JsonObject params, String queryAdml, String queryProfile,
+			Handler<Either<String, JsonObject>> handler) {
+		if (includeAdml && !filteredProfiles.isEmpty()) {
+			params.put("profiles", new JsonArray(filteredProfiles));
+			neo.execute(queryAdml, params, validEmptyHandler(r -> {
+				if (r.isLeft()) handler.handle(r);
+				else neo.execute(queryProfile, params, validEmptyHandler(handler));
+			}));
+		} else if (includeAdml) {
+			neo.execute(queryAdml, params, validEmptyHandler(handler));
+		} else {
+			params.put("profiles", new JsonArray(filteredProfiles));
+			neo.execute(queryProfile, params, validEmptyHandler(handler));
+		}
 	}
 
 	@Override
