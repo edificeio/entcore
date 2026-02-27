@@ -7,6 +7,7 @@ import { Application } from '~/models/application';
 import { getAppName } from '~/utils/get-app-name';
 import { FavoriteStarIcon } from '../FavoriteStarIcon';
 import { IWebApp } from '@edifice.io/client';
+import './ApplicationIcon.css';
 
 export function ApplicationIcon({
   data,
