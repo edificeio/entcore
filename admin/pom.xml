@@ -36,7 +36,7 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>mod-mongo-persistor</artifactId>
-            <version>4.1-zookeeper-SNAPSHOT</version>
+            <version>4.1-separation-SNAPSHOT</version>
             <scope>runtime</scope>
             <classifier>fat</classifier>
         </dependency>
