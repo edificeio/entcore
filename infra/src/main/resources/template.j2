@@ -230,13 +230,13 @@
     "redisConfig": {
       {% if redis_hosts is defined %}
         "hosts": [{{ redis_hosts|join(', ') }}],
+        "port": {{ redisSentinelPort|default('26379') }},
+        "select": {{ redisSelect|default('0') }},
+        "autoFailover": {{ redisAutoFailover|default('false') }},
       {% else %}
         "host": "{{ redisHost }}",
+        "port": {{ redisPort|default('6379') }},
       {% endif %}      
-      "port": {{ redisPort | default('6379') }},
-      {% if redis_hosts is defined %}
-        "select": {{ redisSelect | default('0') }},
-      {% endif %}
       "auth": "{{ credentials_redis_x_password }}",
       "maxPoolWaiting": {{ redisPoolWaitingExplorer | default('2024') }},
       "maxWaitingHandlers": {{ redisWaitingHandlerExplorer | default('2024') }}
