@@ -94,6 +94,8 @@ public class UserController extends BaseController {
 	private UserBookService userBookService;
 	private TimelineHelper notification;
 	private static final int MOTTO_MAX_LENGTH = 75;
+	private static final int HEALTH_MAX_LENGTH = 1000;
+	private static final int HOBBY_VALUES_MAX_LENGTH = 80;
 	private final EventHelper eventHelper;
 	private JsonObject userBookData;
 	private JsonArray userBookMoods;
@@ -273,6 +275,24 @@ public class UserController extends BaseController {
 				if(mood != null && userBookMoods.contains(mood) == false) {
 					badRequest(request);
 					return;
+				}
+				String health = body.getString("health");
+				if (health != null && health.length() > HEALTH_MAX_LENGTH) {
+					badRequest(request);
+					return;
+				}
+				JsonArray hobbies = body.getJsonArray("hobbies");
+				if (hobbies != null) {
+					for (int i = 0; i < hobbies.size(); i++) {
+						JsonObject hobby = hobbies.getJsonObject(i);
+						if (hobby != null) {
+							String values = hobby.getString("values", "");
+							if (values.length() > HOBBY_VALUES_MAX_LENGTH) {
+								badRequest(request);
+								return;
+							}
+						}
+					}
 				}
 				userBookService.update(userId, body, new Handler<Either<String, JsonObject>>() {
 					@Override
