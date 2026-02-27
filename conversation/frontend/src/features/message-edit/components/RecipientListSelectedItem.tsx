@@ -25,12 +25,8 @@ export function RecipientListSelectedItem({
 
   const classNameProfile =
     type === 'user'
-      ? clsx({
-          'text-orange-500': (recipient as User).profile === 'Student',
-          'text-blue-500': (recipient as User).profile === 'Relative',
-          'text-purple-500': (recipient as User).profile === 'Teacher',
-          'text-green-500': (recipient as User).profile === 'Personnel',
-          'text-red-500': ![
+      ? clsx(`user-profile-${(recipient as User).profile?.toLowerCase()}`, {
+          'user-profile-guest': ![
             'Student',
             'Relative',
             'Teacher',
