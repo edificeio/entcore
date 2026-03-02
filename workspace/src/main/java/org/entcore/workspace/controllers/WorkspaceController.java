@@ -436,8 +436,17 @@ public class WorkspaceController extends BaseController {
 												new ArrayList<>(recipientId), resourceId, params);
 										created(request);
 									} else if (isFolder) {
-										final String notificationName = WorkspaceService.WORKSPACE_NAME.toLowerCase()
-												+ ".contrib-folder";
+										// Add push notification for folder contribution
+										final JsonObject pushNotif = new JsonObject();
+										pushNotif.put("title", "push.notif.folder.contrib");
+										final String translation = I18n.getInstance().translate(
+											WorkspaceService.WORKSPACE_NAME.toLowerCase() + ".contrib.folder",
+											getHost(request), I18n.acceptLanguage(request));
+										final String i18nPushNotifBody = user.getUsername() + " " + translation + " : " + resourceName;
+										pushNotif.put("body", i18nPushNotifBody);
+										params.put("pushNotif", pushNotif);
+										// Notify timeline, with push notif added
+										final String notificationName = WorkspaceService.WORKSPACE_NAME.toLowerCase() + ".contrib-folder";
 										notification.notifyTimeline(request, notificationName, user,
 												new ArrayList<>(recipientId), resourceId, params);
 										created(request);
