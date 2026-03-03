@@ -5,5 +5,5 @@ db.timeline.createIndex(
     date: -1,
     created: -1
   },
-  { name: "timeline_user_news_date_created" }
+  { background: true, name: "timeline_user_news_date_created" }
 );
