@@ -427,7 +427,7 @@ public class SqlConversationService implements ConversationService{
 		String messageConditionUnread = addMessageConditionUnread(folder, values, unread, user);
 		String messagesFields = "m.id, m.subject, m.from, m.state, m.\"fromName\", m.to, m.\"toName\", m.cc, m.\"ccName\", m.cci, m.\"cciName\", m.\"displayNames\", m.date, m.\"noReply\" ";
 
-		values.add(State.SENT.name()).add(State.RECALL.name()).add(user.getUserId());
+		values.add(user.getUserId()).add(user.getUserId()).add(State.SENT.name()).add(State.RECALL.name()).add(user.getUserId());
 		String additionalWhere = addCompleteFolderCondition(values, restrain, unread, folder, user, states);
 
 		if(searchText != null){
@@ -435,8 +435,20 @@ public class SqlConversationService implements ConversationService{
 			values.add(StringUtils.join(checkAndComposeWordFromSearchText(searchText), " & "));
 		}
 		String query = "SELECT "+messagesFields+", um.unread as unread, " +
-				"CASE when COUNT(distinct r) = 0 THEN false ELSE true END AS response, COUNT(*) OVER() as count, " +
-				"CASE when COUNT(distinct uma) = 0 THEN false ELSE true END AS  \"hasAttachment\" " +
+				"   EXISTS (" +
+				"      SELECT 1 " +
+				"      FROM conversation.messages r " +
+				"      WHERE r.parent_id = m.id " +
+				"         AND r.from = ? " +
+				"         AND r.state IN ('SENT','RECALL') " +
+				"      ) AS response," +
+				"  COUNT(*) OVER() as count, " +
+				"  EXISTS (" +
+				"      SELECT 1 " +
+				"      FROM conversation.usermessagesattachments uma " +
+				"      WHERE uma.user_id = ? " +
+				"         AND uma.message_id = m.id" +
+				"   ) AS \"hasAttachment\" " +
 				"FROM " + userMessageTable + " um LEFT JOIN " +
 				userMessageAttachmentTable + " uma ON um.user_id = uma.user_id AND um.message_id = uma.message_id JOIN " +
 				messageTable + " m ON (um.message_id = m.id" + messageConditionUnread + ") LEFT JOIN " +
