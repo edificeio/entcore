@@ -868,7 +868,9 @@ public class TimelineController extends BaseController {
 
 			log.info(String.format("[Timeline.add] Add new notification from sender %s with antiflood activation = %s from module %s for resources %s ",
 					sender, !disableAntiflood, json.getString("type", ""), json.getString("resource", "")));
-			if (!disableAntiflood && antiFlood.contains(sender)) {
+			final boolean mustCheckAntiflood = (sender != null && !sender.startsWith("no-reply") && !disableAntiflood);
+
+			if (mustCheckAntiflood && antiFlood.contains(sender)) {
 				log.info(String.format("[Timeline.add] Sender %s has activate antiflood ", sender));
 			}
 			if (sender == null || sender.startsWith("no-reply") || disableAntiflood || antiFlood.add(sender)) {
