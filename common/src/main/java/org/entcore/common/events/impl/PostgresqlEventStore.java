@@ -200,6 +200,10 @@ public class PostgresqlEventStore extends GenericEventStore {
 			event.remove("groups");
 			event.remove("referer");
 			event.remove("sessionId");
+			event.remove("osName");
+			event.remove("osVersion");
+			event.remove("deviceType");
+			event.remove("deviceName");
 			e = event;
 			tableName = "events." + eventType.toLowerCase() + "_events";
 		} else if (allowedEvents.isEmpty()) {
