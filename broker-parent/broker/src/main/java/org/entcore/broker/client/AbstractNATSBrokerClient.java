@@ -615,7 +615,7 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
     private Future<String> request(NatsClient client, String subject, String payload, long timeout) throws Exception {
         Promise<String> future = Promise.promise();
         final byte[] payloadBytes = payload != null? payload.getBytes(charset) : new byte[0];
-        client.request(subject, payloadBytes, Duration.ofMillis(timeout))
+        client.requestWithTimeout(subject, null, payloadBytes, Duration.ofMillis(timeout))
             .onSuccess(e -> {
                 log.debug("Message sent to subject: " + subject);
                 try {
