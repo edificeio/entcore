@@ -873,7 +873,7 @@ public class TimelineController extends BaseController {
 			if (mustCheckAntiflood && antiFlood.contains(sender)) {
 				log.info(String.format("[Timeline.add] Sender %s has activate antiflood ", sender));
 			}
-			if (sender == null || sender.startsWith("no-reply") || disableAntiflood || antiFlood.add(sender)) {
+			if ( !mustCheckAntiflood || antiFlood.add(sender)) {
 				this.removeMutersFromRecipientList(json)
 				.onComplete(notificationResult -> {
 					final JsonObject notification = notificationResult.succeeded() ? notificationResult.result() : json;
