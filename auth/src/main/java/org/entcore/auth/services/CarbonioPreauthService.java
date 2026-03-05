@@ -6,6 +6,9 @@ import io.vertx.core.logging.LoggerFactory;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeSet;
@@ -25,7 +28,7 @@ public class CarbonioPreauthService {
 		this.carbonioDomainKey = carbonioDomainKey;
 	}
 
-	public Either<String, String> generatePreauthUrl(String account) {
+	public Either<String, String> generatePreauthUrl(String account, String redirectUrl) {
 		long timestamp = System.currentTimeMillis();
 
 		Map<String, String> params = new HashMap<>();
@@ -36,7 +39,7 @@ public class CarbonioPreauthService {
 
 		Either<String, String> preauthResult = computePreAuth(params);
 		return preauthResult.isRight()
-				? new Either.Right<>(buildUrl(params, preauthResult.right().getValue()))
+				? new Either.Right<>(buildUrl(params, preauthResult.right().getValue(), redirectUrl))
 				: new Either.Left<>(preauthResult.left().getValue());
 	}
 
@@ -68,7 +71,26 @@ public class CarbonioPreauthService {
 				.collect(Collectors.joining());
 	}
 
-	private String buildUrl(Map<String, String> params, String computedPreAuth) {
+	private String buildUrl(Map<String, String> params, String computedPreAuth, String redirectUrl) {
+		if (redirectUrl != null && !redirectUrl.isEmpty()) {
+			
+			String encodedRedirectUrl = "";
+			try {
+				encodedRedirectUrl = URLEncoder.encode(redirectUrl, "UTF-8");
+			} catch (UnsupportedEncodingException e) {
+				log.error("Error encoding redirect URL Carbonio Preauth Redirect URL: " + redirectUrl, e);
+				encodedRedirectUrl = redirectUrl;
+			}
+
+			return String.format("%s/service/preauth?account=%s&by=%s&timestamp=%s&expires=%s&preauth=%s&redirectURL=%s",
+					carbonioRedirectUrl,
+					params.get("account"),
+					params.get("by"),
+					params.get("timestamp"),
+					params.get("expires"),
+					computedPreAuth,
+					encodedRedirectUrl);
+		}
 		return String.format("%s/service/preauth?account=%s&by=%s&timestamp=%s&expires=%s&preauth=%s",
 				carbonioRedirectUrl,
 				params.get("account"),
