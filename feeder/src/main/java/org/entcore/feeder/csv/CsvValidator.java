@@ -354,9 +354,13 @@ public class CsvValidator extends CsvReport implements ImportValidator {
 					if (invalidColumns.size() > 0 ) {
 						parseErrors("invalid.column", invalidColumns, profile, handler);
 						return;
-					} else if (!columns.contains("classes") && !columns.contains("childClasses")) {
-						handler.handle(result);
-						return;
+				} else if (!columns.contains("classes") && !columns.contains("childClasses")) {
+					// Relative profile: childClasses is required when linking students by name/first name
+					if ("Relative".equals(profile) && !columns.contains("childExternalId") && (columns.contains("childLastName") || columns.contains("childFirstName"))) {
+						addErrorByFile(profile, "missing.column.childClasses");
+					}
+					handler.handle(result);
+					return;
 					} else {
 						int j = 0;
 						for (String column : columns) {
