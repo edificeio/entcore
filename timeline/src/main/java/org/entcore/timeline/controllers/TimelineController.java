@@ -19,9 +19,6 @@
 
 package org.entcore.timeline.controllers;
 
-import io.vertx.core.*;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
@@ -35,38 +32,36 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Utils;
 import fr.wseduc.webutils.collections.TTLSet;
 import fr.wseduc.webutils.http.BaseController;
+import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.entcore.common.cache.CacheService;
 import org.entcore.common.events.EventHelper;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
-import org.entcore.common.http.filter.AdminFilter;
-import org.entcore.common.http.filter.AdmlOfStructures;
-import org.entcore.common.http.filter.ResourceFilter;
-import org.entcore.common.http.filter.SuperAdminFilter;
-import org.entcore.common.http.filter.Trace;
+import org.entcore.common.http.filter.*;
 import org.entcore.common.http.request.JsonHttpServerRequest;
 import org.entcore.common.mute.MuteHelper;
+import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.notification.TimelineNotificationsLoader;
-import org.entcore.common.notification.NotificationUtils;
-import fr.wseduc.webutils.http.Renders;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.timeline.Timeline;
 import org.entcore.timeline.controllers.helper.NotificationHelper;
-import org.entcore.timeline.events.CachedTimelineEventStore;
-import org.entcore.timeline.events.DefaultTimelineEventStore;
-import org.entcore.timeline.events.MobileTimelineEventStore;
-import org.entcore.timeline.events.SplitTimelineEventStore;
-import org.entcore.timeline.events.TimelineEventStore;
+import org.entcore.timeline.events.*;
 import org.entcore.timeline.events.TimelineEventStore.AdminAction;
 import org.entcore.timeline.services.TimelineConfigService;
 import org.entcore.timeline.services.TimelineMailerService;
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import org.vertx.java.core.http.RouteMatcher;
 
 import java.io.StringReader;
@@ -85,7 +80,7 @@ import static org.entcore.common.http.response.DefaultResponseHandler.defaultRes
 public class TimelineController extends BaseController {
     private static final long IMMEDIATE_NOTIF_DELAY_BY_CHUNK = 30000L;
 
-	public static Logger log = LoggerFactory.getLogger(TimelineController.class);
+	private static final Logger log = LoggerFactory.getLogger(TimelineController.class);
 
 	private TimelineEventStore store;
 	private TimelineConfigService configService;
@@ -870,32 +865,39 @@ public class TimelineController extends BaseController {
 		switch (action) {
 		case "add":
 			final String sender = json.getString("sender");
-			if (sender == null || sender.startsWith("no-reply") || json.getBoolean("disableAntiFlood", false) || antiFlood.add(sender)) {
+			final boolean disableAntiflood = json.getBoolean("disableAntiflood", false);
+
+			log.info(String.format("[Timeline.add] Add new notification from sender %s with antiflood activation = %s from module %s for resources %s ",
+					sender, !disableAntiflood, json.getString("type", ""), json.getString("resource", "")));
+			final boolean mustCheckAntiflood = (sender != null && !sender.startsWith("no-reply") && !disableAntiflood);
+
+			if (mustCheckAntiflood && antiFlood.contains(sender)) {
+				log.info(String.format("[Timeline.add] Sender %s has activate antiflood ", sender));
+			}
+			if ( !mustCheckAntiflood || antiFlood.add(sender)) {
 				this.removeMutersFromRecipientList(json)
 				.onComplete(notificationResult -> {
 					final JsonObject notification = notificationResult.succeeded() ? notificationResult.result() : json;
-					store.add(notification, new Handler<JsonObject>() {
-						public void handle(JsonObject result) {
-							// IF call only when recipient size > maxRecipientLength (10k by default)
-							// timer for performance (thread block) reasons
-							if (result.containsKey(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS)) {
-								final JsonArray chunkedNotifications = result.getJsonArray(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS);
-								result.remove(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS);
-								for (int i = 0; i < chunkedNotifications.size(); i++) {
-									final JsonObject cn = chunkedNotifications.getJsonObject(i);
-									vertx.setTimer((i* IMMEDIATE_NOTIF_DELAY_BY_CHUNK) + 1000L, t -> {
-										final JsonArray chunkRecipientsIds = cn.getJsonArray("recipientsIds");
-										log.info("Launch chunked immediate notification. Recipients :  " +
-											(chunkRecipientsIds != null ? chunkRecipientsIds.size():0));
-										notificationHelper.sendImmediateNotifications(new JsonHttpServerRequest(cn.getJsonObject("request")), cn);
-									});
-								}
-							} else {
-								notificationHelper.sendImmediateNotifications(new JsonHttpServerRequest(notification.getJsonObject("request")), notification);
-							}
-							handler.handle(result);
-						}
-					});
+					store.add(notification, result -> {
+                        // IF call only when recipient size > maxRecipientLength (10k by default)
+                        // timer for performance (thread block) reasons
+                        if (result.containsKey(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS)) {
+                            final JsonArray chunkedNotifications = result.getJsonArray(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS);
+                            result.remove(SplitTimelineEventStore.CHUNKED_NOTIFICATIONS);
+                            for (int i = 0; i < chunkedNotifications.size(); i++) {
+                                final JsonObject cn = chunkedNotifications.getJsonObject(i);
+                                vertx.setTimer((i* IMMEDIATE_NOTIF_DELAY_BY_CHUNK) + 1000L, t -> {
+                                    final JsonArray chunkRecipientsIds = cn.getJsonArray("recipientsIds");
+                                    log.info("Launch chunked immediate notification. Recipients :  " +
+                                        (chunkRecipientsIds != null ? chunkRecipientsIds.size():0));
+                                    notificationHelper.sendImmediateNotifications(new JsonHttpServerRequest(cn.getJsonObject("request")), cn);
+                                });
+                            }
+                        } else {
+                            notificationHelper.sendImmediateNotifications(new JsonHttpServerRequest(notification.getJsonObject("request")), notification);
+                        }
+                        handler.handle(result);
+                    });
 				});
 				if (refreshTypesCache && eventTypes != null && !eventTypes.contains(json.getString("type"))) {
 					eventTypes = null;
@@ -1065,7 +1067,7 @@ public class TimelineController extends BaseController {
 
 					// Ajouter le projectId dans les params pour utilisation dans le template
 					params.put("projectId", projectId);
-					
+
 					final String resource = json.getString("resource", "external_notification");
 					final String resourceId = String.valueOf(System.currentTimeMillis()) + resource;
 					final List<String> recipientsList = recipientsId.getList();
@@ -1073,7 +1075,7 @@ public class TimelineController extends BaseController {
 					// Construire le nom de la notification : {projectId}.external_notification
 					// Exemple: "elea.external_notification" ou "monapp.external_notification"
 					final String notificationName = (projectId + "." + resource).toLowerCase();
-					
+
 					// Récupérer la notification directement sans passer par le bus
 					TimelineNotificationsLoader.getInstance(vertx).getNotification(notificationName, notification -> {
 						if (notification == null || notification.isEmpty()) {
@@ -1081,7 +1083,7 @@ public class TimelineController extends BaseController {
 							return;
 						}
 						log.info("Using notification template: " + notificationName);
-						processNotificationWithTemplate(notification, notificationName, request, 
+						processNotificationWithTemplate(notification, notificationName, request,
 								recipientsList, resourceId, senderId, params);
 					});
 					}
@@ -1091,7 +1093,7 @@ public class TimelineController extends BaseController {
 	/**
 	 * Traite une notification avec le template spécifié.
 	 * Cette méthode exécute directement la logique du case "add" sans passer par le bus.
-	 * 
+	 *
 	 * @param notification Le JsonObject de la notification chargée
 	 * @param notificationName Le nom complet de la notification (ex: "timeline.external_notification_elea")
 	 * @param request La requête HTTP
@@ -1101,7 +1103,7 @@ public class TimelineController extends BaseController {
 	 * @param params Les paramètres à passer au template (incluant projectId)
 	 */
 	private void processNotificationWithTemplate(final JsonObject notification, final String notificationName,
-		final HttpServerRequest request, final List<String> recipientsList, final String resourceId, 
+		final HttpServerRequest request, final List<String> recipientsList, final String resourceId,
 		final String senderId, final JsonObject params) {
 
 		// Construire le JsonObject event comme le fait notifyTimeline
