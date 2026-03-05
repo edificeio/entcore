@@ -494,7 +494,6 @@ export class ImportCSVComponent extends OdeComponent implements OnInit, OnDestro
             }
         }
         this.changeDetector.markForCheck();
-
     }
 
     private async getClassesMapping() {
@@ -502,11 +501,13 @@ export class ImportCSVComponent extends OdeComponent implements OnInit, OnDestro
             return;
         }
         this.globalError.reset();
-        const data: { classesMapping: ClassesMapping, errors: string } =
+        const data: {classesMapping: ClassesMapping, error?: string, errors?: {errors: {"error.Relative": Array<string>}}} =
                 await this.spinner.perform('portal-content', ImportCSVService.getClassesMapping(this.importInfos, this.columns.mappings));
 
-        if (data.errors) {
-            this.globalError.message = data.errors;
+        if (data.error) {
+            this.globalError.message = data.error;
+        } else if (data.errors && data.errors.errors && data.errors.errors["error.Relative"]) {
+            this.globalError.message = data.errors.errors["error.Relative"][0];
         } else {
             this.classes.init(data.classesMapping);
             this.wizardEl.doNextStep();
