@@ -151,8 +151,11 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 		final JsonObject preDelete = config.getJsonObject("pre-delete");
 		final Long deleteDelay = config.getLong("delete-delay", 240l); // To small platform default value to 300 and to big platform put value 900 in config
 		final TimelineHelper timeline = new TimelineHelper(vertx, eb, config);
+		final User.DeleteTask deleteTask = new User.DeleteTask(deleteUserDelay, eb, vertx, deleteDelay);
 		try {
-			new CronTrigger(vertx, deleteCron).schedule(new User.DeleteTask(deleteUserDelay, eb, vertx, deleteDelay));
+			// Schedule pre-deleted user deletion task from cron expression
+			new CronTrigger(vertx, deleteCron).schedule(deleteTask);
+			// Pre-deletion
 			if (preDelete != null) {
 				if (preDelete.size() == ManualFeeder.profiles.size() &&
 						ManualFeeder.profiles.keySet().containsAll(preDelete.fieldNames())) {
@@ -167,6 +170,7 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 			} else {
 				new CronTrigger(vertx, preDeleteCron).schedule(new User.PreDeleteTask(preDeleteUserDelay, timeline));
 			}
+			// Imports
 			if (imports != null) {
 				if (feeds.keySet().containsAll(imports.fieldNames())) {
 					for (String f : imports.fieldNames()) {
@@ -184,13 +188,14 @@ public class Feeder extends BusModBase implements Handler<Message<JsonObject>> {
 				new CronTrigger(vertx, importCron).schedule(new ImporterTask(vertx, defaultFeed,
 						config.getBoolean("auto-export", false), config.getLong("auto-export-delay", 1800000l)));
 			}
-
+			// Erase timetable reports
 			new CronTrigger(vertx, timetableReportEraseCron).schedule(new TimetableReport.EraseTask(storage, timetableReportEraseAfterSeconds));
 		} catch (ParseException e) {
 			logger.fatal(e.getMessage(), e);
 			vertx.close();
 			return Future.failedFuture(e);
 		}
+		// Reinit login
 		final String reinitLoginCron = config.getString("reinit-login-cron", null);
 		Validator.initLogin(neo4j, vertx);
 		if(reinitLoginCron != null)
