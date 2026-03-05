@@ -144,7 +144,8 @@ public class CarbonioPreauthController extends BaseController {
 			} else {
 				final String userAlias = getUserAlias(userInfos);
 
-				Either<String, String> result = carbonioPreauthService.generatePreauthUrl(userAlias);
+				String redirectUrl = request.params().get("callback");
+				Either<String, String> result = carbonioPreauthService.generatePreauthUrl(userAlias, redirectUrl);
 				if (result.isLeft()) {
 					log.error("Failed to generate Carbonio preauth URL for user " + userAlias + ": " + result.left().getValue());
 					badRequest(request, result.left().getValue());
