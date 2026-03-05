@@ -44,6 +44,7 @@
   "lastName": "nom",
   "mapping.unknown.error": "Erreur inconnue lors de la recherche des identifiants.",
   "missing.attribute": "Ligne {0} : Attribut {1} manquant.",
+  "missing.column.childClasses": "La colonne \"Classes de l'élève\" est obligatoire lors d'un import parent avec jointure élève par nom et prénom.",
   "missing.columns": "Ligne {0} : colonne manquante.",
   "missing.student": "Élève manquant : {0}",
   "missing.student.soft": "Ligne {0} : le parent {2} {3} référence un élève non retrouvé.",
