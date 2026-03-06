@@ -19,6 +19,12 @@
     "workspace-url": "localhost",
     "workspace-port": 8011,
     "workspace-prefix": "/workspace",
+    "probes": [
+      "org.entcore.common.http.health.Neo4jProbe",
+      "org.entcore.common.http.health.MongoProbe",
+      "org.entcore.common.http.health.RedisProbe",
+      "fr.wseduc.webutils.metrics.EventBusProbe"
+    ],
     "activation-welcome-message": {{ activationWelcomeMessage | default('true') }},
     "createdUserEmail": {{ directoryCreatedUserEmail | default('false') }},
     "classDefaultRoles": {{ directoryClassDefaultRoles | default('false') }},

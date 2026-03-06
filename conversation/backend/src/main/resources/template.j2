@@ -15,6 +15,13 @@
     "port": 8019,
     "app-name": "Messagerie",
     "app-icon": "conversation-large",
+    "probes": [
+      "org.entcore.common.http.health.Neo4jProbe",
+      "org.entcore.common.http.health.MongoProbe",
+      "org.entcore.common.http.health.PostgresProbe",
+      "org.entcore.common.http.health.RedisProbe",
+      "fr.wseduc.webutils.metrics.EventBusProbe"
+    ],
     "block-route-filter": {{ conversationBlockRouteFilter | default('false') }},
     {% if (ha is defined and not(ha)) or (inventory_hostname_short is defined and inventory_hostname_short == 'jobs') %}
       "deleteOrphanCron" : "{{ conversationDeleteOrphanCron | default('0 45 4 * * ? *') }}",
