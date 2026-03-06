@@ -3,6 +3,12 @@
   "config": {
     "main": "org.entcore.auth.Auth",
     "port": 8009,
+    "probes": [
+      "org.entcore.common.http.health.Neo4jProbe",
+      "org.entcore.common.http.health.MongoProbe",
+      "org.entcore.common.http.health.RedisProbe",
+      "fr.wseduc.webutils.metrics.EventBusProbe"
+    ],
     {{ authHttpServerOptions | default('"httpServerOptions": {"maxFormAttributeSize": 2147483647},')}}
     "otp-disabled": {{ authOtpDisabled | default('true') }},
     {% if ha is defined and ha and inventory_hostname_short is defined and inventory_hostname_short != 'jobs' and authInstance is defined %}

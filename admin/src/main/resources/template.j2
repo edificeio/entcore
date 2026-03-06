@@ -9,6 +9,12 @@
     "auto-redeploy": false,
     "app-type" : "END_USER",
     "host": "https://{{ host }}",
+    "probes": [
+      "org.entcore.common.http.health.Neo4jProbe",
+      "org.entcore.common.http.health.MongoProbe",
+      "org.entcore.common.http.health.RedisProbe",
+      "fr.wseduc.webutils.metrics.EventBusProbe"
+    ],
     "mass-messaging-enabled": {{ adminMassMessagingEnabled | default('false') }},
     {% if hotjarId is defined %}
       "publicConf": {
