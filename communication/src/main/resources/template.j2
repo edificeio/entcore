@@ -10,6 +10,11 @@
     "discoverVisibleExpectedProfile": {{ communicationDiscoverVisibleExpectedProfile | default('[]') }},
     "mode": "prod",
     "port": 8015,
+    "probes": [
+      "org.entcore.common.http.health.Neo4jProbe",
+      "org.entcore.common.http.health.RedisProbe",
+      "fr.wseduc.webutils.metrics.EventBusProbe"
+    ],
     "initDefaultCommunicationRules": {{ communicationDefaultComRules }},
     "visibles-search-type": "{{ communicationVisiblesSearchType | default('light') }}"
   }

@@ -5,6 +5,12 @@
     "main": "org.entcore.infra.Starter",
     "port": 8001,
     "mode": "prod",
+    "probes": [
+      "org.entcore.common.http.health.Neo4jProbe",
+      "org.entcore.common.http.health.MongoProbe",
+      "org.entcore.common.http.health.RedisProbe",
+      "fr.wseduc.webutils.metrics.EventBusProbe"
+    ],
     "neo4jMetricsEnable": {{ neo4jMetricsEnable  | default('true') }},
     {% if checkMonitoringEvents is defined %}
       "check-monitoring-events" : {

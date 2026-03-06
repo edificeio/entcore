@@ -15,6 +15,12 @@
     "app-address": "/workspace/workspace",
     "app-icon": "workspace-large",
     "port": 8011,
+    "probes": [
+      "org.entcore.common.http.health.Neo4jProbe",
+      "org.entcore.common.http.health.MongoProbe",
+      "org.entcore.common.http.health.RedisProbe",
+      "fr.wseduc.webutils.metrics.EventBusProbe"
+    ],
     "old-query": {{ workspaceUseOldQuery | default('false') }},
     "fileAnalyzer": {
       "enabled": {{ fileAnalyzerOn | default('true') }},
