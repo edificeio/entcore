@@ -13,6 +13,12 @@
     "app-address": "/archive",
     "app-icon": "archive-large",
     "app-type" : "END_USER",
+    "probes": [
+      "org.entcore.common.http.health.Neo4jProbe",
+      "org.entcore.common.http.health.MongoProbe",
+      "org.entcore.common.http.health.RedisProbe",
+      "fr.wseduc.webutils.metrics.EventBusProbe"
+    ],
     "export-path": "{{ archiveExportPath | default('/tmp') }}",
     "import-path": "{{ archiveImportPath | default('/tmp') }}",
     "archive-private-key": "{{ archivePrivateKey }}",

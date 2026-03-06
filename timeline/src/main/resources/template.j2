@@ -15,6 +15,13 @@
     "db-schema": "flashmsg",
     "auto-redeploy": false,
     "ssl": true,
+    "probes": [
+      "org.entcore.common.http.health.Neo4jProbe",
+      "org.entcore.common.http.health.MongoProbe",
+      "org.entcore.common.http.health.PostgresProbe",
+      "org.entcore.common.http.health.RedisProbe",
+      "fr.wseduc.webutils.metrics.EventBusProbe"
+    ],
     "maxRecipientLength": {{ timelineMaxRecipientLength | default(1000) }},
     {% if pushNotif is defined %}
       "push-notif": {{ pushNotif }},

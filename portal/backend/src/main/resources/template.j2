@@ -6,6 +6,12 @@
     {% if ha is defined and ha and inventory_hostname_short is defined and inventory_hostname_short != 'jobs' and portalInstance is defined %}
       "instances": {{ portalInstance }},
     {% endif %}
+    "probes": [
+      "org.entcore.common.http.health.Neo4jProbe",
+      "org.entcore.common.http.health.MongoProbe",
+      "org.entcore.common.http.health.RedisProbe",
+      "fr.wseduc.webutils.metrics.EventBusProbe"
+    ],
     {% if portalNeo4jCheck is defined and portalNeo4jCheck %}
       "neo4jConfigOverride":{
 		    "email-alerts-subject": "{{ portalNeo4jCheckEmailSubject | default('[NEO4J] Noeuds down: ') }}",
