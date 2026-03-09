@@ -1653,39 +1653,53 @@ public class SqlConversationService implements ConversationService{
 		final SqlStatementsBuilder builder = new SqlStatementsBuilder();
 
 		final JsonArray values = new JsonArray();
-		values.add(user.getUserId());
-		String trashMessagesQuery =
-			"UPDATE " + userMessageTable + " AS um " +
-			"SET trashed = true, folder_id = NULL " +
-			"WHERE um.user_id = ? " +
-			"AND (um.trashed = false OR um.folder_id IS NOT NULL) " +
-			"AND um.folder_id IN (" +
-				"WITH RECURSIVE userFolders AS (" +
-					"SELECT DISTINCT f.id AS id FROM " + folderTable + " AS f " +
-					"WHERE f.id IN " + generateInVars(folderIds, values) + " AND f.user_id = ? " +
-					"UNION " +
-					"SELECT DISTINCT f.id AS id FROM " + folderTable + " AS f " +
-					"JOIN userFolders ON f.parent_id = userFolders.id " +
-					"WHERE f.user_id = ? " +
-				") " +
-				"SELECT id FROM userFolders" +
-			")";
-		values.add(user.getUserId());
-		values.add(user.getUserId());
-		builder.prepared(trashMessagesQuery, values);
+		final String inVars = generateInVars(folderIds, values);
+		values.add(user.getUserId()); // userFolders non-recursive: f.user_id = ?
+		values.add(user.getUserId()); // userFolders recursive:     f.user_id = ?
+		values.add(user.getUserId()); // UPDATE usermessages:       um.user_id = ?
+		values.add(user.getUserId()); // DELETE userthreads:        ut.user_id = ?
+		values.add(user.getUserId()); // NOT EXISTS subquery:       um2.user_id = ?
 
-		final String deleteUserThreads =
-			"DELETE FROM conversation.userthreads " +
-			"WHERE user_id = ? AND thread_id NOT IN (" +
+		final String combinedQuery =
+			"WITH RECURSIVE " +
+			"userFolders AS (" +
+				"SELECT f.id FROM " + folderTable + " f " +
+				"WHERE f.id IN " + inVars + " AND f.user_id = ? " +
+				"UNION " +
+				"SELECT f.id FROM " + folderTable + " f " +
+				"JOIN userFolders uf ON f.parent_id = uf.id " +
+				"WHERE f.user_id = ? " +
+			"), " +
+			"trashed AS (" +
+				"UPDATE " + userMessageTable + " um " +
+				"SET trashed = true, folder_id = NULL " +
+				"WHERE um.user_id = ? " +
+				"AND (um.trashed = false OR um.folder_id IS NOT NULL) " +
+				"AND um.folder_id IN (SELECT id FROM userFolders) " +
+				"RETURNING um.message_id" +
+			"), " +
+			"affected_threads AS (" +
 				"SELECT DISTINCT m.thread_id " +
-				"FROM conversation.usermessages um " +
-				"LEFT JOIN conversation.messages m on um.message_id = m.id " +
-				"WHERE user_id = ? AND trashed = false " +
-			")";
-		final JsonArray threadValues = new JsonArray()
-			.add(user.getUserId())
-			.add(user.getUserId());
-		builder.prepared(deleteUserThreads, threadValues);
+				"FROM trashed t " +
+				"INNER JOIN " + messageTable + " m ON m.id = t.message_id " +
+				"WHERE m.thread_id IS NOT NULL" +
+			"), " +
+			"deleted_threads AS (" +
+				"DELETE FROM conversation.userthreads ut " +
+				"WHERE ut.user_id = ? " +
+				"AND ut.thread_id IN (SELECT thread_id FROM affected_threads) " +
+				"AND NOT EXISTS (" +
+					"SELECT 1 FROM " + userMessageTable + " um2 " +
+					"INNER JOIN " + messageTable + " m2 ON um2.message_id = m2.id " +
+					"WHERE um2.user_id = ? " +
+					"AND um2.trashed = false " +
+					"AND m2.thread_id = ut.thread_id " +
+					"AND NOT EXISTS (SELECT 1 FROM trashed t3 WHERE t3.message_id = um2.message_id)" +
+				")" +
+			") " +
+			"SELECT count(*) FROM trashed";
+
+		builder.prepared(combinedQuery, values);
 
 		final JsonArray deleteFolderValues = new JsonArray();
 		deleteFolderValues.add(user.getUserId());
