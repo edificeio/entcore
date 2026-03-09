@@ -179,16 +179,21 @@ public abstract class AbstractDataValidationService extends TemplatedEmailRender
 			final JsonObject originalState = j.getJsonObject(stateField, new JsonObject());
 			String key = generateRandomCode();
 
-			// Check if data validation was already started
-			if( getState(originalState) == PENDING ) {
-				final Long ttl = getTtl(originalState);
-				if( ttl!=null && ttlToRemainingSeconds(ttl.longValue()) > 0 ) {	// Is it still pending ?
-					String oldCode = getKey(originalState);							// Yes => keep the same code
-					if( !StringUtils.isEmpty(oldCode) ) {
+		// Check if data validation was already started
+		if( getState(originalState) == PENDING ) {
+			final Long ttl = getTtl(originalState);
+			if( ttl!=null && ttlToRemainingSeconds(ttl.longValue()) > 0 ) {	// Is it still pending ?
+				// Only reuse the same code if the destination has not changed.
+				// If the destination changed, a new code must be generated to prevent using a code sent to a previous address to validate a different one.
+				String oldPending = getPending(originalState);
+				if( value != null && value.equals(oldPending) ) {
+					String oldCode = getKey(originalState); // Same destination : keep the same code
+					if(!StringUtils.isEmpty(oldCode)) {
 						key = oldCode;
 					}
 				}
 			}
+		}
 
 			// Reset the stateField to a pending state
 			setState(originalState, PENDING);
