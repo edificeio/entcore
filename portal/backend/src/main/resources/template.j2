@@ -40,7 +40,7 @@
     "mode": "prod",
     "assets-path": "{{ assetsPath | default('/srv/vertx/entcore') }}",
     "path-prefix": "",
-    "emailProvider": {{ emailProvider | default('[]') }},
+    "emailProvider": {{ emailProvider | default('[]', true) }},
     "root-page": "{{ rootPage | default('/timeline/timeline') }}",
     "urls": {
       "userbook": "/userbook",
