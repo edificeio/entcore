@@ -40,7 +40,9 @@ import { WidgetAssignmentComponent } from './widgets/assignment/widget-assignmen
 import { WidgetMassAssignmentComponent } from './widgets/mass-assignment/widget-mass-assignment.component';
 import { WidgetRolesResolver } from './widgets/smart-widget/widget-roles.resolver';
 import { WidgetMyAppsParametersComponent } from './widgets/parameters/widget-myapps-parameters.component';
+import { WidgetBibliocollegeParametersComponent } from './widgets/parameters/widget-bibliocollege-parameters.component';
 import { DefaultBookmarksResolver } from './widgets/parameters/default-bookmarks.resolver';
+import { ChannelsResolver } from './widgets/parameters/channels.resolver';
 
 @NgModule({
     imports: [
@@ -72,7 +74,8 @@ import { DefaultBookmarksResolver } from './widgets/parameters/default-bookmarks
         SmartWidgetComponent,
         WidgetAssignmentComponent,
         WidgetMassAssignmentComponent,
-        WidgetMyAppsParametersComponent
+        WidgetMyAppsParametersComponent,
+        WidgetBibliocollegeParametersComponent
     ],
     providers: [
         NgSwitch,
@@ -83,7 +86,8 @@ import { DefaultBookmarksResolver } from './widgets/parameters/default-bookmarks
         ConnectorRolesResolver,
         WidgetsResolver,
         WidgetRolesResolver,
-        DefaultBookmarksResolver
+        DefaultBookmarksResolver,
+        ChannelsResolver
     ]
 })
 export class ServicesModule {
