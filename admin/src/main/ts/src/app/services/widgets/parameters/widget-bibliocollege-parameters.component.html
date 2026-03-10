@@ -1,0 +1,75 @@
+<div class="panel-section">
+    <div class="message is-info has-margin-10">
+        <div class="message-body">
+            {{ 'services.widget.bibliocollege.parameters.info' | translate }}
+        </div>
+    </div>
+
+    <ode-panel-section [section-title]="'services.widget.bibliocollege.rss.sectionTitle' | translate" [folded]="false">
+        <ul class="rss-list">
+            <li class="rss-item rss-item--readonly" *ngIf="confFeed">
+                <div class="rss-item__label">
+                    <span class="rss-item__title">{{ confFeed.title || confFeed.link }}</span>
+                </div>
+            </li>
+            <li class="rss-item" *ngFor="let feed of feeds; let i = index">
+                <div class="rss-item__label">
+                    <span class="rss-item__title">{{ feed.title || feed.link }}</span>
+                </div>
+                <div class="rss-item__actions">
+                    <i class="fa fa-pencil action" (click)="openEdit(i)" [title]="'services.widget.bibliocollege.rss.edit' | translate"></i>
+                    <i class="fa fa-times action" (click)="deleteRssFeed(i)" [title]="'services.widget.bibliocollege.rss.delete' | translate"></i>
+                </div>
+            </li>
+        </ul>
+        <p *ngIf="!confFeed && feeds.length === 0" class="rss-list-empty">
+            {{ 'services.widget.bibliocollege.rss.empty' | translate }}
+        </p>
+        <button type="button" class="bt-add" (click)="openAdd()">
+            {{ 'services.widget.bibliocollege.rss.add' | translate }}
+            <i class="fa fa-plus-circle is-size-5"></i>
+        </button>
+    </ode-panel-section>
+</div>
+
+<ode-lightbox class="rss-lightbox" [show]="showRssLightbox" (onClose)="closeLightbox()">
+    <form class="form__rss" [formGroup]="rssForm" (ngSubmit)="saveRssFeed()">
+        <div class="form-content">
+            <header>
+                <i class="fa fa-rss is-size-6"></i>&nbsp;
+                <span *ngIf="!isEditing">{{ 'services.widget.bibliocollege.rss.addTitle' | translate }}</span>
+                <span *ngIf="isEditing">{{ 'services.widget.bibliocollege.rss.editTitle' | translate }}</span>
+            </header>
+            <ode-form-field [label]="'services.widget.bibliocollege.rss.titleLabel' | translate">
+                <input type="text"
+                       class="input"
+                       formControlName="title"
+                       [placeholder]="'services.widget.bibliocollege.rss.titlePlaceholder' | translate" />
+            </ode-form-field>
+            <ode-form-field [label]="'services.widget.bibliocollege.rss.urlLabel' | translate">
+                <input type="url"
+                       class="input"
+                       formControlName="link"
+                       [placeholder]="'services.widget.bibliocollege.rss.urlPlaceholder' | translate"
+                       autocomplete="url" />
+            </ode-form-field>
+            <ode-form-field [label]="'services.widget.bibliocollege.rss.showLabel' | translate">
+                <select class="input" formControlName="show">
+                    <option *ngFor="let opt of showOptions" [value]="opt.value">{{ opt.labelKey | translate }}</option>
+                </select>
+            </ode-form-field>
+            <p class="form-error" *ngIf="(linkControl.invalid || titleControl.invalid) && rssForm.touched">
+                {{ 'services.widget.bibliocollege.rss.urlInvalid' | translate }}
+            </p>
+            <div class="form-actions">
+                <button type="button" class="button is-secondary" (click)="closeLightbox()">
+                    {{ 'cancel' | translate }}
+                </button>
+                <button type="submit" class="button submit" [disabled]="rssForm.invalid">
+                    <span *ngIf="!isEditing">{{ 'services.widget.bibliocollege.rss.validate' | translate }}</span>
+                    <span *ngIf="isEditing">{{ 'services.widget.bibliocollege.rss.save' | translate }}</span>
+                </button>
+            </div>
+        </div>
+    </form>
+</ode-lightbox>
