@@ -72,7 +72,10 @@ public class PlatformInfoController extends BaseController {
 				.put("mass-messaging-enabled", config.getBoolean("mass-messaging-enabled"))
 				.put("allow-adml-structure-name-change", config.getBoolean("allow-adml-structure-name-change", true))
 				.put("enable-manual-group-autolink", config.getBoolean("enable-manual-group-autolink", false))
-				.put("enable-flashmsg-user-position-field", config.getBoolean("enable-flashmsg-user-position-field", false));
+				.put("enable-flashmsg-user-position-field", config.getBoolean("enable-flashmsg-user-position-field", false))
+				.put("rss-bibliocollege-flux", config.getString("rss-bibliocollege-flux"))
+				.put("rss-bibliocollege-title", config.getString("rss-bibliocollege-title"))
+				.put("rss-bibliocollege-show", config.getInteger("rss-bibliocollege-show"));
 
 		if (preDelete != null && preDelete.size() == PROFILES.size() &&
 				PROFILES.containsAll(preDelete.fieldNames())) {
