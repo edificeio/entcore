@@ -1,5 +1,5 @@
 import { HttpClient } from "@angular/common/http";
-import { Component, Injector, Input, OnChanges, SimpleChanges } from "@angular/core";
+import { ChangeDetectorRef, Component, Injector } from "@angular/core";
 import { Data, Params } from "@angular/router";
 import { OdeComponent } from "ngx-ode-core";
 import { SpinnerService } from "ngx-ode-ui";
@@ -7,7 +7,6 @@ import { NotifyService } from "src/app/core/services/notify.service";
 import { routing } from "src/app/core/services/routing.service";
 import { GroupModel } from "src/app/core/store/models/group.model";
 import { StructureModel } from "src/app/core/store/models/structure.model";
-import { filterRolesByDistributions } from "../../applications/application/smart-application/smart-application.component";
 import { ServicesStore } from "../../services.store";
 import { filterWidgetsByLevelsOfEducation } from "../../_shared/services-list/services-list.component";
 import { Assignment } from "../../_shared/services-types";
@@ -25,7 +24,7 @@ type SmartWidgetTab = 'assignment' | 'massAssignment' | 'myappsParameters';
         }
     `]
 })
-export class SmartWidgetComponent extends OdeComponent implements OnChanges {
+export class SmartWidgetComponent extends OdeComponent {
     private _currentTab:SmartWidgetTab  = 'assignment';
     public get currentTab():SmartWidgetTab {
         return this._currentTab;
@@ -33,7 +32,13 @@ export class SmartWidgetComponent extends OdeComponent implements OnChanges {
     public set currentTab( newTab:SmartWidgetTab ) {
         this._currentTab = newTab;
         if( newTab==='myappsParameters' ) {
-            this.router.navigate( ['myapps-params'], {relativeTo: this.route});
+            const widgetName = this.servicesStore.widget?.name || this.servicesStore.widget?.displayName || '';
+            if (widgetName === 'my-apps') {
+                this.router.navigate( ['myapps-params'], {relativeTo: this.route});
+            } else if (this.isRssChannelsParamsWidget(widgetName)) {
+                const type = this.getRssChannelsType(widgetName);
+                this.router.navigate( ['bibliocollege-params'], { relativeTo: this.route, queryParams: { type } });
+            }
         } else {
             this.router.navigate( ['.'], {relativeTo: this.route});
         }
@@ -56,13 +61,22 @@ export class SmartWidgetComponent extends OdeComponent implements OnChanges {
         super(injector);
     }
 
+    private get cdr(): ChangeDetectorRef {
+        return this.injector.get(ChangeDetectorRef);
+    }
+
     async ngOnInit() {
         super.ngOnInit();
         this.subscriptions.add(this.route.params.subscribe((params: Params) => {
             if (params['widgetId']) {
                 this.servicesStore.widget = this.servicesStore.structure.widgets.data.find(a => a.id === params['widgetId']);
                 this.checkStructureLevelOfEducation();
-                this.currentTab = 'assignment';
+                const childPath = this.route.snapshot.firstChild?.routeConfig?.path;
+                if (childPath === 'myapps-params' || childPath === 'bibliocollege-params') {
+                    this._currentTab = 'myappsParameters';
+                } else {
+                    this._currentTab = 'assignment';
+                }
             }
         }));
 
@@ -72,12 +86,17 @@ export class SmartWidgetComponent extends OdeComponent implements OnChanges {
                 this.assignmentGroupPickerList = this.servicesStore.structure.groups.data;
                 this.checkStructureLevelOfEducation();
                 this.showMassAssignmentTab(this.currentStructure);
-                this.currentTab = 'assignment';
+                const childPath = this.route.snapshot.firstChild?.routeConfig?.path;
+                if (childPath !== 'myapps-params' && childPath !== 'bibliocollege-params') {
+                    this._currentTab = 'assignment';
+                }
+                this.cdr.markForCheck();
             }
         }));
 
         this.session = await SessionModel.getSession();
         this.currentTab = 'assignment';
+        this.cdr.markForCheck();
     }
 
     private showMassAssignmentTab(structure):void {        
@@ -101,14 +120,49 @@ export class SmartWidgetComponent extends OdeComponent implements OnChanges {
         }
     }
 
+    /** True when the "Paramétrage spécifique" tab should be shown. Conditions depend on the widget. */
     public get canEditMyAppsParameters():boolean {
-        return this.servicesStore.widget.name==='my-apps' 
-            && this.is2D
-            && (this.isAdmc() || this.isAdml(this.currentStructure.id));
-    } 
+        const widget = this.servicesStore.widget;
+        const structure = this.currentStructure || this.servicesStore.structure;
+        if (!widget || !structure) {
+            return false;
+        }
+        const hasRights = this.isAdmc() || this.isAdml(structure.id);
+        const widgetName = (widget.name || widget.displayName || '').trim();
+
+        if (widgetName === 'my-apps') {
+            return this.is2D && hasRights;
+        }
+        if (this.isRssChannelsParamsWidget(widgetName)) {
+            return hasRights;
+        }
+        return false;
+    }
+
+    /** Matches bibliocollege / biblicollege widget (with one or two 'l'). */
+    private isBibliocollegeWidget(name: string): boolean {
+        if (!name) return false;
+        const n = name.trim().toLowerCase();
+        return n === 'biblicollege-widget';
+    }
+
+    /** Widgets that use the RSS/channels "Paramétrage spécifique" (bibliocollege-params). */
+    private isRssChannelsParamsWidget(name: string): boolean {
+        if (!name) return false;
+        const n = name.trim().toLowerCase();
+        return this.isBibliocollegeWidget(name) || n === 'e-sidoc-widget';
+    }
+
+    /** Query param type for GET /rss/channels/structure/:id (e-sidoc-widget -> e-sidoc, bibliocollege -> bibliocollege). */
+    private getRssChannelsType(widgetName: string): string {
+        const n = (widgetName || '').trim().toLowerCase();
+        if ( n === 'e-sidoc-widget') return 'e-sidoc';
+        return 'bibliocollege';
+    }
 
     private get is2D() {
-        return this.currentStructure.levelsOfEducation && this.currentStructure.levelsOfEducation.length && this.currentStructure.levelsOfEducation.indexOf(2) >= 0;
+        const structure = this.currentStructure || this.servicesStore.structure;
+        return structure?.levelsOfEducation?.length && structure.levelsOfEducation.indexOf(2) >= 0;
     }
 
     private isAdmc() {
