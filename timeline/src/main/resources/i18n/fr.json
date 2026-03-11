@@ -101,6 +101,8 @@
   "comments.show": "Afficher les commentaires",
   "communities": "Communautés",
   "conversation": "Messagerie",
+  "elea": "ELEA",
+  "elea.external_notification": "Notification depuis ELEA",
   "empty.timeline": "Léa a publié un billet de Blog, Enzo vous a partagé une Carte mentale, Chloé a écrit un message dans Forum. Retrouvez bientôt toutes vos notifications dans ce Fil de nouveautés.",
   "empty.timeline.nofilters": "Oups, vous avez décoché tous les filtres... Sélectionnez vos rubriques préférées pour accéder aux notifications les plus importantes !",
   "empty.timeline.nofilters.title": "Qui a éteint la lumière ?",
@@ -297,7 +299,5 @@
   "xtnotifications.never": "Jamais",
   "xtnotifications.title": "Mes notifications externes",
   "xtnotifications.validate": "Enregistrer",
-  "xtnotifications.weekly": "Hebdomadaire",
-  "elea": "ELEA",
-  "elea.external_notification": "Notification depuis ELEA"
+  "xtnotifications.weekly": "Hebdomadaire"
 }

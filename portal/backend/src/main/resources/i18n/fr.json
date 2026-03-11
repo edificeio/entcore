@@ -123,7 +123,7 @@
   "bbm.video.record.start": "Démarrer l'enregistrement",
   "bbm.video.record.stop": "Arrêter l'enregistrement",
   "bbm.video.save.loader.caption": "Enregistrement de la vidéo...",
-  "bbm.video.url.placeholder": "Insérez un lien Youtube, Dailymotion, Viméo, …",
+  "bbm.video.url.placeholder": "Insérez un lien YouTube, Dailymotion, Viméo, PeerTube…",
   "bbm.video.url.title": "URL de la vidéo",
   "bbm.video.useEmbedCode": "Utiliser un code embed ou iframe",
   "bbm.workspace": "Espace doc",
