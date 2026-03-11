@@ -232,7 +232,7 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 			{
 				txXDT.add(CREATE_GROUPS, new JsonObject().put("structureExternalId", structureExternalId)
 					.put("name", name).put("displayNameSearchField", Validator.sanitize(name)).put("externalId", externalId)
-					.put("id", UUID.randomUUID().toString()).put("source", getTimetableSource()).put("date", importDate));
+					.put("id", UUID.randomUUID().toString()).put("source", getTimetableSource()).put("date", importDate).put("filter", FG_FILTER));
 
 				ttReport.temporaryGroupCreated(name);
 			}
