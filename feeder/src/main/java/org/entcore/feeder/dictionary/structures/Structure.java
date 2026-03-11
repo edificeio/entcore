@@ -226,6 +226,7 @@ public class Structure {
 							.put("displayNameSearchField", Validator.sanitize(name))
 							.put("structureName", struct.getString("name"))
 							.put("name", name)
+							.put("filter", "FunctionalGroup")
 					);
 			params.put("source", source);
 			getTransaction().add(query, params);

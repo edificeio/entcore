@@ -448,7 +448,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 			{
 				txXDT.add(CREATE_GROUPS + set, currentEntity.put("structureExternalId", structureExternalId)
 					.put("name", name).put("displayNameSearchField", Validator.sanitize(name)).put("externalId", externalId)
-					.put("id", UUID.randomUUID().toString()).put("source", getTimetableSource()).put("date", importDate));
+					.put("id", UUID.randomUUID().toString()).put("source", getTimetableSource()).put("date", importDate).put("filter", FG_FILTER));
 
 				ttReport.temporaryGroupCreated(name);
 			}
@@ -528,6 +528,7 @@ public class UDTImporter extends AbstractTimetableImporter {
 					.put("externalId", externalId)
 					.put("id", UUID.randomUUID().toString()).put("source", getTimetableSource())
 					.put("date", importDate)
+					.put("filter", FG_FILTER)
 					.put("idrgpmt", currentEntity.getString("id")));
 
 				ttReport.temporaryGroupCreated(name);

@@ -99,7 +99,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			"MATCH (s:Structure {externalId : {structureExternalId}}) " +
 			"MERGE (fg:FunctionalGroup:Group {externalId:{externalId}}) " +
 			"ON CREATE SET fg.name = {name}, fg.id = {id}, fg.source = {source}, fg.displayNameSearchField = {displayNameSearchField} " +
-			", fg.created = {date} SET fg.modified = {date}" +
+			", fg.created = {date}, fg.filter = {filter} SET fg.modified = {date}" +
 			"MERGE (fg)-[:DEPENDS]->(s) ";
 	private static final String PERSEDUCNAT_TO_GROUPS =
 			"MATCH (u:User {id : {id}}), (fg:FunctionalGroup) " +
@@ -142,6 +142,7 @@ public abstract class AbstractTimetableImporter implements TimetableImporter {
 			"WITH u, collect(g.externalId) as groups " +
 			"SET u.groups = groups";
 	public static final String COURSES = "courses";
+	protected static final String FG_FILTER = "FunctionalGroup";
 
 	public static final boolean ALLOW_PAST_MODIFICATIONS = false;
 	public static final long CLEARANCE_TIME = 15 * 60 * 1000;
