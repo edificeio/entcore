@@ -36,6 +36,7 @@ import org.entcore.feeder.utils.Validator;
 import java.util.UUID;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
+import static fr.wseduc.webutils.Utils.isEmpty;
 
 public class Group {
 
