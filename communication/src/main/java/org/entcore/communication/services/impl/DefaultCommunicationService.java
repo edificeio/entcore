@@ -1411,7 +1411,7 @@ public class DefaultCommunicationService implements CommunicationService {
 	public void createDiscoverVisibleGroup(String userId, JsonObject body, Handler<Either<String, JsonObject>> handler){
 
 
-		String query = "CREATE (g:CommunityGroup:Group:Visible {name : {name}, type : 'manager', users : 'BOTH', displayNameSearchField: {name}}) " +
+		String query = "CREATE (g:CommunityGroup:Group:Visible {name : {name}, type : 'manager', users : 'BOTH', displayNameSearchField: {name}, filter : 'CommunityManager'}) " +
 						"SET g.id = id(g) +'-'+timestamp() " +
 						"WITH g " +
 						"MATCH (u:User {id : {userId}}) " +
