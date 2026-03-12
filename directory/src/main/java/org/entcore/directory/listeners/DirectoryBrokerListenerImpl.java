@@ -67,6 +67,7 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
         // Create group data
         final JsonObject group = new JsonObject()
                 .put("name", request.getName())
+                .put("filter", request.getFilter())
                 // an empty id means a new group
                 .put("id", "");
         // an empty externalId means no externalId

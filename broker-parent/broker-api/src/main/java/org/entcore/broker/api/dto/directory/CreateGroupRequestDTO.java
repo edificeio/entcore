@@ -41,12 +41,19 @@ public class CreateGroupRequestDTO {
    * It can be null if no additional labels are needed.
    */
   private final List<String> labels;
+  
+  /**
+   * The filter of the group to be created.
+   * It is a technical attribute on all groups used for various purposes. It cannot be null but can be empty.
+   */
+  private final String filter;
 
   /**
    * Creates a new instance of CreateGroupRequestDTO.
    *
    * @param externalId The external ID of the group to be created.
    * @param name The name of the group to be created.
+   * @param filter The filter of the group to be created.
    * @param classId The ID of the class to which this group belongs.
    * @param structureId The ID of the structure to which this group belongs.
    * @param labels The optional list of Neo4j labels to add to the group.
@@ -55,11 +62,13 @@ public class CreateGroupRequestDTO {
   public CreateGroupRequestDTO(
           @JsonProperty("externalId") String externalId, 
           @JsonProperty("name") String name,
+          @JsonProperty("filter") String filter,
           @JsonProperty("classId") String classId,
           @JsonProperty("structureId") String structureId,
           @JsonProperty("labels") List<String> labels) {
     this.externalId = externalId;
     this.name = name;
+    this.filter = filter != null ? filter: "";
     this.classId = classId;
     this.structureId = structureId;
     this.labels = labels;
@@ -79,6 +88,14 @@ public class CreateGroupRequestDTO {
    */
   public String getName() {
     return name;
+  }
+
+  /**
+   * Gets the filter of the group to be created.
+   * @return The filter of the group. It cannot be null but can be empty.
+   */
+  public String getFilter() {
+    return filter;
   }
   
   /**
@@ -122,6 +139,7 @@ public class CreateGroupRequestDTO {
     return "CreateGroupRequestDTO{" +
             "externalId='" + externalId + '\'' +
             ", name='" + name + '\'' +
+            ", filter='" + filter + '\'' +
             ", classId='" + classId + '\'' +
             ", structureId='" + structureId + '\'' +
             ", labels=" + labels +
