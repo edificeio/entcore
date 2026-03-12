@@ -79,6 +79,11 @@ public class Group {
 			if (isNotEmpty(object.getString("name"))) {
 				object.put("displayNameSearchField", Validator.sanitize(object.getString("name")));
 			}
+
+			if (isEmpty(object.getString("filter"))) {
+				object.put("filter", "Manual");
+			}
+
 			String query =
 					"MERGE (t:Group:ManualGroup:Visible { id : {id}}) " +
 					"SET " + Neo4jUtils.nodeSetPropertiesFromJson("t", object, "id", "name", "displayNameSearchField", "create") +
