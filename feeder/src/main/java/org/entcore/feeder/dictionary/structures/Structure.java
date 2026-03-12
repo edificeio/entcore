@@ -252,7 +252,7 @@ public class Structure {
 									.put("displayNameSearchField", Validator.sanitize(name))
 									.put("structureName", struct.getString("name"))
 									.put("name", name + "-" + label)
-									.put("filter", name)
+									.put("filter", name + "-" + label)
 					);
 			params.put("source", source);
 			getTransaction().add(query, params);
