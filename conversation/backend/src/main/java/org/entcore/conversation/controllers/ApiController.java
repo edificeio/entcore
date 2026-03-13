@@ -28,6 +28,7 @@ import org.entcore.common.http.filter.ResourceFilter;
 
 import static fr.wseduc.webutils.request.RequestUtils.bodyToJson;
 import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
+import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 import static org.entcore.common.user.UserUtils.getAuthenticatedUserInfos;
 import static org.entcore.common.utils.StringUtils.isEmpty;
 
@@ -54,10 +55,6 @@ public class ApiController extends BaseController {
 	public static final String RESOURCE_NAME = "message";
 
 	private ConversationService conversationService;
-
-	private enum ConversationEvent {
-		GET_RESOURCE, ACCESS
-	}
 
 	public ApiController() {
 	}
@@ -171,6 +168,26 @@ public class ApiController extends BaseController {
 	private Future<JsonObject> deleteFolders(final HttpServerRequest request, final List<String> folderIds) {
 		return getAuthenticatedUserInfos(eb, request)
 			.compose( user -> conversationService.deleteFoldersAndTrashMessages(folderIds, user) );
+	}
+
+	@Get("api/count/:folder")
+	@SecuredAction(value = "conversation.count", type = ActionType.AUTHENTICATED)
+	public void count(final HttpServerRequest request) {
+		final String folder = request.params().get("folder");
+		final String restrain = request.params().get("restrain");
+		final String unread = request.params().get("unread");
+		if (folder == null || folder.trim().isEmpty()) {
+			badRequest(request);
+			return;
+		}
+		getAuthenticatedUserInfos(eb, request)
+		.onSuccess(user -> {
+			Boolean b = null;
+			if (!isEmpty(unread)) {
+				b = Boolean.valueOf(unread);
+			}
+			conversationService.count(folder, restrain, b, user, defaultResponseHandler(request));
+		});
 	}
 
 	@Get("api/purge/list")

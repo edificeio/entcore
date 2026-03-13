@@ -21,7 +21,7 @@ export const folderHandlers = [
       return HttpResponse.json(mockMessagesOfInbox, { status: 200 });
     }
   }),
-  http.get(`${baseUrl}/count/:folderId`, ({ params }) => {
+  http.get(`${baseUrl}/api/count/:folderId`, ({ params }) => {
     if (params['folderId'] != 'inbox') {
       return HttpResponse.text('Unexpected error', { status: 500 });
     } else {
