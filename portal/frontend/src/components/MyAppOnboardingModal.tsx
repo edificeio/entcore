@@ -3,9 +3,7 @@ import { IconNotification } from '@edifice.io/react/icons';
 import { OnboardingModal, OnboardingModalRef } from '@edifice.io/react/modals';
 import { useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import illuOnboardingStep1 from '~/assets/illu-onboarding-step1.svg';
-import illuOnboardingStep2 from '~/assets/illu-onboarding-step2.svg';
-import illuOnboardingStep3 from '~/assets/illu-onboarding-step3.svg';
+import illuOnboardingActu from '~/assets/illu-onboarding-actu.svg';
 
 export default function MyAppOnboardingModal() {
   const { t } = useTranslation();
@@ -19,7 +17,7 @@ export default function MyAppOnboardingModal() {
         <IconButton
           aria-label={t('my.app.notification')}
           className="bg-secondary-200 fw-bold"
-          icon={<IconNotification color='black'/>}
+          icon={<IconNotification color="black" />}
           type="button"
           variant="ghost"
           onClick={() => {
@@ -47,25 +45,14 @@ export default function MyAppOnboardingModal() {
       </div>
       <OnboardingModal
         ref={onboardingModalRef}
-        id="showOnboardingMyAppsNews"
+        // If this id need to be changed, please clean de database for the old id (in the userPreferences table)
+        id="showOnboardingMyAppsActualites"
         items={[
           {
-            src: illuOnboardingStep1,
-            title: 'my.apps.onboarding.modal.screen1.title',
-            alt: 'my.apps.onboarding.modal.screen1.alt',
-            text: 'my.apps.onboarding.modal.screen1.text',
-          },
-          {
-            src: illuOnboardingStep2,
-            title: 'my.apps.onboarding.modal.screen2.title',
-            alt: 'my.apps.onboarding.modal.screen2.alt',
-            text: 'my.apps.onboarding.modal.screen2.text',
-          },
-          {
-            src: illuOnboardingStep3,
-            title: 'my.apps.onboarding.modal.screen3.title',
-            alt: 'my.apps.onboarding.modal.screen3.alt',
-            text: 'my.apps.onboarding.modal.screen3.text',
+            src: illuOnboardingActu,
+            title: 'my.apps.onboarding.modal.actu.title',
+            alt: 'my.apps.onboarding.modal.actu.alt',
+            text: 'my.apps.onboarding.modal.actu.text',
           },
         ]}
         isOnboardingChange={(isOnboarding) => {
