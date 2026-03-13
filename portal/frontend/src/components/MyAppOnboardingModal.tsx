@@ -45,7 +45,8 @@ export default function MyAppOnboardingModal() {
       </div>
       <OnboardingModal
         ref={onboardingModalRef}
-        id="showOnboardingMyAppsNewsActu"
+        // If this id need to be changed, please clean de database for the old id (in the userPreferences table)
+        id="showOnboardingMyAppsActualites"
         items={[
           {
             src: illuOnboardingActu,
