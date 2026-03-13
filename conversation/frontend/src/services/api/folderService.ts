@@ -26,9 +26,8 @@ export const createFolderService = (baseURL: string) => ({
    * @returns count of [unread] messages
    */
   getCount(folderId: string, unread?: boolean) {
-    
     // To force backend cache to refresh we add a query param with current timestamp
-    const queryParams = [`queryparam_token=${new Date().getTime()}`] as string[];
+    const queryParams: string[] = [`_=${new Date().getTime()}`];
     // `restrain` query parameter applies to users folders only.
     if (SYSTEM_FOLDER_IDS.findIndex((f) => f === folderId) === -1) {
       queryParams.push('restrain');
@@ -38,7 +37,7 @@ export const createFolderService = (baseURL: string) => ({
     }
     return odeServices.http().get<{
       count: number;
-    }>(`${baseURL}/count/${folderId}?${queryParams.join('&')}`);
+    }>(`${baseURL}/api/count/${folderId}?${queryParams.join('&')}`);
   },
 
   /**

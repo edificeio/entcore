@@ -29,9 +29,8 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
               {
                 path: '',
                 async lazy() {
-                  const { Component, loaderForSystemFolders } = await import(
-                    '~/routes/pages/Folder'
-                  );
+                  const { Component, loaderForSystemFolders } =
+                    await import('~/routes/pages/Folder');
                   return {
                     loader: loaderForSystemFolders(_queryClient),
                     Component,
@@ -42,9 +41,8 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
               {
                 path: 'message/:messageId',
                 async lazy() {
-                  const { Component, loader } = await import(
-                    '~/routes/pages/Message'
-                  );
+                  const { Component, loader } =
+                    await import('~/routes/pages/Message');
                   return {
                     loader: loader(_queryClient),
                     Component,
@@ -55,9 +53,8 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
               {
                 path: 'create',
                 async lazy() {
-                  const { Component, loader } = await import(
-                    '~/routes/pages/Message'
-                  );
+                  const { Component, loader } =
+                    await import('~/routes/pages/Message');
                   return {
                     loader: loader(_queryClient),
                     Component,
@@ -73,9 +70,8 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
               {
                 path: '',
                 async lazy() {
-                  const { Component, loader } = await import(
-                    '~/routes/pages/Folder'
-                  );
+                  const { Component, loader } =
+                    await import('~/routes/pages/Folder');
                   return {
                     loader: loader(_queryClient),
                     Component,
@@ -86,9 +82,8 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
               {
                 path: 'message/:messageId',
                 async lazy() {
-                  const { Component, loader } = await import(
-                    '~/routes/pages/Message'
-                  );
+                  const { Component, loader } =
+                    await import('~/routes/pages/Message');
                   return {
                     loader: loader(_queryClient),
                     Component,
@@ -112,9 +107,8 @@ const routes = (_queryClient: QueryClient): RouteObject[] => [
       {
         path: 'oldformat/:messageId',
         async lazy() {
-          const { Component, loader } = await import(
-            '~/routes/pages/OldFormat'
-          );
+          const { Component, loader } =
+            await import('~/routes/pages/OldFormat');
           return {
             loader: loader(_queryClient),
             Component,

@@ -56,11 +56,10 @@ export default ({ mode }: { mode: string }) => {
     '/explorer': proxyObj,
   };
 
-    const proxyConfig = {
-        ...commonProxyConfig,
-        '/conversation': proxyObj,
-      };
-
+  const proxyConfig = {
+    ...commonProxyConfig,
+    '/conversation': proxyObj,
+  };
 
   return defineConfig({
     base: mode === 'production' ? '/conversation' : '',
