@@ -123,6 +123,6 @@
     {% if carbonioDomainKey is defined %}
       "carbonio-domain-key": "{{ carbonioDomainKey }}",
     {% endif %}
-    "passwordRegex": "{{ authPasswordRegex }}"
+    "passwordRegex": "{{ authPasswordRegex | default('.{8}.*')}}"
   }
 }
