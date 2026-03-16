@@ -23,6 +23,8 @@ import fr.wseduc.webutils.DefaultAsyncResult;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.security.Md5;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.common.utils.DateUtils;
@@ -52,6 +54,8 @@ import static org.entcore.feeder.dictionary.structures.DefaultProfiles.PERSONNEL
 import static org.entcore.feeder.dictionary.structures.DefaultProfiles.TEACHER_PROFILE_EXTERNAL_ID;
 
 public class EDTImporter extends AbstractTimetableImporter implements EDTReader {
+
+	protected static final Logger log = LoggerFactory.getLogger(EDTImporter.class);
 
 	private static final String MATCH_PERSEDUCNAT_QUERY =
 			"MATCH (:Structure {UAI : {UAI}})<-[:DEPENDS]-(:ProfileGroup)<-[:IN]-(u:User) " +
@@ -566,8 +570,12 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 				}
 				enabledCurrentWeek = enabledCurrentWeek | currentWeek.get(j);
 			}
-			if(enabledCurrentWeek)
-				persistCourse(generateCourse(i, currentWeek, items, currentEntity));
+			if(enabledCurrentWeek) {
+				final JsonObject course = generateCourse(i, currentWeek, items, currentEntity);
+				if (course != null) {
+					persistCourse(course);
+				}
+			}
 		}
 	}
 
@@ -577,8 +585,15 @@ public class EDTImporter extends AbstractTimetableImporter implements EDTReader 
 		final int placesNumber = Integer.parseInt(entity.getString("NombrePlaces"));
 		DateTime startDate = startDateWeek1.plusWeeks(courseWeek - 1).plusDays(day - 1);
 		DateTime endDate = startDate.plusWeeks(0); // Force a copy of startDate
-		startDate = startDate.plusSeconds(slots.get(entity.getString("NumeroPlaceDebut")).getStart());
-		endDate = endDate.plusSeconds(slots.get(String.valueOf((startPlace + placesNumber - 1))).getEnd());
+		final Slot startingSlotInSchedule = slots.get(entity.getString("NumeroPlaceDebut"));
+		final Slot endingSlotInSchedule = slots.get(String.valueOf((startPlace + placesNumber - 1)));
+		if (startingSlotInSchedule == null || endingSlotInSchedule == null) {
+			log.warn("Skipping course " + entity.encode() + ", because the course slots (starting : " + startPlace + " and ending : " + (startPlace + placesNumber - 1) + ") " +
+					"don't match the slots in the schedule : " + new HashSet<>(slots.keySet())) ;
+			return null;
+		}
+		startDate = startDate.plusSeconds(startingSlotInSchedule.getStart());
+		endDate = endDate.plusSeconds(endingSlotInSchedule.getEnd());
 		final JsonObject c = new JsonObject()
 				.put("structureId", structureId)
 //				.put("subjectId", subjects.get(entity.getJsonArray("Matiere").getJsonObject(0).getString(IDENT)))
