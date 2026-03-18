@@ -86,52 +86,56 @@ public class TraceFilter implements Filter {
 
     @Override
     public void canAccess(HttpServerRequest request, Handler<Boolean> handler) {
-        handler.handle(true);
-        JsonObject entry = MongoDb.now();
-        if (tracedBinding == null) {
-            loadTracedMethods();
-        }
+        try {
+            JsonObject entry = MongoDb.now();
+            if (tracedBinding == null) {
+                loadTracedMethods();
+            }
 
-        if (request instanceof SecureHttpServerRequest && trace(request)) {
-            final long epoch = System.currentTimeMillis();
-            request.response().endHandler(event -> {
-                List<Future> futures = new ArrayList<>();
-                Promise<UserInfos> userFuture = Promise.promise();
-	            Promise<Object> bodyFuture = Promise.promise();
-                futures.add(userFuture.future());
-                final JsonObject action = actions.get(getRequestServiceMethod(request));
-                if (bodyMethods.contains(request.method().name()) && action.getBoolean("body")) {
-                    futures.add(bodyFuture.future());
-                    getBody(request, bodyFuture);
-                }
-                CompositeFuture.all(futures).onComplete(futureEvent -> {
-                    if (futureEvent.failed()) {
-                        log.error("[TraceFilter] Failed to create trace : " + request.uri(), futureEvent.cause());
-                        return;
-                    }
-                    UserInfos user = userFuture.future().result();
-
-                    JsonObject trace = new JsonObject()
-                            .put("application", Config.getInstance().getConfig().getString("app-name"))
-                            .put("user", getUserObject(user))
-                            .put("request", getActionObject(request))
-                            .put("entry", entry)
-                            .put("date", epoch)
-                            .put(RETENTION_DAYS, action.getInteger(RETENTION_DAYS, DEFAULT_RETENTION_DAYS))
-                            .put("response", MongoDb.now())
-                            .put("action", action.getString("value"))
-                            .put("status", request.response().getStatusCode());
-
+            if (request instanceof SecureHttpServerRequest && trace(request)) {
+                final long epoch = System.currentTimeMillis();
+                request.response().endHandler(event -> {
+                    List<Future> futures = new ArrayList<>();
+                    Promise<UserInfos> userFuture = Promise.promise();
+                    Promise<Object> bodyFuture = Promise.promise();
+                    futures.add(userFuture.future());
+                    final JsonObject action = actions.get(getRequestServiceMethod(request));
                     if (bodyMethods.contains(request.method().name()) && action.getBoolean("body")) {
-                        trace.put("resource", bodyFuture.future().result());
+                        futures.add(bodyFuture.future());
+                        getBody(request, bodyFuture);
                     }
+                    CompositeFuture.all(futures).onComplete(futureEvent -> {
+                        if (futureEvent.failed()) {
+                            log.error("[TraceFilter] Failed to create trace : " + request.uri(), futureEvent.cause());
+                            return;
+                        }
+                        UserInfos user = userFuture.future().result();
 
-                    MongoDb.getInstance().insert(COLLECTION, trace);
+                        JsonObject trace = new JsonObject()
+                                .put("application", Config.getInstance().getConfig().getString("app-name"))
+                                .put("user", getUserObject(user))
+                                .put("request", getActionObject(request))
+                                .put("entry", entry)
+                                .put("date", epoch)
+                                .put(RETENTION_DAYS, action.getInteger(RETENTION_DAYS, DEFAULT_RETENTION_DAYS))
+                                .put("response", MongoDb.now())
+                                .put("action", action.getString("value"))
+                                .put("status", request.response().getStatusCode());
+
+                        if (bodyMethods.contains(request.method().name()) && action.getBoolean("body")) {
+                            trace.put("resource", bodyFuture.future().result());
+                        }
+
+                        MongoDb.getInstance().insert(COLLECTION, trace);
+                    });
+
+                    getUser(request, userFuture);
                 });
-
-                getUser(request, userFuture);
-            });
+            }
+        } catch (Exception e) {
+            log.debug("An error occurred while setting up trace filter for request to " + request.path(), e);
         }
+        handler.handle(true);
     }
 
     private JsonObject getUserObject(UserInfos user) {
