@@ -471,7 +471,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		findBySessionId(sessionId).onSuccess(session -> {
 			sendOK(message, new JsonObject().put("status", "ok").put("session", session));
 		}).onFailure(error -> {
-			sendError(message, error.getMessage());
+			sendError(message, error.getMessage(), error, false);
 		});
 	}
 
@@ -498,7 +498,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 												if (s != null) {
 													promise.complete(s);
 												} else {
-													promise.fail("Session not found. 1");
+													promise.fail("Session id " + sessionId + " not found. 1");
 												}
 											} else {
 												generateSessionInfos(uId, event1 -> {
@@ -506,21 +506,21 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 														logger.info("Session with store problem : " + event1.encode());
 														promise.complete(event1);
 													} else {
-														promise.fail("Session not found. 2");
+														promise.fail("Session id " + sessionId + " not found. 2");
 													}
 												});
 											}
 										});
 									} else {
-										promise.fail("Session not found. 3");
+										promise.fail("Session id " + sessionId + " not found. 3");
 									}
 								});
 					} else {
-						promise.fail("Session not found. 4");
+						promise.fail("Session id " + sessionId + " not found. 4");
 					}
 				});
 			} else {
-				promise.fail("Session not found. 5 (with inactivity enabled)");
+				promise.fail("Session id " + sessionId + " not found. 5 (with inactivity enabled)");
 			}
 		});
 		return promise.future();
@@ -842,7 +842,7 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 				sendOK(message);
 			} else {
 				logger.error("Error adding cache attribute in session", ar.cause());
-				sendError(message, "Error adding cache attribute in session");
+				sendError(message, "Error adding cache attribute in session", null, false);
 			}
 		});
 	}
