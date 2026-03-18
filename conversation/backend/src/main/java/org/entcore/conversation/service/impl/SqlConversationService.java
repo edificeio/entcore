@@ -312,12 +312,17 @@ public class SqlConversationService implements ConversationService{
 					builder.prepared(insertUserThread, new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).add(threadId).add(0));
 				}
 
+
+
+				String insertUserThreadBase = "INSERT INTO conversation.userthreads as ut (user_id,thread_id,nb_unread) VALUES ";
 				String insertUserMessage = "INSERT INTO " +  userMessageTable + "(user_id, message_id, total_quota) VALUES ";
 				String insertUserAttachment = "INSERT INTO " +  userMessageAttachmentTable + "(user_id, message_id, attachment_id) VALUES ";
+				StringBuilder insertUserThreadBuilder = new StringBuilder(insertUserThreadBase);
 
 				StringBuilder insertUserMessageBuilder = new StringBuilder(insertUserMessage);
 				StringBuilder insertUserAttachmentBuilder = new StringBuilder(insertUserAttachment);
 
+				int userThreadCount = 0;
 				int userMessageValueCount = 0;
 				int userMessageAttachementCount = 0;
 
@@ -336,11 +341,31 @@ public class SqlConversationService implements ConversationService{
 						userMessageValueCount = 0;
 					}
 					if (threadId != null) {
-						builder.prepared(insertUserThread, new fr.wseduc.webutils.collections.JsonArray().add(toObj.toString()).add(threadId).add(1));
+						userThreadCount++;
+						insertUserThreadBuilder.append(String.format("('%s', '%s', %s),", toObj, threadId, 1));
+
+						if (userThreadCount >= conversationBatchSize) {
+							String query = insertUserThreadBuilder
+									.deleteCharAt(insertUserThreadBuilder.length() - 1)
+									+ " ON CONFLICT (user_id,thread_id) DO UPDATE SET nb_unread = ut.nb_unread + 1 " +
+									"WHERE ut.user_id = EXCLUDED.user_id AND ut.thread_id = EXCLUDED.thread_id";
+
+							builder.prepared(query, new JsonArray());
+							insertUserThreadBuilder = new StringBuilder(insertUserThreadBase);
+							userThreadCount = 0;
+						}
 					}
 				}
 				if (userMessageValueCount > 0) {
 					builder.prepared(insertUserMessageBuilder.deleteCharAt(insertUserMessageBuilder.length()-1).toString(), new JsonArray());
+				}
+				if (userThreadCount > 0) {
+					String query = insertUserThreadBuilder
+							.deleteCharAt(insertUserThreadBuilder.length() - 1)
+							+ " ON CONFLICT (user_id,thread_id) DO UPDATE SET nb_unread = ut.nb_unread + 1 " +
+							"WHERE ut.user_id = EXCLUDED.user_id AND ut.thread_id = EXCLUDED.thread_id";
+
+					builder.prepared(query, new JsonArray());
 				}
 
 				// Pièces jointes
