@@ -85,6 +85,11 @@ public class S3Client {
 
 	public S3Client(Vertx vertx, URI uri, String accessKey, String secretKey, String region, String bucket, String ssec, boolean keepAlive,
 					int timeout, int threshold, long openDelay, int poolSize) {
+		this(vertx, uri, accessKey, secretKey, region, bucket, ssec, keepAlive, timeout, threshold, openDelay, poolSize, false);
+	}
+
+	public S3Client(Vertx vertx, URI uri, String accessKey, String secretKey, String region, String bucket, String ssec, boolean keepAlive,
+					int timeout, int threshold, long openDelay, int poolSize, boolean trustAll) {
 		this.vertx = vertx;
 		this.host = uri.getHost();
 		this.accessKey = accessKey;
@@ -92,7 +97,7 @@ public class S3Client {
 		this.region = region;
 		this.defaultBucket = bucket;
 		this.ssec = ssec;
-		this.httpClient = new ResilientHttpClient(vertx, uri, keepAlive, timeout, threshold, openDelay, poolSize);
+		this.httpClient = new ResilientHttpClient(vertx, uri, keepAlive, timeout, threshold, openDelay, poolSize, trustAll);
 	}
 
 	public void getFileStats(String id, Handler<AsyncResult<FileStats>> handler) {

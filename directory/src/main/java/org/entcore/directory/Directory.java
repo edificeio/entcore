@@ -112,7 +112,8 @@ public class Directory extends BaseServer {
 					s3.getInteger("timeout", 10000),
 					s3.getInteger("threshold", 100),
 					s3.getLong("openDelay", 10000l),
-                    s3.getInteger("poolSize", 16)
+                    s3.getInteger("poolSize", 16),
+					s3.getBoolean("trustAll", false)
 				);
 			} catch (URISyntaxException e) {
 				log.error("S3avatar URI error", e);
