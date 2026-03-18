@@ -37,18 +37,17 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import org.entcore.common.communication.CommunicationUtils;
 import org.entcore.common.http.filter.AdminFilter;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.user.UserUtils;
+import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
 import org.entcore.communication.filters.CommunicationDiscoverVisibleFilter;
 import org.entcore.communication.services.CommunicationService;
 import org.entcore.communication.services.impl.DefaultCommunicationService;
 
 import java.util.List;
-import java.util.Map;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
@@ -73,6 +72,22 @@ public class CommunicationController extends BaseController {
 		if (params.isInvalid()) return;
 		communicationService.addLink(params.getStartGroupId(), params.getEndGroupId(),
 				notEmptyResponseHandler(request));
+	}
+
+	@Put("/api/admin/users/:startUser/communiqueDirect/:endUser")
+	@SecuredAction(value = "", type = ActionType.RESOURCE)
+	@MfaProtected()
+	public void setDirectCommunication(HttpServerRequest request) {
+		String startUser = request.getParam("startUser");
+		String endUser = request.getParam("endUser");
+		String direction = request.getParam("direction");
+
+		if(StringUtils.isEmpty(startUser) || StringUtils.isEmpty(endUser) || StringUtils.isEmpty(direction)) {
+			renderError(request);
+			return;
+		}
+		CommunicationService.Direction directionEnum = getDirection(direction);
+		communicationService.setDirectCommunication(startUser, endUser, directionEnum, defaultResponseHandler(request));
 	}
 
 	@Delete("/group/:startGroupId/communique/:endGroupId")

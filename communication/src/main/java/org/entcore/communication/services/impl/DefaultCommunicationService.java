@@ -26,16 +26,14 @@ import io.vertx.core.*;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.conversation.LegacySearchVisibleRequest;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.StatementsBuilder;
-import org.entcore.common.neo4j.TransactionHelper;
 import org.entcore.common.notification.TimelineHelper;
-import org.entcore.common.schema.Source;
 import org.entcore.common.user.DefaultFunctions;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -74,7 +72,7 @@ public class DefaultCommunicationService implements CommunicationService {
 
 	@Override
 	public void resetRules(String structureId, Handler<Either<String, JsonObject>> eitherHandler) {
-		log.warn("Reset communication rules for structure {}",structureId);
+		log.warn("Reset communication rules for structure " + structureId);
 
 		List<StatementsBuilder> statements = Lists.newLinkedList();
 		StatementsBuilder builder = new StatementsBuilder();
@@ -117,6 +115,41 @@ public class DefaultCommunicationService implements CommunicationService {
 
 		StatementsBuilder allStatements = statements.stream().reduce(new StatementsBuilder(), StatementsBuilder::add);
 		neo4j.executeTransaction(allStatements.build(), null, true, validUniqueResultHandler(eitherHandler) );
+	}
+
+	@Override
+	public void setDirectCommunication(String startUser, String endUser, Direction directionEnum, Handler<Either<String, JsonObject>> eitherHandler) {
+		log.warn(String.format("Set direct communication between %s and %s ", startUser, endUser));
+
+		List<StatementsBuilder> statements = Lists.newLinkedList();
+		StatementsBuilder builder = new StatementsBuilder();
+		JsonObject params = new JsonObject();
+
+		params.put("startUser", startUser);
+		params.put("endUser", endUser);
+
+		//remove communiqueWith to apply default configuration
+		String query =  " MATCH (startUser:User {id: {startUser}})-[r:COMMUNIQUE_DIRECT]-(endUser:User {id: {endUser}}) " +
+						" DELETE r ";
+		builder.add(query, params);
+
+		String createRelationship;
+		switch (directionEnum) {
+			case INCOMING:
+				createRelationship = " startUser<-[:COMMUNIQUE_DIRECT]-endUser ";
+				break;
+			case OUTGOING:
+				createRelationship = " startUser-[:COMMUNIQUE_DIRECT]->endUser ";
+				break;
+			default:
+				createRelationship = " startUser<-[:COMMUNIQUE_DIRECT]-endUser, startUser-[:COMMUNIQUE_DIRECT]->endUser ";
+		}
+
+		query = " MATCH (startUser:User {id: {startUser}}), (endUser:User {id: {endUser}}) " +
+				" CREATE UNIQUE " + createRelationship;
+		builder.add(query, params);
+
+		neo4j.executeTransaction(builder.build(), null, true, validUniqueResultHandler(eitherHandler) );
 	}
 
 	@Override
@@ -304,7 +337,17 @@ public class DefaultCommunicationService implements CommunicationService {
 				set = "SET g.users = CASE WHEN g.users = 'OUTGOING' THEN null ELSE 'INCOMING' END ";
 				break;
 			default:
-				relationship = "g-[r:COMMUNIQUE]-(u:User) ";
+				String createRelationship;
+		switch (direction) {
+			case INCOMING:
+				createRelationship = "u<-[:COMMUNIQUE_DIRECT]-s ";
+				break;
+			case OUTGOING:
+				createRelationship = "u-[:COMMUNIQUE_DIRECT]->s ";
+				break;
+			default:
+				createRelationship = "u<-[:COMMUNIQUE_DIRECT]-s, u-[:COMMUNIQUE_DIRECT]->s ";
+		}	relationship = "g-[r:COMMUNIQUE]-(u:User) ";
 				set = "REMOVE g.users ";
 		}
 		String query =
