@@ -22,12 +22,14 @@ package org.entcore.auth.controllers;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.http.oauth.OpenIdConnectClient;
 import fr.wseduc.webutils.request.CookieHelper;
 import fr.wseduc.webutils.security.HmacSha1;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import jp.eisbahn.oauth2.server.exceptions.OAuthError;
 import org.entcore.auth.oauth.OAuthDataHandler;
@@ -54,11 +56,17 @@ import static fr.wseduc.webutils.Utils.isNotEmpty;
 
 public class OpenIdConnectController extends AbstractFederateController {
 
+	private final static String TOKEN_ENDPOINT = "/auth/oauth2/token";
+	private final static String AUTHORIZATION_ENDPOINT = "/auth/oauth2/auth";
+	private final static String USERINFO_ENDPOINT = "/auth/oauth2/userinfo";
+	private final static String JWKS_ENDPOINT = "/auth/openid/jwks";
+	private final static String LOGOUT_ENDPOINT = "/auth/logout";
 	private OpenIdServiceProviderFactory openIdConnectServiceProviderFactory;
 	private JsonObject certificates = new JsonObject();
 	private boolean subMapping;
 	private JsonObject activationThemes;
 	private OpenIdSloServiceImpl sloServiceImpl;
+	private JsonObject jwksFormat = new JsonObject();
 
 	@Override
 	public void init(Vertx vertx, JsonObject config, RouteMatcher rm,
@@ -72,6 +80,36 @@ public class OpenIdConnectController extends AbstractFederateController {
 		renderJson(request, certificates);
 	}
 
+	@Get("/openid/.well-known/openid-configuration")
+	public void wellKnown(HttpServerRequest request) {
+		final JsonObject wellKnown = new JsonObject();
+		final String endpointBaseUrl = Renders.getScheme(request) + "://" +  Renders.getHost(request);
+
+		wellKnown.put("issuer", config.getJsonObject("openid-connect", new JsonObject()).getString("iss"))
+				.put("authorization_endpoint", endpointBaseUrl + AUTHORIZATION_ENDPOINT)
+				.put("token_endpoint", endpointBaseUrl + TOKEN_ENDPOINT)
+				.put("userinfo_endpoint", endpointBaseUrl + USERINFO_ENDPOINT)
+				.put("jwks_uri", endpointBaseUrl + JWKS_ENDPOINT)
+				.put("end_session_endpoint", endpointBaseUrl + LOGOUT_ENDPOINT)
+				.put("response_types_supported", new JsonArray().add("code"))
+				.put("grant_types_supported", new JsonArray().add("authorization_code"))
+				.put("subject_types_supported", new JsonArray().add("public"))
+				.put("id_token_signing_alg_values_supported", new JsonArray().add("RS256"))
+				.put("scopes_supported", new JsonArray().add("openid").add("userinfo"))
+				.put("token_endpoint_auth_methods_supported", new JsonArray().add("client_secret_basic"))
+				.put("code_challenge_methods_supported", new JsonArray().add("plain"))
+				.put("frontchannel_logout_session_supported", false)
+				.put("frontchannel_logout_supported", false)
+				.put("backchannel_logout_supported", true)
+				.put("backchannel_logout_session_supported", false);
+
+		renderJson(request, wellKnown);
+	}
+
+	@Get("/openid/jwks")
+	public void jwks(HttpServerRequest request) {
+		renderJson(request, jwksFormat);
+	}
 
 	@Get("/openid/login")
 	public void login(HttpServerRequest request) {
@@ -308,6 +346,10 @@ public class OpenIdConnectController extends AbstractFederateController {
 
 	public void setCertificates(JsonObject certificates) {
 		this.certificates = certificates;
+	}
+
+	public void setJwksFormat(JsonObject jwksFormat) {
+		this.jwksFormat = jwksFormat;
 	}
 
 	public void setSubMapping(boolean subMapping) {
