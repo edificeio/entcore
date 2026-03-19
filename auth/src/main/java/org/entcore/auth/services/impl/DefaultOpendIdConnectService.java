@@ -144,7 +144,7 @@ public class DefaultOpendIdConnectService implements OpenIdConnectService, OpenI
 					.put("iat", iat)
 					.put("jti", generateJti())
 					.put("exp", iat + EXPIRATION_TIME)
-					.put("event", new JsonObject().put(EVENTS_SLO, new JsonObject()));
+					.put("events", new JsonObject().put(EVENTS_SLO, new JsonObject()));
 			try {
 				handler.handle(new DefaultAsyncResult<>(jwt != null ? jwt.encodeAndSign(payload) : payload.toString()));
 			} catch (Exception e) {
