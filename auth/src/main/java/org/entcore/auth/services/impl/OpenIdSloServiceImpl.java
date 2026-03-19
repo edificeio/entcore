@@ -21,6 +21,9 @@ import org.entcore.auth.oauth.OAuthDataHandler;
 import org.entcore.auth.services.OpenIdServiceProviderFactory;
 import org.entcore.common.neo4j.Neo4j;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
@@ -94,21 +97,27 @@ public class OpenIdSloServiceImpl {
 
     @SuppressWarnings("deprecation")
     private void sendRequest(JsonObject data) {
-        final String payload = new JsonObject()
-          .put("logout_token", data.getString("logout_token"))
-          .encode();
-        final String logoutUrl = data.getString(LOGOUT_URL);
-        httpClient.request(new RequestOptions()
-          .setAbsoluteURI(logoutUrl)
-          .setMethod(HttpMethod.POST)
-          .addHeader("content-type", "application/json")
-          .addHeader("content-length", String.valueOf(payload.length())))
-          .flatMap(request -> request.send(payload))
-          .onSuccess(response -> {
-              log.debug("Response received with status code " + response.statusCode());
-              response.bodyHandler(body -> log.debug("Body: " + body.toString()));
-          })
-          .onFailure(th -> log.error("An error occurred while calling logout url " + logoutUrl, th));
+        String payload = null;
+        try {
+            payload = "logout_token=" + URLEncoder.encode(data.getString("logout_token"), StandardCharsets.UTF_8.toString());
+        } catch (UnsupportedEncodingException e) {
+            log.error("Unable to encode OIDC logout_token", e);
+        }
+        if (payload != null) {
+            final String logoutUrl = data.getString(LOGOUT_URL);
+            final String validPayload = payload;
+            httpClient.request(new RequestOptions()
+                            .setAbsoluteURI(logoutUrl)
+                            .setMethod(HttpMethod.POST)
+                            .addHeader("content-type", "application/x-www-form-urlencoded")
+                            .addHeader("content-length", String.valueOf(validPayload.length())))
+                    .flatMap(request -> request.send(validPayload))
+                    .onSuccess(response -> {
+                        log.debug("Response received with status code " + response.statusCode());
+                        response.bodyHandler(body -> log.debug("Body: " + body.toString()));
+                    })
+                    .onFailure(th -> log.error("An error occurred while calling logout url " + logoutUrl, th));
+        }
     }
 
     @SuppressWarnings("deprecation")
