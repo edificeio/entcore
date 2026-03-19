@@ -200,6 +200,7 @@ public class Auth extends BaseServer {
 					@Override
 					public void handle(JsonObject certs) {
 						openIdConnectController.setCertificates(certs);
+						openIdConnectController.setJwksFormat(JWT.generateJwks(certs));
 					}
 				});
 			}
