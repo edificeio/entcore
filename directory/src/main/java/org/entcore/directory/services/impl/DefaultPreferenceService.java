@@ -22,6 +22,10 @@ public class DefaultPreferenceService implements PreferenceService {
     @Override
     public Future<UserPreferenceDto> updatePreferences(UserPreferenceDto preference, UserInfos userInfos, JsonObject session) {
         Promise<UserPreferenceDto> promise = Promise.promise();
+        if(preference.getPreferences().isEmpty()) {
+            promise.complete(preference);
+            return promise.future();
+        }
         JsonObject params = new JsonObject();
         params.put("userId", userInfos.getUserId());
 
