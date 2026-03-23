@@ -1,0 +1,79 @@
+package org.entcore.directory.services.impl;
+
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonObject;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.user.UserInfos;
+import org.entcore.directory.pojo.dto.UserPreferenceDto;
+import org.entcore.directory.services.PreferenceService;
+import org.entcore.directory.services.impl.mapper.UserPreferenceDtoMapper;
+
+import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
+
+public class DefaultPreferenceService implements PreferenceService {
+
+    private final Neo4j neo4j = Neo4j.getInstance();
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPreferenceService.class);
+
+    @Override
+    public Future<UserPreferenceDto> updatePreferences(UserPreferenceDto preference, UserInfos userInfos, JsonObject session) {
+        Promise<UserPreferenceDto> promise = Promise.promise();
+        JsonObject params = new JsonObject();
+        params.put("userId", userInfos.getUserId());
+
+        StringBuilder query = new StringBuilder("MATCH (u:User {id:{userId}}) MERGE (u)-[:PREFERS]->(uac:UserAppConf) ");
+        StringBuilder create = new StringBuilder(" ON CREATE  ");
+        StringBuilder merge = new StringBuilder(" ON MATCH ");
+
+        preference.getPreferences().forEach( ( appName ) -> {
+            String partialQuery = "SET uac."+ appName.getMappingName() +" = {"+ appName.getMappingName() +"},";
+            create.append(partialQuery);
+            merge.append(partialQuery);
+            params.put(appName.getMappingName(), Json.encode(preference.getApplicationPreference(appName)));
+        });
+
+        create.deleteCharAt(create.length() - 1);
+        merge.deleteCharAt(merge.length() - 1);
+
+        query.append(create).append(merge).append(" RETURN uac");
+
+        neo4j.execute(query.toString(), params, validUniqueResultHandler( result -> {
+            if(result.isRight()) {
+                promise.complete(UserPreferenceDtoMapper.map(result.right().getValue().getJsonObject("uac").getJsonObject("data", new JsonObject())));
+            } else {
+                promise.fail(result.left().getValue());
+            }
+        }));
+        return promise.future();
+    }
+
+
+    @Override
+    public Future<UserPreferenceDto> getPreferences(UserInfos userInfos, JsonObject session) {
+        Promise<UserPreferenceDto> promise = Promise.promise();
+        JsonObject params = new JsonObject();
+        params.put("userId", userInfos.getUserId());
+
+        StringBuilder query = new StringBuilder("MATCH (u:User {id:{userId}})-[:PREFERS]->(uac:UserAppConf) ");
+        query.append(" RETURN uac");
+
+
+        final JsonObject cache = session.getJsonObject("cache");
+        if(cache.containsKey("preferences")){
+            promise.complete(UserPreferenceDtoMapper.map(cache.getJsonObject("preferences")));
+            return promise.future();
+        }
+        neo4j.execute(query.toString(), params, validUniqueResultHandler( result -> {
+            if (result.isRight()) {
+                promise.complete(UserPreferenceDtoMapper.map(result.right().getValue().getJsonObject("uac").getJsonObject("data", new JsonObject())));
+            } else {
+                promise.fail(result.left().getValue());
+            }
+        }));
+        return promise.future();
+    }
+}
