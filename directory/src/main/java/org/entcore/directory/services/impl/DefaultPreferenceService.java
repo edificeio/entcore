@@ -17,7 +17,6 @@ import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 public class DefaultPreferenceService implements PreferenceService {
 
     private final Neo4j neo4j = Neo4j.getInstance();
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPreferenceService.class);
 
     @Override
     public Future<UserPreferenceDto> updatePreferences(UserPreferenceDto preference, UserInfos userInfos, JsonObject session) {
@@ -54,7 +53,6 @@ public class DefaultPreferenceService implements PreferenceService {
         }));
         return promise.future();
     }
-
 
     @Override
     public Future<UserPreferenceDto> getPreferences(UserInfos userInfos, JsonObject session) {
