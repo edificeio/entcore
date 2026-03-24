@@ -132,7 +132,8 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
                     if (client.getConnection() != null) {
                         log.info("NATS client connected on " + client.getConnection().getConnectedUrl());
                     }
-                });
+                })
+                .onFailure(e -> log.error("Error while connecting to NATS", e));
             connectFutures.add(connectFuture);
         }
 
@@ -192,7 +193,8 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
         // Close all NATS clients
         List<Future<Void>> closeFutures = new ArrayList<>();
         for (NatsClient client : getAllNatsClients()) {
-            closeFutures.add(client.close());
+            closeFutures.add(client.close()
+                .onFailure(e -> log.error("Error while closing NATS client", e)));
         }
         
         return Future.all(closeFutures).mapEmpty();
@@ -482,8 +484,10 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
         promise.future().onSuccess(response -> {
             try {
                 final byte[] payload = ((String) response).getBytes(charset);
-                natsClient.publish(msg.getReplyTo(), payload);
+                natsClient.publish(msg.getReplyTo(), payload)
+                    .onFailure(e -> log.error("Error while publishing response to NATS", e));
             } catch (Exception e) {
+                log.error("Error while publishing response to NATS", e);
                 sendError(msg, e, natsClient);
             }
         }).onFailure(th -> {
@@ -519,10 +523,12 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
         final String message = e.getMessage() == null ? String.valueOf(e) : e.getMessage();
         final NATSResponseDTO natsResponseDTO = new NATSResponseDTO(null, message, false, null);
         try {
-            natsClient.publish(msg.getReplyTo(), mapper.writeValueAsBytes(natsResponseDTO));
+            natsClient.publish(msg.getReplyTo(), mapper.writeValueAsBytes(natsResponseDTO))
+                .onFailure(ex -> log.error("Cannot send error response to NATS", ex));
         } catch (JsonProcessingException ex) {
             log.error("Cannot serialize error", ex);
-            natsClient.publish(msg.getReplyTo(), message.getBytes(StandardCharsets.UTF_8));
+            natsClient.publish(msg.getReplyTo(), message.getBytes(StandardCharsets.UTF_8))
+                .onFailure(err -> log.error("Cannot send error message to NATS", err));
         }
     }
     
@@ -622,6 +628,7 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
                     final String responseStr = new String(e.getData(), charset);
                     future.complete(responseStr);
                 } catch(Exception err) {
+                    log.error("Error parsing response from NATS", err);
                     future.fail(err);
                 }
             })
@@ -652,7 +659,8 @@ public abstract class AbstractNATSBrokerClient implements BrokerClient {
                     futureResponse.onSuccess(response -> {
                         try {
                             final byte[] payload = mapper.writeValueAsString(response).getBytes(charset);
-                            client.publish(replyTo, payload);
+                            client.publish(replyTo, payload)
+                                .onFailure(ex -> log.error("Error publishing response to NATS", ex));
                         } catch (Exception e) {
                             log.error("Error serializing response to JSON", e);
                             sendError(msg, e, client);
