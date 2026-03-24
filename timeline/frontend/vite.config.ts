@@ -1,12 +1,12 @@
 import react from '@vitejs/plugin-react';
 import { resolve } from 'node:path';
 import { loadEnv, ProxyOptions } from 'vite';
-import { defineConfig } from 'vitest/config';
 import tsconfigPaths from 'vite-tsconfig-paths';
+import { defineConfig } from 'vitest/config';
 
 // https://vitejs.dev/config/
 export default ({ mode }: { mode: string }) => {
-  // Checking environement files
+  // Checking environment files
   const envFile = loadEnv(mode, process.cwd());
   const envs = { ...process.env, ...envFile };
   const hasEnvFile = Object.keys(envFile).length;
@@ -95,6 +95,11 @@ export default ({ mode }: { mode: string }) => {
       },
       assetsDir: 'public',
       chunkSizeWarningLimit: 500,
+      rollupOptions: {
+        input: {
+          main: resolve(__dirname, 'homepage.html'),
+        },
+      },
     },
 
     test: {
