@@ -576,7 +576,7 @@
   "explorer.modal.onboarding.trash.title": "Du nouveau dans vos applications !",
   "explorer.modal.props.btn.cancel.label": "Annuler",
   "explorer.modal.props.btn.record.label": "Enregistrer",
-  "explorer.modal.share.alert.community": "Vous pouvez supprimer des communautés du partage uniquement en vous rendant dans la communauté en question.",
+  "explorer.modal.share.alert.community": "Communautés : Vous pouvez partager/départager une ressource directement depuis la communauté concernée.",
   "explorer.modal.share.avatar.me.alt": "Mon avatar",
   "explorer.modal.share.avatar.shared.alt": "Avatar de l'élément partagé",
   "explorer.modal.share.search": "Rechercher des utilisateurs",
