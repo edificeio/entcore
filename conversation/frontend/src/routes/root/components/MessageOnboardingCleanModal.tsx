@@ -1,5 +1,7 @@
-import { OnboardingModal } from '@edifice.io/react/modals';
-import { DisplayRuleCheckResult } from 'node_modules/@edifice.io/react/dist/modules/modals/OnboardingModal/OnboardingModal';
+import {
+  DisplayRuleCheckResult,
+  OnboardingModal,
+} from '@edifice.io/react/modals';
 import illuOnboardingClean from '~/assets/illu-onboarding-clean.svg';
 import { useI18n } from '~/hooks/useI18n';
 
@@ -37,7 +39,7 @@ export default function MessageOnboardingCleanModal() {
 
   return (
     <OnboardingModal
-      id="showOnboardingClean"
+      id="showOnboardingConversation"
       items={[
         {
           src: illuOnboardingClean,
