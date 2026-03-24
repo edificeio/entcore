@@ -69,7 +69,7 @@ init() {
   if [ "$NO_DOCKER" = "true" ] ; then
     pnpm install
   else
-    docker-compose run -e NPM_TOKEN -e TIPTAP_PRO_TOKEN --rm $USER_OPTION node sh -c "pnpm install"
+    docker compose run -e NPM_TOKEN -e TIPTAP_PRO_TOKEN --rm $USER_OPTION node sh -c "pnpm install"
   fi
 }
 
@@ -77,7 +77,7 @@ build () {
   if [ "$NO_DOCKER" = "true" ] ; then
     pnpm run build
   else
-    docker-compose run -e NPM_TOKEN -e TIPTAP_PRO_TOKEN --rm $USER_OPTION node sh -c "pnpm build"
+    docker compose run -e NPM_TOKEN -e TIPTAP_PRO_TOKEN --rm $USER_OPTION node sh -c "pnpm build"
   fi
   status=$?
   if [ $status != 0 ];
