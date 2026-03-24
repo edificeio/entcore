@@ -98,6 +98,15 @@ public class JsonHttpResponse implements HttpServerResponse {
 		return headers;
 	}
 
+	/**
+	 * Returns the headers map to allow external access to response headers.
+	 * This is useful for retrieving cookies set during authentication.
+	 * @return the headers MultiMap
+	 */
+	public MultiMap getHeaders() {
+		return headers;
+	}
+
 	@Override
 	public HttpServerResponse putHeader(String s, String s2) {
 		headers.add(s, s2);

@@ -16,6 +16,7 @@ import org.entcore.common.http.QueryParamTokenFilter;
 import org.entcore.common.http.UserAuthWithQueryParamFilter;
 import org.entcore.common.http.filter.AppOAuthResourceProvider;
 import org.entcore.common.http.request.JsonHttpServerRequest;
+import org.entcore.common.http.response.JsonHttpResponse;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import io.vertx.core.logging.Logger;
@@ -25,6 +26,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
+import io.vertx.core.MultiMap;
+import io.vertx.core.http.HttpServerResponse;
 import org.entcore.common.session.SessionRecreationRequest;
 
 /**
@@ -158,7 +162,11 @@ public class SessionBrokerListenerImpl implements SessionBrokerListener {
                     if (userInfos != null) {
                         final String sessionId = UserUtils.getSessionId(secureRequest).orElse(null);
                         final SessionDto sessionDto = fromUserInfos(userInfos, sessionId);
-                        promise.complete(new FindSessionResponseDTO(sessionDto));
+
+                        // Extract cookies from the response if it's a JsonHttpResponse
+                        final List<String> cookies = extractCookies(secureRequest);
+
+                        promise.complete(new FindSessionResponseDTO(sessionDto, cookies));
                     } else {
                         log.warn("Failed to convert session data to UserInfos");
                         promise.fail("session.conversion.error");
@@ -171,6 +179,31 @@ public class SessionBrokerListenerImpl implements SessionBrokerListener {
         });
         
         return promise.future();
+    }
+
+    /**
+     * Extracts cookies from the HTTP response if it's a JsonHttpResponse.
+     * This allows the NestJS middleware to set cookies on the client.
+     *
+     * @param secureRequest the secure HTTP request
+     * @return list of Set-Cookie header values, or null if not available
+     */
+    private List<String> extractCookies(final SecureHttpServerRequest secureRequest) {
+        try {
+            // SecureHttpServerRequest.response() returns the wrapped request's response
+            // But we need to access the JsonHttpServerRequest's getResponse() to get JsonHttpResponse
+            final HttpServerResponse response = secureRequest.response();
+            if (response instanceof JsonHttpResponse) {
+                final JsonHttpResponse jsonResponse = (JsonHttpResponse) response;
+                final MultiMap headers = jsonResponse.getHeaders();
+                if (headers != null) {
+                    return headers.getAll("Set-Cookie");
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Failed to extract cookies from response: {}", e.getMessage());
+        }
+        return null;
     }
 
     /**
