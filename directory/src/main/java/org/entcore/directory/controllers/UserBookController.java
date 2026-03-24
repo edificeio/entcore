@@ -94,6 +94,7 @@ public class UserBookController extends BaseController {
 	private PreferenceCacheService preferenceCacheService;
 	private final Map<String, Object> serverMap;
 
+	private static final String THEME_VERSION = "themeVersion";
 
 	public void setUserBookService(UserBookService userBookService) {
 		this.userBookService = userBookService;
@@ -109,7 +110,6 @@ public class UserBookController extends BaseController {
 	public void setPreferenceCacheService(PreferenceCacheService preferenceCacheService) {
 		this.preferenceCacheService = preferenceCacheService;
 	}
-
 
 	public UserBookController(Map<String, Object> serverMap) {
 		this.serverMap = serverMap;
@@ -409,7 +409,7 @@ public class UserBookController extends BaseController {
 							@Override
 							public void handle(Message<JsonObject> res) {
 								if(isTheme){
-									CookieHelper.set("themeVersion", System.currentTimeMillis()+"", request);
+									CookieHelper.set(THEME_VERSION, System.currentTimeMillis()+"", request);
 								}
 								renderJson(request, res.body());
 							}
@@ -770,7 +770,7 @@ public class UserBookController extends BaseController {
 								CookieHelper.set("langVersion", System.currentTimeMillis()+"", request);
 							}
 							if (applicationPreference.getPreferences().contains((UserPreferenceDto.Application.THEME))) {
-								CookieHelper.set("themeVersion", System.currentTimeMillis()+"", request);
+								CookieHelper.set(THEME_VERSION, System.currentTimeMillis()+"", request);
 								applicationPreference.getLegacyPreferences().remove(THEME_ATTRIBUTE + getHost(request));
 								UserUtils.removeSessionAttribute(eb,  user.getUserId(), THEME_ATTRIBUTE + getHost(request), null);
 							}

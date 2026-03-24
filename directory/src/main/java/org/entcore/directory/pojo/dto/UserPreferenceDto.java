@@ -10,7 +10,7 @@ public class UserPreferenceDto {
 
     private HomePagePreference homePage;
     @JsonIgnore
-    private transient JsonObject legacyPreferences;
+    private JsonObject legacyPreferences;
     @JsonIgnore
     private final List<Application> preferences = new ArrayList<>();
 

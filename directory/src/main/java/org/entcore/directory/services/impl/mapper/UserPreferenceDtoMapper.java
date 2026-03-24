@@ -7,7 +7,11 @@ import org.entcore.directory.pojo.dto.UserPreferenceDto;
 
 import static org.entcore.directory.pojo.dto.UserPreferenceDto.Application.HOME_PAGE;
 
-public class UserPreferenceDtoMapper {
+public final class UserPreferenceDtoMapper {
+
+    private UserPreferenceDtoMapper() {
+        //private
+    }
 
     public static UserPreferenceDto map(JsonObject pref) {
         UserPreferenceDto dto = new UserPreferenceDto();

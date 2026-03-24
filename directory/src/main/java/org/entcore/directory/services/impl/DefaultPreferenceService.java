@@ -57,18 +57,19 @@ public class DefaultPreferenceService implements PreferenceService {
     @Override
     public Future<UserPreferenceDto> getPreferences(UserInfos userInfos, JsonObject session) {
         Promise<UserPreferenceDto> promise = Promise.promise();
-        JsonObject params = new JsonObject();
-        params.put("userId", userInfos.getUserId());
-
-        StringBuilder query = new StringBuilder("MATCH (u:User {id:{userId}})-[:PREFERS]->(uac:UserAppConf) ");
-        query.append(" RETURN uac");
-
 
         final JsonObject cache = session.getJsonObject("cache");
         if(cache.containsKey("preferences")){
             promise.complete(UserPreferenceDtoMapper.map(cache.getJsonObject("preferences")));
             return promise.future();
         }
+
+        JsonObject params = new JsonObject();
+        params.put("userId", userInfos.getUserId());
+
+        StringBuilder query = new StringBuilder("MATCH (u:User {id:{userId}})-[:PREFERS]->(uac:UserAppConf) ");
+        query.append(" RETURN uac");
+
         neo4j.execute(query.toString(), params, validUniqueResultHandler( result -> {
             if (result.isRight()) {
                 promise.complete(UserPreferenceDtoMapper.map(result.right().getValue().getJsonObject("uac").getJsonObject("data", new JsonObject())));
