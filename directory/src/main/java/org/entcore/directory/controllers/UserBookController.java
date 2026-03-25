@@ -53,13 +53,14 @@ import org.entcore.common.neo4j.Neo;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.notification.ConversationNotification;
-import org.entcore.common.user.PreferenceHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import org.entcore.common.user.dto.UserPreferenceDto;
 import org.entcore.common.user.position.UserPosition;
 import org.entcore.common.user.position.UserPositionService;
 import org.entcore.common.validation.StringValidation;
+import org.entcore.directory.pojo.dto.ApplicationPreference;
+import org.entcore.directory.pojo.dto.UserPreferenceDto;
+import org.entcore.directory.services.PreferenceCacheService;
 import org.entcore.directory.services.PreferenceService;
 import org.entcore.directory.services.SchoolService;
 import org.entcore.directory.services.UserBookService;
@@ -90,6 +91,7 @@ public class UserBookController extends BaseController {
 	protected static final String ANNUAIRE_MODULE = "Annuaire";
 	private Map<String, Map<String, String>> activationWelcomeMessage;
 	private PreferenceService preferenceService;
+	private PreferenceCacheService preferenceCacheService;
 	private final Map<String, Object> serverMap;
 
 	private static final String THEME_VERSION = "themeVersion";
@@ -103,6 +105,10 @@ public class UserBookController extends BaseController {
 	}
 	public void setUserPositionService(UserPositionService userPositionService) {
 		this.userPositionService = userPositionService;
+	}
+
+	public void setPreferenceCacheService(PreferenceCacheService preferenceCacheService) {
+		this.preferenceCacheService = preferenceCacheService;
 	}
 
 	public UserBookController(Map<String, Object> serverMap) {
@@ -515,41 +521,6 @@ public class UserBookController extends BaseController {
 		}
 
 		switch(action){
-			case "v1.get.currentuser" :
-				UserUtils.getUserInfos(eb, request, userInfos -> {
-					UserUtils.getSession(eb, request, session -> {
-						preferenceService.getPreferences(userInfos, session)
-								.onSuccess(pref -> {
-									JsonObject result = new JsonObject().put("message", JsonObject.mapFrom(pref));
-									result.put("status", "ok");
-									message.reply(result);
-								})
-								.onFailure( e -> {
-									message.reply(new JsonObject()
-											.put("status", "error")
-											.put("message", e.getMessage()));
-								});
-					});
-				});
-				break;
-			case "v1.set.currentuser" :
-				UserUtils.getUserInfos(eb, request, userInfos -> {
-					UserUtils.getSession(eb, request, session -> {
-						JsonObject jsonPreference = message.body().getJsonObject("message", new JsonObject());
-						preferenceService.updatePreferences( jsonPreference.mapTo(UserPreferenceDto.class), userInfos, session)
-								.onSuccess(pref -> {
-									JsonObject result = new JsonObject().put("message", JsonObject.mapFrom(pref));
-									result.put("status", "ok");
-									message.reply(result);
-								})
-								.onFailure( e -> {
-									message.reply(new JsonObject()
-											.put("status", "error")
-											.put("message", e.getMessage()));
-								});
-					});
-				});
-				break;
 			case "get.currentuser":
 				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 					public void handle(UserInfos user) {
@@ -789,7 +760,7 @@ public class UserBookController extends BaseController {
 	public void updatePreferenceV1(final HttpServerRequest request) {
 		UserUtils.getSession(eb, request, session -> {
 			RequestUtils.bodyToJson(request, json -> {
-				UserPreferenceDto applicationPreference = json.mapTo(UserPreferenceDto.class);
+				UserPreferenceDto applicationPreference = Json.decodeValue(json.encode(), UserPreferenceDto.class);
 				//populate with application present in the body
 				applicationPreference.populateApplicationPreferences(json.getMap().keySet());
 				UserUtils.getUserInfos(eb, request, user -> preferenceService.updatePreferences(applicationPreference, user, session)
@@ -803,6 +774,7 @@ public class UserBookController extends BaseController {
 								applicationPreference.getLegacyPreferences().remove(THEME_ATTRIBUTE + getHost(request));
 								UserUtils.removeSessionAttribute(eb,  user.getUserId(), THEME_ATTRIBUTE + getHost(request), null);
 							}
+							preferenceCacheService.addPreferences(user, session, applicationPreference);
 							render(request, m);
 						})
 						.onFailure(e -> renderError(request)));
@@ -815,7 +787,10 @@ public class UserBookController extends BaseController {
 	public void getPreferenceV1(final HttpServerRequest request) {
 			UserUtils.getUserInfos(eb, request, user -> {
 				UserUtils.getSession(eb, request, session -> preferenceService.getPreferences(user, session)
-                        .onSuccess(preferenceDto -> render(request, preferenceDto))
+                        .onSuccess(preferenceDto -> {
+							preferenceCacheService.refreshPreferences(user, preferenceDto);
+							render(request, preferenceDto);
+						})
                         .onFailure(e -> renderError(request)));
 			});
 	}
