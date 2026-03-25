@@ -162,6 +162,8 @@ public class Directory extends BaseServer {
 		userBookController.setUserBookService(userBookService);
 		userBookController.setUserPositionService(userPositionService);
 		userBookController.setConversationNotification(conversationNotification);
+		userBookController.setPreferenceCacheService(new DefaultPreferenceCacheService(eb));
+		userBookController.setPreferenceService(new DefaultPreferenceService());
 		addController(userBookController);
 
 		StructureController structureController = new StructureController(

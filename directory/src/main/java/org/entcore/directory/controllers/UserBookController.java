@@ -19,40 +19,7 @@
 
 package org.entcore.directory.controllers;
 
-import static fr.wseduc.webutils.Utils.getOrElse;
-import static fr.wseduc.webutils.Utils.isNotEmpty;
-import static org.entcore.common.http.response.DefaultResponseHandler.arrayResponseHandler;
-import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
-import static org.entcore.common.http.response.DefaultResponseHandler.leftToResponse;
-import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
-import static org.entcore.common.user.SessionAttributes.PERSON_ATTRIBUTE;
-import static org.entcore.common.user.SessionAttributes.BIRTHDAYS_ATTRIBUTE;
-import static org.entcore.common.user.SessionAttributes.THEME_ATTRIBUTE;
-
-import java.io.File;
-import java.util.*;
-import java.util.stream.Collectors;
-
 import com.google.common.collect.Lists;
-import fr.wseduc.webutils.http.Renders;
-import fr.wseduc.webutils.request.CookieHelper;
-import org.entcore.common.events.EventStore;
-import org.entcore.common.events.EventStoreFactory;
-import org.entcore.common.http.request.JsonHttpServerRequest;
-import org.entcore.common.http.response.DefaultResponseHandler;
-import org.entcore.common.neo4j.Neo;
-import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.neo4j.Neo4jResult;
-import org.entcore.common.notification.ConversationNotification;
-import org.entcore.common.user.UserInfos;
-import org.entcore.common.user.UserUtils;
-import org.entcore.common.validation.StringValidation;
-import org.entcore.directory.services.SchoolService;
-import org.entcore.directory.services.UserBookService;
-import org.entcore.common.user.position.UserPositionService;
-import org.entcore.common.user.position.UserPosition;
-import org.vertx.java.core.http.RouteMatcher;
-
 import fr.wseduc.bus.BusAddress;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Put;
@@ -63,6 +30,9 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.HttpClientUtils;
+import fr.wseduc.webutils.http.Renders;
+import fr.wseduc.webutils.request.CookieHelper;
+import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -72,8 +42,39 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
+import org.entcore.common.http.request.JsonHttpServerRequest;
+import org.entcore.common.http.response.DefaultResponseHandler;
+import org.entcore.common.neo4j.Neo;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.Neo4jResult;
+import org.entcore.common.notification.ConversationNotification;
+import org.entcore.common.user.UserInfos;
+import org.entcore.common.user.UserUtils;
+import org.entcore.common.user.position.UserPosition;
+import org.entcore.common.user.position.UserPositionService;
+import org.entcore.common.validation.StringValidation;
+import org.entcore.directory.pojo.dto.ApplicationPreference;
+import org.entcore.directory.pojo.dto.UserPreferenceDto;
+import org.entcore.directory.services.PreferenceCacheService;
+import org.entcore.directory.services.PreferenceService;
+import org.entcore.directory.services.SchoolService;
+import org.entcore.directory.services.UserBookService;
+import org.vertx.java.core.http.RouteMatcher;
+
+import java.io.File;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static fr.wseduc.webutils.Utils.getOrElse;
+import static org.entcore.common.http.response.DefaultResponseHandler.*;
+import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
+import static org.entcore.common.user.SessionAttributes.BIRTHDAYS_ATTRIBUTE;
+import static org.entcore.common.user.SessionAttributes.THEME_ATTRIBUTE;
 
 public class UserBookController extends BaseController {
 
@@ -89,16 +90,26 @@ public class UserBookController extends BaseController {
 	protected enum DirectoryEvent { ACCESS }
 	protected static final String ANNUAIRE_MODULE = "Annuaire";
 	private Map<String, Map<String, String>> activationWelcomeMessage;
+	private PreferenceService preferenceService;
+	private PreferenceCacheService preferenceCacheService;
+	private final Map<String, Object> serverMap;
+
+	private static final String THEME_VERSION = "themeVersion";
 
 	public void setUserBookService(UserBookService userBookService) {
 		this.userBookService = userBookService;
 	}
-	
+
+	public void setPreferenceService(PreferenceService preferenceService) {
+		this.preferenceService = preferenceService;
+	}
 	public void setUserPositionService(UserPositionService userPositionService) {
 		this.userPositionService = userPositionService;
 	}
 
-	private final Map<String, Object> serverMap;
+	public void setPreferenceCacheService(PreferenceCacheService preferenceCacheService) {
+		this.preferenceCacheService = preferenceCacheService;
+	}
 
 	public UserBookController(Map<String, Object> serverMap) {
 		this.serverMap = serverMap;
@@ -398,7 +409,7 @@ public class UserBookController extends BaseController {
 							@Override
 							public void handle(Message<JsonObject> res) {
 								if(isTheme){
-									CookieHelper.set("themeVersion", System.currentTimeMillis()+"", request);
+									CookieHelper.set(THEME_VERSION, System.currentTimeMillis()+"", request);
 								}
 								renderJson(request, res.body());
 							}
@@ -682,15 +693,13 @@ public class UserBookController extends BaseController {
 			public void handle(final UserInfos user) {
 				if (user != null) {
 					final String application = request.params().get("application").replaceAll("\\W+", "");
-					getUserPrefs(user, request, application, new  Handler<Either<String, JsonObject>>(){
-						public void handle(Either<String, JsonObject> event) {
-							if(event.isLeft()){
-								badRequest(request, event.left().getValue());
-							} else {
-								renderJson(request, event.right().getValue());
-							}
-						}
-					});
+					getUserPrefs(user, request, application, event -> {
+                        if(event.isLeft()){
+                            badRequest(request, event.left().getValue());
+                        } else {
+                            renderJson(request, event.right().getValue());
+                        }
+                    });
 				} else {
 					badRequest(request);
 				}
@@ -700,28 +709,24 @@ public class UserBookController extends BaseController {
 
 	private void getUserPrefs(final UserInfos user, final HttpServerRequest request, final String application, final Handler<Either<String, JsonObject>> handler){
 		if (user != null) {
-			UserUtils.getSession(eb, request, new Handler<JsonObject>() {
-				public void handle(JsonObject session) {
-					final JsonObject cache = session.getJsonObject("cache");
+			UserUtils.getSession(eb, request, session -> {
+                final JsonObject cache = session.getJsonObject("cache");
 
-					if(cache.containsKey("preferences")){
-						handler.handle(new Either.Right<String, JsonObject>(
-								new JsonObject().put("preference", cache.getJsonObject("preferences").getString(application))));
-					} else {
-						refreshPreferences(user, request, new Handler<Either<String, JsonObject>>(){
-							public void handle(Either<String, JsonObject> event) {
-								if(event.isLeft()) {
-									log.error(event.left().getValue());
-									handler.handle(new Either.Left<String, JsonObject>("refresh.preferences.failed"));
-								} else {
-									handler.handle(new Either.Right<String, JsonObject>(
-										new JsonObject().put("preference", event.right().getValue().getString(application))));
-								}
-							}
-						});
-					}
-				}
-			});
+                if(cache.containsKey("preferences")){
+                    handler.handle(new Either.Right<String, JsonObject>(
+                            new JsonObject().put("preference", cache.getJsonObject("preferences").getString(application))));
+					return;
+                }
+				refreshPreferences(user, request, event -> {
+                    if(event.isLeft()) {
+                        log.error(event.left().getValue());
+                        handler.handle(new Either.Left<String, JsonObject>("refresh.preferences.failed"));
+                    } else {
+                        handler.handle(new Either.Right<String, JsonObject>(
+                            new JsonObject().put("preference", event.right().getValue().getString(application))));
+                    }
+                });
+            });
 		} else {
 			handler.handle(new Either.Left<String, JsonObject>("bad.user"));
 		}
@@ -729,8 +734,7 @@ public class UserBookController extends BaseController {
 
 	private void refreshPreferences(final UserInfos user, final HttpServerRequest request, final Handler<Either<String, JsonObject>> handler){
 		String query =
-				"MATCH (u:User {id:{userId}})-[:PREFERS]->(uac:UserAppConf)"
-						+" RETURN uac AS preferences";
+				"MATCH (u:User {id:{userId}})-[:PREFERS]->(uac:UserAppConf) RETURN uac AS preferences";
 
 		neo.execute(query,
 			new JsonObject().put("userId", user.getUserId()),
@@ -749,6 +753,46 @@ public class UserBookController extends BaseController {
 					handler.handle(result);
 				}
 		}));
+	}
+
+	@Put("/api/preferences")
+	@SecuredAction(value = "user.preference", type = ActionType.AUTHENTICATED)
+	public void updatePreferenceV1(final HttpServerRequest request) {
+		UserUtils.getSession(eb, request, session -> {
+			RequestUtils.bodyToJson(request, json -> {
+				UserPreferenceDto applicationPreference = Json.decodeValue(json.encode(), UserPreferenceDto.class);
+				//populate with application present in the body
+				applicationPreference.populateApplicationPreferences(json.getMap().keySet());
+				UserUtils.getUserInfos(eb, request, user -> preferenceService.updatePreferences(applicationPreference, user, session)
+						.onSuccess(m -> {
+							//need to reset cookie if pref on lang or theme are impacted
+							if (applicationPreference.getPreferences().contains(UserPreferenceDto.Application.LANGUAGE)) {
+								CookieHelper.set("langVersion", System.currentTimeMillis()+"", request);
+							}
+							if (applicationPreference.getPreferences().contains((UserPreferenceDto.Application.THEME))) {
+								CookieHelper.set(THEME_VERSION, System.currentTimeMillis()+"", request);
+								applicationPreference.getLegacyPreferences().remove(THEME_ATTRIBUTE + getHost(request));
+								UserUtils.removeSessionAttribute(eb,  user.getUserId(), THEME_ATTRIBUTE + getHost(request), null);
+							}
+							preferenceCacheService.addPreferences(user, session, applicationPreference);
+							render(request, m);
+						})
+						.onFailure(e -> renderError(request)));
+				});
+		});
+	}
+
+	@Get("/api/preferences")
+	@SecuredAction(value = "user.preference", type = ActionType.AUTHENTICATED)
+	public void getPreferenceV1(final HttpServerRequest request) {
+			UserUtils.getUserInfos(eb, request, user -> {
+				UserUtils.getSession(eb, request, session -> preferenceService.getPreferences(user, session)
+                        .onSuccess(preferenceDto -> {
+							preferenceCacheService.refreshPreferences(user, preferenceDto);
+							render(request, preferenceDto);
+						})
+                        .onFailure(e -> renderError(request)));
+			});
 	}
 
 	@Put("/preference/:application")
