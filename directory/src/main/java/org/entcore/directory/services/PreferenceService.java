@@ -1,9 +1,10 @@
 package org.entcore.directory.services;
 
+import fr.wseduc.webutils.Either;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
-import org.entcore.common.user.dto.UserPreferenceDto;
+import org.entcore.directory.pojo.dto.UserPreferenceDto;
 
 public interface PreferenceService {
 

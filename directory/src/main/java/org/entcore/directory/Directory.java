@@ -29,6 +29,11 @@ import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Map;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.bus.WorkspaceHelper;
@@ -53,10 +58,6 @@ import org.entcore.directory.security.DirectoryResourcesProvider;
 import org.entcore.directory.security.UserbookCsrfFilter;
 import org.entcore.directory.services.*;
 import org.entcore.directory.services.impl.*;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Map;
 
 public class Directory extends BaseServer {
 
@@ -161,7 +162,8 @@ public class Directory extends BaseServer {
 		userBookController.setUserBookService(userBookService);
 		userBookController.setUserPositionService(userPositionService);
 		userBookController.setConversationNotification(conversationNotification);
-		userBookController.setPreferenceService(new DefaultPreferenceService(new DefaultPreferenceCacheService(eb)));
+		userBookController.setPreferenceCacheService(new DefaultPreferenceCacheService(eb));
+		userBookController.setPreferenceService(new DefaultPreferenceService());
 		addController(userBookController);
 
 		StructureController structureController = new StructureController(
