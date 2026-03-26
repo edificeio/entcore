@@ -98,25 +98,43 @@ clean () {
   fi
 }
 
-buildFrontend () {
-  # --- Build angularJS-based frontends
-  if [ "$MODULE" = "" ] || [ ! "$MODULE" = "admin" ] && [ ! -e ./"$MODULE"/frontend ]; then
-    #try jenkins branch name => then local git branch name => then jenkins params
-    echo "[buildNode] Get branch name from jenkins env..."
-    BRANCH_NAME=`echo $GIT_BRANCH | sed -e "s|origin/||g"`
-    if [ "$BRANCH_NAME" = "" ]; then
-      echo "[buildNode] Get branch name from git..."
-      BRANCH_NAME=`git branch | sed -n -e "s/^\* \(.*\)/\1/p"`
-    fi
-    if [ ! -z "$FRONT_TAG" ]; then
-      echo "[buildNode] Get tag name from jenkins param... $FRONT_TAG"
-      BRANCH_NAME="$FRONT_TAG"
-    fi
-    if [ "$BRANCH_NAME" = "" ]; then
-      echo "[buildNode] Branch name should not be empty!"
-      exit -1
-    fi
+syncReactFrontendBuildToResources() {
+  sync_target_root="$1"
+  sync_resources_dir="$sync_target_root/src/main/resources"
+  sync_public_dir="$sync_resources_dir/public"
+  sync_view_dir="$sync_resources_dir/view"
 
+  # Remove only hashed asset files like name-XXXXXXXX.ext from public resources.
+  if [ -d "$sync_public_dir" ]; then
+    for file in "$sync_public_dir"/*; do
+      [ -f "$file" ] || continue
+      file_name="${file##*/}"
+      echo "$file_name" | grep -E '^[^/]+-[A-Za-z0-9_-]{8,32}\.[A-Za-z0-9]+$' >/dev/null 2>&1 || continue
+      echo "...cleaning previous asset $file_name"
+      rm -f "$file"
+    done
+  fi
+
+  # Move dist to resources dir
+  cp -R ./dist/* "$sync_resources_dir/"
+
+  # Create resources/view directory if needed
+  mkdir -p "$sync_view_dir"
+
+  # Move generated HTML entrypoints into the view directory when present.
+  for html_file in "$sync_resources_dir"/*.html; do
+    [ -f "$html_file" ] || continue
+    echo "...moving HTML file $html_file to $sync_view_dir/"
+    mv "$html_file" "$sync_view_dir/"
+  done
+
+  unset sync_target_root sync_resources_dir sync_public_dir sync_view_dir file file_name html_file
+}
+
+buildFrontend () {
+
+  # --- Build angularJS-based frontends
+  if [ "$MODULE" = "" ] || [ ! "$MODULE" = "admin" ] && [ ! -e ./"$MODULE"/frontend ]  || [ "$MODULE" = "timeline" ]; then
     if [ "$BRANCH_NAME" = 'master' ] || [ "$BRANCH_NAME" = 'fix' ]  || [ "$BRANCH_NAME" = 'release' ]; then
         echo "[buildNode] Use entcore version from package.json ($BRANCH_NAME)"
         case `uname -s` in
@@ -161,14 +179,13 @@ buildFrontend () {
         exit 1
       fi
 
-      # Create directory structure and copy frontend build files to backend
-      rm -rf ../backend/src/main/resources/public/*.js
-      rm -rf ../backend/src/main/resources/public/*.css
-      cp -R ./dist/* ../backend/src/main/resources/
-
-      # Create view directory and copy HTML files
-      mkdir -p ../backend/src/main/resources/view
-      mv ../backend/src/main/resources/*.html ../backend/src/main/resources/view
+      # Create directory structure and copy frontend build files.
+      if [ "$module" = "timeline" ]; then
+        # compatibility mode : preserve legacy frontends files in ../src
+        syncReactFrontendBuildToResources ".."
+      else
+        syncReactFrontendBuildToResources "../backend"
+      fi
 
       # Clean up
       rm -rf ./dist
