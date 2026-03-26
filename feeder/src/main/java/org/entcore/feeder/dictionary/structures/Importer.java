@@ -1194,7 +1194,7 @@ public class Importer {
 		final String query =
 				"MATCH (s:Structure)<-[:DEPENDS*1..2]-(g:Group)-[c:COMMUNIQUE]-(u:User) " +
 				"WHERE s.externalId STARTS WITH {prefix} AND u.source = {currentSource} " +
-				"AND (c.source IS NULL OR c.source <> 'MANUAL') AND NOT (u)-[:IN]->(g) " +
+				"AND c.source IS NULL AND NOT (u)-[:IN]->(g) " +
 				"DELETE c";
 		transactionHelper.add(query, new JsonObject().put("prefix", prefix).put("currentSource", currentSource));
 	}
