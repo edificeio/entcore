@@ -84,21 +84,7 @@ export default ({ mode }: { mode: string }) => {
       host: 'localhost',
     },
 
-    plugins: [
-      {
-        name: 'rewrite-homepage',
-        configureServer(server) {
-          server.middlewares.use((req, _res, next) => {
-            if (req.url === '/') {
-              req.url = '/homepage.html';
-            }
-            next();
-          });
-        },
-      },
-      react(),
-      tsconfigPaths(),
-    ],
+    plugins: [react(), tsconfigPaths()],
 
     build: {
       outDir: './dist',
@@ -107,7 +93,7 @@ export default ({ mode }: { mode: string }) => {
       commonjsOptions: {
         transformMixedEsModules: true,
       },
-      assetsDir: 'public/homepage',
+      assetsDir: 'public',
       chunkSizeWarningLimit: 500,
       rollupOptions: {
         input: {

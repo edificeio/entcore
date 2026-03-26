@@ -1,14 +1,19 @@
+import { matchPath } from 'react-router-dom';
+
 /** Check old format URL and redirect if needed */
 export const manageRedirections = (): string | null => {
-  const pathLocation = window.location.pathname;
+  const hashLocation = window.location.hash.substring(1);
 
-  if (
-    pathLocation === '/' ||
-    pathLocation === '/timeline' ||
-    pathLocation === '/timeline/' ||
-    pathLocation === '/timeline/timeline'
-  ) {
-    return '/timeline';
+  if (hashLocation) {
+    let redirectPath = '';
+    const isPath = matchPath('/view/:id', hashLocation);
+
+    if (isPath) {
+      // Redirect to the new format
+      redirectPath = `/id/${isPath?.params.id}`;
+    }
+
+    return redirectPath;
   }
 
   // No redirection needed
