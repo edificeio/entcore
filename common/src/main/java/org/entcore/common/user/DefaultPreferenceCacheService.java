@@ -1,14 +1,11 @@
-package org.entcore.directory.services.impl;
+package org.entcore.common.user;
 
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
-import org.entcore.common.user.UserInfos;
-import org.entcore.common.user.UserUtils;
-import org.entcore.directory.pojo.dto.UserPreferenceDto;
-import org.entcore.directory.services.PreferenceCacheService;
+import org.entcore.common.user.dto.UserPreferenceDto;
 
 public class DefaultPreferenceCacheService implements PreferenceCacheService {
 

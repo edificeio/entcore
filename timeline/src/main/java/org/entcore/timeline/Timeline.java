@@ -37,6 +37,9 @@ import org.entcore.broker.api.publisher.BrokerPublisherFactory;
 import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.broker.proxy.ApplicationStatusBrokerPublisher;
 import org.entcore.common.http.BaseServer;
+import org.entcore.common.user.DefaultPreferenceCacheService;
+import org.entcore.common.user.DefaultPreferenceService;
+import org.entcore.common.user.PreferenceService;
 import org.entcore.common.utils.MapFactory;
 import org.entcore.timeline.controllers.helper.NotificationHelper;
 import org.entcore.timeline.listeners.TimelineBrokerListenerImpl;
@@ -103,8 +106,10 @@ public class Timeline extends BaseServer {
 				config.getBoolean("remove-push-notifs-404-tokens", false));
 		notificationHelper.setPushNotifServices(pushNotifServices);
 
+		PreferenceService preferenceService = new DefaultPreferenceService(new DefaultPreferenceCacheService(getEventBus(vertx)));
 
 		timelineController.setNotificationHelper(notificationHelper);
+		timelineController.setPreferenceService(preferenceService);
 
 		final FlashMsgService flashMsgService = new FlashMsgServiceSqlImpl("flashmsg", "messages");
 		final FlashMsgController flashMsgController = new FlashMsgController(

@@ -54,6 +54,7 @@ import org.entcore.common.mute.MuteHelper;
 import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.notification.TimelineNotificationsLoader;
+import org.entcore.common.user.PreferenceService;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.timeline.Timeline;
@@ -85,6 +86,8 @@ public class TimelineController extends BaseController {
 	private TimelineEventStore store;
 	private TimelineConfigService configService;
 	private TimelineMailerService mailerService;
+	private PreferenceService preferenceService;
+
 	private Map<String, String> registeredNotifications;
 	private Map<String, String> eventsI18n;
 	private HashMap<String, JsonObject> lazyEventsI18n;
@@ -127,14 +130,14 @@ public class TimelineController extends BaseController {
 		antiFlood = new TTLSet<>(config.getLong("antiFloodDelay", 3000l),
 				vertx, config.getLong("antiFloodClear", 3600 * 1000l));
 		refreshTypesCache = config.getBoolean("refreshTypesCache", false);
-    Future<Void> future = Future.succeededFuture();
+    	Future<Void> future = Future.succeededFuture();
 		if(config.getBoolean("cache", false)){
-      final Promise<Void> promise = Promise.promise();
-			CacheService.create(vertx, config).onSuccess(cacheService -> {
-        final Integer cacheLen = config.getInteger("cache-size", PAGELIMIT);
-        store = new CachedTimelineEventStore(store, cacheService, cacheLen, configService, registeredNotifications);
-      }).onFailure(promise::fail);
-      future = promise.future();
+		  final Promise<Void> promise = Promise.promise();
+		  CacheService.create(vertx, config).onSuccess(cacheService -> {
+			final Integer cacheLen = config.getInteger("cache-size", PAGELIMIT);
+			store = new CachedTimelineEventStore(store, cacheService, cacheLen, configService, registeredNotifications);
+		  }).onFailure(promise::fail);
+		  future = promise.future();
 		}
 
 		// TEMPORARY to handle both timeline and timeline2 view
@@ -148,7 +151,7 @@ public class TimelineController extends BaseController {
 
 		final EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Timeline.class.getSimpleName());
 		this.eventHelper =  new EventHelper(eventStore);
-    return future;
+    	return future;
 	}
 
 	/* Override i18n to use additional timeline translations and nested templates */
@@ -187,6 +190,7 @@ public class TimelineController extends BaseController {
 	@Get("/timeline")
 	@SecuredAction(value = "timeline.view", type = ActionType.AUTHENTICATED)
 	public void view(HttpServerRequest request) {
+		eventHelper.onAccess(request);
 		// =================
 		// /!\ TEMPORARY /!\
 		// =================
@@ -205,19 +209,36 @@ public class TimelineController extends BaseController {
 
 			JsonArray userSkinLevels = this.skinLevels.getJsonArray(userTheme);
 			if (userSkinLevels != null && userSkinLevels.contains("2d")) {
-				renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "timeline2.html", null);
+				renderTimeline2dOrBeta(request);
 			} else {
 				renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)));
 			}
 		});
-		eventHelper.onAccess(request);
+	}
+
+	private void renderTimeline2dOrBeta(HttpServerRequest request){
+		UserUtils.getUserInfos(eb, request, userInfos -> {
+			UserUtils.getSession(eb, request, userSession -> {
+				preferenceService.getPreferences(userInfos, userSession)
+						.onSuccess(preferences -> {
+							if(preferences.getHomePage() != null && preferences.getHomePage().isBetaEnabled()) {
+								renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "homepage.html", null);
+							} else {
+								renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "timeline2.html", null);
+							}
+						}).onFailure( e -> {
+							log.error("Error while retreiving user preferences", e);
+							renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "timeline2.html", null);
+						});
+			});
+		});
 	}
 
 	@Get("/timeline2")
 	@SecuredAction(value = "timeline.view", type = ActionType.AUTHENTICATED)
 	public void view2(HttpServerRequest request) {
 		final boolean cache = config.getBoolean("cache", false);
-		renderView(request, new JsonObject().put("lightMode",isLightmode()).put("cache", cache));
+		renderTimeline2dOrBeta(request);
 		eventHelper.onAccess(request);
 	}
 
@@ -1012,6 +1033,10 @@ public class TimelineController extends BaseController {
 
 	public void setNotificationHelper(NotificationHelper notificationHelper) {
 		this.notificationHelper = notificationHelper;
+	}
+
+	public void setPreferenceService(PreferenceService preferenceService) {
+		this.preferenceService = preferenceService;
 	}
 
 	public void setEventsI18n(Map<String, String> eventsI18n) {

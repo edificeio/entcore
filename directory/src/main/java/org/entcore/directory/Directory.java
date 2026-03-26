@@ -49,6 +49,8 @@ import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.storage.impl.FileStorage;
 import org.entcore.common.storage.impl.MongoDBApplicationStorage;
 import org.entcore.common.storage.impl.S3Storage;
+import org.entcore.common.user.DefaultPreferenceCacheService;
+import org.entcore.common.user.DefaultPreferenceService;
 import org.entcore.common.user.RepositoryHandler;
 import org.entcore.common.user.position.UserPositionService;
 import org.entcore.common.user.position.impl.DefaultUserPositionService;
@@ -162,8 +164,7 @@ public class Directory extends BaseServer {
 		userBookController.setUserBookService(userBookService);
 		userBookController.setUserPositionService(userPositionService);
 		userBookController.setConversationNotification(conversationNotification);
-		userBookController.setPreferenceCacheService(new DefaultPreferenceCacheService(eb));
-		userBookController.setPreferenceService(new DefaultPreferenceService());
+		userBookController.setPreferenceService(new DefaultPreferenceService(new DefaultPreferenceCacheService(eb)));
 		addController(userBookController);
 
 		StructureController structureController = new StructureController(

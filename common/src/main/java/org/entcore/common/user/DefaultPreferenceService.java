@@ -1,22 +1,23 @@
-package org.entcore.directory.services.impl;
+package org.entcore.common.user;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.neo4j.Neo4j;
-import org.entcore.common.user.UserInfos;
-import org.entcore.directory.pojo.dto.UserPreferenceDto;
-import org.entcore.directory.services.PreferenceService;
-import org.entcore.directory.services.impl.mapper.UserPreferenceDtoMapper;
+import org.entcore.common.user.dto.UserPreferenceDto;
+import org.entcore.common.user.mapper.UserPreferenceDtoMapper;
 
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 
 public class DefaultPreferenceService implements PreferenceService {
 
     private final Neo4j neo4j = Neo4j.getInstance();
+    private final PreferenceCacheService preferenceCacheService;
+
+    public DefaultPreferenceService(PreferenceCacheService preferenceCacheService) {
+        this.preferenceCacheService = preferenceCacheService;
+    }
 
     @Override
     public Future<UserPreferenceDto> updatePreferences(UserPreferenceDto preference, UserInfos userInfos, JsonObject session) {
@@ -46,7 +47,10 @@ public class DefaultPreferenceService implements PreferenceService {
 
         neo4j.execute(query.toString(), params, validUniqueResultHandler( result -> {
             if(result.isRight()) {
-                promise.complete(UserPreferenceDtoMapper.map(result.right().getValue().getJsonObject("uac").getJsonObject("data", new JsonObject())));
+                UserPreferenceDto userPreferenceDto = UserPreferenceDtoMapper.map(
+                        result.right().getValue().getJsonObject("uac").getJsonObject("data", new JsonObject()));
+                promise.complete(userPreferenceDto);
+                preferenceCacheService.addPreferences(userInfos, session, userPreferenceDto);
             } else {
                 promise.fail(result.left().getValue());
             }
@@ -72,7 +76,9 @@ public class DefaultPreferenceService implements PreferenceService {
 
         neo4j.execute(query.toString(), params, validUniqueResultHandler( result -> {
             if (result.isRight()) {
-                promise.complete(UserPreferenceDtoMapper.map(result.right().getValue().getJsonObject("uac").getJsonObject("data", new JsonObject())));
+                UserPreferenceDto preferenceDto = UserPreferenceDtoMapper.map(result.right().getValue().getJsonObject("uac").getJsonObject("data", new JsonObject()));
+                promise.complete(preferenceDto);
+                preferenceCacheService.refreshPreferences(userInfos, preferenceDto);
             } else {
                 promise.fail(result.left().getValue());
             }

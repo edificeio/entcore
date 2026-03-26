@@ -1,11 +1,11 @@
-package org.entcore.directory.services.impl.mapper;
+package org.entcore.common.user.mapper;
 
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
-import org.entcore.directory.pojo.dto.HomePagePreference;
-import org.entcore.directory.pojo.dto.UserPreferenceDto;
+import org.entcore.common.user.dto.HomePagePreference;
+import org.entcore.common.user.dto.UserPreferenceDto;
 
-import static org.entcore.directory.pojo.dto.UserPreferenceDto.Application.HOME_PAGE;
+import static org.entcore.common.user.dto.UserPreferenceDto.Application.HOME_PAGE;
 
 public final class UserPreferenceDtoMapper {
 
