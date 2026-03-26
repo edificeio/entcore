@@ -41,7 +41,14 @@
         <dependency>
             <groupId>io.vertx</groupId>
             <artifactId>mod-mongo-persistor</artifactId>
-            <version>4.1-separation-SNAPSHOT</version>
+            <version>${modMongoVersion}</version>
+            <scope>runtime</scope>
+            <classifier>fat</classifier>
+        </dependency>
+        <dependency>
+            <groupId>com.opendigitaleducation</groupId>
+            <artifactId>mod-json-schema-validator</artifactId>
+            <version>${jsonSchemaValidatorVersion}</version>
             <scope>runtime</scope>
             <classifier>fat</classifier>
         </dependency>
