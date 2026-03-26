@@ -1,5 +1,4 @@
 import { Layout, LoadingScreen, useEdificeClient } from '@edifice.io/react';
-import { BetaSwitch } from '~/components/BetaSwitch/BetaSwitch';
 
 /** Check old format URL and redirect if needed */
 export const loader = async () => {
@@ -11,12 +10,7 @@ export const Root = () => {
 
   if (!init) return <LoadingScreen position={false} />;
 
-  return init ? (
-    <Layout>
-      timeline
-      <BetaSwitch />
-    </Layout>
-  ) : null;
+  return init ? <Layout>timeline</Layout> : null;
 };
 
 export default Root;
