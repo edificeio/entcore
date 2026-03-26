@@ -110,5 +110,5 @@ Ajouter un fichier js de test dans `tests/src/test/js/stresstest/scenarios/impac
 ### Lancement
 
 ```shell
-docker-compose run --rm load-tester run file:///home/k6/src/scenarios/impacted-module/my-scenario.js
+docker compose run --rm load-tester run file:///home/k6/src/scenarios/impacted-module/my-scenario.js
 ```
