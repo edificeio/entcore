@@ -84,7 +84,21 @@ export default ({ mode }: { mode: string }) => {
       host: 'localhost',
     },
 
-    plugins: [react(), tsconfigPaths()],
+    plugins: [
+      {
+        name: 'rewrite-homepage',
+        configureServer(server) {
+          server.middlewares.use((req, _res, next) => {
+            if (req.url === '/') {
+              req.url = '/homepage.html';
+            }
+            next();
+          });
+        },
+      },
+      react(),
+      tsconfigPaths(),
+    ],
 
     build: {
       outDir: './dist',
