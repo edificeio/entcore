@@ -19,8 +19,7 @@
       "org.entcore.common.http.health.Neo4jProbe",
       "org.entcore.common.http.health.MongoProbe",
       "org.entcore.common.http.health.PostgresProbe",
-      "org.entcore.common.http.health.RedisProbe",
-      "fr.wseduc.webutils.metrics.EventBusProbe"
+      "org.entcore.common.http.health.RedisProbe"
     ],
     "block-route-filter": {{ conversationBlockRouteFilter | default('false') }},
     {% if (ha is defined and not(ha)) or (inventory_hostname_short is defined and inventory_hostname_short == 'jobs') %}

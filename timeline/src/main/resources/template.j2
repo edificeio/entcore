@@ -19,8 +19,7 @@
       "org.entcore.common.http.health.Neo4jProbe",
       "org.entcore.common.http.health.MongoProbe",
       "org.entcore.common.http.health.PostgresProbe",
-      "org.entcore.common.http.health.RedisProbe",
-      "fr.wseduc.webutils.metrics.EventBusProbe"
+      "org.entcore.common.http.health.RedisProbe"
     ],
     "maxRecipientLength": {{ timelineMaxRecipientLength | default(1000) }},
     {% if pushNotif is defined %}
