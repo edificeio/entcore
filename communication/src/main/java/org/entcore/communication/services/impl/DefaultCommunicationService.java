@@ -337,17 +337,7 @@ public class DefaultCommunicationService implements CommunicationService {
 				set = "SET g.users = CASE WHEN g.users = 'OUTGOING' THEN null ELSE 'INCOMING' END ";
 				break;
 			default:
-				String createRelationship;
-		switch (direction) {
-			case INCOMING:
-				createRelationship = "u<-[:COMMUNIQUE_DIRECT]-s ";
-				break;
-			case OUTGOING:
-				createRelationship = "u-[:COMMUNIQUE_DIRECT]->s ";
-				break;
-			default:
-				createRelationship = "u<-[:COMMUNIQUE_DIRECT]-s, u-[:COMMUNIQUE_DIRECT]->s ";
-		}	relationship = "g-[r:COMMUNIQUE]-(u:User) ";
+				relationship = "g-[r:COMMUNIQUE]-(u:User) ";
 				set = "REMOVE g.users ";
 		}
 		String query =
