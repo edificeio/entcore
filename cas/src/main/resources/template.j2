@@ -17,8 +17,7 @@
     "probes": [
       "org.entcore.common.http.health.Neo4jProbe",
       "org.entcore.common.http.health.MongoProbe",
-      "org.entcore.common.http.health.RedisProbe",
-      "fr.wseduc.webutils.metrics.EventBusProbe"
+      "org.entcore.common.http.health.RedisProbe"
     ],
     {% if casExternalLoginUri is defined %}{{ casExternalLoginUri }},{% endif %}
     {% if casExternalLogin is defined %}{{ casExternalLogin }},{% endif %}

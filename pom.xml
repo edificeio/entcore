@@ -76,6 +76,7 @@
         <gatlingHighchartsVersion>2.3.1</gatlingHighchartsVersion>
         <postgres-driver.version>42.2.26</postgres-driver.version>
         <hikari.version>2.4.2</hikari.version>
+        <jsonSchemaValidatorVersion>2.1-SNAPSHOT</jsonSchemaValidatorVersion>
     </properties>
 
     <dependencies>
@@ -84,12 +85,6 @@
             <artifactId>common</artifactId>
             <version>${entcore-libs.version}</version>
             <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>vertx-core</artifactId>
-            <version>${vertxVersion}</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>io.netty</groupId>
