@@ -865,7 +865,7 @@ public class TimelineController extends BaseController {
 		switch (action) {
 		case "add":
 			final String sender = json.getString("sender");
-			final boolean disableAntiflood = json.getBoolean("disableAntiflood", false);
+			final boolean disableAntiflood = json.getBoolean("disableAntiFlood", false);
 
 			log.info(String.format("[Timeline.add] Add new notification from sender %s with antiflood activation = %s from module %s for resources %s ",
 					sender, !disableAntiflood, json.getString("type", ""), json.getString("resource", "")));
