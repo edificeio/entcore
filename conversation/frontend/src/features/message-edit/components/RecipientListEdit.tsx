@@ -133,6 +133,7 @@ export function RecipientListEdit({
     searchMinLength,
     handleSearchInputChange,
     handleSearchInputKeyUp,
+    resetSearchValue,
   } = useSearchRecipients({
     recipientType,
   });
@@ -183,6 +184,7 @@ export function RecipientListEdit({
         setLoadingBookmarkIndex(index);
         await handleSelectRecipient(recipient);
         setLoadingBookmarkIndex(undefined);
+        resetSearchValue();
       };
       return (
         <Fragment key={index}>
