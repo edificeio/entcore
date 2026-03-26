@@ -895,6 +895,36 @@ i.assistancetic::before {
   }
 }
 
+i.livret-scolaire-large,
+i.type.livret-scolaire,
+i.livret-scolaire {
+  @include fonticon;
+}
+
+i.livret-scolaire-large::before,
+i.type.livret-scolaire::before,
+i.livret-scolaire::before {
+  content:'\e975';
+  color: $green;
+}
+
+// Timeline-specific classes for livret-scolaire
+.bg-app-livret-scolaire {
+  background-color: $green;
+}
+
+.color-app-livret-scolaire {
+  color: $green;
+}
+
+.ic-app-livret-scolaire {
+  @include fonticon;
+  &::before {
+    content: '\e975';
+    color: $green;
+  }
+}
+
 i.votil-large,
 i.type.votil,
 i.votil {
