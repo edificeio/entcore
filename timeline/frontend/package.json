@@ -12,7 +12,6 @@
     "format": "prettier --write .",
     "lint": "eslint .",
     "pre-commit": "lint-staged",
-    "prepare": "cd .. && husky frontend/.husky || true",
     "preview": "vite preview",
     "test": "vitest",
     "test:coverage": "vitest run --coverage",

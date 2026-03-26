@@ -109,7 +109,7 @@ syncReactFrontendBuildToResources() {
     for file in "$sync_public_dir"/*; do
       [ -f "$file" ] || continue
       file_name="${file##*/}"
-      echo "$file_name" | grep -E '^[^/]+-[A-Za-z0-9_-]{8}\.[A-Za-z0-9]+$' >/dev/null 2>&1 || continue
+      echo "$file_name" | grep -E '^[^/]+-[A-Za-z0-9_-]{8,32}\.[A-Za-z0-9]+$' >/dev/null 2>&1 || continue
       echo "...cleaning previous asset $file_name"
       rm -f "$file"
     done

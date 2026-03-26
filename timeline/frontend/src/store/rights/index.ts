@@ -8,10 +8,10 @@ type UserRights = Record<RightRole, boolean>;
  * Use this store with `checkUserRight` utils
  * You can check rights in a react-router loader
  * And set userRights with the store to get a stable global state
- * 
+ *
  * const userRights = await checkUserRight(rights);
-  const { setUserRights } = useUserRightsStore.getState();
-  setUserRights(userRights);
+ * const { setUserRights } = useUserRightsStore.getState();
+ * setUserRights(userRights);
  */
 interface State {
   userRights: UserRights;

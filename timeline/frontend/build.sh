@@ -130,9 +130,8 @@ linkDependencies () {
     echo "ode-explorer not found in package.json"
   fi
 
-  # # Link the packages in the current application
+  # Link the packages in the current application
   echo "Linking packages in the current application..."
-  Link each dependency from package.json
   for dep in $DEPENDENCIES; do
     pnpm link --global "@edifice.io/$dep"
   done

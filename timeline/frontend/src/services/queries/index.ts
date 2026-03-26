@@ -2,7 +2,7 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  This is a starter file and can be modified.
  * * * * * * * * * * * * * * * * * * * * * * * * * * * *
- Modifiy this file and get started with your project!
+ Modify this file and get started with your project!
  * * * * * * * * * * * * * * * * * * * * * * * * * * * *
  */
 
