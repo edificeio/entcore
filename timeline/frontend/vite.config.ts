@@ -107,7 +107,7 @@ export default ({ mode }: { mode: string }) => {
       commonjsOptions: {
         transformMixedEsModules: true,
       },
-      assetsDir: 'public',
+      assetsDir: 'public/homepage',
       chunkSizeWarningLimit: 500,
       rollupOptions: {
         input: {
