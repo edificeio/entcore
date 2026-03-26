@@ -19,6 +19,7 @@
 
 package org.entcore.session;
 
+import java.util.Objects;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.mongodb.MongoUpdateBuilder;
 import fr.wseduc.webutils.Either;
@@ -93,9 +94,8 @@ public class AuthManager extends BusModBase implements Handler<Message<JsonObjec
 		neo4j.init(vertx, neo4jConfig);
 
 		cluster = vertx.isClustered();
-		String node = (String) sessionMap.get("node");
 		mongo = MongoDb.getInstance();
-		mongo.init(vertx.eventBus(), node + config.getString("mongo-address", "wse.mongodb.persistor"));
+		mongo.init(vertx.eventBus(), Objects.toString(sessionMap.get("node"), "") + config.getString("mongo-address", "wse.mongodb.persistor"));
 
 		this.xsrfOnAuth = config.getBoolean("xsrfOnAuth", true);
 
