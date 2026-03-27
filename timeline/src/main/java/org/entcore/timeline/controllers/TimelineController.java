@@ -54,7 +54,7 @@ import org.entcore.common.mute.MuteHelper;
 import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.notification.TimelineHelper;
 import org.entcore.common.notification.TimelineNotificationsLoader;
-import org.entcore.common.user.PreferenceService;
+import org.entcore.common.user.PreferenceHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.timeline.Timeline;
@@ -86,7 +86,7 @@ public class TimelineController extends BaseController {
 	private TimelineEventStore store;
 	private TimelineConfigService configService;
 	private TimelineMailerService mailerService;
-	private PreferenceService preferenceService;
+	private PreferenceHelper preferenceService;
 
 	private Map<String, String> registeredNotifications;
 	private Map<String, String> eventsI18n;
@@ -217,21 +217,17 @@ public class TimelineController extends BaseController {
 	}
 
 	private void renderTimeline2dOrBeta(HttpServerRequest request){
-		UserUtils.getUserInfos(eb, request, userInfos -> {
-			UserUtils.getSession(eb, request, userSession -> {
-				preferenceService.getPreferences(userInfos, userSession)
-						.onSuccess(preferences -> {
-							if(preferences.getHomePage() != null && preferences.getHomePage().isBetaEnabled()) {
-								renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "homepage.html", null);
-							} else {
-								renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "timeline2.html", null);
-							}
-						}).onFailure( e -> {
-							log.error("Error while retreiving user preferences", e);
-							renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "timeline2.html", null);
-						});
-			});
-		});
+		preferenceService.getPreferences(request)
+				.onSuccess(preferences -> {
+					if(preferences.getHomePage() != null && preferences.getHomePage().isBetaEnabled()) {
+						renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "homepage.html", null);
+					} else {
+						renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "timeline2.html", null);
+					}
+				}).onFailure( e -> {
+					log.error("Error while retreiving user preferences", e);
+					renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "timeline2.html", null);
+				});
 	}
 
 	@Get("/timeline2")
@@ -1035,7 +1031,7 @@ public class TimelineController extends BaseController {
 		this.notificationHelper = notificationHelper;
 	}
 
-	public void setPreferenceService(PreferenceService preferenceService) {
+	public void setPreferenceService(PreferenceHelper preferenceService) {
 		this.preferenceService = preferenceService;
 	}
 

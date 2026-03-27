@@ -42,6 +42,7 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpClient;
 import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.events.EventStore;
@@ -52,13 +53,14 @@ import org.entcore.common.neo4j.Neo;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.notification.ConversationNotification;
-import org.entcore.common.user.PreferenceService;
+import org.entcore.common.user.PreferenceHelper;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.user.dto.UserPreferenceDto;
 import org.entcore.common.user.position.UserPosition;
 import org.entcore.common.user.position.UserPositionService;
 import org.entcore.common.validation.StringValidation;
+import org.entcore.directory.services.PreferenceService;
 import org.entcore.directory.services.SchoolService;
 import org.entcore.directory.services.UserBookService;
 import org.vertx.java.core.http.RouteMatcher;
@@ -513,6 +515,41 @@ public class UserBookController extends BaseController {
 		}
 
 		switch(action){
+			case "v1.get.currentuser" :
+				UserUtils.getUserInfos(eb, request, userInfos -> {
+					UserUtils.getSession(eb, request, session -> {
+						preferenceService.getPreferences(userInfos, session)
+								.onSuccess(pref -> {
+									JsonObject result = new JsonObject().put("message", JsonObject.mapFrom(pref));
+									result.put("status", "ok");
+									message.reply(result);
+								})
+								.onFailure( e -> {
+									message.reply(new JsonObject()
+											.put("status", "error")
+											.put("message", e.getMessage()));
+								});
+					});
+				});
+				break;
+			case "v1.set.currentuser" :
+				UserUtils.getUserInfos(eb, request, userInfos -> {
+					UserUtils.getSession(eb, request, session -> {
+						JsonObject jsonPreference = message.body().getJsonObject("message", new JsonObject());
+						preferenceService.updatePreferences( jsonPreference.mapTo(UserPreferenceDto.class), userInfos, session)
+								.onSuccess(pref -> {
+									JsonObject result = new JsonObject().put("message", JsonObject.mapFrom(pref));
+									result.put("status", "ok");
+									message.reply(result);
+								})
+								.onFailure( e -> {
+									message.reply(new JsonObject()
+											.put("status", "error")
+											.put("message", e.getMessage()));
+								});
+					});
+				});
+				break;
 			case "get.currentuser":
 				UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
 					public void handle(UserInfos user) {

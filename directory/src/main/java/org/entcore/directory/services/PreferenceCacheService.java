@@ -1,6 +1,7 @@
-package org.entcore.common.user;
+package org.entcore.directory.services;
 
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.dto.UserPreferenceDto;
 
 public interface PreferenceCacheService {

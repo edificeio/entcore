@@ -20,6 +20,29 @@
 package org.entcore.timeline;
 
 import fr.wseduc.cron.CronTrigger;
+import fr.wseduc.webutils.collections.SharedDataHelper;
+import fr.wseduc.webutils.http.oauth.OAuth2Client;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.shareddata.AsyncMap;
+import org.entcore.broker.api.utils.BrokerProxyUtils;
+import org.entcore.common.http.BaseServer;
+import org.entcore.common.notification.ws.OssFcm;
+import org.entcore.common.user.DefaultPreferenceHelper;
+import org.entcore.common.user.PreferenceHelper;
+import org.entcore.common.utils.MapFactory;
+import org.entcore.timeline.controllers.FlashMsgController;
+import org.entcore.timeline.controllers.TimelineController;
+import org.entcore.timeline.controllers.helper.NotificationHelper;
+import org.entcore.timeline.cron.DailyMailingCronTask;
+import org.entcore.timeline.cron.WeeklyMailingCronTask;
+import org.entcore.timeline.listeners.TimelineBrokerListenerImpl;
+import org.entcore.timeline.services.FlashMsgService;
+import org.entcore.timeline.services.TimelineConfigService;
+import org.entcore.timeline.services.TimelinePushNotifService;
+import org.entcore.timeline.services.impl.*;
 
 import java.net.URI;
 import java.text.ParseException;
@@ -27,34 +50,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
-import io.vertx.core.shareddata.AsyncMap;
-import fr.wseduc.webutils.collections.SharedDataHelper;
-import fr.wseduc.webutils.http.oauth.OAuth2Client;
-import org.entcore.broker.api.publisher.BrokerPublisherFactory;
-import org.entcore.broker.api.utils.BrokerProxyUtils;
-import org.entcore.broker.proxy.ApplicationStatusBrokerPublisher;
-import org.entcore.common.http.BaseServer;
-import org.entcore.common.user.DefaultPreferenceCacheService;
-import org.entcore.common.user.DefaultPreferenceService;
-import org.entcore.common.user.PreferenceService;
-import org.entcore.common.utils.MapFactory;
-import org.entcore.timeline.controllers.helper.NotificationHelper;
-import org.entcore.timeline.listeners.TimelineBrokerListenerImpl;
-import org.entcore.timeline.services.FlashMsgService;
-import org.entcore.timeline.services.TimelineConfigService;
-import org.entcore.timeline.services.TimelinePushNotifService;
-import org.entcore.timeline.services.impl.*;
-import org.entcore.timeline.controllers.FlashMsgController;
-import org.entcore.timeline.controllers.TimelineController;
-import org.entcore.timeline.cron.DailyMailingCronTask;
-import org.entcore.timeline.cron.WeeklyMailingCronTask;
-import org.entcore.common.notification.ws.OssFcm;
-
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 
 public class Timeline extends BaseServer {
 
@@ -106,7 +101,7 @@ public class Timeline extends BaseServer {
 				config.getBoolean("remove-push-notifs-404-tokens", false));
 		notificationHelper.setPushNotifServices(pushNotifServices);
 
-		PreferenceService preferenceService = new DefaultPreferenceService(new DefaultPreferenceCacheService(getEventBus(vertx)));
+		PreferenceHelper preferenceService = new DefaultPreferenceHelper(getEventBus(vertx));
 
 		timelineController.setNotificationHelper(notificationHelper);
 		timelineController.setPreferenceService(preferenceService);
@@ -174,7 +169,6 @@ public class Timeline extends BaseServer {
 	/**
 	 * Read and apply the "push-notif" configuration.
 	 * It can be a single JsonObject, or a JsonArray of JsonObject.
-	 * @see pushNotifServiceFactory() below
 	 */
 	protected List<TimelinePushNotifService> startPushNotifServices(
 			final Map<String,String> eventsI18n,

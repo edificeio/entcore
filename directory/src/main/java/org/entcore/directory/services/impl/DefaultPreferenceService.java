@@ -1,12 +1,15 @@
-package org.entcore.common.user;
+package org.entcore.directory.services.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.dto.UserPreferenceDto;
 import org.entcore.common.user.mapper.UserPreferenceDtoMapper;
+import org.entcore.directory.services.PreferenceCacheService;
+import org.entcore.directory.services.PreferenceService;
 
 import static org.entcore.common.neo4j.Neo4jResult.validUniqueResultHandler;
 

@@ -29,11 +29,6 @@ import io.vertx.core.eventbus.MessageConsumer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Map;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.entcore.broker.api.utils.BrokerProxyUtils;
 import org.entcore.common.bus.WorkspaceHelper;
@@ -49,8 +44,6 @@ import org.entcore.common.storage.StorageFactory;
 import org.entcore.common.storage.impl.FileStorage;
 import org.entcore.common.storage.impl.MongoDBApplicationStorage;
 import org.entcore.common.storage.impl.S3Storage;
-import org.entcore.common.user.DefaultPreferenceCacheService;
-import org.entcore.common.user.DefaultPreferenceService;
 import org.entcore.common.user.RepositoryHandler;
 import org.entcore.common.user.position.UserPositionService;
 import org.entcore.common.user.position.impl.DefaultUserPositionService;
@@ -60,6 +53,10 @@ import org.entcore.directory.security.DirectoryResourcesProvider;
 import org.entcore.directory.security.UserbookCsrfFilter;
 import org.entcore.directory.services.*;
 import org.entcore.directory.services.impl.*;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Map;
 
 public class Directory extends BaseServer {
 
