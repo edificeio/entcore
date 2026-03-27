@@ -26,7 +26,7 @@ import {
   folderQueryOptions,
 } from '~/services/queries';
 import { useActionsStore } from '~/store/actions';
-import MessageOnboardingModal from './components/MessageOnboardingModal';
+import MessageOnboardingCleanModal from './components/MessageOnboardingCleanModal';
 import { ScrollableOutlet } from './components/ScrollableOutlet';
 import './index.css';
 
@@ -94,7 +94,7 @@ export function Component() {
         </div>
 
         <Suspense fallback={<LoadingScreen />}>
-          <MessageOnboardingModal />
+          <MessageOnboardingCleanModal />
         </Suspense>
 
         {!lg && (
