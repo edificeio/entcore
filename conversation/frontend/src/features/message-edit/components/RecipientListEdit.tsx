@@ -133,6 +133,7 @@ export function RecipientListEdit({
     searchMinLength,
     handleSearchInputChange,
     handleSearchInputKeyUp,
+    resetSearchValue,
   } = useSearchRecipients({
     recipientType,
   });
@@ -181,8 +182,15 @@ export function RecipientListEdit({
 
       const handleRecipientClick = async (recipient: Visible) => {
         setLoadingBookmarkIndex(index);
-        await handleSelectRecipient(recipient);
-        setLoadingBookmarkIndex(undefined);
+        try {
+          await handleSelectRecipient(recipient);
+          resetSearchValue();
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error('Failed to select recipient', error);
+        } finally {
+          setLoadingBookmarkIndex(undefined);
+        }
       };
       return (
         <Fragment key={index}>
