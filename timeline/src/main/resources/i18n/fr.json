@@ -193,6 +193,7 @@
   "timeline.admin.treat": "Traiter le signalement",
   "timeline.admin.treated.on": "Traité",
   "timeline.assistancetic-notification": "Votre ticket d'incident a été créé. Veuillez garder votre code {{ticketNumber}}",
+  "timeline.beta.switch.page": "Basculer vers la page d'accueil classique",
   "timeline.col.left": "Etablissement",
   "timeline.col.right": "Mes widgets",
   "timeline.confirm.report": "Vous allez signaler une notification",
