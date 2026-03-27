@@ -36,6 +36,7 @@ function reducer(state: State, action: Action) {
         searchInputValue: '',
         searchResults: [],
         searchAPIResults: [],
+        isSearching: false,
       };
     case 'onChange':
       return { ...state, searchInputValue: action.payload };
