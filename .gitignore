@@ -45,6 +45,7 @@ directory/src/main/resources/public/js
 directory/src/main/resources/public/temp
 archive/src/main/resources/view
 timeline/src/main/resources/view
+timeline/src/main/resources/public/homepage
 sample-*/
 vertx_classpath.txt
 .tern-project
