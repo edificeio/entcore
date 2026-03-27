@@ -1,4 +1,4 @@
-package org.entcore.directory.pojo.dto;
+package org.entcore.common.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.vertx.core.json.JsonObject;
