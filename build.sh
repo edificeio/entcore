@@ -104,17 +104,6 @@ syncReactFrontendBuildToResources() {
   sync_public_dir="$sync_resources_dir/public"
   sync_view_dir="$sync_resources_dir/view"
 
-  # Remove only hashed asset files like name-XXXXXXXX.ext from public resources.
-  if [ -d "$sync_public_dir" ]; then
-    for file in "$sync_public_dir"/*; do
-      [ -f "$file" ] || continue
-      file_name="${file##*/}"
-      echo "$file_name" | grep -E '^[^/]+-[A-Za-z0-9_-]{8,32}\.[A-Za-z0-9]+$' >/dev/null 2>&1 || continue
-      echo "...cleaning previous asset $file_name"
-      rm -f "$file"
-    done
-  fi
-
   # Move dist to resources dir
   cp -R ./dist/* "$sync_resources_dir/"
 
