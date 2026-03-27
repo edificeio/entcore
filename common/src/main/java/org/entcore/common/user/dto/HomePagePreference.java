@@ -1,4 +1,4 @@
-package org.entcore.directory.pojo.dto;
+package org.entcore.common.user.dto;
 
 public class HomePagePreference implements ApplicationPreference {
 
