@@ -351,4 +351,8 @@ public class JsonHttpServerRequest implements HttpServerRequest {
 	public @Nullable Cookie getCookie(String name, String domain, String path) {
 		return null;
 	}
+
+	public static JsonObject toJson(HttpServerRequest request) {
+		return new JsonObject().put("headers", new JsonObject().put("Cookie", request.getHeader("Cookie")));
+	}
 }
