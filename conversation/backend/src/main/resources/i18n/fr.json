@@ -218,6 +218,8 @@
   "onboarding.modal.screen4.text": "La refonte de la Messagerie ne fait que commencer ! D'autres améliorations vous attendent dans quelques mois : l'envoi différé, la demande d'accusé de lecture, l'amélioration du signalement... Restez connectés !",
   "onboarding.modal.screen4.title": "Les nouveautés à venir",
   "onboarding.modal.title": "La Messagerie fait peau neuve !",
+  "onboarding.modal.clean.title": "Du tri dans vos messages",
+  "onboarding.modal.clean.text": "<strong>L’application Messagerie intégrera bientôt une automatisation de suppression des anciens messages.</strong><br />Afin de limiter l'utilisation d'espace de stockage, les messages de plus de 2 ans seront supprimés s’ils ne sont classés dans aucun dossier.Cette action se fera automatiquement et régulièrement tout au long de l'année. <br />Cela libérera de l'espace sur votre quota de stockage. Cette mesure permettra de libérer jusqu’à 8 tonnes d’équivalent CO2 par an sur toutes nos plateformes. Un bon geste pour la planète ! <br />Cette automatisation sera appliquée à partir du xxx 2026. Pensez à faire du tri dès que possible !",
   "outbox.folder": "Messages envoyés",
   "pagination.on": "[[current]] sur [[total]]",
   "print": "Imprimer",
