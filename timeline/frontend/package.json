@@ -12,18 +12,13 @@
     "format": "prettier --write .",
     "lint": "eslint .",
     "pre-commit": "lint-staged",
-    "pre-push": "pnpm run typecheck && pnpm run test",
+    "pre-push": "pnpm typecheck && pnpm run test",
     "preview": "vite preview",
     "test": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:ui": "vitest --ui",
     "test:watch": "vitest --watch",
     "typecheck": "tsc -b --noEmit --pretty"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
   },
   "lint-staged": {
     "**/*.{ts,tsx}": [
