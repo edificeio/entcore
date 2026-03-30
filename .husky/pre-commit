@@ -8,7 +8,7 @@ if echo "$MODIFIED_FILES" | grep -q '^conversation/frontend'; then
   pnpm --filter conversation run pre-commit
 fi
 
-#if echo "$MODIFIED_FILES" | grep -q '^timeline/frontend'; then
-#  echo "🔍 Changes detected in the timeline module..."
-#  pnpm --filter timeline run pre-commit
-#fi
+if echo "$MODIFIED_FILES" | grep -q '^timeline/frontend'; then
+ echo "🔍 Changes detected in the timeline module..."
+ pnpm --filter timeline run pre-commit
+fi
