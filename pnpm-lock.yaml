@@ -27,14 +27,14 @@ importers:
         specifier: ^2.4.1
         version: 2.6.12
       entcore:
-        specifier: dev
-        version: 4.8.14-dev.202602171056(lodash@4.18.1)
+        specifier: develop-b2school
+        version: 4.8.16-develop-b2school.202603231504(lodash@4.17.23)
       entcore-generic-icons:
         specifier: https://github.com/edificeio/generic-icons.git
         version: https://codeload.github.com/edificeio/generic-icons/tar.gz/960f4af943706812f9ebae81a39b7f521bb2fc3b
       entcore-toolkit:
         specifier: ^1.0.1
-        version: 1.2.0(axios@0.15.3)(core-js@2.6.12)(lodash@4.18.1)(typescript@4.9.5)
+        version: 1.2.0(axios@0.15.3)(core-js@2.6.12)(lodash@4.17.23)(typescript@4.9.5)
       humane-js:
         specifier: ^3.2.2
         version: 3.2.2
@@ -934,8 +934,8 @@ packages:
     resolution: {integrity: sha512-5T6P4xPgpp0YDFvSWwEZ4NoE3aM4QBQXDzmVbraCkFj8zHM+mba8SyqB5DbZWyR7mYHo6Y7BdQo3MoA4m0TeQg==}
     engines: {node: '>=0.10.0'}
 
-  baseline-browser-mapping@2.10.17:
-    resolution: {integrity: sha512-HdrkN8eVG2CXxeifv/VdJ4A4RSra1DTW8dc/hdxzhGHN8QePs6gKaWM9pHPcpCoxYZJuOZ8drHmbdpLHjCYjLA==}
+  baseline-browser-mapping@2.10.12:
+    resolution: {integrity: sha512-qyq26DxfY4awP2gIRXhhLWfwzwI+N5Nxk6iQi8EFizIaWIjqicQTE4sLnZZVdeKPRcVNoJOkkpfzoIYuvCKaIQ==}
     engines: {node: '>=6.0.0'}
     hasBin: true
 
@@ -1060,8 +1060,8 @@ packages:
     deprecated: Browserslist 2 could fail on reading Browserslist >3.0 config used in other tools.
     hasBin: true
 
-  browserslist@4.28.2:
-    resolution: {integrity: sha512-48xSriZYYg+8qXna9kwqjIVzuQxi+KYWp2+5nCYnYKPTr0LvD89Jqk2Or5ogxz0NUMfIjhh2lIUX/LyX9B4oIg==}
+  browserslist@4.28.1:
+    resolution: {integrity: sha512-ZC5Bd0LgJXgwGqUknZY/vkUQ04r8NXnJZ3yYi4vDmSiZmC/pdSN0NbNRPxZpbtO4uAfDUAFffO8IZoM3Gj8IkA==}
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
 
@@ -1162,11 +1162,11 @@ packages:
   caniuse-api@1.6.1:
     resolution: {integrity: sha512-SBTl70K0PkDUIebbkXrxWqZlHNs0wRgRD6QZ8guctShjbh63gEPfF+Wj0Yw+75f5Y8tSzqAI/NcisYv/cCah2Q==}
 
-  caniuse-db@1.0.30001787:
-    resolution: {integrity: sha512-MPnMz/6w2kPuQirFSrP/Wujg7jwrTyG7QEr4V2of5CIpHdWSoxBowmVwSiYDqvFl02U/dLzww/xXC0XcJAT85Q==}
+  caniuse-db@1.0.30001782:
+    resolution: {integrity: sha512-aR92RoDI3Perbq3293VQkWsqe0AF70QlEYZfEUP0u4wBwh2CI/00UPiQ/H4I0zAanv9DzGQTsoE98nyS80IcoQ==}
 
-  caniuse-lite@1.0.30001787:
-    resolution: {integrity: sha512-mNcrMN9KeI68u7muanUpEejSLghOKlVhRqS/Za2IeyGllJ9I9otGpR9g3nsw7n4W378TE/LyIteA0+/FOZm4Kg==}
+  caniuse-lite@1.0.30001782:
+    resolution: {integrity: sha512-dZcaJLJeDMh4rELYFw1tvSn1bhZWYFOt468FcbHHxx/Z/dFidd1I6ciyFdi3iwfQCyOjqo9upF6lGQYtMiJWxw==}
 
   caniuse-lite@1.0.30001784:
     resolution: {integrity: sha512-WU346nBTklUV9YfUl60fqRbU5ZqyXlqvo1SgigE1OAXK5bFL8LL9q1K7aap3N739l4BvNqnkm3YrGHiY9sfUQw==}
@@ -1804,8 +1804,8 @@ packages:
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
-  electron-to-chromium@1.5.334:
-    resolution: {integrity: sha512-mgjZAz7Jyx1SRCwEpy9wefDS7GvNPazLthHg8eQMJ76wBdGQQDW33TCrUTvQ4wzpmOrv2zrFoD3oNufMdyMpog==}
+  electron-to-chromium@1.5.328:
+    resolution: {integrity: sha512-QNQ5l45DzYytThO21403XN3FvK0hOkWDG8viNf6jqS42msJ8I4tGDSpBCgvDRRPnkffafiwAym2X2eHeGD2V0w==}
 
   electron-to-chromium@1.5.330:
     resolution: {integrity: sha512-jFNydB5kFtYUobh4IkWUnXeyDbjf/r9gcUEXe1xcrcUxIGfTdzPXA+ld6zBRbwvgIGVzDll/LTIiDztEtckSnA==}
@@ -1876,8 +1876,8 @@ packages:
       lodash: ^4.17.1
       typescript: 2.1.1
 
-  entcore@4.8.14-dev.202602171056:
-    resolution: {integrity: sha512-pfDfTZ01kqGA+pnrbkRtTwyiy26Asu1kXzLoMewyuLsx7SFj1ul7eoYZ89xTD9zVSHRW7GrrIK05wiuTo4IUqA==}
+  entcore@4.8.16-develop-b2school.202603231504:
+    resolution: {integrity: sha512-UN054XMmzLF8z6yeqhfL55m/f5Ieg6jGi6Tlt5lT6HBDConb7AUbmkF2BUBs/8VxDSl7kQVYcriTUYRDEAq8Yg==}
 
   entities@2.2.0:
     resolution: {integrity: sha512-p92if5Nz619I0w+akJrLZH0MX0Pb5DX39XOwQTtXSdQQOaYH03S1uIQp4mhOZtAXrxq4ViO67YTiLBo2638o9A==}
@@ -2317,6 +2317,7 @@ packages:
   git-raw-commits@2.0.0:
     resolution: {integrity: sha512-w4jFEJFgKXMQJ0H0ikBk2S+4KP2VEjhCvLCNqbNRQC8BgGWgLKNCO7a9K9LI+TVT7Gfoloje502sEnctibffgg==}
     engines: {node: '>=6.9.0'}
+    deprecated: This package is no longer maintained. For the JavaScript API, please use @conventional-changelog/git-client instead.
     hasBin: true
 
   git-remote-origin-url@2.0.0:
@@ -3360,8 +3361,8 @@ packages:
   lodash@3.10.1:
     resolution: {integrity: sha512-9mDDwqVIma6OZX79ZlDACZl8sBm0TEnkf99zV3iMA4GzkIT/9hiqP5mY0HoT1iNLCrKc/R1HByV+yJfRWVJryQ==}
 
-  lodash@4.18.1:
-    resolution: {integrity: sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q==}
+  lodash@4.17.23:
+    resolution: {integrity: sha512-LgVTMpQtIopCi79SJeDiP0TfWi5CNEc/L/aRdTh3yIvmZXTnheWpKjSZhnvMl8iXbC1tFg9gdHHDMLoV7CnG+w==}
 
   log4js@0.6.38:
     resolution: {integrity: sha512-Cd+klbx7lkiaamEId9/0odHxv/PFHDz2E12kEfd6/CzIOZD084DzysASR/Dot4i1dYPBQKC3r2XIER+dfbLOmw==}
@@ -3670,8 +3671,8 @@ packages:
   node-libs-browser@2.2.1:
     resolution: {integrity: sha512-h/zcD8H9kaDZ9ALUWwlBUDo6TKF8a7qBSCSEGfjTVIYeqsioSKaAX+BN7NgiMGp6iSIXZ3PxgCu8KS3b71YK5Q==}
 
-  node-releases@2.0.37:
-    resolution: {integrity: sha512-1h5gKZCF+pO/o3Iqt5Jp7wc9rH3eJJ0+nh/CIoiRwjRxde/hAHyLPXYN4V3CqKAbiZPSeJFSWHmJsbkicta0Eg==}
+  node-releases@2.0.36:
+    resolution: {integrity: sha512-TdC8FSgHz8Mwtw9g5L4gR/Sh9XhSP/0DEkQxfEFXOpiul5IiHgHan2VhYYb6agDSfp4KuvltmGApc8HMgUrIkA==}
 
   node-releases@2.0.36:
     resolution: {integrity: sha512-TdC8FSgHz8Mwtw9g5L4gR/Sh9XhSP/0DEkQxfEFXOpiul5IiHgHan2VhYYb6agDSfp4KuvltmGApc8HMgUrIkA==}
@@ -4278,8 +4279,8 @@ packages:
     resolution: {integrity: sha512-V/yCWTTF7VJ9hIh18Ugr2zhJMP01MY7c5kh4J870L7imm6/DIzBsNLTXzMwUA3yZ5b/KBqLx8Kp3uRvd7xSe3Q==}
     engines: {node: '>=0.6'}
 
-  qs@6.15.1:
-    resolution: {integrity: sha512-6YHEFRL9mfgcAvql/XhwTvf5jKcOiiupt2FiJxHkiX1z4j7WL8J/jRHYLluORvc1XxB5rV20KoeK00gVJamspg==}
+  qs@6.15.0:
+    resolution: {integrity: sha512-mAZTtNCeetKMH+pSjrb76NAM8V9a05I9aBZOHztWy/UqcJdQYNsf59vrRKWnojAT9Y+GbIvoTBC++CPHqpDBhQ==}
     engines: {node: '>=0.6'}
 
   qs@6.4.3:
@@ -5783,7 +5784,7 @@ snapshots:
     dependencies:
       '@babel/compat-data': 7.29.0
       '@babel/helper-validator-option': 7.27.1
-      browserslist: 4.28.2
+      browserslist: 4.28.1
       lru-cache: 5.1.1
       semver: 6.3.1
 
@@ -6410,7 +6411,7 @@ snapshots:
 
   async@2.6.4:
     dependencies:
-      lodash: 4.18.1
+      lodash: 4.17.23
 
   asynckit@0.4.0: {}
 
@@ -6419,7 +6420,7 @@ snapshots:
   autoprefixer@6.7.7:
     dependencies:
       browserslist: 1.7.7
-      caniuse-db: 1.0.30001787
+      caniuse-db: 1.0.30001782
       normalize-range: 0.1.2
       num2fraction: 1.2.2
       postcss: 5.2.18
@@ -6434,7 +6435,7 @@ snapshots:
       chalk: 2.4.2
       enhanced-resolve: 3.3.0
       loader-utils: 1.4.2
-      lodash: 4.18.1
+      lodash: 4.17.23
       micromatch: 3.1.10
       mkdirp: 0.5.6
       source-map-support: 0.5.21
@@ -6474,7 +6475,7 @@ snapshots:
       babel-types: 6.26.0
       detect-indent: 4.0.0
       jsesc: 1.3.0
-      lodash: 4.18.1
+      lodash: 4.17.23
       source-map: 0.5.7
       trim-right: 1.0.1
 
@@ -6493,7 +6494,7 @@ snapshots:
       babel-traverse: 6.26.0
       babel-types: 6.26.0
       babylon: 6.18.0
-      lodash: 4.18.1
+      lodash: 4.17.23
     transitivePeerDependencies:
       - supports-color
 
@@ -6507,7 +6508,7 @@ snapshots:
       debug: 2.6.9
       globals: 9.18.0
       invariant: 2.2.4
-      lodash: 4.18.1
+      lodash: 4.17.23
     transitivePeerDependencies:
       - supports-color
 
@@ -6515,7 +6516,7 @@ snapshots:
     dependencies:
       babel-runtime: 6.26.0
       esutils: 2.0.3
-      lodash: 4.18.1
+      lodash: 4.17.23
       to-fast-properties: 1.0.3
 
   babylon@6.18.0: {}
@@ -6554,7 +6555,7 @@ snapshots:
       mixin-deep: 1.3.2
       pascalcase: 0.1.1
 
-  baseline-browser-mapping@2.10.17: {}
+  baseline-browser-mapping@2.10.12: {}
 
   batch@0.6.1: {}
 
@@ -6760,16 +6761,16 @@ snapshots:
 
   browserslist@1.7.7:
     dependencies:
-      caniuse-db: 1.0.30001787
-      electron-to-chromium: 1.5.334
+      caniuse-db: 1.0.30001782
+      electron-to-chromium: 1.5.328
 
-  browserslist@4.28.2:
+  browserslist@4.28.1:
     dependencies:
-      baseline-browser-mapping: 2.10.17
-      caniuse-lite: 1.0.30001787
-      electron-to-chromium: 1.5.334
-      node-releases: 2.0.37
-      update-browserslist-db: 1.2.3(browserslist@4.28.2)
+      baseline-browser-mapping: 2.10.12
+      caniuse-lite: 1.0.30001782
+      electron-to-chromium: 1.5.328
+      node-releases: 2.0.36
+      update-browserslist-db: 1.2.3(browserslist@4.28.1)
 
   browserslist@4.28.2:
     dependencies:
@@ -6893,13 +6894,13 @@ snapshots:
   caniuse-api@1.6.1:
     dependencies:
       browserslist: 1.7.7
-      caniuse-db: 1.0.30001787
+      caniuse-db: 1.0.30001782
       lodash.memoize: 4.1.2
       lodash.uniq: 4.5.0
 
-  caniuse-db@1.0.30001787: {}
+  caniuse-db@1.0.30001782: {}
 
-  caniuse-lite@1.0.30001787: {}
+  caniuse-lite@1.0.30001782: {}
 
   caniuse-lite@1.0.30001784: {}
 
@@ -7128,7 +7129,7 @@ snapshots:
 
   combine-lists@1.0.1:
     dependencies:
-      lodash: 4.18.1
+      lodash: 4.17.23
 
   combined-stream@1.0.8:
     dependencies:
@@ -7191,7 +7192,7 @@ snapshots:
       chalk: 2.4.2
       commander: 2.6.0
       date-fns: 1.30.1
-      lodash: 4.18.1
+      lodash: 4.17.23
       read-pkg: 3.0.0
       rx: 2.3.24
       spawn-command: 0.0.2
@@ -7232,7 +7233,7 @@ snapshots:
     dependencies:
       add-stream: 1.0.0
       conventional-changelog: 3.0.6
-      lodash: 4.18.1
+      lodash: 4.17.23
       meow: 4.0.1
       tempfile: 1.1.1
 
@@ -7249,7 +7250,7 @@ snapshots:
       git-raw-commits: 2.0.0
       git-remote-origin-url: 2.0.0
       git-semver-tags: 2.0.3
-      lodash: 4.18.1
+      lodash: 4.17.23
       normalize-package-data: 2.5.0
       q: 1.5.1
       read-pkg: 3.0.0
@@ -7286,7 +7287,7 @@ snapshots:
       dateformat: 3.0.3
       handlebars: 4.7.9
       json-stringify-safe: 5.0.1
-      lodash: 4.18.1
+      lodash: 4.17.23
       meow: 8.0.0
       semver: 6.3.1
       split: 1.0.1
@@ -7314,7 +7315,7 @@ snapshots:
     dependencies:
       JSONStream: 1.3.5
       is-text-path: 1.0.1
-      lodash: 4.18.1
+      lodash: 4.17.23
       meow: 8.0.0
       split2: 3.2.2
       through2: 4.0.2
@@ -7722,7 +7723,7 @@ snapshots:
 
   ee-first@1.1.1: {}
 
-  electron-to-chromium@1.5.334: {}
+  electron-to-chromium@1.5.328: {}
 
   electron-to-chromium@1.5.330: {}
 
@@ -7825,23 +7826,23 @@ snapshots:
 
   entcore-generic-icons@https://codeload.github.com/edificeio/generic-icons/tar.gz/960f4af943706812f9ebae81a39b7f521bb2fc3b: {}
 
-  entcore-toolkit@1.2.0(axios@0.15.3)(core-js@2.6.12)(lodash@4.18.1)(typescript@2.4.1):
+  entcore-toolkit@1.2.0(axios@0.15.3)(core-js@2.6.12)(lodash@4.17.23)(typescript@2.4.1):
     dependencies:
       axios: 0.15.3
       core-js: 2.6.12
-      lodash: 4.18.1
+      lodash: 4.17.23
       merge2: 1.4.1
       typescript: 2.4.1
 
-  entcore-toolkit@1.2.0(axios@0.15.3)(core-js@2.6.12)(lodash@4.18.1)(typescript@4.9.5):
+  entcore-toolkit@1.2.0(axios@0.15.3)(core-js@2.6.12)(lodash@4.17.23)(typescript@4.9.5):
     dependencies:
       axios: 0.15.3
       core-js: 2.6.12
-      lodash: 4.18.1
+      lodash: 4.17.23
       merge2: 1.4.1
       typescript: 4.9.5
 
-  entcore@4.8.14-dev.202602171056(lodash@4.18.1):
+  entcore@4.8.16-develop-b2school.202603231504(lodash@4.17.23):
     dependencies:
       angular: 1.8.3
       angular-route: 1.8.3
@@ -7851,7 +7852,7 @@ snapshots:
       conventional-changelog: 3.0.6
       conventional-changelog-cli: 2.0.12
       core-js: 2.6.12
-      entcore-toolkit: 1.2.0(axios@0.15.3)(core-js@2.6.12)(lodash@4.18.1)(typescript@2.4.1)
+      entcore-toolkit: 1.2.0(axios@0.15.3)(core-js@2.6.12)(lodash@4.17.23)(typescript@2.4.1)
       gulp: 4.0.2
       gulp-rename: 2.0.0
       gulp-watch: 5.0.1
@@ -8908,7 +8909,7 @@ snapshots:
     dependencies:
       '@types/html-minifier-terser': 6.1.0
       html-minifier-terser: 6.1.0
-      lodash: 4.18.1
+      lodash: 4.17.23
       pretty-error: 4.0.0
       tapable: 2.3.2
     optionalDependencies:
@@ -9648,7 +9649,7 @@ snapshots:
 
   lodash@3.10.1: {}
 
-  lodash@4.18.1: {}
+  lodash@4.17.23: {}
 
   log4js@0.6.38:
     dependencies:
@@ -10117,7 +10118,7 @@ snapshots:
       util: 0.11.1
       vm-browserify: 1.1.2
 
-  node-releases@2.0.37: {}
+  node-releases@2.0.36: {}
 
   node-releases@2.0.36: {}
 
@@ -10718,7 +10719,7 @@ snapshots:
 
   pretty-error@4.0.0:
     dependencies:
-      lodash: 4.18.1
+      lodash: 4.17.23
       renderkid: 3.0.0
 
   pretty-hrtime@1.0.3: {}
@@ -10788,7 +10789,7 @@ snapshots:
     dependencies:
       side-channel: 1.1.0
 
-  qs@6.15.1:
+  qs@6.15.0:
     dependencies:
       side-channel: 1.1.0
 
@@ -11015,7 +11016,7 @@ snapshots:
       css-select: 4.3.0
       dom-converter: 0.2.0
       htmlparser2: 6.1.0
-      lodash: 4.18.1
+      lodash: 4.17.23
       strip-ansi: 6.0.1
 
   repeat-element@1.1.4: {}
@@ -12054,9 +12055,9 @@ snapshots:
 
   upath@1.2.0: {}
 
-  update-browserslist-db@1.2.3(browserslist@4.28.2):
+  update-browserslist-db@1.2.3(browserslist@4.28.1):
     dependencies:
-      browserslist: 4.28.2
+      browserslist: 4.28.1
       escalade: 3.2.0
       picocolors: 1.1.1
 
@@ -12077,7 +12078,7 @@ snapshots:
   url@0.11.4:
     dependencies:
       punycode: 1.4.1
-      qs: 6.15.1
+      qs: 6.15.0
 
   use@3.1.1: {}
 
@@ -12298,7 +12299,7 @@ snapshots:
 
   webpack-merge@4.2.2:
     dependencies:
-      lodash: 4.18.1
+      lodash: 4.17.23
 
   webpack-sources@1.4.3:
     dependencies:
@@ -12372,7 +12373,7 @@ snapshots:
       '@webassemblyjs/wasm-parser': 1.11.1
       acorn: 8.16.0
       acorn-import-assertions: 1.9.0(acorn@8.16.0)
-      browserslist: 4.28.2
+      browserslist: 4.28.1
       chrome-trace-event: 1.0.4
       enhanced-resolve: 5.20.1
       es-module-lexer: 0.9.3
@@ -12413,7 +12414,7 @@ snapshots:
   which-typed-array@1.1.20:
     dependencies:
       available-typed-arrays: 1.0.7
-      call-bind: 1.0.9
+      call-bind: 1.0.8
       call-bound: 1.0.4
       for-each: 0.3.5
       get-proto: 1.0.1
