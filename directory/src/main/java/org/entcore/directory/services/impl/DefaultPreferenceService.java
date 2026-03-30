@@ -2,7 +2,6 @@ package org.entcore.directory.services.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
@@ -33,14 +32,14 @@ public class DefaultPreferenceService implements PreferenceService {
         params.put("userId", userInfos.getUserId());
 
         StringBuilder query = new StringBuilder("MATCH (u:User {id:{userId}}) MERGE (u)-[:PREFERS]->(uac:UserAppConf) ");
-        StringBuilder create = new StringBuilder(" ON CREATE  ");
-        StringBuilder merge = new StringBuilder(" ON MATCH ");
+        StringBuilder create = new StringBuilder(" ON CREATE SET ");
+        StringBuilder merge = new StringBuilder(" ON MATCH SET ");
 
         preference.getPreferences().forEach( ( appName ) -> {
-            String partialQuery = "SET uac."+ appName.getMappingName() +" = {"+ appName.getMappingName() +"},";
+            String partialQuery = " uac."+ appName.getMappingName() +" = {"+ appName.getMappingName() +"},";
             create.append(partialQuery);
             merge.append(partialQuery);
-            params.put(appName.getMappingName(), Json.encode(preference.getApplicationPreference(appName)));
+            params.put(appName.getMappingName(), preference.getPreference(appName).encode());
         });
 
         create.deleteCharAt(create.length() - 1);
