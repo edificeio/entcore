@@ -5,7 +5,7 @@ import { NotFound } from './errors/not-found';
 import { PageError } from './errors/page-error';
 import { manageRedirections } from './redirections';
 
-const routes = (queryClient: QueryClient): RouteObject[] => [
+const routes = (_queryClient: QueryClient): RouteObject[] => [
   /* Main route */
   {
     path: '/',
