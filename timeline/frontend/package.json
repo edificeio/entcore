@@ -20,11 +20,6 @@
     "test:watch": "vitest --watch",
     "typecheck": "tsc -b --noEmit --pretty"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
   "lint-staged": {
     "**/*.{ts,tsx}": [
       "pnpm run format",

@@ -5,13 +5,12 @@ import { NotFound } from './errors/not-found';
 import { PageError } from './errors/page-error';
 import { manageRedirections } from './redirections';
 
-// Mark `queryClient` as used to satisfy TypeScript's unused-parameter check
 const routes = (queryClient: QueryClient): RouteObject[] => {
-  void queryClient;
+  void queryClient; // Mark `queryClient` as used to satisfy TypeScript's unused-parameter check
   return [
     /* Main route */
     {
-      path: '/timeline',
+      path: '/',
       async lazy() {
         const { loader, Root: Component } = await import('~/routes/root');
         return {
@@ -28,15 +27,18 @@ const routes = (queryClient: QueryClient): RouteObject[] => {
     },
   ];
 };
-
-export const basename = import.meta.env.PROD ? '/timeline' : '/';
+export const basename = import.meta.env.PROD ? '/timeline/timeline' : '/';
 
 export const router = (queryClient: QueryClient) => {
   const redirectPath = manageRedirections();
 
-  if (redirectPath) {
+  if (redirectPath !== null) {
+    // If the redirect path is the root, we need to remove the trailing slash to match with /timeline/timeline
+    const normalizedRedirectPath = redirectPath === '/' ? '' : redirectPath;
     const newUrl =
-      window.location.origin + basename.replace(/\/$/g, '') + redirectPath;
+      window.location.origin +
+      basename.replace(/\/$/g, '') +
+      normalizedRedirectPath;
     window.history.replaceState(null, '', newUrl);
   }
   return createBrowserRouter(routes(queryClient), {
