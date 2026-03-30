@@ -6,16 +6,6 @@ import { useI18n } from '~/hooks/useI18n';
 import './BetaSwitch.css';
 
 type UserPrefs = { homePage: { betaEnabled: boolean } | null };
-/*
-async function getUserPrefs() {
-  const userPrefs = await odeServices
-    .http()
-    .get<UserPrefs>('/userbook/api/preferences');
-  return odeServices.http().isResponseError()
-    ? Promise.reject('error')
-    : userPrefs;
-}
-*/
 
 function deactivateHomepage() {
   return odeServices.http().put<UserPrefs>('/userbook/api/preferences', {
