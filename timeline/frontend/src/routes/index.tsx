@@ -5,21 +5,16 @@ import { NotFound } from './errors/not-found';
 import { PageError } from './errors/page-error';
 import { manageRedirections } from './redirections';
 
-// Mark `queryClient` as used to satisfy TypeScript's unused-parameter check
-const routes = (queryClient: QueryClient): RouteObject[] => {
-  void queryClient;
-  return [
-    /* Main route */
-    {
-      path: '/timeline',
-      async lazy() {
-        const { loader, Root: Component } = await import('~/routes/root');
-        return {
-          loader,
-          Component,
-        };
-      },
-      errorElement: <PageError />,
+const routes = (_queryClient: QueryClient): RouteObject[] => [
+  /* Main route */
+  {
+    path: '/timeline',
+    async lazy() {
+      const { loader, Root: Component } = await import('~/routes/root');
+      return {
+        loader,
+        Component,
+      };
     },
     /* 404 Page */
     {
