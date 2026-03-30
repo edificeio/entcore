@@ -271,19 +271,20 @@ public class SqlConversationService implements ConversationService{
 		if (validationParamsError(user, result, draftId))
 			return;
 
-		getSenderAttachments(user.getUserId(), draftId, event -> {
-            if(event.isLeft()){
-                result.handle(new Either.Left<String, JsonObject>(event.left().getValue()));
-                return;
-            }
+		getSenderAttachments(user.getUserId(), draftId, new Handler<Either<String,JsonObject>>() {
+			public void handle(Either<String, JsonObject> event) {
+				if(event.isLeft()){
+					result.handle(new Either.Left<String, JsonObject>(event.left().getValue()));
+					return;
+				}
 
-            JsonArray attachmentIds = event.right().getValue().getJsonArray("attachmentids");
-            long totalQuota = event.right().getValue().getLong("totalquota");
-            String unread = "false";
-            final JsonArray ids = message.getJsonArray("allUsers", new JsonArray());
-            if(ids.contains(user.getUserId()))
-                unread = "true";
-            SqlStatementsBuilder builder = new SqlStatementsBuilder();
+				JsonArray attachmentIds = event.right().getValue().getJsonArray("attachmentids");
+				long totalQuota = event.right().getValue().getLong("totalquota");
+				String unread = "false";
+				final JsonArray ids = message.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray());
+				if(ids.contains(user.getUserId()))
+					unread = "true";
+				SqlStatementsBuilder builder = new SqlStatementsBuilder();
 
             //select  + update with exception if state is not different from previous STATE to avoid double send and ROLLBACK
             String updateMessage =
@@ -295,23 +296,23 @@ public class SqlConversationService implements ConversationService{
             builder.prepared(updateMessage, new JsonArray().add(draftId).add(State.SENT.name()).add(draftId));
             builder.prepared(updateUnread, new JsonArray().add(user.getUserId()).add(draftId));
 
-            final String insertThread =
-                    "INSERT INTO conversation.threads as t (" +
-                    "SELECT thread_id as id, date, subject, \"from\", \"to\", cc, cci, \"displayNames\" " +
-                    "FROM conversation.messages m " +
-                    "WHERE m.id = ?) " +
-                    "ON CONFLICT (id) DO UPDATE SET date = EXCLUDED.date, subject = EXCLUDED.subject, \"from\" = EXCLUDED.\"from\", " +
-                    "\"to\" = EXCLUDED.\"to\", cc = EXCLUDED.cc, cci = EXCLUDED.cci, \"displayNames\" = EXCLUDED.\"displayNames\" " +
-                    "WHERE t.id = EXCLUDED.id ";
-            builder.prepared(insertThread, new fr.wseduc.webutils.collections.JsonArray().add(draftId));
+				final String insertThread =
+						"INSERT INTO conversation.threads as t (" +
+						"SELECT thread_id as id, date, subject, \"from\", \"to\", cc, cci, \"displayNames\" " +
+						"FROM conversation.messages m " +
+						"WHERE m.id = ?) " +
+						"ON CONFLICT (id) DO UPDATE SET date = EXCLUDED.date, subject = EXCLUDED.subject, \"from\" = EXCLUDED.\"from\", " +
+						"\"to\" = EXCLUDED.\"to\", cc = EXCLUDED.cc, cci = EXCLUDED.cci, \"displayNames\" = EXCLUDED.\"displayNames\" " +
+						"WHERE t.id = EXCLUDED.id ";
+				builder.prepared(insertThread, new fr.wseduc.webutils.collections.JsonArray().add(draftId));
 
-            final String insertUserThread =
-                    "INSERT INTO conversation.userthreads as ut (user_id,thread_id,nb_unread) VALUES ";
-            final String insertUserThreadConflict =
-                    " ON CONFLICT (user_id,thread_id) DO UPDATE SET nb_unread = ut.nb_unread + 1 WHERE ut.user_id = EXCLUDED.user_id AND ut.thread_id = EXCLUDED.thread_id";
-            if (threadId != null) {
-                builder.prepared(insertUserThread + " (?, ?, ?) " + insertUserThreadConflict, new JsonArray().add(user.getUserId()).add(threadId).add(0));
-            }
+				final String insertUserThread =
+						"INSERT INTO conversation.userthreads as ut (user_id,thread_id,nb_unread) VALUES (?,?,?) " +
+						"ON CONFLICT (user_id,thread_id) DO UPDATE SET nb_unread = ut.nb_unread + 1 " +
+						"WHERE ut.user_id = EXCLUDED.user_id AND ut.thread_id = EXCLUDED.thread_id";
+				if (threadId != null) {
+					builder.prepared(insertUserThread, new fr.wseduc.webutils.collections.JsonArray().add(user.getUserId()).add(threadId).add(0));
+				}
 
 
 
@@ -320,9 +321,8 @@ public class SqlConversationService implements ConversationService{
 				String insertUserAttachment = "INSERT INTO " +  userMessageAttachmentTable + "(user_id, message_id, attachment_id) VALUES ";
 				StringBuilder insertUserThreadBuilder = new StringBuilder(insertUserThreadBase);
 
-            StringBuilder insertUserMessageBuilder = new StringBuilder(insertUserMessage);
-            StringBuilder insertUserAttachmentBuilder = new StringBuilder(insertUserAttachment);
-            StringBuilder insertThreadBuilder = new StringBuilder(insertUserThread);
+				StringBuilder insertUserMessageBuilder = new StringBuilder(insertUserMessage);
+				StringBuilder insertUserAttachmentBuilder = new StringBuilder(insertUserAttachment);
 
 				int userThreadCount = 0;
 				int userMessageValueCount = 0;
@@ -370,31 +370,27 @@ public class SqlConversationService implements ConversationService{
 					builder.prepared(query, new JsonArray());
 				}
 
-            // Pièces jointes
-            for(Object toObj : ids){
-                if(toObj.equals(user.getUserId())) continue;
+				// Pièces jointes
+				for(Object toObj : ids){
+					if(toObj.equals(user.getUserId())) continue;
 
-                for(Object attachmentId : attachmentIds){
-                    userMessageAttachementCount++;
-                    insertUserAttachmentBuilder.append("(?, ?, ?),");
-                    userMessageAttachmentsValues.add(toObj).add(draftId).add(attachmentId);
+					for(Object attachmentId : attachmentIds){
+						userMessageAttachementCount++;
+						insertUserAttachmentBuilder.append(String.format("('%s', '%s', '%s' ),", toObj, draftId, attachmentId));
+						if (userMessageAttachementCount >= conversationBatchSize) {
+							builder.prepared(insertUserAttachmentBuilder.deleteCharAt(insertUserAttachmentBuilder.length()-1).toString(), new JsonArray());
+							insertUserAttachmentBuilder = new StringBuilder(insertUserAttachment);
+							userMessageAttachementCount = 0;
+						}
+					}
+				}
+				if (userMessageAttachementCount > 0) {
+					builder.prepared(insertUserAttachmentBuilder.deleteCharAt(insertUserAttachmentBuilder.length()-1).toString(), new JsonArray());
+				}
 
-                    if (userMessageAttachementCount >= conversationBatchSize) {
-                        builder.prepared(insertUserAttachmentBuilder.deleteCharAt(insertUserAttachmentBuilder.length()-1).toString(),
-                                userMessageAttachmentsValues);
-                        insertUserAttachmentBuilder = new StringBuilder(insertUserAttachment);
-                        userMessageAttachementCount = 0;
-                        userMessageAttachmentsValues = new JsonArray();
-                    }
-                }
-            }
-            if (userMessageAttachementCount > 0) {
-                builder.prepared(insertUserAttachmentBuilder.deleteCharAt(insertUserAttachmentBuilder.length()-1).toString(),
-                        userMessageAttachmentsValues);
-            }
-
-            sql.transaction(builder.build(),new DeliveryOptions().setSendTimeout(sendTimeout), SqlResult.validUniqueResultHandler(0, result));
-        });
+				sql.transaction(builder.build(),new DeliveryOptions().setSendTimeout(sendTimeout), SqlResult.validUniqueResultHandler(0, result));
+			}
+		});
 	}
 
 	@Override
