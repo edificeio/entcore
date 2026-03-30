@@ -18,7 +18,7 @@ export class Controller implements IController {
       } as UserPrefs);
       location.reload();
     } catch {
-      notify.error("Erreur de traitement ou reseau.");
+      notify.error('timeline.beta.switch.error');
       this.isSwitching = false;
     }
   }
@@ -53,7 +53,7 @@ class Directive implements IDirective<
     http()
       .get("/userbook/api/preferences")
       .then((userPrefs: UserPrefs) =>
-        !userPrefs.homePage ? false : userPrefs?.homePage.betaEnabled,
+        userPrefs.homePage ? userPrefs.homePage.betaEnabled : false,
       )
       .then((value) => {
         if (value) {

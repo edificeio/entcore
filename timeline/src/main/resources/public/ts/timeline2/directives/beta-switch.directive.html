@@ -1,4 +1,4 @@
-<div style="position: absolute; left: 0.4rem; bottom: 0.4rem; z-index: 10;">
+<div ng-if="ctrl.isBetaActivated" style="position: absolute; left: 0.4rem; bottom: 0.4rem; z-index: 10;">
 	<button
 		type="button"
 		class="btn btn-outline-secondary"
@@ -6,6 +6,6 @@
 		ng-click="ctrl.activateHomepage()"
 		ng-disabled="ctrl.isSwitching">
 		<span ng-if="ctrl.isSwitching" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-		<i18n>timeline.beta.switch.page</i18n>
+		<i18n>timeline.beta.switch.new</i18n>
 	</button>
 </div>

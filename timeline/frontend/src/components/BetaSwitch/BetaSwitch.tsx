@@ -35,24 +35,26 @@ export function BetaSwitch() {
       await deactivateHomepage();
       window.location.reload();
     } catch {
-      error('Erreur de traitement ou réseau.');
+      error(t('timeline.beta.switch.error'));
       setIsSwitching(false);
     }
   };
 
-  return createPortal(
-    <>
-      <Button
-        data-testid="beta-switch-button"
-        isLoading={isSwitching}
-        color="tertiary"
-        variant="outline"
-        disabled={isSwitching}
-        onClick={handleSwitchClick}
-      >
-        {t('timeline.beta.switch.page')}
-      </Button>
-    </>,
-    document.getElementById('beta-switch') as HTMLElement,
-  );
+  const rootElement = document.getElementById('beta-switch');
+
+  return rootElement
+    ? createPortal(
+        <Button
+          data-testid="beta-switch-button"
+          isLoading={isSwitching}
+          color="tertiary"
+          variant="outline"
+          disabled={isSwitching}
+          onClick={handleSwitchClick}
+        >
+          {t('timeline.beta.switch.previous')}
+        </Button>,
+        rootElement,
+      )
+    : null;
 }
