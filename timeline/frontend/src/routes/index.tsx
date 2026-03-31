@@ -8,7 +8,7 @@ import { manageRedirections } from './redirections';
 const routes = (queryClient: QueryClient): RouteObject[] => [
   /* Main route */
   {
-    path: '/',
+    path: '/timeline',
     async lazy() {
       const { loader, Root: Component } = await import('~/routes/root');
       return {
