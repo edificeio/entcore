@@ -8,6 +8,7 @@ import {
   Structure,
   createAndSetRole,
   linkRoleToUsers,
+  uploadZip,
   uploadFile,
   downloadFile,
   createUserAndGetData,
@@ -26,20 +27,38 @@ export const options = {
     checks: ["rate == 1.00"],
   },
   scenarios: {
-    testUploadFile: {
+    /*testUploadFile: {
       executor: "per-vu-iterations",
       exec: "testUploadFile",
       vus: 1,
       maxDuration: maxDuration,
       gracefulStop,
+    },*/
+    testUploadZiptestUploadZip: {
+      executor: "per-vu-iterations",
+      exec: "testUploadZip",
+      vus: 1,
+      maxDuration: maxDuration,
+      gracefulStop,
     },
-  },
+  }
 };
 
 type InitData = {
   head: Structure;
 }
 
+const dataRootPath = __ENV.DATA_ROOT_PATH;
+
+let fileToUpload: ArrayBuffer;
+let zipFileToUpload: ArrayBuffer;
+try {
+  fileToUpload = open(`${dataRootPath}/workspace/big-picture.jpg`, "b");
+  zipFileToUpload = open(`${dataRootPath}/workspace/test.zip`, "b");
+} catch(e) {
+  fileToUpload = open(`${dataRootPath}/data/workspace/big-picture.jpg`, "b");
+  zipFileToUpload = open(`${dataRootPath}/data/workspace/test.zip`, "b");
+}
 export function setup() {
   let structure: Structure | null = null;
   describe("[Workspace-Init] Initialize data", () => {
@@ -68,14 +87,6 @@ export function setup() {
   return { head: structure };
 }
 
-const dataRootPath = __ENV.DATA_ROOT_PATH;
-let fileToUpload;
-try {
-  fileToUpload = open(`${dataRootPath}/workspace/big-picture.jpg`, "b");
-} catch(e) {
-  fileToUpload = open(`${dataRootPath}/data/workspace/big-picture.jpg`, "b");
-}
-
 export function testUploadFile(data: InitData) {
 
   describe('[Workspace] Upload file', () => {
@@ -97,7 +108,7 @@ export function testUploadFile(data: InitData) {
     console.log("Downloading thumbnail...");
     const thumbnailFile = downloadFile(fileId, '120x120');
     console.log(`Thumbnail downloaded`);
-    const ok = check(thumbnailFile, {
+    let ok = check(thumbnailFile, {
       "should download thumbnail": (r) => r.status === 200,
       "should have content": (r) => r.body.length > 0,
       "should have correct content-type": (r) => r.headers['Content-Type'] === 'image/jpeg',
@@ -112,4 +123,39 @@ export function testUploadFile(data: InitData) {
       console.error(`Headers are ${JSON.stringify(thumbnailFile.headers)}`);
     }
   });
+}
+
+
+export function testUploadZip(data: InitData) {
+
+  describe('[Workspace] Upload zip file', () => {
+    <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
+    const headUsers = getUsersOfSchool(data.head);
+    const teacher1 = getRandomUserWithProfile(headUsers, 'Teacher');
+
+    console.log("Authenticate teacher1 " + teacher1.login);
+    authenticateWeb(teacher1.login);
+    let zipUploadRes = uploadZip(zipFileToUpload, "test.zip");
+    let ok = check(zipUploadRes, {
+      "zip upload status is 201": (r) => r.status === 201,
+    });
+    let body: any;
+    if (ok) {
+      body = JSON.parse(zipUploadRes.body);
+      ok = check(body, {
+        "uploaded zip  is not null": (b) => !!b,
+        "uploaded zip has 001 file": (b) => b.saved && b.saved.length === 2 && (b.saved[0].name === "001.png" || b.saved[1].name === "001.png"),
+        "uploaded zip has 002 file": (b) => b.saved && b.saved.length === 2 && (b.saved[0].name === "002.png" || b.saved[1].name === "002.png")
+      });
+    }
+    if(ok) {
+      body.saved.forEach((savedFile: any) => {
+        const thumbnailFile = downloadFile(savedFile["_id"], '120x120');
+        check(thumbnailFile, {
+          "should download thumbnail from zipped content": (r) => r.status === 200,
+          "should have content for thumbnail from zipped content": (r) => r.body.length > 0,
+        });
+      });
+    }
+  })
 }
