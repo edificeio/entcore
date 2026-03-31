@@ -27,13 +27,13 @@ export const options = {
     checks: ["rate == 1.00"],
   },
   scenarios: {
-    /*testUploadFile: {
+    testUploadFile: {
       executor: "per-vu-iterations",
       exec: "testUploadFile",
       vus: 1,
       maxDuration: maxDuration,
       gracefulStop,
-    },*/
+    },
     testUploadZiptestUploadZip: {
       executor: "per-vu-iterations",
       exec: "testUploadZip",
