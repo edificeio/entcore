@@ -9,7 +9,7 @@
     "ssl": true,
     "app-type" : "END_USER",
     "host": "https://{{ host }}",
-    "neo4jPlugin": true,
+    "neo4jPlugin": {{workspaceNeo4jPlugin | default('true')}},
     "userbook-host": "https://{{ host }}",
     "app-name": "Espace documentaire",
     "app-address": "/workspace/workspace",
