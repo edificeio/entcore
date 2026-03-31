@@ -79,6 +79,8 @@ export function testUploadFile(data: InitData) {
     const uploadedFile = uploadFile(fileToUpload, "big-picture.jpg");
     console.log(`File uploaded with id ${uploadedFile._id} and size ${uploadedFile.size} bytes`);
     const fileId = uploadedFile._id;
+    console.log("Download it once with a specification to trigger thumbnail generation...");
+    downloadFile(fileId, '120x120');
     console.log("Waiting for image resizer to do its job...");
     sleep(5);
     console.log("Downloading thumbnail...");
@@ -88,7 +90,11 @@ export function testUploadFile(data: InitData) {
       "should download thumbnail": (r) => r.status === 200,
       "should have content": (r) => r.body.length > 0,
       "should have correct content-type": (r) => r.headers['Content-Type'] === 'image/jpeg',
-      "should have correct thumbnail size": (r) => parseInt(r.headers['Content-Length']) <= 5_000, // Should be around 4776 bytes for a 120x120 thumbnail of a jpeg image
+      "should have correct thumbnail size": (r) => {
+        // Should be around 4776 bytes for a 120x120 thumbnail of a jpeg image
+        const size = r.body.length;
+        return 4_000 < size && size < 5_000;
+      }
     });
     if (!ok) {
       console.error(`Status is ${thumbnailFile.status}`);
