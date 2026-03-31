@@ -3,19 +3,21 @@ import { describe } from "https://jslib.k6.io/k6chaijs/4.3.4.0/index.js";
 import {
   authenticateWeb,
   getUsersOfSchool,
-  initStructure,
   getRandomUserWithProfile,
   Session,
   Structure,
   createAndSetRole,
   linkRoleToUsers,
   uploadFile,
-  downloadFile
+  downloadFile,
+  createUserAndGetData,
+  createEmptyStructure,
+  activateUsers
 } from '../../../node_modules/edifice-k6-commons/dist/index.js';
 import { check, sleep } from "k6";
 
 const maxDuration = __ENV.MAX_DURATION || "5m";
-const schoolName = __ENV.DATA_SCHOOL_NAME || "General";
+const schoolName = __ENV.DATA_SCHOOL_NAME || "General - One user";
 const gracefulStop = parseInt(__ENV.GRACEFUL_STOP || "2s");
 
 export const options = {
@@ -42,7 +44,16 @@ export function setup() {
   let structure: Structure | null = null;
   describe("[Workspace-Init] Initialize data", () => {
     <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
-    structure = initStructure(`${schoolName}`, 'tiny')
+    structure = createEmptyStructure(`${schoolName}`, true)
+    const user = createUserAndGetData({
+      firstName: "Uploader",
+      lastName: "User",
+      "type": "Teacher",
+      structureId: structure.id,
+      birthDate: "2020-01-01",
+      positionIds: []
+    })
+    activateUsers(structure);
     const role = createAndSetRole('Espace documentaire');
     const groups = [
         `Teachers from group ${structure.name}.`,
