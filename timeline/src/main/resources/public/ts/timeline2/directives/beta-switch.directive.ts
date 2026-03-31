@@ -1,0 +1,64 @@
+import { IAttributes, IController, IDirective, IScope } from "angular";
+import { notify } from "entcore";
+import { http } from "ode-ngjs-front";
+
+type UserPrefs = { homePage: { betaEnabled: boolean } | null };
+
+export class Controller implements IController {
+  public isSwitching = false;
+  public isBetaVisible: boolean = false;
+
+  async activateHomepage() {
+    if (this.isSwitching) return;
+
+    this.isSwitching = true;
+    try {
+      await http().putJson("/userbook/api/preferences", {
+        homePage: { betaEnabled: true },
+      } as UserPrefs);
+      location.reload();
+    } catch {
+      notify.error("timeline.beta.switch.error");
+      this.isSwitching = false;
+    }
+  }
+}
+
+class Directive implements IDirective<
+  IScope,
+  JQLite,
+  IAttributes,
+  IController[]
+> {
+  restrict = "E";
+  template = require("./beta-switch.directive.html");
+  scope = {};
+  bindToController = true;
+  controller = [Controller];
+  controllerAs = "ctrl";
+  require = ["betaSwitch"];
+
+  link(
+    scope: IScope,
+    elem: JQLite,
+    attr: IAttributes,
+    controllers: IController[] | undefined,
+  ) {
+    let ctrl: Controller | null = controllers
+      ? (controllers[0] as Controller)
+      : null;
+    if (!ctrl) return;
+
+    http()
+      .get("/userbook/api/preferences")
+      .then((userPrefs: UserPrefs) => {
+        ctrl.isBetaVisible =
+          typeof userPrefs?.homePage?.betaEnabled === "boolean";
+        scope.$apply();
+      });
+  }
+}
+
+export function DirectiveFactory() {
+  return new Directive();
+}

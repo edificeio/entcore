@@ -8,7 +8,7 @@ export const manageRedirections = (): string | null => {
     pathLocation === '/timeline/' ||
     pathLocation === '/timeline/timeline'
   ) {
-    return '/';
+    return '/timeline';
   }
 
   // No redirection needed
