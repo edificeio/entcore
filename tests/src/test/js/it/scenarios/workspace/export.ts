@@ -62,7 +62,7 @@ export function setup() {
   describe("[Workspace-Init] Initialize data", () => {
     <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
     structure = createEmptyStructure(`${schoolName}`, true)
-    const user = createUserAndGetData({
+    createUserAndGetData({
       firstName: "Uploader",
       lastName: "User",
       "type": "Teacher",
