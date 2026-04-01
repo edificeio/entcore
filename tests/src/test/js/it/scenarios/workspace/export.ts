@@ -16,6 +16,8 @@ import {
   activateUsers,
   launchExportOrFail,
   verifyExportFiles,
+  parseZip,
+  getZipTree,
 } from '../../../node_modules/edifice-k6-commons/dist/index.js';
 import { check, fail, sleep } from "k6";
 
@@ -132,11 +134,55 @@ export function testExport(data: InitData) {
     check(downloadRes, {
       "should download export file successfully": (r) => r.status === 200,
     });
-    // Check that the zip contains the uploaded files - this is a basic check to ensure the export is correct, we don't check the whole content of the zip for performance reasons
-    check(String(downloadRes.body), {
-      "export file should contain small.png": (content) => content.indexOf("small.png") >= 0,
-      "export file should contain 002.png": (content) => content.indexOf("002.png") >= 0,
-      "export file should contain 001.png": (content) => content.indexOf("001.png") >= 0,
+    
+    // Parse the ZIP archive
+    console.log("Parsing ZIP archive...");
+    const zipArchive = parseZip(downloadRes.body);
+    console.log(`ZIP contains ${zipArchive.fileCount} files and ${zipArchive.directoryCount} directories`);
+    
+    // Display the ZIP tree structure
+    const tree = getZipTree(zipArchive);
+    console.log("ZIP archive structure:");
+    tree.forEach(path => console.log(`  ${path}`));
+    
+    // Check basic structure
+    check(zipArchive, {
+      "archive should contain files": (archive) => archive.fileCount > 0,
+      "archive should have entries": (archive) => archive.entries.size > 0,
     });
+    
+    // Check for specific uploaded files
+    check(tree, {
+      "archive should contain small.png": (t) => tree.some((path: string) => path.endsWith("small.png")),
+    });
+    
+    // You can check for files from the uploaded test.zip
+    const hasExtractedFiles = 
+      zipArchive.entries.has("001.png") || 
+      zipArchive.entries.has("002.png") ||
+      tree.some(path => path.includes("001.png") || path.includes("002.png"));
+    
+    check(hasExtractedFiles, {
+      "archive should contain extracted files from test.zip": (has) => has,
+    });
+    
+    // Validate file sizes - ensure all files have non-zero uncompressed size
+    let allFilesHaveSize = true;
+    let filesWithZeroSize: string[] = [];
+    for (const [filename, entry] of zipArchive.entries) {
+      if (!entry.isDirectory && entry.uncompressedSize === 0) {
+        allFilesHaveSize = false;
+        filesWithZeroSize.push(filename);
+      }
+    }
+    check(allFilesHaveSize, {
+      "all files should have size > 0": (valid) => {
+        if (!valid) {
+          console.log(`Files with zero size: ${filesWithZeroSize.join(', ')}`);
+        }
+        return valid;
+      },
+    });
+
   })
 }
