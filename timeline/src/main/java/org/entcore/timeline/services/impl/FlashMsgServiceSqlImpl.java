@@ -170,7 +170,7 @@ public class FlashMsgServiceSqlImpl extends SqlCrudService implements FlashMsgSe
 
 			// we don't need to check if the message is in the user's language he has to see it
 			// A distinction is made on structureId to disambiguate V1 and V2 and apply domain filter only on V1
-			String query = "SELECT id, contents, color, \"customColor\", signature, \"signatureColor\" FROM " + resourceTable + " m " +
+			String query = "SELECT id, contents, title, color, \"customColor\", signature, \"signatureColor\" FROM " + resourceTable + " m " +
 					"WHERE (" +
 					// Profiles is set and user matches
 					"(profiles IS NOT NULL AND jsonb_array_length(profiles) > 0 " +
