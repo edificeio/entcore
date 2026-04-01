@@ -76,88 +76,93 @@ public abstract class BaseImportProcessing implements ImportProcessing {
 	protected void parse(final Handler<Message<JsonObject>> handler, final ImportProcessing importProcessing) {
 		log.info(e -> "START parsing directory : " + path);
 		initAcademyPrefix(path);
-		final List<String> files = vertx.fileSystem()
-				.readDirBlocking(path, getFileRegex());
-		final Handler[] handlers = new Handler[files.size() + 1];
-		handlers[handlers.length -1] = new Handler<Integer>() {
-			@Override
-			public void handle(Integer v) {
-				log.info(e -> "SUCCEED parsing directory : " + path);
-				next(handler, importProcessing);
-			}
-		};
-		Collections.sort(files);
-		for (int i = files.size() - 1; i >= 0; i--) {
-			final int j = i;
-			handlers[i] = new Handler<Integer>() {
+		try {
+			final List<String> files = vertx.fileSystem()
+					.readDirBlocking(path, getFileRegex());
+			final Handler[] handlers = new Handler[files.size() + 1];
+			handlers[handlers.length -1] = new Handler<Integer>() {
 				@Override
-				public void handle(Integer nbRetries) {
-					final String file = files.get(j);
-					try {
-						log.info(e -> "START parsing file : " + file, true);
-						importer.getReport().loadedFile(file);
-						byte[] encoded = Files.readAllBytes(Paths.get(file));
-						String content = UNESCAPE_AAF.translate(new String(encoded, "UTF-8"));
-						InputSource in = new InputSource(new StringReader(content));
-						AAFHandler sh = new AAFHandler(BaseImportProcessing.this);
-						XMLReader xr = XMLReaderFactory.createXMLReader();
-						xr.setContentHandler(sh);
-						xr.setEntityResolver(new EntityResolver2() {
-							@Override
-							public InputSource getExternalSubset(String name, String baseURI) throws SAXException, IOException {
-								return null;
-							}
-
-							@Override
-							public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) throws SAXException, IOException {
-								return resolveEntity(publicId, systemId);
-							}
-
-							@Override
-							public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-								if (systemId.equals("ficAlimMENESR.dtd")) {
-									Reader reader = new FileReader(path + File.separator + "ficAlimMENESR.dtd");
-									return new InputSource(reader);
-								} else {
-									return null;
-								}
-							}
-						});
-						xr.parse(in);
-						log.info(e -> "START peristing file : " + file);
-						importer.persist(new Handler<Message<JsonObject>>() {
-							@Override
-							public void handle(Message<JsonObject> message) {
-								if ("ok".equals(message.body().getString("status"))) {
-									log.info(e -> "SUCCEED persist successfully for file : " + file);
-									handlers[j + 1].handle(0);
-								} else {
-									log.error(e -> "FAILED persist for file : " + file);
-
-									String msg = message.body().getString("message", "");
-									if(nbRetries < MAX_DEADLOCK_RETRIES && DEADLOCK_PATTERN.matcher(msg).find() == true)
-									{
-										log.info(e -> "RETRY persist for file : " + file);
-										handlers[j].handle(nbRetries + 1);
-									}
-									else
-									{
-										error(message, handler);
-									}
-								}
-							}
-						});
-					} catch (Exception e) {
-						error(e, handler);
-						log.error(t -> "FAILED parsing file : " + file, e);
-					} catch (OutOfMemoryError err) { // badly catch Error to unlock importer
-						log.error(t -> "FAILED parsing file (OOM) : " + file, err);
-						error(new Exception("OOM"), handler);
-					}
+				public void handle(Integer v) {
+					log.info(e -> "SUCCEED parsing directory : " + path);
+					next(handler, importProcessing);
 				}
 			};
+			Collections.sort(files);
+			for (int i = files.size() - 1; i >= 0; i--) {
+				final int j = i;
+				handlers[i] = new Handler<Integer>() {
+					@Override
+					public void handle(Integer nbRetries) {
+						final String file = files.get(j);
+						try {
+							log.info(e -> "START parsing file : " + file, true);
+							importer.getReport().loadedFile(file);
+							byte[] encoded = Files.readAllBytes(Paths.get(file));
+							String content = UNESCAPE_AAF.translate(new String(encoded, "UTF-8"));
+							InputSource in = new InputSource(new StringReader(content));
+							AAFHandler sh = new AAFHandler(BaseImportProcessing.this);
+							XMLReader xr = XMLReaderFactory.createXMLReader();
+							xr.setContentHandler(sh);
+							xr.setEntityResolver(new EntityResolver2() {
+								@Override
+								public InputSource getExternalSubset(String name, String baseURI) throws SAXException, IOException {
+									return null;
+								}
+
+								@Override
+								public InputSource resolveEntity(String name, String publicId, String baseURI, String systemId) throws SAXException, IOException {
+									return resolveEntity(publicId, systemId);
+								}
+
+								@Override
+								public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+									if (systemId.equals("ficAlimMENESR.dtd")) {
+										Reader reader = new FileReader(path + File.separator + "ficAlimMENESR.dtd");
+										return new InputSource(reader);
+									} else {
+										return null;
+									}
+								}
+							});
+							xr.parse(in);
+							log.info(e -> "START peristing file : " + file);
+							importer.persist(new Handler<Message<JsonObject>>() {
+								@Override
+								public void handle(Message<JsonObject> message) {
+									if ("ok".equals(message.body().getString("status"))) {
+										log.info(e -> "SUCCEED persist successfully for file : " + file);
+										handlers[j + 1].handle(0);
+									} else {
+										log.error(e -> "FAILED persist for file : " + file);
+
+										String msg = message.body().getString("message", "");
+										if(nbRetries < MAX_DEADLOCK_RETRIES && DEADLOCK_PATTERN.matcher(msg).find() == true)
+										{
+											log.info(e -> "RETRY persist for file : " + file);
+											handlers[j].handle(nbRetries + 1);
+										}
+										else
+										{
+											error(message, handler);
+										}
+									}
+								}
+							});
+						} catch (Exception e) {
+							error(e, handler);
+							log.error(t -> "FAILED parsing file : " + file, e);
+						} catch (OutOfMemoryError err) { // badly catch Error to unlock importer
+							log.error(t -> "FAILED parsing file (OOM) : " + file, err);
+							error(new Exception("OOM"), handler);
+						}
+					}
+				};
+			}
+			handlers[0].handle(0);
+		} catch (Exception e) {
+			log.error(t -> "FAILED parsing directory : " + path, e);
+			error(e, handler);
 		}
-		handlers[0].handle(0);
 	}
 
 	protected void next(final Handler<Message<JsonObject>> handler, final ImportProcessing importProcessing) {
