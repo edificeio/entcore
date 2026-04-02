@@ -67,6 +67,7 @@ public class CommunicationController extends BaseController {
 	@Post("/group/:startGroupId/communique/:endGroupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
+	@Deprecated
 	public void addLink(HttpServerRequest request) {
 		Params params = new Params(request).validate();
 		if (params.isInvalid()) return;
@@ -76,7 +77,7 @@ public class CommunicationController extends BaseController {
 
 	@Put("/api/admin/users/:startUser/communiqueDirect/:endUser")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
-	@MfaProtected()
+	@ResourceFilter(SuperAdminFilter.class)
 	public void setDirectCommunication(HttpServerRequest request) {
 		String startUser = request.getParam("startUser");
 		String endUser = request.getParam("endUser");
@@ -93,16 +94,21 @@ public class CommunicationController extends BaseController {
 	@Delete("/group/:startGroupId/communique/:endGroupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
+	@Deprecated
 	public void removeLink(HttpServerRequest request) {
 		Params params = new Params(request).validate();
 		if (params.isInvalid()) return;
 		communicationService.removeLink(params.getStartGroupId(), params.getEndGroupId(),
 				notEmptyResponseHandler(request));
 	}
-
+	/**
+	 *  For test only
+	 * @param request
+	 */
 	@Post("/group/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
+	@Deprecated
 	public void addLinksWithUsers(HttpServerRequest request) {
 		String groupId = getGroupId(request);
 		if (groupId == null) return;
@@ -110,9 +116,14 @@ public class CommunicationController extends BaseController {
 		communicationService.addLinkWithUsers(groupId, direction, notEmptyResponseHandler(request));
 	}
 
+	/**
+	 * For test only
+	 * @param request
+	 */
 	@Delete("/group/:groupId")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	@MfaProtected()
+	@Deprecated
 	public void removeLinksWithUsers(HttpServerRequest request) {
 		String groupId = getGroupId(request);
 		if (groupId == null) return;

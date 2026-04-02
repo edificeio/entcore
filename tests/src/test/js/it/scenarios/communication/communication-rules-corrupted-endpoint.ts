@@ -10,15 +10,11 @@ import {
   Group,
   addUsersToGroup,
   modifyCommunicationRelationOrFail,
-  addCommunicationRelationOrFail,
-  removeCommunicationOrFail,
-  safelyRemoveCommunicationFromBothOrFail,
   deleteGroupOrFail,
   searchVisiblesOrFail,
   Visible,
   getProfileGroupOfStructure,
-  setDirectCommunicationOrFail,
-  safelyModifyCommunicationToBothOrFail
+  setDirectCommunicationOrFail
 } from "../../../node_modules/edifice-k6-commons/dist/index.js";
 import {check, group} from "k6";
 
@@ -199,13 +195,10 @@ export function testGroupCommunications(data: InitData){
     addUsersToGroup([school1Teacher.id], group1);
     addUsersToGroup([school2Teacher.id], group2);
 
-    safelyRemoveCommunicationFromBothOrFail(group1);
-    safelyRemoveCommunicationFromBothOrFail(group2);
-
     addCommunicationBetweenGroups(group1.id, group2.id);
 
-    removeCommunicationOrFail(group1, 'both');
     modifyCommunicationRelationOrFail(group1, 'outgoing');
+    modifyCommunicationRelationOrFail(group2, 'outgoing');
 
     console.log(`Group created ${group1.name}, id ${group1.id}`);
     console.log(`Group created ${group2.name}, id ${group2.id}`);
@@ -241,10 +234,10 @@ export function testGroupCommunications(data: InitData){
     addUsersToGroup([school1Teacher.id], group1);
     addUsersToGroup([school2Teacher.id], group2);
 
-    safelyRemoveCommunicationFromBothOrFail(group1);
-    safelyRemoveCommunicationFromBothOrFail(group2);
-
     addCommunicationBetweenGroups(group1.id, group2.id);
+
+    modifyCommunicationRelationOrFail(group1, 'incoming');
+    modifyCommunicationRelationOrFail(group2, 'outgoing');
 
     console.log(`Group created ${group1.name}, id ${group1.id}`);
     console.log(`Group created ${group2.name}, id ${group2.id}`);
@@ -279,10 +272,10 @@ export function testGroupCommunications(data: InitData){
     addUsersToGroup([school1Teacher.id], group1);
     addUsersToGroup([school2Teacher.id], group2);
 
-    safelyRemoveCommunicationFromBothOrFail(group2);
-
     addCommunicationBetweenGroups(group1.id, group2.id);
-    safelyModifyCommunicationToBothOrFail(group1);
+
+    modifyCommunicationRelationOrFail(group1, 'both');
+    modifyCommunicationRelationOrFail(group2, 'outgoing');
 
     console.log(`Group created ${group1.name}, id ${group1.id}`);
     console.log(`Group created ${group2.name}, id ${group2.id}`);
@@ -311,18 +304,15 @@ export function testGroupCommunications(data: InitData){
     const school2Users = getUsersOfSchool(data.structure2);
     const school2Teacher = getRandomUserWithProfile(school2Users, 'Teacher');
 
-    const group1: Group = createGroupOrFail(data.structure1.name + "inter-groups-g1-none", data.structure1);
+    const group1: Group = createGroupOrFail(data.structure1.name + "inter-groups-g1-both", data.structure1);
     const group2: Group = createGroupOrFail(data.structure2.name + "inter-groups-g2-outgoing", data.structure2);
 
     addUsersToGroup([school1Teacher.id], group1);
     addUsersToGroup([school2Teacher.id], group2);
 
-    safelyRemoveCommunicationFromBothOrFail(group1);
-    safelyRemoveCommunicationFromBothOrFail(group2);
-
     addCommunicationBetweenGroups(group1.id, group2.id);
 
-    removeCommunicationOrFail(group1, 'both');
+    modifyCommunicationRelationOrFail(group2, 'outgoing');
 
     console.log(`Group created ${group1.name}, id ${group1.id}`);
     console.log(`Group created ${group2.name}, id ${group2.id}`);
@@ -363,13 +353,7 @@ export function testGroupCommunications(data: InitData){
     addUsersToGroup([school1Teacher.id], group1);
     addUsersToGroup([school2Teacher.id], group2);
 
-    safelyRemoveCommunicationFromBothOrFail(group1);
-    safelyRemoveCommunicationFromBothOrFail(group2);
-
     addCommunicationBetweenGroups(group1.id, group2.id);
-
-    removeCommunicationOrFail(group1, 'both');
-    removeCommunicationOrFail(group2, 'both');
 
     modifyCommunicationRelationOrFail(group1, 'outgoing');
     modifyCommunicationRelationOrFail(group2, 'incoming');
@@ -407,12 +391,9 @@ export function testGroupCommunications(data: InitData){
     addUsersToGroup([school1Teacher.id], group1);
     addUsersToGroup([school2Teacher.id], group2);
 
-    safelyRemoveCommunicationFromBothOrFail(group1);
-    safelyRemoveCommunicationFromBothOrFail(group2);
-
     addCommunicationBetweenGroups(group1.id, group2.id);
 
-    removeCommunicationOrFail(group2, 'both');
+    modifyCommunicationRelationOrFail(group1, 'incoming');
     modifyCommunicationRelationOrFail(group2, 'incoming');
 
     console.log(`Group created ${group1.name}, id ${group1.id}`);
@@ -448,12 +429,9 @@ export function testGroupCommunications(data: InitData){
     addUsersToGroup([school1Teacher.id], group1);
     addUsersToGroup([school2Teacher.id], group2);
 
-    safelyRemoveCommunicationFromBothOrFail(group2);
-
     addCommunicationBetweenGroups(group1.id, group2.id);
 
-    safelyModifyCommunicationToBothOrFail(group1);
-    removeCommunicationOrFail(group2, 'both');
+    modifyCommunicationRelationOrFail(group1, 'both');
     modifyCommunicationRelationOrFail(group2, 'incoming');
 
     console.log(`Group created ${group1.name}, id ${group1.id}`);
@@ -484,18 +462,14 @@ export function testGroupCommunications(data: InitData){
     const school2Teacher = getRandomUserWithProfile(school2Users, 'Teacher');
 
     const group1: Group = createGroupOrFail(data.structure1.name + "inter-groups-g1-none", data.structure1);
-    const group2: Group = createGroupOrFail(data.structure2.name + "inter-groups-g2-incoming", data.structure2);
+    const group2: Group = createGroupOrFail(data.structure2.name + "inter-groups-g2-outgoing", data.structure2);
 
     addUsersToGroup([school1Teacher.id], group1);
     addUsersToGroup([school2Teacher.id], group2);
 
-    safelyRemoveCommunicationFromBothOrFail(group2);
-    safelyRemoveCommunicationFromBothOrFail(group1);
-
     addCommunicationBetweenGroups(group1.id, group2.id);
 
     modifyCommunicationRelationOrFail(group2, 'incoming');
-    removeCommunicationOrFail(group1, 'both');
 
     console.log(`Group created ${group1.name}, id ${group1.id}`);
     console.log(`Group created ${group2.name}, id ${group2.id}`);
@@ -516,7 +490,7 @@ export function testGroupCommunications(data: InitData){
 
 
   /*******************************************************************************************************
-   *  Communication inter Group Ua -> G1 -> G2 -> Ub G2 = BOTH
+   *  Communication inter Group Ua -> G1 -> G2 -> Ub G2 = INCOMING
    ******************************************************************************************************/
 
   group('[Communication] Test that we can\'t communicate A => G1 => G2 => B when communication is OUTGOING for G1 and BOTH G2', () => {
@@ -535,13 +509,10 @@ export function testGroupCommunications(data: InitData){
     addUsersToGroup([school1Teacher.id], group1);
     addUsersToGroup([school2Teacher.id], group2);
 
-    safelyRemoveCommunicationFromBothOrFail(group1);
-
     addCommunicationBetweenGroups(group1.id, group2.id);
 
-    safelyModifyCommunicationToBothOrFail(group2);
-    removeCommunicationOrFail(group1, 'both');
     modifyCommunicationRelationOrFail(group1, 'outgoing');
+    modifyCommunicationRelationOrFail(group2, 'both');
 
     console.log(`Group created ${group1.name}, id ${group1.id}`);
     console.log(`Group created ${group2.name}, id ${group2.id}`);
@@ -577,11 +548,10 @@ export function testGroupCommunications(data: InitData){
     addUsersToGroup([school1Teacher.id], group1);
     addUsersToGroup([school2Teacher.id], group2);
 
-    safelyRemoveCommunicationFromBothOrFail(group2);
-    safelyRemoveCommunicationFromBothOrFail(group1);
     addCommunicationBetweenGroups(group1.id, group2.id);
 
-    safelyModifyCommunicationToBothOrFail(group2);
+    modifyCommunicationRelationOrFail(group1, 'incoming');
+    modifyCommunicationRelationOrFail(group2, 'both');
 
     console.log(`Group created ${group1.name}, id ${group1.id}`);
     console.log(`Group created ${group2.name}, id ${group2.id}`);
@@ -616,12 +586,10 @@ export function testGroupCommunications(data: InitData){
     addUsersToGroup([school1Teacher.id], group1);
     addUsersToGroup([school2Teacher.id], group2);
 
-    safelyRemoveCommunicationFromBothOrFail(group2);
-    safelyRemoveCommunicationFromBothOrFail(group1);
     addCommunicationBetweenGroups(group1.id, group2.id);
 
-    safelyModifyCommunicationToBothOrFail(group2);
-    safelyModifyCommunicationToBothOrFail(group1);
+    modifyCommunicationRelationOrFail(group1, 'both');
+    modifyCommunicationRelationOrFail(group2, 'both');
 
     console.log(`Group created ${group1.name}, id ${group1.id}`);
     console.log(`Group created ${group2.name}, id ${group2.id}`);
@@ -656,12 +624,9 @@ export function testGroupCommunications(data: InitData){
     addUsersToGroup([school1Teacher.id], group1);
     addUsersToGroup([school2Teacher.id], group2);
 
-    safelyRemoveCommunicationFromBothOrFail(group2);
-    safelyRemoveCommunicationFromBothOrFail(group1);
     addCommunicationBetweenGroups(group1.id, group2.id);
 
-    removeCommunicationOrFail(group1, 'both');
-    safelyModifyCommunicationToBothOrFail(group2);
+    modifyCommunicationRelationOrFail(group2, 'both');
 
     console.log(`Group created ${group1.name}, id ${group1.id}`);
     console.log(`Group created ${group2.name}, id ${group2.id}`);
@@ -700,12 +665,10 @@ export function testGroupCommunications(data: InitData){
     addUsersToGroup([school1Teacher.id], group1);
     addUsersToGroup([school2Teacher.id], group2);
 
-    safelyRemoveCommunicationFromBothOrFail(group2);
-    safelyRemoveCommunicationFromBothOrFail(group1);
     addCommunicationBetweenGroups(group1.id, group2.id);
 
     modifyCommunicationRelationOrFail(group1, 'outgoing');
-    removeCommunicationOrFail(group2, 'both');
+    modifyCommunicationRelationOrFail(group2, 'none');
 
     console.log(`Group created ${group1.name}, id ${group1.id}`);
     console.log(`Group created ${group2.name}, id ${group2.id}`);
@@ -715,7 +678,7 @@ export function testGroupCommunications(data: InitData){
     let visiblesRes = searchVisiblesOrFail();
     const visibles: Visible[] = JSON.parse(<string>visiblesRes.body);
     check(visibles, { [`${testName} Visible should not contain the second user`] : visibles => visibles.find( v => v.id === school2Teacher.id ) === undefined } );
-    check(visibles, { [`${testName} Visible should contain the second group`] : visibles => visibles.find( v => v.id === group2.id ) !== null } );
+    check(visibles, { [`${testName} Visible should not contain the second group`] : visibles => visibles.find( v => v.id === group2.id ) === undefined } );
 
     //tear down
     <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
@@ -741,11 +704,10 @@ export function testGroupCommunications(data: InitData){
     addUsersToGroup([school1Teacher.id], group1);
     addUsersToGroup([school2Teacher.id], group2);
 
-    safelyRemoveCommunicationFromBothOrFail(group2);
-    safelyRemoveCommunicationFromBothOrFail(group1);
     addCommunicationBetweenGroups(group1.id, group2.id);
 
-    removeCommunicationOrFail(group2, 'both');
+    modifyCommunicationRelationOrFail(group1, 'incoming');
+    modifyCommunicationRelationOrFail(group2, 'none');
 
     console.log(`Group created ${group1.name}, id ${group1.id}`);
     console.log(`Group created ${group2.name}, id ${group2.id}`);
@@ -780,12 +742,10 @@ export function testGroupCommunications(data: InitData){
     addUsersToGroup([school1Teacher.id], group1);
     addUsersToGroup([school2Teacher.id], group2);
 
-    safelyRemoveCommunicationFromBothOrFail(group2);
-    safelyRemoveCommunicationFromBothOrFail(group1);
     addCommunicationBetweenGroups(group1.id, group2.id);
 
-    safelyModifyCommunicationToBothOrFail(group1);
-    removeCommunicationOrFail(group2, 'both');
+    modifyCommunicationRelationOrFail(group1, 'both');
+    modifyCommunicationRelationOrFail(group2, 'none');
 
     console.log(`Group created ${group1.name}, id ${group1.id}`);
     console.log(`Group created ${group2.name}, id ${group2.id}`);
@@ -815,17 +775,12 @@ export function testGroupCommunications(data: InitData){
     const school2Teacher = getRandomUserWithProfile(school2Users, 'Teacher');
 
     const group1: Group = createGroupOrFail(data.structure1.name + "inter-groups-g1-none", data.structure1);
-    const group2: Group = createGroupOrFail(data.structure2.name + "inter-groups-g2-none", data.structure2);
+    const group2: Group = createGroupOrFail(data.structure2.name + "inter-groups-g2-outgoing", data.structure2);
 
     addUsersToGroup([school1Teacher.id], group1);
     addUsersToGroup([school2Teacher.id], group2);
 
-    safelyRemoveCommunicationFromBothOrFail(group2);
-    safelyRemoveCommunicationFromBothOrFail(group1);
     addCommunicationBetweenGroups(group1.id, group2.id);
-
-    removeCommunicationOrFail(group1, 'both');
-    removeCommunicationOrFail(group2, 'both');
 
     console.log(`Group created ${group1.name}, id ${group1.id}`);
     console.log(`Group created ${group2.name}, id ${group2.id}`);
@@ -858,7 +813,6 @@ export function testGroupCommunications(data: InitData){
 
     const profileGroup  = getProfileGroupOfStructure( 'teachers', data.structure1);
 
-    safelyRemoveCommunicationFromBothOrFail({ id : profileGroup.id, name:null,filter: null, internalCommunicationRule:null, structures: null });
     modifyCommunicationRelationOrFail( { id : profileGroup.id, name:null,filter: null, internalCommunicationRule:null, structures: null }, 'incoming');
 
     <Session>authenticateWeb(school1Teacher.login);
@@ -898,7 +852,6 @@ export function testGroupCommunications(data: InitData){
 
     const profileGroup  = getProfileGroupOfStructure( 'teachers', data.structure1);
 
-    removeCommunicationOrFail({ id : profileGroup.id, name:null,filter: null, internalCommunicationRule:null, structures: null });
     modifyCommunicationRelationOrFail( { id : profileGroup.id, name:null,filter: null, internalCommunicationRule:null, structures: null }, 'outgoing');
 
     <Session>authenticateWeb(school1Teacher.login);
@@ -923,7 +876,6 @@ export function testGroupCommunications(data: InitData){
 
     const profileGroup  = getProfileGroupOfStructure( 'teachers', data.structure1);
 
-    removeCommunicationOrFail({ id : profileGroup.id, name:null,filter: null, internalCommunicationRule:null, structures: null });
     modifyCommunicationRelationOrFail( { id : profileGroup.id, name:null,filter: null, internalCommunicationRule:null, structures: null }, 'incoming');
 
     <Session>authenticateWeb(school1Teacher.login);
@@ -948,9 +900,7 @@ export function testGroupCommunications(data: InitData){
 
     const profileGroup  = getProfileGroupOfStructure( 'teachers', data.structure1);
 
-    console.log(`Profile group ${profileGroup.id}`);
-
-    removeCommunicationOrFail({ id : profileGroup.id, name:null,filter: null, internalCommunicationRule:null, structures: null });
+    modifyCommunicationRelationOrFail( { id : profileGroup.id, name:null,filter: null, internalCommunicationRule:null, structures: null }, 'none');
 
     <Session>authenticateWeb(school1Teacher.login);
 
@@ -979,11 +929,7 @@ export function testGroupCommunications(data: InitData){
     const school2Users = getUsersOfSchool(data.structure2);
     const school2Teacher = getRandomUserWithProfile(school2Users, 'Teacher');
     const group2: Group = createGroupOrFail(data.structure2.name + "inter-groups-g2-incoming", data.structure2);
-
     modifyCommunicationRelationOrFail( { id : profileGroup.id, name:null,filter: null, internalCommunicationRule:null, structures: null }, 'incoming');
-
-    safelyRemoveCommunicationFromBothOrFail(group2);
-
     addCommunicationBetweenGroups(group2.id, profileGroup.id);
 
     <Session>authenticateWeb(school2Teacher.login);
@@ -1009,9 +955,6 @@ export function testGroupCommunications(data: InitData){
     const school2Teacher = getRandomUserWithProfile(school2Users, 'Teacher');
     const group2: Group = createGroupOrFail(data.structure2.name + "inter-groups-g2-both", data.structure2);
     modifyCommunicationRelationOrFail( { id : profileGroup.id, name:null,filter: null, internalCommunicationRule:null, structures: null }, 'both');
-
-    safelyRemoveCommunicationFromBothOrFail(group2);
-
     addCommunicationBetweenGroups(group2.id, profileGroup.id);
 
     <Session>authenticateWeb(school2Teacher.login);
@@ -1028,27 +971,23 @@ export function testGroupCommunications(data: InitData){
     deleteGroupOrFail(group2);
   });
 
-  group('[Communication] Test that we can communicate B => G2 => G1 (profileGroup) <= DEPEND G3 when communication is OUTGOING for G1', () => {
+  group('[Communication] Test that we can\'t communicate B => G2 => G1 (profileGroup) <= DEPEND G3 when communication is OUTGOING for G1', () => {
     const testName = "[  B => G2 => G1 (profileGroup) <= DEPEND G3 when communication is OUTGOING for G1 ]";
     <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
 
     const profileGroup  = getProfileGroupOfStructure( 'teachers', data.structure1);
     const school2Users = getUsersOfSchool(data.structure2);
     const school2Teacher = getRandomUserWithProfile(school2Users, 'Teacher');
-    const group2: Group = createGroupOrFail(data.structure2.name + "inter-groups-g2-outgoing", data.structure2);
-    safelyRemoveCommunicationFromBothOrFail(group2);
-
+    const group2: Group = createGroupOrFail(data.structure2.name + "inter-groups-g2-both", data.structure2);
+    modifyCommunicationRelationOrFail( { id : profileGroup.id, name:null,filter: null, internalCommunicationRule:null, structures: null }, 'both');
     addCommunicationBetweenGroups(group2.id, profileGroup.id);
 
-    modifyCommunicationRelationOrFail( { id : profileGroup.id, name:null,filter: null,
-      internalCommunicationRule:null, structures: null }, 'outgoing');
-    console.log(`Profile group ${profileGroup.id}`);
     <Session>authenticateWeb(school2Teacher.login);
 
     let visiblesRes = searchVisiblesOrFail();
 
     const visibles: Visible[] = JSON.parse(<string>visiblesRes.body);
-    check(visibles, { [`${testName} Visible should contain the group G3 `] : visibles => visibles.find( v => v.displayName === "Parents du groupe CE1." ) !== null } );
+    check(visibles, { [`${testName} Visible should not contain the group G3 `] : visibles => visibles.find( v => v.displayName === "Parents du groupe CE1." ) === undefined } );
 
     //tear down
     <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
@@ -1057,7 +996,7 @@ export function testGroupCommunications(data: InitData){
     deleteGroupOrFail(group2);
   });
 
-  group('[Communication] Test that we can communicate B => G2 => G1 (profileGroup) <= DEPEND G3 when communication is NONE for G1', () => {
+  group('[Communication] Test that we can\'t communicate B => G2 => G1 (profileGroup) <= DEPEND G3 when communication is NONE for G1', () => {
     const testName = "[  B => G2 => G1 (profileGroup) <= DEPEND G3 when communication is NONE for G1 ]";
     <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);
 
@@ -1066,8 +1005,6 @@ export function testGroupCommunications(data: InitData){
     const school2Teacher = getRandomUserWithProfile(school2Users, 'Teacher');
     const group2: Group = createGroupOrFail(data.structure2.name + "inter-groups-g2-none", data.structure2);
     modifyCommunicationRelationOrFail( { id : profileGroup.id, name:null,filter: null, internalCommunicationRule:null, structures: null }, 'none');
-
-    safelyRemoveCommunicationFromBothOrFail(group2);
     addCommunicationBetweenGroups(group2.id, profileGroup.id);
 
     <Session>authenticateWeb(school2Teacher.login);
@@ -1075,7 +1012,7 @@ export function testGroupCommunications(data: InitData){
     let visiblesRes = searchVisiblesOrFail();
 
     const visibles: Visible[] = JSON.parse(<string>visiblesRes.body);
-    check(visibles, { [`${testName} Visible should contain the group G3 `] : visibles => visibles.find( v => v.displayName === "Parents du groupe CE1." ) !== null } );
+    check(visibles, { [`${testName} Visible should not contain the group G3 `] : visibles => visibles.find( v => v.displayName === "Parents du groupe CE1." ) === undefined } );
 
     //tear down
     <Session>authenticateWeb(__ENV.ADMC_LOGIN, __ENV.ADMC_PASSWORD);

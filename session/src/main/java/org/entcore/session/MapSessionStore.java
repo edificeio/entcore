@@ -51,7 +51,7 @@ public class MapSessionStore extends AbstractSessionStore {
     public MapSessionStore(final Vertx vertx, final Boolean cluster, JsonObject config) {
         super(vertx, config, cluster);
         inactivity = new MapActivityManager(vertx, config, cluster);
-        if (Boolean.TRUE.equals(cluster)) {
+        if (Boolean.TRUE.equals(cluster) && false) {
             final ClusterManager cm = ((VertxInternal) vertx).getClusterManager();
             sessions = cm.getSyncMap("sessions");
             logins = cm.getSyncMap("logins");
