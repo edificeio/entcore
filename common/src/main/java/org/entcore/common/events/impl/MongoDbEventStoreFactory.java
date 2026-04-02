@@ -29,11 +29,10 @@ public class MongoDbEventStoreFactory extends EventStoreFactory {
 
 	@Override
 	public EventStore getEventStore(String module) {
-		final MongoDbEventStore eventStore =  new MongoDbEventStore();
+		final MongoDbEventStore eventStore =  new MongoDbEventStore(vertx.getOrCreateContext().config().getBoolean("event-store-malformed", false));
 		eventStore.setEventBus(Server.getEventBus(vertx));
 		eventStore.setModule(module);
 		eventStore.setVertx(vertx);
-
 		vertx.sharedData().<String, String>getLocalAsyncMap("server")
             .compose(serverMap -> serverMap.get("event-store"))
             .onSuccess(eventStoreConf -> {

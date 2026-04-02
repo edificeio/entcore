@@ -20,15 +20,15 @@
 package org.entcore.common.events.impl;
 
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.data.FileResolver;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
-import io.vertx.core.AsyncResult;
+import io.vertx.core.*;
+import io.vertx.core.file.FileSystem;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
@@ -38,6 +38,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
 import static fr.wseduc.webutils.Utils.getOrElse;
+import static io.vertx.core.Future.succeededFuture;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,6 +48,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.net.URLDecoder;
 
+import io.vertx.json.schema.*;
+
 public abstract class GenericEventStore implements EventStore {
 
 	protected String module;
@@ -54,6 +57,10 @@ public abstract class GenericEventStore implements EventStore {
 	protected Vertx vertx;
 	protected JsonArray userBlacklist;
 	protected static final Logger logger = LoggerFactory.getLogger(GenericEventStore.class);
+	private static Validator eventsValidator;
+	private static boolean validatorInitialized = false;
+	public static final String JSONSCHEMA_PATH = FileResolver.absolutePath("eventsschema.json");
+
 
 	@Override
 	public void createAndStoreEvent(String eventType, UserInfos user) {
@@ -243,16 +250,28 @@ public abstract class GenericEventStore implements EventStore {
 	private void execute(UserInfos user, String eventType, HttpServerRequest request, JsonObject customAttributes) {
 		if (user == null || !userBlacklist.contains(user.getUserId())) {
 			final JsonObject event = generateEvent(eventType, user, request, customAttributes);
-			storeEvent(event, new Handler<Either<String, Void>>() {
-				@Override
-				public void handle(Either<String, Void> storeResult) {
-					if (storeResult.isLeft()) {
-						logger.error("Error adding event : " + storeResult.left().getValue());
-					}
+			validateEvent(event, this.vertx)
+			.recover(th -> succeededFuture(false))
+			.onSuccess(isValid -> {
+				if(isValid) {
+					storeEvent(event, storeResult -> {
+						if (storeResult.isLeft()) {
+							logger.error("Error adding event : " + storeResult.left().getValue() + "\n" + event.encode());
+						}
+					});
+				} else if(shouldStoreMalformedEvent()) {
+					storeMalformedEvent(event, storeResult -> {
+						if (storeResult.isLeft()) {
+							logger.error("Error storing malformed event : " + storeResult.left().getValue() + "\n" + event.encode());
+						}
+					});
 				}
-			});
+			})
+			.onFailure(th -> logger.warn("Error while validating event : " + event, th));
 		}
 	}
+
+
 
 	private JsonObject generateEvent(String eventType, UserInfos user, HttpServerRequest request,
 			JsonObject customAttributes) {
@@ -319,6 +338,10 @@ public abstract class GenericEventStore implements EventStore {
 	}
 
 	protected abstract void storeEvent(JsonObject event, Handler<Either<String, Void>> handler);
+	protected abstract void storeMalformedEvent(JsonObject event, Handler<Either<String, Void>> handler);
+	protected boolean shouldStoreMalformedEvent() {
+		return false;
+	}
 
 	private void initBlacklist() {
 		eventBus.request("event.blacklist", new JsonObject(), (Handler<AsyncResult<Message<JsonArray>>>) message -> {
@@ -343,4 +366,61 @@ public abstract class GenericEventStore implements EventStore {
 		this.vertx = vertx;
 	}
 
+	public static Future<Validator> loadJsonSchema(final Vertx vertx) {
+		final Future<Validator> future;
+		if(validatorInitialized) {
+			future = Future.succeededFuture(eventsValidator);
+		} else {
+			logger.debug("Loading events json schema from " + JSONSCHEMA_PATH);
+			final Promise<Validator> promise = Promise.promise();
+			final FileSystem fs = vertx.fileSystem();
+			fs.readFile(JSONSCHEMA_PATH, e -> {
+				if (e.succeeded()) {
+					try {
+						final Validator validator = Validator.create(
+								JsonSchema.of(new JsonObject(e.result().toString())),
+								new JsonSchemaOptions()
+										.setDraft(Draft.DRAFT7)
+										.setBaseUri("http://myapp/")
+						);
+						logger.debug("Successfully loaded events json schema");
+						eventsValidator = validator;
+						promise.complete(validator);
+					} catch (Exception ioExc) {
+						logger.error(JSONSCHEMA_PATH + " could not be loaded", e);
+						promise.fail(ioExc);
+					}
+				} else {
+					logger.error(JSONSCHEMA_PATH + " could not be loaded so no events will be checked");
+					promise.fail(e.cause());
+				}
+				validatorInitialized = true;
+			});
+			future = promise.future();
+		}
+		return future;
+	}
+
+	/**
+	 * Validates the conformity of an event to the events json schema.
+	 * @param event Event to validate
+	 * @return {@code true} iff the event is valid or if no jsonschema could be found on the classpath.
+	 */
+	public static Future<Boolean> validateEvent(final JsonObject event, final Vertx vertx) {
+		return loadJsonSchema(vertx)
+		.map(validator -> {
+			if(validator == null) {
+				// No validator => we could not load it => we let everything pass
+				return true;
+			} else {
+				final OutputUnit validationResult = validator.validate(event);
+				if(validationResult.getValid()) {
+					return true;
+				} else {
+					logger.warn("The following event is not properly formatted :\n " + validationResult.getError() + "\n" + event.encode());
+					return false;
+				}
+			}
+		});
+	}
 }

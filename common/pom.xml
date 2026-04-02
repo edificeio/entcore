@@ -32,6 +32,11 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-json-schema</artifactId>
+            <version>${vertxVersion}</version>
+        </dependency>
+        <dependency>
             <groupId>com.ongres.scram</groupId>
             <artifactId>client</artifactId>
             <version>${scramVersion}</version>

@@ -38,5 +38,10 @@
             <scope>runtime</scope>
             <classifier>fat</classifier>
         </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-json-schema</artifactId>
+            <version>${vertxVersion}</version>
+        </dependency>
     </dependencies>
 </project>

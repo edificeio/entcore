@@ -62,4 +62,9 @@ public class HttpLocalhostEventStore extends GenericEventStore {
 		.onFailure(e -> logger.error("Error storing event : " + event.encode(), e));
 	}
 
+	@Override
+	protected void storeMalformedEvent(JsonObject event, Handler<Either<String, Void>> handler) {
+		logger.warn("Unimplemented protected void HttpLocalhostEventStore.storeMalformedEvent(JsonObject event, Handler<Either<String, Void>> handler)");
+	}
+
 }
