@@ -1,4 +1,4 @@
-package org.entcore.commonuser.position.impl;
+package org.entcore.directory.services.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Vertx;
@@ -7,8 +7,6 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.entcore.common.user.UserInfos;
-import org.entcore.directory.services.impl.DefaultPreferenceCacheService;
-import org.entcore.directory.services.impl.DefaultPreferenceService;
 import org.entcore.test.TestHelper;
 import org.entcore.test.preparation.*;
 import org.junit.Before;
