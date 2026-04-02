@@ -36,12 +36,17 @@ public final class UserPreferenceDtoMapper {
             String encoded =  pref.getString(LANGUAGE.getMappingName());
             dto.setLanguage(decodeSafely(encoded, LanguagePreference.class));
         }
-        if (pref.containsKey(APPLICATION.getMappingName())) {
-            dto.getPreferences().add(APPLICATION);
-            String encoded = pref.getString(APPLICATION.getMappingName());
-            dto.setApps(decodeSafely(encoded, ApplicationPreference.class));
-        }
-        return dto;
+         if (pref.containsKey(APPLICATION.getMappingName())) {
+             dto.getPreferences().add(APPLICATION);
+             String encoded = pref.getString(APPLICATION.getMappingName());
+             dto.setApps(decodeSafely(encoded, ApplicationPreference.class));
+         }
+         if (pref.containsKey(QUIET_HOURS.getMappingName())) {
+             dto.getPreferences().add(QUIET_HOURS);
+             String encoded = pref.getString(QUIET_HOURS.getMappingName());
+             dto.setQuietHours(decodeSafely(encoded, QuietHoursPreference.class));
+         }
+         return dto;
     }
 
     private static <T> T decodeSafely(String codedValue, Class<T> clazz) {

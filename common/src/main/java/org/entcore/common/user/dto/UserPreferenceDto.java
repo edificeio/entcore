@@ -11,6 +11,7 @@ public class UserPreferenceDto {
     private ThemePreference theme;
     private LanguagePreference language;
     private ApplicationPreference apps;
+    private QuietHoursPreference quietHours;
 
     @JsonIgnore
     private JsonObject legacyPreferences;
@@ -61,12 +62,21 @@ public class UserPreferenceDto {
         this.apps = apps;
     }
 
+    public QuietHoursPreference getQuietHours() {
+        return quietHours;
+    }
+
+    public void setQuietHours(QuietHoursPreference quietHours) {
+        this.quietHours = quietHours;
+    }
+
     public Preference getPreference(Application appName) {
         switch (appName) {
             case HOME_PAGE: return homePage;
             case THEME: return theme;
             case LANGUAGE: return language;
             case APPLICATION: return apps;
+            case QUIET_HOURS: return quietHours;
         }
         return new Preference() {
             @Override
@@ -87,7 +97,8 @@ public class UserPreferenceDto {
         HOME_PAGE("homePage"),
         THEME("theme"),
         LANGUAGE("language"),
-        APPLICATION("apps");
+        APPLICATION("apps"),
+        QUIET_HOURS("quietHours");
 
         private String mappingName;
 
