@@ -28,10 +28,29 @@ import org.entcore.common.elasticsearch.ElasticSearch;
 public class ElasticSearchEventStore extends GenericEventStore {
 
 	private final ElasticSearch elasticSearch = ElasticSearch.getInstance();
+	private final boolean storeMalformed;
+
+	public ElasticSearchEventStore(final boolean storeMalformed) {
+		this.storeMalformed = storeMalformed;
+	}
 
 	@Override
 	protected void storeEvent(JsonObject event, Handler<Either<String, Void>> handler) {
-		elasticSearch.post("events", event, ar -> {
+		doStoreEvent("events", event, handler);
+	}
+
+	@Override
+	protected void storeMalformedEvent(JsonObject event, Handler<Either<String, Void>> handler) {
+		doStoreEvent("malformedevents", event, handler);
+	}
+
+	@Override
+	protected boolean shouldStoreMalformedEvent() {
+		return this.storeMalformed;
+	}
+
+	protected void doStoreEvent(final String collection, JsonObject event, Handler<Either<String, Void>> handler) {
+		elasticSearch.post(collection, event, ar -> {
 			if (ar.succeeded()) {
 				handler.handle(new Either.Right<>(null));
 			} else {
@@ -39,5 +58,4 @@ public class ElasticSearchEventStore extends GenericEventStore {
 			}
 		});
 	}
-
 }

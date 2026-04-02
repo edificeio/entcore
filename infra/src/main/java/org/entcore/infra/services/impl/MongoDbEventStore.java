@@ -21,10 +21,15 @@ package org.entcore.infra.services.impl;
 
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.data.FileResolver;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
+import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpServerRequest;
 
+import static io.vertx.core.Future.failedFuture;
+import static io.vertx.core.Future.succeededFuture;
+import static org.entcore.common.events.impl.GenericEventStore.*;
 import static org.entcore.common.mongodb.MongoDbResult.validAsyncActionResultHandler;
 import static org.entcore.common.mongodb.MongoDbResult.validAsyncResultsHandler;
 import static org.entcore.common.utils.DateUtils.formatUtcDateTime;
@@ -34,6 +39,7 @@ import java.util.List;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.json.schema.*;
 import org.entcore.common.events.impl.PostgresqlEventStore;
 import org.entcore.common.user.UserInfos;
 import org.entcore.infra.services.EventStoreService;
@@ -45,7 +51,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.infra.services.PartialResults;
@@ -56,11 +61,15 @@ public class MongoDbEventStore implements EventStoreService {
 	private MongoDb mongoDb = MongoDb.getInstance();
 	private PostgresqlEventStore pgEventStore;
 	private static final String COLLECTION = "events";
+	private static final String FORMAT_ERROR_COLLECTION = "events_format_error";
     private int eventsBatchSize;
     private static final int DEFAULT_EVENT_BATCH_SIZE = 50_000;
     private static final Logger log = LoggerFactory.getLogger(MongoDbEventStore.class);
+	private final Vertx vertx;
+
 
 	public MongoDbEventStore(Vertx vertx) {
+		this.vertx = vertx;
 		vertx.sharedData().<String, String>getLocalAsyncMap("server")
             .compose(serverMap -> serverMap.get("event-store"))
             .onSuccess(eventStoreConf -> {
@@ -82,21 +91,26 @@ public class MongoDbEventStore implements EventStoreService {
 
 	@Override
 	public void store(JsonObject event, final Handler<Either<String, Void>> handler) {
-		mongoDb.save(COLLECTION, event, new Handler<Message<JsonObject>>() {
-			@Override
-			public void handle(Message<JsonObject> event) {
-				if ("ok".equals(event.body().getString("status"))) {
-					handler.handle(new Either.Right<String, Void>(null));
-				} else {
-					handler.handle(new Either.Left<String, Void>(
-							"Error : " + event.body().getString("message") + ", Event : " + event));
+		validateEvent(event, this.vertx)
+			.map(e -> e ? COLLECTION : FORMAT_ERROR_COLLECTION)
+			.recover(th -> succeededFuture(FORMAT_ERROR_COLLECTION))
+			.onSuccess(collection -> {
+				mongoDb.save(collection, event, event1 -> {
+                    if ("ok".equals(event1.body().getString("status"))) {
+                        handler.handle(new Either.Right<>(null));
+                    } else {
+                        handler.handle(new Either.Left<>(
+"Error : " + event1.body().getString("message") + ", Event : " + event1));
+                    }
+                });
+				if (pgEventStore != null) {
+					pgEventStore.store(event.copy(), ar -> {
+					});
 				}
-			}
-		});
-		if (pgEventStore != null) {
-			pgEventStore.store(event.copy(), ar -> {
+			}).onFailure(th -> {
+				handler.handle(new Either.Left<>(
+                        "Error : " + th.getMessage() + ", Event : " + event));
 			});
-		}
 	}
 
 	@Override
@@ -187,7 +201,7 @@ public class MongoDbEventStore implements EventStoreService {
             // batch size allowed
             results.remove(eventsBatchSize);
         }
-        handler.handle(Future.succeededFuture(new PartialResults(isPartial, results)));
+        handler.handle(succeededFuture(new PartialResults(isPartial, results)));
       }));
   }
 
@@ -217,13 +231,13 @@ public class MongoDbEventStore implements EventStoreService {
 						}
 						CompositeFuture.all(futures).onComplete(res -> {
 							if (res.succeeded()) {
-								handler.handle(Future.succeededFuture(new JsonObject()));
+								handler.handle(succeededFuture(new JsonObject()));
 							} else {
 								handler.handle(Future.failedFuture(res.cause()));
 							}
 						});
 					} else {
-						handler.handle(Future.succeededFuture(new JsonObject()));
+						handler.handle(succeededFuture(new JsonObject()));
 					}
 				} else {
 					handler.handle(Future.failedFuture(ar.cause()));

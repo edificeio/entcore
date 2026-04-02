@@ -61,7 +61,6 @@ public class EventStoreController extends BaseController {
 		this.userBlackList = eventConfig.getJsonArray("user-blacklist", new JsonArray());
 		this.eventWhiteList = eventConfig.getJsonArray("event-whitelist", new JsonArray());
 		this.eventModuleReference = eventConfig.getJsonObject("module-reference", new JsonObject());
-
 	}
 
 	@Post("/event/store")
