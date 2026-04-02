@@ -7,4 +7,9 @@ public interface Preference {
     default String encode() {
         return Json.encode(this);
     }
+
+    /** Returns true if the preference data is valid and can be persisted. */
+    default boolean validate() {
+        return true;
+    }
 }
