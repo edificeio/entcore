@@ -1,6 +1,6 @@
 package org.entcore.common.user.dto;
 
-public class HomePagePreference implements ApplicationPreference {
+public class HomePagePreference implements Preference {
 
     private boolean betaEnabled;
 
