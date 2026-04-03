@@ -3,7 +3,6 @@ package org.entcore.directory.services.impl;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
@@ -36,7 +35,7 @@ public class DefaultPreferenceCacheService implements PreferenceCacheService {
         if (cache.containsKey(PREFERENCES_ATTRIBUTE_NAME)) {
             JsonObject prefs = cache.getJsonObject(PREFERENCES_ATTRIBUTE_NAME);
             for (UserPreferenceDto.Application app : preference.getPreferences()) {
-                prefs.put(app.getMappingName(), Json.encode(preference.getApplicationPreference(app)));
+                prefs.put(app.getMappingName(), preference.getPreference(app).encode());
             }
             UserUtils.addSessionAttribute(eb, userInfos.getUserId(), PREFERENCES_ATTRIBUTE_NAME, prefs, event -> {
                 if (!event) {
