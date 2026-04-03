@@ -793,17 +793,17 @@ public class UserBookController extends BaseController {
 				//populate with application present in the body
 				applicationPreference.populateApplicationPreferences(json.getMap().keySet());
 				UserUtils.getUserInfos(eb, request, user -> preferenceService.updatePreferences(applicationPreference, user, session)
-						.onSuccess(m -> {
+						.onSuccess(updatedPreferences -> {
 							//need to reset cookie if pref on lang or theme are impacted
-							if (applicationPreference.getPreferences().contains(UserPreferenceDto.Application.LANGUAGE)) {
+							if (updatedPreferences.getPreferences().contains(UserPreferenceDto.Application.LANGUAGE)) {
 								CookieHelper.set("langVersion", System.currentTimeMillis()+"", request);
 							}
-							if (applicationPreference.getPreferences().contains((UserPreferenceDto.Application.THEME))) {
+							if (updatedPreferences.getPreferences().contains((UserPreferenceDto.Application.THEME))) {
 								CookieHelper.set(THEME_VERSION, System.currentTimeMillis()+"", request);
-								applicationPreference.getLegacyPreferences().remove(THEME_ATTRIBUTE + getHost(request));
+								updatedPreferences.getLegacyPreferences().remove(THEME_ATTRIBUTE + getHost(request));
 								UserUtils.removeSessionAttribute(eb,  user.getUserId(), THEME_ATTRIBUTE + getHost(request), null);
 							}
-							render(request, m);
+							render(request, updatedPreferences);
 						})
 						.onFailure(e -> renderError(request)));
 				});

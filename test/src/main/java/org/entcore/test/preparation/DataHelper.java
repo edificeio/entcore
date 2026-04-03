@@ -169,6 +169,16 @@ public class DataHelper {
         return this;
     }
 
+    public DataHelper withPreference(final UserTest user, final String preference, final String conf) {
+        sb.add("MATCH(u:User {id: {id}}) " +
+                  " MERGE (u)-[:PREFERS]->(uac:UserAppConf) "
+                + " SET uac."+preference+ "= {conf}",
+                new JsonObject()
+                        .put("id", user.getId())
+                        .put("conf", conf));
+       return this;
+    }
+
     /**
      * A class is :
      * <ul>
