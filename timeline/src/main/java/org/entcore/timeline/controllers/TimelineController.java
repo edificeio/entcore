@@ -1078,6 +1078,10 @@ public class TimelineController extends BaseController {
 							params.put("username", username);
 							params.put("uri", "/userbook/annuaire#" + senderId + "#");
 						}
+						final String subject = json.getString("subject", "");
+						if(subject != null && !subject.isEmpty()) {
+							params.put("subject", subject);
+						}
 						if (pushMobile && !mobileTitle.isEmpty()) {
 							JsonObject pushNotif = new JsonObject()
 									.put("title", mobileTitle)
