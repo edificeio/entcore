@@ -1,4 +1,4 @@
-package org.entcore.commonuser.position.impl;
+package org.entcore.common.user.position.impl;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
