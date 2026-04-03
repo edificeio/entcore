@@ -46,7 +46,7 @@ pipeline {
     }
     stage('Build image') {
       steps {
-          sh './build.sh image'
+          sh './edifice image --project-type=entcore --rebuild=false'
       }
     }
   }
