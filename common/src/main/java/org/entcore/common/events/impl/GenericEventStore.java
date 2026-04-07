@@ -20,7 +20,6 @@
 package org.entcore.common.events.impl;
 
 import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.data.FileResolver;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.CookieHelper;
 import io.vertx.core.*;
@@ -59,7 +58,6 @@ public abstract class GenericEventStore implements EventStore {
 	protected static final Logger logger = LoggerFactory.getLogger(GenericEventStore.class);
 	private static Validator eventsValidator;
 	private static boolean validatorInitialized = false;
-	public static final String JSONSCHEMA_PATH = FileResolver.absolutePath("eventsschema.json");
 
 
 	@Override
@@ -371,32 +369,47 @@ public abstract class GenericEventStore implements EventStore {
 		if(validatorInitialized) {
 			future = Future.succeededFuture(eventsValidator);
 		} else {
-			logger.debug("Loading events json schema from " + JSONSCHEMA_PATH);
-			final Promise<Validator> promise = Promise.promise();
-			final FileSystem fs = vertx.fileSystem();
-			fs.readFile(JSONSCHEMA_PATH, e -> {
-				if (e.succeeded()) {
-					try {
-						final Validator validator = Validator.create(
-								JsonSchema.of(new JsonObject(e.result().toString())),
-								new JsonSchemaOptions()
-										.setDraft(Draft.DRAFT7)
-										.setBaseUri("http://myapp/")
-						);
-						logger.debug("Successfully loaded events json schema");
-						eventsValidator = validator;
-						promise.complete(validator);
-					} catch (Exception ioExc) {
-						logger.error(JSONSCHEMA_PATH + " could not be loaded", e);
-						promise.fail(ioExc);
+			final JsonObject config = vertx.getOrCreateContext().config();
+			final Promise<JsonObject> promise = Promise.promise();
+			if(config != null && config.containsKey("events-schema")) {
+				logger.info("Loading events json schema from config");
+				promise.complete(config.getJsonObject("events-schema"));
+			} else if (System.getenv("EVENTS_SCHEMA_PATH") != null){
+				final String eventsSchemaPath = System.getenv("EVENTS_SCHEMA_PATH");
+				logger.info("Loading events json schema from file " + eventsSchemaPath);
+				final FileSystem fs = vertx.fileSystem();
+				fs.readFile(eventsSchemaPath, e -> {
+					if (e.succeeded()) {
+						promise.complete(new JsonObject(e.result().toString()));
+					} else {
+						promise.fail(e.cause());
 					}
+				});
+			} else {
+				logger.debug("Could not find events json schema in neither configuration nor env var");
+				promise.complete(new JsonObject());
+			}
+			return promise.future().map(jsonSchemaContent -> {
+				final Validator validator;
+				if(jsonSchemaContent.isEmpty()) {
+					logger.info("No events schema could be loaded so no events will be checked ");
+					validator = null;
 				} else {
-					logger.error(JSONSCHEMA_PATH + " could not be loaded so no events will be checked");
-					promise.fail(e.cause());
+					validator = Validator.create(
+							JsonSchema.of(jsonSchemaContent),
+							new JsonSchemaOptions()
+									.setDraft(Draft.DRAFT7)
+									.setBaseUri("http://myapp/")
+					);
+					logger.debug("Successfully loaded events json schema");
 				}
-				validatorInitialized = true;
-			});
-			future = promise.future();
+				eventsValidator = validator;
+				return validator;
+			})
+			.onFailure(th -> {
+				logger.error("Events schema could not be loaded so no events will be checked", th);
+			})
+			.onComplete(e -> validatorInitialized = true);
 		}
 		return future;
 	}
