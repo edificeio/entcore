@@ -58,4 +58,23 @@ public class DefaultPreferenceHelper implements PreferenceHelper {
         });
         return promise.future();
     }
+
+    @Override
+    public Future<UserPreferenceDto> getPreferences(String userId) {
+        Promise<UserPreferenceDto> promise = Promise.promise();
+
+        JsonObject params = new JsonObject();
+        params.put("action", "v1.get.fromUserId");
+        params.put("userId", userId);
+
+        eventBus.request(USER_BOOK_PREF, params, asyncResult -> {
+            if (asyncResult.failed()) {
+                promise.fail(asyncResult.cause());
+                return;
+            }
+            JsonObject jsonPreference = ((JsonObject)asyncResult.result().body()).getJsonObject("message", new JsonObject());
+            promise.complete(jsonPreference.mapTo(UserPreferenceDto.class));
+        });
+        return promise.future();
+    }
 }

@@ -23,4 +23,6 @@ public interface PreferenceService {
      * @return preferences actually mapped
      */
     Future<UserPreferenceDto> getPreferences(UserInfos userInfos, JsonObject session);
+
+    Future<UserPreferenceDto> getPreferences(String userId);
 }

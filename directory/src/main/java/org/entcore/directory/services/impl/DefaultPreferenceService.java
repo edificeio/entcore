@@ -87,4 +87,22 @@ public class DefaultPreferenceService implements PreferenceService {
         }));
         return promise.future();
     }
+
+    @Override
+    public Future<UserPreferenceDto> getPreferences(String userId) {
+        Promise<UserPreferenceDto> promise = Promise.promise();
+        JsonObject params = new JsonObject();
+        params.put("userId", userId);
+        StringBuilder query = new StringBuilder("MATCH (u:User {id:{userId}})-[:PREFERS]->(uac:UserAppConf) ");
+        query.append(" RETURN uac");
+        neo4j.execute(query.toString(), params, validUniqueResultHandler( result -> {
+            if (result.isRight()) {
+                UserPreferenceDto preferenceDto = UserPreferenceDtoMapper.map(result.right().getValue().getJsonObject("uac").getJsonObject("data", new JsonObject()));
+                promise.complete(preferenceDto);
+            } else {
+                promise.fail(result.left().getValue());
+            }
+        }));
+        return promise.future();
+    }
 }
