@@ -203,6 +203,8 @@
   "noReply.enabled.warning.recipient": "L'expéditeur a désactivé la possibilité de répondre à son message.",
   "noReply.enabled.warning.sender": "Vous avez désactivé la possibilité de réponses à ce message.",
   "nosubject": "(Aucun objet)",
+  "onboarding.modal.clean.text": "A partir du 1er juin 2026, les messages présents dans votre boite de réception seront supprimés automatiquement 3 ans après la date de leur envoi. Pour les conserver, il vous suffit de les ranger dans un dossier.<br /><br />Cette action libère votre espace de stockage et permet d'économiser 8 tonnes de CO₂ par an. Pensez à classer vos messages importants dès maintenant et régulièrement !",
+  "onboarding.modal.clean.title": "Du tri dans vos messages",
   "onboarding.modal.screen1.alt": "Illustration d'une baguette magique qui transforme une application web",
   "onboarding.modal.screen1.text": "Votre application Messagerie évolue pour devenir plus simple et plus intuitive. Intégrez plus facilement des contenus multimédias grâce au nouvel éditeur de textes. Découvrez également d'autres améliorations conçues pour faciliter votre quotidien !",
   "onboarding.modal.screen1.title": "La Messagerie fait peau neuve !",
