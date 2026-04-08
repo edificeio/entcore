@@ -401,4 +401,51 @@ public class DirectoryBrokerListenerImpl implements DirectoryBrokerListener {
 
         return promise.future();
     }
+
+
+    @Override
+    public Future<GetUsersFromGroupsResponseDTO> getUsersFromGroups(GetUsersFromGroupsRequestDTO request) {
+        final Promise<GetUsersFromGroupsResponseDTO> promise = Promise.promise();
+
+        // Check if the request is valid
+        if (request == null || !request.isValid()) {
+            log.error("Invalid request for getUsersFromGroups: {}", request);
+            promise.fail("request.parameters.invalid");
+            return promise.future();
+        }
+
+        // Convert list of group IDs to JsonArray
+        final JsonArray groupIdsArray = new JsonArray(request.getGroupIds());
+
+        userService.list(groupIdsArray, new JsonArray(), true, null, event -> {
+            if(event.isRight()) {
+                JsonArray usersArray = event.right().getValue();
+                try {
+                    // Transform JsonArray of users to List<UserDTO> (using util method)
+                    List<UserDTO> usersList = new ArrayList<>();
+                    for (int i = 0; i < usersArray.size(); i++) {
+                        JsonObject userJson = usersArray.getJsonObject(i);
+
+                        String id = userJson.getString("id");
+                        String displayName = userJson.getString("username");
+                        String profile = userJson.getString("type");
+
+                        // functions are not returned by the query inside "userService.list" : use empty map
+                        Map<String, List<String>> functions = new HashMap<>();
+
+                        usersList.add(new UserDTO(id, displayName, profile, functions));
+                    }
+                    promise.complete(new GetUsersFromGroupsResponseDTO(usersList));
+                } catch (Exception err) {
+                    log.error("Error while parsing user array", err);
+                    promise.fail(err);
+                }
+            } else {
+                log.error("Error getting users from groups", event.left().getValue());
+                promise.fail(event.left().getValue());
+            }
+        });
+
+        return promise.future();
+    }
 }
