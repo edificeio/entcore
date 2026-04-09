@@ -1,5 +1,5 @@
 import { OnboardingModal } from '@edifice.io/react/modals';
-import illuOnboardingClean from '~/assets/illu-onboarding-clean.svg';
+import illuOnboardingClean from '~/assets/illu-onboarding-clean.png';
 import { useI18n } from '~/hooks/useI18n';
 
 export default function MessageOnboardingCleanModal() {
