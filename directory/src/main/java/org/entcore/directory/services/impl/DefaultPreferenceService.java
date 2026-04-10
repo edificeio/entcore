@@ -45,12 +45,13 @@ public class DefaultPreferenceService implements PreferenceService {
         create.deleteCharAt(create.length() - 1);
         merge.deleteCharAt(merge.length() - 1);
 
-        query.append(create).append(merge).append(" RETURN uac");
+        query.append(create).append(merge).append(" RETURN uac, u.lastDomain as lastDomain");
 
         neo4j.execute(query.toString(), params, validUniqueResultHandler( result -> {
             if(result.isRight()) {
-                UserPreferenceDto userPreferenceDto = UserPreferenceDtoMapper.map(
-                        result.right().getValue().getJsonObject("uac").getJsonObject("data", new JsonObject()));
+                JsonObject prefs = result.right().getValue().getJsonObject("uac").getJsonObject("data", new JsonObject());
+                prefs.put("lastDomain", result.right().getValue().getString("lastDomain"));
+                UserPreferenceDto userPreferenceDto = UserPreferenceDtoMapper.map(prefs);
                 promise.complete(userPreferenceDto);
                 preferenceCacheService.addPreferences(userInfos, session, userPreferenceDto);
             } else {
@@ -63,22 +64,28 @@ public class DefaultPreferenceService implements PreferenceService {
     @Override
     public Future<UserPreferenceDto> getPreferences(UserInfos userInfos, JsonObject session) {
         Promise<UserPreferenceDto> promise = Promise.promise();
-
-        final JsonObject cache = session.getJsonObject("cache", new JsonObject());
-        if(cache.containsKey("preferences")){
-            promise.complete(UserPreferenceDtoMapper.map(cache.getJsonObject("preferences")));
-            return promise.future();
-        }
-
         JsonObject params = new JsonObject();
         params.put("userId", userInfos.getUserId());
 
-        StringBuilder query = new StringBuilder("MATCH (u:User {id:{userId}})-[:PREFERS]->(uac:UserAppConf) ");
-        query.append(" RETURN uac");
+        final JsonObject cache = session.getJsonObject("cache", new JsonObject());
+        if(cache.containsKey("preferences")) {
+            JsonObject prefs =  cache.getJsonObject("preferences").copy();
+            neo4j.execute("MATCH (u:User {id:{userId}}) RETURN u.lastDomain as lastDomain", params, validUniqueResultHandler(result -> {
+                if (result.isRight()) {
+                    prefs.put("lastDomain", result.right().getValue().getString("lastDomain"));
+                    promise.complete(UserPreferenceDtoMapper.map(prefs));
+                } else {
+                    promise.fail(result.left().getValue());
+                }
+            }));
+            return promise.future();
+        }
 
-        neo4j.execute(query.toString(), params, validUniqueResultHandler( result -> {
+        neo4j.execute("MATCH (u:User {id:{userId}})-[:PREFERS]->(uac:UserAppConf) RETURN uac, u.lastDomain", params, validUniqueResultHandler(result -> {
             if (result.isRight()) {
-                UserPreferenceDto preferenceDto = UserPreferenceDtoMapper.map(result.right().getValue().getJsonObject("uac").getJsonObject("data", new JsonObject()));
+                JsonObject prefs = result.right().getValue().getJsonObject("uac").getJsonObject("data", new JsonObject());
+                prefs.put("lastDomain", result.right().getValue().getString("lastDomain"));
+                UserPreferenceDto preferenceDto = UserPreferenceDtoMapper.map(prefs);
                 preferenceCacheService.refreshPreferences(userInfos, preferenceDto);
                 promise.complete(preferenceDto);
             } else {
@@ -93,11 +100,11 @@ public class DefaultPreferenceService implements PreferenceService {
         Promise<UserPreferenceDto> promise = Promise.promise();
         JsonObject params = new JsonObject();
         params.put("userId", userId);
-        StringBuilder query = new StringBuilder("MATCH (u:User {id:{userId}})-[:PREFERS]->(uac:UserAppConf) ");
-        query.append(" RETURN uac");
-        neo4j.execute(query.toString(), params, validUniqueResultHandler( result -> {
+        neo4j.execute("MATCH (u:User {id:{userId}})-[:PREFERS]->(uac:UserAppConf) RETURN uac, u.lastDomain as lastDomain", params, validUniqueResultHandler(result -> {
             if (result.isRight()) {
-                UserPreferenceDto preferenceDto = UserPreferenceDtoMapper.map(result.right().getValue().getJsonObject("uac").getJsonObject("data", new JsonObject()));
+                JsonObject prefs = result.right().getValue().getJsonObject("uac").getJsonObject("data", new JsonObject());
+                prefs.put("lastDomain", result.right().getValue().getString("lastDomain"));
+                UserPreferenceDto preferenceDto = UserPreferenceDtoMapper.map(prefs);
                 promise.complete(preferenceDto);
             } else {
                 promise.fail(result.left().getValue());

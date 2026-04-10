@@ -1,5 +1,6 @@
 package org.entcore.common.user;
 
+import fr.wseduc.webutils.I18n;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.EventBus;
@@ -77,4 +78,20 @@ public class DefaultPreferenceHelper implements PreferenceHelper {
         });
         return promise.future();
     }
+
+    @Override
+    public String getLanguage(UserPreferenceDto preference) {
+        if (preference == null || preference.getLanguage() == null) {
+            return "fr";
+        }
+        String domain = preference.getLastDomain();
+        if(domain == null) {
+            domain = I18n.DEFAULT_DOMAIN;
+        }
+        if(preference.getLanguage().getLanguages().containsKey(domain)) {
+            return preference.getLanguage().getLanguages().get(domain);
+        }
+        return preference.getLanguage().getLanguages().get(I18n.DEFAULT_DOMAIN);
+    }
+
 }

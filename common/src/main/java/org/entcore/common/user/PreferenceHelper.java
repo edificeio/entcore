@@ -27,4 +27,12 @@ public interface PreferenceHelper {
      * @return preferences actually mapped
      */
     Future<UserPreferenceDto> getPreferences(String userId);
+
+    /**
+     * Retrieve current language of the user from preferences
+     *
+     * @param preference user preferences
+     * @return locale to use
+     */
+    String getLanguage(UserPreferenceDto preference);
 }

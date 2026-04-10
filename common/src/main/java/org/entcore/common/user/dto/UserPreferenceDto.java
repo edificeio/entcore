@@ -11,6 +11,7 @@ public class UserPreferenceDto {
     private ThemePreference theme;
     private LanguagePreference language;
     private ApplicationPreference apps;
+    private String lastDomain;
 
     @JsonIgnore
     private JsonObject legacyPreferences;
@@ -59,6 +60,14 @@ public class UserPreferenceDto {
 
     public void setApps(ApplicationPreference apps) {
         this.apps = apps;
+    }
+
+    public String getLastDomain() {
+        return lastDomain;
+    }
+
+    public void setLastDomain(String lastDomain) {
+        this.lastDomain = lastDomain;
     }
 
     public Preference getPreference(Application appName) {
