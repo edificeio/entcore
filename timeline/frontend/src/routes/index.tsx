@@ -5,25 +5,29 @@ import { NotFound } from './errors/not-found';
 import { PageError } from './errors/page-error';
 import { manageRedirections } from './redirections';
 
-const routes = (queryClient: QueryClient): RouteObject[] => [
-  /* Main route */
-  {
-    path: '/timeline',
-    async lazy() {
-      const { loader, Root: Component } = await import('~/routes/root');
-      return {
-        loader,
-        Component,
-      };
+// Mark `queryClient` as used to satisfy TypeScript's unused-parameter check
+const routes = (queryClient: QueryClient): RouteObject[] => {
+  void queryClient;
+  return [
+    /* Main route */
+    {
+      path: '/timeline',
+      async lazy() {
+        const { loader, Root: Component } = await import('~/routes/root');
+        return {
+          loader,
+          Component,
+        };
+      },
+      errorElement: <PageError />,
     },
-    errorElement: <PageError />,
-  },
-  /* 404 Page */
-  {
-    path: '*',
-    element: <NotFound />,
-  },
-];
+    /* 404 Page */
+    {
+      path: '*',
+      element: <NotFound />,
+    },
+  ];
+};
 
 export const basename = import.meta.env.PROD ? '/timeline' : '/';
 
