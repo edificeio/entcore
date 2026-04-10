@@ -123,7 +123,7 @@ syncReactFrontendBuildToResources() {
 buildFrontend () {
 
   # --- Build angularJS-based frontends
-  if [ "$MODULE" = "" ] || [ ! "$MODULE" = "admin" ] && [ ! -e ./"$MODULE"/frontend ]  || [ "$MODULE" = "timeline" ]; then
+  if [ "$MODULE" = "" ] || [ ! "$MODULE" = "admin" ] && [ ! -e ./"$MODULE"/frontend ] || [ "$MODULE" = "timeline" ] || [ "$MODULE" = "auth" ]; then
     if [ "$BRANCH_NAME" = 'master' ] || [ "$BRANCH_NAME" = 'fix' ]  || [ "$BRANCH_NAME" = 'release' ]; then
         echo "[buildNode] Use entcore version from package.json ($BRANCH_NAME)"
         case `uname -s` in
@@ -169,7 +169,7 @@ buildFrontend () {
       fi
 
       # Create directory structure and copy frontend build files.
-      if [ "$module" = "timeline" ]; then
+      if [ "$module" = "timeline" ] || [ "$MODULE" = "auth" ]; then
         # compatibility mode : preserve legacy frontends files in ../src
         syncReactFrontendBuildToResources ".."
       else
