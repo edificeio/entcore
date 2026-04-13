@@ -70,9 +70,15 @@ public class DefaultPreferenceService implements PreferenceService {
         final JsonObject cache = session.getJsonObject("cache", new JsonObject());
         if(cache.containsKey("preferences")) {
             JsonObject prefs =  cache.getJsonObject("preferences").copy();
+            if (cache.containsKey("lastDomain")) {
+                prefs.put("lastDomain", cache.getString("lastDomain"));
+                promise.complete(UserPreferenceDtoMapper.map(prefs));
+                return promise.future();
+            }
             neo4j.execute("MATCH (u:User {id:{userId}}) RETURN u.lastDomain as lastDomain", params, validUniqueResultHandler(result -> {
                 if (result.isRight()) {
                     prefs.put("lastDomain", result.right().getValue().getString("lastDomain"));
+                    preferenceCacheService.putLastDomain(userInfos, result.right().getValue().getString("lastDomain"));
                     promise.complete(UserPreferenceDtoMapper.map(prefs));
                 } else {
                     promise.fail(result.left().getValue());
@@ -85,6 +91,7 @@ public class DefaultPreferenceService implements PreferenceService {
             if (result.isRight()) {
                 JsonObject prefs = result.right().getValue().getJsonObject("uac").getJsonObject("data", new JsonObject());
                 prefs.put("lastDomain", result.right().getValue().getString("lastDomain"));
+                preferenceCacheService.putLastDomain(userInfos, result.right().getValue().getString("lastDomain"));
                 UserPreferenceDto preferenceDto = UserPreferenceDtoMapper.map(prefs);
                 preferenceCacheService.refreshPreferences(userInfos, preferenceDto);
                 promise.complete(preferenceDto);
