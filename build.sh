@@ -169,7 +169,7 @@ buildFrontend () {
       fi
 
       # Create directory structure and copy frontend build files.
-      if [ "$module" = "timeline" ] || [ "$MODULE" = "auth" ]; then
+      if [ "$module" = "timeline" ] || [ "$module" = "auth" ]; then
         # compatibility mode : preserve legacy frontends files in ../src
         syncReactFrontendBuildToResources ".."
       else

@@ -240,7 +240,13 @@ public class SamlController extends AbstractFederateController {
 					("true".equals(request.params().get("mobile")))) {
 				renderView(request, swmf, "wayf-mobile.html", null);
 			} else {
-				renderView(request, swmf, "wayf.html", null);
+				// FIXME: Use right configuration when available
+				final Boolean wayfBeta = true;
+				if(wayfBeta) {
+					renderView(request, swmf, "wayfv2.html", null);
+				} else {
+					renderView(request, swmf, "wayf.html", null);
+				}
 			}
 		} else {
 			request.response().setStatusCode(401).setStatusMessage("Unauthorized")

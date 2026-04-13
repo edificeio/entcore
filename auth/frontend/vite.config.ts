@@ -89,7 +89,8 @@ export default ({ mode }: { mode: string }) => {
         name: 'rewrite-wayfv2',
         configureServer(server) {
           server.middlewares.use((req, _res, next) => {
-            if (req.url === '/') {
+            // Whitelist: only redirect specific SPA routes to wayfv2.html
+            if (req.url === '/' || req.url?.startsWith('/saml/wayf')) {
               req.url = '/wayfv2.html';
             }
             next();

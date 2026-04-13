@@ -29,7 +29,7 @@ const routes = (queryClient: QueryClient): RouteObject[] => {
   ];
 };
 
-export const basename = import.meta.env.PROD ? '/auth' : '/';
+export const basename = import.meta.env.PROD ? '/auth' : '';
 
 export const router = (queryClient: QueryClient) => {
   const redirectPath = manageRedirections();

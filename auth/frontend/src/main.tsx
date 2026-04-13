@@ -1,6 +1,5 @@
 import React, { StrictMode } from 'react';
 
-import { EdificeThemeProvider } from '@edifice.io/react';
 import { createRoot } from 'react-dom/client';
 
 import { RouterProvider } from 'react-router-dom';
@@ -22,9 +21,7 @@ if (import.meta.env.DEV) {
 root.render(
   <StrictMode>
     <Providers>
-      <EdificeThemeProvider>
-        <RouterProvider router={router(queryClient)} />
-      </EdificeThemeProvider>
+      <RouterProvider router={router(queryClient)} />
     </Providers>
   </StrictMode>,
 );

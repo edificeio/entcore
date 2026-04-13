@@ -29,13 +29,7 @@ export const queryClient = new QueryClient({
 export const Providers = ({ children }: { children: ReactNode }) => {
   return (
     <QueryClientProvider client={queryClient}>
-      <EdificeClientProvider
-        params={{
-          app: 'auth',
-        }}
-      >
-        {children}
-      </EdificeClientProvider>
+      {children}
       {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
   );
