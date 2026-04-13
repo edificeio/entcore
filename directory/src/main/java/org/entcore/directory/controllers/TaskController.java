@@ -25,6 +25,14 @@ public class TaskController extends BaseController {
 				.onFailure(error -> render(request, error.getMessage(), 400));
 	}
 
+	/**
+	 * Endpoint to trigger pre delete users task for specific profile, with custom delay.
+	 * @param request the HTTP request containing :
+	 *                - profile : the user profile for which the pre delete users task should be triggered (e.g., "Student", "Teacher", etc.)
+	 *                - delay : the delay in milliseconds before the pre delete users task is executed for the specified profile (e.g., 2592000000 for 30 days)
+	 *                Example of request body:   { "profile": "Student", "delay": 2592000000 }
+	 *                This will trigger the pre delete users task for Student profile and with a delay of 30 days.
+	 */
 	@Post("/api/internal/pre-delete-users")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void preDeleteUsers(final HttpServerRequest request) {
@@ -50,6 +58,15 @@ public class TaskController extends BaseController {
 		});
 	}
 
+	/**
+	 * Endpoint to trigger import task for specific feeder, with options for auto export.
+	 * @param request the HTTP request containing :
+	 *                - feeder : the type of feeder (AAF, AAF1D, CSV)
+	 *                - auto-export : whether to trigger auto export after import, default false
+	 *                - auto-export-delay : the delay in milliseconds before the auto export is triggered after import, default 30 minutes (1800000 milliseconds)
+	 *                Example of request body:   { "feeder": "AAF", "auto-export": true, "auto-export-delay": 1800000 }
+	 *                This will trigger AAF import, with auto export enabled and a delay of 1 hour (3600000 milliseconds) before the auto export is triggered.
+	 */
 	@Post("/api/internal/trigger-import")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void triggerImport(final HttpServerRequest request) {
@@ -69,6 +86,22 @@ public class TaskController extends BaseController {
 		} );
 	}
 
+	/**
+	 * Endpoint to trigger CSV import task with specified path and configuration, used for Educasud project
+	 * @param request the HTTP request containing
+	 *                - path : the path to the CSV file to be imported (e.g., "/path/to/csv/file.zip")
+	 *                - config : a JSON object containing configuration options for the CSV import :
+	 *                  {
+	 *                    "namePattern" : ".*?/Educasud_[0-9]{8}_[0-9]{7}[A-Z]_(.*?).zip",
+	 *                    "profiles" : {
+	 *                      "_Eleves_":"Student",
+	 *                      "_Enseignants_":"Teacher",
+	 * 					    "_Personnels_":"Personnel",
+	 *                      "_Parents_":"Relative"
+	 *                    },
+	 *                    "preDelete" : true
+	 *                  }
+	 */
 	@Post("/api/internal/trigger-csv-import")
 	@SecuredAction(value = "", type = ActionType.RESOURCE)
 	public void triggerCsvImport(final HttpServerRequest request) {
