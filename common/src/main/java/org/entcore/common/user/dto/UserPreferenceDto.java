@@ -1,6 +1,7 @@
 package org.entcore.common.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import fr.wseduc.webutils.I18n;
 import io.vertx.core.json.JsonObject;
 
 import java.util.*;
@@ -68,6 +69,21 @@ public class UserPreferenceDto {
 
     public void setLastDomain(String lastDomain) {
         this.lastDomain = lastDomain;
+    }
+
+    @JsonIgnore
+    public String getCurrentLanguage() {
+        if (this.language == null) {
+            return "fr";
+        }
+        String domain = this.lastDomain;
+        if(domain == null) {
+            domain = I18n.DEFAULT_DOMAIN;
+        }
+        if(language.getLanguages().containsKey(domain)) {
+            return language.getLanguages().get(domain);
+        }
+        return language.getLanguages().get(I18n.DEFAULT_DOMAIN);
     }
 
     public Preference getPreference(Application appName) {
