@@ -34,7 +34,7 @@ public class DefaultPreferenceCacheService implements PreferenceCacheService {
     public void putLastDomain(UserInfos userInfos, String lastDomain) {
         UserUtils.addSessionAttribute(eb, userInfos.getUserId(), PREFERENCES_LAST_DOMAIN_NAME, lastDomain, event -> {
             if(Boolean.FALSE.equals(event)) {
-                LOGGER.error("Could not add lastDomain attribute to session.");
+                LOGGER.error("Could not add lastDomain="+lastDomain+" attribute to session of user id="+userInfos.getUserId()+".");
             }
         });
     }
