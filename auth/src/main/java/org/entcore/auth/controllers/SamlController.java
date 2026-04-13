@@ -240,8 +240,10 @@ public class SamlController extends AbstractFederateController {
 					("true".equals(request.params().get("mobile")))) {
 				renderView(request, swmf, "wayf-mobile.html", null);
 			} else {
-				// FIXME: Use right configuration when available
-				final Boolean wayfBeta = true;
+				// FIXME: Remplacer par la solution choisie pour l'activation de la WAYF
+				// Check wayf-beta cookie to switch between old and new WAYF
+				final String wayfBetaCookie = CookieHelper.get("wayf-beta", request);
+				final Boolean wayfBeta = wayfBetaCookie != null && ("true".equals(wayfBetaCookie) || "1".equals(wayfBetaCookie));
 				if(wayfBeta) {
 					renderView(request, swmf, "wayfv2.html", null);
 				} else {
