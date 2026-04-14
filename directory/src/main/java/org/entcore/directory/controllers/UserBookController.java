@@ -606,6 +606,19 @@ public class UserBookController extends BaseController {
 						}
 					}));
 				break;
+			case "v1.get.fromUserId" :
+					preferenceService.getPreferences(message.body().getString("userId"))
+							.onSuccess(pref -> {
+								JsonObject result = new JsonObject().put("message", JsonObject.mapFrom(pref));
+								result.put("status", "ok");
+								message.reply(result);
+							})
+							.onFailure( e -> {
+								message.reply(new JsonObject()
+										.put("status", "error")
+										.put("message", e.getMessage()));
+							});
+				break;
 			default:
 				message.reply(new JsonObject().put("status", "error")
 						.put("message", "Invalid action."));

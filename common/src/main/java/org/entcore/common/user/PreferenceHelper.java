@@ -20,4 +20,12 @@ public interface PreferenceHelper {
      * @return preferences actually mapped
      */
     Future<UserPreferenceDto> getPreferences(HttpServerRequest request);
+
+    /**
+     * Retrieve user preferences, map only those defined in the actual DTO
+     *
+     * @return preferences actually mapped
+     */
+    Future<UserPreferenceDto> getPreferences(String userId);
+
 }
