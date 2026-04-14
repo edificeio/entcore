@@ -1,8 +1,13 @@
 import { useEffect, useState } from 'react';
 
+interface Provider {
+  name: string;
+  uri: string;
+}
+
 export const App = () => {
   const [childTheme, setChildTheme] = useState<string | undefined>();
-  const [providers, setProviders] = useState<string[] | undefined>();
+  const [providers, setProviders] = useState<Provider[] | undefined>();
 
   useEffect(() => {
     try {
@@ -17,7 +22,10 @@ export const App = () => {
       // Use default values for development
       if (isDev) {
         setChildTheme('theme-open-ent');
-        setProviders(['Provider 1', 'Provider 2']);
+        setProviders([
+          { name: 'Provider 1', uri: '/saml/authn/provider1' },
+          { name: 'Provider 2', uri: '/saml/authn/provider2' },
+        ]);
       }
     }
   }, []);
@@ -25,10 +33,22 @@ export const App = () => {
     <div>
       <h1>WAYF v2</h1>
       {childTheme && <div>Child theme: {childTheme}</div>}
-      {providers && <div>Providers: {providers.join(', ')}</div>}
+      {providers && (
+        <div>
+          <h2>Providers</h2>
+          {providers.map((provider, index) => (
+            <span key={provider.uri}>
+              {provider.name}
+              {index < providers.length - 1 ? ', ' : ''}
+            </span>
+          ))}
+        </div>
+      )}
       <div>
         <h2>Theme content</h2>
-        <img src={`/assets/themes/${childTheme}/img/logo.png`} alt="logo" />
+        {childTheme && (
+          <img src={`/assets/themes/${childTheme}/img/logo.png`} alt="logo" />
+        )}
       </div>
     </div>
   );

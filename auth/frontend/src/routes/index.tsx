@@ -3,7 +3,6 @@ import { RouteObject, createBrowserRouter } from 'react-router-dom';
 
 import { NotFound } from './errors/not-found';
 import { PageError } from './errors/page-error';
-import { manageRedirections } from './redirections';
 
 // Mark `queryClient` as used to satisfy TypeScript's unused-parameter check
 const routes = (queryClient: QueryClient): RouteObject[] => {
@@ -32,13 +31,6 @@ const routes = (queryClient: QueryClient): RouteObject[] => {
 export const basename = import.meta.env.PROD ? '/auth' : '';
 
 export const router = (queryClient: QueryClient) => {
-  const redirectPath = manageRedirections();
-
-  if (redirectPath) {
-    const newUrl =
-      window.location.origin + basename.replace(/\/$/g, '') + redirectPath;
-    window.history.replaceState(null, '', newUrl);
-  }
   return createBrowserRouter(routes(queryClient), {
     basename,
   });

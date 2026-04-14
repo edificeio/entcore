@@ -243,7 +243,7 @@ public class SamlController extends AbstractFederateController {
 				// FIXME: Remplacer par la solution choisie pour l'activation de la WAYF
 				// Check wayf-beta cookie to switch between old and new WAYF
 				final String wayfBetaCookie = CookieHelper.get("wayf-beta", request);
-				final Boolean wayfBeta = wayfBetaCookie != null && ("true".equals(wayfBetaCookie) || "1".equals(wayfBetaCookie));
+				final boolean wayfBeta = wayfBetaCookie != null && ("true".equalsIgnoreCase(wayfBetaCookie) || "1".equals(wayfBetaCookie));
 				if(wayfBeta) {
 					renderView(request, swmf, "wayfv2.html", null);
 				} else {

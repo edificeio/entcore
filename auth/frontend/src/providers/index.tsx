@@ -1,5 +1,4 @@
 import { ERROR_CODE } from '@edifice.io/client';
-import { EdificeClientProvider } from '@edifice.io/react';
 import {
   QueryCache,
   QueryClient,

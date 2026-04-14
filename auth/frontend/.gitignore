@@ -43,3 +43,6 @@ Thumbs.db
 
 .env*
 *.tsbuildinfo
+
+# Exception: keep package.json tracked (overrides parent gitignore)
+!package.json
