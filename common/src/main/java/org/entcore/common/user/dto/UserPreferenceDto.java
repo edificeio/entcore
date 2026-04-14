@@ -1,6 +1,7 @@
 package org.entcore.common.user.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import fr.wseduc.webutils.I18n;
 import io.vertx.core.json.JsonObject;
 
 import java.util.*;
@@ -11,6 +12,7 @@ public class UserPreferenceDto {
     private ThemePreference theme;
     private LanguagePreference language;
     private ApplicationPreference apps;
+    private String lastDomain;
 
     @JsonIgnore
     private JsonObject legacyPreferences;
@@ -59,6 +61,29 @@ public class UserPreferenceDto {
 
     public void setApps(ApplicationPreference apps) {
         this.apps = apps;
+    }
+
+    public String getLastDomain() {
+        return lastDomain;
+    }
+
+    public void setLastDomain(String lastDomain) {
+        this.lastDomain = lastDomain;
+    }
+
+    @JsonIgnore
+    public String getCurrentLanguage() {
+        if (this.language == null) {
+            return "fr";
+        }
+        String domain = this.lastDomain;
+        if(domain == null) {
+            domain = I18n.DEFAULT_DOMAIN;
+        }
+        if(language.getLanguages().containsKey(domain)) {
+            return language.getLanguages().get(domain);
+        }
+        return language.getLanguages().get(I18n.DEFAULT_DOMAIN);
     }
 
     public Preference getPreference(Application appName) {
