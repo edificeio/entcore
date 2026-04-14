@@ -15,6 +15,7 @@ public class DefaultPreferenceCacheService implements PreferenceCacheService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultPreferenceCacheService.class);
     private static final String PREFERENCES_ATTRIBUTE_NAME = "preferences";
+    private static final String PREFERENCES_LAST_DOMAIN_NAME = "lastDomain";
 
     public DefaultPreferenceCacheService(EventBus eb){
         this.eb = eb;
@@ -28,6 +29,16 @@ public class DefaultPreferenceCacheService implements PreferenceCacheService {
             }
         });
     }
+
+    @Override
+    public void putLastDomain(UserInfos userInfos, String lastDomain) {
+        UserUtils.addSessionAttribute(eb, userInfos.getUserId(), PREFERENCES_LAST_DOMAIN_NAME, lastDomain, event -> {
+            if(Boolean.FALSE.equals(event)) {
+                LOGGER.error("Could not add lastDomain="+lastDomain+" attribute to session of user id="+userInfos.getUserId()+".");
+            }
+        });
+    }
+
 
     @Override
     public void addPreferences(UserInfos userInfos, JsonObject session, UserPreferenceDto preference) {

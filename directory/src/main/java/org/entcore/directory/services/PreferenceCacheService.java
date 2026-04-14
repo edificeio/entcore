@@ -14,6 +14,8 @@ public interface PreferenceCacheService {
      */
     void refreshPreferences(UserInfos userInfos, UserPreferenceDto preferences);
 
+    void putLastDomain(UserInfos userInfos, String lastDomain);
+
     /**
      * Add preferences defined in the dto to the cache (session)
      *

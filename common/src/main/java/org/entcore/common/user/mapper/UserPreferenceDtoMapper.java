@@ -1,5 +1,6 @@
 package org.entcore.common.user.mapper;
 
+import fr.wseduc.webutils.I18n;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.Json;
@@ -40,6 +41,11 @@ public final class UserPreferenceDtoMapper {
             dto.getPreferences().add(APPLICATION);
             String encoded = pref.getString(APPLICATION.getMappingName());
             dto.setApps(decodeSafely(encoded, ApplicationPreference.class));
+        }
+        if (pref.containsKey("lastDomain") && pref.getString("lastDomain") != null) {
+            dto.setLastDomain(pref.getString("lastDomain"));
+        } else {
+           dto.setLastDomain(I18n.DEFAULT_DOMAIN);
         }
         return dto;
     }
