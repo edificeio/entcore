@@ -240,4 +240,155 @@ public class NotificationHelperTest {
         // invalid tz string in preference -> falls back to UAI resolution
         assertEquals(ZoneId.of("Europe/Paris"), NotificationHelper.resolveTimezone(tz("Invalid/Zone"), "0750010E"));
     }
+
+    // --- computeNextSendTime (guards — point d'entrée) ---
+
+    private static QuietHoursPreference enabledPref(int[]... days) {
+        QuietHoursPreference pref = new QuietHoursPreference();
+        pref.setEnabled(true);
+        if (days.length == 7) pref.setSchedule(days);
+        return pref;
+    }
+
+    private static int[][] fullSchedule(int... hours) {
+        int[][] s = new int[7][];
+        for (int i = 0; i < 7; i++) s[i] = hours;
+        return s;
+    }
+
+    @Test
+    public void testComputeNextSendTime_NullPref_ReturnsOriginal() {
+        Instant t = dt(2026, 3, 30, 22, 30).toInstant();
+        assertEquals(t, NotificationHelper.computeNextSendTime(t, null, (ZoneId) null));
+    }
+
+    @Test
+    public void testComputeNextSendTime_NotEnabled_ReturnsOriginal() {
+        Instant t = dt(2026, 3, 30, 22, 30).toInstant();
+        QuietHoursPreference pref = new QuietHoursPreference(); // enabled=false
+        pref.setSchedule(fullSchedule(22, 23));
+        assertEquals(t, NotificationHelper.computeNextSendTime(t, pref, ZoneId.of("Europe/Paris")));
+    }
+
+    @Test
+    public void testComputeNextSendTime_NullSchedule_ReturnsOriginal() {
+        Instant t = dt(2026, 3, 30, 22, 30).toInstant();
+        QuietHoursPreference pref = new QuietHoursPreference();
+        pref.setEnabled(true);
+        // schedule stays null
+        assertEquals(t, NotificationHelper.computeNextSendTime(t, pref, ZoneId.of("Europe/Paris")));
+    }
+
+    @Test
+    public void testComputeNextSendTime_NullZone_ReturnsOriginal() {
+        Instant t = dt(2026, 3, 30, 22, 30).toInstant();
+        QuietHoursPreference pref = new QuietHoursPreference();
+        pref.setEnabled(true);
+        pref.setSchedule(fullSchedule(22, 23));
+        assertEquals(t, NotificationHelper.computeNextSendTime(t, pref, (ZoneId) null));
+    }
+
+    // --- computeNextSendTime (moteur pur ZonedDateTime, int[][]) ---
+
+    @Test
+    public void testComputeNextSendTime_HourNotQuiet_ReturnsOriginal() {
+        // Monday 10:37, hour 10 not in schedule -> original instant unchanged (not truncated)
+        ZonedDateTime localTime = dt(2026, 3, 30, 10, 37);
+        int[][] schedule = new int[7][];
+        schedule[0] = new int[]{22, 23}; // Monday: only 22h-23h quiet
+        for (int i = 1; i < 7; i++) schedule[i] = new int[]{};
+        Instant result = NotificationHelper.computeNextSendTime(localTime, schedule);
+        assertEquals(localTime.toInstant(), result);
+    }
+
+    @Test
+    public void testComputeNextSendTime_HourQuiet_ReturnsNextHour() {
+        // Monday 22:37 is quiet, 23h also quiet, next non-quiet = Tuesday 00:00 if not quiet
+        ZonedDateTime localTime = dt(2026, 3, 30, 22, 37);
+        int[][] schedule = new int[7][];
+        schedule[0] = new int[]{22, 23}; // Monday: 22h-23h quiet
+        for (int i = 1; i < 7; i++) schedule[i] = new int[]{};
+        // Expected: Tuesday 00:00 Europe/Paris
+        ZonedDateTime expected = dt(2026, 3, 31, 0, 0);
+        assertEquals(expected.toInstant(), NotificationHelper.computeNextSendTime(localTime, schedule));
+    }
+
+    @Test
+    public void testComputeNextSendTime_MidnightSpanning() {
+        // Friday 23:30, schedule [22,23,0,1,2] -> next non-quiet hour = 3h Saturday
+        ZonedDateTime localTime = dt(2026, 3, 27, 23, 30); // Friday
+        int[][] schedule = new int[7][];
+        schedule[4] = new int[]{22, 23}; // Friday
+        schedule[5] = new int[]{0, 1, 2}; // Saturday
+        for (int i = 0; i < 7; i++) if (schedule[i] == null) schedule[i] = new int[]{};
+        ZonedDateTime expected = dt(2026, 3, 28, 3, 0); // Saturday 3h
+        assertEquals(expected.toInstant(), NotificationHelper.computeNextSendTime(localTime, schedule));
+    }
+
+    @Test
+    public void testComputeNextSendTime_FullDayQuiet_SkipsToNextDay() {
+        // Monday entirely quiet -> first non-quiet hour is Tuesday 00:00
+        ZonedDateTime localTime = dt(2026, 3, 30, 14, 0);
+        int[][] schedule = new int[7][];
+        schedule[0] = new int[]{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23}; // Monday full
+        for (int i = 1; i < 7; i++) schedule[i] = new int[]{};
+        ZonedDateTime expected = dt(2026, 3, 31, 0, 0); // Tuesday 00:00
+        assertEquals(expected.toInstant(), NotificationHelper.computeNextSendTime(localTime, schedule));
+    }
+
+    @Test
+    public void testComputeNextSendTime_AllQuiet168Slots_ReturnsNull() {
+        // Every hour of every day is quiet -> no slot found -> null
+        ZonedDateTime localTime = dt(2026, 3, 30, 10, 0);
+        int[] allHours = new int[]{0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23};
+        int[][] schedule = new int[7][];
+        for (int i = 0; i < 7; i++) schedule[i] = allHours;
+        assertNull(NotificationHelper.computeNextSendTime(localTime, schedule));
+    }
+
+    @Test
+    public void testComputeNextSendTime_ExactlyAtQuietBoundary_NotQuiet() {
+        // Monday 08:00 exactly, hour 8 not in schedule -> original instant unchanged
+        ZonedDateTime localTime = dt(2026, 3, 30, 8, 0);
+        int[][] schedule = new int[7][];
+        schedule[0] = new int[]{0, 1, 2, 3, 4, 5, 6, 7}; // 0h-7h quiet, 8h not
+        for (int i = 1; i < 7; i++) schedule[i] = new int[]{};
+        assertEquals(localTime.toInstant(), NotificationHelper.computeNextSendTime(localTime, schedule));
+    }
+
+    @Test
+    public void testComputeNextSendTime_ExactlyAtQuietHour_Reports() {
+        // Monday 07:59 is in quiet hour 7 -> report to 8h
+        ZonedDateTime localTime = dt(2026, 3, 30, 7, 59);
+        int[][] schedule = new int[7][];
+        schedule[0] = new int[]{0, 1, 2, 3, 4, 5, 6, 7}; // 0h-7h quiet
+        for (int i = 1; i < 7; i++) schedule[i] = new int[]{};
+        ZonedDateTime expected = dt(2026, 3, 30, 8, 0);
+        assertEquals(expected.toInstant(), NotificationHelper.computeNextSendTime(localTime, schedule));
+    }
+
+    @Test
+    public void testComputeNextSendTime_NullDayInSchedule_TreatedAsNotQuiet() {
+        // schedule[0] = null for Monday -> not quiet, return original
+        ZonedDateTime localTime = dt(2026, 3, 30, 10, 0);
+        int[][] schedule = new int[7][];
+        schedule[0] = null; // null treated as not quiet
+        for (int i = 1; i < 7; i++) schedule[i] = new int[]{};
+        assertEquals(localTime.toInstant(), NotificationHelper.computeNextSendTime(localTime, schedule));
+    }
+
+    @Test
+    public void testComputeNextSendTime_DST_SpringForward() {
+        // Europe/Paris: clocks go forward at 2h->3h on last Sunday of March
+        // Notif at 01:30 local, quiet hours [1,2], next non-quiet = 3h (but 2h doesn't exist that night)
+        // ZonedDateTime.plusHours(1) from 1h30 gives 3h30 (2h skipped by DST)
+        // schedule[6] = [1, 2] (Sunday) -> hour 1 is quiet, hour 2 doesn't exist (DST), cursor lands on 3h
+        ZonedDateTime localTime = ZonedDateTime.of(2026, 3, 29, 1, 30, 0, 0, ZoneId.of("Europe/Paris")); // Sunday
+        int[][] schedule = new int[7][];
+        schedule[6] = new int[]{1, 2}; // Sunday: quiet 1h and 2h
+        for (int i = 0; i < 6; i++) schedule[i] = new int[]{};
+        // After DST, 2h doesn't exist: plusHours(1) from truncated 1h gives 3h directly
+        ZonedDateTime expected = ZonedDateTime.of(2026, 3, 29, 3, 0, 0, 0, ZoneId.of("Europe/Paris"));
+        assertEquals(expected.toInstant(), NotificationHelper.computeNextSendTime(localTime, schedule));
+    }
 }
