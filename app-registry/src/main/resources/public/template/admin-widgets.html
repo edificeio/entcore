@@ -94,8 +94,8 @@
                 <legend translate content="appregistry.distributions"></legend>
                 <div class="row">
                     <label class="four cell">[[lang.translate("appregistry.distributions")]]</label>
-                    <select ng-if="distributions && distributions.length > 0" style="min-height: 40px;" multiple ng-model="role.distributions" 
-                        ng-change="changeWidgetDistributions(widget.id, role.distributions);" 
+                    <select ng-if="distributions && distributions.length > 0" style="min-height: 40px;" multiple ng-model="widget.distributions" 
+                        ng-change="changeWidgetDistributions(widget.id, widget.distributions);" 
                         ng-options="item for item in distributions">
                     </select>
                 </div>
