@@ -178,6 +178,53 @@ public class NotificationHelper {
         return false;
     }
 
+    /** Returns the next send instant based on quiet hours. Returns notificationTime if no preference is active. */
+    static Instant computeNextSendTime(Instant notificationTime, QuietHoursPreference userPrefQuietHours, TimezonePreference userPrefTimezone, String userPrefUai) {
+        if (userPrefQuietHours == null || !userPrefQuietHours.isEnabled() || userPrefQuietHours.getSchedule() == null) {
+            return notificationTime;
+        }
+        ZoneId zone = resolveTimezone(userPrefTimezone, userPrefUai);
+        return computeNextSendTime(notificationTime, userPrefQuietHours, zone);
+    }
+
+    /** Returns the next send instant using an already-resolved ZoneId. Returns notificationTime if zone is null. */
+    static Instant computeNextSendTime(Instant notificationTime, QuietHoursPreference userPrefQuietHours, ZoneId zone) {
+        if (zone == null) return notificationTime;
+        if (userPrefQuietHours == null || !userPrefQuietHours.isEnabled() || userPrefQuietHours.getSchedule() == null) {
+            return notificationTime;
+        }
+        return computeNextSendTime(notificationTime.atZone(zone), userPrefQuietHours.getSchedule());
+    }
+
+    /**
+     * Pure engine: returns the original instant if the current hour is not quiet.
+     * Otherwise advances hour by hour (max 168 slots) to find the first non-quiet hour.
+     * Returns null if no slot found (degenerate schedule). DST handled by ZonedDateTime.plusHours.
+     */
+    static Instant computeNextSendTime(ZonedDateTime localTime, int[][] schedule) {
+        if (schedule == null) return localTime.toInstant();
+        int currentDayIndex = localTime.getDayOfWeek().getValue() - 1;
+        int currentHour = localTime.getHour();
+        if (!isHourInSchedule(schedule, currentDayIndex, currentHour)) return localTime.toInstant();
+        ZonedDateTime cursor = localTime.truncatedTo(java.time.temporal.ChronoUnit.HOURS).plusHours(1);
+        for (int i = 0; i < 168; i++) {
+            if (!isHourInSchedule(schedule, cursor.getDayOfWeek().getValue() - 1, cursor.getHour())) {
+                return cursor.toInstant();
+            }
+            cursor = cursor.plusHours(1);
+        }
+        return null;
+    }
+
+    /** Returns true if the given hour is in the schedule for the given dayIndex. */
+    private static boolean isHourInSchedule(int[][] schedule, int dayIndex, int hour) {
+        if (dayIndex < 0 || dayIndex >= schedule.length || schedule[dayIndex] == null) return false;
+        for (int quietHour : schedule[dayIndex]) {
+            if (quietHour == hour) return true;
+        }
+        return false;
+    }
+
     /**
      * Parses the quietHours preference from the user JSON object.
      * Returns null if absent or malformed.
