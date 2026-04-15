@@ -19,21 +19,19 @@
 
 package org.entcore.timeline.cron;
 
-import org.entcore.timeline.services.TimelineMailerService;
 import io.vertx.core.Handler;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 
-import fr.wseduc.webutils.Either;
+import org.entcore.timeline.services.impl.PeriodicTimelineMailerService;
 
-public class WeeklyMailingCronTask implements Handler<Long> {
+public class OptimizedWeeklyMailingCronTask implements Handler<Long> {
 
 	private static final Logger log = LoggerFactory.getLogger(WeeklyMailingCronTask.class);
-	private final TimelineMailerService mailerService;
+	private final PeriodicTimelineMailerService mailerService;
 	private final int dayDelta;
 
-	public WeeklyMailingCronTask(TimelineMailerService mailer, int dayDelta){
+	public OptimizedWeeklyMailingCronTask(PeriodicTimelineMailerService mailer, int dayDelta){
 		this.mailerService = mailer;
 		this.dayDelta = dayDelta;
 	}
@@ -41,13 +39,9 @@ public class WeeklyMailingCronTask implements Handler<Long> {
 	@Override
 	public void handle(Long event) {
 		log.info("[Weekly mailing] Starting ...");
-		mailerService.sendWeeklyMails(dayDelta, event1 -> {
-            if(event1.isLeft()){
-                log.error("[Weekly mailing] Error encountered : " + event1.left().getValue());
-            } else {
-                log.info("[Weekly mailing] Completed : " + event1.right().getValue().encodePrettily());
-            }
-        });
+		mailerService.sendWeeklyMails(dayDelta).onSuccess( value -> {
+			log.info("[Weekly mailing] Completed : " + value.encodePrettily());
+		}).onFailure(t -> log.error("[Weekly mailing] Failed : " + t.getMessage(), t));
 	}
 
 }

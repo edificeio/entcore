@@ -232,9 +232,9 @@ public class PostgresEmailSender implements EmailSender {
                             }
                         }
                     }
-                    addMeta(request, mail).compose(r -> {
-                        return helper.createWithAttachments(mail, attList);
-                    }).onComplete(r -> {
+                    addMeta(request, mail)
+                            .compose(r -> helper.createWithAttachments(mail, attList))
+                            .onComplete(r -> {
                         if (r.failed()) {
                             logger.error("Failed to save mail: ", r.cause());
                             if(handler != null){
@@ -263,6 +263,22 @@ public class PostgresEmailSender implements EmailSender {
                 handleAsyncError(e.getMessage(), handler);
             }
         }
+    }
+
+    public Future<Void> sendEmails(List<PostgresEmailDto> mails) {
+        for ( PostgresEmailDto mail : mails) {
+            mail.setPriority(priority);
+            final String moduleName = BaseServer.getModuleName();
+            if (Utils.isNotEmpty(moduleName)) {
+                mail.setModule(moduleName);
+            }
+            if (Utils.isNotEmpty(platformId)) {
+                mail.setPlatformId(platformId);
+            }
+            mail.setFrom(new PostgresEmailDto.User(getSenderEmail(), null));
+            mail.setPlatformUrl(host);
+        }
+        return helper.massCreate(mails);
     }
 
     private Future<PostgresEmailBuilder.EmailBuilder> addMeta(HttpServerRequest request, PostgresEmailBuilder.EmailBuilder mail) {

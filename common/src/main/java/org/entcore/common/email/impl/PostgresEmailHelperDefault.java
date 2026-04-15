@@ -1,5 +1,6 @@
 package org.entcore.common.email.impl;
 
+import com.google.common.collect.Lists;
 import io.vertx.core.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -160,6 +161,85 @@ public class PostgresEmailHelperDefault implements PostgresEmailHelper {
             this.pool.preparedQuery(query.toString()).execute(tuple, h);
         }
         return future.future();
+    }
+
+    @Override
+    public Future<Void> massCreate(List<PostgresEmailDto> mails) {
+        Future<Void> futureTransaction = Future.succeededFuture();
+        List<List<PostgresEmailDto>> list = Lists.partition(mails, 250);
+
+        LocalDateTime now = LocalDateTime.now();
+
+        for (List<PostgresEmailDto> partitionedMail: list){
+
+            JsonArray logmails = new JsonArray();
+
+            StringBuilder queryMail = new StringBuilder("INSERT INTO ").append(tableName)
+                    .append("(id, date, profile, module, platform_id, platform_url, receivers, from_mail, from_name, cc, bcc, subject, headers, body, priority) VALUES ");
+            StringBuilder queryAttachement = new StringBuilder("INSERT INTO ").append(attachementTableName)
+                    .append("(id, date, mail_id, name, content) VALUES ");
+
+            Tuple tuple = Tuple.tuple();
+            Tuple attachmentTuple = Tuple.tuple();
+            int index = 1;
+            for(PostgresEmailDto mail: partitionedMail) {
+                logmails.add(mail.toJsonLog().put("logcreated", MongoDb.now()));
+                queryMail.append("($").append(index++).append(",$").append(index++).append(",$").append(index++).append(",$").append(index++).append(",$").append(index++)
+                        .append(",$").append(index++).append(",$").append(index++).append(",$").append(index++).append(",$").append(index++).append(",$").append(index++)
+                        .append(",$").append(index++).append(",$").append(index++).append(",$").append(index++).append(",$").append(index++).append(",$").append(index++)
+                        .append("),");
+                tuple.addValue(mail.getId());
+                tuple.addValue(now);
+                tuple.addValue(mail.getProfile());
+                tuple.addValue(mail.getModule());
+                tuple.addValue(mail.getPlatformId());
+                tuple.addValue(mail.getPlatformUrl());
+                tuple.addValue(mail.getReceivers());
+                tuple.addValue(mail.getFrom().getMail());
+                tuple.addValue(mail.getFrom().getName());
+                tuple.addValue(mail.getCcs());
+                tuple.addValue(mail.getBccs());
+                tuple.addValue(mail.getSubject());
+                tuple.addValue(mail.getHeadersJson());
+                tuple.addValue(mail.getBody());
+                tuple.addValue(mail.getPriority());
+                if (!mail.getAttachments().isEmpty()) {
+                    for (PostgresEmailDto.Attachment attachment: mail.getAttachments()) {
+                        queryAttachement.append("($").append(index++).append(",$").append(index++).append(",$").append(index++).append(",$").append(index++).append(",$").append(index++)
+                                        .append("),");
+                        attachmentTuple.addValue(attachment.getId());
+                        attachmentTuple.addValue(now);
+                        attachmentTuple.addValue(mail.getId());
+                        attachmentTuple.addValue(attachment.getName());
+                        attachmentTuple.addValue(attachment.getContent());
+                    }
+                }
+            }
+            if (this.mongoDb != null && !logmails.isEmpty()) {
+                this.mongoDb.insert("logemails", logmails);
+            }
+            if(tuple.size() > 0) {
+                queryMail.deleteCharAt(queryMail.length() - 1);
+                futureTransaction = futureTransaction.compose((v) -> pool.withTransaction( sqlConnection -> {
+                    final List<Future<?>> futures = new ArrayList<>();
+                    futures.add(sqlConnection.preparedQuery(queryMail.toString()).execute(tuple).onComplete(sqlResult -> {
+                        if (sqlResult.failed()) {
+                            log.error("Failed to create attachment: ", sqlResult.cause());
+                        }
+                    }));
+                    if (attachmentTuple.size() > 0) {
+                        queryAttachement.deleteCharAt(queryAttachement.length() - 1);
+                        futures.add(sqlConnection.preparedQuery(queryAttachement.toString()).execute(attachmentTuple).onComplete(r -> {
+                            if (r.failed()) {
+                                log.error("Failed to create attachment: ", r.cause());
+                            }
+                        }));
+                    }
+                    return Future.all(futures).mapEmpty();
+                }));
+            }
+        }
+        return futureTransaction;
     }
 
 }

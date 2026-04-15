@@ -8,6 +8,7 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.apache.commons.lang3.NotImplementedException;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.user.UserUtils;
 
@@ -56,6 +57,10 @@ public interface PostgresEmailHelper {
         }else{
             return new PostgresEmailHelperDefault(vertx, pgConfig);
         }
+    }
+
+    default Future<Void> massCreate(List<PostgresEmailDto> mails) {
+        throw new NotImplementedException();
     }
 
 }
