@@ -59,6 +59,7 @@
         <testContainerVersion>1.19.3</testContainerVersion>
         <modPostgresVersion>2.1-separation-SNAPSHOT</modPostgresVersion>
         <modMongoVersion>4.1-separation-SNAPSHOT</modMongoVersion>
+        <modSmsProxyVersion>2.1-separation-SNAPSHOT</modSmsProxyVersion>
         <webUtilsVersion>3.3-SNAPSHOT</webUtilsVersion>
         <mongodbHelperVersion>3.1-SNAPSHOT</mongodbHelperVersion>
         <jodaTimeVersion>2.9.4</jodaTimeVersion>
@@ -76,7 +77,6 @@
         <gatlingHighchartsVersion>2.3.1</gatlingHighchartsVersion>
         <postgres-driver.version>42.2.26</postgres-driver.version>
         <hikari.version>2.4.2</hikari.version>
-        <jsonSchemaValidatorVersion>2.1-SNAPSHOT</jsonSchemaValidatorVersion>
     </properties>
 
     <dependencies>
@@ -85,12 +85,6 @@
             <artifactId>common</artifactId>
             <version>${entcore-libs.version}</version>
             <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-buffer</artifactId>
-            <version>4.1.107.Final</version>
-            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.entcore</groupId>
