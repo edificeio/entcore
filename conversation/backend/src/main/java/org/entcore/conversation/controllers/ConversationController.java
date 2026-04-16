@@ -597,6 +597,9 @@ public class ConversationController extends BaseController {
 				.put("messageUri", pathPrefix + "/conversation#/read-mail/" + id);
 		params.put("resourceUri", params.getString("messageUri"));
 		params.put("pushNotif", new JsonObject().put("title", user.getUsername()).put("body", subject + "\n" + sentMessage.getString("body")));
+		if (sentMessage.getBoolean("disableAntiFlood", false)) {
+			params.put("disableAntiFlood", true);
+		}
 		List<String> recipients = new ArrayList<>();
 		String idTmp;
 		for (Object o : r) {
@@ -1991,12 +1994,6 @@ public class ConversationController extends BaseController {
 						.put("cci", new JsonArray())
 						.put("noReply", true);
 
-				JsonObject action = new JsonObject()
-						.put("action", "send")
-						.put("userId", from)
-						.put("username", username)
-						.put("message", message);
-
 
 				final UserInfos user = new UserInfos();
 				user.setUserId(from);
@@ -2015,7 +2012,8 @@ public class ConversationController extends BaseController {
 													.put("subject", result.getString("subject"))
 													.put("id", result.getString("id"))
 													.put("thread_id", result.getString("thread_id"))
-													.put("sentIds", m.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray()));
+													.put("sentIds", m.getJsonArray("allUsers", new fr.wseduc.webutils.collections.JsonArray()))
+													.put("disableAntiFlood", true);
 											timelineNotification(request, timelineParams, user);
 											JsonObject s = new JsonObject().put("status", "ok")
 													.put("result", new fr.wseduc.webutils.collections.JsonArray().add(new JsonObject()));
