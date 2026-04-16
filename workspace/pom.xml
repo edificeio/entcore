@@ -42,13 +42,6 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>io.vertx</groupId>
-            <artifactId>mod-mongo-persistor</artifactId>
-            <version>4.1-separation-SNAPSHOT</version>
-            <scope>runtime</scope>
-            <classifier>fat</classifier>
-        </dependency>
-        <dependency>
             <groupId>fr.wseduc</groupId>
             <artifactId>mod-image-resizer</artifactId>
             <version>${imageResizerVersion}</version>

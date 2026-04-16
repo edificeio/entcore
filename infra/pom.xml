@@ -40,13 +40,6 @@
         </dependency>
         <dependency>
             <groupId>io.vertx</groupId>
-            <artifactId>mod-mongo-persistor</artifactId>
-            <version>4.1-separation-SNAPSHOT</version>
-            <scope>runtime</scope>
-            <classifier>fat</classifier>
-        </dependency>
-        <dependency>
-            <groupId>io.vertx</groupId>
             <artifactId>vertx-json-schema</artifactId>
             <version>${vertxVersion}</version>
         </dependency>
