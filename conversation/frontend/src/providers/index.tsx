@@ -1,5 +1,5 @@
 import { ERROR_CODE } from '@edifice.io/client';
-import { EdificeClientProvider } from '@edifice.io/react';
+import { ConfirmModal, EdificeClientProvider } from '@edifice.io/react';
 import {
   QueryCache,
   QueryClient,
@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { ReactNode } from 'react';
+import { useConfirmModalStore } from '~/store';
 import { EdificeScreebProvider } from './EdificeScreebProvider';
 
 export const queryClient = new QueryClient({
@@ -28,14 +29,19 @@ export const queryClient = new QueryClient({
 });
 
 export const Providers = ({ children }: { children: ReactNode }) => {
+  const confirmModalProps = useConfirmModalStore();
+
   return (
     <QueryClientProvider client={queryClient}>
       <EdificeClientProvider
         params={{
-          app: 'actualites',
+          app: 'conversation',
         }}
       >
-        <EdificeScreebProvider>{children}</EdificeScreebProvider>
+        <EdificeScreebProvider>
+          {children}
+          <ConfirmModal {...confirmModalProps} />
+        </EdificeScreebProvider>
       </EdificeClientProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
