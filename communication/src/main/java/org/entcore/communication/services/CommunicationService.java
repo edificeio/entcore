@@ -59,7 +59,17 @@ public interface CommunicationService {
 	 */
     void resetRules(String structureId, Handler<Either<String, JsonObject>> eitherHandler);
 
-    //enum VisibleType { USERS, GROUPS, BOTH }
+	/**
+	 * Modify direct communication between two users INCOMING s <= e, OUTGOING s => e
+	 *
+	 * @param startUser
+	 * @param endUser
+	 * @param directionEnum
+	 * @param eitherHandler
+	 */
+	void setDirectCommunication(String startUser, String endUser, Direction directionEnum, Handler<Either<String, JsonObject>> eitherHandler);
+
+	//enum VisibleType { USERS, GROUPS, BOTH }
 	enum Direction { 
 		INCOMING 	(0x01),
 		OUTGOING 	(0x10), 
