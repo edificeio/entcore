@@ -965,6 +965,7 @@ public class UserUtils {
 		try {
 			return mapper.readValue(session.encode(), UserInfos.class);
 		} catch (IOException e) {
+			log.error("Failed to parse session to UserInfos. Session content: " + session.encode(), e);
 			e.printStackTrace();
 			return null;
 		}

@@ -25,27 +25,35 @@
         <div class="row justify-content-center">
             <div class="col-md-9 col-sm-12">
                 <div class="mb-16 text-center">
-                    <div>
-                        <i18n>validate-mfa.step2.hint.paragraph1</i18n>
-                        <span> [[ctrl.mobile]].</span>
+                    <div ng-if="!ctrl.isTotp">
+                        <div>
+                            <i18n>validate-mfa.step2.hint.paragraph1</i18n>
+                            <span> [[ctrl.mobile]].</span>
+                        </div>
+                        <div>
+                            <i18n>validate-mfa.step2.hint.paragraph2</i18n>
+                        </div>
                     </div>
-                    <div>
-                        <i18n>validate-mfa.step2.hint.paragraph2</i18n>
+                    <div ng-if="ctrl.isTotp">
+                        <i18n>validate-mfa.step2.totp.hint</i18n>
                     </div>
                 </div>
 
+                <!-- Formulaire de validation du code MFA -->
                 <div class="text-center">
                     <form novalidate autocomplete="off" name="formCodeMfa" class="col-sm-6 form-control-lg mx-auto" ng-submit="">
-                        <label class="mb-8 fw-bold text-center" for="input-data">
-                            <i18n>validate-mfa.step2.form.code</i18n>
+                        <label class="mb-8 fw-bold text-center d-block">
+                            <i18n ng-if="!ctrl.isTotp">validate-mfa.step2.form.code</i18n>
+                            <i18n ng-if="ctrl.isTotp">validate-mfa.step2.totp.form.code</i18n>
                         </label>
-                        <input type="text" id="input-data" style="background-color: white;" name="inputCode" required
-                            maxlength="6"
-                            oninput="this.value = this.value.replace(/[^0-9]/g, '');"
-                            pattern="[0-9]{6}"
-                            ng-model="ctrl.inputCode" 
-                            ng-model-options="{ debounce: 500 }"
-                            ng-change="onCodeChange(formCodeMfa)" class="form-control" />
+                        <div class="d-flex justify-content-center gap-8">
+                            <input type="text" id="otp-digit-0" class="form-control text-center fw-bold" style="width:4rem;height:4.5rem;font-size:2rem;padding:0;line-height:4.5rem;background-color:white;" maxlength="1" pattern="[0-9]" inputmode="numeric" autocomplete="one-time-code" ng-model="ctrl.otpDigits[0]" ng-change="onDigitChange(0)" />
+                            <input type="text" id="otp-digit-1" class="form-control text-center fw-bold" style="width:4rem;height:4.5rem;font-size:2rem;padding:0;line-height:4.5rem;background-color:white;" maxlength="1" pattern="[0-9]" inputmode="numeric" ng-model="ctrl.otpDigits[1]" ng-change="onDigitChange(1)" />
+                            <input type="text" id="otp-digit-2" class="form-control text-center fw-bold" style="width:4rem;height:4.5rem;font-size:2rem;padding:0;line-height:4.5rem;background-color:white;" maxlength="1" pattern="[0-9]" inputmode="numeric" ng-model="ctrl.otpDigits[2]" ng-change="onDigitChange(2)" />
+                            <input type="text" id="otp-digit-3" class="form-control text-center fw-bold" style="width:4rem;height:4.5rem;font-size:2rem;padding:0;line-height:4.5rem;background-color:white;" maxlength="1" pattern="[0-9]" inputmode="numeric" ng-model="ctrl.otpDigits[3]" ng-change="onDigitChange(3)" />
+                            <input type="text" id="otp-digit-4" class="form-control text-center fw-bold" style="width:4rem;height:4.5rem;font-size:2rem;padding:0;line-height:4.5rem;background-color:white;" maxlength="1" pattern="[0-9]" inputmode="numeric" ng-model="ctrl.otpDigits[4]" ng-change="onDigitChange(4)" />
+                            <input type="text" id="otp-digit-5" class="form-control text-center fw-bold" style="width:4rem;height:4.5rem;font-size:2rem;padding:0;line-height:4.5rem;background-color:white;" maxlength="1" pattern="[0-9]" inputmode="numeric" ng-model="ctrl.otpDigits[5]" ng-change="onDigitChange(5)" />
+                        </div>
                     </form>
                     <footer class="mt-8 mb-16">
                         <div ng-show="ctrl.status==='wait'" class="text-primary mb-12">
@@ -76,7 +84,7 @@
                     </footer>
                 </div>
 
-                <div class="text-center" ng-if="ctrl.status!=='ok'">
+                <div class="text-center" ng-if="ctrl.status!=='ok' && !ctrl.isTotp">
                     <div class="mb-16">
                         <span>
                             <i18n>validate-mfa.step2.hint.paragraph4</i18n>

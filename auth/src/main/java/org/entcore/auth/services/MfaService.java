@@ -46,4 +46,12 @@ public interface MfaService {
 		}
 	 */
 	public Future<JsonObject> tryCode(final HttpServerRequest request, final UserInfos userInfos, final String key);
+
+	/**
+	 * Verify a TOTP code against the stored secret of a given user (admin use).
+	 * @param userId the target user's id
+	 * @param code the 6-digit TOTP code to verify
+	 * @return { "state": "valid" | "invalid" | "not.enrolled" }
+	 */
+	public Future<JsonObject> verifyTotpForUser(final String userId, final String code);
 }
