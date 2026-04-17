@@ -337,20 +337,22 @@ public class FlashMsgController extends BaseController {
 						boolean sendMailNotification = body.getBoolean("mailNotification");
 						boolean sendPushNotification = body.getBoolean("pushNotification");
 
-						final JsonObject params = new JsonObject()
+						final JsonObject baseParams = new JsonObject()
 							.put("username", user.getUsername())
 							.put("uri", "/userbook/annuaire#" + user.getUserId() + "#" + user.getType())
 							.put("content", content)
 							.put("disableAntiFlood", true);
 
 						if (sendMailNotification && !recipientIds.isEmpty()) {
+							final JsonObject params = baseParams.copy();
 							notification.notifyTimeline(request, "timeline.send-flash-message-mail", user,
 							recipientIds, params);
 						}
 
 						if (sendPushNotification && !recipientIds.isEmpty()) {
-							params.put("pushNotif", new JsonObject().put("title", "push.notif.new.flash.message").put("body", user.getUsername()+ " : " + StringUtils.stripHtmlTag(content)));
-							params.put("disableMailNotification", true);
+							final JsonObject params = baseParams.copy()
+								.put("pushNotif", new JsonObject().put("title", "push.notif.new.flash.message").put("body", user.getUsername()+ " : " + StringUtils.stripHtmlTag(content)))
+								.put("disableMailNotification", true);
 							notification.notifyTimeline(request, "timeline.send-flash-message-push", user,
 							recipientIds, params);
 						}
