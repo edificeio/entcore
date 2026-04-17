@@ -25,19 +25,60 @@
         <div class="row justify-content-center">
             <div class="col-md-9 col-sm-12">
                 <div class="mb-16 text-center">
-                    <div>
-                        <i18n>validate-mfa.step2.hint.paragraph1</i18n>
-                        <span> [[ctrl.mobile]].</span>
+                    <div ng-if="!ctrl.isTotp">
+                        <div>
+                            <i18n>validate-mfa.step2.hint.paragraph1</i18n>
+                            <span> [[ctrl.mobile]].</span>
+                        </div>
+                        <div>
+                            <i18n>validate-mfa.step2.hint.paragraph2</i18n>
+                        </div>
                     </div>
-                    <div>
-                        <i18n>validate-mfa.step2.hint.paragraph2</i18n>
+                    <div ng-if="ctrl.isTotp && !ctrl.showTotpEnrollment">
+                        <i18n>validate-mfa.step2.totp.hint</i18n>
+                    </div>
+                    <div ng-if="ctrl.showTotpEnrollment">
+                        <i18n>validate-mfa.totp.enrollment.hint</i18n>
                     </div>
                 </div>
 
-                <div class="text-center">
+                <!-- Boutons de gestion TOTP (enrollment/removal) -->
+                <div ng-if="ctrl.isTotp && !ctrl.showTotpEnrollment" class="text-center mb-16">
+                    <button ng-if="!ctrl.hasTotp" type="button" class="btn btn-primary" ng-click="onOpenTotpEnrollment()">
+                        <i18n>validate-mfa.totp.define</i18n>
+                    </button>
+                    <button ng-if="ctrl.hasTotp" type="button" class="btn btn-danger" ng-click="onRemoveTotp()">
+                        <i18n>validate-mfa.totp.remove</i18n>
+                    </button>
+                </div>
+
+                <!-- Formulaire d'enrollment TOTP -->
+                <div ng-if="ctrl.isTotp && ctrl.showTotpEnrollment" class="text-center">
+                    <form novalidate autocomplete="off" name="formTotpEnrollment" class="col-sm-6 form-control-lg mx-auto">
+                        <label class="mb-8 fw-bold text-center" for="input-totp-secret">
+                            <i18n>validate-mfa.totp.secret</i18n>
+                        </label>
+                        <input type="text" id="input-totp-secret" style="background-color: white;" name="inputTotpSecret"
+                            ng-model="ctrl.totpSecret"
+                            placeholder="Base32 secret"
+                            class="form-control mb-8" />
+                        <div class="d-flex justify-content-center gap-8">
+                            <button type="button" class="btn btn-primary" ng-click="onSaveTotp()" ng-disabled="!ctrl.totpSecret">
+                                <i18n>save</i18n>
+                            </button>
+                            <button type="button" class="btn btn-secondary" ng-click="onCancelTotpEnrollment()">
+                                <i18n>cancel</i18n>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Formulaire de validation du code MFA -->
+                <div class="text-center" ng-if="!ctrl.showTotpEnrollment">
                     <form novalidate autocomplete="off" name="formCodeMfa" class="col-sm-6 form-control-lg mx-auto" ng-submit="">
                         <label class="mb-8 fw-bold text-center" for="input-data">
-                            <i18n>validate-mfa.step2.form.code</i18n>
+                            <i18n ng-if="!ctrl.isTotp">validate-mfa.step2.form.code</i18n>
+                            <i18n ng-if="ctrl.isTotp">validate-mfa.step2.totp.form.code</i18n>
                         </label>
                         <input type="text" id="input-data" style="background-color: white;" name="inputCode" required
                             maxlength="6"
@@ -76,7 +117,7 @@
                     </footer>
                 </div>
 
-                <div class="text-center" ng-if="ctrl.status!=='ok'">
+                <div class="text-center" ng-if="ctrl.status!=='ok' && !ctrl.isTotp">
                     <div class="mb-16">
                         <span>
                             <i18n>validate-mfa.step2.hint.paragraph4</i18n>

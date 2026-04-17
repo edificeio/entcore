@@ -100,12 +100,47 @@ public class DefaultUserService implements UserService {
 
 	@Override
 	public void update(final String id, final JsonObject user, final UserInfos caller, final Handler<Either<String, JsonObject>> result) {
-		JsonObject action = new JsonObject()
-				.put("action", "manual-update-user")
-				.put("userId", id)
-				.put("data", user)
-				.put("callerId", caller == null ? null : caller.getUserId());
-		eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+		if (user.containsKey("totp")) {
+			final String totpSecret = user.getString("totp");
+			user.remove("totp");
+			updateTotp(id, totpSecret, ar -> {
+				if (ar.isLeft()) {
+					result.handle(new Either.Left<>(ar.left().getValue()));
+					return;
+				}
+				if (user.isEmpty()) {
+					result.handle(new Either.Right<>(new JsonObject()));
+					return;
+				}
+				JsonObject action = new JsonObject()
+						.put("action", "manual-update-user")
+						.put("userId", id)
+						.put("data", user)
+						.put("callerId", caller == null ? null : caller.getUserId());
+				eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+			});
+		} else {
+			JsonObject action = new JsonObject()
+					.put("action", "manual-update-user")
+					.put("userId", id)
+					.put("data", user)
+					.put("callerId", caller == null ? null : caller.getUserId());
+			eb.request(Directory.FEEDER, action, handlerToAsyncHandler(validUniqueResultHandler(result)));
+		}
+	}
+
+	public void updateTotp(final String id, final String totpSecret, final Handler<Either<String, JsonObject>> result) {
+		final String query;
+		final JsonObject params = new JsonObject().put("id", id);
+		if (totpSecret != null && !totpSecret.isEmpty()) {
+			// non-empty => enroll (add or update the property)
+			query = "MATCH (u:User {id: {id}}) SET u.totp = {totp}";
+			params.put("totp", totpSecret);
+		} else {
+			// null or empty => unenroll (remove the property)
+			query = "MATCH (u:User {id: {id}}) REMOVE u.totp";
+		}
+		neo.execute(query, params, m -> result.handle(Neo4jResult.validEmpty(m)));
 	}
 
 	@Override
@@ -376,6 +411,9 @@ public class DefaultUserService implements UserService {
 				for (Object o : filterAttributes) {
 					r.remove((String) o);
 				}
+				// Replace raw TOTP secret with a boolean to avoid exposing the secret
+				r.put("hasTotp", r.getString("totp") != null && !r.getString("totp").isEmpty());
+				r.remove("totp");
 
 				//put administrative attachment first in structureNodes
 				final JsonArray jaAdm = r.getJsonArray("administrativeStructures");
@@ -1216,6 +1254,7 @@ public class DefaultUserService implements UserService {
 				"RETURN DISTINCT u.profiles as profiles, u.id as id, u.firstName as firstName, u.lastName as lastName, u.displayName as displayName, "+
 				"u.email as email, u.homePhone as homePhone, u.mobile as mobile, u.birthDate as birthDate, u.login as originalLogin, relativeList, " +
 				"motto, health, mood, hobbies, " +
+				"CASE WHEN u.totp IS NOT NULL AND u.totp <> '' THEN true ELSE false END as hasTotp, " +
 				"CASE WHEN schools IS NULL THEN [] ELSE schools END as schools ";
 		} catch (ValidationException exception) {
 			logger.error("Select hobbies exception", exception);

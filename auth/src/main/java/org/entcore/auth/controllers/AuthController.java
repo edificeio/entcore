@@ -657,6 +657,7 @@ public class AuthController extends BaseController {
 		final JsonArray mfaConfig = new JsonArray();
 		if( Mfa.withSms() ) mfaConfig.add(Mfa.TYPE_SMS);
 		if( Mfa.withEmail() ) mfaConfig.add(Mfa.TYPE_EMAIL);
+		if( Mfa.withTotp() ) mfaConfig.add(Mfa.TYPE_TOTP);
 		context.put("mfaConfig", mfaConfig);
 
 		renderJson(request, context);
@@ -1967,7 +1968,7 @@ public class AuthController extends BaseController {
 				}*/
 				mfaState.remove("valid");
 				renderJson(request, new JsonObject()
-					.put("type", Mfa.withSms() ? Mfa.TYPE_SMS : Mfa.TYPE_EMAIL)
+					.put("type", Mfa.withTotp() ? Mfa.TYPE_TOTP : (Mfa.withSms() ? Mfa.TYPE_SMS : Mfa.TYPE_EMAIL))
 					.put("waitInSeconds", UserValidation.getDefaultWaitInSeconds())
 					.put("state", mfaState)
 				);

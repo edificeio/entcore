@@ -297,6 +297,7 @@ public class UserInfos {
 	private Map<String, Object> otherProperties = new HashMap<>();
 	private String email;
 	private String mobile;
+	private Boolean hasTotp;
 
 	public Map<String, Child> getChildren() { return children; }
 
@@ -553,6 +554,14 @@ public class UserInfos {
 
 	public void setMobile(String mobile) {
 		this.mobile = mobile;
+	}
+
+	public Boolean hasTotp() {
+		return hasTotp;
+	}
+
+	public void setTotp(Boolean hasTotp) {
+		this.hasTotp = hasTotp;
 	}
 
 	@JsonAnySetter

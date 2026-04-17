@@ -110,6 +110,26 @@
 				<label ng-if="showMobileInput && isMobileWellFormatted()"><a ng-click="saveAndCloseMobileInput()" href="#"><i18n>classAdmin.save</i18n></a></label>
 			</div>
 			<div class="row">
+				<label class="four cell"><i18n>directory.totp.secret</i18n></label>
+				<label class="six cell">
+					<span ng-if="selectedUser.hasTotp"><i18n>directory.totp.enrolled</i18n></span>
+					<span ng-if="!selectedUser.hasTotp"><i18n>directory.totp.not.enrolled</i18n></span>
+				</label>
+				<input type="text" class="eight cell inline-editing" name="totpSecret"
+					   ng-if="showTotpInput"
+					   ng-model="temp.totp"
+					   placeholder="Base32 secret" />
+				<label ng-if="!showTotpInput">
+					<a ng-click="openTotpInput()" href="#"><i18n>directory.totp.enroll</i18n></a>
+					<span ng-if="selectedUser.hasTotp"> | <a ng-click="removeTotpSecret()" href="#"><i18n>directory.totp.remove</i18n></a></span>
+				</label>
+				<label ng-if="showTotpInput">
+					<a ng-if="temp.totp" ng-click="saveAndCloseTotpInput()" href="#"><i18n>classAdmin.save</i18n></a>
+					<span> | </span>
+					<a ng-click="showTotpInput = false" href="#"><i18n>cancel</i18n></a>
+				</label>
+			</div>
+			<div class="row">
 				<label translate content="userBook.profile.birthdate" class="four cell"></label>
 				<em>
 					<div class="eight text-flow">
