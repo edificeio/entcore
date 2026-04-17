@@ -46,6 +46,7 @@ export const directoryService = {
                 email: user.email,
                 homePhone: user.homePhone,
                 mobile: user.mobile,
+                totp: user.totp,
                 birthDate: user.birthDate,
                 childrenIds: user.type == "Relative" ? user.relatives.map(u => u.id) : []
             }));
@@ -66,6 +67,9 @@ export const directoryService = {
     },
     async updateUserMobile(user: User) {
         return await http.put('/directory/user/' + user.id, { mobile: user.mobile });
+    },
+    async updateUserTotp(user: User) {
+        return await http.put('/directory/user/' + user.id, { totp: user.totp });
     },
     async getPreference(): Promise<ClassAdminPreferences> {
         if (preferences) {

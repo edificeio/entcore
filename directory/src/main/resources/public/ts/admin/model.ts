@@ -87,6 +87,8 @@ export class User extends Model {
     email: string;
     homePhone: string;
     mobile: string;
+    totp: string;
+    hasTotp: boolean;
     displayName: string;
     _hobbies: Hobby[] = [];
     relatives: User[] = [];

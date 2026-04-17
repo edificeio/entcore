@@ -22,6 +22,12 @@ export class ValidateMfaController implements IController {
 	public koStatusCause = "";
 	// Server data
 	private infos?: IMfaInfos;
+	
+	// TOTP enrollment management
+	public showTotpEnrollment: boolean = false;
+	public totpSecret?: string = "";
+	private savingTotp: boolean = false;
+	private userHasTotp: boolean = false;
 
 	public async initialize() {
 		try {
@@ -29,6 +35,8 @@ export class ValidateMfaController implements IController {
 				notif().onSessionReady().promise,
 				conf().Platform.idiom.addBundlePromise("/auth/i18n")
 			]);
+			// Initialize userHasTotp from session
+			this.userHasTotp = (this.me as any)?.hasTotp === true;
 			this.infos = await this.getMfaInfos();
 		} catch( e ) {
 			setTimeout( () => notify.error('validate-mfa.error.network', 4000), 500 );
@@ -59,6 +67,59 @@ export class ValidateMfaController implements IController {
 
 	public get mobile() {
 		return session()?.description.mobile;
+	}
+
+	public get isTotp(): boolean {
+		return this.infos?.type === 'totp' as any;
+	}
+
+	public get hasTotp(): boolean {
+		return this.userHasTotp;
+	}
+
+	public openTotpEnrollment(): void {
+		this.totpSecret = "";
+		this.showTotpEnrollment = true;
+	}
+
+	public async saveTotp(): Promise<void> {
+		if (this.savingTotp) return;
+		try {
+			this.savingTotp = true;
+			const response = await http().putJson('/directory/user/totp', { totp: this.totpSecret });
+			if (response.status >= 200 && response.status < 300) {
+				this.userHasTotp = true;
+				this.showTotpEnrollment = false;
+				this.totpSecret = "";
+				notify.success('validate-mfa.totp.saved');
+			} else {
+				notify.error('validate-mfa.totp.error');
+			}
+		} catch (e) {
+			notify.error('validate-mfa.totp.error');
+		} finally {
+			this.savingTotp = false;
+		}
+	}
+
+	public async removeTotp(): Promise<void> {
+		try {
+			const response = await http().putJson('/directory/user/totp', { totp: null });
+			if (response.status >= 200 && response.status < 300) {
+				this.userHasTotp = false;
+				this.showTotpEnrollment = false;
+				notify.success('validate-mfa.totp.removed');
+			} else {
+				notify.error('validate-mfa.totp.error');
+			}
+		} catch (e) {
+			notify.error('validate-mfa.totp.error');
+		}
+	}
+
+	public cancelTotpEnrollment(): void {
+		this.showTotpEnrollment = false;
+		this.totpSecret = "";
 	}
 
 	public async validateCode():Promise<OTPStatus> {
@@ -114,6 +175,10 @@ interface ValidateMfaScope extends IScope {
 	canRenderUi: boolean;
 	onCodeChange: (form:angular.IFormController) => Promise<void>;
 	onCodeRenew: () => Promise<void>;
+	onOpenTotpEnrollment: () => void;
+	onSaveTotp: () => Promise<void>;
+	onRemoveTotp: () => Promise<void>;
+	onCancelTotpEnrollment: () => void;
 }
 
 /* Directive */
@@ -192,6 +257,26 @@ class Directive implements IDirective<ValidateMfaScope,JQLite,IAttributes,IContr
 			angular.element(document.getElementById('btnRenew')).prop("disabled", "disabled");
 			await ctrl.renewCode();
 			setTimeout( ()=>angular.element(document.getElementById('btnRenew')).prop("disabled", false), 15000);
+			safeApply();
+		}
+
+		scope.onOpenTotpEnrollment = () => {
+			ctrl.openTotpEnrollment();
+			safeApply();
+		}
+
+		scope.onSaveTotp = async () => {
+			await ctrl.saveTotp();
+			safeApply();
+		}
+
+		scope.onRemoveTotp = async () => {
+			await ctrl.removeTotp();
+			safeApply();
+		}
+
+		scope.onCancelTotpEnrollment = () => {
+			ctrl.cancelTotpEnrollment();
 			safeApply();
 		}
 

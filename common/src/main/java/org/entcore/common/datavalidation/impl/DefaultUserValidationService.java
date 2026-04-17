@@ -278,15 +278,21 @@ public class DefaultUserValidationService implements UserValidationService {
     }
 
 	private Future<Boolean> needMFA(final JsonObject session, final UserInfos infos) {
+        if (infos == null) {
+            logger.warn("needMFA called with null UserInfos - this should not happen");
+            return Future.succeededFuture(Boolean.FALSE);
+        }
+        
         // As of 2023-01-27, an MFA is needed to access protected zones if and only if :
         // - no MFA has already been performed during this session, and
         // - user is ADMx, and
         // - MFA is activated at platform-level, and
         // - all structures, the user is attached to, are not ignoring MFA
+        // - at least one MFA method is available for the user
         if( Boolean.TRUE.equals(getIsMFA(session))
-         || infos == null
          || !(infos.isADMC() || infos.isADML())
          || Mfa.isNotActivatedForUser(infos)
+         || (Mfa.withTotp() && !Mfa.withSms() && !Mfa.withEmail() && !Boolean.TRUE.equals(infos.hasTotp()))
             ) {
             return Future.succeededFuture(Boolean.FALSE);
         }

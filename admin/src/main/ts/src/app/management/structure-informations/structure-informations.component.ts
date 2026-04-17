@@ -88,7 +88,10 @@ export class StructureInformationsComponent extends OdeComponent implements OnIn
     const context: Context = await SessionModel.getContext();
     if( context && context.mfaConfig && context.mfaConfig.length>0 ) {
       this.withMfa = true;
-      this.labelEnableMFA = this.bundles.translate("management.structure.informations.enableMFA", {type: 'SMS'});
+      const typeLabel = (context.mfaConfig as string[])
+        .map(t => t === 'totp' ? 'OTP' : t.toUpperCase())
+        .join(' / ');
+      this.labelEnableMFA = this.bundles.translate("management.structure.informations.enableMFA", {type: typeLabel});
     }
     this.changeDetector.markForCheck();
   }
