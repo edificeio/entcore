@@ -35,7 +35,6 @@ import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.notification.NotificationUtils;
 import org.entcore.common.notification.TimelineNotificationsLoader;
-import org.entcore.common.utils.StopWatch;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.timeline.controllers.TimelineLambda;
 import org.entcore.timeline.services.TimelineConfigService;
@@ -558,10 +557,8 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 					final JsonArray userIds = new JsonArray();
 					for (Object userObj : users)
 						userIds.add(((JsonObject) userObj).getString("id", ""));
-					StopWatch step4 = new StopWatch();
 					NotificationUtils.getUsersPreferences(eb, userIds, "language: uac.language, displayName: u.displayName", new Handler<JsonArray>() {
 						public void handle(JsonArray preferences) {
-							log.info("[WeeklyMails][perf] getUsersPreferences page " + userPagination.get() + " time " + step4.elapsedTimeMillis() + " ms");
 							for (Object userObj : preferences) {
 								final JsonObject userPrefs = (JsonObject) userObj;
 								final String userDomain = userPrefs.getString("lastDomain", I18n.DEFAULT_DOMAIN);
@@ -575,10 +572,8 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 								final String userLanguage = mutableUserLanguage;
 								final String userDisplayName = getOrElse(userPrefs.getString("displayName"), "", true);
 
-								StopWatch step5 = new StopWatch();
 								getAggregatedUserNotifications(userPrefs.getString("userId", ""), weekDate.getTime(), weekEndDate.getTime(), new Handler<JsonArray>() {
 									public void handle(JsonArray notifications) {
-										log.info("[WeeklyMails][perf] getAggregatedUserNotifications user " +  userPrefs.getString("userId", "") + " time " + step5.elapsedTimeMillis() + " ms");
 										if (notifications.size() == 0) {
 											usersEndHandler.handle(null);
 											return;
@@ -636,11 +631,9 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 											JsonObject templateParams = new JsonObject().put("notifications", weeklyNotificationsGroupedArray);
 											templateParams.put("displayName", userDisplayName);
 
-											StopWatch step6 = new StopWatch();
 											new DefaultTimelineMailerService(that).processTimelineTemplate(templateParams, "", "notifications/weekly-mail.html",
 													userDomain, userScheme, userLanguage, false, new Handler<String>() {
 														public void handle(final String processedTemplate) {
-															log.info("[WeeklyMails][perf] processTimelineTemplate user " +  userPrefs.getString("userId", "") + " time " + step6.elapsedTimeMillis() + " ms");
 															//On completion : log
 															final Handler<AsyncResult<Message<JsonObject>>> completionHandler = event -> {
 																if (event.failed() || "error".equals(event.result().body().getString("status", "error"))) {
@@ -658,7 +651,6 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 															translateTimeline(keys, userDomain, userLanguage, new Handler<JsonArray>() {
 																public void handle(JsonArray translations) {
 																	//Send mail containing the "weekly" notifications
-																	StopWatch step7 = new StopWatch();
 																	emailSender.sendEmail(request,
 																			userPrefs.getString("userMail", ""),
 																			null,
@@ -667,11 +659,7 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 																			processedTemplate,
 																			null,
 																			false,
-																			h -> {
-																				completionHandler.handle(h);
-																				log.info("[WeeklyMails][perf] send mail for user " +  userPrefs.getString("userId", "")
-																						+ " time " + step7.elapsedTimeMillis() + " ms");
-																			});
+																			completionHandler);
 																}
 															});
 														}
@@ -690,10 +678,8 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 
 			public void handle(Boolean continuation) {
 				if (continuation) {
-					StopWatch step3 = new StopWatch();
 					getImpactedUsers(notifiedUsers, userPagination.getAndIncrement(), new Handler<Either<String, JsonArray>>() {
 						public void handle(Either<String, JsonArray> event) {
-							log.info("[WeeklyMails][perf] getImpactedUsers page " + userPagination.get() + " time " + step3.elapsedTimeMillis() + " ms");
 							if (event.isLeft()) {
 								log.error("[sendWeeklyMails] Error while retrieving impacted users : " + event.left().getValue());
 								handler.handle(new Either.Left<String, JsonObject>(event.left().getValue()));
@@ -708,11 +694,9 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 				}
 			}
 		};
-		StopWatch step1 = new StopWatch();
 		getRecipientsUsers(weekDate.getTime(), weekEndDate.getTime(), new Handler<JsonArray>() {
 			@Override
 			public void handle(JsonArray event) {
-				log.info("[WeeklyMails][perf] getRecipientUsersTiming " + step1.elapsedTimeMillis() + " ms");
 				if (event != null && event.size() > 0) {
 					notifiedUsers.addAll(event.getList());
 					endPage.set((event.size() / USERS_LIMIT) + (event.size() % USERS_LIMIT != 0 ? 1 : 0));
@@ -724,10 +708,8 @@ public class DefaultTimelineMailerService extends Renders implements TimelineMai
 					handler.handle(new Either.Right<String, JsonObject>(results));
 					return;
 				}
-				StopWatch step2 = new StopWatch();
 				getNotificationsDefaults(new Handler<JsonArray>() {
 					public void handle(final JsonArray notifications) {
-						log.info("[WeeklyMails][perf] getNotifications " + step2.elapsedTimeMillis() + " ms");
 						if (notifications == null) {
 							log.error("[sendWeeklyMails] Error while retrieving notifications defaults.");
 						} else {
