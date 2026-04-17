@@ -5,10 +5,38 @@ import io.vertx.core.json.Json;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Represents a user's quiet hours preference for notification deferral.
+ */
 public class QuietHoursPreference implements Preference {
 
+    /**
+     * Indicates who manages the quiet hours configuration.
+     */
+    public enum ManagedBy {
+        /** Set by the user themselves */
+        USER,
+        /** Set by the structure (school/organization) */
+        STRUCTURE
+    }
+
+    /**
+     * Weekly schedule of quiet hours.
+     * Array of 7 days (0=Monday, 6=Sunday), each containing the hours (0-23) that are quiet.
+     * Null means no schedule is defined.
+     */
     private int[][] schedule;
-    private boolean managed;
+
+    /**
+     * Indicates who manages this quiet hours configuration.
+     * See {@link ManagedBy} for possible values.
+     */
+    private ManagedBy managedBy;
+
+    /**
+     * Whether quiet hours filtering is active.
+     * When false, notifications are sent immediately regardless of the schedule.
+     */
     private boolean enabled;
 
     public int[][] getSchedule() {
@@ -19,12 +47,12 @@ public class QuietHoursPreference implements Preference {
         this.schedule = schedule;
     }
 
-    public boolean isManaged() {
-        return managed;
+    public ManagedBy getManagedBy() {
+        return managedBy;
     }
 
-    public void setManaged(boolean managed) {
-        this.managed = managed;
+    public void setManagedBy(ManagedBy managedBy) {
+        this.managedBy = managedBy;
     }
 
     public boolean isEnabled() {

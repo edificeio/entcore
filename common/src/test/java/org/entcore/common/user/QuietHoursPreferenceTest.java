@@ -1,6 +1,7 @@
 package org.entcore.common.user;
 
 import org.entcore.common.user.dto.QuietHoursPreference;
+import org.entcore.common.user.dto.QuietHoursPreference.ManagedBy;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -21,7 +22,6 @@ public class QuietHoursPreferenceTest {
     @Test
     public void testValidate_NullSchedule_Valid() {
         QuietHoursPreference pref = new QuietHoursPreference();
-        pref.setTimezone("Europe/Paris");
         assertTrue(pref.validate());
     }
 
@@ -85,7 +85,7 @@ public class QuietHoursPreferenceTest {
         assertTrue(pref.validate());
     }
 
-    // --- enabled / managed defaults ---
+    // --- enabled / managedBy defaults ---
 
     @Test
     public void testDefaults_EnabledIsFalse() {
@@ -95,10 +95,10 @@ public class QuietHoursPreferenceTest {
     }
 
     @Test
-    public void testDefaults_ManagedIsFalse() {
-        // primitive boolean -> default false
+    public void testDefaults_ManagedByIsNull() {
+        // enum reference -> default null
         QuietHoursPreference pref = new QuietHoursPreference();
-        assertFalse(pref.isManaged());
+        assertNull(pref.getManagedBy());
     }
 
     @Test
@@ -109,9 +109,16 @@ public class QuietHoursPreferenceTest {
     }
 
     @Test
-    public void testSetManaged_True() {
+    public void testSetManagedBy_Structure() {
         QuietHoursPreference pref = new QuietHoursPreference();
-        pref.setManaged(true);
-        assertTrue(pref.isManaged());
+        pref.setManagedBy(ManagedBy.STRUCTURE);
+        assertEquals(ManagedBy.STRUCTURE, pref.getManagedBy());
+    }
+
+    @Test
+    public void testSetManagedBy_User() {
+        QuietHoursPreference pref = new QuietHoursPreference();
+        pref.setManagedBy(ManagedBy.USER);
+        assertEquals(ManagedBy.USER, pref.getManagedBy());
     }
 }
