@@ -1,13 +1,13 @@
-import { ConfirmModal, EdificeClientProvider } from '@edifice.io/react';
+import { ERROR_CODE } from '@edifice.io/client';
+import { EdificeClientProvider } from '@edifice.io/react';
 import {
   QueryCache,
   QueryClient,
   QueryClientProvider,
 } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { ERROR_CODE } from '@edifice.io/client';
 import { ReactNode } from 'react';
-import { useConfirmModalStore } from '~/store';
+import { EdificeScreebProvider } from './EdificeScreebProvider';
 
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({
@@ -28,16 +28,14 @@ export const queryClient = new QueryClient({
 });
 
 export const Providers = ({ children }: { children: ReactNode }) => {
-  const confirmModalProps = useConfirmModalStore();
   return (
     <QueryClientProvider client={queryClient}>
       <EdificeClientProvider
         params={{
-          app: 'conversation',
+          app: 'actualites',
         }}
       >
-        {children}
-        <ConfirmModal {...confirmModalProps} />
+        <EdificeScreebProvider>{children}</EdificeScreebProvider>
       </EdificeClientProvider>
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
