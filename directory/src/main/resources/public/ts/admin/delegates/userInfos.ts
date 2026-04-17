@@ -39,6 +39,9 @@ export interface UserInfosDelegateScope extends EventDelegateScope {
     openMobileInput(): void;
     saveAndCloseMobileInput(): void;
     isMobileWellFormatted(): boolean;
+    openTotpInput(): void;
+    saveAndCloseTotpInput(): void;
+    removeTotpSecret(): void;
     userInfosDisplayChildren(): boolean
     userInfosDisplayRelative(): boolean
     userInfosDisplayUserbook(): boolean
@@ -64,13 +67,15 @@ export interface UserInfosDelegateScope extends EventDelegateScope {
         email?: string;
         homePhone?: string;
         mobile?: string;
+        totp?: string;
         // International phone number
-        intlFormatNumber?: () => string
+        intlFormatNumber?: () => string;
     };
     showDisplayNameInput: boolean;
     showEmailInput: boolean;
     showPhoneInput: boolean;
     showMobileInput: boolean;
+    showTotpInput: boolean;
     isForbidden(): boolean;
     //from others
     usersForType(type?: UserTypes): User[]
@@ -134,6 +139,8 @@ export async function UserInfosDelegate($scope: UserInfosDelegateScope) {
         $scope.showPhoneInput = false;
         $scope.temp.mobile = "";
         $scope.showMobileInput = false;
+        $scope.temp.totp = "";
+        $scope.showTotpInput = false;
         cleanSearch();
     }
     const setSelectedUser = async (user: User) => {
@@ -368,6 +375,39 @@ export async function UserInfosDelegate($scope: UserInfosDelegateScope) {
     }
     $scope.isMobileWellFormatted = function () {
         return angular.element("input[type=\"tel\"][name=\"mobile\"]").hasClass('ng-valid');
+    }
+    $scope.openTotpInput = function () {
+        $scope.temp.totp = "";
+        $scope.showTotpInput = true;
+    }
+    let savingTotp = false;
+    $scope.saveAndCloseTotpInput = async function () {
+        if (savingTotp) return;
+        try {
+            savingTotp = true;
+            $scope.selectedUser.totp = $scope.temp.totp;
+            await directoryService.updateUserTotp($scope.selectedUser);
+            $scope.selectedUser.hasTotp = true;
+            $scope.showTotpInput = false;
+            notify.success('directory.totp.saved');
+            $scope.safeApply();
+        } catch (e) {
+            notify.error('directory.totp.error');
+        } finally {
+            savingTotp = false;
+        }
+    }
+    $scope.removeTotpSecret = async function () {
+        try {
+            $scope.selectedUser.totp = null;
+            await directoryService.updateUserTotp($scope.selectedUser);
+            $scope.selectedUser.hasTotp = false;
+            $scope.showTotpInput = false;
+            notify.success('directory.totp.removed');
+            $scope.safeApply();
+        } catch (e) {
+            notify.error('directory.totp.error');
+        }
     }
     $scope.isForbidden = function() {
         if( !Me.session.functions.SUPER_ADMIN 

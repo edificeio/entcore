@@ -31,6 +31,7 @@ import io.vertx.core.json.JsonArray;
 public class Mfa {
     static public final String TYPE_SMS   = "sms";
     static public final String TYPE_EMAIL = "email";
+	static public final String TYPE_TOTP = "totp";
 
 	public static class Factory {
 		private Vertx vertx;
@@ -87,6 +88,7 @@ public class Mfa {
 
 	private boolean withSms = false;
 	private boolean withEmail = false;
+	private boolean withTotp = false;
 	private Mfa(final io.vertx.core.Vertx vertx, final JsonObject params) {
 		if( params != null ) {
 			final JsonArray types = params.getJsonArray("types", new JsonArray());
@@ -98,6 +100,7 @@ public class Mfa {
 			}
 			this.withSms = types.contains(Mfa.TYPE_SMS);
 			this.withEmail = types.contains(Mfa.TYPE_EMAIL);
+			this.withTotp = types.contains(Mfa.TYPE_TOTP);
 		}
 	}
 
@@ -111,6 +114,11 @@ public class Mfa {
 		return Factory.getInstance().withEmail;
 	}
 
+	/** Check if MFA can be completed through a TOTP. */
+	public static boolean withTotp() {
+		return Factory.getInstance().withTotp;
+	}
+
 	/** Get an array of MFA-protected URLs. */
 	public static JsonArray getMfaProtectedUrls() {
 		return Factory.getFactory().mfaProtectedUrls;
@@ -118,7 +126,7 @@ public class Mfa {
 
     public static boolean isNotActivatedForUser(final UserInfos userInfos) {
         return (
-			!(Factory.getInstance().withSms || Factory.getInstance().withEmail) 
+			!(Factory.getInstance().withSms || Factory.getInstance().withEmail || Factory.getInstance().withTotp) 
 			|| Boolean.TRUE.equals(userInfos.getIgnoreMFA()) 
 		);
     }

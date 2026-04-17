@@ -3,7 +3,6 @@ package org.entcore.auth.services.impl;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.Future;
-import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
@@ -27,12 +26,17 @@ import org.entcore.common.utils.StringUtils;
 import static fr.wseduc.webutils.Utils.getOrElse;
 import static org.entcore.common.datavalidation.utils.DataStateUtils.*;
 
+import com.eatthepath.otp.TimeBasedOneTimePasswordGenerator;
 import java.security.InvalidKeyException;
+import java.time.Instant;
+import java.util.Base64;
 import java.util.Map;
+import javax.crypto.spec.SecretKeySpec;
 
 
 public class DefaultMfaService implements MfaService {
     static Logger logger = LoggerFactory.getLogger(DefaultMfaService.class);
+    private static final TimeBasedOneTimePasswordGenerator TOTP_GENERATOR = new TimeBasedOneTimePasswordGenerator();
 
     /** Inner service to manage field "mfaState" */
     //---------------------------------------------------------------
@@ -43,7 +47,7 @@ public class DefaultMfaService implements MfaService {
 
         MfaField(io.vertx.core.Vertx vertx, io.vertx.core.json.JsonObject config, io.vertx.core.json.JsonObject params) {
             super(
-                Mfa.withSms() ? "mobile" : "email", // used for reading only
+                Mfa.withTotp() ? "totp" : Mfa.withSms() ? "mobile" : "email", // used for reading only
                 "mfaState", 
                 vertx, 
                 config,
@@ -94,7 +98,7 @@ public class DefaultMfaService implements MfaService {
                     // Otherwise, current code is still pending.
                 } while(false);
                 j.put("state", j.remove(stateField) );
-                j.put("target", j.remove(Mfa.withSms() ? "mobile" : "email") );
+                j.put("target", j.remove(Mfa.withTotp() ? "totp" : Mfa.withSms() ? "mobile" : "email") );
                 return Future.succeededFuture(j);
             });
         }
@@ -254,11 +258,14 @@ public class DefaultMfaService implements MfaService {
             // Mfa deactivated => error
             return Future.failedFuture("not.active");
         }
-
-        // At first, retrieve current state
+        // At first, retrieve current state (also reads TOTP secret as "target" when withTotp)
         return mfaField.getCurrentMfaState(userInfos.getUserId())
         .compose( fullState -> {
-            // Then generate a new code, or refresh it if pending.
+            // For users with TOTP enrolled, no code needs to be generated or sent
+            if( Mfa.withTotp() && !StringUtils.isEmpty(fullState.getString("target")) ) {
+                return Future.succeededFuture(new JsonObject().put("state", "pending").put("type", "totp"));
+            }
+            // For SMS/email users: generate a new code, or refresh it if pending.
             return mfaField.generateOrRefreshCode(
                 fullState.getJsonObject("state"),
                 userInfos.getUserId(), 
@@ -294,10 +301,10 @@ public class DefaultMfaService implements MfaService {
                         return mfaState;
                     });
                 }
+            })
+            .map( state -> {
+                return mfaField.formatAsResponse(getState(state), getTries(state), getTtl(state));
             });
-        })
-        .map( state -> {
-            return mfaField.formatAsResponse(getState(state), getTries(state), getTtl(state));
         });
     }
 
@@ -306,9 +313,22 @@ public class DefaultMfaService implements MfaService {
             // Mfa deactivated => error
             return Future.failedFuture("validate-mfa.error.not.active");
         }
-        return mfaField
-        .tryValidate( userInfos.getUserId(), key )
-        .compose( result -> {
+        // Per-user bifurcation: TOTP (hardware key) vs SMS/email
+        final Future<JsonObject> validationResult;
+        if( Mfa.withTotp() ) {
+            // "target" holds the TOTP secret for enrolled users, null otherwise
+            validationResult = mfaField.getCurrentMfaState(userInfos.getUserId())
+            .compose( fullState -> {
+                final String totpSecret = fullState.getString("target");
+                if( !StringUtils.isEmpty(totpSecret) ) {
+                    return verifyTotp(totpSecret, key);
+                }
+                return mfaField.tryValidate(userInfos.getUserId(), key);
+            });
+        } else {
+            validationResult = mfaField.tryValidate(userInfos.getUserId(), key);
+        }
+        return validationResult.compose( result -> {
             if( result !=null && "valid".equalsIgnoreCase(result.getString("state")) ) {
                 return UserValidation.setIsMFA(eb, UserUtils.getSessionIdOrTokenId(request).get(), true)
                 .map( set -> result )
@@ -317,6 +337,24 @@ public class DefaultMfaService implements MfaService {
             }
             return Future.succeededFuture(result);
         });
+    }
+
+    private Future<JsonObject> verifyTotp(final String totpSecretB64, final String code) {
+        try {
+            final byte[] secretBytes = Base64.getDecoder().decode(totpSecretB64);
+            final SecretKeySpec secretKey = new SecretKeySpec(secretBytes, TOTP_GENERATOR.getAlgorithm());
+            final Instant now = Instant.now();
+            for (int window = -1; window <= 1; window++) {
+                final Instant t = now.plus(TOTP_GENERATOR.getTimeStep().multipliedBy(window));
+                if (TOTP_GENERATOR.generateOneTimePasswordString(secretKey, t).equals(code)) {
+                    return Future.succeededFuture(new JsonObject().put("state", "valid"));
+                }
+            }
+            return Future.succeededFuture(new JsonObject().put("state", "invalid"));
+        } catch (Exception e) {
+            logger.error("[TOTP] Verification error", e);
+            return Future.failedFuture(e);
+        }
     }
 
 	public DefaultMfaService setEventStore(EventStore eventStore) {
