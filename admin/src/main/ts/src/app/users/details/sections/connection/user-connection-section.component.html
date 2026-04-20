@@ -283,6 +283,63 @@
 
   <form>
     <fieldset>
+      <ode-form-field label="totp.secret">
+        <div>
+          <label class="info-label">
+            <span *ngIf="details.hasTotp"><s5l>totp.enrolled</s5l></span>
+            <span *ngIf="!details.hasTotp"><s5l>totp.not.enrolled</s5l></span>
+          </label>
+          <div *ngIf="showTotpInput" class="totp-input-section">
+            <input 
+              type="text" 
+              [(ngModel)]="tempTotp" 
+              name="totpSecret" 
+              placeholder="Base32 secret"
+              [disabled]="isForbidden"
+            />
+          </div>
+          <div class="totp-buttons">
+            <button 
+              type="button" 
+              *ngIf="!showTotpInput"
+              (click)="openTotpInput()"
+              [disabled]="isForbidden"
+            >
+              <s5l>totp.enroll</s5l>
+            </button>
+            <button 
+              type="button" 
+              *ngIf="!showTotpInput && details.hasTotp"
+              (click)="removeTotpSecret()"
+              [disabled]="isForbidden"
+              class="is-danger"
+            >
+              <s5l>totp.remove</s5l>
+            </button>
+            <button 
+              type="button" 
+              *ngIf="showTotpInput && tempTotp"
+              (click)="saveAndCloseTotpInput()"
+              [disabled]="isForbidden || spinner.isLoading('portal-content')"
+            >
+              <s5l>save</s5l>
+              <i class="fa fa-floppy-o"></i>
+            </button>
+            <button 
+              type="button" 
+              *ngIf="showTotpInput"
+              (click)="showTotpInput = false"
+            >
+              <s5l>cancel</s5l>
+            </button>
+          </div>
+        </div>
+      </ode-form-field>
+    </fieldset>
+  </form>
+
+  <form>
+    <fieldset>
       <ode-form-field
         label="password.renewal.code"
         *ngIf="!details.activationCode"

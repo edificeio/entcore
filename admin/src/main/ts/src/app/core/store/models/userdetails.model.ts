@@ -41,6 +41,8 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     address: string;
     homePhone: string;
     mobile?: string;
+    totp?: string;
+    hasTotp?: boolean;
     profiles: Array<String> = [];
     type?: Array<string>;
     functions?: Array<[string, Array<string>]>;
@@ -304,6 +306,10 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
 
     updateMobile() {
         return this.http.put(`/directory/user/${this.id}`, {mobile: this.mobile});
+    }
+
+    updateTotp() {
+        return this.http.put(`/directory/user/totp`, {totp: this.totp});
     }
 
     updateLogin() {
