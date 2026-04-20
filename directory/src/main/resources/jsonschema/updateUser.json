@@ -36,6 +36,9 @@
     "mobile": {
       "type": ["string", "null"]
     },
+    "totp": {
+      "type": ["string", "null"]
+    },
     "childrenIds": {
       "type": ["string", "null"]
     },

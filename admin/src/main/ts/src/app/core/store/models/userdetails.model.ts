@@ -309,7 +309,7 @@ export class UserDetailsModel extends Model<UserDetailsModel> {
     }
 
     updateTotp() {
-        return this.http.put(`/directory/user/totp`, {totp: this.totp});
+        return this.http.put(`/directory/user/${this.id}`, {totp: this.totp});
     }
 
     updateLogin() {
