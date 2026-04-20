@@ -1,17 +1,20 @@
+import { odeServices } from '@edifice.io/client';
 import {
   queryOptions,
   useMutation,
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { configService } from '..';
-import { SignaturePreferences } from '~/models/signature';
 import { Config } from '~/config';
+import { PublicConf } from '~/models/publicConf';
+import { SignaturePreferences } from '~/models/signature';
+import { configService } from '..';
 
 export const configQueryKeys = {
   all: () => ['config'] as const,
   global: () => [...configQueryKeys.all(), 'global'] as const,
   signature: () => [...configQueryKeys.all(), 'signature'] as const,
+  publicConfig: () => [...configQueryKeys.all(), 'publicConfig'] as const,
 };
 
 /**
@@ -47,6 +50,18 @@ export const configQueryOptions = {
       staleTime: 15 * 60 * 1000,
     });
   },
+
+  /**
+   * @returns Query options for fetching the public configuration, including the Screeb app ID. The query is cached indefinitely since config values are not expected to change frequently.
+   */
+  getPublicConfig() {
+    return queryOptions({
+      queryKey: configQueryKeys.publicConfig(),
+      queryFn: (): Promise<PublicConf> =>
+        odeServices.conf().getPublicConf('conversation'),
+      staleTime: Infinity,
+    });
+  },
 };
 
 export const useGlobalConfig = () => {
@@ -71,4 +86,8 @@ export const useSetSignaturePreferences = () => {
       queryClient.setQueryData(configQueryKeys.signature(), preferences);
     },
   });
+};
+
+export const usePublicConfig = () => {
+  return useQuery(configQueryOptions.getPublicConfig());
 };
