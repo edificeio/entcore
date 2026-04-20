@@ -231,7 +231,7 @@ public class TimelineController extends BaseController {
 		UserUtils.getUserInfos(eb, request, user -> {
 			preferenceService.getPreferences(request)
 					.onSuccess(preferences -> {
-						if(preferences.getHomePage() != null && preferences.getHomePage().isBetaEnabled() && user.getAuthorizedActions().stream().anyMatch( a -> a.getName().equals(TIMELINE_BETA_RIGHT))) {
+						if (user.getAuthorizedActions().stream().anyMatch( a -> a.getName().equals(TIMELINE_BETA_RIGHT)) && preferences.getHomePage() != null && preferences.getHomePage().isBetaEnabled()) {
 							renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "homepage.html", null);
 						} else {
 							renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "timeline2.html", null);
