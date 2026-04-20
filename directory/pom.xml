@@ -12,6 +12,9 @@
 
     <artifactId>directory</artifactId>
 
+    <properties>
+        <modPdfGeneratorVersion>2.1-separation-SNAPSHOT</modPdfGeneratorVersion>
+    </properties>
     <dependencies>
         <dependency>
             <groupId>org.entcore</groupId>
@@ -49,6 +52,13 @@
             <groupId>org.entcore</groupId>
             <artifactId>feeder</artifactId>
             <version>${revision}</version>
+            <scope>runtime</scope>
+            <classifier>fat</classifier>
+        </dependency>
+        <dependency>
+            <groupId>fr.wseduc</groupId>
+            <artifactId>mod-pdf-generator</artifactId>
+            <version>${modPdfGeneratorVersion}</version>
             <scope>runtime</scope>
             <classifier>fat</classifier>
         </dependency>
