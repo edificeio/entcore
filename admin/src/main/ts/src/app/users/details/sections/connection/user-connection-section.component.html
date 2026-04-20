@@ -281,7 +281,7 @@
     </fieldset>
   </form>
 
-  <form>
+  <form *ngIf="shouldShowTotpField">
     <fieldset>
       <ode-form-field label="totp.secret">
         <div style="display: flex; align-items: center; gap: 10px;">
