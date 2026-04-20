@@ -99,10 +99,12 @@ public class DefaultCommunicationService implements CommunicationService {
 				" DELETE c";
 		builder.add(query, params);
 		//remove incoming communication from an external group
-		query = "MATCH(s:Structure {id: {structureId}, users:'INCOMING'})<-[:DEPENDS]-(g:Group)<-[c:COMMUNIQUE]-(g2:Group) "
-				+ " WHERE NOT(g:ManualGroup) " +
-				" DELETE c";
+		query = "MATCH (s:Structure  {id: {structureId}})<-[:BELONGS]-(cla:Class)<-[:DEPENDS]-(g:Group)<-[c:COMMUNIQUE]-(g2:Group) where NOT(g:ManualGroup) " +
+				"    AND g.id IN g2.communiqueWith SET g2.communiqueWith = [x IN g2.communiqueWith WHERE x <> g.id] DELETE c";
+		builder.add(query, params);
 
+		query = "MATCH (s:Structure  {id: {structureId}})<-[:DEPENDS]-(g:Group)<-[c:COMMUNIQUE]-(g2:Group) where NOT(g:ManualGroup) " +
+				"    AND g.id IN g2.communiqueWith SET g2.communiqueWith = [x IN g2.communiqueWith WHERE x <> g.id] DELETE c";
 		builder.add(query, params);
 
 		statements.add(builder);
