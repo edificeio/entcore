@@ -58,7 +58,7 @@ export const configQueryOptions = {
     return queryOptions({
       queryKey: configQueryKeys.publicConfig(),
       queryFn: (): Promise<PublicConf> =>
-        odeServices.conf().getPublicConf('actualites'),
+        odeServices.conf().getPublicConf('conversation'),
       staleTime: Infinity,
     });
   },
