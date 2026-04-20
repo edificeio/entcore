@@ -55,6 +55,9 @@ export class UserConnectionSectionComponent
   isUpdateMailSaved: boolean = false;
   isHomePhoneSaved: boolean = false;
   isMobileSaved: boolean = false;
+  isTotpSaved: boolean = false;
+  showTotpInput: boolean = false;
+  tempTotp: string = "";
 
   @Input() structure: StructureModel;
   
@@ -390,6 +393,44 @@ export class UserConnectionSectionComponent
             user: this.user.firstName + ' ' + this.user.lastName
           }
         }, 'notify.user.updatePhone.error.title', err);
+    });
+  }
+
+  openTotpInput() {
+    this.tempTotp = "";
+    this.showTotpInput = true;
+  }
+
+  saveAndCloseTotpInput() {
+    if (!this.tempTotp) return;
+    this.details.totp = this.tempTotp;
+    this.spinner.perform('portal-content', this.details.updateTotp())
+    .then(() => {
+      this.details.hasTotp = true;
+      this.showTotpInput = false;
+      this.tempTotp = "";
+      this.ns.success('totp.saved');
+      this.userInfoService.setState(this.details);
+      this.isTotpSaved = true;
+      this.cdRef.markForCheck();
+    })
+    .catch(err => {
+      this.ns.error('totp.error', '', err);
+    });
+  }
+
+  removeTotpSecret() {
+    this.details.totp = null;
+    this.spinner.perform('portal-content', this.details.updateTotp())
+    .then(() => {
+      this.details.hasTotp = false;
+      this.showTotpInput = false;
+      this.ns.success('totp.removed');
+      this.userInfoService.setState(this.details);
+      this.cdRef.markForCheck();
+    })
+    .catch(err => {
+      this.ns.error('totp.error', '', err);
     });
   }
 
