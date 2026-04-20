@@ -79,8 +79,9 @@ import static org.entcore.common.http.response.DefaultResponseHandler.arrayRespo
 import static org.entcore.common.http.response.DefaultResponseHandler.defaultResponseHandler;
 
 public class TimelineController extends BaseController {
-    private static final long IMMEDIATE_NOTIF_DELAY_BY_CHUNK = 30000L;
 
+	private static final long IMMEDIATE_NOTIF_DELAY_BY_CHUNK = 30000L;
+	private static final String TIMELINE_BETA_RIGHT = "org.entcore.timeline|betaActivation";
 	private static final Logger log = LoggerFactory.getLogger(TimelineController.class);
 
 	private TimelineEventStore store;
@@ -216,18 +217,30 @@ public class TimelineController extends BaseController {
 		});
 	}
 
-	private void renderTimeline2dOrBeta(HttpServerRequest request){
-		preferenceService.getPreferences(request)
-				.onSuccess(preferences -> {
-					if(preferences.getHomePage() != null && preferences.getHomePage().isBetaEnabled()) {
-						renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "homepage.html", null);
-					} else {
+	/**
+	 * Endpoint to create the workflow right to show beta switch on timeline front
+	 * @param request
+	 */
+	@Get("/beta-right")
+	@SecuredAction(value = "timeline.beta", right = TIMELINE_BETA_RIGHT)
+	public void beta(HttpServerRequest request) {
+		Renders.ok(request);
+	}
+
+	private void renderTimeline2dOrBeta(HttpServerRequest request) {
+		UserUtils.getUserInfos(eb, request, user -> {
+			preferenceService.getPreferences(request)
+					.onSuccess(preferences -> {
+						if (user.getAuthorizedActions().stream().anyMatch( a -> a.getName().equals(TIMELINE_BETA_RIGHT)) && preferences.getHomePage() != null && preferences.getHomePage().isBetaEnabled()) {
+							renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "homepage.html", null);
+						} else {
+							renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "timeline2.html", null);
+						}
+					}).onFailure( e -> {
+						log.error("Error while retreiving user preferences", e);
 						renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "timeline2.html", null);
-					}
-				}).onFailure( e -> {
-					log.error("Error while retreiving user preferences", e);
-					renderView(request, new JsonObject().put("lightMode", isLightmode()).put("cache", config.getBoolean("cache", false)), "timeline2.html", null);
-				});
+					});
+		});
 	}
 
 	@Get("/timeline2")
