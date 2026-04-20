@@ -1544,6 +1544,7 @@
   "switch.old.admin.console.tooltip": "Quitter la nouvelle version et revenir à l'ancienne version de la console d'administration",
   "teaches": "Enseignements",
   "timetable.import.exists": "Un import est déjà en cours pour cette structure",
+  "timeline.beta": "Accès à la bêta de la timeline",
   "title": "Titre",
   "toggle.account": "{{ 0 ? Débloquer le compte : Bloquer le compte }}",
   "transport": "Transport scolaire",
