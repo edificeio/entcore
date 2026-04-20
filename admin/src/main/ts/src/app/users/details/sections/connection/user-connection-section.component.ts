@@ -100,6 +100,14 @@ export class UserConnectionSectionComponent
     super();
   }
 
+  get shouldShowTotpField(): boolean {
+    // Show TOTP field if at least one structure does not ignore MFA
+    if (!this.details || !this.details.structureNodes || this.details.structureNodes.length === 0) {
+      return false;
+    }
+    return this.details.structureNodes.some(structure => !structure.ignoreMFA);
+  }
+
   async ngOnInit() {
     this.email = this.details.email;
     this.passwordResetMail = this.details.email;
