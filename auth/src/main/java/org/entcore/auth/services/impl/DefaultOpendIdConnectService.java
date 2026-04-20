@@ -56,7 +56,7 @@ public class DefaultOpendIdConnectService implements OpenIdConnectService, OpenI
 
 	@Override
 	public void generateIdToken(String userId, final String clientId, final String nonce, final Handler<AsyncResult<String>> handler) {
-		final  String query = "MATCH (u:User {id: {id}}) return u.externalId as sub, u.email as  email, u.displayName as name";
+		final  String query = "MATCH (u:User {id: {id}}) return u.externalId as sub, u.id as uid, u.email as  email, u.displayName as name";
 		Neo4j.getInstance().execute(query, new JsonObject().put("id", userId), new Handler<Message<JsonObject>>() {
 			@Override
 			public void handle(Message<JsonObject> event) {
