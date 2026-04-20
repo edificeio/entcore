@@ -107,7 +107,7 @@ public interface Shareable {
 	default void sendNotify(final HttpServerRequest request, final String resource,
 							final UserInfos user, final List<String> recipients, final String notificationName,
 							JsonObject params, final String resourceNameAttribute) {
-		getNotification().notifyTimeline(request, notificationName, user, recipients, params);
+		getNotification().notifyTimeline(request, notificationName, user, recipients, resource, params);
 	}
 
 }
