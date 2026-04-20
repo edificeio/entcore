@@ -284,24 +284,16 @@
   <form>
     <fieldset>
       <ode-form-field label="totp.secret">
-        <div>
-          <label class="info-label">
-            <span *ngIf="details.hasTotp"><s5l>totp.enrolled</s5l></span>
-            <span *ngIf="!details.hasTotp"><s5l>totp.not.enrolled</s5l></span>
-          </label>
-          <div *ngIf="showTotpInput" class="totp-input-section">
-            <input 
-              type="text" 
-              [(ngModel)]="tempTotp" 
-              name="totpSecret" 
-              placeholder="Base32 secret"
-              [disabled]="isForbidden"
-            />
-          </div>
-          <div class="totp-buttons">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <!-- Mode affichage normal : statut + bouton configurer OU supprimer -->
+          <ng-container *ngIf="!showTotpInput">
+            <span>
+              <s5l *ngIf="details.hasTotp">totp.enrolled</s5l>
+              <s5l *ngIf="!details.hasTotp">totp.not.enrolled</s5l>
+            </span>
             <button 
-              type="button" 
-              *ngIf="!showTotpInput"
+              type="button"
+              *ngIf="!details.hasTotp"
               (click)="openTotpInput()"
               [disabled]="isForbidden"
             >
@@ -309,30 +301,40 @@
             </button>
             <button 
               type="button" 
-              *ngIf="!showTotpInput && details.hasTotp"
+              *ngIf="details.hasTotp"
               (click)="removeTotpSecret()"
               [disabled]="isForbidden"
               class="is-danger"
             >
               <s5l>totp.remove</s5l>
             </button>
+          </ng-container>
+          
+          <!-- Mode saisie : input + bouton enregistrer + bouton annuler -->
+          <ng-container *ngIf="showTotpInput">
+            <input 
+              type="text" 
+              [(ngModel)]="tempTotp" 
+              name="totpSecret" 
+              placeholder="Base32 secret"
+              [disabled]="isForbidden"
+              style="flex: 1; max-width: 300px;"
+            />
             <button 
               type="button" 
-              *ngIf="showTotpInput && tempTotp"
               (click)="saveAndCloseTotpInput()"
-              [disabled]="isForbidden || spinner.isLoading('portal-content')"
+              [disabled]="isForbidden || !tempTotp || spinner.isLoading('portal-content')"
             >
               <s5l>save</s5l>
               <i class="fa fa-floppy-o"></i>
             </button>
             <button 
               type="button" 
-              *ngIf="showTotpInput"
               (click)="showTotpInput = false"
             >
               <s5l>cancel</s5l>
             </button>
-          </div>
+          </ng-container>
         </div>
       </ode-form-field>
     </fieldset>
