@@ -109,7 +109,7 @@ public class DefaultUserService implements UserService {
 					return;
 				}
 				if (user.isEmpty()) {
-					result.handle(new Either.Right<>(new JsonObject()));
+					result.handle(new Either.Right<>(new JsonObject().put("status", "ok")));
 					return;
 				}
 				JsonObject action = new JsonObject()
