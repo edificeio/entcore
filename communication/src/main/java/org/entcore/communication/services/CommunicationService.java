@@ -31,6 +31,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.communication.dto.rest.SearchVisibleRestDTO;
 
 public interface CommunicationService {
 	String IMPOSSIBLE_TO_CHANGE_DIRECTION = "impossible to change direction";
@@ -113,11 +114,9 @@ public interface CommunicationService {
 	void communiqueWith(String groupId,// VisibleType filter,
 			Handler<Either<String, JsonObject>> handler);
 
-	void addLinkBetweenRelativeAndStudent(String groupId, Direction direction,
-			Handler<Either<String, JsonObject>> handler);
+	Future<Integer> addLinkBetweenRelativeAndStudent(String groupId, Direction direction);
 
-	void removeLinkBetweenRelativeAndStudent(String groupId, Direction direction,
-			Handler<Either<String, JsonObject>> handler);
+	Future<Integer> removeLinkBetweenRelativeAndStudent(String groupId, Direction direction);
 
 	void initDefaultRules(JsonArray structureIds, JsonObject defaultRules, final Integer transactionId,
 						  final Boolean commit, final Handler<Either<String, JsonObject>> handler);
@@ -143,6 +142,8 @@ public interface CommunicationService {
 			boolean reverseUnion,
 			Handler<Either<String, JsonArray>> handler);
 
+	Future<JsonArray> visibleUsers(UserInfos userInfos, SearchVisibleRestDTO searchVisibleDto);
+
 	void usersCanSeeMe(String userId, final Handler<Either<String, JsonArray>> handler);
 
 	void visibleProfilsGroups(String userId, String customReturn, JsonObject additionnalParams, String preFilter,
@@ -151,9 +152,9 @@ public interface CommunicationService {
 	void visibleManualGroups(String userId, String customReturn, JsonObject additionnalParams,
 			Handler<Either<String, JsonArray>> handler);
 
-	void getOutgoingRelations(String id, Handler<Either<String, JsonArray>> results);
+	Future<JsonArray> getOutgoingRelations(String id);
 
-	void getIncomingRelations(String id, Handler<Either<String, JsonArray>> results);
+	Future<JsonArray> getIncomingRelations(String id);
 
 	void safelyRemoveLinkWithUsers(String groupId, Handler<Either<String, JsonObject>> handler);
 
