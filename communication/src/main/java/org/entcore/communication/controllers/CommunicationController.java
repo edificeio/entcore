@@ -35,6 +35,7 @@ import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.http.filter.AdminFilter;
@@ -42,14 +43,19 @@ import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.StringUtils;
-import org.entcore.common.validation.StringValidation;
+import org.entcore.communication.dto.rest.CountResultDTO;
+import org.entcore.communication.dto.rest.SearchVisibleBusDTO;
+import org.entcore.communication.dto.rest.SearchVisibleRestDTO;
 import org.entcore.communication.filters.CommunicationDiscoverVisibleFilter;
+import org.entcore.communication.mapper.GroupDtoMapper;
+import org.entcore.communication.mapper.SearchVisibleDtoMapper;
+import org.entcore.communication.mapper.UserDtoMapper;
 import org.entcore.communication.services.CommunicationService;
 import org.entcore.communication.services.impl.DefaultCommunicationService;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
 
 public class CommunicationController extends BaseController {
@@ -143,13 +149,17 @@ public class CommunicationController extends BaseController {
 	@Get("/group/:groupId/outgoing")
 	public void getOutgoingRelations(HttpServerRequest request) {
 		String groupId = request.params().get("groupId");
-		communicationService.getOutgoingRelations(groupId, arrayResponseHandler(request));
+		communicationService.getOutgoingRelations(groupId)
+				.onSuccess( groups -> render(request, groups.stream().map(JsonObject.class::cast).map(GroupDtoMapper::map).collect(Collectors.toList())))
+				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 	}
 
 	@Get("/group/:groupId/incoming")
 	public void getIncomingRelations(HttpServerRequest request) {
 		String groupId = request.params().get("groupId");
-		communicationService.getIncomingRelations(groupId, arrayResponseHandler(request));
+		communicationService.getIncomingRelations(groupId)
+				.onSuccess( groups -> render(request, groups.stream().map(JsonObject.class::cast).map(GroupDtoMapper::map).collect(Collectors.toList())))
+				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 	}
 
 	@Post("/relative/:groupId")
@@ -157,9 +167,14 @@ public class CommunicationController extends BaseController {
 	@MfaProtected()
 	public void addLinkBetweenRelativeAndStudent(HttpServerRequest request) {
 		String groupId = getGroupId(request);
-		if (groupId == null) return;
+		if (groupId == null) {
+			renderError(request);
+			return;
+		}
 		CommunicationService.Direction direction = getDirection(request.params().get("direction"));
-		communicationService.addLinkBetweenRelativeAndStudent(groupId, direction, notEmptyResponseHandler(request));
+		communicationService.addLinkBetweenRelativeAndStudent(groupId, direction)
+				.onSuccess( count -> render(request, new CountResultDTO(count)))
+				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 	}
 
 	@Delete("/relative/:groupId")
@@ -167,9 +182,14 @@ public class CommunicationController extends BaseController {
 	@MfaProtected()
 	public void removeLinkBetweenRelativeAndStudent(HttpServerRequest request) {
 		String groupId = getGroupId(request);
-		if (groupId == null) return;
+		if (groupId == null) {
+			renderError(request);
+			return;
+		}
 		CommunicationService.Direction direction = getDirection(request.params().get("direction"));
-		communicationService.removeLinkBetweenRelativeAndStudent(groupId, direction, notEmptyResponseHandler(request));
+		communicationService.removeLinkBetweenRelativeAndStudent(groupId, direction)
+				.onSuccess( count -> render(request, new CountResultDTO(count)))
+				.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())));
 	}
 
 	@Get("/visible/:userId")
@@ -188,129 +208,17 @@ public class CommunicationController extends BaseController {
 	@Post("/visible")
 	@SecuredAction(value = "", type = ActionType.AUTHENTICATED)
 	public void searchVisible(HttpServerRequest request) {
-		RequestUtils.bodyToJson(request, filter -> UserUtils.getUserInfos(eb, request, user -> {
-			if (user != null) {
-				String preFilter = "";
-				String match = "";
-				String where = "";
-				String nbUsers = "";
-				String groupTypes = "";
-				JsonObject params = new JsonObject();
-				JsonArray expectedTypes = null;
-				if (filter != null && filter.size()> 0) {
-					for (String criteria : filter.fieldNames()) {
-						switch (criteria) {
-							case "structures":
-							case "classes":
-								JsonArray itemssc = filter.getJsonArray(criteria);
-								if (itemssc == null || itemssc.isEmpty() ||
-										("structures".equals(criteria) &&  filter.getJsonArray("classes") != null &&
-												!filter.getJsonArray("classes").isEmpty())) continue;
-								if (!params.containsKey("nIds")) {
-									params.put("nIds", itemssc);
-								} else {
-									params.getJsonArray("nIds").addAll(itemssc);
-								}
-								if (!match.contains("-[:DEPENDS")) {
-									if (!match.contains("MATCH ")) {
-										match = "MATCH ";
-										where = " WHERE ";
-									} else {
-										// We use another MATCH here, because for users not attached to a class, a simple comma does some oddities
-										match += " MATCH ";
-										where += "AND ";
-									}
-									match += "(visibles)-[:IN*0..1]->()-[:DEPENDS]->(n) ";
-									where += "n.id IN {nIds} ";
-								}
-								if ("structures".equals(criteria)) {
-									match = match.replaceFirst("\\[:DEPENDS]", "[:DEPENDS*1..2]");
-								}
-								break;
-							case "profiles":
-							case "functions":
-								JsonArray itemspf = filter.getJsonArray(criteria);
-								if (itemspf == null || itemspf.isEmpty()) continue;
-								if (!params.containsKey("filters")) {
-									params.put("filters", itemspf);
-								} else {
-									//params.getJsonArray("filters").addAll(itemspf);
-									params.put("filters2", itemspf);
-								}
-								if (!match.contains("MATCH ")) {
-									match = "MATCH ";
-									where = " WHERE ";
-								} else {
-									// We use another MATCH here, because for users not attached to a class, a simple comma does some oddities
-									match += " MATCH ";
-									where += "AND ";
-								}
-								if (!match.contains("(visibles)-[:IN*0..1]->(g)")) {
-									match += "(visibles)-[:IN*0..1]->(g)";
-									where += "g.filter IN {filters} ";
-								} else {
-									match += "(visibles)-[:IN*0..1]->(g2) ";
-									where += "g2.filter IN {filters2} ";
-								}
-								break;
-							case "positions":
-								JsonArray positionIds = filter.getJsonArray(criteria);
-								if (positionIds == null || positionIds.isEmpty()) continue;
-								params.put("positionIds", positionIds);
-								if (!match.contains("MATCH ")) {
-									where = " WHERE ";
-								} else {
-									where += "AND ";
-								}
-								where += "  ANY(id IN positionIds WHERE id IN {positionIds}) ";
-                break;
-							case "search":
-								final String search = filter.getString(criteria);
-								if (isNotEmpty(search)) {
-									preFilter = "AND m.displayNameSearchField CONTAINS {search} ";
-
-									String sanitizedSearch = StringValidation.sanitize(search);
-									params.put("search", sanitizedSearch);
-								}
-								break;
-							case "types":
-								JsonArray types = filter.getJsonArray(criteria);
-								if (types != null && types.size() > 0 && CommunicationService.EXPECTED_TYPES.containsAll(types.getList())) {
-									expectedTypes = types;
-								}
-								break;
-							case "nbUsersInGroups":
-								if (filter.getBoolean("nbUsersInGroups", false)) {
-									nbUsers = ", visibles.nbUsers as nbUsers";
-								}
-								break;
-							case "groupType":
-								if (filter.getBoolean("groupType", false)) {
-									groupTypes = ", labels(visibles) as groupType, visibles.filter as groupProfile";
-								}
-								break;
-						}
-					}
-				}
-				final boolean returnGroupType = !groupTypes.isEmpty();
-				final String customReturn = match + where +
-						"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
-						"positionNames, positionIds, " +
-						"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
-						"HEAD(visibles.profiles) as profile, subjects" + nbUsers + groupTypes;
-				communicationService.visibleUsers(user.getUserId(), null, expectedTypes, true, true, false,
-						preFilter, customReturn, params, user.getType(), false, visibles -> {
-							if (visibles.isRight()) {
-								renderJson(request,
-										UserUtils.translateAndGroupVisible(visibles.right().getValue(),
-												I18n.acceptLanguage(request), returnGroupType));
-							} else {
-								leftToResponse(request, visibles.left());
-							}
-						});
-			} else {
-				badRequest(request, "invalid.user");
-			}
+		RequestUtils.bodyToClass(request, SearchVisibleRestDTO.class).onSuccess(filter -> UserUtils.getUserInfos(eb, request, user -> {
+			// override some value for this canal
+			filter.setItSelf(true)
+				.setMyGroup(true)
+				.setProfile(false);
+			boolean returnGroupType = Boolean.TRUE.equals(filter.getGroupType());
+			communicationService.visibleUsers(user, filter)
+					.onFailure(th -> renderError(request, new JsonObject().put("error", th.getMessage())))
+					.onSuccess( visibles -> {
+						render(request, SearchVisibleDtoMapper.map(UserUtils.translateAndGroupVisible(visibles, I18n.acceptLanguage(request), returnGroupType)));
+					});
 		}));
 	}
 
@@ -324,19 +232,29 @@ public class CommunicationController extends BaseController {
 					badRequest(request, "invalid.groupId");
 					return;
 				}
+				//FIXME we must use a dedicated query to prefilter on users of a group
 				String customReturn =
 						"WITH COLLECT(visibles.id) as vIds " +
-						"UNWIND vIds AS vId "+
-						"MATCH (u:User { id: vId }) "+
-						"USING INDEX u:User(id) " +
-						"MATCH (s:Group { id : {groupId}})<-[:IN]-(u:User) " +
-						"USING INDEX s:Group(id) "+
-						"RETURN DISTINCT HEAD(u.profiles) as type, u.id as id, " +
-						"u.displayName as displayName, u.login as login " +
-						"ORDER BY type DESC, displayName ";
+								"UNWIND vIds AS vId "+
+								"MATCH (u:User { id: vId }) "+
+								"USING INDEX u:User(id) " +
+								"MATCH (s:Group { id : {groupId}})<-[:IN]-(u:User) " +
+								"USING INDEX s:Group(id) "+
+								"RETURN DISTINCT HEAD(u.profiles) as type, u.id as id, " +
+								"u.displayName as displayName, u.login as login " +
+								"ORDER BY type DESC, displayName ";
 				final JsonObject params = new JsonObject().put("groupId", groupId);
 				communicationService.visibleUsers(user.getUserId(), null, null, true, true, false, null,
-						customReturn, params, arrayResponseHandler(request));
+						customReturn, params, visibles -> {
+							if(visibles.isLeft()) {
+								renderError(request, new JsonObject().put("error", visibles.left()));
+								return;
+							}
+							render(request, visibles.right().getValue().stream()
+									.map(JsonObject.class::cast)
+									.map(UserDtoMapper::map)
+									.collect(Collectors.toList()));
+						});
 			} else {
 				badRequest(request, "invalid.user");
 			}
@@ -345,11 +263,13 @@ public class CommunicationController extends BaseController {
 
 	@BusAddress("wse.communication.users")
 	public void visibleUsers(final Message<JsonObject> message) {
-		String userId = message.body().getString("userId");
+		SearchVisibleBusDTO searchQuery = message.body().mapTo(SearchVisibleBusDTO.class);
+
+		String userId = searchQuery.getUserId();
 		if (userId != null && !userId.trim().isEmpty()) {
-			String action = message.body().getString("action", "");
-			String schoolId = message.body().getString("schoolId");
-			JsonArray expectedTypes = message.body().getJsonArray("expectedTypes");
+			String action = searchQuery.getAction();
+			String schoolId = searchQuery.getSchoolId();
+			JsonArray expectedTypes = new JsonArray(searchQuery.getExpectedTypes());
 			Handler<Either<String, JsonArray>> responseHandler = new Handler<Either<String, JsonArray>>() {
 
 				@Override
@@ -366,35 +286,35 @@ public class CommunicationController extends BaseController {
 			};
 			switch (action) {
 			case "visibleUsers":
-				String preFilter = message.body().getString("preFilter");
-				String customReturn = message.body().getString("customReturn");
-				JsonObject ap = message.body().getJsonObject("additionnalParams");
-				boolean itSelf = message.body().getBoolean("itself", false);
+				String preFilter = searchQuery.getPreFilter();
+				String customReturn = searchQuery.getCustomReturn();
+				JsonObject ap = new JsonObject(searchQuery.getAdditionnalParams());
+				boolean itSelf = searchQuery.isItSelf();
 				boolean myGroup = communicationService instanceof DefaultCommunicationService ? true :
-						message.body().getBoolean("mygroup", false);
-				boolean profile = message.body().getBoolean("profile", true);
-				String userProfile = message.body().getString("userProfile", null);
-				boolean reverseUnion = message.body().getBoolean("reverseUnion", false);
+						searchQuery.isMyGroup();
+				boolean profile = searchQuery.isProfile();
+				String userProfile = searchQuery.getUserProfile();
+				boolean reverseUnion = searchQuery.isReverseUnion();
 				communicationService.visibleUsers(userId, schoolId, expectedTypes, itSelf, myGroup,
 						profile, preFilter, customReturn, ap, userProfile, reverseUnion, responseHandler);
 				break;
 			case "visibleUsersForShare":
-					String search = message.body().getString("search");
-					JsonArray userIds =  message.body().getJsonArray("userIds");
+					String search = searchQuery.getSearch();
+					JsonArray userIds = new JsonArray(searchQuery.getUserIds());
 					communicationService.visibleUsersForShare(userId, search, userIds, responseHandler);
 					break;
 			case "usersCanSeeMe":
 				communicationService.usersCanSeeMe(userId, responseHandler);
 				break;
 			case "visibleProfilsGroups":
-				String pF = message.body().getString("preFilter");
-				String c = message.body().getString("customReturn");
-				JsonObject p = message.body().getJsonObject("additionnalParams");
+				String pF = searchQuery.getPreFilter();
+				String c = searchQuery.getCustomReturn();
+				JsonObject p = new JsonObject(searchQuery.getAdditionnalParams());
 				communicationService.visibleProfilsGroups(userId, c, p, pF, responseHandler);
 				break;
 			case "visibleManualGroups":
-				String cr = message.body().getString("customReturn");
-				JsonObject pa = message.body().getJsonObject("additionnalParams");
+				String cr = searchQuery.getCustomReturn();
+				JsonObject pa = new JsonObject(searchQuery.getAdditionnalParams());
 				communicationService.visibleManualGroups(userId, cr, pa, responseHandler);
 				break;
 			default:

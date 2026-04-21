@@ -30,6 +30,7 @@ import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.apache.commons.collections4.CollectionUtils;
 import org.entcore.common.conversation.LegacySearchVisibleRequest;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.StatementsBuilder;
@@ -39,12 +40,14 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.common.validation.StringValidation;
+import org.entcore.communication.dto.rest.SearchVisibleRestDTO;
 import org.entcore.communication.services.CommunicationService;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import static fr.wseduc.webutils.Utils.isNotEmpty;
 import static io.vertx.core.json.JsonObject.mapFrom;
 import static org.entcore.common.neo4j.Neo4jResult.*;
 import static org.entcore.common.share.ShareService.EXPECTED_IDS_USERS_GROUPS;
@@ -378,8 +381,8 @@ public class DefaultCommunicationService implements CommunicationService {
 	}
 
 	@Override
-	public void addLinkBetweenRelativeAndStudent(String groupId, Direction direction,
-												 Handler<Either<String, JsonObject>> handler) {
+	public Future<Integer> addLinkBetweenRelativeAndStudent(String groupId, Direction direction) {
+		Promise<Integer> promise = Promise.promise();
 		String createRelationship;
 		switch (direction) {
 			case INCOMING:
@@ -397,12 +400,19 @@ public class DefaultCommunicationService implements CommunicationService {
 						"CREATE UNIQUE " + createRelationship +
 						"RETURN COUNT(*) as number ";
 		JsonObject params = new JsonObject().put("groupId", groupId).put("direction", direction.name());
-		neo4j.execute(query, params, validUniqueResultHandler(handler));
+		neo4j.execute(query, params, validUniqueResultHandler( res -> {
+			if(res.isLeft()) {
+				promise.fail(res.left().getValue());
+				return;
+			}
+			promise.complete(res.right().getValue().getInteger("number"));
+		}));
+		return promise.future();
 	}
 
 	@Override
-	public void removeLinkBetweenRelativeAndStudent(String groupId, Direction direction,
-													Handler<Either<String, JsonObject>> handler) {
+	public Future<Integer> removeLinkBetweenRelativeAndStudent(String groupId, Direction direction) {
+		Promise<Integer> promise = Promise.promise();
 		String relationship;
 		String set;
 		switch (direction) {
@@ -429,7 +439,14 @@ public class DefaultCommunicationService implements CommunicationService {
 						"DELETE r " +
 						"RETURN COUNT(*) as number ";
 		JsonObject params = new JsonObject().put("groupId", groupId);
-		neo4j.execute(query, params, validUniqueResultHandler(handler));
+		neo4j.execute(query, params, validUniqueResultHandler(res -> {
+			if(res.isLeft()) {
+				promise.fail(res.left().getValue());
+				return;
+			}
+			promise.complete(res.right().getValue().getInteger("number"));
+		}));
+		return promise.future();
 	}
 
 	private List<StatementsBuilder> getStatementsForDefaultRules(JsonArray structureIds, JsonObject defaultRules) {
@@ -864,6 +881,105 @@ public class DefaultCommunicationService implements CommunicationService {
 		neo4j.execute(q, params, validResultHandler(handler));
 	}
 
+	@Override
+	public Future<JsonArray> visibleUsers(UserInfos userInfos, SearchVisibleRestDTO searchVisibleDto) {
+		Promise<JsonArray> promise = Promise.promise();
+		String preFilter = "";
+		String match = "";
+		String where = "";
+		String nbUsers = "";
+		String groupTypes = "";
+		JsonObject params = new JsonObject();
+		JsonArray expectedTypes = null;
+
+		boolean matchAdded = false;
+
+		if (!CollectionUtils.isEmpty(searchVisibleDto.getStructures())) {
+
+			match = "MATCH ";
+			where = " WHERE ";
+			match += "(visibles)-[:IN*0..1]->()-[:DEPENDS*1..2]->(n) ";
+			where += "n.id IN {nIds} ";
+
+			params.put("nIds", new JsonArray(searchVisibleDto.getStructures()));
+			matchAdded = true;
+		} else if (!CollectionUtils.isEmpty(searchVisibleDto.getClasses())) {
+
+			match = "MATCH ";
+			where = " WHERE ";
+			match += "(visibles)-[:IN*0..1]->()-[:DEPENDS*1..2]->(n) ";
+			where += "n.id IN {nIds} ";
+
+			params.put("nIds", new JsonArray(searchVisibleDto.getClasses()));
+			matchAdded = true;
+		}
+		if (!CollectionUtils.isEmpty(searchVisibleDto.getProfiles())) {
+			params.put("filters", new JsonArray(searchVisibleDto.getProfiles()));
+			if (!matchAdded) {
+				match = "MATCH (visibles)-[:IN*0..1]->(g)";
+				where = " WHERE g.filter IN {filters} ";
+			} else {
+				match += " MATCH (visibles)-[:IN*0..1]->(g)";
+				where += " AND g.filter IN {filters} ";
+			}
+			matchAdded = true;
+		}
+		if (!CollectionUtils.isEmpty(searchVisibleDto.getFunctions())) {
+			params.put("filters2", new JsonArray(searchVisibleDto.getFunctions()));
+			if (!matchAdded) {
+				match = "MATCH (visibles)-[:IN*0..1]->(g2)";
+				where = " WHERE g2.filter IN {filters2} ";
+			} else {
+				match += " MATCH (visibles)-[:IN*0..1]->(g2)";
+				where += " AND g2.filter IN {filters2} ";
+			}
+			matchAdded = true;
+		}
+		if (!CollectionUtils.isEmpty(searchVisibleDto.getPositions())) {
+			params.put("positionIds", new JsonArray(searchVisibleDto.getPositions()));
+			if (!matchAdded) {
+				where = " WHERE ";
+			} else {
+				where += " AND ";
+			}
+			where += "  ANY(id IN positionIds WHERE id IN {positionIds}) ";
+			matchAdded = true;
+		}
+		if (isNotEmpty(searchVisibleDto.getSearch())) {
+			preFilter = "AND m.displayNameSearchField CONTAINS {search} ";
+
+			String sanitizedSearch = StringValidation.sanitize(searchVisibleDto.getSearch());
+			params.put("search", sanitizedSearch);
+		}
+		if (CollectionUtils.isEmpty(searchVisibleDto.getTypes())) {
+			if (CommunicationService.EXPECTED_TYPES.containsAll(searchVisibleDto.getTypes())) {
+				expectedTypes = new JsonArray(searchVisibleDto.getTypes());
+			}
+		}
+		if (Boolean.TRUE.equals(searchVisibleDto.getNbUsersInGroups())) {
+			nbUsers = ", visibles.nbUsers as nbUsers";
+		}
+		if (Boolean.TRUE.equals(searchVisibleDto.getGroupType())) {
+			groupTypes = ", labels(visibles) as groupType, visibles.filter as groupProfile";
+		}
+
+		final String customReturn = match + where +
+				"RETURN DISTINCT visibles.id as id, visibles.name as name, " +
+				"positionNames, positionIds, " +
+				"visibles.displayName as displayName, visibles.groupDisplayName as groupDisplayName, " +
+				"HEAD(visibles.profiles) as profile, subjects" + nbUsers + groupTypes;
+
+		visibleUsers(userInfos.getUserId(), null, expectedTypes, searchVisibleDto.isItSelf(), searchVisibleDto.isMyGroup(), searchVisibleDto.isProfile(),
+				preFilter, customReturn, params, userInfos.getType(), false, visibles -> {
+					if (visibles.isRight()) {
+						promise.complete(visibles.right().getValue());
+					} else {
+						promise.fail(visibles.left().getValue());
+					}
+				});
+		return promise.future();
+	}
+
 
 	@Override
 	public void usersCanSeeMe(String userId, Handler<Either<String, JsonArray>> handler) {
@@ -956,19 +1072,36 @@ public class DefaultCommunicationService implements CommunicationService {
 			+ "     WHEN HAS(g.subType) THEN g.subType END as subType";
 
 	@Override
-	public void getOutgoingRelations(String id, Handler<Either<String, JsonArray>> results) {
+	public Future<JsonArray> getOutgoingRelations(String id) {
+		Promise<JsonArray> promise = Promise.promise();
 		String query = "MATCH (g:Group)<-[:COMMUNIQUE]-(ug: Group { id: {id} }) WHERE exists(g.id) "
 				+ relationQuery;
 		JsonObject params = new JsonObject().put("id", id);
-		neo4j.execute(query, params, validResultHandler(results));
+		neo4j.execute(query, params, validResultHandler( v -> {
+			if(v.isLeft()) {
+				promise.fail(v.left().getValue());
+				return;
+			}
+			promise.complete(v.right().getValue());
+		}));
+
+		return promise.future();
 	}
 
 	@Override
-	public void getIncomingRelations(String id, Handler<Either<String, JsonArray>> results) {
+	public Future<JsonArray> getIncomingRelations(String id) {
+		Promise<JsonArray> promise = Promise.promise();
 		String query = "MATCH (g:Group)-[:COMMUNIQUE]->(ug: Group { id: {id} }) WHERE exists(g.id) "
 				+ relationQuery;
 		JsonObject params = new JsonObject().put("id", id);
-		neo4j.execute(query, params, validResultHandler(results));
+		neo4j.execute(query, params, validResultHandler(v -> {
+			if(v.isLeft()) {
+				promise.fail(v.left().getValue());
+				return;
+			}
+			promise.complete(v.right().getValue());
+		}));
+		return promise.future();
 	}
 
 	@Override
