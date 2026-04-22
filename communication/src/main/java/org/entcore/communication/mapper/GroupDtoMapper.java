@@ -31,7 +31,8 @@ public class GroupDtoMapper {
         group.setNbUsers(json.getInteger("nbUsers"))
                 .setGroupType(json.getString("groupType"))
                 .setSortName(json.getString("sortName"))
-                .setProfile(json.getString("profile"));
+                .setProfile(json.getString("profile"))
+                .setGroupDisplayName(json.getString("groupDisplayName"));
         return group;
     }
 
