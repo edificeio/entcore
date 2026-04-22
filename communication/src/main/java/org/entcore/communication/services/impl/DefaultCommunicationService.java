@@ -526,6 +526,42 @@ public class DefaultCommunicationService implements CommunicationService {
 		return toFuture(h -> initDefaultRules(structureIds, defaultRules, h));
 	}
 
+	@Override
+	public Future<JsonObject> initDefaultRules(JsonArray structureIds, JsonObject defaultRules,
+			Integer transactionId, Boolean commit) {
+		return toFuture(h -> initDefaultRules(structureIds, defaultRules, transactionId, commit, h));
+	}
+
+	@Override
+	public Future<JsonObject> applyDefaultRules(JsonArray structureIds) {
+		return toFuture(h -> applyDefaultRules(structureIds, h));
+	}
+
+	@Override
+	public Future<JsonObject> applyDefaultRules(JsonArray structureIds, Integer transactionId, Boolean commit) {
+		return toFuture(h -> applyDefaultRules(structureIds, transactionId, commit, h));
+	}
+
+	@Override
+	public Future<JsonObject> applyRules(String groupId) {
+		return toFuture(h -> applyRules(groupId, h));
+	}
+
+	@Override
+	public Future<JsonObject> addLink(String startGroupId, String endGroupId) {
+		return toFuture(h -> addLink(startGroupId, endGroupId, h));
+	}
+
+	@Override
+	public Future<JsonObject> addLinkWithUsers(String groupId, Direction direction) {
+		return toFuture(h -> addLinkWithUsers(groupId, direction, h));
+	}
+
+	@Override
+	public Future<JsonObject> removeLinkWithUsers(String groupId, Direction direction) {
+		return toFuture(h -> removeLinkWithUsers(groupId, direction, h));
+	}
+
 	private void getStatementsForDefaultRules(JsonArray structureIds, String attr, JsonObject defaultRules,
 											  final StatementsBuilder existingGroups, final StatementsBuilder newGroups) {
 		final String[] a = attr.split("\\-");
