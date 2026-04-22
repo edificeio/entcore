@@ -104,7 +104,9 @@ public class AudioRecorderHandler implements Handler<ServerWebSocket> {
 				final String id = path.replaceFirst("/audio/", "");
 				log.info("[Dictaphone] - Pausing n°: " + id+" / "+queries.getOrDefault("sampleRate", "44100"));
 				eb.request(AudioRecorderWorker.class.getSimpleName(),
-						new JsonObject().put("action", "open").put("id", id).put("sampleRate", queries.getOrDefault("sampleRate", "44100")), handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
+						new JsonObject().put("action", "open").put("id", id).put("sampleRate", queries.getOrDefault("sampleRate", "44100")),
+						new DeliveryOptions().setLocalOnly(true),
+						handlerToAsyncHandler(new Handler<Message<JsonObject>>() {
 					@Override
 					public void handle(Message<JsonObject> m) {
 						if ("ok".equals(m.body().getString("status"))) {
