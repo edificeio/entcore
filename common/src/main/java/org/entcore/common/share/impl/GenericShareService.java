@@ -216,100 +216,76 @@ public abstract class GenericShareService implements ShareService {
 	protected void getShareInfos(final String userId, final JsonArray actions, final JsonObject groupCheckedActions,
 			final JsonObject userCheckedActions, final String acceptLanguage, ShareInfosQuery query,
 			final Handler<JsonObject> handler) {
-		final JsonObject groupParams = new JsonObject().put("groupIds",
-				new JsonArray(new ArrayList<>(groupCheckedActions.fieldNames())));
-		final JsonObject userParams = new JsonObject().put("userIds",
-				new JsonArray(new ArrayList<>(userCheckedActions.fieldNames())));
-		final String search = query.getSearch();
+		JsonArray usersIds = new JsonArray(new ArrayList(userCheckedActions.fieldNames()));
+		JsonObject groupParams = (new JsonObject()).put("groupIds", new JsonArray(new ArrayList(groupCheckedActions.fieldNames())));
+		JsonObject userParams = (new JsonObject()).put("userIds", usersIds);
+		String search = query.getSearch();
 		if (search != null && search.trim().isEmpty()) {
-			final Neo4j neo4j = Neo4j.getInstance();
-			neo4j.execute(GROUP_SHARED, groupParams, validResultHandler(sg-> {
+			Neo4j neo4j = Neo4j.getInstance();
+			neo4j.execute("MATCH (g:Group) WHERE g.id in {groupIds} RETURN distinct g.id as id, g.name as name, g.groupDisplayName as groupDisplayName, g.structureName as structureName, labels(g) as labels ORDER BY name ", groupParams, Neo4jResult.validResultHandler((sg) -> {
 				JsonArray visibleGroups;
 				if (sg.isRight()) {
-					visibleGroups = sg.right().getValue();
+					visibleGroups = (JsonArray)sg.right().getValue();
 				} else {
 					visibleGroups = new JsonArray();
 				}
-				final JsonObject groups = new JsonObject();
+
+				JsonObject groups = new JsonObject();
 				groups.put("visibles", visibleGroups);
 				groups.put("checked", groupCheckedActions);
-				for (Object u : visibleGroups) {
-					if (!(u instanceof JsonObject))
-						continue;
-					JsonObject group = (JsonObject) u;
-					UserUtils.groupDisplayName(group, acceptLanguage);
+
+				for(Object u : visibleGroups) {
+					if (u instanceof JsonObject) {
+						JsonObject group = (JsonObject)u;
+						UserUtils.groupDisplayName(group, acceptLanguage);
+					}
 				}
-				neo4j.execute(USER_SHARED, userParams, validResultHandler(event-> {
+
+				neo4j.execute("MATCH (u:User) WHERE u.id in {userIds} RETURN distinct u.id as id, u.login as login, u.displayName as username, u.lastName as lastName, u.firstName as firstName, u.profiles[0] as profile  ORDER BY username ", userParams, Neo4jResult.validResultHandler((event) -> {
 					JsonArray visibleUsers;
 					if (event.isRight()) {
-						visibleUsers = event.right().getValue();
+						visibleUsers = (JsonArray)event.right().getValue();
 					} else {
 						visibleUsers = new JsonArray();
 					}
+
 					JsonObject users = new JsonObject();
 					users.put("visibles", visibleUsers);
 					users.put("checked", userCheckedActions);
-					JsonObject share = new JsonObject().put("actions", actions).put("groups", groups)
-							.put("users", users);
+					JsonObject share = (new JsonObject()).put("actions", actions).put("groups", groups).put("users", users);
 					handler.handle(share);
 				}));
 			}));
+			return;
+		}
+		String sanitizedSearch;
+		if (search != null) {
+			sanitizedSearch = StringValidation.sanitize(search);
+			groupParams.put("search", sanitizedSearch);
+			userParams.put("search", sanitizedSearch);
 		} else {
-			// Complex query that combines visible profile groups and explicitly shared groups
-			// The UNION allows getting both types of groups with their labels for proper display
-			final String groupQuery = "RETURN distinct profileGroup.id as id, profileGroup.name as name, "
-					+ "profileGroup.groupDisplayName as groupDisplayName, profileGroup.structureName as structureName, "
-					+ "labels(profileGroup) as labels "
-					+ "ORDER BY name " + "UNION " + GROUP_SHARED;
-			//FIXME should be optimized by removing unecessary optionals
-			final String userQuery = "RETURN distinct visibles.id as id, visibles.login as login, visibles.displayName as username, "
-					+ "visibles.lastName as lastName, visibles.firstName as firstName, visibles.profiles[0] as profile "
-					+ "ORDER BY username " + "UNION " + USER_SHARED;
-			//
-			final StringBuilder preFilterUserBuilder = new StringBuilder();
-			final StringBuilder preFilterGroupBuilder = new StringBuilder();
-			//PREFILTER GROUPS AND USERS BY SEARCH
-			if (search != null) {
-				String sanitizedSearch = StringValidation.sanitize(search);
-				groupParams.put("search", sanitizedSearch);
-				userParams.put("search", sanitizedSearch);
-				//
-				preFilterUserBuilder.append(" AND m.displayNameSearchField CONTAINS {search} ");
-			}
-			//PREFILTER GROUPS BY FILTER
-			if(query.getOnlyGroupsWithFilters() != null && query.getOnlyGroupsWithFilters().size() > 0) {
-				groupParams.put("onlyGroupsWithFilters", new JsonArray(query.getOnlyGroupsWithFilters()));
-				preFilterGroupBuilder.append(" AND gp.filter IN {onlyGroupsWithFilters} ");
-			}
-			//PREFILTER USERS BY PROFILES
-			if(query.getOnlyUsersWithProfiles() != null && query.getOnlyUsersWithProfiles().size() > 0) {
-				userParams.put("onlyUserWithProfiles", new JsonArray(query.getOnlyUsersWithProfiles()));
-				preFilterUserBuilder.append(" AND ANY(pro IN m.profiles WHERE pro IN {onlyUserWithProfiles}) ");
-			}
-			//
-			String preFilterGroup = preFilterGroupBuilder.toString().trim().isEmpty() ? null : preFilterGroupBuilder.toString();
-			UserUtils.findVisibleProfilsGroups(eb, userId, preFilterGroup, groupQuery, groupParams, visibleGroups-> {
-				final JsonObject groups = new JsonObject();
-				groups.put("visibles", visibleGroups);
-				groups.put("checked", groupCheckedActions);
-				for (Object u : visibleGroups) {
-					if (!(u instanceof JsonObject))
-						continue;
-					JsonObject group = (JsonObject) u;
+			sanitizedSearch = null;
+		}
+
+		UserUtils.findVisibleProfilsGroups(this.eb, userId, null, "RETURN distinct profileGroup.id as id, profileGroup.name as name, profileGroup.groupDisplayName as groupDisplayName, profileGroup.structureName as structureName, labels(profileGroup) as labels ORDER BY name UNION MATCH (g:Group) WHERE g.id in {groupIds} RETURN distinct g.id as id, g.name as name, g.groupDisplayName as groupDisplayName, g.structureName as structureName, labels(g) as labels ORDER BY name ", groupParams, (visibleGroups) -> {
+			JsonObject groups = new JsonObject();
+			groups.put("visibles", visibleGroups);
+			groups.put("checked", groupCheckedActions);
+
+			for(Object u : visibleGroups) {
+				if (u instanceof JsonObject) {
+					JsonObject group = (JsonObject)u;
 					UserUtils.groupDisplayName(group, acceptLanguage);
 				}
-				//
-				String preFilterUser = preFilterUserBuilder.toString().trim().isEmpty() ? null : preFilterUserBuilder.toString();
-				findVisibleUsers(eb, userId, false, preFilterUser, userQuery, userParams,visibleUsers-> {
-					JsonObject users = new JsonObject();
-					users.put("visibles", visibleUsers);
-					users.put("checked", userCheckedActions);
-					JsonObject share = new JsonObject().put("actions", actions).put("groups", groups)
-							.put("users", users);
-					handler.handle(share);
-				});
+			}
+			UserUtils.findVisibleUsersForShare(this.eb, userId, sanitizedSearch, usersIds, (visibleUsers) -> {
+				JsonObject users = new JsonObject();
+				users.put("visibles", visibleUsers);
+				users.put("checked", userCheckedActions);
+				JsonObject share = (new JsonObject()).put("actions", actions).put("groups", groups).put("users", users);
+				handler.handle(share);
 			});
-		}
+		});
 	}
 
 	// TODO improve query
