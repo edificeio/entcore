@@ -36,6 +36,7 @@
     "mode": "prod",
     "use-optimized" : {{ timelineUseOptimizedPeriodicMailer|default('true') }},
     "log-push-notifs": {{ timelineLogPushNotifs | default('false') }},
-    "remove-push-notifs-404-tokens": {{ timelinePushNotifs404 | default('true') }}
+    "remove-push-notifs-404-tokens": {{ timelinePushNotifs404 | default('true') }},
+    "specific-homepages-host": {{ timelineSpecificHomepagesHost | default('[]') }}
   }
 }

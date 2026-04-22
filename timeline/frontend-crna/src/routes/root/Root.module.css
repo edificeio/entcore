@@ -1,0 +1,8 @@
+/* Sidebar gauche réduite à ~25% (1fr/4fr) au lieu de 33% (1fr/3fr) par défaut */
+.layout :global(.pagelayout-mainarea.has-left-sidebar-only) {
+  grid-template-columns: 1fr 3fr;
+}
+
+.layout :global(.pagelayout-mainarea.has-both-sidebars) {
+  grid-template-columns: 1fr 3fr 1fr;
+}
