@@ -1051,6 +1051,44 @@ public class DefaultCommunicationService implements CommunicationService {
 		neo4j.execute(query, params, validResultHandler(handler));
 	}
 
+	private static <T> Future<T> toFuture(java.util.function.Consumer<Handler<Either<String, T>>> call) {
+		Promise<T> promise = Promise.promise();
+		call.accept(res -> {
+			if (res.isRight()) promise.complete(res.right().getValue());
+			else promise.fail(res.left().getValue());
+		});
+		return promise.future();
+	}
+
+	@Override
+	public Future<JsonArray> visibleUsers(String userId, String structureId, JsonArray expectedTypes, boolean itSelf,
+			boolean myGroup, boolean profile, String preFilter, String customReturn, JsonObject additionalParams,
+			String userProfile, boolean reverseUnion) {
+		return toFuture(h -> visibleUsers(userId, structureId, expectedTypes, itSelf, myGroup, profile,
+				preFilter, customReturn, additionalParams, userProfile, reverseUnion, h));
+	}
+
+	@Override
+	public Future<JsonArray> usersCanSeeMe(String userId) {
+		return toFuture(h -> usersCanSeeMe(userId, h));
+	}
+
+	@Override
+	public Future<JsonArray> visibleProfilsGroups(String userId, String customReturn, JsonObject additionnalParams,
+			String preFilter) {
+		return toFuture(h -> visibleProfilsGroups(userId, customReturn, additionnalParams, preFilter, h));
+	}
+
+	@Override
+	public Future<JsonArray> visibleManualGroups(String userId, String customReturn, JsonObject additionnalParams) {
+		return toFuture(h -> visibleManualGroups(userId, customReturn, additionnalParams, h));
+	}
+
+	@Override
+	public Future<JsonArray> visibleUsersForShare(String userId, String search, JsonArray userIds) {
+		return toFuture(h -> visibleUsersForShare(userId, search, userIds, h));
+	}
+
 	private static String relationQuery = "OPTIONAL MATCH (sg:Structure)<-[:DEPENDS]-(g) "
 			+ "OPTIONAL MATCH (sc:Structure)<-[:BELONGS]-(c:Class)<-[:DEPENDS]-(g) "
 			+ "WITH COALESCE(sg, sc) as s, c, g "

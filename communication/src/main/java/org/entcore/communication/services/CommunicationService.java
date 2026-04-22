@@ -142,15 +142,28 @@ public interface CommunicationService {
 			boolean reverseUnion,
 			Handler<Either<String, JsonArray>> handler);
 
+	Future<JsonArray> visibleUsers(String userId, String structureId, JsonArray expectedTypes, boolean itSelf,
+			boolean myGroup, boolean profile, String preFilter, String customReturn, JsonObject additionalParams,
+			String userProfile, boolean reverseUnion);
+
 	Future<JsonArray> visibleUsers(UserInfos userInfos, SearchVisibleRestDTO searchVisibleDto);
 
 	void usersCanSeeMe(String userId, final Handler<Either<String, JsonArray>> handler);
 
+	Future<JsonArray> usersCanSeeMe(String userId);
+
 	void visibleProfilsGroups(String userId, String customReturn, JsonObject additionnalParams, String preFilter,
 			Handler<Either<String, JsonArray>> handler);
 
+	Future<JsonArray> visibleProfilsGroups(String userId, String customReturn, JsonObject additionnalParams,
+			String preFilter);
+
 	void visibleManualGroups(String userId, String customReturn, JsonObject additionnalParams,
 			Handler<Either<String, JsonArray>> handler);
+
+	Future<JsonArray> visibleManualGroups(String userId, String customReturn, JsonObject additionnalParams);
+
+	Future<JsonArray> visibleUsersForShare(String userId, String search, JsonArray userIds);
 
 	Future<JsonArray> getOutgoingRelations(String id);
 
