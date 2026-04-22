@@ -32,6 +32,7 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
@@ -51,9 +52,11 @@ import org.entcore.communication.mapper.GroupDtoMapper;
 import org.entcore.communication.mapper.SearchVisibleDtoMapper;
 import org.entcore.communication.mapper.UserDtoMapper;
 import org.entcore.communication.services.CommunicationService;
+import org.entcore.communication.mapper.BusUserDtoMapper;
 import org.entcore.communication.services.impl.DefaultCommunicationService;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static org.entcore.common.http.response.DefaultResponseHandler.*;
@@ -264,66 +267,63 @@ public class CommunicationController extends BaseController {
 	@BusAddress("wse.communication.users")
 	public void visibleUsers(final Message<JsonObject> message) {
 		SearchVisibleBusDTO searchQuery = message.body().mapTo(SearchVisibleBusDTO.class);
-
 		String userId = searchQuery.getUserId();
-		if (userId != null && !userId.trim().isEmpty()) {
-			String action = searchQuery.getAction();
-			String schoolId = searchQuery.getSchoolId();
-			JsonArray expectedTypes = new JsonArray(searchQuery.getExpectedTypes());
-			Handler<Either<String, JsonArray>> responseHandler = new Handler<Either<String, JsonArray>>() {
+		if (userId == null || userId.trim().isEmpty()) {
+			message.reply(new JsonArray());
+			return;
+		}
 
-				@Override
-				public void handle(Either<String, JsonArray> res) {
-					JsonArray j;
-					if (res.isRight()) {
-						j = res.right().getValue();
-					} else {
-						log.warn(res.left().getValue());
-						j = new JsonArray();
-					}
-					message.reply(j);
-				}
-			};
-			switch (action) {
+		String schoolId = searchQuery.getSchoolId();
+		JsonArray expectedTypes = new JsonArray(searchQuery.getExpectedTypes());
+		final Future<JsonArray> future;
+
+		switch (searchQuery.getAction()) {
 			case "visibleUsers":
-				String preFilter = searchQuery.getPreFilter();
-				String customReturn = searchQuery.getCustomReturn();
-				JsonObject ap = new JsonObject(searchQuery.getAdditionnalParams());
-				boolean itSelf = searchQuery.isItSelf();
-				boolean myGroup = communicationService instanceof DefaultCommunicationService ? true :
-						searchQuery.isMyGroup();
-				boolean profile = searchQuery.isProfile();
-				String userProfile = searchQuery.getUserProfile();
-				boolean reverseUnion = searchQuery.isReverseUnion();
-				communicationService.visibleUsers(userId, schoolId, expectedTypes, itSelf, myGroup,
-						profile, preFilter, customReturn, ap, userProfile, reverseUnion, responseHandler);
+				boolean myGroup = communicationService instanceof DefaultCommunicationService || searchQuery.isMyGroup();
+				//FIXME: we can't define a DTO  until we remove customeReturn from query
+				future = communicationService.visibleUsers(userId, schoolId, expectedTypes,
+						searchQuery.isItSelf(), myGroup, searchQuery.isProfile(),
+						searchQuery.getPreFilter(), searchQuery.getCustomReturn(),
+						new JsonObject(searchQuery.getAdditionnalParams()),
+						searchQuery.getUserProfile(), searchQuery.isReverseUnion());
 				break;
 			case "visibleUsersForShare":
-					String search = searchQuery.getSearch();
-					JsonArray userIds = new JsonArray(searchQuery.getUserIds());
-					communicationService.visibleUsersForShare(userId, search, userIds, responseHandler);
-					break;
+				future = communicationService.visibleUsersForShare(userId, searchQuery.getSearch(),
+						new JsonArray(searchQuery.getUserIds()))
+						.map(arr -> serialize(arr, BusUserDtoMapper::map));
+				break;
 			case "usersCanSeeMe":
-				communicationService.usersCanSeeMe(userId, responseHandler);
+				future = communicationService.usersCanSeeMe(userId)
+						.map(arr -> serialize(arr, BusUserDtoMapper::map));
 				break;
 			case "visibleProfilsGroups":
-				String pF = searchQuery.getPreFilter();
-				String c = searchQuery.getCustomReturn();
-				JsonObject p = new JsonObject(searchQuery.getAdditionnalParams());
-				communicationService.visibleProfilsGroups(userId, c, p, pF, responseHandler);
+				//FIXME: we can't define a DTO  until we remove customeReturn from query
+				future = communicationService.visibleProfilsGroups(userId, searchQuery.getCustomReturn(),
+						new JsonObject(searchQuery.getAdditionnalParams()), searchQuery.getPreFilter());
 				break;
 			case "visibleManualGroups":
-				String cr = searchQuery.getCustomReturn();
-				JsonObject pa = new JsonObject(searchQuery.getAdditionnalParams());
-				communicationService.visibleManualGroups(userId, cr, pa, responseHandler);
+				//FIXME: we can't define a DTO  until we remove customeReturn from query
+				future = communicationService.visibleManualGroups(userId, searchQuery.getCustomReturn(),
+						new JsonObject(searchQuery.getAdditionnalParams()));
 				break;
 			default:
 				message.reply(new JsonArray());
-				break;
-			}
-		} else {
-			message.reply(new JsonArray());
+				return;
 		}
+
+		future.onSuccess(message::reply)
+			  .onFailure(err -> {
+					log.warn(err.getMessage());
+					message.reply(new JsonArray());
+				});
+	}
+
+	private static <T> JsonArray serialize(JsonArray arr, Function<JsonObject, T> mapper) {
+		return new JsonArray(arr.stream()
+				.map(JsonObject.class::cast)
+				.map(mapper)
+				.map(JsonObject::mapFrom)
+				.collect(Collectors.toList()));
 	}
 
 	private void visibleUsers(String userId, String schoolId, JsonArray expectedTypes,
