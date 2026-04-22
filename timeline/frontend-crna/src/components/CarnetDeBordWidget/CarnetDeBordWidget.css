@@ -1,0 +1,207 @@
+.carnet-de-bord-widget {
+  display: flex;
+  flex-direction: column;
+  gap: var(--primitive-spacer-8);
+  border-radius: var(--primitive-border-radius-xl);
+  padding: var(--primitive-spacer-12) var(--primitive-spacer-16)
+    var(--primitive-spacer-16);
+  background-color: var(--primitive-white);
+}
+
+
+.carnet-de-bord-list-card {
+  border-radius: var(--primitive-border-radius-xl);
+  padding: var(--primitive-spacer-12) var(--primitive-spacer-16) var(--primitive-spacer-16);
+  background-color: var(--primitive-grey-100);
+}
+
+.carnet-de-bord-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--primitive-spacer-8);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.carnet-de-bord-entry {
+  display: flex;
+  align-items: center;
+  gap: var(--primitive-spacer-8);
+  background: var(--primitive-grey-100);
+  border: 1px solid var(--primitive-grey-200);
+  border-radius: var(--primitive-border-radius-lg);
+  padding: var(--primitive-spacer-8);
+  text-decoration: none;
+  color: inherit;
+  width: 100%;
+  text-align: left;
+  cursor: default;
+}
+
+button.carnet-de-bord-entry {
+  cursor: pointer;
+}
+
+button.carnet-de-bord-entry:hover {
+  background-color: var(--primitive-white);
+  border-color: var(--primitive-grey-300);
+}
+
+/* multi-élèves : entrées sur fond de card grise → blanc + hover gris */
+.carnet-de-bord-list-card .carnet-de-bord-entry {
+  background: var(--primitive-white);
+  border-color: var(--primitive-white);
+}
+
+.carnet-de-bord-list-card button.carnet-de-bord-entry:hover {
+  background-color: var(--primitive-grey-100);
+  border-color: var(--primitive-grey-300);
+}
+
+.carnet-de-bord-entry-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--primitive-border-radius-lg);
+  overflow: hidden;
+  flex-shrink: 0;
+  background-color: var(--primitive-yellow-100);
+  border: 1px solid var(--primitive-yellow-300);
+  color: var(--primitive-grey-900);
+}
+
+.carnet-de-bord-entry-icon[data-type='lateness'] {
+  background-color: var(--color-buttons-primary-pale);
+  border-color: var(--color-buttons-primary-light);
+  color: var(--color-buttons-primary-dark);
+}
+
+.carnet-de-bord-entry-icon[data-type='absences'] {
+  background-color: var(--color-buttons-primary-pale);
+  border-color: var(--color-buttons-primary-light);
+  color: var(--color-buttons-primary-dark);
+}
+
+.carnet-de-bord-entry-icon[data-type='grades'] {
+  background-color: var(--color-buttons-primary-pale);
+  border-color: var(--color-buttons-primary-light);
+  color: var(--color-buttons-primary-dark);
+}
+
+.carnet-de-bord-entry-icon[data-type='diary'] {
+  background-color: var(--color-buttons-primary-pale);
+  border-color: var(--color-buttons-primary-light);
+  color: var(--color-buttons-primary-dark);
+}
+
+.carnet-de-bord-entry-icon[data-type='skills'] {
+  background-color: var(--color-buttons-primary-pale);
+  border-color: var(--color-buttons-primary-light);
+  color: var(--color-buttons-primary-dark);
+}
+
+.carnet-de-bord-entry--disabled {
+  background: var(--primitive-grey-100);
+  border-color: var(--primitive-grey-100);
+}
+.carnet-de-bord-entry-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.carnet-de-bord-entry-label {
+  font-family: var(--primitive-font-family-arimo);
+  font-weight: var(--primitive-font-weight-bold);
+  font-size: var(--primitive-font-size-small);
+  line-height: var(--primitive-font-lineheight-2xs);
+  color: var(--primitive-grey-900);
+}
+
+.carnet-de-bord-entry-sublabel {
+  font-family: var(--primitive-legacy-font-family-roboto);
+  font-weight: 400;
+  font-size: var(--primitive-font-size-small);
+  line-height: var(--primitive-font-lineheight-2xs);
+  color: var(--primitive-grey-800);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.carnet-de-bord-lightbox-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.carnet-de-bord-lightbox-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--primitive-spacer-4);
+  padding: var(--primitive-spacer-12) var(--primitive-spacer-8);
+  border-bottom: 1px solid var(--primitive-grey-200);
+}
+
+.carnet-de-bord-lightbox-item:last-child {
+  border-bottom: none;
+}
+
+.carnet-de-bord-lightbox-value {
+  font-family: var(--primitive-legacy-font-family-roboto);
+  font-weight: 400;
+  font-size: var(--primitive-font-size-small);
+  line-height: var(--primitive-font-lineheight-2xs);
+  color: var(--primitive-grey-800);
+  flex: 1;
+  margin: 0;
+}
+
+.carnet-de-bord-lightbox-subsection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--primitive-spacer-2);
+  padding-left: var(--primitive-spacer-12);
+  border-left: 2px solid var(--primitive-grey-200);
+  margin-top: var(--primitive-spacer-4);
+}
+
+
+.carnet-de-bord-lightbox-title {
+  font-size: var(--primitive-font-size-default);
+  font-weight: var(--primitive-font-weight-bold);
+}
+
+.carnet-de-bord-lightbox-count {
+  background-color: var(--color-buttons-primary-pale) !important;
+  color: var(--color-buttons-primary-dark) !important;
+  font-size: var(--primitive-font-size-small);
+  font-weight: var(--primitive-font-weight-bold);
+}
+
+.carnet-de-bord-pronote-btn {
+  font-size: var(--primitive-font-size-caption) !important;
+  flex-shrink: 0;
+}
+
+.carnet-de-bord-grade-badge {
+  background-color: var(--color-buttons-primary-pale) !important;
+  color: var(--color-buttons-primary-dark) !important;
+  font-weight: var(--primitive-font-weight-bold);
+}
+
+.carnet-de-bord-date-badge {
+  background-color: var(--color-buttons-primary-pale) !important;
+  color: var(--color-buttons-primary-dark) !important;
+  font-size: var(--primitive-font-size-caption);
+}
+
+.carnet-de-bord-skill-label {
+  background-color: var(--primitive-grey-200) !important;
+  color: var(--primitive-grey-900) !important;
+  font-size: var(--primitive-font-size-caption);
+}

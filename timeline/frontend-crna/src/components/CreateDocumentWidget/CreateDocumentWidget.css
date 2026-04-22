@@ -1,0 +1,20 @@
+.create-document-apps-card {
+  background-color: var(--primitive-white);
+  border-radius: var(--primitive-border-radius-xl);
+  border: 1px solid var(--primitive-grey-200);
+  padding: var(--primitive-spacer-12);
+}
+
+.create-document-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: var(--primitive-white);
+  font-weight: var(--primitive-font-weight-bold);
+  font-size: var(--primitive-font-size-default);
+  text-decoration: none;
+  flex-shrink: 0;
+}
