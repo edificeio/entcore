@@ -1,0 +1,7 @@
+.voir-tout {
+  font-family: var(--primitive-legacy-font-family-roboto);
+  font-size: var(--primitive-font-size-small);
+  font-weight: var(--primitive-font-weight-medium);
+  line-height: var(--primitive-font-lineheight-xs);
+  color: var(--primitive-blue-700) !important;
+}

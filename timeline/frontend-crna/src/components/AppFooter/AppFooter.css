@@ -1,0 +1,62 @@
+.app-footer {
+  background-color: var(--primitive-clients-crna-500);
+  border-radius: var(--primitive-border-radius-2xl);
+  padding: var(--primitive-spacer-24) var(--primitive-spacer-32);
+  margin-top: var(--primitive-spacer-16);
+  margin-bottom: var(--primitive-spacer-16);
+}
+
+.app-footer-brand {}
+
+.app-footer .app-footer-brand-name {
+  margin: 0;
+  font-family: var(--primitive-font-family-urbanist);
+  font-weight: var(--primitive-font-weight-bold);
+  font-size: 2.2rem;
+  line-height: var(--primitive-font-lineheight-xs);
+  color: var(--primitive-white);
+  white-space: nowrap;
+}
+
+.app-footer-brand-description {
+  margin: 0;
+  font-family: var(--primitive-font-family-arimo);
+  font-weight: 400;
+  font-size: var(--primitive-font-size-default);
+  line-height: var(--primitive-font-lineheight-xs);
+  color: var(--primitive-white);
+}
+
+.app-footer-brand-logo {
+  width: 126px;
+  height: 62px;
+  object-fit: contain;
+}
+
+.app-footer-section {
+  color: var(--primitive-white);
+}
+
+.app-footer .app-footer-section-title {
+  margin: 0;
+  font-family: var(--primitive-font-family-urbanist);
+  font-weight: var(--primitive-font-weight-bold);
+  font-size: var(--primitive-font-size-s);
+  line-height: var(--primitive-font-lineheight-s);
+  color: var(--primitive-white);
+  white-space: nowrap;
+}
+
+.app-footer-link {
+  font-family: var(--primitive-font-family-arimo);
+  font-weight: 400;
+  font-size: var(--primitive-font-size-default);
+  line-height: var(--primitive-font-lineheight-xs);
+  color: var(--primitive-white);
+  text-decoration: none;
+}
+
+.app-footer-link:hover {
+  text-decoration: underline;
+  color: var(--primitive-white);
+}
