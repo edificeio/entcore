@@ -99,17 +99,23 @@ public interface CommunicationService {
 	void addLink(String startGroupId, String endGroupId,
 			Handler<Either<String, JsonObject>> handler);
 
+	Future<JsonObject> addLink(String startGroupId, String endGroupId);
+
 	void removeLink(String startGroupId, String endGroupId,
 			Handler<Either<String, JsonObject>> handler);
 
 	void addLinkWithUsers(String groupId, Direction direction,
 						  Handler<Either<String, JsonObject>> handler);
 
+	Future<JsonObject> addLinkWithUsers(String groupId, Direction direction);
+
 	void addLinkWithUsers(Map<String, Direction> params,
 						  Handler<Either<String, JsonObject>> handler);
 
 	void removeLinkWithUsers(String groupId, Direction direction,
 			Handler<Either<String, JsonObject>> handler);
+
+	Future<JsonObject> removeLinkWithUsers(String groupId, Direction direction);
 
 	void communiqueWith(String groupId,// VisibleType filter,
 			Handler<Either<String, JsonObject>> handler);
@@ -121,6 +127,9 @@ public interface CommunicationService {
 	void initDefaultRules(JsonArray structureIds, JsonObject defaultRules, final Integer transactionId,
 						  final Boolean commit, final Handler<Either<String, JsonObject>> handler);
 
+	Future<JsonObject> initDefaultRules(JsonArray structureIds, JsonObject defaultRules, Integer transactionId,
+			Boolean commit);
+
 	void initDefaultRules(JsonArray structureIds, JsonObject defaultRules,
 			Handler<Either<String, JsonObject>> handler);
 
@@ -129,9 +138,15 @@ public interface CommunicationService {
 	void applyDefaultRules(JsonArray structureIds, final Integer transactionId, final Boolean commit,
 						   Handler<Either<String, JsonObject>> handler);
 
+	Future<JsonObject> applyDefaultRules(JsonArray structureIds, Integer transactionId, Boolean commit);
+
 	void applyDefaultRules(JsonArray structureIds, Handler<Either<String, JsonObject>> handler);
 
+	Future<JsonObject> applyDefaultRules(JsonArray structureIds);
+
 	void applyRules(String groupId, Handler<Either<String,JsonObject>> responseHandler);
+
+	Future<JsonObject> applyRules(String groupId);
 
 	void removeRules(String structureId, Handler<Either<String, JsonObject>> handler);
 

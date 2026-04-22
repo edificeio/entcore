@@ -44,6 +44,7 @@ import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.StringUtils;
+import org.entcore.communication.dto.rest.CommunicationBusDTO;
 import org.entcore.communication.dto.rest.CountResultDTO;
 import org.entcore.communication.dto.rest.InitDefaultRulesDTO;
 import org.entcore.communication.dto.rest.SearchVisibleBusDTO;
@@ -389,102 +390,64 @@ public class CommunicationController extends BaseController {
 
 	@BusAddress("wse.communication")
 	public void communicationEventBusHandler(final Message<JsonObject> message) {
+		CommunicationBusDTO dto = message.body().mapTo(CommunicationBusDTO.class);
 		JsonObject initDefaultRules = config.getJsonObject("initDefaultCommunicationRules");
-		final Handler<Either<String, JsonObject>> responseHandler = new Handler<Either<String, JsonObject>>() {
+		final Future<JsonObject> future;
 
-			@Override
-			public void handle(Either<String, JsonObject> res) {
-				if (res.isRight()) {
-					message.reply(res.right().getValue());
+		switch (dto.getAction() != null ? dto.getAction() : "") {
+			case "initDefaultCommunicationRules":
+				future = communicationService.initDefaultRules(new JsonArray(dto.getSchoolIds()), initDefaultRules);
+				break;
+			case "initAndApplyDefaultCommunicationRules":
+				future = communicationService.initDefaultRules(new JsonArray(dto.getSchoolIds()), initDefaultRules,
+								dto.getTransactionId(), dto.isCommit())
+						.compose(ignored -> communicationService.applyDefaultRules(new JsonArray(dto.getSchoolIds()),
+								dto.getTransactionId(), dto.isCommit()));
+				break;
+			case "setDefaultCommunicationRules":
+				future = communicationService.applyDefaultRules(new JsonArray().add(dto.getSchoolId()));
+				break;
+			case "setMultipleDefaultCommunicationRules":
+				future = communicationService.applyDefaultRules(new JsonArray(dto.getSchoolIds()));
+				break;
+			case "setCommunicationRules":
+				future = communicationService.applyRules(dto.getGroupId());
+				break;
+			case "addLink":
+				if (dto.getStartGroupId() == null || dto.getEndGroupId() == null) {
+					future = Future.failedFuture("missing.parameters");
 				} else {
-					message.reply(new JsonObject().put("status", "error")
-							.put("message", res.left().getValue()));
-				}
-			}
-		};
-		switch (message.body().getString("action", "")) {
-			case "initDefaultCommunicationRules" :
-				communicationService.initDefaultRules(message.body().getJsonArray("schoolIds"),
-						initDefaultRules, responseHandler);
-				break;
-			case "initAndApplyDefaultCommunicationRules" :
-				final Integer transactionId = message.body().getInteger("transactionId");
-				final Boolean commit = message.body().getBoolean("commit", true);
-				communicationService.initDefaultRules(message.body().getJsonArray("schoolIds"),
-						initDefaultRules, transactionId, commit, new Handler<Either<String, JsonObject>>() {
-					@Override
-					public void handle(Either<String, JsonObject> event) {
-						if (event.isRight()) {
-							communicationService.applyDefaultRules(message.body().getJsonArray("schoolIds"),
-									transactionId, commit, responseHandler);
-						} else {
-							message.reply(new JsonObject().put("status", "error")
-									.put("message", event.left().getValue()));
-						}
-					}
-				});
-				break;
-			case "setDefaultCommunicationRules" :
-				communicationService.applyDefaultRules(new JsonArray().add(
-						message.body().getString("schoolId")), responseHandler);
-				break;
-			case "setMultipleDefaultCommunicationRules" :
-				communicationService.applyDefaultRules(
-						message.body().getJsonArray("schoolIds"), responseHandler);
-				break;
-			case "setCommunicationRules" :
-				communicationService.applyRules(
-						message.body().getString("groupId"), responseHandler);
-				break;
-			case "addLink" :
-				// Create communication link between two groups
-				if (message.body().containsKey("startGroupId") && message.body().containsKey("endGroupId")) {
-					String startGroupId = message.body().getString("startGroupId");
-					String endGroupId = message.body().getString("endGroupId");
-					
-					communicationService.addLink(startGroupId, endGroupId, responseHandler);
-				} else {
-					message.reply(new JsonObject().put("status", "error")
-							.put("message", "missing.parameters"));
+					future = communicationService.addLink(dto.getStartGroupId(), dto.getEndGroupId());
 				}
 				break;
-			case "addLinkWithUsers" :
-				if (message.body().containsKey("groupId") && message.body().containsKey("direction")) {
-					String groupId = message.body().getString("groupId");
-					String direction = message.body().getString("direction", "BOTH");
-					CommunicationService.Direction directionEnum;
-					try {
-						directionEnum = CommunicationService.Direction.valueOf(direction.toUpperCase());
-					} catch (IllegalArgumentException | NullPointerException e) {
-						directionEnum = CommunicationService.Direction.BOTH;
-					}
-					
-					communicationService.addLinkWithUsers(groupId, directionEnum, responseHandler);
-				}else {
-					message.reply(new JsonObject().put("status", "error")
-							.put("message", "missing.parameters"));
+			case "addLinkWithUsers":
+				if (dto.getGroupId() == null || dto.getDirection() == null) {
+					future = Future.failedFuture("missing.parameters");
+				} else {
+					future = communicationService.addLinkWithUsers(dto.getGroupId(), parseDirection(dto.getDirection()));
 				}
 				break;
-			case "removeLinkWithUsers" :
-				if (message.body().containsKey("groupId") && message.body().containsKey("direction")) {
-					String groupId = message.body().getString("groupId");
-					String direction = message.body().getString("direction", "BOTH");
-					CommunicationService.Direction directionEnum;
-					try {
-						directionEnum = CommunicationService.Direction.valueOf(direction.toUpperCase());
-					} catch (IllegalArgumentException | NullPointerException e) {
-						directionEnum = CommunicationService.Direction.BOTH;
-					}
-					
-					communicationService.removeLinkWithUsers(groupId, directionEnum, responseHandler);
+			case "removeLinkWithUsers":
+				if (dto.getGroupId() == null || dto.getDirection() == null) {
+					future = Future.failedFuture("missing.parameters");
 				} else {
-					message.reply(new JsonObject().put("status", "error")
-							.put("message", "missing.parameters"));
+					future = communicationService.removeLinkWithUsers(dto.getGroupId(), parseDirection(dto.getDirection()));
 				}
 				break;
 			default:
-				message.reply(new JsonObject().put("status", "error")
-						.put("message", "invalid.action"));
+				future = Future.failedFuture("invalid.action");
+		}
+
+		future
+				.onSuccess(message::reply)
+				.onFailure(err -> message.reply(new JsonObject().put("status", "error").put("message", err.getMessage())));
+	}
+
+	private static CommunicationService.Direction parseDirection(String direction) {
+		try {
+			return CommunicationService.Direction.valueOf(direction.toUpperCase());
+		} catch (IllegalArgumentException | NullPointerException e) {
+			return CommunicationService.Direction.BOTH;
 		}
 	}
 
