@@ -124,6 +124,8 @@ public interface CommunicationService {
 	void initDefaultRules(JsonArray structureIds, JsonObject defaultRules,
 			Handler<Either<String, JsonObject>> handler);
 
+	Future<JsonObject> initDefaultRules(JsonArray structureIds, JsonObject defaultRules);
+
 	void applyDefaultRules(JsonArray structureIds, final Integer transactionId, final Boolean commit,
 						   Handler<Either<String, JsonObject>> handler);
 
