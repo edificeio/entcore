@@ -9,6 +9,7 @@ public class GroupDTO extends IdentifiableDTO {
     private String filter;
     private String profile;
     private String displayName;
+    private String groupDisplayName;
     private InternalCommunicationRule internalCommunicationRule;
     private List<IdentifiableDTO> classes = Lists.newArrayList();
     private List<IdentifiableDTO> structures = Lists.newArrayList();
@@ -114,6 +115,15 @@ public class GroupDTO extends IdentifiableDTO {
 
     public GroupDTO setNbUsers(Integer nbUsers) {
         this.nbUsers = nbUsers;
+        return this;
+    }
+
+    public String getGroupDisplayName() {
+        return groupDisplayName;
+    }
+
+    public GroupDTO setGroupDisplayName(String groupDisplayName) {
+        this.groupDisplayName = groupDisplayName;
         return this;
     }
 
