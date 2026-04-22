@@ -521,6 +521,11 @@ public class DefaultCommunicationService implements CommunicationService {
 		initDefaultRules(structureIds, defaultRules, null, true, handler);
 	}
 
+	@Override
+	public Future<JsonObject> initDefaultRules(JsonArray structureIds, JsonObject defaultRules) {
+		return toFuture(h -> initDefaultRules(structureIds, defaultRules, h));
+	}
+
 	private void getStatementsForDefaultRules(JsonArray structureIds, String attr, JsonObject defaultRules,
 											  final StatementsBuilder existingGroups, final StatementsBuilder newGroups) {
 		final String[] a = attr.split("\\-");

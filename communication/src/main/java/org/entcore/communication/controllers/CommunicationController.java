@@ -45,6 +45,7 @@ import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.user.UserUtils;
 import org.entcore.common.utils.StringUtils;
 import org.entcore.communication.dto.rest.CountResultDTO;
+import org.entcore.communication.dto.rest.InitDefaultRulesDTO;
 import org.entcore.communication.dto.rest.SearchVisibleBusDTO;
 import org.entcore.communication.dto.rest.SearchVisibleRestDTO;
 import org.entcore.communication.filters.CommunicationDiscoverVisibleFilter;
@@ -340,19 +341,16 @@ public class CommunicationController extends BaseController {
 	@Put("/init/rules")
 	@SecuredAction("communication.init.default.rules")
 	public void initDefaultCommunicationRules(final HttpServerRequest request) {
-		RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
-			@Override
-			public void handle(JsonObject body) {
-				JsonObject initDefaultRules = config.getJsonObject("initDefaultCommunicationRules");
-				JsonArray structures = body.getJsonArray("structures");
-				if (structures != null && structures.size() > 0) {
-					communicationService.initDefaultRules(structures,
-							initDefaultRules, defaultResponseHandler(request));
-				} else {
-					badRequest(request, "invalid.structures");
-				}
+		RequestUtils.bodyToClass(request, InitDefaultRulesDTO.class).onSuccess(body -> {
+			if (body.getStructures() == null || body.getStructures().isEmpty()) {
+				badRequest(request, "invalid.structures");
+				return;
 			}
-		});
+			JsonObject initDefaultRules = config.getJsonObject("initDefaultCommunicationRules");
+			communicationService.initDefaultRules(new JsonArray(body.getStructures()), initDefaultRules)
+					.onSuccess(result -> renderJson(request, result))
+					.onFailure(err -> renderError(request, new JsonObject().put("error", err.getMessage())));
+		}).onFailure(err -> badRequest(request, err.getMessage()));
 	}
 
 	@Post("/rules/:structureId/reset")
