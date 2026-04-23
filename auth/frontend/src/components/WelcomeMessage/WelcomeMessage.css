@@ -1,0 +1,17 @@
+.wayf-welcome-message {
+  background: var(--primitives-white);
+  border-radius: 1.5rem;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+  min-height: 0;
+}
+
+.wayf-welcome-message__placeholder {
+  color: var(--primitives-grey-800);
+  font-size: 1rem;
+  line-height: 1.5;
+  margin: 0;
+}

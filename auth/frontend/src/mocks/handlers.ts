@@ -1,9 +1,14 @@
 import { HttpResponse, http } from 'msw';
+import authI18nFr from '../../../src/main/resources/i18n/fr.json';
 
 /**
  * DO NOT MODIFY
  */
 const defaultHandlers = [
+  http.get('/auth/i18n', () => {
+    return HttpResponse.json(authI18nFr);
+  }),
+
   http.get('/userbook/preference/apps', () => {
     return HttpResponse.json({
       preference: '{"bookmarks":[],"applications":["FakeApp"]}',
