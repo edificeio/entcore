@@ -27,8 +27,10 @@ public class S3FallbackS3S3Storage implements FallbackStorage {
     private static final Logger log = LoggerFactory.getLogger(S3FallbackS3S3Storage.class);
 
     public S3FallbackS3S3Storage(Vertx vertx, JsonObject s3, JsonObject s3fallback) {
-        this.s3Client = new S3Client(vertx, URI.create(s3.getString("uri")), s3.getString("accessKey"), s3.getString("secretKey"), s3.getString("region"), s3.getString("bucket"), s3.getString("ssec"));
-        this.s3FallbackClient = new S3Client(vertx, URI.create(s3fallback.getString("uri")), s3fallback.getString("accessKey"), s3fallback.getString("secretKey"), s3fallback.getString("region"), s3fallback.getString("bucket"), s3fallback.getString("ssec"));
+        this.s3Client = new S3Client(vertx, URI.create(s3.getString("uri")), s3.getString("accessKey"), s3.getString("secretKey"), s3.getString("region"), s3.getString("bucket"), s3.getString("ssec"),
+                false, 10000, 100, 10000L, 16, s3.getBoolean("trustAll", false));
+        this.s3FallbackClient = new S3Client(vertx, URI.create(s3fallback.getString("uri")), s3fallback.getString("accessKey"), s3fallback.getString("secretKey"), s3fallback.getString("region"), s3fallback.getString("bucket"), s3fallback.getString("ssec"),
+                false, 10000, 100, 10000L, 16, s3fallback.getBoolean("trustAll", false));
 
         this.bucket = s3fallback.getString("bucket");
         this.bucketMaxAge = s3fallback.getInteger("bucketMaxAge", 2);
