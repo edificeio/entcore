@@ -1,10 +1,12 @@
-package org.entcore.communication.dto.rest;
+package org.entcore.communication.dto.bus;
+
+import org.entcore.communication.dto.rest.SearchVisibleRequestDTO;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class SearchVisibleBusDTO extends SearchVisibleRestDTO {
+public class SearchVisibleBusDTO extends SearchVisibleRequestDTO {
 
     private String userId;
     private List<String> userIds;
