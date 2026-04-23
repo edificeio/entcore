@@ -46,7 +46,8 @@ pipeline {
     }
     stage('Build image') {
       steps {
-          sh './edifice image --project-type=entcore --rebuild=false'
+          sh './edifice image --archs=linux/amd64 --project-type=entcore --rebuild=false -- -workspace'
+          sh './edifice image --archs=linux/amd64 --project-type=entcore --rebuild=false --external-programs=shared-mime-info --external-programs=lame --external-programs=libmp3lame-dev --external-programs=libmp3lame0 workspace'
       }
     }
   }
