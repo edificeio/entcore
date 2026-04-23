@@ -227,5 +227,13 @@
   "wayf.label.cgu": "Pour consulter la charte d'utilisation, cliquez ici",
   "wayf.meta.description": "Connexion à votre espace numérique scolaire : un accès simple, sécurisé et intuitif pour toute la communauté éducative.",
   "wayf.select.profile": "Vous souhaitez vous connecter en tant que ...",
+  "wayf.link.help": "Besoin d'aide ?",
+  "wayf.choice": "Vous êtes :",
+  "wayf.link.cgu": "Charte d'utilisation",
+  "wayf.student": "Élève",
+  "wayf.teacher": "Enseignant",
+  "wayf.relative": "Représentant légal",
+  "wayf.perseducnat": "Personnel",
+  "wayf.other": "Invité",
   "weak": "Faible"
 }

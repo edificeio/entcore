@@ -12,9 +12,8 @@ const routes = (queryClient: QueryClient): RouteObject[] => {
     {
       path: '/saml/wayf',
       async lazy() {
-        const { loader, Root: Component } = await import('~/routes/root');
+        const { WayfPage: Component } = await import('~/routes/pages/Wayf');
         return {
-          loader,
           Component,
         };
       },
